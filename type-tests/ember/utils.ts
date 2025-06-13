@@ -101,7 +101,7 @@ declare const fileList: FileList;
   expectTypeOf(Ember.typeOf(/abc/)).toBeString();
   expectTypeOf(Ember.typeOf(new Date())).toBeString();
   expectTypeOf(Ember.typeOf(fileList)).toBeString();
-  expectTypeOf(Ember.typeOf(Ember.Object.extend())).toBeString();
+  expectTypeOf(Ember.typeOf(class extends Ember.Object {})).toBeString();
   expectTypeOf(Ember.typeOf(Ember.Object.create())).toBeString();
   expectTypeOf(Ember.typeOf(new Error('teamocil'))).toBeString();
   expectTypeOf(Ember.typeOf(new Date() as RegExp | Date)).toBeString();

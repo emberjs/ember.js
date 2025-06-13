@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 
 import { set, setProperties } from '@ember/object';
 
@@ -35,7 +35,7 @@ let BaseModifier = setModifierManager(
   (owner) => {
     return new CustomModifierManager(owner);
   },
-  class extends EmberObject {
+  class extends CoreObject {
     didInsertElement() {}
     didUpdate() {}
     willDestroyElement() {}
@@ -427,11 +427,11 @@ moduleFor(
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => set(this.context, 'model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => set(this.context, 'model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }
@@ -453,11 +453,11 @@ moduleFor(
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => set(this.context, 'model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => set(this.context, 'model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }

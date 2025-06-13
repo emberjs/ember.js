@@ -1,7 +1,7 @@
 import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
-import { set, setProperties } from '@ember/object';
+import { get, set, setProperties } from '@ember/object';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
@@ -280,7 +280,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
         pushHook('willDestroy');
         removeComponent(this);
 
-        this._super(...arguments);
+        super.willDestroy(...arguments);
       }
     };
 
@@ -1319,7 +1319,7 @@ moduleFor(
         width = '5';
         didInsertElement() {
           schedule('afterRender', () => {
-            this.set('width', '10');
+            set(this, 'width', '10');
           });
         }
       };
@@ -1340,8 +1340,8 @@ moduleFor(
       let ComponentClass = class extends Component {
         didInsertElement() {
           schedule('afterRender', () => {
-            let parent = this.get('parent');
-            parent.set('foo', 'wat');
+            let parent = get(this, 'parent');
+            set(parent, 'foo', 'wat');
           });
         }
       };
@@ -1365,7 +1365,7 @@ moduleFor(
         customHref = 'http://google.com';
         attributeBindings = ['customHref:href'];
         willRender() {
-          this.set('customHref', 'http://willRender.com');
+          set(this, 'customHref', 'http://willRender.com');
         }
       };
 
@@ -1552,7 +1552,7 @@ moduleFor(
 
     ['@test lifecycle hooks exist on the base class'](assert) {
       // Make sure we get the finalized component prototype
-      let prototype = Component.proto();
+      let prototype = Component.prototype;
 
       assert.equal(typeof prototype.didDestroyElement, 'function', 'didDestroyElement exists');
       assert.equal(typeof prototype.didInsertElement, 'function', 'didInsertElement exists');

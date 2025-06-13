@@ -2,11 +2,11 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { componentCapabilities } from '@glimmer/manager';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { set, setProperties, computed } from '@ember/object';
 import { setComponentManager } from '@ember/-internals/glimmer';
 
-class BasicComponentManager extends EmberObject {
+class BasicComponentManager extends CoreObject {
   capabilities = componentCapabilities('3.13');
 
   createComponent(factory, args) {
@@ -38,7 +38,7 @@ class ComponentManagerTest extends RenderingTestCase {
   constructor(assert) {
     super(...arguments);
 
-    InstrumentedComponentManager = class extends EmberObject {
+    InstrumentedComponentManager = class extends CoreObject {
       capabilities = componentCapabilities('3.13', {
         destructor: true,
         asyncLifecycleCallbacks: true,
@@ -83,7 +83,7 @@ moduleFor(
     ['@test it can render a basic component with custom component manager']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
         }
       );
@@ -101,7 +101,7 @@ moduleFor(
     ['@test it can render a basic component with custom component manager with a factory']() {
       let ComponentClass = setComponentManager(
         () => BasicComponentManager.create(),
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
         }
       );
@@ -119,7 +119,7 @@ moduleFor(
     ['@test it can have no template context']() {
       class ComponentWithNoTemplate {}
       setComponentManager(() => {
-        let Manager = class extends EmberObject {
+        let Manager = class extends CoreObject {
           capabilities = componentCapabilities('3.13');
 
           createComponent() {
@@ -148,7 +148,7 @@ moduleFor(
     ['@test it can discover component manager through inheritance - ES Classes']() {
       class Base {}
       setComponentManager(() => {
-        let Manager = class extends EmberObject {
+        let Manager = class extends CoreObject {
           capabilities = componentCapabilities('3.13');
 
           createComponent(Factory, args) {
@@ -182,7 +182,7 @@ moduleFor(
     }
 
     ['@test it can discover component manager through inheritance - Ember Object']() {
-      let Parent = setComponentManager(createBasicManager, class extends EmberObject {});
+      let Parent = setComponentManager(createBasicManager, class extends CoreObject {});
       let Child = class extends Parent {};
       let Grandchild = class extends Child {
         init() {
@@ -208,7 +208,7 @@ moduleFor(
 
       let ComponentClass = setComponentManager(
         () => {
-          let Manager = class extends EmberObject {
+          let Manager = class extends CoreObject {
             capabilities = componentCapabilities('3.13');
 
             createComponent(factory) {
@@ -223,7 +223,7 @@ moduleFor(
           };
           return new Manager();
         },
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
           count = 1234;
         }
@@ -246,7 +246,7 @@ moduleFor(
     ['@test it can set arguments on the component instance']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           @computed('args.named.firstName', 'args.named.lastName')
           get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
@@ -267,7 +267,7 @@ moduleFor(
     ['@test arguments are updated if they change']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           @computed('args.named.firstName', 'args.named.lastName')
           get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
@@ -300,7 +300,7 @@ moduleFor(
     ['@test it can set positional params on the component instance']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           @computed('args.positional.[]')
           get salutation() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
@@ -321,7 +321,7 @@ moduleFor(
     ['@test positional params are updated if they change (computed, arr tag)']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           @computed('args.positional.[]')
           get salutation() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
@@ -354,7 +354,7 @@ moduleFor(
     ['@test positional params are updated if they change (computed, individual tags)']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           @computed('args.positional.0', 'args.positional.1')
           get salutation() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
@@ -387,7 +387,7 @@ moduleFor(
     ['@test positional params are updated if they change (native)']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           get salutation() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
           }
@@ -419,7 +419,7 @@ moduleFor(
     ['@test it can opt-in to running destructor'](assert) {
       let ComponentClass = setComponentManager(
         () => {
-          return EmberObject.create({
+          return CoreObject.create({
             capabilities: componentCapabilities('3.13', {
               destructor: true,
             }),
@@ -441,7 +441,7 @@ moduleFor(
             },
           });
         },
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
           destroy() {
             assert.step('component.destroy()');
@@ -459,7 +459,7 @@ moduleFor(
 
       this.assertHTML(`<p>hello world</p>`);
 
-      runTask(() => this.context.set('show', false));
+      runTask(() => set(this.context, 'show', false));
 
       this.assertText('');
 
@@ -469,7 +469,7 @@ moduleFor(
     ['@test it can opt-in to running async lifecycle hooks'](assert) {
       let ComponentClass = setComponentManager(
         () => {
-          return EmberObject.create({
+          return CoreObject.create({
             capabilities: componentCapabilities('3.13', {
               asyncLifecycleCallbacks: true,
               updateHook: true,
@@ -504,7 +504,7 @@ moduleFor(
             },
           });
         },
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
         }
       );
@@ -519,7 +519,7 @@ moduleFor(
       this.assertHTML(`<p>hello world</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
-      runTask(() => this.context.set('name', 'max'));
+      runTask(() => set(this.context, 'name', 'max'));
       this.assertHTML(`<p>hello max</p>`);
       assert.verifySteps(['updateComponent', 'didUpdateComponent']);
     }
@@ -532,7 +532,7 @@ moduleFor(
 
       let ComponentClass = setComponentManager(
         () => {
-          return EmberObject.create({
+          return CoreObject.create({
             capabilities: {
               asyncLifecycleCallbacks: true,
               destructor: true,
@@ -568,7 +568,7 @@ moduleFor(
             },
           });
         },
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
         }
       );
@@ -593,7 +593,7 @@ moduleFor(
     ['@test it can render a basic component with custom component manager']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
         }
       );
@@ -611,7 +611,7 @@ moduleFor(
     ['@test it can set arguments on the component instance']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           @computed('args.named.firstName', 'args.named.lastName')
           get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
@@ -630,7 +630,7 @@ moduleFor(
     }
 
     ['@test it can pass attributes']() {
-      let ComponentClass = setComponentManager(createBasicManager, class extends EmberObject {});
+      let ComponentClass = setComponentManager(createBasicManager, class extends CoreObject {});
 
       this.registerComponent('foo-bar', {
         template: `<p ...attributes>Hello world!</p>`,
@@ -645,7 +645,7 @@ moduleFor(
     ['@test arguments are updated if they change']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        class extends EmberObject {
+        class extends CoreObject {
           @computed('args.named.firstName', 'args.named.lastName')
           get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
@@ -676,7 +676,7 @@ moduleFor(
     }
 
     ['@test updating attributes triggers updateComponent and didUpdateComponent'](assert) {
-      let TestManager = class extends EmberObject {
+      let TestManager = class extends CoreObject {
         capabilities = componentCapabilities('3.13', {
           destructor: true,
           asyncLifecycleCallbacks: true,
@@ -717,7 +717,7 @@ moduleFor(
         () => {
           return TestManager.create();
         },
-        class extends EmberObject {
+        class extends CoreObject {
           didRender() {}
           didUpdate() {}
         }
@@ -733,7 +733,7 @@ moduleFor(
       this.assertHTML(`<p data-test="foo">Hello world!</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
       assert.verifySteps(['updateComponent', 'didUpdateComponent']);
     }
 
@@ -792,7 +792,7 @@ moduleFor(
         'getContext',
       ]);
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
       assert.deepEqual(updated, [{ id: 'no-id' }, { id: 'static-id' }, { id: 'dynamic-id' }]);
       assert.verifySteps(['updateComponent', 'updateComponent', 'updateComponent']);
     }
@@ -836,7 +836,7 @@ moduleFor(
       this.assertHTML(`<p data-test="foo">Hello world!</p>`);
       assert.verifySteps(['createComponent', 'getContext']);
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
       assert.verifySteps([]);
     }
 
@@ -848,7 +848,7 @@ moduleFor(
 
       let ComponentClass = setComponentManager(
         () => {
-          return EmberObject.create({
+          return CoreObject.create({
             capabilities: {
               asyncLifecycleCallbacks: true,
               destructor: true,
@@ -884,7 +884,7 @@ moduleFor(
             },
           });
         },
-        class extends EmberObject {
+        class extends CoreObject {
           greeting = 'hello';
         }
       );

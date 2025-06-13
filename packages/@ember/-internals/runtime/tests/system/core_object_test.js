@@ -1,13 +1,6 @@
-import { getOwner, setOwner } from '@ember/-internals/owner';
-import { get, set, observer } from '@ember/object';
+import { get, set } from '@ember/object';
 import CoreObject from '@ember/object/core';
-import {
-  moduleFor,
-  AbstractTestCase,
-  buildOwner,
-  runDestroy,
-  runLoopSettled,
-} from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
 import { destroy } from '@glimmer/destroyable';
 import { run } from '@ember/runloop';
@@ -27,100 +20,6 @@ moduleFor(
         Object.prototype.hasOwnProperty.call(obj, 'toString'),
         'Calling toString() should not create a toString class property'
       );
-    }
-
-    ['@test should not trigger proxy assertion when retrieving a proxy with (GH#16263)'](assert) {
-      let someProxyishThing = class extends CoreObject {
-        unknownProperty() {
-          return true;
-        }
-      }.create();
-
-      let obj = CoreObject.create({
-        someProxyishThing,
-      });
-
-      let proxy = get(obj, 'someProxyishThing');
-      assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
-    }
-
-    ['@test should not trigger proxy assertion when retrieving a re-registered proxy (GH#16610)'](
-      assert
-    ) {
-      let owner = buildOwner();
-
-      let someProxyishThing = class extends CoreObject {
-        unknownProperty() {
-          return true;
-        }
-      }.create();
-
-      // emulates ember-engines's process of registering services provided
-      // by the host app down to the engine
-      owner.register('thing:one', someProxyishThing, { instantiate: false });
-
-      assert.equal(owner.lookup('thing:one'), someProxyishThing);
-
-      runDestroy(owner);
-    }
-
-    ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {
-      let proxy = class extends CoreObject {
-        unknownProperty() {
-          return true;
-        }
-      }.create();
-
-      assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
-
-      // should not trigger an assertion
-      getOwner(proxy);
-    }
-
-    ['@test can use getOwner in a proxy init GH#16484'](assert) {
-      let owner = {};
-      let options = {};
-      setOwner(options, owner);
-
-      class TestObj extends CoreObject {
-        init() {
-          super.init(...arguments);
-          let localOwner = getOwner(this);
-
-          assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
-        }
-        unknownProperty() {
-          return undefined;
-        }
-      }
-
-      TestObj.create(options);
-    }
-
-    async ['@test observed properties are enumerable when set GH#14594'](assert) {
-      let callCount = 0;
-      let Test = CoreObject.extend({
-        myProp: null,
-        anotherProp: undefined,
-        didChangeMyProp: observer('myProp', function () {
-          callCount++;
-        }),
-      });
-
-      let test = Test.create();
-      set(test, 'id', '3');
-      set(test, 'myProp', { id: 1 });
-
-      assert.deepEqual(Object.keys(test).sort(), ['id', 'myProp']);
-
-      set(test, 'anotherProp', 'nice');
-
-      assert.deepEqual(Object.keys(test).sort(), ['anotherProp', 'id', 'myProp']);
-      await runLoopSettled();
-
-      assert.equal(callCount, 1);
-
-      test.destroy();
     }
 
     ['@test native getters/setters do not cause rendering invalidation during init'](assert) {

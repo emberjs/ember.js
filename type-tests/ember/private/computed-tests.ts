@@ -15,12 +15,3 @@ class Example1 extends Ember.Object {
     return `${this.firstName} ${this.lastName}`;
   }
 }
-
-class Example2 extends Example1 {
-  foo() {
-    expectTypeOf(this.get('fullName').split(',')).toEqualTypeOf<string[]>();
-    expectTypeOf(this.get('allNames')[0]).toEqualTypeOf<string | undefined>();
-    expectTypeOf(this.get('firstName').split(',')).toEqualTypeOf<string[]>();
-    expectTypeOf(this.get('lastName').split(',')).toEqualTypeOf<string[]>();
-  }
-}

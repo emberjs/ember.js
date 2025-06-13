@@ -28,14 +28,3 @@ expectTypeOf(co2.toString()).toEqualTypeOf<string>();
 /** .create tests w/ initial instance data passed in */
 // @ts-expect-error: We reject arbitrary properties!
 const co3 = CoreObject.create({ foo: '123', bar: 456 });
-
-// NOTE: This is marked as @internal and will not be publicly available
-// Note: we don't provide type creation via `.extend`. People should use native
-// classes instead.
-expectTypeOf(CoreObject.extend({ baz: 6 }).create()).not.toHaveProperty('baz');
-
-// NOTE: This is marked as @internal and will not be publicly available
-CoreObject.reopen({ baz: 6 });
-
-// NOTE: This is marked as @internal and will not be publicly available
-CoreObject.reopenClass({ baz: 6 });

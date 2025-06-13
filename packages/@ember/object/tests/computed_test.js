@@ -1,16 +1,12 @@
 import { notifyPropertyChange } from '@ember/-internals/metal';
-import { alias, oneWay as reads } from '@ember/object/computed';
-import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import EmberObject, { get, set, computed } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-
-function K() {
-  return this;
-}
 
 function testGet(assert, expect, x, y) {
   assert.equal(get(x, y), expect);
   assert.equal(get(x, y), expect);
-  assert.equal(x.get(y), expect);
+  assert.equal(get(x, y), expect);
 }
 
 moduleFor(
@@ -139,170 +135,7 @@ moduleFor(
       testGet(assert, 'BLARG 2', obj2, 'foo'); // should not invalidate property
     }
 
-    ['@test can retrieve metadata for a computed property'](assert) {
-      let MyClass = EmberObject.extend({
-        computedProperty: computed(function () {}).meta({ key: 'keyValue' }),
-      });
-
-      assert.equal(
-        get(MyClass.metaForProperty('computedProperty'), 'key'),
-        'keyValue',
-        'metadata saved on the computed property can be retrieved'
-      );
-
-      let ClassWithNoMetadata = class extends EmberObject {
-        @computed
-        get computedProperty() {
-          return undefined;
-        }
-
-        staticProperty = 12;
-      };
-
-      assert.equal(
-        typeof ClassWithNoMetadata.metaForProperty('computedProperty'),
-        'object',
-        'returns empty hash if no metadata has been saved'
-      );
-
-      expectAssertion(function () {
-        ClassWithNoMetadata.metaForProperty('nonexistentProperty');
-      }, "metaForProperty() could not find a computed property with key 'nonexistentProperty'.");
-
-      expectAssertion(function () {
-        ClassWithNoMetadata.metaForProperty('staticProperty');
-      }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
-    }
-
-    ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
-      assert
-    ) {
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {}),
-
-        fooDidChange: observer('foo', function () {}),
-
-        bar: computed(function () {}),
-      });
-
-      let SubClass = MyClass.extend({
-        foo: null,
-      });
-
-      let list = [];
-
-      SubClass.eachComputedProperty((name) => list.push(name));
-
-      assert.deepEqual(
-        list.sort(),
-        ['bar'],
-        'overridding with null removes from eachComputedProperty listing'
-      );
-    }
-
-    ['@test can iterate over a list of computed properties for a class'](assert) {
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {}),
-
-        fooDidChange: observer('foo', function () {}),
-
-        bar: computed(function () {}),
-
-        qux: alias('foo'),
-      });
-
-      let SubClass = MyClass.extend({
-        baz: computed(function () {}),
-      });
-
-      SubClass.reopen({
-        bat: computed(function () {}).meta({ iAmBat: true }),
-      });
-
-      let list = [];
-
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
-
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'foo', 'qux'],
-        'watched and unwatched computed properties are iterated'
-      );
-
-      list = [];
-
-      SubClass.eachComputedProperty(function (name, meta) {
-        list.push(name);
-
-        if (name === 'bat') {
-          assert.deepEqual(meta, { iAmBat: true });
-        } else {
-          assert.deepEqual(meta, {});
-        }
-      });
-
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'bat', 'baz', 'foo', 'qux'],
-        'all inherited properties are included'
-      );
-    }
-
-    ['@test list of properties updates when an additional property is added (such cache busting)'](
-      assert
-    ) {
-      let MyClass = EmberObject.extend({
-        foo: computed(K),
-
-        fooDidChange: observer('foo', function () {}),
-
-        bar: computed(K),
-      });
-
-      let list = [];
-
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
-
-      assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
-
-      MyClass.reopen({
-        baz: computed(K),
-      });
-
-      MyClass.create().destroy(); // force apply mixins
-
-      list = [];
-
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
-
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'foo', 'baz'].sort(),
-        'expected three computed properties'
-      );
-
-      defineProperty(MyClass.prototype, 'qux', computed(K));
-
-      list = [];
-
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
-
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'foo', 'baz', 'qux'].sort(),
-        'expected four computed properties'
-      );
-    }
-
-    ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
+    ['@test Calling super in call outside the immediate function of a CP getter works'](assert) {
       function macro(callback) {
         return computed(function () {
           return callback.call(this);
@@ -326,7 +159,7 @@ moduleFor(
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
     }
 
-    ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
+    ['@test Calling super in apply outside the immediate function of a CP getter works'](assert) {
       function macro(callback) {
         return computed(function () {
           return callback.apply(this);
@@ -348,24 +181,6 @@ moduleFor(
       };
 
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
-    }
-
-    ['@test observing prop installed with computed macro reads and overriding it in create() works'](
-      assert
-    ) {
-      let Obj = EmberObject.extend({
-        name: reads('model.name'),
-        nameDidChange: observer('name', function () {}),
-      });
-
-      let obj1 = Obj.create({ name: '1' });
-      let obj2 = Obj.create({ name: '2' });
-
-      assert.equal(obj1.get('name'), '1');
-      assert.equal(obj2.get('name'), '2');
-
-      obj1.destroy();
-      obj2.destroy();
     }
 
     ['@test native getters and setters work'](assert) {

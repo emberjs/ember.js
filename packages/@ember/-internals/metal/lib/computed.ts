@@ -201,43 +201,6 @@ function noop(): void {}
   person.lastName;  // 'Wagenet'
   ```
 
-  Computed properties can also be used in classic classes. To do this, we
-  provide the getter and setter as the last argument like we would for a macro,
-  and we assign it to a property on the class definition. This is an _anonymous_
-  computed macro:
-
-  ```javascript
-  import EmberObject, { computed, set } from '@ember/object';
-
-  let Person = EmberObject.extend({
-    // these will be supplied by `create`
-    firstName: null,
-    lastName: null,
-
-    fullName: computed('firstName', 'lastName', {
-      get() {
-        return `${this.firstName} ${this.lastName}`;
-      }
-
-      set(key, value) {
-        let [firstName, lastName] = value.split(' ');
-
-        set(this, 'firstName', firstName);
-        set(this, 'lastName', lastName);
-
-        return value;
-      }
-    })
-  });
-
-  let tom = Person.create({
-    firstName: 'Tom',
-    lastName: 'Dale'
-  });
-
-  tom.get('fullName') // 'Tom Dale'
-  ```
-
   You can overwrite computed property without setters with a normal property (no
   longer computed) that won't change if dependencies change. You can also mark
   computed property as `.readOnly()` and block all attempts to set it.
@@ -623,21 +586,6 @@ class ComputedDecoratorImpl extends Function {
     set(person, 'guid', 'new-guid'); // will throw an exception
     ```
 
-    Classic Class Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    let Person = EmberObject.extend({
-      guid: computed(function() {
-        return 'guid-guid-guid';
-      }).readOnly()
-    });
-
-    let person = Person.create();
-    person.set('guid', 'new-guid'); // will throw an exception
-    ```
-
     @method readOnly
     @return {ComputedProperty} this
     @chainable
@@ -673,20 +621,6 @@ class ComputedDecoratorImpl extends Function {
         return Person.create({ id: personId });
       }
     }
-    ```
-
-    Classic Class Example:
-
-    ```javascript
-    import { computed } from '@ember/object';
-    import Person from 'my-app/utils/person';
-
-    const Store = EmberObject.extend({
-      person: computed(function() {
-        let personId = this.get('personId');
-        return Person.create({ id: personId });
-      }).meta({ type: Person })
-    });
     ```
 
     The hash that you pass to the `meta()` function will be saved on the
@@ -758,32 +692,6 @@ type ComputedDecoratorKeysAndConfig = [...keys: string[], config: ComputedProper
   client.fullName; // 'Betty Fuller'
   ```
 
-  Classic Class Example:
-
-  ```js
-  import EmberObject, { computed } from '@ember/object';
-
-  let Person = EmberObject.extend({
-    init() {
-      this._super(...arguments);
-
-      this.firstName = 'Betty';
-      this.lastName = 'Jones';
-    },
-
-    fullName: computed('firstName', 'lastName', function() {
-      return `${this.get('firstName')} ${this.get('lastName')}`;
-    })
-  });
-
-  let client = Person.create();
-
-  client.get('fullName'); // 'Betty Jones'
-
-  client.set('lastName', 'Fuller');
-  client.get('fullName'); // 'Betty Fuller'
-  ```
-
   You can also provide a setter, either directly on the class using native class
   syntax, or by passing a hash with `get` and `set` functions.
 
@@ -819,38 +727,6 @@ type ComputedDecoratorKeysAndConfig = [...keys: string[], config: ComputedProper
 
   set(client, 'lastName', 'Fuller');
   client.fullName; // 'Betty Fuller'
-  ```
-
-  Classic Class Example:
-
-  ```js
-  import EmberObject, { computed } from '@ember/object';
-
-  let Person = EmberObject.extend({
-    init() {
-      this._super(...arguments);
-
-      this.firstName = 'Betty';
-      this.lastName = 'Jones';
-    },
-
-    fullName: computed('firstName', 'lastName', {
-      get(key) {
-        return `${this.get('firstName')} ${this.get('lastName')}`;
-      },
-      set(key, value) {
-        let [firstName, lastName] = value.split(/\s+/);
-        this.setProperties({ firstName, lastName });
-        return value;
-      }
-    })
-  });
-
-  let client = Person.create();
-  client.get('firstName'); // 'Betty'
-
-  client.set('fullName', 'Carroll Fuller');
-  client.get('firstName'); // 'Carroll'
   ```
 
   When passed as an argument, the `set` function should accept two parameters,

@@ -520,7 +520,7 @@ class EachTest extends AbstractEachTest {
       }
 
       _isEven() {
-        this.set('isEven', this.get('item.value') % 2 === 0);
+        set(this, 'isEven', get(this, 'item.value') % 2 === 0);
       }
 
       didUpdate() {

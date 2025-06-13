@@ -11,12 +11,7 @@ import EmberObject from '@ember/object';
   @class TestAdapter
   @public
 */
-interface Adapter extends EmberObject {
-  asyncStart(): void;
-  asyncEnd(): void;
-  exception(error: unknown): never;
-}
-const Adapter = EmberObject.extend({
+export default class Adapter extends EmberObject {
   /**
     This callback will be called whenever an async operation is about to start.
 
@@ -26,7 +21,7 @@ const Adapter = EmberObject.extend({
     @public
     @method asyncStart
   */
-  asyncStart() {},
+  asyncStart(): void {}
 
   /**
     This callback will be called whenever an async operation has completed.
@@ -34,7 +29,7 @@ const Adapter = EmberObject.extend({
     @public
     @method asyncEnd
   */
-  asyncEnd() {},
+  asyncEnd(): void {}
 
   /**
     Override this method with your testing framework's false assertion.
@@ -53,9 +48,7 @@ const Adapter = EmberObject.extend({
     @method exception
     @param {String} error The exception to be raised.
   */
-  exception(error: unknown) {
+  exception(error: unknown): never {
     throw error;
-  },
-});
-
-export default Adapter;
+  }
+}

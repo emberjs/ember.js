@@ -1,7 +1,8 @@
-import EmberObject, { computed, observer } from '@ember/object';
+import { computed } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { tracked } from '@ember/-internals/metal';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'dependentKeyCompat',
@@ -32,7 +33,7 @@ moduleFor(
     }
 
     '@test it works with classic classes'(assert) {
-      let Person = class extends EmberObject {
+      let Person = class extends CoreObject {
         @tracked
         firstName = 'Tom';
         @tracked
@@ -58,74 +59,76 @@ moduleFor(
       assert.equal(tom.fullName, 'Thomas Dale');
     }
 
-    async '@test it works with async observers'(assert) {
-      let count = 0;
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async '@test it works with async observers'(assert) {
+    //   let count = 0;
 
-      let Person = EmberObject.extend({
-        firstName: tracked({ value: 'Tom' }),
-        lastName: tracked({ value: 'Dale' }),
+    //   let Person = EmberObject.extend({
+    //     firstName: tracked({ value: 'Tom' }),
+    //     lastName: tracked({ value: 'Dale' }),
 
-        givenName: dependentKeyCompat({
-          get() {
-            return this.firstName;
-          },
-        }),
+    //     givenName: dependentKeyCompat({
+    //       get() {
+    //         return this.firstName;
+    //       },
+    //     }),
 
-        givenNameObserver: observer({
-          dependentKeys: ['givenName'],
-          fn() {
-            count++;
-          },
-          sync: false,
-        }),
-      });
+    //     givenNameObserver: observer({
+    //       dependentKeys: ['givenName'],
+    //       fn() {
+    //         count++;
+    //       },
+    //       sync: false,
+    //     }),
+    //   });
 
-      let tom = Person.create();
+    //   let tom = Person.create();
 
-      assert.equal(count, 0);
+    //   assert.equal(count, 0);
 
-      // check the alias, and bootstrap it
-      assert.equal(tom.givenName, 'Tom', 'alias works');
+    //   // check the alias, and bootstrap it
+    //   assert.equal(tom.givenName, 'Tom', 'alias works');
 
-      tom.firstName = 'Thomas';
-      await runLoopSettled();
+    //   tom.firstName = 'Thomas';
+    //   await runLoopSettled();
 
-      assert.equal(count, 1);
+    //   assert.equal(count, 1);
 
-      tom.destroy();
-    }
+    //   tom.destroy();
+    // }
 
-    '@test it does not work with sync observers'(assert) {
-      let count = 0;
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // '@test it does not work with sync observers'(assert) {
+    //   let count = 0;
 
-      let Person = EmberObject.extend({
-        firstName: tracked({ value: 'Tom' }),
-        lastName: tracked({ value: 'Dale' }),
+    //   let Person = EmberObject.extend({
+    //     firstName: tracked({ value: 'Tom' }),
+    //     lastName: tracked({ value: 'Dale' }),
 
-        givenName: dependentKeyCompat({
-          get() {
-            return this.firstName;
-          },
-        }),
+    //     givenName: dependentKeyCompat({
+    //       get() {
+    //         return this.firstName;
+    //       },
+    //     }),
 
-        givenNameObserver: observer({
-          dependentKeys: ['givenName'],
-          fn() {
-            count++;
-          },
-          sync: true,
-        }),
-      });
+    //     givenNameObserver: observer({
+    //       dependentKeys: ['givenName'],
+    //       fn() {
+    //         count++;
+    //       },
+    //       sync: true,
+    //     }),
+    //   });
 
-      let tom = Person.create();
+    //   let tom = Person.create();
 
-      assert.equal(count, 0);
+    //   assert.equal(count, 0);
 
-      tom.firstName = 'Thomas';
+    //   tom.firstName = 'Thomas';
 
-      assert.equal(count, 0);
+    //   assert.equal(count, 0);
 
-      tom.destroy();
-    }
+    //   tom.destroy();
+    // }
   }
 );

@@ -1,6 +1,7 @@
 import type { BootOptions } from '@ember/engine/instance';
 import Controller from '@ember/controller';
 import type EmberObject from '@ember/object';
+import { get, set, setProperties } from '@ember/object';
 import NoneLocation from '@ember/routing/none-location';
 
 import ApplicationTestCase from './application';
@@ -30,7 +31,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
             testCase.expectedPushURL = null;
           }
 
-          this.set('path', path);
+          set(this, 'path', path);
         }
 
         replaceURL(path: string) {
@@ -47,7 +48,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
             testCase.expectedReplaceURL = null;
           }
 
-          this.set('path', path);
+          set(this, 'path', path);
         }
       }
     );
@@ -77,16 +78,16 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   async setAndFlush(obj: EmberObject, prop: string, value: unknown): Promise<void>;
   async setAndFlush(obj: EmberObject, prop: Record<string, unknown> | string, value?: unknown) {
     if (typeof prop === 'object') {
-      obj.setProperties(prop);
+      setProperties(obj, prop);
     } else {
-      obj.set(prop, value);
+      set(obj, prop, value);
     }
 
     await runLoopSettled();
   }
 
   assertCurrentPath(path: string, message = `current path equals '${path}'`) {
-    this.assert.equal(this.appRouter.get('location.path'), path, message);
+    this.assert.equal(get(this.appRouter, 'location.path'), path, message);
   }
 
   /**
@@ -96,16 +97,14 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setSingleQPController
   */
-  setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar', options = {}) {
+  setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar') {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: [param],
-          [param]: defaultValue,
-        },
-        options
-      )
+      class extends Controller {
+        queryParams = [param];
+        // @ts-expect-error This is not guaranteed safe
+        [param] = defaultValue;
+      }
     );
   }
 
@@ -115,24 +114,18 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setMappedQPController
   */
-  setMappedQPController(
-    routeName: string,
-    prop = 'page',
-    urlKey = 'parentPage',
-    defaultValue = 1,
-    options = {}
-  ) {
+  setMappedQPController(routeName: string, prop = 'page', urlKey = 'parentPage', defaultValue = 1) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: {
+      class extends Controller {
+        queryParams = [
+          {
             [prop]: urlKey,
           },
-          [prop]: defaultValue,
-        },
-        options
-      )
+        ];
+        // @ts-expect-error This is not guaranteed safe
+        [prop] = defaultValue;
+      }
     );
   }
 }

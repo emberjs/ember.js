@@ -8,7 +8,14 @@ import {
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
-import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
+import EmberObject, {
+  action,
+  computed,
+  get,
+  set,
+  getProperties,
+  setProperties,
+} from '@ember/object';
 import { typeOf } from '@ember/utils';
 import { lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
@@ -392,15 +399,14 @@ class Route<Model = unknown> extends EmberObject implements IRoute {
     @since 1.6.0
     @public
   */
-  // Set in reopen so it can be overriden with extend
-  declare queryParams: Record<
+  queryParams: Record<
     string,
     {
       refreshModel?: boolean;
       replace?: boolean;
       as?: string;
     }
-  >;
+  > = {};
 
   /**
     The name of the template to use by default when rendering this route's
@@ -432,8 +438,37 @@ class Route<Model = unknown> extends EmberObject implements IRoute {
     @since 1.4.0
     @public
   */
-  // Set in reopen so it can be overriden with extend
-  declare templateName: string | null;
+  templateName: string | null = null;
+
+  /**
+    The controller associated with this route.
+
+    Example
+
+    ```app/routes/form.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class FormRoute extends Route {
+      @action
+      willTransition(transition) {
+        if (this.controller.get('userHasEnteredData') &&
+            !confirm('Are you sure you want to abandon progress?')) {
+          transition.abort();
+        } else {
+          // Bubble the `willTransition` action so that
+          // parent routes can decide whether or not to abort.
+          return true;
+        }
+      }
+    }
+    ```
+
+    @property controller
+    @type Controller
+    @since 1.6.0
+    @public
+  */
 
   /**
     The name of the controller to associate with this route.
@@ -455,8 +490,7 @@ class Route<Model = unknown> extends EmberObject implements IRoute {
     @since 1.4.0
     @public
   */
-  // Set in reopen so it can be overriden with extend
-  declare controllerName: string | null;
+  controllerName: string | null = null;
 
   /**
     The controller associated with this route.
@@ -1588,13 +1622,6 @@ class Route<Model = unknown> extends EmberObject implements IRoute {
         continue;
       }
 
-      // to support the dubious feature of using unknownProperty
-      // on queryParams configuration
-      if (propName === 'unknownProperty' || propName === '_super') {
-        // possible todo: issue deprecation warning?
-        continue;
-      }
-
       let desc = combinedQueryParameterConfiguration[propName];
       assert(`[BUG] missing query parameter configuration for ${propName}`, desc);
 
@@ -1676,8 +1703,140 @@ class Route<Model = unknown> extends EmberObject implements IRoute {
     };
   }
 
-  // Set in reopen
-  declare actions: Record<string, AnyFn>;
+  @action
+  queryParamsDidChange<T>(
+    this: Route<T>,
+    changed: object,
+    _totalPresent: unknown,
+    removed: object
+  ) {
+    // SAFETY: Since `_qp` is protected we can't infer the type
+    let qpMap = (get(this, '_qp') as Route<T>['_qp']).map;
+
+    let totalChanged = Object.keys(changed).concat(Object.keys(removed));
+    for (let change of totalChanged) {
+      let qp = qpMap[change];
+      if (qp) {
+        let options = this._optionsForQueryParam(qp);
+        assert('options exists', options && typeof options === 'object');
+        if ((get(options, 'refreshModel') as boolean) && this._router.currentState) {
+          this.refresh();
+          break;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  @action
+  finalizeQueryParamChange<T>(
+    this: Route<T>,
+    params: Record<string, string | null | undefined>,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    finalParams: {}[],
+    transition: Transition
+  ) {
+    if (this.fullRouteName !== 'application') {
+      return true;
+    }
+
+    // Transition object is absent for intermediate transitions.
+    if (!transition) {
+      return;
+    }
+
+    let routeInfos = transition[STATE_SYMBOL]!.routeInfos;
+    let router = this._router;
+    let qpMeta = router._queryParamsFor(routeInfos);
+    let changes = router._qpUpdates;
+    let qpUpdated = false;
+    let replaceUrl;
+
+    stashParamNames(router, routeInfos);
+
+    for (let qp of qpMeta.qps) {
+      let route = qp.route;
+      let controller = route.controller;
+      let presentKey = qp.urlKey in params && qp.urlKey;
+
+      // Do a reverse lookup to see if the changed query
+      // param URL key corresponds to a QP property on
+      // this controller.
+      let value;
+      let svalue: string | null | undefined;
+      if (changes.has(qp.urlKey)) {
+        // Value updated in/before setupController
+        value = get(controller, qp.prop);
+        svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
+      } else {
+        if (presentKey) {
+          svalue = params[presentKey];
+
+          if (svalue !== undefined) {
+            value = route.deserializeQueryParam(svalue, qp.urlKey, qp.type);
+          }
+        } else {
+          // No QP provided; use default value.
+          svalue = qp.serializedDefaultValue;
+          value = copyDefaultValue(qp.defaultValue);
+        }
+      }
+
+      // SAFETY: Since `_qp` is protected we can't infer the type
+      controller._qpDelegate = (get(route, '_qp') as Route<T>['_qp']).states.inactive;
+
+      let thisQueryParamChanged = svalue !== qp.serializedValue;
+      if (thisQueryParamChanged) {
+        if (transition.queryParamsOnly && replaceUrl !== false) {
+          let options = route._optionsForQueryParam(qp);
+          let replaceConfigValue = get(options, 'replace');
+          if (replaceConfigValue) {
+            replaceUrl = true;
+          } else if (replaceConfigValue === false) {
+            // Explicit pushState wins over any other replaceStates.
+            replaceUrl = false;
+          }
+        }
+
+        set(controller, qp.prop, value);
+
+        qpUpdated = true;
+      }
+
+      // Stash current serialized value of controller.
+      qp.serializedValue = svalue;
+
+      let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue;
+      if (!thisQueryParamHasDefaultValue) {
+        finalParams.push({
+          value: svalue,
+          visible: true,
+          key: presentKey || qp.urlKey,
+        });
+      }
+    }
+
+    // Some QPs have been updated, and those changes need to be propogated
+    // immediately. Eventually, we should work on making this async somehow.
+    if (qpUpdated === true) {
+      flushAsyncObservers(false);
+    }
+
+    if (replaceUrl) {
+      transition.method('replace');
+    }
+
+    qpMeta.qps.forEach((qp: QueryParam) => {
+      // SAFETY: Since `_qp` is protected we can't infer the type
+      let routeQpMeta = get(qp.route, '_qp') as Route<T>['_qp'];
+      let finalizedController = qp.route.controller;
+      finalizedController['_qpDelegate'] = get(routeQpMeta, 'states.active');
+    });
+
+    router._qpUpdates.clear();
+    return;
+  }
 
   /**
     Sends an action to the router, which will delegate it to the currently
@@ -1727,15 +1886,19 @@ class Route<Model = unknown> extends EmberObject implements IRoute {
     @since 1.0.0
     @public
   */
-  // Set with reopen to override parent behavior
-  declare send: <K extends keyof this | keyof this['actions']>(
+  send<K extends keyof this>(
     name: K,
-    ...args: MaybeParameters<
-      K extends keyof this ? this[K] : K extends keyof this['actions'] ? this['actions'][K] : never
-    >
-  ) => MaybeReturnType<
-    K extends keyof this ? this[K] : K extends keyof this['actions'] ? this['actions'][K] : never
-  >;
+    ...args: MaybeParameters<K extends keyof this ? this[K] : never>
+  ): MaybeReturnType<K extends keyof this ? this[K] : never>;
+  send(name: string, ...args: any[]) {
+    assert(
+      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
+    if ((this._router && this._router._routerMicrolib) || !isTesting()) {
+      this._router.send(name, ...args);
+    }
+  }
 }
 
 export function getRenderState(route: Route): RenderState | undefined {
@@ -2031,200 +2194,5 @@ export { defaultSerialize };
 export function hasDefaultSerialize(route: Route): boolean {
   return route.serialize === defaultSerialize;
 }
-
-// Set these here so they can be overridden with extend
-Route.reopen({
-  mergedProperties: ['queryParams'],
-  queryParams: {},
-  templateName: null,
-  controllerName: null,
-
-  send(...args: any[]) {
-    assert(
-      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
-      !this.isDestroying && !this.isDestroyed
-    );
-    if ((this._router && this._router._routerMicrolib) || !isTesting()) {
-      this._router.send(...args);
-    } else {
-      let name = args.shift();
-      let action = this.actions[name];
-      if (action) {
-        return action.apply(this, args);
-      }
-    }
-  },
-
-  /**
-    The controller associated with this route.
-
-    Example
-
-    ```app/routes/form.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class FormRoute extends Route {
-      @action
-      willTransition(transition) {
-        if (this.controller.get('userHasEnteredData') &&
-            !confirm('Are you sure you want to abandon progress?')) {
-          transition.abort();
-        } else {
-          // Bubble the `willTransition` action so that
-          // parent routes can decide whether or not to abort.
-          return true;
-        }
-      }
-    }
-    ```
-
-    @property controller
-    @type Controller
-    @since 1.6.0
-    @public
-  */
-
-  actions: {
-    /**
-    This action is called when one or more query params have changed. Bubbles.
-
-    @method queryParamsDidChange
-    @param changed {Object} Keys are names of query params that have changed.
-    @param totalPresent {Object} Keys are names of query params that are currently set.
-    @param removed {Object} Keys are names of query params that have been removed.
-    @returns {boolean}
-    @private
-   */
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    queryParamsDidChange<T>(this: Route<T>, changed: {}, _totalPresent: unknown, removed: {}) {
-      // SAFETY: Since `_qp` is protected we can't infer the type
-      let qpMap = (get(this, '_qp') as Route<T>['_qp']).map;
-
-      let totalChanged = Object.keys(changed).concat(Object.keys(removed));
-      for (let change of totalChanged) {
-        let qp = qpMap[change];
-        if (qp) {
-          let options = this._optionsForQueryParam(qp);
-          assert('options exists', options && typeof options === 'object');
-          if ((get(options, 'refreshModel') as boolean) && this._router.currentState) {
-            this.refresh();
-            break;
-          }
-        }
-      }
-
-      return true;
-    },
-
-    finalizeQueryParamChange<T>(
-      this: Route<T>,
-      params: Record<string, string | null | undefined>,
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      finalParams: {}[],
-      transition: Transition
-    ) {
-      if (this.fullRouteName !== 'application') {
-        return true;
-      }
-
-      // Transition object is absent for intermediate transitions.
-      if (!transition) {
-        return;
-      }
-
-      let routeInfos = transition[STATE_SYMBOL]!.routeInfos;
-      let router = this._router;
-      let qpMeta = router._queryParamsFor(routeInfos);
-      let changes = router._qpUpdates;
-      let qpUpdated = false;
-      let replaceUrl;
-
-      stashParamNames(router, routeInfos);
-
-      for (let qp of qpMeta.qps) {
-        let route = qp.route;
-        let controller = route.controller;
-        let presentKey = qp.urlKey in params && qp.urlKey;
-
-        // Do a reverse lookup to see if the changed query
-        // param URL key corresponds to a QP property on
-        // this controller.
-        let value;
-        let svalue: string | null | undefined;
-        if (changes.has(qp.urlKey)) {
-          // Value updated in/before setupController
-          value = get(controller, qp.prop);
-          svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
-        } else {
-          if (presentKey) {
-            svalue = params[presentKey];
-
-            if (svalue !== undefined) {
-              value = route.deserializeQueryParam(svalue, qp.urlKey, qp.type);
-            }
-          } else {
-            // No QP provided; use default value.
-            svalue = qp.serializedDefaultValue;
-            value = copyDefaultValue(qp.defaultValue);
-          }
-        }
-
-        // SAFETY: Since `_qp` is protected we can't infer the type
-        controller._qpDelegate = (get(route, '_qp') as Route<T>['_qp']).states.inactive;
-
-        let thisQueryParamChanged = svalue !== qp.serializedValue;
-        if (thisQueryParamChanged) {
-          if (transition.queryParamsOnly && replaceUrl !== false) {
-            let options = route._optionsForQueryParam(qp);
-            let replaceConfigValue = get(options, 'replace');
-            if (replaceConfigValue) {
-              replaceUrl = true;
-            } else if (replaceConfigValue === false) {
-              // Explicit pushState wins over any other replaceStates.
-              replaceUrl = false;
-            }
-          }
-
-          set(controller, qp.prop, value);
-
-          qpUpdated = true;
-        }
-
-        // Stash current serialized value of controller.
-        qp.serializedValue = svalue;
-
-        let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue;
-        if (!thisQueryParamHasDefaultValue) {
-          finalParams.push({
-            value: svalue,
-            visible: true,
-            key: presentKey || qp.urlKey,
-          });
-        }
-      }
-
-      // Some QPs have been updated, and those changes need to be propogated
-      // immediately. Eventually, we should work on making this async somehow.
-      if (qpUpdated === true) {
-        flushAsyncObservers(false);
-      }
-
-      if (replaceUrl) {
-        transition.method('replace');
-      }
-
-      qpMeta.qps.forEach((qp: QueryParam) => {
-        // SAFETY: Since `_qp` is protected we can't infer the type
-        let routeQpMeta = get(qp.route, '_qp') as Route<T>['_qp'];
-        let finalizedController = qp.route.controller;
-        finalizedController['_qpDelegate'] = get(routeQpMeta, 'states.active');
-      });
-
-      router._qpUpdates.clear();
-      return;
-    },
-  },
-});
 
 export default Route;

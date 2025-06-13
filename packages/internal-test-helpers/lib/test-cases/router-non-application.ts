@@ -14,11 +14,17 @@ import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance'
 import type EngineInstance from '@ember/engine/instance';
 import type { InternalFactory } from '@ember/-internals/owner';
 
+class BaseComponent extends Component {
+  tagName = '';
+  layoutName = '-top-level';
+}
+
 export default class RouterNonApplicationTestCase extends AbstractTestCase {
   owner: EngineInstance;
   renderer: Renderer;
   element: HTMLElement;
   component: any;
+  BaseComponent = BaseComponent;
 
   constructor(assert: QUnit['assert']) {
     super(assert);
@@ -124,12 +130,16 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
       })
     );
 
-    let attrs = Object.assign({}, context, {
-      tagName: '',
-      layoutName: '-top-level',
-    });
+    let ComponentClass = BaseComponent;
 
-    owner.register('component:-top-level', Component.extend(attrs));
+    for (const [key, value] of Object.entries(context)) {
+      ComponentClass = class extends ComponentClass {
+        // @ts-expect-error This is not guaranteed safe
+        [key] = value;
+      };
+    }
+
+    owner.register('component:-top-level', ComponentClass);
 
     this.component = owner.lookup('component:-top-level');
 

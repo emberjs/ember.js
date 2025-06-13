@@ -1,14 +1,5 @@
-import EmberObject, { computed, observer } from '@ember/object';
-import {
-  defineProperty,
-  addObserver,
-  removeObserver,
-  addListener,
-  removeListener,
-  sendEvent,
-} from '@ember/-internals/metal';
-import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import CoreObject from '@ember/object/core';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject ES Compatibility',
@@ -16,7 +7,7 @@ moduleFor(
     ['@test extending an Ember.Object'](assert) {
       let calls = [];
 
-      class MyObject extends EmberObject {
+      class MyObject extends CoreObject {
         constructor() {
           calls.push('constructor');
           super(...arguments);
@@ -53,7 +44,7 @@ moduleFor(
     ['@test normal method super'](assert) {
       let calls = [];
 
-      let Foo = class extends EmberObject {
+      let Foo = class extends CoreObject {
         method() {
           calls.push('foo');
         }
@@ -111,7 +102,7 @@ moduleFor(
     ['@test static method super'](assert) {
       let calls;
 
-      let Foo = class extends EmberObject {
+      let Foo = class extends CoreObject {
         static method() {
           calls.push('foo');
         }
@@ -166,33 +157,17 @@ moduleFor(
       });
     }
 
-    ['@test using mixins'](assert) {
-      let Mixin1 = Mixin.create({
-        property1: 'data-1',
-      });
-
-      let Mixin2 = Mixin.create({
-        property2: 'data-2',
-      });
-
-      class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
-
-      let myObject = MyObject.create();
-      assert.equal(myObject.property1, 'data-1', 'includes the first mixin');
-      assert.equal(myObject.property2, 'data-2', 'includes the second mixin');
-    }
-
     ['@test using instanceof'](assert) {
-      class MyObject extends EmberObject {}
+      class MyObject extends CoreObject {}
 
       let myObject = MyObject.create();
 
       assert.ok(myObject instanceof MyObject);
-      assert.ok(myObject instanceof EmberObject);
+      assert.ok(myObject instanceof CoreObject);
     }
 
-    ['@test using Ember.Object#detect'](assert) {
-      let Parent = class extends EmberObject {};
+    ['@test using CoreObject#detect'](assert) {
+      let Parent = class extends CoreObject {};
       class Child extends Parent {}
       let Grandchild = class extends Child {};
 
@@ -200,10 +175,10 @@ moduleFor(
       assert.ok(Child.detect(Grandchild), 'Child.detect(Grandchild)');
     }
 
-    ['@test extending an ES subclass of EmberObject'](assert) {
+    ['@test extending an ES subclass of CoreObject'](assert) {
       let calls = [];
 
-      class SubEmberObject extends EmberObject {
+      class SubCoreObject extends CoreObject {
         constructor() {
           calls.push('constructor');
           super(...arguments);
@@ -215,16 +190,16 @@ moduleFor(
         }
       }
 
-      class MyObject extends SubEmberObject {}
+      class MyObject extends SubCoreObject {}
 
       MyObject.create();
       assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
     }
 
-    ['@test calling extend on an ES subclass of EmberObject'](assert) {
+    ['@test calling extend on an ES subclass of CoreObject'](assert) {
       let calls = [];
 
-      class SubEmberObject extends EmberObject {
+      class SubCoreObject extends CoreObject {
         constructor() {
           calls.push('before constructor');
           super(...arguments);
@@ -238,7 +213,7 @@ moduleFor(
         }
       }
 
-      let MyObject = class extends SubEmberObject {};
+      let MyObject = class extends SubCoreObject {};
 
       MyObject.create();
       assert.deepEqual(
@@ -256,269 +231,82 @@ moduleFor(
       assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
     }
 
-    ['@test calling metaForProperty on a native class works'](assert) {
-      assert.expect(0);
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // '@test observes / removeObserver on / removeListener interop'(assert) {
+    //   let fooDidChangeBase = 0;
+    //   let fooDidChangeA = 0;
+    //   let fooDidChangeB = 0;
+    //   let someEventBase = 0;
+    //   let someEventA = 0;
+    //   let someEventB = 0;
+    //   class A extends EmberObject.extend({
+    //     fooDidChange: observer('foo', function () {
+    //       fooDidChangeBase++;
+    //     }),
 
-      class SubEmberObject extends EmberObject {}
+    //     onSomeEvent() {
+    //       someEventBase++;
+    //     },
+    //   }) {
+    //     init() {
+    //       super.init();
+    //       this.foo = 'bar';
+    //     }
 
-      defineProperty(
-        SubEmberObject.prototype,
-        'foo',
-        computed('foo', {
-          get() {
-            return 'bar';
-          },
-        })
-      );
+    //     fooDidChange() {
+    //       super.fooDidChange();
+    //       fooDidChangeA++;
+    //     }
 
-      // able to get meta without throwing an error
-      SubEmberObject.metaForProperty('foo');
-    }
+    //     onSomeEvent() {
+    //       super.onSomeEvent();
+    //       someEventA++;
+    //     }
+    //   }
 
-    // TODO: Revisit this
-    '@test observes / removeObserver on / removeListener interop'(assert) {
-      let fooDidChangeBase = 0;
-      let fooDidChangeA = 0;
-      let fooDidChangeB = 0;
-      let someEventBase = 0;
-      let someEventA = 0;
-      let someEventB = 0;
-      class A extends EmberObject.extend({
-        fooDidChange: observer('foo', function () {
-          fooDidChangeBase++;
-        }),
+    //   class B extends A {
+    //     fooDidChange() {
+    //       super.fooDidChange();
+    //       fooDidChangeB++;
+    //     }
 
-        onSomeEvent() {
-          someEventBase++;
-        },
-      }) {
-        init() {
-          super.init();
-          this.foo = 'bar';
-        }
+    //     onSomeEvent() {
+    //       super.onSomeEvent();
+    //       someEventB++;
+    //     }
+    //   }
 
-        fooDidChange() {
-          super.fooDidChange();
-          fooDidChangeA++;
-        }
+    //   removeObserver(B.prototype, 'foo', null, 'fooDidChange');
+    //   removeListener(B.prototype, 'someEvent', null, 'onSomeEvent');
 
-        onSomeEvent() {
-          super.onSomeEvent();
-          someEventA++;
-        }
-      }
+    //   assert.equal(fooDidChangeBase, 0);
+    //   assert.equal(fooDidChangeA, 0);
+    //   assert.equal(fooDidChangeB, 0);
 
-      class B extends A {
-        fooDidChange() {
-          super.fooDidChange();
-          fooDidChangeB++;
-        }
+    //   assert.equal(someEventBase, 0);
+    //   assert.equal(someEventA, 0);
+    //   assert.equal(someEventB, 0);
 
-        onSomeEvent() {
-          super.onSomeEvent();
-          someEventB++;
-        }
-      }
+    //   let a = A.create();
+    //   set(a, 'foo', 'something');
 
-      removeObserver(B.prototype, 'foo', null, 'fooDidChange');
-      removeListener(B.prototype, 'someEvent', null, 'onSomeEvent');
+    //   // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
+    //   return runLoopSettled().then(async () => {
+    //     assert.equal(fooDidChangeBase, 1);
+    //     assert.equal(fooDidChangeA, 1);
+    //     assert.equal(fooDidChangeB, 0);
 
-      assert.equal(fooDidChangeBase, 0);
-      assert.equal(fooDidChangeA, 0);
-      assert.equal(fooDidChangeB, 0);
+    //     let b = B.create();
+    //     set(b, 'foo', 'something');
+    //     await runLoopSettled();
 
-      assert.equal(someEventBase, 0);
-      assert.equal(someEventA, 0);
-      assert.equal(someEventB, 0);
+    //     assert.equal(fooDidChangeBase, 1);
+    //     assert.equal(fooDidChangeA, 1);
+    //     assert.equal(fooDidChangeB, 0);
 
-      let a = A.create();
-      a.set('foo', 'something');
-
-      // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
-      return runLoopSettled().then(async () => {
-        assert.equal(fooDidChangeBase, 1);
-        assert.equal(fooDidChangeA, 1);
-        assert.equal(fooDidChangeB, 0);
-
-        let b = B.create();
-        b.set('foo', 'something');
-        await runLoopSettled();
-
-        assert.equal(fooDidChangeBase, 1);
-        assert.equal(fooDidChangeA, 1);
-        assert.equal(fooDidChangeB, 0);
-
-        a.destroy();
-        b.destroy();
-      });
-    }
-
-    '@test super and _super interop between old and new methods'(assert) {
-      let calls = [];
-      let changes = [];
-      let events = [];
-      let lastProps;
-
-      class A extends EmberObject {
-        init(props) {
-          calls.push('A init');
-          lastProps = props;
-        }
-      }
-
-      let Mixin1 = Mixin.create({
-        init() {
-          calls.push('Mixin1 init before _super');
-          this._super(...arguments);
-          calls.push('Mixin1 init after _super');
-        },
-      });
-
-      let Mixin2 = Mixin.create({
-        init() {
-          calls.push('Mixin2 init before _super');
-          this._super(...arguments);
-          calls.push('Mixin2 init after _super');
-        },
-      });
-
-      class B extends A.extend(Mixin1, Mixin2) {
-        init() {
-          calls.push('B init before super.init');
-          super.init(...arguments);
-          calls.push('B init after super.init');
-        }
-
-        onSomeEvent(evt) {
-          events.push(`B onSomeEvent ${evt}`);
-        }
-
-        fullNameDidChange() {
-          changes.push('B fullNameDidChange');
-        }
-      }
-
-      // // define a CP
-      defineProperty(
-        B.prototype,
-        'full',
-        computed('first', 'last', {
-          get() {
-            return this.first + ' ' + this.last;
-          },
-        })
-      );
-
-      // Only string observers are allowed for prototypes
-      addObserver(B.prototype, 'full', null, 'fullNameDidChange');
-
-      // Only string listeners are allowed for prototypes
-      addListener(B.prototype, 'someEvent', null, 'onSomeEvent');
-
-      B.reopen({
-        init() {
-          calls.push('reopen init before _super');
-          this._super(...arguments);
-          calls.push('reopen init after _super');
-        },
-      });
-
-      let C = class extends B {
-        init() {
-          calls.push('C init before _super');
-          super.init(...arguments);
-          calls.push('C init after _super');
-        }
-
-        onSomeEvent(evt) {
-          calls.push('C onSomeEvent before _super');
-          super.onSomeEvent(evt);
-          calls.push('C onSomeEvent after _super');
-        }
-
-        fullNameDidChange() {
-          calls.push('C fullNameDidChange before _super');
-          super.fullNameDidChange();
-          calls.push('C fullNameDidChange after _super');
-        }
-      };
-
-      class D extends C {
-        init() {
-          calls.push('D init before super.init');
-          super.init(...arguments);
-          calls.push('D init after super.init');
-        }
-
-        onSomeEvent(evt) {
-          events.push('D onSomeEvent before super.onSomeEvent');
-          super.onSomeEvent(evt);
-          events.push('D onSomeEvent after super.onSomeEvent');
-        }
-
-        fullNameDidChange() {
-          changes.push('D fullNameDidChange before super.fullNameDidChange');
-          super.fullNameDidChange();
-          changes.push('D fullNameDidChange after super.fullNameDidChange');
-        }
-
-        triggerSomeEvent(...args) {
-          sendEvent(this, 'someEvent', args);
-        }
-      }
-
-      assert.deepEqual(calls, [], 'nothing has been called');
-      assert.deepEqual(changes, [], 'full has not changed');
-      assert.deepEqual(events, [], 'onSomeEvent has not been triggered');
-
-      let d = D.create({ first: 'Robert', last: 'Jackson' });
-
-      assert.deepEqual(calls, [
-        'D init before super.init',
-        'C init before _super',
-        'reopen init before _super',
-        'B init before super.init',
-        'Mixin2 init before _super',
-        'Mixin1 init before _super',
-        'A init',
-        'Mixin1 init after _super',
-        'Mixin2 init after _super',
-        'B init after super.init',
-        'reopen init after _super',
-        'C init after _super',
-        'D init after super.init',
-      ]);
-      assert.deepEqual(changes, [], 'full has not changed');
-      assert.deepEqual(events, [], 'onSomeEvent has not been triggered');
-
-      assert.deepEqual(lastProps, {
-        first: 'Robert',
-        last: 'Jackson',
-      });
-
-      assert.equal(d.full, 'Robert Jackson');
-
-      d.setProperties({ first: 'Kris', last: 'Selden' });
-
-      // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
-      return runLoopSettled().then(() => {
-        assert.deepEqual(changes, [
-          'D fullNameDidChange before super.fullNameDidChange',
-          'B fullNameDidChange',
-          'D fullNameDidChange after super.fullNameDidChange',
-        ]);
-
-        assert.equal(d.full, 'Kris Selden');
-
-        d.triggerSomeEvent('event arg');
-        assert.deepEqual(events, [
-          'D onSomeEvent before super.onSomeEvent',
-          'B onSomeEvent event arg',
-          'D onSomeEvent after super.onSomeEvent',
-        ]);
-
-        d.destroy();
-      });
-    }
+    //     a.destroy();
+    //     b.destroy();
+    //   });
+    // }
   }
 );

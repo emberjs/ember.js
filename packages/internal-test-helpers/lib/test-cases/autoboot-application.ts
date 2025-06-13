@@ -18,7 +18,15 @@ export default abstract class AutobootApplicationTestCase extends TestResolverAp
     assert('expected a resolver', resolver instanceof Resolver);
     this.resolver = resolver;
 
-    resolver.add('router:main', Router.extend(this.routerOptions));
+    let routerClass = class extends Router {};
+    for (const [key, value] of Object.entries(this.routerOptions)) {
+      routerClass = class extends routerClass {
+        // @ts-expect-error This is not guaranteed safe
+        [key] = value;
+      };
+    }
+
+    resolver.add('router:main', routerClass);
 
     return application;
   }

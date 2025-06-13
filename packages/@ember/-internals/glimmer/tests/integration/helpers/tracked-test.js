@@ -1,5 +1,7 @@
-import EmberObject from '@ember/object';
+import { set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { Helper } from '@ember/-internals/glimmer';
 import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
@@ -55,7 +57,7 @@ moduleFor(
     '@test nested tracked properties rerender when updated'(assert) {
       let computeCount = 0;
 
-      let Person = class extends EmberObject {
+      let Person = class extends CoreObject {
         @tracked
         name = 'bob';
       };
@@ -169,7 +171,7 @@ moduleFor(
     '@test nested getters update when dependent properties are invalidated'(assert) {
       let computeCount = 0;
 
-      let Person = class extends EmberObject {
+      let Person = class extends CoreObject {
         @tracked
         first = 'Rob';
         @tracked
@@ -267,7 +269,7 @@ moduleFor(
     '@test class based helpers are autotracked'(assert) {
       let computeCount = 0;
 
-      let TrackedClass = class extends EmberObject {
+      let TrackedClass = class extends CoreObject {
         @tracked
         value = 'bob';
       };
@@ -279,12 +281,15 @@ moduleFor(
         template: strip`{{hello-world}}`,
       });
 
-      this.registerHelper('hello-world', {
-        compute() {
-          computeCount++;
-          return `${trackedInstance.value}-value`;
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          compute() {
+            computeCount++;
+            return `${trackedInstance.value}-value`;
+          }
+        }
+      );
 
       this.render('<Person/>');
 
@@ -306,7 +311,7 @@ moduleFor(
     }
 
     '@test each-in autotracks non-tracked values correctly'() {
-      let obj = EmberObject.create({ value: 'bob' });
+      let obj = CoreObject.create({ value: 'bob' });
 
       this.registerComponent('person', {
         ComponentClass: class extends Component {
@@ -323,13 +328,13 @@ moduleFor(
 
       this.assertText('bob-value');
 
-      runTask(() => obj.set('value', 'sal'));
+      runTask(() => set(obj, 'value', 'sal'));
 
       this.assertText('sal-value');
     }
 
     '@test each-in autotracks arrays correctly'() {
-      let obj = EmberObject.create({ arr: new TrackedArray([1]) });
+      let obj = CoreObject.create({ arr: new TrackedArray([1]) });
 
       this.registerComponent('person', {
         ComponentClass: class extends Component {

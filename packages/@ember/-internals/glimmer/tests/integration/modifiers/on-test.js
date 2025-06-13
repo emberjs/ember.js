@@ -1,6 +1,7 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
+import { set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -90,7 +91,7 @@ moduleFor(
       assert.equal(first, 1, 'first has been called 1 time');
       assert.equal(second, 0, 'second not called on initial render');
 
-      runTask(() => this.context.set('callback', secondCallback));
+      runTask(() => set(this.context, 'callback', secondCallback));
       runTask(() => this.$('button').click());
 
       assert.equal(first, 1, 'first has been called 1 time');
@@ -141,7 +142,7 @@ moduleFor(
       runTask(() => this.$('button').click());
       assert.equal(count, 2, 'has been called 2 times');
 
-      runTask(() => this.context.set('once', true));
+      runTask(() => set(this.context, 'once', true));
       runTask(() => this.$('button').click());
       assert.equal(count, 3, 'has been called 3 time');
 
@@ -238,7 +239,7 @@ moduleFor(
       runTask(() => this.$('button').click());
       assert.equal(count, 1, 'has been called 1 time');
 
-      runTask(() => this.context.set('showButton', false));
+      runTask(() => set(this.context, 'showButton', false));
 
       this.assertCounts({ adds: 1, removes: 1 });
     }
@@ -295,7 +296,7 @@ moduleFor(
 
       this.$('button').click();
 
-      runTask(() => this.context.set('showButton', false));
+      runTask(() => set(this.context, 'showButton', false));
 
       this.assertCounts({ adds: 0, removes: 0 });
     }

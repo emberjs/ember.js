@@ -1,6 +1,7 @@
 import EmberObject from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
@@ -43,7 +44,7 @@ moduleFor(
 
       this.assertText('robert jackson | robert jackson');
 
-      runTask(() => this.context.set('first', 'max'));
+      runTask(() => set(this.context, 'first', 'max'));
       this.assertText('max jackson | max jackson');
     }
 
@@ -78,7 +79,7 @@ moduleFor(
 
       this.assertText('robert jackson | robert jackson');
 
-      runTask(() => this.context.set('first', 'max'));
+      runTask(() => set(this.context, 'first', 'max'));
       this.assertText('max jackson | max jackson');
     }
 
@@ -254,7 +255,7 @@ moduleFor(
         get countAlias() {
           return this.count;
         }
-        increment = () => this.set('count', this.count + 1);
+        increment = () => set(this, 'count', this.count + 1);
       }
 
       this.registerComponent('counter', {
@@ -568,7 +569,7 @@ moduleFor(
         'updating inner component causes inner component to rerender'
       );
 
-      runTask(() => this.context.set('count', 1));
+      runTask(() => set(this.context, 'count', 1));
 
       this.assertText('2');
 
@@ -595,15 +596,15 @@ moduleFor(
 
       this.assertText('hello!');
 
-      runTask(() => this.context.set('text', 'hello world!'));
+      runTask(() => set(this.context, 'text', 'hello world!'));
       this.assertText('hello world!');
 
-      runTask(() => this.context.set('text', 'hello!'));
+      runTask(() => set(this.context, 'text', 'hello!'));
       this.assertText('hello!');
     }
 
     '@test computed properties can depend on nested args'() {
-      let foo = EmberObject.create({
+      let foo = CoreObject.create({
         text: 'hello!',
       });
 
@@ -625,10 +626,10 @@ moduleFor(
 
       this.assertText('hello!');
 
-      runTask(() => foo.set('text', 'hello world!'));
+      runTask(() => set(foo, 'text', 'hello world!'));
       this.assertText('hello world!');
 
-      runTask(() => foo.set('text', 'hello!'));
+      runTask(() => set(foo, 'text', 'hello!'));
       this.assertText('hello!');
     }
 
@@ -650,10 +651,10 @@ moduleFor(
 
       this.assertText('hello!');
 
-      runTask(() => this.context.set('text', 'hello world!'));
+      runTask(() => set(this.context, 'text', 'hello world!'));
       this.assertText('hello world!');
 
-      runTask(() => this.context.set('text', 'hello!'));
+      runTask(() => set(this.context, 'text', 'hello!'));
       this.assertText('hello!');
     }
 

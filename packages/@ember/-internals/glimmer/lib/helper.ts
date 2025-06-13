@@ -136,6 +136,7 @@ export default class Helper<S = unknown> extends FrameworkObject {
     assert('expected compute to be defined', this.compute);
   }
 
+  // TODO: Update this comment to not use observer or extend
   /**
     On a class-based helper, it may be useful to force a recomputation of that
     helpers value. This is akin to `rerender` on a component.

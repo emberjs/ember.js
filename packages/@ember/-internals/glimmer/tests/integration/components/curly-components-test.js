@@ -6,7 +6,6 @@ import {
   equalTokens,
   equalsElement,
   runTask,
-  runLoopSettled,
 } from 'internal-test-helpers';
 
 import { tracked as trackedBuiltIn } from 'tracked-built-ins';
@@ -17,7 +16,8 @@ import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
-import EmberObject, { set, get, computed, observer } from '@ember/object';
+import { set, get, computed } from '@ember/object';
+import CoreObject from '@ember/object/core';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -502,7 +502,7 @@ moduleFor(
         init() {
           super.init(...arguments);
           this.classNames = this.classNames.slice();
-          this.classNames.push('foo', 'bar', `outside-${this.get('extraClass')}`);
+          this.classNames.push('foo', 'bar', `outside-${get(this, 'extraClass')}`);
         }
       };
 
@@ -699,11 +699,11 @@ moduleFor(
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => set(this.context, 'model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => set(this.context, 'model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }
@@ -725,11 +725,11 @@ moduleFor(
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => set(this.context, 'model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => set(this.context, 'model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }
@@ -759,7 +759,7 @@ moduleFor(
         init() {
           super.init(...arguments);
           instance = this;
-          this.set('message', 'hello');
+          set(this, 'message', 'hello');
         }
       };
 
@@ -1258,11 +1258,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
+      runTask(() => set(this.context, 'somecomponent', 'not not notsomecomponent'));
 
       this.assertText('somecomponent');
 
-      runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
+      runTask(() => set(this.context, 'somecomponent', 'notsomecomponent'));
 
       this.assertText('somecomponent');
     }
@@ -1293,11 +1293,11 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here');
 
-      runTask(() => this.context.set('prop', 'other thing there'));
+      runTask(() => set(this.context, 'prop', 'other thing there'));
 
       this.assertText('In layout - someProp: other thing there');
 
-      runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => set(this.context, 'prop', 'something here'));
 
       this.assertText('In layout - someProp: something here');
     }
@@ -1317,11 +1317,11 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here');
 
-      runTask(() => this.context.set('prop', 'other thing there'));
+      runTask(() => set(this.context, 'prop', 'other thing there'));
 
       this.assertText('In layout - someProp: other thing there');
 
-      runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => set(this.context, 'prop', 'something here'));
 
       this.assertText('In layout - someProp: something here');
     }
@@ -1349,16 +1349,16 @@ moduleFor(
 
       this.assertText('In layout - someProp: value set in instance');
 
-      runTask(() => this.context.set('prop', 'updated something passed when invoked'));
+      runTask(() => set(this.context, 'prop', 'updated something passed when invoked'));
 
       this.assertText('In layout - someProp: updated something passed when invoked');
 
-      runTask(() => instance.set('someProp', 'update value set in instance'));
+      runTask(() => set(instance, 'someProp', 'update value set in instance'));
 
       this.assertText('In layout - someProp: update value set in instance');
 
-      runTask(() => this.context.set('prop', 'something passed when invoked'));
-      runTask(() => instance.set('someProp', 'value set in instance'));
+      runTask(() => set(this.context, 'prop', 'something passed when invoked'));
+      runTask(() => set(instance, 'someProp', 'value set in instance'));
 
       this.assertText('In layout - someProp: value set in instance');
     }
@@ -1415,7 +1415,7 @@ moduleFor(
       this.assertText('In layout - someProp: wycats');
 
       expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
-        runTask(() => this.context.set('someProp', 'tomdale'));
+        runTask(() => set(this.context, 'someProp', 'tomdale'));
       });
 
       this.assertText('In layout - someProp: tomdale');
@@ -1428,7 +1428,7 @@ moduleFor(
       this.assertText('In layout - someProp: tomdale');
 
       expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
-        runTask(() => this.context.set('someProp', 'wycats'));
+        runTask(() => set(this.context, 'someProp', 'wycats'));
       });
 
       this.assertText('In layout - someProp: wycats');
@@ -1454,15 +1454,15 @@ moduleFor(
 
           @action
           myClick() {
-            let currentCounter = this.get('counter');
+            let currentCounter = get(this, 'counter');
 
             assert.equal(currentCounter, 0, 'the current `counter` value is correct');
 
             let newCounter = currentCounter + 1;
-            this.set('counter', newCounter);
+            set(this, 'counter', newCounter);
 
             assert.equal(
-              this.get('counter'),
+              get(this, 'counter'),
               newCounter,
               "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
             );
@@ -1480,7 +1480,7 @@ moduleFor(
       runTask(() => this.$('button').click());
 
       assert.equal(
-        componentInstance.get('counter'),
+        get(componentInstance, 'counter'),
         1,
         '`counter` incremented on click on the component and is not `undefined`'
       );
@@ -1515,13 +1515,13 @@ moduleFor(
       this.assertStableRerender();
 
       runTask(() => {
-        this.context.set('model.value', 'lul');
-        this.context.set('model.items', [1]);
+        set(this.context, 'model.value', 'lul');
+        set(this.context, 'model.items', [1]);
       });
 
       this.assertText(strip`Args: lul | lul | lul111`);
 
-      runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
+      runTask(() => set(this.context, 'model', { value: 'wat', items: [1, 2, 3] }));
 
       this.assertText('Args: wat | wat | wat123123123');
     }
@@ -1541,11 +1541,11 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here');
 
-      runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => set(this.context, 'prop', 'something else'));
 
       this.assertText('In layout - someProp: something else');
 
-      runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => set(this.context, 'prop', 'something here'));
 
       this.assertText('In layout - someProp: something here');
     }
@@ -1571,11 +1571,11 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here - In template');
 
-      runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => set(this.context, 'prop', 'something else'));
 
       this.assertText('In layout - someProp: something else - In template');
 
-      runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => set(this.context, 'prop', 'something here'));
 
       this.assertText('In layout - someProp: something here - In template');
     }
@@ -1612,11 +1612,11 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here - In template');
 
-      runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => set(this.context, 'prop', 'something else'));
 
       this.assertText('In layout - someProp: something else - In template');
 
-      runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => set(this.context, 'prop', 'something here'));
 
       this.assertText('In layout - someProp: something here - In template');
     }
@@ -1642,11 +1642,11 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here - In template');
 
-      runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => set(this.context, 'prop', 'something else'));
 
       this.assertText('In layout - someProp: something else - In template');
 
-      runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => set(this.context, 'prop', 'something here'));
 
       this.assertText('In layout - someProp: something here - In template');
     }
@@ -1714,19 +1714,19 @@ moduleFor(
 
       this.assertText('Foo4Bar');
 
-      runTask(() => this.context.get('things').push(5));
+      runTask(() => get(this.context, 'things').push(5));
 
       this.assertText('Foo4Bar5');
 
-      runTask(() => this.context.get('things').shift());
+      runTask(() => get(this.context, 'things').shift());
 
       this.assertText('4Bar5');
 
-      runTask(() => this.context.get('things').splice(0, 3));
+      runTask(() => get(this.context, 'things').splice(0, 3));
 
       this.assertText('');
 
-      runTask(() => this.context.set('things', ['Foo', 4, 'Bar']));
+      runTask(() => set(this.context, 'things', ['Foo', 4, 'Bar']));
 
       this.assertText('Foo4Bar');
     }
@@ -1778,17 +1778,17 @@ moduleFor(
 
       this.assertText('Foo4');
 
-      runTask(() => this.context.set('user1', 'Bar'));
+      runTask(() => set(this.context, 'user1', 'Bar'));
 
       this.assertText('Bar4');
 
-      runTask(() => this.context.set('user2', '5'));
+      runTask(() => set(this.context, 'user2', '5'));
 
       this.assertText('Bar5');
 
       runTask(() => {
-        this.context.set('user1', 'Foo');
-        this.context.set('user2', 4);
+        set(this.context, 'user1', 'Foo');
+        set(this.context, 'user2', 4);
       });
 
       this.assertText('Foo4');
@@ -1809,13 +1809,13 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
 
-      runTask(() => this.context.set('role', 'input'));
+      runTask(() => set(this.context, 'role', 'input'));
 
       this.assertComponentElement(this.firstChild, {
         attrs: { role: 'input' },
       });
 
-      runTask(() => this.context.set('role', 'main'));
+      runTask(() => set(this.context, 'role', 'main'));
 
       this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
     }
@@ -1835,13 +1835,13 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
 
-      runTask(() => this.context.set('role', 'input'));
+      runTask(() => set(this.context, 'role', 'input'));
 
       this.assertComponentElement(this.firstChild, {
         attrs: { role: 'input' },
       });
 
-      runTask(() => this.context.set('role', undefined));
+      runTask(() => set(this.context, 'role', undefined));
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
     }
@@ -1868,7 +1868,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
 
-      runTask(() => instance.set('ariaRole', 'input'));
+      runTask(() => set(instance, 'ariaRole', 'input'));
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
     }
@@ -1902,11 +1902,11 @@ moduleFor(
         '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
       );
 
-      runTask(() => this.context.set('name', 'Ole, ole'));
+      runTask(() => set(this.context, 'name', 'Ole, ole'));
 
       this.assertText('[In layout - with-block] [In block - Ole, ole][In layout - without-block] ');
 
-      runTask(() => this.context.set('name', 'Whoop, whoop!'));
+      runTask(() => set(this.context, 'name', 'Whoop, whoop!'));
 
       this.assertText(
         '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
@@ -2034,17 +2034,17 @@ moduleFor(
 
       this.assertText('Quint4');
 
-      runTask(() => this.context.set('myName', 'Sergio'));
+      runTask(() => set(this.context, 'myName', 'Sergio'));
 
       this.assertText('Sergio4');
 
-      runTask(() => this.context.set('myAge', 2));
+      runTask(() => set(this.context, 'myAge', 2));
 
       this.assertText('Sergio2');
 
       runTask(() => {
-        this.context.set('myName', 'Quint');
-        this.context.set('myAge', 4);
+        set(this.context, 'myName', 'Quint');
+        set(this.context, 'myAge', 4);
       });
 
       this.assertText('Quint4');
@@ -2094,11 +2094,11 @@ moduleFor(
 
       this.assertText('Yes:Hello42');
 
-      runTask(() => this.context.set('activated', false));
+      runTask(() => set(this.context, 'activated', false));
 
       this.assertText('No:Goodbye');
 
-      runTask(() => this.context.set('activated', true));
+      runTask(() => set(this.context, 'activated', true));
 
       this.assertText('Yes:Hello42');
     }
@@ -2428,7 +2428,7 @@ moduleFor(
         'x-outer receives the ambient scope as its parentView (after rerender)'
       );
 
-      runTask(() => this.context.set('showInner', true));
+      runTask(() => set(this.context, 'showInner', true));
 
       assert.equal(
         outer.parentView,
@@ -2441,7 +2441,7 @@ moduleFor(
         'receives the wrapping component as its parentView in template blocks'
       );
 
-      runTask(() => this.context.set('showInner', false));
+      runTask(() => set(this.context, 'showInner', false));
 
       assert.equal(
         outer.parentView,
@@ -2475,7 +2475,7 @@ moduleFor(
         ComponentClass: class extends Component {
           value = null;
           didReceiveAttrs() {
-            middle.set('value', this.get('value'));
+            set(middle, 'value', get(this, 'value'));
           }
         },
         template: '<div id="inner-value">{{value}}</div>',
@@ -2494,7 +2494,7 @@ moduleFor(
       this.registerComponent('x-outer', {
         ComponentClass: class extends Component {
           value = 1;
-          wrapper = EmberObject.create({ content: null });
+          wrapper = CoreObject.create({ content: null });
         },
         template:
           '<div id="outer-value">{{this.wrapper.content}}</div> {{x-inner value=this.value wrapper=this.wrapper}}',
@@ -2503,7 +2503,7 @@ moduleFor(
       this.registerComponent('x-inner', {
         ComponentClass: class extends Component {
           didReceiveAttrs() {
-            this.get('wrapper').set('content', this.get('value'));
+            set(this.wrapper, 'content', this.value);
           }
           value = null;
         },
@@ -2536,7 +2536,7 @@ moduleFor(
       this.registerComponent('x-inner', {
         ComponentClass: class extends Component {
           didReceiveAttrs() {
-            this.get('wrapper').content = this.get('value');
+            get(this, 'wrapper').content = get(this, 'value');
           }
           value = null;
         },
@@ -2574,15 +2574,15 @@ moduleFor(
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      runTask(() => this.context.get('items').push('Sergio'));
+      runTask(() => get(this.context, 'items').push('Sergio'));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.get('items').shift());
+      runTask(() => get(this.context, 'items').shift());
 
       this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.set('items', ['Tom', 'Dick', 'Harry']));
+      runTask(() => set(this.context, 'items', ['Tom', 'Dick', 'Harry']));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
     }
@@ -2609,7 +2609,7 @@ moduleFor(
         `the element has the correct classes: ${this.$('button').attr('class')}`
       );
       // `ember-view` is no longer in classNames.
-      // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined');
+      // assert.deepEqual(get(clickyThing, 'classNames'), expectedClassNames, 'classNames are properly combined');
       this.assertComponentElement(this.firstChild, {
         tagName: 'button',
         attrs: { class: classes(expectedClassNames.join(' ')) },
@@ -2622,7 +2622,7 @@ moduleFor(
         `the element has the correct classes: ${this.$('button').attr('class')} (rerender)`
       );
       // `ember-view` is no longer in classNames.
-      // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined (rerender)');
+      // assert.deepEqual(get(clickyThing, 'classNames'), expectedClassNames, 'classNames are properly combined (rerender)');
       this.assertComponentElement(this.firstChild, {
         tagName: 'button',
         attrs: { class: classes(expectedClassNames.join(' ')) },
@@ -2680,19 +2680,19 @@ moduleFor(
       this.assertText('initial value - initial value');
 
       runTask(() => {
-        component.set('bar', 'updated value');
+        set(component, 'bar', 'updated value');
       });
 
       this.assertText('updated value - updated value');
 
       runTask(() => {
-        component.set('bar', undefined);
+        set(component, 'bar', undefined);
       });
 
       this.assertText(' - ');
 
       runTask(() => {
-        this.component.set('localBar', 'initial value');
+        set(this.component, 'localBar', 'initial value');
       });
 
       this.assertText('initial value - initial value');
@@ -2732,13 +2732,13 @@ moduleFor(
       this.assertText('initial value - initial value');
 
       runTask(() => {
-        component.set('bar', 'updated value');
+        set(component, 'bar', 'updated value');
       });
 
       this.assertText('updated value - updated value');
 
       runTask(() => {
-        this.component.set('localBar', 'initial value');
+        set(this.component, 'localBar', 'initial value');
       });
 
       this.assertText('initial value - initial value');
@@ -2778,13 +2778,13 @@ moduleFor(
       this.assertText('initial value');
 
       runTask(() => {
-        component.set('bar', 'updated value');
+        set(component, 'bar', 'updated value');
       });
 
       this.assertText('updated value');
 
       runTask(() => {
-        this.component.set('localBar', 'initial value');
+        set(this.component, 'localBar', 'initial value');
       });
 
       this.assertText('initial value');
@@ -2824,8 +2824,8 @@ moduleFor(
 
         set value(value) {
           let vals = value.split('|');
-          this.set('a', vals[0]);
-          this.set('b', vals[1]);
+          set(this, 'a', vals[0]);
+          set(this, 'b', vals[1]);
         }
       };
 
@@ -2844,7 +2844,7 @@ moduleFor(
       );
 
       runTask(() => {
-        child.set('a', 'Foo');
+        set(child, 'a', 'Foo');
       });
 
       this.assert.equal(parent.string, 'Foo|World', 'parent value updated');
@@ -2856,7 +2856,7 @@ moduleFor(
       );
 
       runTask(() => {
-        child.set('a', 'Hello');
+        set(child, 'a', 'Hello');
       });
 
       this.assert.equal(parent.string, 'Hello|World', 'parent value reset');
@@ -2897,13 +2897,13 @@ moduleFor(
       this.assertText('Jackson');
 
       runTask(() => {
-        serviceInstance.set('last', 'McGuffey');
+        set(serviceInstance, 'last', 'McGuffey');
       });
 
       this.assertText('McGuffey');
 
       runTask(() => {
-        serviceInstance.set('last', 'Jackson');
+        set(serviceInstance, 'last', 'Jackson');
       });
 
       this.assertText('Jackson');
@@ -2959,7 +2959,7 @@ moduleFor(
 
           change() {
             let value = this.readDOMAttr('value');
-            this.set('value', value);
+            set(this, 'value', value);
           }
         },
       });
@@ -3012,21 +3012,21 @@ moduleFor(
           }
 
           updateValue() {
-            let newValue = this.get('options.lastObject.value');
+            let newValue = get(this, 'options.lastObject.value');
 
-            this.set('value', newValue);
+            set(this, 'value', newValue);
           }
 
           registerOption(option) {
-            if (this.get('options').indexOf(option) === -1) {
-              this.get('options').push(option);
+            if (get(this, 'options').indexOf(option) === -1) {
+              get(this, 'options').push(option);
             }
           }
 
           unregisterOption(option) {
-            let index = this.get('options').indexOf(option);
+            let index = get(this, 'options').indexOf(option);
             if (index > -1) {
-              this.get('options').splice(index, 1);
+              get(this, 'options').splice(index, 1);
             }
 
             this.updateValue();
@@ -3044,17 +3044,17 @@ moduleFor(
           didInsertElement() {
             super.didInsertElement(...arguments);
 
-            this.get('select').registerOption(this);
+            get(this, 'select').registerOption(this);
           }
 
           @computed('select.value')
           get selected() {
-            return this.get('value') === this.get('select.value');
+            return get(this, 'value') === get(this, 'select.value');
           }
 
           willDestroyElement() {
             super.willDestroyElement(...arguments);
-            this.get('select').unregisterOption(this);
+            get(this, 'select').unregisterOption(this);
           }
         },
       });
@@ -3082,7 +3082,7 @@ moduleFor(
           }
 
           willDestroyElement() {
-            this.set('showFoo', false);
+            set(this, 'showFoo', false);
             assert.ok(true, 'willDestroyElement was fired');
             super.willDestroyElement(...arguments);
           }
@@ -3096,49 +3096,11 @@ moduleFor(
       this.assertText('things');
     }
 
-    async ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
-      let barCopyDidChangeCount = 0;
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            this.didInit = true;
-          },
-
-          didReceiveAttrs() {
-            assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-            this.set('barCopy', this.attrs.bar.value + 1);
-          },
-
-          barCopyDidChange: observer('barCopy', () => {
-            barCopyDidChangeCount++;
-          }),
-        }),
-
-        template: '{{this.bar}}-{{this.barCopy}}',
-      });
-
-      await this.render(`{{foo-bar bar=this.bar}}`, { bar: 3 });
-
-      this.assertText('3-4');
-
-      assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
-
-      set(this.context, 'bar', 7);
-
-      await runLoopSettled();
-
-      this.assertText('7-8');
-
-      assert.strictEqual(barCopyDidChangeCount, 2, 'expected observer firing for: barCopy');
-    }
-
     ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
       this.registerComponent('foo-bar', {
         ComponentClass: class extends Component {
           didReceiveAttrs() {
-            assert.equal(1, this.get('foo'), 'expected attrs to have correct value');
+            assert.equal(1, get(this, 'foo'), 'expected attrs to have correct value');
           }
         },
 
@@ -3152,7 +3114,7 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: class extends Component {
           didUpdateAttrs() {
-            assert.equal(5, this.get('foo'), 'expected newAttrs to have new value');
+            assert.equal(5, get(this, 'foo'), 'expected newAttrs to have new value');
           }
         },
 
@@ -3212,9 +3174,9 @@ moduleFor(
 
       expectAssertion(() => {
         this.registerComponent('foo-bar', {
-          ComponentClass: MyComponent.reopenClass({
-            positionalParams: ['myVar'],
-          }),
+          ComponentClass: class extends MyComponent {
+            static positionalParams = ['myVar'];
+          },
           template:
             'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
         });
@@ -3227,9 +3189,9 @@ moduleFor(
 
       expectDeprecation(() => {
         this.registerComponent('foo-bar', {
-          ComponentClass: MyComponent.reopenClass({
-            positionalParams: ['myVar'],
-          }),
+          ComponentClass: class extends MyComponent {
+            static positionalParams = ['myVar'];
+          },
           template:
             'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
         });
@@ -3244,9 +3206,9 @@ moduleFor(
       let MyComponent = class extends Component {};
 
       this.registerComponent('foo-bar', {
-        ComponentClass: MyComponent.reopenClass({
-          positionalParams: ['myVar'],
-        }),
+        ComponentClass: class extends MyComponent {
+          static positionalParams = ['myVar'];
+        },
         template: 'MyVar1: {{@myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{@myVar2}}',
       });
 

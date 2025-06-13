@@ -4,7 +4,6 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./mixin": "./mixin.ts",
     "./-internals": "./-internals.ts",
     "./internals": "./internals.ts",
     "./evented": "./evented.ts",

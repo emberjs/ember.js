@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { get, set, trySet, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -41,26 +41,6 @@ moduleFor(
 
       set(arr, 1, 'lol');
       assert.deepEqual(arr, ['first', 'lol']);
-    }
-
-    ['@test should call setUnknownProperty if defined and value is undefined'](assert) {
-      let obj = {
-        count: 0,
-
-        unknownProperty() {
-          assert.ok(false, 'should not invoke unknownProperty if setUnknownProperty is defined');
-        },
-
-        setUnknownProperty(key, value) {
-          assert.equal(key, 'foo', 'should pass key');
-          assert.equal(value, 'BAR', 'should pass key');
-          this.count++;
-          return 'FOO';
-        },
-      };
-
-      assert.equal(set(obj, 'foo', 'BAR'), 'BAR', 'should return set value');
-      assert.equal(obj.count, 1, 'should have invoked');
     }
 
     ['@test warn on attempts to call set with undefined as object']() {
@@ -145,7 +125,7 @@ moduleFor(
     }
 
     ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {
-      let ParentClass = class extends EmberObject {
+      let ParentClass = class extends CoreObject {
         @computed
         get prop() {
           return this._val;
@@ -171,7 +151,7 @@ moduleFor(
     ['@test should respect prototypical inheritance when subclasses override CPs with native classes'](
       assert
     ) {
-      class ParentClass extends EmberObject {
+      class ParentClass extends CoreObject {
         @computed
         set prop(val) {
           assert.ok(false, 'incorrect setter called');

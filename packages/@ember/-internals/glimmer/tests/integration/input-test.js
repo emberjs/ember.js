@@ -87,17 +87,17 @@ moduleFor(
 
       this.assert.equal(this.$inputElement().prop('disabled'), false);
 
-      runTask(() => this.context.set('model.value', true));
+      runTask(() => set(this.context, 'model.value', true));
 
       this.assert.equal(this.$inputElement().prop('disabled'), true);
       this.assertHTML('<input disabled="">'); // Note the DOM output is <input disabled>
 
-      runTask(() => this.context.set('model.value', 'wat'));
+      runTask(() => set(this.context, 'model.value', 'wat'));
 
       this.assert.equal(this.$inputElement().prop('disabled'), true);
       this.assertHTML('<input disabled="">'); // Note the DOM output is <input disabled>
 
-      runTask(() => this.context.set('model', { value: false }));
+      runTask(() => set(this.context, 'model', { value: false }));
 
       this.assert.equal(this.$inputElement().prop('disabled'), false);
       this.assertHTML('<input>');

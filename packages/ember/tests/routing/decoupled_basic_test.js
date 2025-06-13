@@ -5,7 +5,8 @@ import { compile } from 'ember-template-compiler';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
-import EmberObject, { set } from '@ember/object';
+import { get, set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -33,44 +34,46 @@ function handleURLRejectsWith(context, assert, path, expectedReason) {
     });
 }
 
+class TestCase extends ApplicationTestCase {
+  constructor() {
+    super(...arguments);
+    this.addTemplate('home', '<h3 class="hours">Hours</h3>');
+    this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
+    this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
+
+    this.router.map(function () {
+      this.route('home', { path: '/' });
+    });
+
+    originalConsoleError = console.error;
+  }
+
+  teardown() {
+    super.teardown();
+    console.error = originalConsoleError;
+  }
+
+  handleURLAborts(assert, path) {
+    run(() => {
+      let router = this.applicationInstance.lookup('router:main');
+      router.handleURL(path).then(
+        function () {
+          assert.ok(false, 'url: `' + path + '` was NOT to be handled');
+        },
+        function (reason) {
+          assert.ok(
+            reason && reason.message === 'TransitionAborted',
+            'url: `' + path + '` was to be aborted'
+          );
+        }
+      );
+    });
+  }
+}
+
 moduleFor(
   'Basic Routing - Decoupled from global resolver',
-  class extends ApplicationTestCase {
-    constructor() {
-      super(...arguments);
-      this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      originalConsoleError = console.error;
-    }
-
-    teardown() {
-      super.teardown();
-      console.error = originalConsoleError;
-    }
-
-    handleURLAborts(assert, path) {
-      run(() => {
-        let router = this.applicationInstance.lookup('router:main');
-        router.handleURL(path).then(
-          function () {
-            assert.ok(false, 'url: `' + path + '` was NOT to be handled');
-          },
-          function (reason) {
-            assert.ok(
-              reason && reason.message === 'TransitionAborted',
-              'url: `' + path + '` was to be aborted'
-            );
-          }
-        );
-      });
-    }
-
+  class extends TestCase {
     async ['@test warn on URLs not included in the route set'](assert) {
       await this.visit('/');
 
@@ -116,7 +119,7 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           menuItem = MenuItem.create({ id: id });
 
@@ -161,7 +164,7 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           return { id: id };
         }
@@ -243,7 +246,7 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           menuItem = MenuItem.create({ id: id });
           return new RSVP.Promise((res) => (resolve = res));
@@ -298,7 +301,7 @@ moduleFor(
         let urlSetCount = 0;
         let router = this.applicationInstance.lookup('router:main');
 
-        router.get('location').setURL = function (path) {
+        get(router, 'location').setURL = function (path) {
           urlSetCount++;
           set(this, 'path', path);
         };
@@ -311,7 +314,7 @@ moduleFor(
         });
 
         assert.equal(urlSetCount, 1);
-        assert.equal(router.get('location').getURL(), '/bar');
+        assert.equal(get(router, 'location').getURL(), '/bar');
       });
     }
 
@@ -331,68 +334,6 @@ moduleFor(
           assert.ok(true, 'url change event was fired');
         });
         ['foo', 'bar', '/foo'].forEach((destination) => run(router, 'transitionTo', destination));
-      });
-    }
-
-    ['@test using replaceWith calls location.replaceURL if available'](assert) {
-      let setCount = 0;
-      let replaceCount = 0;
-      this.router.reopen({
-        location: NoneLocation.create({
-          setURL(path) {
-            setCount++;
-            set(this, 'path', path);
-          },
-
-          replaceURL(path) {
-            replaceCount++;
-            set(this, 'path', path);
-          },
-        }),
-      });
-
-      this.router.map(function () {
-        this.route('root', { path: '/' });
-        this.route('foo');
-      });
-
-      return this.visit('/').then(() => {
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(setCount, 1);
-        assert.equal(replaceCount, 0);
-
-        run(() => router.replaceWith('foo'));
-
-        assert.equal(setCount, 1, 'should not call setURL');
-        assert.equal(replaceCount, 1, 'should call replaceURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
-      });
-    }
-
-    ['@test using replaceWith calls setURL if location.replaceURL is not defined'](assert) {
-      let setCount = 0;
-
-      this.router.reopen({
-        location: NoneLocation.create({
-          setURL(path) {
-            setCount++;
-            set(this, 'path', path);
-          },
-        }),
-      });
-
-      this.router.map(function () {
-        this.route('root', { path: '/' });
-        this.route('foo');
-      });
-
-      return this.visit('/').then(() => {
-        let router = this.applicationInstance.lookup('router:main');
-
-        assert.equal(setCount, 1);
-        run(() => router.replaceWith('foo'));
-        assert.equal(setCount, 2, 'should call setURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
       });
     }
 
@@ -477,7 +418,7 @@ moduleFor(
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
         assert.equal(router.currentPath, 'home');
-        assert.equal(router.get('location').getURL(), '/home');
+        assert.equal(get(router, 'location').getURL(), '/home');
       });
     }
 
@@ -575,10 +516,8 @@ moduleFor(
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
         assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
-        assert.equal(
-          this.applicationInstance.lookup('router:main').get('location').getURL(),
-          '/foo/bar/2/baz'
-        );
+        let router = this.applicationInstance.lookup('router:main');
+        assert.equal(get(router, 'location').getURL(), '/foo/bar/2/baz');
       });
     }
 
@@ -614,95 +553,8 @@ moduleFor(
         assert.equal(router.currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
         assert.equal(router.currentPath, 'foo.qux');
-        assert.equal(router.get('location').getURL(), '/foo/qux');
+        assert.equal(get(router, 'location').getURL(), '/foo/qux');
       });
-    }
-
-    ['@test Router accounts for rootURL on page load when using history location'](assert) {
-      let rootURL = window.location.pathname + '/app';
-      let postsTemplateRendered = false;
-      let setHistory;
-
-      setHistory = function (obj, path) {
-        obj.set('history', { state: { path: path } });
-      };
-
-      let location = HistoryLocation.create({
-        initState() {
-          let path = rootURL + '/posts';
-
-          setHistory(this, path);
-          this.set('location', {
-            pathname: path,
-            href: 'http://localhost/' + path,
-          });
-        },
-
-        replaceState(path) {
-          setHistory(this, path);
-        },
-
-        pushState(path) {
-          setHistory(this, path);
-        },
-      });
-
-      this.router.reopen({
-        // location: 'historyTest',
-        location,
-        rootURL: rootURL,
-      });
-
-      this.router.map(function () {
-        this.route('posts', { path: '/posts' });
-      });
-
-      this.add(
-        'route:posts',
-        class extends Route {
-          model() {}
-          setupController() {
-            postsTemplateRendered = true;
-            this._super(...arguments);
-          }
-        }
-      );
-
-      return this.visit('/').then(() => {
-        assert.ok(postsTemplateRendered, 'Posts route successfully stripped from rootURL');
-
-        runDestroy(location);
-        location = null;
-      });
-    }
-
-    ['@test The rootURL is passed properly to the location implementation'](assert) {
-      assert.expect(1);
-      let rootURL = '/blahzorz';
-      this.add(
-        'location:history-test',
-        class extends HistoryLocation {
-          rootURL = 'this is not the URL you are looking for';
-          history = {
-            pushState() {},
-          };
-          initState() {
-            assert.equal(this.get('rootURL'), rootURL);
-          }
-        }
-      );
-
-      this.router.reopen({
-        location: 'history-test',
-        rootURL: rootURL,
-        // if we transition in this test we will receive failures
-        // if the tests are run from a static file
-        _doURLTransition() {
-          return RSVP.resolve('');
-        },
-      });
-
-      return this.visit('/');
     }
 
     ['@test Generating a URL should not affect currentModel'](assert) {
@@ -1031,7 +883,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(router.get('location.path'), '/about/TreeklesMcGeekles');
+        assert.equal(get(router, 'location.path'), '/about/TreeklesMcGeekles');
       });
     }
 
@@ -1499,7 +1351,7 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
       class EngineIndexRoute extends Route {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           engineInstance = getOwner(this);
         }
       }
@@ -1551,6 +1403,188 @@ moduleFor(
         generatedRoute = this.applicationInstance.lookup('route:posts');
 
         assert.ok(generatedRoute instanceof AppRoute, 'should extend the correct route');
+      });
+    }
+  }
+);
+
+moduleFor(
+  'Basic Routing - Decoupled from global resolver',
+  class extends TestCase {
+    get routerOptions() {
+      return {
+        location: 'history-test',
+        rootURL: '/blahzorz',
+        _doURLTransition: () => RSVP.resolve(''),
+      };
+    }
+
+    ['@test The rootURL is passed properly to the location implementation'](assert) {
+      assert.expect(1);
+      this.add(
+        'location:history-test',
+        class extends HistoryLocation {
+          rootURL = 'this is not the URL you are looking for';
+          history = {
+            pushState() {},
+          };
+          initState() {
+            assert.equal(get(this, 'rootURL'), '/blahzorz');
+          }
+        }
+      );
+
+      return this.visit('/');
+    }
+  }
+);
+
+moduleFor(
+  'Basic Routing - Decoupled from global resolver',
+  class extends TestCase {
+    constructor() {
+      super();
+      this.setCount = 0;
+    }
+
+    get routerOptions() {
+      let testCase = this;
+
+      return {
+        location: NoneLocation.create({
+          setURL(path) {
+            testCase.setCount++;
+            set(this, 'path', path);
+          },
+        }),
+      };
+    }
+
+    ['@test using replaceWith calls setURL if location.replaceURL is not defined'](assert) {
+      this.router.map(function () {
+        this.route('root', { path: '/' });
+        this.route('foo');
+      });
+
+      return this.visit('/').then(() => {
+        let router = this.applicationInstance.lookup('router:main');
+
+        assert.equal(this.setCount, 1);
+        run(() => router.replaceWith('foo'));
+        assert.equal(this.setCount, 2, 'should call setURL once');
+        assert.equal(get(router, 'location').getURL(), '/foo');
+      });
+    }
+  }
+);
+
+moduleFor(
+  'Basic Routing - Decoupled from global resolver',
+  class extends TestCase {
+    get routerOptions() {
+      let rootURL = window.location.pathname + '/app';
+
+      function setHistory(obj, path) {
+        set(obj, 'history', { state: { path: path } });
+      }
+
+      this.location = HistoryLocation.create({
+        initState() {
+          let path = rootURL + '/posts';
+
+          setHistory(this, path);
+          set(this, 'location', {
+            pathname: path,
+            href: 'http://localhost/' + path,
+          });
+        },
+
+        replaceState(path) {
+          setHistory(this, path);
+        },
+
+        pushState(path) {
+          setHistory(this, path);
+        },
+      });
+
+      return {
+        location: this.location,
+        rootURL,
+      };
+    }
+
+    ['@test Router accounts for rootURL on page load when using history location'](assert) {
+      let postsTemplateRendered = false;
+
+      this.router.map(function () {
+        this.route('posts', { path: '/posts' });
+      });
+
+      this.add(
+        'route:posts',
+        class extends Route {
+          model() {}
+          setupController() {
+            postsTemplateRendered = true;
+            super.setupController(...arguments);
+          }
+        }
+      );
+
+      return this.visit('/').then(() => {
+        assert.ok(postsTemplateRendered, 'Posts route successfully stripped from rootURL');
+
+        runDestroy(this.location);
+        this.location = null;
+      });
+    }
+  }
+);
+
+moduleFor(
+  'Basic Routing - Decoupled from global resolver',
+  class extends TestCase {
+    constructor() {
+      super();
+      this.setCount = 0;
+      this.replaceCount = 0;
+    }
+
+    get routerOptions() {
+      let testCase = this;
+
+      return {
+        location: NoneLocation.create({
+          setURL(path) {
+            testCase.setCount++;
+            set(this, 'path', path);
+          },
+
+          replaceURL(path) {
+            testCase.replaceCount++;
+            set(this, 'path', path);
+          },
+        }),
+      };
+    }
+
+    ['@test using replaceWith calls location.replaceURL if available'](assert) {
+      this.router.map(function () {
+        this.route('root', { path: '/' });
+        this.route('foo');
+      });
+
+      return this.visit('/').then(() => {
+        let router = this.applicationInstance.lookup('router:main');
+        assert.equal(this.setCount, 1);
+        assert.equal(this.replaceCount, 0);
+
+        run(() => router.replaceWith('foo'));
+
+        assert.equal(this.setCount, 1, 'should not call setURL');
+        assert.equal(this.replaceCount, 1, 'should call replaceURL once');
+        assert.equal(get(router, 'location').getURL(), '/foo');
       });
     }
   }

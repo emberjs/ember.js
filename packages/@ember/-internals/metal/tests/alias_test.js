@@ -8,7 +8,7 @@ import {
   removeObserver,
   tagForProperty,
 } from '..';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 import { valueForTag, validateTag } from '@glimmer/validator';
@@ -95,7 +95,7 @@ moduleFor(
     async [`@test inheriting an observer of the alias from the prototype then
     redefining the alias on the instance to another property dependent on same key
     does not call the observer twice`](assert) {
-      let obj1 = class extends EmberObject {
+      let obj1 = class extends CoreObject {
         foo = null;
         @alias('foo') bar;
         @alias('foo') baz;

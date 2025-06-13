@@ -1,6 +1,6 @@
 import { generateGuid, guidFor } from '@ember/-internals/utils';
 import { addArrayObserver, removeArrayObserver } from '@ember/-internals/metal';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {
@@ -23,7 +23,7 @@ export function newObjectsFixture(cnt) {
   return ret;
 }
 
-const ArrayTestsObserverClass = class extends EmberObject {
+const ArrayTestsObserverClass = class extends CoreObject {
   init() {
     super.init(...arguments);
     this.isEnabled = true;

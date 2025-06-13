@@ -1,14 +1,7 @@
-import { ENV } from '@ember/-internals/environment';
-import EmberObject, { observer } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { get } from '../..';
-import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { destroy } from '@glimmer/destroyable';
-
-function aget(x, y) {
-  return x[y];
-}
 
 moduleFor(
   'get',
@@ -70,39 +63,11 @@ moduleFor(
       assert.equal(count, 1);
     }
 
-    ['@test should call unknownProperty on watched values if the value is undefined using getFromEmberMetal()/set()'](
-      assert
-    ) {
-      let obj = {
-        unknownProperty(key) {
-          assert.equal(key, 'foo', 'should pass key');
-          return 'FOO';
-        },
-      };
-      assert.equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
-    }
-
-    ['@test should call unknownProperty on watched values if the value is undefined using accessors'](
-      assert
-    ) {
-      if (ENV.USES_ACCESSORS) {
-        let obj = {
-          unknownProperty(key) {
-            assert.equal(key, 'foo', 'should pass key');
-            return 'FOO';
-          },
-        };
-        assert.equal(aget(obj, 'foo'), 'FOO', 'should return value from unknown');
-      } else {
-        assert.ok('SKIPPING ACCESSORS');
-      }
-    }
-
     ['@test get works with paths correctly'](assert) {
       let func = function () {};
       func.bar = 'awesome';
 
-      let destroyedObj = EmberObject.create({ bar: 'great' });
+      let destroyedObj = CoreObject.create({ bar: 'great' });
       run(() => destroyedObj.destroy());
 
       assert.equal(get({ foo: null }, 'foo.bar'), undefined);
@@ -178,30 +143,6 @@ moduleFor(
         () => get(obj, false),
         /The key provided to get must be a string or number, you passed false/
       );
-    }
-
-    // ..........................................................
-    // BUGS
-    //
-
-    ['@test (regression) watched properties on unmodified inherited objects should still return their original value'](
-      assert
-    ) {
-      let MyMixin = Mixin.create({
-        someProperty: 'foo',
-        propertyDidChange: observer('someProperty', () => {}),
-      });
-
-      let baseObject = MyMixin.apply({});
-      let theRealObject = Object.create(baseObject);
-
-      assert.equal(
-        get(theRealObject, 'someProperty'),
-        'foo',
-        'should return the set value, not false'
-      );
-
-      run(() => destroy(baseObject));
     }
   }
 );

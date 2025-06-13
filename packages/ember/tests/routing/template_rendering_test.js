@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import { set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
@@ -82,7 +83,7 @@ moduleFor(
         class extends Route {
           setupController() {
             assert.ok(true, 'FooBarRoute was called');
-            return this._super(...arguments);
+            return super.setupController(...arguments);
           }
         }
       );
@@ -92,7 +93,7 @@ moduleFor(
         class extends Route {
           setupController() {
             assert.ok(true, 'BarBazRoute was called');
-            return this._super(...arguments);
+            return super.setupController(...arguments);
           }
         }
       );
@@ -208,7 +209,7 @@ moduleFor(
         'route:page',
         class extends Route {
           model(params) {
-            return EmberObject.create({ name: params.name });
+            return CoreObject.create({ name: params.name });
           }
         }
       );
@@ -240,7 +241,7 @@ moduleFor(
       assert.equal(insertionCount, 1, 'view should have inserted only once');
       let router = this.applicationInstance.lookup('router:main');
 
-      await run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
+      await run(() => router.transitionTo('page', CoreObject.create({ name: 'third' })));
 
       assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
       assert.equal(insertionCount, 1, 'view should still have inserted only once');
@@ -263,7 +264,9 @@ moduleFor(
           rootElement = document.getElementById('qunit-fixture');
           assert.equal(rootElement.textContent.trim(), 'HiBye', 'initial render');
 
-          run(() => this.applicationInstance.lookup('controller:sample').set('showTheThing', true));
+          run(() =>
+            set(this.applicationInstance.lookup('controller:sample'), 'showTheThing', true)
+          );
 
           assert.equal(rootElement.textContent.trim(), 'HiYayBye', 'second render');
           return this.visit('/2');
@@ -335,7 +338,7 @@ moduleFor(
           'didInsertElement not invoked on displayed component'
         );
 
-        run(() => indexController.set('showFirst', false));
+        run(() => set(indexController, 'showFirst', false));
 
         assert.strictEqual(
           myComponentCounter,

@@ -1,5 +1,6 @@
 import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { get } from '@ember/object';
 import Service, { service } from '@ember/service';
 import EmberRoute from '@ember/routing/route';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -104,66 +105,6 @@ moduleFor(
 
       runDestroy(owner);
     }
-
-    ['@test .send just calls an action if the router is absent'](assert) {
-      assert.expect(7);
-      let route = class extends EmberRoute {
-        actions = {
-          returnsTrue(foo, bar) {
-            assert.equal(foo, 1);
-            assert.equal(bar, 2);
-            assert.equal(this, route);
-            return true;
-          },
-
-          returnsFalse() {
-            assert.ok(true, 'returnsFalse was called');
-            return false;
-          },
-        };
-      }.create();
-
-      assert.equal(route.send('returnsTrue', 1, 2), true);
-      assert.equal(route.send('returnsFalse'), false);
-      assert.equal(route.send('nonexistent', 1, 2, 3), undefined);
-
-      runDestroy(route);
-    }
-
-    ['@test .send just calls an action if the routers internal router property is absent'](assert) {
-      assert.expect(7);
-      let route = class extends EmberRoute {
-        router = {};
-        actions = {
-          returnsTrue(foo, bar) {
-            assert.equal(foo, 1);
-            assert.equal(bar, 2);
-            assert.equal(this, route);
-            return true;
-          },
-
-          returnsFalse() {
-            assert.ok(true, 'returnsFalse was called');
-            return false;
-          },
-        };
-      }.create();
-
-      assert.equal(true, route.send('returnsTrue', 1, 2));
-      assert.equal(false, route.send('returnsFalse'));
-      assert.equal(undefined, route.send('nonexistent', 1, 2, 3));
-
-      runDestroy(route);
-    }
-
-    ['@test .send asserts if called on a destroyed route']() {
-      route.routeName = 'rip-alley';
-      runDestroy(route);
-
-      expectAssertion(() => {
-        route.send('trigger-me-dead');
-      }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed route 'rip-alley'.");
-    }
   }
 );
 
@@ -245,7 +186,7 @@ moduleFor(
       lookupHash['controller:test'] = {};
 
       routeOne.controllerName = 'test';
-      let qp = routeOne.get('_qp');
+      let qp = get(routeOne, '_qp');
 
       assert.deepEqual(qp.map, {}, 'map should be empty');
       assert.deepEqual(qp.propertyNames, [], 'property names should be empty');
@@ -282,7 +223,7 @@ moduleFor(
       let appRoute = owner.lookup('route:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appRoute.get('authService'), 'service.auth is injected');
+      assert.equal(authService, get(appRoute, 'authService'), 'service.auth is injected');
 
       runDestroy(owner);
     }

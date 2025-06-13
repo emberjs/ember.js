@@ -153,7 +153,7 @@ export function resumeObserverDeactivation() {
 }
 
 /**
- * Primarily used for cases where we are redefining a class, e.g. mixins/reopen
+ * Primarily used for cases where we are redefining a class, e.g. mixins
  * being applied later. Revalidates all the observers, resetting their tags.
  *
  * @private

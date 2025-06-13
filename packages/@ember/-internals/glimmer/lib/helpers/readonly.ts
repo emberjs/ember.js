@@ -34,7 +34,7 @@ import { internalHelper } from './internal-helper';
   ```app/components/my-child.js
   export default class MyChild extends Component {
     click() {
-      this.incrementProperty('childClickCount');
+      set(this, 'childClickCount', this.childClickCount + 1);
     }
   }
   ```
@@ -95,7 +95,7 @@ import { internalHelper } from './internal-helper';
 
   export default class MyChild extends Component {
     click() {
-      this.get('clicks').incrementProperty('total');
+      set(this.clicks, 'total', this.clicks.total + 1);
     }
   }
   ```

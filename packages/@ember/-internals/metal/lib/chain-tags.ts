@@ -160,12 +160,7 @@ function getChainTags(
     if (descriptor === undefined) {
       // If the descriptor is undefined, then its a normal property, so we should
       // lookup the value to chain off of like normal.
-
-      if (!(segment in current) && typeof current.unknownProperty === 'function') {
-        current = current.unknownProperty(segment);
-      } else {
-        current = current[segment];
-      }
+      current = current[segment];
     } else if (CHAIN_PASS_THROUGH.has(descriptor)) {
       current = current[segment];
     } else {

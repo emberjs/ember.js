@@ -1,21 +1,13 @@
 import Component from '@ember/component';
-import Object, { computed, get } from '@ember/object';
+import Object, { computed, get, set } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-Component.extend({
-  layout: 'my-layout',
-});
+class LayoutComponent extends Component {
+  layoutName = 'my-layout';
+}
 
-const MyComponent = Component.extend();
+const MyComponent = class extends Component {};
 expectTypeOf(get(MyComponent, 'positionalParams')).toEqualTypeOf<string | string[]>();
-
-const component1 = Component.extend({
-  actions: {
-    hello(name: string) {
-      console.log('Hello', name);
-    },
-  },
-});
 
 class AnotherComponent extends Component {
   name = '';
@@ -25,18 +17,10 @@ class AnotherComponent extends Component {
   }
 
   hello(name: string) {
-    this.set('name', name);
+    set(this, 'name', name);
     this.name = name;
   }
 }
-
-Component.extend({
-  tagName: 'em',
-});
-
-Component.extend({
-  classNames: ['my-class', 'my-other-class'],
-});
 
 class Bindings extends Component {
   classNameBindings = ['propertyA', 'propertyB'];
@@ -44,89 +28,17 @@ class Bindings extends Component {
 
   @computed()
   get propertyB() {
-    if (!this.get('propertyA')) {
+    if (!this.propertyA) {
       return 'from-b';
     }
   }
 }
 
-Component.extend({
-  classNameBindings: ['hovered'],
-  hovered: true,
-});
-
 class Message extends Object {
   empty = false;
 }
 
-Component.extend({
-  classNameBindings: ['messages.empty'],
-  messages: Message.create({
-    empty: true,
-  }),
-});
-
-Component.extend({
-  classNameBindings: ['isEnabled:enabled:disabled'],
-  isEnabled: true,
-});
-
-Component.extend({
-  classNameBindings: ['isEnabled::disabled'],
-  isEnabled: true,
-});
-
-Component.extend({
-  tagName: 'a',
-  attributeBindings: ['href'],
-  href: 'http://google.com',
-});
-
-Component.extend({
-  tagName: 'a',
-  attributeBindings: ['url:href'],
-  url: 'http://google.com',
-});
-
-Component.extend({
-  tagName: 'use',
-  attributeBindings: ['xlinkHref:xlink:href'],
-  xlinkHref: '#triangle',
-});
-
-Component.extend({
-  tagName: 'input',
-  attributeBindings: ['disabled'],
-  disabled: false,
-});
-
-Component.extend({
-  tagName: 'input',
-  attributeBindings: ['disabled'],
-  disabled: computed(() => {
-    return someLogic();
-  }),
-});
-
 declare function someLogic(): boolean;
-
-Component.extend({
-  tagName: 'form',
-  attributeBindings: ['novalidate'],
-  novalidate: null,
-});
-
-Component.extend({
-  click(event: object) {
-    // will be called when an instance's
-    // rendered element is clicked
-  },
-});
-
-Component.reopen({
-  attributeBindings: ['metadata:data-my-metadata'],
-  metadata: '',
-});
 
 interface MySig {
   Args: {

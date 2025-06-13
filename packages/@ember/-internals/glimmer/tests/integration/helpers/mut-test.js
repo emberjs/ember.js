@@ -455,7 +455,7 @@ moduleFor(
           }
           @computed('height')
           get style() {
-            let height = this.get('height');
+            let height = get(this, 'height');
             return htmlSafe(`height: ${height}px;`);
           }
           height = 20;
@@ -524,17 +524,17 @@ moduleFor(
           }
           @computed('height', 'width')
           get style() {
-            let height = this.get('height');
-            let width = this.get('width');
+            let height = get(this, 'height');
+            let width = get(this, 'width');
             return htmlSafe(`height: ${height}px; width: ${width}px;`);
           }
           height = 20;
           @computed('height')
           get width() {
-            return this.get('height') * 2;
+            return get(this, 'height') * 2;
           }
           set width(width) {
-            this.set('height', width / 2);
+            set(this, 'height', width / 2);
           }
         },
         template: '{{this.width}}x{{this.height}}',

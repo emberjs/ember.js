@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { computed } from '@ember/object';
+import { computed, get } from '@ember/object';
 
 moduleFor(
   'Service Injection',
@@ -21,7 +21,7 @@ moduleFor(
       await this.visit('/');
 
       let controller = this.applicationInstance.lookup('controller:application');
-      assert.ok(controller.get('myService') instanceof MyService);
+      assert.ok(get(controller, 'myService') instanceof MyService);
     }
   }
 );

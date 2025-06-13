@@ -15,7 +15,7 @@ import {
 import { get } from '@ember/object';
 import { getName, guidFor, setName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -34,7 +34,7 @@ import EmberObject from '@ember/object';
   @extends EmberObject
   @public
 */
-class Namespace extends EmberObject {
+class Namespace extends CoreObject {
   static NAMESPACES = NAMESPACES;
   static NAMESPACES_BY_ID = NAMESPACES_BY_ID;
   static processAll = processAllNamespaces;

@@ -1,5 +1,4 @@
 import { get } from '@ember/object';
-import { hasUnknownProperty } from '@ember/-internals/metal';
 /**
  @module @ember/utils
 */
@@ -40,7 +39,7 @@ export default function isEmpty(obj: unknown): boolean {
     return true;
   }
 
-  if (!hasUnknownProperty(obj) && typeof (obj as HasSize).size === 'number') {
+  if (typeof (obj as HasSize).size === 'number') {
     return !(obj as HasSize).size;
   }
 

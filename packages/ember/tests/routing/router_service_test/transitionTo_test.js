@@ -4,7 +4,7 @@ import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
-import { action, get } from '@ember/object';
+import { action, get, set } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 
@@ -22,12 +22,12 @@ moduleFor(
         class extends NoneLocation {
           setURL(path) {
             testCase.state.push(path);
-            this.set('path', path);
+            set(this, 'path', path);
           }
 
           replaceURL(path) {
             testCase.state.splice(testCase.state.length - 1, 1, path);
-            this.set('path', path);
+            set(this, 'path', path);
           }
         }
       );
@@ -121,7 +121,7 @@ moduleFor(
           componentInstance.transitionToSister();
         });
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+        assert.equal(get(this.routerService, 'currentRouteName'), 'parent.sister');
       });
     }
 
@@ -153,7 +153,7 @@ moduleFor(
           componentInstance.transitionToSister();
         });
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+        assert.equal(get(this.routerService, 'currentRouteName'), 'parent.sister');
       });
     }
 
@@ -188,8 +188,8 @@ moduleFor(
         componentInstance.transitionToDynamic();
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
-      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      assert.equal(get(this.routerService, 'currentRouteName'), 'dynamic');
+      assert.equal(get(this.routerService, 'currentURL'), '/dynamic/1');
       this.assertText('much dynamicism');
     }
 
@@ -233,8 +233,8 @@ moduleFor(
         componentInstance.transitionToDynamic();
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
-      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      assert.equal(get(this.routerService, 'currentRouteName'), 'dynamic');
+      assert.equal(get(this.routerService, 'currentURL'), '/dynamic/1');
       this.assertText('much dynamicism');
     }
 
@@ -245,10 +245,10 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort'],
-          sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = ['sort'];
+          sort = 'ASC';
+        }
       );
 
       let queryParams = this.buildQueryParams({ sort: 'ASC' });
@@ -258,7 +258,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.equal(get(this.routerService, 'currentURL'), '/child');
         });
     }
 
@@ -267,9 +267,9 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort'],
-        })
+        class extends Controller {
+          queryParams = ['sort'];
+        }
       );
 
       let queryParams = this.buildQueryParams({ sort: 'DESC' });
@@ -279,13 +279,13 @@ moduleFor(
           return this.routerService.transitionTo('parent.child');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.equal(get(this.routerService, 'currentURL'), '/child');
         })
         .then(() => {
           return this.routerService.transitionTo(queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          assert.equal(get(this.routerService, 'currentURL'), '/child?sort=DESC');
         });
     }
 
@@ -294,12 +294,12 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort', 'page', 'category', 'extra'],
-          sort: 'ASC',
-          page: null,
-          category: undefined,
-        })
+        class extends Controller {
+          queryParams = ['sort', 'page', 'category', 'extra'];
+          sort = 'ASC';
+          page = null;
+          category = undefined;
+        }
       );
 
       let queryParams = this.buildQueryParams({ sort: 'DESC' });
@@ -309,7 +309,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          assert.equal(get(this.routerService, 'currentURL'), '/child?sort=DESC');
         });
     }
 
@@ -320,12 +320,14 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: {
-            cont_sort: 'url_sort',
-          },
-          cont_sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = [
+            {
+              cont_sort: 'url_sort',
+            },
+          ];
+          cont_sort = 'ASC';
+        }
       );
 
       let queryParams = this.buildQueryParams({ url_sort: 'DESC' });
@@ -335,7 +337,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=DESC');
+          assert.equal(get(this.routerService, 'currentURL'), '/child?url_sort=DESC');
         });
     }
 
@@ -346,12 +348,14 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: {
-            cont_sort: 'url_sort',
-          },
-          cont_sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = [
+            {
+              cont_sort: 'url_sort',
+            },
+          ];
+          cont_sort = 'ASC';
+        }
       );
 
       let queryParams = this.buildQueryParams({ cont_sort: 'ASC' });
@@ -385,16 +389,16 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             cont_sort: { as: 'url_sort' },
-          },
-          cont_sort: 'ASC',
-        })
+          };
+          cont_sort = 'ASC';
+        }
       );
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+        assert.equal(get(this.routerService, 'currentURL'), '/child?url_sort=ASC');
       });
     }
 
@@ -415,13 +419,13 @@ moduleFor(
       );
       this.add(
         'controller:parent',
-        Controller.extend({
-          queryParams: ['url_sort'],
-        })
+        class extends Controller {
+          queryParams = ['url_sort'];
+        }
       );
 
       return this.visit('/child?url_sort=a').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
+        assert.equal(get(this.routerService, 'currentURL'), '/?url_sort=a');
       });
     }
   }

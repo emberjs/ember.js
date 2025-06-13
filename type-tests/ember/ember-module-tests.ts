@@ -66,9 +66,6 @@ expectTypeOf(Ember.isPresent([])).toEqualTypeOf<boolean>();
 class O2 extends Ember.Object {
   name = 'foo';
   age = 3;
-
-  nameWatcher = Ember.observer('name', () => {});
-  nameWatcher2 = Ember.observer('name', 'fullName', () => {});
 }
 const o2 = O2.create({
   name: 'foo',
@@ -122,7 +119,9 @@ expectTypeOf(Ember.Application.create()).toEqualTypeOf<Ember.Application>();
 expectTypeOf(new Ember.ApplicationInstance()).toEqualTypeOf<Ember.ApplicationInstance>();
 expectTypeOf(Ember.ApplicationInstance.create()).toEqualTypeOf<Ember.ApplicationInstance>();
 // Ember.Component
-const C1 = Ember.Component.extend({ classNames: ['foo'] });
+const C1 = class extends Ember.Component {
+  classNames = ['foo'];
+};
 class C2 extends Ember.Component {
   classNames = ['foo'];
 }
@@ -188,7 +187,7 @@ class UsesMixin extends Ember.Object {
   }
 }
 // Ember.Namespace
-const myNs = Ember.Namespace.extend({});
+const myNs = class extends Ember.Namespace {};
 // Ember.NoneLocation
 expectTypeOf(new Ember.NoneLocation()).toEqualTypeOf<Ember.NoneLocation>();
 // Ember.Object
@@ -201,8 +200,8 @@ new Ember.Router();
 new Ember.Service();
 // Ember.Test
 if (Ember.Test) {
-  new Ember.Test.Adapter();
-  new Ember.Test.QUnitAdapter();
+  Ember.Test.Adapter.asyncStart;
+  Ember.Test.QUnitAdapter.asyncStart;
   // Ember.Test
   expectTypeOf(Ember.Test.checkWaiters()).toEqualTypeOf<boolean>();
 }

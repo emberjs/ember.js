@@ -2,7 +2,7 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import Namespace from '@ember/application/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -30,8 +30,8 @@ moduleFor(
       context.lookup = originalLookup;
     }
 
-    ['@test Namespace should be a subclass of EmberObject'](assert) {
-      assert.ok(EmberObject.detect(Namespace));
+    ['@test Namespace should be a subclass of CoreObject'](assert) {
+      assert.ok(CoreObject.detect(Namespace));
     }
 
     ['@test Namespace should be duck typed'](assert) {
@@ -59,32 +59,6 @@ moduleFor(
       );
     }
 
-    ['@test Classes under an Namespace are properly named'](assert) {
-      let nsA = (lookup.NamespaceA = Namespace.create());
-      nsA.Foo = EmberObject.extend();
-      Namespace.processAll();
-      assert.equal(getName(nsA.Foo), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
-
-      nsA.Bar = EmberObject.extend();
-      Namespace.processAll();
-      assert.equal(getName(nsA.Bar), 'NamespaceA.Bar', 'New Classes get the naming treatment too');
-
-      let nsB = (lookup.NamespaceB = Namespace.create());
-      nsB.Foo = EmberObject.extend();
-      Namespace.processAll();
-      assert.equal(
-        getName(nsB.Foo),
-        'NamespaceB.Foo',
-        'Classes in new namespaces get the naming treatment'
-      );
-    }
-
-    //test("Classes under Ember are properly named", function() {
-    //  // ES6TODO: This test does not work reliably when running independent package build with Broccoli config.
-    //  Ember.TestObject = EmberObject.extend({});
-    //  equal(Ember.TestObject.toString(), "Ember.TestObject", "class under Ember is given a string representation");
-    //});
-
     ['@test Lowercase namespaces are no longer supported'](assert) {
       let nsC = (lookup.namespaceC = Namespace.create());
       Namespace.processAll();
@@ -101,8 +75,8 @@ moduleFor(
           name: 'CustomNamespaceB',
         }));
 
-        nsA.Foo = class extends EmberObject {};
-        nsB.Foo = class extends EmberObject {};
+        nsA.Foo = class extends CoreObject {};
+        nsB.Foo = class extends CoreObject {};
 
         Namespace.processAll();
 
@@ -126,8 +100,8 @@ moduleFor(
 
       let namespace = (lookup.NS = Namespace.create());
 
-      namespace.ClassA = class extends EmberObject {};
-      namespace.ClassB = class extends EmberObject {};
+      namespace.ClassA = class extends CoreObject {};
+      namespace.ClassB = class extends CoreObject {};
 
       Namespace.processAll();
 

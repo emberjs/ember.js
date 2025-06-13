@@ -279,6 +279,7 @@ class Application extends Engine {
   */
   declare eventDispatcher: EventDispatcher | null;
 
+  // TODO: Update this comment
   /**
     The DOM events for which the event dispatcher should listen.
 
@@ -354,10 +355,6 @@ class Application extends Engine {
       ...
     });
 
-    App.Router.reopen({
-      location: 'none'
-    });
-
     App.Router.map({
       ...
     });
@@ -388,6 +385,7 @@ class Application extends Engine {
     @default true
     @private
   */
+  // TODO: We should kill this
   declare _globalsMode: boolean;
 
   /**
@@ -504,7 +502,7 @@ class Application extends Engine {
     // Create subclass of Router for this Application instance.
     // This is to ensure that someone reopening `App.Router` does not
     // tamper with the default `Router`.
-    this.Router = (this.Router || Router).extend() as typeof Router;
+    this.Router = class extends (this.Router || Router) {};
 
     this._buildDeprecatedInstance();
   }
