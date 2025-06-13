@@ -17,9 +17,6 @@ moduleFor(
         }
       };
 
-      // force Base to be finalized so its properties will contain `foo`
-      Base.proto();
-
       class Child extends Base {
         get foo() {
           if (value === 'building') {
@@ -29,8 +26,6 @@ moduleFor(
           return "child's foo";
         }
       }
-
-      Child.proto();
 
       let Grandchild = class extends Child {
         get foo() {

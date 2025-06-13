@@ -20,8 +20,6 @@ import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
-const wasApplied = new WeakSet();
-
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
 const destroyCalled = new Set();
@@ -142,9 +140,6 @@ class CoreObject {
 
   constructor(owner?: Owner) {
     this[OWNER] = owner;
-
-    // prepare prototype...
-    (this.constructor as typeof CoreObject).proto();
 
     let self = this;
 
@@ -461,18 +456,6 @@ class CoreObject {
     return c !== Function.prototype ? c : undefined;
   }
 
-  static proto() {
-    let p = this.prototype;
-    if (!wasApplied.has(p)) {
-      wasApplied.add(p);
-      let parent = this.superclass;
-      if (parent) {
-        parent.proto();
-      }
-    }
-    return p;
-  }
-
   static toString() {
     return `<${getFactoryFor(this) || '(unknown)'}:constructor>`;
   }
@@ -495,10 +478,9 @@ if (DEBUG) {
   */
   CoreObject._onLookup = function injectedPropertyAssertion(debugContainerKey: string) {
     let [type] = debugContainerKey.split(':');
-    let proto = this.proto();
 
-    for (let key in proto) {
-      let desc = descriptorForProperty(proto, key);
+    for (let key in this.prototype) {
+      let desc = descriptorForProperty(this.prototype, key);
       if (desc && DEBUG_INJECTION_FUNCTIONS.has(desc._getter)) {
         assert(
           `Defining \`${key}\` as an injected controller property on a non-controller (\`${debugContainerKey}\`) is not allowed.`,
@@ -518,12 +500,11 @@ if (DEBUG) {
   */
   CoreObject._lazyInjections = function () {
     let injections: Record<string, { namespace: unknown; source: unknown; specifier: string }> = {};
-    let proto = this.proto();
     let key;
     let desc;
 
-    for (key in proto) {
-      desc = descriptorForProperty(proto, key);
+    for (key in this.prototype) {
+      desc = descriptorForProperty(this.prototype, key);
       if (desc && DEBUG_INJECTION_FUNCTIONS.has(desc._getter)) {
         let { namespace, source, type, name } = DEBUG_INJECTION_FUNCTIONS.get(desc._getter);
 

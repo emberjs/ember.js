@@ -35,8 +35,6 @@ moduleFor(
         }
       };
 
-      Obj.proto(); // ensure the prototype is "collapsed" / merged
-
       assert.ok(isComputed(Obj.prototype, 'foo'));
     }
 

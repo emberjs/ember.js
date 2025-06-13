@@ -1552,7 +1552,7 @@ moduleFor(
 
     ['@test lifecycle hooks exist on the base class'](assert) {
       // Make sure we get the finalized component prototype
-      let prototype = Component.proto();
+      let prototype = Component.prototype;
 
       assert.equal(typeof prototype.didDestroyElement, 'function', 'didDestroyElement exists');
       assert.equal(typeof prototype.didInsertElement, 'function', 'didInsertElement exists');
