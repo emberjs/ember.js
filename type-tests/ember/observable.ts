@@ -6,19 +6,13 @@ class MyComponent extends Ember.Component {
 
   init() {
     this._super();
-    this.addObserver('foo', this, 'fooDidChange');
-    this.addObserver('foo', this, this.fooDidChange);
     Ember.addObserver(this, 'foo', this, 'fooDidChange');
     Ember.addObserver(this, 'foo', this, this.fooDidChange);
-    this.removeObserver('foo', this, 'fooDidChange');
-    this.removeObserver('foo', this, this.fooDidChange);
     Ember.removeObserver(this, 'foo', this, 'fooDidChange');
     Ember.removeObserver(this, 'foo', this, this.fooDidChange);
     const lambda = () => {
       this.fooDidChange(this, 'foo');
     };
-    this.addObserver('foo', lambda);
-    this.removeObserver('foo', lambda);
     Ember.addObserver(this, 'foo', lambda);
     Ember.removeObserver(this, 'foo', lambda);
   }
@@ -32,9 +26,6 @@ class MyComponent extends Ember.Component {
     // your code
   }
 }
-
-const myComponent = MyComponent.create();
-myComponent.addObserver('foo', null, () => {});
 
 class Person extends Ember.Object {
   name = '';

@@ -59,30 +59,3 @@ expectTypeOf(p2b.firstName).toEqualTypeOf<string>();
 
 const p2c = Person.create({}, {}, { firstName: 'string' });
 expectTypeOf(p2c.firstName).toEqualTypeOf<string>();
-
-class MyComponent extends EmberObject {
-  foo = 'bar';
-
-  constructor(owner: Owner) {
-    super(owner);
-
-    this.addObserver('foo', this, 'fooDidChange');
-
-    this.addObserver('foo', this, this.fooDidChange);
-    this.removeObserver('foo', this, 'fooDidChange');
-
-    this.removeObserver('foo', this, this.fooDidChange);
-    const lambda = () => {
-      this.fooDidChange(this, 'foo');
-    };
-    this.addObserver('foo', lambda);
-    this.removeObserver('foo', lambda);
-  }
-
-  fooDidChange(_sender: this, _key: string) {
-    // your code
-  }
-}
-
-const myComponent = MyComponent.create();
-myComponent.addObserver('foo', null, () => {});
