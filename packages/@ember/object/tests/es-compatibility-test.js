@@ -1,4 +1,4 @@
-import EmberObject, { computed } from '@ember/object';
+import EmberObject, { computed, set } from '@ember/object';
 import { defineProperty, addObserver, addListener, sendEvent } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
@@ -325,7 +325,7 @@ moduleFor(
     //   assert.equal(someEventB, 0);
 
     //   let a = A.create();
-    //   a.set('foo', 'something');
+    //   set(a, 'foo', 'something');
 
     //   // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
     //   return runLoopSettled().then(async () => {
@@ -334,7 +334,7 @@ moduleFor(
     //     assert.equal(fooDidChangeB, 0);
 
     //     let b = B.create();
-    //     b.set('foo', 'something');
+    //     set(b, 'foo', 'something');
     //     await runLoopSettled();
 
     //     assert.equal(fooDidChangeBase, 1);
@@ -491,7 +491,8 @@ moduleFor(
 
       assert.equal(d.full, 'Robert Jackson');
 
-      d.setProperties({ first: 'Kris', last: 'Selden' });
+      set(d, 'first', 'Kris');
+      set(d, 'last', 'Selden');
 
       // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
       return runLoopSettled().then(() => {

@@ -11,7 +11,6 @@ import {
   removeObserver,
   get,
   set,
-  setProperties,
 } from '@ember/-internals/metal';
 import { getFactoryFor } from '@ember/-internals/container';
 import CoreObject from '@ember/object/core';
@@ -44,77 +43,6 @@ type ObserverMethod<Target, Sender> =
   @public
 */
 class EmberObject extends CoreObject {
-  // NOT TYPE SAFE!
-  /**
-    Sets the provided key or path to the value.
-
-    ```javascript
-    record.set("key", value);
-    ```
-
-    This method is generally very similar to calling `object["key"] = value` or
-    `object.key = value`, except that it provides support for computed
-    properties, the `setUnknownProperty()` method and property observers.
-
-    ### Computed Properties
-
-    If you try to set a value on a key that has a computed property handler
-    defined (see the `get()` method for an example), then `set()` will call
-    that method, passing both the value and key instead of simply changing
-    the value itself. This is useful for those times when you need to
-    implement a property that is composed of one or more member
-    properties.
-
-    ### Unknown Properties
-
-    If you try to set a value on a key that is undefined in the target
-    object, then the `setUnknownProperty()` handler will be called instead. This
-    gives you an opportunity to implement complex "virtual" properties that
-    are not predefined on the object. If `setUnknownProperty()` returns
-    undefined, then `set()` will simply set the value on the object.
-
-    ### Property Observers
-
-    In addition to changing the property, `set()` will also register a property
-    change with the object. Unless you have placed this call inside of a
-    `beginPropertyChanges()` and `endPropertyChanges(),` any "local" observers
-    (i.e. observer methods declared on the same object), will be called
-    immediately. Any "remote" observers (i.e. observer methods declared on
-    another object) will be placed in a queue and called at a later time in a
-    coalesced manner.
-
-    @method set
-    @param {String} keyName The property to set
-    @param {Object} value The value to set or `null`.
-    @return {Object} The passed value
-    @public
-  */
-  set<K extends keyof this, T extends this[K]>(key: K, value: T): T;
-  set<T>(key: string, value: T): T;
-  set(keyName: string, value: unknown) {
-    return set(this, keyName, value);
-  }
-  // NOT TYPE SAFE!
-  /**
-    Sets a list of properties at once. These properties are set inside
-    a single `beginPropertyChanges` and `endPropertyChanges` batch, so
-    observers will be buffered.
-
-    ```javascript
-    record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
-    ```
-
-    @method setProperties
-    @param {Object} hash the hash of keys and values to set
-    @return {Object} The passed in hash
-    @public
-  */
-  setProperties<K extends keyof this, P extends { [Key in K]: this[Key] }>(hash: P): P;
-  setProperties<T extends Record<string, unknown>>(hash: T): T;
-  setProperties(hash: object) {
-    return setProperties(this, hash);
-  }
-
   /**
     Begins a grouping of property changes.
 

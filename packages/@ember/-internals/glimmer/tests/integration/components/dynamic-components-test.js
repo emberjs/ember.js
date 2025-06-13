@@ -726,7 +726,7 @@ moduleFor(
         ComponentClass: class extends Component {
           init() {
             super.init(...arguments);
-            this.set('person', {
+            set(this, 'person', {
               name: 'Alex',
               toString() {
                 return `Person (${this.name})`;

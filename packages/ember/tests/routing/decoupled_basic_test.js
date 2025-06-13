@@ -622,7 +622,7 @@ moduleFor(
       let setHistory;
 
       setHistory = function (obj, path) {
-        obj.set('history', { state: { path: path } });
+        set(obj, 'history', { state: { path: path } });
       };
 
       let location = HistoryLocation.create({
@@ -630,7 +630,7 @@ moduleFor(
           let path = rootURL + '/posts';
 
           setHistory(this, path);
-          this.set('location', {
+          set(this, 'location', {
             pathname: path,
             href: 'http://localhost/' + path,
           });

@@ -164,7 +164,7 @@ class ModifierManagerTest extends RenderingTestCase {
           positional[0];
 
           assert.equal(this.element.tagName, 'H1');
-          this.set('savedElement', this.element);
+          set(this, 'savedElement', this.element);
         }
         didUpdate() {
           assert.equal(this.element, this.savedElement);
@@ -594,7 +594,7 @@ moduleFor(
       this.registerModifier('foo-bar', ModifierClass);
 
       this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
-      runTask(() => this.context.set('baz', 'Hello'));
+      runTask(() => set(this.context, 'baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');
     }

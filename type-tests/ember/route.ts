@@ -1,6 +1,7 @@
 import Route from '@ember/routing/route';
 import Array from '@ember/array';
 import Ember from 'ember'; // currently needed for Transition
+import { set } from '@ember/object';
 import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
 import { service } from '@ember/service';
@@ -38,7 +39,7 @@ class Test extends Route {
 
   setupController(controller: Ember.Controller, model: {}) {
     this._super(controller, model);
-    this.controllerFor('application').set('model', model);
+    set(this.controllerFor('application'), 'model', model);
   }
 
   resetController(controller: Ember.Controller, isExiting: boolean, transition: Transition) {

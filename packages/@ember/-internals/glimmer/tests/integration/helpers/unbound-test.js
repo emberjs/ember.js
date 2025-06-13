@@ -379,7 +379,7 @@ moduleFor(
           if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
-          this.set('value', value);
+          set(this, 'value', value);
           this.addObserver('value.firstName', this, this.recompute);
           return value ? get(value, 'firstName').toUpperCase() : '';
         },
@@ -398,7 +398,7 @@ moduleFor(
           if (this.value) {
             this.teardown();
           }
-          this.set('value', value);
+          set(this, 'value', value);
           this.addObserver('value.firstName', this, this.recompute);
           this.addObserver('value.lastName', this, this.recompute);
           return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
@@ -494,7 +494,7 @@ moduleFor(
           if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
-          this.set('value', value);
+          set(this, 'value', value);
           this.addObserver('value.firstName', this, this.recompute);
           return value ? get(value, 'firstName').toUpperCase() : '';
         },
@@ -513,7 +513,7 @@ moduleFor(
           if (this.value) {
             this.teardown();
           }
-          this.set('value', value);
+          set(this, 'value', value);
           this.addObserver('value.firstName', this, this.recompute);
           this.addObserver('value.lastName', this, this.recompute);
           return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');

@@ -702,12 +702,12 @@ moduleFor(
         }
         set aInt(value) {
           assert.equal(value, 123, 'setter receives the new value');
-          this.set('a', String(value)); // side effect
+          set(this, 'a', String(value)); // side effect
         }
       }.create();
 
       assert.ok(get(testObj, 'aInt') === 1, 'getter works');
-      testObj.set('aInt', 123);
+      set(testObj, 'aInt', 123);
       assert.ok(get(testObj, 'a') === '123', 'setter works');
       assert.ok(get(testObj, 'aInt') === 123, 'cp has been updated too');
     }
@@ -726,7 +726,7 @@ moduleFor(
       assert.ok(get(testObj, 'a') === '1');
 
       expectAssertion(() => {
-        testObj.set('aInt', '123');
+        set(testObj, 'aInt', '123');
       }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
     }
 
@@ -744,7 +744,7 @@ moduleFor(
         }),
       }).create();
 
-      testObj.set('sampleCP', 'abcd');
+      set(testObj, 'sampleCP', 'abcd');
       assert.ok(get(testObj, 'sampleCP') === 'set-value', 'The return value of the CP was cached');
     }
   }

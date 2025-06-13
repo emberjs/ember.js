@@ -1,60 +1,9 @@
-import { addObserver } from '@ember/-internals/metal';
 import EmberObject, { computed, get } from '@ember/object';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'mixins/observable',
   class extends AbstractTestCase {
-    ['@test should be able to use setProperties to set multiple properties at once'](assert) {
-      let obj = EmberObject.create({
-        firstName: 'Steve',
-        lastName: 'Jobs',
-        companyName: 'Apple, Inc.',
-      });
-
-      obj.setProperties({ firstName: 'Tim', lastName: 'Cook' });
-      assert.equal('Tim', get(obj, 'firstName'));
-      assert.equal('Cook', get(obj, 'lastName'));
-    }
-
-    async ['@test calling setProperties completes safely despite exceptions'](assert) {
-      let exc = new Error('Something unexpected happened!');
-      let obj = class extends EmberObject {
-        @computed
-        get companyName() {
-          return 'Apple, Inc.';
-        }
-        set companyName(value) {
-          throw exc;
-        }
-      }.create({
-        firstName: 'Steve',
-        lastName: 'Jobs',
-      });
-
-      let firstNameChangedCount = 0;
-
-      addObserver(obj, 'firstName', () => firstNameChangedCount++);
-
-      try {
-        obj.setProperties({
-          firstName: 'Tim',
-          lastName: 'Cook',
-          companyName: 'Fruit Co., Inc.',
-        });
-      } catch (err) {
-        if (err !== exc) {
-          throw err;
-        }
-      }
-
-      await runLoopSettled();
-
-      assert.equal(firstNameChangedCount, 1, 'firstName should have fired once');
-
-      obj.destroy();
-    }
-
     ['@test should be able to retrieve cached values of computed properties without invoking the computed property'](
       assert
     ) {

@@ -240,7 +240,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     this.reopenRoute(articleLookup, {
       resetController(controller, isExiting) {
-        this.controllerFor(commentsLookup).set('page', 1);
+        set(this.controllerFor(commentsLookup), 'page', 1);
         if (isExiting) {
           set(controller, 'q', 'imdone');
         }

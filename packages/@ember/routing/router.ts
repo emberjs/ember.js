@@ -61,7 +61,7 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
   this._cancelSlowTransitionTimer();
 
   this.notifyPropertyChange('url');
-  this.set('currentState', this.targetState);
+  set(this, 'currentState', this.targetState);
 
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -417,12 +417,12 @@ class EmberRouter extends EmberObject {
         // to make router.currentRoute.name consistent with router.currentRouteName
         // see https://github.com/emberjs/ember.js/issues/19449
         if (transition.isIntermediate) {
-          router.set('currentRoute', transition.to);
+          set(router, 'currentRoute', transition.to);
         }
       }
 
       routeDidChange(transition: Transition) {
-        router.set('currentRoute', transition.to);
+        set(router, 'currentRoute', transition.to);
         once(() => {
           sendEvent(router, 'routeDidChange', [transition]);
 
@@ -1332,7 +1332,7 @@ class EmberRouter extends EmberObject {
       this._routerMicrolib,
       this._routerMicrolib.activeTransition[STATE_SYMBOL]!
     );
-    this.set('targetState', targetState);
+    set(this, 'targetState', targetState);
 
     transition.trigger(true, 'loading', transition, originRoute);
   }
@@ -1771,9 +1771,9 @@ function didBeginTransition(transition: Transition, router: EmberRouter) {
   let routerState = new RouterState(router, router._routerMicrolib, transition[STATE_SYMBOL]!);
 
   if (!router.currentState) {
-    router.set('currentState', routerState);
+    set(router, 'currentState', routerState);
   }
-  router.set('targetState', routerState);
+  set(router, 'targetState', routerState);
 
   transition.promise = transition.catch((error: any) => {
     if (router._isErrorHandled(error)) {

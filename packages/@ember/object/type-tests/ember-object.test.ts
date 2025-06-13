@@ -51,19 +51,6 @@ expectTypeOf(p.toggleProperty('age')).toEqualTypeOf<boolean>();
 
 expectTypeOf(p.cacheFor('age')).toEqualTypeOf<unknown>();
 
-expectTypeOf(p.set('firstName', 'Joe')).toBeString();
-expectTypeOf(p.set('invalid', 1)).toEqualTypeOf<number>();
-
-const setPropertiesResult = p.setProperties({ firstName: 'Joe', invalid: 1 });
-expectTypeOf(setPropertiesResult).toEqualTypeOf<{
-  firstName: string;
-  invalid: number;
-}>();
-expectTypeOf(setPropertiesResult.firstName).toEqualTypeOf<string>();
-expectTypeOf(setPropertiesResult.invalid).toEqualTypeOf<number>();
-// @ts-expect-error doesn't have unknown properties
-setPropertiesResult.unknown;
-
 expectTypeOf(p.notifyPropertyChange('firstName')).toEqualTypeOf(p);
 
 const p2 = Person.create({ firstName: 'string' });
@@ -110,4 +97,3 @@ class MyComponent extends EmberObject {
 
 const myComponent = MyComponent.create();
 myComponent.addObserver('foo', null, () => {});
-myComponent.set('foo', 'baz');

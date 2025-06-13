@@ -146,7 +146,7 @@ moduleFor(
       let ComponentWithBacktrackingSet = class extends Component {
         init() {
           super.init(...arguments);
-          this.set('person.name', 'Ben');
+          set(this, 'person.name', 'Ben');
         }
       };
 

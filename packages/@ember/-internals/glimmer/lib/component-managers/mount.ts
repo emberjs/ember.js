@@ -2,6 +2,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/routing/-internals';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
+import { get, set } from '@ember/object';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import type {
   CapturedArguments,
@@ -95,7 +96,7 @@ class MountManager
     let modelRef;
 
     if (args.named.has('model')) {
-      modelRef = args.named.get('model');
+      modelRef = get(args.named, 'model') as Reference;
     }
 
     if (modelRef === undefined) {
@@ -163,7 +164,7 @@ class MountManager
     let { controller, modelRef } = bucket;
 
     if (modelRef !== undefined) {
-      controller.set('model', valueForRef(modelRef));
+      set(controller, 'model', valueForRef(modelRef));
     }
   }
 }

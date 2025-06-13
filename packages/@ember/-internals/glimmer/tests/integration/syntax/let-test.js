@@ -161,11 +161,11 @@ moduleFor(
 
       this.assertText('[foo-foo]');
 
-      runTask(() => this.context.set('hash.foo', 'FOO'));
+      runTask(() => set(this.context, 'hash.foo', 'FOO'));
 
       this.assertText('[FOO-FOO]');
 
-      runTask(() => this.context.set('hash.foo', 'foo'));
+      runTask(() => set(this.context, 'hash.foo', 'foo'));
 
       this.assertText('[foo-foo]');
     }

@@ -1,4 +1,4 @@
-import EmberObject, { computed } from '@ember/object';
+import EmberObject, { computed, set } from '@ember/object';
 import {
   alias,
   or,
@@ -53,8 +53,8 @@ class Person extends EmberObject {
 
   set fullNameWritable(value: string) {
     const [first, last] = value.split(' ');
-    this.set('firstName', first);
-    this.set('lastName', last);
+    set(this, 'firstName', first);
+    set(this, 'lastName', last);
   }
 
   @(computed().meta({ foo: 'bar' }).readOnly())

@@ -1,7 +1,7 @@
 import type { BootOptions } from '@ember/engine/instance';
 import Controller from '@ember/controller';
 import type EmberObject from '@ember/object';
-import { get, set } from '@ember/object';
+import { get, set, setProperties } from '@ember/object';
 import NoneLocation from '@ember/routing/none-location';
 
 import ApplicationTestCase from './application';
@@ -78,7 +78,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   async setAndFlush(obj: EmberObject, prop: string, value: unknown): Promise<void>;
   async setAndFlush(obj: EmberObject, prop: Record<string, unknown> | string, value?: unknown) {
     if (typeof prop === 'object') {
-      obj.setProperties(prop);
+      setProperties(obj, prop);
     } else {
       set(obj, prop, value);
     }

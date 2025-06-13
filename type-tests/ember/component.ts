@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { set } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 Ember.Component.extend({
@@ -20,7 +21,7 @@ class AnotherComponent extends Ember.Component {
   name = '';
 
   hello(name: string) {
-    this.set('name', name);
+    set(this, 'name', name);
     this.name = name;
   }
 }
