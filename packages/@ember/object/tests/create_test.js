@@ -171,17 +171,7 @@ moduleFor(
         CoreObject.create({
           foo: computed(function () {}),
         });
-      }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() before calling create().');
-    }
-
-    ['@test throws if you try to call _super in a method']() {
-      expectAssertion(function () {
-        CoreObject.create({
-          foo() {
-            this._super(...arguments);
-          },
-        });
-      }, 'EmberObject.create no longer supports defining methods that call _super.');
+      }, 'EmberObject.create no longer supports defining computed properties. Define computed properties in the class definition.');
     }
 
     ['@test inherits properties from passed in CoreObject'](assert) {

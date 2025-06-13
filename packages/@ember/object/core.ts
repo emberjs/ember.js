@@ -66,13 +66,8 @@ function initialize(obj: CoreObject, properties?: unknown) {
 
       assert(
         'EmberObject.create no longer supports defining computed ' +
-          'properties. Define computed properties using extend() ' +
-          'before calling create().',
+          'properties. Define computed properties in the class definition.',
         !isClassicDecorator(value)
-      );
-      assert(
-        'EmberObject.create no longer supports defining methods that call _super.',
-        !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
       );
 
       let possibleDesc = descriptorForProperty(obj, keyName, m);
@@ -491,49 +486,6 @@ class CoreObject {
 
   static detectInstance(obj: unknown) {
     return obj instanceof this;
-  }
-
-  /**
-    In some cases, you may want to annotate computed properties with additional
-    metadata about how they function or what values they operate on. For
-    example, computed property functions may close over variables that are then
-    no longer available for introspection.
-
-    You can pass a hash of these values to a computed property like this:
-
-    ```javascript
-    import { computed } from '@ember/object';
-
-    person: computed(function() {
-      let personId = this.get('personId');
-      return Person.create({ id: personId });
-    }).meta({ type: Person })
-    ```
-
-    Once you've done this, you can retrieve the values saved to the computed
-    property from your class like this:
-
-    ```javascript
-    MyClass.metaForProperty('person');
-    ```
-
-    This will return the original hash that was passed to `meta()`.
-
-    @static
-    @method metaForProperty
-    @param key {String} property name
-    @private
-  */
-  static metaForProperty(key: string) {
-    let proto = this.proto(); // ensure prototype is initialized
-    let possibleDesc = descriptorForProperty(proto, key);
-
-    assert(
-      `metaForProperty() could not find a computed property with key '${key}'.`,
-      possibleDesc !== undefined
-    );
-
-    return possibleDesc._meta || {};
   }
 
   /**

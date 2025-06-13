@@ -135,44 +135,6 @@ moduleFor(
       testGet(assert, 'BLARG 2', obj2, 'foo'); // should not invalidate property
     }
 
-    ['@test can retrieve metadata for a computed property'](assert) {
-      class MyClass extends EmberObject {
-        @(computed().meta({ key: 'keyValue' }))
-        get computedProperty() {
-          return undefined;
-        }
-      }
-
-      assert.equal(
-        get(MyClass.metaForProperty('computedProperty'), 'key'),
-        'keyValue',
-        'metadata saved on the computed property can be retrieved'
-      );
-
-      let ClassWithNoMetadata = class extends EmberObject {
-        @computed
-        get computedProperty() {
-          return undefined;
-        }
-
-        staticProperty = 12;
-      };
-
-      assert.equal(
-        typeof ClassWithNoMetadata.metaForProperty('computedProperty'),
-        'object',
-        'returns empty hash if no metadata has been saved'
-      );
-
-      expectAssertion(function () {
-        ClassWithNoMetadata.metaForProperty('nonexistentProperty');
-      }, "metaForProperty() could not find a computed property with key 'nonexistentProperty'.");
-
-      expectAssertion(function () {
-        ClassWithNoMetadata.metaForProperty('staticProperty');
-      }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
-    }
-
     // TODO: Determine if there's anything worth testing here now that observer helper is gone
     // ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
     //   assert
@@ -287,7 +249,7 @@ moduleFor(
     //   );
     // }
 
-    ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
+    ['@test Calling super in call outside the immediate function of a CP getter works'](assert) {
       function macro(callback) {
         return computed(function () {
           return callback.call(this);
@@ -311,7 +273,7 @@ moduleFor(
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
     }
 
-    ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
+    ['@test Calling super in apply outside the immediate function of a CP getter works'](assert) {
       function macro(callback) {
         return computed(function () {
           return callback.apply(this);

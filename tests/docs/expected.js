@@ -291,7 +291,6 @@ module.exports = {
     'max',
     'meta',
     'metadata',
-    'metaForProperty',
     'method',
     'min',
     'mixin',
