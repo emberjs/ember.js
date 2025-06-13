@@ -5,7 +5,7 @@ import { compile } from 'ember-template-compiler';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
-import { set } from '@ember/object';
+import { get, set } from '@ember/object';
 import CoreObject from '@ember/object/core';
 import {
   moduleFor,
@@ -301,7 +301,7 @@ moduleFor(
         let urlSetCount = 0;
         let router = this.applicationInstance.lookup('router:main');
 
-        router.get('location').setURL = function (path) {
+        get(router, 'location').setURL = function (path) {
           urlSetCount++;
           set(this, 'path', path);
         };
@@ -314,7 +314,7 @@ moduleFor(
         });
 
         assert.equal(urlSetCount, 1);
-        assert.equal(router.get('location').getURL(), '/bar');
+        assert.equal(get(router, 'location').getURL(), '/bar');
       });
     }
 
@@ -418,7 +418,7 @@ moduleFor(
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
         assert.equal(router.currentPath, 'home');
-        assert.equal(router.get('location').getURL(), '/home');
+        assert.equal(get(router, 'location').getURL(), '/home');
       });
     }
 
@@ -516,10 +516,8 @@ moduleFor(
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
         assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
-        assert.equal(
-          this.applicationInstance.lookup('router:main').get('location').getURL(),
-          '/foo/bar/2/baz'
-        );
+        let router = this.applicationInstance.lookup('router:main');
+        assert.equal(get(router, 'location').getURL(), '/foo/bar/2/baz');
       });
     }
 
@@ -555,7 +553,7 @@ moduleFor(
         assert.equal(router.currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
         assert.equal(router.currentPath, 'foo.qux');
-        assert.equal(router.get('location').getURL(), '/foo/qux');
+        assert.equal(get(router, 'location').getURL(), '/foo/qux');
       });
     }
 
@@ -885,7 +883,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(router.get('location.path'), '/about/TreeklesMcGeekles');
+        assert.equal(get(router, 'location.path'), '/about/TreeklesMcGeekles');
       });
     }
 
@@ -1431,7 +1429,7 @@ moduleFor(
             pushState() {},
           };
           initState() {
-            assert.equal(this.get('rootURL'), '/blahzorz');
+            assert.equal(get(this, 'rootURL'), '/blahzorz');
           }
         }
       );
@@ -1474,7 +1472,7 @@ moduleFor(
         assert.equal(this.setCount, 1);
         run(() => router.replaceWith('foo'));
         assert.equal(this.setCount, 2, 'should call setURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.equal(get(router, 'location').getURL(), '/foo');
       });
     }
   }
@@ -1487,7 +1485,7 @@ moduleFor(
       let rootURL = window.location.pathname + '/app';
 
       function setHistory(obj, path) {
-        obj.set('history', { state: { path: path } });
+        set(obj, 'history', { state: { path: path } });
       }
 
       this.location = HistoryLocation.create({
@@ -1586,7 +1584,7 @@ moduleFor(
 
         assert.equal(this.setCount, 1, 'should not call setURL');
         assert.equal(this.replaceCount, 1, 'should call replaceURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.equal(get(router, 'location').getURL(), '/foo');
       });
     }
   }

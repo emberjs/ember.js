@@ -11,7 +11,6 @@ import {
   removeObserver,
   get,
   set,
-  getProperties,
   setProperties,
 } from '@ember/-internals/metal';
 import { getFactoryFor } from '@ember/-internals/container';
@@ -45,80 +44,6 @@ type ObserverMethod<Target, Sender> =
   @public
 */
 class EmberObject extends CoreObject {
-  /**
-    Retrieves the value of a property from the object.
-
-    This method is usually similar to using `object[keyName]` or `object.keyName`,
-    however it supports both computed properties and the unknownProperty
-    handler.
-
-    Because `get` unifies the syntax for accessing all these kinds
-    of properties, it can make many refactorings easier, such as replacing a
-    simple property with a computed property, or vice versa.
-
-    ### Computed Properties
-
-    Computed properties are methods defined with the `property` modifier
-    declared at the end, such as:
-
-    ```javascript
-    import { computed } from '@ember/object';
-
-    fullName: computed('firstName', 'lastName', function() {
-      return this.get('firstName') + ' ' + this.get('lastName');
-    })
-    ```
-
-    When you call `get` on a computed property, the function will be
-    called and the return value will be returned instead of the function
-    itself.
-
-    ### Unknown Properties
-
-    Likewise, if you try to call `get` on a property whose value is
-    `undefined`, the `unknownProperty()` method will be called on the object.
-    If this method returns any value other than `undefined`, it will be returned
-    instead. This allows you to implement "virtual" properties that are
-    not defined upfront.
-
-    @method get
-    @param {String} keyName The property to retrieve
-    @return {Object} The property value or undefined.
-    @public
-  */
-  get<K extends keyof this>(key: K): this[K];
-  get(key: string): unknown;
-  get(keyName: string) {
-    return get(this, keyName);
-  }
-  /**
-    To get the values of multiple properties at once, call `getProperties`
-    with a list of strings or an array:
-
-    ```javascript
-    record.getProperties('firstName', 'lastName', 'zipCode');
-    // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
-    ```
-
-    is equivalent to:
-
-    ```javascript
-    record.getProperties(['firstName', 'lastName', 'zipCode']);
-    // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
-    ```
-
-    @method getProperties
-    @param {String...|Array} list of keys to get
-    @return {Object}
-    @public
-  */
-  getProperties<L extends Array<keyof this>>(list: L): { [Key in L[number]]: this[Key] };
-  getProperties<L extends Array<keyof this>>(...list: L): { [Key in L[number]]: this[Key] };
-  getProperties<L extends string[]>(list: L): { [Key in L[number]]: unknown };
-  getProperties<L extends string[]>(...list: L): { [Key in L[number]]: unknown };
-  getProperties(...args: string[]) {
-    return getProperties(this, ...args);
-  }
   // NOT TYPE SAFE!
   /**
     Sets the provided key or path to the value.

@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { set } from '@ember/object';
+import { get, set } from '@ember/object';
 import HistoryLocation from '@ember/routing/history-location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -103,7 +103,7 @@ moduleFor(
         location = HistoryTestLocation.create();
         location.initState();
 
-        assert.strictEqual(location.get('baseURL'), '/foo/');
+        assert.strictEqual(get(location, 'baseURL'), '/foo/');
       } finally {
         document.head.removeChild(base);
       }
@@ -121,7 +121,7 @@ moduleFor(
         location = HistoryTestLocation.create();
         location.initState();
 
-        assert.strictEqual(location.get('baseURL'), '');
+        assert.strictEqual(get(location, 'baseURL'), '');
       } finally {
         document.head.removeChild(base);
       }

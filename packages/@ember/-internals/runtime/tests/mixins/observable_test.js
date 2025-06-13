@@ -5,32 +5,6 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
 moduleFor(
   'mixins/observable',
   class extends AbstractTestCase {
-    ['@test should be able to use getProperties to get a POJO of provided keys'](assert) {
-      let obj = EmberObject.create({
-        firstName: 'Steve',
-        lastName: 'Jobs',
-        companyName: 'Apple, Inc.',
-      });
-
-      let pojo = obj.getProperties('firstName', 'lastName');
-      assert.equal('Steve', pojo.firstName);
-      assert.equal('Jobs', pojo.lastName);
-    }
-
-    ['@test should be able to use getProperties with array parameter to get a POJO of provided keys'](
-      assert
-    ) {
-      let obj = EmberObject.create({
-        firstName: 'Steve',
-        lastName: 'Jobs',
-        companyName: 'Apple, Inc.',
-      });
-
-      let pojo = obj.getProperties(['firstName', 'lastName']);
-      assert.equal('Steve', pojo.firstName);
-      assert.equal('Jobs', pojo.lastName);
-    }
-
     ['@test should be able to use setProperties to set multiple properties at once'](assert) {
       let obj = EmberObject.create({
         firstName: 'Steve',
@@ -39,8 +13,8 @@ moduleFor(
       });
 
       obj.setProperties({ firstName: 'Tim', lastName: 'Cook' });
-      assert.equal('Tim', obj.get('firstName'));
-      assert.equal('Cook', obj.get('lastName'));
+      assert.equal('Tim', get(obj, 'firstName'));
+      assert.equal('Cook', get(obj, 'lastName'));
     }
 
     async ['@test calling setProperties completes safely despite exceptions'](assert) {
@@ -119,7 +93,7 @@ moduleFor(
         age: '24',
       });
       obj.incrementProperty('age');
-      assert.equal(25, obj.get('age'));
+      assert.equal(25, get(obj, 'age'));
     }
   }
 );

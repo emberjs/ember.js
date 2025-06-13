@@ -1,5 +1,6 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Controller from '@ember/controller';
+import { get } from '@ember/object';
 import Service, { service } from '@ember/service';
 import { Helper, helper } from '@ember/-internals/glimmer';
 
@@ -96,7 +97,7 @@ moduleFor(
           nameBuilder;
 
           compute() {
-            this.get('nameBuilder').build();
+            get(this, 'nameBuilder').build();
           }
         }
       );

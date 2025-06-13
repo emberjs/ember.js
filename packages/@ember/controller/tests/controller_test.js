@@ -81,8 +81,8 @@ moduleFor(
         }.create();
       });
 
-      assert.notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
-      assert.equal(controller.get('content'), 'foo-bar', 'content is not set properly');
+      assert.notEqual(get(controller, 'model'), 'foo-bar', 'model is set properly');
+      assert.equal(get(controller, 'content'), 'foo-bar', 'content is not set properly');
     }
 
     ['@test specifying `content` (without `model` specified) does not result in deprecation'](
@@ -152,7 +152,7 @@ moduleFor(
 
       assert.equal(
         postsController,
-        postController.get('postsController'),
+        get(postController, 'postsController'),
         'controller.posts is injected'
       );
 
@@ -175,7 +175,7 @@ moduleFor(
       let appController = owner.lookup('controller:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appController.get('authService'), 'service.auth is injected');
+      assert.equal(authService, get(appController, 'authService'), 'service.auth is injected');
 
       runDestroy(owner);
     }

@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { set } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 class AuthService extends Ember.Service {
@@ -32,13 +33,13 @@ class LoginRoute extends Ember.Route {
   declare application: ApplicationController;
 
   didTransition() {
-    if (!this.get('auth').get('isAuthenticated')) {
-      this.get('application').transitionToLogin();
+    if (!this.auth.isAuthenticated) {
+      this.application.transitionToLogin();
     }
   }
 
   anyOldMethod() {
-    this.get('application').set('string', 'must be a string');
+    set(this.application, 'string', 'must be a string');
     expectTypeOf(this.controllerFor('emberApplication')).toEqualTypeOf<Controller>();
   }
 }
@@ -67,8 +68,8 @@ class ComponentInjection extends Ember.Component {
       queryParams: { seriously: 'yes' },
     });
     expectTypeOf(url).toBeString();
-    if (!this.get('auth').isAuthenticated) {
-      this.get('applicationController').transitionToLogin();
+    if (!this.auth.isAuthenticated) {
+      this.applicationController.transitionToLogin();
     }
   }
 }

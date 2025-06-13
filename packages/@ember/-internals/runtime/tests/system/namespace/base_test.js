@@ -2,7 +2,6 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
-import EmberObject from '@ember/object';
 import CoreObject from '@ember/object/core';
 import Namespace from '@ember/application/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -31,8 +30,8 @@ moduleFor(
       context.lookup = originalLookup;
     }
 
-    ['@test Namespace should be a subclass of EmberObject'](assert) {
-      assert.ok(EmberObject.detect(Namespace));
+    ['@test Namespace should be a subclass of CoreObject'](assert) {
+      assert.ok(CoreObject.detect(Namespace));
     }
 
     ['@test Namespace should be duck typed'](assert) {

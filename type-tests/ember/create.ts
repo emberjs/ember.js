@@ -10,7 +10,6 @@ expectTypeOf(o).toBeObject();
 // object returned by create type-checks as an instance of Ember.Object
 expectTypeOf(o.isDestroyed).toBeBoolean();
 expectTypeOf(o.isDestroying).toBeBoolean();
-expectTypeOf(o.get).toMatchTypeOf<<K extends keyof Ember.Object>(key: K) => Ember.Object[K]>();
 
 /**
  * One-argument case
@@ -50,7 +49,6 @@ const p = Person.create();
 
 expectTypeOf(p.firstName).toBeString();
 expectTypeOf(p.fullName).toBeString();
-expectTypeOf(p.get('fullName')).toBeString();
 
 Person.create({ firstName: 'string' });
 Person.create({}, { firstName: 'string' });

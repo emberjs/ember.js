@@ -268,12 +268,12 @@ declare const SIGNATURE: unique symbol;
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
-  import EmberObject from '@ember/object';
+  import CoreObject from '@ember/object/core';
 
   export default class extends Component {
     classNameBindings = ['messages.empty'];
 
-    messages = EmberObject.create({
+    messages = CoreObject.create({
       empty: true
     });
   }
@@ -862,7 +862,7 @@ class Component<S = unknown> extends CoreView implements PropertyDidChange {
 
   getAttr(key: string) {
     // TODO Intimate API should be deprecated
-    return this.get(key);
+    return get(this, key);
   }
 
   /**

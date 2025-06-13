@@ -8,9 +8,6 @@ class Person extends EmberObject {
   get fullName() {
     return `${this.firstName} ${this.lastName}`;
   }
-  get fullName2(): string {
-    return `${this.get('firstName')} ${this.get('lastName')}`;
-  }
 }
 
 expectTypeOf(Person.prototype.firstName).toBeString();

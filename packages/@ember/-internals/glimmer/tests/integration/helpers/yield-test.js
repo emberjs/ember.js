@@ -1,6 +1,6 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/object';
+import { get, set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -294,9 +294,9 @@ moduleFor(
       let ChildCompComponent = class extends Component {
         didReceiveAttrs() {
           super.didReceiveAttrs();
-          let parentView = this.get('parentView');
+          let parentView = get(this, 'parentView');
 
-          assert.ok(parentView.get('isParentComponent'));
+          assert.ok(get(parentView, 'isParentComponent'));
         }
       };
 
