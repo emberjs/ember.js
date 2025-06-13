@@ -2,6 +2,7 @@ import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'inte
 
 import { tracked } from '@glimmer/tracking';
 import Controller from '@ember/controller';
+import { set } from '@ember/object';
 import {
   getRootViews,
   getChildViews,
@@ -32,7 +33,7 @@ moduleFor(
           isExpanded = true;
 
           click() {
-            this.toggleProperty('isExpanded');
+            set(this, 'isExpanded', !this.isExpanded);
             return false;
           }
         },
@@ -44,7 +45,7 @@ moduleFor(
         @tracked isExpanded = true;
 
         toggle = () => {
-          this.toggleProperty('isExpanded');
+          set(this, 'isExpanded', !this.isExpanded);
         };
       }
 

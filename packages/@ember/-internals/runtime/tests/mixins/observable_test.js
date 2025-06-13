@@ -36,13 +36,5 @@ moduleFor(
         'returns undefined if the value is not a computed property'
       );
     }
-
-    ['@test incrementProperty should work even if value is number in string'](assert) {
-      let obj = EmberObject.create({
-        age: '24',
-      });
-      obj.incrementProperty('age');
-      assert.equal(25, get(obj, 'age'));
-    }
   }
 );
