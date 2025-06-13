@@ -151,11 +151,6 @@ class CoreObject {
     let m = meta(self);
 
     m.setInitializing();
-
-    // only return when in debug builds and `self` is the proxy created above
-    if (DEBUG && self !== this) {
-      return self;
-    }
   }
 
   /**
