@@ -456,10 +456,6 @@ class CoreObject {
     return false;
   }
 
-  static detectInstance(obj: unknown) {
-    return obj instanceof this;
-  }
-
   static get superclass() {
     let c = Object.getPrototypeOf(this);
     return c !== Function.prototype ? c : undefined;

@@ -12,10 +12,7 @@ moduleFor(
       // simulate these classes being defined on a Namespace
       setName(Foo, 'Foo');
 
-      assert.equal(
-        foo.toString(),
-        '<(unknown):' + guidFor(foo) + '>'
-      );
+      assert.equal(foo.toString(), '<(unknown):' + guidFor(foo) + '>');
     }
   }
 );
