@@ -20,18 +20,6 @@ import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
-interface HasToStringExtension {
-  toStringExtension: () => void;
-}
-
-function hasToStringExtension(val: unknown): val is HasToStringExtension {
-  return (
-    typeof val === 'object' &&
-    val !== null &&
-    typeof (val as HasToStringExtension).toStringExtension === 'function'
-  );
-}
-
 const wasApplied = new WeakSet();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
@@ -376,27 +364,12 @@ class CoreObject {
     student.toString(); //=> "<(subclass of Person):ember1025>"
     ```
 
-    If the method `toStringExtension` is defined, its return value will be
-    included in the output.
-
-    ```javascript
-    const Teacher = Person.extend({
-      toStringExtension() {
-        return this.get('fullName');
-      }
-    });
-    teacher = Teacher.create();
-    teacher.toString(); //=> "<Teacher:ember1026:Tom Dale>"
-    ```
-
     @method toString
     @return {String} string representation
     @public
   */
   toString() {
-    let extension = hasToStringExtension(this) ? `:${this.toStringExtension()}` : '';
-
-    return `<${getFactoryFor(this) || '(unknown)'}:${guidFor(this)}${extension}>`;
+    return `<${getFactoryFor(this) || '(unknown)'}:${guidFor(this)}>`;
   }
 
   /**
