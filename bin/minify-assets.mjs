@@ -67,15 +67,15 @@ let packageData = {
 };
 
 function totalMin(dataset) {
-  return dataset.reduce((a, b) => a + b[1], 0);
+  return dataset.reduce((a, b) => a + (b[1] || 0), 0);
 }
 
 function totalGz(dataset) {
-  return dataset.reduce((a, b) => a + b[2], 0);
+  return dataset.reduce((a, b) => a + (b[2] || 0), 0);
 }
 
 // function totalBr(dataset) {
-//   return dataset.reduce((a, b) => a + b[3], 0);
+//   return dataset.reduce((a, b) => a + (b[3] || 0), 0);
 // }
 
 import { buildMacros } from '@embroider/macros/babel';
@@ -196,9 +196,9 @@ printTable([
   ],
   ...packageData.ember.map((x) => [
     x[0].replace('@ember/', ''),
-    size(x[1]),
-    size(x[2]),
-    // size(x[3]),
+    size(x[1] || 0),
+    size(x[2] || 0),
+    // size(x[3] || 0),
   ]),
 ]);
 
@@ -212,8 +212,8 @@ printTable([
   ],
   ...packageData.glimmer.map((x) => [
     x[0].replace('@glimmer/', ''),
-    size(x[1]),
-    size(x[2]),
-    // size(x[3]),
+    size(x[1] || 0),
+    size(x[2] || 0),
+    // size(x[3] || 0),
   ]),
 ]);
