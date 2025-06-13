@@ -51,8 +51,6 @@ expectTypeOf(p.toggleProperty('age')).toEqualTypeOf<boolean>();
 
 expectTypeOf(p.cacheFor('age')).toEqualTypeOf<unknown>();
 
-expectTypeOf(p.notifyPropertyChange('firstName')).toEqualTypeOf(p);
-
 const p2 = Person.create({ firstName: 'string' });
 expectTypeOf(p2.firstName).toEqualTypeOf<string>();
 

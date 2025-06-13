@@ -4,9 +4,6 @@ import {
   isElementDescriptor,
   setClassicDecorator,
   hasListeners,
-  beginPropertyChanges,
-  notifyPropertyChange,
-  endPropertyChanges,
   addObserver,
   removeObserver,
   get,
@@ -43,65 +40,6 @@ type ObserverMethod<Target, Sender> =
   @public
 */
 class EmberObject extends CoreObject {
-  /**
-    Begins a grouping of property changes.
-
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call this
-    method at the beginning of the changes to begin deferring change
-    notifications. When you are done making changes, call
-    `endPropertyChanges()` to deliver the deferred change notifications and end
-    deferring.
-
-    @method beginPropertyChanges
-    @return {Observable}
-    @private
-  */
-  beginPropertyChanges() {
-    beginPropertyChanges();
-    return this;
-  }
-
-  /**
-    Ends a grouping of property changes.
-
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call
-    `beginPropertyChanges()` at the beginning of the changes to defer change
-    notifications. When you are done making changes, call this method to
-    deliver the deferred change notifications and end deferring.
-
-    @method endPropertyChanges
-    @return {Observable}
-    @private
-  */
-  endPropertyChanges() {
-    endPropertyChanges();
-    return this;
-  }
-  /**
-    Convenience method to call `propertyWillChange` and `propertyDidChange` in
-    succession.
-
-    Notify the observer system that a property has just changed.
-
-    Sometimes you need to change a value directly or indirectly without
-    actually calling `get()` or `set()` on it. In this case, you can use this
-    method instead. Calling this method will notify all observers that the
-    property has potentially changed value.
-
-    @method notifyPropertyChange
-    @param {String} keyName The property key to be notified about.
-    @return {Observable}
-    @public
-  */
-  notifyPropertyChange(keyName: string) {
-    notifyPropertyChange(this, keyName);
-    return this;
-  }
-
   /**
     Adds an observer on a property.
 
