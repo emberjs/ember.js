@@ -408,7 +408,7 @@ moduleFor(
       this.assertText('Not outer 29');
 
       runTask(() => {
-        this.context.set('model', {
+        set(this.context, 'model', {
           outerName: 'Outer',
           outerAge: 28,
         });
@@ -454,7 +454,7 @@ moduleFor(
       this.assertText('Inner 29');
 
       runTask(() => {
-        this.context.set('model', {
+        set(this.context, 'model', {
           outerName: 'Outer',
           outerAge: 28,
         });

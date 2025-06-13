@@ -31,7 +31,6 @@ class MyComponent extends EmberObject {
 
 const myComponent = MyComponent.create();
 myComponent.addObserver('foo', null, () => {});
-myComponent.set('foo', 'baz');
 
 class Person extends EmberObject {
   name = 'Fred';
@@ -73,9 +72,6 @@ function testSet() {
   expectTypeOf(set(person, 'name', 'Joe')).toEqualTypeOf<string>();
   expectTypeOf(set(person, 'age', 35)).toEqualTypeOf<number>();
   expectTypeOf(set(person, 'capitalized', 'JOE')).toEqualTypeOf<string>();
-  expectTypeOf(person.set('name', 'Joe')).toEqualTypeOf<'Joe'>();
-  expectTypeOf(person.set('age', 35)).toEqualTypeOf<35>();
-  expectTypeOf(person.set('capitalized', 'JOE')).toEqualTypeOf<'JOE'>();
   expectTypeOf(set(pojo, 'name', 'Joe')).toEqualTypeOf<string>();
 }
 
@@ -88,14 +84,6 @@ function testSetProperties() {
   expectTypeOf(setProperties(person, { name: 'Joe', capitalized: 'JOE' })).toEqualTypeOf<
     Pick<Person, 'name' | 'capitalized'>
   >();
-  expectTypeOf(person.setProperties({ name: 'Joe' })).toEqualTypeOf<{ name: string }>();
-  expectTypeOf(person.setProperties({ name: 'Joe', age: 35 })).toEqualTypeOf<
-    Pick<Person, 'name' | 'age'>
-  >();
-  expectTypeOf(person.setProperties({ name: 'Joe', capitalized: 'JOE' })).toEqualTypeOf<{
-    name: string;
-    capitalized: string;
-  }>();
   expectTypeOf(setProperties(pojo, { name: 'Joe', age: 35 })).toEqualTypeOf<
     Pick<Person, 'name' | 'age'>
   >();

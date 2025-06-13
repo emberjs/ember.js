@@ -38,15 +38,18 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => this.context.set('foo', 'FOO'));
+      runTask(() => set(this.context, 'foo', 'FOO'));
 
       this.assertInnerHTML('|FOO|bar|');
 
-      runTask(() => this.context.set('bar', 'BAR'));
+      runTask(() => set(this.context, 'bar', 'BAR'));
 
       this.assertInnerHTML('|FOO|BAR|');
 
-      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => {
+        set(this.context, 'foo', 'foo');
+        set(this.context, 'bar', 'bar');
+      });
 
       this.assertInnerHTML('|foo|bar|');
     }
@@ -63,15 +66,18 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => this.context.set('foo', 'FOO'));
+      runTask(() => set(this.context, 'foo', 'FOO'));
 
       this.assertInnerHTML('|||');
 
-      runTask(() => this.context.set('bar', null));
+      runTask(() => set(this.context, 'bar', null));
 
       this.assertInnerHTML('|||');
 
-      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => {
+        set(this.context, 'foo', 'foo');
+        set(this.context, 'bar', 'bar');
+      });
 
       this.assertInnerHTML('|||');
     }
@@ -87,15 +93,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => this.context.set('class', 'foo'));
+      runTask(() => set(this.context, 'class', 'foo'));
 
       this.assertInnerHTML('hello');
 
-      runTask(() => this.context.set('class', null));
+      runTask(() => set(this.context, 'class', null));
 
       this.assertInnerHTML('hello');
 
-      runTask(() => this.context.set('class', 'foo bar'));
+      runTask(() => set(this.context, 'class', 'foo bar'));
 
       this.assertInnerHTML('hello');
     }
@@ -111,15 +117,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => this.context.set('isShowing', false));
+      runTask(() => set(this.context, 'isShowing', false));
 
       this.assertInnerHTML('outside <!----> outside');
 
-      runTask(() => this.context.set('isShowing', null));
+      runTask(() => set(this.context, 'isShowing', null));
 
       this.assertInnerHTML('outside <!----> outside');
 
-      runTask(() => this.context.set('isShowing', true));
+      runTask(() => set(this.context, 'isShowing', true));
 
       this.assertInnerHTML('outside before hello after outside');
     }

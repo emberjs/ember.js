@@ -595,7 +595,7 @@ moduleFor(
       this.registerModifier('foo-bar', ModifierClass);
 
       this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
-      runTask(() => this.context.set('baz', 'Hello'));
+      runTask(() => set(this.context, 'baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');
     }

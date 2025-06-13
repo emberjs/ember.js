@@ -459,7 +459,7 @@ moduleFor(
 
       this.assertHTML(`<p>hello world</p>`);
 
-      runTask(() => this.context.set('show', false));
+      runTask(() => set(this.context, 'show', false));
 
       this.assertText('');
 
@@ -519,7 +519,7 @@ moduleFor(
       this.assertHTML(`<p>hello world</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
-      runTask(() => this.context.set('name', 'max'));
+      runTask(() => set(this.context, 'name', 'max'));
       this.assertHTML(`<p>hello max</p>`);
       assert.verifySteps(['updateComponent', 'didUpdateComponent']);
     }
@@ -733,7 +733,7 @@ moduleFor(
       this.assertHTML(`<p data-test="foo">Hello world!</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
       assert.verifySteps(['updateComponent', 'didUpdateComponent']);
     }
 
@@ -792,7 +792,7 @@ moduleFor(
         'getContext',
       ]);
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
       assert.deepEqual(updated, [{ id: 'no-id' }, { id: 'static-id' }, { id: 'dynamic-id' }]);
       assert.verifySteps(['updateComponent', 'updateComponent', 'updateComponent']);
     }
@@ -836,7 +836,7 @@ moduleFor(
       this.assertHTML(`<p data-test="foo">Hello world!</p>`);
       assert.verifySteps(['createComponent', 'getContext']);
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
       assert.verifySteps([]);
     }
 

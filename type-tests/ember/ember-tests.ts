@@ -73,7 +73,6 @@ App.todosController = TodosController.create();
 
 const todos = App.todosController.todos;
 let todo = todos[0];
-todo?.set('isDone', true);
 App.todosController.remaining;
 todo = Todo.create({ isDone: true });
 todos.push(todo);

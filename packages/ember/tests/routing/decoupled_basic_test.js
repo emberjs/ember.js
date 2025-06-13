@@ -1493,7 +1493,7 @@ moduleFor(
           let path = rootURL + '/posts';
 
           setHistory(this, path);
-          this.set('location', {
+          set(this, 'location', {
             pathname: path,
             href: 'http://localhost/' + path,
           });

@@ -1,5 +1,5 @@
 import Component from '@ember/component';
-import Object, { computed, get } from '@ember/object';
+import Object, { computed, get, set } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 class LayoutComponent extends Component {
@@ -17,7 +17,7 @@ class AnotherComponent extends Component {
   }
 
   hello(name: string) {
-    this.set('name', name);
+    set(this, 'name', name);
     this.name = name;
   }
 }

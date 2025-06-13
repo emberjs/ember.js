@@ -8,6 +8,7 @@ import {
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
 import type { InternalOwner } from '@ember/-internals/owner';
+import { set } from '@ember/object';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { assert, captureRenderTree } from '@ember/debug';
@@ -313,7 +314,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('engineName', 'bar');
+          const controller = this.controllerFor('application')!;
+          set(controller, 'engineName', 'bar');
         });
 
         this.assertRenderTree([
@@ -362,7 +364,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('engineName', undefined);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'engineName', undefined);
         });
 
         this.assertRenderTree([
@@ -396,10 +399,9 @@ if (ENV._DEBUG_RENDER_TREE) {
         };
 
         runTask(() => {
-          this.controllerFor('application')!.setProperties({
-            showMore: true,
-            engineModel: model,
-          });
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showMore', true);
+          set(controller, 'engineModel', model);
         });
 
         this.assertRenderTree([
@@ -458,7 +460,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('engineName', 'bar');
+          const controller = this.controllerFor('application')!;
+          set(controller, 'engineName', 'bar');
         });
 
         this.assertRenderTree([
@@ -569,10 +572,9 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.setProperties({
-            showMore: false,
-            engineName: undefined,
-          });
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showMore', false);
+          set(controller, 'engineName', undefined);
         });
 
         this.assertRenderTree([
@@ -720,7 +722,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         runTask(() => {
           let controller = instance!.lookup('controller:application');
           assert('Expected an instance of controller', controller instanceof Controller);
-          controller.set('message', 'World');
+          set(controller, 'message', 'World');
         });
 
         this.assertRenderTree([
@@ -776,7 +778,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         runTask(() => {
           let controller = instance!.lookup('controller:application');
           assert('Expected an instance of controller', controller instanceof Controller);
-          controller.set('message', undefined);
+          set(controller, 'message', undefined);
         });
 
         this.assertRenderTree([
@@ -870,7 +872,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -895,7 +898,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -943,7 +947,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -968,7 +973,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -1018,7 +1024,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -1043,7 +1050,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -1091,7 +1099,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -1116,7 +1125,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -1176,7 +1186,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', true);
         });
 
         this.assertRenderTree([
@@ -1201,7 +1212,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', false);
         });
 
         this.assertRenderTree([
@@ -1295,7 +1307,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           },
         ]);
 
-        runTask(() => target.set('showSecond', true));
+        runTask(() => set(target, 'showSecond', true));
 
         const secondModifiers: ExpectedRenderNode['children'] = [
           {
@@ -1366,7 +1378,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           },
         ]);
 
-        runTask(() => target.set('showSecond', false));
+        runTask(() => set(target, 'showSecond', false));
 
         this.assertRenderTree([
           {
@@ -1462,7 +1474,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', true);
         });
 
         const secondModifiers: ExpectedRenderNode['children'] = [
@@ -1519,7 +1532,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', false);
         });
 
         this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
@@ -1571,7 +1585,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', true);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', true);
         });
 
         const secondModifiers: ExpectedRenderNode['children'] = [
@@ -1608,7 +1623,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          this.controllerFor('application')!.set('showSecond', false);
+          const controller = this.controllerFor('application')!;
+          set(controller, 'showSecond', false);
         });
 
         this.assertRenderTree([

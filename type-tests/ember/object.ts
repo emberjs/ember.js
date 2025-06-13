@@ -42,15 +42,6 @@ class Foo extends Ember.Object {
   baz() {
     this.b = 10;
     expectTypeOf(this.b.toFixed(4)).toEqualTypeOf<string>();
-    expectTypeOf(this.set('a', 'abc').split(',')).toEqualTypeOf<string[]>();
-    expectTypeOf(this.set('b', 10).toFixed(4)).toEqualTypeOf<string>();
-
-    this.setProperties({ b: 11 });
-    // this.setProperties({ b: '11' }); // @ts-expect-error
-    this.setProperties({
-      a: 'def',
-      b: 11,
-    });
   }
 }
 
@@ -62,7 +53,6 @@ export class Foo2 extends Ember.Object {
 
     expectTypeOf(Ember.get(this as Foo2, 'name')).toBeString();
 
-    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<{ name: string }>();
     expectTypeOf(Ember.setProperties(this, { name })).toEqualTypeOf<{ name: string }>();
   }
 

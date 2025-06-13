@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { set } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 function customMacro(message: string) {
@@ -35,8 +36,8 @@ class Person extends Ember.Object {
 
   set fullNameWritable(value: string) {
     const [first, last] = value.split(' ');
-    this.set('firstName', first);
-    this.set('lastName', last);
+    set(this, 'firstName', first);
+    set(this, 'lastName', last);
   }
 
   @(Ember.computed().meta({ foo: 'bar' }).readOnly())
