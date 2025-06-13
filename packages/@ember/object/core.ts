@@ -6,7 +6,6 @@ import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
 import { type default as Owner, getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
-import type { ComputedProperty } from '@ember/-internals/metal';
 import {
   sendEvent,
   activateObserver,
@@ -486,28 +485,6 @@ class CoreObject {
 
   static detectInstance(obj: unknown) {
     return obj instanceof this;
-  }
-
-  /**
-    Iterate over each computed property for the class, passing its name
-    and any associated metadata (see `metaForProperty`) to the callback.
-
-    @static
-    @method eachComputedProperty
-    @param {Function} callback
-    @param {Object} binding
-    @private
-  */
-  static eachComputedProperty(callback: (name: string, meta: unknown) => void, binding = this) {
-    this.proto(); // ensure prototype is initialized
-    let empty = {};
-
-    meta(this.prototype).forEachDescriptors((name: string, descriptor: ComputedProperty) => {
-      if (descriptor.enumerable) {
-        let meta = descriptor._meta || empty;
-        callback.call(binding, name, meta);
-      }
-    });
   }
 
   static get superclass() {

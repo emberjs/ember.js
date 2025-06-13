@@ -161,7 +161,6 @@ module.exports = {
     'domReady',
     'each-in',
     'each',
-    'eachComputedProperty',
     'element',
     'elementId',
     'enableDestroyableTracking',
