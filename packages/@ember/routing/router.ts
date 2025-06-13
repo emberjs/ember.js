@@ -1,7 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals/glimmer';
-import { sendEvent } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
+import { notifyPropertyChange, sendEvent } from '@ember/-internals/metal';
 import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { default as BucketCache } from './lib/cache';
@@ -60,7 +60,7 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
 
   this._cancelSlowTransitionTimer();
 
-  this.notifyPropertyChange('url');
+  notifyPropertyChange(this, 'url');
   set(this, 'currentState', this.targetState);
 
   if (DEBUG) {
