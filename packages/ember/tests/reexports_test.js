@@ -1,4 +1,3 @@
-import Ember from '../index';
 import { FEATURES } from '@ember/canary-features';
 import {
   AbstractTestCase,
@@ -21,35 +20,8 @@ class ReExportTests extends AbstractTestCase {
         exportName = path;
       }
 
-      expectDeprecation(
-        /'ember' barrel file is deprecated/,
-        DEPRECATIONS.DEPRECATE_IMPORT_EMBER(path || exportName).isEnabled
-      );
-
       confirmExport(Ember, assert, path, moduleId, exportName, mod);
     });
-  }
-
-  [`${testUnless(
-    DEPRECATIONS.DEPRECATE_IMPORT_EMBER('FEATURES').isRemoved
-  )} Ember.FEATURES is exported`](assert) {
-    if (Object.keys(FEATURES).length === 0) {
-      assert.expect(0);
-    }
-
-    for (let feature in FEATURES) {
-      expectDeprecation(
-        () => {
-          assert.equal(
-            Ember.FEATURES[feature],
-            FEATURES[feature],
-            'Ember.FEATURES contains ${feature} with correct value'
-          );
-        },
-        /importing FEATURES from the 'ember' barrel file is deprecated/,
-        DEPRECATIONS.DEPRECATE_IMPORT_EMBER('FEATURES').isEnabled
-      );
-    }
   }
 }
 
