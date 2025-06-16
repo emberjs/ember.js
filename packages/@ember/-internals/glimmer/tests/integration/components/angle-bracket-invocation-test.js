@@ -427,11 +427,11 @@ moduleFor(
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => set(this.context, 'model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => set(this.context, 'model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }
@@ -453,11 +453,11 @@ moduleFor(
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => set(this.context, 'model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => set(this.context, 'model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }

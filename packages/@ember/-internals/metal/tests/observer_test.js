@@ -10,8 +10,6 @@ import {
   get,
   set,
 } from '..';
-import { observer } from '@ember/object';
-import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 import { meta as metaFor } from '@ember/-internals/meta';
@@ -33,40 +31,6 @@ moduleFor(
         obj = undefined;
         return runLoopSettled();
       }
-    }
-
-    ['@test observer should assert to invalid input']() {
-      expectAssertion(() => {
-        observer(() => {});
-      }, 'observer called without valid path');
-
-      expectAssertion(() => {
-        observer(null);
-      }, 'observer must be provided a function or an observer definition');
-
-      expectAssertion(() => {
-        observer({});
-      }, 'observer called without a function');
-
-      expectAssertion(() => {
-        observer({
-          fn() {},
-        });
-      }, 'observer called without valid path');
-
-      expectAssertion(() => {
-        observer({
-          fn() {},
-          dependentKeys: [],
-        });
-      }, 'observer called without valid path');
-
-      expectAssertion(() => {
-        observer({
-          fn() {},
-          dependentKeys: ['foo'],
-        });
-      }, 'observer called without sync');
     }
 
     async ['@test observer should fire when property is modified'](assert) {
@@ -187,79 +151,6 @@ moduleFor(
       }
 
       assert.equal(observerCount, 10, 'should continue to fire indefinitely');
-    }
-
-    async ['@test observers watching multiple properties via brace expansion should fire when the properties change'](
-      assert
-    ) {
-      obj = {};
-      let count = 0;
-
-      mixin(obj, {
-        observeFooAndBar: observer('{foo,bar}', function () {
-          count++;
-        }),
-      });
-
-      set(obj, 'foo', 'foo');
-      await runLoopSettled();
-
-      assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
-
-      set(obj, 'bar', 'bar');
-      await runLoopSettled();
-
-      assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
-
-      set(obj, 'baz', 'baz');
-      await runLoopSettled();
-
-      assert.equal(count, 2, 'observer not invoked on unspecified property');
-    }
-
-    async ['@test observers watching multiple properties via brace expansion should fire when dependent properties change'](
-      assert
-    ) {
-      obj = { baz: 'Initial' };
-      let count = 0;
-
-      defineProperty(
-        obj,
-        'foo',
-        computed('bar', function () {
-          return get(this, 'bar').toLowerCase();
-        })
-      );
-
-      defineProperty(
-        obj,
-        'bar',
-        computed('baz', function () {
-          return get(this, 'baz').toUpperCase();
-        })
-      );
-
-      mixin(obj, {
-        fooAndBarWatcher: observer('{foo,bar}', function () {
-          count++;
-        }),
-      });
-
-      get(obj, 'foo');
-      set(obj, 'baz', 'Baz');
-      await runLoopSettled();
-
-      // fire once for foo, once for bar
-      assert.equal(
-        count,
-        2,
-        'observer specified via brace expansion invoked on dependent property change'
-      );
-
-      set(obj, 'quux', 'Quux');
-      await runLoopSettled();
-
-      assert.equal(count, 2, 'observer not fired on unspecified property');
     }
 
     async ['@test removing an chain observer on change should not fail'](assert) {
@@ -431,36 +322,6 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(count, 1, "removed observer shouldn't fire");
-    }
-
-    async ['@test local observers can be removed'](assert) {
-      let barObserved = 0;
-
-      let MyMixin = Mixin.create({
-        foo1: observer('bar', function () {
-          barObserved++;
-        }),
-
-        foo2: observer('bar', function () {
-          barObserved++;
-        }),
-      });
-
-      obj = {};
-      MyMixin.apply(obj);
-
-      set(obj, 'bar', 'HI!');
-      await runLoopSettled();
-
-      assert.equal(barObserved, 2, 'precond - observers should be fired');
-
-      removeObserver(obj, 'bar', null, 'foo1');
-
-      barObserved = 0;
-      set(obj, 'bar', 'HI AGAIN!');
-      await runLoopSettled();
-
-      assert.equal(barObserved, 1, 'removed observers should not be called');
     }
 
     async ['@test removeObserver should respect targets with methods'](assert) {

@@ -2,6 +2,7 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
+import { set } from '@ember/object';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
@@ -263,7 +264,9 @@ moduleFor(
           rootElement = document.getElementById('qunit-fixture');
           assert.equal(rootElement.textContent.trim(), 'HiBye', 'initial render');
 
-          run(() => this.applicationInstance.lookup('controller:sample').set('showTheThing', true));
+          run(() =>
+            set(this.applicationInstance.lookup('controller:sample'), 'showTheThing', true)
+          );
 
           assert.equal(rootElement.textContent.trim(), 'HiYayBye', 'second render');
           return this.visit('/2');
@@ -335,7 +338,7 @@ moduleFor(
           'didInsertElement not invoked on displayed component'
         );
 
-        run(() => indexController.set('showFirst', false));
+        run(() => set(indexController, 'showFirst', false));
 
         assert.strictEqual(
           myComponentCounter,

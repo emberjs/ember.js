@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject, { set } from '@ember/object';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
@@ -323,7 +323,7 @@ moduleFor(
 
       this.assertText('bob-value');
 
-      runTask(() => obj.set('value', 'sal'));
+      runTask(() => set(obj, 'value', 'sal'));
 
       this.assertText('sal-value');
     }

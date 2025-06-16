@@ -1,5 +1,3 @@
-import { set, get, observer } from '@ember/object';
-import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
@@ -16,225 +14,191 @@ moduleFor(
       }
     }
 
-    async ['@test global observer helper'](assert) {
-      let MyMixin = Mixin.create({
-        count: 0,
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test replacing observer should remove old observer'](assert) {
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
 
-        foo: observer('bar', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
+    //     foo: observer('bar', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //   });
 
-      obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   let Mixin2 = Mixin.create({
+    //     foo: observer('baz', function () {
+    //       set(this, 'count', get(this, 'count') + 10);
+    //     }),
+    //   });
 
-      set(obj, 'bar', 'BAZ');
-      await runLoopSettled();
+    //   obj = mixin({}, MyMixin, Mixin2);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
+    //   set(obj, 'bar', 'BAZ');
+    //   await runLoopSettled();
 
-    async ['@test global observer helper takes multiple params'](assert) {
-      let MyMixin = Mixin.create({
-        count: 0,
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
-        foo: observer('bar', 'baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
+    //   set(obj, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-      obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   assert.equal(get(obj, 'count'), 10, 'should invoke observer after change');
+    // }
 
-      set(obj, 'bar', 'BAZ');
-      await runLoopSettled();
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test observing chain with property before'](assert) {
+    //   let obj2 = { baz: 'baz' };
 
-      set(obj, 'baz', 'BAZ');
-      await runLoopSettled();
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
+    //     bar: obj2,
+    //     foo: observer('bar.baz', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //   });
 
-      assert.equal(get(obj, 'count'), 2, 'should invoke observer after change');
+    //   obj = mixin({}, MyMixin);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      destroy(obj);
-      await runLoopSettled();
-    }
+    //   set(obj2, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-    async ['@test replacing observer should remove old observer'](assert) {
-      let MyMixin = Mixin.create({
-        count: 0,
+    //   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+    // }
 
-        foo: observer('bar', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test observing chain with property after'](assert) {
+    //   let obj2 = { baz: 'baz' };
 
-      let Mixin2 = Mixin.create({
-        foo: observer('baz', function () {
-          set(this, 'count', get(this, 'count') + 10);
-        }),
-      });
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
+    //     foo: observer('bar.baz', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //     bar: obj2,
+    //   });
 
-      obj = mixin({}, MyMixin, Mixin2);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   obj = mixin({}, MyMixin);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      set(obj, 'bar', 'BAZ');
-      await runLoopSettled();
+    //   set(obj2, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+    //   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+    // }
 
-      set(obj, 'baz', 'BAZ');
-      await runLoopSettled();
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test observing chain with property in mixin applied later'](assert) {
+    //   let obj2 = { baz: 'baz' };
 
-      assert.equal(get(obj, 'count'), 10, 'should invoke observer after change');
-    }
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
+    //     foo: observer('bar.baz', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //   });
 
-    async ['@test observing chain with property before'](assert) {
-      let obj2 = { baz: 'baz' };
+    //   let MyMixin2 = Mixin.create({ bar: obj2 });
 
-      let MyMixin = Mixin.create({
-        count: 0,
-        bar: obj2,
-        foo: observer('bar.baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
+    //   obj = mixin({}, MyMixin);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   MyMixin2.apply(obj);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      set(obj2, 'baz', 'BAZ');
-      await runLoopSettled();
+    //   set(obj2, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
+    //   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+    // }
 
-    async ['@test observing chain with property after'](assert) {
-      let obj2 = { baz: 'baz' };
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test observing chain with existing property'](assert) {
+    //   let obj2 = { baz: 'baz' };
 
-      let MyMixin = Mixin.create({
-        count: 0,
-        foo: observer('bar.baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-        bar: obj2,
-      });
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
+    //     foo: observer('bar.baz', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //   });
 
-      obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   obj = mixin({ bar: obj2 }, MyMixin);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      set(obj2, 'baz', 'BAZ');
-      await runLoopSettled();
+    //   set(obj2, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
+    //   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+    // }
 
-    async ['@test observing chain with property in mixin applied later'](assert) {
-      let obj2 = { baz: 'baz' };
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test observing chain with property in mixin before'](assert) {
+    //   let obj2 = { baz: 'baz' };
+    //   let MyMixin2 = Mixin.create({ bar: obj2 });
 
-      let MyMixin = Mixin.create({
-        count: 0,
-        foo: observer('bar.baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
+    //     foo: observer('bar.baz', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //   });
 
-      let MyMixin2 = Mixin.create({ bar: obj2 });
+    //   obj = mixin({}, MyMixin2, MyMixin);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   set(obj2, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-      MyMixin2.apply(obj);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+    // }
 
-      set(obj2, 'baz', 'BAZ');
-      await runLoopSettled();
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test observing chain with property in mixin after'](assert) {
+    //   let obj2 = { baz: 'baz' };
+    //   let MyMixin2 = Mixin.create({ bar: obj2 });
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
+    //     foo: observer('bar.baz', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //   });
 
-    async ['@test observing chain with existing property'](assert) {
-      let obj2 = { baz: 'baz' };
+    //   obj = mixin({}, MyMixin, MyMixin2);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      let MyMixin = Mixin.create({
-        count: 0,
-        foo: observer('bar.baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
+    //   set(obj2, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-      obj = mixin({ bar: obj2 }, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+    // }
 
-      set(obj2, 'baz', 'BAZ');
-      await runLoopSettled();
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test observing chain with overridden property'](assert) {
+    //   let obj2 = { baz: 'baz' };
+    //   let obj3 = { baz: 'foo' };
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
+    //   let MyMixin2 = Mixin.create({ bar: obj3 });
 
-    async ['@test observing chain with property in mixin before'](assert) {
-      let obj2 = { baz: 'baz' };
-      let MyMixin2 = Mixin.create({ bar: obj2 });
+    //   let MyMixin = Mixin.create({
+    //     count: 0,
+    //     foo: observer('bar.baz', function () {
+    //       set(this, 'count', get(this, 'count') + 1);
+    //     }),
+    //   });
 
-      let MyMixin = Mixin.create({
-        count: 0,
-        foo: observer('bar.baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
+    //   obj = mixin({ bar: obj2 }, MyMixin, MyMixin2);
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-      obj = mixin({}, MyMixin2, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+    //   set(obj2, 'baz', 'BAZ');
+    //   await runLoopSettled();
 
-      set(obj2, 'baz', 'BAZ');
-      await runLoopSettled();
+    //   assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
+    //   set(obj3, 'baz', 'BEAR');
+    //   await runLoopSettled();
 
-    async ['@test observing chain with property in mixin after'](assert) {
-      let obj2 = { baz: 'baz' };
-      let MyMixin2 = Mixin.create({ bar: obj2 });
-
-      let MyMixin = Mixin.create({
-        count: 0,
-        foo: observer('bar.baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
-
-      obj = mixin({}, MyMixin, MyMixin2);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
-
-      set(obj2, 'baz', 'BAZ');
-      await runLoopSettled();
-
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
-
-    async ['@test observing chain with overridden property'](assert) {
-      let obj2 = { baz: 'baz' };
-      let obj3 = { baz: 'foo' };
-
-      let MyMixin2 = Mixin.create({ bar: obj3 });
-
-      let MyMixin = Mixin.create({
-        count: 0,
-        foo: observer('bar.baz', function () {
-          set(this, 'count', get(this, 'count') + 1);
-        }),
-      });
-
-      obj = mixin({ bar: obj2 }, MyMixin, MyMixin2);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
-
-      set(obj2, 'baz', 'BAZ');
-      await runLoopSettled();
-
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
-
-      set(obj3, 'baz', 'BEAR');
-      await runLoopSettled();
-
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
-    }
+    //   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+    // }
   }
 );

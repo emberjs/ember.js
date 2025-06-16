@@ -2,7 +2,7 @@
 /* eslint-disable prefer-const */
 import Route from '@ember/routing/route';
 import type Array from '@ember/array';
-import EmberObject from '@ember/object';
+import EmberObject, { set } from '@ember/object';
 import Controller from '@ember/controller';
 import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
@@ -120,7 +120,7 @@ declare module '@ember/controller' {
 class SetupControllerTest extends Route {
   setupController(controller: Controller, model: {}, transition: Transition) {
     this._super(controller, model);
-    this.controllerFor('application').set('model', model);
+    set(this.controllerFor('application'), 'model', model);
     transition.abort();
   }
 }

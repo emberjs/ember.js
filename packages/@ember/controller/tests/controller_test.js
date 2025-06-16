@@ -37,33 +37,6 @@ moduleFor(
       runTask(() => this.$('button').click());
       this.assertText('2');
     }
-
-    async '@test model can be observed with sync observers'(assert) {
-      let observerRunCount = 0;
-
-      this.add(
-        'controller:index',
-        class extends Controller {
-          constructor() {
-            super(...arguments);
-            this.model = 0;
-
-            this.addObserver('model', this, () => observerRunCount++, true);
-          }
-
-          @action
-          update() {
-            this.model++;
-          }
-        }
-      );
-
-      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.model}}</button>');
-
-      await this.visit('/');
-      runTask(() => this.$('button').click());
-      assert.equal(observerRunCount, 1, 'observer ran exactly once');
-    }
   }
 );
 
@@ -80,8 +53,8 @@ moduleFor(
         }.create();
       });
 
-      assert.notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
-      assert.equal(controller.get('content'), 'foo-bar', 'content is not set properly');
+      assert.notEqual(get(controller, 'model'), 'foo-bar', 'model is set properly');
+      assert.equal(get(controller, 'content'), 'foo-bar', 'content is not set properly');
     }
 
     ['@test specifying `content` (without `model` specified) does not result in deprecation'](
@@ -151,7 +124,7 @@ moduleFor(
 
       assert.equal(
         postsController,
-        postController.get('postsController'),
+        get(postController, 'postsController'),
         'controller.posts is injected'
       );
 
@@ -174,7 +147,7 @@ moduleFor(
       let appController = owner.lookup('controller:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appController.get('authService'), 'service.auth is injected');
+      assert.equal(authService, get(appController, 'authService'), 'service.auth is injected');
 
       runDestroy(owner);
     }

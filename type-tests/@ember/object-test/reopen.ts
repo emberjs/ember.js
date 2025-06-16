@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject, { get } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { expectTypeOf } from 'expect-type';
 
@@ -6,7 +6,7 @@ class Person extends EmberObject {
   name = '';
 
   sayHello() {
-    alert(`Hello. My name is ${this.get('name')}`);
+    alert(`Hello. My name is ${this.name}`);
   }
 }
 
@@ -53,13 +53,13 @@ const Person3 = Person2.reopen({
   goodbyeMessage: 'goodbye',
 
   sayGoodbye(this: Person) {
-    alert(`${this.get('goodbyeMessage')}, ${this.get('name')}`);
+    alert(`${get(this, 'goodbyeMessage')}, ${get(this, 'name')}`);
   },
 });
 
 const person3 = Person3.create();
-person3.get('name');
-person3.get('goodbyeMessage');
+person3.name;
+get(person3, 'goodbyeMessage');
 person3.sayHello();
 // @ts-expect-error
 person3.sayGoodbye();

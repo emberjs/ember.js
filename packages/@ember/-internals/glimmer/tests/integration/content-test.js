@@ -4,7 +4,7 @@ import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'int
 
 import { set, computed } from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import EmberObject from '@ember/object';
+import EmberObject, { get } from '@ember/object';
 import { readOnly } from '@ember/object/computed';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
@@ -293,7 +293,7 @@ class DynamicContentTest extends RenderingTestCase {
     let Formatter = class extends EmberObject {
       @computed('message')
       get formattedMessage() {
-        return this.get('message').toUpperCase();
+        return get(this, 'message').toUpperCase();
       }
     };
 
@@ -320,7 +320,7 @@ class DynamicContentTest extends RenderingTestCase {
     let Formatter = class extends EmberObject {
       @computed('messenger.message')
       get formattedMessage() {
-        return this.get('messenger.message').toUpperCase();
+        return get(this, 'messenger.message').toUpperCase();
       }
     };
 

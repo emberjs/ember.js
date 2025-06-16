@@ -1,7 +1,7 @@
 import type { InternalOwner, RegisterOptions } from '@ember/-internals/owner';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 
-export default class ComponentLookup extends EmberObject {
+export default class ComponentLookup extends CoreObject {
   componentFor(name: string, owner: InternalOwner) {
     let fullName = `component:${name}` as const;
     return owner.factoryFor(fullName);

@@ -1,4 +1,4 @@
-import EmberObject, { computed } from '@ember/object';
+import EmberObject, { computed, set } from '@ember/object';
 import {
   alias,
   or,
@@ -38,28 +38,28 @@ class Person extends EmberObject {
 
   @computed('firstName', 'lastName')
   get fullName(): string {
-    return `${this.get('firstName')} ${this.get('lastName')}`;
+    return `${this.firstName} ${this.lastName}`;
   }
 
   @(computed('fullName').readOnly())
   get fullNameReadonly() {
-    return this.get('fullName');
+    return this.fullName;
   }
 
   @computed('firstName', 'lastName')
   get fullNameWritable(): string {
-    return this.get('fullName');
+    return this.fullName;
   }
 
   set fullNameWritable(value: string) {
     const [first, last] = value.split(' ');
-    this.set('firstName', first);
-    this.set('lastName', last);
+    set(this, 'firstName', first);
+    set(this, 'lastName', last);
   }
 
   @(computed().meta({ foo: 'bar' }).readOnly())
   get combinators() {
-    return this.get('firstName');
+    return this.firstName;
   }
 
   @alias('fullName')
@@ -84,43 +84,22 @@ expectTypeOf(person.fullNameWritable).toEqualTypeOf<string>();
 expectTypeOf(person.combinators).toEqualTypeOf<string>();
 expectTypeOf(person.explicitlyDeclared).toEqualTypeOf<string>();
 
-expectTypeOf(person.get('firstName')).toEqualTypeOf<string>();
-expectTypeOf(person.get('age')).toEqualTypeOf<number>();
-expectTypeOf(person.get('noArgs')).toEqualTypeOf<string>();
-expectTypeOf(person.get('fullName')).toEqualTypeOf<string>();
-expectTypeOf(person.get('fullNameReadonly')).toEqualTypeOf<string>();
-expectTypeOf(person.get('fullNameWritable')).toEqualTypeOf<string>();
-expectTypeOf(person.get('combinators')).toEqualTypeOf<string>();
-expectTypeOf(person.get('explicitlyDeclared')).toEqualTypeOf<string>();
-
-expectTypeOf(person.getProperties('firstName', 'fullName', 'age')).toMatchTypeOf<{
-  firstName: string;
-  fullName: string;
-  age: number;
-}>();
-
 const person2 = Person.create({
   fullName: 'Fred Smith',
 });
-
-expectTypeOf(person2.get('firstName')).toEqualTypeOf<string>();
-expectTypeOf(person2.get('fullName')).toEqualTypeOf<string>();
 
 const person3 = Person.extend({
   firstName: 'Fred',
   fullName: 'Fred Smith',
 }).create();
 
-expectTypeOf(person3.get('firstName')).toEqualTypeOf<string>();
-expectTypeOf(person3.get('fullName')).toEqualTypeOf<string>();
-
 const person4 = Person.extend({
   firstName: computed(() => 'Fred'),
   fullName: computed(() => 'Fred Smith'),
 }).create();
 
-expectTypeOf(person4.get('firstName')).toEqualTypeOf<string>();
-expectTypeOf(person4.get('fullName')).toEqualTypeOf<string>();
+expectTypeOf(person4.firstName).toEqualTypeOf<string>();
+expectTypeOf(person4.fullName).toEqualTypeOf<string>();
 
 // computed property macros
 class Bar extends EmberObject {

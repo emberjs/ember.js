@@ -19,7 +19,7 @@ BaseEngine.initializer({
 BaseEngine.instanceInitializer({
   name: 'my-instance-initializer',
   initialize(engine) {
-    (engine.lookup('foo:bar') as Obj).get('foo');
+    (engine.lookup('foo:bar') as Obj).foo;
   },
 });
 

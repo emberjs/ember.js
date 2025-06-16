@@ -19,20 +19,20 @@ let InstrumentedRoute = class extends Route {
     let service = get(this, 'routerService');
     service.on('routeWillChange', (transition) => {
       results.push([
-        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+        `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
         `${this.routeName} routeWillChange: ${transition.from && transition.from.name} - ${
           transition.to.name
         }`,
-        service.get('currentURL'),
+        get(service, 'currentURL'),
       ]);
     });
     service.on('routeDidChange', (transition) => {
       results.push([
-        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+        `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
         `${this.routeName} routeDidChange: ${transition.from && transition.from.name} - ${
           transition.to.name
         }`,
-        service.get('currentURL'),
+        get(service, 'currentURL'),
       ]);
     });
   }
@@ -40,36 +40,36 @@ let InstrumentedRoute = class extends Route {
   activate() {
     let service = get(this, 'routerService');
     results.push([
-      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
       `${this.routeName} activate`,
-      service.get('currentURL'),
+      get(service, 'currentURL'),
     ]);
   }
 
   redirect() {
     let service = get(this, 'routerService');
     results.push([
-      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
       `${this.routeName} redirect`,
-      service.get('currentURL'),
+      get(service, 'currentURL'),
     ]);
   }
 
   beforeModel() {
     let service = get(this, 'routerService');
     results.push([
-      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
       `${this.routeName} beforeModel`,
-      service.get('currentURL'),
+      get(service, 'currentURL'),
     ]);
   }
 
   model() {
     let service = get(this, 'routerService');
     results.push([
-      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
       `${this.routeName} model`,
-      service.get('currentURL'),
+      get(service, 'currentURL'),
     ]);
     return new RSVP.Promise((resolve) => {
       setTimeout(resolve, 200);
@@ -79,9 +79,9 @@ let InstrumentedRoute = class extends Route {
   afterModel() {
     let service = get(this, 'routerService');
     results.push([
-      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
       `${this.routeName} afterModel`,
-      service.get('currentURL'),
+      get(service, 'currentURL'),
     ]);
   }
 
@@ -89,11 +89,11 @@ let InstrumentedRoute = class extends Route {
   willTransition(transition) {
     let service = get(this, 'routerService');
     results.push([
-      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
       `${this.routeName} willTransition: ${transition.from && transition.from.name} - ${
         transition.to.name
       }`,
-      service.get('currentURL'),
+      get(service, 'currentURL'),
     ]);
     return true;
   }
@@ -102,9 +102,9 @@ let InstrumentedRoute = class extends Route {
   didTransition() {
     let service = get(this, 'routerService');
     results.push([
-      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${get(service, 'currentRouteName')} - ${get(service, 'currentRoute.name')}`,
       `${this.routeName} didTransition`,
-      service.get('currentURL'),
+      get(service, 'currentURL'),
     ]);
     return true;
   }
@@ -145,7 +145,7 @@ moduleFor(
       assert.expect(1);
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/');
+        assert.equal(get(this.routerService, 'currentURL'), '/');
       });
     }
 
@@ -153,7 +153,7 @@ moduleFor(
       assert.expect(1);
 
       return this.visit('/child').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/child');
+        assert.equal(get(this.routerService, 'currentURL'), '/child');
       });
     }
 
@@ -165,7 +165,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.sister');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/sister');
+          assert.equal(get(this.routerService, 'currentURL'), '/sister');
         });
     }
 
@@ -174,17 +174,17 @@ moduleFor(
 
       return this.visit('/child')
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.equal(get(this.routerService, 'currentURL'), '/child');
 
           return this.visit('/sister');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/sister');
+          assert.equal(get(this.routerService, 'currentURL'), '/sister');
 
           return this.visit('/brother');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/brother');
+          assert.equal(get(this.routerService, 'currentURL'), '/brother');
         });
     }
 

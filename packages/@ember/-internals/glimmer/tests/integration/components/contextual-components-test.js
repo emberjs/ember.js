@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { isEmpty } from '@ember/utils';
-import { action } from '@ember/object';
+import { action, get, set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -66,15 +66,15 @@ moduleFor(
 
       this.assertText('Gabon Zack');
 
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => set(this.context, 'model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack');
 
-      runTask(() => this.context.set('model.name', 'Matthew'));
+      runTask(() => set(this.context, 'model.name', 'Matthew'));
 
       this.assertText('Good morning Matthew');
 
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+      runTask(() => set(this.context, 'model', { greeting: 'Gabon ', name: 'Zack' }));
 
       this.assertText('Gabon Zack');
     }
@@ -104,15 +104,15 @@ moduleFor(
 
       this.assertText('Gabon Zack Zack Gabon ');
 
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => set(this.context, 'model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack Zack Good morning ');
 
-      runTask(() => this.context.set('model.name', 'Matthew '));
+      runTask(() => set(this.context, 'model.name', 'Matthew '));
 
       this.assertText('Good morning Matthew Matthew Good morning ');
 
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+      runTask(() => set(this.context, 'model', { greeting: 'Gabon ', name: 'Zack ' }));
 
       this.assertText('Gabon Zack Zack Gabon ');
     }
@@ -141,15 +141,15 @@ moduleFor(
 
       this.assertText('Gabon Zack');
 
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => set(this.context, 'model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack');
 
-      runTask(() => this.context.set('model.name', 'Matthew'));
+      runTask(() => set(this.context, 'model.name', 'Matthew'));
 
       this.assertText('Good morning Matthew');
 
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+      runTask(() => set(this.context, 'model', { greeting: 'Gabon ', name: 'Zack' }));
 
       this.assertText('Gabon Zack');
     }
@@ -178,15 +178,15 @@ moduleFor(
 
       this.assertText('Gabon Zack Zack Gabon ');
 
-      runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => set(this.context, 'model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack Zack Good morning ');
 
-      runTask(() => this.context.set('model.name', 'Matthew '));
+      runTask(() => set(this.context, 'model.name', 'Matthew '));
 
       this.assertText('Good morning Matthew Matthew Good morning ');
 
-      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+      runTask(() => set(this.context, 'model', { greeting: 'Gabon ', name: 'Zack ' }));
 
       this.assertText('Gabon Zack Zack Gabon ');
     }
@@ -231,11 +231,11 @@ moduleFor(
 
       this.assertText('ni hao');
 
-      runTask(() => this.context.set('model.lookupComponent', '-hindi'));
+      runTask(() => set(this.context, 'model.lookupComponent', '-hindi'));
 
       this.assertText('Namaste');
 
-      runTask(() => this.context.set('model', { lookupComponent: '-mandarin' }));
+      runTask(() => set(this.context, 'model', { lookupComponent: '-mandarin' }));
 
       this.assertText('ni hao');
     }
@@ -257,11 +257,11 @@ moduleFor(
 
       this.assertText('Hodi');
 
-      runTask(() => this.context.set('model.greeting', 'Hola'));
+      runTask(() => set(this.context, 'model.greeting', 'Hola'));
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+      runTask(() => set(this.context, 'model', { greeting: 'Hodi' }));
 
       this.assertText('Hodi');
     }
@@ -289,11 +289,11 @@ moduleFor(
 
       this.assertText('Hodi');
 
-      runTask(() => this.context.set('model.greeting', 'Hola'));
+      runTask(() => set(this.context, 'model.greeting', 'Hola'));
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+      runTask(() => set(this.context, 'model', { greeting: 'Hodi' }));
 
       this.assertText('Hodi');
     }
@@ -359,11 +359,11 @@ moduleFor(
 
       this.assertText('Hodi Sigmundur 33');
 
-      runTask(() => this.context.set('model.greeting', 'Kaixo'));
+      runTask(() => set(this.context, 'model.greeting', 'Kaixo'));
 
       this.assertText('Kaixo Sigmundur 33');
 
-      runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+      runTask(() => set(this.context, 'model', { greeting: 'Hodi' }));
 
       this.assertText('Hodi Sigmundur 33');
     }
@@ -399,16 +399,16 @@ moduleFor(
 
       this.assertText('Outer 28');
 
-      runTask(() => this.context.set('model.outerAge', 29));
+      runTask(() => set(this.context, 'model.outerAge', 29));
 
       this.assertText('Outer 29');
 
-      runTask(() => this.context.set('model.outerName', 'Not outer'));
+      runTask(() => set(this.context, 'model.outerName', 'Not outer'));
 
       this.assertText('Not outer 29');
 
       runTask(() => {
-        this.context.set('model', {
+        set(this.context, 'model', {
           outerName: 'Outer',
           outerAge: 28,
         });
@@ -445,16 +445,16 @@ moduleFor(
 
       this.assertText('Inner 28');
 
-      runTask(() => this.context.set('model.outerAge', 29));
+      runTask(() => set(this.context, 'model.outerAge', 29));
 
       this.assertText('Inner 29');
 
-      runTask(() => this.context.set('model.outerName', 'Not outer'));
+      runTask(() => set(this.context, 'model.outerName', 'Not outer'));
 
       this.assertText('Inner 29');
 
       runTask(() => {
-        this.context.set('model', {
+        set(this.context, 'model', {
           outerName: 'Outer',
           outerAge: 28,
         });
@@ -485,11 +485,11 @@ moduleFor(
 
       this.assertText('Hodi Hodari');
 
-      runTask(() => this.context.set('model.name', 'Sergio'));
+      runTask(() => set(this.context, 'model.name', 'Sergio'));
 
       this.assertText('Hodi Sergio');
 
-      runTask(() => this.context.set('model', { name: 'Hodari' }));
+      runTask(() => set(this.context, 'model', { name: 'Hodari' }));
 
       this.assertText('Hodi Hodari');
     }
@@ -508,11 +508,11 @@ moduleFor(
 
       this.assertText('');
 
-      runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
 
-      runTask(() => this.context.set('componentName', undefined));
+      runTask(() => set(this.context, 'componentName', undefined));
 
       this.assertText('');
     }
@@ -531,11 +531,11 @@ moduleFor(
 
       this.assertText('hello Alex');
 
-      runTask(() => this.context.set('componentName', undefined));
+      runTask(() => set(this.context, 'componentName', undefined));
 
       this.assertText('');
 
-      runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
     }
@@ -554,11 +554,11 @@ moduleFor(
 
       this.assertText('');
 
-      runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
 
-      runTask(() => this.context.set('componentName', null));
+      runTask(() => set(this.context, 'componentName', null));
 
       this.assertText('');
     }
@@ -577,11 +577,11 @@ moduleFor(
 
       this.assertText('hello Alex');
 
-      runTask(() => this.context.set('componentName', null));
+      runTask(() => set(this.context, 'componentName', null));
 
       this.assertText('');
 
-      runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
     }
@@ -652,11 +652,11 @@ moduleFor(
 
       this.assertText(expectedText);
 
-      runTask(() => this.context.set('model.expectedText', 'Hola'));
+      runTask(() => set(this.context, 'model.expectedText', 'Hola'));
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model', { expectedText }));
+      runTask(() => set(this.context, 'model', { expectedText }));
 
       this.assertText(expectedText);
     }
@@ -685,11 +685,11 @@ moduleFor(
 
       this.assertText(expectedText);
 
-      runTask(() => this.context.set('model.expectedText', 'Hola'));
+      runTask(() => set(this.context, 'model.expectedText', 'Hola'));
 
       this.assertText('Hola');
 
-      runTask(() => this.context.set('model', { expectedText }));
+      runTask(() => set(this.context, 'model', { expectedText }));
 
       this.assertText(expectedText);
     }
@@ -722,11 +722,11 @@ moduleFor(
 
       this.assertText(`${expectedText},Hola`);
 
-      runTask(() => this.context.set('model.expectedText', 'Kaixo'));
+      runTask(() => set(this.context, 'model.expectedText', 'Kaixo'));
 
       this.assertText('Kaixo,Hola');
 
-      runTask(() => this.context.set('model', { expectedText }));
+      runTask(() => set(this.context, 'model', { expectedText }));
 
       this.assertText(`${expectedText},Hola`);
     }
@@ -764,7 +764,7 @@ moduleFor(
           static positionalParams = ['my-parent-attr'];
 
           didReceiveAttrs() {
-            this.set('myProp', this.getAttr('my-parent-attr'));
+            set(this, 'myProp', this.getAttr('my-parent-attr'));
           }
         },
         template: '<span id="nested-prop">{{this.myProp}}</span>',
@@ -779,7 +779,7 @@ moduleFor(
         ComponentClass: class extends Component {
           @action
           changeValue() {
-            this.incrementProperty('myProp');
+            set(this, 'myProp', this.myProp + 1);
           }
         },
         template: strip`
@@ -810,7 +810,7 @@ moduleFor(
 
       assert.equal(this.$('#nested-prop').text(), '3');
 
-      runTask(() => this.context.set('model', { myProp: 1 }));
+      runTask(() => set(this.context, 'model', { myProp: 1 }));
 
       assert.equal(this.$('#nested-prop').text(), '1');
     }
@@ -873,7 +873,7 @@ moduleFor(
 
       assert.equal(this.$('.value').text(), '10');
 
-      runTask(() => this.context.set('model', { val2: 8 }));
+      runTask(() => set(this.context, 'model', { val2: 8 }));
 
       assert.equal(this.$('.value').text(), '8');
     }
@@ -898,7 +898,7 @@ moduleFor(
           message = 'hello';
           @action
           change() {
-            this.set('message', 'goodbye');
+            set(this, 'message', 'goodbye');
           }
         },
         template: strip`
@@ -969,7 +969,7 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
-      runTask(() => this.context.set('isOpen', false));
+      runTask(() => set(this.context, 'isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
@@ -983,7 +983,7 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
-      runTask(() => this.context.set('isOpen', true));
+      runTask(() => set(this.context, 'isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
@@ -1034,7 +1034,7 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
-      runTask(() => this.context.set('isOpen', false));
+      runTask(() => set(this.context, 'isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
@@ -1048,7 +1048,7 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
-      runTask(() => this.context.set('isOpen', true));
+      runTask(() => set(this.context, 'isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
@@ -1112,7 +1112,7 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
-      runTask(() => this.context.set('compName', 'your-comp'));
+      runTask(() => set(this.context, 'compName', 'your-comp'));
 
       assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
       assert.ok(!isEmpty(previousInstance), 'a previous instance now exists');
@@ -1139,7 +1139,7 @@ moduleFor(
       assert.equal(initCount, 2, 'the component was constructed exactly 2 times (rerender)');
       assert.equal(this.$().text(), 'your-comp: open');
 
-      runTask(() => this.context.set('compName', 'my-comp'));
+      runTask(() => set(this.context, 'compName', 'my-comp'));
 
       assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
       assert.ok(!isEmpty(previousInstance), 'a previous instance still exists');
@@ -1170,23 +1170,23 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').push('c'));
+      runTask(() => get(this.context, 'allParams').push('c'));
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').pop());
+      runTask(() => get(this.context, 'allParams').pop());
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').splice(0, 2));
+      runTask(() => get(this.context, 'allParams').splice(0, 2));
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', ['1', '2']));
+      runTask(() => set(this.context, 'allParams', ['1', '2']));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', ['a', 'b']));
+      runTask(() => set(this.context, 'allParams', ['a', 'b']));
 
       this.assertText('ab');
     }
@@ -1212,23 +1212,23 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').push('c'));
+      runTask(() => get(this.context, 'allParams').push('c'));
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').pop());
+      runTask(() => get(this.context, 'allParams').pop());
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').splice(0, 3));
+      runTask(() => get(this.context, 'allParams').splice(0, 3));
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', ['1', '2']));
+      runTask(() => set(this.context, 'allParams', ['1', '2']));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', ['a', 'b']));
+      runTask(() => set(this.context, 'allParams', ['a', 'b']));
 
       this.assertText('ab');
     }
@@ -1250,11 +1250,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
 
       this.assert.strictEqual('bar', this.firstChild.value);
 
-      runTask(() => this.context.set('value', 'foo'));
+      runTask(() => set(this.context, 'value', 'foo'));
 
       this.assert.strictEqual('foo', this.firstChild.value);
     }
@@ -1275,11 +1275,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => this.context.set('value', 'bar'));
+      runTask(() => set(this.context, 'value', 'bar'));
 
       this.assert.strictEqual('bar', this.firstChild.value);
 
-      runTask(() => this.context.set('value', 'foo'));
+      runTask(() => set(this.context, 'value', 'foo'));
 
       this.assert.strictEqual('foo', this.firstChild.value);
     }
@@ -1467,7 +1467,7 @@ class MutableParamTestGenerator {
 
         assert.equal(this.$('.value').text(), '10');
 
-        runTask(() => this.context.set('model', { val2: 8 }));
+        runTask(() => set(this.context, 'model', { val2: 8 }));
 
         assert.equal(this.$('.value').text(), '8');
       },

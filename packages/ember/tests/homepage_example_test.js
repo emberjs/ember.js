@@ -18,7 +18,7 @@ moduleFor(
         lastName = null;
         @computed('firstName', 'lastName')
         get fullName() {
-          return `${this.get('firstName')} ${this.get('lastName')}`;
+          return `${this.firstName} ${this.lastName}`;
         }
       };
 

@@ -1,5 +1,6 @@
 import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { get } from '@ember/object';
 import Service, { service } from '@ember/service';
 import EmberRoute from '@ember/routing/route';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -245,7 +246,7 @@ moduleFor(
       lookupHash['controller:test'] = {};
 
       routeOne.controllerName = 'test';
-      let qp = routeOne.get('_qp');
+      let qp = get(routeOne, '_qp');
 
       assert.deepEqual(qp.map, {}, 'map should be empty');
       assert.deepEqual(qp.propertyNames, [], 'property names should be empty');
@@ -282,7 +283,7 @@ moduleFor(
       let appRoute = owner.lookup('route:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appRoute.get('authService'), 'service.auth is injected');
+      assert.equal(authService, get(appRoute, 'authService'), 'service.auth is injected');
 
       runDestroy(owner);
     }

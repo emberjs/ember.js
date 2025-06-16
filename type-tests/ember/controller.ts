@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { set } from '@ember/object';
 
 class MyController extends Ember.Controller {
   queryParams = ['category'];
@@ -6,6 +7,6 @@ class MyController extends Ember.Controller {
   isExpanded = false;
 
   toggleBody() {
-    this.toggleProperty('isExpanded');
+    set(this, 'isExpanded', !this.isExpanded);
   }
 }

@@ -1,6 +1,7 @@
 import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
 
 import { renderSettled } from '@ember/-internals/glimmer';
+import { set } from '@ember/object';
 import { run, schedule } from '@ember/runloop';
 
 import { all } from 'rsvp';
@@ -35,7 +36,7 @@ moduleFor(
       this.render(strip`{{this.foo}}`, { foo: 'bar' });
 
       this.assertText('bar');
-      this.component.set('foo', 'baz');
+      set(this.component, 'foo', 'baz');
       this.assertText('bar');
 
       return renderSettled().then(() => {
@@ -53,14 +54,14 @@ moduleFor(
 
       return run(() => {
         schedule('actions', null, () => {
-          this.component.set('foo', 'set in actions');
+          set(this.component, 'foo', 'set in actions');
 
           promise = renderSettled().then(() => {
             this.assertText('set in afterRender');
           });
 
           schedule('afterRender', null, () => {
-            this.component.set('foo', 'set in afterRender');
+            set(this.component, 'foo', 'set in afterRender');
           });
         });
 

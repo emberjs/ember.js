@@ -1,12 +1,6 @@
-import {
-  RenderingTestCase,
-  moduleFor,
-  strip,
-  runTask,
-  runLoopSettled,
-} from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import { set, get, setProperties } from '@ember/object';
+import { set, setProperties } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -368,76 +362,6 @@ moduleFor(
       this.assertText('abc abc');
     }
 
-    async ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
-      this.registerHelper('capitalizeName', {
-        destroy() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this._super(...arguments);
-        },
-
-        compute([value]) {
-          if (this.value) {
-            this.removeObserver('value.firstName', this, this.recompute);
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          return value ? get(value, 'firstName').toUpperCase() : '';
-        },
-      });
-
-      this.registerHelper('concatNames', {
-        destroy() {
-          this.teardown();
-          this._super(...arguments);
-        },
-        teardown() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this.removeObserver('value.lastName', this, this.recompute);
-        },
-        compute([value]) {
-          if (this.value) {
-            this.teardown();
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          this.addObserver('value.lastName', this, this.recompute);
-          return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
-        },
-      });
-
-      this.render(
-        `{{capitalizeName this.person}} {{unbound (capitalizeName this.person)}} {{concatNames this.person}} {{unbound (concatNames this.person)}}`,
-        {
-          person: {
-            firstName: 'shooby',
-            lastName: 'taylor',
-          },
-        }
-      );
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => this.rerender());
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => set(this.context, 'person.firstName', 'sally'));
-      await runLoopSettled();
-
-      this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
-
-      runTask(() =>
-        set(this.context, 'person', {
-          firstName: 'shooby',
-          lastName: 'taylor',
-        })
-      );
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-    }
-
     ['@test should be able to render an unbound helper invocation in #each helper']() {
       this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
@@ -481,76 +405,6 @@ moduleFor(
       );
 
       this.assertText('SHOOBY SHOOBYCINDY CINDY');
-    }
-
-    async ['@test should be able to render an unbound helper invocation with bound hash options']() {
-      this.registerHelper('capitalizeName', {
-        destroy() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this._super(...arguments);
-        },
-
-        compute([value]) {
-          if (this.value) {
-            this.removeObserver('value.firstName', this, this.recompute);
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          return value ? get(value, 'firstName').toUpperCase() : '';
-        },
-      });
-
-      this.registerHelper('concatNames', {
-        destroy() {
-          this.teardown();
-          this._super(...arguments);
-        },
-        teardown() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this.removeObserver('value.lastName', this, this.recompute);
-        },
-        compute([value]) {
-          if (this.value) {
-            this.teardown();
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          this.addObserver('value.lastName', this, this.recompute);
-          return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
-        },
-      });
-
-      this.render(
-        `{{capitalizeName this.person}} {{unbound (capitalizeName this.person)}} {{concatNames this.person}} {{unbound (concatNames this.person)}}`,
-        {
-          person: {
-            firstName: 'shooby',
-            lastName: 'taylor',
-          },
-        }
-      );
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => this.rerender());
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => set(this.context, 'person.firstName', 'sally'));
-      await runLoopSettled();
-
-      this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
-
-      runTask(() =>
-        set(this.context, 'person', {
-          firstName: 'shooby',
-          lastName: 'taylor',
-        })
-      );
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
     }
 
     ['@test should be able to render bound form of a helper inside unbound form of same helper']() {

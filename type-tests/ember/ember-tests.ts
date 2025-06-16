@@ -11,7 +11,7 @@ class DetailedPresident extends President {
   lastName = 'Obama';
   @Ember.computed()
   get fullName() {
-    return `${this.get('firstName')} ${this.get('lastName')}`;
+    return `${this.firstName} ${this.lastName}`;
   }
 }
 
@@ -27,9 +27,7 @@ class MyApp extends Ember.Application {
 }
 
 const App = MyApp.create();
-App.country.get('presidentName');
 App.president = DetailedPresident.create();
-App.president.get('fullName');
 
 declare class MyPerson extends Ember.Object {
   static createMan(): MyPerson;
@@ -51,14 +49,14 @@ MyPerson2.create().helloWorld();
 class Tom extends Person1 {
   name = 'Tom Dale';
   helloWorld() {
-    this.say('Hi my name is ' + this.get('name'));
+    this.say('Hi my name is ' + this.name);
   }
 }
 const tom = Tom.create();
 tom.helloWorld();
 
 const PersonReopened = Person1.reopen({ isPerson: true });
-PersonReopened.create().get('isPerson');
+Ember.get(PersonReopened.create(), 'isPerson');
 
 class Todo extends Ember.Object {
   isDone = false;
@@ -69,20 +67,19 @@ class TodosController extends Ember.Object {
 
   @Ember.computed('todos.@each.isDone')
   get remaining() {
-    const todos = this.get('todos');
-    return todos.filter((todo) => todo.get('isDone') === false).length;
+    const todos = this.todos;
+    return todos.filter((todo) => todo.isDone === false).length;
   }
 }
 
 App.todosController = TodosController.create();
 
-const todos = App.todosController.get('todos');
+const todos = App.todosController.todos;
 let todo = todos[0];
-todo?.set('isDone', true);
-App.todosController.get('remaining');
+App.todosController.remaining;
 todo = Todo.create({ isDone: true });
 todos.push(todo);
-App.todosController.get('remaining');
+App.todosController.remaining;
 
 const NormalApp = Ember.Application.create({
   rootElement: '#sidebar',
@@ -92,7 +89,7 @@ class Person2 extends Ember.Object {
   name = '';
 
   sayHello() {
-    console.log('Hello from ' + this.get('name'));
+    console.log('Hello from ' + this.name);
   }
 }
 class Person3 extends Ember.Object {
@@ -104,7 +101,7 @@ const people2 = [
   Person3.create({ name: 'Majd', isHappy: false }),
 ];
 const isHappy = (person: Person3): boolean => {
-  return Boolean(person.get('isHappy'));
+  return Boolean(person.isHappy);
 };
 people2.every(isHappy);
 
