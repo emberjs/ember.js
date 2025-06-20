@@ -6,4 +6,5 @@ export {
   htmlSafe,
   isHTMLSafe,
   type SafeString,
+  type TrustedHTML,
 } from '@ember/-internals/glimmer';
