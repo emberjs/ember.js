@@ -194,9 +194,6 @@ d('@ember/object/computed', emberObjectComputed);
 import * as emberObjectCore from '@ember/object/core';
 d('@ember/object/core', emberObjectCore);
 
-import * as emberObjectEvents from '@ember/object/events';
-d('@ember/object/events', emberObjectEvents);
-
 import * as emberObjectIndex from '@ember/object/index';
 d('@ember/object/index', emberObjectIndex);
 
