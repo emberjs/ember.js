@@ -34,11 +34,6 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import EmberComputedProperty, {
   expandProperties as emberExpandProperties,
 } from '@ember/object/computed';
-import {
-  addListener as emberAddListener,
-  removeListener as emberRemoveListener,
-  sendEvent as emberSendEvent,
-} from '@ember/object/events';
 
 import { RSVP as _RSVP } from '@ember/-internals/runtime';
 import {
@@ -292,11 +287,6 @@ namespace Ember {
   // ****@ember/object/core****
   export const CoreObject = EmberCoreObject;
   export type CoreObject = EmberCoreObject;
-
-  // ****@ember/object/events****
-  export const addListener = emberAddListener;
-  export const removeListener = emberRemoveListener;
-  export const sendEvent = emberSendEvent;
 
   // ****@ember/object/mixin****
   export const Mixin = EmberMixin;

@@ -27,7 +27,7 @@ import {
   defineDecorator,
   defineValue,
 } from '@ember/-internals/metal';
-import { addListener, removeListener } from '@ember/object/events';
+import { addListener, removeListener } from '@ember/-internals/metal';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;

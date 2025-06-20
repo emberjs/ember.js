@@ -2,11 +2,6 @@ import type Owner from '@ember/owner';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
-// addListener
-Ember.addListener({ a: 'foo' }, 'event', {}, () => {});
-Ember.addListener({ a: 'foo' }, 'event', {}, 'a');
-Ember.addListener({ a: 'foo' }, 'event', {}, 'b');
-Ember.addListener({ a: 'foo' }, 'event', null, () => {});
 // addObserver
 Ember.addObserver({ a: 'foo' }, 'a', null, () => {});
 Ember.addObserver({ a: 'foo' }, 'a', {}, () => {});
@@ -67,21 +62,11 @@ class O2 extends Ember.Object {
   name = 'foo';
   age = 3;
 }
-const o2 = O2.create({
-  name: 'foo',
-  age: 3,
-});
-// removeListener
-Ember.removeListener(O2, 'create', null, () => {});
-Ember.removeListener(O2, 'create', null, 'create');
-Ember.removeListener({}, 'create', null, 'blah');
 // removeObserver
 Ember.removeObserver(O2, 'create', () => {});
 Ember.removeObserver({}, 'create', () => {});
 // runInDebug
 Ember.runInDebug(() => {});
-// sendEvent
-expectTypeOf(Ember.sendEvent(o2, 'clicked', [1, 2])).toBeBoolean();
 // set
 expectTypeOf(Ember.set(O2.create(), 'name', 'bar')).toEqualTypeOf<string>();
 expectTypeOf(Ember.set(O2.create(), 'age', 4)).toEqualTypeOf<number>();
