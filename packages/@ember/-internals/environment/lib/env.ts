@@ -156,7 +156,7 @@ export const ENV = {
 
 ((
   EmberENV: Record<string, unknown> & {
-    EXTEND_PROTOTYPES?: { Array?: boolean } | boolean;
+    EXTEND_PROTOTYPES?: boolean;
     EMBER_LOAD_HOOKS?: Record<string, unknown>;
     FEATURES?: Record<string, unknown>;
   }
@@ -177,18 +177,6 @@ export const ENV = {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] === true;
     } else {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag];
-    }
-  }
-
-  // TODO: Remove in Ember 6.5. This setting code for EXTEND_PROTOTYPES
-  // should stay for at least an LTS cycle so that users get the explicit
-  // deprecation exception when it breaks in >= 6.0.0.
-  let { EXTEND_PROTOTYPES } = EmberENV;
-  if (EXTEND_PROTOTYPES !== undefined) {
-    if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {
-      ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES.Array !== false;
-    } else {
-      ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES !== false;
     }
   }
 

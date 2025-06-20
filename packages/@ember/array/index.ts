@@ -198,9 +198,6 @@ export function isArray(obj: unknown): obj is ArrayLike<unknown> | EmberArray<un
 
 /*
   This allows us to define computed properties that are not enumerable.
-  The primary reason this is important is that when `NativeArray` is
-  applied to `Array.prototype` we need to ensure that we do not add _any_
-  new enumerable properties.
 */
 function nonEnumerableComputed(callback: ComputedPropertyCallback) {
   let property = computed(callback);
