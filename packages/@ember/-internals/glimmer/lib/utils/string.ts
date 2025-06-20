@@ -108,35 +108,35 @@ export function htmlSafe(str: string): SafeString {
 /**
   Use this method to indicate that a string should be rendered as HTML
   without escaping when the string is used in a template. To say this another way,
-  strings marked with `trustedHTML` will not be HTML escaped.
+  strings marked with `trustHTML` will not be HTML escaped.
 
-  A word of warning -   The `trustedHTML` method does not make the string safe;
+  A word of warning -   The `trustHTML` method does not make the string safe;
   it only tells the framework to treat the string as if it is safe to render
   as HTML - that we trust its contents to be safe. If a string contains user inputs or other untrusted
-  data, you must sanitize the string before using the `trustedHTML` method.
+  data, you must sanitize the string before using the `trustHTML` method.
   Otherwise your code is vulnerable to
   [Cross-Site Scripting](https://owasp.org/www-community/attacks/DOM_Based_XSS).
   There are many open source sanitization libraries to choose from,
   both for front end and server-side sanitization.
 
   ```glimmer-js
-  import { trustedHTML } from '@ember/template';
+  import { trustHTML } from '@ember/template';
 
   const someTrustedOrSanitizedString = "<div>Hello!</div>"
 
   <template>
-    {{trustedHTML someTrustedOrSanitizedString}}
+    {{trustHTML someTrustedOrSanitizedString}}
   </template>
   ```
 
-  @method trustedHTML
+  @method trustHTML
   @for @ember/template
   @param str {String} The string to treat as trusted.
   @static
   @return {SafeString} A string that will not be HTML escaped by Handlebars.
   @public
  */
-export const trustedHTML = htmlSafe;
+export const trustHTML = htmlSafe;
 
 /**
   Detects if a string was decorated using `htmlSafe`.
@@ -168,13 +168,13 @@ export function isHTMLSafe(str: unknown): str is SafeString {
 }
 
 /**
-  Detects if a string was decorated using `trustedHTML`.
+  Detects if a string was decorated using `trustHTML`.
 
   ```javascript
-  import { trustedHTML, isHTMLSafe } from '@ember/template';
+  import { trustHTML, isHTMLSafe } from '@ember/template';
 
   let plainString = 'plain string';
-  let safeString = trustedHTML('<div>someValue</div>');
+  let safeString = trustHTML('<div>someValue</div>');
 
   isTrustedHTML(plainString); // false
   isTrustedHTML(safeString);  // true

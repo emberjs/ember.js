@@ -456,7 +456,7 @@ export {
   type FunctionBasedHelper,
   type FunctionBasedHelperInstance,
 } from './lib/helper';
-export { SafeString, trustedHTML, isTrustedHTML, htmlSafe, isHTMLSafe } from './lib/utils/string';
+export { SafeString, trustHTML, isTrustedHTML, htmlSafe, isHTMLSafe } from './lib/utils/string';
 export { Renderer, _resetRenderers, renderSettled } from './lib/renderer';
 export {
   getTemplate,

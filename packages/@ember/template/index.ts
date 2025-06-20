@@ -2,7 +2,7 @@
 // value, since it should not be constructed by users.
 export {
   isTrustedHTML,
-  trustedHTML,
+  trustHTML,
   htmlSafe,
   isHTMLSafe,
   type SafeString,
