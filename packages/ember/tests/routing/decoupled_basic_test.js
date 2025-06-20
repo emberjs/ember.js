@@ -5,7 +5,7 @@ import { compile } from 'ember-template-compiler';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
-import EmberObject, { set } from '@ember/object';
+import EmberObject, { get, set } from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -298,7 +298,7 @@ moduleFor(
         let urlSetCount = 0;
         let router = this.applicationInstance.lookup('router:main');
 
-        router.get('location').setURL = function (path) {
+        get(router, 'location').setURL = function (path) {
           urlSetCount++;
           set(this, 'path', path);
         };
@@ -311,7 +311,7 @@ moduleFor(
         });
 
         assert.equal(urlSetCount, 1);
-        assert.equal(router.get('location').getURL(), '/bar');
+        assert.equal(get(router, 'location').getURL(), '/bar');
       });
     }
 
@@ -365,7 +365,7 @@ moduleFor(
 
         assert.equal(setCount, 1, 'should not call setURL');
         assert.equal(replaceCount, 1, 'should call replaceURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.equal(get(router, 'location').getURL(), '/foo');
       });
     }
 
@@ -392,7 +392,7 @@ moduleFor(
         assert.equal(setCount, 1);
         run(() => router.replaceWith('foo'));
         assert.equal(setCount, 2, 'should call setURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.equal(get(router, 'location').getURL(), '/foo');
       });
     }
 
@@ -477,7 +477,7 @@ moduleFor(
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
         assert.equal(router.currentPath, 'home');
-        assert.equal(router.get('location').getURL(), '/home');
+        assert.equal(get(router, 'location').getURL(), '/home');
       });
     }
 
@@ -575,10 +575,8 @@ moduleFor(
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
         assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
-        assert.equal(
-          this.applicationInstance.lookup('router:main').get('location').getURL(),
-          '/foo/bar/2/baz'
-        );
+        let router = this.applicationInstance.lookup('router:main');
+        assert.equal(get(router, 'location').getURL(), '/foo/bar/2/baz');
       });
     }
 
@@ -614,7 +612,7 @@ moduleFor(
         assert.equal(router.currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
         assert.equal(router.currentPath, 'foo.qux');
-        assert.equal(router.get('location').getURL(), '/foo/qux');
+        assert.equal(get(router, 'location').getURL(), '/foo/qux');
       });
     }
 
@@ -624,7 +622,7 @@ moduleFor(
       let setHistory;
 
       setHistory = function (obj, path) {
-        obj.set('history', { state: { path: path } });
+        set(obj, 'history', { state: { path: path } });
       };
 
       let location = HistoryLocation.create({
@@ -632,7 +630,7 @@ moduleFor(
           let path = rootURL + '/posts';
 
           setHistory(this, path);
-          this.set('location', {
+          set(this, 'location', {
             pathname: path,
             href: 'http://localhost/' + path,
           });
@@ -687,7 +685,7 @@ moduleFor(
             pushState() {},
           };
           initState() {
-            assert.equal(this.get('rootURL'), rootURL);
+            assert.equal(get(this, 'rootURL'), rootURL);
           }
         }
       );
@@ -879,9 +877,7 @@ moduleFor(
     }
 
     ['@test `activate` event fires on the route'](assert) {
-      assert.expect(4);
-
-      let eventFired = 0;
+      assert.expect(2);
 
       this.router.map(function () {
         this.route('nork');
@@ -890,15 +886,6 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
-
-            this.on('activate', function (transition) {
-              assert.equal(++eventFired, 1, 'activate event is fired once');
-              assert.ok(transition, 'transition is passed to activate event');
-            });
-          }
-
           activate(transition) {
             assert.ok(true, 'activate hook is called');
             assert.ok(transition, 'transition is passed to activate hook');
@@ -910,9 +897,7 @@ moduleFor(
     }
 
     ['@test `deactivate` event fires on the route'](assert) {
-      assert.expect(4);
-
-      let eventFired = 0;
+      assert.expect(2);
 
       this.router.map(function () {
         this.route('nork');
@@ -922,15 +907,6 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
-
-            this.on('deactivate', function (transition) {
-              assert.equal(++eventFired, 1, 'deactivate event is fired once');
-              assert.ok(transition, 'transition is passed');
-            });
-          }
-
           deactivate(transition) {
             assert.ok(true, 'deactivate hook is called');
             assert.ok(transition, 'transition is passed');
@@ -1053,7 +1029,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(router.get('location.path'), '/about/TreeklesMcGeekles');
+        assert.equal(get(router, 'location.path'), '/about/TreeklesMcGeekles');
       });
     }
 

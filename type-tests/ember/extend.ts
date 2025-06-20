@@ -9,7 +9,7 @@ class Person extends Ember.Object {
     return `${this.firstName} ${this.lastName}`;
   }
   get fullName2(): string {
-    return `${this.get('firstName')} ${this.get('lastName')}`;
+    return `${this.firstName} ${this.lastName}`;
   }
 }
 

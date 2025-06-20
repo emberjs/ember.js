@@ -21,16 +21,10 @@ export {
   hasUnknownProperty,
 } from './lib/property_get';
 export { set, _setProp, trySet } from './lib/property_set';
-export {
-  objectAt,
-  replace,
-  replaceInNativeArray,
-  addArrayObserver,
-  removeArrayObserver,
-} from './lib/array';
+export { objectAt, replace, addArrayObserver, removeArrayObserver } from './lib/array';
 export { arrayContentWillChange, arrayContentDidChange } from './lib/array_events';
 export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
-export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';
+export { addListener, hasListeners, removeListener, sendEvent } from './lib/events';
 
 export {
   beginPropertyChanges,

@@ -52,6 +52,7 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { setProperties } from '@ember/-internals/metal';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
@@ -239,7 +240,7 @@ export default class CurlyComponentManager
   /*
    * This hook is responsible for actually instantiating the component instance.
    * It also is where we perform additional bookkeeping to support legacy
-   * features like exposed by view mixins like ChildViewSupport, ActionSupport,
+   * features like exposed by view mixins like ChildViewSupport,
    * etc.
    */
   create(
@@ -440,7 +441,7 @@ export default class CurlyComponentManager
       bucket.argsRevision = valueForTag(argsTag);
 
       component[IS_DISPATCHING_ATTRS] = true;
-      component.setProperties(props);
+      setProperties(component, props);
       component[IS_DISPATCHING_ATTRS] = false;
 
       component.trigger('didUpdateAttrs');

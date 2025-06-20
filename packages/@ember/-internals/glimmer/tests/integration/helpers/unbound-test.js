@@ -1,13 +1,6 @@
-import {
-  RenderingTestCase,
-  moduleFor,
-  strip,
-  runTask,
-  runLoopSettled,
-} from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import { set, get, setProperties } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { set, setProperties } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -42,7 +35,7 @@ moduleFor(
 
     ['@test should be able to use unbound helper in #each helper']() {
       this.render(`<ul>{{#each this.items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`, {
-        items: emberA(['a', 'b', 'c', 1, 2, 3]),
+        items: ['a', 'b', 'c', 1, 2, 3],
       });
 
       this.assertText('abc123');
@@ -56,7 +49,7 @@ moduleFor(
       this.render(
         `<ul>{{#each this.items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`,
         {
-          items: emberA([{ wham: 'bam' }, { wham: 1 }]),
+          items: [{ wham: 'bam' }, { wham: 1 }],
         }
       );
 
@@ -66,11 +59,11 @@ moduleFor(
 
       this.assertText('bam1');
 
-      runTask(() => this.context.items.setEach('wham', 'HEY'));
+      runTask(() => this.context.items.forEach((i) => (i.wham = 'HEY')));
 
       this.assertText('bam1');
 
-      runTask(() => set(this.context, 'items', emberA([{ wham: 'bam' }, { wham: 1 }])));
+      runTask(() => set(this.context, 'items', [{ wham: 'bam' }, { wham: 1 }]));
 
       this.assertText('bam1');
     }
@@ -110,7 +103,7 @@ moduleFor(
     }
 
     ['@test should property escape unsafe hrefs']() {
-      let unsafeUrls = emberA([
+      let unsafeUrls = [
         {
           name: 'Bob',
           url: 'javascript:bob-is-cool',
@@ -123,7 +116,7 @@ moduleFor(
           name: 'Richard',
           url: 'javascript:richard-is-cool',
         },
-      ]);
+      ];
 
       this.render(
         `<ul>{{#each this.people as |person|}}<li><a href="{{unbound person.url}}">{{person.name}}</a></li>{{/each}}</ul>`,
@@ -152,7 +145,7 @@ moduleFor(
 
       this.assertHTML(escapedHtml);
 
-      runTask(() => this.context.people.setEach('url', 'http://google.com'));
+      runTask(() => this.context.people.forEach((i) => (i.url = 'http://google.com')));
 
       this.assertHTML(escapedHtml);
 
@@ -369,83 +362,13 @@ moduleFor(
       this.assertText('abc abc');
     }
 
-    async ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
-      this.registerHelper('capitalizeName', {
-        destroy() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this._super(...arguments);
-        },
-
-        compute([value]) {
-          if (this.value) {
-            this.removeObserver('value.firstName', this, this.recompute);
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          return value ? get(value, 'firstName').toUpperCase() : '';
-        },
-      });
-
-      this.registerHelper('concatNames', {
-        destroy() {
-          this.teardown();
-          this._super(...arguments);
-        },
-        teardown() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this.removeObserver('value.lastName', this, this.recompute);
-        },
-        compute([value]) {
-          if (this.value) {
-            this.teardown();
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          this.addObserver('value.lastName', this, this.recompute);
-          return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
-        },
-      });
-
-      this.render(
-        `{{capitalizeName this.person}} {{unbound (capitalizeName this.person)}} {{concatNames this.person}} {{unbound (concatNames this.person)}}`,
-        {
-          person: {
-            firstName: 'shooby',
-            lastName: 'taylor',
-          },
-        }
-      );
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => this.rerender());
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => set(this.context, 'person.firstName', 'sally'));
-      await runLoopSettled();
-
-      this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
-
-      runTask(() =>
-        set(this.context, 'person', {
-          firstName: 'shooby',
-          lastName: 'taylor',
-        })
-      );
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-    }
-
     ['@test should be able to render an unbound helper invocation in #each helper']() {
       this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
       this.render(
         `{{#each this.people as |person|}}{{capitalize person.firstName}} {{unbound (capitalize person.firstName)}}{{/each}}`,
         {
-          people: emberA([
+          people: [
             {
               firstName: 'shooby',
               lastName: 'taylor',
@@ -454,7 +377,7 @@ moduleFor(
               firstName: 'cindy',
               lastName: 'taylor',
             },
-          ]),
+          ],
         }
       );
 
@@ -464,98 +387,24 @@ moduleFor(
 
       this.assertText('SHOOBY SHOOBYCINDY CINDY');
 
-      runTask(() => this.context.people.setEach('firstName', 'chad'));
+      runTask(() => this.context.people.forEach((i) => set(i, 'firstName', 'chad')));
 
       this.assertText('CHAD SHOOBYCHAD CINDY');
 
       runTask(() =>
-        set(
-          this.context,
-          'people',
-          emberA([
-            {
-              firstName: 'shooby',
-              lastName: 'taylor',
-            },
-            {
-              firstName: 'cindy',
-              lastName: 'taylor',
-            },
-          ])
-        )
-      );
-
-      this.assertText('SHOOBY SHOOBYCINDY CINDY');
-    }
-
-    async ['@test should be able to render an unbound helper invocation with bound hash options']() {
-      this.registerHelper('capitalizeName', {
-        destroy() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this._super(...arguments);
-        },
-
-        compute([value]) {
-          if (this.value) {
-            this.removeObserver('value.firstName', this, this.recompute);
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          return value ? get(value, 'firstName').toUpperCase() : '';
-        },
-      });
-
-      this.registerHelper('concatNames', {
-        destroy() {
-          this.teardown();
-          this._super(...arguments);
-        },
-        teardown() {
-          this.removeObserver('value.firstName', this, this.recompute);
-          this.removeObserver('value.lastName', this, this.recompute);
-        },
-        compute([value]) {
-          if (this.value) {
-            this.teardown();
-          }
-          this.set('value', value);
-          this.addObserver('value.firstName', this, this.recompute);
-          this.addObserver('value.lastName', this, this.recompute);
-          return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
-        },
-      });
-
-      this.render(
-        `{{capitalizeName this.person}} {{unbound (capitalizeName this.person)}} {{concatNames this.person}} {{unbound (concatNames this.person)}}`,
-        {
-          person: {
+        set(this.context, 'people', [
+          {
             firstName: 'shooby',
             lastName: 'taylor',
           },
-        }
-      );
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => this.rerender());
-      await runLoopSettled();
-
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
-
-      runTask(() => set(this.context, 'person.firstName', 'sally'));
-      await runLoopSettled();
-
-      this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
-
-      runTask(() =>
-        set(this.context, 'person', {
-          firstName: 'shooby',
-          lastName: 'taylor',
-        })
+          {
+            firstName: 'cindy',
+            lastName: 'taylor',
+          },
+        ])
       );
 
-      this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
+      this.assertText('SHOOBY SHOOBYCINDY CINDY');
     }
 
     ['@test should be able to render bound form of a helper inside unbound form of same helper']() {

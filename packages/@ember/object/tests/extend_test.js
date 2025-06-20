@@ -1,6 +1,6 @@
-import { computed, get } from '@ember/object';
-import EmberObject, { observer } from '@ember/object';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { get } from '@ember/object';
+import EmberObject from '@ember/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject.extend',
@@ -79,14 +79,14 @@ moduleFor(
       let some = SomeClass.create();
       let another = AnotherClass.create();
       let yetAnother = YetAnotherClass.create();
-      assert.deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
+      assert.deepEqual(get(some, 'things'), ['foo'], 'base class should have just its value');
       assert.deepEqual(
-        another.get('things'),
+        get(another, 'things'),
         ['foo', 'bar'],
         "subclass should have base class' and its own"
       );
       assert.deepEqual(
-        yetAnother.get('things'),
+        get(yetAnother, 'things'),
         ['foo', 'baz'],
         "subclass should have base class' and its own"
       );
@@ -122,36 +122,37 @@ moduleFor(
       );
     }
 
-    async ['@test Overriding a computed property with an observer'](assert) {
-      let Parent = EmberObject.extend({
-        foo: computed(function () {
-          return 'FOO';
-        }),
-      });
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test Overriding a computed property with an observer'](assert) {
+    //   let Parent = EmberObject.extend({
+    //     foo: computed(function () {
+    //       return 'FOO';
+    //     }),
+    //   });
 
-      let seen = [];
+    //   let seen = [];
 
-      let Child = Parent.extend({
-        foo: observer('bar', function () {
-          seen.push(this.get('bar'));
-        }),
-      });
+    //   let Child = Parent.extend({
+    //     foo: observer('bar', function () {
+    //       seen.push(this.get('bar'));
+    //     }),
+    //   });
 
-      let child = Child.create({ bar: 0 });
+    //   let child = Child.create({ bar: 0 });
 
-      assert.deepEqual(seen, []);
+    //   assert.deepEqual(seen, []);
 
-      child.set('bar', 1);
-      await runLoopSettled();
+    //   child.set('bar', 1);
+    //   await runLoopSettled();
 
-      assert.deepEqual(seen, [1]);
+    //   assert.deepEqual(seen, [1]);
 
-      child.set('bar', 2);
-      await runLoopSettled();
+    //   child.set('bar', 2);
+    //   await runLoopSettled();
 
-      assert.deepEqual(seen, [1, 2]);
+    //   assert.deepEqual(seen, [1, 2]);
 
-      child.destroy();
-    }
+    //   child.destroy();
+    // }
   }
 );

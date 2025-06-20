@@ -1,9 +1,7 @@
-import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
-import { _ProxyMixin } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { computed } from '@ember/object';
+import { computed, get } from '@ember/object';
 
 moduleFor(
   'Service Injection',
@@ -23,34 +21,7 @@ moduleFor(
       await this.visit('/');
 
       let controller = this.applicationInstance.lookup('controller:application');
-      assert.ok(controller.get('myService') instanceof MyService);
-    }
-
-    async ['@test Service can be an object proxy and access owner in init GH#16484'](assert) {
-      let serviceOwner;
-
-      this.add(
-        'controller:application',
-        class extends Controller {
-          @service('my-service')
-          myService;
-        }
-      );
-      let MyService = class extends Service.extend(_ProxyMixin) {
-        init() {
-          super.init(...arguments);
-
-          serviceOwner = getOwner(this);
-        }
-      };
-      this.add('service:my-service', MyService);
-      this.addTemplate('application', '');
-
-      let instance = await this.visit('/');
-
-      let controller = this.applicationInstance.lookup('controller:application');
-      assert.ok(controller.get('myService') instanceof MyService);
-      assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
+      assert.ok(get(controller, 'myService') instanceof MyService);
     }
   }
 );

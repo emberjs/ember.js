@@ -1,11 +1,12 @@
 import type { ResolverClass } from '@ember/-internals/container/lib/registry';
-import type { default as Owner, RegisterOptions, Factory } from '@ember/owner';
+import type { default as Owner, RegisterOptions } from '@ember/owner';
 import type Namespace from '@ember/application/namespace';
 import type { Initializer } from '@ember/engine';
 import Engine from '@ember/engine';
 import type EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
+import { InternalFactory } from '@ember/-internals/owner';
 
 declare let owner: Owner;
 
@@ -37,7 +38,8 @@ expectTypeOf(engine.Resolver).toEqualTypeOf<ResolverClass>();
 // RegistryProxy
 
 expectTypeOf(engine.resolveRegistration('foo:bar')).toEqualTypeOf<
-  Factory<object> | object | undefined
+  // NOTE: The original tests had Factory here. It seems like Factory should match InternalFactory...
+  InternalFactory<object> | object | undefined
 >();
 // @ts-expect-error Requires name
 engine.resolveRegistration();

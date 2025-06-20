@@ -1,5 +1,6 @@
 import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-helpers';
 
+import { set } from '@ember/object';
 import Service, { service } from '@ember/service';
 import { Component, Helper } from '@ember/-internals/glimmer';
 
@@ -182,7 +183,7 @@ moduleFor(
           tagName = '';
           init() {
             super.init(...arguments);
-            this.set('id', id++);
+            set(this, 'id', id++);
           }
         },
         template: 'x-foo: {{@name}} ({{this.id}})',
@@ -193,7 +194,7 @@ moduleFor(
           tagName = '';
           init() {
             super.init(...arguments);
-            this.set('id', id++);
+            set(this, 'id', id++);
           }
         },
         template: 'x-bar ({{this.id}})',

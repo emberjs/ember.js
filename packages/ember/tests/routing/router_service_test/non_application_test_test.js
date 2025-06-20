@@ -51,11 +51,11 @@ moduleFor(
 
     ['@test RouterService properties can be accessed with default'](assert) {
       assert.expect(5);
-      assert.equal(this.routerService.get('currentRouteName'), null);
-      assert.equal(this.routerService.get('currentURL'), null);
-      assert.equal(this.routerService.get('location'), 'none');
-      assert.equal(this.routerService.get('rootURL'), '/');
-      assert.equal(this.routerService.get('currentRoute'), null);
+      assert.equal(get(this.routerService, 'currentRouteName'), null);
+      assert.equal(get(this.routerService, 'currentURL'), null);
+      assert.equal(get(this.routerService, 'location'), 'none');
+      assert.equal(get(this.routerService, 'rootURL'), '/');
+      assert.equal(get(this.routerService, 'currentRoute'), null);
     }
 
     ['@test RouterService properties of router can be accessed with default when router is present'](
@@ -64,11 +64,11 @@ moduleFor(
       assert.expect(5);
       let router = this.owner.lookup('router:main');
       router.setupRouter();
-      assert.equal(this.routerService.get('currentRouteName'), null);
-      assert.equal(this.routerService.get('currentURL'), null);
-      assert.ok(this.routerService.get('location') instanceof NoneLocation);
-      assert.equal(this.routerService.get('rootURL'), '/');
-      assert.equal(this.routerService.get('currentRoute'), null);
+      assert.equal(get(this.routerService, 'currentRouteName'), null);
+      assert.equal(get(this.routerService, 'currentURL'), null);
+      assert.ok(get(this.routerService, 'location') instanceof NoneLocation);
+      assert.equal(get(this.routerService, 'rootURL'), '/');
+      assert.equal(get(this.routerService, 'currentRoute'), null);
     }
 
     ['@test RouterService#urlFor returns url'](assert) {
@@ -110,10 +110,10 @@ moduleFor(
       this.render('{{foo-bar}}');
 
       run(function () {
-        componentInstance.send('transitionToSister');
+        componentInstance.transitionToSister();
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+      assert.equal(get(this.routerService, 'currentRouteName'), 'parent.sister');
       assert.ok(this.routerService.isActive('parent.sister'));
     }
 

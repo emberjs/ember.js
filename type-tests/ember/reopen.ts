@@ -5,7 +5,7 @@ class Person extends Ember.Object {
   name = '';
 
   sayHello() {
-    alert(`Hello. My name is ${this.get('name')}`);
+    alert(`Hello. My name is ${Ember.get(this, 'name')}`);
   }
 }
 
@@ -52,13 +52,13 @@ const Person3 = Person2.reopen({
   goodbyeMessage: 'goodbye',
 
   sayGoodbye(this: Person) {
-    alert(`${this.get('goodbyeMessage')}, ${this.get('name')}`);
+    alert(`${Ember.get(this, 'goodbyeMessage')}, ${Ember.get(this, 'name')}`);
   },
 });
 
 const person3 = Person3.create();
-person3.get('name');
-person3.get('goodbyeMessage');
+Ember.get(person3, 'name');
+Ember.get(person3, 'goodbyeMessage');
 person3.sayHello();
 // @ts-expect-error
 person3.sayGoodbye();

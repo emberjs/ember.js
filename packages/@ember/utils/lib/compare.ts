@@ -1,6 +1,5 @@
 import type { TypeName } from './type-of';
 import typeOf from './type-of';
-import { Comparable } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 
 const TYPE_ORDER: Record<TypeName, number> = {
@@ -104,15 +103,6 @@ export default function compare<T>(v: T, w: T): Compare {
   let type1 = typeOf(v);
   let type2 = typeOf(w);
 
-  if (type1 === 'instance' && isComparable(v) && v.constructor.compare) {
-    return v.constructor.compare(v, w);
-  }
-
-  if (type2 === 'instance' && isComparable(w) && w.constructor.compare) {
-    // SAFETY: Multiplying by a negative just changes the sign
-    return (w.constructor.compare(w, v) * -1) as Compare;
-  }
-
   let res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
 
   if (res !== 0) {
@@ -149,9 +139,6 @@ export default function compare<T>(v: T, w: T): Compare {
       return spaceship(vLen, wLen);
     }
     case 'instance':
-      if (isComparable(v) && v.compare) {
-        return v.compare(v, w);
-      }
       return 0;
 
     case 'date':
@@ -161,12 +148,4 @@ export default function compare<T>(v: T, w: T): Compare {
     default:
       return 0;
   }
-}
-
-interface ComparableConstructor {
-  constructor: Comparable;
-}
-
-function isComparable(value: unknown): value is Comparable & ComparableConstructor {
-  return Comparable.detect(value);
 }

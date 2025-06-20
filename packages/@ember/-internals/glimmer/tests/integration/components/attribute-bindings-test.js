@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/object';
+import { get, set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -720,11 +720,11 @@ moduleFor(
 
           let bindings = [];
 
-          if (this.get('hasFoo')) {
+          if (get(this, 'hasFoo')) {
             bindings.push('foo:data-foo');
           }
 
-          if (this.get('hasBar')) {
+          if (get(this, 'hasBar')) {
             bindings.push('bar:data-bar');
           }
 

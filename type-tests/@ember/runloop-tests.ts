@@ -15,7 +15,7 @@ import {
   // private, supported via `declare module` below
   _backburner,
 } from '@ember/runloop';
-import EmberObject, { action } from '@ember/object';
+import EmberObject, { action, set } from '@ember/object';
 import type { AnyFn, MethodsOf } from '@ember/-internals/utility-types';
 import { expectTypeOf } from 'expect-type';
 
@@ -86,7 +86,7 @@ class TestBind extends EmberObject {
   editor: string | null = null;
 
   setupEditor(editor: string) {
-    this.set('editor', editor);
+    set(this, 'editor', editor);
   }
 }
 

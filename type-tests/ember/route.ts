@@ -1,6 +1,7 @@
 import Route from '@ember/routing/route';
 import Array from '@ember/array';
 import Ember from 'ember'; // currently needed for Transition
+import { set } from '@ember/object';
 import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
 import { service } from '@ember/service';
@@ -31,14 +32,14 @@ class Test extends Route {
   }
 
   afterModel(posts: Posts, transition: Transition) {
-    if (posts.firstObject) {
-      this.router.transitionTo('post.show', posts.firstObject);
+    if (posts[0]) {
+      this.router.transitionTo('post.show', posts[0]);
     }
   }
 
   setupController(controller: Ember.Controller, model: {}) {
     this._super(controller, model);
-    this.controllerFor('application').set('model', model);
+    set(this.controllerFor('application'), 'model', model);
   }
 
   resetController(controller: Ember.Controller, isExiting: boolean, transition: Transition) {
@@ -87,14 +88,6 @@ class WithBadReturningBeforeAndModelHooks extends Route {
     // @ts-expect-error
     return "returning anything else is nonsensical (if 'legal')";
   }
-}
-
-class HasEvented extends Route {
-  methodUsingEvented() {
-    this.on('some-event', this, 'aMethod');
-  }
-
-  aMethod() {}
 }
 
 class HasActionHandler extends Route {

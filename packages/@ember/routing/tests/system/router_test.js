@@ -1,3 +1,4 @@
+import { get } from '@ember/object';
 import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
@@ -76,7 +77,7 @@ moduleFor(
 
     ['@test should destroy its location upon destroying the routers owner.'](assert) {
       let router = createRouter();
-      let location = router.get('location');
+      let location = get(router, 'location');
 
       runDestroy(owner);
 
@@ -90,9 +91,9 @@ moduleFor(
         },
       });
 
-      let location = router.get('location');
+      let location = get(router, 'location');
 
-      assert.equal(location.get('rootURL'), '/rootdir/');
+      assert.equal(get(location, 'rootURL'), '/rootdir/');
     }
 
     ['@test Router._routePath should consume identical prefixes'](assert) {

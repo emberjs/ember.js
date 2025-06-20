@@ -51,18 +51,9 @@ class Foo extends Object {
     // today, this is an acceptable workaround for now. It is assignable *or*
     // castable.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const a: number = this.get('b');
+    const a: number = this.b;
 
-    expectTypeOf(this.get('b').toFixed(4)).toEqualTypeOf<string>();
-    expectTypeOf(this.set('a', 'abc').split(',')).toEqualTypeOf<string[]>();
-    expectTypeOf(this.set('b', 10).toFixed(4)).toEqualTypeOf<string>();
-
-    this.setProperties({ b: 11 });
-    // this.setProperties({ b: '11' }); // @ts-expect-error
-    this.setProperties({
-      a: 'def',
-      b: 11,
-    });
+    expectTypeOf(this.b.toFixed(4)).toEqualTypeOf<string>();
   }
 }
 
@@ -70,20 +61,10 @@ export class Foo2 extends Object {
   name = '';
 
   changeName(name: string) {
-    expectTypeOf(this.set('name', name)).toBeString();
     expectTypeOf(set(this, 'name', name)).toBeString();
 
-    // For some reason, `this` type lookup does not resolve correctly here. Used
-    // outside a class, like `get(someFoo, 'name')`, this works correctly. Since
-    // there are basically no cases inside a class where you *have* to use `get`
-    // today, this is an acceptable workaround for now. It is assignable *or*
-    // castable.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const s: string = this.get('name');
     expectTypeOf(get(this as Foo2, 'name')).toBeString();
-    expectTypeOf((this as Foo2).get('name')).toBeString();
 
-    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<{ name: string }>();
     expectTypeOf(setProperties(this, { name })).toEqualTypeOf<{ name: string }>();
   }
 

@@ -227,16 +227,9 @@ export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: 
 
   ```app/components/rich-text-editor.js
   import Component from '@ember/component';
-  import { on } from '@ember/object/evented';
   import { bind } from '@ember/runloop';
 
   export default Component.extend({
-    initializeTinyMCE: on('didInsertElement', function() {
-      tinymce.init({
-        selector: '#' + this.$().prop('id'),
-        setup: bind(this, this.setupEditor)
-      });
-    }),
 
     didInsertElement() {
       tinymce.init({

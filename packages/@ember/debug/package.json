@@ -12,7 +12,6 @@
     "@ember/application": "workspace:*",
     "@ember/array": "workspace:*",
     "@ember/engine": "workspace:*",
-    "@ember/enumerable": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/owner": "workspace:*",
     "@ember/routing": "workspace:*",

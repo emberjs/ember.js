@@ -2,7 +2,6 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { action, computed, set } from '@ember/object';
@@ -93,7 +92,7 @@ moduleFor(
         'route:home',
         class extends Route {
           setupController(controller) {
-            controller.set('hours', [
+            set(controller, 'hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
@@ -228,7 +227,7 @@ moduleFor(
         'route:home',
         class extends Route {
           setupController(/* controller */) {
-            this.controllerFor('home').set('hours', [
+            set(this.controllerFor('home'), 'hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
@@ -307,7 +306,7 @@ moduleFor(
           setupController(controller, model) {
             assert.equal(this.controllerFor('home'), controller);
 
-            this.controllerFor('home').set('hours', model);
+            set(this.controllerFor('home'), 'hours', model);
           }
         }
       );
@@ -717,7 +716,7 @@ moduleFor(
 
     ['@test Parent route context change'](assert) {
       let editCount = 0;
-      let editedPostIds = emberA();
+      let editedPostIds = [];
 
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('posts', '{{outlet}}');

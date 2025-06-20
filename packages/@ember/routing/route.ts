@@ -9,11 +9,8 @@ import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
-import Evented from '@ember/object/evented';
-import { A as emberA } from '@ember/array';
-import { ActionHandler } from '@ember/-internals/runtime';
 import { typeOf } from '@ember/utils';
-import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
+import { lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
@@ -73,12 +70,10 @@ const RENDER_STATE = Symbol('render-state');
 
   @class Route
   @extends EmberObject
-  @uses ActionHandler
-  @uses Evented
   @since 1.0.0
   @public
 */
-interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
+interface Route<Model = unknown> extends IRoute<Model> {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -252,7 +247,7 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
+class Route<Model = unknown> extends EmberObject implements IRoute {
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we
@@ -346,8 +341,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
         object[name] = get(model, name);
       } else if (/_id$/.test(name)) {
         object[name] = get(model, 'id');
-      } else if (isProxy(model)) {
-        object[name] = get(model, name);
       }
     } else {
       object = getProperties(model, params);
@@ -769,7 +762,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   */
   exit(transition?: Transition) {
     this.deactivate(transition);
-    this.trigger('deactivate', transition);
     this.teardownViews();
   }
 
@@ -795,48 +787,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   enter(transition: Transition) {
     this[RENDER_STATE] = undefined;
     this.activate(transition);
-    this.trigger('activate', transition);
   }
-
-  /**
-    This event is triggered when the router enters the route. It is
-    not executed when the model for the route changes.
-
-    ```app/routes/application.js
-    import { on } from '@ember/object/evented';
-    import Route from '@ember/routing/route';
-
-    export default Route.extend({
-      collectAnalytics: on('activate', function(){
-        collectAnalytics();
-      })
-    });
-    ```
-
-    @event activate
-    @since 1.9.0
-    @public
-  */
-
-  /**
-    This event is triggered when the router completely exits this
-    route. It is not executed when the model for the route changes.
-
-    ```app/routes/index.js
-    import { on } from '@ember/object/evented';
-    import Route from '@ember/routing/route';
-
-    export default Route.extend({
-      trackPageLeaveAnalytics: on('deactivate', function(){
-        trackPageLeaveAnalytics();
-      })
-    });
-    ```
-
-    @event deactivate
-    @since 1.9.0
-    @public
-  */
 
   /**
     This hook is executed when the router completely exits this route. It is
@@ -1488,6 +1439,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     }
   }
 
+  // TODO: Revisit the docs
   /**
     Allows you to produce custom metadata for the route.
     The return value of this method will be attached to
@@ -1931,7 +1883,7 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<st
 function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
     // SAFETY: We lost the type data about the array if we don't cast.
-    return emberA(value.slice()) as unknown as T;
+    return value.slice() as T;
   }
   return value;
 }
@@ -1993,6 +1945,7 @@ function mergeEachQueryParams(
 
 function addQueryParamsObservers(controller: any, propNames: string[]) {
   propNames.forEach((prop) => {
+    // TODO: Handle the case where it has a descriptor (such as tracked or computed)
     if (descriptorForProperty(controller, prop) === undefined) {
       let desc = lookupDescriptor(controller, prop);
 
@@ -2005,10 +1958,55 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
             set: desc.set,
           })
         );
+      } else {
+        const current = controller[prop];
+        controller[`___${prop}`] = current;
+        defineProperty(
+          controller,
+          prop,
+          dependentKeyCompat({
+            get: () => {
+              if (Array.isArray(controller[`___${prop}`])) {
+                return new Proxy(controller[`___${prop}`], {
+                  get: (target, key, receiver) => {
+                    if (
+                      [
+                        'copyWithin',
+                        'fill',
+                        'pop',
+                        'push',
+                        'reverse',
+                        'shift',
+                        'sort',
+                        'splice',
+                        'unshift',
+                      ].includes(key as string)
+                    ) {
+                      let original = target[key];
+                      return (...args: any[]) => {
+                        let result = original.apply(target, args);
+                        controller._qpChanged(controller, `${prop}.[]`);
+                        return result;
+                      };
+                    }
+                    return Reflect.get(target, key, receiver);
+                  },
+                  getPrototypeOf() {
+                    return Array.prototype;
+                  },
+                });
+              }
+              return controller[`___${prop}`];
+            },
+            set: (value) => {
+              controller[`___${prop}`] = value;
+            },
+          })
+        );
       }
     }
 
-    addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
+    addObserver(controller, prop, controller, controller._qpChanged, false);
   });
 }
 

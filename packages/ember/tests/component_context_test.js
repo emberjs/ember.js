@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import { get } from '@ember/object';
 import { Component } from '@ember/-internals/glimmer';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 
@@ -141,7 +142,7 @@ moduleFor(
       this.addComponent('my-component', {
         ComponentClass: class extends Component {
           didInsertElement() {
-            this.element.innerHTML = this.get('data');
+            this.element.innerHTML = get(this, 'data');
           }
         },
       });
@@ -172,7 +173,7 @@ moduleFor(
       this.addComponent('my-component', {
         ComponentClass: class extends Component {
           didInsertElement() {
-            this.element.innerHTML = this.get('attrs.attrs.value');
+            this.element.innerHTML = get(this, 'attrs.attrs.value');
           }
         },
       });

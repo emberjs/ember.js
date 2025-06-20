@@ -5,14 +5,15 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA } from '@ember/array';
 import { RSVP } from '@ember/-internals/runtime';
+import { set } from '@ember/object';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
+import { tracked } from 'tracked-built-ins';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -167,7 +168,7 @@ moduleFor(
         'The dynamic link is disabled when its disabled is true'
       );
 
-      runTask(() => controller.set('dynamicDisabled', false));
+      runTask(() => set(controller, 'dynamicDisabled', false));
 
       assert.equal(
         this.$('#about-link-static > a.disabled').length,
@@ -241,7 +242,7 @@ moduleFor(
         'The default disabled class is not added on the dynamic link'
       );
 
-      runTask(() => controller.set('dynamicDisabled', false));
+      runTask(() => set(controller, 'dynamicDisabled', false));
 
       assert.equal(
         this.$('#about-link-static > a.do-not-want').length,
@@ -298,7 +299,7 @@ moduleFor(
         'The default disabled class is not added'
       );
 
-      runTask(() => controller.set('disabledClass', 'can-not-use'));
+      runTask(() => set(controller, 'disabledClass', 'can-not-use'));
 
       assert.equal(
         this.$('#about-link > a.can-not-use').length,
@@ -356,7 +357,7 @@ moduleFor(
 
       assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
 
-      runTask(() => controller.set('dynamicDisabled', false));
+      runTask(() => set(controller, 'dynamicDisabled', false));
 
       await this.click('#about-link > a');
 
@@ -450,7 +451,7 @@ moduleFor(
         'The other link was rendered without the default active class'
       );
 
-      runTask(() => controller.set('activeClass', 'wow-active'));
+      runTask(() => set(controller, 'activeClass', 'wow-active'));
 
       assert.equal(
         this.$('#self-link > a.wow-active').length,
@@ -1088,7 +1089,7 @@ moduleFor(
         'The link is not active since current-when is false'
       );
 
-      runTask(() => controller.set('isCurrent', true));
+      runTask(() => set(controller, 'isCurrent', true));
 
       assert.ok(
         this.$('#index-link > a').hasClass('active'),
@@ -1344,7 +1345,7 @@ moduleFor(
 
       assertEquality('/');
 
-      runTask(() => controller.set('foo', 'about'));
+      runTask(() => set(controller, 'foo', 'about'));
 
       assertEquality('/about');
     }
@@ -1376,7 +1377,7 @@ moduleFor(
 
       await this.visit('/');
 
-      runTask(() => controller.set('post', post));
+      runTask(() => set(controller, 'post', post));
 
       assert.equal(
         normalizeUrl(this.$('#post > a').attr('href')),
@@ -1384,7 +1385,7 @@ moduleFor(
         'precond - Link has rendered href attr properly'
       );
 
-      runTask(() => controller.set('post', secondPost));
+      runTask(() => set(controller, 'post', secondPost));
 
       assert.equal(
         this.$('#post > a').attr('href'),
@@ -1392,7 +1393,7 @@ moduleFor(
         'href attr was updated after one of the params had been changed'
       );
 
-      runTask(() => controller.set('post', null));
+      runTask(() => set(controller, 'post', null));
 
       assert.equal(
         this.$('#post > a').attr('href'),
@@ -1447,7 +1448,7 @@ moduleFor(
             controller = this;
           }
 
-          routeNames = emberA(['foo', 'bar', 'rar']);
+          routeNames = tracked(['foo', 'bar', 'rar']);
           route1 = 'bar';
           route2 = 'foo';
         }
@@ -1486,11 +1487,11 @@ moduleFor(
 
       linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
-      runTask(() => controller.set('route1', 'rar'));
+      runTask(() => set(controller, 'route1', 'rar'));
 
       linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
-      runTask(() => controller.routeNames.shiftObject());
+      runTask(() => controller.routeNames.shift());
 
       linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
     }
@@ -1816,28 +1817,28 @@ moduleFor(
       await expectWarning(() => this.click(contextLink[0]), warningMessage);
 
       // Set the destinationRoute (context is still null).
-      runTask(() => controller.set('destinationRoute', 'thing'));
+      runTask(() => set(controller, 'destinationRoute', 'thing'));
       assertLinkStatus(contextLink);
 
       // Set the routeContext to an id
-      runTask(() => controller.set('routeContext', '456'));
+      runTask(() => set(controller, 'routeContext', '456'));
       assertLinkStatus(contextLink, '/thing/456');
 
       // Test that 0 isn't interpreted as falsy.
-      runTask(() => controller.set('routeContext', 0));
+      runTask(() => set(controller, 'routeContext', 0));
       assertLinkStatus(contextLink, '/thing/0');
 
       // Set the routeContext to an object
-      runTask(() => controller.set('routeContext', { id: 123 }));
+      runTask(() => set(controller, 'routeContext', { id: 123 }));
       assertLinkStatus(contextLink, '/thing/123');
 
       // Set the destinationRoute back to null.
-      runTask(() => controller.set('destinationRoute', null));
+      runTask(() => set(controller, 'destinationRoute', null));
       assertLinkStatus(contextLink);
 
       await expectWarning(() => this.click(staticLink[0]), warningMessage);
 
-      runTask(() => controller.set('secondRoute', 'about'));
+      runTask(() => set(controller, 'secondRoute', 'about'));
       assertLinkStatus(staticLink, '/about');
 
       // Click the now-active link

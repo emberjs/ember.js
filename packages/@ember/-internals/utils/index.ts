@@ -26,7 +26,6 @@ export { canInvoke } from './lib/invoke';
 export { getName, setName } from './lib/name';
 export { default as toString } from './lib/to-string';
 export { isObject } from './lib/spec';
-export { isProxy, setProxy } from './lib/is_proxy';
 export { default as Cache } from './lib/cache';
 export {
   setupMandatorySetter,

@@ -29,7 +29,6 @@
     "@ember/debug": "workspace:*",
     "@ember/destroyable": "workspace:*",
     "@ember/engine": "workspace:*",
-    "@ember/enumerable": "workspace:*",
     "@ember/helper": "workspace:*",
     "@ember/instrumentation": "workspace:*",
     "@ember/modifier": "workspace:*",
@@ -65,7 +64,8 @@
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
     "router_js": "^8.0.5",
-    "rsvp": "^4.8.5"
+    "rsvp": "^4.8.5",
+    "tracked-built-ins": "^4.0.0"
   },
   "devDependencies": {
     "@ember/template-compiler": "workspace:*"

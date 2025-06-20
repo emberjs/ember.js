@@ -1,13 +1,5 @@
-import EmberObject, { computed, observer } from '@ember/object';
-import {
-  defineProperty,
-  on,
-  addObserver,
-  removeObserver,
-  addListener,
-  removeListener,
-  sendEvent,
-} from '@ember/-internals/metal';
+import EmberObject, { computed, set } from '@ember/object';
+import { defineProperty, addObserver, addListener, sendEvent } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -276,92 +268,83 @@ moduleFor(
       SubEmberObject.metaForProperty('foo');
     }
 
-    '@test observes / removeObserver on / removeListener interop'(assert) {
-      let fooDidChangeBase = 0;
-      let fooDidChangeA = 0;
-      let fooDidChangeB = 0;
-      let someEventBase = 0;
-      let someEventA = 0;
-      let someEventB = 0;
-      class A extends EmberObject.extend({
-        fooDidChange: observer('foo', function () {
-          fooDidChangeBase++;
-        }),
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // '@test observes / removeObserver on / removeListener interop'(assert) {
+    //   let fooDidChangeBase = 0;
+    //   let fooDidChangeA = 0;
+    //   let fooDidChangeB = 0;
+    //   let someEventBase = 0;
+    //   let someEventA = 0;
+    //   let someEventB = 0;
+    //   class A extends EmberObject.extend({
+    //     fooDidChange: observer('foo', function () {
+    //       fooDidChangeBase++;
+    //     }),
 
-        onSomeEvent: on('someEvent', function () {
-          someEventBase++;
-        }),
-      }) {
-        init() {
-          super.init();
-          this.foo = 'bar';
-        }
+    //     onSomeEvent() {
+    //       someEventBase++;
+    //     },
+    //   }) {
+    //     init() {
+    //       super.init();
+    //       this.foo = 'bar';
+    //     }
 
-        fooDidChange() {
-          super.fooDidChange();
-          fooDidChangeA++;
-        }
+    //     fooDidChange() {
+    //       super.fooDidChange();
+    //       fooDidChangeA++;
+    //     }
 
-        onSomeEvent() {
-          super.onSomeEvent();
-          someEventA++;
-        }
-      }
+    //     onSomeEvent() {
+    //       super.onSomeEvent();
+    //       someEventA++;
+    //     }
+    //   }
 
-      class B extends A {
-        fooDidChange() {
-          super.fooDidChange();
-          fooDidChangeB++;
-        }
+    //   class B extends A {
+    //     fooDidChange() {
+    //       super.fooDidChange();
+    //       fooDidChangeB++;
+    //     }
 
-        onSomeEvent() {
-          super.onSomeEvent();
-          someEventB++;
-        }
-      }
+    //     onSomeEvent() {
+    //       super.onSomeEvent();
+    //       someEventB++;
+    //     }
+    //   }
 
-      removeObserver(B.prototype, 'foo', null, 'fooDidChange');
-      removeListener(B.prototype, 'someEvent', null, 'onSomeEvent');
+    //   removeObserver(B.prototype, 'foo', null, 'fooDidChange');
+    //   removeListener(B.prototype, 'someEvent', null, 'onSomeEvent');
 
-      assert.equal(fooDidChangeBase, 0);
-      assert.equal(fooDidChangeA, 0);
-      assert.equal(fooDidChangeB, 0);
+    //   assert.equal(fooDidChangeBase, 0);
+    //   assert.equal(fooDidChangeA, 0);
+    //   assert.equal(fooDidChangeB, 0);
 
-      assert.equal(someEventBase, 0);
-      assert.equal(someEventA, 0);
-      assert.equal(someEventB, 0);
+    //   assert.equal(someEventBase, 0);
+    //   assert.equal(someEventA, 0);
+    //   assert.equal(someEventB, 0);
 
-      let a = A.create();
-      a.set('foo', 'something');
+    //   let a = A.create();
+    //   set(a, 'foo', 'something');
 
-      // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
-      return runLoopSettled().then(async () => {
-        assert.equal(fooDidChangeBase, 1);
-        assert.equal(fooDidChangeA, 1);
-        assert.equal(fooDidChangeB, 0);
+    //   // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
+    //   return runLoopSettled().then(async () => {
+    //     assert.equal(fooDidChangeBase, 1);
+    //     assert.equal(fooDidChangeA, 1);
+    //     assert.equal(fooDidChangeB, 0);
 
-        sendEvent(a, 'someEvent');
-        assert.equal(someEventBase, 1);
-        assert.equal(someEventA, 1);
-        assert.equal(someEventB, 0);
+    //     let b = B.create();
+    //     set(b, 'foo', 'something');
+    //     await runLoopSettled();
 
-        let b = B.create();
-        b.set('foo', 'something');
-        await runLoopSettled();
+    //     assert.equal(fooDidChangeBase, 1);
+    //     assert.equal(fooDidChangeA, 1);
+    //     assert.equal(fooDidChangeB, 0);
 
-        assert.equal(fooDidChangeBase, 1);
-        assert.equal(fooDidChangeA, 1);
-        assert.equal(fooDidChangeB, 0);
-
-        sendEvent(b, 'someEvent');
-        assert.equal(someEventBase, 1);
-        assert.equal(someEventA, 1);
-        assert.equal(someEventB, 0);
-
-        a.destroy();
-        b.destroy();
-      });
-    }
+    //     a.destroy();
+    //     b.destroy();
+    //   });
+    // }
 
     '@test super and _super interop between old and new methods'(assert) {
       let calls = [];
@@ -508,7 +491,8 @@ moduleFor(
 
       assert.equal(d.full, 'Robert Jackson');
 
-      d.setProperties({ first: 'Kris', last: 'Selden' });
+      set(d, 'first', 'Kris');
+      set(d, 'last', 'Selden');
 
       // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
       return runLoopSettled().then(() => {

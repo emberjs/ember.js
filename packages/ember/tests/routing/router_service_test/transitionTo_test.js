@@ -4,7 +4,7 @@ import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
-import { action, get } from '@ember/object';
+import { action, get, set } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 
@@ -22,12 +22,12 @@ moduleFor(
         class extends NoneLocation {
           setURL(path) {
             testCase.state.push(path);
-            this.set('path', path);
+            set(this, 'path', path);
           }
 
           replaceURL(path) {
             testCase.state.splice(testCase.state.length - 1, 1, path);
-            this.set('path', path);
+            set(this, 'path', path);
           }
         }
       );
@@ -109,8 +109,7 @@ moduleFor(
             super.init();
             componentInstance = this;
           }
-          @action
-          transitionToSister() {
+          @action transitionToSister() {
             get(this, 'routerService').transitionTo('parent.sister');
           }
         },
@@ -119,10 +118,10 @@ moduleFor(
 
       return this.visit('/').then(() => {
         run(function () {
-          componentInstance.send('transitionToSister');
+          componentInstance.transitionToSister();
         });
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+        assert.equal(get(this.routerService, 'currentRouteName'), 'parent.sister');
       });
     }
 
@@ -151,10 +150,10 @@ moduleFor(
 
       return this.visit('/').then(() => {
         run(function () {
-          componentInstance.send('transitionToSister');
+          componentInstance.transitionToSister();
         });
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+        assert.equal(get(this.routerService, 'currentRouteName'), 'parent.sister');
       });
     }
 
@@ -186,11 +185,11 @@ moduleFor(
       await this.visit('/');
 
       run(function () {
-        componentInstance.send('transitionToDynamic');
+        componentInstance.transitionToDynamic();
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
-      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      assert.equal(get(this.routerService, 'currentRouteName'), 'dynamic');
+      assert.equal(get(this.routerService, 'currentURL'), '/dynamic/1');
       this.assertText('much dynamicism');
     }
 
@@ -231,11 +230,11 @@ moduleFor(
       await this.visit('/');
 
       run(function () {
-        componentInstance.send('transitionToDynamic');
+        componentInstance.transitionToDynamic();
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
-      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      assert.equal(get(this.routerService, 'currentRouteName'), 'dynamic');
+      assert.equal(get(this.routerService, 'currentURL'), '/dynamic/1');
       this.assertText('much dynamicism');
     }
 
@@ -259,7 +258,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.equal(get(this.routerService, 'currentURL'), '/child');
         });
     }
 
@@ -280,13 +279,13 @@ moduleFor(
           return this.routerService.transitionTo('parent.child');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.equal(get(this.routerService, 'currentURL'), '/child');
         })
         .then(() => {
           return this.routerService.transitionTo(queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          assert.equal(get(this.routerService, 'currentURL'), '/child?sort=DESC');
         });
     }
 
@@ -310,7 +309,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          assert.equal(get(this.routerService, 'currentURL'), '/child?sort=DESC');
         });
     }
 
@@ -336,7 +335,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=DESC');
+          assert.equal(get(this.routerService, 'currentURL'), '/child?url_sort=DESC');
         });
     }
 
@@ -395,7 +394,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+        assert.equal(get(this.routerService, 'currentURL'), '/child?url_sort=ASC');
       });
     }
 
@@ -422,7 +421,7 @@ moduleFor(
       );
 
       return this.visit('/child?url_sort=a').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
+        assert.equal(get(this.routerService, 'currentURL'), '/?url_sort=a');
       });
     }
   }

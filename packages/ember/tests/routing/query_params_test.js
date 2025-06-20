@@ -1,14 +1,14 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
-import EmberObject, { action, get, computed } from '@ember/object';
+import EmberObject, { action, get, computed, set } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
-import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
 import { tracked } from '@ember/-internals/metal';
 import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';
+import { TrackedArray } from 'tracked-built-ins';
 
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
 
@@ -133,7 +133,7 @@ moduleFor(
           'redirected to the sibling route, instead of child route'
         );
         assert.equal(
-          this.getController('parent').get('foo'),
+          get(this.getController('parent'), 'foo'),
           'lol',
           'controller has value from the active transition'
         );
@@ -179,12 +179,12 @@ moduleFor(
           'redirected to the sibling route, instead of child route'
         );
         assert.equal(
-          this.getController('parent').get('string'),
+          get(this.getController('parent'), 'string'),
           'hello',
           'controller has value from the active transition'
         );
         assert.deepEqual(
-          this.getController('parent').get('array'),
+          get(this.getController('parent'), 'array'),
           ['one', 2],
           'controller has value from the active transition'
         );
@@ -236,7 +236,7 @@ moduleFor(
       this.assertCurrentPath('/?other_foo=WOO', "QP updated correctly without 'as'");
 
       await this.transitionTo('/?other_foo=NAW');
-      assert.equal(controller.get('foo'), 'NAW', 'QP managed correctly on URL transition');
+      assert.equal(get(controller, 'foo'), 'NAW', 'QP managed correctly on URL transition');
 
       await this.setAndFlush(controller, 'bar', 'NERK');
       this.assertCurrentPath('/?other_bar=NERK&other_foo=NAW', "QP mapped correctly with 'as'");
@@ -388,7 +388,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.equal(
-              controller.get('foo'),
+              get(controller, 'foo'),
               'YEAH',
               "controller's foo QP property set before setupController called"
             );
@@ -409,7 +409,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.equal(
-              controller.get('faz'),
+              get(controller, 'faz'),
               'YEAH',
               "controller's foo QP property set before setupController called"
             );
@@ -749,21 +749,15 @@ moduleFor(
       );
 
       this.setSingleQPController('application', 'foo', 1, {
+        router: service(),
+
         increment: action(function () {
-          this.incrementProperty('foo');
-          this.send('refreshRoute');
+          set(this, 'foo', this.foo + 1);
+          this.router.refresh();
         }),
       });
 
-      this.add(
-        'route:application',
-        class extends Route {
-          @action
-          refreshRoute() {
-            this.refresh();
-          }
-        }
-      );
+      this.add('route:application', class extends Route {});
 
       await this.visitAndAssert('/');
       assert.equal(getTextOf(document.getElementById('test-value')), '1');
@@ -864,7 +858,7 @@ moduleFor(
       await this.transitionTo('/');
 
       let indexController = this.getController('index');
-      assert.equal(indexController.get('omg'), 'lol');
+      assert.equal(get(indexController, 'omg'), 'lol');
     }
 
     async ['@test can opt into a replace query by specifying replace:true in the Route config hash'](
@@ -1043,7 +1037,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.ok(true, 'setupController called');
-            controller.set('omg', 'OVERRIDE');
+            set(controller, 'omg', 'OVERRIDE');
           }
           @action
           queryParamsDidChange() {
@@ -1072,7 +1066,7 @@ moduleFor(
         class extends Route {
           setupController(controller) {
             assert.ok(true, 'setupController called');
-            controller.set('omg', ['OVERRIDE']);
+            set(controller, 'omg', ['OVERRIDE']);
           }
           @action
           queryParamsDidChange() {
@@ -1094,10 +1088,10 @@ moduleFor(
 
       return this.visit('/?omg=borf').then(() => {
         let indexController = this.getController('index');
-        assert.equal(indexController.get('omg'), 'borf');
+        assert.equal(get(indexController, 'omg'), 'borf');
 
         this.transitionTo('/');
-        assert.equal(indexController.get('omg'), 'lol');
+        assert.equal(get(indexController, 'omg'), 'lol');
       });
     }
 
@@ -1223,10 +1217,10 @@ moduleFor(
 
       return this.visit('/?foo=true').then(() => {
         let controller = this.getController('index');
-        assert.equal(controller.get('foo'), true);
+        assert.equal(get(controller, 'foo'), true);
 
         this.transitionTo('/?foo=false');
-        assert.equal(controller.get('foo'), false);
+        assert.equal(get(controller, 'foo'), false);
       });
     }
 
@@ -1243,7 +1237,7 @@ moduleFor(
 
       return this.visit('/?foo=').then(() => {
         let controller = this.getController('index');
-        assert.equal(controller.get('foo'), '');
+        assert.equal(get(controller, 'foo'), '');
       });
     }
 
@@ -1289,7 +1283,7 @@ moduleFor(
 
       return this.visit('/?foo[]=1&foo[]=2&foo[]=3').then(() => {
         let controller = this.getController('index');
-        assert.deepEqual(controller.get('foo'), ['1', '2', '3']);
+        assert.deepEqual(get(controller, 'foo'), ['1', '2', '3']);
       });
     }
 
@@ -1300,47 +1294,47 @@ moduleFor(
         this.route('home', { path: '/' });
       });
 
-      this.setSingleQPController('home', 'foo', emberA());
+      this.setSingleQPController('home', 'foo', new TrackedArray());
 
       await this.visitAndAssert('/');
       let controller = this.getController('home');
 
-      controller.foo.pushObject(1);
+      controller.foo.push(1);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.popObject();
+      controller.foo.pop();
       await runLoopSettled();
       this.assertCurrentPath('/');
       assert.deepEqual(controller.foo, []);
 
-      controller.foo.pushObject(1);
+      controller.foo.push(1);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.popObject();
+      controller.foo.pop();
       await runLoopSettled();
       this.assertCurrentPath('/');
       assert.deepEqual(controller.foo, []);
 
-      controller.foo.pushObject(1);
+      controller.foo.push(1);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.pushObject(2);
+      controller.foo.push(2);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%2C2%5D');
       assert.deepEqual(controller.foo, [1, 2]);
 
-      controller.foo.popObject();
+      controller.foo.pop();
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.unshiftObject('lol');
+      controller.foo.unshift('lol');
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B%22lol%22%2C1%5D');
       assert.deepEqual(controller.foo, ['lol', 1]);
@@ -1363,13 +1357,13 @@ moduleFor(
         }
       );
 
-      this.setSingleQPController('home', 'foo', emberA([1]));
+      this.setSingleQPController('home', 'foo', [1]);
 
       await this.visitAndAssert('/');
       assert.equal(modelCount, 1);
 
       let controller = this.getController('home');
-      await this.setAndFlush(controller, 'model', emberA([1]));
+      await this.setAndFlush(controller, 'model', [1]);
 
       assert.equal(modelCount, 1);
       this.assertCurrentPath('/');
@@ -1419,21 +1413,21 @@ moduleFor(
       await this.visitAndAssert('/home');
       let controller = this.getController('home');
 
-      assert.deepEqual(controller.get('foo'), [1, 2]);
+      assert.deepEqual(get(controller, 'foo'), [1, 2]);
       this.assertCurrentPath('/home');
 
-      await this.setAndFlush(controller, 'foo', emberA([1, 3]));
+      await this.setAndFlush(controller, 'foo', [1, 3]);
       this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
 
       await this.transitionTo('/home');
 
-      assert.deepEqual(controller.get('foo'), [1, 2]);
+      assert.deepEqual(get(controller, 'foo'), [1, 2]);
       this.assertCurrentPath('/home');
 
       await this.setAndFlush(controller, 'foo', null);
       this.assertCurrentPath('/home', 'Setting property to null');
 
-      await this.setAndFlush(controller, 'foo', emberA([1, 3]));
+      await this.setAndFlush(controller, 'foo', [1, 3]);
       this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
 
       await this.setAndFlush(controller, 'foo', undefined);

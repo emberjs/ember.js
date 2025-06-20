@@ -1,7 +1,7 @@
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { getElementView } from './utils';
 import ActionManager from './action_manager';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
@@ -24,9 +24,9 @@ const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
   @class EventDispatcher
   @namespace Ember
   @private
-  @extends EmberObject
+  @extends CoreObject
 */
-export default class EventDispatcher extends EmberObject {
+export default class EventDispatcher extends CoreObject {
   /**
     The set of events names (and associated handler function names) to be setup
     and dispatched by the `EventDispatcher`. Modifications to this list can be done
@@ -350,13 +350,13 @@ export default class EventDispatcher extends EmberObject {
 
   destroy() {
     if (this._didSetup === false) {
-      return;
+      return this;
     }
 
     let rootElement = this._sanitizedRootElement;
 
     if (!rootElement) {
-      return;
+      return this;
     }
 
     for (let event in this._eventHandlers) {
@@ -365,7 +365,7 @@ export default class EventDispatcher extends EmberObject {
 
     rootElement.classList.remove(ROOT_ELEMENT_CLASS);
 
-    return this._super(...arguments);
+    return super.destroy();
   }
 
   toString() {
