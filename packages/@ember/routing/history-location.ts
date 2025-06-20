@@ -18,6 +18,7 @@ function _uuid() {
   });
 }
 
+// TODO: Update these docs
 /**
   HistoryLocation implements the location API using the browser's
   history.pushState API.

@@ -1,7 +1,6 @@
 import { getFactoryFor, Registry } from '@ember/-internals/container';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import { addObserver } from '@ember/object/observers';
-import Mixin from '@ember/object/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberObject, { computed, get } from '@ember/object';
@@ -40,16 +39,15 @@ moduleFor(
     }
 
     ['@test calls computed property setters'](assert) {
-      let MyClass = EmberObject.extend({
-        foo: computed({
-          get() {
-            return "this is not the value you're looking for";
-          },
-          set(key, value) {
-            return value;
-          },
-        }),
-      });
+      let MyClass = class extends EmberObject {
+        @computed
+        get foo() {
+          return this._foo;
+        }
+        set foo(value) {
+          this._foo = value;
+        }
+      };
 
       let o = MyClass.create({ foo: 'bar' });
       assert.equal(get(o, 'foo'), 'bar');
@@ -185,7 +183,7 @@ moduleFor(
         EmberObject.create({
           foo: computed(function () {}),
         });
-      }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
+      }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() before calling create().');
     }
 
     ['@test throws if you try to call _super in a method']() {
@@ -196,18 +194,6 @@ moduleFor(
           },
         });
       }, 'EmberObject.create no longer supports defining methods that call _super.');
-    }
-
-    ["@test throws if you try to 'mixin' a definition"]() {
-      let myMixin = Mixin.create({
-        adder(arg1, arg2) {
-          return arg1 + arg2;
-        },
-      });
-
-      expectAssertion(function () {
-        EmberObject.create(myMixin);
-      }, 'EmberObject.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
     }
 
     ['@test inherits properties from passed in EmberObject'](assert) {

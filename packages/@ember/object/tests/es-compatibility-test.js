@@ -1,6 +1,5 @@
 import EmberObject, { computed, set } from '@ember/object';
 import { defineProperty, addObserver, addListener, sendEvent } from '@ember/-internals/metal';
-import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
@@ -157,22 +156,6 @@ moduleFor(
           'chain of static methods called with super'
         );
       });
-    }
-
-    ['@test using mixins'](assert) {
-      let Mixin1 = Mixin.create({
-        property1: 'data-1',
-      });
-
-      let Mixin2 = Mixin.create({
-        property2: 'data-2',
-      });
-
-      class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
-
-      let myObject = MyObject.create();
-      assert.equal(myObject.property1, 'data-1', 'includes the first mixin');
-      assert.equal(myObject.property2, 'data-2', 'includes the second mixin');
     }
 
     ['@test using instanceof'](assert) {
@@ -359,23 +342,7 @@ moduleFor(
         }
       }
 
-      let Mixin1 = Mixin.create({
-        init() {
-          calls.push('Mixin1 init before _super');
-          this._super(...arguments);
-          calls.push('Mixin1 init after _super');
-        },
-      });
-
-      let Mixin2 = Mixin.create({
-        init() {
-          calls.push('Mixin2 init before _super');
-          this._super(...arguments);
-          calls.push('Mixin2 init after _super');
-        },
-      });
-
-      class B extends A.extend(Mixin1, Mixin2) {
+      class B extends A {
         init() {
           calls.push('B init before super.init');
           super.init(...arguments);
@@ -407,14 +374,6 @@ moduleFor(
 
       // Only string listeners are allowed for prototypes
       addListener(B.prototype, 'someEvent', null, 'onSomeEvent');
-
-      B.reopen({
-        init() {
-          calls.push('reopen init before _super');
-          this._super(...arguments);
-          calls.push('reopen init after _super');
-        },
-      });
 
       let C = class extends B {
         init() {
@@ -469,15 +428,9 @@ moduleFor(
       assert.deepEqual(calls, [
         'D init before super.init',
         'C init before _super',
-        'reopen init before _super',
         'B init before super.init',
-        'Mixin2 init before _super',
-        'Mixin1 init before _super',
         'A init',
-        'Mixin1 init after _super',
-        'Mixin2 init after _super',
         'B init after super.init',
-        'reopen init after _super',
         'C init after _super',
         'D init after super.init',
       ]);

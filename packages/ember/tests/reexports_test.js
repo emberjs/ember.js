@@ -78,7 +78,6 @@ import * as test23 from '@ember/object/computed';
 import * as test24 from '@ember/object/core';
 import * as test26 from '@ember/object/events';
 import * as test27 from '@ember/object/internals';
-import * as test28 from '@ember/object/mixin';
 import * as test30 from '@ember/object/observers';
 import * as test33 from '@ember/routing/hash-location';
 import * as test34 from '@ember/routing/history-location';
@@ -199,7 +198,6 @@ let allExports = [
   ['sendEvent', '@ember/object/events', 'sendEvent', test26],
   ['cacheFor', '@ember/object/internals', 'cacheFor', test27],
   ['guidFor', '@ember/object/internals', 'guidFor', test27],
-  ['Mixin', '@ember/object/mixin', 'default', test28],
   ['addObserver', '@ember/object/observers', 'addObserver', test30],
   ['removeObserver', '@ember/object/observers', 'removeObserver', test30],
   ['HashLocation', '@ember/routing/hash-location', 'default', test33],

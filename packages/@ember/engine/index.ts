@@ -551,10 +551,7 @@ export function buildInitializerMethod<
     // SAFETY: The superclass may be an Engine, we don't call unless we confirmed it was ok.
     let superclass = this.superclass as typeof Engine;
     if (superclass[bucketName] !== undefined && superclass[bucketName] === this[bucketName]) {
-      let attrs = {
-        [bucketName]: Object.create(this[bucketName]),
-      };
-      this.reopenClass(attrs);
+      this[bucketName] = Object.create(this[bucketName]);
     }
 
     assert(

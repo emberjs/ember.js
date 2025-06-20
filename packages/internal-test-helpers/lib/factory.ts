@@ -33,10 +33,6 @@ export default function factory() {
       return new TestFactory(options);
     }
 
-    static reopenClass(options: Partial<typeof TestFactory>) {
-      setProperties(this, options);
-    }
-
     static extend(options: object) {
       class ChildTestFactory extends TestFactory {}
       setProperties(ChildTestFactory, options);

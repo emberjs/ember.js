@@ -280,7 +280,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
         pushHook('willDestroy');
         removeComponent(this);
 
-        this._super(...arguments);
+        super.willDestroy(...arguments);
       }
     };
 

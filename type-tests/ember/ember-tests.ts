@@ -55,9 +55,6 @@ class Tom extends Person1 {
 const tom = Tom.create();
 tom.helloWorld();
 
-const PersonReopened = Person1.reopen({ isPerson: true });
-Ember.get(PersonReopened.create(), 'isPerson');
-
 class Todo extends Ember.Object {
   isDone = false;
 }
@@ -126,16 +123,3 @@ promise.then(
 
 // make sure Ember.RSVP.Promise can be reference as a type
 declare function promiseReturningFunction(urn: string): Ember.RSVP.Promise<string>;
-
-const mix1 = Ember.Mixin.create({
-  foo: 1,
-});
-
-const mix2 = Ember.Mixin.create({
-  bar: 2,
-});
-
-const component1 = Ember.Component.extend(mix1, mix2, {
-  lyft: Ember.inject.service(),
-  cars: Ember.computed('lyft.cars').readOnly(),
-});

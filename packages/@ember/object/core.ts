@@ -17,14 +17,11 @@ import {
   DEBUG_INJECTION_FUNCTIONS,
   hasUnknownProperty,
 } from '@ember/-internals/metal';
-import Mixin, { applyMixin } from '@ember/object/mixin';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
-
-type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
 type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>
@@ -53,10 +50,8 @@ function hasToStringExtension(val: unknown): val is HasToStringExtension {
     typeof (val as HasToStringExtension).toStringExtension === 'function'
   );
 }
-const reopen = Mixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
-const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
@@ -77,12 +72,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
       typeof properties === 'object' && properties !== null
     );
 
-    assert(
-      'EmberObject.create no longer supports mixing in other ' +
-        'definitions, use .extend & .create separately instead.',
-      !(properties instanceof Mixin)
-    );
-
     let concatenatedProperties = obj.concatenatedProperties;
     let mergedProperties = obj.mergedProperties;
 
@@ -96,7 +85,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
 
       assert(
         'EmberObject.create no longer supports defining computed ' +
-          'properties. Define computed properties using extend() or reopen() ' +
+          'properties. Define computed properties using extend() ' +
           'before calling create().',
         !isClassicDecorator(value)
       );
@@ -170,20 +159,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
   class system based on Ember's Mixin system, and provides the basis for the
   Ember Object Model. `CoreObject` should generally not be used directly,
   instead you should use `EmberObject`.
-
-  ## Usage
-
-  You can define a class by extending from `CoreObject` using the `extend`
-  method:
-
-  ```js
-  const Person = CoreObject.extend({
-    name: 'Tomster',
-  });
-  ```
-
-  For detailed usage, see the [Object Model](https://guides.emberjs.com/release/object-model/)
-  section of the guides.
 
   ## Usage with Native Classes
 
@@ -305,11 +280,6 @@ class CoreObject {
     if (DEBUG && self !== this) {
       return self;
     }
-  }
-
-  reopen(...args: Array<Mixin | Record<string, unknown>>): this {
-    applyMixin(this, args);
-    return this;
   }
 
   /**
@@ -612,121 +582,17 @@ class CoreObject {
   }
 
   /**
-    Creates a new subclass.
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const Person = EmberObject.extend({
-      say(thing) {
-        alert(thing);
-       }
-    });
-    ```
-
-    This defines a new subclass of EmberObject: `Person`. It contains one method: `say()`.
-
-    You can also create a subclass from any existing class by calling its `extend()` method.
-    For example, you might want to create a subclass of Ember's built-in `Component` class:
-
-    ```javascript
-    import Component from '@ember/component';
-
-    const PersonComponent = Component.extend({
-      tagName: 'li',
-      classNameBindings: ['isAdministrator']
-    });
-    ```
-
-    When defining a subclass, you can override methods but still access the
-    implementation of your parent class by calling the special `_super()` method:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const Person = EmberObject.extend({
-      say(thing) {
-        let name = this.get('name');
-        alert(`${name} says: ${thing}`);
-      }
-    });
-
-    const Soldier = Person.extend({
-      say(thing) {
-        this._super(`${thing}, sir!`);
-      },
-      march(numberOfHours) {
-        alert(`${this.get('name')} marches for ${numberOfHours} hours.`);
-      }
-    });
-
-    let yehuda = Soldier.create({
-      name: 'Yehuda Katz'
-    });
-
-    yehuda.say('Yes');  // alerts "Yehuda Katz says: Yes, sir!"
-    ```
-
-    The `create()` on line #17 creates an *instance* of the `Soldier` class.
-    The `extend()` on line #8 creates a *subclass* of `Person`. Any instance
-    of the `Person` class will *not* have the `march()` method.
-
-    You can also pass `Mixin` classes to add additional properties to the subclass.
-
-    ```javascript
-    import EmberObject from '@ember/object';
-    import Mixin from '@ember/object/mixin';
-
-    const Person = EmberObject.extend({
-      say(thing) {
-        alert(`${this.get('name')} says: ${thing}`);
-      }
-    });
-
-    const SingingMixin = Mixin.create({
-      sing(thing) {
-        alert(`${this.get('name')} sings: la la la ${thing}`);
-      }
-    });
-
-    const BroadwayStar = Person.extend(SingingMixin, {
-      dance() {
-        alert(`${this.get('name')} dances: tap tap tap tap `);
-      }
-    });
-    ```
-
-    The `BroadwayStar` class contains three methods: `say()`, `sing()`, and `dance()`.
-
-    @method extend
-    @static
-    @for @ember/object
-    @param {Mixin} [mixins]* One or more Mixin classes
-    @param {Object} [arguments]* Object containing values to use within the new class
-    @public
-  */
-  static extend<Statics, Instance, M extends Array<unknown>>(
-    this: Statics & EmberClassConstructor<Instance>,
-    ...mixins: M
-  ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
-  static extend(...mixins: any[]) {
-    let Class = class extends this {};
-    reopen.apply(Class.PrototypeMixin, mixins);
-    return Class;
-  }
-
-  /**
     Creates an instance of a class. Accepts either no arguments, or an object
     containing values to initialize the newly instantiated object with.
 
     ```javascript
     import EmberObject from '@ember/object';
 
-    const Person = EmberObject.extend({
+    class Person extends EmberObject {
       helloWorld() {
         alert(`Hi, my name is ${this.get('name')}`);
       }
-    });
+    }
 
     let tom = Person.create({
       name: 'Tom Dale'
@@ -735,8 +601,7 @@ class CoreObject {
     tom.helloWorld(); // alerts "Hi, my name is Tom Dale".
     ```
 
-    `create` will call the `init` function if defined during
-    `AnyObject.extend`
+    `create` will call the `init` function if defined.
 
     If no arguments are passed to `create`, it will not set values to the new
     instance during initialization:
@@ -798,129 +663,6 @@ class CoreObject {
     // SAFETY: The `initialize` call is responsible to merge the prototype chain
     // so that this holds.
     return instance as InstanceType<C> & MergeArray<Args>;
-  }
-
-  /**
-    Augments a constructor's prototype with additional
-    properties and functions:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const MyObject = EmberObject.extend({
-      name: 'an object'
-    });
-
-    o = MyObject.create();
-    o.get('name'); // 'an object'
-
-    MyObject.reopen({
-      say(msg) {
-        console.log(msg);
-      }
-    });
-
-    o2 = MyObject.create();
-    o2.say('hello'); // logs "hello"
-
-    o.say('goodbye'); // logs "goodbye"
-    ```
-
-    To add functions and properties to the constructor itself,
-    see `reopenClass`
-
-    @method reopen
-    @for @ember/object
-    @static
-    @public
-  */
-  static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
-    this.willReopen();
-    reopen.apply(this.PrototypeMixin, args);
-    return this;
-  }
-
-  static willReopen() {
-    let p = this.prototype;
-    if (wasApplied.has(p)) {
-      wasApplied.delete(p);
-
-      // If the base mixin already exists and was applied, create a new mixin to
-      // make sure that it gets properly applied. Reusing the same mixin after
-      // the first `proto` call will cause it to get skipped.
-      if (prototypeMixinMap.has(this)) {
-        prototypeMixinMap.set(this, Mixin.create(this.PrototypeMixin));
-      }
-    }
-  }
-
-  /**
-    Augments a constructor's own properties and functions:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const MyObject = EmberObject.extend({
-      name: 'an object'
-    });
-
-    MyObject.reopenClass({
-      canBuild: false
-    });
-
-    MyObject.canBuild; // false
-    o = MyObject.create();
-    ```
-
-    In other words, this creates static properties and functions for the class.
-    These are only available on the class and not on any instance of that class.
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const Person = EmberObject.extend({
-      name: '',
-      sayHello() {
-        alert(`Hello. My name is ${this.get('name')}`);
-      }
-    });
-
-    Person.reopenClass({
-      species: 'Homo sapiens',
-
-      createPerson(name) {
-        return Person.create({ name });
-      }
-    });
-
-    let tom = Person.create({
-      name: 'Tom Dale'
-    });
-    let yehuda = Person.createPerson('Yehuda Katz');
-
-    tom.sayHello(); // "Hello. My name is Tom Dale"
-    yehuda.sayHello(); // "Hello. My name is Yehuda Katz"
-    alert(Person.species); // "Homo sapiens"
-    ```
-
-    Note that `species` and `createPerson` are *not* valid on the `tom` and `yehuda`
-    variables. They are only valid on `Person`.
-
-    To add functions and properties to instances of
-    a constructor by extending the constructor's prototype
-    see `reopen`
-
-    @method reopenClass
-    @for @ember/object
-    @static
-    @public
-  */
-  static reopenClass<C extends typeof CoreObject>(
-    this: C,
-    ...mixins: Array<Mixin | Record<string, unknown>>
-  ): C {
-    applyMixin(this, mixins);
-    return this;
   }
 
   static detect(obj: unknown) {
@@ -1005,16 +747,6 @@ class CoreObject {
     });
   }
 
-  static get PrototypeMixin() {
-    let prototypeMixin = prototypeMixinMap.get(this);
-    if (prototypeMixin === undefined) {
-      prototypeMixin = Mixin.create();
-      prototypeMixin.ownerConstructor = this;
-      prototypeMixinMap.set(this, prototypeMixin);
-    }
-    return prototypeMixin;
-  }
-
   static get superclass() {
     let c = Object.getPrototypeOf(this);
     return c !== Function.prototype ? c : undefined;
@@ -1027,12 +759,6 @@ class CoreObject {
       let parent = this.superclass;
       if (parent) {
         parent.proto();
-      }
-
-      // If the prototype mixin exists, apply it. In the case of native classes,
-      // it will not exist (unless the class has been reopened).
-      if (prototypeMixinMap.has(this)) {
-        this.PrototypeMixin.apply(p);
       }
     }
     return p;
@@ -1056,12 +782,6 @@ function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, un
   let initProperties: Record<string, unknown> = {};
 
   for (let properties of props) {
-    assert(
-      'EmberObject.create no longer supports mixing in other ' +
-        'definitions, use .extend & .create separately instead.',
-      !(properties instanceof Mixin)
-    );
-
     let keyNames = Object.keys(properties);
 
     for (let j = 0, k = keyNames.length; j < k; j++) {

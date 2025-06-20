@@ -1,8 +1,12 @@
 import { get } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
+import EmberRouter from '@ember/routing/router';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
+
+const originalInit = EmberRouter.prototype.init;
+const originalSetupRouter = EmberRouter.prototype.setupRouter;
 
 // These tests mimic what happens with lazily loaded Engines.
 moduleFor(
@@ -15,13 +19,13 @@ moduleFor(
         location: 'test',
 
         init() {
-          this._super(...arguments);
+          originalInit.call(this, ...arguments);
           this._seenHandlers = Object.create(null);
           this._handlerPromises = Object.create(null);
         },
 
         setupRouter() {
-          let isNewSetup = this._super(...arguments);
+          let isNewSetup = originalSetupRouter.call(this, ...arguments);
           if (isNewSetup) {
             let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
             let getRoute = this._routerMicrolib.getRoute;
@@ -297,9 +301,7 @@ moduleFor(
         "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
       );
 
-      this.setSingleQPController('example', 'foo', undefined, {
-        foo: undefined,
-      });
+      this.setSingleQPController('example', 'foo', undefined);
 
       this.add(
         'route:example',

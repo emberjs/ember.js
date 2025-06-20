@@ -71,7 +71,6 @@ import EmberHelper from '@ember/component/helper';
 import EmberEngine from '@ember/engine';
 import EmberEngineInstance from '@ember/engine/instance';
 import EmberCoreObject from '@ember/object/core';
-import EmberMixin, { mixin as emberMixin } from '@ember/object/mixin';
 import {
   addObserver as emberAddObserver,
   removeObserver as emberRemoveObserver,
@@ -298,11 +297,6 @@ namespace Ember {
   export const removeListener = emberRemoveListener;
   export const sendEvent = emberSendEvent;
 
-  // ****@ember/object/mixin****
-  export const Mixin = EmberMixin;
-  export type Mixin = EmberMixin;
-  export const mixin = emberMixin;
-
   // ****@ember/object/observers****
   export const addObserver = emberAddObserver;
   export const removeObserver = emberRemoveObserver;
@@ -505,8 +499,8 @@ namespace Ember {
   export declare let Handlebars: EmberHandlebars;
   export declare let Test:
     | (NonNullable<typeof EmberTestingImpl>['Test'] & {
-        Adapter: NonNullable<typeof EmberTestingImpl>['Adapter'];
-        QUnitAdapter: NonNullable<typeof EmberTestingImpl>['QUnitAdapter'];
+        Adapter: InstanceType<NonNullable<typeof EmberTestingImpl>['Adapter']>;
+        QUnitAdapter: InstanceType<NonNullable<typeof EmberTestingImpl>['QUnitAdapter']>;
       })
     | undefined;
   export declare let setupForTesting:

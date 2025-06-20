@@ -24,9 +24,9 @@ const MODEL = Symbol('MODEL');
   @extends EmberObject
   @public
 */
-class Controller<T = unknown> extends FrameworkObject.extend({
-  concatenatedProperties: ['queryParams'],
-}) {
+class Controller<T = unknown> extends FrameworkObject {
+  concatenatedProperties = ['queryParams'];
+
   /**
    This property is updated to various different callback functions depending on
    the current "state" of the backing route. It is used by
@@ -298,18 +298,6 @@ class Controller<T = unknown> extends FrameworkObject.extend({
   export default class PostController extends Controller {
     @controller posts;
   }
-  ```
-
-  Classic Class Example:
-
-  ```app/controllers/post.js
-  import Controller, {
-    inject as controller
-  } from '@ember/controller';
-
-  export default Controller.extend({
-    posts: controller()
-  });
   ```
 
   This example will create a `posts` property on the `post` controller that

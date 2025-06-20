@@ -83,7 +83,7 @@ moduleFor(
         class extends Route {
           setupController() {
             assert.ok(true, 'FooBarRoute was called');
-            return this._super(...arguments);
+            return super.setupController(...arguments);
           }
         }
       );
@@ -93,7 +93,7 @@ moduleFor(
         class extends Route {
           setupController() {
             assert.ok(true, 'BarBazRoute was called');
-            return this._super(...arguments);
+            return super.setupController(...arguments);
           }
         }
       );

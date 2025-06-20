@@ -1,7 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals/glimmer';
-import { computed, get, set } from '@ember/object';
-import { notifyPropertyChange, sendEvent } from '@ember/-internals/metal';
+import { sendEvent } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { default as BucketCache } from './lib/cache';
@@ -50,6 +50,7 @@ import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
 import { makeArray } from '@ember/array';
+import { dependentKeyCompat } from '@ember/object/compat';
 
 /**
 @module @ember/routing/router
@@ -143,8 +144,7 @@ class EmberRouter extends EmberObject {
     @default '/'
     @public
   */
-  // Set with reopen to allow overriding via extend
-  declare rootURL: string;
+  rootURL: string = '/';
 
   /**
    The `location` property determines the type of URL's that your
@@ -164,8 +164,7 @@ class EmberRouter extends EmberObject {
     @see {Location}
     @public
   */
-  // Set with reopen to allow overriding via extend
-  declare location: (keyof LocationRegistry & string) | EmberLocation;
+  location: (keyof LocationRegistry & string) | EmberLocation = 'hash';
 
   _routerMicrolib!: Router<Route>;
   _didSetupRouter = false;
@@ -193,7 +192,7 @@ class EmberRouter extends EmberObject {
 
   private namespace: any;
 
-  // Set with reopenClass
+  // Set by `map`
   private static dslCallbacks?: DSLCallback[];
 
   /**
@@ -237,8 +236,6 @@ class EmberRouter extends EmberObject {
   static map(callback: DSLCallback) {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
-      // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
@@ -1437,8 +1434,7 @@ class EmberRouter extends EmberObject {
     @private
     @since 1.2.0
   */
-  // Set with reopen to allow overriding via extend
-  declare didTransition: typeof defaultDidTransition;
+  didTransition = defaultDidTransition;
 
   /**
     Handles notifying any listeners of an impending URL
@@ -1450,8 +1446,7 @@ class EmberRouter extends EmberObject {
     @private
     @since 1.11.0
   */
-  // Set with reopen to allow overriding via extend
-  declare willTransition: typeof defaultWillTransition;
+  willTransition = defaultWillTransition;
 
   /**
    Represents the current URL.
@@ -1460,8 +1455,16 @@ class EmberRouter extends EmberObject {
     @type {String}
     @private
   */
-  // Set with reopen to allow overriding via extend
-  declare url: string;
+  @dependentKeyCompat
+  get url() {
+    let location = get(this, 'location');
+
+    if (typeof location === 'string') {
+      return undefined;
+    }
+
+    return location.getURL();
+  }
 }
 
 /*
@@ -1701,6 +1704,7 @@ export function triggerEvent<N extends MethodNamesOf<typeof defaultActionHandler
     routeInfo = routeInfos[i];
     assert('[BUG] Missing routeInfo', routeInfo);
     handler = routeInfo.route;
+    // @ts-expect-error FIXME: This is not going to work
     actionHandler = handler && handler.actions && handler.actions[name];
     if (actionHandler) {
       if (actionHandler.apply(handler, args) === true) {
@@ -1802,23 +1806,5 @@ function forEachQueryParam(
     callback(key, value, qp);
   }
 }
-
-EmberRouter.reopen({
-  didTransition: defaultDidTransition,
-  willTransition: defaultWillTransition,
-  rootURL: '/',
-  location: 'hash',
-
-  // FIXME: Does this need to be overrideable via extend?
-  url: computed(function (this: EmberRouter) {
-    let location = get(this, 'location');
-
-    if (typeof location === 'string') {
-      return undefined;
-    }
-
-    return location.getURL();
-  }),
-});
 
 export default EmberRouter;

@@ -1,11 +1,13 @@
 import EmberObject from '@ember/object';
 import Ember from 'ember';
 
-const BaseApp = Ember.Application.extend({
-  modulePrefix: 'my-app',
-});
+class BaseApp extends Ember.Application {
+  modulePrefix = 'my-app';
+}
 
-class Obj extends EmberObject.extend({ foo: 'bar' }) {}
+class Obj extends EmberObject {
+  foo = 'bar';
+}
 
 BaseApp.initializer({
   name: 'my-initializer',
