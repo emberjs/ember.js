@@ -253,6 +253,7 @@ module.exports = {
     'helper',
     'helperContainer',
     'htmlSafe',
+    'trustHTML',
     'if',
     'in-element',
     'includes',
@@ -292,6 +293,7 @@ module.exports = {
     'isFactory',
     'isFulfilled',
     'isHTMLSafe',
+    'isTrustedHTML',
     'isInteractive',
     'isNone',
     'isObject',
@@ -599,6 +601,7 @@ module.exports = {
     'Service',
     'TestAdapter',
     'Transition',
+    'TrustedHTML',
     'rsvp',
   ],
   modules: [
