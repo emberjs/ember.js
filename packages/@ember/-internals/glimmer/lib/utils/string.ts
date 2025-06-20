@@ -34,7 +34,7 @@ import type { SafeString as GlimmerSafeString } from '@glimmer/runtime';
 
   @for @ember/template
   @class TrustedHTML
-  @since 4.12.0
+  @since 6.7.0
   @public
  */
 export class TrustedHTML implements GlimmerSafeString {
@@ -100,7 +100,7 @@ export class TrustedHTML implements GlimmerSafeString {
   @since 4.12.0
   @public
  */
-export class SafeString extends TrustedHTML {}
+export const SafeString = TrustedHTML;
 
 /**
   Use this method to indicate that a string should be rendered as HTML
