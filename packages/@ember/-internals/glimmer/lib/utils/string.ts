@@ -106,6 +106,39 @@ export function htmlSafe(str: string): SafeString {
 }
 
 /**
+  Use this method to indicate that a string should be rendered as HTML
+  without escaping when the string is used in a template. To say this another way,
+  strings marked with `trustedHTML` will not be HTML escaped.
+
+  A word of warning -   The `trustedHTML` method does not make the string safe;
+  it only tells the framework to treat the string as if it is safe to render
+  as HTML - that we trust its contents to be safe. If a string contains user inputs or other untrusted
+  data, you must sanitize the string before using the `trustedHTML` method.
+  Otherwise your code is vulnerable to
+  [Cross-Site Scripting](https://owasp.org/www-community/attacks/DOM_Based_XSS).
+  There are many open source sanitization libraries to choose from,
+  both for front end and server-side sanitization.
+
+  ```glimmer-js
+  import { trustedHTML } from '@ember/template';
+
+  const someTrustedOrSanitizedString = "<div>Hello!</div>"
+
+  <template>
+    {{trustedHTML someTrustedOrSanitizedString}}
+  </template>
+  ```
+
+  @method trustedHTML
+  @for @ember/template
+  @param str {String} The string to treat as trusted.
+  @static
+  @return {SafeString} A string that will not be HTML escaped by Handlebars.
+  @public
+ */
+export const trustedHTML = htmlSafe;
+
+/**
   Detects if a string was decorated using `htmlSafe`.
 
   ```javascript
