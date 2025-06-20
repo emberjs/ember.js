@@ -166,3 +166,24 @@ export function isHTMLSafe(str: unknown): str is SafeString {
     str !== null && typeof str === 'object' && typeof (str as SafeString).toHTML === 'function'
   );
 }
+
+/**
+  Detects if a string was decorated using `trustedHTML`.
+
+  ```javascript
+  import { trustedHTML, isHTMLSafe } from '@ember/template';
+
+  let plainString = 'plain string';
+  let safeString = trustedHTML('<div>someValue</div>');
+
+  isTrustedHTML(plainString); // false
+  isTrustedHTML(safeString);  // true
+  ```
+
+  @method isHTMLSafe
+  @for @ember/template
+  @static
+  @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
+  @public
+*/
+export const isTrustedHTML = isHTMLSafe;
