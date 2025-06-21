@@ -1,7 +1,7 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { processAllNamespaces } from '@ember/-internals/metal';
 import { getName } from '@ember/-internals/utils';
 import {
@@ -37,7 +37,7 @@ moduleFor(
     }
 
     ['@test acts like a namespace'](assert) {
-      engine.Foo = class extends EmberObject {};
+      engine.Foo = class extends CoreObject {};
       processAllNamespaces();
       assert.equal(getName(engine.Foo), 'TestEngine.Foo', 'Classes pick up their parent namespace');
     }

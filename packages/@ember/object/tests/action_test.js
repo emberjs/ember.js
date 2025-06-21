@@ -1,5 +1,6 @@
 import { Component } from '@ember/-internals/glimmer';
-import EmberObject, { action } from '@ember/object';
+import { action } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -24,7 +25,7 @@ moduleFor(
     }
 
     '@test action decorator does not add actions to superclass'(assert) {
-      class Foo extends EmberObject {
+      class Foo extends CoreObject {
         @action
         foo() {
           // Do nothing
@@ -172,7 +173,7 @@ moduleFor(
 
     '@test action decorator throws an error if applied to non-methods'() {
       expectAssertion(() => {
-        class TestObject extends EmberObject {
+        class TestObject extends CoreObject {
           @action foo = 'bar';
         }
 
@@ -182,7 +183,7 @@ moduleFor(
 
     '@test action decorator throws an error if passed a function in native classes'() {
       expectAssertion(() => {
-        class TestObject extends EmberObject {
+        class TestObject extends CoreObject {
           @action(function () {}) foo = 'bar';
         }
 
