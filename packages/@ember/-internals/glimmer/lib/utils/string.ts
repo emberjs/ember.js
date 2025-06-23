@@ -101,6 +101,7 @@ export class TrustedHTML implements GlimmerSafeString {
   @public
  */
 export const SafeString = TrustedHTML;
+export type SafeString = TrustedHTML;
 
 /**
   Use this method to indicate that a string should be rendered as HTML
