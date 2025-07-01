@@ -3736,7 +3736,7 @@ packages:
     version: 0.94.8
 
   '@glimmer/runtime@file:glimmer-runtime-0.94.10.tgz':
-    resolution: {integrity: sha512-Aj3PKCrD5XTrkYN6UcwRwQ8AdPODhKpqacpC5SsBkt0XO7uLBgEthiH8ylFBiHNzTmkPRnTeBs2QZFD/EcQGcg==, tarball: file:glimmer-runtime-0.94.10.tgz}
+    resolution: {integrity: sha512-LlWIZTgR8oBcl3AFepId4ZwT7kmrknnKpd3fCqHRUhO7MLO1zugi245W0k4x36dEwk+F41Rrkcq0viT1yNwooA==, tarball: file:glimmer-runtime-0.94.10.tgz}
     version: 0.94.10
 
   '@glimmer/syntax@file:glimmer-syntax-0.94.9.tgz':
