@@ -32,7 +32,6 @@
         "./opcodes.json": [[["default"], "./opcodes.json"]],
         "./package.json": [[["default"], "./package.json"]],
         "./patch-all.mjs": [[["default"], "./patch-all.mjs"]],
-        "./run-browserstack-tests.mjs": [[["default"], "./run-browserstack-tests.mjs"]],
         "./run-tests.mjs": [[["default"], "./run-tests.mjs"]],
         "./run-types-tests.mjs": [[["default"], "./run-types-tests.mjs"]],
         "./sync-npm-owners.mjs": [[["default"], "./sync-npm-owners.mjs"]]

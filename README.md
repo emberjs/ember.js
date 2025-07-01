@@ -1,4 +1,4 @@
-# Status [![Build Status](https://travis-ci.org/glimmerjs/glimmer-vm.svg?branch=main)](https://travis-ci.org/glimmerjs/glimmer-vm) [![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=cG1zSVBpNk5nTWxDcGJ0YkVkQjZsM1YrRzFvQW9GdGlhQm5WMFh1QUZXWT0tLXpXTVRWMXNMRW03MmxUZVpLUy85YkE9PQ==--b6c04579b1314f752eacc8bfff1a03574b8bdc8d%)](https://www.browserstack.com/automate/public-build/cG1zSVBpNk5nTWxDcGJ0YkVkQjZsM1YrRzFvQW9GdGlhQm5WMFh1QUZXWT0tLXpXTVRWMXNMRW03MmxUZVpLUy85YkE9PQ==--b6c04579b1314f752eacc8bfff1a03574b8bdc8d%)
+# Status [![Build Status](https://travis-ci.org/glimmerjs/glimmer-vm.svg?branch=main)](https://travis-ci.org/glimmerjs/glimmer-vm)
 
 
 Glimmer is a flexible, low-level rendering pipeline for building a "live" DOM
@@ -26,19 +26,19 @@ must build the packages first with `npm run build`).
 
 # How to Run Tests
 
-## Via Ember CLI
+## Running all tests
 
-1. Run: `ember test --server`
-
-Ember CLI is a CI tool, so it will run tests as you change files.
-
-## On the console with PhantomJS
-
-1. Run `npm test`.
+1. Run `pnpm test` to run all tests.
 
 ## In a browser
 
-1. Run `npm start`.
+1. Run `pnpm start` to start the Vite dev server.
+2. Open your browser and navigate to the provided URL.
+3. Use the QUnit interface to filter and run specific tests.
+
+## Node.js tests
+
+1. Run `pnpm test:node` to run Node.js tests via Turbo.
 2. Visit <http://localhost:7357/tests/>.
 
 # TypeScript Notes
@@ -90,4 +90,3 @@ private properties outside of the package.**
 
 Cross-browser testing provided by:
 
-<a href="http://browserstack.com"><img height="70" src="https://p3.zdusercontent.com/attachment/1015988/PWfFdN71Aung2evRkIVQuKJpE?token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..aUrNFb8clSXsFwgw5BUTcg.IJr5piuCen7PmSSBHSrOnqM9K5YZfxX3lvbp-5LCqoKOi4CjjgdA419iqjofs0nLtm26FMURvZ8JRTuKB4iHer6lGu5f8dXHtIkYAHjP5fXDWkl044Yg2mSdrhF6uPy62GdlBYoYxwvgkNrac8nN_In8GY-qOC7bYmlZyJT7tsTZUTYbNMQiXS86YA5LgdCEWzWreMvc3C6cvZtVXIrcVgpkroIhvsTQPm4vQA-Uq6iCbTPA4oX5cpEtMtrlg4jYBnnAE4BTw5UwU_dY83ep5g.7wpc1IKv0rSRGsvqCG_q3g" alt="BrowserStack"></a>

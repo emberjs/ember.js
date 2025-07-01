@@ -208,9 +208,9 @@ The build system uses Turbo for orchestration with these key relationships:
 - Cache keys include TypeScript configs, source files, and lock files
 
 ### Build Commands
-- `pnpm build:control` - Build all packages using Rollup
-- `pnpm repo:prepack` - Prepare packages for publishing
+- `pnpm repo:prepack` - Build all packages via Turbo (recommended)
 - `pnpm repo:lint:types` - Type check all packages
+- `pnpm clean` - Clean build artifacts
 
 ### Package Publishing
 
