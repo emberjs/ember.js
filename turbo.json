@@ -24,10 +24,10 @@
   "tasks": {
     "lint:all": {
       "cache": false,
-      "dependsOn": ["test:lint", "test:publint"]
+      "dependsOn": ["lint", "test:publint"]
     },
     "test:node": {},
-    "test:lint": {},
+    "lint": {},
     "test:publint": {
       "dependsOn": ["prepack", "prepare"]
     },

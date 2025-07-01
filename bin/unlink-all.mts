@@ -1,3 +1,12 @@
+/**
+ * This script removes the global pnpm links created by link-all.mts.
+ *
+ * It unlinks all @glimmer packages from the global pnpm store and
+ * removes the dist/ directory that was created for testing.
+ *
+ * Usage: pnpm unlink:all
+ */
+
 import chalk from 'chalk';
 import { execa } from 'execa';
 import { rimraf } from 'rimraf';

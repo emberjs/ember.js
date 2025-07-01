@@ -17,7 +17,7 @@ export default config(
   gitignore(),
   {
     name: '@glimmer-workspace/ignores',
-    ignores: ['ts-dist/**/*'],
+    ignores: ['ts-dist/**/*', '.reference/**/*'],
   },
   override('no-console packages', {
     filter: 'env!=console',
