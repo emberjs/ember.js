@@ -42,7 +42,7 @@ jobs:
           pnpm-args: '--ignore-scripts'
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm repo:lint:all
+      - run: pnpm lint:all
 
 
   verify:
@@ -126,7 +126,7 @@ jobs:
         with:
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm repo:lint:types
+      - run: pnpm lint:types
 
   floating-dependencies:
     name: Floating Dependencies

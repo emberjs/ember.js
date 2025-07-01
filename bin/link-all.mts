@@ -1,3 +1,20 @@
+/**
+ * This script prepares all @glimmer packages for local testing against ember.js.
+ *
+ * It performs the following steps:
+ * 1. Packs all @glimmer packages into tarballs (similar to npm pack)
+ * 2. Extracts them into a dist/ directory with proper structure
+ * 3. Creates a temporary pnpm workspace with all the packages
+ * 4. Globally links each package so they can be used by ember.js
+ *
+ * This allows testing Glimmer VM changes in ember.js without publishing to npm.
+ * The ember.js build can then use `pnpm link --global <package>` to use these
+ * local versions instead of the published npm packages.
+ *
+ * Usage: pnpm link:all
+ * To undo: pnpm unlink:all
+ */
+
 import { writeFileSync } from 'node:fs';
 import { readFile, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';

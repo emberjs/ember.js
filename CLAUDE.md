@@ -19,10 +19,12 @@ To run a single test or test module, use the browser test interface with `pnpm s
 
 ### Linting & Type Checking
 
+- `pnpm lint` - Run ESLint quietly
 - `pnpm lint:fix` - Auto-fix linting issues and format with Prettier (required before commits)
-- `pnpm test:lint` - Run ESLint
-- `pnpm lint:format` - Check Prettier formatting
-- `pnpm repo:lint:types` - Type check all packages via Turbo
+- `pnpm lint:check` - Check Prettier formatting
+- `pnpm lint:types` - Type check all packages via Turbo
+- `pnpm lint:all` - Run all linting checks
+- `pnpm lint:published` - Lint published packages
 
 ### CI Preparation
 
