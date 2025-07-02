@@ -159,11 +159,11 @@ moduleFor(
 
       owner.register(
         'controller:application',
-        Controller.extend({
+        class extends Controller {
           toString() {
             return 'controller:rip-alley';
-          },
-        })
+          }
+        }
       );
 
       let controller = owner.lookup('controller:application');
@@ -184,9 +184,9 @@ moduleFor(
       let controller;
 
       ignoreDeprecation(function () {
-        controller = Controller.extend({
-          content: 'foo-bar',
-        }).create();
+        controller = class extends Controller {
+          content = 'foo-bar';
+        }.create();
       });
 
       assert.notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
@@ -199,9 +199,9 @@ moduleFor(
       assert.expect(2);
       expectNoDeprecation();
 
-      let controller = Controller.extend({
-        content: 'foo-bar',
-      }).create();
+      let controller = class extends Controller {
+        content = 'foo-bar';
+      }.create();
 
       assert.equal(get(controller, 'content'), 'foo-bar');
     }
@@ -210,10 +210,10 @@ moduleFor(
       assert.expect(3);
       expectNoDeprecation();
 
-      let controller = Controller.create({
-        content: 'foo-bar',
-        model: 'blammo',
-      });
+      let controller = class extends Controller {
+        content = 'foo-bar';
+        model = 'blammo';
+      }.create();
 
       assert.equal(get(controller, 'content'), 'foo-bar');
       assert.equal(get(controller, 'model'), 'blammo');
@@ -228,11 +228,12 @@ moduleFor(
       let owner = buildOwner();
 
       expectAssertion(function () {
-        let AnObject = EmberObject.extend({
-          foo: injectController('bar'),
-        });
+        let AnObject = class extends EmberObject {
+          @injectController('bar')
+          foo;
+        };
 
-        owner.register('controller:bar', EmberObject.extend());
+        owner.register('controller:bar', class extends EmberObject {});
         owner.register('foo:main', AnObject);
 
         owner.lookup('foo:main');
@@ -246,12 +247,13 @@ moduleFor(
 
       owner.register(
         'controller:post',
-        Controller.extend({
-          postsController: injectController('posts'),
-        })
+        class extends Controller {
+          @injectController('posts')
+          postsController;
+        }
       );
 
-      owner.register('controller:posts', Controller.extend());
+      owner.register('controller:posts', class extends Controller {});
 
       let postController = owner.lookup('controller:post');
       let postsController = owner.lookup('controller:posts');
@@ -270,12 +272,13 @@ moduleFor(
 
       owner.register(
         'controller:application',
-        Controller.extend({
-          authService: service('auth'),
-        })
+        class extends Controller {
+          @service('auth')
+          authService;
+        }
       );
 
-      owner.register('service:auth', Service.extend());
+      owner.register('service:auth', class extends Service {});
 
       let appController = owner.lookup('controller:application');
       let authService = owner.lookup('service:auth');

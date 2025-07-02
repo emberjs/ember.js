@@ -51,12 +51,13 @@ moduleFor(
         defineComponent(
           null,
           `<button class='do-stuff' {{on "click" this.doStuff}}>Button</button>`,
-          Component.extend({
-            doStuff: action(function () {
+          class extends Component {
+            @action
+            doStuff() {
               let rootElement = getOwner(this).application.rootElement;
               actions.push(rootElement);
-            }),
-          })
+            }
+          }
         )
       );
 

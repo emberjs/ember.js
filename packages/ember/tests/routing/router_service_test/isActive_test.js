@@ -79,15 +79,15 @@ moduleFor(
 
       this.add(
         'controller:parent.sister',
-        Controller.extend({
-          queryParams: ['sort'],
-          sort: 'ASC',
+        class extends Controller {
+          queryParams = ['sort'];
+          sort = 'ASC';
 
           init() {
             assert.ok(false, 'should never create');
-            this._super(...arguments);
-          },
-        })
+            super.init(...arguments);
+          }
+        }
       );
 
       return this.visit('/')
@@ -106,10 +106,10 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort'],
-          sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = ['sort'];
+          sort = 'ASC';
+        }
       );
 
       return this.visit('/')
@@ -149,11 +149,11 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort', 'page'],
-          sort: 'ASC',
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['sort', 'page'];
+          sort = 'ASC';
+          page = 1;
+        }
       );
 
       let qp = this.buildQueryParams({ sort: 'ascending' });

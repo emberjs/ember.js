@@ -9,7 +9,7 @@ moduleFor(
   class extends RenderingTestCase {
     '@test it basically works'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
+        ComponentClass: setComponentTemplate(compile('hello'), class extends Component {}),
       });
 
       this.render('<FooBar />');
@@ -77,10 +77,10 @@ moduleFor(
     }
 
     '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
-      let Parent = setComponentTemplate(compile('hello'), Component.extend());
+      let Parent = setComponentTemplate(compile('hello'), class extends Component {});
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Parent.extend(),
+        ComponentClass: class extends Parent {},
       });
 
       this.render('<FooBar />');
@@ -93,7 +93,7 @@ moduleFor(
     }
 
     '@test templates set with setComponentTemplate are inherited (native ES class extends)'() {
-      let Parent = setComponentTemplate(compile('hello'), Component.extend());
+      let Parent = setComponentTemplate(compile('hello'), class extends Component {});
 
       this.registerComponent('foo-bar', {
         ComponentClass: class extends Parent {},
@@ -109,8 +109,8 @@ moduleFor(
     }
 
     '@test it can re-assign templates from another class'() {
-      let Foo = setComponentTemplate(compile('shared'), Component.extend());
-      let Bar = setComponentTemplate(getComponentTemplate(Foo), Component.extend());
+      let Foo = setComponentTemplate(compile('shared'), class extends Component {});
+      let Bar = setComponentTemplate(getComponentTemplate(Foo), class extends Component {});
 
       this.registerComponent('foo', { ComponentClass: Foo });
       this.registerComponent('bar', { ComponentClass: Bar });

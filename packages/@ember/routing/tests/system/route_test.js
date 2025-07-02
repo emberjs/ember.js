@@ -25,13 +25,13 @@ moduleFor(
       runDestroy(route);
 
       let calledFind = false;
-      route = EmberRoute.extend({
-        store: {
+      route = class extends EmberRoute {
+        store = {
           find() {
             calledFind = true;
           },
-        },
-      }).create();
+        };
+      }.create();
 
       route.store.find();
       assert.true(calledFind, 'store.find was called');
@@ -43,9 +43,9 @@ moduleFor(
 
       let foo = { name: 'foo' };
 
-      let FooRoute = EmberRoute.extend({
-        currentModel: foo,
-      });
+      let FooRoute = class extends EmberRoute {
+        currentModel = foo;
+      };
 
       owner.register('route:foo', FooRoute);
 
@@ -55,8 +55,8 @@ moduleFor(
     }
 
     ['@test _optionsForQueryParam should work with nested properties'](assert) {
-      let route = EmberRoute.extend({
-        queryParams: {
+      let route = class extends EmberRoute {
+        queryParams = {
           'nested.foo': {
             // By default, controller query param properties don't
             // cause a full transition when they are changed, but
@@ -73,8 +73,8 @@ moduleFor(
             // different URL key.
             as: 'foobar',
           },
-        },
-      }).create();
+        };
+      }.create();
 
       assert.strictEqual(
         route._optionsForQueryParam({
@@ -95,9 +95,9 @@ moduleFor(
 
       let foo = { name: 'foo' };
 
-      let FooRoute = EmberRoute.extend({
-        currentModel: foo,
-      });
+      let FooRoute = class extends EmberRoute {
+        currentModel = foo;
+      };
 
       owner.register('route:foo', FooRoute);
 
@@ -108,8 +108,8 @@ moduleFor(
 
     ['@test .send just calls an action if the router is absent'](assert) {
       assert.expect(7);
-      let route = EmberRoute.extend({
-        actions: {
+      let route = class extends EmberRoute {
+        actions = {
           returnsTrue(foo, bar) {
             assert.equal(foo, 1);
             assert.equal(bar, 2);
@@ -121,8 +121,8 @@ moduleFor(
             assert.ok(true, 'returnsFalse was called');
             return false;
           },
-        },
-      }).create();
+        };
+      }.create();
 
       assert.equal(route.send('returnsTrue', 1, 2), true);
       assert.equal(route.send('returnsFalse'), false);
@@ -133,9 +133,9 @@ moduleFor(
 
     ['@test .send just calls an action if the routers internal router property is absent'](assert) {
       assert.expect(7);
-      let route = EmberRoute.extend({
-        router: {},
-        actions: {
+      let route = class extends EmberRoute {
+        router = {};
+        actions = {
           returnsTrue(foo, bar) {
             assert.equal(foo, 1);
             assert.equal(bar, 2);
@@ -147,8 +147,8 @@ moduleFor(
             assert.ok(true, 'returnsFalse was called');
             return false;
           },
-        },
-      }).create();
+        };
+      }.create();
 
       assert.equal(true, route.send('returnsTrue', 1, 2));
       assert.equal(false, route.send('returnsFalse'));
@@ -278,12 +278,13 @@ moduleFor(
 
       owner.register(
         'route:application',
-        EmberRoute.extend({
-          authService: service('auth'),
-        })
+        class extends EmberRoute {
+          @service('auth')
+          authService;
+        }
       );
 
-      owner.register('service:auth', Service.extend());
+      owner.register('service:auth', class extends Service {});
 
       let appRoute = owner.lookup('route:application');
       let authService = owner.lookup('service:auth');

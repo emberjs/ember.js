@@ -11,11 +11,11 @@ moduleFor(
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value}}',
       });
 
@@ -40,12 +40,12 @@ moduleFor(
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value}}',
       });
 
@@ -76,11 +76,11 @@ moduleFor(
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value.prop}}',
       });
 
@@ -113,11 +113,11 @@ moduleFor(
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value}}',
       });
 
@@ -144,20 +144,20 @@ moduleFor(
       let middle, bottom;
 
       this.registerComponent('x-bottom', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.bar}}',
       });
 
       this.registerComponent('x-middle', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             middle = this;
-          },
-        }),
+          }
+        },
         template: '{{this.foo}} {{x-bottom bar=(mut this.foo)}}',
       });
 

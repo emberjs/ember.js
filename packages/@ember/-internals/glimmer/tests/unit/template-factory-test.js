@@ -53,15 +53,15 @@ moduleFor(
       assert.ok(typeof compiled.spec !== 'string', 'Spec has been parsed');
 
       this.registerComponent('x-precompiled', {
-        ComponentClass: Component.extend({
-          layout: Precompiled,
-        }),
+        ComponentClass: class extends Component {
+          layout = Precompiled;
+        },
       });
 
       this.registerComponent('x-compiled', {
-        ComponentClass: Component.extend({
-          layout: Compiled,
-        }),
+        ComponentClass: class extends Component {
+          layout = Compiled;
+        },
       });
 
       this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');

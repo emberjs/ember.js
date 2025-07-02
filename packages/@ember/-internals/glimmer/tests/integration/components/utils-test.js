@@ -19,23 +19,23 @@ moduleFor(
       super(...arguments);
 
       this.addComponent('x-tagless', {
-        ComponentClass: Component.extend({
-          tagName: '',
-        }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
 
         template:
           '<div id="{{this.id}}">[{{this.id}}] {{#if this.isShowing}}{{yield}}{{/if}}</div>',
       });
 
       this.addComponent('x-toggle', {
-        ComponentClass: Component.extend({
-          isExpanded: true,
+        ComponentClass: class extends Component {
+          isExpanded = true;
 
           click() {
             this.toggleProperty('isExpanded');
             return false;
-          },
-        }),
+          }
+        },
 
         template: '[{{this.id}}] {{#if this.isExpanded}}{{yield}}{{/if}}',
       });
@@ -286,12 +286,12 @@ moduleFor(
     ['@test getViewBounds on a regular component'](assert) {
       let component;
       this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             component = this;
-          },
-        }),
+          }
+        },
         template: `<p>Hi, mom!</p>`,
       });
 
@@ -319,13 +319,14 @@ moduleFor(
     ['@test getViewBounds on a tagless component'](assert) {
       let component;
       this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
-          tagName: '',
+        ComponentClass: class extends Component {
+          tagName = '';
+
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             component = this;
-          },
-        }),
+          }
+        },
         template: `<span id="start-node">Hi,</span> <em id="before-end-node">mom</em>!`,
       });
 
@@ -361,12 +362,12 @@ moduleFor(
 
       let component;
       this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             component = this;
-          },
-        }),
+          }
+        },
         template: `<p>Hi, mom!</p>`,
       });
 
@@ -386,12 +387,12 @@ moduleFor(
 
       let component;
       this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             component = this;
-          },
-        }),
+          }
+        },
         template: `<p>Hi, mom!</p>`,
       });
 

@@ -77,60 +77,60 @@ moduleFor(
       });
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             hooks.push('application - application');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register(
               'controller:application',
-              Controller.extend({
-                queryParams: ['lang'],
-                lang: '',
-              })
+              class extends Controller {
+                queryParams = ['lang'];
+                lang = '';
+              }
             );
             this.register(
               'controller:category',
-              Controller.extend({
-                queryParams: ['type'],
-              })
+              class extends Controller {
+                queryParams = ['type'];
+              }
             );
             this.register(
               'controller:authorKtrl',
-              Controller.extend({
-                queryParams: ['official'],
-              })
+              class extends Controller {
+                queryParams = ['official'];
+              }
             );
             this.register('template:application', compile('Engine{{this.lang}}{{outlet}}'));
             this.register(
               'route:application',
-              Route.extend({
+              class extends Route {
                 model() {
                   hooks.push('engine - application');
-                },
-              })
+                }
+              }
             );
             this.register(
               'route:author',
-              Route.extend({
-                controllerName: 'authorKtrl',
-              })
+              class extends Route {
+                controllerName = 'authorKtrl';
+              }
             );
 
             if (self._additionalEngineRegistrations) {
               self._additionalEngineRegistrations.call(this);
             }
-          },
-        })
+          }
+        }
       );
     }
 
@@ -139,23 +139,23 @@ moduleFor(
 
       this.add(
         'engine:chat-engine',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register('template:application', compile('Engine'));
             this.register(
               'controller:application',
-              Controller.extend({
+              class extends Controller {
                 init() {
-                  this._super(...arguments);
+                  super.init(...arguments);
                   hooks.push('engine - application');
-                },
-              })
+                }
+              }
             );
-          },
-        })
+          }
+        }
       );
     }
 
@@ -163,11 +163,11 @@ moduleFor(
       this.addTemplate('application', 'Application{{mount "chat-engine"}}');
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             hooks.push('application - application');
-          },
-        })
+          }
+        }
       );
     }
 
@@ -192,10 +192,10 @@ moduleFor(
       this.add('template:application', sharedTemplate);
       this.add(
         'controller:application',
-        Controller.extend({
-          contextType: 'Application',
-          'ambiguous-curlies': 'Controller Data!',
-        })
+        class extends Controller {
+          contextType = 'Application';
+          'ambiguous-curlies' = 'Controller Data!';
+        }
       );
 
       this.router.map(function () {
@@ -205,25 +205,25 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.register(
               'controller:application',
-              Controller.extend({
-                contextType: 'Engine',
-              })
+              class extends Controller {
+                contextType = 'Engine';
+              }
             );
             this.register('template:application', sharedTemplate);
             this.register(
               'component:ambiguous-curlies',
               setComponentTemplate(compile(`<p>Component!</p>`), templateOnlyComponent())
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog').then(() => {
@@ -238,9 +238,9 @@ moduleFor(
         {{ambiguous-curlies}}
       `);
 
-      let sharedComponent = Component.extend({
-        layout: sharedLayout,
-      });
+      let sharedComponent = class extends Component {
+        layout = sharedLayout;
+      };
 
       this.addTemplate(
         'application',
@@ -260,11 +260,11 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register(
               'template:application',
               compile(strip`
@@ -278,8 +278,8 @@ moduleFor(
               'component:ambiguous-curlies',
               setComponentTemplate(compile(`<p>Component!</p>`), templateOnlyComponent())
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog').then(() => {
@@ -358,23 +358,23 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register('template:application', compile('Engine{{outlet}}'));
             this.register(
               'route:application',
-              Route.extend({
+              class extends Route {
                 deactivate() {
                   assert.notOk(this.isDestroyed, 'Route is not destroyed');
                   assert.notOk(this.isDestroying, 'Route is not being destroyed');
-                },
-              })
+                }
+              }
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog').then(() => {
@@ -399,20 +399,20 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
         this.register('template:application_error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -438,20 +438,20 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
         this.register('template:error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -477,20 +477,20 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:post_error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
         this.register('template:post_error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -516,20 +516,20 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:post.error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
         this.register('template:post.error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post.comments',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -557,21 +557,21 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_loading',
-          Route.extend({
+          class extends Route {
             activate() {
               next(loadingEntered.resolve);
-            },
-          })
+            }
+          }
         );
         this.register('template:application_loading', compile('Loading'));
         this.register('template:post', compile('Post'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return resolveLoading.promise;
-            },
-          })
+            }
+          }
         );
       });
 
@@ -604,21 +604,21 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:loading',
-          Route.extend({
+          class extends Route {
             activate() {
               next(loadingEntered.resolve);
-            },
-          })
+            }
+          }
         );
         this.register('template:loading', compile('Loading'));
         this.register('template:post', compile('Post'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return resolveLoading.promise;
-            },
-          })
+            }
+          }
         );
       });
 
@@ -653,13 +653,13 @@ moduleFor(
         this.register('template:post.likes', compile('Likes'));
         this.register(
           'route:post.likes',
-          Route.extend({
+          class extends Route {
             model() {
               return new RSVP.Promise((resolve) => {
                 resolveLoading = resolve;
               });
-            },
-          })
+            }
+          }
         );
       });
 
@@ -691,21 +691,21 @@ moduleFor(
         this.register('template:post.comments', compile('Comments'));
         this.register(
           'route:post.loading',
-          Route.extend({
+          class extends Route {
             activate() {
               next(loadingEntered.resolve);
-            },
-          })
+            }
+          }
         );
         this.register('template:post.loading', compile('Loading'));
         this.register('template:post.likes', compile('Likes'));
         this.register(
           'route:post.likes',
-          Route.extend({
+          class extends Route {
             model() {
               return resolveLoading.promise;
-            },
-          })
+            }
+          }
         );
       });
 
@@ -796,11 +796,11 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:application',
-          Route.extend({
+          class extends Route {
             init() {
               throw new Error('Whoops! Something went wrong...');
-            },
-          })
+            }
+          }
         );
       });
 
@@ -826,16 +826,16 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register(
               'controller:application',
-              Controller.extend({
-                queryParams: ['lazyQueryParam'],
-              })
+              class extends Controller {
+                queryParams = ['lazyQueryParam'];
+              }
             );
 
             this.register(
@@ -845,23 +845,23 @@ moduleFor(
 
             this.register(
               'route:application',
-              Route.extend({
-                queryParams: {
+              class extends Route {
+                queryParams = {
                   lazyQueryParam: {
                     defaultValue: null,
                   },
-                },
+                };
                 deserializeQueryParam() {
                   hooks.push('engine - deserialize query param');
                   return 'foo';
-                },
+                }
                 model() {
                   hooks.push('engine - application');
-                },
-              })
+                }
+              }
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog?lazyQueryParam=bar', { shouldRender: true }).then(() => {

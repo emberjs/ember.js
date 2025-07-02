@@ -35,11 +35,11 @@ let BaseModifier = setModifierManager(
   (owner) => {
     return new CustomModifierManager(owner);
   },
-  EmberObject.extend({
-    didInsertElement() {},
-    didUpdate() {},
-    willDestroyElement() {},
-  })
+  class extends EmberObject {
+    didInsertElement() {}
+    didUpdate() {}
+    willDestroyElement() {}
+  }
 );
 
 moduleFor(
@@ -84,7 +84,9 @@ moduleFor(
     '@test it can render a basic component with template and javascript'() {
       this.registerComponent('foo-bar', {
         template: 'FIZZ BAR {{this.local}}',
-        ComponentClass: Component.extend({ local: 'hey' }),
+        ComponentClass: class extends Component {
+          local = 'hey';
+        },
       });
 
       this.render('<FooBar />');
@@ -106,11 +108,11 @@ moduleFor(
 
     '@test it can not render a component name without initial capital letter'(assert) {
       this.registerComponent('div', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
             assert.ok(false, 'should not have created component');
-          },
-        }),
+          }
+        },
       });
 
       this.render('<div></div>');
@@ -183,12 +185,10 @@ moduleFor(
     }
 
     '@test it can have a custom tagName'() {
-      let FooBarComponent = Component.extend({
-        tagName: 'foo-bar',
-      });
-
       this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
+        ComponentClass: class extends Component {
+          tagName = 'foo-bar';
+        },
         template: 'hello',
       });
 
@@ -226,12 +226,10 @@ moduleFor(
     }
 
     '@test it can have custom classNames'() {
-      let FooBarComponent = Component.extend({
-        classNames: ['foo', 'bar'],
-      });
-
       this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
+        ComponentClass: class extends Component {
+          classNames = ['foo', 'bar'];
+        },
         template: 'hello',
       });
 
@@ -287,9 +285,9 @@ moduleFor(
     }
 
     '@test it can set custom classNames from the invocation'() {
-      let FooBarComponent = Component.extend({
-        classNames: ['foo'],
-      });
+      let FooBarComponent = class extends Component {
+        classNames = ['foo'];
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -340,12 +338,12 @@ moduleFor(
     '@test it has an element'() {
       let instance;
 
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           instance = this;
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -370,19 +368,19 @@ moduleFor(
     '@test it has the right parentView and childViews'(assert) {
       let fooBarInstance, fooBarBazInstance;
 
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarInstance = this;
-        },
-      });
+        }
+      };
 
-      let FooBarBazComponent = Component.extend({
+      let FooBarBazComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarBazInstance = this;
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -485,13 +483,13 @@ moduleFor(
     '@test it can yield internal and external properties positionally'() {
       let instance;
 
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           instance = this;
-        },
-        greeting: 'hello',
-      });
+        }
+        greeting = 'hello';
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -549,10 +547,9 @@ moduleFor(
     }
 
     '@test positional parameters are not allowed'() {
-      let TestComponent = class extends Component {};
-      TestComponent.reopenClass({
-        positionalParams: ['first', 'second'],
-      });
+      let TestComponent = class extends Component {
+        static positionalParams = ['first', 'second'];
+      };
 
       this.registerComponent('sample-component', {
         ComponentClass: TestComponent,
@@ -644,7 +641,7 @@ moduleFor(
 
     '@test includes invocation specified attributes in root element ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend(),
+        ComponentClass: class extends Component {},
         template: 'hello',
       });
 
@@ -692,7 +689,9 @@ moduleFor(
 
     '@test attributes without values passed at invocation are included in `...attributes` ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div ...attributes>hello</div>',
       });
 
@@ -709,7 +708,9 @@ moduleFor(
 
     '@test attributes without values at definition are included in `...attributes` ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div data-bar ...attributes>hello</div>',
       });
 
@@ -726,7 +727,9 @@ moduleFor(
 
     '@test includes invocation specified attributes in `...attributes` slot in tagless component ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div ...attributes>hello</div>',
       });
 
@@ -775,14 +778,14 @@ moduleFor(
     '@test merges attributes with `...attributes` in tagless component ("splattributes")'() {
       let instance;
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          tagName: '',
+        ComponentClass: class extends Component {
+          tagName = '';
           init() {
             instance = this;
-            this._super(...arguments);
+            super.init(...arguments);
             this.localProp = 'qux';
-          },
-        }),
+          }
+        },
         template: '<div data-derp={{this.localProp}} ...attributes>hello</div>',
       });
 
@@ -833,14 +836,14 @@ moduleFor(
     '@test merges class attribute with `...attributes` in tagless component ("splattributes")'() {
       let instance;
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          tagName: '',
+        ComponentClass: class extends Component {
+          tagName = '';
           init() {
             instance = this;
-            this._super(...arguments);
+            super.init(...arguments);
             this.localProp = 'qux';
-          },
-        }),
+          }
+        },
         template: '<div class={{this.localProp}} ...attributes>hello</div>',
       });
 
@@ -886,14 +889,14 @@ moduleFor(
     '@test merges trailing class attribute with `...attributes` in tagless component ("splattributes")'() {
       let instance;
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          tagName: '',
+        ComponentClass: class extends Component {
+          tagName = '';
           init() {
             instance = this;
-            this._super(...arguments);
+            super.init(...arguments);
             this.localProp = 'qux';
-          },
-        }),
+          }
+        },
         template: '<div ...attributes class={{this.localProp}}>hello</div>',
       });
 
@@ -938,11 +941,15 @@ moduleFor(
 
     '@test merges class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
       });
       this.registerComponent('foo-bar/baz', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div class="default-class" ...attributes>hello</div>',
       });
 
@@ -957,11 +964,15 @@ moduleFor(
 
     '@test merges trailing class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
       });
       this.registerComponent('foo-bar/baz', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div ...attributes class="default-class" >hello</div>',
       });
 
@@ -976,11 +987,15 @@ moduleFor(
 
     '@test the attributes passed on invocation trump over the default ones on elements with `...attributes` in yielded contextual component ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
       });
       this.registerComponent('foo-bar/baz', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div title="bar" ...attributes>hello</div>',
       });
 
@@ -995,12 +1010,16 @@ moduleFor(
 
     '@test can forward ...attributes to dynamic component invocation ("splattributes")'() {
       this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<XInner ...attributes>{{yield}}</XInner>',
       });
 
       this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div ...attributes>{{yield}}</div>',
       });
 
@@ -1019,12 +1038,16 @@ moduleFor(
 
     '@test an inner angle invocation can forward ...attributes through dynamic component invocation ("splattributes")'() {
       this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: `{{#let (component 'x-inner') as |Thing|}}<Thing ...attributes>{{yield}}</Thing>{{/let}}`,
       });
 
       this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div ...attributes>{{yield}}</div>',
       });
 
@@ -1039,12 +1062,16 @@ moduleFor(
 
     '@test an inner angle invocation can forward ...attributes through static component invocation ("splattributes")'() {
       this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: `<XInner ...attributes>{{yield}}</XInner>`,
       });
 
       this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div ...attributes>{{yield}}</div>',
       });
 
@@ -1059,7 +1086,9 @@ moduleFor(
 
     '@test can include `...attributes` in multiple elements in tagless component ("splattributes")'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div ...attributes>hello</div><p ...attributes>world</p>',
       });
 
@@ -1127,11 +1156,15 @@ moduleFor(
 
     '@test can yield content to contextual components invoked with angle-bracket components that receives splattributes'() {
       this.registerComponent('foo-bar/inner', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<h1 ...attributes>{{yield}}</h1>',
       });
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         // If <Inner> doesn't receive splattributes this test passes
         template: strip`
           {{#let (component "foo-bar/inner") as |Inner|}}
@@ -1267,18 +1300,20 @@ moduleFor(
       let modifierNamedArgs = null;
       let modifiedElement;
       this.registerComponent('the-foo', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div id="inner-div" ...attributes>Foo</div>',
       });
       this.registerModifier(
         'bar',
-        BaseModifier.extend({
+        class extends BaseModifier {
           didInsertElement(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             modifiedElement = this.element;
-          },
-        })
+          }
+        }
       );
       this.render('<TheFoo {{bar "something" foo="else"}}/>', {});
       assert.deepEqual(modifierParams, ['something'], 'positional arguments');
@@ -1293,22 +1328,24 @@ moduleFor(
     '@test modifiers are forwarded to all the elements receiving the splattributes'(assert) {
       let elementIds = [];
       this.registerComponent('the-foo', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template:
           '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>',
       });
       let test = this;
       this.registerModifier(
         'bar',
-        BaseModifier.extend({
+        class extends BaseModifier {
           didInsertElement(params, namedArgs) {
             assert.deepEqual(params, ['something']);
             test.assertNamedArgs(namedArgs, { foo: 'else' });
             if (this.element) {
               elementIds.push(this.element.getAttribute('id'));
             }
-          },
-        })
+          }
+        }
       );
       this.render('<TheFoo {{bar "something" foo="else"}}/>');
       assert.deepEqual(
@@ -1323,23 +1360,25 @@ moduleFor(
       let modifierNamedArgs = null;
       let modifiedElement;
       this.registerComponent('the-foo', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div id="inner-div" ...attributes>Foo</div>',
       });
       this.registerModifier(
         'bar',
-        BaseModifier.extend({
+        class extends BaseModifier {
           didInsertElement(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             modifiedElement = this.element;
-          },
+          }
           didUpdate(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             modifiedElement = this.element;
-          },
-        })
+          }
+        }
       );
       this.render('<TheFoo {{bar this.something foo=this.foo}}/>', {
         something: 'something',
@@ -1371,23 +1410,25 @@ moduleFor(
       let context = { id: 1 };
       let context2 = { id: 2 };
       this.registerComponent('the-foo', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div id="inner-div" ...attributes>Foo</div>',
       });
       this.registerModifier(
         'bar',
-        BaseModifier.extend({
+        class extends BaseModifier {
           didInsertElement(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             modifiedElement = this.element;
-          },
+          }
           didUpdate(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             modifiedElement = this.element;
-          },
-        })
+          }
+        }
       );
       this.render('<TheFoo {{bar "name" this foo=this}}/>', context);
       assert.equal(modifierParams[1].id, 1);
@@ -1414,23 +1455,25 @@ moduleFor(
       let modifierNamedArgs = null;
       let modifiedElement;
       this.registerComponent('the-foo', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div id="inner-div" ...attributes>Foo</div>',
       });
       this.registerModifier(
         'bar',
-        BaseModifier.extend({
+        class extends BaseModifier {
           didInsertElement(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             modifiedElement = this.element;
-          },
+          }
           didUpdate(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             modifiedElement = this.element;
-          },
-        })
+          }
+        }
       );
       this.render(
         `
@@ -1462,25 +1505,29 @@ moduleFor(
       let elementIds = [];
 
       this.registerComponent('the-inner', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template: '<div id="inner-div" ...attributes>{{yield}}</div>',
       });
       this.registerComponent('the-foo', {
-        ComponentClass: Component.extend({ tagName: '' }),
+        ComponentClass: class extends Component {
+          tagName = '';
+        },
         template:
           '<div id="outer-div" ...attributes>Outer</div><TheInner ...attributes>Hello</TheInner>',
       });
       this.registerModifier(
         'bar',
-        BaseModifier.extend({
+        class extends BaseModifier {
           didInsertElement(params, namedArgs) {
             modifierParams = params;
             modifierNamedArgs = namedArgs;
             if (this.element) {
               elementIds.push(this.element.getAttribute('id'));
             }
-          },
-        })
+          }
+        }
       );
       this.render(
         `

@@ -123,9 +123,9 @@ moduleFor(
     }
 
     ['@test a listener registered with one can be removed with off'](assert) {
-      let obj = EmberObject.extend(Evented, {
-        F() {},
-      }).create();
+      let obj = class extends EmberObject.extend(Evented) {
+        F() {}
+      }.create();
       let F = function () {};
 
       obj.one('event!', F);

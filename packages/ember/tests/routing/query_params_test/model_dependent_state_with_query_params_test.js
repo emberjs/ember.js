@@ -298,16 +298,16 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          articles,
-        })
+        class extends Controller {
+          articles = articles;
+        }
       );
 
       let self = this;
       let assert = this.assert;
       this.add(
         'route:article',
-        Route.extend({
+        class extends Route {
           model(params) {
             if (self.expectedModelHookParams) {
               assert.deepEqual(
@@ -318,8 +318,8 @@ moduleFor(
               self.expectedModelHookParams = null;
             }
             return articles.findBy('id', params.id);
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -409,16 +409,16 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          articles: site_articles,
-        })
+        class extends Controller {
+          articles = site_articles;
+        }
       );
 
       let self = this;
       let assert = this.assert;
       this.add(
         'route:site.article',
-        Route.extend({
+        class extends Route {
           model(params) {
             if (self.expectedModelHookParams) {
               assert.deepEqual(
@@ -429,8 +429,8 @@ moduleFor(
               self.expectedModelHookParams = null;
             }
             return site_articles.findBy('id', params.id);
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -520,36 +520,35 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          siteArticles: site_articles,
-          sites,
-          allSitesAllArticles: computed({
-            get() {
-              let ret = [];
-              let siteArticles = this.siteArticles;
-              let sites = this.sites;
-              sites.forEach((site) => {
-                ret = ret.concat(
-                  siteArticles.map((article) => {
-                    return {
-                      id: `${site.id}-${article.id}`,
-                      site_id: site.id,
-                      article_id: article.id,
-                    };
-                  })
-                );
-              });
-              return ret;
-            },
-          }),
-        })
+        class extends Controller {
+          siteArticles = site_articles;
+          sites = sites;
+          @computed
+          get allSitesAllArticles() {
+            let ret = [];
+            let siteArticles = this.siteArticles;
+            let sites = this.sites;
+            sites.forEach((site) => {
+              ret = ret.concat(
+                siteArticles.map((article) => {
+                  return {
+                    id: `${site.id}-${article.id}`,
+                    site_id: site.id,
+                    article_id: article.id,
+                  };
+                })
+              );
+            });
+            return ret;
+          }
+        }
       );
 
       let self = this;
       let assert = this.assert;
       this.add(
         'route:site',
-        Route.extend({
+        class extends Route {
           model(params) {
             if (self.expectedSiteModelHookParams) {
               assert.deepEqual(
@@ -560,13 +559,13 @@ moduleFor(
               self.expectedSiteModelHookParams = null;
             }
             return sites.findBy('id', params.site_id);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:site.article',
-        Route.extend({
+        class extends Route {
           model(params) {
             if (self.expectedArticleModelHookParams) {
               assert.deepEqual(
@@ -577,8 +576,8 @@ moduleFor(
               self.expectedArticleModelHookParams = null;
             }
             return site_articles.findBy('id', params.article_id);
-          },
-        })
+          }
+        }
       );
 
       this.add(

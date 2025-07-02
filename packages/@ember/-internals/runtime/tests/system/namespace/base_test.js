@@ -101,8 +101,8 @@ moduleFor(
           name: 'CustomNamespaceB',
         }));
 
-        nsA.Foo = EmberObject.extend();
-        nsB.Foo = EmberObject.extend();
+        nsA.Foo = class extends EmberObject {};
+        nsB.Foo = class extends EmberObject {};
 
         Namespace.processAll();
 
@@ -126,8 +126,8 @@ moduleFor(
 
       let namespace = (lookup.NS = Namespace.create());
 
-      namespace.ClassA = EmberObject.extend();
-      namespace.ClassB = EmberObject.extend();
+      namespace.ClassA = class extends EmberObject {};
+      namespace.ClassB = class extends EmberObject {};
 
       Namespace.processAll();
 

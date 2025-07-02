@@ -5,7 +5,7 @@ import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { computed, set } from '@ember/object';
+import { action, computed, set } from '@ember/object';
 import { service } from '@ember/service';
 
 let originalConsoleError;
@@ -91,15 +91,15 @@ moduleFor(
 
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           setupController(controller) {
             controller.set('hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ]);
-          },
-        })
+          }
+        }
       );
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
@@ -115,15 +115,15 @@ moduleFor(
     [`@test The route controller is still set when overriding the setupController hook`](assert) {
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           setupController() {
             // no-op
             // importantly, we are not calling this._super
-          },
-        })
+          }
+        }
       );
 
-      this.add('controller:home', Controller.extend());
+      this.add('controller:home', class extends Controller {});
 
       return this.visit('/').then(() => {
         let homeRoute = this.applicationInstance.lookup('route:home');
@@ -141,15 +141,15 @@ moduleFor(
       this.addTemplate('home', '<p>{{this.myValue}}</p>');
       this.add(
         'route:home',
-        Route.extend({
-          controllerName: 'myController',
-        })
+        class extends Route {
+          controllerName = 'myController';
+        }
       );
       this.add(
         'controller:myController',
-        Controller.extend({
-          myValue: 'foo',
-        })
+        class extends Controller {
+          myValue = 'foo';
+        }
       );
 
       return this.visit('/').then(() => {
@@ -181,23 +181,23 @@ moduleFor(
 
       this.add(
         'route:home',
-        Route.extend({
-          controllerName: 'myController',
-        })
+        class extends Route {
+          controllerName = 'myController';
+        }
       );
 
       this.add(
         'controller:home',
-        Controller.extend({
-          myValue: 'home',
-        })
+        class extends Controller {
+          myValue = 'home';
+        }
       );
 
       this.add(
         'controller:myController',
-        Controller.extend({
-          myValue: 'myController',
-        })
+        class extends Controller {
+          myValue = 'myController';
+        }
       );
 
       return this.visit('/').then(() => {
@@ -226,15 +226,15 @@ moduleFor(
 
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           setupController(/* controller */) {
             this.controllerFor('home').set('hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ]);
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -260,15 +260,16 @@ moduleFor(
 
       this.add(
         'controller:home',
-        Controller.extend({
-          model: computed(function () {
+        class extends Controller {
+          @computed
+          get model() {
             return [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ];
-          }),
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -294,21 +295,21 @@ moduleFor(
 
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           model() {
             return [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ];
-          },
+          }
 
           setupController(controller, model) {
             assert.equal(this.controllerFor('home'), controller);
 
             this.controllerFor('home').set('hours', model);
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -335,13 +336,13 @@ moduleFor(
 
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model(params) {
             return EmberObject.create({
               menuItemId: params.menu_item_id,
             });
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('special', '<p>{{@model.menuItemId}}</p>');
@@ -354,12 +355,11 @@ moduleFor(
     }
 
     ['@test The Specials Page defaults to looking models up via `find`']() {
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           return MenuItem.create({ id });
-        },
-      });
+        }
+      };
       this.add('model:menu_item', MenuItem);
 
       let SpecialRoute = class extends Route {
@@ -390,12 +390,11 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           return MenuItem.create({ id: id });
-        },
-      });
+        }
+      };
       this.add('model:menu_item', MenuItem);
 
       let SpecialRoute = class extends Route {
@@ -429,13 +428,12 @@ moduleFor(
       let menuItem;
       let rootElement;
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           menuItem = MenuItem.create({ id: id });
           return menuItem;
-        },
-      });
+        }
+      };
 
       this.router.map(function () {
         this.route('root', { path: '/' }, function () {
@@ -448,35 +446,36 @@ moduleFor(
 
       this.add(
         'route:root',
-        Route.extend({
+        class extends Route {
           model() {
             rootModel++;
-            return this._super(...arguments);
-          },
+            return super.model(...arguments);
+          }
 
           setupController() {
             rootSetup++;
-          },
+          }
 
           serialize() {
             rootSerialize++;
-            return this._super(...arguments);
-          },
-        })
+            return super.serialize(...arguments);
+          }
+        }
       );
 
-      this.add('route:loading', Route.extend({}));
-      this.add('route:home', Route.extend({}));
+      this.add('route:loading', class extends Route {});
+      this.add('route:home', class extends Route {});
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model({ menu_item_id }) {
             return MenuItem.find(menu_item_id);
-          },
+          }
+
           setupController(controller, model) {
             set(controller, 'model', model);
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('root.index', '<h3>Home</h3>');
@@ -544,42 +543,42 @@ moduleFor(
 
       this.add(
         'route:the-post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:the-post.comments',
-        Route.extend({
+        class extends Route {
           afterModel(post /*, transition */) {
             let parent_model = this.modelFor('the-post');
 
             assert.equal(post, parent_model);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:shares',
-        Route.extend({
+        class extends Route {
           model(params) {
             return shares[params.share_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:shares.share',
-        Route.extend({
+        class extends Route {
           afterModel(share /*, transition */) {
             let parent_model = this.modelFor('shares');
 
             assert.equal(share, parent_model);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1/comments')
@@ -629,22 +628,22 @@ moduleFor(
 
       this.add(
         'route:the-post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:comments',
-        Route.extend({
+        class extends Route {
           afterModel(post /*, transition */) {
             let parent_model = this.modelFor('the-post');
 
             assert.equal(post, parent_model);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1/comments')
@@ -683,20 +682,20 @@ moduleFor(
 
       this.add(
         'route:the-post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:comments',
-        Route.extend({
+        class extends Route {
           model() {
             assert.equal(this.modelFor('the-post'), currentPost);
-          },
-        })
+          }
+        }
       );
 
       currentPost = post1;
@@ -736,50 +735,52 @@ moduleFor(
 
       this.add(
         'route:posts',
-        Route.extend({
-          router: service(),
-          actions: {
-            showPost(context) {
-              this.router.transitionTo('post', context);
-            },
-          },
-        })
+        class extends Route {
+          @service
+          router;
+
+          @action
+          showPost(context) {
+            this.router.transitionTo('post', context);
+          }
+        }
       );
 
       this.add(
         'route:post',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
 
           model(params) {
             return { id: params.postId };
-          },
+          }
 
           serialize(model) {
             return { postId: model.id };
-          },
+          }
 
-          actions: {
-            editPost() {
-              this.router.transitionTo('post.edit');
-            },
-          },
-        })
+          @action
+          editPost() {
+            this.router.transitionTo('post.edit');
+          }
+        }
       );
 
       this.add(
         'route:post.edit',
-        Route.extend({
+        class extends Route {
           model() {
             let postId = this.modelFor('post').id;
             editedPostIds.push(postId);
             return null;
-          },
+          }
+
           setup() {
-            this._super(...arguments);
+            super.setup(...arguments);
             editCount++;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1').then(() => {
@@ -807,11 +808,11 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return model;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -827,13 +828,12 @@ moduleFor(
 
     ['@test Route model hook finds the same model as a manual find'](assert) {
       let post;
-      let Post = EmberObject.extend();
-      Post.reopenClass({
-        find() {
+      let Post = class extends EmberObject {
+        static find() {
           post = this;
           return {};
-        },
-      });
+        }
+      };
       this.add('model:post', Post);
 
       let PostRoute = class extends Route {
@@ -862,37 +862,38 @@ moduleFor(
       let appcount = 0;
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             ++appcount;
-          },
-        })
+          }
+        }
       );
 
       let parentcount = 0;
       this.add(
         'route:parent',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.equal(params.parent_id, '123');
             ++parentcount;
-          },
-          actions: {
+          }
+
+          actions = {
             refreshParent() {
               this.refresh();
             },
-          },
-        })
+          };
+        }
       );
 
       let childcount = 0;
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             ++childcount;
-          },
-        })
+          }
+        }
       );
 
       let router;

@@ -11,11 +11,11 @@ moduleFor(
       let bottom;
 
       this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.setMe}}',
       });
 
@@ -54,20 +54,20 @@ moduleFor(
       let bottom, middle;
 
       this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.setMe}}',
       });
 
       this.registerComponent('middle-mut', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             middle = this;
-          },
-        }),
+          }
+        },
         template: '{{bottom-mut setMe=(mut this.value)}}',
       });
 
@@ -123,11 +123,11 @@ moduleFor(
       let bottom;
 
       this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.stuff}}',
       });
 
@@ -149,20 +149,20 @@ moduleFor(
       let middle, bottom;
 
       this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.setMe}}',
       });
 
       this.registerComponent('middle-mut', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             middle = this;
-          },
-        }),
+          }
+        },
         template: '{{bottom-mut setMe=(readonly this.value)}}',
       });
 
@@ -228,15 +228,15 @@ moduleFor(
       let didInsert = [];
 
       this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           willRender() {
             willRender.push(get(this, 'setMe'));
-          },
+          }
           didInsertElement() {
             didInsert.push(get(this, 'setMe'));
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.setMe}}',
       });
 
@@ -279,25 +279,26 @@ moduleFor(
       let bottom, middle;
 
       this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
-          thingy: null,
+        ComponentClass: class extends Component {
+          thingy = null;
           didInsertElement() {
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.thingy}}',
       });
 
       this.registerComponent('middle-mut', {
-        ComponentClass: Component.extend({
-          baseValue: 12,
-          val: computed('baseValue', function () {
-            return this.get('baseValue');
-          }),
+        ComponentClass: class extends Component {
+          baseValue = 12;
+          @computed('baseValue')
+          get val() {
+            return this.baseValue;
+          }
           didInsertElement() {
             middle = this;
-          },
-        }),
+          }
+        },
         template: '{{bottom-mut thingy=(mut this.val)}}',
       });
 
@@ -332,11 +333,11 @@ moduleFor(
       let inner;
 
       this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             inner = this;
-          },
-        }),
+          }
+        },
         template: '{{this.foo}}',
       });
 
@@ -365,11 +366,11 @@ moduleFor(
       let inner;
 
       this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             inner = this;
-          },
-        }),
+          }
+        },
         template: '{{@model}}',
       });
 
@@ -398,11 +399,11 @@ moduleFor(
       let inner;
 
       this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             inner = this;
-          },
-        }),
+          }
+        },
         template: 'hello{{@model}}',
       });
 
@@ -439,25 +440,26 @@ moduleFor(
       let input, output;
 
       this.registerComponent('x-input', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             input = this;
-          },
-        }),
+          }
+        },
       });
 
       this.registerComponent('x-output', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['style'],
+        ComponentClass: class extends Component {
+          attributeBindings = ['style'];
           didInsertElement() {
             output = this;
-          },
-          style: computed('height', function () {
+          }
+          @computed('height')
+          get style() {
             let height = this.get('height');
             return htmlSafe(`height: ${height}px;`);
-          }),
-          height: 20,
-        }),
+          }
+          height = 20;
+        },
         template: '{{this.height}}',
       });
 
@@ -507,35 +509,34 @@ moduleFor(
       let input, output;
 
       this.registerComponent('x-input', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             input = this;
-          },
-        }),
+          }
+        },
       });
 
       this.registerComponent('x-output', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['style'],
+        ComponentClass: class extends Component {
+          attributeBindings = ['style'];
           didInsertElement() {
             output = this;
-          },
-          style: computed('height', 'width', function () {
+          }
+          @computed('height', 'width')
+          get style() {
             let height = this.get('height');
             let width = this.get('width');
             return htmlSafe(`height: ${height}px; width: ${width}px;`);
-          }),
-          height: 20,
-          width: computed('height', {
-            get() {
-              return this.get('height') * 2;
-            },
-            set(keyName, width) {
-              this.set('height', width / 2);
-              return width;
-            },
-          }),
-        }),
+          }
+          height = 20;
+          @computed('height')
+          get width() {
+            return this.get('height') * 2;
+          }
+          set width(width) {
+            this.set('height', width / 2);
+          }
+        },
         template: '{{this.width}}x{{this.height}}',
       });
 

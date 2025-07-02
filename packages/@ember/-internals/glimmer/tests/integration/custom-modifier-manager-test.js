@@ -42,20 +42,20 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      EmberObject.extend({
-        didInsertElement() {},
-        didUpdate() {},
-        willDestroyElement() {},
-      })
+      class extends EmberObject {
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
     );
 
     this.registerModifier(
       'foo-bar',
-      ModifierClass.extend({
+      class extends ModifierClass {
         didInsertElement() {
           assert.ok(true, 'Called didInsertElement');
-        },
-      })
+        }
+      }
     );
 
     this.render('<h1 {{foo-bar}}>hello world</h1>');
@@ -68,28 +68,28 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      EmberObject.extend({
-        didInsertElement() {},
-        didUpdate() {},
-        willDestroyElement() {},
-      })
+      class extends EmberObject {
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
     );
 
     this.registerModifier(
       'foo-bar',
-      ModifierClass.extend({
+      class extends ModifierClass {
         didUpdate([truthy]) {
           assert.ok(true, 'Called didUpdate');
           assert.equal(truthy, 'true', 'gets updated args');
-        },
+        }
         didInsertElement([truthy]) {
           assert.ok(true, 'Called didInsertElement');
           assert.equal(truthy, true, 'gets initial args');
-        },
+        }
         willDestroyElement() {
           assert.ok(true, 'Called willDestroyElement');
-        },
-      })
+        }
+      }
     );
 
     this.render('{{#if this.truthy}}<h1 {{foo-bar this.truthy}}>hello world</h1>{{/if}}', {
@@ -110,30 +110,30 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      EmberObject.extend({
-        didInsertElement() {},
-        didUpdate() {},
-        willDestroyElement() {},
-      })
+      class extends EmberObject {
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
     );
 
-    ModifierClass = ModifierClass.extend({
+    ModifierClass = class extends ModifierClass {
       didInsertElement([truthy]) {
-        this._super(...arguments);
+        super.didInsertElement(...arguments);
         assert.ok(true, 'Called didInsertElement');
         assert.equal(truthy, true, 'gets initial args');
-      },
-    });
+      }
+    };
 
     this.registerModifier(
       'foo-bar',
-      ModifierClass.extend({
+      class extends ModifierClass {
         didInsertElement([truthy]) {
-          this._super(...arguments);
+          super.didInsertElement(...arguments);
           assert.ok(true, 'Called didInsertElement');
           assert.equal(truthy, true, 'gets initial args');
-        },
-      })
+        }
+      }
     );
 
     this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>', {
@@ -148,31 +148,31 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      EmberObject.extend({
-        didInsertElement() {},
-        didUpdate() {},
-        willDestroyElement() {},
-      })
+      class extends EmberObject {
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
     );
 
     this.registerModifier(
       'foo-bar',
-      ModifierClass.extend({
-        savedElement: undefined,
+      class extends ModifierClass {
+        savedElement = undefined;
         didInsertElement(positional) {
           // consume first positional argument (ensures updates run)
           positional[0];
 
           assert.equal(this.element.tagName, 'H1');
           this.set('savedElement', this.element);
-        },
+        }
         didUpdate() {
           assert.equal(this.element, this.savedElement);
-        },
+        }
         willDestroyElement() {
           assert.equal(this.element, this.savedElement);
-        },
-      })
+        }
+      }
     );
 
     this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>', {
@@ -184,9 +184,10 @@ class ModifierManagerTest extends RenderingTestCase {
   }
 
   '@test lifecycle hooks are autotracked by default'(assert) {
-    let TrackedClass = EmberObject.extend({
-      count: tracked({ value: 0 }),
-    });
+    let TrackedClass = class extends EmberObject {
+      @tracked
+      count = 0;
+    };
 
     let trackedOne = TrackedClass.create();
     let trackedTwo = TrackedClass.create();
@@ -198,28 +199,28 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      EmberObject.extend({
-        didInsertElement() {},
-        didUpdate() {},
-        willDestroyElement() {},
-      })
+      class extends EmberObject {
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
     );
 
     this.registerModifier(
       'foo-bar',
-      ModifierClass.extend({
+      class extends ModifierClass {
         didInsertElement() {
           // track the count of the first item
           trackedOne.count;
           insertCount++;
-        },
+        }
 
         didUpdate() {
           // track the count of the second item
           trackedTwo.count;
           updateCount++;
-        },
-      })
+        }
+      }
     );
 
     this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>');
@@ -250,7 +251,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      class {
+      class extends EmberObject {
         static create() {
           return new this();
         }
@@ -299,20 +300,20 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new OverrideCustomModifierManager(owner);
       },
-      EmberObject.extend({
+      class extends EmberObject {
         didInsertElement() {
           assert.step('didInsertElement');
-        },
+        }
         didUpdate() {
           assert.step('didUpdate');
-        },
+        }
         willDestroyElement() {
           assert.step('willDestroyElement');
-        },
-      })
+        }
+      }
     );
 
-    this.registerModifier('foo-bar', ModifierClass.extend());
+    this.registerModifier('foo-bar', class extends ModifierClass {});
 
     assert.throws(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
@@ -360,30 +361,30 @@ moduleFor(
         (owner) => {
           return new this.CustomModifierManager(owner);
         },
-        EmberObject.extend({
-          didInsertElement() {},
-          didUpdate() {},
-          willDestroyElement() {},
-        })
+        class extends EmberObject {
+          didInsertElement() {}
+          didUpdate() {}
+          willDestroyElement() {}
+        }
       );
 
       this.registerModifier(
         'foo-bar',
-        ModifierClass.extend({
+        class extends ModifierClass {
           didInsertElement(positional) {
             insertCount++;
 
             // consume the second positional
             positional[1];
-          },
+          }
 
           didUpdate(positional) {
             updateCount++;
 
             // consume the second positional
             positional[1];
-          },
-        })
+          }
+        }
       );
 
       this.render(
@@ -416,30 +417,30 @@ moduleFor(
         (owner) => {
           return new this.CustomModifierManager(owner);
         },
-        EmberObject.extend({
-          didInsertElement() {},
-          didUpdate() {},
-          willDestroyElement() {},
-        })
+        class extends EmberObject {
+          didInsertElement() {}
+          didUpdate() {}
+          willDestroyElement() {}
+        }
       );
 
       this.registerModifier(
         'foo-bar',
-        ModifierClass.extend({
+        class extends ModifierClass {
           didInsertElement(_positional, named) {
             insertCount++;
 
             // consume qux
             named.qux;
-          },
+          }
 
           didUpdate(_positiona, named) {
             updateCount++;
 
             // consume qux
             named.qux;
-          },
-        })
+          }
+        }
       );
 
       this.render('<h1 {{foo-bar bar=this.bar qux=this.qux}}>hello world</h1>', {
@@ -507,7 +508,9 @@ moduleFor(
 
       this.registerComponent('bar', {
         template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
-        ComponentClass: Component.extend({ val }),
+        ComponentClass: class extends Component {
+          val = val;
+        },
       });
 
       this.render('<Bar/>');
@@ -521,7 +524,11 @@ moduleFor(
 
       this.registerComponent('baz', {
         template: '<div {{this.bar (this.foo)}}></div>',
-        ComponentClass: Component.extend({ tagName: '', foo, bar }),
+        ComponentClass: class extends Component {
+          foo = foo;
+          bar = bar;
+          tagName = '';
+        },
       });
 
       this.render('<Baz/>');
@@ -571,17 +578,17 @@ moduleFor(
         (owner) => {
           return new CustomModifierManager(owner);
         },
-        EmberObject.extend({
+        class extends EmberObject {
           didInsertElement() {
             assert.ok(false);
-          },
+          }
           didUpdate() {
             assert.ok(false);
-          },
+          }
           willDestroyElement() {
             assert.ok(false);
-          },
-        })
+          }
+        }
       );
 
       this.registerModifier('foo-bar', ModifierClass);

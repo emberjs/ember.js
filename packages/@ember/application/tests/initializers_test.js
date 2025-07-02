@@ -37,7 +37,7 @@ moduleFor(
     }
 
     [`@test initializers require proper 'name' and 'initialize' properties`]() {
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       expectAssertion(() => {
         MyApplication.initializer({ name: 'initializer' });
@@ -53,7 +53,7 @@ moduleFor(
     ) {
       assert.expect(2);
 
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.initializer({
         name: 'initializer',
@@ -92,7 +92,7 @@ moduleFor(
     }
 
     [`@test initializers are passed an App`](assert) {
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.initializer({
         name: 'initializer',
@@ -106,7 +106,7 @@ moduleFor(
 
     [`@test initializers can be registered in a specified order`](assert) {
       let order = [];
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.initializer({
         name: 'fourth',
@@ -163,7 +163,7 @@ moduleFor(
 
     [`@test initializers can be registered in a specified order as an array`](assert) {
       let order = [];
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.initializer({
         name: 'third',
@@ -220,7 +220,7 @@ moduleFor(
 
     [`@test initializers can have multiple dependencies`](assert) {
       let order = [];
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
       let a = {
         name: 'a',
         before: 'b',
@@ -273,7 +273,7 @@ moduleFor(
     [`@test initializers set on Application subclasses are not shared between apps`](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstApp = Application.extend();
+      let FirstApp = class extends Application {};
 
       FirstApp.initializer({
         name: 'first',
@@ -282,7 +282,7 @@ moduleFor(
         },
       });
 
-      let SecondApp = Application.extend();
+      let SecondApp = class extends Application {};
 
       SecondApp.initializer({
         name: 'second',
@@ -305,7 +305,7 @@ moduleFor(
     [`@test initializers are concatenated`](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstApp = Application.extend();
+      let FirstApp = class extends Application {};
 
       FirstApp.initializer({
         name: 'first',
@@ -314,7 +314,7 @@ moduleFor(
         },
       });
 
-      let SecondApp = FirstApp.extend();
+      let SecondApp = class extends FirstApp {};
       SecondApp.initializer({
         name: 'second',
         initialize() {
@@ -349,7 +349,7 @@ moduleFor(
     [`@test initializers are per-app`](assert) {
       assert.expect(2);
 
-      let FirstApp = Application.extend();
+      let FirstApp = class extends Application {};
 
       FirstApp.initializer({
         name: 'abc',
@@ -363,7 +363,7 @@ moduleFor(
         });
       });
 
-      let SecondApp = Application.extend();
+      let SecondApp = class extends Application {};
       SecondApp.instanceInitializer({
         name: 'abc',
         initialize() {},
@@ -374,7 +374,7 @@ moduleFor(
 
     [`@test initializers are executed in their own context`](assert) {
       assert.expect(1);
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.initializer({
         name: 'coolInitializer',

@@ -43,73 +43,73 @@ class AbstractAppendTest extends RenderingTestCase {
 
     let componentsByName = {};
 
-    let createLogger = (name, template, extras = {}) => {
+    let createLogger = (name, template) => {
       function pushHook(hookName) {
         hooks.push([name, hookName]);
       }
 
-      let LoggerComponent = Component.extend({
+      let LoggerComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           if (name in componentsByName) {
             throw new TypeError('Component named: ` ' + name + ' ` already registered');
           }
           componentsByName[name] = this;
           pushHook('init');
           this.on('init', () => pushHook('on(init)'));
-        },
+        }
 
         didReceiveAttrs() {
           pushHook('didReceiveAttrs');
-        },
+        }
 
         willInsertElement() {
           pushHook('willInsertElement');
-        },
+        }
 
         willRender() {
           pushHook('willRender');
-        },
+        }
 
         didInsertElement() {
           pushHook('didInsertElement');
-        },
+        }
 
         didRender() {
           pushHook('didRender');
-        },
+        }
 
         didUpdateAttrs() {
           pushHook('didUpdateAttrs');
-        },
+        }
 
         willUpdate() {
           pushHook('willUpdate');
-        },
+        }
 
         didUpdate() {
           pushHook('didUpdate');
-        },
+        }
 
         willDestroyElement() {
           pushHook('willDestroyElement');
-        },
+        }
 
         willClearRender() {
           pushHook('willClearRender');
-        },
+        }
 
         didDestroyElement() {
           pushHook('didDestroyElement');
-        },
+        }
 
         willDestroy() {
           pushHook('willDestroy');
-          this._super(...arguments);
-        },
-      });
+          super.willDestroy(...arguments);
+        }
+      };
 
-      let local = LoggerComponent.extend(extras);
+      let local = class extends LoggerComponent {};
 
       setComponentTemplate(compile(template), local);
 
@@ -291,66 +291,66 @@ class AbstractAppendTest extends RenderingTestCase {
       }
 
       let options = {
-        ComponentClass: _options.ComponentClass.extend({
+        ComponentClass: class extends _options.ComponentClass {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             if (name in componentsByName) {
               throw new TypeError('Component named: ` ' + name + ' ` already registered');
             }
             componentsByName[name] = this;
             pushHook('init');
             this.on('init', () => pushHook('on(init)'));
-          },
+          }
 
           didReceiveAttrs() {
             pushHook('didReceiveAttrs');
-          },
+          }
 
           willInsertElement() {
             pushHook('willInsertElement');
-          },
+          }
 
           willRender() {
             pushHook('willRender');
-          },
+          }
 
           didInsertElement() {
             pushHook('didInsertElement');
-          },
+          }
 
           didRender() {
             pushHook('didRender');
-          },
+          }
 
           didUpdateAttrs() {
             pushHook('didUpdateAttrs');
-          },
+          }
 
           willUpdate() {
             pushHook('willUpdate');
-          },
+          }
 
           didUpdate() {
             pushHook('didUpdate');
-          },
+          }
 
           willDestroyElement() {
             pushHook('willDestroyElement');
-          },
+          }
 
           willClearRender() {
             pushHook('willClearRender');
-          },
+          }
 
           didDestroyElement() {
             pushHook('didDestroyElement');
-          },
+          }
 
           willDestroy() {
             pushHook('willDestroy');
-            this._super(...arguments);
-          },
-        }),
+            super.willDestroy(...arguments);
+          }
+        },
         resolveableTemplate: _options.resolveableTemplate,
       };
 
@@ -358,18 +358,18 @@ class AbstractAppendTest extends RenderingTestCase {
     };
 
     this.registerComponent('x-parent', {
-      ComponentClass: Component.extend({
-        layoutName: 'components/x-parent',
-      }),
+      ComponentClass: class extends Component {
+        layoutName = 'components/x-parent';
+      },
 
       resolveableTemplate:
         '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
-      ComponentClass: Component.extend({
-        tagName: '',
-      }),
+      ComponentClass: class extends Component {
+        tagName = '';
+      },
 
       resolveableTemplate: '[child: {{this.bar}}]{{yield}}',
     });
@@ -528,21 +528,21 @@ class AbstractAppendTest extends RenderingTestCase {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-parent', {
-      ComponentClass: Component.extend({
-        layoutName: 'components/x-parent',
+      ComponentClass: class extends Component {
+        layoutName = 'components/x-parent';
         willDestroyElement() {
           willDestroyCalled++;
-        },
-      }),
+        }
+      },
 
       resolveableTemplate:
         '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
-      ComponentClass: Component.extend({
-        tagName: '',
-      }),
+      ComponentClass: class extends Component {
+        tagName = '';
+      },
 
       template: '[child: {{this.bar}}]{{yield}}',
     });
@@ -617,7 +617,7 @@ class AbstractAppendTest extends RenderingTestCase {
     let renderer = this.owner.lookup('renderer:-dom');
 
     this.registerComponent('x-component', {
-      ComponentClass: Component.extend(),
+      ComponentClass: class extends Component {},
     });
 
     this.component = this.owner.factoryFor('component:x-component').create();
@@ -634,25 +634,25 @@ class AbstractAppendTest extends RenderingTestCase {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-first', {
-      ComponentClass: Component.extend({
-        layoutName: 'components/x-first',
+      ComponentClass: class extends Component {
+        layoutName = 'components/x-first';
 
         willDestroyElement() {
           willDestroyCalled++;
-        },
-      }),
+        }
+      },
 
       resolveableTemplate: 'x-first {{this.foo}}!',
     });
 
     this.registerComponent('x-second', {
-      ComponentClass: Component.extend({
-        layoutName: 'components/x-second',
+      ComponentClass: class extends Component {
+        layoutName = 'components/x-second';
 
         willDestroyElement() {
           willDestroyCalled++;
-        },
-      }),
+        }
+      },
 
       resolveableTemplate: 'x-second {{this.bar}}!',
     });
@@ -772,8 +772,8 @@ class AbstractAppendTest extends RenderingTestCase {
 
     let element1, element2;
     this.registerComponent('first-component', {
-      ComponentClass: Component.extend({
-        layout: compile('component-one'),
+      ComponentClass: class extends Component {
+        layout = compile('component-one');
 
         didInsertElement() {
           element1 = this.element;
@@ -781,18 +781,18 @@ class AbstractAppendTest extends RenderingTestCase {
           let SecondComponent = owner.factoryFor('component:second-component');
 
           append(SecondComponent.create());
-        },
-      }),
+        }
+      },
     });
 
     this.registerComponent('second-component', {
-      ComponentClass: Component.extend({
-        layout: compile(`component-two`),
+      ComponentClass: class extends Component {
+        layout = compile(`component-two`);
 
         didInsertElement() {
           element2 = this.element;
-        },
-      }),
+        }
+      },
     });
 
     let FirstComponent = this.owner.factoryFor('component:first-component');
@@ -812,13 +812,13 @@ class AbstractAppendTest extends RenderingTestCase {
 
     let element1, element2, element3, element4, component1, component2;
     this.registerComponent('foo-bar', {
-      ComponentClass: Component.extend({
-        layout: compile('foo-bar'),
+      ComponentClass: class extends Component {
+        layout = compile('foo-bar');
 
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           component1 = this;
-        },
+        }
 
         didInsertElement() {
           element1 = this.element;
@@ -832,22 +832,22 @@ class AbstractAppendTest extends RenderingTestCase {
           });
 
           append(this._instance);
-        },
+        }
 
         willDestroy() {
           this._instance.destroy();
-        },
-      }),
+        }
+      },
     });
 
     this.registerComponent('baz-qux', {
-      ComponentClass: Component.extend({
-        layout: compile('baz-qux'),
+      ComponentClass: class extends Component {
+        layout = compile('baz-qux');
 
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           component2 = this;
-        },
+        }
 
         didInsertElement() {
           element3 = this.element;
@@ -861,28 +861,30 @@ class AbstractAppendTest extends RenderingTestCase {
           });
 
           append(this._instance);
-        },
+        }
 
         willDestroy() {
           this._instance.destroy();
-        },
-      }),
+        }
+      },
     });
 
     let instantiatedRoots = 0;
     let destroyedRoots = 0;
     this.registerComponent('other-root', {
-      ComponentClass: Component.extend({
-        layout: compile(`fake-thing: {{this.counter}}`),
+      ComponentClass: class extends Component {
+        layout = compile(`fake-thing: {{this.counter}}`);
+
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           this.counter = instantiatedRoots++;
-        },
+        }
+
         willDestroy() {
           destroyedRoots++;
-          this._super(...arguments);
-        },
-      }),
+          super.willDestroy(...arguments);
+        }
+      },
     });
 
     this.render(
@@ -942,9 +944,9 @@ moduleFor(
 
     ['@test raises an assertion when the target does not exist in the DOM'](assert) {
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          layoutName: 'components/foo-bar',
-        }),
+        ComponentClass: class extends Component {
+          layoutName = 'components/foo-bar';
+        },
         resolveableTemplate: 'FOO BAR!',
       });
 

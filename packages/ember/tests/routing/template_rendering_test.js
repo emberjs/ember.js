@@ -49,9 +49,9 @@ moduleFor(
       this.addTemplate('the_real_home_template', '<p>THIS IS THE REAL HOME</p>');
       this.add(
         'route:home',
-        Route.extend({
-          templateName: 'the_real_home_template',
-        })
+        class extends Route {
+          templateName = 'the_real_home_template';
+        }
       );
 
       return this.visit('/').then(() => {
@@ -80,36 +80,36 @@ moduleFor(
 
       this.add(
         'route:foo',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, 'FooBarRoute was called');
             return this._super(...arguments);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:bar.baz',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, 'BarBazRoute was called');
             return this._super(...arguments);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'controller:bar',
-        Controller.extend({
-          name: 'Bar',
-        })
+        class extends Controller {
+          name = 'Bar';
+        }
       );
 
       this.add(
         'controller:bar.baz',
-        Controller.extend({
-          name: 'BarBaz',
-        })
+        class extends Controller {
+          name = 'BarBaz';
+        }
       );
 
       return this.visit('/top/middle/bottom').then(() => {
@@ -158,11 +158,11 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return emberA();
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts').then(() => {
@@ -185,12 +185,13 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel() {
             this.router.transitionTo('posts');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts').then(() => {
@@ -206,21 +207,21 @@ moduleFor(
 
       this.add(
         'route:page',
-        Route.extend({
+        class extends Route {
           model(params) {
             return EmberObject.create({ name: params.name });
-          },
-        })
+          }
+        }
       );
 
       let insertionCount = 0;
       this.add(
         'component:foo-bar',
-        Component.extend({
+        class extends Component {
           didInsertElement() {
             insertionCount += 1;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('page', '<p>{{@model.name}}{{foo-bar}}</p>');
@@ -291,36 +292,36 @@ moduleFor(
 
       this.add(
         'controller:index',
-        Controller.extend({
-          showFirst: true,
-        })
+        class extends Controller {
+          showFirst = true;
+        }
       );
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           setupController(controller) {
             indexController = controller;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'component:my-component',
-        Component.extend({
+        class extends Component {
           didInsertElement() {
             myComponentCounter++;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'component:other-component',
-        Component.extend({
+        class extends Component {
           didInsertElement() {
             otherComponentCounter++;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {

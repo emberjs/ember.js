@@ -196,7 +196,9 @@ moduleFor(
     }
 
     ['@test yield uses the original context']() {
-      let KiwiCompComponent = Component.extend({ boundText: 'Inner' });
+      let KiwiCompComponent = class extends Component {
+        boundText = 'Inner';
+      };
 
       this.registerComponent('kiwi-comp', {
         ComponentClass: KiwiCompComponent,
@@ -218,7 +220,9 @@ moduleFor(
     }
 
     ["@test outer block param doesn't mask inner component property"]() {
-      let KiwiCompComponent = Component.extend({ boundText: 'Inner' });
+      let KiwiCompComponent = class extends Component {
+        boundText = 'Inner';
+      };
 
       this.registerComponent('kiwi-comp', {
         ComponentClass: KiwiCompComponent,
@@ -240,7 +244,9 @@ moduleFor(
     }
 
     ["@test inner block param doesn't mask yield property"]() {
-      let KiwiCompComponent = Component.extend({ boundText: 'Inner' });
+      let KiwiCompComponent = class extends Component {
+        boundText = 'Inner';
+      };
 
       this.registerComponent('kiwi-comp', {
         ComponentClass: KiwiCompComponent,
@@ -281,16 +287,18 @@ moduleFor(
 
     // INUR not need with no data update
     ['@test yield should not introduce a view'](assert) {
-      let ParentCompComponent = Component.extend({ isParentComponent: true });
+      let ParentCompComponent = class extends Component {
+        isParentComponent = true;
+      };
 
-      let ChildCompComponent = Component.extend({
+      let ChildCompComponent = class extends Component {
         didReceiveAttrs() {
-          this._super();
+          super.didReceiveAttrs();
           let parentView = this.get('parentView');
 
           assert.ok(parentView.get('isParentComponent'));
-        },
-      });
+        }
+      };
 
       this.registerComponent('parent-comp', {
         ComponentClass: ParentCompComponent,

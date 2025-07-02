@@ -29,9 +29,9 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          foo: 'alex',
-        })
+        class extends Controller {
+          foo = 'alex';
+        }
       );
 
       this.application.register(
@@ -82,21 +82,23 @@ moduleFor(
 
       this.add(
         'service:name-builder',
-        Service.extend({
+        class extends Service {
           build() {
             serviceCalled = true;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'helper:full-name',
-        Helper.extend({
-          nameBuilder: service('name-builder'),
+        class extends Helper {
+          @service('name-builder')
+          nameBuilder;
+
           compute() {
             this.get('nameBuilder').build();
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {

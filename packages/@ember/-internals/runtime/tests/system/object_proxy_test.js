@@ -8,17 +8,14 @@ moduleFor(
   'ObjectProxy',
   class extends AbstractTestCase {
     ['@test should not proxy properties passed to create'](assert) {
-      let Proxy = ObjectProxy.extend({
-        cp: computed({
-          get() {
-            return this._cp;
-          },
-          set(key, value) {
-            this._cp = value;
-            return this._cp;
-          },
-        }),
-      });
+      let Proxy = class extends ObjectProxy {
+        get cp() {
+          return this._cp;
+        }
+        set cp(value) {
+          this._cp = value;
+        }
+      };
       let proxy = Proxy.create({
         prop: 'Foo',
         cp: 'Bar',
@@ -102,17 +99,17 @@ moduleFor(
 
     ['@test calling a function on the proxy avoids the assertion'](assert) {
       if (DEBUG) {
-        let proxy = ObjectProxy.extend({
+        let proxy = class extends ObjectProxy {
           init() {
-            this._super();
+            super.init();
             if (!this.foobar) {
               this.foobar = function () {
                 let content = get(this, 'content');
                 return content.foobar.apply(content, []);
               };
             }
-          },
-        }).create({
+          }
+        }.create({
           content: {
             foobar() {
               return 'xoxo';
@@ -173,8 +170,9 @@ moduleFor(
       let count = 0;
       let last;
 
-      let Proxy = ObjectProxy.extend({
-        fullName: computed('firstName', 'lastName', function () {
+      let Proxy = class extends ObjectProxy {
+        @computed('firstName', 'lastName')
+        get fullName() {
           let firstName = this.get('firstName');
           let lastName = this.get('lastName');
 
@@ -182,8 +180,8 @@ moduleFor(
             return firstName + ' ' + lastName;
           }
           return firstName || lastName;
-        }),
-      });
+        }
+      };
 
       let proxy = Proxy.create();
 
@@ -347,18 +345,18 @@ moduleFor(
     }
 
     async '@test custom proxies should be able to notify property changes manually'(assert) {
-      let proxy = ObjectProxy.extend({
-        locals: { foo: 123 },
+      let proxy = class extends ObjectProxy {
+        locals = { foo: 123 };
 
         unknownProperty(key) {
           return this.locals[key];
-        },
+        }
 
         setUnknownProperty(key, value) {
           this.locals[key] = value;
           this.notifyPropertyChange(key);
-        },
-      }).create();
+        }
+      }.create();
 
       let count = 0;
 

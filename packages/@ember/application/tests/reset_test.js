@@ -39,7 +39,7 @@ moduleFor(
     ['@test When an application is reset, new instances of controllers are generated'](assert) {
       run(() => {
         this.createApplication();
-        this.add('controller:academic', Controller.extend());
+        this.add('controller:academic', class extends Controller {});
       });
 
       let firstController = this.applicationInstance.lookup('controller:academic');
@@ -109,9 +109,9 @@ moduleFor(
 
         this.add(
           'router:main',
-          Router.extend({
-            location: 'none',
-          })
+          class extends Router {
+            location = 'none';
+          }
         );
 
         this.router.map(function () {

@@ -30,7 +30,7 @@ moduleFor(
     }
 
     createApplication(options) {
-      return super.createApplication(options, Application.extend());
+      return super.createApplication(options, class extends Application {});
     }
 
     assertEmptyFixture(message) {
@@ -279,22 +279,24 @@ moduleFor(
 
       this.add(
         'route:a',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel() {
             this.router.replaceWith('b', 'zomg');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:b',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel(params) {
             this.router.transitionTo('c', params.b);
-          },
-        })
+          }
+        }
       );
 
       /*
@@ -319,31 +321,33 @@ moduleFor(
 
       this.add(
         'route:a',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel() {
             this.router.replaceWith('b', 'zomg');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:b',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel(params) {
             this.router.transitionTo('c', params.b);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:c',
-        Route.extend({
+        class extends Route {
           afterModel() {
             throw new Error('transition failure');
-          },
-        })
+          }
+        }
       );
 
       expectAsyncError();
@@ -472,9 +476,9 @@ moduleFor(
       this.addTemplate('application', '<h1>Hello world</h1>');
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let BlogEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -510,18 +514,18 @@ moduleFor(
       });
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
+      let BlogEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
 
         init(...args) {
-          this._super.apply(this, args);
+          super.init(...args);
           this.register('template:application', compile('{{cache-money}}'));
           this.register(
             'component:cache-money',
-            defineComponent({}, `<p>Dis cache money</p>`, Component.extend({}))
+            defineComponent({}, `<p>Dis cache money</p>`, class extends Component {})
           );
-        },
-      });
+        }
+      };
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -551,18 +555,18 @@ moduleFor(
       });
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
+      let BlogEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
 
         init(...args) {
-          this._super.apply(this, args);
+          super.init(...args);
           this.register('template:application', compile('{{cache-money}}'));
           this.register(
             'component:cache-money',
-            defineComponent({}, `<p>Dis cache money</p>`, Component.extend({}))
+            defineComponent({}, `<p>Dis cache money</p>`, class extends Component {})
           );
-        },
-      });
+        }
+      };
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -588,11 +592,11 @@ moduleFor(
       });
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
+      let BlogEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
 
         init(...args) {
-          this._super.apply(this, args);
+          super.init(...args);
           this.register('template:application', compile('{{swag}}'));
           this.register(
             'helper:swag',
@@ -600,8 +604,8 @@ moduleFor(
               return 'turnt up';
             })
           );
-        },
-      });
+        }
+      };
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -628,27 +632,27 @@ moduleFor(
 
       this.add(
         'route:show',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             data: { refreshModel: true },
-          },
+          };
 
           model(params) {
             return {
               componentName: params.component_name,
               componentData: params.data ? JSON.parse(params.data) : undefined,
             };
-          },
-        })
+          }
+        }
       );
 
-      let Counter = EmberObject.extend({
-        value: 0,
+      let Counter = class extends EmberObject {
+        value = 0;
 
         increment() {
           this.incrementProperty('value');
-        },
-      });
+        }
+      };
 
       this.add('service:isolatedCounter', Counter);
       this.add('service:sharedCounter', Counter.create());
@@ -665,26 +669,28 @@ moduleFor(
           `<h1>X-Foo</h1>
            <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>`,
 
-          Component.extend({
-            tagName: 'x-foo',
+          class extends Component {
+            tagName = 'x-foo';
 
-            isolatedCounter: service(),
-            sharedCounter: service(),
+            @service
+            isolatedCounter;
+            @service
+            sharedCounter;
 
             init() {
-              this._super();
+              super.init();
               xFooInitCalled = true;
-            },
+            }
 
             didInsertElement() {
               xFooDidInsertElementCalled = true;
-            },
+            }
 
             click() {
               this.get('isolatedCounter').increment();
               this.get('sharedCounter').increment();
-            },
-          })
+            }
+          }
         )
       );
 
@@ -694,22 +700,24 @@ moduleFor(
           null,
           `<h1>X-Bar</h1>
           <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>`,
-          Component.extend({
-            counter: service('sharedCounter'),
+          class extends Component {
+            @service('sharedCounter')
+            counter;
 
-            incrementCounter: action(function () {
+            @action
+            incrementCounter() {
               this.get('counter').increment();
-            }),
+            }
 
             init() {
-              this._super();
+              super.init();
               xBarInitCalled = true;
-            },
+            }
 
             didInsertElement() {
               xBarDidInsertElementCalled = true;
-            },
-          })
+            }
+          }
         )
       );
 

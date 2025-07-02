@@ -120,7 +120,12 @@ moduleFor(
         queryParams: { page: 'page' },
       });
       this.add('controller:parent', parentController);
-      this.add('route:parent.child', Route.extend({ controllerName: 'parent' }));
+      this.add(
+        'route:parent.child',
+        class extends Route {
+          controllerName = 'parent';
+        }
+      );
 
       await this.setupBase('/parent');
       await this.transitionTo('parent.child', { queryParams: { page: 2 } });
