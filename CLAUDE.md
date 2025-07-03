@@ -6,16 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Building
 
-- `pnpm repo:prepack` - Build all packages via Turbo (recommended)
+- `pnpm build` - Build all packages via Turbo (recommended)
 - `pnpm clean` - Clean build artifacts
 
 ### Testing
 
 - `pnpm test` - Run all tests
-- `pnpm start` - Start Vite dev server for browser testing
+- `pnpm dev` - Start Vite dev server for browser testing
 - `pnpm test:node` - Run Node.js tests via Turbo
 
-To run a single test or test module, use the browser test interface with `pnpm start` and filter tests using the QUnit UI.
+To run a single test or test module, use the browser test interface with `pnpm dev` and filter tests using the QUnit UI.
 
 ### Linting & Type Checking
 
@@ -29,6 +29,7 @@ To run a single test or test module, use the browser test interface with `pnpm s
 ### CI Preparation
 
 These commands MUST be run before pushing to ensure CI passes:
+
 - `pnpm lint:fix` - Fix formatting and linting
 - `pnpm repo:update:conventions` - Update package conventions
 - `pnpm repo:update:metadata` - Update package metadata
@@ -48,18 +49,21 @@ Glimmer VM is a **compiler-based rendering engine** that compiles Handlebars tem
 ### Key Packages
 
 **Compilation Pipeline**:
+
 - `@glimmer/syntax` - Template parser and AST (uses visitor pattern for traversal)
 - `@glimmer/compiler` - Compiles templates to bytecode
 - `@glimmer/wire-format` - Bytecode format definitions
 - `@glimmer/opcode-compiler` - Bytecode generation
 
 **Runtime Engine**:
+
 - `@glimmer/runtime` - VM that executes bytecode
 - `@glimmer/vm` - Core VM implementation
 - `@glimmer/reference` - Reactive reference system for state tracking
 - `@glimmer/validator` - Change detection and invalidation
 
 **Extension Points**:
+
 - `@glimmer/manager` - Component/helper/modifier manager APIs
 - `@glimmer/interfaces` - TypeScript interfaces and contracts
 
@@ -88,6 +92,7 @@ Glimmer VM is a **compiler-based rendering engine** that compiles Handlebars tem
 ### Debug Infrastructure
 
 The codebase includes sophisticated debug tooling:
+
 - `check()` function for runtime type checking (stripped in production by babel plugin)
 - `@glimmer/debug` package for development-time debugging
 - Stack checking and validation in development builds
@@ -102,13 +107,14 @@ cd packages/@glimmer/[package-name]
 pnpm test:node -- path/to/test.ts
 
 # For browser tests
-pnpm start
+pnpm dev
 # Then navigate to the browser and use the QUnit filter
 ```
 
 ### After making AST changes
 
 If you modify the AST structure in `@glimmer/syntax`:
+
 1. Run smoke tests: `cd smoke-tests/node && pnpm test:node`
 2. Update snapshots if needed: `pnpm vitest run -u`
 3. Document why changes are not breaking (visitor pattern protection)
@@ -116,6 +122,7 @@ If you modify the AST structure in `@glimmer/syntax`:
 ### Before pushing changes
 
 Always run these commands to avoid CI failures:
+
 ```bash
 pnpm lint:fix
 pnpm repo:update:conventions
@@ -136,3 +143,25 @@ git add -A && git commit
 - Squashing commits is often preferred for complex PRs
 - When rebasing, be prepared to resolve conflicts in package.json, eslint.config.js, and build configs
 - The babel debug plugin pattern requires `check()` calls to be inline (not inside if blocks) for proper type narrowing
+
+## Turbo Configuration
+
+### Script Naming Conventions
+
+- Use `turbo <task>` directly (without `run`) for consistency
+- Common aliases added for better DX:
+  - `pnpm build` → builds all packages
+  - `pnpm dev` → starts development server
+
+### Performance Optimizations
+
+- Caching enabled for deterministic tasks (lint, test:node, prepack)
+- Proper input/output declarations for better cache hits
+- Environment variables tracked: NODE_ENV, CI
+- TUI enabled for better progress visualization
+
+### Task Dependencies
+
+- `prepack` depends on upstream packages (`^prepack`)
+- `test:publint` depends on `prepack` to validate built packages
+- Type checking depends on all packages being built first
