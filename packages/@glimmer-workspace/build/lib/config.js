@@ -96,11 +96,10 @@ export function tsconfig(updates) {
 }
 
 /**
- * @param {PackageInfo} pkg
  * @param {'dev' | 'prod'} env
  * @returns {RollupPlugin}
  */
-export function typescript(pkg, env) {
+export function typescript(env) {
   if (!env) {
     throw new Error('env is required');
   }
@@ -420,7 +419,7 @@ export class Package {
                     }),
                   ]),
               postcss(),
-              typescript(this.#package, env),
+              typescript(env),
               // Strip debug calls in all builds - they're only for local development
               stripGlimmerDebug(),
             ],

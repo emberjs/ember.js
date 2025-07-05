@@ -98,8 +98,8 @@
     "mkdirp": "^3.0.1",
     "prettier": "^3.5.1",
     "preval.macro": "^5.0.0",
-    "puppeteer": "23.11.1",
-    "puppeteer-chromium-resolver": "^23.0.0",
+    "puppeteer": "24.11.2",
+    "puppeteer-chromium-resolver": "^24.0.1",
     "qunit": "^2.24.1",
     "release-plan": "^0.13.1",
     "rimraf": "^5.0.10",
@@ -111,7 +111,7 @@
     "turbo": "^2.4.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.1",
-    "vite": "^6.1.1",
+    "vite": "^7.0.2",
     "vitest": "^3.0.6",
     "zx": "^8.3.2"
   },
@@ -137,7 +137,11 @@
       "@glimmer/syntax": "workspace:*",
       "@rollup/pluginutils": "^5.0.2",
       "@types/node": "$@types/node",
-      "typescript": "$typescript"
+      "typescript": "$typescript",
+      "@oclif/plugin-warn-if-update-available": "^3.1.42",
+      "d3-color": "^3.1.0",
+      "esbuild": "^0.25.0",
+      "got": "^11.8.5"
     },
     "peerDependencyRules": {
       "allowAny": [
