@@ -291,9 +291,6 @@ importers:
       glob:
         specifier: ^10.2.3
         version: 10.2.3
-      globby:
-        specifier: ^14.1.0
-        version: 14.1.0
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -303,18 +300,12 @@ importers:
       p-map:
         specifier: ^7.0.3
         version: 7.0.3
-      pkg-entry-points:
-        specifier: ^1.1.1
-        version: 1.1.1
       puppeteer-chromium-resolver:
         specifier: ^23.0.0
         version: 23.0.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      spex:
-        specifier: ^3.4.0
-        version: 3.4.0
       strip-ansi:
         specifier: ^7.1.0
         version: 7.1.0
@@ -1627,9 +1618,6 @@ importers:
       execa:
         specifier: ^9.5.2
         version: 9.5.2
-      fs-extra:
-        specifier: ^11.2.0
-        version: 11.3.0
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -7922,10 +7910,6 @@ packages:
   spdx-license-ids@3.0.20:
     resolution: {integrity: sha512-jg25NiDV/1fLtSgEgyvVyDunvaNHbuwF9lfNV17gSmPFAlYzdfNBlLtLzXTevwkPj7DhGbmN9VnmJIgLnhvaBw==}
 
-  spex@3.4.0:
-    resolution: {integrity: sha512-8JeZJ7QlEBnSj1W1fKXgbB2KUPA8k4BxFMf6lZX/c1ZagU/1b9uZWZK0yD6yjfzqAIuTNG4YlRmtMpQiXuohsg==}
-    engines: {node: '>=14.0.0'}
-
   split2@3.2.2:
     resolution: {integrity: sha512-9NThjpgZnifTkJpzTZ7Eue85S49QwpNhZTq6GRJwObb6jnLFNGB7Qm73V5HewTROPyxD0C29xqmaI68bQtV+hg==}
 
@@ -12241,6 +12225,10 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
+  debug@4.4.1:
+    dependencies:
+      ms: 2.1.3
+
   debug@4.4.1(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
@@ -13297,7 +13285,7 @@ snapshots:
     dependencies:
       basic-ftp: 5.0.5
       data-uri-to-buffer: 6.0.2
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -13533,7 +13521,7 @@ snapshots:
   http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -13560,7 +13548,7 @@ snapshots:
   https-proxy-agent@7.0.6:
     dependencies:
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -14693,7 +14681,7 @@ snapshots:
     dependencies:
       '@tootallnate/quickjs-emscripten': 0.23.0
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.1
       get-uri: 6.0.4
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
@@ -15829,7 +15817,7 @@ snapshots:
   socks-proxy-agent@8.0.5:
     dependencies:
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.1
       socks: 2.8.3
     transitivePeerDependencies:
       - supports-color
@@ -15873,8 +15861,6 @@ snapshots:
       spdx-license-ids: 3.0.20
 
   spdx-license-ids@3.0.20: {}
-
-  spex@3.4.0: {}
 
   split2@3.2.2:
     dependencies:
