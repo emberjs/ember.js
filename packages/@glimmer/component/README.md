@@ -15,21 +15,23 @@ npm install --save-dev @glimmer/component
 
 To use this in a Glimmer application, import the package and export an extended class:
 
-```ts
+```glimmer-ts
 import Component from '@glimmer/component';
 
 export default class MyComponent extends Component {
+  get doubled() {
+    return this.args.foo * 2;
+  }
+
+  <template>
+    {{@foo}} * 2 === {{this.doubled}}
+  </template>
 }
 ```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/glimmerjs/glimmer.js.
-
-## Acknowledgements
-
-Thanks to [Monegraph](http://monegraph.com) for funding the initial development
-of this library.
+Bug reports and pull requests are welcome on GitHub at https://github.com/emberjs/ember.js
 
 ## License
 
