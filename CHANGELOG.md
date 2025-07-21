@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v6.6.0-beta.1 (June 9, 2025)
+## v6.6.0 (July 21, 2025)
 
 - [#20627](https://github.com/emberjs/ember.js/pull/20627) [CLEANUP] Remove `escapeExpression` from `@ember/template`
 - [#20909](https://github.com/emberjs/ember.js/pull/20909) Remove microtask in runtime compiler
