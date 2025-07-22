@@ -13,7 +13,6 @@ import type { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action
 */
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
-const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -162,11 +161,6 @@ export default class EventDispatcher extends EmberObject {
       `You cannot use the same root element (${specifiedRootElement}) multiple times in an Ember.Application`,
       !rootElement.classList.contains(ROOT_ELEMENT_CLASS)
     );
-    assert(
-      'You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application',
-      !rootElement.querySelector(ROOT_ELEMENT_SELECTOR)
-    );
-
     rootElement.classList.add(ROOT_ELEMENT_CLASS);
 
     assert(
