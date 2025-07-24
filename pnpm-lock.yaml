@@ -3688,83 +3688,83 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@glimmer/compiler@file:glimmer-compiler-0.94.10.tgz':
-    resolution: {integrity: sha512-anNa2qs5fopI6GmHSppBTQ0mPyFcMJqxVJtPNSWaMJAc5jsmIRmhIBpt7+/KrC9XCNQ8ay8LuGJsFzNeC9bwRQ==, tarball: file:glimmer-compiler-0.94.10.tgz}
+    resolution: {integrity: sha512-s+TSiI2yiJRepqsMylEm4aXPAh1gkdT5Dz79CO+F3FEodmDM2UX4pQ1IbdSDMUPmXfHfdMtCu3kZzuSX7EgwgA==, tarball: file:glimmer-compiler-0.94.10.tgz}
     version: 0.94.10
     engines: {node: '>= 18.0.0'}
 
   '@glimmer/destroyable@file:glimmer-destroyable-0.94.8.tgz':
-    resolution: {integrity: sha512-KqJ6VGss7vYRZw+3XBh6NjNCpOdysaSiYuy8a0mxfBMZkze1A0D83mQFZ3FmmGFjVKz2u/cL3nyIp2OkcOSFHw==, tarball: file:glimmer-destroyable-0.94.8.tgz}
+    resolution: {integrity: sha512-rjveOF3GU1RkzLAyXLlQJmDJzOvHqi+K+UGkdWGByKcHz74qQ+cv6Jjh8K05q1f/S3pdeurwYQwoBDCVWwkpYg==, tarball: file:glimmer-destroyable-0.94.8.tgz}
     version: 0.94.8
 
   '@glimmer/encoder@file:glimmer-encoder-0.93.8.tgz':
-    resolution: {integrity: sha512-8/2Q+BNdl+S0Fp8h6boU+ZB5R9TzHrW5tI8lFnJjLOoTUzujr34RtSlDWxn2amKMXcfxaQshB5xG616bnf97AQ==, tarball: file:glimmer-encoder-0.93.8.tgz}
+    resolution: {integrity: sha512-lGCyhsQ2RbEV/BOGwrm+eveS/iJz2YYvjeuhU6JJHR0fojwKoimmFpl3xfzd7AqoXrpDotaINGOABpvYoPddZQ==, tarball: file:glimmer-encoder-0.93.8.tgz}
     version: 0.93.8
 
   '@glimmer/env@0.1.7':
     resolution: {integrity: sha512-JKF/a9I9jw6fGoz8kA7LEQslrwJ5jms5CXhu/aqkBWk+PmZ6pTl8mlb/eJ/5ujBGTiQzBhy5AIWF712iA+4/mw==}
 
   '@glimmer/global-context@file:glimmer-global-context-0.93.4.tgz':
-    resolution: {integrity: sha512-Yw9xkDReAcC5oS/hY3PjGrFKRygYFA4pdO7tvuxReoVOyUtjoBOAwHJUileiElERDdMWIMfoLema8Td1mqkjhA==, tarball: file:glimmer-global-context-0.93.4.tgz}
+    resolution: {integrity: sha512-gWA3akY0GI8rDPp76MRlrDYy8t4qWxoNSA87uQibaOM9IgWsk7bDhLRhIC8HtvMcNKPXTgJ9li/jbycREb+z/w==, tarball: file:glimmer-global-context-0.93.4.tgz}
     version: 0.93.4
 
   '@glimmer/interfaces@file:glimmer-interfaces-0.94.6.tgz':
-    resolution: {integrity: sha512-xACWYAK2YLMA01KfVTOUVSivC9zplm29YwxMpglOZNLNDqonyggsik8Hsfk4oSRorbf6egFBYbAgCbz7YKH1FQ==, tarball: file:glimmer-interfaces-0.94.6.tgz}
+    resolution: {integrity: sha512-cYWTFq8NgzKwIDg96NQtjlyJOnpBTd1csbaY+jnb5N6z+BlinLGvTVQJyCiFHFxIUM2LuaCdtW4tgxVAI0zysw==, tarball: file:glimmer-interfaces-0.94.6.tgz}
     version: 0.94.6
 
   '@glimmer/manager@file:glimmer-manager-0.94.9.tgz':
-    resolution: {integrity: sha512-Qcju/ZmhE01DTgIp7iU01ZIkwqFjv1dFr9zZS0oAGx7tXsfBZzpTFLdjSiARllaA+qPLAaIb7hO5pq4X6TF2Lw==, tarball: file:glimmer-manager-0.94.9.tgz}
+    resolution: {integrity: sha512-6Jacfa7mKjuHCEhN+jNYha222AR80SsOF1+CRDfkAsBYQXkj0HLChPZ5LdVerQhpbFpxZX+0dBxpvJfE85AUNw==, tarball: file:glimmer-manager-0.94.9.tgz}
     version: 0.94.9
 
   '@glimmer/node@file:glimmer-node-0.94.9.tgz':
-    resolution: {integrity: sha512-/pqG5dmSTJ8fFCqNxUplDPINcH/jH17/CbhaKCZcadMMejezDVIMsf0AVdpufwT1oujD6LOfr93pWZARSM0kAw==, tarball: file:glimmer-node-0.94.9.tgz}
+    resolution: {integrity: sha512-0RMOmz5a8o3nFXC5hTMhl9xGDrUhOEUYPDmVzga5Yvm884CAKoy1NMPPNaMCZxZdB8vqGdDvoWg2oZeWC0tM6A==, tarball: file:glimmer-node-0.94.9.tgz}
     version: 0.94.9
 
   '@glimmer/opcode-compiler@file:glimmer-opcode-compiler-0.94.9.tgz':
-    resolution: {integrity: sha512-QL8fzQPwQHxKc69semBzjVbbSIRcnu390vj1zYQWL9Qofl/TfG5tfCdexUmYXRo8z3Ily8Qh9AkwUkoXQ3yfXQ==, tarball: file:glimmer-opcode-compiler-0.94.9.tgz}
+    resolution: {integrity: sha512-Qxb/j4ymhlmPV/9euvexJ2JfnCHQFKl8T4iYfVrTSY9WME3hnausMT0cJQ9Wxi3y6GJdKn7nXeWPmnpYte916A==, tarball: file:glimmer-opcode-compiler-0.94.9.tgz}
     version: 0.94.9
 
   '@glimmer/owner@file:glimmer-owner-0.93.4.tgz':
-    resolution: {integrity: sha512-xoclaVdCF4JH/yx8dHplCj6XFAa7ggwc7cyeOthRvTNGsp/J/CNKHT6NEkdERBYqy6tvg5GoONvWFdm8Wd5Uig==, tarball: file:glimmer-owner-0.93.4.tgz}
+    resolution: {integrity: sha512-0k/tXQAhuzxoqifkHSplWn3MjhzDUNQwupq+gsziJoL1ENHNYV2o8MNGgg6Ks9V/DtChyDP6s4Yjj4zOb2fTug==, tarball: file:glimmer-owner-0.93.4.tgz}
     version: 0.93.4
 
   '@glimmer/program@file:glimmer-program-0.94.9.tgz':
-    resolution: {integrity: sha512-CPvLp3toDBzOahrQGPSGnH+ifegsuxA2Fx9G8KrqsoeHuC2gTW7sj05IEnJi5X5scpYNU32/qVv9J9NKw0EMFw==, tarball: file:glimmer-program-0.94.9.tgz}
+    resolution: {integrity: sha512-qFWPELR/oUKT/Gi8N3k5NH2RLlVSrfSdmkLa6aMZn0hSDGNstoPsqc90GzqrfwRnMj4qPbxcvbowTnPEayFvGg==, tarball: file:glimmer-program-0.94.9.tgz}
     version: 0.94.9
 
   '@glimmer/reference@file:glimmer-reference-0.94.8.tgz':
-    resolution: {integrity: sha512-lLBWYeH/d80wR+z23+FqOOYnIDf1VT+JAFrNxnaJZNFnPhTy3pIIPpZvD0FRyEWzy7WVUSRhW2YodOypa91qJg==, tarball: file:glimmer-reference-0.94.8.tgz}
+    resolution: {integrity: sha512-CHcb5O7kBzHUpQKeHX7pTifqAIuy+GFUyhJxGhRVFYEpiyDlnsaQv/Ydfg+6G1ltEq4kLq0Jpa3B/sGTHbnBtA==, tarball: file:glimmer-reference-0.94.8.tgz}
     version: 0.94.8
 
   '@glimmer/runtime@file:glimmer-runtime-0.94.10.tgz':
-    resolution: {integrity: sha512-LlWIZTgR8oBcl3AFepId4ZwT7kmrknnKpd3fCqHRUhO7MLO1zugi245W0k4x36dEwk+F41Rrkcq0viT1yNwooA==, tarball: file:glimmer-runtime-0.94.10.tgz}
+    resolution: {integrity: sha512-zQR/+G78d8UVZQt5fa0dFwKMh+r2ZBI3e2v2ZatAqWcJcVbOYcIDdr04PD8fSBO3j6nnfkqWrhU7rfTqEaGHqw==, tarball: file:glimmer-runtime-0.94.10.tgz}
     version: 0.94.10
 
   '@glimmer/syntax@file:glimmer-syntax-0.94.9.tgz':
-    resolution: {integrity: sha512-dHeizmN/wXUQrqtbU0tCx+r3ShjsfKoRlSllMar79VBpCVxySzR4lbF+qSIaN6WEfWrwXWMDP76QqUmZL5PYWw==, tarball: file:glimmer-syntax-0.94.9.tgz}
+    resolution: {integrity: sha512-fExAOVYImgNHYkD0fVvOdhEPtRnAX1Pg/Fzufj3ti/8FGSKjp86imASIUZOpOOsWkcWw1208uNnZIvqppBB4ww==, tarball: file:glimmer-syntax-0.94.9.tgz}
     version: 0.94.9
 
   '@glimmer/tracking@1.1.2':
     resolution: {integrity: sha512-cyV32zsHh+CnftuRX84ALZpd2rpbDrhLhJnTXn9W//QpqdRZ5rdMsxSY9fOsj0CKEc706tmEU299oNnDc0d7tA==}
 
   '@glimmer/util@file:glimmer-util-0.94.8.tgz':
-    resolution: {integrity: sha512-HTivPpXJZmIUDr24m9rM6h1D2aD24RnTJcO/4vwuybwiH4qTYGfsw/iC0o9fna10GCvYKCKnxokclJV9eU4r6g==, tarball: file:glimmer-util-0.94.8.tgz}
+    resolution: {integrity: sha512-6YgJ6Ti6hjdNRNH87VwPp97csJT7m+eeHGJRRQjPVQJKk0r4kUBgRzddgbldQuvuUVF/Mjv/CTVHWwEIMb8l4A==, tarball: file:glimmer-util-0.94.8.tgz}
     version: 0.94.8
 
   '@glimmer/validator@file:glimmer-validator-0.94.8.tgz':
-    resolution: {integrity: sha512-bm6tZsuJWPD9cR3Zh69H6pjkgudNfOZRr8pF9OfxuASFh5G/tkzTfyabWu8+F2jC5l3ciRPvngRYAVsJd6XH0g==, tarball: file:glimmer-validator-0.94.8.tgz}
+    resolution: {integrity: sha512-Nh4lGB9kuE/EzuB+kcwdF6c2ABJ5TxjR5pe/k2TJppzX6/TpgI8gIib4iTFgHhiFqhasHUuY2OGNpilNNakcvA==, tarball: file:glimmer-validator-0.94.8.tgz}
     version: 0.94.8
 
   '@glimmer/vm-babel-plugins@file:glimmer-vm-babel-plugins-0.93.4.tgz':
-    resolution: {integrity: sha512-+MjT+U/MsP7O32rXTYlvcmuiKtwI/PflokpVIW0M9wrkfFrsqgdhLQKvA+tNNxFW9LQ55zbhOtJweFNblHOvxg==, tarball: file:glimmer-vm-babel-plugins-0.93.4.tgz}
+    resolution: {integrity: sha512-AQC9fd4bz7Cpsr+YvlhnnzvRWPjvAKjcUqQ66yDiFjkTQ3hw+OHYlZoBWUuacTihzfN+IJFvwfbF2L5s+2KD1g==, tarball: file:glimmer-vm-babel-plugins-0.93.4.tgz}
     version: 0.93.4
     engines: {node: '>=18.18.0'}
 
   '@glimmer/vm@file:glimmer-vm-0.94.8.tgz':
-    resolution: {integrity: sha512-Teq81mkvvTH4fhG26dr15dlgQURR1hIiawdHshc6gVCIqEDJW2CtwCpJWeFFW3EZvueJFfql8PH7KrVQGB/XAw==, tarball: file:glimmer-vm-0.94.8.tgz}
+    resolution: {integrity: sha512-Cz2vYD01uXQe3gcEBr7tbZtWaawa3dgw/LYiXfUB0rVVugt6PSYJ/+BaYiZiS8pEAZjPiTnbbm1SX5qkK2nV1g==, tarball: file:glimmer-vm-0.94.8.tgz}
     version: 0.94.8
 
   '@glimmer/wire-format@file:glimmer-wire-format-0.94.8.tgz':
-    resolution: {integrity: sha512-BESs3ufyepSYhecEPIdNThtQS/ueaTovjoSolu/YQvhkyCNC53UJW1414qj2N92+9scQ52sb1qsIqETJdllJ/w==, tarball: file:glimmer-wire-format-0.94.8.tgz}
+    resolution: {integrity: sha512-uJHwKfSUTVzNUF2Re7KS8lf7v4FBDrvSJNYS8guTWDlc/Nk4COGmU2qicgIZiq79zuzEptNu2W4mfwI/5ZDo7A==, tarball: file:glimmer-wire-format-0.94.8.tgz}
     version: 0.94.8
 
   '@gwhitney/detect-indent@7.0.1':
@@ -10692,12 +10692,12 @@ packages:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
 
-  type-fest@4.35.0:
-    resolution: {integrity: sha512-2/AwEFQDFEy30iOLjrvHDIH7e4HEWH+f1Yl1bI5XMqzuoCUqwYCdxachgsgv0og/JdVZUhbfjcJAoHj5L1753A==}
-    engines: {node: '>=16'}
-
   type-fest@4.37.0:
     resolution: {integrity: sha512-S/5/0kFftkq27FPNye0XM1e2NsnoD/3FS+pBmbjmmtLT6I+i344KoOf7pvXreaFsDamWeaJX55nczA1m5PsBDg==}
+    engines: {node: '>=16'}
+
+  type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
   type-is@1.6.18:
@@ -11743,7 +11743,7 @@ snapshots:
       '@babel/code-frame': 7.26.2
       '@babel/generator': 7.26.9
       '@babel/helper-compilation-targets': 7.26.5
-      '@babel/helper-module-transforms': 7.26.0(@babel/core@7.26.9)(supports-color@8.1.1)
+      '@babel/helper-module-transforms': 7.26.0(@babel/core@7.26.9(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/helpers': 7.26.9
       '@babel/parser': 7.26.9
       '@babel/template': 7.26.9
@@ -12023,6 +12023,7 @@ snapshots:
       '@babel/traverse': 7.26.9(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@babel/helper-module-transforms@7.26.0(@babel/core@7.27.4)':
     dependencies:
@@ -15153,7 +15154,7 @@ snapshots:
   '@glimmer/interfaces@file:glimmer-interfaces-0.94.6.tgz':
     dependencies:
       '@simple-dom/interface': 1.4.0
-      type-fest: 4.37.0
+      type-fest: 4.41.0
 
   '@glimmer/manager@file:glimmer-manager-0.94.9.tgz':
     dependencies:
@@ -20677,7 +20678,7 @@ snapshots:
       fs-extra: 10.1.0
       resolve-package-path: 4.0.3
       tmp: 0.0.33
-      type-fest: 4.35.0
+      type-fest: 4.37.0
       walk-sync: 3.0.0
     transitivePeerDependencies:
       - supports-color
@@ -24613,9 +24614,9 @@ snapshots:
 
   type-fest@0.8.1: {}
 
-  type-fest@4.35.0: {}
-
   type-fest@4.37.0: {}
+
+  type-fest@4.41.0: {}
 
   type-is@1.6.18:
     dependencies:
