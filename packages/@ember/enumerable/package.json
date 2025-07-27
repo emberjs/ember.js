@@ -15,7 +15,7 @@
     "@glimmer/env": "^0.1.7",
     "@glimmer/owner": "0.93.4",
     "@glimmer/util": "0.94.8",
-    "@glimmer/validator": "0.94.8",
+    "@glimmer/validator": "0.95.0",
     "internal-test-helpers": "workspace:*"
   }
 }

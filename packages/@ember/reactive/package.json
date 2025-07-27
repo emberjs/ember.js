@@ -1,11 +1,11 @@
 {
-  "name": "@ember/template-factory",
+  "name": "@ember/reactive",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./index.ts"
   },
   "dependencies": {
-    "@glimmer/opcode-compiler": "0.94.10"
+    "@glimmer/validator": "0.95.0"
   }
 }

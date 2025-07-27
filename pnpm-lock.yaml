@@ -22,8 +22,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       '@glimmer/compiler':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/destroyable':
         specifier: 0.94.8
         version: 0.94.8
@@ -34,41 +34,41 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/node':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/opcode-compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
       '@glimmer/program':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/reference':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/runtime':
         specifier: 0.94.10
         version: 0.94.10
-      '@glimmer/syntax':
+      '@glimmer/reference':
         specifier: 0.94.9
         version: 0.94.9
+      '@glimmer/runtime':
+        specifier: 0.94.11
+        version: 0.94.11
+      '@glimmer/syntax':
+        specifier: 0.95.0
+        version: 0.95.0
       '@glimmer/util':
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       '@glimmer/vm':
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/vm-babel-plugins':
-        specifier: 0.93.4
-        version: 0.93.4(@babel/core@7.26.9)
+        specifier: 0.93.5
+        version: 0.93.5(@babel/core@7.26.9)
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -165,7 +165,7 @@ importers:
         version: 1.4.0
       '@swc-node/register':
         specifier: ^1.6.8
-        version: 1.10.9(@swc/core@1.11.1)(@swc/types@0.1.18)(typescript@5.1.6)
+        version: 1.10.9(@swc/core@1.11.1)(@swc/types@0.1.18)(typescript@5.2.2)
       '@swc/core':
         specifier: ^1.3.100
         version: 1.11.1
@@ -279,7 +279,7 @@ importers:
         version: 3.5.3
       puppeteer:
         specifier: ^24.2.0
-        version: 24.3.0(typescript@5.1.6)
+        version: 24.3.0(typescript@5.2.2)
       qunit:
         specifier: ^2.19.4
         version: 2.24.1
@@ -314,11 +314,11 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(handlebars@4.7.8)(underscore@1.13.7)
       typescript:
-        specifier: '5.1'
-        version: 5.1.6
+        specifier: '5.2'
+        version: 5.2.2
       typescript-eslint:
         specifier: ^8.26.0
-        version: 8.26.0(eslint@9.21.0)(typescript@5.1.6)
+        version: 8.26.0(eslint@9.21.0)(typescript@5.2.2)
       vite:
         specifier: ^5.4.12
         version: 5.4.14(@types/node@20.17.19)(terser@5.42.0)
@@ -383,8 +383,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/compiler':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/component':
         specifier: workspace:^
         version: link:../../@glimmer/component
@@ -401,35 +401,35 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/node':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/opcode-compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
       '@glimmer/program':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/reference':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/runtime':
         specifier: 0.94.10
         version: 0.94.10
-      '@glimmer/syntax':
+      '@glimmer/reference':
         specifier: 0.94.9
         version: 0.94.9
+      '@glimmer/runtime':
+        specifier: 0.94.11
+        version: 0.94.11
+      '@glimmer/syntax':
+        specifier: 0.95.0
+        version: 0.95.0
       '@glimmer/util':
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       '@glimmer/vm':
         specifier: 0.94.8
         version: 0.94.8
@@ -513,8 +513,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -567,8 +567,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
@@ -576,8 +576,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -600,11 +600,11 @@ importers:
         specifier: workspace:*
         version: link:../-internals
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/runtime':
         specifier: 0.94.10
         version: 0.94.10
+      '@glimmer/runtime':
+        specifier: 0.94.11
+        version: 0.94.11
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -639,8 +639,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -687,8 +687,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
@@ -696,8 +696,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -767,8 +767,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -809,8 +809,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -824,11 +824,11 @@ importers:
         specifier: workspace:*
         version: link:../component
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/runtime':
         specifier: 0.94.10
         version: 0.94.10
+      '@glimmer/runtime':
+        specifier: 0.94.11
+        version: 0.94.11
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -860,8 +860,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -872,11 +872,11 @@ importers:
         specifier: workspace:*
         version: link:../-internals
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/runtime':
         specifier: 0.94.10
         version: 0.94.10
+      '@glimmer/runtime':
+        specifier: 0.94.11
+        version: 0.94.11
 
   packages/@ember/object:
     dependencies:
@@ -911,8 +911,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
@@ -920,8 +920,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -961,6 +961,12 @@ importers:
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
+
+  packages/@ember/reactive:
+    dependencies:
+      '@glimmer/validator':
+        specifier: 0.95.0
+        version: 0.95.0
 
   packages/@ember/renderer:
     dependencies:
@@ -1013,8 +1019,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
@@ -1022,8 +1028,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1064,8 +1070,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1103,8 +1109,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1130,14 +1136,14 @@ importers:
         specifier: workspace:*
         version: link:../canary-features
       '@glimmer/compiler':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/syntax':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.95.0
+        version: 0.95.0
       ember:
         specifier: workspace:*
         version: link:../../ember
@@ -1157,8 +1163,8 @@ importers:
         specifier: workspace:*
         version: link:../debug
       '@glimmer/compiler':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1166,14 +1172,14 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/opcode-compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/syntax':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.95.0
+        version: 0.95.0
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1181,8 +1187,8 @@ importers:
   packages/@ember/template-factory:
     dependencies:
       '@glimmer/opcode-compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
 
   packages/@ember/test:
     dependencies:
@@ -1220,8 +1226,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
@@ -1229,8 +1235,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1289,11 +1295,11 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/runtime':
         specifier: 0.94.10
         version: 0.94.10
+      '@glimmer/runtime':
+        specifier: 0.94.11
+        version: 0.94.11
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1409,14 +1415,14 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
       '@glimmer/runtime':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/tracking':
         specifier: workspace:*
         version: link:../@glimmer/tracking
@@ -1424,8 +1430,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1508,23 +1514,23 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/runtime':
         specifier: 0.94.10
         version: 0.94.10
+      '@glimmer/runtime':
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/syntax':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.95.0
+        version: 0.95.0
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1589,8 +1595,8 @@ importers:
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1658,8 +1664,8 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/destroyable':
         specifier: 0.94.8
         version: 0.94.8
@@ -1667,26 +1673,26 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/opcode-compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/owner':
         specifier: 0.93.4
         version: 0.93.4
       '@glimmer/runtime':
-        specifier: 0.94.10
-        version: 0.94.10
+        specifier: 0.94.11
+        version: 0.94.11
       '@glimmer/syntax':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: 0.95.0
+        version: 0.95.0
       '@glimmer/util':
         specifier: 0.94.8
         version: 0.94.8
       '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: 0.95.0
+        version: 0.95.0
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1802,7 +1808,7 @@ importers:
         version: 9.1.0(eslint@8.57.1)
       eslint-plugin-ember:
         specifier: ^12.0.2
-        version: 12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)
+        version: 12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.2.2))(eslint@8.57.1)
       eslint-plugin-node:
         specifier: ^11.1.0
         version: 11.1.0(eslint@8.57.1)
@@ -1985,10 +1991,10 @@ importers:
         version: 10.1.5(eslint@9.29.0)
       eslint-plugin-ember:
         specifier: ^12.5.0
-        version: 12.5.0(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.1.6))(eslint@9.29.0)
+        version: 12.5.0(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.2.2))(eslint@9.29.0)
       eslint-plugin-n:
         specifier: ^17.18.0
-        version: 17.20.0(eslint@9.29.0)(typescript@5.1.6)
+        version: 17.20.0(eslint@9.29.0)(typescript@5.2.2)
       eslint-plugin-qunit:
         specifier: ^8.1.2
         version: 8.1.2(eslint@9.29.0)
@@ -2009,10 +2015,10 @@ importers:
         version: 3.4.0
       stylelint:
         specifier: ^16.19.1
-        version: 16.20.0(typescript@5.1.6)
+        version: 16.20.0(typescript@5.2.2)
       stylelint-config-standard:
         specifier: ^38.0.0
-        version: 38.0.0(stylelint@16.20.0(typescript@5.1.6))
+        version: 38.0.0(stylelint@16.20.0(typescript@5.2.2))
       testem:
         specifier: ^3.16.0
         version: 3.16.0(handlebars@4.7.8)(underscore@1.13.7)
@@ -3668,8 +3674,8 @@ packages:
     resolution: {integrity: sha512-xoR8F6fsgFqWbPbCfSgJuJ95vaLnXw0SgDCwyl/KMeeaSxpHwJbr8+BfiUl+7ko2A+HzrY5dPXXnGr4ZM+CUXw==}
     engines: {node: '>= 16.0.0'}
 
-  '@glimmer/compiler@0.94.10':
-    resolution: {integrity: sha512-SrWiaKM3AND2FQ732wtjAKol7XhCnRqit3tJShG4X0mT27Jb3zuhTI2dkfYVVMTJ23pjT/+0y+s/uGaBSirnBg==}
+  '@glimmer/compiler@0.94.11':
+    resolution: {integrity: sha512-t9eyLZIFsiwAib8Zyfu67yBep5Vn2bd5DScIE2hharPE/OKKI7cpQYi6BzQhSGYEBVU82ITd/2TLvJ1K8eIahA==}
     engines: {node: '>= 18.0.0'}
 
   '@glimmer/debug@0.92.4':
@@ -3714,20 +3720,20 @@ packages:
   '@glimmer/manager@0.92.4':
     resolution: {integrity: sha512-YMoarZT/+Ft2YSd+Wuu5McVsdP9y6jeAdVQGYFpno3NlL3TXYbl7ELtK7OGxFLjzQE01BdiUZZRvcY+a/s9+CQ==}
 
-  '@glimmer/manager@0.94.9':
-    resolution: {integrity: sha512-AQT90eSRbgx6O4VnyRgR+y3SqKChPrpZs5stENa0UnqOSbt7dF6XdqAmllfznKFpLlKmJSV7JaVpCarVTR/JQQ==}
+  '@glimmer/manager@0.94.10':
+    resolution: {integrity: sha512-Hqi92t6vtVg4nSRGWTvCJ+0Vg3iF1tiTG9RLzuUtZac7DIAzuQAxjhGbtu82miT+liCqU+MFmB3nkfNH0Zz74g==}
 
   '@glimmer/node@0.92.4':
     resolution: {integrity: sha512-a5GME7HQJZFJPQDdSetQI6jjKXXQi0Vdr3WuUrYwhienVTV5LG0uClbFE2yYWC7TX97YDHpRrNk1CC258rujkQ==}
 
-  '@glimmer/node@0.94.9':
-    resolution: {integrity: sha512-X90Xyru/TNi/ocq27ttT4zlMGK931J+pGL0eDYEkUX2fJYHd9Wm1idAB7MLJYIJarv/kuoxteiGThGIYkeNVaQ==}
+  '@glimmer/node@0.94.10':
+    resolution: {integrity: sha512-8kw6K+RoKhjfprMO059M7x5yRZRK7WGLzD2056/G+65wV7gnJVDuh4qQirekaagjtskz6OdRBVWrSmrbICWtzQ==}
 
   '@glimmer/opcode-compiler@0.92.4':
     resolution: {integrity: sha512-WnZSBwxNqW/PPD/zfxEg6BVR5tHwTm8fp76piix8BNCQ6CuzVn6HUJ5SlvBsOwyoRCmzt/pkKmBJn+I675KG4w==}
 
-  '@glimmer/opcode-compiler@0.94.9':
-    resolution: {integrity: sha512-LlBniSmtBoIlkxzPKHyOw4Nj946Cczelo8RAnqoG/egkHuk4hoO/7ycSgNpPvV3G14BA4Fpy5ExBffx6iuRxQQ==}
+  '@glimmer/opcode-compiler@0.94.10':
+    resolution: {integrity: sha512-KYsaODjkgtpUzMR1chyI0IRcvo4ewnjW8Dy+5833+OIG7rx6INl7HvKtooLzjHv+uJOZ74fd/s/0XfaY6eNEww==}
 
   '@glimmer/owner@0.92.3':
     resolution: {integrity: sha512-ZxmXIUCy6DOobhGDhA6kMpaXZS7HAucEgIl/qcjV9crlzGOO8H4j+n2x6nA/8zpuqvO0gYaBzqdNdu+7EgOEmw==}
@@ -3738,8 +3744,8 @@ packages:
   '@glimmer/program@0.92.4':
     resolution: {integrity: sha512-fkquujQ11lsGCWl/+XpZW2E7bjHj/g6/Ht292A7pSoANBD8Bz/gPYiPM+XuMwes9MApEsTEMjV4EXlyk2/Cirg==}
 
-  '@glimmer/program@0.94.9':
-    resolution: {integrity: sha512-KA3TXYL2iDdR92pPnB/sw1tgIC7B40l2P60iD1sqkYbyxAbrUPHSToA1ycmK4DwmxDOT3Hz9dvpceoCMbh0xjA==}
+  '@glimmer/program@0.94.10':
+    resolution: {integrity: sha512-a5rpsvBwrcAn0boV4ONy+dHr8tWSTvLAPTR1T1KxF0OBHRVciCAfBPRFemVO6Q3H117At9ifn3uoevtQ6H0M+Q==}
 
   '@glimmer/reference@0.84.3':
     resolution: {integrity: sha512-lV+p/aWPVC8vUjmlvYVU7WQJsLh319SdXuAWoX/SE3pq340BJlAJiEcAc6q52y9JNhT57gMwtjMX96W5Xcx/qw==}
@@ -3747,14 +3753,14 @@ packages:
   '@glimmer/reference@0.92.3':
     resolution: {integrity: sha512-Ud4LE689mEXL6BJnJx0ZPt2dt/A540C+TAnBFXHpcAjROz5gT337RN+tgajwudEUqpufExhcPSMGzs1pvWYCJg==}
 
-  '@glimmer/reference@0.94.8':
-    resolution: {integrity: sha512-FPoXBRMXJupO9nAq/Vw3EY/FCY3xbd+VALqZupyu6ds9vjNiKAkD9+ujIjYa1f+d/ez2ONhy8QjEFoBsyW2flA==}
+  '@glimmer/reference@0.94.9':
+    resolution: {integrity: sha512-qlgTYxgEOpgxuyb13u2qwqhibpfktlk08F+nfwuNxtuhodsItBi3YxjFMPrVP0zOjTnhUObR8OYtMsD5WFOddA==}
 
   '@glimmer/runtime@0.92.4':
     resolution: {integrity: sha512-ISqM/8hVh+fY/gnLAAPKfts4CvnJBOyCYAXgGccIlzzQrSVLaz0NoRiWTLGj5B/3xyPbqLwYPDvlTsOjYtvPoA==}
 
-  '@glimmer/runtime@0.94.10':
-    resolution: {integrity: sha512-eRe9TmP02ESVXJn2ZOOEm/Hm/Ro7X0kRvZsU8OVtXOqWU8JxeKMwjCEiLbJBQKbYfycRy1u8jZ2wuH0qM/d3EQ==}
+  '@glimmer/runtime@0.94.11':
+    resolution: {integrity: sha512-96PqfxnkEW8k8dMydDmaXgijD7yvtIfjMkHoJ7ljUmE1icZ7jj6f+UIZ0LThpXMzkKaBe1xEapjr91Ldsvmqbg==}
 
   '@glimmer/syntax@0.84.3':
     resolution: {integrity: sha512-ioVbTic6ZisLxqTgRBL2PCjYZTFIwobifCustrozRU2xGDiYvVIL0vt25h2c1ioDsX59UgVlDkIK4YTAQQSd2A==}
@@ -3765,8 +3771,8 @@ packages:
   '@glimmer/syntax@0.92.3':
     resolution: {integrity: sha512-7wPKQmULyXCYf0KvbPmfrs/skPISH2QGR9atCnmDWnHyLv5SSZVLm1P0Ctrpta6+Ci3uGQb7hGk0IjsLEavcYQ==}
 
-  '@glimmer/syntax@0.94.9':
-    resolution: {integrity: sha512-OBw8DqMzKO4LX4kJBhwfTUqtpbd7O9amQXNTfb1aS7pufio5Vu5Qi6mRTfdFj6RyJ//aSI/l0kxWt6beYW0Apg==}
+  '@glimmer/syntax@0.95.0':
+    resolution: {integrity: sha512-W/PHdODnpONsXjbbdY9nedgIHpglMfOzncf/moLVrKIcCfeQhw2vG07Rs/YW8KeJCgJRCLkQsi+Ix7XvrurGAg==}
 
   '@glimmer/tracking@1.1.2':
     resolution: {integrity: sha512-cyV32zsHh+CnftuRX84ALZpd2rpbDrhLhJnTXn9W//QpqdRZ5rdMsxSY9fOsj0CKEc706tmEU299oNnDc0d7tA==}
@@ -3792,15 +3798,15 @@ packages:
   '@glimmer/validator@0.92.3':
     resolution: {integrity: sha512-HKrMYeW0YhiksSeKYqX2chUR/rz82j12DcY7p2dORQlTV3qlAfiE5zRTJH1KRA1X3ZMf7DI2/GOzkXwYp0o+3Q==}
 
-  '@glimmer/validator@0.94.8':
-    resolution: {integrity: sha512-vTP6hAcrxE5/0dG2w+tHSteXxgWmkBwMzu5ZTxMg+EkqthWl8B5r5skLiviQ6SdKAOBJGhzf6tF4ltHo5y83hQ==}
+  '@glimmer/validator@0.95.0':
+    resolution: {integrity: sha512-xF3K5voKeRqhONztfMHDd2wHDYD6UUI9pFPd+RMGtW6DXYv31G0zUm2pGsOwQ9dyNeE6khaXy7e3FtNjDrSmvQ==}
 
   '@glimmer/vm-babel-plugins@0.92.3':
     resolution: {integrity: sha512-VpkKsHc3oiq9ruiwT7sN4RuOIc5n10PCeWX7tYSNZ85S1bETcAFn0XbyNjI+G3uFshQGEK0T8Fn3+/8VTNIQIg==}
     engines: {node: '>=16'}
 
-  '@glimmer/vm-babel-plugins@0.93.4':
-    resolution: {integrity: sha512-+MjT+U/MsP7O32rXTYlvcmuiKtwI/PflokpVIW0M9wrkfFrsqgdhLQKvA+tNNxFW9LQ55zbhOtJweFNblHOvxg==}
+  '@glimmer/vm-babel-plugins@0.93.5':
+    resolution: {integrity: sha512-xwVRgDjuadOB9qV1jyTKBrUgE/cpmixD/wIYnFf4+hNJRD39urteKRPw98xJSAt7Bw/6y5B8zsgwFS18Nknlrg==}
     engines: {node: '>=18.18.0'}
 
   '@glimmer/vm@0.92.3':
@@ -3824,6 +3830,10 @@ packages:
 
   '@handlebars/parser@2.0.0':
     resolution: {integrity: sha512-EP9uEDZv/L5Qh9IWuMUGJRfwhXJ4h1dqKTT4/3+tY0eu7sPis7xh23j61SYUnNF4vqCQvvUXpDo9Bh/+q1zASA==}
+
+  '@handlebars/parser@2.2.1':
+    resolution: {integrity: sha512-D76vKOZFEGA9v6g0rZTYTQDUXNopCblW1Zeas3EEVrbdeh8gWrCEO9/goocKmcgtqAwv1Md76p58UQp7HeFTEw==}
+    engines: {node: ^18 || ^20 || ^22 || >=24}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -10791,6 +10801,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@5.2.2:
+    resolution: {integrity: sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   uc.micro@1.0.6:
     resolution: {integrity: sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==}
 
@@ -15187,10 +15202,10 @@ snapshots:
       '@glimmer/vm': 0.92.3
       '@glimmer/wire-format': 0.92.3
 
-  '@glimmer/compiler@0.94.10':
+  '@glimmer/compiler@0.94.11':
     dependencies:
       '@glimmer/interfaces': 0.94.6
-      '@glimmer/syntax': 0.94.9
+      '@glimmer/syntax': 0.95.0
       '@glimmer/util': 0.94.8
       '@glimmer/wire-format': 0.94.8
 
@@ -15261,14 +15276,14 @@ snapshots:
       '@glimmer/validator': 0.92.3
       '@glimmer/vm': 0.92.3
 
-  '@glimmer/manager@0.94.9':
+  '@glimmer/manager@0.94.10':
     dependencies:
       '@glimmer/destroyable': 0.94.8
       '@glimmer/global-context': 0.93.4
       '@glimmer/interfaces': 0.94.6
-      '@glimmer/reference': 0.94.8
+      '@glimmer/reference': 0.94.9
       '@glimmer/util': 0.94.8
-      '@glimmer/validator': 0.94.8
+      '@glimmer/validator': 0.95.0
       '@glimmer/vm': 0.94.8
 
   '@glimmer/node@0.92.4':
@@ -15278,10 +15293,10 @@ snapshots:
       '@glimmer/util': 0.92.3
       '@simple-dom/document': 1.4.0
 
-  '@glimmer/node@0.94.9':
+  '@glimmer/node@0.94.10':
     dependencies:
       '@glimmer/interfaces': 0.94.6
-      '@glimmer/runtime': 0.94.10
+      '@glimmer/runtime': 0.94.11
       '@glimmer/util': 0.94.8
       '@simple-dom/document': 1.4.0
 
@@ -15298,11 +15313,11 @@ snapshots:
       '@glimmer/vm': 0.92.3
       '@glimmer/wire-format': 0.92.3
 
-  '@glimmer/opcode-compiler@0.94.9':
+  '@glimmer/opcode-compiler@0.94.10':
     dependencies:
       '@glimmer/encoder': 0.93.8
       '@glimmer/interfaces': 0.94.6
-      '@glimmer/manager': 0.94.9
+      '@glimmer/manager': 0.94.10
       '@glimmer/util': 0.94.8
       '@glimmer/vm': 0.94.8
       '@glimmer/wire-format': 0.94.8
@@ -15324,11 +15339,11 @@ snapshots:
       '@glimmer/vm': 0.92.3
       '@glimmer/wire-format': 0.92.3
 
-  '@glimmer/program@0.94.9':
+  '@glimmer/program@0.94.10':
     dependencies:
       '@glimmer/interfaces': 0.94.6
-      '@glimmer/manager': 0.94.9
-      '@glimmer/opcode-compiler': 0.94.9
+      '@glimmer/manager': 0.94.10
+      '@glimmer/opcode-compiler': 0.94.10
       '@glimmer/util': 0.94.8
       '@glimmer/vm': 0.94.8
       '@glimmer/wire-format': 0.94.8
@@ -15349,12 +15364,12 @@ snapshots:
       '@glimmer/util': 0.92.3
       '@glimmer/validator': 0.92.3
 
-  '@glimmer/reference@0.94.8':
+  '@glimmer/reference@0.94.9':
     dependencies:
       '@glimmer/global-context': 0.93.4
       '@glimmer/interfaces': 0.94.6
       '@glimmer/util': 0.94.8
-      '@glimmer/validator': 0.94.8
+      '@glimmer/validator': 0.95.0
 
   '@glimmer/runtime@0.92.4':
     dependencies:
@@ -15371,17 +15386,17 @@ snapshots:
       '@glimmer/vm': 0.92.3
       '@glimmer/wire-format': 0.92.3
 
-  '@glimmer/runtime@0.94.10':
+  '@glimmer/runtime@0.94.11':
     dependencies:
       '@glimmer/destroyable': 0.94.8
       '@glimmer/global-context': 0.93.4
       '@glimmer/interfaces': 0.94.6
-      '@glimmer/manager': 0.94.9
+      '@glimmer/manager': 0.94.10
       '@glimmer/owner': 0.93.4
-      '@glimmer/program': 0.94.9
-      '@glimmer/reference': 0.94.8
+      '@glimmer/program': 0.94.10
+      '@glimmer/reference': 0.94.9
       '@glimmer/util': 0.94.8
-      '@glimmer/validator': 0.94.8
+      '@glimmer/validator': 0.95.0
       '@glimmer/vm': 0.94.8
 
   '@glimmer/syntax@0.84.3':
@@ -15407,12 +15422,12 @@ snapshots:
       '@handlebars/parser': 2.0.0
       simple-html-tokenizer: 0.5.11
 
-  '@glimmer/syntax@0.94.9':
+  '@glimmer/syntax@0.95.0':
     dependencies:
       '@glimmer/interfaces': 0.94.6
       '@glimmer/util': 0.94.8
       '@glimmer/wire-format': 0.94.8
-      '@handlebars/parser': 2.0.0
+      '@handlebars/parser': 2.2.1
       simple-html-tokenizer: 0.5.11
 
   '@glimmer/tracking@1.1.2':
@@ -15454,7 +15469,7 @@ snapshots:
       '@glimmer/interfaces': 0.92.3
       '@glimmer/util': 0.92.3
 
-  '@glimmer/validator@0.94.8':
+  '@glimmer/validator@0.95.0':
     dependencies:
       '@glimmer/global-context': 0.93.4
       '@glimmer/interfaces': 0.94.6
@@ -15465,7 +15480,7 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
 
-  '@glimmer/vm-babel-plugins@0.93.4(@babel/core@7.26.9)':
+  '@glimmer/vm-babel-plugins@0.93.5(@babel/core@7.26.9)':
     dependencies:
       babel-plugin-debug-macros: 0.3.4(@babel/core@7.26.9)
     transitivePeerDependencies:
@@ -15497,6 +15512,8 @@ snapshots:
   '@gwhitney/detect-indent@7.0.1': {}
 
   '@handlebars/parser@2.0.0': {}
+
+  '@handlebars/parser@2.2.1': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -16392,7 +16409,7 @@ snapshots:
       - '@swc/types'
       - supports-color
 
-  '@swc-node/register@1.10.9(@swc/core@1.11.1)(@swc/types@0.1.18)(typescript@5.1.6)':
+  '@swc-node/register@1.10.9(@swc/core@1.11.1)(@swc/types@0.1.18)(typescript@5.2.2)':
     dependencies:
       '@swc-node/core': 1.13.3(@swc/core@1.11.1)(@swc/types@0.1.18)
       '@swc-node/sourcemap-support': 0.5.1
@@ -16402,7 +16419,7 @@ snapshots:
       oxc-resolver: 1.12.0
       pirates: 4.0.6
       tslib: 2.8.1
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - '@swc/types'
       - supports-color
@@ -16631,67 +16648,67 @@ snapshots:
       '@types/node': 20.17.19
     optional: true
 
-  '@typescript-eslint/eslint-plugin@8.26.0(@typescript-eslint/parser@8.26.0(eslint@9.21.0)(typescript@5.1.6))(eslint@9.21.0)(typescript@5.1.6)':
+  '@typescript-eslint/eslint-plugin@8.26.0(@typescript-eslint/parser@8.26.0(eslint@9.21.0)(typescript@5.2.2))(eslint@9.21.0)(typescript@5.2.2)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.26.0(eslint@9.21.0)(typescript@5.1.6)
+      '@typescript-eslint/parser': 8.26.0(eslint@9.21.0)(typescript@5.2.2)
       '@typescript-eslint/scope-manager': 8.26.0
-      '@typescript-eslint/type-utils': 8.26.0(eslint@9.21.0)(typescript@5.1.6)
-      '@typescript-eslint/utils': 8.26.0(eslint@9.21.0)(typescript@5.1.6)
+      '@typescript-eslint/type-utils': 8.26.0(eslint@9.21.0)(typescript@5.2.2)
+      '@typescript-eslint/utils': 8.26.0(eslint@9.21.0)(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 8.26.0
       eslint: 9.21.0
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare: 1.4.0
-      ts-api-utils: 2.0.1(typescript@5.1.6)
-      typescript: 5.1.6
+      ts-api-utils: 2.0.1(typescript@5.2.2)
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6)':
+  '@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.2.2)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.26.0
       '@typescript-eslint/types': 8.26.0
-      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 8.26.0
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 8.57.1
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
     optional: true
 
-  '@typescript-eslint/parser@8.26.0(eslint@9.21.0)(typescript@5.1.6)':
+  '@typescript-eslint/parser@8.26.0(eslint@9.21.0)(typescript@5.2.2)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.26.0
       '@typescript-eslint/types': 8.26.0
-      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 8.26.0
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 9.21.0
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.1.6)':
+  '@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.2.2)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.26.0
       '@typescript-eslint/types': 8.26.0
-      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 8.26.0
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 9.29.0
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
     optional: true
 
-  '@typescript-eslint/project-service@8.34.1(typescript@5.1.6)':
+  '@typescript-eslint/project-service@8.34.1(typescript@5.2.2)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.34.1(typescript@5.1.6)
+      '@typescript-eslint/tsconfig-utils': 8.34.1(typescript@5.2.2)
       '@typescript-eslint/types': 8.34.1
       debug: 4.4.0(supports-color@8.1.1)
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
@@ -16705,18 +16722,18 @@ snapshots:
       '@typescript-eslint/types': 8.34.1
       '@typescript-eslint/visitor-keys': 8.34.1
 
-  '@typescript-eslint/tsconfig-utils@8.34.1(typescript@5.1.6)':
+  '@typescript-eslint/tsconfig-utils@8.34.1(typescript@5.2.2)':
     dependencies:
-      typescript: 5.1.6
+      typescript: 5.2.2
 
-  '@typescript-eslint/type-utils@8.26.0(eslint@9.21.0)(typescript@5.1.6)':
+  '@typescript-eslint/type-utils@8.26.0(eslint@9.21.0)(typescript@5.2.2)':
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.1.6)
-      '@typescript-eslint/utils': 8.26.0(eslint@9.21.0)(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.2.2)
+      '@typescript-eslint/utils': 8.26.0(eslint@9.21.0)(typescript@5.2.2)
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 9.21.0
-      ts-api-utils: 2.0.1(typescript@5.1.6)
-      typescript: 5.1.6
+      ts-api-utils: 2.0.1(typescript@5.2.2)
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
@@ -16724,7 +16741,7 @@ snapshots:
 
   '@typescript-eslint/types@8.34.1': {}
 
-  '@typescript-eslint/typescript-estree@8.26.0(typescript@5.1.6)':
+  '@typescript-eslint/typescript-estree@8.26.0(typescript@5.2.2)':
     dependencies:
       '@typescript-eslint/types': 8.26.0
       '@typescript-eslint/visitor-keys': 8.26.0
@@ -16733,15 +16750,15 @@ snapshots:
       is-glob: 4.0.3
       minimatch: 9.0.5
       semver: 7.7.1
-      ts-api-utils: 2.0.1(typescript@5.1.6)
-      typescript: 5.1.6
+      ts-api-utils: 2.0.1(typescript@5.2.2)
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/typescript-estree@8.34.1(typescript@5.1.6)':
+  '@typescript-eslint/typescript-estree@8.34.1(typescript@5.2.2)':
     dependencies:
-      '@typescript-eslint/project-service': 8.34.1(typescript@5.1.6)
-      '@typescript-eslint/tsconfig-utils': 8.34.1(typescript@5.1.6)
+      '@typescript-eslint/project-service': 8.34.1(typescript@5.2.2)
+      '@typescript-eslint/tsconfig-utils': 8.34.1(typescript@5.2.2)
       '@typescript-eslint/types': 8.34.1
       '@typescript-eslint/visitor-keys': 8.34.1
       debug: 4.4.0(supports-color@8.1.1)
@@ -16749,30 +16766,30 @@ snapshots:
       is-glob: 4.0.3
       minimatch: 9.0.5
       semver: 7.7.1
-      ts-api-utils: 2.1.0(typescript@5.1.6)
-      typescript: 5.1.6
+      ts-api-utils: 2.1.0(typescript@5.2.2)
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.26.0(eslint@9.21.0)(typescript@5.1.6)':
+  '@typescript-eslint/utils@8.26.0(eslint@9.21.0)(typescript@5.2.2)':
     dependencies:
       '@eslint-community/eslint-utils': 4.4.1(eslint@9.21.0)
       '@typescript-eslint/scope-manager': 8.26.0
       '@typescript-eslint/types': 8.26.0
-      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.2.2)
       eslint: 9.21.0
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.34.1(eslint@9.29.0)(typescript@5.1.6)':
+  '@typescript-eslint/utils@8.34.1(eslint@9.29.0)(typescript@5.2.2)':
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@9.29.0)
       '@typescript-eslint/scope-manager': 8.34.1
       '@typescript-eslint/types': 8.34.1
-      '@typescript-eslint/typescript-estree': 8.34.1(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 8.34.1(typescript@5.2.2)
       eslint: 9.29.0
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
@@ -17319,12 +17336,12 @@ snapshots:
 
   babel-plugin-ember-template-compilation@2.4.1:
     dependencies:
-      '@glimmer/syntax': 0.94.9
+      '@glimmer/syntax': 0.95.0
       babel-import-util: 3.0.1
 
   babel-plugin-ember-template-compilation@3.0.0:
     dependencies:
-      '@glimmer/syntax': 0.94.9
+      '@glimmer/syntax': 0.95.0
       babel-import-util: 3.0.1
       import-meta-resolve: 4.1.0
 
@@ -18521,14 +18538,14 @@ snapshots:
       object-assign: 4.1.1
       vary: 1.1.2
 
-  cosmiconfig@9.0.0(typescript@5.1.6):
+  cosmiconfig@9.0.0(typescript@5.2.2):
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
       js-yaml: 4.1.0
       parse-json: 5.2.0
     optionalDependencies:
-      typescript: 5.1.6
+      typescript: 5.2.2
 
   cross-spawn@6.0.6:
     dependencies:
@@ -19666,7 +19683,7 @@ snapshots:
       - ember-provide-consume-context
       - supports-color
 
-  ember-eslint-parser@0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1):
+  ember-eslint-parser@0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.2.2))(eslint@8.57.1):
     dependencies:
       '@babel/core': 7.26.9
       '@babel/eslint-parser': 7.27.5(@babel/core@7.26.9)(eslint@8.57.1)
@@ -19677,11 +19694,11 @@ snapshots:
       mathml-tag-names: 2.1.3
       svg-tags: 1.0.0
     optionalDependencies:
-      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.1.6)
+      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.2.2)
     transitivePeerDependencies:
       - eslint
 
-  ember-eslint-parser@0.5.9(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.1.6))(eslint@9.29.0):
+  ember-eslint-parser@0.5.9(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.2.2))(eslint@9.29.0):
     dependencies:
       '@babel/core': 7.27.4
       '@babel/eslint-parser': 7.27.5(@babel/core@7.27.4)(eslint@9.29.0)
@@ -19692,7 +19709,7 @@ snapshots:
       mathml-tag-names: 2.1.3
       svg-tags: 1.0.0
     optionalDependencies:
-      '@typescript-eslint/parser': 8.26.0(eslint@9.29.0)(typescript@5.1.6)
+      '@typescript-eslint/parser': 8.26.0(eslint@9.29.0)(typescript@5.2.2)
     transitivePeerDependencies:
       - eslint
 
@@ -20181,11 +20198,11 @@ snapshots:
       line-column: 1.0.2
       requireindex: 1.2.0
 
-  eslint-plugin-ember@12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1):
+  eslint-plugin-ember@12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.2.2))(eslint@8.57.1):
     dependencies:
       '@ember-data/rfc395-data': 0.0.4
       css-tree: 3.1.0
-      ember-eslint-parser: 0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)
+      ember-eslint-parser: 0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.2.2))(eslint@8.57.1)
       ember-rfc176-data: 0.3.18
       eslint: 8.57.1
       eslint-utils: 3.0.0(eslint@8.57.1)
@@ -20195,15 +20212,15 @@ snapshots:
       requireindex: 1.2.0
       snake-case: 3.0.4
     optionalDependencies:
-      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.1.6)
+      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.2.2)
     transitivePeerDependencies:
       - '@babel/core'
 
-  eslint-plugin-ember@12.5.0(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.1.6))(eslint@9.29.0):
+  eslint-plugin-ember@12.5.0(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.2.2))(eslint@9.29.0):
     dependencies:
       '@ember-data/rfc395-data': 0.0.4
       css-tree: 3.1.0
-      ember-eslint-parser: 0.5.9(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.1.6))(eslint@9.29.0)
+      ember-eslint-parser: 0.5.9(@babel/core@7.27.4)(@typescript-eslint/parser@8.26.0(eslint@9.29.0)(typescript@5.2.2))(eslint@9.29.0)
       ember-rfc176-data: 0.3.18
       eslint: 9.29.0
       eslint-utils: 3.0.0(eslint@9.29.0)
@@ -20213,7 +20230,7 @@ snapshots:
       requireindex: 1.2.0
       snake-case: 3.0.4
     optionalDependencies:
-      '@typescript-eslint/parser': 8.26.0(eslint@9.29.0)(typescript@5.1.6)
+      '@typescript-eslint/parser': 8.26.0(eslint@9.29.0)(typescript@5.2.2)
     transitivePeerDependencies:
       - '@babel/core'
 
@@ -20276,10 +20293,10 @@ snapshots:
       minimatch: 9.0.5
       semver: 7.7.1
 
-  eslint-plugin-n@17.20.0(eslint@9.29.0)(typescript@5.1.6):
+  eslint-plugin-n@17.20.0(eslint@9.29.0)(typescript@5.2.2):
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@9.29.0)
-      '@typescript-eslint/utils': 8.34.1(eslint@9.29.0)(typescript@5.1.6)
+      '@typescript-eslint/utils': 8.34.1(eslint@9.29.0)(typescript@5.2.2)
       enhanced-resolve: 5.18.1
       eslint: 9.29.0
       eslint-plugin-es-x: 7.8.0(eslint@9.29.0)
@@ -20288,7 +20305,7 @@ snapshots:
       ignore: 5.3.2
       minimatch: 9.0.5
       semver: 7.7.1
-      ts-declaration-location: 1.0.7(typescript@5.1.6)
+      ts-declaration-location: 1.0.7(typescript@5.2.2)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -23216,11 +23233,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  puppeteer@24.3.0(typescript@5.1.6):
+  puppeteer@24.3.0(typescript@5.2.2):
     dependencies:
       '@puppeteer/browsers': 2.7.1
       chromium-bidi: 2.0.0(devtools-protocol@0.0.1402036)
-      cosmiconfig: 9.0.0(typescript@5.1.6)
+      cosmiconfig: 9.0.0(typescript@5.2.2)
       devtools-protocol: 0.0.1402036
       puppeteer-core: 24.3.0
       typed-query-selector: 2.12.0
@@ -24226,16 +24243,16 @@ snapshots:
 
   styled_string@0.0.1: {}
 
-  stylelint-config-recommended@16.0.0(stylelint@16.20.0(typescript@5.1.6)):
+  stylelint-config-recommended@16.0.0(stylelint@16.20.0(typescript@5.2.2)):
     dependencies:
-      stylelint: 16.20.0(typescript@5.1.6)
+      stylelint: 16.20.0(typescript@5.2.2)
 
-  stylelint-config-standard@38.0.0(stylelint@16.20.0(typescript@5.1.6)):
+  stylelint-config-standard@38.0.0(stylelint@16.20.0(typescript@5.2.2)):
     dependencies:
-      stylelint: 16.20.0(typescript@5.1.6)
-      stylelint-config-recommended: 16.0.0(stylelint@16.20.0(typescript@5.1.6))
+      stylelint: 16.20.0(typescript@5.2.2)
+      stylelint-config-recommended: 16.0.0(stylelint@16.20.0(typescript@5.2.2))
 
-  stylelint@16.20.0(typescript@5.1.6):
+  stylelint@16.20.0(typescript@5.2.2):
     dependencies:
       '@csstools/css-parser-algorithms': 3.0.4(@csstools/css-tokenizer@3.0.3)
       '@csstools/css-tokenizer': 3.0.3
@@ -24244,7 +24261,7 @@ snapshots:
       '@dual-bundle/import-meta-resolve': 4.1.0
       balanced-match: 2.0.0
       colord: 2.9.3
-      cosmiconfig: 9.0.0(typescript@5.1.6)
+      cosmiconfig: 9.0.0(typescript@5.2.2)
       css-functions-list: 3.2.3
       css-tree: 3.1.0
       debug: 4.4.1
@@ -24803,18 +24820,18 @@ snapshots:
 
   trim-newlines@3.0.1: {}
 
-  ts-api-utils@2.0.1(typescript@5.1.6):
+  ts-api-utils@2.0.1(typescript@5.2.2):
     dependencies:
-      typescript: 5.1.6
+      typescript: 5.2.2
 
-  ts-api-utils@2.1.0(typescript@5.1.6):
+  ts-api-utils@2.1.0(typescript@5.2.2):
     dependencies:
-      typescript: 5.1.6
+      typescript: 5.2.2
 
-  ts-declaration-location@1.0.7(typescript@5.1.6):
+  ts-declaration-location@1.0.7(typescript@5.2.2):
     dependencies:
       picomatch: 4.0.2
-      typescript: 5.1.6
+      typescript: 5.2.2
 
   tsconfig-paths@3.15.0:
     dependencies:
@@ -24900,19 +24917,21 @@ snapshots:
     dependencies:
       is-typedarray: 1.0.0
 
-  typescript-eslint@8.26.0(eslint@9.21.0)(typescript@5.1.6):
+  typescript-eslint@8.26.0(eslint@9.21.0)(typescript@5.2.2):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.26.0(@typescript-eslint/parser@8.26.0(eslint@9.21.0)(typescript@5.1.6))(eslint@9.21.0)(typescript@5.1.6)
-      '@typescript-eslint/parser': 8.26.0(eslint@9.21.0)(typescript@5.1.6)
-      '@typescript-eslint/utils': 8.26.0(eslint@9.21.0)(typescript@5.1.6)
+      '@typescript-eslint/eslint-plugin': 8.26.0(@typescript-eslint/parser@8.26.0(eslint@9.21.0)(typescript@5.2.2))(eslint@9.21.0)(typescript@5.2.2)
+      '@typescript-eslint/parser': 8.26.0(eslint@9.21.0)(typescript@5.2.2)
+      '@typescript-eslint/utils': 8.26.0(eslint@9.21.0)(typescript@5.2.2)
       eslint: 9.21.0
-      typescript: 5.1.6
+      typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
 
   typescript-memoize@1.1.1: {}
 
   typescript@5.1.6: {}
+
+  typescript@5.2.2: {}
 
   uc.micro@1.0.6: {}
 

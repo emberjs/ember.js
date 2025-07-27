@@ -15,10 +15,10 @@
     "@ember/runloop": "workspace:*",
     "@glimmer/destroyable": "0.94.8",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/manager": "0.94.9",
+    "@glimmer/manager": "0.94.10",
     "@glimmer/owner": "0.93.4",
     "@glimmer/util": "0.94.8",
-    "@glimmer/validator": "0.94.8",
+    "@glimmer/validator": "0.95.0",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"
   }
