@@ -985,6 +985,12 @@ importers:
         specifier: ^0.15.0
         version: 0.15.0
 
+  packages/@ember/reactive:
+    dependencies:
+      '@glimmer/validator':
+        specifier: file:../../../glimmer-validator-0.94.8.tgz
+        version: file:glimmer-validator-0.94.8.tgz
+
   packages/@ember/renderer:
     dependencies:
       '@ember/-internals':
