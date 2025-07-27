@@ -21,7 +21,7 @@ for (let file of tgzs) {
   let match = file.match(PARSE);
   let { name } = match.groups;
 
-  overrides[`@glimmer/${name}`] = `./${file}`;
+  overrides[`@glimmer/${name}`] = `file:./${file}`;
 }
 
 let manifestPath = join(process.cwd(), 'package.json');
