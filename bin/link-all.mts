@@ -16,7 +16,7 @@
  */
 
 import { writeFileSync } from 'node:fs';
-import { readFile, unlink, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import chalk from 'chalk';
@@ -67,8 +67,6 @@ const unpack = pkgs.map(async (pkg) => {
       strip: 1,
       cwd: pkgDest,
     });
-
-    await unlink(tarball);
 
     // https://github.com/pnpm/pnpm/issues/881
     const packageJsonPath = join(pkgDest, 'package.json');
