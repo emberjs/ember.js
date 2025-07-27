@@ -58,7 +58,7 @@ export class RenderTest implements IRenderTest {
   testType: ComponentKind = 'unknown';
 
   protected element: SimpleElement;
-  protected assert = QUnit.assert;
+  assert = QUnit.assert;
   protected context: Dict = dict();
   protected renderResult: Nullable<RenderResult> = null;
   protected helpers = dict<UserHelper>();
@@ -439,7 +439,7 @@ export class RenderTest implements IRenderTest {
         let key = Array.isArray(items[index]) ? items[index][0] : index;
         let value = Array.isArray(items[index]) ? items[index][1] : items[index];
 
-        QUnit.assert.equal(el.textContent, `${key}.${value}`);
+        QUnit.assert.equal(el.textContent, `${key}.${value}`, `Comparing the rendered key.value`);
       }
     );
   }
@@ -497,7 +497,10 @@ export class RenderTest implements IRenderTest {
   }
 
   protected assertEachInReactivity(
-    Klass: new (...args: any[]) => { collection: number[]; update: () => void }
+    Klass: new (...args: any[]) => {
+      collection: (string | number)[] | Map<unknown, string | number>;
+      update: () => void;
+    }
   ) {
     let instance: TestComponent | undefined;
 
@@ -533,7 +536,9 @@ export class RenderTest implements IRenderTest {
     let { collection } = instance;
 
     this.assertEachCompareResults(
-      Symbol.iterator in collection ? Array.from(collection) : Object.entries(collection)
+      Symbol.iterator in collection
+        ? Array.from(collection as string[])
+        : Object.entries(collection)
     );
 
     instance.update();
@@ -541,12 +546,21 @@ export class RenderTest implements IRenderTest {
     this.rerender();
 
     this.assertEachCompareResults(
-      Symbol.iterator in collection ? Array.from(collection) : Object.entries(collection)
+      Symbol.iterator in collection
+        ? Array.from(collection as string[])
+        : Object.entries(collection)
     );
   }
 
   protected assertEachReactivity(
-    Klass: new (...args: any[]) => { collection: number[]; update: () => void }
+    Klass: new (...args: any[]) => {
+      collection:
+        | (string | number)[]
+        | Set<number | string>
+        | Map<unknown, unknown>
+        | Record<string, unknown>;
+      update: () => void;
+    }
   ) {
     let instance: TestComponent | undefined;
 
@@ -579,13 +593,19 @@ export class RenderTest implements IRenderTest {
       throw new Error('The instance is not defined');
     }
 
-    this.assertEachCompareResults(Array.from(instance.collection).map((v, i) => [i, v]));
+    function getEntries() {
+      if (!instance) return [];
+
+      return Array.from(instance.collection as (string | number)[]);
+    }
+
+    this.assertEachCompareResults((getEntries() as string[]).map((v, i) => [i, v]));
 
     instance.update();
 
     this.rerender();
 
-    this.assertEachCompareResults(Array.from(instance.collection).map((v, i) => [i, v]));
+    this.assertEachCompareResults((getEntries() as string[]).map((v, i) => [i, v]));
 
     this.assertStableRerender();
   }

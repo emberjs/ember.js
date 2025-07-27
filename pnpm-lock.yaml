@@ -1496,6 +1496,9 @@ importers:
       '@glimmer/validator':
         specifier: workspace:*
         version: link:..
+      expect-type:
+        specifier: ^1.1.0
+        version: 1.1.0
 
   packages/@glimmer/vm:
     dependencies:
