@@ -1,4 +1,4 @@
-name: docs.yml
+name: Generate Docs
 on:
   push:
     tags:
@@ -33,14 +33,16 @@ jobs:
           repository: ember-learn/ember-api-docs-data
           path: ember-api-docs-data
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-
-      - name: Install pnpm
-        run: npm install -g pnpm
 
       - name: Install dependencies for ember-jsonapi-docs
         run: pnpm install
