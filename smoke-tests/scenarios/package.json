@@ -11,7 +11,7 @@
     "@types/node": "^20.12.7",
     "qunit": "^2.20.1",
     "scenario-tester": "^4.0.0",
-    "typescript": "5.1",
+    "typescript": "~5.8.3",
     "webpack": "^5.91.0"
   },
   "scripts": {
