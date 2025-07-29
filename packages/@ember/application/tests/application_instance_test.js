@@ -4,7 +4,7 @@ import ApplicationInstance from '@ember/application/instance';
 import { run } from '@ember/runloop';
 import { privatize as P } from '@ember/-internals/container';
 import { factory } from 'internal-test-helpers';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import {
   moduleFor,
   ModuleBasedTestResolver,
@@ -209,7 +209,7 @@ moduleFor(
     ['@test can build a registry via ApplicationInstance.setupRegistry() -- simulates ember-test-helpers'](
       assert
     ) {
-      let namespace = EmberObject.create({
+      let namespace = CoreObject.create({
         Resolver: { create: function () {} },
       });
 

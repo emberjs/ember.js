@@ -8,7 +8,7 @@ import {
   removeObserver,
   tagForProperty,
 } from '..';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
@@ -70,13 +70,13 @@ moduleFor(
     }
 
     ['@test nested aliases should trigger computed property invalidation [GH#19279]'](assert) {
-      let AttributeModel = class extends EmberObject {
+      let AttributeModel = class extends CoreObject {
         @alias('additives.length')
         countAdditives;
         additives = A();
       };
 
-      let RootModel = class extends EmberObject {
+      let RootModel = class extends CoreObject {
         @computed('metaAttributes.@each.countAdditives')
         get allAdditives() {
           return this.metaAttributes.reduce((acc, el) => {
@@ -95,7 +95,7 @@ moduleFor(
     async [`@test inheriting an observer of the alias from the prototype then
     redefining the alias on the instance to another property dependent on same key
     does not call the observer twice`](assert) {
-      let obj1 = class extends EmberObject {
+      let obj1 = class extends CoreObject {
         foo = null;
         @alias('foo') bar;
         @alias('foo') baz;
