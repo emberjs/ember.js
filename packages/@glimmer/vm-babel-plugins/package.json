@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/vm-babel-plugins",
-  "version": "0.93.4",
+  "version": "0.93.5",
   "license": "MIT",
   "description": "Compiles out VM assertion and deprecation utilities and debug tooling based on environment",
   "repository": {

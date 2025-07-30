@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/runtime",
-  "version": "0.94.10",
+  "version": "0.94.11",
   "license": "MIT",
   "description": "Minimal runtime needed to render Glimmer templates",
   "repository": {
