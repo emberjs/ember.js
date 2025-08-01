@@ -27,7 +27,7 @@ export function inject(
   ...args: [] | [name: string] | ElementDescriptor
 ): PropertyDecorator | DecoratorPropertyDescriptor | void {
   deprecateUntil(
-    'Importing `inject` from `@ember/service` is deprecated. Please import `service` instead.',
+    "Importing `inject` from `@ember/service` is deprecated. Please import `service` instead. This likely means that you want to find lines: `import { inject as service } from '@ember/service'` and replace them with: `import { service } from '@ember/service';`",
     DEPRECATIONS.DEPRECATE_IMPORT_INJECT
   );
 
