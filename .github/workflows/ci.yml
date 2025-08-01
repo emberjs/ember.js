@@ -56,7 +56,7 @@ jobs:
       matrix:
         # I removed 'next' from this list because we're seeing buggy behavior in
         # the so-far unreleased 5.4. -ef4
-        ts-version: ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7']
+        ts-version: ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8']
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
