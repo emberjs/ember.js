@@ -73,6 +73,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: rollup
+        run: pnpm build
       - name: build
         run: pnpm vite build --mode=development
       - name: test
@@ -104,6 +106,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: rollup
+        run: pnpm build
       - name: build
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
       - name: test
