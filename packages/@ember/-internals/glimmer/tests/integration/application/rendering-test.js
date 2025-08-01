@@ -6,6 +6,7 @@ import { service } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
 import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
+import GlimmerComponent from '@glimmer/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 import { template } from '@ember/template-compiler';
@@ -413,10 +414,9 @@ moduleFor(
       });
 
       this.addComponent('foo', {
-        // TODO: use a Glimmer Component instead, since that's the requirement to make it fail
-        ComponentClass: class extends Component {
+        ComponentClass: class extends GlimmerComponent {
           willDestroy() {
-            assert.step(this.model);
+            assert.step(this.args.model);
           }
         },
       });
