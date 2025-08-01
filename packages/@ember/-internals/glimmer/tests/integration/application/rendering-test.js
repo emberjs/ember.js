@@ -398,6 +398,99 @@ moduleFor(
         });
     }
 
+    async ['@test @model should be stable when transitioning out of the route']() {
+      let assert = this.assert;
+
+      this.router.map(function () {
+        this.route('a', function () {
+          this.route('b');
+          this.route('c');
+        });
+        this.route('d', function () {
+          this.route('e');
+        });
+        this.route('f');
+      });
+
+      this.addComponent('foo', {
+        // TODO: use a Glimmer Component instead, since that's the requirement to make it fail
+        ComponentClass: class extends Component {
+          willDestroy() {
+            assert.step(this.model);
+          }
+        },
+      });
+      this.add(
+        'route:a',
+        class extends Route {
+          model() {
+            return 'a';
+          }
+        }
+      );
+      this.add(
+        'route:a.b',
+        class extends Route {
+          model() {
+            return 'b';
+          }
+        }
+      );
+      this.addTemplate('a.b', '<Foo @model={{@model}} @controller={{this}} />');
+      this.add(
+        'route:a.c',
+        class extends Route {
+          model() {
+            return 'c';
+          }
+        }
+      );
+      this.add(
+        'route:d',
+        class extends Route {
+          model() {
+            return 'd';
+          }
+        }
+      );
+      this.add(
+        'route:d.e',
+        class extends Route {
+          model() {
+            return 'e';
+          }
+        }
+      );
+      this.add(
+        'route:f',
+        class extends Route {
+          model() {
+            return 'f';
+          }
+        }
+      );
+
+      await this.visit('/a/b');
+      await this.visit('/a');
+
+      await this.visit('/a/b');
+      await this.visit('/a/c');
+
+      await this.visit('/a/b');
+      await this.visit('/d');
+
+      await this.visit('/a/b');
+      await this.visit('/d/e');
+
+      await this.visit('/a/b');
+      await this.visit('/f');
+
+      this.assert.verifySteps(
+        ['b', 'b', 'b', 'b', 'b'],
+        'The @model property of the Foo component should be stable in the willDestroy hook'
+      );
+    }
+
     ['@test it should produce a stable DOM when the model changes']() {
       this.router.map(function () {
         this.route('color', { path: '/colors/:color' });
