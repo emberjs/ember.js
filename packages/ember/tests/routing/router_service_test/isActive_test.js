@@ -168,5 +168,23 @@ moduleFor(
           assert.deepEqual(qp.queryParams, { sort: 'ascending' });
         });
     }
+
+    ['@test RouterService#isActive calls setupRouter to ensure router is initialized'](assert) {
+      assert.expect(1);
+
+      return this.visit('/').then(() => {
+        let setupRouterCallCount = 0;
+        let originalSetupRouter = this.routerService._router.setupRouter;
+
+        this.routerService._router.setupRouter = function () {
+          setupRouterCallCount++;
+          return originalSetupRouter.call(this);
+        };
+
+        this.routerService.isActive('parent.child');
+
+        assert.equal(setupRouterCallCount, 1, 'setupRouter should be called exactly once when isActive is invoked');
+      });
+    }
   }
 );
