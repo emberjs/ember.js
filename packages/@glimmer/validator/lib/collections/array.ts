@@ -68,7 +68,7 @@ class TrackedArray<T = unknown> {
       `.unshift()`, since in those cases (and only those cases!) the `Array`
       itself checks `.length` to return from the function call.
      */
-    let nativelyAccessingLengthFromPushOrUnshift = false;
+    let nativelyAccessingLengthFromWriteMethod = false;
 
     return new Proxy(clone, {
       get(target, prop /*, _receiver */) {
@@ -90,8 +90,8 @@ class TrackedArray<T = unknown> {
           // "read" operation safely, and if done during an *existing* read
           // (e.g. if the user has already checked `.length` *prior* to this),
           // that will still trigger the mutation-after-consumption assertion.
-          if (nativelyAccessingLengthFromPushOrUnshift) {
-            nativelyAccessingLengthFromPushOrUnshift = false;
+          if (nativelyAccessingLengthFromWriteMethod) {
+            nativelyAccessingLengthFromWriteMethod = false;
           } else {
             consumeTag(self.#collection);
           }
@@ -103,7 +103,7 @@ class TrackedArray<T = unknown> {
         // the flag to `true` so that when the `.length` is read by `Array` (see
         // immediately above), it knows not to dirty the collection.
         if (ARRAY_WRITE_THEN_READ_METHODS.has(prop)) {
-          nativelyAccessingLengthFromPushOrUnshift = true;
+          nativelyAccessingLengthFromWriteMethod = true;
         }
 
         if (ARRAY_GETTER_METHODS.has(prop)) {
