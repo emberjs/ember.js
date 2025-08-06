@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import { Component } from '@ember/-internals/glimmer';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 
