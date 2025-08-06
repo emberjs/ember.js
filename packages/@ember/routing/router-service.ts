@@ -311,6 +311,7 @@ class RouterService extends Service.extend(Evented) {
    */
   isActive(...args: RouteArgs) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
+    this._router.setupRouter();
     let routerMicrolib = this._router._routerMicrolib;
 
     // When using isActive() in a getter, we want to entagle with the auto-tracking system
