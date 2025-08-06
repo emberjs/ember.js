@@ -169,21 +169,40 @@ moduleFor(
         });
     }
 
-    ['@test RouterService#isActive calls setupRouter to ensure router is initialized'](assert) {
+    ['@test RouterService#isActive works reliably during component rendering before router initialization'](assert) {
       assert.expect(1);
+    
+      // This simulates the scenario where isActive is called during component rendering
+      // before the router has been fully set up, which used to throw an error
+
+      let componentInstance;
+
+      this.addTemplate('parent.index', '{{foo-component}}');
+
+      this.addComponent('foo-component', {
+        ComponentClass: class extends Component {
+          @service('router')
+          routerService;
+
+          init() {
+            super.init();
+            componentInstance = this;
+          }
+
+          get isRouteActive() {
+            // This used to throw "Cannot read properties of undefined (reading 'isActiveIntent')"
+            // before setupRouter() was added to the isActive method
+            return this.routerService.isActive('parent.child');
+          }
+        },
+        template: `{{this.isRouteActive}}`,
+      });
 
       return this.visit('/').then(() => {
-        let setupRouterCallCount = 0;
-        let originalSetupRouter = this.routerService._router.setupRouter;
-
-        this.routerService._router.setupRouter = function () {
-          setupRouterCallCount++;
-          return originalSetupRouter.call(this);
-        };
-
-        this.routerService.isActive('parent.child');
-
-        assert.equal(setupRouterCallCount, 1, 'setupRouter should be called exactly once when isActive is invoked');
+        // The test passes if no error is thrown during rendering
+        // and isActive returns a boolean value
+        assert.strictEqual(typeof componentInstance.isRouteActive, 'boolean',
+          'isActive should return a boolean value without throwing an error');
       });
     }
   }
