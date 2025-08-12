@@ -27,6 +27,7 @@
     "@glimmer/reference": "workspace:*",
     "@glimmer/runtime": "workspace:*",
     "@glimmer/syntax": "workspace:*",
+    "@glimmer/tracking": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/validator": "workspace:*",
     "@glimmer/vm": "workspace:*",

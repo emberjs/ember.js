@@ -1,15 +1,2 @@
-import { trackedData } from '@glimmer/validator';
-
-export function tracked(target: object, key: string) {
-  let { getter, setter } = trackedData<any, any>(key);
-
-  Object.defineProperty(target, key, {
-    get() {
-      return getter(this);
-    },
-
-    set(value: unknown) {
-      setter(this, value);
-    },
-  });
-}
+// TODO: lets point everybody who uses this directly at @glimmer/tracking
+export { tracked } from '@glimmer/tracking';
