@@ -3,7 +3,6 @@ packages:
   - 'packages/@ember/*'
   - 'packages/@glimmer/*'
   - 'smoke-tests/*'
-  - 'glimmer-vm'
   - 'glimmer-vm/packages/@glimmer/*'
   - 'glimmer-vm/packages/@glimmer/*/test'
   - 'glimmer-vm/packages/@glimmer-workspace/integration-tests'

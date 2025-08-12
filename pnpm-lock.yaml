@@ -367,6 +367,9 @@ importers:
       '@glimmer/syntax':
         specifier: workspace:*
         version: link:../../@glimmer/syntax
+      '@glimmer/tracking':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/tracking
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
