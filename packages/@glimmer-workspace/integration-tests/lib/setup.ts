@@ -3,7 +3,6 @@ import type { IteratorDelegate } from '@glimmer/reference';
 import type { TestBase } from 'qunit';
 import setGlobalContext from '@glimmer/global-context';
 import { consumeTag, dirtyTagFor, tagFor } from '@glimmer/validator';
-import QUnit from 'qunit';
 
 import { scheduleDidDestroy, scheduleWillDestroy } from './base-env';
 import { NativeIteratorDelegate } from './modes/env';

@@ -7,6 +7,7 @@
 
   <body>
     <script type="module">
+      import "qunit/qunit/qunit.js";
       import { runTests } from "@glimmer-workspace/integration-tests";
       await runTests(
         import.meta.glob("./packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.ts"),

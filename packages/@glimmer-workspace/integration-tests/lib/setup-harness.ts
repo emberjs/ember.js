@@ -2,8 +2,6 @@
 import type { Expand } from '@glimmer/interfaces';
 import type { Runner } from 'js-reporters';
 import { debug } from '@glimmer/validator';
-import { autoRegister } from 'js-reporters';
-import { default as QUnit } from 'qunit';
 
 const SMOKE_TEST_FILE = './packages/@glimmer-workspace/integration-tests/test/smoke-test.ts';
 
@@ -31,7 +29,7 @@ export async function bootQunit(
 }
 
 export async function setupQunit() {
-  const qunitLib: QUnit = await import('qunit');
+  const qunitLib: QUnit = QUnit;
   await import('qunit/qunit/qunit.css');
 
   const testing = Testing.withConfig(
@@ -72,10 +70,11 @@ export async function setupQunit() {
     }
   );
 
-  const runner = autoRegister();
-
   testing.begin(() => {
     if (testing.config.ci) {
+      // @ts-expect-error TODO: js-reporters not available
+      const runner = autoRegister();
+
       // @ts-expect-error add reporters.tap to the types
 
       const tap = qunitLib.reporters.tap as {
