@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
   const build = {
     rollupOptions: {
       preserveEntrySignatures: 'strict',
+      input: ['index.html', 'glimmer-vm/index.html'],
       output: {
         preserveModules: true,
       },
@@ -40,7 +41,7 @@ export default defineConfig(({ mode }) => {
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { noDiscovery: true },
+    optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,
     esbuild: false,

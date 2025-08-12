@@ -16,7 +16,14 @@ const { buildInfo } = require('./broccoli/build-info');
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin');
 const canaryFeatures = require('./broccoli/canary-features');
 
-const testDependencies = ['qunit', 'vite'];
+const testDependencies = [
+  'qunit',
+  'vite',
+  'js-reporters',
+  '@simple-dom/serializer',
+  '@simple-dom/void-map',
+  'expect-type',
+];
 
 let configs = [
   esmConfig(),
