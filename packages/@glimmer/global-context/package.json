@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/global-context",
-  "version": "0.93.3",
+  "version": "0.93.4",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,7 +22,8 @@
           "default": "./dist/prod/index.js"
         }
       }
-    }
+    },
+    "types": "dist/dev/index.d.ts"
   },
   "files": [
     "dist"

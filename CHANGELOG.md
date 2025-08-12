@@ -1,5 +1,88 @@
 # Changelog
 
+## Release (2025-07-27)
+
+@glimmer/compiler 0.94.11 (patch)
+@glimmer/manager 0.94.10 (patch)
+@glimmer/node 0.94.10 (patch)
+@glimmer/opcode-compiler 0.94.10 (patch)
+@glimmer/program 0.94.10 (patch)
+@glimmer/reference 0.94.9 (patch)
+@glimmer/runtime 0.94.11 (patch)
+@glimmer/syntax 0.95.0 (minor)
+@glimmer/validator 0.95.0 (minor)
+@glimmer/vm-babel-plugins 0.93.5 (patch)
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/integration-tests`, `@glimmer/validator`
+  * [#1748](https://github.com/glimmerjs/glimmer-vm/pull/1748) Implement trackedObject, trackedSet, trackedWeakSet, trackedMap, and trackedWeakMap ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1713](https://github.com/glimmerjs/glimmer-vm/pull/1713) Implement trackedArray(data, { equals, description }) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/syntax`
+  * [#1743](https://github.com/glimmerjs/glimmer-vm/pull/1743) Upgrade handlebars parser ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/build-support`, `@glimmer/vm-babel-plugins`
+  * [#1759](https://github.com/glimmerjs/glimmer-vm/pull/1759) Fix security vulnerabilities with targeted solutions ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/bin`, `@glimmer-workspace/build-support`, `@glimmer-workspace/repo-metadata`
+  * [#1753](https://github.com/glimmerjs/glimmer-vm/pull/1753) Fix build verification by stripping debug calls from all builds ([@wycats](https://github.com/wycats))
+* Other
+  * [#1744](https://github.com/glimmerjs/glimmer-vm/pull/1744) Upgrade to pnpm 10.6.5 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :memo: Documentation
+* [#1752](https://github.com/glimmerjs/glimmer-vm/pull/1752) Add reactivity docs from #1690 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer-workspace/bin`
+  * [#1764](https://github.com/glimmerjs/glimmer-vm/pull/1764) fix link-all: Extensions must match path on disk. It was TS that created a problem, and node fixed it. ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1763](https://github.com/glimmerjs/glimmer-vm/pull/1763) Change link all, so that tarballs are left in the dist directory for easier testing with emberjs ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1757](https://github.com/glimmerjs/glimmer-vm/pull/1757) Improve and consolidate package.json scripts ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/bin`, `@glimmer-workspace/repo-metadata`
+  * [#1760](https://github.com/glimmerjs/glimmer-vm/pull/1760) Remove unused dependencies ([@wycats](https://github.com/wycats))
+  * [#1756](https://github.com/glimmerjs/glimmer-vm/pull/1756) Remove unused scripts and update documentation ([@wycats](https://github.com/wycats))
+* Other
+  * [#1758](https://github.com/glimmerjs/glimmer-vm/pull/1758) Optimize Turbo configuration and clean up dependencies ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/repo-metadata`
+  * [#1754](https://github.com/glimmerjs/glimmer-vm/pull/1754) Fix floating dependencies CI by replacing meta-updater ([@wycats](https://github.com/wycats))
+
+#### Committers: 2
+- Yehuda Katz ([@wycats](https://github.com/wycats))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
+## Release (2025-03-18)
+
+@glimmer/compiler 0.94.10 (patch)
+@glimmer/destroyable 0.94.8 (patch)
+@glimmer/encoder 0.93.8 (patch)
+@glimmer/global-context 0.93.4 (patch)
+@glimmer/manager 0.94.9 (patch)
+@glimmer/node 0.94.9 (patch)
+@glimmer/opcode-compiler 0.94.9 (patch)
+@glimmer/owner 0.93.4 (patch)
+@glimmer/program 0.94.9 (patch)
+@glimmer/reference 0.94.8 (patch)
+@glimmer/runtime 0.94.10 (patch)
+@glimmer/syntax 0.94.9 (patch)
+@glimmer/util 0.94.8 (patch)
+@glimmer/validator 0.94.8 (patch)
+@glimmer/vm 0.94.8 (patch)
+@glimmer/wire-format 0.94.8 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/benchmark-env`, `@glimmer/compiler`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1741](https://github.com/glimmerjs/glimmer-vm/pull/1741) Re-add support for tsconfig's moduleResolution=node10 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* Other
+  * [#1738](https://github.com/glimmerjs/glimmer-vm/pull/1738) Removing editor.rulers ([@ef4](https://github.com/ef4))
+* `@glimmer-workspace/repo-metadata`
+  * [#1736](https://github.com/glimmerjs/glimmer-vm/pull/1736) pnpm repo:update:metadata ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/runtime`
+  * [#1735](https://github.com/glimmerjs/glimmer-vm/pull/1735) Force release ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 2
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2025-03-14)
 
 @glimmer/runtime 0.94.9 (patch)

@@ -1,68 +1,169 @@
 {
   "solution": {
     "@glimmer/compiler": {
-      "oldVersion": "0.94.9"
+      "impact": "patch",
+      "oldVersion": "0.94.10",
+      "newVersion": "0.94.11",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/syntax"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/compiler/package.json"
     },
     "@glimmer/destroyable": {
-      "oldVersion": "0.94.7"
+      "oldVersion": "0.94.8"
     },
     "@glimmer/encoder": {
-      "oldVersion": "0.93.7"
+      "oldVersion": "0.93.8"
     },
     "@glimmer/global-context": {
-      "oldVersion": "0.93.3"
+      "oldVersion": "0.93.4"
     },
     "@glimmer/interfaces": {
       "oldVersion": "0.94.6"
     },
     "@glimmer/manager": {
-      "oldVersion": "0.94.8"
+      "impact": "patch",
+      "oldVersion": "0.94.9",
+      "newVersion": "0.94.10",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/validator"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/reference"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/manager/package.json"
     },
     "@glimmer/node": {
-      "oldVersion": "0.94.8"
+      "impact": "patch",
+      "oldVersion": "0.94.9",
+      "newVersion": "0.94.10",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/runtime"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/node/package.json"
     },
     "@glimmer/opcode-compiler": {
-      "oldVersion": "0.94.8"
+      "impact": "patch",
+      "oldVersion": "0.94.9",
+      "newVersion": "0.94.10",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/manager"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/opcode-compiler/package.json"
     },
     "@glimmer/owner": {
-      "oldVersion": "0.93.3"
+      "oldVersion": "0.93.4"
     },
     "@glimmer/program": {
-      "oldVersion": "0.94.8"
+      "impact": "patch",
+      "oldVersion": "0.94.9",
+      "newVersion": "0.94.10",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/opcode-compiler"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/manager"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/program/package.json"
     },
     "@glimmer/reference": {
-      "oldVersion": "0.94.7"
-    },
-    "@glimmer/runtime": {
       "impact": "patch",
       "oldVersion": "0.94.8",
       "newVersion": "0.94.9",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "@NullVoxPopuli said so2"
+          "reason": "Has dependency `workspace:*` on @glimmer/validator"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/reference/package.json"
+    },
+    "@glimmer/runtime": {
+      "impact": "patch",
+      "oldVersion": "0.94.10",
+      "newVersion": "0.94.11",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/program"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/manager"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/reference"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/validator"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/runtime/package.json"
     },
     "@glimmer/syntax": {
-      "oldVersion": "0.94.8"
+      "impact": "minor",
+      "oldVersion": "0.94.9",
+      "newVersion": "0.95.0",
+      "constraints": [
+        {
+          "impact": "minor",
+          "reason": "Appears in changelog section :rocket: Enhancement"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/syntax/package.json"
     },
     "@glimmer/util": {
-      "oldVersion": "0.94.7"
+      "oldVersion": "0.94.8"
     },
     "@glimmer/validator": {
-      "oldVersion": "0.94.7"
+      "impact": "minor",
+      "oldVersion": "0.94.8",
+      "newVersion": "0.95.0",
+      "constraints": [
+        {
+          "impact": "minor",
+          "reason": "Appears in changelog section :rocket: Enhancement"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/validator/package.json"
     },
     "@glimmer/vm": {
-      "oldVersion": "0.94.7"
+      "oldVersion": "0.94.8"
     },
     "@glimmer/vm-babel-plugins": {
-      "oldVersion": "0.93.4"
+      "impact": "patch",
+      "oldVersion": "0.93.4",
+      "newVersion": "0.93.5",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/vm-babel-plugins/package.json"
     },
     "@glimmer/wire-format": {
-      "oldVersion": "0.94.7"
+      "oldVersion": "0.94.8"
     }
   },
-  "description": "## Release (2025-03-14)\n\n\n\n#### :bug: Bug Fix\n* `@glimmer-workspace/build-support`\n  * [#1734](https://github.com/glimmerjs/glimmer-vm/pull/1734) Restore {{debugger}} behavior ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :house: Internal\n* `@glimmer-workspace/bin`\n  * [#1732](https://github.com/glimmerjs/glimmer-vm/pull/1732) Fix bench post-install ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
+  "description": "## Release (2025-07-27)\n\n@glimmer/compiler 0.94.11 (patch)\n@glimmer/manager 0.94.10 (patch)\n@glimmer/node 0.94.10 (patch)\n@glimmer/opcode-compiler 0.94.10 (patch)\n@glimmer/program 0.94.10 (patch)\n@glimmer/reference 0.94.9 (patch)\n@glimmer/runtime 0.94.11 (patch)\n@glimmer/syntax 0.95.0 (minor)\n@glimmer/validator 0.95.0 (minor)\n@glimmer/vm-babel-plugins 0.93.5 (patch)\n\n#### :rocket: Enhancement\n* `@glimmer-workspace/integration-tests`, `@glimmer/validator`\n  * [#1748](https://github.com/glimmerjs/glimmer-vm/pull/1748) Implement trackedObject, trackedSet, trackedWeakSet, trackedMap, and trackedWeakMap ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n  * [#1713](https://github.com/glimmerjs/glimmer-vm/pull/1713) Implement trackedArray(data, { equals, description }) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n* `@glimmer/syntax`\n  * [#1743](https://github.com/glimmerjs/glimmer-vm/pull/1743) Upgrade handlebars parser ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :bug: Bug Fix\n* `@glimmer-workspace/build-support`, `@glimmer/vm-babel-plugins`\n  * [#1759](https://github.com/glimmerjs/glimmer-vm/pull/1759) Fix security vulnerabilities with targeted solutions ([@wycats](https://github.com/wycats))\n* `@glimmer-workspace/bin`, `@glimmer-workspace/build-support`, `@glimmer-workspace/repo-metadata`\n  * [#1753](https://github.com/glimmerjs/glimmer-vm/pull/1753) Fix build verification by stripping debug calls from all builds ([@wycats](https://github.com/wycats))\n* Other\n  * [#1744](https://github.com/glimmerjs/glimmer-vm/pull/1744) Upgrade to pnpm 10.6.5 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :memo: Documentation\n* [#1752](https://github.com/glimmerjs/glimmer-vm/pull/1752) Add reactivity docs from #1690 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :house: Internal\n* `@glimmer-workspace/bin`\n  * [#1764](https://github.com/glimmerjs/glimmer-vm/pull/1764) fix link-all: Extensions must match path on disk. It was TS that created a problem, and node fixed it. ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n  * [#1763](https://github.com/glimmerjs/glimmer-vm/pull/1763) Change link all, so that tarballs are left in the dist directory for easier testing with emberjs ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n  * [#1757](https://github.com/glimmerjs/glimmer-vm/pull/1757) Improve and consolidate package.json scripts ([@wycats](https://github.com/wycats))\n* `@glimmer-workspace/bin`, `@glimmer-workspace/repo-metadata`\n  * [#1760](https://github.com/glimmerjs/glimmer-vm/pull/1760) Remove unused dependencies ([@wycats](https://github.com/wycats))\n  * [#1756](https://github.com/glimmerjs/glimmer-vm/pull/1756) Remove unused scripts and update documentation ([@wycats](https://github.com/wycats))\n* Other\n  * [#1758](https://github.com/glimmerjs/glimmer-vm/pull/1758) Optimize Turbo configuration and clean up dependencies ([@wycats](https://github.com/wycats))\n* `@glimmer-workspace/repo-metadata`\n  * [#1754](https://github.com/glimmerjs/glimmer-vm/pull/1754) Fix floating dependencies CI by replacing meta-updater ([@wycats](https://github.com/wycats))\n\n#### Committers: 2\n- Yehuda Katz ([@wycats](https://github.com/wycats))\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
 }

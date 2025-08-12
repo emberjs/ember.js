@@ -29,7 +29,6 @@ jobs:
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm turbo prepack
-      - run: node ./bin/build-verify.mjs
 
   lint:
     name: Linting
@@ -43,7 +42,7 @@ jobs:
           pnpm-args: '--ignore-scripts'
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm repo:lint:all
+      - run: pnpm lint:all
 
 
   verify:
@@ -93,7 +92,6 @@ jobs:
           pnpm test:setup
           pnpm test:node
 
-
   test-chrome:
     name: Chrome
     runs-on: ubuntu-latest
@@ -117,42 +115,6 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm test
 
-  # test-browserstack:
-  #   name: Browserstack
-  #   runs-on: ubuntu-latest
-  #   needs: ['install_dependencies']
-  #   timeout-minutes: 20
-
-  #   env:
-  #     BROWSERSTACK_USERNAME: glimmervm1
-  #     BROWSERSTACK_ACCESS_KEY: 7DFjbGLxYRsXWmc8tzeh
-
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: wyvox/action-setup-pnpm@v2
-  #     - run: pnpm browserstack:connect
-  #     - run: pnpm test:browserstack
-  #     - run: pnpm browserstack:results
-  #     - run: pnpm browserstack:disconnect
-
-  # test-browserstack:
-  #   name: Browserstack
-  #   runs-on: ubuntu-latest
-  #   needs: ['install_dependencies']
-  #   timeout-minutes: 20
-
-  #   env:
-  #     BROWSERSTACK_USERNAME: glimmervm1
-  #     BROWSERSTACK_ACCESS_KEY: 7DFjbGLxYRsXWmc8tzeh
-
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: wyvox/action-setup-pnpm@v2
-  #     - run: pnpm browserstack:connect
-  #     - run: pnpm test:browserstack
-  #     - run: pnpm browserstack:results
-  #     - run: pnpm browserstack:disconnect
-
   test-types:
     name: Types
     runs-on: ubuntu-latest
@@ -164,7 +126,7 @@ jobs:
         with:
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm repo:lint:types
+      - run: pnpm lint:types
 
   floating-dependencies:
     name: Floating Dependencies

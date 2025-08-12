@@ -17,6 +17,26 @@ const { ModuleKind, ModuleResolutionKind, ScriptTarget } = ts;
 const { default: nodeResolve } = await import('@rollup/plugin-node-resolve');
 const { default: postcss } = await import('rollup-plugin-postcss');
 const { default: nodePolyfills } = await import('rollup-plugin-polyfill-node');
+const { babel } = await import('@rollup/plugin-babel');
+const stripDebugPlugin = await import('@glimmer/local-debug-babel-plugin');
+
+/**
+ * Create a Rollup plugin that strips debug calls from builds
+ * @returns {RollupPlugin}
+ */
+function stripGlimmerDebug() {
+  return babel({
+    babelHelpers: 'bundled',
+    plugins: [stripDebugPlugin.default],
+    // Only process JavaScript files (TypeScript already transpiled by SWC)
+    include: ['packages/@glimmer/**/*.js'],
+    // Skip .d.ts files
+    exclude: ['**/*.d.ts'],
+    // Don't use any config files
+    configFile: false,
+    babelrc: false,
+  });
+}
 
 /**
  * @import { PartialCompilerOptions } from "@rollup/plugin-typescript";
@@ -76,11 +96,10 @@ export function tsconfig(updates) {
 }
 
 /**
- * @param {PackageInfo} pkg
  * @param {'dev' | 'prod'} env
  * @returns {RollupPlugin}
  */
-export function typescript(pkg, env) {
+export function typescript(env) {
   if (!env) {
     throw new Error('env is required');
   }
@@ -328,6 +347,8 @@ export class Package {
                 },
               },
             }),
+            // Strip debug calls in all builds - they're only for local development
+            stripGlimmerDebug(),
           ],
         })
     );
@@ -398,7 +419,9 @@ export class Package {
                     }),
                   ]),
               postcss(),
-              typescript(this.#package, env),
+              typescript(env),
+              // Strip debug calls in all builds - they're only for local development
+              stripGlimmerDebug(),
             ],
           })
       ),

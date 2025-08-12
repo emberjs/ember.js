@@ -27,6 +27,7 @@ import { CURLY_TEST_COMPONENT, GLIMMER_TEST_COMPONENT } from './components';
 import { assertElementShape, assertEmberishElement } from './dom/assertions';
 import { assertingElement, toInnerHTML } from './dom/simple-utils';
 import { equalTokens, isServerMarker, normalizeSnapshot } from './snapshot';
+import { defineComponent } from './test-helpers/define';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 type Present<T> = Exclude<T, null | undefined>;
@@ -57,7 +58,7 @@ export class RenderTest implements IRenderTest {
   testType: ComponentKind = 'unknown';
 
   protected element: SimpleElement;
-  protected assert = QUnit.assert;
+  assert = QUnit.assert;
   protected context: Dict = dict();
   protected renderResult: Nullable<RenderResult> = null;
   protected helpers = dict<UserHelper>();
@@ -428,6 +429,185 @@ export class RenderTest implements IRenderTest {
     let result = expect(this.renderResult, 'the test should call render() before destroy()');
 
     inTransaction(result.env, () => destroy(result));
+  }
+
+  private assertEachCompareResults(
+    items: (number | string | [string | number, string | number])[]
+  ) {
+    [...(this.element as unknown as HTMLElement).querySelectorAll('.test-item')].forEach(
+      (el, index) => {
+        let key = Array.isArray(items[index]) ? items[index][0] : index;
+        let value = Array.isArray(items[index]) ? items[index][1] : items[index];
+
+        QUnit.assert.equal(el.textContent, `${key}.${value}`, `Comparing the rendered key.value`);
+      }
+    );
+  }
+
+  protected assertReactivity<T>(
+    Klass: new (...args: any[]) => { get value(): T; update: () => void },
+    shouldUpdate = true,
+    message?: string
+  ) {
+    let instance: TestComponent | undefined;
+    let count = 0;
+
+    class TestComponent extends Klass {
+      constructor(...args: unknown[]) {
+        super(...args);
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        instance = this;
+      }
+
+      override get value() {
+        count++;
+
+        return super.value;
+      }
+    }
+
+    if (message) {
+      QUnit.assert.ok(true, message);
+    }
+
+    let comp = defineComponent({}, `<div class="test">{{this.value}}</div>`, {
+      strictMode: true,
+      definition: TestComponent,
+    });
+
+    this.renderComponent(comp);
+
+    QUnit.assert.equal(count, 1, `The count is 1`);
+
+    if (!instance) {
+      throw new Error('The instance is not defined');
+    }
+
+    instance.update();
+
+    this.rerender();
+
+    QUnit.assert.equal(
+      count,
+      shouldUpdate ? 2 : 1,
+      shouldUpdate ? `The count is updated` : `The could should not update`
+    );
+
+    this.assertStableRerender();
+  }
+
+  protected assertEachInReactivity(
+    Klass: new (...args: any[]) => {
+      collection: (string | number)[] | Map<unknown, string | number>;
+      update: () => void;
+    }
+  ) {
+    let instance: TestComponent | undefined;
+
+    class TestComponent extends Klass {
+      constructor(...args: unknown[]) {
+        super(...args);
+        // eslint-disable-next-line
+        instance = this;
+      }
+    }
+
+    let comp = defineComponent(
+      {},
+      `
+        <ul>
+          {{#each-in this.collection as |lhs rhs|}}
+            <li class="test-item">{{lhs}}.{{rhs}}</li>
+          {{/each-in}}
+        </ul>
+`,
+      {
+        strictMode: true,
+        definition: TestComponent,
+      }
+    );
+
+    this.renderComponent(comp);
+
+    if (!instance) {
+      throw new Error('The instance is not defined');
+    }
+
+    let { collection } = instance;
+
+    this.assertEachCompareResults(
+      Symbol.iterator in collection
+        ? Array.from(collection as string[])
+        : Object.entries(collection)
+    );
+
+    instance.update();
+
+    this.rerender();
+
+    this.assertEachCompareResults(
+      Symbol.iterator in collection
+        ? Array.from(collection as string[])
+        : Object.entries(collection)
+    );
+  }
+
+  protected assertEachReactivity(
+    Klass: new (...args: any[]) => {
+      collection:
+        | (string | number)[]
+        | Set<number | string>
+        | Map<unknown, unknown>
+        | Record<string, unknown>;
+      update: () => void;
+    }
+  ) {
+    let instance: TestComponent | undefined;
+
+    class TestComponent extends Klass {
+      constructor(...args: any[]) {
+        super(...args);
+        // eslint-disable-next-line
+        instance = this;
+      }
+    }
+
+    let comp = defineComponent(
+      {},
+      `
+        <ul>
+          {{#each this.collection as |value index|}}
+            <li class="test-item">{{index}}.{{value}}</li>
+          {{/each}}
+        </ul>
+`,
+      {
+        strictMode: true,
+        definition: TestComponent,
+      }
+    );
+
+    this.renderComponent(comp);
+
+    if (!instance) {
+      throw new Error('The instance is not defined');
+    }
+
+    function getEntries() {
+      if (!instance) return [];
+
+      return Array.from(instance.collection as (string | number)[]);
+    }
+
+    this.assertEachCompareResults((getEntries() as string[]).map((v, i) => [i, v]));
+
+    instance.update();
+
+    this.rerender();
+
+    this.assertEachCompareResults((getEntries() as string[]).map((v, i) => [i, v]));
+
+    this.assertStableRerender();
   }
 
   protected set(key: string, value: unknown): void {

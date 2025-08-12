@@ -15,19 +15,6 @@
       }
     },
     {
-      "root": ".meta-updater",
-      "name": "@glimmer-workspace/meta-updater",
-      "version": "0.92.0",
-      "type": "commonjs",
-      "private": true,
-      "repo-meta": {
-        "built": false
-      },
-      "entryPoints": {
-        ".": [[["default"], "./main.mjs"]]
-      }
-    },
-    {
       "root": "bin",
       "name": "@glimmer-workspace/bin",
       "version": "0.92.0",
@@ -40,13 +27,11 @@
         "env": ["node", "console"]
       },
       "entryPoints": {
-        "./build-verify.mjs": [[["default"], "./build-verify.mjs"]],
         "./clean.mjs": [[["default"], "./clean.mjs"]],
         "./opcodes/opcodes.schema.json": [[["default"], "./opcodes/opcodes.schema.json"]],
         "./opcodes.json": [[["default"], "./opcodes.json"]],
         "./package.json": [[["default"], "./package.json"]],
         "./patch-all.mjs": [[["default"], "./patch-all.mjs"]],
-        "./run-browserstack-tests.mjs": [[["default"], "./run-browserstack-tests.mjs"]],
         "./run-tests.mjs": [[["default"], "./run-tests.mjs"]],
         "./run-types-tests.mjs": [[["default"], "./run-types-tests.mjs"]],
         "./sync-npm-owners.mjs": [[["default"], "./sync-npm-owners.mjs"]]
@@ -153,7 +138,7 @@
     {
       "root": "packages/@glimmer/compiler",
       "name": "@glimmer/compiler",
-      "version": "0.94.9",
+      "version": "0.94.11",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -261,7 +246,7 @@
     {
       "root": "packages/@glimmer/destroyable",
       "name": "@glimmer/destroyable",
-      "version": "0.94.7",
+      "version": "0.94.8",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -287,7 +272,7 @@
     {
       "root": "packages/@glimmer/encoder",
       "name": "@glimmer/encoder",
-      "version": "0.93.7",
+      "version": "0.93.8",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -300,7 +285,7 @@
     {
       "root": "packages/@glimmer/global-context",
       "name": "@glimmer/global-context",
-      "version": "0.93.3",
+      "version": "0.93.4",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -353,7 +338,7 @@
     {
       "root": "packages/@glimmer/manager",
       "name": "@glimmer/manager",
-      "version": "0.94.8",
+      "version": "0.94.10",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -380,7 +365,7 @@
     {
       "root": "packages/@glimmer/node",
       "name": "@glimmer/node",
-      "version": "0.94.8",
+      "version": "0.94.10",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -393,7 +378,7 @@
     {
       "root": "packages/@glimmer/opcode-compiler",
       "name": "@glimmer/opcode-compiler",
-      "version": "0.94.8",
+      "version": "0.94.10",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -406,7 +391,7 @@
     {
       "root": "packages/@glimmer/owner",
       "name": "@glimmer/owner",
-      "version": "0.93.3",
+      "version": "0.93.4",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -432,7 +417,7 @@
     {
       "root": "packages/@glimmer/program",
       "name": "@glimmer/program",
-      "version": "0.94.8",
+      "version": "0.94.10",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -458,7 +443,7 @@
     {
       "root": "packages/@glimmer/reference",
       "name": "@glimmer/reference",
-      "version": "0.94.7",
+      "version": "0.94.9",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -484,7 +469,7 @@
     {
       "root": "packages/@glimmer/runtime",
       "name": "@glimmer/runtime",
-      "version": "0.94.9",
+      "version": "0.94.11",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -497,7 +482,7 @@
     {
       "root": "packages/@glimmer/syntax",
       "name": "@glimmer/syntax",
-      "version": "0.94.8",
+      "version": "0.95.0",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -524,7 +509,7 @@
     {
       "root": "packages/@glimmer/util",
       "name": "@glimmer/util",
-      "version": "0.94.7",
+      "version": "0.94.8",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -550,7 +535,7 @@
     {
       "root": "packages/@glimmer/validator",
       "name": "@glimmer/validator",
-      "version": "0.94.7",
+      "version": "0.95.0",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -577,7 +562,7 @@
     {
       "root": "packages/@glimmer/vm",
       "name": "@glimmer/vm",
-      "version": "0.94.7",
+      "version": "0.94.8",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -590,7 +575,7 @@
     {
       "root": "packages/@glimmer/vm-babel-plugins",
       "name": "@glimmer/vm-babel-plugins",
-      "version": "0.93.4",
+      "version": "0.93.5",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -603,7 +588,7 @@
     {
       "root": "packages/@glimmer/wire-format",
       "name": "@glimmer/wire-format",
-      "version": "0.94.7",
+      "version": "0.94.8",
       "type": "module",
       "private": false,
       "repo-meta": {

@@ -10,13 +10,14 @@ import {
   node,
   config,
 } from '@glimmer-workspace/eslint-plugin';
+import { WORKSPACE_ROOT } from '@glimmer-workspace/repo-metadata';
 
 /** @internal */
 export default config(
   gitignore(),
   {
     name: '@glimmer-workspace/ignores',
-    ignores: ['ts-dist/**/*'],
+    ignores: ['ts-dist/**/*', '.reference/**/*'],
   },
   override('no-console packages', {
     filter: 'env!=console',
@@ -88,5 +89,28 @@ export default config(
     },
     rules: { 'n/no-process-exit': 'error' },
   }),
+  {
+    name: 'CLI scripts',
+    files: [
+      'bin/**/*.{js,ts,mjs,mts}',
+      'repo-metadata/lib/update.ts',
+      'repo-metadata/lib/package-updater.ts',
+    ],
+    languageOptions: {
+      parser: tslint.parser,
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: WORKSPACE_ROOT,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tslint.plugin,
+    },
+    rules: {
+      'n/no-process-exit': 'off',
+    },
+  },
   jsons
 );

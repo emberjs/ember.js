@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/syntax",
-  "version": "0.94.8",
+  "version": "0.95.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -28,7 +28,8 @@
           "default": "./dist/prod/index.js"
         }
       }
-    }
+    },
+    "types": "dist/dev/index.d.ts"
   },
   "files": [
     "dist"
@@ -41,7 +42,7 @@
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/wire-format": "workspace:*",
-    "@handlebars/parser": "~2.0.0",
+    "@handlebars/parser": "~2.2.0",
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {

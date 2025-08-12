@@ -4,9 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 
-import type { Project, ProjectManifest } from '@pnpm/types';
 import type { PackageEntryPoints } from 'pkg-entry-points';
-import { findWorkspacePackages } from '@pnpm/workspace.find-packages';
 import chalk from 'chalk';
 import { execa } from 'execa';
 import { getPackageEntryPointsSync } from 'pkg-entry-points';
@@ -14,14 +12,57 @@ import YAML from 'yaml';
 
 import type { PackageInfo, RepoMetaForPackage } from './types';
 
+interface PnpmPackage {
+  name: string;
+  version: string;
+  path: string;
+  private?: boolean;
+  dependencies?: Record<string, unknown>;
+  devDependencies?: Record<string, unknown>;
+}
+
+interface WorkspacePackage {
+  rootDir: string;
+  manifest: ManifestExt;
+}
+
 const workspaceRoot = new URL('../..', import.meta.url).pathname;
 const metadataRoot = new URL('..', import.meta.url).pathname;
 
 const workspaceFile = await readFile(join(workspaceRoot, 'pnpm-workspace.yaml'), 'utf8');
 const workspaceInfo = YAML.parse(workspaceFile) as { packages: string[] };
 
-const packages = await findWorkspacePackages(workspaceRoot, {
-  patterns: workspaceInfo.packages,
+// Get workspace packages using pnpm list instead of @pnpm/workspace.find-packages
+// to avoid peer dependency issues with @pnpm/* internal packages
+let pnpmPackages: PnpmPackage[];
+try {
+  const { stdout } = await execa('pnpm', ['list', '--recursive', '--json', '--depth=0'], {
+    cwd: workspaceRoot,
+  });
+  pnpmPackages = JSON.parse(stdout) as PnpmPackage[];
+} catch (error) {
+  console.error(chalk.red('Failed to get workspace packages with pnpm list:'), error);
+  throw new Error('Failed to get workspace packages');
+}
+
+const packages: WorkspacePackage[] = pnpmPackages.map((pkg) => {
+  // Read the actual package.json to get all fields including repo-meta
+  const packageJsonPath = join(pkg.path, 'package.json');
+  if (!existsSync(packageJsonPath)) {
+    console.error(chalk.red(`Missing package.json at ${packageJsonPath}`));
+    throw new Error(`Missing package.json at ${packageJsonPath}`);
+  }
+
+  try {
+    const fullManifest = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as ManifestExt;
+    return {
+      rootDir: pkg.path,
+      manifest: fullManifest,
+    };
+  } catch (error) {
+    console.error(chalk.red(`Failed to read/parse package.json at ${packageJsonPath}:`), error);
+    throw new Error(`Failed to read/parse package.json at ${packageJsonPath}`);
+  }
 });
 
 if (process.argv.includes('--print-list')) {
@@ -35,7 +76,10 @@ if (process.argv.includes('--print-list')) {
   process.exit(0);
 }
 
-interface ManifestExt extends ProjectManifest {
+interface ManifestExt {
+  name?: string;
+  version?: string;
+  private?: boolean;
   type?: 'module' | 'commonjs';
   'repo-meta'?: RepoMetaForPackage;
 }
@@ -48,14 +92,14 @@ const WARNINGS: Record<
   }
 > = {};
 
-function warn(pkg: Project, code: string, field: string, expected?: string) {
+function warn(pkg: WorkspacePackage, code: string, field: string, expected?: string) {
   const pkgRoot = relative(workspaceRoot, pkg.rootDir);
   let { problems } = (WARNINGS[pkgRoot] ??= { name: pkg.manifest.name, problems: {} });
   problems[field] = { code, expected };
 }
 
 const packagesMetadata = packages.map((pkg) => {
-  const manifest = pkg.manifest as ManifestExt;
+  const manifest = pkg.manifest;
   const { name, type, private: isPrivate = false } = manifest;
 
   assert(name, `Missing name in ${relative(workspaceRoot, pkg.rootDir)}/package.json`);
@@ -142,7 +186,11 @@ if (prev && next === JSON.stringify(JSON.parse(prev), null, 2)) {
   console.error(`No changes in ${relative(workspaceRoot, outFile)}`);
 } else {
   writeFileSync(outFile, next, 'utf-8');
-  await execa({ cwd: workspaceRoot })`pnpm prettier --write ${outFile}`;
+  try {
+    await execa({ cwd: workspaceRoot })`pnpm prettier --write ${outFile}`;
+  } catch (error) {
+    console.error(chalk.yellow('Warning: Failed to format metadata.json with prettier:'), error);
+  }
   console.error(`Updated ${relative(workspaceRoot, outFile)}`);
 }
 
