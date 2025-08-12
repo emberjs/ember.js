@@ -92,7 +92,7 @@ module.exports = function (hooks) {
 function createApplication() {
   if (this.app) return this.app;
 
-  let app = this.Ember.Application.extend().create({
+  let app = class extends this.Ember.Application {}.create({
     autoboot: false,
     Resolver: {
       create: (specifier) => {
@@ -101,9 +101,9 @@ function createApplication() {
     },
   });
 
-  let Router = this.Ember.Router.extend({
-    location: 'none',
-  });
+  let Router = class extends this.Ember.Router {
+    location = 'none';
+  };
 
   if (this.routesCallback) {
     Router.map(this.routesCallback);

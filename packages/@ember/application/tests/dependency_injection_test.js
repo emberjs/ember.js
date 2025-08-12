@@ -21,11 +21,11 @@ moduleFor(
         Resolver: ModuleBasedTestResolver,
       });
 
-      application.Person = EmberObject.extend({});
-      application.Orange = EmberObject.extend({});
-      application.Email = EmberObject.extend({});
-      application.User = EmberObject.extend({});
-      application.PostIndexController = EmberObject.extend({});
+      application.Person = class extends EmberObject {};
+      application.Orange = class extends EmberObject {};
+      application.Email = class extends EmberObject {};
+      application.User = class extends EmberObject {};
+      application.PostIndexController = class extends EmberObject {};
 
       application.register('model:person', application.Person, {
         singleton: false,

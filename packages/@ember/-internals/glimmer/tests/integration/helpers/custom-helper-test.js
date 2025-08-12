@@ -743,7 +743,9 @@ moduleFor(
 
       this.registerComponent('bar', {
         template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
-        ComponentClass: Component.extend({ val }),
+        ComponentClass: class extends Component {
+          val = val;
+        },
       });
 
       this.render('<Bar/>');
@@ -757,7 +759,10 @@ moduleFor(
 
       this.registerComponent('baz', {
         template: '{{this.bar (this.foo)}}',
-        ComponentClass: Component.extend({ foo, bar }),
+        ComponentClass: class extends Component {
+          foo = foo;
+          bar = bar;
+        },
       });
 
       this.render('<Baz/>');

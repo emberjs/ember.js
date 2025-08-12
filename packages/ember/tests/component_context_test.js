@@ -19,14 +19,14 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          text: 'outer',
-        })
+        class extends Controller {
+          text = 'outer';
+        }
       );
       this.addComponent('my-component', {
-        ComponentClass: Component.extend({
-          text: 'inner',
-        }),
+        ComponentClass: class extends Component {
+          text = 'inner';
+        },
         template: `{{this.text}}-{{yield}}`,
       });
 
@@ -50,14 +50,14 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          text: 'outer',
-        })
+        class extends Controller {
+          text = 'outer';
+        }
       );
       this.addComponent('my-component', {
-        ComponentClass: Component.extend({
-          text: 'inner',
-        }),
+        ComponentClass: class extends Component {
+          text = 'inner';
+        },
       });
 
       return this.visit('/').then(() => {
@@ -77,14 +77,14 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          text: 'outer',
-        })
+        class extends Controller {
+          text = 'outer';
+        }
       );
       this.addComponent('my-component', {
-        ComponentClass: Component.extend({
-          text: 'inner',
-        }),
+        ComponentClass: class extends Component {
+          text = 'inner';
+        },
         template: '{{this.text}}',
       });
 
@@ -104,16 +104,16 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          text: 'outer',
-        })
+        class extends Controller {
+          text = 'outer';
+        }
       );
       this.addComponent('my-component', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             this.element.innerHTML = 'Some text inserted';
-          },
-        }),
+          }
+        },
       });
 
       return this.visit('/').then(() => {
@@ -133,17 +133,17 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          text: 'outer',
-          foo: 'Some text inserted',
-        })
+        class extends Controller {
+          text = 'outer';
+          foo = 'Some text inserted';
+        }
       );
       this.addComponent('my-component', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             this.element.innerHTML = this.get('data');
-          },
-        }),
+          }
+        },
       });
 
       return this.visit('/').then(() => {
@@ -164,17 +164,17 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          text: 'outer',
-          foo: 'Some text inserted',
-        })
+        class extends Controller {
+          text = 'outer';
+          foo = 'Some text inserted';
+        }
       );
       this.addComponent('my-component', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             this.element.innerHTML = this.get('attrs.attrs.value');
-          },
-        }),
+          }
+        },
       });
 
       return this.visit('/').then(() => {

@@ -12,8 +12,9 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       run(() => {
-        array = ArrayProxy.extend({
-          arrangedContent: computed('content.[]', function () {
+        array = class extends ArrayProxy {
+          @computed('content.[]')
+          get arrangedContent() {
             let content = this.get('content');
             return (
               content &&
@@ -29,8 +30,8 @@ moduleFor(
                 })
               )
             );
-          }),
-        }).create({
+          }
+        }.create({
           content: emberA([1, 2, 4, 5]),
         });
       });
@@ -146,8 +147,9 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       run(function () {
-        array = ArrayProxy.extend({
-          arrangedContent: computed('content.[]', function () {
+        array = class extends ArrayProxy {
+          @computed('content.[]')
+          get arrangedContent() {
             let content = this.get('content');
             return (
               content &&
@@ -163,13 +165,13 @@ moduleFor(
                 })
               )
             );
-          }),
+          }
 
           objectAtContent(idx) {
             let obj = objectAt(this.get('arrangedContent'), idx);
             return obj && obj.toString();
-          },
-        }).create({
+          }
+        }.create({
           content: emberA([1, 2, 4, 5]),
         });
       });
@@ -234,12 +236,12 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       run(function () {
-        array = ArrayProxy.extend({
+        array = class extends ArrayProxy {
           objectAtContent(idx) {
             let obj = objectAt(this.get('arrangedContent'), idx);
             return obj && obj.toString();
-          },
-        }).create({
+          }
+        }.create({
           content: emberA([1, 2, 4, 5]),
         });
       });

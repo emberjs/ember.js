@@ -3,11 +3,13 @@ import ApplicationInstance from '@ember/application/instance';
 import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-const BaseApp = Application.extend({
-  modulePrefix: 'my-app',
-});
+const BaseApp = class extends Application {
+  modulePrefix = 'my-app';
+};
 
-class Obj extends EmberObject.extend({ foo: 'bar' }) {}
+class Obj extends EmberObject {
+  foo = 'bar';
+}
 
 BaseApp.initializer({
   name: 'my-initializer',

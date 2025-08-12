@@ -54,18 +54,18 @@ moduleFor(
     ['@test normal method super'](assert) {
       let calls = [];
 
-      let Foo = EmberObject.extend({
+      let Foo = class extends EmberObject {
         method() {
           calls.push('foo');
-        },
-      });
+        }
+      };
 
-      let Bar = Foo.extend({
+      let Bar = class extends Foo {
         method() {
-          this._super();
+          super.method();
           calls.push('bar');
-        },
-      });
+        }
+      };
 
       class Baz extends Bar {
         method() {
@@ -74,19 +74,19 @@ moduleFor(
         }
       }
 
-      let Qux = Baz.extend({
+      let Qux = class extends Baz {
         method() {
-          this._super();
+          super.method();
           calls.push('qux');
-        },
-      });
+        }
+      };
 
-      let Quux = Qux.extend({
+      let Quux = class extends Qux {
         method() {
-          this._super();
+          super.method();
           calls.push('quux');
-        },
-      });
+        }
+      };
 
       class Corge extends Quux {
         method() {
@@ -112,20 +112,18 @@ moduleFor(
     ['@test static method super'](assert) {
       let calls;
 
-      let Foo = EmberObject.extend();
-      Foo.reopenClass({
-        method() {
+      let Foo = class extends EmberObject {
+        static method() {
           calls.push('foo');
-        },
-      });
+        }
+      };
 
-      let Bar = Foo.extend();
-      Bar.reopenClass({
-        method() {
-          this._super();
+      let Bar = class extends Foo {
+        static method() {
+          super.method();
           calls.push('bar');
-        },
-      });
+        }
+      };
 
       class Baz extends Bar {
         static method() {
@@ -134,21 +132,19 @@ moduleFor(
         }
       }
 
-      let Qux = Baz.extend();
-      Qux.reopenClass({
-        method() {
-          this._super();
+      let Qux = class extends Baz {
+        static method() {
+          super.method();
           calls.push('qux');
-        },
-      });
+        }
+      };
 
-      let Quux = Qux.extend();
-      Quux.reopenClass({
-        method() {
-          this._super();
+      let Quux = class extends Qux {
+        static method() {
+          super.method();
           calls.push('quux');
-        },
-      });
+        }
+      };
 
       class Corge extends Quux {
         static method() {
@@ -197,9 +193,9 @@ moduleFor(
     }
 
     ['@test using Ember.Object#detect'](assert) {
-      let Parent = EmberObject.extend();
+      let Parent = class extends EmberObject {};
       class Child extends Parent {}
-      let Grandchild = Child.extend();
+      let Grandchild = class extends Child {};
 
       assert.ok(Parent.detect(Child), 'Parent.detect(Child)');
       assert.ok(Child.detect(Grandchild), 'Child.detect(Grandchild)');
@@ -243,7 +239,7 @@ moduleFor(
         }
       }
 
-      let MyObject = SubEmberObject.extend({});
+      let MyObject = class extends SubEmberObject {};
 
       MyObject.create();
       assert.deepEqual(
@@ -437,25 +433,25 @@ moduleFor(
         },
       });
 
-      let C = B.extend({
+      let C = class extends B {
         init() {
           calls.push('C init before _super');
-          this._super(...arguments);
+          super.init(...arguments);
           calls.push('C init after _super');
-        },
+        }
 
         onSomeEvent(evt) {
           calls.push('C onSomeEvent before _super');
-          this._super(evt);
+          super.onSomeEvent(evt);
           calls.push('C onSomeEvent after _super');
-        },
+        }
 
         fullNameDidChange() {
           calls.push('C fullNameDidChange before _super');
-          this._super();
+          super.fullNameDidChange();
           calls.push('C fullNameDidChange after _super');
-        },
-      });
+        }
+      };
 
       class D extends C {
         init() {

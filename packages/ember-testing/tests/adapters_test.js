@@ -74,11 +74,11 @@ moduleFor(
       assert.expect(1);
       let CustomAdapter;
 
-      CustomAdapter = Adapter.extend({
+      CustomAdapter = class extends Adapter {
         asyncStart() {
           assert.ok(true, 'Correct adapter was used');
-        },
-      });
+        }
+      };
 
       run(function () {
         App = EmberApplication.create({

@@ -82,7 +82,7 @@ module.exports = {
     switch (options.componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
-        defaultExport = `Component.extend({});`;
+        defaultExport = `class extends Component {}`;
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;

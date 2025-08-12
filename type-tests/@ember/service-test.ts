@@ -7,12 +7,13 @@ class FirstSvc extends Service {
     return '';
   }
 }
-const SecondSvc = Service.extend({
-  foo: 'bar',
+
+class SecondSvc extends Service {
+  foo = 'bar';
   second() {
     return '';
-  },
-});
+  }
+}
 
 declare module '@ember/service' {
   interface Registry {

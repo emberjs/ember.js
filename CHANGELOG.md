@@ -1,7 +1,20 @@
 # Ember Changelog
 
-## v6.5.0-beta.1 (April 28, 2025)
+## v6.7.0-beta.1 (July 21, 2025)
 
+- [#20939](https://github.com/emberjs/ember.js/pull/20939) [ENHANCEMENT] Add `import { trustHTML } from '@ember/template';` as an alias of `import { htmlSafe } from '@ember/template', for naming that better matches the behavior.
+- [#20941](https://github.com/emberjs/ember.js/pull/20941) [CLEANUP] Remove code from `deprecate-array-prototype-extensions` deprecation that was until 6.0
+- [#20920](https://github.com/emberjs/ember.js/pull/20920) / [#20922](https://github.com/emberjs/ember.js/pull/20922) [INTERNAL] Remove many uses of `.extend`
+- [#20926](https://github.com/emberjs/ember.js/pull/20926) [INTERNAL] Remove all view mixins
+
+## v6.6.0 (July 21, 2025)
+
+- [#20627](https://github.com/emberjs/ember.js/pull/20627) [CLEANUP] Remove `escapeExpression` from `@ember/template`
+- [#20909](https://github.com/emberjs/ember.js/pull/20909) Remove microtask in runtime compiler
+
+## v6.5.0 (June 9, 2025)
+
+- [#20835](https://github.com/emberjs/ember.js/pull/20835) [FEATURE] Add a `--route-authoring-format` option to the route generator to generate template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
 - [#20862](https://github.com/emberjs/ember.js/pull/20862) [FEATURE] Add blueprints to generate strict components (template tag) with `--strict` or `--tt` per [RFC #0779](https://rfcs.emberjs.com/id/0779-first-class-component-templates).
 - [#20813](https://github.com/emberjs/ember.js/pull/20686) / [#20813](https://github.com/emberjs/ember.js/pull/20813) [DEPRECATION] Deprecate `import Ember from 'ember'` per [RFC #1003](https://rfcs.emberjs.com/id/1003-deprecation-import-ember-from-ember).
 - [#20880](https://github.com/emberjs/ember.js/pull/20880) [CLEANUP] Remove the `ember-cli-qunit` tests

@@ -162,9 +162,9 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     let { isInteractive } = this;
 
-    let ComponentClass = this.ComponentClass.extend({
+    let ComponentClass = class extends this.ComponentClass {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         this.isInitialRender = true;
         this.componentName = name;
@@ -179,7 +179,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
         schedule('afterRender', () => {
           this.isInitialRender = false;
         });
-      },
+      }
 
       didReceiveAttrs(options) {
         pushHook('didReceiveAttrs', options);
@@ -197,14 +197,14 @@ class LifeCycleHooksTest extends RenderingTestCase {
             assertState('didReceiveAttrs', 'hasElement', this);
           }
         }
-      },
+      }
 
       willInsertElement() {
         pushHook('willInsertElement');
         assertParentView('willInsertElement', this);
         assertElement('willInsertElement', this, false);
         assertState('willInsertElement', 'hasElement', this);
-      },
+      }
 
       willRender() {
         pushHook('willRender');
@@ -217,21 +217,21 @@ class LifeCycleHooksTest extends RenderingTestCase {
           assertElement('willRender', this);
           assertState('willRender', 'inDOM', this);
         }
-      },
+      }
 
       didInsertElement() {
         pushHook('didInsertElement');
         assertParentView('didInsertElement', this);
         assertElement('didInsertElement', this);
         assertState('didInsertElement', 'inDOM', this);
-      },
+      }
 
       didRender() {
         pushHook('didRender');
         assertParentView('didRender', this);
         assertElement('didRender', this);
         assertState('didRender', 'inDOM', this);
-      },
+      }
 
       didUpdateAttrs(options) {
         pushHook('didUpdateAttrs', options);
@@ -242,49 +242,49 @@ class LifeCycleHooksTest extends RenderingTestCase {
         } else {
           assertState('didUpdateAttrs', 'hasElement', this);
         }
-      },
+      }
 
       willUpdate(options) {
         pushHook('willUpdate', options);
         assertParentView('willUpdate', this);
         assertElement('willUpdate', this);
         assertState('willUpdate', 'inDOM', this);
-      },
+      }
 
       didUpdate(options) {
         pushHook('didUpdate', options);
         assertParentView('didUpdate', this);
         assertElement('didUpdate', this);
         assertState('didUpdate', 'inDOM', this);
-      },
+      }
 
       willDestroyElement() {
         pushHook('willDestroyElement');
         assertParentView('willDestroyElement', this);
         assertElement('willDestroyElement', this);
         assertState('willDestroyElement', 'inDOM', this);
-      },
+      }
 
       willClearRender() {
         pushHook('willClearRender');
         assertParentView('willClearRender', this);
         assertElement('willClearRender', this);
         assertState('willClearRender', 'inDOM', this);
-      },
+      }
 
       didDestroyElement() {
         pushHook('didDestroyElement');
         assertNoElement('didDestroyElement', this);
         assertState('didDestroyElement', 'destroying', this);
-      },
+      }
 
       willDestroy() {
         pushHook('willDestroy');
         removeComponent(this);
 
         this._super(...arguments);
-      },
-    });
+      }
+    };
 
     super.registerComponent(name, { ComponentClass, template });
   }
@@ -1316,7 +1316,9 @@ moduleFor(
   'Components test: interactive lifecycle hooks (tagless curly components)',
   class extends CurlyComponentsTest {
     get ComponentClass() {
-      return Component.extend({ tagName: '' });
+      return class extends Component {
+        tagName = '';
+      };
     }
 
     get isInteractive() {
@@ -1329,7 +1331,9 @@ moduleFor(
   'Components test: non-interactive lifecycle hooks (tagless curly components)',
   class extends CurlyComponentsTest {
     get ComponentClass() {
-      return Component.extend({ tagName: '' });
+      return class extends Component {
+        tagName = '';
+      };
     }
 
     get isInteractive() {
@@ -1342,14 +1346,14 @@ moduleFor(
   'Run loop and lifecycle hooks',
   class extends RenderingTestCase {
     ['@test afterRender set']() {
-      let ComponentClass = Component.extend({
-        width: '5',
+      let ComponentClass = class extends Component {
+        width = '5';
         didInsertElement() {
           schedule('afterRender', () => {
             this.set('width', '10');
           });
-        },
-      });
+        }
+      };
 
       let template = `{{this.width}}`;
       this.registerComponent('foo-bar', { ComponentClass, template });
@@ -1364,14 +1368,14 @@ moduleFor(
     }
 
     ['@test afterRender set on parent']() {
-      let ComponentClass = Component.extend({
+      let ComponentClass = class extends Component {
         didInsertElement() {
           schedule('afterRender', () => {
             let parent = this.get('parent');
             parent.set('foo', 'wat');
           });
-        },
-      });
+        }
+      };
 
       let template = `{{this.foo}}`;
 
@@ -1387,14 +1391,14 @@ moduleFor(
     }
 
     ['@test `willRender` can set before render (GH#14458)']() {
-      let ComponentClass = Component.extend({
-        tagName: 'a',
-        customHref: 'http://google.com',
-        attributeBindings: ['customHref:href'],
+      let ComponentClass = class extends Component {
+        tagName = 'a';
+        customHref = 'http://google.com';
+        attributeBindings = ['customHref:href'];
         willRender() {
           this.set('customHref', 'http://willRender.com');
-        },
-      });
+        }
+      };
 
       let template = `Hello World`;
 
@@ -1416,7 +1420,7 @@ moduleFor(
       let ParentDestroyedElements = [];
       let ChildDestroyedElements = [];
 
-      let ParentComponent = Component.extend({
+      let ParentComponent = class extends Component {
         willDestroyElement() {
           ParentDestroyedElements.push({
             id: this.itemId,
@@ -1425,8 +1429,8 @@ moduleFor(
             nextSibling: Boolean(this.element.nextSibling),
             previousSibling: Boolean(this.element.previousSibling),
           });
-        },
-      });
+        }
+      };
 
       let PartentTemplate = strip`
       {{yield}}
@@ -1436,7 +1440,7 @@ moduleFor(
       </ul>
     `;
 
-      let NestedComponent = Component.extend({
+      let NestedComponent = class extends Component {
         willDestroyElement() {
           ChildDestroyedElements.push({
             id: this.nestedId,
@@ -1445,8 +1449,8 @@ moduleFor(
             nextSibling: Boolean(this.element.nextSibling),
             previousSibling: Boolean(this.element.previousSibling),
           });
-        },
-      });
+        }
+      };
 
       let NestedTemplate = `{{yield}}`;
 

@@ -76,19 +76,19 @@ moduleFor(
     '@test returns a RouteInfoWithAttributes for recognized URL'(assert) {
       this.add(
         'route:dynamicWithChild',
-        Route.extend({
+        class extends Route {
           model(params) {
             return { name: 'dynamicWithChild', data: params.dynamic_id };
-          },
-        })
+          }
+        }
       );
       this.add(
         'route:dynamicWithChild.child',
-        Route.extend({
+        class extends Route {
           model(params) {
             return { name: 'dynamicWithChild.child', data: params.child_id };
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/')
@@ -118,11 +118,11 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             return { name: 'child', data: ['stuff'] };
-          },
-        })
+          }
+        }
       );
       return this.visit('/')
         .then(() => {
@@ -172,11 +172,11 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             return { name: 'child', data: ['stuff'] };
-          },
-        })
+          }
+        }
       );
       return this.visit('/')
         .then(() => {
@@ -198,11 +198,11 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             throw Error('Unhandled');
-          },
-        })
+          }
+        }
       );
       return this.visit('/')
         .then(() => {

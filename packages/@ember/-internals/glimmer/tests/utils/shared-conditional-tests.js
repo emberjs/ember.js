@@ -856,12 +856,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.registerComponent('foo-bar', {
       template: 'foo-bar',
-      ComponentClass: Component.extend({
+      ComponentClass: class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           childCreated = true;
-        },
-      }),
+        }
+      },
     });
 
     let innerTemplate = this.templateFor({

@@ -22,11 +22,11 @@ QUnit.module('Components can be rendered without a DOM dependency', function (ho
     function (assert) {
       this.owner.register(
         'component:fake-link',
-        this.Ember.Component.extend({
-          tagName: 'link',
-          attributeBindings: ['href', 'rel'],
-          rel: 'canonical',
-        })
+        class extends this.Ember.Component {
+          tagName = 'link';
+          attributeBindings = ['href', 'rel'];
+          rel = 'canonical';
+        }
       );
 
       let html = this.render('{{fake-link}}');

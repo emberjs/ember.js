@@ -291,11 +291,12 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   ['@test it can render a computed property']() {
-    let Formatter = EmberObject.extend({
-      formattedMessage: computed('message', function () {
+    let Formatter = class extends EmberObject {
+      @computed('message')
+      get formattedMessage() {
         return this.get('message').toUpperCase();
-      }),
-    });
+      }
+    };
 
     let m = Formatter.create({ message: 'hello' });
 
@@ -317,11 +318,12 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   ['@test it can render a computed property with nested dependency']() {
-    let Formatter = EmberObject.extend({
-      formattedMessage: computed('messenger.message', function () {
+    let Formatter = class extends EmberObject {
+      @computed('messenger.message')
+      get formattedMessage() {
         return this.get('messenger.message').toUpperCase();
-      }),
-    });
+      }
+    };
 
     let m = Formatter.create({ messenger: { message: 'hello' } });
 
@@ -610,9 +612,10 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   ['@test it can render a readOnly property of a path']() {
-    let Messenger = EmberObject.extend({
-      message: readOnly('a.b.c'),
-    });
+    let Messenger = class extends EmberObject {
+      @readOnly('a.b.c')
+      message;
+    };
 
     let messenger = Messenger.create({
       a: {
@@ -1705,9 +1708,9 @@ if (DEBUG) {
       }
 
       ['@test specifying `attributeBindings: ["style"]` generates a warning']() {
-        let FooBarComponent = Component.extend({
-          attributeBindings: ['style'],
-        });
+        let FooBarComponent = class extends Component {
+          attributeBindings = ['style'];
+        };
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,

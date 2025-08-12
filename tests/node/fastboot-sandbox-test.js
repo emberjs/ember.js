@@ -86,7 +86,7 @@ class Resolver extends Ember.Object {
   }
 }
 
-var app = Ember.Application.extend().create({
+var app = class extends Ember.Application {}.create({
   autoboot: false,
   Resolver,
 });

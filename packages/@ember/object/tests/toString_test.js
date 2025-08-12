@@ -6,13 +6,13 @@ moduleFor(
   'system/object/toString',
   class extends AbstractTestCase {
     ['@test toString includes toStringExtension if defined'](assert) {
-      let Foo = EmberObject.extend({
+      let Foo = class extends EmberObject {
         toStringExtension() {
           return 'fooey';
-        },
-      });
+        }
+      };
       let foo = Foo.create();
-      let Bar = EmberObject.extend({});
+      let Bar = class extends EmberObject {};
       let bar = Bar.create();
 
       // simulate these classes being defined on a Namespace

@@ -188,20 +188,20 @@ moduleFor(
 
       runTask(() => {
         function registerRoute(application, name, callback) {
-          let route = EmberRoute.extend({
-            activate: callback,
-          });
+          let route = class extends EmberRoute {
+            activate = callback;
+          };
 
           application.register('route:' + name, route);
         }
 
-        let MyApplication = Application.extend({
+        let MyApplication = class extends Application {
           ready() {
             registerRoute(this, 'index', () => {
               assert.ok(true, 'last-minute route is activated');
             });
-          },
-        });
+          }
+        };
 
         let app = this.createApplication({}, MyApplication);
 
@@ -242,9 +242,9 @@ moduleFor(
         this.addTemplate('application', '<h1>{{this.greeting}}</h1>');
         this.add(
           'controller:application',
-          Controller.extend({
-            greeting: 'Hello!',
-          })
+          class extends Controller {
+            greeting = 'Hello!';
+          }
         );
       });
       this.assertText('Hello!');
@@ -285,7 +285,7 @@ moduleFor(
     }
 
     [`@test can resolve custom router`](assert) {
-      let CustomRouter = Router.extend();
+      let CustomRouter = class extends Router {};
 
       runTask(() => {
         this.createApplication();

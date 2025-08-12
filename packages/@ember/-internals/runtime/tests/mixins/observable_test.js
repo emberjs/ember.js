@@ -45,16 +45,15 @@ moduleFor(
 
     async ['@test calling setProperties completes safely despite exceptions'](assert) {
       let exc = new Error('Something unexpected happened!');
-      let obj = EmberObject.extend({
-        companyName: computed({
-          get() {
-            return 'Apple, Inc.';
-          },
-          set() {
-            throw exc;
-          },
-        }),
-      }).create({
+      let obj = class extends EmberObject {
+        @computed
+        get companyName() {
+          return 'Apple, Inc.';
+        }
+        set companyName(value) {
+          throw exc;
+        }
+      }.create({
         firstName: 'Steve',
         lastName: 'Jobs',
       });
@@ -85,11 +84,12 @@ moduleFor(
     ['@test should be able to retrieve cached values of computed properties without invoking the computed property'](
       assert
     ) {
-      let obj = EmberObject.extend({
-        foo: computed(function () {
+      let obj = class extends EmberObject {
+        @computed
+        get foo() {
           return 'foo';
-        }),
-      }).create({
+        }
+      }.create({
         bar: 'bar',
       });
 

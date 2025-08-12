@@ -278,12 +278,12 @@ moduleFor(
 
     [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
       this.registerComponent('foo-bar2', {
-        ComponentClass: Component.extend({
-          tagName: '',
+        ComponentClass: class extends Component {
+          tagName = '';
           fire() {
             assert.ok(false);
-          },
-        }),
+          }
+        },
         template: `<button {{on 'click' this.fire}}>Fire!</button>`,
       });
 

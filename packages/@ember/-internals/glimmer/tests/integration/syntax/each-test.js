@@ -519,21 +519,21 @@ class EachTest extends AbstractEachTest {
   [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-    let FooBarComponent = Component.extend({
+    let FooBarComponent = class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.isEven = true;
         this.tagName = 'li';
-      },
+      }
 
       _isEven() {
         this.set('isEven', this.get('item.value') % 2 === 0);
-      },
+      }
 
       didUpdate() {
         this._isEven();
-      },
-    });
+      }
+    };
 
     this.registerComponent('foo-bar', {
       ComponentClass: FooBarComponent,
@@ -1101,12 +1101,13 @@ moduleFor(
   class extends EachTest {
     createList(items) {
       let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        arrangedContent: computed('wrappedItems.[]', function () {
+      let proxy = class extends ArrayProxy {
+        @computed('wrappedItems.[]')
+        get arrangedContent() {
           // Slice the items to ensure that updates must be propogated
           return this.wrappedItems.slice();
-        }),
-      }).create({
+        }
+      }.create({
         wrappedItems: wrapped,
       });
 
