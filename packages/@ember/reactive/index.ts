@@ -1,12 +1,3 @@
-export {
-  trackedArray,
-  trackedObject,
-  trackedWeakSet,
-  trackedSet,
-  trackedMap,
-  trackedWeakMap,
-} from '@glimmer/validator';
-
 /**
  * The `@ember/reactive` package contains common reactive utilities
  * for tracking values and creating reactive data structures.
@@ -56,6 +47,7 @@ export {
  * @returns {Array} A tracked array that updates reactively
  * @public
  */
+export { trackedArray } from '@glimmer/validator';
 
 /**
  * A utility for creating tracked objects, copying the original data so that
@@ -98,6 +90,7 @@ export {
  * @returns {Object} A tracked object that updates reactively
  * @public
  */
+export { trackedObject } from '@glimmer/validator';
 
 /**
  * A utility for creating tracked sets, copying the original data so that
@@ -141,6 +134,7 @@ export {
  * @returns {Set} A tracked Set that updates reactively
  * @public
  */
+export { trackedSet } from '@glimmer/validator';
 
 /**
  * A utility for creating tracked weak sets, copying the original data so that
@@ -181,6 +175,7 @@ export {
  * @returns {WeakSet} A tracked WeakSet that updates reactively
  * @public
  */
+export { trackedWeakSet } from '@glimmer/validator';
 
 /**
  * A utility for creating tracked maps, copying the original data so that
@@ -224,6 +219,7 @@ export {
  * @returns {Map} A tracked Map that updates reactively
  * @public
  */
+export { trackedMap } from '@glimmer/validator';
 
 /**
  * A utility for creating tracked weak maps, copying the original data so that
@@ -264,3 +260,4 @@ export {
  * @returns {WeakMap} A tracked WeakMap that updates reactively
  * @public
  */
+export { trackedWeakMap } from '@glimmer/validator';
