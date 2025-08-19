@@ -945,6 +945,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/tracking':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/tracking
       eslint:
         specifier: ^9.20.1
         version: 9.29.0
