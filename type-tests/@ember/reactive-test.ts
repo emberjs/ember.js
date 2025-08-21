@@ -1,4 +1,4 @@
-import { trackedArray, trackedObject, trackedWeakSet, trackedSet, trackedMap, trackedWeakMap } from '@ember/reactive';
+import { trackedArray, trackedObject, trackedWeakSet, trackedSet, trackedMap, trackedWeakMap } from '@ember/reactive/collections';
 import { expectTypeOf } from 'expect-type';
 
 
