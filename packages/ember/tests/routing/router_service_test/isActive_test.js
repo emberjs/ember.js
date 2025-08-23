@@ -172,7 +172,7 @@ moduleFor(
 
     ['@test RouterService#isActive works reliably during component rendering before router initialization'](assert) {
       assert.expect(1);
-    
+
       // This simulates the scenario where isActive is called during component rendering
       // before the router has been fully set up, which used to throw an error
 
