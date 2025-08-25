@@ -20,10 +20,13 @@ import { run } from '@ember/runloop';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { renderComponent, type RenderResult } from '../../../lib/renderer';
 import { trackedObject } from '@ember/reactive';
+import { cached, tracked } from '@glimmer/tracking';
+import Service, { service } from '@ember/service';
+import type Owner from '@ember/owner';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
   component: (RenderResult & { rerender: () => void }) | undefined;
-  owner: object;
+  owner: Owner;
 
   constructor(assert: QUnit['assert']) {
     super(assert);
@@ -34,6 +37,14 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
 
   get element() {
     return document.querySelector('#qunit-fixture')!;
+  }
+
+  assertChange({ change, expect }: { change: () => void; expect: string }) {
+    run(() => change());
+
+    assertHTML(expect);
+
+    this.assertStableRerender();
   }
 
   renderComponent(
@@ -174,11 +185,246 @@ moduleFor(
 
       this.renderComponent(Root, { args, expect: '2' });
 
-      args.foo++;
+      this.assertChange({
+        change: () => args.foo++,
+        expect: '3',
+      });
+    }
 
-      run(() => this.rerender());
+    '@skip when args are a custom tracked class, the rendered component response appropriately'() {
+      class Args {
+        @tracked foo = 2;
+      }
+      let args = new Args();
+      let Root = defComponent('{{@foo}}', {
+        scope: {},
+      });
 
-      assertHTML('3');
+      // @ts-expect-error SAFETY: custom class is not currently supported as args, but would be nice to support?
+      this.renderComponent(Root, { args, expect: '2' });
+
+      this.assertChange({
+        change: () => args.foo++,
+        expect: '3',
+      });
+    }
+
+    '@test a modifier can call renderComponent'() {
+      let render = defineSimpleModifier((element, [comp]) => {
+        let result = renderComponent(comp, { into: element });
+
+        return () => result.destroy();
+      });
+
+      let Inner = defComponent('hi there');
+      let Root = defComponent(`<div {{render Inner}}></div>`, { scope: { render, Inner } });
+
+      this.renderComponent(Root, { expect: '<div>hi there</div>' });
+    }
+
+    '@test can render in to a detached element'() {
+      let Inner = defComponent('hello there');
+      let element = document.createElement('div');
+      let attach: () => void;
+
+      class _Root extends GlimmerishComponent {
+        @tracked attached: Element | undefined;
+
+        constructor(owner: any, args: any) {
+          super(owner, args);
+
+          let result = renderComponent(Inner, { into: element });
+
+          attach = () => void (this.attached = element);
+
+          registerDestructor(this, () => result.destroy());
+        }
+      }
+
+      let Root = defComponent(`{{this.attached}}`, { component: _Root });
+
+      this.renderComponent(Root, { expect: '' });
+
+      this.assertChange({
+        change: () => attach(),
+        expect: `<div>hello there</div>`,
+      });
+    }
+
+    '@test replaces existing contents within the target element'() {
+      let Inner = defComponent('hello there');
+      let element = document.createElement('div');
+      element.innerHTML = 'general kenobi';
+
+      let render: () => void;
+
+      class _Root extends GlimmerishComponent {
+        constructor(owner: any, args: any) {
+          super(owner, args);
+
+          render = () => {
+            let result = renderComponent(Inner, { into: element });
+
+            registerDestructor(this, () => result.destroy());
+          };
+        }
+      }
+
+      let Root = defComponent(`{{element}}`, { scope: { element }, component: _Root });
+
+      this.renderComponent(Root, { expect: '<div>general kenobi</div>' });
+
+      this.assertChange({
+        change: () => render(),
+        expect: `<div>hello there</div>`,
+      });
+    }
+
+    [`@test renderComponent is eager, so it tracks with its parent`](assert: Assert) {
+      let step = (...x: unknown[]) => assert.step(x.join(':'));
+
+      let Inner = defComponent('{{@foo}} <button onclick={{@increment}}>++</button>');
+
+      let element = document.createElement('div');
+      class _Root extends GlimmerishComponent {
+        @tracked foo = 2;
+        increment = () => this.foo++;
+
+        @cached
+        get sillyExampleToTieInToReactivity() {
+          step('render:root');
+
+          let self = this;
+          let result = renderComponent(Inner, {
+            into: element,
+            args: {
+              get foo() {
+                step('foo', self.foo);
+                return self.foo;
+              },
+              increment: () => void self.increment(),
+            },
+          });
+
+          registerDestructor(this, () => result.destroy());
+          return '';
+        }
+      }
+      let Root = defComponent(`{{element}}{{this.sillyExampleToTieInToReactivity}}`, {
+        scope: { element },
+        component: _Root,
+      });
+
+      this.renderComponent(Root, { expect: '<div>2 <button>++</button></div>' });
+      assert.verifySteps(['render:root', 'foo:2']);
+
+      this.assertChange({
+        change: () => {
+          this.element.querySelector('button')?.click();
+        },
+        expect: `<div>3 <button>++</button></div>`,
+      });
+
+      /**
+       * @see
+       * https://github.com/emberjs/rfcs/pull/1099/files#diff-2b962105b9083ca84579cdc957f27f49407440f3c5078083fa369ec18cc46da8R365
+       *
+       * We could later add an option to not do this behavior
+       */
+      assert.verifySteps(
+        [`render:root`, `foo:3`, `foo:3`],
+        `Destruction is async, so we get an extra 'foo:3' here, and then because our getter consumes foo (since renderComponent is eager), we dirty the cached getter, and re-run the getter, creating a new renderComponent call, overwriting the existing contents`
+      );
+    }
+
+    '@test multiple renderComponents share reactivity'() {
+      let args = trackedObject({ foo: 2 });
+
+      let InnerOne = defComponent('{{@foo}}');
+      let InnerTwo = defComponent('{{@foo}}');
+
+      let element1 = document.createElement('div');
+      let element2 = document.createElement('div');
+
+      element1.setAttribute('data-one', '');
+      element2.setAttribute('data-two', '');
+
+      class _Root extends GlimmerishComponent {
+        constructor(owner: any, _args: any) {
+          super(owner, _args);
+
+          let result1 = renderComponent(InnerOne, { into: element1, args });
+          let result2 = renderComponent(InnerTwo, { into: element2, args });
+
+          registerDestructor(this, () => {
+            result1.destroy();
+            result2.destroy();
+          });
+        }
+      }
+
+      let Root = defComponent(`{{element1}}{{element2}}`, {
+        scope: { element1, element2 },
+        component: _Root,
+      });
+
+      this.renderComponent(Root, { expect: '<div data-one="">2</div><div data-two="">2</div>' });
+
+      this.assertChange({
+        change: () => args.foo++,
+        expect: '<div data-one="">3</div><div data-two="">3</div>',
+      });
+    }
+
+    '@test multiple renderComponents share service injection'() {
+      class State extends Service {
+        @tracked foo = 2;
+      }
+
+      this.owner.register('service:state', State);
+
+      class _One extends GlimmerishComponent {
+        @service state!: State;
+      }
+      class _Two extends GlimmerishComponent {
+        @service state!: State;
+      }
+      let InnerOne = defComponent('{{this.state.foo}}', { component: _One });
+      let InnerTwo = defComponent('{{this.state.foo}}', { component: _Two });
+
+      let element1 = document.createElement('div');
+      let element2 = document.createElement('div');
+
+      element1.setAttribute('data-one', '');
+      element2.setAttribute('data-two', '');
+
+      class _Root extends GlimmerishComponent {
+        constructor(owner: any, _args: any) {
+          super(owner, _args);
+
+          let result1 = renderComponent(InnerOne, { into: element1, owner });
+          let result2 = renderComponent(InnerTwo, { into: element2, owner });
+
+          registerDestructor(this, () => {
+            result1.destroy();
+            result2.destroy();
+          });
+        }
+      }
+
+      let Root = defComponent(`{{element1}}{{element2}}`, {
+        scope: { element1, element2 },
+        component: _Root,
+      });
+
+      this.renderComponent(Root, { expect: '<div data-one="">2</div><div data-two="">2</div>' });
+
+      let x = this.owner.lookup('service:state') as State;
+
+      this.assertChange({
+        change: () => x.foo++,
+        expect: '<div data-one="">3</div><div data-two="">3</div>',
+      });
     }
   }
 );

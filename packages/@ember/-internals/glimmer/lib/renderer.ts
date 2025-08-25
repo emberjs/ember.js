@@ -352,8 +352,8 @@ interface RendererData {
 }
 
 export class RendererState {
-  static create(owner: RendererData, renderer: BaseRenderer): RendererState {
-    const state = new RendererState(owner, renderer);
+  static create(data: RendererData, renderer: BaseRenderer): RendererState {
+    const state = new RendererState(data, renderer);
     associateDestroyableChild(renderer, state);
     return state;
   }
@@ -550,10 +550,18 @@ function intoTarget(into: IntoTarget): Cursor {
 }
 
 /**
- * render a component into DOM element.
+ * Render a component into DOM element.
  *
+ * @method renderComponent
+ * @static
+ * @for @ember/renderer
+ * @param {Object} component The component to render.
+ * @param {Object} options
+ * @param {Element} options.into Where to render the component in to.
+ * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
+ * @param {Object} [options.env] Optional renderer configuration
+ * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive as long as it is an object or object-like
  * @public
- * @module @ember/renderer
  *
  * This function returns `undefined` if there was an error rendering the
  * component.
@@ -624,16 +632,35 @@ export function renderComponent(
     hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
   });
 
-  let result = renderer.render(component, { into, args }).result;
+  /**
+   * Replace all contents, if we've rendered multiple times.
+   *
+   * https://github.com/emberjs/rfcs/pull/1099/files#diff-2b962105b9083ca84579cdc957f27f49407440f3c5078083fa369ec18cc46da8R365
+   *
+   * We could later add an option to not do this behavior
+   */
+  let existing = RENDER_CACHE.get(into);
+  existing?.destroy();
+  if (!existing && into instanceof Element) {
+    into.innerHTML = '';
+  }
 
-  return {
+  let innerResult = renderer.render(component, { into, args }).result;
+
+  let result = {
     destroy() {
-      if (result) {
-        destroy(result);
+      if (innerResult) {
+        destroy(innerResult);
       }
     },
   };
+
+  RENDER_CACHE.set(into, result);
+
+  return result;
 }
+
+const RENDER_CACHE = new WeakMap<IntoTarget, RenderResult>();
 
 export class BaseRenderer {
   static strict(
