@@ -19,7 +19,7 @@ import type {
   DebugRenderTree,
   Environment,
   DynamicScope as GlimmerDynamicScope,
-  RenderResult,
+  RenderResult as GlimmerRenderResult,
   Template,
   TemplateFactory,
   EvaluationContext,
@@ -138,7 +138,7 @@ type RootState = ClassicRootState | ComponentRootState;
 class ComponentRootState {
   readonly type = 'component';
 
-  #result: RenderResult | undefined;
+  #result: GlimmerRenderResult | undefined;
   #render: () => void;
 
   constructor(
@@ -180,7 +180,7 @@ class ComponentRootState {
     return isDestroyed(this);
   }
 
-  get result(): RenderResult | undefined {
+  get result(): GlimmerRenderResult | undefined {
     return this.#result;
   }
 }
@@ -188,7 +188,7 @@ class ComponentRootState {
 class ClassicRootState {
   readonly type = 'classic';
   public id: string;
-  public result: RenderResult | undefined;
+  public result: GlimmerRenderResult | undefined;
   public destroyed: boolean;
   public render: () => void;
   readonly env: Environment;
@@ -529,6 +529,18 @@ export class RendererState {
 
 type IntoTarget = Cursor | Element | SimpleElement;
 
+/**
+ * The returned object from `renderComponent`
+ * @public
+ * @module @ember/renderer
+ */
+export interface RenderResult {
+  /**
+   * Destroys the render tree and removes all rendered content from the element rendered into
+   */
+  destroy(): void;
+}
+
 function intoTarget(into: IntoTarget): Cursor {
   if ('element' in into) {
     return into;
@@ -538,6 +550,11 @@ function intoTarget(into: IntoTarget): Cursor {
 }
 
 /**
+ * render a component into DOM element.
+ *
+ * @public
+ * @module @ember/renderer
+ *
  * This function returns `undefined` if there was an error rendering the
  * component.
  *
@@ -545,22 +562,77 @@ function intoTarget(into: IntoTarget): Cursor {
  * undefined.
  */
 export function renderComponent(
+  /**
+   * The component definition to render.
+   *
+   * Any component that has had its manager registered is valid.
+   * For the component-types that ship with ember, manager registration
+   * does not need to be worried about.
+   */
   component: object,
   {
-    owner,
+    owner = {},
     env,
     into,
     args,
   }: {
-    owner: object;
-    env: { document: SimpleDocument | Document; isInteractive: boolean; hasDOM?: boolean };
+    /**
+     * The element to render the component in to.
+     */
     into: IntoTarget;
+
+    /**
+     * Optional owner. Defaults to `{}`, can be any object, but will need to implement the [Owner](https://api.emberjs.com/ember/release/classes/Owner) API for components within this render tree to access services.
+     */
+    owner?: object;
+    /**
+     * Optionally configure the rendering environment
+     */
+    env?: {
+      /**
+       * When false, modifiers will not run.
+       */
+      isInteractive?: boolean;
+      /**
+       * All other options are forwarded to the underlying renderer.
+       * (its API is currently private and out of scope for this RFC,
+       *  so passing additional things here is also considered private API)
+       */
+      [rendererOption: string]: unknown;
+    };
+
+    /**
+     * These args get passed to the rendered component
+     *
+     * If your args are reactive, re-rendering will happen automatically.
+     *
+     */
     args?: Record<string, unknown>;
   }
-): RenderResult | undefined {
-  let renderer = BaseRenderer.strict(owner, env.document, env);
+): RenderResult {
+  /**
+   * SAFETY: we should figure out what we need out of a `document` and narrow the API.
+   *         this exercise should also end up beginning to define what we need for CLI rendering (or to other outputs)
+   */
+  let document =
+    env && 'document' in env
+      ? (env?.['document'] as SimpleDocument | Document)
+      : globalThis.document;
+  let renderer = BaseRenderer.strict(owner, document, {
+    ...env,
+    isInteractive: env?.isInteractive ?? true,
+    hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
+  });
 
-  return renderer.render(component, { into, args }).result;
+  let result = renderer.render(component, { into, args }).result;
+
+  return {
+    destroy() {
+      if (result) {
+        destroy(result);
+      }
+    },
+  };
 }
 
 export class BaseRenderer {

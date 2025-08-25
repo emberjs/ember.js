@@ -17,12 +17,11 @@ import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
 import { run } from '@ember/runloop';
-import { associateDestroyableChild } from '@glimmer/destroyable';
-import type { RenderResult } from '@glimmer/interfaces';
-import { renderComponent } from '../../../lib/renderer';
+import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
+import { renderComponent, type RenderResult } from '../../../lib/renderer';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
-  component: RenderResult | undefined;
+  component: (RenderResult & { rerender: () => void }) | undefined;
   owner: object;
 
   constructor(assert: QUnit['assert']) {
@@ -43,14 +42,18 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
     let { owner } = this;
 
     run(() => {
-      this.component = renderComponent(component, {
+      const result = renderComponent(component, {
         owner,
         env: { document: document, isInteractive: true, hasDOM: true },
         into: this.element,
       });
-      if (this.component) {
-        associateDestroyableChild(this, this.component);
-      }
+      this.component = {
+        ...result,
+        rerender() {
+          // unused, but asserted against
+        },
+      };
+      registerDestructor(this, () => result.destroy());
     });
 
     if ('expect' in options) {
