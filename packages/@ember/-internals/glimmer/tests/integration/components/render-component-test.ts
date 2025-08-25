@@ -19,6 +19,7 @@ import GlimmerishComponent from '../../utils/glimmerish-component';
 import { run } from '@ember/runloop';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { renderComponent, type RenderResult } from '../../../lib/renderer';
+import { trackedObject } from '@ember/reactive';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
   component: (RenderResult & { rerender: () => void }) | undefined;
@@ -37,13 +38,14 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
 
   renderComponent(
     component: object,
-    options: { expect: string } | { classic: ClassicComponentShape }
+    options: { args?: Record<string, unknown>; expect: string } | { classic: ClassicComponentShape }
   ) {
     let { owner } = this;
 
     run(() => {
       const result = renderComponent(component, {
         owner,
+        args: 'args' in options ? options.args : {},
         env: { document: document, isInteractive: true, hasDOM: true },
         into: this.element,
       });
@@ -162,6 +164,21 @@ moduleFor(
       });
 
       this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
+    }
+
+    '@test when args are trackedObject, the rendered component response appropriately'() {
+      let args = trackedObject({ foo: 2 });
+      let Root = defComponent('{{@foo}}', {
+        scope: {},
+      });
+
+      this.renderComponent(Root, { args, expect: '2' });
+
+      args.foo++;
+
+      run(() => this.rerender());
+
+      assertHTML('3');
     }
   }
 );
