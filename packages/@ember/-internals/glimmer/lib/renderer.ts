@@ -562,12 +562,6 @@ function intoTarget(into: IntoTarget): Cursor {
  * @param {Object} [options.env] Optional renderer configuration
  * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive as long as it is an object or object-like
  * @public
- *
- * This function returns `undefined` if there was an error rendering the
- * component.
- *
- * @fixme restructure this to return a result containing the error rather than
- * undefined.
  */
 export function renderComponent(
   /**
@@ -638,9 +632,16 @@ export function renderComponent(
    * https://github.com/emberjs/rfcs/pull/1099/files#diff-2b962105b9083ca84579cdc957f27f49407440f3c5078083fa369ec18cc46da8R365
    *
    * We could later add an option to not do this behavior
+   *
+   * NOTE: destruction is async
    */
   let existing = RENDER_CACHE.get(into);
   existing?.destroy();
+  /**
+   * We can only replace the inner HTML the first time.
+   * Because destruction is async, it won't be safe to
+   * do this again, and we'll have to rely on the above destroy.
+   */
   if (!existing && into instanceof Element) {
     into.innerHTML = '';
   }

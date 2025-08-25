@@ -10,6 +10,7 @@ import {
   defineSimpleModifier,
   moduleFor,
   type ClassicComponentShape,
+  runDestroy,
 } from 'internal-test-helpers';
 
 import { Input, Textarea } from '@ember/component';
@@ -82,6 +83,14 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
 moduleFor(
   'Strict Mode - renderComponent',
   class extends RenderComponentTestCase {
+    afterEach() {
+      if (this.component) {
+        // runDestroy(this.component);
+        // runDestroy(this.owner);
+        runDestroy(this);
+      }
+    }
+
     '@test Can use a component in scope'() {
       let Foo = defComponent('Hello, world!');
       let Root = defComponent('<Foo/>', { scope: { Foo } });
@@ -249,6 +258,38 @@ moduleFor(
         change: () => attach(),
         expect: `<div>hello there</div>`,
       });
+    }
+
+    /**
+     * Test skipped because when an error occurs,
+     * we mess up the cache used by renderComponent.
+     */
+    '@skip can *not* render in to a TextNode'(assert: Assert) {
+      let Inner = defComponent('hello there');
+      let element = document.createTextNode('');
+
+      class _Root extends GlimmerishComponent {
+        @tracked attached: Element | undefined;
+
+        constructor(owner: any, args: any) {
+          super(owner, args);
+
+          assert.throws(
+            () => {
+              assert.step('throw');
+              // @ts-expect-error deliberately not supported
+              renderComponent(Inner, { into: element });
+            },
+            /Cannot add children to a Text/,
+            'throws an error about not being able to add children to TextNodes'
+          );
+        }
+      }
+
+      let Root = defComponent(``, { component: _Root });
+
+      this.renderComponent(Root, { expect: '<!---->' });
+      assert.verifySteps(['throw']);
     }
 
     '@test replaces existing contents within the target element'() {
