@@ -170,7 +170,9 @@ moduleFor(
         });
     }
 
-    ['@test RouterService#isActive works reliably during component rendering before router initialization'](assert) {
+    ['@test RouterService#isActive works reliably during component rendering before router initialization'](
+      assert
+    ) {
       assert.expect(1);
 
       // This simulates the scenario where isActive is called during component rendering
@@ -202,8 +204,11 @@ moduleFor(
       return this.visit('/').then(() => {
         // The test passes if no error is thrown during rendering
         // and isActive returns a boolean value
-        assert.strictEqual(typeof componentInstance.isRouteActive, 'boolean',
-          'isActive should return a boolean value without throwing an error');
+        assert.strictEqual(
+          typeof componentInstance.isRouteActive,
+          'boolean',
+          'isActive should return a boolean value without throwing an error'
+        );
       });
     }
   }
