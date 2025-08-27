@@ -634,6 +634,7 @@ module.exports = {
     '@ember/object/proxy',
     '@ember/owner',
     '@ember/reactive',
+    '@ember/reactive/collections',
     '@ember/renderer',
     '@ember/routing',
     '@ember/routing/hash-location',

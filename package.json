@@ -281,6 +281,7 @@
       "@ember/object/promise-proxy-mixin.js": "ember-source/@ember/object/promise-proxy-mixin.js",
       "@ember/object/proxy.js": "ember-source/@ember/object/proxy.js",
       "@ember/owner/index.js": "ember-source/@ember/owner/index.js",
+      "@ember/reactive/collections.js": "ember-source/@ember/reactive/collections.js",
       "@ember/reactive/index.js": "ember-source/@ember/reactive/index.js",
       "@ember/renderer/index.js": "ember-source/@ember/renderer/index.js",
       "@ember/routing/-internals.js": "ember-source/@ember/routing/-internals.js",
