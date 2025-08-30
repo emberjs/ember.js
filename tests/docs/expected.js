@@ -423,6 +423,7 @@ module.exports = {
     'removeObjects',
     'removeObserver',
     'removeTestHelpers',
+    'renderComponent',
     'renderSettled',
     'reopen',
     'reopenClass',

@@ -24,6 +24,6 @@ class GlimmerishComponent {
   }
 }
 
-setComponentManager(() => new GlimmerishComponentManager(), GlimmerishComponent);
+setComponentManager((owner) => new GlimmerishComponentManager(owner), GlimmerishComponent);
 
 export default GlimmerishComponent;
