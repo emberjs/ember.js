@@ -1,4 +1,5 @@
-import EmberObject, { get } from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 // TODO: Update these tests (or the title) to match each other.
@@ -6,7 +7,7 @@ moduleFor(
   'system/core_object/reopen',
   class extends AbstractTestCase {
     ['@test adds new properties to subclass instance'](assert) {
-      let Subclass = class extends EmberObject {};
+      let Subclass = class extends CoreObject {};
       Subclass.reopen({
         foo() {
           return 'FOO';
@@ -19,7 +20,7 @@ moduleFor(
     }
 
     ['@test reopened properties inherited by subclasses'](assert) {
-      let Subclass = class extends EmberObject {};
+      let Subclass = class extends CoreObject {};
       let SubSub = class extends Subclass {};
 
       Subclass.reopen({
@@ -34,7 +35,7 @@ moduleFor(
     }
 
     ['@test allows reopening already instantiated classes'](assert) {
-      let Subclass = class extends EmberObject {};
+      let Subclass = class extends CoreObject {};
 
       Subclass.create();
 
@@ -42,7 +43,9 @@ moduleFor(
         trololol: true,
       });
 
-      assert.equal(Subclass.create().get('trololol'), true, 'reopen works');
+      let instance = Subclass.create();
+
+      assert.equal(get(instance, 'trololol'), true, 'reopen works');
     }
   }
 );
