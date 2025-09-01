@@ -18,7 +18,7 @@
  *
  * @example
  * ```javascript
- * import { trackedArray } from '@ember/reactive';
+ * import { trackedArray } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
  * import { fn } from '@ember/helper';
  *
@@ -61,7 +61,7 @@ export { trackedArray } from '@glimmer/validator';
  *
  * @example
  * ```gjs
- * import { trackedObject } from '@ember/reactive';
+ * import { trackedObject } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
  * import { fn } from '@ember/helper';
  *
@@ -104,7 +104,7 @@ export { trackedObject } from '@glimmer/validator';
  *
  * @example
  * ```gjs
- * import { trackedSet } from '@ember/reactive';
+ * import { trackedSet } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
  * import { fn } from '@ember/helper';
  *
@@ -151,7 +151,7 @@ export { trackedSet } from '@glimmer/validator';
  *
  * @example
  * ```gjs
- * import { trackedWeakSet } from '@ember/reactive';
+ * import { trackedWeakSet } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
  * import { fn } from '@ember/helper';
  *
@@ -189,7 +189,7 @@ export { trackedWeakSet } from '@glimmer/validator';
  *
  * @example
  * ```gjs
- * import { trackedMap } from '@ember/reactive';
+ * import { trackedMap } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
  * import { fn } from '@ember/helper';
  *
@@ -236,7 +236,7 @@ export { trackedMap } from '@glimmer/validator';
  *
  * @example
  * ```gjs
- * import { trackedWeakMap } from '@ember/reactive';
+ * import { trackedWeakMap } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
  * import { fn } from '@ember/helper';
  *
