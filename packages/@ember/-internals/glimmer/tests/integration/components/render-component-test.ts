@@ -20,7 +20,7 @@ import GlimmerishComponent from '../../utils/glimmerish-component';
 import { run } from '@ember/runloop';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { renderComponent, type RenderResult } from '../../../lib/renderer';
-import { trackedObject } from '@ember/reactive';
+import { trackedObject } from '@ember/reactive/collections';
 import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
