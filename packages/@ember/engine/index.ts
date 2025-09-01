@@ -472,6 +472,9 @@ export function buildInitializerMethod<
   B extends 'initializers' | 'instanceInitializers',
   T extends B extends 'initializers' ? Engine : EngineInstance,
 >(bucketName: B, humanName: string) {
+  if (bucketName !== 'initializers' && bucketName !== 'instanceInitializers') {
+    throw new Error(`Invalid bucketName: ${bucketName}`);
+  }
   return function (this: typeof Engine, initializer: Initializer<T>) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
