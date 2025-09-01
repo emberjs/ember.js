@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v6.7.0-beta.1 (July 21, 2025)
+## v6.7.0 (September  1, 2025)
 
 - [#20939](https://github.com/emberjs/ember.js/pull/20939) [ENHANCEMENT] Add `import { trustHTML } from '@ember/template';` as an alias of `import { htmlSafe } from '@ember/template', for naming that better matches the behavior.
 - [#20941](https://github.com/emberjs/ember.js/pull/20941) [CLEANUP] Remove code from `deprecate-array-prototype-extensions` deprecation that was until 6.0
