@@ -62,3 +62,21 @@
 */
 
 export { renderSettled } from '@ember/-internals/glimmer';
+
+/**
+ * Render a component into a DOM element.
+ *
+ * See also: [RFC#1099](https://github.com/emberjs/rfcs/blob/main/text/1099-renderComponent.md)
+ *
+ * @method renderComponent
+ * @static
+ * @for @ember/renderer
+ * @param {Object} component The component to render.
+ * @param {Object} options
+ * @param {Element} options.into Where to render the component in to.
+ * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
+ * @param {Object} [options.env] Optional renderer configuration
+ * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive as long as it is an object or object-like
+ * @public
+ */
+export { renderComponent } from '@ember/-internals/glimmer';

@@ -550,7 +550,7 @@ function intoTarget(into: IntoTarget): Cursor {
 }
 
 /**
- * Render a component into DOM element.
+ * Render a component into a DOM element.
  *
  * @method renderComponent
  * @static

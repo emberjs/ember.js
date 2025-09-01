@@ -465,7 +465,7 @@ export {
   htmlSafe,
   isHTMLSafe,
 } from './lib/utils/string';
-export { Renderer, _resetRenderers, renderSettled } from './lib/renderer';
+export { Renderer, _resetRenderers, renderSettled, renderComponent } from './lib/renderer';
 export {
   getTemplate,
   setTemplate,
