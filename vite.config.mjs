@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => {
     publicDir: 'tests/public',
     build,
     esbuild: false,
+    envPrefix: 'VM_',
   };
 });
 
