@@ -28,11 +28,13 @@ interface Crypto {
 }
 
 export const defaultId: TemplateIdFn = (() => {
+  /* prettier-ignore */
   const req = (
+    // @ts-expect-error using node API here, but only here
     typeof module === 'object' && typeof module.require === 'function'
-      ? // eslint-disable-next-line @typescript-eslint/unbound-method
+      ? // @ts-expect-error using node API here, but only here
         module.require
-      : globalThis.require
+      : (globalThis as any).require
   ) as typeof require | undefined;
 
   if (req) {
