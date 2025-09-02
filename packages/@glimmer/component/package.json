@@ -21,7 +21,7 @@
     "@glimmer/env": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "5.1"
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">= 18"

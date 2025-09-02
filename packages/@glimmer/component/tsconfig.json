@@ -11,9 +11,13 @@
       "@ember/component": ["../../../types/stable/@ember/component/index.d.ts"],
       "@ember/runloop": ["../../../types/stable/@ember/runloop/index.d.ts"]
     },
-    "lib": ["es2020", "dom"],
+    "target": "esnext",
+    "module": "esnext",
     "declarationDir": "./dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["vite/client"],
+    "strict": true,
+    "noImplicitReturns": false
   },
   "include": ["./src/**/*.ts"]
 }
