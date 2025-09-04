@@ -1,17 +1,31 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Components test: send',
   class extends RenderingTestCase {
-    ['@test sending to undefined actions triggers an error'](assert) {
-      assert.expect(2);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test sending to undefined actions triggers an error`](assert) {
+      assert.expect(3);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
 
       let component;
 
@@ -39,7 +53,14 @@ moduleFor(
       }, /had no action handler for: baz/);
     }
 
-    ['@test `send` will call send from a target if it is defined']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test \`send\` will call send from a target if it is defined`]() {
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+
       let component;
       let target = {
         send: (message, payload) => {
@@ -64,8 +85,15 @@ moduleFor(
       runTask(() => component.send('foo', 'baz'));
     }
 
-    ['@test a handled action can be bubbled to the target for continued processing']() {
-      this.assert.expect(2);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test a handled action can be bubbled to the target for continued processing`]() {
+      this.assert.expect(3);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
 
       let component;
 
@@ -97,8 +125,15 @@ moduleFor(
       runTask(() => component.send('poke'));
     }
 
-    ["@test action can be handled by a superclass' actions object"](assert) {
-      this.assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test action can be handled by a superclass' actions object`](assert) {
+      this.assert.expect(5);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
 
       let component;
 
@@ -166,7 +201,14 @@ moduleFor(
       });
     }
 
-    ['@test asserts if called on a destroyed component']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test asserts if called on a destroyed component`]() {
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+
       let component;
 
       this.owner.register(
