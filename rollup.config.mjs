@@ -16,7 +16,14 @@ const { buildInfo } = require('./broccoli/build-info');
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin');
 const canaryFeatures = require('./broccoli/canary-features');
 
-const testDependencies = ['qunit', 'vite'];
+const testDependencies = [
+  'qunit',
+  'vite',
+  'js-reporters',
+  '@simple-dom/serializer',
+  '@simple-dom/void-map',
+  'expect-type',
+];
 
 let configs = [
   esmConfig(),
@@ -357,11 +364,16 @@ export function resolvePackages(deps, isExternal) {
           return deps[source];
         }
 
-        let candidateStem = resolve(projectRoot, 'packages', source);
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
-          let candidate = candidateStem + suffix;
-          if (existsSync(candidate) && statSync(candidate).isFile()) {
-            return candidate;
+        let candidateStems = [
+          resolve(projectRoot, 'packages', source),
+          resolve(projectRoot, 'glimmer-vm/packages', source),
+        ];
+        for (let candidateStem of candidateStems) {
+          for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+            let candidate = candidateStem + suffix;
+            if (existsSync(candidate) && statSync(candidate).isFile()) {
+              return candidate;
+            }
           }
         }
 
@@ -597,10 +609,22 @@ function packageMeta() {
   };
 }
 
+const allowedCycles = [
+  // external and not causing problems
+  'node_modules/rsvp/lib/rsvp',
+
+  // TODO: these would be good to fix once they're in this repo
+  'packages/@glimmer/debug',
+  'packages/@glimmer/runtime',
+  'packages/@glimmer/opcode-compiler',
+  'packages/@glimmer/syntax',
+  'packages/@glimmer/compiler',
+];
+
 function handleRollupWarnings(level, log, handler) {
   switch (log.code) {
     case 'CIRCULAR_DEPENDENCY':
-      if (log.ids.some((id) => id.includes('node_modules/rsvp/lib/rsvp'))) {
+      if (log.ids.some((id) => allowedCycles.some((allowed) => id.includes(allowed)))) {
         // rsvp has some internal cycles but they don't bother us
         return;
       }
