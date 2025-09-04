@@ -3,8 +3,15 @@ import Service, { service } from '@ember/service';
 import EmberObject, { get } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { setOwner } from '@ember/-internals/owner';
-import { runDestroy, buildOwner } from 'internal-test-helpers';
-import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';
+import {
+  runDestroy,
+  buildOwner,
+  expectDeprecation,
+  moduleFor,
+  ApplicationTestCase,
+  AbstractTestCase,
+  runTask,
+} from 'internal-test-helpers';
 import { action } from '@ember/object';
 
 moduleFor(
@@ -73,7 +80,7 @@ moduleFor(
   'Controller event handling',
   class extends AbstractTestCase {
     ['@test Action can be handled by a function on actions object'](assert) {
-      assert.expect(1);
+      assert.expect(2);
       let TestController = Controller.extend({
         actions: {
           poke() {
@@ -82,11 +89,13 @@ moduleFor(
         },
       });
       let controller = TestController.create();
-      controller.send('poke');
+      expectDeprecation(() => {
+        controller.send('poke');
+      }, /send\(\) is deprecated/);
     }
 
     ['@test A handled action can be bubbled to the target for continued processing'](assert) {
-      assert.expect(2);
+      assert.expect(3);
       let owner = buildOwner();
 
       let TestController = Controller.extend({
@@ -112,13 +121,15 @@ moduleFor(
 
       setOwner(controller, owner);
 
-      controller.send('poke');
+      expectDeprecation(() => {
+        controller.send('poke');
+      }, /send\(\) is deprecated/);
 
       runDestroy(owner);
     }
 
     ["@test Action can be handled by a superclass' actions object"](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       let SuperController = Controller.extend({
         actions: {
@@ -149,9 +160,11 @@ moduleFor(
       });
 
       let controller = IndexController.create({});
-      controller.send('foo');
-      controller.send('bar', 'HELLO');
-      controller.send('baz');
+      expectDeprecation(() => {
+        controller.send('foo');
+        controller.send('bar', 'HELLO');
+        controller.send('baz');
+      }, /send\(\) is deprecated/);
     }
 
     ['@test .send asserts if called on a destroyed controller']() {
@@ -169,9 +182,11 @@ moduleFor(
       let controller = owner.lookup('controller:application');
       runDestroy(owner);
 
-      expectAssertion(() => {
-        controller.send('trigger-me-dead');
-      }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'controller:rip-alley'.");
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          controller.send('trigger-me-dead');
+        }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'controller:rip-alley'.");
+      }, /send\(\) is deprecated/);
     }
   }
 );
