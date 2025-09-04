@@ -96,6 +96,13 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
   @public
 */
 export function empty(dependentKey: string) {
+  deprecate('empty is deprecated. Define your own property using @ember/legacy-utils.', false, {
+    id: 'ember-object.deprecate-empty',
+    until: '7.0.0',
+    for: 'ember-source',
+    since: { available: '6.8.0' },
+  });
+
   assert(
     'You attempted to use @empty as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -142,6 +149,13 @@ export function empty(dependentKey: string) {
   @public
 */
 export function notEmpty(dependentKey: string) {
+  deprecate('notEmpty is deprecated. Define your own property using @ember/legacy-utils.', false, {
+    id: 'ember-object.deprecate-not-empty',
+    until: '7.0.0',
+    for: 'ember-source',
+    since: { available: '6.8.0' },
+  });
+
   assert(
     'You attempted to use @notEmpty as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -185,6 +199,13 @@ export function notEmpty(dependentKey: string) {
   @public
 */
 export function none(dependentKey: string) {
+  deprecate('none is deprecated. Define your own property using @ember/legacy-utils.', false, {
+    id: 'ember-object.deprecate-none',
+    until: '7.0.0',
+    for: 'ember-source',
+    since: { available: '6.8.0' },
+  });
+
   assert(
     'You attempted to use @none as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))

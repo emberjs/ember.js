@@ -33,3 +33,5 @@ export {
   teardownMandatorySetter,
   setWithMandatorySetter,
 } from './lib/mandatory-setter';
+export type { TypeName } from './lib/type-of';
+export { default as typeOf } from './lib/type-of';

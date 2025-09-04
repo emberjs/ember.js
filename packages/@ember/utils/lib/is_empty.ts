@@ -1,5 +1,6 @@
 import { get } from '@ember/object';
 import { hasUnknownProperty } from '@ember/-internals/metal';
+import { deprecate } from '@ember/debug';
 /**
  @module @ember/utils
 */
@@ -36,6 +37,13 @@ import { hasUnknownProperty } from '@ember/-internals/metal';
   @public
 */
 export default function isEmpty(obj: unknown): boolean {
+  deprecate('isEmpty is deprecated. Use @ember/legacy-utils instead.', false, {
+    for: 'ember-source',
+    id: 'ember-utils.deprecate-isEmpty',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  });
+
   if (obj === null || obj === undefined) {
     return true;
   }
