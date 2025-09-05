@@ -4,6 +4,7 @@ import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
+import { hasCoreViewListener, sendCoreViewEvent } from './core-view-utils';
 
 export interface ViewState {
   enter?(view: Component): void;
@@ -45,11 +46,13 @@ const HAS_ELEMENT: Readonly<ViewState> = Object.freeze({
 
   // Handle events from `Ember.EventDispatcher`
   handleEvent(view: Component, eventName: string, event: Event) {
-    if (view.has(eventName)) {
+    if (hasCoreViewListener(view, eventName)) {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
       return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {
-        return join(view, view.trigger, eventName, event);
+        return join(() => {
+          return sendCoreViewEvent(view, eventName, [event]);
+        });
       });
     } else {
       return true; // continue event propagation

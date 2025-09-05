@@ -5,7 +5,7 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { setListeners } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -38,11 +38,24 @@ import { assert } from '@ember/debug';
   @param {Boolean} once A flag whether a function should only be called once
   @public
 */
+export function addListener<Target>(
+  obj: object,
+  eventName: string,
+  target: Target,
+  method: PropertyKey | ((this: Target, ...args: any[]) => void),
+  once?: boolean,
+  sync?: boolean
+): void;
 export function addListener(
   obj: object,
   eventName: string,
-  target: object | Function | null,
-  method?: Function | PropertyKey,
+  method: PropertyKey | ((...args: any[]) => void)
+): void;
+export function addListener(
+  obj: object,
+  eventName: string,
+  target: object | PropertyKey | ((...args: any[]) => void) | null,
+  method?: PropertyKey | ((...args: any[]) => void),
   once?: boolean,
   sync = true
 ): void {
@@ -52,9 +65,12 @@ export function addListener(
   );
 
   if (!method && 'function' === typeof target) {
-    method = target;
+    // SAFETY: This should be correct. It may be possible to get TS to infer it.
+    method = target as (...args: any[]) => void;
     target = null;
   }
+
+  assert('target should be object or null', target === null || typeof target === 'object');
 
   metaFor(obj).addToListeners(eventName, target, method!, once === true, sync);
 }
@@ -76,8 +92,19 @@ export function addListener(
 export function removeListener(
   obj: object,
   eventName: string,
-  targetOrFunction: object | Function | null,
-  functionOrName?: string | Function
+  target: object | null,
+  methodOrName: string | ((...args: any[]) => void)
+): void;
+export function removeListener(
+  obj: object,
+  eventName: string,
+  method: (...args: any[]) => void
+): void;
+export function removeListener(
+  obj: object,
+  eventName: string,
+  targetOrFunction: object | ((...args: any[]) => void) | null,
+  functionOrName?: string | ((...args: any[]) => void)
 ): void {
   assert(
     'You must pass at least an object, event name, and method or target and method/method name to removeListener',
@@ -199,6 +226,7 @@ export function hasListeners(obj: object, eventName: string): boolean {
 
   @method on
   @static
+  @deprecated Use native JavaScript events or a dedicated event library instead.
   @for @ember/object/evented
   @param {String} eventNames*
   @param {Function} func
@@ -206,6 +234,17 @@ export function hasListeners(obj: object, eventName: string): boolean {
   @public
 */
 export function on<T extends AnyFn>(...args: [...eventNames: string[], func: T]): T {
+  deprecate(
+    '`on` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+    false,
+    {
+      for: 'ember-source',
+      id: 'ember-evented',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    }
+  );
+
   let func = args.pop();
   let events = args as string[];
 

@@ -355,7 +355,7 @@ export class Meta {
   addToListeners(
     eventName: string,
     target: object | null,
-    method: Function | PropertyKey,
+    method: ((...args: any[]) => void) | PropertyKey,
     once: boolean,
     sync: boolean
   ) {

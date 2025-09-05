@@ -1,4 +1,9 @@
-import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
+import {
+  clearElementView,
+  clearViewElement,
+  getViewElement,
+  sendCoreViewEvent,
+} from '@ember/-internals/views';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
@@ -46,8 +51,8 @@ export default class ComponentStateBucket {
 
     if (isInteractive) {
       beginUntrackFrame();
-      component.trigger('willDestroyElement');
-      component.trigger('willClearRender');
+      sendCoreViewEvent(component, 'willDestroyElement');
+      sendCoreViewEvent(component, 'willClearRender');
       endUntrackFrame();
 
       let element = getViewElement(component);
