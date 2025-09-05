@@ -9,7 +9,12 @@ import {
   sendEvent,
 } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject ES Compatibility',
@@ -283,30 +288,35 @@ moduleFor(
       let someEventBase = 0;
       let someEventA = 0;
       let someEventB = 0;
-      class A extends EmberObject.extend({
-        fooDidChange: observer('foo', function () {
-          fooDidChangeBase++;
-        }),
+      let A;
+      expectDeprecation(() => {
+        A = class extends (
+          EmberObject.extend({
+            fooDidChange: observer('foo', function () {
+              fooDidChangeBase++;
+            }),
 
-        onSomeEvent: on('someEvent', function () {
-          someEventBase++;
-        }),
-      }) {
-        init() {
-          super.init();
-          this.foo = 'bar';
-        }
+            onSomeEvent: on('someEvent', function () {
+              someEventBase++;
+            }),
+          })
+        ) {
+          init() {
+            super.init();
+            this.foo = 'bar';
+          }
 
-        fooDidChange() {
-          super.fooDidChange();
-          fooDidChangeA++;
-        }
+          fooDidChange() {
+            super.fooDidChange();
+            fooDidChangeA++;
+          }
 
-        onSomeEvent() {
-          super.onSomeEvent();
-          someEventA++;
-        }
-      }
+          onSomeEvent() {
+            super.onSomeEvent();
+            someEventA++;
+          }
+        };
+      }, /`on` is deprecated/);
 
       class B extends A {
         fooDidChange() {

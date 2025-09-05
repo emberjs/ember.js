@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { expectDeprecation, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
 import { _getCurrentRunLoop } from '@ember/runloop';
@@ -159,7 +159,9 @@ moduleFor(
           init() {
             super.init();
             Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
-              this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
+              expectDeprecation(() => {
+                this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
+              }, /`on` is deprecated/);
             });
           }
         },
