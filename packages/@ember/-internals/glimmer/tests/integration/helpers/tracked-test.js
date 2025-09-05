@@ -7,7 +7,13 @@ import {
   notifyPropertyChange,
 } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
 
@@ -172,29 +178,32 @@ moduleFor(
     }
 
     '@test custom ember array properties rerender when updated'() {
-      let CustomArray = class extends EmberObject.extend(MutableArray) {
-        init() {
-          super.init(...arguments);
-          this._vals = [1, 2, 3];
-        }
+      let CustomArray;
+      expectDeprecation(() => {
+        CustomArray = class extends EmberObject.extend(MutableArray) {
+          init() {
+            super.init(...arguments);
+            this._vals = [1, 2, 3];
+          }
 
-        objectAt(index) {
-          return this._vals[index];
-        }
+          objectAt(index) {
+            return this._vals[index];
+          }
 
-        replace(start, deleteCount, items = []) {
-          this._vals.splice(start, deleteCount, ...items);
-          notifyPropertyChange(this, '[]');
-        }
+          replace(start, deleteCount, items = []) {
+            this._vals.splice(start, deleteCount, ...items);
+            notifyPropertyChange(this, '[]');
+          }
 
-        join() {
-          return this._vals.join(...arguments);
-        }
+          join() {
+            return this._vals.join(...arguments);
+          }
 
-        get length() {
-          return this._vals.length;
-        }
-      };
+          get length() {
+            return this._vals.length;
+          }
+        };
+      }, /Usage of MutableArray is deprecated/);
 
       class NumListComponent extends Component {
         @tracked numbers = CustomArray.create();
