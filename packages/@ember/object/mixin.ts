@@ -653,6 +653,11 @@ export default class Mixin {
     @internal
   */
   apply(obj: object, _hideKeys = false) {
+    if (DEBUG) {
+      let deprecation = findDeprecation(this);
+      deprecate(deprecation?.message ?? 'Huh???', !deprecation, deprecation?.options);
+    }
+
     // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
     // mutating a native object prototype like this should _not_ result in enumerable properties being added (or we have significant
     // issues with things like deep equality checks from test frameworks, or things like jQuery.extend(true, [], [])).
