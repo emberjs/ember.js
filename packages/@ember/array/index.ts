@@ -21,6 +21,7 @@ import Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
+import { setDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 export { default as makeArray } from './make';
 
@@ -1456,6 +1457,16 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 });
 
+setDeprecation(EmberArray, {
+  message: 'Usage of EmberArray is deprecated',
+  options: {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  },
+});
+
 /**
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
@@ -1852,6 +1863,16 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 });
 
+setDeprecation(MutableArray, {
+  message: 'Usage of MutableArray is deprecated',
+  options: {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  },
+});
+
 /**
   Creates an `Ember.NativeArray` from an Array-like object.
   Does not modify the original object's contents.
@@ -2087,6 +2108,16 @@ NativeArray.keys().forEach((methodName) => {
 });
 
 NativeArray = NativeArray.without(...ignore);
+
+setDeprecation(NativeArray, {
+  message: 'Usage of EmberArray is deprecated',
+  options: {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  },
+});
 
 let A: <T>(arr?: Array<T>) => NativeArray<T>;
 

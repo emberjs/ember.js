@@ -30,6 +30,7 @@ import {
   type Tag,
   type Revision,
 } from '@glimmer/validator';
+import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';
@@ -407,8 +408,10 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   }
 }
 
-ArrayProxy.reopen(MutableArray, {
-  arrangedContent: alias('content'),
+disableDeprecations(() => {
+  ArrayProxy.reopen(MutableArray, {
+    arrangedContent: alias('content'),
+  });
 });
 
 export default ArrayProxy;
