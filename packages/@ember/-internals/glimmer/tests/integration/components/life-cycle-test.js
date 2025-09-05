@@ -1,4 +1,11 @@
-import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
+import {
+  classes,
+  expectDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  strip,
+} from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
@@ -6,6 +13,7 @@ import { A as emberA } from '@ember/array';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { addListener } from '@ember/-internals/metal';
 
 class LifeCycleHooksTest extends RenderingTestCase {
   constructor() {
@@ -174,7 +182,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
         assertNoElement('init', this);
         assertState('init', 'preRender', this);
 
-        this.on('init', () => pushHook('on(init)'));
+        addListener(this, 'init', () => pushHook('on(init)'));
 
         schedule('afterRender', () => {
           this.isInitialRender = false;
