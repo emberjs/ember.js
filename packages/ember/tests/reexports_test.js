@@ -63,7 +63,6 @@ import * as test4 from '@ember/array/mutable';
 import * as test5 from '@ember/array/proxy';
 import * as test6 from '@ember/canary-features';
 import * as test7 from '@ember/component';
-import * as test8 from '@ember/component/helper';
 import * as test9 from '@ember/component/template-only';
 import * as test10 from '@ember/controller';
 import * as test11 from '@ember/debug';
@@ -139,8 +138,6 @@ let allExports = [
   ['_getComponentTemplate', '@ember/component', 'getComponentTemplate', test7],
   ['_setComponentManager', '@ember/component', 'setComponentManager', test7],
   ['_setComponentTemplate', '@ember/component', 'setComponentTemplate', test7],
-  ['Helper', '@ember/component/helper', 'default', test8],
-  ['Helper.helper', '@ember/component/helper', 'helper', test8],
   ['_templateOnlyComponent', '@ember/component/template-only', 'default', test9],
   ['Controller', '@ember/controller', 'default', test10],
   ['ControllerMixin', '@ember/controller', 'ControllerMixin', test10],

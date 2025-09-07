@@ -239,7 +239,6 @@
       "@ember/array/mutable.js": "ember-source/@ember/array/mutable.js",
       "@ember/array/proxy.js": "ember-source/@ember/array/proxy.js",
       "@ember/canary-features/index.js": "ember-source/@ember/canary-features/index.js",
-      "@ember/component/helper.js": "ember-source/@ember/component/helper.js",
       "@ember/component/index.js": "ember-source/@ember/component/index.js",
       "@ember/component/template-only.js": "ember-source/@ember/component/template-only.js",
       "@ember/controller/index.js": "ember-source/@ember/controller/index.js",

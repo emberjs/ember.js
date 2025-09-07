@@ -14,7 +14,6 @@ import {
 } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
-  Bounds,
   Cursor,
   DebugRenderTree,
   Environment,
@@ -46,14 +45,10 @@ import {
 import { dict } from '@glimmer/util';
 import { unwrapTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import RSVP from 'rsvp';
-import type Component from './component';
 import { hasDOM } from '../../browser-environment';
-import type ClassicComponent from './component';
-import { BOUNDS } from './component-managers/curly';
 import { createRootOutlet } from './component-managers/outlet';
-import { RootComponentDefinition } from './component-managers/root';
 import { EmberEnvironmentDelegate } from './environment';
 import { StrictResolver } from './renderer/strict-resolver';
 import ResolverImpl from './resolver';
@@ -61,6 +56,7 @@ import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 import { makeRouteTemplate } from './component-managers/route-template';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
+import { templateOnlyComponent as templateOnly } from '@glimmer/runtime';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 
@@ -71,7 +67,6 @@ export interface View {
   elementId: string | null;
   isDestroying: boolean;
   isDestroyed: boolean;
-  [BOUNDS]: Bounds | null;
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
@@ -164,7 +159,7 @@ class ComponentRootState {
     });
   }
 
-  isFor(_component: ClassicComponent): boolean {
+  isFor(_component: unknown): boolean {
     return false;
   }
 
@@ -194,7 +189,7 @@ class ClassicRootState {
   readonly env: Environment;
 
   constructor(
-    public root: Component | OutletView,
+    public root: unknown | OutletView,
     context: EvaluationContext,
     owner: object,
     template: Template,
@@ -208,7 +203,7 @@ class ClassicRootState {
       template !== undefined
     );
 
-    this.id = root instanceof OutletView ? guidFor(root) : getViewId(root);
+    this.id = root instanceof OutletView ? guidFor(root) : getViewId(root as any);
     this.result = undefined;
     this.destroyed = false;
     this.env = context.env;
@@ -837,8 +832,8 @@ export class Renderer extends BaseRenderer {
     );
   }
 
-  appendTo(view: ClassicComponent, target: SimpleElement): void {
-    let definition = new RootComponentDefinition(view);
+  appendTo(view: any, target: SimpleElement): void {
+    let definition = templateOnly();
     this._appendDefinition(
       view,
       curry(0 as CurriedComponent, definition, this.state.owner, null, true),
@@ -846,11 +841,7 @@ export class Renderer extends BaseRenderer {
     );
   }
 
-  _appendDefinition(
-    root: OutletView | ClassicComponent,
-    definition: CurriedValue,
-    target: SimpleElement
-  ): void {
+  _appendDefinition(root: OutletView, definition: CurriedValue, target: SimpleElement): void {
     let self = createConstRef(definition, 'this');
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new ClassicRootState(
@@ -866,7 +857,7 @@ export class Renderer extends BaseRenderer {
     this.state.renderRoot(rootState, this);
   }
 
-  cleanupRootFor(component: ClassicComponent): void {
+  cleanupRootFor(component: unknown): void {
     // no need to cleanup roots if we have already been destroyed
     if (isDestroyed(this)) {
       return;
@@ -887,7 +878,10 @@ export class Renderer extends BaseRenderer {
     }
   }
 
-  remove(view: ClassicComponent): void {
+  /**
+   * What's a view?
+   */
+  remove(view: any): void {
     view._transitionTo('destroying');
 
     this.cleanupRootFor(view);
@@ -934,21 +928,5 @@ export class Renderer extends BaseRenderer {
         'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
       );
     }
-  }
-
-  getBounds(component: View): {
-    parentElement: SimpleElement;
-    firstNode: SimpleNode;
-    lastNode: SimpleNode;
-  } {
-    let bounds: Bounds | null = component[BOUNDS];
-
-    assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
-
-    let parentElement = bounds.parentElement();
-    let firstNode = bounds.firstNode();
-    let lastNode = bounds.lastNode();
-
-    return { parentElement, firstNode, lastNode };
   }
 }

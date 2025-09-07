@@ -273,17 +273,14 @@ export const setHelperManager = glimmerSetHelperManager;
   // app/components/data-loader.js
   import Component from '@glimmer/component';
   import { getValue } from '@glimmer/tracking/primitives/cache';
-  import Helper from '@ember/component/helper';
   import { invokeHelper } from '@ember/helper';
 
-  class PlusOne extends Helper {
-    compute([number]) {
-      return number + 1;
-    }
+  function plusOne(number) {
+    return number + 1;
   }
 
   export default class PlusOneComponent extends Component {
-    plusOne = invokeHelper(this, PlusOne, () => {
+    plusOne = invokeHelper(this, plusOne, () => {
       return {
         positional: [this.args.number],
       };
