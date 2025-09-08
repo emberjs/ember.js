@@ -1,12 +1,15 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class AddObjectTest extends AbstractTestCase {
   '@test should return receiver'() {
     let before = newFixture(3);
     let obj = this.newObject(before);
-    this.assert.equal(obj.addObject(before[1]), obj, 'should return receiver');
+
+    expectDeprecation(() => {
+      this.assert.equal(obj.addObject(before[1]), obj, 'should return receiver');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   async '@test [A,B].addObject(C) => [A,B,C] + notify'() {
@@ -16,9 +19,13 @@ class AddObjectTest extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.addObject(item);
+    expectDeprecation(() => {
+      obj.addObject(item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -53,9 +60,13 @@ class AddObjectTest extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.addObject(item); // note: item in set
+    expectDeprecation(() => {
+      obj.addObject(item); // note: item in set
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();

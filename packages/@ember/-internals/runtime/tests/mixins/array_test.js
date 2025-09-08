@@ -7,13 +7,14 @@ import {
   arrayContentWillChange,
 } from '@ember/-internals/metal';
 import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
-import EmberArray, { A as emberA } from '@ember/array';
+import EmberArray from '@ember/array';
 import {
   moduleFor,
   AbstractTestCase,
   runLoopSettled,
   expectDeprecation,
 } from 'internal-test-helpers';
+import { emberAWithoutDeprecation } from '@ember/routing/-internals';
 
 let TestArray;
 
@@ -68,7 +69,9 @@ moduleFor(
         });
       }, /Usage of EmberArray is deprecated/);
       let y = x.slice(1);
-      assert.equal(EmberArray.detect(y), true, 'mixin should be applied');
+      expectDeprecation(() => {
+        assert.equal(EmberArray.detect(y), true, 'mixin should be applied');
+      }, /Usage of EmberArray is deprecated/);
     }
 
     ['@test slice supports negative index arguments'](assert) {
@@ -362,7 +365,7 @@ moduleFor(
       let obj = class extends EmberObject {
         init() {
           super.init(...arguments);
-          set(this, 'resources', emberA());
+          set(this, 'resources', emberAWithoutDeprecation());
         }
 
         @computed('resources.@each.common')
@@ -371,7 +374,9 @@ moduleFor(
         }
       }.create();
 
-      get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      expectDeprecation(() => {
+        get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      }, /Usage of Ember.Array methods is deprecated/);
       assert.equal('HI!', get(obj, 'common'));
 
       set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
@@ -387,14 +392,17 @@ moduleFor(
         init() {
           this._super(...arguments);
           // Observer does not fire on init
-          set(this, 'resources', emberA());
+          set(this, 'resources', emberAWithoutDeprecation());
         },
 
         commonDidChange: emberObserver('resources.@each.common', () => count++),
       }).create();
 
       // Observer fires first time when new object is added
-      get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      expectDeprecation(() => {
+        get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
 
       // Observer fires second time when property on an object is changed

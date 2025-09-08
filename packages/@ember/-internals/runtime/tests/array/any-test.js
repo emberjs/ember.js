@@ -1,5 +1,8 @@
-import { A as emberA } from '@ember/array';
-import { AbstractTestCase } from 'internal-test-helpers';
+import {
+  AbstractTestCase,
+  emberAWithoutDeprecation as emberA,
+  expectDeprecation,
+} from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
 class AnyTests extends AbstractTestCase {
@@ -9,10 +12,12 @@ class AnyTests extends AbstractTestCase {
     let found = [];
     let result;
 
-    result = obj.any(function (i) {
-      found.push(i);
-      return false;
-    });
+    expectDeprecation(() => {
+      result = obj.any(function (i) {
+        found.push(i);
+        return false;
+      });
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(result, false, 'return value of obj.any');
     this.assert.deepEqual(found, ary, 'items passed during any() should match');
@@ -26,10 +31,12 @@ class AnyTests extends AbstractTestCase {
     let found = [];
     let result;
 
-    result = obj.any(function (i) {
-      found.push(i);
-      return --cnt <= 0;
-    });
+    expectDeprecation(() => {
+      result = obj.any(function (i) {
+        found.push(i);
+        return --cnt <= 0;
+      });
+    }, /Usage of Ember.Array methods is deprecated/);
     this.assert.equal(result, true, 'return value of obj.any');
     this.assert.equal(found.length, exp, 'should invoke proper number of times');
     this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during any() should match');
@@ -39,7 +46,9 @@ class AnyTests extends AbstractTestCase {
     let obj = emberA([0, 1, 2]);
     let result;
 
-    result = obj.any((i) => Boolean(i));
+    expectDeprecation(() => {
+      result = obj.any((i) => Boolean(i));
+    }, /Usage of Ember.Array methods is deprecated/);
     this.assert.equal(result, true, 'return value of obj.any');
   }
 
@@ -47,7 +56,9 @@ class AnyTests extends AbstractTestCase {
     let obj = emberA([undefined]);
     let result;
 
-    result = obj.any(() => true);
+    expectDeprecation(() => {
+      result = obj.any(() => true);
+    }, /Usage of Ember.Array methods is deprecated/);
     assert.equal(result, true, 'return value of obj.any');
   }
 }

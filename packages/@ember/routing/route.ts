@@ -10,7 +10,7 @@ import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
-import { A as emberA } from '@ember/array';
+import { NativeArray } from '@ember/array';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { typeOf } from '@ember/utils';
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
@@ -36,6 +36,9 @@ import {
   prefixRouteNameArg,
   stashParamNames,
 } from './lib/utils';
+import { isEmberArray } from '@ember/array/-internals';
+import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
+import { emberAWithoutDeprecation } from './-internals';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   _names?: unknown[];
@@ -1930,8 +1933,8 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<st
 // FIXME: This should probably actually return a `NativeArray` if the passed in value is an Array.
 function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
-    // SAFETY: We lost the type data about the array if we don't cast.
-    return emberA(value.slice()) as unknown as T;
+    // SAFETY: We lose the type data about the array if we don't cast.
+    return emberAWithoutDeprecation(value.slice()) as unknown as T;
   }
   return value;
 }

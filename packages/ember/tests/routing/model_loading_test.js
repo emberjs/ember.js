@@ -2,8 +2,12 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
-import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  getTextOf,
+  emberAWithoutDeprecation as emberA,
+} from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { action, computed, set } from '@ember/object';
 import { service } from '@ember/service';

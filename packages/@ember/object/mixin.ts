@@ -679,6 +679,11 @@ export default class Mixin {
     @internal
   */
   detect(obj: any): boolean {
+    if (DEBUG) {
+      let deprecation = findDeprecation(this);
+      deprecate(deprecation?.message ?? 'Huh???', !deprecation, deprecation?.options);
+    }
+
     if (typeof obj !== 'object' || obj === null) {
       return false;
     }

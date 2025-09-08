@@ -1,8 +1,15 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 import { get, set } from '@ember/object';
-import { A as emberA, removeAt } from '@ember/array';
+import { removeAt } from '@ember/array';
 import ObjectProxy from '@ember/object/proxy';
+import { emberAWithoutDeprecation } from '@ember/routing/-internals';
 
 moduleFor(
   'Syntax test: {{#let as}}',
@@ -160,7 +167,7 @@ moduleFor(
       this.render(
         `{{#let this.arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/let}}`,
         {
-          arrayThing: emberA(['Hello', ' ', 'world']),
+          arrayThing: emberAWithoutDeprecation(['Hello', ' ', 'world']),
         }
       );
 
@@ -172,10 +179,12 @@ moduleFor(
 
       runTask(() => {
         let array = get(this.context, 'arrayThing');
-        array.replace(0, 1, ['Goodbye']);
-        removeAt(array, 1);
-        array.insertAt(1, ', ');
-        array.pushObject('!');
+        expectDeprecation(() => {
+          array.replace(0, 1, ['Goodbye']);
+          removeAt(array, 1);
+          array.insertAt(1, ', ');
+          array.pushObject('!');
+        }, /Usage of Ember.Array methods is deprecated/);
       });
 
       this.assertText('Goodbye, world!');

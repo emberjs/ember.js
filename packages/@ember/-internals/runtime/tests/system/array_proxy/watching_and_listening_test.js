@@ -1,7 +1,11 @@
 import { peekMeta } from '@ember/-internals/meta';
 import ArrayProxy from '@ember/array/proxy';
-import { A } from '@ember/array';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  emberAWithoutDeprecation as A,
+  AbstractTestCase,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 function sortedListenersFor(obj, eventName) {
   let listeners = peekMeta(obj).matchingListeners(eventName) || [];
@@ -18,7 +22,10 @@ moduleFor(
   class extends AbstractTestCase {
     [`@test setting 'content' adds listeners correctly`](assert) {
       let content = A();
-      let proxy = ArrayProxy.create();
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.create();
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.deepEqual(sortedListenersFor(content, '@array:before'), []);
       assert.deepEqual(sortedListenersFor(content, '@array:change'), []);
@@ -36,7 +43,10 @@ moduleFor(
     [`@test changing 'content' adds and removes listeners correctly`](assert) {
       let content1 = A();
       let content2 = A();
-      let proxy = ArrayProxy.create({ content: content1 });
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.create({ content: content1 });
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.deepEqual(sortedListenersFor(content1, '@array:before'), []);
       assert.deepEqual(sortedListenersFor(content1, '@array:change'), []);

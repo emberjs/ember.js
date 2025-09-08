@@ -7,6 +7,8 @@ import {
   equalsElement,
   runTask,
   runLoopSettled,
+  expectDeprecation,
+  emberAWithoutDeprecation as emberA,
 } from 'internal-test-helpers';
 
 import { action } from '@ember/object';
@@ -17,7 +19,6 @@ import { alias } from '@ember/object/computed';
 import { on } from '@ember/object/evented';
 import Service, { service } from '@ember/service';
 import EmberObject, { set, get, computed, observer } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -1714,15 +1715,21 @@ moduleFor(
 
       this.assertText('Foo4Bar');
 
-      runTask(() => this.context.get('things').pushObject(5));
+      expectDeprecation(() => {
+        runTask(() => this.context.get('things').pushObject(5));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('Foo4Bar5');
 
-      runTask(() => this.context.get('things').shiftObject());
+      expectDeprecation(() => {
+        runTask(() => this.context.get('things').shiftObject());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('4Bar5');
 
-      runTask(() => this.context.get('things').clear());
+      expectDeprecation(() => {
+        runTask(() => this.context.get('things').clear());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('');
 
@@ -2574,11 +2581,15 @@ moduleFor(
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      runTask(() => this.context.get('items').pushObject('Sergio'));
+      expectDeprecation(() => {
+        runTask(() => this.context.get('items').pushObject('Sergio'));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.get('items').shiftObject());
+      expectDeprecation(() => {
+        runTask(() => this.context.get('items').shiftObject());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
@@ -3012,17 +3023,25 @@ moduleFor(
           }
 
           updateValue() {
-            let newValue = this.get('options.lastObject.value');
+            let newValue;
+
+            expectDeprecation(() => {
+              newValue = this.get('options.lastObject.value');
+            }, /Usage of Ember.Array methods is deprecated/);
 
             this.set('value', newValue);
           }
 
           registerOption(option) {
-            this.get('options').addObject(option);
+            expectDeprecation(() => {
+              this.get('options').addObject(option);
+            }, /Usage of Ember.Array methods is deprecated/);
           }
 
           unregisterOption(option) {
-            this.get('options').removeObject(option);
+            expectDeprecation(() => {
+              this.get('options').removeObject(option);
+            }, /Usage of Ember.Array methods is deprecated/);
 
             this.updateValue();
           }

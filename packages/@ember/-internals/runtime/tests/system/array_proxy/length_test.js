@@ -1,8 +1,14 @@
 import ArrayProxy from '@ember/array/proxy';
 import EmberObject, { observer } from '@ember/object';
 import { oneWay as reads, not } from '@ember/object/computed';
-import { A as a } from '@ember/array';
-import { moduleFor, AbstractTestCase, runTask, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runTask,
+  runLoopSettled,
+  expectDeprecation,
+  emberAWithoutDeprecation as a,
+} from 'internal-test-helpers';
 import { set, get } from '@ember/object';
 import { createCache, getValue } from '@glimmer/validator';
 
@@ -10,9 +16,12 @@ moduleFor(
   'Ember.ArrayProxy - content change (length)',
   class extends AbstractTestCase {
     ['@test should update length for null content'](assert) {
-      let proxy = ArrayProxy.create({
-        content: a([1, 2, 3]),
-      });
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.create({
+          content: a([1, 2, 3]),
+        });
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.equal(proxy.get('length'), 3, 'precond - length is 3');
 
@@ -24,12 +33,15 @@ moduleFor(
     ['@test should update length for null content when there is a computed property watching length'](
       assert
     ) {
-      let proxy = class extends ArrayProxy {
-        @not('length')
-        isEmpty;
-      }.create({
-        content: a([1, 2, 3]),
-      });
+      let proxy;
+      expectDeprecation(() => {
+        proxy = class extends ArrayProxy {
+          @not('length')
+          isEmpty;
+        }.create({
+          content: a([1, 2, 3]),
+        });
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.equal(proxy.get('length'), 3, 'precond - length is 3');
 
@@ -45,14 +57,17 @@ moduleFor(
     ['@test getting length does not recompute the object cache'](assert) {
       let indexes = [];
 
-      let proxy = class extends ArrayProxy {
-        objectAtContent(index) {
-          indexes.push(index);
-          return this.content[index];
-        }
-      }.create({
-        content: a([1, 2, 3, 4, 5]),
-      });
+      let proxy;
+      expectDeprecation(() => {
+        proxy = class extends ArrayProxy {
+          objectAtContent(index) {
+            indexes.push(index);
+            return this.content[index];
+          }
+        }.create({
+          content: a([1, 2, 3, 4, 5]),
+        });
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.equal(get(proxy, 'length'), 5);
       assert.deepEqual(indexes, []);
@@ -63,14 +78,18 @@ moduleFor(
       assert.deepEqual(indexes, []);
 
       indexes.length = 0;
-      proxy.content.replace(1, 0, [1, 2, 3]);
+      expectDeprecation(() => {
+        proxy.content.replace(1, 0, [1, 2, 3]);
+      }, /Usage of Ember.Array methods is deprecated/);
       assert.equal(get(proxy, 'length'), 6);
       assert.deepEqual(indexes, []);
     }
 
     '@test accessing length after content set to null'(assert) {
-      let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
-
+      let obj;
+      expectDeprecation(() => {
+        obj = ArrayProxy.create({ content: ['foo', 'bar'] });
+      }, /Usage of ArrayProxy is deprecated/);
       assert.equal(obj.length, 2, 'precond');
 
       set(obj, 'content', null);
@@ -80,14 +99,17 @@ moduleFor(
     }
 
     '@test accessing length after content set to null in willDestroy'(assert) {
-      let obj = class extends ArrayProxy {
-        willDestroy() {
-          this.set('content', null);
-          this._super(...arguments);
-        }
-      }.create({
-        content: ['foo', 'bar'],
-      });
+      let obj;
+      expectDeprecation(() => {
+        obj = class extends ArrayProxy {
+          willDestroy() {
+            this.set('content', null);
+            this._super(...arguments);
+          }
+        }.create({
+          content: ['foo', 'bar'],
+        });
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.equal(obj.length, 2, 'precond');
 
@@ -98,8 +120,10 @@ moduleFor(
     }
 
     '@test setting length to 0'(assert) {
-      let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
-
+      let obj;
+      expectDeprecation(() => {
+        obj = ArrayProxy.create({ content: ['foo', 'bar'] });
+      }, /Usage of ArrayProxy is deprecated/);
       assert.equal(obj.length, 2, 'precond');
 
       set(obj, 'length', 0);
@@ -109,8 +133,10 @@ moduleFor(
     }
 
     '@test setting length to smaller value'(assert) {
-      let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
-
+      let obj;
+      expectDeprecation(() => {
+        obj = ArrayProxy.create({ content: ['foo', 'bar'] });
+      }, /Usage of ArrayProxy is deprecated/);
       assert.equal(obj.length, 2, 'precond');
 
       set(obj, 'length', 1);
@@ -120,8 +146,10 @@ moduleFor(
     }
 
     '@test setting length to larger value'(assert) {
-      let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
-
+      let obj;
+      expectDeprecation(() => {
+        obj = ArrayProxy.create({ content: ['foo', 'bar'] });
+      }, /Usage of ArrayProxy is deprecated/);
       assert.equal(obj.length, 2, 'precond');
 
       set(obj, 'length', 3);
@@ -131,8 +159,10 @@ moduleFor(
     }
 
     '@test setting length after content set to null'(assert) {
-      let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
-
+      let obj;
+      expectDeprecation(() => {
+        obj = ArrayProxy.create({ content: ['foo', 'bar'] });
+      }, /Usage of ArrayProxy is deprecated/);
       assert.equal(obj.length, 2, 'precond');
 
       set(obj, 'content', null);
@@ -143,7 +173,10 @@ moduleFor(
     }
 
     '@test setting length to greater than zero'(assert) {
-      let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
+      let obj;
+      expectDeprecation(() => {
+        obj = ArrayProxy.create({ content: ['foo', 'bar'] });
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.equal(obj.length, 2, 'precond');
 
@@ -172,12 +205,14 @@ moduleFor(
       // bootstrap aliases
       obj.length;
 
-      obj.set(
-        'model',
-        ArrayProxy.create({
-          content: a(['red', 'yellow', 'blue']),
-        })
-      );
+      expectDeprecation(() => {
+        obj.set(
+          'model',
+          ArrayProxy.create({
+            content: a(['red', 'yellow', 'blue']),
+          })
+        );
+      }, /Usage of ArrayProxy is deprecated/);
 
       await runLoopSettled();
 
@@ -191,7 +226,10 @@ moduleFor(
       assert.equal(dCalled, 1, 'expected observer `colors.[]` to be called ONCE');
       assert.equal(eCalled, 1, 'expected observer `colors.content.[]` to be called ONCE');
 
-      obj.get('colors').pushObjects(['green', 'red']);
+      expectDeprecation(() => {
+        obj.get('colors').pushObjects(['green', 'red']);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
 
       assert.equal(obj.get('colors.content.length'), 5);
@@ -208,19 +246,26 @@ moduleFor(
     }
 
     async ['@test array proxy length is reactive when accessed normally'](assert) {
-      let proxy = ArrayProxy.create({
-        content: a([1, 2, 3]),
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.create({
+          content: a([1, 2, 3]),
+        });
       });
 
       let lengthCache = createCache(() => proxy.length);
 
       assert.equal(getValue(lengthCache), 3, 'length is correct');
 
-      proxy.pushObject(4);
+      expectDeprecation(() => {
+        proxy.pushObject(4);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(getValue(lengthCache), 4, 'length is correct');
 
-      proxy.removeObject(1);
+      expectDeprecation(() => {
+        proxy.removeObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(getValue(lengthCache), 3, 'length is correct');
 
@@ -230,19 +275,26 @@ moduleFor(
     }
 
     async ['@test array proxy length is reactive when accessed using get'](assert) {
-      let proxy = ArrayProxy.create({
-        content: a([1, 2, 3]),
-      });
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.create({
+          content: a([1, 2, 3]),
+        });
+      }, /Usage of ArrayProxy is deprecated/);
 
       let lengthCache = createCache(() => get(proxy, 'length'));
 
       assert.equal(getValue(lengthCache), 3, 'length is correct');
 
-      proxy.pushObject(4);
+      expectDeprecation(() => {
+        proxy.pushObject(4);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(getValue(lengthCache), 4, 'length is correct');
 
-      proxy.removeObject(1);
+      expectDeprecation(() => {
+        proxy.removeObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(getValue(lengthCache), 3, 'length is correct');
 

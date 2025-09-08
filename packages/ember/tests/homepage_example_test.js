@@ -1,8 +1,11 @@
 import Route from '@ember/routing/route';
 import EmberObject, { computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  emberAWithoutDeprecation as emberA,
+  ApplicationTestCase,
+} from 'internal-test-helpers';
 
 moduleFor(
   'The example renders correctly',

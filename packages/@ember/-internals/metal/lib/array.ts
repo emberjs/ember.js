@@ -3,6 +3,7 @@ import type MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
+import { disableDeprecations } from '@ember/array/-internals';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
@@ -27,7 +28,9 @@ export function replace<T>(
   items: readonly T[] = EMPTY_ARRAY as []
 ): void {
   if (isMutableArray(array)) {
-    array.replace(start, deleteCount, items);
+    disableDeprecations(() => {
+      array.replace(start, deleteCount, items);
+    });
   } else {
     assert('Can only replace content of a native array or MutableArray', Array.isArray(array));
     replaceInNativeArray(array, start, deleteCount, items);

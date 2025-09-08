@@ -13,6 +13,7 @@ import {
   strip,
   runTask,
   expectDeprecation,
+  emberAWithoutDeprecation,
 } from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
@@ -148,10 +149,12 @@ moduleFor(
 
     '@test array properties rerender when updated'() {
       class NumListComponent extends Component {
-        @tracked numbers = A([1, 2, 3]);
+        @tracked numbers = emberAWithoutDeprecation([1, 2, 3]);
 
         addNumber = () => {
-          this.numbers.pushObject(4);
+          expectDeprecation(() => {
+            this.numbers.pushObject(4);
+          }, /Usage of Ember.Array methods is deprecated/);
         };
       }
 
@@ -209,7 +212,9 @@ moduleFor(
         @tracked numbers = CustomArray.create();
 
         addNumber = () => {
-          this.numbers.pushObject(4);
+          expectDeprecation(() => {
+            this.numbers.pushObject(4);
+          }, /Usage of Ember.Array methods is deprecated/);
         };
       }
 
@@ -398,7 +403,7 @@ moduleFor(
     }
 
     '@test each-in autotracks arrays acorrectly'() {
-      let obj = EmberObject.create({ arr: A([1]) });
+      let obj = EmberObject.create({ arr: emberAWithoutDeprecation([1]) });
 
       this.registerComponent('person', {
         ComponentClass: class extends Component {
@@ -415,7 +420,9 @@ moduleFor(
 
       this.assertText('1');
 
-      runTask(() => obj.arr.pushObject(2));
+      expectDeprecation(() => {
+        runTask(() => obj.arr.pushObject(2));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('12');
     }

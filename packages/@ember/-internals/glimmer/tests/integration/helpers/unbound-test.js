@@ -4,10 +4,11 @@ import {
   strip,
   runTask,
   runLoopSettled,
+  emberAWithoutDeprecation,
+  expectDeprecation,
 } from 'internal-test-helpers';
 
 import { set, get, setProperties } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
 
@@ -42,7 +43,7 @@ moduleFor(
 
     ['@test should be able to use unbound helper in #each helper']() {
       this.render(`<ul>{{#each this.items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`, {
-        items: emberA(['a', 'b', 'c', 1, 2, 3]),
+        items: emberAWithoutDeprecation(['a', 'b', 'c', 1, 2, 3]),
       });
 
       this.assertText('abc123');
@@ -56,7 +57,7 @@ moduleFor(
       this.render(
         `<ul>{{#each this.items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`,
         {
-          items: emberA([{ wham: 'bam' }, { wham: 1 }]),
+          items: emberAWithoutDeprecation([{ wham: 'bam' }, { wham: 1 }]),
         }
       );
 
@@ -66,11 +67,15 @@ moduleFor(
 
       this.assertText('bam1');
 
-      runTask(() => this.context.items.setEach('wham', 'HEY'));
+      expectDeprecation(() => {
+        runTask(() => this.context.items.setEach('wham', 'HEY'));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('bam1');
 
-      runTask(() => set(this.context, 'items', emberA([{ wham: 'bam' }, { wham: 1 }])));
+      runTask(() =>
+        set(this.context, 'items', emberAWithoutDeprecation([{ wham: 'bam' }, { wham: 1 }]))
+      );
 
       this.assertText('bam1');
     }
@@ -110,7 +115,7 @@ moduleFor(
     }
 
     ['@test should property escape unsafe hrefs']() {
-      let unsafeUrls = emberA([
+      let unsafeUrls = emberAWithoutDeprecation([
         {
           name: 'Bob',
           url: 'javascript:bob-is-cool',
@@ -152,7 +157,9 @@ moduleFor(
 
       this.assertHTML(escapedHtml);
 
-      runTask(() => this.context.people.setEach('url', 'http://google.com'));
+      expectDeprecation(() => {
+        runTask(() => this.context.people.setEach('url', 'http://google.com'));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertHTML(escapedHtml);
 
@@ -445,7 +452,7 @@ moduleFor(
       this.render(
         `{{#each this.people as |person|}}{{capitalize person.firstName}} {{unbound (capitalize person.firstName)}}{{/each}}`,
         {
-          people: emberA([
+          people: emberAWithoutDeprecation([
             {
               firstName: 'shooby',
               lastName: 'taylor',
@@ -464,7 +471,9 @@ moduleFor(
 
       this.assertText('SHOOBY SHOOBYCINDY CINDY');
 
-      runTask(() => this.context.people.setEach('firstName', 'chad'));
+      expectDeprecation(() => {
+        runTask(() => this.context.people.setEach('firstName', 'chad'));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('CHAD SHOOBYCHAD CINDY');
 
@@ -472,7 +481,7 @@ moduleFor(
         set(
           this.context,
           'people',
-          emberA([
+          emberAWithoutDeprecation([
             {
               firstName: 'shooby',
               lastName: 'taylor',

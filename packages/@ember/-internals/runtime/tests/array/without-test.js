@@ -1,4 +1,4 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class WithoutTests extends AbstractTestCase {
@@ -9,7 +9,10 @@ class WithoutTests extends AbstractTestCase {
     after = [before[0], before[2]];
     obj = this.newObject(before);
 
-    ret = obj.without(before[1]);
+    expectDeprecation(() => {
+      ret = obj.without(before[1]);
+    }, /Usage of Ember.Array methods is deprecated/);
+
     this.assert.deepEqual(this.toArray(ret), after, 'should have removed item');
     this.assert.deepEqual(this.toArray(obj), before, 'should not have changed original');
   }
@@ -21,7 +24,10 @@ class WithoutTests extends AbstractTestCase {
     after = [before[0], before[1]];
     obj = this.newObject(before);
 
-    ret = obj.without(NaN);
+    expectDeprecation(() => {
+      ret = obj.without(NaN);
+    }, /Usage of Ember.Array methods is deprecated/);
+
     this.assert.deepEqual(this.toArray(ret), after, 'should have removed item');
   }
 
@@ -31,7 +37,10 @@ class WithoutTests extends AbstractTestCase {
     item = newFixture(1)[0];
     obj = this.newObject(newFixture(3));
 
-    ret = obj.without(item);
+    expectDeprecation(() => {
+      ret = obj.without(item);
+    }, /Usage of Ember.Array methods is deprecated/);
+
     this.assert.equal(ret, obj, 'should be same instance');
   }
 }
