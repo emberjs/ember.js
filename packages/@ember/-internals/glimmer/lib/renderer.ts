@@ -648,6 +648,10 @@ export function renderComponent(
 
   let innerResult = renderer.render(component, { into, args }).result;
 
+  if (innerResult) {
+    associateDestroyableChild(owner, innerResult);
+  }
+
   let result = {
     destroy() {
       if (innerResult) {
