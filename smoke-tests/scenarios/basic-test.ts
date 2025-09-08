@@ -106,6 +106,37 @@ function basicTest(scenarios: Scenarios, appName: string) {
             `,
           },
           integration: {
+            'destruction-test.gjs': `
+              import { module, test } from 'qunit';
+              import { render } from '@ember/test-helpers';
+              import { setupRenderingTest } from 'ember-qunit';
+
+              import Component from '@glimmer/component';
+
+              class Dropdown extends Component {
+                willDestroy() {
+                  super.willDestroy();
+                  this.args.onDestroy();
+                }
+              }
+
+
+              module('Integration | Component | dropdown', function (hooks) {
+                setupRenderingTest(hooks);
+
+                hooks.after(function (assert) {
+                  assert.verifySteps(['Dropdown destroyed']);
+                });
+
+                test('it calls "@onDestroy"', async function (assert) {
+                  const onDropdownDestroy = () => assert.step('Dropdown destroyed');
+
+                  await render(
+                    <template><Dropdown @onDestroy={{onDropdownDestroy}} /></template>,
+                  );
+                });
+              });
+            `,
             'interactive-example-test.js': `
               import { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
