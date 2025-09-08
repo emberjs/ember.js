@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.8.0-beta.2 (September 8, 2025)
+
+- [#20966](https://github.com/emberjs/ember.js/pull/20966) [BUGFIX] Correctly export `renderComponent` from `@ember/renderer`
+
 ## v6.8.0-beta.1 (September 1, 2025)
 
 - [#20950](https://github.com/emberjs/ember.js/pull/20950) / [#20961](https://github.com/emberjs/ember.js/pull/20961) / [#20963](https://github.com/emberjs/ember.js/pull/20963) [FEATURE] Upgrade glimmer-vm to build in Tracked Collections (previously provided by `tracked-built-ins`) per [RFC #1068](https://rfcs.emberjs.com/id/1068-tracked-collections).
