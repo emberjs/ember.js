@@ -172,7 +172,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
 
                 test('it calls "registerDestructor"', async function (assert) {
-                  const onDestroy = () => assert.step('WillDestroy destroyed');
+                  const onDestroy = () => assert.step('destroyed');
 
                   await render(<template><Destructor @onDestroy={{onDestroy}} /></template>);
 
