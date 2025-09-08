@@ -18,7 +18,7 @@ import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
 import { run } from '@ember/runloop';
-import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
+import { destroy, associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { renderComponent, type RenderResult } from '../../../lib/renderer';
 import { trackedObject } from '@ember/reactive/collections';
 import { cached, tracked } from '@glimmer/tracking';
@@ -81,14 +81,123 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
 }
 
 moduleFor(
+  'Strict Mode - RenderComponentTestCase',
+  class extends RenderComponentTestCase {
+    afterEach() {
+      if (this.component) {
+        runDestroy(this);
+      }
+    }
+
+    '@test destroy cleans up dom via destrying the test context'() {
+      let Foo = defComponent('Hello, world!');
+      let Root = defComponent('<Foo/>', { scope: { Foo } });
+
+      this.renderComponent(Root, { expect: 'Hello, world!' });
+
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
+  }
+);
+
+moduleFor(
+  'Strict Mode - renderComponent (direct)',
+  class extends AbstractStrictTestCase {
+    get element() {
+      return document.querySelector('#qunit-fixture')!;
+    }
+
+    '@test manually calling destroy cleans up the DOM'() {
+      let Foo = defComponent('Hello, world!');
+
+      let owner = buildOwner({});
+      let manualDestroy: () => void;
+
+      run(() => {
+        let result = renderComponent(Foo, {
+          owner,
+          into: this.element,
+        });
+        manualDestroy = result.destroy;
+        this.component = {
+          ...result,
+          rerender() {
+            // unused, but asserted against
+          },
+        };
+      });
+
+      assertHTML('Hello, world!');
+      this.assertStableRerender();
+
+      run(() => manualDestroy());
+
+      assertHTML('');
+      this.assertStableRerender();
+
+      run(() => destroy(owner));
+    }
+
+    '@test destroying the owner cleans up the DOM'() {
+      let Foo = defComponent('Hello, world!');
+
+      let owner = buildOwner({});
+
+      run(() => {
+        let result = renderComponent(Foo, {
+          owner,
+          into: this.element,
+        });
+        this.component = {
+          ...result,
+          rerender() {
+            // unused, but asserted against
+          },
+        };
+      });
+
+      assertHTML('Hello, world!');
+      this.assertStableRerender();
+
+      run(() => destroy(owner));
+
+      assertHTML('');
+      this.assertStableRerender();
+    }
+  }
+);
+
+moduleFor(
   'Strict Mode - renderComponent',
   class extends RenderComponentTestCase {
     afterEach() {
       if (this.component) {
-        // runDestroy(this.component);
-        // runDestroy(this.owner);
         runDestroy(this);
       }
+    }
+
+    '@test destroy cleans up dom via destroying the owner'() {
+      let Foo = defComponent('Hello, world!');
+      let Root = defComponent('<Foo/>', { scope: { Foo } });
+
+      this.renderComponent(Root, { expect: 'Hello, world!' });
+
+      run(() => destroy(this.owner));
+
+      assertHTML('');
+    }
+
+    '@test [RenderComponentTestCase] destroy cleans up dom via destrying the test context'() {
+      let Foo = defComponent('Hello, world!');
+      let Root = defComponent('<Foo/>', { scope: { Foo } });
+
+      this.renderComponent(Root, { expect: 'Hello, world!' });
+
+      run(() => destroy(this));
+
+      assertHTML('');
     }
 
     '@test Can use a component in scope'() {
