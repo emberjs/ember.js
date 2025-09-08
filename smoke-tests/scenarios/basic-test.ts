@@ -108,32 +108,77 @@ function basicTest(scenarios: Scenarios, appName: string) {
           integration: {
             'destruction-test.gjs': `
               import { module, test } from 'qunit';
-              import { render } from '@ember/test-helpers';
+              import { clearRender, render } from '@ember/test-helpers';
               import { setupRenderingTest } from 'ember-qunit';
+              import { registerDestructor } from '@ember/destroyable';
 
               import Component from '@glimmer/component';
 
-              class Dropdown extends Component {
+              class WillDestroy extends Component {
                 willDestroy() {
                   super.willDestroy();
                   this.args.onDestroy();
                 }
               }
 
+              class Destructor extends Component {
+                constructor(...args) {
+                  super(...args);
 
-              module('Integration | Component | dropdown', function (hooks) {
+                  let onDestroy = this.args.onDestroy;
+                  registerDestructor(this, () => onDestroy());
+                }
+              }
+
+              module('@glimmer/component Destruction', function (hooks) {
                 setupRenderingTest(hooks);
 
-                hooks.after(function (assert) {
-                  assert.verifySteps(['Dropdown destroyed']);
+                module('after', function (hooks) {
+                  hooks.after(function (assert) {
+                    assert.verifySteps(['WillDestroy destroyed']);
+                  });
+
+                  test('it calls "@onDestroy"', async function (assert) {
+                    const onDestroy = () => assert.step('WillDestroy destroyed');
+
+                    await render(
+                      <template><WillDestroy @onDestroy={{onDestroy}} /></template>
+                    );
+                  });
+                });
+
+                module('afterEach', function (hooks) {
+                  hooks.afterEach(function (assert) {
+                    assert.verifySteps(['WillDestroy destroyed']);
+                  });
+
+                  test('it calls "@onDestroy"', async function (assert) {
+                    const onDestroy = () => assert.step('WillDestroy destroyed');
+
+                    await render(
+                      <template><WillDestroy @onDestroy={{onDestroy}} /></template>
+                    );
+                  });
                 });
 
                 test('it calls "@onDestroy"', async function (assert) {
-                  const onDropdownDestroy = () => assert.step('Dropdown destroyed');
+                  const onDestroy = () => assert.step('destroyed');
 
-                  await render(
-                    <template><Dropdown @onDestroy={{onDropdownDestroy}} /></template>,
-                  );
+                  await render(<template><WillDestroy @onDestroy={{onDestroy}} /></template>);
+
+                  await clearRender();
+
+                  assert.verifySteps(['destroyed']);
+                });
+
+                test('it calls "registerDestructor"', async function (assert) {
+                  const onDestroy = () => assert.step('WillDestroy destroyed');
+
+                  await render(<template><Destructor @onDestroy={{onDestroy}} /></template>);
+
+                  await clearRender();
+
+                  assert.verifySteps(['destroyed']);
                 });
               });
             `,
