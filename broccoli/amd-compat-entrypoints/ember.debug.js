@@ -161,9 +161,6 @@ d('@ember/array/proxy', emberArrayProxy);
 import * as emberCanaryFeaturesIndex from '@ember/canary-features/index';
 d('@ember/canary-features/index', emberCanaryFeaturesIndex);
 
-import * as emberComponentHelper from '@ember/component/helper';
-d('@ember/component/helper', emberComponentHelper);
-
 import * as emberComponentIndex from '@ember/component/index';
 d('@ember/component/index', emberComponentIndex);
 

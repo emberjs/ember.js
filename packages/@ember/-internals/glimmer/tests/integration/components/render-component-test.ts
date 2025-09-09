@@ -13,7 +13,6 @@ import {
   runDestroy,
 } from 'internal-test-helpers';
 
-import { Input, Textarea } from '@ember/component';
 import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
@@ -600,33 +599,6 @@ moduleFor(
 moduleFor(
   'Strict Mode - renderComponent - built ins',
   class extends RenderComponentTestCase {
-    '@test Can use Input'() {
-      let Root = defComponent('<Input/>', { scope: { Input } });
-
-      this.renderComponent(Root, {
-        classic: {
-          tagName: 'input',
-          attrs: {
-            type: 'text',
-            class: 'ember-text-field ember-view',
-          },
-        },
-      });
-    }
-
-    '@test Can use Textarea'() {
-      let Root = defComponent('<Textarea/>', { scope: { Textarea } });
-
-      this.renderComponent(Root, {
-        classic: {
-          tagName: 'textarea',
-          attrs: {
-            class: 'ember-text-area ember-view',
-          },
-        },
-      });
-    }
-
     '@test Can use hash'() {
       let Root = defComponent(
         '{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}',

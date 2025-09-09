@@ -65,10 +65,7 @@
   ```
 
   Ember's built-in helpers are described under the [Ember.Templates.helpers](/ember/release/classes/Ember.Templates.helpers)
-  namespace. Documentation on creating custom helpers can be found under
-  [helper](/ember/release/functions/@ember%2Fcomponent%2Fhelper/helper) (or
-  under [Helper](/ember/release/classes/Helper) if a helper requires access to
-  dependency injection).
+  namespace.
 
   ### Invoking a Component
 
@@ -447,16 +444,7 @@
 export { templateFactory as template, templateCacheCounters } from '@glimmer/opcode-compiler';
 
 export { default as RootTemplate } from './lib/templates/root';
-export { default as Input } from './lib/components/input';
 export { default as LinkTo } from './lib/components/link-to';
-export { default as Textarea } from './lib/components/textarea';
-export { default as Component } from './lib/component';
-export {
-  default as Helper,
-  helper,
-  type FunctionBasedHelper,
-  type FunctionBasedHelperInstance,
-} from './lib/helper';
 export {
   TrustedHTML,
   SafeString,

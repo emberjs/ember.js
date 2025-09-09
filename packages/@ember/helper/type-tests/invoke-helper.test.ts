@@ -1,22 +1,20 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import { getValue } from '@ember/-internals/metal';
-import Helper from '@ember/component/helper';
 import { invokeHelper } from '@ember/helper';
 import type { Cache } from '@glimmer/validator';
 import { expectTypeOf } from 'expect-type';
+import type Owner from '@ember/owner';
 
 // NOTE: The types should probably be stricter, but they're from glimmer itself
 
-class PlusOne extends Helper {
-  compute([number]: [number]) {
-    return number + 1;
-  }
+function plusOne(number: number) {
+  return number + 1;
 }
 
 class PlusOneComponent extends Component {
   declare number: number;
 
-  plusOne = invokeHelper(this, PlusOne, () => {
+  plusOne = invokeHelper(this, plusOne, () => {
     return {
       positional: [this.number],
     };
@@ -27,6 +25,6 @@ class PlusOneComponent extends Component {
   }
 }
 
-let component = PlusOneComponent.create();
+let component = new PlusOneComponent({} as Owner, {}) ;
 
 expectTypeOf(component.plusOne).toEqualTypeOf<Cache<unknown>>();

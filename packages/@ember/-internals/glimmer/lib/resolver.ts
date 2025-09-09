@@ -12,11 +12,7 @@ import type {
   TemplateFactory,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import {
-  getComponentTemplate,
-  getInternalComponentManager,
-  setInternalHelperManager,
-} from '@glimmer/manager';
+import { getComponentTemplate, getInternalComponentManager } from '@glimmer/manager';
 import {
   array,
   concat,
@@ -27,8 +23,6 @@ import {
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime';
-import { isCurlyManager } from './component-managers/curly';
-import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -134,8 +128,6 @@ const BUILTIN_MODIFIERS: Record<string, object> = {
   on,
 };
 
-const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
-
 export default class ResolverImpl implements ClassicResolver<InternalOwner> {
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
@@ -166,22 +158,7 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       return null;
     }
 
-    if (typeof definition === 'function' && isClassicHelper(definition)) {
-      // For classic class based helpers, we need to pass the factoryFor result itself rather
-      // than the raw value (`factoryFor(...).class`). This is because injections are already
-      // bound in the factoryFor result, including type-based injections
-
-      if (DEBUG) {
-        // In DEBUG we need to only set the associated value once, otherwise
-        // we'll trigger an assertion
-        if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
-          CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
-          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
-        }
-      } else {
-        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
-      }
-
+    if (typeof definition === 'function') {
       return factory;
     }
 
@@ -262,7 +239,7 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       let manager = getInternalComponentManager(ComponentClass);
 
       definition = {
-        state: isCurlyManager(manager) ? factory : ComponentClass,
+        state: ComponentClass,
         manager,
         template,
       };

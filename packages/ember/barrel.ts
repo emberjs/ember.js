@@ -84,8 +84,6 @@ import EmberApplication, {
 } from '@ember/application';
 import EmberApplicationInstance from '@ember/application/instance';
 import EmberNamespace from '@ember/application/namespace';
-import EmberComponent, { Input as EmberInput } from '@ember/component';
-import EmberHelper from '@ember/component/helper';
 import EmberEngine from '@ember/engine';
 import EmberEngineInstance from '@ember/engine/instance';
 import EmberEnumerable from '@ember/enumerable';
@@ -240,15 +238,6 @@ namespace Ember {
 
   // ****@ember/canary-features****
   export const FEATURES = { isEnabled, ...EmberFEATURES };
-
-  // ****@ember/component****
-  export const _Input = EmberInput;
-  export const Component = EmberComponent;
-  export type Component<S = unknown> = EmberComponent<S>;
-
-  // // ****@ember/component/helper****
-  export const Helper = EmberHelper;
-  export type Helper<S = unknown> = EmberHelper<S>;
 
   // ****@ember/controller****
   export const Controller = EmberController;
