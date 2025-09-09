@@ -464,9 +464,18 @@ importers:
         specifier: ^4.8.5
         version: 4.8.5
     devDependencies:
+      '@ember/reactive':
+        specifier: workspace:*
+        version: link:../reactive
+      '@ember/template-compilation':
+        specifier: workspace:*
+        version: link:../template-compilation
       '@ember/template-compiler':
         specifier: workspace:*
         version: link:../template-compiler
+      '@glimmer/tracking':
+        specifier: workspace:*
+        version: link:../../@glimmer/tracking
 
   packages/@ember/application:
     dependencies:

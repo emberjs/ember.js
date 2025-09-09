@@ -71,6 +71,9 @@
     "rsvp": "^4.8.5"
   },
   "devDependencies": {
-    "@ember/template-compiler": "workspace:*"
+    "@ember/reactive": "workspace:*",
+    "@ember/template-compilation": "workspace:*",
+    "@ember/template-compiler": "workspace:*",
+    "@glimmer/tracking": "workspace:*"
   }
 }
