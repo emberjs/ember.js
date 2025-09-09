@@ -99,6 +99,17 @@ moduleFor(
 
       assertHTML('');
     }
+
+    '@test destroy of the owner cleans up dom via destrying the test context'() {
+      let Foo = defComponent('Hello, world!');
+      let Root = defComponent('<Foo/>', { scope: { Foo } });
+
+      this.renderComponent(Root, { expect: 'Hello, world!' });
+
+      run(() => destroy(this.owner));
+
+      assertHTML('');
+    }
   }
 );
 
@@ -189,17 +200,6 @@ moduleFor(
       assertHTML('');
     }
 
-    '@test [RenderComponentTestCase] destroy cleans up dom via destrying the test context'() {
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('<Foo/>', { scope: { Foo } });
-
-      this.renderComponent(Root, { expect: 'Hello, world!' });
-
-      run(() => destroy(this));
-
-      assertHTML('');
-    }
-
     '@test Can use a component in scope'() {
       let Foo = defComponent('Hello, world!');
       let Root = defComponent('<Foo/>', { scope: { Foo } });
@@ -240,6 +240,24 @@ moduleFor(
       let Root = defComponent('{{if true "foo" "bar"}}{{unless true "foo" "bar"}}');
 
       this.renderComponent(Root, { expect: 'foobar' });
+    }
+
+    '@test multiple components have independent lifetimes'() {
+      class State {
+        @tracked showSecond = true;
+      }
+      let state = new State();
+      let Foo = defComponent('Hello, world!');
+      let Root = defComponent('<Foo />{{#if state.showSecond}}<Foo />{{/if}}', {
+        scope: { state, Foo },
+      });
+
+      this.renderComponent(Root, { expect: 'Hello, world!Hello, world!' });
+
+      this.assertChange({
+        change: () => (state.showSecond = false),
+        expect: 'Hello, world!<!---->',
+      });
     }
 
     '@test Can use a dynamic component definition'() {
