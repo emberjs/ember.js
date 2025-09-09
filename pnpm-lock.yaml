@@ -382,6 +382,9 @@ importers:
       '@ember/utils':
         specifier: workspace:*
         version: link:../utils
+      '@ember/version':
+        specifier: workspace:*
+        version: link:../version
       '@glimmer/compiler':
         specifier: 0.94.11
         version: 0.94.11
@@ -608,6 +611,13 @@ importers:
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
+    devDependencies:
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
 
   packages/@ember/controller:
     dependencies:
@@ -623,6 +633,9 @@ importers:
       '@ember/object':
         specifier: workspace:*
         version: link:../object
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
       '@ember/service':
         specifier: workspace:*
         version: link:../service
@@ -647,6 +660,10 @@ importers:
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
+    devDependencies:
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
 
   packages/@ember/debug:
     dependencies:
@@ -871,6 +888,9 @@ importers:
       '@ember/-internals':
         specifier: workspace:*
         version: link:../-internals
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
       '@glimmer/manager':
         specifier: 0.94.10
         version: 0.94.10
@@ -928,6 +948,10 @@ importers:
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
+    devDependencies:
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
 
   packages/@ember/owner:
     dependencies:
@@ -1117,6 +1141,10 @@ importers:
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
+    devDependencies:
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
 
   packages/@ember/template:
     dependencies:
@@ -1183,6 +1211,10 @@ importers:
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
+    devDependencies:
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
 
   packages/@ember/template-factory:
     dependencies:
@@ -1319,6 +1351,18 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
     devDependencies:
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../../@ember/component
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../../@ember/destroyable
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../../@ember/owner
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../../@ember/runloop
       typescript:
         specifier: '5.1'
         version: 5.1.6

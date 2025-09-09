@@ -12,5 +12,9 @@
     "@glimmer/manager": "0.94.10",
     "@glimmer/runtime": "0.94.11",
     "expect-type": "^0.15.0"
+  },
+  "devDependencies": {
+    "@ember/object": "workspace:*",
+    "@ember/owner": "workspace:*"
   }
 }

@@ -21,6 +21,10 @@
     "@glimmer/env": "^0.1.7"
   },
   "devDependencies": {
+    "@ember/component": "workspace:*",
+    "@ember/destroyable": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/owner": "workspace:*",
     "typescript": "5.1"
   },
   "engines": {

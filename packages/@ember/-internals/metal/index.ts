@@ -10,7 +10,7 @@ export {
   type ComputedPropertyCallback,
 } from './lib/computed';
 export { getCachedValueFor } from './lib/computed_cache';
-export { default as alias } from './lib/alias';
+export { default as alias, type AliasDecorator } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
 export {
   PROXY_CONTENT,

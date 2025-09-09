@@ -10,6 +10,7 @@
     "@ember/array": "workspace:*",
     "@ember/debug": "workspace:*",
     "@ember/object": "workspace:*",
+    "@ember/routing": "workspace:*",
     "@ember/service": "workspace:*",
     "@glimmer/destroyable": "0.94.8",
     "@glimmer/env": "^0.1.7",
@@ -18,5 +19,8 @@
     "@glimmer/validator": "0.95.0",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"
+  },
+  "devDependencies": {
+    "@ember/owner": "workspace:*"
   }
 }
