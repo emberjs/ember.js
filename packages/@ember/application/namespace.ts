@@ -11,7 +11,7 @@ import {
   processNamespace,
   processAllNamespaces,
   removeNamespace,
-  Namespace as MetalNamespace,
+  type Namespace as MetalNamespace,
 } from '@ember/-internals/metal'; // Preloaded into namespaces
 import { get } from '@ember/object';
 import { getName, guidFor, setName } from '@ember/-internals/utils';
