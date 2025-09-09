@@ -5,7 +5,6 @@
     "target": "es2021",
     "module": "es2020",
     "sourceMap": true,
-    "baseUrl": "../packages",
     "rootDir": "../packages",
 
     // Environment Configuration

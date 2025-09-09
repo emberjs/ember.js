@@ -2,7 +2,7 @@ import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
-import type Container from '@ember/-internals/container/lib/container';
+import type { Container } from '@ember/-internals/container';
 import Mixin from '@ember/object/mixin';
 import type { ContainerProxy } from '@ember/-internals/owner';
 

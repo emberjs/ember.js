@@ -1,4 +1,4 @@
-import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
+import type { DeprecationOptions } from '@ember/debug';
 import { ENV } from '@ember/-internals/environment';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';

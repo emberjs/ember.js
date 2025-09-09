@@ -2,7 +2,7 @@
 @module @ember/component
 */
 
-import type { InternalFactoryManager } from '@ember/-internals/container/lib/container';
+import type { InternalFactoryManager } from '@ember/-internals/container';
 import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';

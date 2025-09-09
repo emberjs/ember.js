@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./collections": "./collections.ts"
   },
   "dependencies": {
     "@glimmer/validator": "0.95.0"

@@ -1,4 +1,4 @@
-import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import type { View } from '@ember/-internals/glimmer';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
