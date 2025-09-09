@@ -110,7 +110,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { module, test } from 'qunit';
               import { clearRender, render } from '@ember/test-helpers';
               import { setupRenderingTest } from 'ember-qunit';
-              import { registerDestructor } from '@ember/destroyable';
+              import { destroy, registerDestructor } from '@ember/destroyable';
 
               import Component from '@glimmer/component';
 
@@ -158,6 +158,8 @@ function basicTest(scenarios: Scenarios, appName: string) {
                     await render(
                       <template><WillDestroy @onDestroy={{onDestroy}} /></template>
                     );
+
+                    destroy(this.owner);
                   });
                 });
 
