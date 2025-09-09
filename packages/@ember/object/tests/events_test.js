@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object';
-import Evented from '@ember/object/evented';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { Evented } from '@ember/-internals/runtime';
+import { moduleFor, AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 
 moduleFor(
   'Object events',
@@ -13,12 +13,18 @@ moduleFor(
 
       let obj = EmberObject.extend(Evented).create();
 
-      obj.on('event!', F);
-      obj.trigger('event!');
+      expectDeprecation(() => {
+        obj.on('event!', F);
+      }, /`on` is deprecated/);
+      expectDeprecation(() => {
+        obj.trigger('event!');
+      }, /`trigger` is deprecated/);
 
       assert.equal(count, 1, 'the event was triggered');
 
-      obj.trigger('event!');
+      expectDeprecation(() => {
+        obj.trigger('event!');
+      }, /`trigger` is deprecated/);
 
       assert.equal(count, 2, 'the event was triggered');
     }
@@ -33,12 +39,19 @@ moduleFor(
 
       let obj = EmberObject.extend(Evented).create();
 
-      obj.one('event!', F);
-      obj.trigger('event!');
+      expectDeprecation(() => {
+        obj.one('event!', F);
+      }, /`one` is deprecated/);
+
+      expectDeprecation(() => {
+        obj.trigger('event!');
+      }, /`trigger` is deprecated/);
 
       assert.equal(count, 1, 'the event was triggered');
 
-      obj.trigger('event!');
+      expectDeprecation(() => {
+        obj.trigger('event!');
+      }, /`trigger` is deprecated/);
 
       assert.equal(count, 1, 'the event was not triggered again');
     }
@@ -48,12 +61,16 @@ moduleFor(
 
       let obj = EmberObject.extend(Evented).create();
 
-      obj.on('event!', function () {
-        args = [].slice.call(arguments);
-        self = this;
-      });
+      expectDeprecation(() => {
+        obj.on('event!', function () {
+          args = [].slice.call(arguments);
+          self = this;
+        });
+      }, /`on` is deprecated/);
 
-      obj.trigger('event!', 'foo', 'bar');
+      expectDeprecation(() => {
+        obj.trigger('event!', 'foo', 'bar');
+      }, /`trigger` is deprecated/);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(self, obj);
@@ -65,19 +82,25 @@ moduleFor(
 
       let obj = EmberObject.extend(Evented).create();
 
-      obj.one('event!', function () {
-        args = [].slice.call(arguments);
-        self = this;
-        count++;
-      });
+      expectDeprecation(() => {
+        obj.one('event!', function () {
+          args = [].slice.call(arguments);
+          self = this;
+          count++;
+        });
+      }, /`one` is deprecated/);
 
-      obj.trigger('event!', 'foo', 'bar');
+      expectDeprecation(() => {
+        obj.trigger('event!', 'foo', 'bar');
+      }, /`trigger` is deprecated/);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(self, obj);
       assert.equal(count, 1, 'the event is triggered once');
 
-      obj.trigger('event!', 'baz', 'bat');
+      expectDeprecation(() => {
+        obj.trigger('event!', 'baz', 'bat');
+      }, /`trigger` is deprecated/);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(count, 1, 'the event was not triggered again');
@@ -90,12 +113,16 @@ moduleFor(
       let obj = EmberObject.extend(Evented).create();
       let target = {};
 
-      obj.on('event!', target, function () {
-        args = [].slice.call(arguments);
-        self = this;
-      });
+      expectDeprecation(() => {
+        obj.on('event!', target, function () {
+          args = [].slice.call(arguments);
+          self = this;
+        });
+      }, /`on` is deprecated/);
 
-      obj.trigger('event!', 'foo', 'bar');
+      expectDeprecation(() => {
+        obj.trigger('event!', 'foo', 'bar');
+      }, /`trigger` is deprecated/);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(self, target);
@@ -112,12 +139,19 @@ moduleFor(
 
       let obj = EmberObject.extend(Evented).create();
 
-      obj.one('event!', target, 'fn');
-      obj.trigger('event!');
+      expectDeprecation(() => {
+        obj.one('event!', target, 'fn');
+      }, /`one` is deprecated/);
+
+      expectDeprecation(() => {
+        obj.trigger('event!');
+      }, /`trigger` is deprecated/);
 
       assert.equal(count, 1, 'the event was triggered');
 
-      obj.trigger('event!');
+      expectDeprecation(() => {
+        obj.trigger('event!');
+      }, /`trigger` is deprecated/);
 
       assert.equal(count, 1, 'the event was not triggered again');
     }
@@ -128,28 +162,54 @@ moduleFor(
       }.create();
       let F = function () {};
 
-      obj.one('event!', F);
-      obj.one('event!', obj, 'F');
+      expectDeprecation(() => {
+        obj.one('event!', F);
+      }, /`one` is deprecated/);
 
-      assert.equal(obj.has('event!'), true, 'has events');
+      expectDeprecation(() => {
+        obj.one('event!', obj, 'F');
+      }, /`one` is deprecated/);
 
-      obj.off('event!', F);
-      obj.off('event!', obj, 'F');
+      let objHas;
+      expectDeprecation(() => {
+        objHas = obj.has('event!');
+      }, /`has` is deprecated/);
+      assert.equal(objHas, true, 'has events');
 
-      assert.equal(obj.has('event!'), false, 'has no more events');
+      expectDeprecation(() => {
+        obj.off('event!', F);
+      }, /`off` is deprecated/);
+
+      expectDeprecation(() => {
+        obj.off('event!', obj, 'F');
+      }, /`off` is deprecated/);
+
+      expectDeprecation(() => {
+        objHas = obj.has('event!');
+      }, /`has` is deprecated/);
+
+      assert.equal(objHas, false, 'has no more events');
     }
 
     ['@test adding and removing listeners should be chainable'](assert) {
       let obj = EmberObject.extend(Evented).create();
       let F = function () {};
 
-      let ret = obj.on('event!', F);
+      let ret;
+
+      expectDeprecation(() => {
+        ret = obj.on('event!', F);
+      }, /`on` is deprecated/);
       assert.equal(ret, obj, '#on returns self');
 
-      ret = obj.off('event!', F);
+      expectDeprecation(() => {
+        ret = obj.off('event!', F);
+      }, /`off` is deprecated/);
       assert.equal(ret, obj, '#off returns self');
 
-      ret = obj.one('event!', F);
+      expectDeprecation(() => {
+        ret = obj.one('event!', F);
+      }, /`one` is deprecated/);
       assert.equal(ret, obj, '#one returns self');
     }
   }

@@ -1,4 +1,10 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
@@ -56,7 +62,9 @@ class AbstractAppendTest extends RenderingTestCase {
           }
           componentsByName[name] = this;
           pushHook('init');
-          this.on('init', () => pushHook('on(init)'));
+          expectDeprecation(() => {
+            this.on('init', () => pushHook('on(init)'));
+          }, /`on` is deprecated/);
         }
 
         didReceiveAttrs() {
@@ -299,7 +307,9 @@ class AbstractAppendTest extends RenderingTestCase {
             }
             componentsByName[name] = this;
             pushHook('init');
-            this.on('init', () => pushHook('on(init)'));
+            expectDeprecation(() => {
+              this.on('init', () => pushHook('on(init)'));
+            }, /`on` is deprecated/);
           }
 
           didReceiveAttrs() {
