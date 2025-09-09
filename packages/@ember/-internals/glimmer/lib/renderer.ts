@@ -227,6 +227,8 @@ class ClassicRootState {
 
       let result = (this.result = iterator.sync());
 
+      associateDestroyableChild(owner, result);
+
       // override .render function after initial render
       this.render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
     });
