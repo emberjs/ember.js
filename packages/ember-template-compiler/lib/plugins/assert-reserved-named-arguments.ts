@@ -1,3 +1,4 @@
 import { INTERNAL_PLUGINS } from '@ember/template-compiler/-internal-primitives';
+import type { ASTPluginBuilder } from '@glimmer/syntax';
 
-export default INTERNAL_PLUGINS.AssertReservedNamedArguments;
+export default INTERNAL_PLUGINS.AssertReservedNamedArguments as ASTPluginBuilder;

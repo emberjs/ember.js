@@ -86,4 +86,5 @@ export {
   isSearchDisabled as isNamespaceSearchDisabled,
   setSearchDisabled as setNamespaceSearchDisabled,
   setUnprocessedMixins,
+  type Namespace,
 } from './lib/namespace_search';
