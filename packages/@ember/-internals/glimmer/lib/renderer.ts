@@ -227,6 +227,8 @@ class ClassicRootState {
 
       let result = (this.result = iterator.sync());
 
+      associateDestroyableChild(owner, result);
+
       // override .render function after initial render
       this.render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
     });
@@ -647,6 +649,10 @@ export function renderComponent(
   }
 
   let innerResult = renderer.render(component, { into, args }).result;
+
+  if (innerResult) {
+    associateDestroyableChild(owner, innerResult);
+  }
 
   let result = {
     destroy() {
