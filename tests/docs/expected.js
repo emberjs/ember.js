@@ -403,7 +403,6 @@ module.exports = {
     'registerAsyncHelper',
     'registerDeprecationHandler',
     'registerDestructor',
-    'registeredActions',
     'registeredOption',
     'registeredOptions',
     'registeredOptionsForType',
