@@ -13,7 +13,7 @@ import type { SafeString as GlimmerSafeString } from '@glimmer/runtime';
   1. This does not *make* the string safe; it means that some code in your
      application has *marked* it as trusted using the `trustHTML()` function.
 
-  2. The only public API for getting a `TrutsedHTML` is calling `trustHTML()`. It
+  2. The only public API for getting a `TrustedHTML` is calling `trustHTML()`. It
      is *not* user-constructible.
 
   If a string contains user inputs or other untrusted data, you must sanitize
