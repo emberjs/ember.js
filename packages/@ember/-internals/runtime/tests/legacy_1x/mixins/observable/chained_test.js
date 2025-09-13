@@ -1,7 +1,12 @@
 import { addObserver } from '@ember/-internals/metal';
 import EmberObject, { get, set } from '@ember/object';
-import { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  emberAWithoutDeprecation,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -29,7 +34,7 @@ moduleFor(
       let child4 = EmberObject.create({ name: 'Nancy' });
 
       set(family, 'momma', momma);
-      set(momma, 'children', emberA([child1, child2, child3]));
+      set(momma, 'children', emberAWithoutDeprecation([child1, child2, child3]));
 
       let observerFiredCount = 0;
       addObserver(family, 'momma.children.@each.name', this, function () {
@@ -45,7 +50,9 @@ moduleFor(
       assert.equal(observerFiredCount, 3, 'observer fired after changing child names');
 
       observerFiredCount = 0;
-      get(momma, 'children').pushObject(child4);
+      expectDeprecation(() => {
+        get(momma, 'children').pushObject(child4);
+      }, /Usage of Ember.Array methods is deprecated/);
       await runLoopSettled();
 
       assert.equal(observerFiredCount, 1, 'observer fired after adding a new item');

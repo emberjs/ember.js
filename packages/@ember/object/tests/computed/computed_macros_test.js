@@ -17,8 +17,12 @@ import {
   or,
 } from '@ember/object/computed';
 import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
-import { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  emberAWithoutDeprecation as emberA,
+  AbstractTestCase,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   'CP macros',
@@ -37,7 +41,9 @@ moduleFor(
       assert.equal(get(obj, 'bestLannisterUnspecified'), true, 'bestLannister initially empty');
       assert.equal(get(obj, 'noLannistersKnown'), true, 'lannisters initially empty');
 
-      get(obj, 'lannisters').pushObject('Tyrion');
+      expectDeprecation(() => {
+        get(obj, 'lannisters').pushObject('Tyrion');
+      }, /Usage of Ember.Array methods is deprecated/);
       set(obj, 'bestLannister', 'Tyrion');
 
       assert.equal(get(obj, 'bestLannisterUnspecified'), false, 'empty respects strings');
@@ -58,7 +64,9 @@ moduleFor(
       assert.equal(get(obj, 'bestLannisterSpecified'), false, 'bestLannister initially empty');
       assert.equal(get(obj, 'LannistersKnown'), false, 'lannisters initially empty');
 
-      get(obj, 'lannisters').pushObject('Tyrion');
+      expectDeprecation(() => {
+        get(obj, 'lannisters').pushObject('Tyrion');
+      }, /Usage of Ember.Array methods is deprecated/);
       set(obj, 'bestLannister', 'Tyrion');
 
       assert.equal(get(obj, 'bestLannisterSpecified'), true, 'empty respects strings');

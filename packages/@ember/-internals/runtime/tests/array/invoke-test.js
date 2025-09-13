@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object';
 import { NativeArray } from '@ember/array';
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
 class InvokeTests extends AbstractTestCase {
@@ -22,11 +22,15 @@ class InvokeTests extends AbstractTestCase {
     ];
 
     obj = this.newObject(ary);
-    obj.invoke('foo');
+    expectDeprecation(() => {
+      obj.invoke('foo');
+    }, /Usage of Ember.Array methods is deprecated/);
     this.assert.equal(cnt, 3, 'should have invoked 3 times');
 
     cnt = 0;
-    obj.invoke('foo', 2);
+    expectDeprecation(() => {
+      obj.invoke('foo', 2);
+    }, /Usage of Ember.Array methods is deprecated/);
     this.assert.equal(cnt, 6, 'should have invoked 3 times, passing param');
   }
 
@@ -45,16 +49,24 @@ class InvokeTests extends AbstractTestCase {
       },
     ]);
 
-    let result = obj.invoke('foo');
+    let result;
+    expectDeprecation(() => {
+      result = obj.invoke('foo');
+    }, /Usage of Ember.Array methods is deprecated/);
     assert.deepEqual(result, ['one', undefined, 'two']);
   }
 
   '@test invoke should return an extended array (aka Ember.A)'(assert) {
     let obj = this.newObject([{ foo() {} }, { foo() {} }]);
 
-    let result = obj.invoke('foo');
+    let result;
+    expectDeprecation(() => {
+      result = obj.invoke('foo');
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    assert.ok(NativeArray.detect(result), 'NativeArray has been applied');
+    expectDeprecation(() => {
+      assert.ok(NativeArray.detect(result), 'NativeArray has been applied');
+    }, /Usage of EmberArray is deprecated/);
   }
 }
 
