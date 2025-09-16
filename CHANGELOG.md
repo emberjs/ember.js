@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.8.0-beta.3 (September 15, 2025)
+
+- [#20974](https://github.com/emberjs/ember.js/pull/20974) [BUGFIX] Fix issue with renderer's cleanup since the introduction of renderComponent
+
 ## v6.8.0-beta.2 (September 8, 2025)
 
 - [#20966](https://github.com/emberjs/ember.js/pull/20966) [BUGFIX] Correctly export `renderComponent` from `@ember/renderer`
