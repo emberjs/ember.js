@@ -1,8 +1,13 @@
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { alias, oneWay as reads } from '@ember/object/computed';
-import { A as emberA, isArray } from '@ember/array';
+import { isArray } from '@ember/array';
 import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  emberAWithoutDeprecation as emberA,
+  AbstractTestCase,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 function K() {
   return this;
@@ -423,13 +428,22 @@ moduleFor(
       n.set('options', emberA([{ value: 'foo' }]));
       assert.deepEqual(n.normalized, ['foo']);
 
-      n.options.pushObject({ value: 'bar' });
+      expectDeprecation(() => {
+        n.options.pushObject({ value: 'bar' });
+      }, /Usage of Ember.Array methods is deprecated/);
+
       assert.deepEqual(n.normalized, ['foo', 'bar']);
 
-      n.options.pushObject({ extra: 'wat', value: 'baz' });
+      expectDeprecation(() => {
+        n.options.pushObject({ extra: 'wat', value: 'baz' });
+      }, /Usage of Ember.Array methods is deprecated/);
+
       assert.deepEqual(n.normalized, ['foo', 'bar', 'baz']);
 
-      n.options.clear();
+      expectDeprecation(() => {
+        n.options.clear();
+      }, /Usage of Ember.Array methods is deprecated/);
+
       assert.deepEqual(n.normalized, []);
 
       n.set('options', [{ value: 'foo' }, { value: 'bar' }]);

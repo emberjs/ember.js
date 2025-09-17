@@ -50,6 +50,7 @@ import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
+import { emberAWithoutDeprecation } from 'internal-test-helpers';
 
 /**
 @module @ember/routing/router
@@ -1008,7 +1009,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     } else if (defaultType === 'number') {
       return Number(value).valueOf();
     } else if (defaultType === 'array') {
-      return emberA(JSON.parse(value as string));
+      return emberAWithoutDeprecation(JSON.parse(value as string));
     }
     return value;
   }
