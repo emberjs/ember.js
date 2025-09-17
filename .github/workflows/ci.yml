@@ -202,6 +202,9 @@ jobs:
   deploy-tag:
     name: Deploy tags to npm
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs:
       [
         basic-test,
