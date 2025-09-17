@@ -6,7 +6,8 @@ import {
   arrayContentDidChange,
   arrayContentWillChange,
 } from '@ember/-internals/metal';
-import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
+import { get, set, computed, observer as emberObserver } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import EmberArray, { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -14,7 +15,7 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = class extends EmberObject.extend(EmberArray) {
+const TestArray = class extends CoreObject.extend(EmberArray) {
   _content = null;
 
   init() {
@@ -50,7 +51,7 @@ moduleFor(
   'Ember.Array',
   class extends AbstractTestCase {
     ['@test the return value of slice has Ember.Array applied'](assert) {
-      let x = EmberObject.extend(EmberArray).create({
+      let x = CoreObject.extend(EmberArray).create({
         length: 0,
       });
       let y = x.slice(1);
@@ -80,7 +81,7 @@ moduleFor(
 // CONTENT DID CHANGE
 //
 
-class DummyArray extends EmberObject.extend(EmberArray) {
+class DummyArray extends CoreObject.extend(EmberArray) {
   length = 0;
   objectAt(idx) {
     return 'ITEM-' + idx;
@@ -194,7 +195,7 @@ moduleFor(
     beforeEach(assert) {
       obj = DummyArray.create();
 
-      observer = class extends EmberObject {
+      observer = class extends CoreObject {
         arrayWillChange() {
           assert.equal(this._before, null); // should only call once
           this._before = Array.prototype.slice.call(arguments);
@@ -286,7 +287,7 @@ moduleFor(
     async ['@test adding an object should notify (@each.isDone)'](assert) {
       let called = 0;
 
-      let observerObject = EmberObject.create({
+      let observerObject = CoreObject.create({
         wasCalled() {
           called++;
         },
@@ -295,7 +296,7 @@ moduleFor(
       addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
       ary.addObject(
-        EmberObject.create({
+        CoreObject.create({
           desc: 'foo',
           isDone: false,
         })
@@ -308,7 +309,7 @@ moduleFor(
     async ['@test using @each to observe arrays that does not return objects raise error'](assert) {
       let called = 0;
 
-      let observerObject = EmberObject.create({
+      let observerObject = CoreObject.create({
         wasCalled() {
           called++;
         },
@@ -342,7 +343,7 @@ moduleFor(
     ['@test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization'](
       assert
     ) {
-      let obj = class extends EmberObject {
+      let obj = class extends CoreObject {
         init() {
           super.init(...arguments);
           set(this, 'resources', emberA());
@@ -354,7 +355,7 @@ moduleFor(
         }
       }.create();
 
-      get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      get(obj, 'resources').pushObject(CoreObject.create({ common: 'HI!' }));
       assert.equal('HI!', get(obj, 'common'));
 
       set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
@@ -366,7 +367,7 @@ moduleFor(
     ) {
       let count = 0;
 
-      let obj = EmberObject.extend({
+      let obj = CoreObject.extend({
         init() {
           this._super(...arguments);
           // Observer does not fire on init
@@ -377,7 +378,7 @@ moduleFor(
       }).create();
 
       // Observer fires first time when new object is added
-      get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      get(obj, 'resources').pushObject(CoreObject.create({ common: 'HI!' }));
       await runLoopSettled();
 
       // Observer fires second time when property on an object is changed

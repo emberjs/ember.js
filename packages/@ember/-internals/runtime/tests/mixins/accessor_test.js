@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -7,7 +7,7 @@ moduleFor(
     ['@test works with getters'](assert) {
       let value = 'building';
 
-      let Base = class extends EmberObject {
+      let Base = class extends CoreObject {
         get foo() {
           if (value === 'building') {
             throw Error('base should not be called yet');
