@@ -1,8 +1,38 @@
-import { deprecate } from '@ember/debug';
-import type { TypeName } from '@ember/-internals/utils';
-import typeOfInternal from '@ember/-internals/utils/lib/type-of';
+// import CoreObject from '@ember/object/core';
 
-export type { TypeName };
+export type TypeName =
+  | 'undefined'
+  | 'null'
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'function'
+  | 'array'
+  | 'regexp'
+  | 'date'
+  | 'filelist'
+  | 'class'
+  | 'instance'
+  | 'error'
+  | 'object';
+
+// ........................................
+// TYPING & ARRAY MESSAGING
+//
+const TYPE_MAP: Record<string, TypeName> = {
+  '[object Boolean]': 'boolean',
+  '[object Number]': 'number',
+  '[object String]': 'string',
+  '[object Function]': 'function',
+  '[object AsyncFunction]': 'function',
+  '[object Array]': 'array',
+  '[object Date]': 'date',
+  '[object RegExp]': 'regexp',
+  '[object Object]': 'object',
+  '[object FileList]': 'filelist',
+} as const;
+
+const { toString } = Object.prototype;
 
 /**
  @module @ember/utils
@@ -62,19 +92,34 @@ export type { TypeName };
   ```
 
   @method typeOf
-  @for @ember/utils
+  @for @ember/-internals/utils
   @param item the item to check
   @return {String} the type
   @public
   @static
 */
 export default function typeOf(item: unknown): TypeName {
-  deprecate('typeOf is deprecated. Use @ember/legacy-utils instead.', false, {
-    for: 'ember-source',
-    id: 'ember-utils.deprecate-typeOf',
-    since: { available: '6.8.0' },
-    until: '7.0.0',
-  });
+  if (item === null) {
+    return 'null';
+  }
+  if (item === undefined) {
+    return 'undefined';
+  }
+  let ret = TYPE_MAP[toString.call(item)] || 'object';
 
-  return typeOfInternal(item);
+  if (ret === 'function') {
+    // if (CoreObject.detect(item)) {
+    //   ret = 'class';
+    // }
+  } else if (ret === 'object') {
+    if (item instanceof Error) {
+      ret = 'error';
+      // } else if (item instanceof CoreObject) {
+      //   ret = 'instance';
+    } else if (item instanceof Date) {
+      ret = 'date';
+    }
+  }
+
+  return ret;
 }
