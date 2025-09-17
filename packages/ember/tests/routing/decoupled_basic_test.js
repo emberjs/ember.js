@@ -13,6 +13,7 @@ import {
   ModuleBasedTestResolver,
   runDestroy,
   runTask,
+  expectDeprecation,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
@@ -879,7 +880,7 @@ moduleFor(
     }
 
     ['@test `activate` event fires on the route'](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       let eventFired = 0;
 
@@ -893,10 +894,12 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            this.on('activate', function (transition) {
-              assert.equal(++eventFired, 1, 'activate event is fired once');
-              assert.ok(transition, 'transition is passed to activate event');
-            });
+            expectDeprecation(() => {
+              this.on('activate', function (transition) {
+                assert.equal(++eventFired, 1, 'activate event is fired once');
+                assert.ok(transition, 'transition is passed to activate event');
+              });
+            }, /`on` is deprecated/);
           }
 
           activate(transition) {
@@ -910,7 +913,7 @@ moduleFor(
     }
 
     ['@test `deactivate` event fires on the route'](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       let eventFired = 0;
 
@@ -925,10 +928,12 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            this.on('deactivate', function (transition) {
-              assert.equal(++eventFired, 1, 'deactivate event is fired once');
-              assert.ok(transition, 'transition is passed');
-            });
+            expectDeprecation(() => {
+              this.on('deactivate', function (transition) {
+                assert.equal(++eventFired, 1, 'deactivate event is fired once');
+                assert.ok(transition, 'transition is passed');
+              });
+            }, /`on` is deprecated/);
           }
 
           deactivate(transition) {
