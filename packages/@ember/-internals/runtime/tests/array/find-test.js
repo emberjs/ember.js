@@ -1,5 +1,5 @@
 import EmberObject from '@ember/object';
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
 class FindTests extends AbstractTestCase {
@@ -43,8 +43,10 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', 'foo'), ary[0], 'findBy(foo)');
-    this.assert.equal(obj.findBy('bar', 'bar'), ary[1], 'findBy(bar)');
+    expectDeprecation(() => {
+      this.assert.equal(obj.findBy('foo', 'foo'), ary[0], 'findBy(foo)');
+      this.assert.equal(obj.findBy('bar', 'bar'), ary[1], 'findBy(bar)');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should return first object with truthy prop'() {
@@ -55,8 +57,10 @@ class FindByTests extends AbstractTestCase {
     obj = this.newObject(ary);
 
     // different values - all eval to true
-    this.assert.equal(obj.findBy('foo'), ary[0], 'findBy(foo)');
-    this.assert.equal(obj.findBy('bar'), ary[1], 'findBy(bar)');
+    expectDeprecation(() => {
+      this.assert.equal(obj.findBy('foo'), ary[0], 'findBy(foo)');
+      this.assert.equal(obj.findBy('bar'), ary[1], 'findBy(bar)');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should return first null property match'() {
@@ -66,8 +70,10 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', null), ary[0], "findBy('foo', null)");
-    this.assert.equal(obj.findBy('bar', null), ary[1], "findBy('bar', null)");
+    expectDeprecation(() => {
+      this.assert.equal(obj.findBy('foo', null), ary[0], "findBy('foo', null)");
+      this.assert.equal(obj.findBy('bar', null), ary[1], "findBy('bar', null)");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should return first undefined property match'() {
@@ -77,8 +83,10 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', undefined), ary[0], "findBy('foo', undefined)");
-    this.assert.equal(obj.findBy('bar', undefined), ary[1], "findBy('bar', undefined)");
+    expectDeprecation(() => {
+      this.assert.equal(obj.findBy('foo', undefined), ary[0], "findBy('foo', undefined)");
+      this.assert.equal(obj.findBy('bar', undefined), ary[1], "findBy('bar', undefined)");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 }
 

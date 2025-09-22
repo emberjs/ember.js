@@ -2,15 +2,28 @@
 @module @ember/object
 */
 import { DEBUG } from '@glimmer/env';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
 import { computed, get } from '@ember/object';
 import { compare } from '@ember/utils';
 import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
 import type { NativeArray } from '@ember/array';
+import { disableDeprecations as disableArrayDeprecations } from '@ember/array/-internals';
+import { disableDeprecations as disableMixinDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
+
+let deprecationsAreDisabled = false;
+function disableDeprecations<T>(callback: () => T): T {
+  const original = deprecationsAreDisabled;
+  deprecationsAreDisabled = true;
+  try {
+    return callback();
+  } finally {
+    deprecationsAreDisabled = original;
+  }
+}
 
 function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
-  return Array.isArray(obj) || EmberArray.detect(obj);
+  return Array.isArray(obj) || disableMixinDeprecations(() => EmberArray.detect(obj));
 }
 
 function reduceMacro(
@@ -48,12 +61,14 @@ function arrayMacro(
   }
 
   return computed(dependentKey, ...additionalDependentKeys, function () {
-    let value = get(this, propertyName);
-    if (isNativeOrEmberArray(value)) {
-      return emberA(callback.call(this, value));
-    } else {
-      return emberA();
-    }
+    return disableArrayDeprecations(() => {
+      let value = get(this, propertyName);
+      if (isNativeOrEmberArray(value)) {
+        return emberA(callback.call(this, value));
+      } else {
+        return emberA();
+      }
+    });
   }).readOnly() as PropertyDecorator;
 }
 
@@ -69,7 +84,7 @@ function multiArrayMacro(
   let dependentKeys = _dependentKeys.map((key) => `${key}.[]`);
 
   return computed(...dependentKeys, function () {
-    return emberA(callback.call(this, _dependentKeys));
+    return disableArrayDeprecations(() => emberA(callback.call(this, _dependentKeys)));
   }).readOnly() as PropertyDecorator;
 }
 
@@ -102,6 +117,13 @@ function multiArrayMacro(
   @public
 */
 export function sum(dependentKey: string) {
+  deprecate('The @sum decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.sum-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @sum as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -166,6 +188,13 @@ export function sum(dependentKey: string) {
   @public
 */
 export function max(dependentKey: string) {
+  deprecate('The @max decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.max-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @max as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -229,6 +258,13 @@ export function max(dependentKey: string) {
   @public
 */
 export function min(dependentKey: string) {
+  deprecate('The @min decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.min-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @min as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -326,6 +362,17 @@ export function map(
   additionalDependentKeysOrCallback: string[] | ((value: unknown, index: number) => unknown),
   callback?: (value: unknown, index: number) => unknown
 ): PropertyDecorator {
+  deprecate(
+    'The @map decorator is deprecated. Use TrackedArray with native getters.',
+    deprecationsAreDisabled,
+    {
+      for: 'ember-source',
+      id: 'ember-object.map-deprecated',
+      since: { available: '7.9.0' },
+      until: '8.0.0',
+    }
+  );
+
   assert(
     'You attempted to use @map as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -410,6 +457,13 @@ export function map(
   @public
 */
 export function mapBy(dependentKey: string, propertyKey: string) {
+  deprecate('The @mapBy decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.mapBy-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @mapBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -425,7 +479,9 @@ export function mapBy(dependentKey: string, propertyKey: string) {
     !/[[\]{}]/g.test(dependentKey)
   );
 
-  return map(`${dependentKey}.@each.${propertyKey}`, (item) => get(item, propertyKey));
+  return disableDeprecations(() =>
+    map(`${dependentKey}.@each.${propertyKey}`, (item) => get(item, propertyKey))
+  );
 }
 
 /**
@@ -552,6 +608,17 @@ export function filter(
     | ((value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown),
   callback?: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
 ): PropertyDecorator {
+  deprecate(
+    'The @filter decorator is deprecated. Use TrackedArray with native getters.',
+    deprecationsAreDisabled,
+    {
+      for: 'ember-source',
+      id: 'ember-object.filter-deprecated',
+      since: { available: '7.9.0' },
+      until: '8.0.0',
+    }
+  );
+
   assert(
     'You attempted to use @filter as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -634,6 +701,13 @@ export function filter(
   @public
 */
 export function filterBy(dependentKey: string, propertyKey: string, value?: unknown) {
+  deprecate('The @filterBy decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.filterBy-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @filterBy as a decorator directly, but it requires atleast `dependentKey` and `propertyKey` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -644,14 +718,14 @@ export function filterBy(dependentKey: string, propertyKey: string, value?: unkn
     !/[[\]{}]/g.test(dependentKey)
   );
 
-  let callback;
+  let callback: (item: unknown) => unknown;
   if (arguments.length === 2) {
     callback = (item: unknown) => get(item, propertyKey);
   } else {
     callback = (item: unknown) => get(item, propertyKey) === value;
   }
 
-  return filter(`${dependentKey}.@each.${propertyKey}`, callback);
+  return disableDeprecations(() => filter(`${dependentKey}.@each.${propertyKey}`, callback));
 }
 
 /**
@@ -694,8 +768,19 @@ export function uniq(
   dependentKey: string,
   ...additionalDependentKeys: string[]
 ): PropertyDecorator {
+  deprecate(
+    'The @uniq/@union decorator is deprecated. Use TrackedArray with native getters.',
+    false,
+    {
+      for: 'ember-source',
+      id: 'ember-object.uniq-deprecated',
+      since: { available: '7.9.0' },
+      until: '8.0.0',
+    }
+  );
+
   assert(
-    'You attempted to use @uniq/@union as a decorator directly, but it requires atleast one dependent key parameter',
+    'You attempted to use @uniq/@union as a decorator directly, but it requires at least one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -704,7 +789,7 @@ export function uniq(
   return multiArrayMacro(
     args,
     function (this: unknown, dependentKeys) {
-      let uniq = emberA();
+      let uniq = disableArrayDeprecations(() => emberA());
       let seen = new Set();
 
       dependentKeys.forEach((dependentKey) => {
@@ -763,6 +848,13 @@ export function uniq(
   @public
 */
 export function uniqBy(dependentKey: string, propertyKey: string) {
+  deprecate('The @uniqBy decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.uniqBy-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @uniqBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -775,7 +867,9 @@ export function uniqBy(dependentKey: string, propertyKey: string) {
 
   return computed(`${dependentKey}.[]`, function () {
     let list = get(this, dependentKey);
-    return isNativeOrEmberArray(list) ? uniqByArray(list, propertyKey) : emberA();
+    return disableArrayDeprecations(() =>
+      isNativeOrEmberArray(list) ? uniqByArray(list, propertyKey) : emberA()
+    );
   }).readOnly() as PropertyDecorator;
 }
 
@@ -862,6 +956,17 @@ export let union = uniq;
   @public
 */
 export function intersect(dependentKey: string, ...additionalDependentKeys: string[]) {
+  deprecate(
+    'The @intersect decorator is deprecated. Use TrackedArray with native getters.',
+    false,
+    {
+      for: 'ember-source',
+      id: 'ember-object.intersect-deprecated',
+      since: { available: '7.9.0' },
+      until: '8.0.0',
+    }
+  );
+
   assert(
     'You attempted to use @intersect as a decorator directly, but it requires atleast one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -951,6 +1056,13 @@ export function intersect(dependentKey: string, ...additionalDependentKeys: stri
   @public
 */
 export function setDiff(setAProperty: string, setBProperty: string) {
+  deprecate('The @setDiff decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.setDiff-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @setDiff as a decorator directly, but it requires atleast one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -1002,6 +1114,7 @@ export function setDiff(setAProperty: string, setBProperty: string) {
 
   @method collect
   @for @ember/object/computed
+  @deprecated Use TrackedArray with native getters
   @static
   @param {String} dependentKey*
   @return {ComputedProperty} computed property which maps values of all passed
@@ -1009,6 +1122,13 @@ export function setDiff(setAProperty: string, setBProperty: string) {
   @public
 */
 export function collect(dependentKey: string, ...additionalDependentKeys: string[]) {
+  deprecate('The @collect decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.collect-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @collect as a decorator directly, but it requires atleast one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -1186,6 +1306,13 @@ export function sort(
   additionalDependentKeysOrDefinition: SortDefinition | string | string[],
   sortDefinition?: SortDefinition
 ): PropertyDecorator {
+  deprecate('The @sort decorator is deprecated. Use TrackedArray with native getters.', false, {
+    for: 'ember-source',
+    id: 'ember-object.sort-deprecated',
+    since: { available: '7.9.0' },
+    until: '8.0.0',
+  });
+
   assert(
     'You attempted to use @sort as a decorator directly, but it requires atleast an `itemsKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -1260,11 +1387,12 @@ function propertySort(itemsKey: string, sortPropertiesKey: string): PropertyDeco
 
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
     if (!isNativeOrEmberArray(items)) {
-      return emberA();
+      return disableArrayDeprecations(() => emberA());
     }
 
     if (normalizedSortProperties.length === 0) {
-      return emberA(items.slice());
+      const arrayItems = items;
+      return disableArrayDeprecations(() => emberA(arrayItems.slice()));
     } else {
       return sortByNormalizedSortProperties(items, normalizedSortProperties);
     }
@@ -1291,15 +1419,17 @@ function sortByNormalizedSortProperties(
   items: unknown[] | EmberArray<unknown>,
   normalizedSortProperties: [prop: string, direction: string][]
 ) {
-  return emberA(
-    items.slice().sort((itemA: unknown, itemB: unknown) => {
-      for (let [prop, direction] of normalizedSortProperties) {
-        let result = compare(get(itemA, prop), get(itemB, prop));
-        if (result !== 0) {
-          return direction === 'desc' ? -1 * result : result;
+  return disableArrayDeprecations(() =>
+    emberA(
+      items.slice().sort((itemA: unknown, itemB: unknown) => {
+        for (let [prop, direction] of normalizedSortProperties) {
+          let result = compare(get(itemA, prop), get(itemB, prop));
+          if (result !== 0) {
+            return direction === 'desc' ? -1 * result : result;
+          }
         }
-      }
-      return 0;
-    })
+        return 0;
+      })
+    )
   );
 }

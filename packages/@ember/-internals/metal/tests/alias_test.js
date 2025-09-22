@@ -10,7 +10,12 @@ import {
 } from '..';
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+} from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 import { valueForTag, validateTag } from '@glimmer/validator';
 
@@ -70,11 +75,21 @@ moduleFor(
     }
 
     ['@test nested aliases should trigger computed property invalidation [GH#19279]'](assert) {
+      let additives;
+      expectDeprecation(() => {
+        additives = A();
+      }, /Usage of Ember.A is deprecated/);
+
       let AttributeModel = class extends EmberObject {
         @alias('additives.length')
         countAdditives;
-        additives = A();
+        additives = additives;
       };
+
+      let metaAttributes;
+      expectDeprecation(() => {
+        metaAttributes = A([AttributeModel.create()]);
+      }, /Usage of Ember.A is deprecated/);
 
       let RootModel = class extends EmberObject {
         @computed('metaAttributes.@each.countAdditives')
@@ -83,12 +98,14 @@ moduleFor(
             return acc.concat(el.additives);
           }, []);
         }
-        metaAttributes = A([AttributeModel.create()]);
+        metaAttributes = metaAttributes;
       };
 
       let model = RootModel.create();
       assert.equal(model.allAdditives.length, 0);
-      model.metaAttributes[0].additives.pushObject('foo');
+      expectDeprecation(() => {
+        model.metaAttributes[0].additives.pushObject('foo');
+      }, /Usage of Ember.Array methods is deprecated/);
       assert.equal(model.allAdditives.length, 1);
     }
 
