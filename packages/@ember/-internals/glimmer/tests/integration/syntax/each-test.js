@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  applyMixins,
+  strip,
+  runTask,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 import { notifyPropertyChange, on } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
@@ -1121,11 +1128,14 @@ moduleFor(
   class extends EachTest {
     createList(items) {
       let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        setup: on('init', function () {
-          this.set('content', emberA(wrapped));
-        }),
-      }).create();
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.extend({
+          setup: on('init', function () {
+            this.set('content', emberA(wrapped));
+          }),
+        }).create();
+      }, /`on` is deprecated/);
 
       return { list: proxy, delegate: wrapped };
     }

@@ -1,4 +1,6 @@
 import { addListener, removeListener, hasListeners, sendEvent } from '@ember/-internals/metal';
+import { setDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
+import { deprecate } from '@ember/debug';
 import Mixin from '@ember/object/mixin';
 
 export { on } from '@ember/-internals/metal';
@@ -46,6 +48,7 @@ export { on } from '@ember/-internals/metal';
 
   @class Evented
   @public
+  @deprecated Use native JavaScript events or a dedicated event library instead.
  */
 interface Evented {
   /**
@@ -63,6 +66,7 @@ interface Evented {
     parameter is used the callback method becomes the third argument.
 
     @method on
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object} [target] The "this" binding for the callback
     @param {Function|String} method A function or the name of a function to be called on `target`
@@ -85,6 +89,7 @@ interface Evented {
     becomes the third argument.
 
     @method one
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object} [target] The "this" binding for the callback
     @param {Function|String} method A function or the name of a function to be called on `target`
@@ -113,6 +118,7 @@ interface Evented {
     ```
 
     @method trigger
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object...} args Optional arguments to pass on
     @public
@@ -122,6 +128,7 @@ interface Evented {
     Cancels subscription for given name, target, and method.
 
     @method off
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object} target The target of the subscription
     @param {Function|String} method The function or the name of a function of the subscription
@@ -138,6 +145,7 @@ interface Evented {
     Checks to see if object has any subscriptions for named event.
 
     @method has
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @return {Boolean} does the object have a subscription for event
     @public
@@ -146,26 +154,87 @@ interface Evented {
 }
 const Evented = Mixin.create({
   on(name: string, target: object, method?: string | Function) {
+    deprecate(
+      '`on` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      false,
+      {
+        for: 'ember-source',
+        id: 'ember-evented',
+        since: { available: '6.8.0' },
+        until: '7.0.0',
+      }
+    );
     addListener(this, name, target, method);
     return this;
   },
 
   one(name: string, target: object, method?: string | Function) {
+    deprecate(
+      '`one` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      false,
+      {
+        for: 'ember-source',
+        id: 'ember-evented',
+        since: { available: '6.8.0' },
+        until: '7.0.0',
+      }
+    );
     addListener(this, name, target, method, true);
     return this;
   },
 
   trigger(name: string, ...args: any[]) {
+    deprecate(
+      '`trigger` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      false,
+      {
+        for: 'ember-source',
+        id: 'ember-evented',
+        since: { available: '6.8.0' },
+        until: '7.0.0',
+      }
+    );
     sendEvent(this, name, args);
   },
 
   off(name: string, target: object, method?: string | Function) {
+    deprecate(
+      '`off` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      false,
+      {
+        for: 'ember-source',
+        id: 'ember-evented',
+        since: { available: '6.8.0' },
+        until: '7.0.0',
+      }
+    );
     removeListener(this, name, target, method);
     return this;
   },
 
   has(name: string) {
+    deprecate(
+      '`has` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      false,
+      {
+        for: 'ember-source',
+        id: 'ember-evented',
+        since: { available: '6.8.0' },
+        until: '7.0.0',
+      }
+    );
     return hasListeners(this, name);
+  },
+});
+
+setDeprecation(Evented, {
+  message:
+    'Evented mixin is deprecated. Use native JavaScript events or a dedicated event library instead.',
+  options: {
+    for: 'ember-source',
+    id: 'ember-evented',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
   },
 });
 
