@@ -8,7 +8,8 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
-import EmberObject, { get, computed } from '@ember/object';
+import { get, computed } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {
@@ -31,7 +32,7 @@ export function newObjectsFixture(cnt) {
   return ret;
 }
 
-const ArrayTestsObserverClass = class extends EmberObject {
+const ArrayTestsObserverClass = class extends CoreObject {
   init() {
     super.init(...arguments);
     this.isEnabled = true;
@@ -168,7 +169,7 @@ class ArrayProxyHelpers extends AbstractArrayHelper {
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = EmberObject.extend(EmberArray, {
+const TestArray = CoreObject.extend(EmberArray, {
   _content: null,
 
   init() {
@@ -204,7 +205,7 @@ const TestArray = EmberObject.extend(EmberArray, {
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestMutableArray = EmberObject.extend(MutableArray, {
+const TestMutableArray = CoreObject.extend(MutableArray, {
   _content: null,
 
   init(ary = []) {
