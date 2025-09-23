@@ -7,7 +7,6 @@ jobs:
   contrib-readme-job:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       pull-requests: write
 
     steps:
