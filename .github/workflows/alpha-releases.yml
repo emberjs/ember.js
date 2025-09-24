@@ -28,6 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+        with:
+          node-version: '20'
       - name: setup git
         run: |
           git config --local user.email 'tomster@emberjs.com'
