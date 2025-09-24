@@ -5,10 +5,6 @@ on:
     - cron: '0 20 * * 3' # weekly (Wednesday)
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
   test:
     name: Basic Test
@@ -24,6 +20,7 @@ jobs:
   release:
     permissions:
       contents: write # to push tag
+      id-token: write
 
     name: Tag + Release
     runs-on: ubuntu-latest
@@ -51,8 +48,6 @@ jobs:
         run: node bin/build-for-publishing.js
       - name: publish to npm
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - name: push tag
         # Push in a way that will NOT trigger other workflows
         run: git push origin v${{env.NEXT_ALPHA}}-ember-source
