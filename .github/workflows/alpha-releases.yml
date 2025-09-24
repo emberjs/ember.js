@@ -30,6 +30,8 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           node-version: '20'
+      - name: Update npm
+        run: npm install -g npm@latest # npm >= 11.5.1 is needed
       - name: setup git
         run: |
           git config --local user.email 'tomster@emberjs.com'
