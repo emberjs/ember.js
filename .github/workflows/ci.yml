@@ -11,8 +11,6 @@ on:
       - lts*
       # nightly ci cron branches
       - cron*
-    tags:
-      - 'v*'
     paths-ignore:
       - 'CHANGELOG.md'
   pull_request:
@@ -21,221 +19,12 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Linting
-    runs-on: ubuntu-latest
-    outputs:
-       matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: linting
-        run: pnpm lint
-      - id: set-matrix
-        working-directory: smoke-tests/scenarios
-        run: |
-          matrix_json=$(pnpm scenario-tester list --require @swc-node/register --files "*-test.ts" --matrix "pnpm run test --filter %s"   )
-          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
-
-  types:
-    name: Type Checking (current version)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build types
-        run: pnpm build:types
-      - name: Check published and internal types
-        run: pnpm type-check
-
-  types-range:
-    name: Type Checking (other supported versions)
-    runs-on: ubuntu-latest
-    needs: ['types']
-    strategy:
-      matrix:
-        ts-version: ['5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build stable type definitions
-        run: pnpm build:types
-      - name: install TS@${{matrix.ts-version}}
-        run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
-      - name: Check published and internal types with TS@${{matrix.ts-version}}
-        run: pnpm type-check
-
-  basic-test:
-    name: Basic Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build
-        run: pnpm vite build --mode=development
-      - name: test
-        run: pnpm test
-
-  variant-tests:
-    name: ${{ matrix.name }}
-    runs-on: ubuntu-latest
-    needs: [basic-test, lint, types]
-    strategy:
-      matrix:
-        include:
-          - name: "All deprecations enabled"
-            ALL_DEPRECATIONS_ENABLED: "true"
-          - name: "All deprecations enabled, with optional features"
-            ALL_DEPRECATIONS_ENABLED: "true"
-            ENABLE_OPTIONAL_FEATURES: "true"
-          - name: "Deprecations as errors"
-            OVERRIDE_DEPRECATION_VERSION: "15.0.0"
-          - name: "Deprecations as errors, with optional features"
-            OVERRIDE_DEPRECATION_VERSION: "15.0.0"
-            ENABLE_OPTIONAL_FEATURES: "true"
-          - name: "Production build"
-            BUILD: "production"
-          - name: "Production build, with optional features"
-            BUILD: "production"
-            ENABLE_OPTIONAL_FEATURES: "true"
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build
-        run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
-      - name: test
-        env:
-          ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
-          OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
-          ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
-          RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
-
-        run: pnpm test
-
-  browserstack-test:
-    name: Browserstack Tests (Safari, Edge)
-    runs-on: ubuntu-latest
-    needs: [basic-test, lint, types]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build
-        env:
-          ALL_SUPPORTED_BROWSERS: true
-        run: pnpm vite build --mode=development
-
-      - name: Set BrowserStack Local Identifier
-        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-ember-source')
-        run: |
-          BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
-
-      - name: test:browserstack
-        env:
-          BROWSERSTACK_USERNAME: emberjscoreteam1
-          # This is in plaintext on purpose. It has no privileged access to anything (this is a free
-          # account) and it allows us to run browserstack tests against PRs.
-          BROWSERSTACK_ACCESS_KEY: o5LNEdygq1SP4L9kst4s
-        run: pnpm test:browserstack
-
-  smoke-test:
-    name: Smoke tests (Full Ember Apps)
-    runs-on: ubuntu-latest
-    needs: [basic-test, lint, types]
-    strategy:
-       fail-fast: false
-       matrix: ${{fromJson(needs.lint.outputs.matrix)}}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-        with:
-          use_lockfile: "false"
-      - name: build
-        run: pnpm build
-      - name: test
-        working-directory: smoke-tests/scenarios
-        run: |
-          ${{ matrix.command }}
-
-  node-test:
-    name: Node.js Tests
-    runs-on: ubuntu-latest
-    needs: [basic-test, lint, types]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build
-        env:
-          SHOULD_TRANSPILE_FOR_NODE: true
-        run: pnpm build
-      - name: test
-        run: pnpm test:node
-
-  blueprint-test:
-    name: Blueprint Tests
-    runs-on: ubuntu-latest
-    needs: [lint]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: test
-        run: pnpm test:blueprints
-
-  browser-test:
-    name: Browser Tests (Firefox)
-    runs-on: ubuntu-22.04 # Firefox is not installing on Ubuntu 24 on GitHub Actions https://github.com/browser-actions/setup-firefox/issues/622
-    needs: [basic-test, lint, types]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build
-        run: pnpm vite build --mode=development
-      - name: Setup firefox
-        uses: browser-actions/setup-firefox@latest
-        with:
-          firefox-version: 115.9.1esr
-      - run: firefox --version
-      - name: test
-        run: pnpm ember test --path dist -c testem.ci-browsers.js
-
-  deploy-tag:
-    name: Deploy tags to npm
-    runs-on: ubuntu-latest
-    needs:
-      [
-        basic-test,
-        lint,
-        variant-tests,
-        browserstack-test,
-        node-test,
-        blueprint-test,
-        browser-test,
-      ]
-    if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-ember-source')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - name: build for publish
-        run: node bin/build-for-publishing.js
-      - name: publish to npm
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-
+  ci:
+    uses: ./.github/workflows/ci-jobs.yml
   publish:
     name: Publish channel to s3
     runs-on: ubuntu-latest
-    needs:
-      [
-        basic-test,
-        lint,
-        variant-tests,
-        browserstack-test,
-        node-test,
-        blueprint-test,
-        browser-test,
-      ]
+    needs: [ci]
     # Only run on pushes to branches that are not from the cron workflow
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
@@ -253,16 +42,7 @@ jobs:
   publish-alpha:
     name: Publish alpha from default branch
     runs-on: ubuntu-latest
-    needs:
-      [
-        basic-test,
-        lint,
-        variant-tests,
-        browserstack-test,
-        node-test,
-        blueprint-test,
-        browser-test,
-      ]
+    needs: [ ci ]
     # Only run on pushes to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
@@ -282,16 +62,7 @@ jobs:
   notify:
     name: Notify Discord
     runs-on: ubuntu-latest
-    needs:
-      [
-        basic-test,
-        lint,
-        variant-tests,
-        browserstack-test,
-        node-test,
-        blueprint-test,
-        browser-test,
-      ]
+    needs: [ ci ]
     if: failure() && contains(github.ref, 'cron') == true
     steps:
       - uses: sarisia/actions-status-discord@v1
