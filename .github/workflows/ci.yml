@@ -19,12 +19,12 @@ permissions:
   contents: read
 
 jobs:
-  ci:
+  tests:
     uses: ./.github/workflows/ci-jobs.yml
   publish:
     name: Publish channel to s3
     runs-on: ubuntu-latest
-    needs: [ci]
+    needs: [ tests ]
     # Only run on pushes to branches that are not from the cron workflow
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
@@ -42,7 +42,7 @@ jobs:
   publish-alpha:
     name: Publish alpha from default branch
     runs-on: ubuntu-latest
-    needs: [ ci ]
+    needs: [ tests ]
     # Only run on pushes to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
@@ -62,7 +62,7 @@ jobs:
   notify:
     name: Notify Discord
     runs-on: ubuntu-latest
-    needs: [ ci ]
+    needs: [ tests ]
     if: failure() && contains(github.ref, 'cron') == true
     steps:
       - uses: sarisia/actions-status-discord@v1
