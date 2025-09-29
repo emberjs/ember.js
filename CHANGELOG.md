@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.8.0-beta.4 (September 29, 2025)
+
+- [#20988](https://github.com/emberjs/ember.js/pull/20988) [BUGFIX] Drop unnecessary package ember-cli-htmlbars-inline-precompile from component-test blueprint
+
 ## v6.8.0-beta.3 (September 15, 2025)
 
 - [#20974](https://github.com/emberjs/ember.js/pull/20974) [BUGFIX] Fix issue with renderer's cleanup since the introduction of renderComponent
