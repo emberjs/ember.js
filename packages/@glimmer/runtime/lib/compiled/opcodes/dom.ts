@@ -147,12 +147,11 @@ APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
 });
 
 APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
+  let args = check(vm.stack.pop(), CheckArguments);
   if (!vm.env.isInteractive) {
     return;
   }
-
   let owner = vm.getOwner();
-  let args = check(vm.stack.pop(), CheckArguments);
   let definition = vm.constants.getValue<ModifierDefinition>(handle);
 
   let { manager } = definition;
@@ -189,13 +188,14 @@ APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
 });
 
 APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
+  let { stack } = vm;
+  let ref = check(stack.pop(), CheckReference);
+  let args = check(stack.pop(), CheckArguments).capture();
+
   if (!vm.env.isInteractive) {
     return;
   }
 
-  let { stack } = vm;
-  let ref = check(stack.pop(), CheckReference);
-  let args = check(stack.pop(), CheckArguments).capture();
   let { positional: outerPositional, named: outerNamed } = args;
 
   let { constructing } = vm.tree();
