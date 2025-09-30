@@ -449,6 +449,9 @@ function normalizeSpecifier(moduleName, specifier) {
   } else if (specifier.startsWith('./')) {
     let parentModuleName = moduleName.replace(TERMINAL_MODULE_RE, '');
     let sansLeadingDot = specifier.replace(NEIGHBOR_PATH_RE, '');
+    if (sansLeadingDot.endsWith('.d.ts')) {
+      sansLeadingDot = sansLeadingDot.slice(0, -5);
+    }
     let newImportName = `${parentModuleName}/${sansLeadingDot}`;
     return newImportName;
   } else if (specifier.startsWith('../')) {

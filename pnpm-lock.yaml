@@ -106,6 +106,9 @@ importers:
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.21.0
+      '@glimmer/component':
+        specifier: workspace:*
+        version: link:packages/@glimmer/component
       '@rollup/plugin-babel':
         specifier: ^6.0.4
         version: 6.0.4(@babel/core@7.26.9)(rollup@4.34.8)
