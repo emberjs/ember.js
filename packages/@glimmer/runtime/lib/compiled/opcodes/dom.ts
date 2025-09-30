@@ -190,13 +190,15 @@ APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
 APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
   let { stack } = vm;
   let ref = check(stack.pop(), CheckReference);
-  let args = check(stack.pop(), CheckArguments).capture();
+  let args = check(stack.pop(), CheckArguments);
 
   if (!vm.env.isInteractive) {
     return;
   }
 
-  let { positional: outerPositional, named: outerNamed } = args;
+  let capturedArgs = args.capture();
+
+  let { positional: outerPositional, named: outerNamed } = capturedArgs;
 
   let { constructing } = vm.tree();
   let initialOwner = vm.getOwner();
@@ -223,12 +225,12 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
       owner = curriedOwner;
 
       if (positional !== undefined) {
-        args.positional = positional.concat(outerPositional) as CapturedPositionalArguments;
+        capturedArgs.positional = positional.concat(outerPositional) as CapturedPositionalArguments;
       }
 
       if (named !== undefined) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        args.named = Object.assign({}, ...named, outerNamed);
+        capturedArgs.named = Object.assign({}, ...named, outerNamed);
       }
     } else {
       hostDefinition = value;
@@ -261,7 +263,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
       owner,
       expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
       definition.state,
-      args
+      capturedArgs
     );
 
     return {
@@ -280,7 +282,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
       'BUG: ElementModifier could not find operations to append to'
     );
 
-    operations.addModifier(vm, instance, args);
+    operations.addModifier(vm, instance, capturedArgs);
 
     tag = instance.manager.getTag(instance.state);
 
