@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "6.8.0-alpha.1",
+  "version": "6.9.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -224,7 +224,6 @@
       "@ember/-internals/views/lib/compat/fallback-view-registry.js": "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
       "@ember/-internals/views/lib/component_lookup.js": "ember-source/@ember/-internals/views/lib/component_lookup.js",
       "@ember/-internals/views/lib/mixins/action_support.js": "ember-source/@ember/-internals/views/lib/mixins/action_support.js",
-      "@ember/-internals/views/lib/system/action_manager.js": "ember-source/@ember/-internals/views/lib/system/action_manager.js",
       "@ember/-internals/views/lib/system/event_dispatcher.js": "ember-source/@ember/-internals/views/lib/system/event_dispatcher.js",
       "@ember/-internals/views/lib/system/utils.js": "ember-source/@ember/-internals/views/lib/system/utils.js",
       "@ember/-internals/views/lib/views/core_view.js": "ember-source/@ember/-internals/views/lib/views/core_view.js",
@@ -282,6 +281,7 @@
       "@ember/object/promise-proxy-mixin.js": "ember-source/@ember/object/promise-proxy-mixin.js",
       "@ember/object/proxy.js": "ember-source/@ember/object/proxy.js",
       "@ember/owner/index.js": "ember-source/@ember/owner/index.js",
+      "@ember/reactive/collections.js": "ember-source/@ember/reactive/collections.js",
       "@ember/reactive/index.js": "ember-source/@ember/reactive/index.js",
       "@ember/renderer/index.js": "ember-source/@ember/renderer/index.js",
       "@ember/routing/-internals.js": "ember-source/@ember/routing/-internals.js",

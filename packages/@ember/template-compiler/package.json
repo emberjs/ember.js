@@ -19,5 +19,8 @@
     "@glimmer/opcode-compiler": "workspace:*",
     "@glimmer/syntax": "workspace:*",
     "expect-type": "^0.15.0"
+  },
+  "devDependencies": {
+     "internal-test-helpers": "workspace:*"
   }
 }

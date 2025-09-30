@@ -113,9 +113,6 @@ d('@ember/-internals/views/lib/component_lookup', emberinternalsViewsLibComponen
 import * as emberinternalsViewsLibMixinsActionSupport from '@ember/-internals/views/lib/mixins/action_support';
 d('@ember/-internals/views/lib/mixins/action_support', emberinternalsViewsLibMixinsActionSupport);
 
-import * as emberinternalsViewsLibSystemActionManager from '@ember/-internals/views/lib/system/action_manager';
-d('@ember/-internals/views/lib/system/action_manager', emberinternalsViewsLibSystemActionManager);
-
 import * as emberinternalsViewsLibSystemEventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 d(
   '@ember/-internals/views/lib/system/event_dispatcher',

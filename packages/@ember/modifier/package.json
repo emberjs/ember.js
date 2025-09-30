@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
+    "@ember/owner": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/runtime": "workspace:*"
   }

@@ -1,6 +1,18 @@
 # Ember Changelog
 
-## v6.7.0-beta.1 (July 21, 2025)
+## v6.8.0-beta.2 (September 8, 2025)
+
+- [#20966](https://github.com/emberjs/ember.js/pull/20966) [BUGFIX] Correctly export `renderComponent` from `@ember/renderer`
+
+## v6.8.0-beta.1 (September 1, 2025)
+
+- [#20950](https://github.com/emberjs/ember.js/pull/20950) / [#20961](https://github.com/emberjs/ember.js/pull/20961) / [#20963](https://github.com/emberjs/ember.js/pull/20963) [FEATURE] Upgrade glimmer-vm to build in Tracked Collections (previously provided by `tracked-built-ins`) per [RFC #1068](https://rfcs.emberjs.com/id/1068-tracked-collections).
+  - [WARNING] Drops support for TS 5.0 and TS 5.1 under our [TS Support policy](https://emberjs.com/typescript-support/)
+- [#20962](https://github.com/emberjs/ember.js/pull/20962) [FEATURE] Add `renderComponent` per [RFC #1099](https://rfcs.emberjs.com/id/1099-renderComponent).
+- [#20957](https://github.com/emberjs/ember.js/pull/20957) / [#20960](https://github.com/emberjs/ember.js/pull/20960) Add TS 5.8, 5.9 to the TS test matrix
+- [#20949](https://github.com/emberjs/ember.js/pull/20949) [INTERNAL] Add a workflow to generate api docs and open PRs to the api docs data repo
+
+## v6.7.0 (September  1, 2025)
 
 - [#20939](https://github.com/emberjs/ember.js/pull/20939) [ENHANCEMENT] Add `import { trustHTML } from '@ember/template';` as an alias of `import { htmlSafe } from '@ember/template', for naming that better matches the behavior.
 - [#20941](https://github.com/emberjs/ember.js/pull/20941) [CLEANUP] Remove code from `deprecate-array-prototype-extensions` deprecation that was until 6.0

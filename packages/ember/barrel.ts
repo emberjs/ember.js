@@ -258,15 +258,19 @@ namespace Ember {
 
   // ****@ember/debug****
   export const _captureRenderTree = captureRenderTree;
-  export const assert = EmberDebug.assert;
-  export const warn = EmberDebug.warn;
+  export const assert: typeof EmberDebug.assert = EmberDebug.assert;
+  export const warn: typeof EmberDebug.warn = EmberDebug.warn;
   export const debug = EmberDebug.debug;
   export const deprecate = EmberDebug.deprecate;
   export const deprecateFunc = EmberDebug.deprecateFunc;
   export const runInDebug = EmberDebug.runInDebug;
   export const inspect = EmberDebug.inspect;
 
-  export const Debug = {
+  export const Debug: {
+    registerDeprecationHandler: typeof EmberDebug.registerDeprecationHandler;
+    registerWarnHandler: typeof EmberDebug.registerWarnHandler;
+    isComputed: typeof metal.isComputed;
+  } = {
     registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
     registerWarnHandler: EmberDebug.registerWarnHandler,
     // ****@ember/-internals/metal****

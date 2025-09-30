@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import { Component } from '@ember/-internals/glimmer';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 
@@ -167,6 +168,48 @@ moduleFor(
           assert.ok(this.routerService.isActive('parent.child', qp)); // using same qp second time should not fail
           assert.deepEqual(qp.queryParams, { sort: 'ascending' });
         });
+    }
+
+    ['@test RouterService#isActive works reliably during component rendering before router initialization'](
+      assert
+    ) {
+      assert.expect(1);
+
+      // This simulates the scenario where isActive is called during component rendering
+      // before the router has been fully set up, which used to throw an error
+
+      let componentInstance;
+
+      this.addTemplate('parent.index', '{{foo-component}}');
+
+      this.addComponent('foo-component', {
+        ComponentClass: class extends Component {
+          @service('router')
+          routerService;
+
+          init() {
+            super.init();
+            componentInstance = this;
+          }
+
+          get isRouteActive() {
+            // This used to throw "Cannot read properties of undefined (reading 'isActiveIntent')"
+            // before setupRouter() was added to the isActive method
+            return this.routerService.isActive('parent.child');
+          }
+        },
+        template: `{{this.isRouteActive}}`,
+      });
+
+      return this.visit('/').then(() => {
+        // The test passes if no error is thrown during rendering
+        // and isActive returns a boolean value
+        assert.strictEqual(
+          typeof componentInstance.isRouteActive,
+          'boolean',
+          'isActive should return a boolean value without throwing an error'
+        );
+      });
     }
   }
 );

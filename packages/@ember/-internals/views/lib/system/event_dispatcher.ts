@@ -3,10 +3,8 @@ import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
 import { getElementView } from './utils';
-import ActionManager from './action_manager';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer';
 import type Component from '@ember/component';
-import type { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
 
 /**
 @module ember
@@ -265,54 +263,6 @@ export default class EventDispatcher extends EmberObject {
       return result;
     };
 
-    let actionHandler = (target: Element, event: Event) => {
-      let actionId = target.getAttribute('data-ember-action');
-      let actions: Array<ActionState> | undefined;
-
-      // In Glimmer2 this attribute is set to an empty string and an additional
-      // attribute it set for each action on a given element. In this case, the
-      // attributes need to be read so that a proper set of action handlers can
-      // be coalesced.
-      if (actionId === '') {
-        actions = [];
-
-        for (let attr of target.attributes) {
-          let attrName = attr.name;
-
-          if (attrName.indexOf('data-ember-action-') === 0) {
-            let action = ActionManager.registeredActions[attr.value];
-            assert('[BUG] Missing action', action);
-            actions.push(action);
-          }
-        }
-      } else if (actionId) {
-        // FIXME: This branch is never called in tests. Improve tests or remove
-        let actionState = ActionManager.registeredActions[actionId];
-        if (actionState) {
-          actions = [actionState];
-        }
-      }
-
-      // We have to check for actions here since in some cases, jQuery will trigger
-      // an event on `removeChild` (i.e. focusout) after we've already torn down the
-      // action handlers for the view.
-      if (!actions) {
-        // FIXME: This branch is never called in tests. Improve tests or remove
-        return;
-      }
-
-      let result = true;
-      for (let index = 0; index < actions.length; index++) {
-        let action = actions[index];
-
-        if (action && action.eventName === eventName) {
-          // return false if any of the action handlers returns false
-          result = action.handler(event) && result;
-        }
-      }
-      return result;
-    };
-
     let handleEvent = (this._eventHandlers[event] = (event: Event) => {
       let target = event.target;
 
@@ -328,13 +278,6 @@ export default class EventDispatcher extends EmberObject {
             event.stopPropagation();
             break;
           } else if (event.cancelBubble === true) {
-            break;
-          }
-        } else if (
-          typeof target.hasAttribute === 'function' &&
-          target.hasAttribute('data-ember-action')
-        ) {
-          if (actionHandler(target, event) === false) {
             break;
           }
         }

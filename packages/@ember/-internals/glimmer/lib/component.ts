@@ -1,11 +1,11 @@
-import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import type { View } from '@ember/-internals/glimmer';
 import {
   descriptorForProperty,
   get,
   nativeDescDecorator,
   PROPERTY_DID_CHANGE,
 } from '@ember/-internals/metal';
-import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
+import type { PropertyDidChange } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
 import type { ViewStates } from '@ember/-internals/views';
