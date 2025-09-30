@@ -42,6 +42,13 @@ Find out more:
 
 See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/main/CONTRIBUTING.md)
 
+# Our Contributors
+
+A big thank you to all the amazing people who have helped improve this project.
+
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
+
 ---
 
 Cross-browser testing provided by <a href="http://browserstack.com">Browserstack</a>.
