@@ -10,3 +10,4 @@ export { default as DSL, type DSLCallback } from './lib/dsl';
 export type { EngineRouteInfo } from './lib/engines';
 export type { RouteInfo, RouteInfoWithAttributes } from './lib/route-info';
 export { default as controllerFor } from './lib/controller_for';
+export { emberAWithoutDeprecation } from './lib/array';
