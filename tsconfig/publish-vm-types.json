@@ -17,6 +17,23 @@
     "rootDir": "../glimmer-vm/packages"
   },
   // TODO: this should expand to the rest of the packages
-  "include": ["../glimmer-vm/packages/@glimmer/destroyable/*.ts"],
+  "include": [
+    "../glimmer-vm/packages/@glimmer/compiler/*.ts",
+    "../glimmer-vm/packages/@glimmer/destroyable/*.ts",
+    "../glimmer-vm/packages/@glimmer/global-context/*.ts",
+    "../glimmer-vm/packages/@glimmer/interfaces/*.ts",
+    "../glimmer-vm/packages/@glimmer/manager/*.ts",
+    "../glimmer-vm/packages/@glimmer/node/*.ts",
+    "../glimmer-vm/packages/@glimmer/opcode-compiler/*.ts",
+    "../glimmer-vm/packages/@glimmer/owner/*.ts",
+    "../glimmer-vm/packages/@glimmer/program/*.ts",
+    "../glimmer-vm/packages/@glimmer/reference/*.ts",
+    "../glimmer-vm/packages/@glimmer/runtime/*.ts",
+    "../glimmer-vm/packages/@glimmer/syntax/*.ts",
+    "../glimmer-vm/packages/@glimmer/util/*.ts",
+    "../glimmer-vm/packages/@glimmer/validator/*.ts",
+    "../glimmer-vm/packages/@glimmer/vm/*.ts",
+    "../glimmer-vm/packages/@glimmer/vm-babel-plugins/*.ts"
+  ],
   "exclude": ["../glimmer-vm/**/test"]
 }
