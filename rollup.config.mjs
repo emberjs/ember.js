@@ -292,7 +292,19 @@ function walkGlimmerDeps(packageNames) {
 }
 
 function findFromProject(...names) {
-  let current = packageCache.get(packageCache.appRoot);
+  let current;
+
+  let glimmerVmTarget = resolve(packageCache.appRoot, 'glimmer-vm', 'packages', names[0]);
+  if (existsSync(glimmerVmTarget)) {
+    // the glimmer-vm packages are all in a known subdir. We don't list them as
+    // actual NPM deps of the top-level workspace because we don't want their
+    // types leaking into our type-tests.
+    names.shift();
+    current = packageCache.get(glimmerVmTarget);
+  } else {
+    current = packageCache.get(packageCache.appRoot);
+  }
+
   for (let name of names) {
     current = packageCache.resolve(name, current);
   }
