@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@ember/object": "workspace:*",
-    "@ember/owner": "workspace:*"
+    "@ember/owner": "workspace:*",
+    "@glimmer/interfaces": "workspace:*"
   }
 }

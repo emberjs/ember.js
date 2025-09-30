@@ -10,6 +10,7 @@
     "@ember/canary-features": "workspace:*",
     "@glimmer/compiler": "workspace:*",
     "@glimmer/env": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
     "@glimmer/syntax": "workspace:*",
     "ember": "workspace:*",
     "ember-template-compiler": "workspace:*"

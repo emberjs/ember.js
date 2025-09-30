@@ -27,6 +27,7 @@
     "@glimmer/compiler": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
     "@glimmer/env": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/opcode-compiler": "workspace:*",
     "@glimmer/owner": "workspace:*",

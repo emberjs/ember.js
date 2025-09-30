@@ -28,6 +28,7 @@
     "@ember/utils": "workspace:*",
     "@glimmer/compiler": "workspace:*",
     "@glimmer/env": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/runtime": "workspace:*",
     "@glimmer/syntax": "workspace:*",

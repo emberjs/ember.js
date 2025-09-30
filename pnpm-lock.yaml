@@ -106,60 +106,6 @@ importers:
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.21.0
-      '@glimmer/compiler':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/compiler
-      '@glimmer/component':
-        specifier: workspace:^
-        version: link:packages/@glimmer/component
-      '@glimmer/destroyable':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/destroyable
-      '@glimmer/env':
-        specifier: workspace:*
-        version: link:packages/@glimmer/env
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/global-context
-      '@glimmer/interfaces':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/interfaces
-      '@glimmer/manager':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/manager
-      '@glimmer/node':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/node
-      '@glimmer/opcode-compiler':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/opcode-compiler
-      '@glimmer/owner':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/owner
-      '@glimmer/program':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/program
-      '@glimmer/reference':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/reference
-      '@glimmer/runtime':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/runtime
-      '@glimmer/syntax':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/syntax
-      '@glimmer/util':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/validator
-      '@glimmer/vm':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/vm
-      '@glimmer/vm-babel-plugins':
-        specifier: workspace:*
-        version: link:glimmer-vm/packages/@glimmer/vm-babel-plugins
       '@rollup/plugin-babel':
         specifier: ^6.0.4
         version: 6.0.4(@babel/core@7.26.9)(rollup@4.34.8)
@@ -1546,6 +1492,9 @@ importers:
       '@ember/owner':
         specifier: workspace:*
         version: link:../owner
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
 
   packages/@ember/controller:
     dependencies:
@@ -1631,6 +1580,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../../../glimmer-vm/packages/@glimmer/manager
@@ -1768,12 +1720,18 @@ importers:
       '@ember/component':
         specifier: workspace:*
         version: link:../component
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../../../glimmer-vm/packages/@glimmer/runtime
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1819,6 +1777,9 @@ importers:
       '@ember/owner':
         specifier: workspace:*
         version: link:../owner
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../../../glimmer-vm/packages/@glimmer/manager
@@ -1970,6 +1931,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../../../glimmer-vm/packages/@glimmer/manager
@@ -2097,6 +2061,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/syntax':
         specifier: workspace:*
         version: link:../../../glimmer-vm/packages/@glimmer/syntax
@@ -2291,6 +2258,9 @@ importers:
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../@ember/runloop
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       typescript:
         specifier: ^5.7.3
         version: 5.9.2
@@ -2491,6 +2461,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../../glimmer-vm/packages/@glimmer/manager
@@ -2644,6 +2617,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../@glimmer/env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../../glimmer-vm/packages/@glimmer/manager
