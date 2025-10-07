@@ -360,6 +360,11 @@ export function resolvePackages(deps, isExternal) {
         return;
       }
 
+      // the actual test entrypoints
+      if (source.endsWith('index.html')) {
+        return;
+      }
+
       let pkgName = packageName(source);
       if (pkgName) {
         // having a pkgName means this is not a relative import
@@ -397,7 +402,7 @@ export function resolvePackages(deps, isExternal) {
 
         // Anything not explicitliy handled above is an error, because we don't
         // want to accidentally incorporate anything else into the build.
-        throw new Error(`missing ${source}`);
+        throw new Error(`missing in resolvePackages: ${source}`);
       }
     },
   };
