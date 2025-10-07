@@ -8,7 +8,6 @@
 */
 
 import { createRequire } from 'node:module';
-import vmBabelPlugins from '@glimmer/vm-babel-plugins';
 import baseConfig from './babel.config.mjs';
 
 // eslint-disable-next-line no-redeclare
@@ -28,9 +27,5 @@ export default {
     ],
   ],
 
-  plugins: [
-    ...baseConfig.plugins,
-    buildDebugMacroPlugin(!isProduction),
-    ...vmBabelPlugins({ isDebug: !isProduction }),
-  ],
+  plugins: [...baseConfig.plugins, buildDebugMacroPlugin(!isProduction)],
 };
