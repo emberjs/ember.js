@@ -28,6 +28,8 @@ jobs:
        matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: linting
         run: pnpm lint
@@ -42,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build types
         run: pnpm build:types
@@ -72,6 +76,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
@@ -103,6 +109,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
@@ -121,6 +129,8 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         env:
@@ -150,6 +160,8 @@ jobs:
        matrix: ${{fromJson(needs.lint.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
         with:
           use_lockfile: "false"
@@ -166,6 +178,8 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         env:
@@ -180,6 +194,8 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: test
         run: pnpm test:blueprints
@@ -190,6 +206,8 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
@@ -217,6 +235,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-ember-source')
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
@@ -242,6 +262,8 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
@@ -269,6 +291,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
