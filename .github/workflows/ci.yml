@@ -57,6 +57,8 @@ jobs:
         ts-version: ['5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9']
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - name: build stable type definitions
         run: pnpm build:types
