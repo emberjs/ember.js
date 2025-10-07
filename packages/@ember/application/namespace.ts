@@ -23,7 +23,7 @@ import EmberObject from '@ember/object';
   such as an application or framework. Create a namespace anytime you want
   to define one of these new containers.
 
-  # Example Usage
+  ## Example Usage
 
   ```javascript
   MyFramework = Ember.Namespace.create({
