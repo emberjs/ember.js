@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.9.0-beta.1 (October 13, 2025)
+
+- All changes were internal, docs, and/or bugfixes that were backported.
+
 ## v6.8.0 (October 13, 2025)
  
 - [#20950](https://github.com/emberjs/ember.js/pull/20950) / [#20961](https://github.com/emberjs/ember.js/pull/20961) / [#20963](https://github.com/emberjs/ember.js/pull/20963) [FEATURE] Upgrade glimmer-vm to build in Tracked Collections (previously provided by `tracked-built-ins`) per [RFC #1068](https://rfcs.emberjs.com/id/1068-tracked-collections).
