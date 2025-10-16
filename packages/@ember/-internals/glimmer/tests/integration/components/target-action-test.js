@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { expectDeprecation, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
@@ -11,7 +11,7 @@ moduleFor(
   'Components test: send',
   class extends RenderingTestCase {
     ['@test sending to undefined actions triggers an error'](assert) {
-      assert.expect(2);
+      assert.expect(4);
 
       let component;
 
@@ -31,11 +31,15 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      runTask(() => component.send('foo', 'bar'));
+      expectDeprecation(() => {
+        runTask(() => component.send('foo', 'bar'));
+      }, /send\(\) is deprecated/);
 
-      expectAssertion(() => {
-        return component.send('baz', 'bar');
-      }, /had no action handler for: baz/);
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          return component.send('baz', 'bar');
+        }, /had no action handler for: baz/);
+      }, /send\(\) is deprecated/);
     }
 
     ['@test `send` will call send from a target if it is defined']() {
@@ -59,11 +63,13 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      runTask(() => component.send('foo', 'baz'));
+      expectDeprecation(() => {
+        runTask(() => component.send('foo', 'baz'));
+      }, /send\(\) is deprecated/);
     }
 
     ['@test a handled action can be bubbled to the target for continued processing']() {
-      this.assert.expect(2);
+      this.assert.expect(3);
 
       let component;
 
@@ -91,11 +97,13 @@ moduleFor(
 
       this.render('{{foo-bar poke="poke"}}');
 
-      runTask(() => component.send('poke'));
+      expectDeprecation(() => {
+        runTask(() => component.send('poke'));
+      }, /send\(\) is deprecated/);
     }
 
     ["@test action can be handled by a superclass' actions object"](assert) {
-      this.assert.expect(4);
+      this.assert.expect(5);
 
       let component;
 
@@ -136,11 +144,13 @@ moduleFor(
 
       this.render('{{x-index}}');
 
-      runTask(() => {
-        component.send('foo');
-        component.send('bar', 'HELLO');
-        component.send('baz');
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          component.send('foo');
+          component.send('bar', 'HELLO');
+          component.send('baz');
+        });
+      }, /send\(\) is deprecated/);
     }
 
     ['@test actions cannot be provided at create time'](assert) {
@@ -186,9 +196,11 @@ moduleFor(
         set(this.context, 'shouldRender', false);
       });
 
-      expectAssertion(() => {
-        component.send('trigger-me-dead');
-      }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'component:rip-alley'.");
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          component.send('trigger-me-dead');
+        }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'component:rip-alley'.");
+      }, /send\(\) is deprecated/);
     }
   }
 );
