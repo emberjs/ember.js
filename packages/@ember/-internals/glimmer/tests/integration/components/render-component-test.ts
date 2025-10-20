@@ -13,7 +13,7 @@ import {
   runDestroy,
 } from 'internal-test-helpers';
 
-import { Input, Textarea } from '@ember/component';
+import EmberComponent, { Input, Textarea } from '@ember/component';
 import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
@@ -23,6 +23,7 @@ import { renderComponent, type RenderResult } from '../../../lib/renderer';
 import { trackedObject } from '@ember/reactive/collections';
 import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
+import { getOwner } from '@ember/owner';
 import type Owner from '@ember/owner';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
@@ -72,8 +73,10 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
 
     if ('expect' in options) {
       assertHTML(options.expect);
-    } else {
+    } else if ('classic' in options) {
       assertClassicComponentElement(options.classic);
+    } else {
+      throw new Error(`Unexpected (test)renderComponent options`);
     }
 
     this.assertStableRerender();
@@ -107,6 +110,87 @@ moduleFor(
       this.renderComponent(Root, { expect: 'Hello, world!' });
 
       run(() => destroy(this.owner));
+
+      assertHTML('');
+    }
+  }
+);
+
+moduleFor(
+  'Strict Mode - renderComponent (@ember/component)',
+  class extends RenderComponentTestCase {
+    [`@test Issue#20984: owner is destroyed: willDestroy calls owner's lookup`](assert: Assert) {
+      class FooService {
+        static create() {
+          return new FooService();
+        }
+
+        called = () => {
+          assert.step('called');
+        };
+      }
+
+      this.owner.register('service:foo-service', FooService);
+
+      class Foo extends EmberComponent {
+        willDestroy() {
+          assert.step('willDestroy');
+          let owner = getOwner(this) as Owner;
+
+          let service = owner.lookup('service:foo-service') as FooService;
+
+          service.called();
+        }
+      }
+
+      defComponent(`content`, { component: Foo });
+
+      this.renderComponent(Foo, { classic: { tagName: 'div', content: 'content' } });
+
+      assert.verifySteps([]);
+
+      run(() => destroy(this.owner));
+
+      assert.verifySteps(['willDestroy', 'called']);
+
+      assertHTML('');
+    }
+
+    [`@test Issue#20984: component is destroyed: willDestroy calls owner's lookup`](
+      assert: Assert
+    ) {
+      class FooService {
+        static create() {
+          return new FooService();
+        }
+
+        called = () => {
+          assert.step('called');
+        };
+      }
+
+      this.owner.register('service:foo-service', FooService);
+
+      class Foo extends EmberComponent {
+        willDestroy() {
+          assert.step('willDestroy');
+          let owner = getOwner(this) as Owner;
+
+          let service = owner.lookup('service:foo-service') as FooService;
+
+          service.called();
+        }
+      }
+
+      defComponent(`content`, { component: Foo });
+
+      this.renderComponent(Foo, { classic: { tagName: 'div', content: 'content' } });
+
+      assert.verifySteps([]);
+
+      run(() => this.component?.destroy());
+
+      assert.verifySteps(['willDestroy', 'called']);
 
       assertHTML('');
     }
