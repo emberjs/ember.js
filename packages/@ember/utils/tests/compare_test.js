@@ -84,5 +84,15 @@ moduleFor(
       assert.equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
       assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
     }
+    
+    ['@test comparing numbers with edge cases'](assert) {
+      assert.equal(compare(0, 0), 0, 'zero equals zero');
+      assert.equal(compare(10, 10), 0, 'same numbers are equal');
+      assert.equal(compare(5, 10), -1, 'smaller number comes first');
+      assert.equal(compare(10, 5), 1, 'larger number comes second');
+      assert.equal(compare(-5, 5), -1, 'negative is less than positive');
+      assert.equal(compare(0.1, 0.2), -1, 'decimal comparison works');
+    }
+
   }
 );
