@@ -598,6 +598,34 @@ moduleFor(
 );
 
 moduleFor(
+  'Strict Mode <-> Loose Mode - renderComponent',
+  class extends RenderComponentTestCase {
+    '@test incidentally invoked loose-mode components can still resolve helpers'() {
+      this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
+      let Loose = defineComponent(null, `Hi: {{a-helper "there"}}`);
+      let Root = defComponent('<Loose />', { scope: { Loose } });
+
+      this.renderComponent(Root, { expect: 'Hi: THERE' });
+
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
+
+    '@test strict-mode components cannot lookup things in the registry'(assert: Assert) {
+      this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
+      assert.throws(() => {
+        /**
+         * We need to pass a scope so that `defComponent` returns a strict-mode component.
+         */
+        let Root = defComponent('{{a-helper "hi"}}', { scope: {} });
+        this.renderComponent(Root, { expect: '' });
+      }, /but that value was not in scope: a-helper/);
+    }
+  }
+);
+
+moduleFor(
   'Strict Mode - renderComponent - built ins',
   class extends RenderComponentTestCase {
     '@test Can use Input'() {
