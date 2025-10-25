@@ -1,8 +1,12 @@
 import Controller from '@ember/controller';
-import { A as emberA } from '@ember/array';
 import Route from '@ember/routing/route';
 import { computed } from '@ember/object';
-import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
+import {
+  QueryParamTestCase,
+  moduleFor,
+  runLoopSettled,
+  emberAWithoutDeprecation as emberA,
+} from 'internal-test-helpers';
 
 class ModelDependentQPTestCase extends QueryParamTestCase {
   boot() {
@@ -317,7 +321,7 @@ moduleFor(
               );
               self.expectedModelHookParams = null;
             }
-            return articles.findBy('id', params.id);
+            return articles.find((i) => i.id === params.id);
           }
         }
       );
@@ -428,7 +432,7 @@ moduleFor(
               );
               self.expectedModelHookParams = null;
             }
-            return site_articles.findBy('id', params.id);
+            return site_articles.find((i) => i.id === params.id);
           }
         }
       );
@@ -558,7 +562,7 @@ moduleFor(
               );
               self.expectedSiteModelHookParams = null;
             }
-            return sites.findBy('id', params.site_id);
+            return sites.find((i) => i.id === params.site_id);
           }
         }
       );
@@ -575,7 +579,7 @@ moduleFor(
               );
               self.expectedArticleModelHookParams = null;
             }
-            return site_articles.findBy('id', params.article_id);
+            return site_articles.find((i) => i.id === params.article_id);
           }
         }
       );

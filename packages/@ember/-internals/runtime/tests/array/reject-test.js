@@ -1,4 +1,4 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 import EmberObject from '@ember/object';
 
@@ -7,7 +7,10 @@ class RejectTest extends AbstractTestCase {
     let obj = this.newObject([1, 2, 3, 4]);
     let result;
 
-    result = obj.reject((i) => i < 3);
+    expectDeprecation(() => {
+      result = obj.reject((i) => i < 3);
+    }, /Usage of Ember.Array methods is deprecated/);
+
     this.assert.deepEqual(result, [3, 4], 'reject the correct items');
   }
 
@@ -17,7 +20,9 @@ class RejectTest extends AbstractTestCase {
     let filtered, rejected;
 
     filtered = obj.filter(isEven);
-    rejected = obj.reject(isEven);
+    expectDeprecation(() => {
+      rejected = obj.reject(isEven);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.deepEqual(filtered, [2, 4], 'filtered evens');
     this.assert.deepEqual(rejected, [1, 3], 'rejected evens');
@@ -32,8 +37,10 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo', 'foo'), [], 'rejectBy(foo)');
-    this.assert.deepEqual(obj.rejectBy('bar', 'bar'), [ary[0]], 'rejectBy(bar)');
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.rejectBy('foo', 'foo'), [], 'rejectBy(foo)');
+      this.assert.deepEqual(obj.rejectBy('bar', 'bar'), [ary[0]], 'rejectBy(bar)');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should include in result if property is false'() {
@@ -43,8 +50,10 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo'), ary, 'rejectBy(foo)');
-    this.assert.deepEqual(obj.rejectBy('bar'), [ary[1]], 'rejectBy(bar)');
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.rejectBy('foo'), ary, 'rejectBy(foo)');
+      this.assert.deepEqual(obj.rejectBy('bar'), [ary[1]], 'rejectBy(bar)');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should reject on second argument if provided'() {
@@ -59,7 +68,9 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo', 3), [ary[1], ary[2]], "rejectBy('foo', 3)')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.rejectBy('foo', 3), [ary[1], ary[2]], "rejectBy('foo', 3)')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should correctly reject null second argument'() {
@@ -74,7 +85,9 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo', null), [ary[0], ary[3]], "rejectBy('foo', null)')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.rejectBy('foo', null), [ary[0], ary[3]], "rejectBy('foo', null)')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should correctly reject undefined second argument'() {
@@ -84,7 +97,9 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('bar', undefined), [], "rejectBy('bar', undefined)')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.rejectBy('bar', undefined), [], "rejectBy('bar', undefined)')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should correctly reject explicit undefined second argument'() {
@@ -101,11 +116,13 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(
-      obj.rejectBy('foo', undefined),
-      ary.slice(0, 2),
-      "rejectBy('foo', undefined)')"
-    );
+    expectDeprecation(() => {
+      this.assert.deepEqual(
+        obj.rejectBy('foo', undefined),
+        ary.slice(0, 2),
+        "rejectBy('foo', undefined)')"
+      );
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should match undefined, null, or false properties without second argument'() {
@@ -126,7 +143,9 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo'), ary.slice(2), "rejectBy('foo')')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.rejectBy('foo'), ary.slice(2), "rejectBy('foo')')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 }
 

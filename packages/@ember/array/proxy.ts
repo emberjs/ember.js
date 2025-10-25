@@ -19,7 +19,7 @@ import { isObject } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
 import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
 import {
   combine,
@@ -30,6 +30,8 @@ import {
   type Tag,
   type Revision,
 } from '@glimmer/validator';
+import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
+import { deprecationsAreDisabled } from './-internals';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';
@@ -201,6 +203,15 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   _arrTag: Tag | null = null;
 
   init(props: object | undefined) {
+    // This is not used internally, so instead of warning every time one of the methods is used,
+    // we can just warn when it is created.
+    deprecate('Usage of ArrayProxy is deprecated.', false, {
+      for: 'ember-source',
+      id: 'array-proxy',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
+
     super.init(props);
 
     setCustomTagFor(this, customTagForArrayProxy);
@@ -231,6 +242,12 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
       'Mutating an arranged ArrayProxy is not allowed',
       get(this, 'arrangedContent') === get(this, 'content')
     );
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     this.replaceContent(idx, amt, objects);
   }
 
@@ -243,6 +260,13 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
 
   // Overriding objectAt is not supported.
   objectAt(idx: number) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
+
     this._revalidate();
 
     if (this._objects === null) {
@@ -407,8 +431,10 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   }
 }
 
-ArrayProxy.reopen(MutableArray, {
-  arrangedContent: alias('content'),
+disableDeprecations(() => {
+  ArrayProxy.reopen(MutableArray, {
+    arrangedContent: alias('content'),
+  });
 });
 
 export default ArrayProxy;

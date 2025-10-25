@@ -3,8 +3,13 @@ import { run } from '@ember/runloop';
 import { get, computed } from '@ember/object';
 import EmberObject, { observer } from '@ember/object';
 import Observable from '@ember/object/observable';
-import { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  emberAWithoutDeprecation as emberA,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -720,7 +725,10 @@ moduleFor(
     }
 
     async ['@test should notify array observer when array changes'](assert) {
-      get(object, 'normalArray').replace(0, 0, [6]);
+      expectDeprecation(() => {
+        get(object, 'normalArray').replace(0, 0, [6]);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
 
       assert.equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
