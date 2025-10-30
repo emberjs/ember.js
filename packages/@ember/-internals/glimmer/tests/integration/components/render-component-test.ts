@@ -632,6 +632,37 @@ moduleFor(
         this.renderComponent(Root, { expect: '' });
       }, /but that value was not in scope: a-helper/);
     }
+
+    '@test rendering multiple times to adjacent elements'(assert: Assert) {
+      this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
+      let Loose = defineComponent(null, `Hi: {{a-helper "there"}}`);
+      let get = (id) => this.element.querySelector(id);
+      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+        renderComponent(Comp, {
+          into: get(`#${id}`),
+          owner,
+        });
+      }
+      let A = defComponent('a:<Loose />', { scope: { Loose } });
+      let B = defComponent('b:<Loose />', { scope: { Loose } });
+      let Root = defComponent(
+        [
+          `<div id="a"></div><br>`,
+          `<div id="b"></div>`,
+          `{{render A 'a' owner}}`,
+          `{{render B 'b' owner}}`,
+        ].join('\n'),
+        { scope: { render, A, B, owner: this.owner } }
+      );
+
+      this.renderComponent(Root, {
+        expect: [`<div id="a">hi:a</div><br>`, `<div id="b">hi:b</div>`, ``, ``].join('\n'),
+      });
+
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
   }
 );
 
