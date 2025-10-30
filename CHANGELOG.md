@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.9.0-beta.2 (October 30, 2025)
+
+- [#20994](https://github.com/emberjs/ember.js/pull/20994) [BUGFIX] Fix loose-mode components invoked from a strict mode component via renderComponent
+
 ## v6.9.0-beta.1 (October 13, 2025)
 
 - All changes were internal, docs, and/or bugfixes that were backported.
