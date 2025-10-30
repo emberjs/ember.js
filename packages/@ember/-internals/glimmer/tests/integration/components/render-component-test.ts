@@ -604,6 +604,39 @@ moduleFor(
         expect: '<div data-one="">3</div><div data-two="">3</div>',
       });
     }
+
+    '@test rendering multiple times to adjacent elements'() {
+      let aHelper = (str: string) => str.toUpperCase();
+      let Child = defComponent(`Hi: {{aHelper "there"}}`, { scope: { aHelper } });
+      let get = (id: string) => this.element.querySelector(id);
+      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+        renderComponent(Comp, {
+          into: get(`#${id}`)!,
+          owner,
+        });
+      }
+      let A = defComponent('a:<Child />', { scope: { Child } });
+      let B = defComponent('b:<Child />', { scope: { Child } });
+      let Root = defComponent(
+        [
+          `<div id="a"></div><br>`,
+          `<div id="b"></div>`,
+          `{{render A 'a' owner}}`,
+          `{{render B 'b' owner}}`,
+        ].join('\n'),
+        { scope: { render, A, B, owner: this.owner } }
+      );
+
+      this.renderComponent(Root, {
+        expect: [`<div id="a">a:Hi: THERE</div><br>`, `<div id="b">b:Hi: THERE</div>`, ``, ``].join(
+          '\n'
+        ),
+      });
+
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
   }
 );
 
