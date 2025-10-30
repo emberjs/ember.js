@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.8.1 (October 30, 2025)
+
+- [#20994](https://github.com/emberjs/ember.js/pull/20994) [BUGFIX] Fix loose-mode components invoked from a strict mode component via renderComponent
+
 ## v6.8.0 (October 13, 2025)
  
 - [#20950](https://github.com/emberjs/ember.js/pull/20950) / [#20961](https://github.com/emberjs/ember.js/pull/20961) / [#20963](https://github.com/emberjs/ember.js/pull/20963) [FEATURE] Upgrade glimmer-vm to build in Tracked Collections (previously provided by `tracked-built-ins`) per [RFC #1068](https://rfcs.emberjs.com/id/1068-tracked-collections).
