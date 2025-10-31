@@ -26,7 +26,7 @@ import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
-  component: (RenderResult & { rerender: () => void }) | undefined;
+  declare component: (RenderResult & { rerender: () => void }) | undefined;
   owner: Owner;
 
   constructor(assert: QUnit['assert']) {
