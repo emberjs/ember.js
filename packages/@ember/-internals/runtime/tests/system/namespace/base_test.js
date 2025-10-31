@@ -3,6 +3,7 @@ import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import Namespace from '@ember/application/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -61,16 +62,16 @@ moduleFor(
 
     ['@test Classes under an Namespace are properly named'](assert) {
       let nsA = (lookup.NamespaceA = Namespace.create());
-      nsA.Foo = EmberObject.extend();
+      nsA.Foo = CoreObject.extend();
       Namespace.processAll();
       assert.equal(getName(nsA.Foo), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
 
-      nsA.Bar = EmberObject.extend();
+      nsA.Bar = CoreObject.extend();
       Namespace.processAll();
       assert.equal(getName(nsA.Bar), 'NamespaceA.Bar', 'New Classes get the naming treatment too');
 
       let nsB = (lookup.NamespaceB = Namespace.create());
-      nsB.Foo = EmberObject.extend();
+      nsB.Foo = CoreObject.extend();
       Namespace.processAll();
       assert.equal(
         getName(nsB.Foo),
@@ -101,8 +102,8 @@ moduleFor(
           name: 'CustomNamespaceB',
         }));
 
-        nsA.Foo = class extends EmberObject {};
-        nsB.Foo = class extends EmberObject {};
+        nsA.Foo = class extends CoreObject {};
+        nsB.Foo = class extends CoreObject {};
 
         Namespace.processAll();
 
@@ -126,8 +127,8 @@ moduleFor(
 
       let namespace = (lookup.NS = Namespace.create());
 
-      namespace.ClassA = class extends EmberObject {};
-      namespace.ClassB = class extends EmberObject {};
+      namespace.ClassA = class extends CoreObject {};
+      namespace.ClassB = class extends CoreObject {};
 
       Namespace.processAll();
 
