@@ -67,6 +67,8 @@ jobs:
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
+        env:
+          NODE_ENV: development
       - name: test
         run: pnpm test
 
@@ -100,6 +102,8 @@ jobs:
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
+        env:
+          NODE_ENV: ${{ matrix.BUILD || 'development' }}
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
@@ -121,6 +125,7 @@ jobs:
       - name: build
         env:
           ALL_SUPPORTED_BROWSERS: true
+          NODE_ENV: development
         run: pnpm vite build --mode=development
 
       - name: Set BrowserStack Local Identifier
