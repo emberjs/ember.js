@@ -35,8 +35,10 @@ jobs:
       - uses: ./.github/actions/setup
       - name: build types
         run: pnpm build:types
-      - name: Check published and internal types
-        run: pnpm type-check
+      - name: Check internal types
+        run: pnpm type-check:internals
+      - name: Check published types
+        run: pnpm type-check:types
 
   types-range:
     name: Type Checking (other supported versions)
@@ -54,8 +56,8 @@ jobs:
         run: pnpm build:types
       - name: install TS@${{matrix.ts-version}}
         run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
-      - name: Check published and internal types with TS@${{matrix.ts-version}}
-        run: pnpm type-check
+      - name: Check published types
+        run: pnpm type-check:types
 
   basic-test:
     name: Basic Test

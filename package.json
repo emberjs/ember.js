@@ -60,7 +60,7 @@
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
-    "type-check:types": "pnpm build:types && tsc --noEmit --project type-tests",
+    "type-check:types": "tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*",
     "unlink:all": "node bin/unlink-all.mjs"
   },
