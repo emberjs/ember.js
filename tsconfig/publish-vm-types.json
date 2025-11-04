@@ -16,7 +16,6 @@
     "declarationDir": "../types/stable",
     "rootDir": "../glimmer-vm/packages"
   },
-  // TODO: this should expand to the rest of the packages
   "include": [
     "../glimmer-vm/packages/@glimmer/compiler/*.ts",
     "../glimmer-vm/packages/@glimmer/destroyable/*.ts",
