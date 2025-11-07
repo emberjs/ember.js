@@ -117,7 +117,7 @@ if (DEBUG) {
   // Bug: this may be a quirk of our test setup?
   // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
   // to add it at all, but the current test build doesn't produce a "prod compiler", so
-  // we ended up running the debug-build for the template compliler in prod tests. Once
+  // we ended up running the debug-build for the template compiler in prod tests. Once
   // that is fixed, this can be removed. For now, this allows the test to work and does
   // not really harm anything, since it's just a no-op pass-through helper and the bytes
   // has to be included anyway. In the future, perhaps we can avoid the latter by using
@@ -125,7 +125,7 @@ if (DEBUG) {
   BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 }
 
-// With the implementation of RFC #1006(https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper), the `action` modifer was removed. It was the
+// With the implementation of RFC #1006(https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper), the `action` modifier was removed. It was the
 // only built-in keyword modifier, so this object is currently empty.
 const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {};
 

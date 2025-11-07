@@ -366,7 +366,7 @@ export function resolvePackages(deps, isExternal) {
         }
 
         if (testDependencies.includes(pkgName)) {
-          // these are allowed to fall through and get resolved noramlly by vite
+          // these are allowed to fall through and get resolved normally by vite
           // within our test suite.
           return;
         }
