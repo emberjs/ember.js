@@ -501,7 +501,7 @@ moduleFor(
        *
        *
        * NOTE: for this verify-steps, we only expect foo:3 once, because the first
-       *       incartaion of renderComponent (back when foo was 2) will not run again, due
+       *       incarnation of renderComponent (back when foo was 2) will not run again, due
        *       to being destroyed.
        */
       assert.verifySteps([`render:root`, `foo:3`]);
