@@ -10,6 +10,7 @@ import {
   associateDestroyableChild,
   destroy,
   isDestroyed,
+  isDestroying,
   registerDestructor,
 } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -158,8 +159,13 @@ class ComponentRootState {
 
       associateDestroyableChild(this, this.#result);
 
-      // override .render function after initial render
-      this.#render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
+      this.#render = errorLoopTransaction(() => {
+        if (isDestroying(result) || isDestroyed(result)) return;
+
+        return result.rerender({
+          alwaysRevalidate: false,
+        });
+      });
     });
   }
 
@@ -228,8 +234,13 @@ class ClassicRootState {
 
       associateDestroyableChild(owner, result);
 
-      // override .render function after initial render
-      this.render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
+      this.render = errorLoopTransaction(() => {
+        if (isDestroying(result) || isDestroyed(result)) return;
+
+        return result.rerender({
+          alwaysRevalidate: false,
+        });
+      });
     });
   }
 
