@@ -160,7 +160,7 @@ class ComponentRootState {
       associateDestroyableChild(this, this.#result);
 
       this.#render = errorLoopTransaction(() => {
-        if (isDestroying(result) || isDestroying(result)) return;
+        if (isDestroying(result) || isDestroyed(result)) return;
 
         return result.rerender({
           alwaysRevalidate: false,
@@ -235,7 +235,7 @@ class ClassicRootState {
       associateDestroyableChild(owner, result);
 
       this.render = errorLoopTransaction(() => {
-        if (isDestroying(result) || isDestroying(result)) return;
+        if (isDestroying(result) || isDestroyed(result)) return;
 
         return result.rerender({
           alwaysRevalidate: false,
