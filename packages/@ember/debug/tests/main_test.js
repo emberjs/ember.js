@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { HANDLERS } from '../lib/handlers';
 import {
   registerHandler,
@@ -238,7 +238,7 @@ moduleForDevelopment(
 
     ['@test assert does not throw if second argument is an object'](assert) {
       assert.expect(1);
-      let Igor = class extends EmberObject {};
+      let Igor = class extends CoreObject {};
 
       emberAssert('is truthy', Igor);
       emberAssert('is truthy', Igor.create());

@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
@@ -24,7 +24,7 @@ class FilterByTest extends AbstractTestCase {
   '@test should include in result if property is true'() {
     let obj, ary;
 
-    ary = [{ foo: 'foo', bar: true }, EmberObject.create({ foo: 'bar', bar: false })];
+    ary = [{ foo: 'foo', bar: true }, CoreObject.create({ foo: 'bar', bar: false })];
 
     obj = this.newObject(ary);
 
@@ -38,9 +38,9 @@ class FilterByTest extends AbstractTestCase {
 
     ary = [
       { name: 'obj1', foo: 3 },
-      EmberObject.create({ name: 'obj2', foo: 2 }),
+      CoreObject.create({ name: 'obj2', foo: 2 }),
       { name: 'obj3', foo: 2 },
-      EmberObject.create({ name: 'obj4', foo: 3 }),
+      CoreObject.create({ name: 'obj4', foo: 3 }),
     ];
 
     obj = this.newObject(ary);
@@ -53,9 +53,9 @@ class FilterByTest extends AbstractTestCase {
 
     ary = [
       { name: 'obj1', foo: 3 },
-      EmberObject.create({ name: 'obj2', foo: null }),
+      CoreObject.create({ name: 'obj2', foo: null }),
       { name: 'obj3', foo: null },
-      EmberObject.create({ name: 'obj4', foo: 3 }),
+      CoreObject.create({ name: 'obj4', foo: 3 }),
     ];
 
     obj = this.newObject(ary);
@@ -68,11 +68,11 @@ class FilterByTest extends AbstractTestCase {
 
     ary = [
       { name: 'obj1', foo: 3 },
-      EmberObject.create({ name: 'obj2', foo: 3 }),
+      CoreObject.create({ name: 'obj2', foo: 3 }),
       { name: 'obj3', foo: undefined },
-      EmberObject.create({ name: 'obj4', foo: undefined }),
+      CoreObject.create({ name: 'obj4', foo: undefined }),
       { name: 'obj5' },
-      EmberObject.create({ name: 'obj6' }),
+      CoreObject.create({ name: 'obj6' }),
     ];
 
     obj = this.newObject(ary);
@@ -85,11 +85,11 @@ class FilterByTest extends AbstractTestCase {
 
     ary = [
       { name: 'obj1', foo: 3 },
-      EmberObject.create({ name: 'obj2', foo: 3 }),
+      CoreObject.create({ name: 'obj2', foo: 3 }),
       { name: 'obj3', foo: undefined },
-      EmberObject.create({ name: 'obj4', foo: undefined }),
+      CoreObject.create({ name: 'obj4', foo: undefined }),
       { name: 'obj5' },
-      EmberObject.create({ name: 'obj6' }),
+      CoreObject.create({ name: 'obj6' }),
     ];
 
     obj = this.newObject(ary);
