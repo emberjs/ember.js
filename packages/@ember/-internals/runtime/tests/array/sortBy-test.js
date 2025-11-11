@@ -1,11 +1,14 @@
 import { get } from '@ember/object';
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
 class SortByTests extends AbstractTestCase {
   '@test sort by value of property'() {
     let obj = this.newObject([{ a: 2 }, { a: 1 }]);
-    let sorted = obj.sortBy('a');
+    let sorted;
+    expectDeprecation(() => {
+      sorted = obj.sortBy('a');
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(get(sorted[0], 'a'), 1);
     this.assert.equal(get(sorted[1], 'a'), 2);
@@ -16,7 +19,10 @@ class SortByTests extends AbstractTestCase {
       { a: 1, b: 2 },
       { a: 1, b: 1 },
     ]);
-    let sorted = obj.sortBy('a', 'b');
+    let sorted;
+    expectDeprecation(() => {
+      sorted = obj.sortBy('a', 'b');
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(get(sorted[0], 'b'), 1);
     this.assert.equal(get(sorted[1], 'b'), 2);

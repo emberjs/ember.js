@@ -1,4 +1,4 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class ObjectAtTests extends AbstractTestCase {
@@ -8,7 +8,9 @@ class ObjectAtTests extends AbstractTestCase {
     let len = expected.length;
 
     for (let idx = 0; idx < len; idx++) {
-      this.assert.equal(obj.objectAt(idx), expected[idx], `obj.objectAt(${idx}) should match`);
+      expectDeprecation(() => {
+        this.assert.equal(obj.objectAt(idx), expected[idx], `obj.objectAt(${idx}) should match`);
+      }, /Usage of Ember.Array methods is deprecated/);
     }
   }
 
@@ -16,18 +18,22 @@ class ObjectAtTests extends AbstractTestCase {
     let obj;
 
     obj = this.newObject(newFixture(3));
-    this.assert.equal(
-      obj.objectAt(obj, 5),
-      undefined,
-      'should return undefined for obj.objectAt(5) when len = 3'
-    );
+    expectDeprecation(() => {
+      this.assert.equal(
+        obj.objectAt(obj, 5),
+        undefined,
+        'should return undefined for obj.objectAt(5) when len = 3'
+      );
+    }, /Usage of Ember.Array methods is deprecated/);
 
     obj = this.newObject([]);
-    this.assert.equal(
-      obj.objectAt(obj, 0),
-      undefined,
-      'should return undefined for obj.objectAt(0) when len = 0'
-    );
+    expectDeprecation(() => {
+      this.assert.equal(
+        obj.objectAt(obj, 0),
+        undefined,
+        'should return undefined for obj.objectAt(0) when len = 0'
+      );
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 }
 
