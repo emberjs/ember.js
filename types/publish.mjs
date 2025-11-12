@@ -103,6 +103,7 @@ async function main() {
   await fs.mkdir(TYPES_DIR, { recursive: true });
 
   doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-types.json']));
+  doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-vm-types.json']));
 
   // We're deprecating the barrel file, so this is temporary. The Ember global is a namespace,
   // and namespaces can't be both exported and used as a type with the same semantics and
@@ -111,7 +112,9 @@ async function main() {
   // prior to the deprecation)
   await fs.cp(path.join(TYPES_DIR, 'ember/barrel.d.ts'), path.join(TYPES_DIR, 'ember/index.d.ts'));
 
-  let remappedLocationExcludes = await doOrDie(copyHandwrittenDefinitions);
+  let remappedLocationExcludes = await doOrDie(() => copyHandwrittenDefinitions('packages'));
+  await doOrDie(() => copyHandwrittenDefinitions('glimmer-vm/packages'));
+
   let sideEffectExcludes = await doOrDie(copyRemappedLocationModules);
 
   // The majority of those items should be excluded entirely, but in some cases
@@ -201,8 +204,7 @@ function copyRemappedLocationModules() {
 
   @returns {Promise<Array<string>>} The modules copied over by hand.
 */
-async function copyHandwrittenDefinitions() {
-  let inputDir = 'packages';
+async function copyHandwrittenDefinitions(inputDir) {
   let definitionModules = glob
     .sync('**/*.d.ts', {
       cwd: inputDir,
@@ -447,6 +449,9 @@ function normalizeSpecifier(moduleName, specifier) {
   } else if (specifier.startsWith('./')) {
     let parentModuleName = moduleName.replace(TERMINAL_MODULE_RE, '');
     let sansLeadingDot = specifier.replace(NEIGHBOR_PATH_RE, '');
+    if (sansLeadingDot.endsWith('.d.ts')) {
+      sansLeadingDot = sansLeadingDot.slice(0, -5);
+    }
     let newImportName = `${parentModuleName}/${sansLeadingDot}`;
     return newImportName;
   } else if (specifier.startsWith('../')) {
