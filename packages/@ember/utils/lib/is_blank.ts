@@ -1,3 +1,4 @@
+import { deprecate } from '@ember/debug';
 import isEmpty from './is_empty';
 /**
  @module @ember/utils
@@ -29,5 +30,12 @@ import isEmpty from './is_empty';
   @public
 */
 export default function isBlank(obj: unknown): boolean {
+  deprecate('isBlank is deprecated. Use @ember/legacy-utils instead.', false, {
+    for: 'ember-source',
+    id: 'ember-utils.deprecate-isBlank',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  });
+
   return isEmpty(obj) || (typeof obj === 'string' && /\S/.test(obj) === false);
 }
