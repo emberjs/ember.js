@@ -314,7 +314,7 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(handlebars@4.7.8)(underscore@1.13.7)
       typescript:
-        specifier: '5.2'
+        specifier: 5.2.2
         version: 5.2.2
       typescript-eslint:
         specifier: ^8.26.0
@@ -9658,6 +9658,7 @@ packages:
   puppeteer@24.3.0:
     resolution: {integrity: sha512-wYEx+NnEM1T6ncHB+IsTovUgx+JlZ0pv0sRGTb8IzoTeOILvyUcdU2h34bYEQ1iG5maz1VQA5eI4kzIyAVh90A==}
     engines: {node: '>=18'}
+    deprecated: < 24.15.0 is no longer supported
     hasBin: true
 
   q@0.9.7:
@@ -11861,7 +11862,7 @@ snapshots:
       '@babel/code-frame': 7.26.2
       '@babel/generator': 7.26.9
       '@babel/helper-compilation-targets': 7.26.5
-      '@babel/helper-module-transforms': 7.26.0(@babel/core@7.26.9)(supports-color@8.1.1)
+      '@babel/helper-module-transforms': 7.26.0(@babel/core@7.26.9(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/helpers': 7.26.9
       '@babel/parser': 7.26.9
       '@babel/template': 7.26.9
@@ -12141,6 +12142,7 @@ snapshots:
       '@babel/traverse': 7.26.9(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@babel/helper-module-transforms@7.26.0(@babel/core@7.27.4)':
     dependencies:
