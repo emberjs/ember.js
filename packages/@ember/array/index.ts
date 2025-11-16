@@ -1380,19 +1380,32 @@ const EmberArray = Mixin.create(Enumerable, {
     return any(this, callback);
   },
 
-  // FIXME: When called without initialValue, behavior does not match native behavior
   reduce<T, V>(
     this: EmberArray<T>,
     callback: (summation: V, current: T, index: number, arr: EmberArray<T>) => V,
-    initialValue: V
+    initialValue?: V
   ) {
     assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 
-    let ret = initialValue;
+    let length = this.length;
+    let startIndex = 0;
+    let ret: V;
 
-    this.forEach(function (item, i) {
-      ret = callback(ret, item, i, this);
-    }, this);
+    if (arguments.length > 1) {
+      ret = initialValue as V;
+    } else {
+      if (length === 0) {
+        throw new TypeError('Reduce of empty array with no initial value');
+      }
+
+      ret = objectAt(this, 0) as unknown as V;
+      startIndex = 1;
+    }
+
+    for (let index = startIndex; index < length; index++) {
+      let item = objectAt(this, index) as T;
+      ret = callback(ret, item, index, this);
+    }
 
     return ret;
   },
