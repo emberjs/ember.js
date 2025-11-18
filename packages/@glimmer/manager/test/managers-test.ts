@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   ComponentManager,
   HelperManager,
@@ -103,7 +104,7 @@ module('Managers', () => {
       );
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('throws if multiple component managers associated with the same definition', (assert) => {
         let definition = setInternalComponentManager({} as any, {});
 
@@ -205,7 +206,7 @@ module('Managers', () => {
       assert.strictEqual(instance1, helper, 'manager is the internal helper');
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('throws if multiple helper managers associated with the same definition', (assert) => {
         let definition = setInternalHelperManager(() => {
           return {} as any;
@@ -316,7 +317,7 @@ module('Managers', () => {
       );
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('throws if multiple modifier managers associated with the same definition', (assert) => {
         let definition = setModifierManager(() => {
           return {} as any;
@@ -376,7 +377,7 @@ module('Managers', () => {
 });
 
 function assertPrimitiveUsage(assert: Assert, setManager: any) {
-  if (!import.meta.env.DEV) {
+  if (!DEBUG) {
     assert.expect(0);
     return;
   }

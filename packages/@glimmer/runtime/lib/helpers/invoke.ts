@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type { Arguments, InternalHelperManager } from '@glimmer/interfaces';
 import type { Cache } from '@glimmer/validator';
 import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
@@ -7,13 +8,13 @@ import { createCache, getValue } from '@glimmer/validator';
 
 import { EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL } from '../vm/arguments';
 
-let ARGS_CACHES = import.meta.env.DEV
+let ARGS_CACHES = DEBUG
   ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>()
   : undefined;
 
 function getArgs(proxy: SimpleArgsProxy): Partial<Arguments> {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-  return getValue(import.meta.env.DEV ? ARGS_CACHES!.get(proxy)! : proxy.argsCache!)!;
+  return getValue(DEBUG ? ARGS_CACHES!.get(proxy)! : proxy.argsCache!)!;
 }
 
 class SimpleArgsProxy {
@@ -25,7 +26,7 @@ class SimpleArgsProxy {
   ) {
     let argsCache = createCache(() => computeArgs(context));
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       ARGS_CACHES!.set(this, argsCache);
       Object.freeze(this);
@@ -51,7 +52,7 @@ export function invokeHelper(
   computeArgs?: (context: object) => Partial<Arguments>
 ): Cache {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS usage
-  if (import.meta.env.DEV && (typeof context !== 'object' || context === null)) {
+  if (DEBUG && (typeof context !== 'object' || context === null)) {
     throw new Error(
       `Expected a context object to be passed as the first parameter to invokeHelper, got ${context}`
     );
@@ -61,7 +62,7 @@ export function invokeHelper(
 
   const internalManager = getInternalHelperManager(definition);
 
-  if (import.meta.env.DEV && typeof internalManager === 'function') {
+  if (DEBUG && typeof internalManager === 'function') {
     throw new Error(
       'Found a helper manager, but it was an internal built-in helper manager. `invokeHelper` does not support internal helpers yet.'
     );
@@ -75,7 +76,7 @@ export function invokeHelper(
 
   if (hasValue(manager)) {
     cache = createCache(() => {
-      if (import.meta.env.DEV && (isDestroying(cache) || isDestroyed(cache))) {
+      if (DEBUG && (isDestroying(cache) || isDestroyed(cache))) {
         throw new Error(
           `You attempted to get the value of a helper after the helper was destroyed, which is not allowed`
         );

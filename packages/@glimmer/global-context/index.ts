@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -127,7 +128,7 @@ export function debugAssert(
   options?: { id: string }
 ): asserts test {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (import.meta.env?.DEV && assert) {
+  if (DEBUG && assert) {
     assert(test, typeof msg === 'string' ? msg : msg(), options);
   }
 }
@@ -173,7 +174,7 @@ export interface GlobalContext {
 let globalContextWasSet = false;
 
 export default function setGlobalContext(context: GlobalContext) {
-  if (import.meta.env?.DEV) {
+  if (DEBUG) {
     if (globalContextWasSet) {
       throw new Error('Attempted to set the global context twice. This should only be set once.');
     }
@@ -200,7 +201,7 @@ export let testOverrideGlobalContext:
   | ((context: Partial<GlobalContext> | null) => GlobalContext | null)
   | undefined;
 
-if (import.meta.env?.DEV) {
+if (DEBUG) {
   assertGlobalContextWasSet = () => {
     if (!globalContextWasSet) {
       throw new Error(

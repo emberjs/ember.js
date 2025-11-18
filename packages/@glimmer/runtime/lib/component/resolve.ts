@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,
   ComponentDefinition,
@@ -19,7 +20,7 @@ export function resolveComponent(
       expect(owner, 'BUG: expected owner when looking up component')
     ) ?? null;
 
-  if (import.meta.env.DEV && !definition) {
+  if (DEBUG && !definition) {
     throw new Error(
       `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
     );

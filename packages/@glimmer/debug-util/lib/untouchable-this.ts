@@ -1,7 +1,8 @@
+import { DEBUG } from '@glimmer/env';
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 export default function buildUntouchableThis(source: string): null | object {
   let context: null | object = null;
-  if (import.meta.env.DEV) {
+  if (DEBUG) {
     let assertOnProperty = (property: string | number | symbol) => {
       let access =
         typeof property === 'symbol' || typeof property === 'number'

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
   CapturedRenderNode,
@@ -32,7 +33,7 @@ export class Ref<T extends object> {
   }
 
   release(): void {
-    if (import.meta.env.DEV && this.value === null) {
+    if (DEBUG && this.value === null) {
       throw new Error('BUG: double release?');
     }
 
@@ -83,7 +84,7 @@ export default class DebugRenderTreeImpl<TBucket extends object>
   }
 
   didRender(state: TBucket, bounds: Bounds): void {
-    if (import.meta.env.DEV && this.stack.current !== state) {
+    if (DEBUG && this.stack.current !== state) {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new Error(`BUG: expecting ${this.stack.current}, got ${state}`);
     }
@@ -133,7 +134,7 @@ export default class DebugRenderTreeImpl<TBucket extends object>
   }
 
   private exit(): void {
-    if (import.meta.env.DEV && this.stack.size === 0) {
+    if (DEBUG && this.stack.size === 0) {
       throw new Error('BUG: unbalanced pop');
     }
 
@@ -145,7 +146,7 @@ export default class DebugRenderTreeImpl<TBucket extends object>
   }
 
   private appendChild(node: InternalRenderNode<TBucket>, state: TBucket): void {
-    if (import.meta.env.DEV && this.refs.has(state)) {
+    if (DEBUG && this.refs.has(state)) {
       throw new Error('BUG: child already appended');
     }
 

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import {
   beginTrackFrame,
   consumeTag,
@@ -395,7 +396,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(isConst(nonConstCache), 'non-constant cache returns false');
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('createCache throws an error in import.meta.env.DEV mode if users to use with a non-function', (assert) => {
         assert.throws(
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any,
@@ -488,7 +489,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(tag, snapshot));
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('it errors when attempting to update a value already consumed in the same transaction', (assert) => {
         class Foo {
           foo = 123;
@@ -514,7 +515,7 @@ module('@glimmer/validator: tracking', () => {
     }
   });
 
-  if (import.meta.env.DEV) {
+  if (DEBUG) {
     module('debug', () => {
       test('it errors when attempting to update a value that has already been consumed in the same transaction', (assert) => {
         let tag = createTag();

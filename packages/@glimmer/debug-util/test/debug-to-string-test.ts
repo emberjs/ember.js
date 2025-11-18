@@ -1,10 +1,11 @@
+import { DEBUG } from '@glimmer/env';
 /// <reference types="vite/client" />
 
 import { debugToString as maybeDebugToString } from '@glimmer/debug-util';
 
 QUnit.module('debug-to-string tests');
 
-if (import.meta.env.DEV) {
+if (DEBUG) {
   const debugToString = maybeDebugToString as (value: unknown) => string;
   QUnit.test('[debugToString] should be an function in debug mode', (assert) => {
     assert.deepEqual(typeof maybeDebugToString, 'function');

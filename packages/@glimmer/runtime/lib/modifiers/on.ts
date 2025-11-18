@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   CapturedArguments,
   InternalModifierManager,
@@ -78,7 +79,7 @@ export class OnModifierState {
       }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
     }) as EventListener;
 
-    if (import.meta.env.DEV && args.positional.length !== 2) {
+    if (DEBUG && args.positional.length !== 2) {
       throw new Error(
         `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`
       );
@@ -88,7 +89,7 @@ export class OnModifierState {
     let passive: boolean | undefined = undefined;
     let capture: boolean | undefined = undefined;
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       let { once: _once, passive: _passive, capture: _capture, ...extra } = reifyNamed(args.named);
 
       once = check(_once, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
@@ -161,7 +162,7 @@ export class OnModifierState {
     if (shouldUpdate) {
       let callback = userProvidedCallback;
 
-      if (import.meta.env.DEV) {
+      if (DEBUG) {
         callback = userProvidedCallback.bind(untouchableContext);
 
         if (passive) {

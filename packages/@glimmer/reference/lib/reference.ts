@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   ComputeReference,
   ConstantReference,
@@ -64,7 +65,7 @@ export function createPrimitiveRef<T extends string | symbol | number | boolean 
   ref.tag = CONSTANT_TAG;
   ref.lastValue = value;
 
-  if (import.meta.env?.DEV) {
+  if (DEBUG) {
     ref.debugLabel = String(value);
   }
 
@@ -82,7 +83,7 @@ export function createConstRef<T>(value: T, debugLabel: false | string): Referen
   ref.lastValue = value;
   ref.tag = CONSTANT_TAG;
 
-  if (import.meta.env?.DEV) {
+  if (DEBUG) {
     ref.debugLabel = debugLabel as string;
   }
 
@@ -95,7 +96,7 @@ export function createUnboundRef<T>(value: T, debugLabel: false | string): Refer
   ref.lastValue = value;
   ref.tag = CONSTANT_TAG;
 
-  if (import.meta.env?.DEV) {
+  if (DEBUG) {
     ref.debugLabel = debugLabel as string;
   }
 
@@ -112,7 +113,7 @@ export function createComputeRef<T = unknown>(
   ref.compute = compute;
   ref.update = update;
 
-  if (import.meta.env?.DEV) {
+  if (DEBUG) {
     ref.debugLabel = `(result of a \`${debugLabel}\` helper)`;
   }
 
@@ -172,7 +173,7 @@ export function valueForRef<T>(_ref: Reference<T>): T {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         lastValue = ref.lastValue = compute!();
       },
-      import.meta.env?.DEV && ref.debugLabel
+      DEBUG && ref.debugLabel
     );
 
     tag = ref.tag = newTag;
@@ -217,7 +218,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     if (isDict(parent)) {
       child = createUnboundRef(
         (parent as Record<string, unknown>)[path],
-        import.meta.env?.DEV && `${parentRef.debugLabel}.${path}`
+        DEBUG && `${parentRef.debugLabel}.${path}`
       );
     } else {
       child = UNDEFINED_REFERENCE;
@@ -240,7 +241,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
       }
     );
 
-    if (import.meta.env?.DEV) {
+    if (DEBUG) {
       child.debugLabel = `${parentRef.debugLabel}.${path}`;
     }
   }
@@ -262,7 +263,7 @@ export function childRefFromParts(root: Reference, parts: string[]): Reference {
 
 export let createDebugAliasRef: undefined | ((debugLabel: string, inner: Reference) => Reference);
 
-if (import.meta.env?.DEV) {
+if (DEBUG) {
   createDebugAliasRef = (debugLabel: string, inner: Reference) => {
     const update = isUpdatableRef(inner) ? (value: unknown): void => updateRef(inner, value) : null;
     const ref = createComputeRef(() => valueForRef(inner), update);

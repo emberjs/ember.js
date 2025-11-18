@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type { TemplateFactory } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/debug-util';
 
@@ -7,7 +8,7 @@ const getPrototypeOf = Reflect.getPrototypeOf;
 
 export function setComponentTemplate(factory: TemplateFactory, obj: object) {
   if (
-    import.meta.env.DEV &&
+    DEBUG &&
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
     !(obj !== null && (typeof obj === 'object' || typeof obj === 'function'))
   ) {
@@ -15,7 +16,7 @@ export function setComponentTemplate(factory: TemplateFactory, obj: object) {
     throw new Error(`Cannot call \`setComponentTemplate\` on \`${debugToString!(obj)}\``);
   }
 
-  if (import.meta.env.DEV && TEMPLATES.has(obj)) {
+  if (DEBUG && TEMPLATES.has(obj)) {
     throw new Error(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       `Cannot call \`setComponentTemplate\` multiple times on the same class (\`${debugToString!(

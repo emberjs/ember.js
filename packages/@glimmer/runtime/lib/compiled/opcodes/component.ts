@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
   CapabilityMask,
@@ -166,7 +167,7 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
   let definition: ComponentDefinition | CurriedValue;
 
   if (typeof component === 'string') {
-    if (import.meta.env.DEV && isStrict) {
+    if (DEBUG && isStrict) {
       throw new Error(
         `Attempted to resolve a dynamic component with a string definition, \`${component}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
       );
@@ -193,7 +194,7 @@ APPEND_OPCODES.add(VM_RESOLVE_CURRIED_COMPONENT_OP, (vm) => {
   let definition: CurriedValue | ComponentDefinition | null;
 
   if (
-    import.meta.env.DEV &&
+    DEBUG &&
     !(typeof value === 'function' || (typeof value === 'object' && value !== null))
   ) {
     throw new Error(
@@ -206,7 +207,7 @@ APPEND_OPCODES.add(VM_RESOLVE_CURRIED_COMPONENT_OP, (vm) => {
   } else {
     definition = constants.component(value as object, vm.getOwner(), true);
 
-    if (import.meta.env.DEV && definition === null) {
+    if (DEBUG && definition === null) {
       throw new Error(
         `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${
           ref.debugLabel
@@ -417,7 +418,7 @@ APPEND_OPCODES.add(VM_REGISTER_COMPONENT_DESTRUCTOR_OP, (vm, { op1: register }) 
   let d = manager.getDestroyable(state);
 
   if (
-    import.meta.env.DEV &&
+    DEBUG &&
     !managerHasCapability(manager, capabilities, InternalComponentCapabilities.willDestroy) &&
     d !== null &&
     (typeof 'willDestroy') in d
@@ -433,7 +434,7 @@ APPEND_OPCODES.add(VM_REGISTER_COMPONENT_DESTRUCTOR_OP, (vm, { op1: register }) 
 APPEND_OPCODES.add(VM_BEGIN_COMPONENT_TRANSACTION_OP, (vm, { op1: register }) => {
   let name;
 
-  if (import.meta.env.DEV) {
+  if (DEBUG) {
     let { definition, manager } = check(
       vm.fetchValue(check(register, CheckRegister)),
       CheckComponentInstance
