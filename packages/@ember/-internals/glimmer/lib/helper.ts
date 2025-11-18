@@ -321,7 +321,7 @@ export type FunctionBasedHelper<S> = abstract new () => FunctionBasedHelperInsta
 // This is needful because we lie about what this actually is for Glint's sake:
 // a function-based helper returns a `Factory<SimpleHelper>`, which is designed
 // to be "opaque" from a consumer's POV, i.e. not user-callable or constructible
-// but only useable in a template (or via `invokeHelper()` which also treats it
+// but only usable in a template (or via `invokeHelper()` which also treats it
 // as a fully opaque `object` from a type POV). But Glint needs a `Helper<S>` to
 // make it work the same way as class-based helpers. (Note that this does not
 // hold for plain functions as helpers, which it can handle distinctly.) This
