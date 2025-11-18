@@ -1,7 +1,8 @@
 import { run } from '@ember/runloop';
 import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 import { peekMeta } from '@ember/-internals/meta';
-import EmberObject, { get, set, observer } from '@ember/object';
+import { get, set, observer } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -9,7 +10,7 @@ moduleFor(
   '@ember/-internals/runtime/system/object/destroy_test',
   class extends AbstractTestCase {
     ['@test should schedule objects to be destroyed at the end of the run loop'](assert) {
-      let obj = EmberObject.create();
+      let obj = CoreObject.create();
       let meta;
 
       run(() => {
@@ -31,7 +32,7 @@ moduleFor(
       assert
     ) {
       if (DEBUG) {
-        let obj = EmberObject.extend({
+        let obj = CoreObject.extend({
           fooDidChange: observer('foo', function () {}),
         }).create({
           foo: 'bar',
@@ -47,19 +48,19 @@ moduleFor(
 
     async ['@test observers should not fire after an object has been destroyed'](assert) {
       let count = 0;
-      let obj = EmberObject.extend({
+      let obj = CoreObject.extend({
         fooDidChange: observer('foo', function () {
           count++;
         }),
       }).create();
 
-      obj.set('foo', 'bar');
+      set(obj, 'foo', 'bar');
       await runLoopSettled();
 
       assert.equal(count, 1, 'observer was fired once');
 
       beginPropertyChanges();
-      obj.set('foo', 'quux');
+      set(obj, 'foo', 'quux');
       obj.destroy();
       endPropertyChanges();
       await runLoopSettled();
@@ -75,11 +76,11 @@ moduleFor(
 
       let objs = {};
 
-      let A = EmberObject.extend({
+      let A = CoreObject.extend({
         objs: objs,
         isAlive: true,
         willDestroy() {
-          this.set('isAlive', false);
+          set(this, 'isAlive', false);
         },
         bDidChange: observer('objs.b.isAlive', function () {
           shouldNotChange++;
@@ -89,11 +90,11 @@ moduleFor(
         }),
       });
 
-      let B = EmberObject.extend({
+      let B = CoreObject.extend({
         objs: objs,
         isAlive: true,
         willDestroy() {
-          this.set('isAlive', false);
+          set(this, 'isAlive', false);
         },
         aDidChange: observer('objs.a.isAlive', function () {
           shouldNotChange++;
@@ -103,11 +104,11 @@ moduleFor(
         }),
       });
 
-      let C = EmberObject.extend({
+      let C = CoreObject.extend({
         objs: objs,
         isAlive: true,
         willDestroy() {
-          this.set('isAlive', false);
+          set(this, 'isAlive', false);
         },
         aDidChange: observer('objs.a.isAlive', function () {
           shouldNotChange++;
@@ -117,7 +118,7 @@ moduleFor(
         }),
       });
 
-      let LongLivedObject = EmberObject.extend({
+      let LongLivedObject = CoreObject.extend({
         objs: objs,
         isAliveDidChange: observer('objs.a.isAlive', function () {
           shouldChange++;
