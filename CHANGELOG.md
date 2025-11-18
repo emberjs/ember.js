@@ -12,6 +12,10 @@
 
 - All changes were internal, docs, and/or bugfixes that were backported.
 
+## v6.8.2 (November 17, 2025)
+
+- [#21002](https://github.com/emberjs/ember.js/pull/21002) [BUGFIX] Don't render if we're mid-destroy
+
 ## v6.8.1 (October 30, 2025)
 
 - [#20994](https://github.com/emberjs/ember.js/pull/20994) [BUGFIX] Fix loose-mode components invoked from a strict mode component via renderComponent
