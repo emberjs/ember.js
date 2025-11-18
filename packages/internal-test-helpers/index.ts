@@ -59,3 +59,4 @@ export {
 
 export { isEdge } from './lib/browser-detect';
 export { verifyRegistration } from './lib/registry-check';
+export { emberAWithoutDeprecation } from './lib/array';
