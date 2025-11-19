@@ -18,46 +18,46 @@
 import d from 'amd-compat-entrypoint-definition';
 
 import * as emberinternalsBrowserEnvironmentIndex from '@ember/-internals/browser-environment/index';
-d('@ember/-internals/browser-environment/index', emberinternalsBrowserEnvironmentIndex);
+here(@ember/-internals/browser-environment/index);
 
 import * as emberinternalsContainerIndex from '@ember/-internals/container/index';
-d('@ember/-internals/container/index', emberinternalsContainerIndex);
+here(@ember/-internals/container/index);
 
 import * as emberinternalsDeprecationsIndex from '@ember/-internals/deprecations/index';
-d('@ember/-internals/deprecations/index', emberinternalsDeprecationsIndex);
+here(@ember/-internals/deprecations/index);
 
 import * as emberinternalsEnvironmentIndex from '@ember/-internals/environment/index';
-d('@ember/-internals/environment/index', emberinternalsEnvironmentIndex);
+here(@ember/-internals/environment/index);
 
 import * as emberinternalsErrorHandlingIndex from '@ember/-internals/error-handling/index';
-d('@ember/-internals/error-handling/index', emberinternalsErrorHandlingIndex);
+here(@ember/-internals/error-handling/index);
 
 import * as emberinternalsGlimmerIndex from '@ember/-internals/glimmer/index';
-d('@ember/-internals/glimmer/index', emberinternalsGlimmerIndex);
+here(@ember/-internals/glimmer/index);
 
 import * as emberinternalsMetaIndex from '@ember/-internals/meta/index';
-d('@ember/-internals/meta/index', emberinternalsMetaIndex);
+here(@ember/-internals/meta/index);
 
 import * as emberinternalsMetaLibMeta from '@ember/-internals/meta/lib/meta';
-d('@ember/-internals/meta/lib/meta', emberinternalsMetaLibMeta);
+here(@ember/-internals/meta/lib/meta);
 
 import * as emberinternalsMetalIndex from '@ember/-internals/metal/index';
-d('@ember/-internals/metal/index', emberinternalsMetalIndex);
+here(@ember/-internals/metal/index);
 
 import * as emberinternalsOwnerIndex from '@ember/-internals/owner/index';
-d('@ember/-internals/owner/index', emberinternalsOwnerIndex);
+here(@ember/-internals/owner/index);
 
 import * as emberinternalsRoutingIndex from '@ember/-internals/routing/index';
-d('@ember/-internals/routing/index', emberinternalsRoutingIndex);
+here(@ember/-internals/routing/index);
 
 import * as emberinternalsRuntimeIndex from '@ember/-internals/runtime/index';
-d('@ember/-internals/runtime/index', emberinternalsRuntimeIndex);
+here(@ember/-internals/runtime/index);
 
 import * as emberinternalsRuntimeLibExtRsvp from '@ember/-internals/runtime/lib/ext/rsvp';
-d('@ember/-internals/runtime/lib/ext/rsvp', emberinternalsRuntimeLibExtRsvp);
+here(@ember/-internals/runtime/lib/ext/rsvp);
 
 import * as emberinternalsRuntimeLibMixinsproxy from '@ember/-internals/runtime/lib/mixins/-proxy';
-d('@ember/-internals/runtime/lib/mixins/-proxy', emberinternalsRuntimeLibMixinsproxy);
+here(@ember/-internals/runtime/lib/mixins/-proxy);
 
 import * as emberinternalsRuntimeLibMixinsActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 d(
@@ -66,7 +66,7 @@ d(
 );
 
 import * as emberinternalsRuntimeLibMixinsComparable from '@ember/-internals/runtime/lib/mixins/comparable';
-d('@ember/-internals/runtime/lib/mixins/comparable', emberinternalsRuntimeLibMixinsComparable);
+here(@ember/-internals/runtime/lib/mixins/comparable);
 
 import * as emberinternalsRuntimeLibMixinsContainerProxy from '@ember/-internals/runtime/lib/mixins/container_proxy';
 d(
@@ -87,19 +87,19 @@ d(
 );
 
 import * as emberinternalsStringIndex from '@ember/-internals/string/index';
-d('@ember/-internals/string/index', emberinternalsStringIndex);
+here(@ember/-internals/string/index);
 
 import * as emberinternalsUtilityTypesIndex from '@ember/-internals/utility-types/index';
-d('@ember/-internals/utility-types/index', emberinternalsUtilityTypesIndex);
+here(@ember/-internals/utility-types/index);
 
 import * as emberinternalsUtilsIndex from '@ember/-internals/utils/index';
-d('@ember/-internals/utils/index', emberinternalsUtilsIndex);
+here(@ember/-internals/utils/index);
 
 import * as emberinternalsViewsIndex from '@ember/-internals/views/index';
-d('@ember/-internals/views/index', emberinternalsViewsIndex);
+here(@ember/-internals/views/index);
 
 import * as emberinternalsViewsLibCompatAttrs from '@ember/-internals/views/lib/compat/attrs';
-d('@ember/-internals/views/lib/compat/attrs', emberinternalsViewsLibCompatAttrs);
+here(@ember/-internals/views/lib/compat/attrs);
 
 import * as emberinternalsViewsLibCompatFallbackViewRegistry from '@ember/-internals/views/lib/compat/fallback-view-registry';
 d(
@@ -108,10 +108,10 @@ d(
 );
 
 import * as emberinternalsViewsLibComponentLookup from '@ember/-internals/views/lib/component_lookup';
-d('@ember/-internals/views/lib/component_lookup', emberinternalsViewsLibComponentLookup);
+here(@ember/-internals/views/lib/component_lookup);
 
 import * as emberinternalsViewsLibMixinsActionSupport from '@ember/-internals/views/lib/mixins/action_support';
-d('@ember/-internals/views/lib/mixins/action_support', emberinternalsViewsLibMixinsActionSupport);
+here(@ember/-internals/views/lib/mixins/action_support);
 
 import * as emberinternalsViewsLibSystemEventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 d(
@@ -120,355 +120,355 @@ d(
 );
 
 import * as emberinternalsViewsLibSystemUtils from '@ember/-internals/views/lib/system/utils';
-d('@ember/-internals/views/lib/system/utils', emberinternalsViewsLibSystemUtils);
+here(@ember/-internals/views/lib/system/utils);
 
 import * as emberinternalsViewsLibViewsCoreView from '@ember/-internals/views/lib/views/core_view';
-d('@ember/-internals/views/lib/views/core_view', emberinternalsViewsLibViewsCoreView);
+here(@ember/-internals/views/lib/views/core_view);
 
 import * as emberinternalsViewsLibViewsStates from '@ember/-internals/views/lib/views/states';
-d('@ember/-internals/views/lib/views/states', emberinternalsViewsLibViewsStates);
+here(@ember/-internals/views/lib/views/states);
 
 import * as emberApplicationIndex from '@ember/application/index';
-d('@ember/application/index', emberApplicationIndex);
+here(@ember/application/index);
 
 import * as emberApplicationInstance from '@ember/application/instance';
-d('@ember/application/instance', emberApplicationInstance);
+here(@ember/application/instance);
 
 import * as emberApplicationLibLazyLoad from '@ember/application/lib/lazy_load';
-d('@ember/application/lib/lazy_load', emberApplicationLibLazyLoad);
+here(@ember/application/lib/lazy_load);
 
 import * as emberApplicationNamespace from '@ember/application/namespace';
-d('@ember/application/namespace', emberApplicationNamespace);
+here(@ember/application/namespace);
 
 import * as emberArrayinternals from '@ember/array/-internals';
-d('@ember/array/-internals', emberArrayinternals);
+here(@ember/array/-internals);
 
 import * as emberArrayIndex from '@ember/array/index';
-d('@ember/array/index', emberArrayIndex);
+here(@ember/array/index);
 
 import * as emberArrayLibMakeArray from '@ember/array/lib/make-array';
-d('@ember/array/lib/make-array', emberArrayLibMakeArray);
+here(@ember/array/lib/make-array);
 
 import * as emberArrayMutable from '@ember/array/mutable';
-d('@ember/array/mutable', emberArrayMutable);
+here(@ember/array/mutable);
 
 import * as emberArrayProxy from '@ember/array/proxy';
-d('@ember/array/proxy', emberArrayProxy);
+here(@ember/array/proxy);
 
 import * as emberCanaryFeaturesIndex from '@ember/canary-features/index';
-d('@ember/canary-features/index', emberCanaryFeaturesIndex);
+here(@ember/canary-features/index);
 
 import * as emberComponentHelper from '@ember/component/helper';
-d('@ember/component/helper', emberComponentHelper);
+here(@ember/component/helper);
 
 import * as emberComponentIndex from '@ember/component/index';
-d('@ember/component/index', emberComponentIndex);
+here(@ember/component/index);
 
 import * as emberComponentTemplateOnly from '@ember/component/template-only';
-d('@ember/component/template-only', emberComponentTemplateOnly);
+here(@ember/component/template-only);
 
 import * as emberControllerIndex from '@ember/controller/index';
-d('@ember/controller/index', emberControllerIndex);
+here(@ember/controller/index);
 
 import * as emberDebugIndex from '@ember/debug/index';
-d('@ember/debug/index', emberDebugIndex);
+here(@ember/debug/index);
 
 import * as emberDebugLibCaptureRenderTree from '@ember/debug/lib/capture-render-tree';
-d('@ember/debug/lib/capture-render-tree', emberDebugLibCaptureRenderTree);
+here(@ember/debug/lib/capture-render-tree);
 
 import * as emberDebugLibDeprecate from '@ember/debug/lib/deprecate';
-d('@ember/debug/lib/deprecate', emberDebugLibDeprecate);
+here(@ember/debug/lib/deprecate);
 
 import * as emberDebugLibHandlers from '@ember/debug/lib/handlers';
-d('@ember/debug/lib/handlers', emberDebugLibHandlers);
+here(@ember/debug/lib/handlers);
 
 import * as emberDebugLibInspect from '@ember/debug/lib/inspect';
-d('@ember/debug/lib/inspect', emberDebugLibInspect);
+here(@ember/debug/lib/inspect);
 
 import * as emberDebugLibTesting from '@ember/debug/lib/testing';
-d('@ember/debug/lib/testing', emberDebugLibTesting);
+here(@ember/debug/lib/testing);
 
 import * as emberDebugLibWarn from '@ember/debug/lib/warn';
-d('@ember/debug/lib/warn', emberDebugLibWarn);
+here(@ember/debug/lib/warn);
 
 import * as emberDebugContainerDebugAdapter from '@ember/debug/container-debug-adapter';
-d('@ember/debug/container-debug-adapter', emberDebugContainerDebugAdapter);
+here(@ember/debug/container-debug-adapter);
 
 import * as emberDebugDataAdapter from '@ember/debug/data-adapter';
-d('@ember/debug/data-adapter', emberDebugDataAdapter);
+here(@ember/debug/data-adapter);
 
 import * as emberDeprecatedFeaturesIndex from '@ember/deprecated-features/index';
-d('@ember/deprecated-features/index', emberDeprecatedFeaturesIndex);
+here(@ember/deprecated-features/index);
 
 import * as emberDestroyableIndex from '@ember/destroyable/index';
-d('@ember/destroyable/index', emberDestroyableIndex);
+here(@ember/destroyable/index);
 
 import * as emberEngineIndex from '@ember/engine/index';
-d('@ember/engine/index', emberEngineIndex);
+here(@ember/engine/index);
 
 import * as emberEngineInstance from '@ember/engine/instance';
-d('@ember/engine/instance', emberEngineInstance);
+here(@ember/engine/instance);
 
 import * as emberEngineLibEngineParent from '@ember/engine/lib/engine-parent';
-d('@ember/engine/lib/engine-parent', emberEngineLibEngineParent);
+here(@ember/engine/lib/engine-parent);
 
 import * as emberEnumerableIndex from '@ember/enumerable/index';
-d('@ember/enumerable/index', emberEnumerableIndex);
+here(@ember/enumerable/index);
 
 import * as emberEnumerableMutable from '@ember/enumerable/mutable';
-d('@ember/enumerable/mutable', emberEnumerableMutable);
+here(@ember/enumerable/mutable);
 
 import * as emberHelperIndex from '@ember/helper/index';
-d('@ember/helper/index', emberHelperIndex);
+here(@ember/helper/index);
 
 import * as emberInstrumentationIndex from '@ember/instrumentation/index';
-d('@ember/instrumentation/index', emberInstrumentationIndex);
+here(@ember/instrumentation/index);
 
 import * as emberModifierIndex from '@ember/modifier/index';
-d('@ember/modifier/index', emberModifierIndex);
+here(@ember/modifier/index);
 
 import * as emberObjectinternals from '@ember/object/-internals';
-d('@ember/object/-internals', emberObjectinternals);
+here(@ember/object/-internals);
 
 import * as emberObjectCompat from '@ember/object/compat';
-d('@ember/object/compat', emberObjectCompat);
+here(@ember/object/compat);
 
 import * as emberObjectComputed from '@ember/object/computed';
-d('@ember/object/computed', emberObjectComputed);
+here(@ember/object/computed);
 
 import * as emberObjectCore from '@ember/object/core';
-d('@ember/object/core', emberObjectCore);
+here(@ember/object/core);
 
 import * as emberObjectEvented from '@ember/object/evented';
-d('@ember/object/evented', emberObjectEvented);
+here(@ember/object/evented);
 
 import * as emberObjectEvents from '@ember/object/events';
-d('@ember/object/events', emberObjectEvents);
+here(@ember/object/events);
 
 import * as emberObjectIndex from '@ember/object/index';
-d('@ember/object/index', emberObjectIndex);
+here(@ember/object/index);
 
 import * as emberObjectInternals from '@ember/object/internals';
-d('@ember/object/internals', emberObjectInternals);
+here(@ember/object/internals);
 
 import * as emberObjectLibComputedComputedMacros from '@ember/object/lib/computed/computed_macros';
-d('@ember/object/lib/computed/computed_macros', emberObjectLibComputedComputedMacros);
+here(@ember/object/lib/computed/computed_macros);
 
 import * as emberObjectLibComputedReduceComputedMacros from '@ember/object/lib/computed/reduce_computed_macros';
-d('@ember/object/lib/computed/reduce_computed_macros', emberObjectLibComputedReduceComputedMacros);
+here(@ember/object/lib/computed/reduce_computed_macros);
 
 import * as emberObjectMixin from '@ember/object/mixin';
-d('@ember/object/mixin', emberObjectMixin);
+here(@ember/object/mixin);
 
 import * as emberObjectObservable from '@ember/object/observable';
-d('@ember/object/observable', emberObjectObservable);
+here(@ember/object/observable);
 
 import * as emberObjectObservers from '@ember/object/observers';
-d('@ember/object/observers', emberObjectObservers);
+here(@ember/object/observers);
 
 import * as emberObjectPromiseProxyMixin from '@ember/object/promise-proxy-mixin';
-d('@ember/object/promise-proxy-mixin', emberObjectPromiseProxyMixin);
+here(@ember/object/promise-proxy-mixin);
 
 import * as emberObjectProxy from '@ember/object/proxy';
-d('@ember/object/proxy', emberObjectProxy);
+here(@ember/object/proxy);
 
 import * as emberOwnerIndex from '@ember/owner/index';
-d('@ember/owner/index', emberOwnerIndex);
+here(@ember/owner/index);
 
 import * as emberRendererIndex from '@ember/renderer/index';
-d('@ember/renderer/index', emberRendererIndex);
+here(@ember/renderer/index);
 
 import * as emberRoutinginternals from '@ember/routing/-internals';
-d('@ember/routing/-internals', emberRoutinginternals);
+here(@ember/routing/-internals);
 
 import * as emberRoutingHashLocation from '@ember/routing/hash-location';
-d('@ember/routing/hash-location', emberRoutingHashLocation);
+here(@ember/routing/hash-location);
 
 import * as emberRoutingHistoryLocation from '@ember/routing/history-location';
-d('@ember/routing/history-location', emberRoutingHistoryLocation);
+here(@ember/routing/history-location);
 
 import * as emberRoutingIndex from '@ember/routing/index';
-d('@ember/routing/index', emberRoutingIndex);
+here(@ember/routing/index);
 
 import * as emberRoutingLibCache from '@ember/routing/lib/cache';
-d('@ember/routing/lib/cache', emberRoutingLibCache);
+here(@ember/routing/lib/cache);
 
 import * as emberRoutingLibControllerFor from '@ember/routing/lib/controller_for';
-d('@ember/routing/lib/controller_for', emberRoutingLibControllerFor);
+here(@ember/routing/lib/controller_for);
 
 import * as emberRoutingLibDsl from '@ember/routing/lib/dsl';
-d('@ember/routing/lib/dsl', emberRoutingLibDsl);
+here(@ember/routing/lib/dsl);
 
 import * as emberRoutingLibEngines from '@ember/routing/lib/engines';
-d('@ember/routing/lib/engines', emberRoutingLibEngines);
+here(@ember/routing/lib/engines);
 
 import * as emberRoutingLibGenerateController from '@ember/routing/lib/generate_controller';
-d('@ember/routing/lib/generate_controller', emberRoutingLibGenerateController);
+here(@ember/routing/lib/generate_controller);
 
 import * as emberRoutingLibLocationUtils from '@ember/routing/lib/location-utils';
-d('@ember/routing/lib/location-utils', emberRoutingLibLocationUtils);
+here(@ember/routing/lib/location-utils);
 
 import * as emberRoutingLibQueryParams from '@ember/routing/lib/query_params';
-d('@ember/routing/lib/query_params', emberRoutingLibQueryParams);
+here(@ember/routing/lib/query_params);
 
 import * as emberRoutingLibRouteInfo from '@ember/routing/lib/route-info';
-d('@ember/routing/lib/route-info', emberRoutingLibRouteInfo);
+here(@ember/routing/lib/route-info);
 
 import * as emberRoutingLibRouterState from '@ember/routing/lib/router_state';
-d('@ember/routing/lib/router_state', emberRoutingLibRouterState);
+here(@ember/routing/lib/router_state);
 
 import * as emberRoutingLibRoutingService from '@ember/routing/lib/routing-service';
-d('@ember/routing/lib/routing-service', emberRoutingLibRoutingService);
+here(@ember/routing/lib/routing-service);
 
 import * as emberRoutingLibUtils from '@ember/routing/lib/utils';
-d('@ember/routing/lib/utils', emberRoutingLibUtils);
+here(@ember/routing/lib/utils);
 
 import * as emberRoutingLocation from '@ember/routing/location';
-d('@ember/routing/location', emberRoutingLocation);
+here(@ember/routing/location);
 
 import * as emberRoutingNoneLocation from '@ember/routing/none-location';
-d('@ember/routing/none-location', emberRoutingNoneLocation);
+here(@ember/routing/none-location);
 
 import * as emberRoutingRouteInfo from '@ember/routing/route-info';
-d('@ember/routing/route-info', emberRoutingRouteInfo);
+here(@ember/routing/route-info);
 
 import * as emberRoutingRoute from '@ember/routing/route';
-d('@ember/routing/route', emberRoutingRoute);
+here(@ember/routing/route);
 
 import * as emberRoutingRouterService from '@ember/routing/router-service';
-d('@ember/routing/router-service', emberRoutingRouterService);
+here(@ember/routing/router-service);
 
 import * as emberRoutingRouter from '@ember/routing/router';
-d('@ember/routing/router', emberRoutingRouter);
+here(@ember/routing/router);
 
 import * as emberRoutingTransition from '@ember/routing/transition';
-d('@ember/routing/transition', emberRoutingTransition);
+here(@ember/routing/transition);
 
 import * as emberRunloopprivateBackburner from '@ember/runloop/-private/backburner';
-d('@ember/runloop/-private/backburner', emberRunloopprivateBackburner);
+here(@ember/runloop/-private/backburner);
 
 import * as emberRunloopIndex from '@ember/runloop/index';
-d('@ember/runloop/index', emberRunloopIndex);
+here(@ember/runloop/index);
 
 import * as emberServiceIndex from '@ember/service/index';
-d('@ember/service/index', emberServiceIndex);
+here(@ember/service/index);
 
 import * as emberTemplateCompilationIndex from '@ember/template-compilation/index';
-d('@ember/template-compilation/index', emberTemplateCompilationIndex);
+here(@ember/template-compilation/index);
 
 import * as emberTemplateFactoryIndex from '@ember/template-factory/index';
-d('@ember/template-factory/index', emberTemplateFactoryIndex);
+here(@ember/template-factory/index);
 
 import * as emberTemplateIndex from '@ember/template/index';
-d('@ember/template/index', emberTemplateIndex);
+here(@ember/template/index);
 
 import * as emberTestAdapter from '@ember/test/adapter';
-d('@ember/test/adapter', emberTestAdapter);
+here(@ember/test/adapter);
 
 import * as emberTestIndex from '@ember/test/index';
-d('@ember/test/index', emberTestIndex);
+here(@ember/test/index);
 
 import * as emberUtilsIndex from '@ember/utils/index';
-d('@ember/utils/index', emberUtilsIndex);
+here(@ember/utils/index);
 
 import * as emberUtilsLibCompare from '@ember/utils/lib/compare';
-d('@ember/utils/lib/compare', emberUtilsLibCompare);
+here(@ember/utils/lib/compare);
 
 import * as emberUtilsLibIsEqual from '@ember/utils/lib/is-equal';
-d('@ember/utils/lib/is-equal', emberUtilsLibIsEqual);
+here(@ember/utils/lib/is-equal);
 
 import * as emberUtilsLibIsBlank from '@ember/utils/lib/is_blank';
-d('@ember/utils/lib/is_blank', emberUtilsLibIsBlank);
+here(@ember/utils/lib/is_blank);
 
 import * as emberUtilsLibIsEmpty from '@ember/utils/lib/is_empty';
-d('@ember/utils/lib/is_empty', emberUtilsLibIsEmpty);
+here(@ember/utils/lib/is_empty);
 
 import * as emberUtilsLibIsNone from '@ember/utils/lib/is_none';
-d('@ember/utils/lib/is_none', emberUtilsLibIsNone);
+here(@ember/utils/lib/is_none);
 
 import * as emberUtilsLibIsPresent from '@ember/utils/lib/is_present';
-d('@ember/utils/lib/is_present', emberUtilsLibIsPresent);
+here(@ember/utils/lib/is_present);
 
 import * as emberUtilsLibTypeOf from '@ember/utils/lib/type-of';
-d('@ember/utils/lib/type-of', emberUtilsLibTypeOf);
+here(@ember/utils/lib/type-of);
 
 import * as emberVersionIndex from '@ember/version/index';
-d('@ember/version/index', emberVersionIndex);
+here(@ember/version/index);
 
 import * as glimmerDestroyable from '@glimmer/destroyable';
-d('@glimmer/destroyable', glimmerDestroyable);
+here(@glimmer/destroyable);
 
 import * as glimmerEncoder from '@glimmer/encoder';
-d('@glimmer/encoder', glimmerEncoder);
+here(@glimmer/encoder);
 
 import * as glimmerEnv from '@glimmer/env';
-d('@glimmer/env', glimmerEnv);
+here(@glimmer/env);
 
 import * as glimmerGlobalContext from '@glimmer/global-context';
-d('@glimmer/global-context', glimmerGlobalContext);
+here(@glimmer/global-context);
 
 import * as glimmerManager from '@glimmer/manager';
-d('@glimmer/manager', glimmerManager);
+here(@glimmer/manager);
 
 import * as glimmerNode from '@glimmer/node';
-d('@glimmer/node', glimmerNode);
+here(@glimmer/node);
 
 import * as glimmerOpcodeCompiler from '@glimmer/opcode-compiler';
-d('@glimmer/opcode-compiler', glimmerOpcodeCompiler);
+here(@glimmer/opcode-compiler);
 
 import * as glimmerOwner from '@glimmer/owner';
-d('@glimmer/owner', glimmerOwner);
+here(@glimmer/owner);
 
 import * as glimmerProgram from '@glimmer/program';
-d('@glimmer/program', glimmerProgram);
+here(@glimmer/program);
 
 import * as glimmerReference from '@glimmer/reference';
-d('@glimmer/reference', glimmerReference);
+here(@glimmer/reference);
 
 import * as glimmerRuntime from '@glimmer/runtime';
-d('@glimmer/runtime', glimmerRuntime);
+here(@glimmer/runtime);
 
 import * as glimmerTrackingIndex from '@glimmer/tracking/index';
-d('@glimmer/tracking/index', glimmerTrackingIndex);
+here(@glimmer/tracking/index);
 
 import * as glimmerTrackingPrimitivesCache from '@glimmer/tracking/primitives/cache';
-d('@glimmer/tracking/primitives/cache', glimmerTrackingPrimitivesCache);
+here(@glimmer/tracking/primitives/cache);
 
 import * as glimmerUtil from '@glimmer/util';
-d('@glimmer/util', glimmerUtil);
+here(@glimmer/util);
 
 import * as glimmerValidator from '@glimmer/validator';
-d('@glimmer/validator', glimmerValidator);
+here(@glimmer/validator);
 
 import * as glimmerVm from '@glimmer/vm';
-d('@glimmer/vm', glimmerVm);
+here(@glimmer/vm);
 
 import * as glimmerWireFormat from '@glimmer/wire-format';
-d('@glimmer/wire-format', glimmerWireFormat);
+here(@glimmer/wire-format);
 
 import * as simpleDomDocument from '@simple-dom/document';
-d('@simple-dom/document', simpleDomDocument);
+here(@simple-dom/document);
 
 import * as backburnerjs from 'backburner.js';
-d('backburner.js', backburnerjs);
+here(backburner.js);
 
 import * as dagMap from 'dag-map';
-d('dag-map', dagMap);
+here(dag-map);
 
 import * as emberIndex from 'ember/index';
-d('ember/index', emberIndex);
+here(ember/index);
 
 import * as emberVersion from 'ember/version';
-d('ember/version', emberVersion);
+here(ember/version);
 
 import * as routeRecognizer from 'route-recognizer';
-d('route-recognizer', routeRecognizer);
+here(route-recognizer);
 
 import * as routerJs from 'router_js';
-d('router_js', routerJs);
+here(router_js);
 
 import * as rsvp from 'rsvp';
-d('rsvp', rsvp);
+here(rsvp);
 
 if (typeof module === 'object' && typeof module.require === 'function') {
   module.exports = emberIndex.default;

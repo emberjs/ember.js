@@ -7,6 +7,7 @@ settings:
 overrides:
   socket.io: ^4.7.0
   rollup: ^4.2.0
+  ember-auto-import: file:../ember-auto-import/packages/ember-auto-import
 
 importers:
 
@@ -1800,8 +1801,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       ember-auto-import:
-        specifier: ^2.4.3
-        version: 2.11.2(webpack@5.103.0)
+        specifier: file:../../../ember-auto-import/packages/ember-auto-import
+        version: file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0)
       ember-cli:
         specifier: ~5.7.0
         version: 5.7.0(@types/node@20.19.25)
@@ -1992,8 +1993,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(@babel/core@7.28.5)
       ember-auto-import:
-        specifier: ^2.10.0
-        version: 2.11.2(webpack@5.103.0)
+        specifier: file:../../../ember-auto-import/packages/ember-auto-import
+        version: file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0)
       ember-cli:
         specifier: ~6.5.0-beta.0
         version: 6.5.0(@types/node@20.19.25)(handlebars@4.7.8)(underscore@1.13.7)
@@ -3241,6 +3242,10 @@ packages:
 
   '@embroider/reverse-exports@0.1.2':
     resolution: {integrity: sha512-TgjQalfB42RnwdRVApjcvHSVjBe+7MJfCZV0Cs1jv2QgnFGr/6f5X19PKvmF4FU4xbBf7yOsIWrVvYvidWnXlw==}
+
+  '@embroider/reverse-exports@0.2.0':
+    resolution: {integrity: sha512-WFsw8nQpHZiWGEDYpa/A79KEFfTisqteXbY+jg9eZiww1r1G+LZvsmdszDp86TkotUSCqrMbK/ewn0jR1CJmqg==}
+    engines: {node: 12.* || 14.* || >= 16}
 
   '@embroider/router@3.0.4':
     resolution: {integrity: sha512-kSygi43vpyqaX7gOaIPFY6WkqHm0NlvMSFJBG98Z2DNxjalGFI3+vzVEmguzQd5fgiMiZcXVAug4yjn1CKdXTA==}
@@ -6523,8 +6528,8 @@ packages:
   electron-to-chromium@1.5.255:
     resolution: {integrity: sha512-Z9oIp4HrFF/cZkDPMpz2XSuVpc1THDpT4dlmATFlJUIBVCy9Vap5/rIXsASP1CscBacBqhabwh8vLctqBwEerQ==}
 
-  ember-auto-import@2.11.2:
-    resolution: {integrity: sha512-eR67ggmPQ6Upx6Smbur0HTRYqQshyxJMKPkWBHwWZmZ8sOA5piR0raL7ccKO0Hrn4ZEkp8ih24yAwvssb6K4NQ==}
+  ember-auto-import@file:../ember-auto-import/packages/ember-auto-import:
+    resolution: {directory: ../ember-auto-import/packages/ember-auto-import, type: directory}
     engines: {node: 12.* || 14.* || >= 16}
 
   ember-cli-app-version@6.0.1:
@@ -11720,7 +11725,7 @@ snapshots:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.5
       '@babel/helper-compilation-targets': 7.27.2
-      '@babel/helper-module-transforms': 7.28.3(@babel/core@7.28.5(supports-color@8.1.1))(supports-color@8.1.1)
+      '@babel/helper-module-transforms': 7.28.3(@babel/core@7.28.5)(supports-color@8.1.1)
       '@babel/helpers': 7.28.4
       '@babel/parser': 7.28.5
       '@babel/template': 7.27.2
@@ -11909,7 +11914,6 @@ snapshots:
       '@babel/traverse': 7.28.5(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
@@ -13730,7 +13734,7 @@ snapshots:
       broccoli-debug: 0.6.5
       broccoli-funnel: 3.0.8
       dom-element-descriptors: 0.5.1
-      ember-auto-import: 2.11.2(webpack@5.103.0)
+      ember-auto-import: file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0)
       ember-cli-babel: 8.2.0(@babel/core@7.28.5)
       ember-cli-htmlbars: 6.3.0
       ember-source: 'link:'
@@ -14014,6 +14018,11 @@ snapshots:
       - supports-color
 
   '@embroider/reverse-exports@0.1.2':
+    dependencies:
+      mem: 8.1.1
+      resolve.exports: 2.0.3
+
+  '@embroider/reverse-exports@0.2.0':
     dependencies:
       mem: 8.1.1
       resolve.exports: 2.0.3
@@ -15699,7 +15708,7 @@ snapshots:
 
   '@types/minimatch@6.0.0':
     dependencies:
-      minimatch: 7.4.6
+      minimatch: 9.0.5
 
   '@types/minimist@1.2.5': {}
 
@@ -17853,7 +17862,7 @@ snapshots:
 
   electron-to-chromium@1.5.255: {}
 
-  ember-auto-import@2.11.2(webpack@5.103.0):
+  ember-auto-import@file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0):
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.28.5)
@@ -17862,6 +17871,7 @@ snapshots:
       '@babel/plugin-transform-class-static-block': 7.28.3(@babel/core@7.28.5)
       '@babel/preset-env': 7.28.5(@babel/core@7.28.5)
       '@embroider/macros': 1.19.4
+      '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 2.9.1(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.28.5)(webpack@5.103.0)
       babel-plugin-ember-modules-api-polyfill: 3.5.0
