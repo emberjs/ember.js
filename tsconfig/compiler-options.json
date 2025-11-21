@@ -21,8 +21,6 @@
     "noUnusedLocals": false,
     "noUncheckedIndexedAccess": true,
     "noUnusedParameters": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": false,
     "isolatedModules": true,
 
     "newLine": "LF",
