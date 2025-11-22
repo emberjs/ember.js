@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Private Fields Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Private Fields in Templates - Test</h1>
+    <div id="output"></div>
+    
+    <script type="module">
+        // This simulates the fix we made to compile-options.ts
+        const IDENT = /^[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
+        const PRIVATE_IDENT = /^#[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
+
+        function inScope(variable, evaluator) {
+            // Check if it's a private field
+            if (PRIVATE_IDENT.exec(variable)) {
+                // Private fields are always considered "in scope" when referenced in a template
+                // since they are class members, not lexical variables.
+                return true;
+            }
+
+            // If the identifier is not a valid JS identifier, it's definitely not in scope
+            if (!IDENT.exec(variable)) {
+                return false;
+            }
+
+            try {
+                return evaluator(`typeof ${variable} !== "undefined"`) === true;
+            } catch (e) {
+                if (e && e instanceof SyntaxError) {
+                    return false;
+                }
+                throw e;
+            }
+        }
+
+        // Test cases
+        const output = document.getElementById('output');
+        const tests = [];
+
+        // Test 1: Regular identifier
+        tests.push({
+            name: 'Regular identifier (count)',
+            variable: 'count',
+            evaluator: (code) => eval(code),
+            expected: false // not in scope in this context
+        });
+
+        // Test 2: Private field identifier
+        tests.push({
+            name: 'Private field (#increment)',
+            variable: '#increment',
+            evaluator: (code) => eval(code),
+            expected: true // should be considered in scope
+        });
+
+        // Test 3: Another private field
+        tests.push({
+            name: 'Private field (#count)',
+            variable: '#count',
+            evaluator: (code) => eval(code),
+            expected: true
+        });
+
+        // Test 4: Invalid identifier
+        tests.push({
+            name: 'Invalid identifier (123abc)',
+            variable: '123abc',
+            evaluator: (code) => eval(code),
+            expected: false
+        });
+
+        // Run tests
+        let passed = 0;
+        let failed = 0;
+
+        tests.forEach(test => {
+            const result = inScope(test.variable, test.evaluator);
+            const success = result === test.expected;
+            
+            if (success) {
+                passed++;
+                output.innerHTML += `<div class="success">✓ ${test.name}: ${result} (expected: ${test.expected})</div>`;
+            } else {
+                failed++;
+                output.innerHTML += `<div class="error">✗ ${test.name}: ${result} (expected: ${test.expected})</div>`;
+            }
+        });
+
+        output.innerHTML += `<br><h2>Results: ${passed} passed, ${failed} failed</h2>`;
+
+        if (failed === 0) {
+            output.innerHTML += `<div class="success">All tests passed! Private fields are now recognized.</div>`;
+        }
+    </script>
+</body>
+</html>
