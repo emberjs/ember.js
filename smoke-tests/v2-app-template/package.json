@@ -35,7 +35,7 @@
     "@babel/runtime": "^7.27.1",
     "@babel/plugin-transform-runtime": "^7.27.1",
     "@babel/eslint-parser": "^7.27.1",
-    "@ember/optional-features": "^2.2.0",
+    "@ember/optional-features": "2.3.0-alpha.0",
     "@ember/string": "^4.0.1",
     "@ember/test-helpers": "^5.2.2",
     "@ember/test-waiters": "^4.1.0",
