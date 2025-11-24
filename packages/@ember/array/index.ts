@@ -1024,13 +1024,18 @@ interface EmberArray<T> extends Enumerable {
 
     @method reduce
     @param {Function} callback The callback to execute
-    @param {Object} initialValue Initial value for the reduce
+    @param {Object} initialValue Initial value for the reduce (optional)
     @return {Object} The reduced value.
     @public
   */
+  // Overload for reduce without initialValue (matches native Array.prototype.reduce)
+  reduce(
+    callback: (summation: T, current: T, index: number, arr: this) => T
+  ): T;
+  // Overload for reduce with initialValue
   reduce<V>(
     callback: (summation: V, current: T, index: number, arr: this) => V,
-    initialValue?: V
+    initialValue: V
   ): V;
   /**
     Invokes the named method on every object in the receiver that
@@ -1380,14 +1385,31 @@ const EmberArray = Mixin.create(Enumerable, {
     return any(this, callback);
   },
 
-  // FIXME: When called without initialValue, behavior does not match native behavior
-  reduce<T, V>(
-    this: EmberArray<T>,
-    callback: (summation: V, current: T, index: number, arr: EmberArray<T>) => V,
-    initialValue: V
-  ) {
+  // FIXME resolved: Now supports optional initialValue matching native Array.prototype.reduce behavior
+  reduce(callback: any, initialValue?: any): any {
     assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 
+    let length = this.length;
+
+    // When called without initialValue, match native Array.prototype.reduce behavior:
+    // - Use first element as initial value
+    // - Start iteration from second element (index 1)
+    // - Throw error if array is empty
+    if (initialValue === undefined) {
+      if (length === 0) {
+        throw new TypeError('Reduce of empty array with no initial value');
+      }
+
+      let ret = objectAt(this, 0) as T;
+
+      for (let i = 1; i < length; i++) {
+        ret = callback(ret, objectAt(this, i)!, i, this) as T;
+      }
+
+      return ret;
+    }
+
+    // When called with initialValue, use existing behavior
     let ret = initialValue;
 
     this.forEach(function (item, i) {
