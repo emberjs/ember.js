@@ -7,7 +7,6 @@ settings:
 overrides:
   socket.io: ^4.7.0
   rollup: ^4.2.0
-  ember-auto-import: file:../ember-auto-import/packages/ember-auto-import
 
 importers:
 
@@ -1801,8 +1800,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       ember-auto-import:
-        specifier: file:../../../ember-auto-import/packages/ember-auto-import
-        version: file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0)
+        specifier: ^2.12.0
+        version: 2.12.0(webpack@5.103.0)
       ember-cli:
         specifier: ~5.7.0
         version: 5.7.0(@types/node@20.19.25)
@@ -1993,8 +1992,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(@babel/core@7.28.5)
       ember-auto-import:
-        specifier: file:../../../ember-auto-import/packages/ember-auto-import
-        version: file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0)
+        specifier: ^2.10.0
+        version: 2.12.0(webpack@5.103.0)
       ember-cli:
         specifier: ~6.5.0-beta.0
         version: 6.5.0(@types/node@20.19.25)(handlebars@4.7.8)(underscore@1.13.7)
@@ -6528,8 +6527,8 @@ packages:
   electron-to-chromium@1.5.255:
     resolution: {integrity: sha512-Z9oIp4HrFF/cZkDPMpz2XSuVpc1THDpT4dlmATFlJUIBVCy9Vap5/rIXsASP1CscBacBqhabwh8vLctqBwEerQ==}
 
-  ember-auto-import@file:../ember-auto-import/packages/ember-auto-import:
-    resolution: {directory: ../ember-auto-import/packages/ember-auto-import, type: directory}
+  ember-auto-import@2.12.0:
+    resolution: {integrity: sha512-J9wVTddnpx1ZPf6CgtMs8byp5t9ZZITUX9v+H+PgSDSgbYbDrVlKr2RGDfJLrnaTpuWwZqh1b54/9jLaERr6QA==}
     engines: {node: 12.* || 14.* || >= 16}
 
   ember-cli-app-version@6.0.1:
@@ -13734,7 +13733,7 @@ snapshots:
       broccoli-debug: 0.6.5
       broccoli-funnel: 3.0.8
       dom-element-descriptors: 0.5.1
-      ember-auto-import: file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0)
+      ember-auto-import: 2.12.0(webpack@5.103.0)
       ember-cli-babel: 8.2.0(@babel/core@7.28.5)
       ember-cli-htmlbars: 6.3.0
       ember-source: 'link:'
@@ -17862,7 +17861,7 @@ snapshots:
 
   electron-to-chromium@1.5.255: {}
 
-  ember-auto-import@file:../ember-auto-import/packages/ember-auto-import(webpack@5.103.0):
+  ember-auto-import@2.12.0(webpack@5.103.0):
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.28.5)

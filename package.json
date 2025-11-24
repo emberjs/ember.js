@@ -176,8 +176,7 @@
   },
   "pnpm": {
     "overrides": {
-      "rollup": "^4.2.0",
-       "ember-auto-import": "file:../ember-auto-import/packages/ember-auto-import"
+      "rollup": "^4.2.0"
     },
     "onlyBuiltDependencies": [
       "@swc/core",
