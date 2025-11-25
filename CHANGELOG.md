@@ -1,14 +1,6 @@
 # Ember Changelog
 
-## v6.9.0-beta.3 (November 11, 2025)
-
-- [#21002](https://github.com/emberjs/ember.js/pull/21002) [BUGFIX] Don't render if we're mid-destroy
-
-## v6.9.0-beta.2 (October 30, 2025)
-
-- [#20994](https://github.com/emberjs/ember.js/pull/20994) [BUGFIX] Fix loose-mode components invoked from a strict mode component via renderComponent
-
-## v6.9.0-beta.1 (October 13, 2025)
+## v6.9.0 (November 25, 2025)
 
 - All changes were internal, docs, and/or bugfixes that were backported.
 
