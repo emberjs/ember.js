@@ -473,3 +473,9 @@ d('rsvp', rsvp);
 if (typeof module === 'object' && typeof module.require === 'function') {
   module.exports = emberIndex.default;
 }
+
+emberDebugIndex.deprecate(
+  'Your app loaded Ember via a legacy AMD bundle. Opt into loading it from the modern ES modules by setting the use-ember-modules optional feature.',
+  false,
+  emberinternalsDeprecationsIndex.DEPRECATIONS.DEPRECATE_AMD_BUNDLES.options
+);
