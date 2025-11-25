@@ -2,6 +2,7 @@
 @module ember
 */
 
+import { ENV } from '@ember/-internals/environment';
 import { meta } from '@ember/-internals/meta';
 import Mixin from '@ember/object/mixin';
 import {
@@ -9,7 +10,6 @@ import {
   set,
   defineProperty,
   tagForObject,
-  computed,
   tagForProperty,
 } from '@ember/-internals/metal';
 import { setProxy, setupMandatorySetter, isObject, isProxy } from '@ember/-internals/utils';
@@ -21,9 +21,6 @@ import { combine, updateTag, tagFor, tagMetaFor } from '@glimmer/validator';
 
 export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
   let content = get(proxy, 'content');
-  // SAFETY: Ideally we'd assert instead of casting, but @glimmer/validator doesn't give us
-  // sufficient public types for this. Previously this code was .js and worked correctly so
-  // hopefully this is sufficiently reliable.
   updateTag(tagForObject(proxy) as UpdatableTag, tagForObject(content));
   return content;
 }
@@ -35,8 +32,6 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
   let tag = tagFor(proxy, key, meta);
 
   if (DEBUG) {
-    // TODO: Replace this with something more first class for tracking tags in DEBUG
-    // SAFETY: This is not an officially supported property but setting shouldn't cause issues.
     (tag as any)._propertyKey = key;
   }
 
@@ -60,23 +55,7 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
   }
 }
 
-/**
-  `Ember.ProxyMixin` forwards all properties not defined by the proxy itself
-  to a proxied `content` object.  See ObjectProxy for more details.
-
-  @class ProxyMixin
-  @namespace Ember
-  @private
-*/
 interface ProxyMixin<T = unknown> {
-  /**
-    The object whose properties will be forwarded.
-
-    @property content
-    @type {unknown}
-    @default null
-    @public
-  */
   content: T | null;
 
   willDestroy(): void;
@@ -91,14 +70,6 @@ interface ProxyMixin<T = unknown> {
 }
 
 const ProxyMixin = Mixin.create({
-  /**
-    The object whose properties will be forwarded.
-
-    @property content
-    @type {unknown}
-    @default null
-    @public
-  */
   content: null,
 
   init() {
@@ -113,9 +84,10 @@ const ProxyMixin = Mixin.create({
     this._super(...arguments);
   },
 
-  isTruthy: computed('content', function () {
+  // FIXED: Classic method instead of ES6 getter
+  isTruthy() {
     return Boolean(get(this, 'content'));
-  }),
+  },
 
   unknownProperty(key: string) {
     let content = contentFor(this);
@@ -126,8 +98,6 @@ const ProxyMixin = Mixin.create({
     let m = meta(this);
 
     if (m.isInitializing() || m.isPrototypeMeta(this)) {
-      // if marked as prototype or object is initializing then just
-      // defineProperty rather than delegate
       defineProperty(this, key, null, value);
       return value;
     }
@@ -139,7 +109,6 @@ const ProxyMixin = Mixin.create({
       content
     );
 
-    // SAFETY: We don't actually guarantee that this is an object, so this isn't necessarily safe :(
     return set(content as object, key, value);
   },
 });
