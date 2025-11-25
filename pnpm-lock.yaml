@@ -1777,8 +1777,8 @@ importers:
         specifier: ^7.24.4
         version: 7.28.5
       '@ember/optional-features':
-        specifier: 2.3.0-alpha.0
-        version: 2.3.0-alpha.0
+        specifier: ^2.3.0
+        version: 2.3.0
       '@ember/string':
         specifier: ^3.0.1
         version: 3.1.1
@@ -1945,8 +1945,8 @@ importers:
         specifier: ^7.27.1
         version: 7.28.4
       '@ember/optional-features':
-        specifier: 2.3.0-alpha.0
-        version: 2.3.0-alpha.0
+        specifier: ^2.3.0
+        version: 2.3.0
       '@ember/string':
         specifier: ^4.0.1
         version: 4.0.1
@@ -3156,8 +3156,8 @@ packages:
   '@ember/edition-utils@1.2.0':
     resolution: {integrity: sha512-VmVq/8saCaPdesQmftPqbFtxJWrzxNGSQ+e8x8LLe3Hjm36pJ04Q8LeORGZkAeOhldoUX9seLGmSaHeXkIqoog==}
 
-  '@ember/optional-features@2.3.0-alpha.0':
-    resolution: {integrity: sha512-gqlyxxvaDazyIZnPNWiQHdEE4a9JYQZf4wOn9SLoDDQZzyPVjjjh7erdKqPfB5mr52EcMAjH9xjdmmE9iCTgqg==}
+  '@ember/optional-features@2.3.0':
+    resolution: {integrity: sha512-+M8CkPledQEaDbfIlwlq6Phgpm5jdT3a6WVDJk7b/zadw5xAJkuQKVK7DgR0SFgHGiWlyn6a8AU5p2mCA706RA==}
     engines: {node: 10.* || 12.* || >= 14}
 
   '@ember/string@3.1.1':
@@ -11746,7 +11746,7 @@ snapshots:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.5
       '@babel/helper-compilation-targets': 7.27.2
-      '@babel/helper-module-transforms': 7.28.3(@babel/core@7.28.5(supports-color@8.1.1))(supports-color@8.1.1)
+      '@babel/helper-module-transforms': 7.28.3(@babel/core@7.28.5)(supports-color@8.1.1)
       '@babel/helpers': 7.28.4
       '@babel/parser': 7.28.5
       '@babel/template': 7.27.2
@@ -11935,7 +11935,6 @@ snapshots:
       '@babel/traverse': 7.28.5(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
@@ -13729,7 +13728,7 @@ snapshots:
 
   '@ember/edition-utils@1.2.0': {}
 
-  '@ember/optional-features@2.3.0-alpha.0':
+  '@ember/optional-features@2.3.0':
     dependencies:
       chalk: 4.1.2
       ember-cli-version-checker: 5.1.2
