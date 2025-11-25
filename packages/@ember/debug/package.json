@@ -5,7 +5,8 @@
   "exports": {
     ".": "./index.ts",
     "./container-debug-adapter": "./container-debug-adapter.ts",
-    "./data-adapter": "./data-adapter.ts"
+    "./data-adapter": "./data-adapter.ts",
+    "./inspector-support": "./inspector-support.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
