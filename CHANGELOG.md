@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v6.10.0-beta.1 (November 25, 2025)
+
+- [#21013](https://github.com/emberjs/ember.js/pull/21013) / [#21009](https://github.com/emberjs/ember.js/pull/21009) [DEPRECATION] Deprecate use of amd bundles per [RFC #1101](https://rfcs.emberjs.com/id/1101-deprecate-ember-vendor-bundles).
+- [#21004](https://github.com/emberjs/ember.js/pull/21004) Remove deprecated TypeScript compiler options for TS 6.0 compatibility
+
 ## v6.9.0 (November 25, 2025)
 
 - All changes were internal, docs, and/or bugfixes that were backported.
