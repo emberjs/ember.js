@@ -1,7 +1,13 @@
 import { Project, Scenarios } from 'scenario-tester';
 import { dirname } from 'node:path';
 
-function classic(project: Project) {}
+function classic(project: Project) {
+  // our monorepo uses pnpm overrides to force-upgrade ember-cli-htmlbars to 7,
+  // so that we can actually test the case where the use-ember-modules flag is
+  // enabled. This scenario ensures that when the flag is off, we still work
+  // with ember-cli-htmlbars 6.
+  project.linkDevDependency('ember-cli-htmlbars', { resolveName: 'ember-cli-htmlbars-6', baseDir: __dirname });
+}
 
 function classicUseModulesFeature(project: Project) {
   project.mergeFiles({
