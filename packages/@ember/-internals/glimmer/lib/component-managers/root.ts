@@ -12,7 +12,7 @@ import type {
 import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
-import type EmberComponent from '../component';
+import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
@@ -22,9 +22,9 @@ import CurlyComponentManager, {
 } from './curly';
 
 class RootComponentManager extends CurlyComponentManager {
-  component: EmberComponent;
+  component: Component;
 
-  constructor(component: EmberComponent) {
+  constructor(component: Component) {
     super();
     this.component = component;
   }
@@ -104,7 +104,7 @@ export class RootComponentDefinition implements ComponentDefinition {
   capabilities = capabilityFlagsFrom(ROOT_CAPABILITIES);
   compilable = null;
 
-  constructor(component: EmberComponent) {
+  constructor(component: Component) {
     this.manager = new RootComponentManager(component);
     let factory = getFactoryFor(component);
     assert('missing factory for component', factory !== undefined);

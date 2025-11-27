@@ -5,7 +5,7 @@ import type { Reference } from '@glimmer/reference';
 import { createConstRef } from '@glimmer/reference';
 import type { Revision, Tag } from '@glimmer/validator';
 import { beginUntrackFrame, endUntrackFrame, valueForTag } from '@glimmer/validator';
-import type EmberComponent from '../component';
+import type Component from '../component';
 
 type Finalizer = () => void;
 function NOOP() {}
@@ -22,11 +22,11 @@ function NOOP() {}
 */
 export default class ComponentStateBucket {
   public classRef: Reference | null = null;
-  public rootRef: Reference<EmberComponent>;
+  public rootRef: Reference<Component>;
   public argsRevision: Revision;
 
   constructor(
-    public component: EmberComponent,
+    public component: Component,
     public args: CapturedNamedArguments | null,
     public argsTag: Tag,
     public finalizer: Finalizer,
