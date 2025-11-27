@@ -49,7 +49,7 @@ import { unwrapTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
-import type Component from './component';
+import type EmberComponent from './component';
 import { hasDOM } from '../../browser-environment';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
@@ -199,7 +199,7 @@ class ClassicRootState {
   readonly env: Environment;
 
   constructor(
-    public root: Component | OutletView,
+    public root: EmberComponent | OutletView,
     context: EvaluationContext,
     owner: object,
     template: Template,

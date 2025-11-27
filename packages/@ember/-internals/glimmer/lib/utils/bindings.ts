@@ -10,9 +10,9 @@ import {
   createPrimitiveRef,
   valueForRef,
 } from '@glimmer/reference';
-import type Component from '../component';
+import type EmberComponent from '../component';
 
-function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {
+function referenceForParts(rootRef: Reference<EmberComponent>, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';
 
   // TODO deprecate this
@@ -50,8 +50,8 @@ export function parseAttributeBinding(microsyntax: string): [string, string, boo
 }
 
 export function installAttributeBinding(
-  component: Component,
-  rootRef: Reference<Component>,
+  component: EmberComponent,
+  rootRef: Reference<EmberComponent>,
   parsed: [string, string, boolean],
   operations: ElementOperations
 ) {
@@ -81,7 +81,7 @@ export function installAttributeBinding(
 }
 
 export function createClassNameBindingRef(
-  rootRef: Reference<Component>,
+  rootRef: Reference<EmberComponent>,
   microsyntax: string,
   operations: ElementOperations
 ) {

@@ -795,13 +795,13 @@ declare const SIGNATURE: unique symbol;
 */
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface Component<S = unknown>
+interface EmberComponent<S = unknown>
   extends CoreView,
     TargetActionSupport,
     ActionSupport,
     ComponentMethods {}
 
-class Component<S = unknown>
+class EmberComponent<S = unknown>
   extends CoreView.extend(
     TargetActionSupport,
     ActionSupport,
@@ -827,7 +827,7 @@ class Component<S = unknown>
 
   // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
   // here to preserve the type param.
-  declare private [SIGNATURE]: S;
+  private declare [SIGNATURE]: S;
 
   // SAFTEY: This is set in `init`.
   declare _superRerender: this['rerender'];
@@ -1327,7 +1327,7 @@ class Component<S = unknown>
     addChildView(this, view);
   }
 
-  _transitionTo(this: Component, state: keyof typeof ViewStates) {
+  _transitionTo(this: EmberComponent, state: keyof typeof ViewStates) {
     let priorState = this._currentState;
     let currentState = (this._currentState = this._states[state]);
     this._state = state;
@@ -1689,10 +1689,10 @@ class Component<S = unknown>
 }
 
 // We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
-Component.reopenClass({
+EmberComponent.reopenClass({
   positionalParams: [],
 });
 
-setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
+setInternalComponentManager(CURLY_COMPONENT_MANAGER, EmberComponent);
 
-export default Component;
+export default EmberComponent;

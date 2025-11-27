@@ -39,7 +39,7 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import type Component from '../component';
+import type EmberComponent from '../component';
 import type { DynamicScope } from '../renderer';
 import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
@@ -77,8 +77,8 @@ function aliasIdToElementId(args: VMArguments, props: any) {
 // properties applying right to left.
 function applyAttributeBindings(
   attributeBindings: Array<string>,
-  component: Component,
-  rootRef: Reference<Component>,
+  component: EmberComponent,
+  rootRef: Reference<EmberComponent>,
   operations: ElementOperations
 ) {
   let seen: string[] = [];
@@ -109,9 +109,9 @@ const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
 type ComponentFactory = InternalFactory<
-  Component,
+  EmberComponent,
   {
-    create(props?: any): Component;
+    create(props?: any): EmberComponent;
     positionalParams: string | string[] | undefined | null;
     name: string;
   }
@@ -126,7 +126,7 @@ export default class CurlyComponentManager
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket>
 {
-  protected templateFor(component: Component): CompilableProgram | null {
+  protected templateFor(component: EmberComponent): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
     assert('Component is unexpectedly missing an owner', owner);
@@ -474,7 +474,10 @@ export default class CurlyComponentManager
   }
 }
 
-export function processComponentInitializationAssertions(component: Component, props: any): void {
+export function processComponentInitializationAssertions(
+  component: EmberComponent,
+  props: any
+): void {
   assert(
     `classNameBindings must be non-empty strings: ${component}`,
     (() => {
