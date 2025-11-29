@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class PushObjectTests extends AbstractTestCase {
@@ -7,7 +7,9 @@ class PushObjectTests extends AbstractTestCase {
     let exp = newFixture(1)[0];
     let obj = this.newObject([]);
 
-    this.assert.equal(obj.pushObject(exp), exp, 'should return pushed object');
+    expectDeprecation(() => {
+      this.assert.equal(obj.pushObject(exp), exp, 'should return pushed object');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   async '@test [].pushObject(X) => [X] + notify'() {
@@ -16,9 +18,13 @@ class PushObjectTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.pushObject(after[0]);
+    expectDeprecation(() => {
+      obj.pushObject(after[0]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -50,9 +56,13 @@ class PushObjectTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.pushObject(item);
+    expectDeprecation(() => {
+      obj.pushObject(item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -85,9 +95,13 @@ class PushObjectTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.pushObject(item);
+    expectDeprecation(() => {
+      obj.pushObject(item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();

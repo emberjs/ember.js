@@ -1,4 +1,4 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
 class UniqByTests extends AbstractTestCase {
@@ -8,10 +8,13 @@ class UniqByTests extends AbstractTestCase {
       { id: 2, value: 'two' },
       { id: 1, value: 'one' },
     ]);
-    this.assert.deepEqual(numbers.uniqBy('id'), [
-      { id: 1, value: 'one' },
-      { id: 2, value: 'two' },
-    ]);
+
+    expectDeprecation(() => {
+      this.assert.deepEqual(numbers.uniqBy('id'), [
+        { id: 1, value: 'one' },
+        { id: 2, value: 'two' },
+      ]);
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test supports function as key'() {
@@ -26,10 +29,12 @@ class UniqByTests extends AbstractTestCase {
       return val.value;
     };
 
-    this.assert.deepEqual(numbers.uniqBy(keyFunction), [
-      { id: 1, value: 'boom' },
-      { id: 1, value: 'doom' },
-    ]);
+    expectDeprecation(() => {
+      this.assert.deepEqual(numbers.uniqBy(keyFunction), [
+        { id: 1, value: 'boom' },
+        { id: 1, value: 'doom' },
+      ]);
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 }
 
