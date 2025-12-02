@@ -27,6 +27,7 @@ const testDependencies = [
 
 let configs = [
   esmConfig(),
+  esmTemplateCompiler(),
   legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js', {
     isDeveloping: true,
   }),
@@ -53,19 +54,45 @@ if (process.env.DEBUG_SINGLE_CONFIG) {
 export default configs;
 
 function esmConfig() {
+  return sharedESMConfig({
+    input: {
+      ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
+      ...renameEntrypoints(packages(), (name) => join('packages', name)),
+    },
+    debugMacrosMode: '@embroider/macros',
+  });
+}
+
+function esmTemplateCompiler() {
+  return sharedESMConfig({
+    input: {
+      // the actual authored "./packages/ember-template-compiler/index.ts" is
+      // part of what powers the historical dist/ember-template-compiler.js AMD
+      // bundle. It has historical cruft that has never been present in our ESM
+      // builds.
+      //
+      // On the ESM build, the main entrypoint of ember-template-compiler is the
+      // "minimal.ts" version, which has a lot less in it.
+
+      'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
+    },
+    // the template compiler is always in debug mode (and doesn't use
+    // embroider/macros, so it's directly invokable on node)
+    debugMacrosMode: true,
+  });
+}
+
+function sharedESMConfig({ input, debugMacrosMode }) {
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
-    buildDebugMacroPlugin('@embroider/macros'),
+    buildDebugMacroPlugin(debugMacrosMode),
     canaryFeatures(),
   ];
 
   return {
     onLog: handleRollupWarnings,
-    input: {
-      ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
-      ...renameEntrypoints(packages(), (name) => join('packages', name)),
-    },
+    input,
     output: {
       format: 'es',
       dir: 'dist',
@@ -604,9 +631,10 @@ function pruneEmptyBundles() {
 function packageMeta() {
   return {
     name: 'package-meta',
-    generateBundle(options, bundles) {
+    generateBundle() {
       let renamedModules = Object.fromEntries(
-        Object.keys(bundles)
+        glob
+          .sync('packages/**/*.js', { cwd: 'dist', nodir: true })
           .filter((name) => !name.startsWith('packages/shared-chunks/'))
           .sort()
           .map((name) => {

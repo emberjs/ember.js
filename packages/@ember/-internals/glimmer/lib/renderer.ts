@@ -10,6 +10,7 @@ import {
   associateDestroyableChild,
   destroy,
   isDestroyed,
+  isDestroying,
   registerDestructor,
 } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -55,7 +56,6 @@ import { BOUNDS } from './component-managers/curly';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import { EmberEnvironmentDelegate } from './environment';
-import { StrictResolver } from './renderer/strict-resolver';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
@@ -159,8 +159,13 @@ class ComponentRootState {
 
       associateDestroyableChild(this, this.#result);
 
-      // override .render function after initial render
-      this.#render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
+      this.#render = errorLoopTransaction(() => {
+        if (isDestroying(result) || isDestroyed(result)) return;
+
+        return result.rerender({
+          alwaysRevalidate: false,
+        });
+      });
     });
   }
 
@@ -229,8 +234,13 @@ class ClassicRootState {
 
       associateDestroyableChild(owner, result);
 
-      // override .render function after initial render
-      this.render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
+      this.render = errorLoopTransaction(() => {
+        if (isDestroying(result) || isDestroyed(result)) return;
+
+        return result.rerender({
+          alwaysRevalidate: false,
+        });
+      });
     });
   }
 
@@ -345,7 +355,7 @@ interface ViewRegistry {
   [viewId: string]: unknown;
 }
 
-type Resolver = ClassicResolver | StrictResolver;
+type Resolver = ClassicResolver;
 
 interface RendererData {
   owner: object;
@@ -679,7 +689,7 @@ export class BaseRenderer {
       owner,
       { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
-      new StrictResolver(),
+      new ResolverImpl(),
       clientBuilder
     );
   }
@@ -769,7 +779,7 @@ export class Renderer extends BaseRenderer {
       owner,
       { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
-      new StrictResolver(),
+      new ResolverImpl(),
       clientBuilder
     );
   }

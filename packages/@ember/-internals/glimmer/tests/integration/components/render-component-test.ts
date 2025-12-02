@@ -498,11 +498,21 @@ moduleFor(
        * https://github.com/emberjs/rfcs/pull/1099/files#diff-2b962105b9083ca84579cdc957f27f49407440f3c5078083fa369ec18cc46da8R365
        *
        * We could later add an option to not do this behavior
+       *
+       *
+       * NOTE: for this verify-steps, we only expect foo:3 once, because the first
+       *       incarnation of renderComponent (back when foo was 2) will not run again, due
+       *       to being destroyed.
        */
-      assert.verifySteps(
-        [`render:root`, `foo:3`, `foo:3`],
-        `Destruction is async, so we get an extra 'foo:3' here, and then because our getter consumes foo (since renderComponent is eager), we dirty the cached getter, and re-run the getter, creating a new renderComponent call, overwriting the existing contents`
-      );
+      assert.verifySteps([`render:root`, `foo:3`]);
+
+      assert.strictEqual(this.element.innerHTML, '<div>3 <button>++</button></div>');
+
+      run(() => {
+        destroy(this.owner);
+      });
+
+      assert.strictEqual(this.element.innerHTML, '');
     }
 
     '@test multiple renderComponents share reactivity'() {
@@ -593,6 +603,34 @@ moduleFor(
         change: () => x.foo++,
         expect: '<div data-one="">3</div><div data-two="">3</div>',
       });
+    }
+  }
+);
+
+moduleFor(
+  'Strict Mode <-> Loose Mode - renderComponent',
+  class extends RenderComponentTestCase {
+    '@test incidentally invoked loose-mode components can still resolve helpers'() {
+      this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
+      let Loose = defineComponent(null, `Hi: {{a-helper "there"}}`);
+      let Root = defComponent('<Loose />', { scope: { Loose } });
+
+      this.renderComponent(Root, { expect: 'Hi: THERE' });
+
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
+
+    '@test strict-mode components cannot lookup things in the registry'(assert: Assert) {
+      this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
+      assert.throws(() => {
+        /**
+         * We need to pass a scope so that `defComponent` returns a strict-mode component.
+         */
+        let Root = defComponent('{{a-helper "hi"}}', { scope: {} });
+        this.renderComponent(Root, { expect: '' });
+      }, /but that value was not in scope: a-helper/);
     }
   }
 );

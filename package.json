@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "6.10.0-alpha.1",
+  "version": "6.11.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -160,7 +160,8 @@
   },
   "pnpm": {
     "overrides": {
-      "rollup": "^4.2.0"
+      "rollup": "^4.2.0",
+      "ember-cli-htmlbars": "^7.0.0"
     },
     "onlyBuiltDependencies": [
       "@swc/core",
@@ -173,7 +174,7 @@
     "@glimmer/component": ">= 1.1.2"
   },
   "engines": {
-    "node": ">= 18.*"
+    "node": ">= 20.19"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints",
@@ -344,6 +345,7 @@
       "@simple-dom/document/index.js": "ember-source/@simple-dom/document/index.js",
       "backburner.js/index.js": "ember-source/backburner.js/index.js",
       "dag-map/index.js": "ember-source/dag-map/index.js",
+      "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
       "ember-testing/lib/adapters/adapter.js": "ember-source/ember-testing/lib/adapters/adapter.js",
       "ember-testing/lib/adapters/qunit.js": "ember-source/ember-testing/lib/adapters/qunit.js",
