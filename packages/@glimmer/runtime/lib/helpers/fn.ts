@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type { AnyFn, CapturedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { check } from '@glimmer/debug';
@@ -81,7 +82,7 @@ export const fn = internalHelper(({ positional }: CapturedArguments) => {
       return (...invocationArgs: unknown[]) => {
         let [fn, ...args] = reifyPositional(positional);
 
-        if (import.meta.env.DEV) assertCallbackIsFn(callbackRef);
+        if (DEBUG) assertCallbackIsFn(callbackRef);
 
         if (isInvokableRef(callbackRef)) {
           let value = args.length > 0 ? args[0] : invocationArgs[0];

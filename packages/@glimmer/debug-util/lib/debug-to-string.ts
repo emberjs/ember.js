@@ -1,8 +1,9 @@
+import { DEBUG } from '@glimmer/env';
 import type { AnyFn } from '@glimmer/interfaces';
 
 let debugToString: undefined | ((value: unknown) => string);
 
-if (import.meta.env?.DEV) {
+if (DEBUG) {
   let getFunctionName = (fn: AnyFn) => {
     let functionName = fn.name;
 

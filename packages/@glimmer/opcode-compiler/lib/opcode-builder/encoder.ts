@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   BlockMetadata,
   BuilderOp,
@@ -164,7 +165,7 @@ export class EncoderImpl implements Encoder {
   ): void {
     let { heap } = this;
 
-    if (import.meta.env.DEV && (type as number) > TYPE_SIZE) {
+    if (DEBUG && (type as number) > TYPE_SIZE) {
       throw new Error(`Opcode type over 8-bits. Got ${type}.`);
     }
 

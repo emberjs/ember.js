@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   AttributeCursor,
   AttributeOperation,
@@ -27,7 +28,7 @@ export function dynamicAttribute(
   const { tagName, namespaceURI } = element;
   const attribute = { element, name: attr, namespace };
 
-  if (import.meta.env.DEV && attr === 'style' && !isTrusting) {
+  if (DEBUG && attr === 'style' && !isTrusting) {
     return new DebugStyleAttributeManager(attribute);
   }
 
@@ -241,7 +242,7 @@ let DebugStyleAttributeManager: {
   new (attribute: AttributeCursor): AttributeOperation;
 };
 
-if (import.meta.env.DEV) {
+if (DEBUG) {
   DebugStyleAttributeManager = class extends SimpleDynamicAttribute {
     override set(dom: TreeBuilder, value: unknown, env: Environment): void {
       warnIfStyleNotTrusted(value);

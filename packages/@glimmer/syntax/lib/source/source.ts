@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@glimmer/interfaces';
 import { localAssert, setLocalDebugType } from '@glimmer/debug-util';
 
@@ -77,7 +78,7 @@ export class Source {
       if (seenLines === line - 1) {
         if (seenChars + column > nextLine) return nextLine;
 
-        if (import.meta.env?.DEV) {
+        if (DEBUG) {
           let roundTrip = this.hbsPosFor(seenChars + column);
           localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
           localAssert(

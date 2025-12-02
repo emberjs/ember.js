@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   CapturedPositionalArguments,
   Environment,
@@ -240,7 +241,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
     let manager = getInternalModifierManager(hostDefinition, true);
 
     if (manager === null) {
-      if (import.meta.env.DEV) {
+      if (DEBUG) {
         throw new Error(
           `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
             ref.debugLabel

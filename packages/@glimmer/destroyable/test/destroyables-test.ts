@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type { GlobalContext } from '@glimmer/global-context';
 import { unwrap } from '@glimmer/debug-util';
 import {
@@ -390,7 +391,7 @@ module('Destroyables', (hooks) => {
     assert.verifySteps(['child destructor', 'parent destructor'], 'destructors run bottom up');
   });
 
-  if (import.meta.env.DEV) {
+  if (DEBUG) {
     test('attempting to unregister a destructor that was not registered throws an error', (assert) => {
       assert.throws(() => {
         unregisterDestructor({}, () => 123);

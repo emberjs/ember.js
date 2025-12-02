@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   CapturedPositionalArguments,
   CurriedType,
@@ -78,7 +79,7 @@ APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
 
   let isStrict = false;
 
-  if (import.meta.env.DEV) {
+  if (DEBUG) {
     // strict check only happens in import.meta.env.DEV builds, no reason to load it otherwise
     isStrict = vm.constants.getValue<boolean>(decodeHandle(_isStrict));
   }

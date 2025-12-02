@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   BlockMetadata,
   CompilableTemplate,
@@ -222,7 +223,7 @@ export class VM {
     context: EvaluationContext,
     tree: TreeBuilder
   ) {
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       assertGlobalContextWasSet!();
     }
@@ -723,7 +724,7 @@ export class VM {
   /// EXECUTION
 
   execute(initialize?: (vm: this) => void): RenderResult {
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       let hasErrored = true;
       try {
         let value = this._execute(initialize);

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import {
   CURRIED_COMPONENT,
   CURRIED_HELPER,
@@ -58,7 +59,7 @@ function toDynamicContentType(value: unknown) {
     return ContentType.Component;
   } else {
     if (
-      import.meta.env.DEV &&
+      DEBUG &&
       !isCurriedType(value, CURRIED_HELPER) &&
       !hasInternalHelperManager(value)
     ) {

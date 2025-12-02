@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,
   ComponentInstanceWithCreate,
@@ -63,7 +64,7 @@ class TransactionImpl implements Transaction {
       if (modifierTag !== null) {
         let tag = track(
           () => manager.install(state),
-          import.meta.env.DEV &&
+          DEBUG &&
             `- While rendering:\n  (instance of a \`${
               definition.resolvedName || manager.getDebugName(definition.state)
             }\` modifier)`
@@ -80,7 +81,7 @@ class TransactionImpl implements Transaction {
       if (modifierTag !== null) {
         let tag = track(
           () => manager.update(state),
-          import.meta.env.DEV &&
+          DEBUG &&
             `- While rendering:\n  (instance of a \`${
               definition.resolvedName || manager.getDebugName(definition.state)
             }\` modifier)`
@@ -119,7 +120,7 @@ export class EnvironmentImpl implements Environment {
     } else if (options.document) {
       this.appendOperations = new DOMTreeConstruction(options.document);
       this.updateOperations = new DOMChangesImpl(options.document);
-    } else if (import.meta.env.DEV) {
+    } else if (DEBUG) {
       throw new Error('you must pass document or appendOperations to a new runtime');
     }
   }

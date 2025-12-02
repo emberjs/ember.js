@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/interfaces';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
 import {
@@ -59,7 +60,7 @@ module('@glimmer/validator: validators', () => {
       assert.verifySteps(['scheduleRevalidate']);
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('it cannot be updated', (assert) => {
         let tag = createTag();
         let subtag = createTag();
@@ -144,7 +145,7 @@ module('@glimmer/validator: validators', () => {
       assert.notOk(validateTag(tag, snapshot), 'tag is invalid after subtag is dirtied again');
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('does not allow cycles on tags that have not been marked with ALLOW_CYCLES', (assert) => {
         let tag = createUpdatableTag();
         let subtag = createUpdatableTag();
@@ -194,7 +195,7 @@ module('@glimmer/validator: validators', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('it cannot be dirtied', (assert) => {
         let tag1 = createTag();
         let tag2 = createTag();
@@ -224,7 +225,7 @@ module('@glimmer/validator: validators', () => {
   });
 
   module('ConstantTag', () => {
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('it cannot be dirtied', (assert) => {
         assert.throws(
           // @ts-expect-error this is an error condition
@@ -262,7 +263,7 @@ module('@glimmer/validator: validators', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('it cannot be dirtied', (assert) => {
         assert.throws(
           // @ts-expect-error this is an error condition
@@ -307,7 +308,7 @@ module('@glimmer/validator: validators', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       test('it cannot be dirtied', (assert) => {
         assert.throws(
           // @ts-expect-error this is an error condition

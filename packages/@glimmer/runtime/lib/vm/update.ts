@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   AppendingBlock,
   Bounds,
@@ -41,7 +42,7 @@ export class UpdatingVM implements IUpdatingVM {
   }
 
   execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
-    if (import.meta.env.DEV) {
+    if (DEBUG) {
       let hasErrored = true;
       try {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
