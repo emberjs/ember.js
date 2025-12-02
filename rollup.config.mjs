@@ -392,6 +392,10 @@ export function resolvePackages(deps, isExternal) {
         return;
       }
 
+      if (source === '@glimmer/local-debug-flags') {
+        return resolve(projectRoot, 'glimmer-vm/packages/@glimmer/local-debug-flags/disabled.ts');
+      }
+
       let pkgName = packageName(source);
       if (pkgName) {
         // having a pkgName means this is not a relative import
