@@ -99,5 +99,17 @@ moduleFor(
       assert.equal(compare(Infinity, NaN), 1, 'Infinity should be greater than NaN');
       assert.equal(compare(-Infinity, NaN), 1, '-Infinity should be greater than NaN');
     }
+
+    ['@test sort with compare'](assert) {
+      let arr = [NaN, 10, -5, 0, NaN, 5];
+      arr.sort(compare);
+
+      assert.ok(Number.isNaN(arr[0]), 'index 0 is NaN');
+      assert.ok(Number.isNaN(arr[1]), 'index 1 is NaN');
+      assert.equal(arr[2], -5, 'index 2 is -5');
+      assert.equal(arr[3], 0, 'index 3 is 0');
+      assert.equal(arr[4], 5, 'index 4 is 5');
+      assert.equal(arr[5], 10, 'index 5 is 10');
+    }
   }
 );
