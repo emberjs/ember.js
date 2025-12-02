@@ -52,7 +52,7 @@
     "babel-plugin-ember-template-compilation": "^2.4.1",
     "concurrently": "^9.1.2",
     "decorator-transforms": "^2.3.0",
-    "ember-auto-import": "^2.10.0",
+    "ember-auto-import": "^2.12.0",
     "ember-cli": "~6.5.0-beta.0",
     "ember-cli-babel": "^8.2.0",
     "ember-cli-deprecation-workflow": "^3.3.0",
