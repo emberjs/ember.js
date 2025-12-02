@@ -84,5 +84,20 @@ moduleFor(
       assert.equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
       assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
     }
+
+    ['@test NaN handling'](assert) {
+      assert.equal(compare(NaN, NaN), 0, 'NaN should equal NaN for ordering');
+      assert.equal(compare(NaN, 0), -1, 'NaN should be less than 0');
+      assert.equal(compare(NaN, 5), -1, 'NaN should be less than positive numbers');
+      assert.equal(compare(NaN, -5), -1, 'NaN should be less than negative numbers');
+      assert.equal(compare(NaN, Infinity), -1, 'NaN should be less than Infinity');
+      assert.equal(compare(NaN, -Infinity), -1, 'NaN should be less than -Infinity');
+
+      assert.equal(compare(0, NaN), 1, '0 should be greater than NaN');
+      assert.equal(compare(5, NaN), 1, 'positive numbers should be greater than NaN');
+      assert.equal(compare(-5, NaN), 1, 'negative numbers should be greater than NaN');
+      assert.equal(compare(Infinity, NaN), 1, 'Infinity should be greater than NaN');
+      assert.equal(compare(-Infinity, NaN), 1, '-Infinity should be greater than NaN');
+    }
   }
 );

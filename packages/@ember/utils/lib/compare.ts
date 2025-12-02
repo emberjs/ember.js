@@ -40,6 +40,20 @@ type Compare = -1 | 0 | 1;
 //                                `._________`-.   `.   `.___
 //                                              SSt  `------'`
 function spaceship(a: number, b: number): Compare {
+  // Handle NaN cases explicitly to ensure we always return -1, 0, or 1
+  const aIsNaN = Number.isNaN(a);
+  const bIsNaN = Number.isNaN(b);
+
+  if (aIsNaN && bIsNaN) {
+    return 0; // NaN === NaN for ordering purposes
+  }
+  if (aIsNaN) {
+    return -1; // NaN < any number
+  }
+  if (bIsNaN) {
+    return 1; // any number > NaN
+  }
+
   // SAFETY: `Math.sign` always returns `-1` for negative, `0` for zero, and `1`
   // for positive numbers. (The extra precision is useful for the way we use
   // this in the context of `compare`.)
