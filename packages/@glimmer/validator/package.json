@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",
+    "@glimmer/env": "workspace:*",
     "eslint": "^9.20.1",
     "expect-type": "^1.1.0",
     "publint": "^0.3.2",

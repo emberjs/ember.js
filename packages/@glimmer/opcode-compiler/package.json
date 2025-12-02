@@ -44,6 +44,7 @@
     "@glimmer/constants": "workspace:*",
     "@glimmer/debug": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
+    "@glimmer/env": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "eslint": "^9.20.1",
     "publint": "^0.3.2",
