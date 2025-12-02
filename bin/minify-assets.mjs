@@ -48,7 +48,7 @@ import nodeGzip from 'node-gzip';
 import { join } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { minify } from 'terser';
-import { transformSync } from '@babel/core';
+import { transformAsync } from '@babel/core';
 import * as brotli from 'brotli';
 import { partial } from 'filesize';
 const size = partial({ standard: 'jedec' });
@@ -94,10 +94,12 @@ for (const pkg of packages) {
 
   for (let file of jsFiles) {
     let source = readFileSync(file, 'utf8');
-    let transformed = transformSync(source, {
-      ...babelOptions,
-      filename: file,
-    }).code;
+    let transformed = (
+      await transformAsync(source, {
+        ...babelOptions,
+        filename: file,
+      })
+    ).code;
     let result = await minify(transformed, {
       module: true,
       mangle: false,
