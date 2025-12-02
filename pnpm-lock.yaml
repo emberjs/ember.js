@@ -525,6 +525,9 @@ importers:
         specifier: workspace:*
         version: link:../interfaces
     devDependencies:
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
@@ -569,6 +572,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       eslint:
         specifier: ^9.20.1
         version: 9.29.0
@@ -607,6 +613,9 @@ importers:
         specifier: workspace:*
         version: link:../vm
     devDependencies:
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       eslint:
         specifier: ^9.20.1
         version: 9.29.0
@@ -622,6 +631,9 @@ importers:
 
   glimmer-vm/packages/@glimmer/global-context:
     devDependencies:
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       eslint:
         specifier: ^9.20.1
         version: 9.29.0
@@ -692,6 +704,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       eslint:
         specifier: ^9.20.1
         version: 9.29.0
@@ -787,6 +802,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
@@ -894,6 +912,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       '@glimmer/tracking':
         specifier: workspace:*
         version: link:../../../../packages/@glimmer/tracking
@@ -971,6 +992,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
@@ -1008,6 +1032,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
@@ -1092,6 +1119,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       eslint:
         specifier: ^9.20.1
         version: 9.29.0
