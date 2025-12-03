@@ -5,7 +5,7 @@
     "target": "esnext",
     "module": "esnext",
     "sourceMap": true,
-    "rootDir": "../packages",
+    "rootDir": "../",
 
     // Environment Configuration
     "experimentalDecorators": true,

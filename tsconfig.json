@@ -4,6 +4,6 @@
     "outDir": "dist",
     "noEmit": true
   },
-  "include": ["packages/**/*.ts"],
+  "include": ["packages/**/*.ts", "glimmer-vm/packages/**/*"],
   "exclude": ["dist", "node_modules", "tmp", "types"]
 }

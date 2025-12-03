@@ -134,17 +134,6 @@ export default [
     },
   },
   {
-    files: ['glimmer-vm/**/*.ts'],
-    languageOptions: {
-      ecmaVersion: 5,
-      sourceType: 'module',
-      parserOptions: {
-        project: './tsconfig-vm.json',
-        tsconfigRootDir: __dirname,
-      },
-    },
-  },
-  {
     // TODO: files: ['packages/**/*.[jt]s'],
     files: ['packages/**/*.js'],
 
@@ -251,6 +240,7 @@ export default [
       'broccoli/**/*.js',
       '**/ember-cli-build.js',
       '**/*.cjs',
+      'glimmer-vm/bin/**/*',
     ],
 
     languageOptions: {
