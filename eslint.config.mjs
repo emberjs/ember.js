@@ -290,4 +290,24 @@ export default [
       },
     },
   },
+  ...tseslint.configs.recommendedTypeChecked.map((x) => {
+    x.languageOptions ||= {};
+    x.languageOptions.parserOptions = {
+      ...x.languageOptions?.parserOptions,
+      project: './tsconfig.json',
+      tsconfigRootDir: __dirname,
+    };
+    x.files = [
+      'glimmer-vm/packages/@glimmer/**/*',
+      'glimmer-vm/packages/@glimmer-workspace/integration-tests/**/*',
+    ];
+
+    x.rules = {
+      ...x.rules,
+      'prefer-const': 'off',
+      'no-implicit-coercion': 'off',
+    };
+
+    return x;
+  }),
 ];
