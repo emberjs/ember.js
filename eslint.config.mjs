@@ -28,6 +28,7 @@ export default [
       'glimmer-vm/repo-metadata/',
       'glimmer-vm/**/rollup.config.mjs',
       'glimmer-vm/packages/@glimmer/vm-babel-plugins/',
+      'glimmer-vm/guides/',
     ],
   },
   pluginJs.configs.recommended,
@@ -263,7 +264,6 @@ export default [
     files: ['glimmer-vm/bin/**/*'],
     rules: {
       'no-console': 'off',
-      'n/no-process-exit': 'off',
     },
   },
   {
