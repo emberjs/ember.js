@@ -28,6 +28,12 @@ export default [
       'glimmer-vm/repo-metadata/',
       'glimmer-vm/**/rollup.config.mjs',
       'glimmer-vm/packages/@glimmer/vm-babel-plugins/',
+      'glimmer-vm/guides/',
+      // to Delete
+      'glimmer-vm/benchmark/',
+      'glimmer-vm/packages/@glimmer-workspace/benchmark-env',
+      'glimmer-vm/packages/@glimmer-workspace/build/',
+      'glimmer-vm/packages/@glimmer-workspace/eslint-plugin/',
     ],
   },
   pluginJs.configs.recommended,
@@ -131,17 +137,6 @@ export default [
       // TODO: Disabled when upgrading typescript-eslint from 5 to 8
       '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-unsafe-declaration-merging': 'off',
-    },
-  },
-  {
-    files: ['glimmer-vm/**/*.ts'],
-    languageOptions: {
-      ecmaVersion: 5,
-      sourceType: 'module',
-      parserOptions: {
-        project: './tsconfig-vm.json',
-        tsconfigRootDir: __dirname,
-      },
     },
   },
   {
@@ -251,6 +246,8 @@ export default [
       'broccoli/**/*.js',
       '**/ember-cli-build.js',
       '**/*.cjs',
+      'glimmer-vm/bin/**/*',
+      'glimmer-vm/packages/@glimmer-workspace/**/*',
     ],
 
     languageOptions: {
@@ -266,6 +263,13 @@ export default [
       'no-throw-literal': 'error',
       'disable-features/disable-async-await': 'off',
       'disable-features/disable-generator-functions': 'off',
+    },
+  },
+  {
+    // scripts that are allowed to print things
+    files: ['glimmer-vm/bin/**/*'],
+    rules: {
+      'no-console': 'off',
     },
   },
   {
@@ -286,4 +290,24 @@ export default [
       },
     },
   },
+  ...tseslint.configs.recommendedTypeChecked.map((x) => {
+    x.languageOptions ||= {};
+    x.languageOptions.parserOptions = {
+      ...x.languageOptions?.parserOptions,
+      project: './tsconfig.json',
+      tsconfigRootDir: __dirname,
+    };
+    x.files = [
+      'glimmer-vm/packages/@glimmer/**/*',
+      'glimmer-vm/packages/@glimmer-workspace/integration-tests/**/*',
+    ];
+
+    x.rules = {
+      ...x.rules,
+      'prefer-const': 'off',
+      'no-implicit-coercion': 'off',
+    };
+
+    return x;
+  }),
 ];
