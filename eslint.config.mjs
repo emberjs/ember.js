@@ -259,6 +259,14 @@ export default [
     },
   },
   {
+    // scripts that are allowed to print things
+    files: ['glimmer-vm/bin/**/*'],
+    rules: {
+      'no-console': 'off',
+      'n/no-process-exit': 'off',
+    },
+  },
+  {
     files: ['node-tests/**/*.js'],
 
     languageOptions: {
