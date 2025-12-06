@@ -29,6 +29,11 @@ export default [
       'glimmer-vm/**/rollup.config.mjs',
       'glimmer-vm/packages/@glimmer/vm-babel-plugins/',
       'glimmer-vm/guides/',
+      // to Delete
+      'glimmer-vm/benchmark/',
+      'glimmer-vm/packages/@glimmer-workspace/benchmark-env',
+      'glimmer-vm/packages/@glimmer-workspace/build/',
+      'glimmer-vm/packages/@glimmer-workspace/eslint-plugin/',
     ],
   },
   pluginJs.configs.recommended,
@@ -242,6 +247,7 @@ export default [
       '**/ember-cli-build.js',
       '**/*.cjs',
       'glimmer-vm/bin/**/*',
+      'glimmer-vm/packages/@glimmer-workspace/**/*',
     ],
 
     languageOptions: {
