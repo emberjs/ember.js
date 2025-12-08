@@ -194,6 +194,9 @@ d('@ember/debug/lib/warn', emberDebugLibWarn);
 import * as emberDebugContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 d('@ember/debug/container-debug-adapter', emberDebugContainerDebugAdapter);
 
+import * as emberDebugInspectorSupport from '@ember/debug/inspector-support';
+d('@ember/debug/inspector-support', emberDebugInspectorSupport);
+
 import * as emberDebugDataAdapter from '@ember/debug/data-adapter';
 d('@ember/debug/data-adapter', emberDebugDataAdapter);
 
