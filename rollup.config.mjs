@@ -184,7 +184,7 @@ function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
       }),
       resolveTS(),
       version(),
-      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }, isExternal),
+      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }, { isExternal }),
       licenseAndLoader(),
     ],
   };
@@ -378,7 +378,10 @@ function resolveTS() {
   };
 }
 
-export function resolvePackages(deps, isExternal) {
+export function resolvePackages(deps, params) {
+  const isExternal = params?.isExternal;
+  const enableLocalDebug = params?.enableLocalDebug ?? false;
+
   return {
     enforce: 'pre',
     name: 'resolve-packages',
@@ -392,7 +395,7 @@ export function resolvePackages(deps, isExternal) {
         return;
       }
 
-      if (source === '@glimmer/local-debug-flags') {
+      if (source === '@glimmer/local-debug-flags' && !enableLocalDebug) {
         return resolve(projectRoot, 'glimmer-vm/packages/@glimmer/local-debug-flags/disabled.ts');
       }
 
