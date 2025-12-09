@@ -1,0 +1,52 @@
+{
+  "name": "@glimmer/program",
+  "version": "0.94.10",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "directory": "packages/@glimmer/program"
+  },
+  "type": "module",
+  "exports": "./index.ts",
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "development": {
+          "types": "./dist/dev/index.d.ts",
+          "default": "./dist/dev/index.js"
+        },
+        "default": {
+          "types": "./dist/prod/index.d.ts",
+          "default": "./dist/prod/index.js"
+        }
+      }
+    },
+    "types": "dist/dev/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "rollup -c rollup.config.mjs",
+    "test:publint": "publint"
+  },
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/opcode-compiler": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/vm": "workspace:*",
+    "@glimmer/wire-format": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/constants": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*",
+    "eslint": "^9.20.1",
+    "publint": "^0.3.2",
+    "rollup": "^4.34.8",
+    "typescript": "^5.7.3"
+  }
+}

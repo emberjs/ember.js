@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "name": "@types/eslint-community__eslint-plugin-eslint-comments",
+  "version": "0.92.0",
+  "exports": "./index.d.ts",
+  "scripts": {},
+  "dependencies": {
+    "@types/eslint": "^9.6.1"
+  }
+}

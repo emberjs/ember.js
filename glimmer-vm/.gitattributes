@@ -1,0 +1,5 @@
+guides/workspace/demos/auto-import.gif filter=lfs diff=lfs merge=lfs -text
+guides/workspace/demos/fixme.png filter=lfs diff=lfs merge=lfs -text
+guides/workspace/demos/dependency-links.png filter=lfs diff=lfs merge=lfs -text
+guides/workspace/demos/dependi-outdated.png filter=lfs diff=lfs merge=lfs -text
+guides/workspace/demos/dependi-update.png filter=lfs diff=lfs merge=lfs -text

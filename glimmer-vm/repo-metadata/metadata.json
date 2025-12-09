@@ -1,0 +1,685 @@
+{
+  "workspace": {
+    "packages": [".meta-updater", "bin", "repo-metadata", "packages/*/*", "packages/*/*/test"],
+    "version": "0.92.0"
+  },
+  "packages": [
+    {
+      "root": "",
+      "name": "glimmer-engine",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      }
+    },
+    {
+      "root": "bin",
+      "name": "@glimmer-workspace/bin",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false,
+        "strictness": "loose",
+        "lint": ["*"],
+        "env": ["node", "console"]
+      },
+      "entryPoints": {
+        "./clean.mjs": [[["default"], "./clean.mjs"]],
+        "./opcodes/opcodes.schema.json": [[["default"], "./opcodes/opcodes.schema.json"]],
+        "./opcodes.json": [[["default"], "./opcodes.json"]],
+        "./package.json": [[["default"], "./package.json"]],
+        "./patch-all.mjs": [[["default"], "./patch-all.mjs"]],
+        "./run-tests.mjs": [[["default"], "./run-tests.mjs"]],
+        "./run-types-tests.mjs": [[["default"], "./run-types-tests.mjs"]],
+        "./sync-npm-owners.mjs": [[["default"], "./sync-npm-owners.mjs"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer-workspace/benchmark-env",
+      "name": "@glimmer-workspace/benchmark-env",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": true,
+        "strictness": "loose"
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer-workspace/build",
+      "name": "@glimmer-workspace/build-support",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false,
+        "strictness": "loose",
+        "env": ["console"]
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.js"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer-workspace/env",
+      "name": "@glimmer-workspace/env",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.d.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer-workspace/eslint-plugin",
+      "name": "@glimmer-workspace/eslint-plugin",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.js"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer-workspace/integration-tests",
+      "name": "@glimmer-workspace/integration-tests",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false,
+        "strictness": "loose",
+        "lint": ["index", "lib/**/*", "test/**/*"]
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer-workspace/integration-tests/test",
+      "name": "@glimmer-test/integration-tests",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer-workspace/test-utils",
+      "name": "@glimmer-workspace/test-utils",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]],
+        ".": [[["default"], "./index.ts"]],
+        "./index.ts": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/compiler",
+      "name": "@glimmer/compiler",
+      "version": "0.94.11",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true,
+        "supportcjs": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/compiler/test",
+      "name": "@glimmer-test/compiler",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/constants",
+      "name": "@glimmer/constants",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]],
+        "./test/package.json": [[["default"], "./test/package.json"]],
+        ".": [[["default"], "./index.ts"]],
+        "./index.ts": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/constants/test",
+      "name": "@glimmer-test/constants",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/debug",
+      "name": "@glimmer/debug",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/debug-util",
+      "name": "@glimmer/debug-util",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/debug-util/test",
+      "name": "@glimmer-test/debug-util",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/debug/test",
+      "name": "@glimmer-test/debug",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/destroyable",
+      "name": "@glimmer/destroyable",
+      "version": "0.94.8",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/destroyable/test",
+      "name": "@glimmer-test/destroyable",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/encoder",
+      "name": "@glimmer/encoder",
+      "version": "0.93.8",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/global-context",
+      "name": "@glimmer/global-context",
+      "version": "0.93.4",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/interfaces",
+      "name": "@glimmer/interfaces",
+      "version": "0.94.6",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.d.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/local-debug-babel-plugin",
+      "name": "@glimmer/local-debug-babel-plugin",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false,
+        "strictness": "loose"
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.js"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/local-debug-flags",
+      "name": "@glimmer/local-debug-flags",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/manager",
+      "name": "@glimmer/manager",
+      "version": "0.94.10",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/manager/test",
+      "name": "@glimmer-test/manager",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false,
+        "strictness": "loose"
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/node",
+      "name": "@glimmer/node",
+      "version": "0.94.10",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/opcode-compiler",
+      "name": "@glimmer/opcode-compiler",
+      "version": "0.94.10",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/owner",
+      "name": "@glimmer/owner",
+      "version": "0.93.4",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/owner/test",
+      "name": "@glimmer-test/owner",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/program",
+      "name": "@glimmer/program",
+      "version": "0.94.10",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/program/test",
+      "name": "@glimmer-test/program",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/reference",
+      "name": "@glimmer/reference",
+      "version": "0.94.9",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/reference/test",
+      "name": "@glimmer-test/reference",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/runtime",
+      "name": "@glimmer/runtime",
+      "version": "0.94.11",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/syntax",
+      "name": "@glimmer/syntax",
+      "version": "0.95.0",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true,
+        "supportcjs": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/syntax/test",
+      "name": "@glimmer-test/syntax",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/util",
+      "name": "@glimmer/util",
+      "version": "0.94.8",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/util/test",
+      "name": "@glimmer-test/util",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/validator",
+      "name": "@glimmer/validator",
+      "version": "0.95.0",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/validator/test",
+      "name": "@glimmer-test/validator",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false,
+        "strictness": "strict"
+      },
+      "entryPoints": {
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/vm",
+      "name": "@glimmer/vm",
+      "version": "0.94.8",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/vm-babel-plugins",
+      "name": "@glimmer/vm-babel-plugins",
+      "version": "0.93.5",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@glimmer/wire-format",
+      "name": "@glimmer/wire-format",
+      "version": "0.94.8",
+      "type": "module",
+      "private": false,
+      "repo-meta": {
+        "built": true
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.ts"]]
+      }
+    },
+    {
+      "root": "packages/@types/eslint-community__eslint-plugin-eslint-comments",
+      "name": "@types/eslint-community__eslint-plugin-eslint-comments",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.d.ts"]]
+      }
+    },
+    {
+      "root": "packages/@types/eslint-plugin-import",
+      "name": "@types/eslint-plugin-import",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.d.ts"]]
+      }
+    },
+    {
+      "root": "packages/@types/eslint-plugin-qunit",
+      "name": "@types/eslint-plugin-qunit",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        "./index.d.ts": [[["default"], "./index.d.ts"]],
+        "./package.json": [[["default"], "./package.json"]]
+      }
+    },
+    {
+      "root": "packages/@types/js-reporters",
+      "name": "@types/js-reporters",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.d.ts"]]
+      }
+    },
+    {
+      "root": "packages/@types/puppeteer-chromium-resolver",
+      "name": "@types/puppeteer-chromium-resolver",
+      "version": "0.92.0",
+      "type": "commonjs",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [[["default"], "./index.d.ts"]]
+      }
+    },
+    {
+      "root": "repo-metadata",
+      "name": "@glimmer-workspace/repo-metadata",
+      "version": "0.92.0",
+      "type": "module",
+      "private": true,
+      "repo-meta": {
+        "built": false
+      },
+      "entryPoints": {
+        ".": [
+          [["types"], "./index.d.ts"],
+          [["default"], "./index.js"]
+        ],
+        "./metadata.json": [[["default"], "./metadata.json"]]
+      }
+    }
+  ]
+}

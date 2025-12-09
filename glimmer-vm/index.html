@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Glimmer Test Suite</title>
+  </head>
+
+  <body>
+    <script type="module">
+      import "qunit/qunit/qunit.js";
+      import { runTests } from "@glimmer-workspace/integration-tests";
+      await runTests(
+        import.meta.glob("./packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.ts"),
+      );
+    </script>
+  </body>
+</html>
