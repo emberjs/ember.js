@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "@glimmer-test/debug-util",
+  "version": "0.92.0",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/env": "workspace:*",
+    "@glimmer/util": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/debug-util": "workspace:*",
+    "vite": "^6.1.1"
+  }
+}

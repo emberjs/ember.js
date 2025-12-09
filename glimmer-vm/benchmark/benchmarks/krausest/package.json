@@ -1,0 +1,49 @@
+{
+  "private": true,
+  "name": "@glimmer-workspace/krausest",
+  "type": "module",
+  "imports": {
+    "#*": "./lib/*"
+  },
+  "scripts": {
+    "start": "vite --mode production",
+    "test:lint": "eslint . --quiet"
+  },
+  "dependencies": {
+    "@glimmer-workspace/benchmark-env": "file:packages/@glimmer-workspace/benchmark-env.tgz",
+    "@glimmer/compiler": "file:packages/@glimmer/compiler.tgz",
+    "@glimmer/interfaces": "file:packages/@glimmer/interfaces.tgz",
+    "@glimmer/runtime": "file:packages/@glimmer/runtime.tgz",
+    "@simple-dom/document": "^1.4.0",
+    "@simple-dom/serializer": "^1.4.0",
+    "@simple-dom/void-map": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.4",
+    "eslint": "^9.18.0",
+    "type-fest": "^4.32.0",
+    "vite": "^5.4.10"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "config": {
+    "tsconfig": "../../tsconfig.json"
+  },
+  "pnpm": {
+    "overrides": {
+      "@glimmer-workspace/build-support": "file:packages/@glimmer-workspace/build-support.tgz",
+      "@glimmer/debug-util": "file:packages/@glimmer/debug-util.tgz",
+      "@glimmer/global-context": "file:packages/@glimmer/global-context.tgz",
+      "@glimmer/manager": "file:packages/@glimmer/manager.tgz",
+      "@glimmer/opcode-compiler": "file:packages/@glimmer/opcode-compiler.tgz",
+      "@glimmer/program": "file:packages/@glimmer/program.tgz",
+      "@glimmer/reference": "file:packages/@glimmer/reference.tgz",
+      "@glimmer/syntax": "file:packages/@glimmer/syntax.tgz",
+      "@glimmer/util": "file:packages/@glimmer/util.tgz",
+      "@glimmer/validator": "file:packages/@glimmer/validator.tgz",
+      "@glimmer/wire-format": "file:packages/@glimmer/wire-format.tgz",
+      "@glimmer-workspace/env": "file:packages/@glimmer-workspace/env.tgz"
+    }
+  }
+}

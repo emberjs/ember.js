@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec node --disable-warning=ExperimentalWarning --experimental-strip-types "$@"

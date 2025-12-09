@@ -1,0 +1,74 @@
+name: PerformanceCheck
+
+on:
+  workflow_dispatch:
+    inputs:
+      BRANCH:
+        description: Branch to checkout
+        required: false
+        default: 'main'
+        type: string
+  # Don't run on every merge to main, because many merges
+  # may not even be vm related, but infra, or GH Actions
+  pull_request:
+    types: [ labeled ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FIDELITY: 100
+  THROTTLE: 4
+  FORK_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+
+jobs:
+  master-krausest-comparison:
+    if: ${{ github.event.label.name == 'perf' }}
+    name: Glimmer Krausest Benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.BRANCH }}
+
+      - uses: marceloprado/has-changed-path@v1.0.1
+        id: did-change
+        with:
+          paths: packages/
+
+      - uses: wyvox/action-setup-pnpm@v3
+        if: steps.did-change.outputs.changed == 'true'
+        with:
+          node-version: '22'
+
+      - name: Setup Benchmark Directory
+        if: steps.did-change.outputs.changed == 'true'
+        run: pnpm run benchmark:setup
+        
+      - name: RUN
+        if: steps.did-change.outputs.changed == 'true'
+        run: pnpm run benchmark:run
+
+      - name: Remove unused artifacts
+        if: steps.did-change.outputs.changed == 'true'
+        run: rm -rf ./tracerbench-results/traces && rm -rf ./tracerbench-results/traces.zip
+
+      - name: Upload Tracerbench Artifacts
+        if: steps.did-change.outputs.changed == 'true' && (failure() || success())
+        uses: actions/upload-artifact@v3
+        with:
+          name: Trace Artifacts
+          path: tracerbench-results
+
+      - name: Write message
+        if: steps.did-change.outputs.changed == 'true'
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-path: "tracerbench-results/msg.txt"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

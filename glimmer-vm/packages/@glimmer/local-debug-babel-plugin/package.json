@@ -1,0 +1,12 @@
+{
+  "name": "@glimmer/local-debug-babel-plugin",
+  "version": "0.92.0",
+  "license": "MIT",
+  "repo-meta": {
+    "strictness": "loose"
+  },
+  "type": "module",
+  "private": true,
+  "exports": "./index.js",
+  "scripts": {}
+}

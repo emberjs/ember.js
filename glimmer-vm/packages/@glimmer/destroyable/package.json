@@ -1,0 +1,48 @@
+{
+  "name": "@glimmer/destroyable",
+  "version": "0.94.8",
+  "license": "MIT",
+  "description": "Utilities for creating and managing a destroyable hierarchy of objects",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "directory": "packages/@glimmer/destroyable"
+  },
+  "type": "module",
+  "exports": "./index.ts",
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "development": {
+          "types": "./dist/dev/index.d.ts",
+          "default": "./dist/dev/index.js"
+        },
+        "default": {
+          "types": "./dist/prod/index.d.ts",
+          "default": "./dist/prod/index.js"
+        }
+      }
+    },
+    "types": "dist/dev/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "rollup -c rollup.config.mjs",
+    "test:publint": "publint"
+  },
+  "dependencies": {
+    "@glimmer/global-context": "workspace:*",
+    "@glimmer/interfaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/debug-util": "workspace:*",
+     "@glimmer/env": "workspace:*",
+    "eslint": "^9.20.1",
+    "publint": "^0.3.2",
+    "rollup": "^4.34.8",
+    "typescript": "^5.7.3"
+  }
+}

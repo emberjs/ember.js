@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "@glimmer-test/debug",
+  "version": "0.92.0",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/debug": "workspace:*"
+  }
+}
