@@ -14,8 +14,6 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       # Temporarily disabled to see the later parts of CI
       # - name: linting
@@ -31,8 +29,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build types
         run: pnpm build:types
@@ -50,8 +46,6 @@ jobs:
         ts-version: [ '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9' ]
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build stable type definitions
         run: pnpm build:types
@@ -65,8 +59,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
@@ -100,8 +92,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
@@ -122,8 +112,6 @@ jobs:
     needs: [ basic-test, lint, types ]
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         env:
@@ -154,8 +142,6 @@ jobs:
       matrix: ${{fromJson(needs.lint.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
         with:
           use_lockfile: "false"
@@ -172,8 +158,6 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         env:
@@ -188,8 +172,6 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: test
         run: pnpm test:blueprints
@@ -200,8 +182,6 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development

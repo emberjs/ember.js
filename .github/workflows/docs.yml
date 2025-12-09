@@ -20,7 +20,6 @@ jobs:
           repository: emberjs/ember.js
           path: ember.js
           ref: ${{ inputs.ref || github.ref_name }}
-          submodules: true
 
       - name: Checkout ember-jsonapi-docs
         uses: actions/checkout@v4

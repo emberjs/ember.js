@@ -29,8 +29,6 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
@@ -49,8 +47,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
