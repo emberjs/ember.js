@@ -72,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ basic-test, lint, types ]
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: "All deprecations enabled"
