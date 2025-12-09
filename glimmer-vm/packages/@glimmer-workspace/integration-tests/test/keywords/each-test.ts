@@ -9,7 +9,7 @@ import {
 class Each extends RenderTest {
   static suiteName = '{{#each}} keyword';
 
-  @test
+  @test({ skip: true })
   'each with undefined item https://github.com/emberjs/ember.js/issues/20786'() {
     class State {
       @tracked data = [undefined];

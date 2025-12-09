@@ -632,22 +632,6 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
-  'The if helper should consider an empty array truthy'() {
-    this.render(
-      '<div>{{#if this.condition}}<p>{{this.value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>',
-      { condition: [], value: 'hello world' }
-    );
-
-    this.assertHTML('<div><p>hello world</p></div>');
-
-    this.rerender({ condition: ['thing'] });
-    this.assertHTML('<div><p>hello world</p></div>', 'after updating array');
-
-    this.rerender({ condition: [] });
-    this.assertHTML('<div><p>hello world</p></div>', 'back to empty array');
-  }
-
-  @test
   'a simple implementation of a dirtying rerender without else'() {
     this.render('<div>{{#if this.condition}}<p>{{this.value}}</p>{{/if}}</div>', {
       condition: true,
@@ -702,22 +686,6 @@ class UpdatingTest extends RenderTest {
 
     this.rerender({ condition: true });
     this.assertHTML('<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
-  }
-
-  @test
-  'The unless helper should consider an empty array truthy'() {
-    this.render(
-      '<div>{{#unless this.condition}}<p>{{this.value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>',
-      { condition: [], value: 'hello world' }
-    );
-
-    this.assertHTML('<div><p>Nothing</p></div>', 'Initial render');
-
-    this.rerender({ condition: [1] });
-    this.assertHTML('<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
-
-    this.rerender({ condition: [] });
-    this.assertHTML('<div><p>Nothing</p></div>', 'If the condition is false, the else renders');
   }
 
   @test

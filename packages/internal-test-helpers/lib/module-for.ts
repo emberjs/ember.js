@@ -8,6 +8,15 @@ import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import type { TestCase } from './test-cases/abstract';
 import { setContext, unsetContext } from './test-context';
+import { setupAssertionHelpers } from './ember-dev/assertion';
+import { setupContainersCheck } from './ember-dev/containers';
+import { setupDeprecationHelpers } from './ember-dev/deprecation';
+import { setupNamespacesCheck } from './ember-dev/namespaces';
+import { setupObserversCheck } from './ember-dev/observers';
+import { setupRunLoopCheck } from './ember-dev/run-loop';
+import { setupWarningHelpers } from './ember-dev/warning';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
+import type { DebugEnv } from './ember-dev/utils';
 
 interface TestClass<T extends TestCase> {
   new (assert: QUnit['assert']): T;
@@ -49,7 +58,19 @@ export default function moduleFor<T extends TestCase, M extends Generator>(
   TestClass: TestClass<T>,
   ...mixins: Mixin<M>[]
 ) {
+  let env = {
+    getDebugFunction,
+    setDebugFunction,
+  } as DebugEnv;
+
   QUnit.module(description, function (hooks) {
+    setupContainersCheck(hooks);
+    setupNamespacesCheck(hooks);
+    setupObserversCheck(hooks);
+    setupRunLoopCheck(hooks);
+    setupAssertionHelpers(hooks, env);
+    setupDeprecationHelpers(hooks, env);
+    setupWarningHelpers(hooks, env);
     setupTestClass(hooks, TestClass, ...mixins);
   });
 }

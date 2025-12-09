@@ -16,6 +16,7 @@ import { destroy } from '@glimmer/destroyable';
 import { inTransaction } from '@glimmer/runtime';
 import { clearElement, dict } from '@glimmer/util';
 import { dirtyTagFor } from '@glimmer/validator';
+import { run } from '@ember/runloop';
 
 import type { ComponentBlueprint, ComponentKind, ComponentTypes } from './components';
 import type { UserHelper } from './helpers';
@@ -379,11 +380,13 @@ export class RenderTest implements IRenderTest {
       }
     }
 
-    this.setProperties(properties);
+    run(() => {
+      this.setProperties(properties);
 
-    this.renderResult = this.delegate.renderTemplate(template, this.context, this.element, () =>
-      this.takeSnapshot()
-    );
+      this.renderResult = this.delegate.renderTemplate(template, this.context, this.element, () =>
+        this.takeSnapshot()
+      );
+    });
   }
 
   renderComponent(
@@ -403,7 +406,14 @@ export class RenderTest implements IRenderTest {
       'Attempted to render a component, but the delegate did not implement renderComponent'
     );
 
-    this.renderResult = this.delegate.renderComponent(component, args, this.element, dynamicScope);
+    run(() => {
+      this.renderResult = this.delegate.renderComponent(
+        component,
+        args,
+        this.element,
+        dynamicScope
+      );
+    });
   }
 
   rerender(properties: Dict = {}): void {
@@ -413,22 +423,26 @@ export class RenderTest implements IRenderTest {
       // couldn't stringify, possibly has a circular dependency
     }
 
-    this.setProperties(properties);
+    run(() => {
+      this.setProperties(properties);
 
-    let result = expect(this.renderResult, 'the test should call render() before rerender()');
+      let result = expect(this.renderResult, 'the test should call render() before rerender()');
 
-    try {
-      result.env.begin();
-      result.rerender();
-    } finally {
-      result.env.commit();
-    }
+      try {
+        result.env.begin();
+        result.rerender();
+      } finally {
+        result.env.commit();
+      }
+    });
   }
 
   destroy(): void {
     let result = expect(this.renderResult, 'the test should call render() before destroy()');
 
-    inTransaction(result.env, () => destroy(result));
+    run(() => {
+      inTransaction(result.env, () => destroy(result));
+    });
   }
 
   private assertEachCompareResults(

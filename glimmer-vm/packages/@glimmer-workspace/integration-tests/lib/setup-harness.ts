@@ -3,8 +3,6 @@ import type { Expand } from '@glimmer/interfaces';
 import type { Runner } from 'js-reporters';
 import { debug } from '@glimmer/validator';
 
-const SMOKE_TEST_FILE = './packages/@glimmer-workspace/integration-tests/test/smoke-test.ts';
-
 export async function runTests(packages: Record<string, () => Promise<void>>) {
   const { smokeTest } = await setupQunit();
   return bootQunit(packages, { smokeTest });
@@ -17,11 +15,6 @@ export async function bootQunit(
   const { smokeTest } = options;
 
   for (const [name, pkg] of Object.entries(packages)) {
-    if (name === SMOKE_TEST_FILE && !smokeTest) {
-      console.log('skipping', name);
-      continue;
-    }
-
     await pkg();
   }
 
@@ -32,43 +25,11 @@ export async function setupQunit() {
   const qunitLib: QUnit = QUnit;
   await import('qunit/qunit/qunit.css');
 
-  const testing = Testing.withConfig(
-    {
-      id: 'smoke_tests',
-      label: 'Smoke Tests',
-      tooltip: 'Enable Smoke Tests',
-    },
-    {
-      id: 'ci',
-      label: 'CI Mode',
-      tooltip:
-        'CI mode emits tap output and makes tests run faster by sacrificing UI responsiveness',
-    },
-    {
-      id: 'enable_internals_logging',
-      label: 'Log Deep Internals',
-      tooltip: 'Logs internals that are used in the development of the trace logs',
-    },
-
-    {
-      id: 'enable_trace_logging',
-      label: 'Trace Logs',
-      tooltip: 'Trace logs emit information about the internal VM state',
-    },
-
-    {
-      id: 'enable_subtle_logging',
-      label: '+ Subtle',
-      tooltip:
-        'Subtle logs include unchanged information and other details not necessary for normal debugging',
-    },
-
-    {
-      id: 'enable_trace_explanations',
-      label: '+ Explanations',
-      tooltip: 'Also explain the trace logs',
-    }
-  );
+  const testing = Testing.withConfig({
+    id: 'ci',
+    label: 'CI Mode',
+    tooltip: 'CI mode emits tap output and makes tests run faster by sacrificing UI responsiveness',
+  });
 
   testing.begin(() => {
     if (testing.config.ci) {
@@ -107,21 +68,12 @@ export async function setupQunit() {
     //
     // this adds a very small amount of async, just to allow
     // the QUnit UI to rerender once per module completed
-    const pause = () =>
-      new Promise<void>((res) => {
-        setTimeout(res, 1);
-      });
-
-    let start = performance.now();
-    qunitLib.testDone(async () => {
-      let gap = performance.now() - start;
-      if (gap > 200) {
-        await pause();
-        start = performance.now();
-      }
-    });
-
-    qunitLib.moduleDone(pause);
+    qunitLib.moduleDone(
+      () =>
+        new Promise<void>((res) => {
+          setTimeout(res, 0);
+        })
+    );
   }
 
   qunitLib.done(() => {

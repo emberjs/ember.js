@@ -510,7 +510,7 @@ module('@glimmer/validator: tracking', () => {
               setter(foo, 789);
             });
           });
-        }, /You attempted to update `foo` on `\(an instance of/u);
+        }, /You attempted to update `foo` on `Foo`/);
       });
     }
   });
@@ -528,7 +528,7 @@ module('@glimmer/validator: tracking', () => {
               dirtyTag(tag);
             });
           });
-        }, /Error: You attempted to update `\(an unknown tag\)`/u);
+        }, /Error: Assertion Failed: You attempted to update `undefined`/u);
       });
 
       test('it throws errors across track frames within the same debug transaction', (assert) => {
@@ -545,7 +545,7 @@ module('@glimmer/validator: tracking', () => {
               dirtyTag(tag);
             });
           });
-        }, /Error: You attempted to update `\(an unknown tag\)`/u);
+        }, /Error: Assertion Failed: You attempted to update `undefined`/u);
       });
 
       test('it ignores untrack for consumption', (assert) => {
@@ -578,7 +578,7 @@ module('@glimmer/validator: tracking', () => {
               dirtyTag(tag);
             });
           });
-        }, /Error: You attempted to update `\(an unknown tag\)`/u);
+        }, /Error: Assertion Failed: You attempted to update `undefined`/u);
       });
     });
   }

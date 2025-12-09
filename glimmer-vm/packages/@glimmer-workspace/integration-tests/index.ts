@@ -1,5 +1,3 @@
-import './lib/setup';
-
 export * from './lib/base-env';
 export * from './lib/compile';
 export * from './lib/components';
