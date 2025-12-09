@@ -360,6 +360,9 @@ importers:
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../../@glimmer/debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../packages/@glimmer/env
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../../@glimmer/local-debug-flags
@@ -573,6 +576,9 @@ importers:
         specifier: workspace:*
         version: link:../interfaces
     devDependencies:
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../../../../packages/@ember/runloop
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
@@ -12901,7 +12907,7 @@ snapshots:
       '@babel/code-frame': 7.26.2
       '@babel/generator': 7.26.9
       '@babel/helper-compilation-targets': 7.26.5
-      '@babel/helper-module-transforms': 7.26.0(@babel/core@7.26.9(supports-color@8.1.1))(supports-color@8.1.1)
+      '@babel/helper-module-transforms': 7.26.0(@babel/core@7.26.9)(supports-color@8.1.1)
       '@babel/helpers': 7.26.9
       '@babel/parser': 7.26.9
       '@babel/template': 7.26.9
@@ -13181,7 +13187,6 @@ snapshots:
       '@babel/traverse': 7.26.9(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   '@babel/helper-module-transforms@7.26.0(@babel/core@7.27.4)':
     dependencies:

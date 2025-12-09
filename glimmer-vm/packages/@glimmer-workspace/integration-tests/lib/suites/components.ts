@@ -7,6 +7,7 @@ import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { strip, stripTight } from '../test-helpers/strings';
 import { tracked } from '../test-helpers/tracked';
+import { DEBUG } from '@glimmer/env';
 
 export class TemplateOnlyComponents extends RenderTest {
   static suiteName = 'TemplateOnly';
@@ -393,6 +394,7 @@ export class GlimmerishComponents extends RenderTest {
 
   @test({
     kind: 'glimmer',
+    skip: !DEBUG,
   })
   'invoking dynamic component (path) via angle brackets does not work for string'() {
     this.registerComponent('Glimmer', 'TestHarness', '<this.args.Foo />');
@@ -768,7 +770,7 @@ export class GlimmerishComponents extends RenderTest {
     this.assertHTML('123<!---->');
   }
 
-  @test({ kind: 'templateOnly' })
+  @test({ kind: 'templateOnly', skip: !DEBUG })
   'throwing an error during component construction does not put result into a bad state'() {
     this.registerComponent(
       'Glimmer',
@@ -796,7 +798,7 @@ export class GlimmerishComponents extends RenderTest {
     this.assertHTML('', 'destroys correctly');
   }
 
-  @test({ kind: 'templateOnly' })
+  @test({ kind: 'templateOnly', skip: !DEBUG })
   'throwing an error during component construction does not put result into a bad state with multiple prior nodes'() {
     this.registerComponent(
       'Glimmer',
@@ -830,7 +832,7 @@ export class GlimmerishComponents extends RenderTest {
     this.assertHTML('', 'destroys correctly');
   }
 
-  @test({ kind: 'templateOnly' })
+  @test({ kind: 'templateOnly', skip: !DEBUG })
   'throwing an error during component construction does not put result into a bad state with nested components'() {
     this.registerComponent(
       'Glimmer',
@@ -863,7 +865,7 @@ export class GlimmerishComponents extends RenderTest {
     this.assertHTML('', 'destroys correctly');
   }
 
-  @test({ kind: 'templateOnly' })
+  @test({ kind: 'templateOnly', skip: !DEBUG })
   'throwing an error during rendering gives a readable error stack'(assert: Assert) {
     // eslint-disable-next-line no-console
     let originalConsoleError = console.error;

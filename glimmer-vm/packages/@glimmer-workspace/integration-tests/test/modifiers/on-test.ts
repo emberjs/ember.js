@@ -3,6 +3,7 @@ import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 import { consume } from '@glimmer-workspace/test-utils';
+import { DEBUG } from '@glimmer/env';
 
 // check if window exists and actually is the global
 const hasDom =
@@ -207,7 +208,7 @@ if (hasDom) {
       this.assertCounts({ adds: 2, removes: 1 });
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'setting passive named argument prevents calling preventDefault'(assert: Assert) {
       let matcher =
         /You marked this listener as 'passive', meaning that you must not call 'event.preventDefault\(\)'/u;
@@ -317,7 +318,7 @@ if (hasDom) {
       this.assertCounts({ adds: 1, removes: 0 });
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts when eventName is missing'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on undefined this.callback}}>Click Me</button>`, {
@@ -326,7 +327,7 @@ if (hasDom) {
       }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts when eventName is a bound undefined value'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on this.someUndefinedThing this.callback}}>Click Me</button>`, {
@@ -335,7 +336,7 @@ if (hasDom) {
       }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts when eventName is a function'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on this.callback}}>Click Me</button>`, {
@@ -344,28 +345,28 @@ if (hasDom) {
       }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts when callback is missing'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on 'click'}}>Click Me</button>`);
       }, /You must pass a function as the second argument to the `on` modifier/u);
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts when callback is undefined'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on 'click' this.foo}}>Click Me</button>`);
       }, /You must pass a function as the second argument to the `on` modifier; you passed undefined. While rendering:\n{2}this.foo/u);
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts when callback is null'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on 'click' this.foo}}>Click Me</button>`, { foo: null });
       }, /You must pass a function as the second argument to the `on` modifier; you passed null. While rendering:\n{2}this.foo/u);
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts if the provided callback accesses `this` without being bound prior to passing to on'(
       assert: Assert
     ) {
@@ -382,7 +383,7 @@ if (hasDom) {
       this.findButton().click();
     }
 
-    @test
+    @test({ skip: !DEBUG })
     'asserts if more than 2 positional parameters are provided'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on 'click' this.callback this.someArg}}>Click Me</button>`, {

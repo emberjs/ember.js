@@ -43,6 +43,7 @@
     "@ember/runloop": "workspace:*",
     "@glimmer/constants": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
+    "@glimmer/env": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "@types/js-reporters": "workspace:*",
     "@types/qunit": "^2.19.12",

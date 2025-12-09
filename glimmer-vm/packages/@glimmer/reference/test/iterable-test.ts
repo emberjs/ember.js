@@ -6,7 +6,6 @@ import { createComputeRef, createIteratorRef, valueForRef } from '@glimmer/refer
 import { consumeTag, VOLATILE_TAG } from '@glimmer/validator';
 
 import { module, test } from './utils/qunit';
-import { TestContext } from './utils/template';
 
 class IterableWrapper {
   private iterable: Reference<{ next(): OpaqueIterationItem | null }>;
@@ -44,35 +43,25 @@ class IterableWrapper {
 }
 
 module('@glimmer/reference: IterableReference', (hooks) => {
-  let originalContext: GlobalContext | null;
-
-  hooks.beforeEach(() => {
-    originalContext = unwrap(testOverrideGlobalContext)(TestContext);
-  });
-
-  hooks.afterEach(() => {
-    unwrap(testOverrideGlobalContext)(originalContext);
-  });
-
   module('iterator delegates', () => {
     test('it correctly iterates delegates', (assert) => {
-      let obj = { a: 'Yehuda', b: 'Godfrey' };
+      let obj = ['Yehuda', 'Godfrey'];
       let target = new IterableWrapper(obj);
 
       assert.deepEqual(target.toValues(), Object.values(obj));
     });
 
     test('it correctly synchronizes delegates when changed', (assert) => {
-      let obj = { a: 'Yehuda', b: 'Godfrey' } as Record<string, string>;
+      let obj = ['Yehuda', 'Godfrey'];
       let target = new IterableWrapper(obj);
 
       assert.deepEqual(target.toValues(), Object.values(obj));
 
-      obj['c'] = 'Rob';
+      obj[2] = 'Rob';
 
       assert.deepEqual(target.toValues(), Object.values(obj));
 
-      obj['a'] = 'Godhuda';
+      obj[0] = 'Godhuda';
 
       assert.deepEqual(target.toValues(), Object.values(obj));
     });

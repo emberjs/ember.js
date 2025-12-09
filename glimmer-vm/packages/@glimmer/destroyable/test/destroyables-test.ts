@@ -12,7 +12,8 @@ import {
   registerDestructor,
   unregisterDestructor,
 } from '@glimmer/destroyable';
-import { testOverrideGlobalContext } from '@glimmer/global-context';
+
+import { run } from '@ember/runloop';
 
 const { module, test } = QUnit;
 
@@ -20,34 +21,16 @@ let destroyQueue: (() => void)[] = [];
 let destroyedQueue: (() => void)[] = [];
 
 function flush() {
-  destroyQueue.forEach((fn) => fn());
-  destroyedQueue.forEach((fn) => fn());
+  run(() => {
+    destroyQueue.forEach((fn) => fn());
+    destroyedQueue.forEach((fn) => fn());
 
-  destroyQueue = [];
-  destroyedQueue = [];
+    destroyQueue = [];
+    destroyedQueue = [];
+  });
 }
 
 module('Destroyables', (hooks) => {
-  let originalContext: GlobalContext | null;
-
-  hooks.beforeEach(() => {
-    originalContext = unwrap(
-      testOverrideGlobalContext?.({
-        scheduleDestroy<T extends object>(destroyable: T, destructor: (obj: T) => void) {
-          destroyQueue.push(() => destructor(destroyable));
-        },
-
-        scheduleDestroyed(fn: () => void) {
-          destroyedQueue.push(fn);
-        },
-      })
-    );
-  });
-
-  hooks.afterEach(() => {
-    unwrap(testOverrideGlobalContext)(originalContext);
-  });
-
   hooks.afterEach((assert) => {
     assert.strictEqual(destroyQueue.length, 0, 'destruction flushed');
   });

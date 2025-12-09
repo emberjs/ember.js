@@ -262,12 +262,14 @@ module('@glimmer/validator: tracking', () => {
       endTrackFrame();
     });
 
-    test('asserts if track frame was ended without one existing', (assert) => {
-      assert.throws(
-        () => endTrackFrame(),
-        /attempted to close a tracking frame, but one was not open/u
-      );
-    });
+    if (DEBUG) {
+      test('asserts if track frame was ended without one existing', (assert) => {
+        assert.throws(
+          () => endTrackFrame(),
+          /attempted to close a tracking frame, but one was not open/u
+        );
+      });
+    }
   });
 
   module('tracking cache', () => {

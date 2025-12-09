@@ -6,6 +6,7 @@ import {
   RenderTest,
   test,
 } from '@glimmer-workspace/integration-tests';
+import { DEBUG } from '@glimmer/env';
 
 class FnTest extends RenderTest {
   static suiteName = 'Helpers test: {{fn}}';
@@ -125,7 +126,7 @@ class FnTest extends RenderTest {
     assert.strictEqual(this.stashedFn?.(), 'arg1: foo, arg2: bar');
   }
 
-  @test
+  @test({ skip: !DEBUG })
   'asserts if no argument given'(assert: Assert) {
     assert.throws(() => {
       this.render(`{{fn}}`, {
@@ -136,7 +137,7 @@ class FnTest extends RenderTest {
     }, /You must pass a function as the `fn` helper's first argument./u);
   }
 
-  @test
+  @test({ skip: !DEBUG })
   'asserts if the first argument is undefined'(assert: Assert) {
     assert.throws(() => {
       this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
@@ -147,7 +148,7 @@ class FnTest extends RenderTest {
     }, /You must pass a function as the `fn` helper's first argument, you passed undefined. While rendering:\n{2}this.myFunc/u);
   }
 
-  @test
+  @test({ skip: !DEBUG })
   'asserts if the first argument is null'(assert: Assert) {
     assert.throws(() => {
       this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
@@ -158,7 +159,7 @@ class FnTest extends RenderTest {
     }, /You must pass a function as the `fn` helper's first argument, you passed null. While rendering:\n{2}this.myFunc/u);
   }
 
-  @test
+  @test({ skip: !DEBUG })
   'asserts if the provided function accesses `this` without being bound prior to passing to fn'(
     assert: Assert
   ) {
@@ -176,7 +177,7 @@ class FnTest extends RenderTest {
     }, /You accessed `this.arg2` from a function passed to the `fn` helper, but the function itself was not bound to a valid `this` context. Consider updating to use a bound function./u);
   }
 
-  @test
+  @test({ skip: !DEBUG })
   'there is no `this` context within the callback'(assert: Assert) {
     this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, {
       myFunc() {
