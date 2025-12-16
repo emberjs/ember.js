@@ -321,11 +321,11 @@ function walkGlimmerDeps(packageNames) {
 function findFromProject(...names) {
   let current;
 
-  let glimmerVmTarget = resolve(packageCache.appRoot, 'glimmer-vm', 'packages', names[0]);
+  let glimmerVmTarget = resolve(packageCache.appRoot, 'packages', names[0]);
   if (existsSync(glimmerVmTarget)) {
-    // the glimmer-vm packages are all in a known subdir. We don't list them as
-    // actual NPM deps of the top-level workspace because we don't want their
-    // types leaking into our type-tests.
+    // the glimmer-vm packages were historically deps but are now in our repo.
+    // We don't list them as actual NPM deps of the top-level workspace because
+    // we don't want their types leaking into our type-tests.
     names.shift();
     current = packageCache.get(glimmerVmTarget);
   } else {
@@ -396,7 +396,7 @@ export function resolvePackages(deps, params) {
       }
 
       if (source === '@glimmer/local-debug-flags' && !enableLocalDebug) {
-        return resolve(projectRoot, 'glimmer-vm/packages/@glimmer/local-debug-flags/disabled.ts');
+        return resolve(projectRoot, 'packages/@glimmer/local-debug-flags/disabled.ts');
       }
 
       let pkgName = packageName(source);
@@ -415,16 +415,11 @@ export function resolvePackages(deps, params) {
           return deps[source];
         }
 
-        let candidateStems = [
-          resolve(projectRoot, 'packages', source),
-          resolve(projectRoot, 'glimmer-vm/packages', source),
-        ];
-        for (let candidateStem of candidateStems) {
-          for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
-            let candidate = candidateStem + suffix;
-            if (existsSync(candidate) && statSync(candidate).isFile()) {
-              return candidate;
-            }
+        let candidateStem = resolve(projectRoot, 'packages', source);
+        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+          let candidate = candidateStem + suffix;
+          if (existsSync(candidate) && statSync(candidate).isFile()) {
+            return candidate;
           }
         }
 
