@@ -1,6 +1,6 @@
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { DEBUG } from '@glimmer/env';
-import { debug } from '@glimmer/validator';
+import { resetTracking } from '@glimmer/validator';
 
 declare global {
   interface Assert {
@@ -89,7 +89,7 @@ QUnit.moduleDone(
 );
 
 QUnit.testStart(() => {
-  debug.resetTrackingTransaction?.();
+  resetTracking();
 });
 
 const uiFlags = [
