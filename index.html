@@ -40,6 +40,12 @@
       if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
         EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
       }
+
+      QUnit.config.urlConfig.push({
+        id: 'OVERRIDE_DEPRECATION_VERSION',
+        value: ['20.0.0', '6.0.0', '5.12.0'],
+        label: 'Deprecation Version',
+      });
     </script>
 
     <script type="module">
