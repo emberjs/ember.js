@@ -25,6 +25,9 @@ export default [
       '**/smoke-tests/',
       '**/types/',
       '**/type-tests/',
+      'glimmer-vm/repo-metadata/',
+      'glimmer-vm/**/rollup.config.mjs',
+      'glimmer-vm/packages/@glimmer/vm-babel-plugins/',
     ],
   },
   pluginJs.configs.recommended,
@@ -131,6 +134,17 @@ export default [
     },
   },
   {
+    files: ['glimmer-vm/**/*.ts'],
+    languageOptions: {
+      ecmaVersion: 5,
+      sourceType: 'module',
+      parserOptions: {
+        project: './tsconfig-vm.json',
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+  {
     // TODO: files: ['packages/**/*.[jt]s'],
     files: ['packages/**/*.js'],
 
@@ -208,6 +222,7 @@ export default [
       'broccoli/**/*.js',
       '**/ember-cli-build.js',
       '**/*.cjs',
+      'glimmer-vm/server/**/*.js',
     ],
   },
   {

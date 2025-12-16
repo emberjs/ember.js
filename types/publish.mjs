@@ -111,7 +111,8 @@ async function main() {
   // prior to the deprecation)
   await fs.cp(path.join(TYPES_DIR, 'ember/barrel.d.ts'), path.join(TYPES_DIR, 'ember/index.d.ts'));
 
-  let remappedLocationExcludes = await doOrDie(copyHandwrittenDefinitions);
+  let remappedLocationExcludes = await doOrDie(() => copyHandwrittenDefinitions('packages'));
+
   let sideEffectExcludes = await doOrDie(copyRemappedLocationModules);
 
   // The majority of those items should be excluded entirely, but in some cases
@@ -201,8 +202,7 @@ function copyRemappedLocationModules() {
 
   @returns {Promise<Array<string>>} The modules copied over by hand.
 */
-async function copyHandwrittenDefinitions() {
-  let inputDir = 'packages';
+async function copyHandwrittenDefinitions(inputDir) {
   let definitionModules = glob
     .sync('**/*.d.ts', {
       cwd: inputDir,
@@ -220,7 +220,9 @@ async function copyHandwrittenDefinitions() {
     )
   );
 
-  return definitionModules;
+  // the handwritten definitions in ember don't need to get postprocessing, the
+  // ones in glimmer do need postprocessing.
+  return definitionModules.filter(moduleName => moduleName.startsWith('@ember/') || moduleName.startsWith('loader/'));
 }
 
 /**
@@ -447,6 +449,9 @@ function normalizeSpecifier(moduleName, specifier) {
   } else if (specifier.startsWith('./')) {
     let parentModuleName = moduleName.replace(TERMINAL_MODULE_RE, '');
     let sansLeadingDot = specifier.replace(NEIGHBOR_PATH_RE, '');
+    if (sansLeadingDot.endsWith('.d.ts')) {
+      sansLeadingDot = sansLeadingDot.slice(0, -5);
+    }
     let newImportName = `${parentModuleName}/${sansLeadingDot}`;
     return newImportName;
   } else if (specifier.startsWith('../')) {

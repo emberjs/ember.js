@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "name": "@types/puppeteer-chromium-resolver",
+  "version": "0.92.0",
+  "exports": "./index.d.ts",
+  "scripts": {},
+  "dependencies": {
+    "puppeteer": "23.11.1"
+  }
+}

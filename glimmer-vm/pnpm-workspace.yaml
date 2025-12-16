@@ -1,0 +1,6 @@
+packages:
+  - '.meta-updater'
+  - 'bin'
+  - 'repo-metadata'
+  - 'packages/*/*'
+  - 'packages/*/*/test'

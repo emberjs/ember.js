@@ -74,6 +74,12 @@
       import.meta.glob('./packages/*/tests/**/*.{js,ts}', {
         eager: true,
       });
+
+      // packages originally authored in glimmer-vm repo have a different test
+      // naming convention
+      import.meta.glob('./packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.{js,ts}', {
+        eager: true,
+      });
     </script>
 
     <div id="qunit"></div>

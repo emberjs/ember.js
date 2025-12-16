@@ -1,0 +1,156 @@
+name: Size
+
+on:
+  workflow_dispatch:
+    inputs:
+      BRANCH:
+        description: Branch to checkout
+        required: false
+        default: 'main'
+        type: string
+  pull_request: {}
+
+env:
+  TURBO_API: http://127.0.0.1:9080
+  TURBO_TOKEN: this-is-not-a-secret
+  TURBO_TEAM: myself
+
+jobs:
+  compare_sizes:
+    name: 'Compare Sizes and Comment'
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: '[DEBUG] Dump GitHub context'
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - uses: wyvox/action@v1
+        with:
+          pnpm-args: '--ignore-scripts'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.BRANCH }}
+
+      - run: pnpm turbo prepack
+      - run: sudo snap install dust
+
+      - name: "Get sizes for development outputs"
+        id: dev
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/dev\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - name: "Get sizes for production outputs"
+        id: prod
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/prod\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - name: "Get sizes from the main branch"
+        run: |
+          git remote -v
+          git fetch origin
+          git checkout main
+          git clean -Xfd
+          pnpm install
+          pnpm turbo prepack
+
+      - name: "[Main] Get sizes for development outputs"
+        id: main-dev
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/dev\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - name: "[Main] Get sizes for production outputs"
+        id: main-prod
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/prod\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      #########################
+      # Intended Layout:
+      #
+      #  |      | This PR | Main |
+      #  | Dev  |   x1    |  y1  |
+      #  | Prod |   x2    |  y2  |
+      #
+      #########################
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
+            <tbody>
+            <tr><td>Dev</td><td>
+
+            ```
+            ${{ steps.dev.outputs.sizes }}
+            ```
+
+            </td><td>
+
+            ```
+            ${{ steps.main-dev.outputs.sizes }}
+            ```
+
+            </td></tr>
+            <tr><td>Prod</td><td>
+
+            ```
+            ${{ steps.prod.outputs.sizes }}
+            ```
+
+            </td><td>
+
+            ```
+            ${{ steps.main-prod.outputs.sizes }}
+            ```
+
+            </td></tr>
+            </tbody></table>
+
+
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

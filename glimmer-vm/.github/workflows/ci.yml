@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - next
+      - 'release-*'
+      - 'v*'
+  pull_request: {}
+  schedule:
+    - cron: '0 3 * * *' # daily, at 3am
+
+env:
+  TURBO_API: http://127.0.0.1:9080
+  TURBO_TOKEN: this-is-not-a-secret
+  TURBO_TEAM: myself
+
+jobs:
+  install_dependencies:
+    name: 'Setup'
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          pnpm-args: '--ignore-scripts'
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm turbo prepack
+
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 10
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          pnpm-args: '--ignore-scripts'
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm lint:all
+
+
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 10
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          pnpm-args: '--ignore-scripts'
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm lint:fix
+      - run: pnpm repo:update:conventions
+      - run: pnpm repo:update:metadata
+      - uses: wyvox/action-no-git-diff@v1
+
+
+  test-node:
+    name: Node
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 5
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm test:node
+
+  test-smoke:
+    name: Smoke
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 5
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - working-directory: ./smoke-tests/node
+        run: |
+          pnpm test:setup
+          pnpm test:node
+
+  test-chrome:
+    name: Chrome
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 10
+
+    steps:
+      - name: install puppeteer libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -yq libgbm1 libatk1.0-0 libc6 \
+            libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 \
+            libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 \
+            libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+            libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 \
+            libxss1 libxtst6 ca-certificates fonts-liberation libnss3 lsb-release \
+            xdg-utils wget libcairo2
+      - uses: wyvox/action@v1
+        with:
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm test
+
+  test-types:
+    name: Types
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 10
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm lint:types
+
+  floating-dependencies:
+    name: Floating Dependencies
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 10
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          pnpm-args: '--no-lockfile'
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm test

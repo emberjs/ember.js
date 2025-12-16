@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
   const build = {
     rollupOptions: {
       preserveEntrySignatures: 'strict',
+      input: ['index.html', 'glimmer-vm/index.html'],
       output: {
         preserveModules: true,
       },
@@ -36,14 +37,18 @@ export default defineConfig(({ mode }) => {
         extensions: ['.js', '.ts'],
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
-      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+      resolvePackages(
+        { ...exposedDependencies(), ...hiddenDependencies() },
+        { enableLocalDebug: true }
+      ),
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { noDiscovery: true },
+    optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,
     esbuild: false,
+    envPrefix: 'VM_',
   };
 });
 
