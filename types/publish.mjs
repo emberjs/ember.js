@@ -112,7 +112,6 @@ async function main() {
   await fs.cp(path.join(TYPES_DIR, 'ember/barrel.d.ts'), path.join(TYPES_DIR, 'ember/index.d.ts'));
 
   let remappedLocationExcludes = await doOrDie(() => copyHandwrittenDefinitions('packages'));
-  await doOrDie(() => copyHandwrittenDefinitions('glimmer-vm/packages'));
 
   let sideEffectExcludes = await doOrDie(copyRemappedLocationModules);
 
@@ -221,7 +220,9 @@ async function copyHandwrittenDefinitions(inputDir) {
     )
   );
 
-  return definitionModules;
+  // the handwritten definitions in ember don't need to get postprocessing, the
+  // ones in glimmer do need postprocessing.
+  return definitionModules.filter(moduleName => moduleName.startsWith('@ember/') || moduleName.startsWith('loader/'));
 }
 
 /**
