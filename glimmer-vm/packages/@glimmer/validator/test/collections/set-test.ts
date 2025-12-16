@@ -93,205 +93,219 @@ module('@glimmer/validator: trackedSet', function () {
     assert.true(iter.next().done);
   });
 
-  test('union', (assert) => {
-    const set = trackedSet();
-    const set2 = trackedSet();
-    const nativeSet = new Set();
+  if (Set.prototype.union) {
+    test('union', (assert) => {
+      const set = trackedSet();
+      const set2 = trackedSet();
+      const nativeSet = new Set();
 
-    set.add(0);
-    set.add(2);
-    set.add(1);
+      set.add(0);
+      set.add(2);
+      set.add(1);
 
-    set2.add(2);
-    set2.add(3);
+      set2.add(2);
+      set2.add(3);
 
-    nativeSet.add(0);
-    nativeSet.add(5);
+      nativeSet.add(0);
+      nativeSet.add(5);
 
-    let iter = set.union(set2).values();
+      let iter = set.union(set2).values();
 
-    assert.strictEqual(iter.next().value, 0);
-    assert.strictEqual(iter.next().value, 2);
-    assert.strictEqual(iter.next().value, 1);
-    assert.strictEqual(iter.next().value, 3);
-    assert.true(iter.next().done);
+      assert.strictEqual(iter.next().value, 0);
+      assert.strictEqual(iter.next().value, 2);
+      assert.strictEqual(iter.next().value, 1);
+      assert.strictEqual(iter.next().value, 3);
+      assert.true(iter.next().done);
 
-    let iter2 = set.union(nativeSet).values();
+      let iter2 = set.union(nativeSet).values();
 
-    assert.strictEqual(iter2.next().value, 0);
-    assert.strictEqual(iter2.next().value, 2);
-    assert.strictEqual(iter2.next().value, 1);
-    assert.strictEqual(iter2.next().value, 5);
-    assert.true(iter2.next().done);
-  });
+      assert.strictEqual(iter2.next().value, 0);
+      assert.strictEqual(iter2.next().value, 2);
+      assert.strictEqual(iter2.next().value, 1);
+      assert.strictEqual(iter2.next().value, 5);
+      assert.true(iter2.next().done);
+    });
+  }
 
-  test('intersection', (assert) => {
-    const set = trackedSet();
-    const set2 = trackedSet();
-    const nativeSet = new Set();
+  if (Set.prototype.intersection) {
+    test('intersection', (assert) => {
+      const set = trackedSet();
+      const set2 = trackedSet();
+      const nativeSet = new Set();
 
-    set.add(0);
-    set.add(2);
-    set.add(1);
+      set.add(0);
+      set.add(2);
+      set.add(1);
 
-    set2.add(2);
-    set2.add(3);
+      set2.add(2);
+      set2.add(3);
 
-    nativeSet.add(0);
-    nativeSet.add(5);
+      nativeSet.add(0);
+      nativeSet.add(5);
 
-    let iter = set.intersection(set2).values();
+      let iter = set.intersection(set2).values();
 
-    assert.strictEqual(iter.next().value, 2);
-    assert.true(iter.next().done);
+      assert.strictEqual(iter.next().value, 2);
+      assert.true(iter.next().done);
 
-    let iter2 = set.intersection(nativeSet).values();
+      let iter2 = set.intersection(nativeSet).values();
 
-    assert.strictEqual(iter2.next().value, 0);
-    assert.true(iter2.next().done);
-  });
+      assert.strictEqual(iter2.next().value, 0);
+      assert.true(iter2.next().done);
+    });
+  }
 
-  test('difference', (assert) => {
-    const set = trackedSet();
-    const set2 = trackedSet();
-    const nativeSet = new Set();
+  if (Set.prototype.difference) {
+    test('difference', (assert) => {
+      const set = trackedSet();
+      const set2 = trackedSet();
+      const nativeSet = new Set();
 
-    set.add(0);
-    set.add(2);
-    set.add(1);
+      set.add(0);
+      set.add(2);
+      set.add(1);
 
-    set2.add(2);
-    set2.add(3);
+      set2.add(2);
+      set2.add(3);
 
-    nativeSet.add(0);
-    nativeSet.add(5);
+      nativeSet.add(0);
+      nativeSet.add(5);
 
-    let iter = set.difference(set2).values();
+      let iter = set.difference(set2).values();
 
-    assert.strictEqual(iter.next().value, 0);
-    assert.strictEqual(iter.next().value, 1);
-    assert.true(iter.next().done);
+      assert.strictEqual(iter.next().value, 0);
+      assert.strictEqual(iter.next().value, 1);
+      assert.true(iter.next().done);
 
-    let iter2 = set.difference(nativeSet).values();
+      let iter2 = set.difference(nativeSet).values();
 
-    assert.strictEqual(iter2.next().value, 2);
-    assert.strictEqual(iter2.next().value, 1);
-    assert.true(iter2.next().done);
-  });
+      assert.strictEqual(iter2.next().value, 2);
+      assert.strictEqual(iter2.next().value, 1);
+      assert.true(iter2.next().done);
+    });
+  }
 
-  test('symmetricDifference', (assert) => {
-    const set = trackedSet();
-    const set2 = trackedSet();
-    const nativeSet = new Set();
+  if (Set.prototype.symmetricDifference) {
+    test('symmetricDifference', (assert) => {
+      const set = trackedSet();
+      const set2 = trackedSet();
+      const nativeSet = new Set();
 
-    set.add(0);
-    set.add(2);
-    set.add(1);
+      set.add(0);
+      set.add(2);
+      set.add(1);
 
-    set2.add(2);
-    set2.add(3);
+      set2.add(2);
+      set2.add(3);
 
-    nativeSet.add(0);
-    nativeSet.add(5);
+      nativeSet.add(0);
+      nativeSet.add(5);
 
-    let iter = set.symmetricDifference(set2).values();
+      let iter = set.symmetricDifference(set2).values();
 
-    assert.strictEqual(iter.next().value, 0);
-    assert.strictEqual(iter.next().value, 1);
-    assert.strictEqual(iter.next().value, 3);
-    assert.true(iter.next().done);
+      assert.strictEqual(iter.next().value, 0);
+      assert.strictEqual(iter.next().value, 1);
+      assert.strictEqual(iter.next().value, 3);
+      assert.true(iter.next().done);
 
-    let iter2 = set.symmetricDifference(nativeSet).values();
+      let iter2 = set.symmetricDifference(nativeSet).values();
 
-    assert.strictEqual(iter2.next().value, 2);
-    assert.strictEqual(iter2.next().value, 1);
-    assert.strictEqual(iter2.next().value, 5);
-    assert.true(iter2.next().done);
-  });
+      assert.strictEqual(iter2.next().value, 2);
+      assert.strictEqual(iter2.next().value, 1);
+      assert.strictEqual(iter2.next().value, 5);
+      assert.true(iter2.next().done);
+    });
+  }
 
-  test('isSubsetOf', (assert) => {
-    const set = trackedSet();
-    const set2 = trackedSet();
-    const nativeSet = new Set();
+  if (Set.prototype.isSubsetOf) {
+    test('isSubsetOf', (assert) => {
+      const set = trackedSet();
+      const set2 = trackedSet();
+      const nativeSet = new Set();
 
-    set.add(0);
-    set.add(2);
-    set.add(1);
+      set.add(0);
+      set.add(2);
+      set.add(1);
 
-    set2.add(2);
-    set2.add(3);
+      set2.add(2);
+      set2.add(3);
 
-    nativeSet.add(0);
-    nativeSet.add(5);
+      nativeSet.add(0);
+      nativeSet.add(5);
 
-    assert.false(set.isSubsetOf(set2));
+      assert.false(set.isSubsetOf(set2));
 
-    set2.add(0);
-    set2.add(1);
+      set2.add(0);
+      set2.add(1);
 
-    assert.true(set.isSubsetOf(set2));
+      assert.true(set.isSubsetOf(set2));
 
-    assert.false(set.isSubsetOf(nativeSet));
+      assert.false(set.isSubsetOf(nativeSet));
 
-    nativeSet.add(1);
-    nativeSet.add(2);
+      nativeSet.add(1);
+      nativeSet.add(2);
 
-    assert.true(set.isSubsetOf(nativeSet));
-  });
+      assert.true(set.isSubsetOf(nativeSet));
+    });
+  }
 
-  test('isSupersetOf', (assert) => {
-    const set = trackedSet();
-    const set2 = trackedSet();
-    const nativeSet = new Set();
+  if (Set.prototype.isSupersetOf) {
+    test('isSupersetOf', (assert) => {
+      const set = trackedSet();
+      const set2 = trackedSet();
+      const nativeSet = new Set();
 
-    set.add(0);
-    set.add(2);
-    set.add(1);
+      set.add(0);
+      set.add(2);
+      set.add(1);
 
-    set2.add(2);
-    set2.add(3);
+      set2.add(2);
+      set2.add(3);
 
-    nativeSet.add(0);
-    nativeSet.add(5);
+      nativeSet.add(0);
+      nativeSet.add(5);
 
-    assert.false(set.isSupersetOf(set2));
+      assert.false(set.isSupersetOf(set2));
 
-    set.add(3);
+      set.add(3);
 
-    assert.true(set.isSupersetOf(set2));
+      assert.true(set.isSupersetOf(set2));
 
-    assert.false(set.isSupersetOf(nativeSet));
+      assert.false(set.isSupersetOf(nativeSet));
 
-    set.add(5);
+      set.add(5);
 
-    assert.true(set.isSupersetOf(nativeSet));
-  });
+      assert.true(set.isSupersetOf(nativeSet));
+    });
+  }
 
-  test('isDisjointFrom', (assert) => {
-    const set = trackedSet();
-    const set2 = trackedSet();
-    const nativeSet = new Set();
+  if (Set.prototype.isDisjointFrom) {
+    test('isDisjointFrom', (assert) => {
+      const set = trackedSet();
+      const set2 = trackedSet();
+      const nativeSet = new Set();
 
-    set.add(0);
-    set.add(2);
-    set.add(1);
+      set.add(0);
+      set.add(2);
+      set.add(1);
 
-    set2.add(3);
+      set2.add(3);
 
-    nativeSet.add(5);
+      nativeSet.add(5);
 
-    assert.true(set.isDisjointFrom(set2));
+      assert.true(set.isDisjointFrom(set2));
 
-    set2.add(2);
+      set2.add(2);
 
-    assert.false(set.isDisjointFrom(set2));
+      assert.false(set.isDisjointFrom(set2));
 
-    assert.true(set.isDisjointFrom(nativeSet));
+      assert.true(set.isDisjointFrom(nativeSet));
 
-    nativeSet.add(0);
+      nativeSet.add(0);
 
-    assert.false(set.isDisjointFrom(nativeSet));
-  });
+      assert.false(set.isDisjointFrom(nativeSet));
+    });
+  }
 
   test('forEach', (assert) => {
     const set = trackedSet();

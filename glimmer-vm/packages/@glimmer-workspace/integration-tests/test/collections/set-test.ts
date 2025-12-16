@@ -323,7 +323,7 @@ class TrackedSetTest extends RenderTest {
    * If any rendered change occurs at all, that's a success
    *
    */
-  @test
+  @test({ skip: !Set.prototype.union })
   union() {
     this.#testIfChange.call(this, {
       op: (a: Set<string>, b: Set<string>) => {
@@ -333,7 +333,7 @@ class TrackedSetTest extends RenderTest {
     });
   }
 
-  @test
+  @test({ skip: !Set.prototype.intersection })
   intersection() {
     this.#testIfChange.call(this, {
       op: (a: Set<string>, b: Set<string>) => {
@@ -343,7 +343,7 @@ class TrackedSetTest extends RenderTest {
     });
   }
 
-  @test
+  @test({ skip: !Set.prototype.difference })
   difference() {
     this.#testIfChange.call(this, {
       op: (a: Set<string>, b: Set<string>) => {
@@ -353,7 +353,7 @@ class TrackedSetTest extends RenderTest {
     });
   }
 
-  @test
+  @test({ skip: !Set.prototype.symmetricDifference })
   symmetricDifference() {
     this.#testIfChange.call(this, {
       op: (a: Set<string>, b: Set<string>) => {

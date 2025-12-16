@@ -18,26 +18,28 @@ module('@glimmer/validator: trackedWeakMap()', function () {
 
   test('does not work with built-ins', (assert) => {
     const map = trackedWeakMap();
+    const pattern =
+      /(Invalid value used as weak map key)|(WeakMap key must be an object)|(Attempted to set a non-object key in a WeakMap)/u;
 
     assert.throws(
       // @ts-expect-error -- point is testing constructor error
       () => map.set('aoeu', 123),
-      /Invalid value used as weak map key/u
+      pattern
     );
     assert.throws(
       // @ts-expect-error -- point is testing constructor error
       () => map.set(true, 123),
-      /Invalid value used as weak map key/u
+      pattern
     );
     assert.throws(
       // @ts-expect-error -- point is testing constructor error
       () => map.set(123, 123),
-      /Invalid value used as weak map key/u
+      pattern
     );
     assert.throws(
       // @ts-expect-error -- point is testing constructor error
       () => map.set(undefined, 123),
-      /Invalid value used as weak map key/u
+      pattern
     );
   });
 
