@@ -218,6 +218,11 @@ function packages() {
       '@ember/-internals/*/type-tests/**' /* internal packages */,
       '*/*/type-tests/**' /* scoped packages */,
       '*/type-tests/**' /* packages */,
+
+      // all the glimmer-vm packages are handled instead as
+      // "exposedDependencies" since they used to actually be dependencies.
+      '@glimmer-workspace/**',
+      '@glimmer/**',
     ],
     cwd: 'packages',
   });
@@ -264,6 +269,11 @@ export function exposedDependencies() {
       '@glimmer/runtime',
       '@glimmer/validator',
     ]),
+    '@glimmer/tracking': resolve(packageCache.appRoot, 'packages/@glimmer/tracking/index.ts'),
+    '@glimmer/tracking/primitives/cache': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/tracking/primitives/cache.ts'
+    ),
   };
 }
 
@@ -363,7 +373,7 @@ function resolveTS() {
     name: 'resolve-ts',
     async resolveId(source, importer) {
       let result = await this.resolve(source, importer);
-      if (result === null) {
+      if (result === null && importer) {
         // the rest of rollup couldn't find it
         let stem = resolve(dirname(importer), source);
         for (let candidate of ['.ts', '/index.ts']) {
