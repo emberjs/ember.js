@@ -54,7 +54,7 @@
     "lint:fix": "npm-run-all lint:*:fix",
     "lint:format": "prettier --check .",
     "lint:format:fix": "prettier --write .",
-    "test": "node bin/run-tests.js",
+    "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
@@ -144,7 +144,6 @@
     "execa": "^5.1.1",
     "expect-type": "^0.15.0",
     "filesize": "^10.1.6",
-    "finalhandler": "^1.1.2",
     "fs-extra": "^11.1.1",
     "git-repo-info": "^2.1.1",
     "github": "^0.2.3",
@@ -155,13 +154,11 @@
     "node-gzip": "^1.1.2",
     "npm-run-all2": "^6.0.6",
     "prettier": "^3.5.3",
-    "puppeteer": "^24.2.0",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
     "resolve.exports": "^2.0.3",
     "rollup": "^4.2.0",
     "rsvp": "^4.8.5",
-    "serve-static": "^1.14.2",
     "simple-dom": "^1.4.0",
     "table": "^6.9.0",
     "terser": "^5.42.0",
@@ -182,8 +179,7 @@
     "onlyBuiltDependencies": [
       "@swc/core",
       "core-js",
-      "esbuild",
-      "puppeteer"
+      "esbuild"
     ]
   },
   "peerDependencies": {
