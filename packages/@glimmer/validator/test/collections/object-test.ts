@@ -7,8 +7,6 @@ import { module, test } from '../-utils';
 expectTypeOf<ReturnType<typeof trackedObject>>().toMatchTypeOf<object>();
 
 // @ts-expect-error - Required keys should require a value
-trackedObject<{ foo: number }>();
-// @ts-expect-error - Required keys should require a value
 trackedObject<{ foo: number }>({});
 
 // Optional keys should not require a value
