@@ -42,7 +42,7 @@ class IterableWrapper {
   }
 }
 
-module('@glimmer/reference: IterableReference', (hooks) => {
+module('@glimmer/reference: IterableReference', () => {
   module('iterator delegates', () => {
     test('it correctly iterates delegates', (assert) => {
       let obj = ['Yehuda', 'Godfrey'];

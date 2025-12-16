@@ -407,7 +407,7 @@ export class RenderTest implements IRenderTest {
     );
 
     run(() => {
-      this.renderResult = this.delegate.renderComponent(
+      this.renderResult = this.delegate.renderComponent!(
         component,
         args,
         this.element,

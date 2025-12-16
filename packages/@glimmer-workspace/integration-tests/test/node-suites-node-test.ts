@@ -17,6 +17,6 @@ nodeComponentSuite(ServerSideComponentSuite);
 suite(DOMHelperTests, NodeJitRenderDelegate);
 suite(SerializedDOMHelperTests, JitSerializationDelegate);
 
-if (typeof process !== 'undefined') {
+if (typeof (globalThis as any).process !== 'undefined') {
   suite(CompilationTests, NodeJitRenderDelegate);
 }

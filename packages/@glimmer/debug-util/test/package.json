@@ -8,7 +8,6 @@
     "@glimmer/util": "workspace:*"
   },
   "devDependencies": {
-    "@glimmer/debug-util": "workspace:*",
-    "vite": "^6.1.1"
+    "@glimmer/debug-util": "workspace:*"
   }
 }

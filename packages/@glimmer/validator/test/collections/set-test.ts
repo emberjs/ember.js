@@ -93,7 +93,7 @@ module('@glimmer/validator: trackedSet', function () {
     assert.true(iter.next().done);
   });
 
-  if (Set.prototype.union) {
+  if (setHasMethod('union')) {
     test('union', (assert) => {
       const set = trackedSet();
       const set2 = trackedSet();
@@ -127,7 +127,7 @@ module('@glimmer/validator: trackedSet', function () {
     });
   }
 
-  if (Set.prototype.intersection) {
+  if (setHasMethod('intersection')) {
     test('intersection', (assert) => {
       const set = trackedSet();
       const set2 = trackedSet();
@@ -155,7 +155,7 @@ module('@glimmer/validator: trackedSet', function () {
     });
   }
 
-  if (Set.prototype.difference) {
+  if (setHasMethod('difference')) {
     test('difference', (assert) => {
       const set = trackedSet();
       const set2 = trackedSet();
@@ -185,7 +185,7 @@ module('@glimmer/validator: trackedSet', function () {
     });
   }
 
-  if (Set.prototype.symmetricDifference) {
+  if (setHasMethod('symmetricDifference')) {
     test('symmetricDifference', (assert) => {
       const set = trackedSet();
       const set2 = trackedSet();
@@ -217,7 +217,7 @@ module('@glimmer/validator: trackedSet', function () {
     });
   }
 
-  if (Set.prototype.isSubsetOf) {
+  if (setHasMethod('isSubsetOf')) {
     test('isSubsetOf', (assert) => {
       const set = trackedSet();
       const set2 = trackedSet();
@@ -249,7 +249,7 @@ module('@glimmer/validator: trackedSet', function () {
     });
   }
 
-  if (Set.prototype.isSupersetOf) {
+  if (setHasMethod('isSupersetOf')) {
     test('isSupersetOf', (assert) => {
       const set = trackedSet();
       const set2 = trackedSet();
@@ -279,7 +279,7 @@ module('@glimmer/validator: trackedSet', function () {
     });
   }
 
-  if (Set.prototype.isDisjointFrom) {
+  if (setHasMethod('isDisjointFrom')) {
     test('isDisjointFrom', (assert) => {
       const set = trackedSet();
       const set2 = trackedSet();
@@ -370,3 +370,7 @@ module('@glimmer/validator: trackedSet', function () {
     assert.false(set.has(1));
   });
 });
+
+function setHasMethod(name: string): boolean {
+  return typeof (Set as any).prototype[name] === 'function';
+}
