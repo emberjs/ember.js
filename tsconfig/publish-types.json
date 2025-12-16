@@ -19,7 +19,8 @@
   "exclude": [
     "../**/type-tests",
     "../**/tests",
-    "../**/test",
+    "../**/@glimmer/*/test",
+    "../**/@glimmer-workspace/*/test",
     "../**/internal-test-helpers",
 
     // @glimmer/component publishes as its own real package
