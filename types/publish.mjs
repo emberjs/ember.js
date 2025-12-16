@@ -103,7 +103,6 @@ async function main() {
   await fs.mkdir(TYPES_DIR, { recursive: true });
 
   doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-types.json']));
-  doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-vm-types.json']));
 
   // We're deprecating the barrel file, so this is temporary. The Ember global is a namespace,
   // and namespaces can't be both exported and used as a type with the same semantics and
