@@ -1,9 +1,10 @@
-import EmberObject, { get } from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { compare } from '@ember/utils';
 import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-class Rectangle extends EmberObject.extend(Comparable) {
+class Rectangle extends CoreObject.extend(Comparable) {
   length = 0;
   width = 0;
 

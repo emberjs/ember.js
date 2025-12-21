@@ -1,6 +1,7 @@
 import ArrayProxy from '@ember/array/proxy';
-import EmberObject, { observer } from '@ember/object';
+import { observer } from '@ember/object';
 import { oneWay as reads, not } from '@ember/object/computed';
+import CoreObject from '@ember/object/core';
 import { A as a } from '@ember/array';
 import { moduleFor, AbstractTestCase, runTask, runLoopSettled } from 'internal-test-helpers';
 import { set, get } from '@ember/object';
@@ -158,7 +159,7 @@ moduleFor(
 
       aCalled = bCalled = cCalled = dCalled = eCalled = 0;
 
-      let obj = EmberObject.extend({
+      let obj = CoreObject.extend({
         colors: reads('model'),
         length: reads('colors.length'),
 
@@ -172,7 +173,7 @@ moduleFor(
       // bootstrap aliases
       obj.length;
 
-      obj.set(
+      set(obj,
         'model',
         ArrayProxy.create({
           content: a(['red', 'yellow', 'blue']),
@@ -181,9 +182,9 @@ moduleFor(
 
       await runLoopSettled();
 
-      assert.equal(obj.get('colors.content.length'), 3);
-      assert.equal(obj.get('colors.length'), 3);
-      assert.equal(obj.get('length'), 3);
+      assert.equal(get(obj, 'colors.content.length'), 3);
+      assert.equal(get(obj, 'colors.length'), 3);
+      assert.equal(get(obj, 'length'), 3);
 
       assert.equal(aCalled, 1, 'expected observer `length` to be called ONCE');
       assert.equal(bCalled, 1, 'expected observer `colors.length` to be called ONCE');
@@ -191,12 +192,12 @@ moduleFor(
       assert.equal(dCalled, 1, 'expected observer `colors.[]` to be called ONCE');
       assert.equal(eCalled, 1, 'expected observer `colors.content.[]` to be called ONCE');
 
-      obj.get('colors').pushObjects(['green', 'red']);
+      get(obj, 'colors').pushObjects(['green', 'red']);
       await runLoopSettled();
 
-      assert.equal(obj.get('colors.content.length'), 5);
-      assert.equal(obj.get('colors.length'), 5);
-      assert.equal(obj.get('length'), 5);
+      assert.equal(get(obj, 'colors.content.length'), 5);
+      assert.equal(get(obj, 'colors.length'), 5);
+      assert.equal(get(obj, 'length'), 5);
 
       assert.equal(aCalled, 2, 'expected observer `length` to be called TWICE');
       assert.equal(bCalled, 2, 'expected observer `colors.length` to be called TWICE');

@@ -1,6 +1,6 @@
 import { inject } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { buildOwner } from 'internal-test-helpers';
 import { runDestroy, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -9,7 +9,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test attempting to inject a nonexistent container key should error']() {
       let owner = buildOwner();
-      let AnObject = class extends EmberObject {
+      let AnObject = class extends CoreObject {
         @inject('bar', 'baz')
         foo;
       };
@@ -25,7 +25,7 @@ moduleFor(
 
     ['@test factories should return a list of lazy injection full names'](assert) {
       if (DEBUG) {
-        let AnObject = class extends EmberObject {
+        let AnObject = class extends CoreObject {
           @inject('foo', 'bar')
           foo;
 

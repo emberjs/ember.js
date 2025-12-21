@@ -1,7 +1,7 @@
 import { getOwner } from '@ember/-internals/owner';
 import { Container, Registry } from '@ember/-internals/container';
 import ContainerProxy from '../../lib/mixins/container_proxy';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
@@ -10,7 +10,7 @@ moduleFor(
   '@ember/-internals/runtime/mixins/container_proxy',
   class extends AbstractTestCase {
     beforeEach() {
-      this.Owner = EmberObject.extend(ContainerProxy);
+      this.Owner = CoreObject.extend(ContainerProxy);
       this.instance = this.Owner.create();
 
       this.registry = new Registry();
@@ -31,7 +31,7 @@ moduleFor(
 
       this.registry.register(
         'service:auth',
-        class extends EmberObject {
+        class extends CoreObject {
           willDestroy() {
             assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
           }
@@ -53,7 +53,7 @@ moduleFor(
 
       this.registry.register(
         'service:foo',
-        class FooService extends EmberObject {
+        class FooService extends CoreObject {
           willDestroy() {
             assert.ok(true, 'is properly destroyed');
           }
