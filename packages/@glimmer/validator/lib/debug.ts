@@ -215,7 +215,7 @@ if (DEBUG) {
         if (updateStackBegin !== -1) {
           let start = nthIndex(e.stack, '\n', 1, updateStackBegin);
           let end = nthIndex(e.stack, '\n', 4, updateStackBegin);
-           
+
           e.stack = e.stack.substr(0, start) + e.stack.substr(end);
         }
       }

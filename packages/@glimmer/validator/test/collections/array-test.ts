@@ -1,5 +1,3 @@
-/* eslint-disable import-x/no-extraneous-dependencies */
-
 import { trackedArray } from '@glimmer/validator';
 import { expectTypeOf } from 'expect-type';
 
@@ -219,7 +217,6 @@ module('@glimmer/validator: trackedArray()', () => {
       let arr = trackedArray([1, 2, 3]);
 
       assert.strictEqual(
-         
         arr.reduce((s, v) => s + v, ''),
         '123'
       );
@@ -229,7 +226,6 @@ module('@glimmer/validator: trackedArray()', () => {
       let arr = trackedArray([1, 2, 3]);
 
       assert.strictEqual(
-         
         arr.reduceRight((s, v) => s + v, ''),
         '321'
       );

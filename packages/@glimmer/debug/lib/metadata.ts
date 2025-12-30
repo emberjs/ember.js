@@ -166,8 +166,8 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
     out += `${string}${dynamic}`;
   }
 
-  /* eslint-disable-next-line regexp/no-super-linear-backtracking,
-     @typescript-eslint/no-non-null-assertion -- @fixme */
+  // NOTE: this regex may be non-performant
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   out = /^\s*?\n?([\s\S]*?)\s*$/u.exec(out)![1] as string;
 
   let min = Number.MAX_SAFE_INTEGER;

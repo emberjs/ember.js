@@ -6,7 +6,6 @@ import type {
   StrictResolution,
 } from '@glimmer/interfaces';
 
- 
 export type resolution =
   | ResolveAsComponentOrHelperHeadResolution
   | ResolveAsHelperHeadResolution

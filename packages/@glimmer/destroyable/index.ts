@@ -145,8 +145,7 @@ export function unregisterDestructor<T extends Destroyable>(
   meta[destructorsKey] = remove(
     meta[destructorsKey],
     destructor,
-    DEBUG &&
-      'attempted to remove a destructor that was not registered with the destroyable'
+    DEBUG && 'attempted to remove a destructor that was not registered with the destroyable'
   );
 }
 

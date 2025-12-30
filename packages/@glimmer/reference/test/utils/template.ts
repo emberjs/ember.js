@@ -61,12 +61,10 @@ class ObjectIterator extends BoundedIterator {
 
 export const TestContext = {
   getProp(obj: object, path: string) {
-     
     return Reflect.get(obj, path);
   },
 
   getPath(obj: object, path: string) {
-     
     return Reflect.get(obj, path);
   },
 

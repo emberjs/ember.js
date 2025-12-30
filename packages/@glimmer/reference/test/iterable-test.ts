@@ -120,7 +120,6 @@ module('@glimmer/reference: IterableReference', () => {
     });
 
     test('@identity works with null', (assert) => {
-       
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 
@@ -134,7 +133,6 @@ module('@glimmer/reference: IterableReference', () => {
     });
 
     test('@identity works with multiple null values', (assert) => {
-       
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 

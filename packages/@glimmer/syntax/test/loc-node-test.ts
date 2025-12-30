@@ -74,7 +74,6 @@ test('blocks', () => {
       }}
     `);
 
-   
   let [, block] = ast.body as [any, AST.BlockStatement];
   let [nestedBlock] = block.program.body as [AST.BlockStatement];
   let [nestedBlockText] = nestedBlock.program.body;

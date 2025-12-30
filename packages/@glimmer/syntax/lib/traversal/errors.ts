@@ -21,9 +21,8 @@ export interface TraversalErrorConstructor {
 }
 
 const TraversalError: TraversalErrorConstructor = (function () {
-   
   TraversalError.prototype = Object.create(Error.prototype);
-   
+
   TraversalError.prototype.constructor = TraversalError;
 
   function TraversalError(

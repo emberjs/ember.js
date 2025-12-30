@@ -127,7 +127,6 @@ export function debugAssert(
   msg: string | (() => string),
   options?: { id: string }
 ): asserts test {
-   
   if (DEBUG && assert) {
     assert(test, typeof msg === 'string' ? msg : msg(), options);
   }

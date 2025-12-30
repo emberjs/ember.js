@@ -21,7 +21,7 @@ module('@glimmer/validator: trackedMap', function () {
 
   test('works with all kinds of keys', (assert) => {
     // Spoiler: they are needed, as without them, types are inferred
-     
+
     const map = trackedMap<unknown, unknown>([
       ['foo', 123],
       [{}, {}],
@@ -110,9 +110,9 @@ module('@glimmer/validator: trackedMap', function () {
 
     map.forEach((v, k) => {
       count++;
-       
+
       values += k;
-       
+
       values += v;
     });
 

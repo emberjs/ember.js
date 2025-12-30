@@ -177,7 +177,6 @@ function visitKey<N extends ASTv1.Node>(
   }
 
   if (keyEnter !== undefined) {
-     
     if (keyEnter(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }
@@ -198,7 +197,6 @@ function visitKey<N extends ASTv1.Node>(
   }
 
   if (keyExit !== undefined) {
-     
     if (keyExit(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }

@@ -56,7 +56,6 @@ if (DEBUG) {
     );
   });
   QUnit.test('should return debug name for class', (assert) => {
-     
     assert.deepEqual(debugToString(class Foo {}), 'Foo');
   });
   QUnit.test('should return debug name for ember-like object #1', (assert) => {

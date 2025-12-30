@@ -24,7 +24,6 @@ export function helperCapabilities<Version extends keyof HelperCapabilitiesVersi
   options: Partial<HelperCapabilities> = {}
 ): HelperCapabilities {
   debugAssert(
-     
     managerAPI === '3.23',
     () =>
       `Invalid helper manager compatibility specified; you specified ${managerAPI}, but only '3.23' is supported.`

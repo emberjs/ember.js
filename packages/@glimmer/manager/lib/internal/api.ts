@@ -41,7 +41,6 @@ function setManager<Def extends object>(
 ): Def {
   if (DEBUG) {
     debugAssert(
-       
       obj !== null && (typeof obj === 'object' || typeof obj === 'function'),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       `Attempted to set a manager on a non-object value. Managers can only be associated with objects or functions. Value was ${debugToString!(
@@ -99,7 +98,6 @@ export function getInternalModifierManager(
 ): InternalModifierManager | null {
   if (DEBUG) {
     debugAssert(
-       
       (typeof definition === 'object' && definition !== null) || typeof definition === 'function',
       () =>
         // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
@@ -145,7 +143,6 @@ export function getInternalHelperManager(
   isOptional?: true
 ): CustomHelperManager | Helper | null {
   debugAssert(
-     
     (typeof definition === 'object' && definition !== null) || typeof definition === 'function',
     () =>
       // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
@@ -193,7 +190,6 @@ export function getInternalComponentManager(
   isOptional?: true
 ): InternalComponentManager | null {
   debugAssert(
-     
     (typeof definition === 'object' && definition !== null) || typeof definition === 'function',
     () =>
       // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
