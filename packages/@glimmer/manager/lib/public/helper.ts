@@ -24,7 +24,7 @@ export function helperCapabilities<Version extends keyof HelperCapabilitiesVersi
   options: Partial<HelperCapabilities> = {}
 ): HelperCapabilities {
   debugAssert(
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
+     
     managerAPI === '3.23',
     () =>
       `Invalid helper manager compatibility specified; you specified ${managerAPI}, but only '3.23' is supported.`

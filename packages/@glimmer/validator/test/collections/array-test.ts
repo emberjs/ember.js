@@ -219,7 +219,7 @@ module('@glimmer/validator: trackedArray()', () => {
       let arr = trackedArray([1, 2, 3]);
 
       assert.strictEqual(
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+         
         arr.reduce((s, v) => s + v, ''),
         '123'
       );
@@ -229,7 +229,7 @@ module('@glimmer/validator: trackedArray()', () => {
       let arr = trackedArray([1, 2, 3]);
 
       assert.strictEqual(
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+         
         arr.reduceRight((s, v) => s + v, ''),
         '321'
       );

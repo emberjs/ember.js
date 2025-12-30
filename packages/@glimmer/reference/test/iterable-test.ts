@@ -120,7 +120,7 @@ module('@glimmer/reference: IterableReference', () => {
     });
 
     test('@identity works with null', (assert) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 
@@ -134,7 +134,7 @@ module('@glimmer/reference: IterableReference', () => {
     });
 
     test('@identity works with multiple null values', (assert) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 

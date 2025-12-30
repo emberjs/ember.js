@@ -6,7 +6,7 @@ import type {
   StrictResolution,
 } from '@glimmer/interfaces';
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+ 
 export type resolution =
   | ResolveAsComponentOrHelperHeadResolution
   | ResolveAsHelperHeadResolution

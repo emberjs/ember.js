@@ -127,7 +127,7 @@ export function debugAssert(
   msg: string | (() => string),
   options?: { id: string }
 ): asserts test {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+   
   if (DEBUG && assert) {
     assert(test, typeof msg === 'string' ? msg : msg(), options);
   }

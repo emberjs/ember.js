@@ -89,7 +89,7 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
 
       deleteProperty(target, prop) {
         if (prop in target) {
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+           
           delete target[prop as keyof ObjectType];
           self.#dirtyStorageFor(prop);
           self.#storages.delete(prop);

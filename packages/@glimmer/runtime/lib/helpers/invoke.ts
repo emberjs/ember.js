@@ -51,7 +51,7 @@ export function invokeHelper(
   definition: object,
   computeArgs?: (context: object) => Partial<Arguments>
 ): Cache {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS usage
+   
   if (DEBUG && (typeof context !== 'object' || context === null)) {
     throw new Error(
       `Expected a context object to be passed as the first parameter to invokeHelper, got ${context}`

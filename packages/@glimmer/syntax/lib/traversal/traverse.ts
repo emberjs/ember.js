@@ -177,7 +177,7 @@ function visitKey<N extends ASTv1.Node>(
   }
 
   if (keyEnter !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- JS API
+     
     if (keyEnter(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }
@@ -192,13 +192,13 @@ function visitKey<N extends ASTv1.Node>(
       // TODO: dynamically check the results by having a table of
       // expected node types in value space, not just type space
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assignKey(node, key, value, result as any);
     }
   }
 
   if (keyExit !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- JS API
+     
     if (keyExit(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }

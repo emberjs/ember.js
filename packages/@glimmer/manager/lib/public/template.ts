@@ -9,7 +9,7 @@ const getPrototypeOf = Reflect.getPrototypeOf;
 export function setComponentTemplate(factory: TemplateFactory, obj: object) {
   if (
     DEBUG &&
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
+     
     !(obj !== null && (typeof obj === 'object' || typeof obj === 'function'))
   ) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
