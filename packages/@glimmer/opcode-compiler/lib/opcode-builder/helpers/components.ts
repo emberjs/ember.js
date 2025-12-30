@@ -380,7 +380,7 @@ export function InvokeNonStaticComponent(
   let bindableAtNames =
     capabilities === true ||
     hasCapability(capabilities, InternalComponentCapabilities.prepareArgs) ||
-    Boolean(named && named[0].length !== 0);
+    named?.[0].length !== 0;
 
   let blocks = namedBlocks.with('attrs', elementBlock);
 
