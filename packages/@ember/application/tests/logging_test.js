@@ -75,10 +75,10 @@ moduleFor(
     }
 
     ['@test predefined classes do not get logged'](assert) {
-      this.add('controller:application', Controller.extend());
-      this.add('controller:posts', Controller.extend());
-      this.add('route:application', Route.extend());
-      this.add('route:posts', Route.extend());
+      this.add('controller:application', class extends Controller {});
+      this.add('controller:posts', class extends Controller {});
+      this.add('route:application', class extends Route {});
+      this.add('route:posts', class extends Route {});
 
       return this.visit('/posts').then(() => {
         assert.ok(

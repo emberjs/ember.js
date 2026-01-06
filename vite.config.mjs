@@ -22,10 +22,11 @@ export default defineConfig(({ mode }) => {
   const build = {
     rollupOptions: {
       preserveEntrySignatures: 'strict',
-      treeshake: false,
+      input: ['index.html', 'glimmer-vm/index.html'],
       output: {
         preserveModules: true,
       },
+      treeshake: false,
     },
     minify: mode === 'production',
   };
@@ -37,17 +38,21 @@ export default defineConfig(({ mode }) => {
         extensions: ['.js', '.ts'],
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
-      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+      resolvePackages(
+        { ...exposedDependencies(), ...hiddenDependencies() },
+        { enableLocalDebug: true }
+      ),
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { noDiscovery: true },
+    optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,
 
     // the stock esbuild support for typescript is horribly broken. For example,
     // it will simply remove your decorators.
     esbuild: false,
+    envPrefix: 'VM_',
   };
 });
 

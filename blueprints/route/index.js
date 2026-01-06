@@ -29,6 +29,12 @@ module.exports = {
       name: 'reset-namespace',
       type: Boolean,
     },
+    {
+      name: 'route-authoring-format',
+      type: ['loose', 'strict'],
+      default: 'loose',
+      aliases: [{ loose: 'loose' }, { strict: 'strict' }],
+    },
   ],
 
   init() {
@@ -78,6 +84,23 @@ module.exports = {
         return 'app';
       },
     };
+  },
+
+  files() {
+    let files = this._super.files.apply(this, arguments);
+
+    if (this.options.routeAuthoringFormat === 'strict') {
+      const strictFilesToRemove =
+        this.options.isTypeScriptProject || this.options.typescript ? '.gjs' : '.gts';
+      files = files.filter(
+        (file) =>
+          !(file.endsWith('.js') || file.endsWith('.hbs') || file.endsWith(strictFilesToRemove))
+      );
+    } else {
+      files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
+    }
+
+    return files;
   },
 
   locals: function (options) {

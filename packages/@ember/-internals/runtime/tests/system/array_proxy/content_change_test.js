@@ -33,12 +33,12 @@ moduleFor(
     ['@test objectAt recomputes the object cache correctly'](assert) {
       let indexes = [];
 
-      let proxy = ArrayProxy.extend({
+      let proxy = class extends ArrayProxy {
         objectAtContent(index) {
           indexes.push(index);
           return this.content[index];
-        },
-      }).create({
+        }
+      }.create({
         content: emberA([1, 2, 3, 4, 5]),
       });
 
@@ -63,12 +63,12 @@ moduleFor(
     ['@test negative indexes are handled correctly'](assert) {
       let indexes = [];
 
-      let proxy = ArrayProxy.extend({
+      let proxy = class extends ArrayProxy {
         objectAtContent(index) {
           indexes.push(index);
           return this.content[index];
-        },
-      }).create({
+        }
+      }.create({
         content: emberA([1, 2, 3, 4, 5]),
       });
 

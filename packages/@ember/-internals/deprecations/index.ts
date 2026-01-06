@@ -1,4 +1,4 @@
-import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
+import type { DeprecationOptions } from '@ember/debug';
 import { ENV } from '@ember/-internals/environment';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';
@@ -95,43 +95,13 @@ export const DEPRECATIONS = {
     return deprecation({
       id: `deprecate-import-${dasherize(importName).toLowerCase()}-from-ember`,
       for: 'ember-source',
-      since: { available: '5.10.0' },
+      since: { available: '5.10.0', enabled: '6.5.0' },
       until: '7.0.0',
       url: `https://deprecations.emberjs.com/id/import-${dasherize(
         importName
       ).toLowerCase()}-from-ember`,
     });
   },
-  DEPRECATE_TEMPLATE_ACTION: deprecation({
-    id: 'template-action',
-    url: 'https://deprecations.emberjs.com/id/template-action',
-    until: '6.0.0',
-    for: 'ember-source',
-    since: {
-      available: '5.9.0',
-      enabled: '5.9.0',
-    },
-  }),
-  DEPRECATE_COMPONENT_TEMPLATE_RESOLVING: deprecation({
-    id: 'component-template-resolving',
-    url: 'https://deprecations.emberjs.com/id/component-template-resolving',
-    until: '6.0.0',
-    for: 'ember-source',
-    since: {
-      available: '5.10.0',
-      enabled: '5.10.0',
-    },
-  }),
-  DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS: deprecation({
-    id: 'deprecate-array-prototype-extensions',
-    url: 'https://deprecations.emberjs.com/id/deprecate-array-prototype-extensions',
-    until: '6.0.0',
-    for: 'ember-source',
-    since: {
-      available: '5.10.0',
-      enabled: '5.10.0',
-    },
-  }),
   DEPRECATE_IMPORT_INJECT: deprecation({
     for: 'ember-source',
     id: 'importing-inject-from-ember-service',
@@ -141,6 +111,16 @@ export const DEPRECATIONS = {
     },
     until: '7.0.0',
     url: 'https://deprecations.emberjs.com/id/importing-inject-from-ember-service',
+  }),
+  DEPRECATE_AMD_BUNDLES: deprecation({
+    for: 'ember-source',
+    id: 'using-amd-bundles',
+    since: {
+      available: '6.10.0',
+      enabled: '6.10.0',
+    },
+    until: '7.0.0',
+    url: 'https://deprecations.emberjs.com/id/using-amd-bundles',
   }),
 };
 
@@ -156,15 +136,4 @@ export function deprecateUntil(message: string, deprecation: DeprecationObject) 
     );
   }
   deprecate(message, deprecation.test, options);
-}
-
-const { EXTEND_PROTOTYPES } = ENV as {
-  EXTEND_PROTOTYPES: { Array?: boolean };
-};
-
-if (EXTEND_PROTOTYPES.Array !== false) {
-  deprecateUntil(
-    'Array prototype extensions are deprecated. Follow the deprecation guide for migration instructions, and set EmberENV.EXTEND_PROTOTYPES to false in your config/environment.js',
-    DEPRECATIONS.DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS
-  );
 }

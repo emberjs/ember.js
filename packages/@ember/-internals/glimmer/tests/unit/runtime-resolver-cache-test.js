@@ -1,18 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
-import {
-  RenderingTestCase,
-  moduleFor,
-  runDestroy,
-  runAppend,
-  runTask,
-  testUnless,
-  expectDeprecation,
-} from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { templateCacheCounters } from '@ember/-internals/glimmer';
 import { Component } from '../utils/helpers';
-import { DEPRECATIONS } from '../../../deprecations';
 
 moduleFor(
   'ember-glimmer runtime resolver cache',
@@ -76,7 +67,7 @@ moduleFor(
       // static layout
       this.registerComponent('component-one', { template: 'One' });
       this.registerComponent('component-two', {
-        ComponentClass: Component.extend(),
+        ComponentClass: class extends Component {},
         template: 'Two',
       });
 
@@ -123,116 +114,6 @@ moduleFor(
 
       this.assertText('Two');
       this.expectCacheChanges({}, 'toggle back to component-two no change');
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-    )} each template is only compiled once`]() {
-      expectDeprecation(
-        /resolved templates/,
-        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
-      );
-      // static layout
-      this.registerComponent('component-one', { resolveableTemplate: 'One' });
-
-      // test directly import template factory onto late bound layout
-      let Two = Component.extend({
-        layout: this.compile('Two'),
-      });
-      this.registerComponent('component-two', { ComponentClass: Two });
-
-      // inject layout onto component, share layout with component-one
-      let Root = Component.extend({
-        layout: this.owner.lookup('template:components/component-one'),
-      });
-
-      this.registerComponent('root-component', { ComponentClass: Root });
-
-      // template instance shared between to template managers
-      let rootFactory = this.owner.factoryFor('component:root-component');
-
-      // snapshot counters
-      this.getCacheCounters();
-
-      // show component-one for the first time
-      this.render(
-        `
-    {{~#if this.cond~}}
-      {{component-one}}
-    {{~else~}}
-      {{component-two}}
-    {{~/if}}`,
-        {
-          cond: true,
-        }
-      );
-
-      this.assertText('One');
-      this.expectCacheChanges(
-        {
-          componentDefinitionCount: 1,
-          templateCacheMisses: 2,
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
-        },
-        'test case component and component-one no change'
-      );
-
-      // show component-two for the first time
-      runTask(() => set(this.context, 'cond', false));
-
-      this.assertText('Two');
-      this.expectCacheChanges(
-        {
-          templateCacheMisses: 1,
-          componentDefinitionCount: 1,
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
-        },
-        'component-two first render misses template cache'
-      );
-
-      // show component-one again
-      runTask(() => set(this.context, 'cond', true));
-
-      this.assertText('One');
-      this.expectCacheChanges({}, 'toggle back to component-one no change');
-
-      // show component-two again
-      runTask(() => set(this.context, 'cond', false));
-
-      this.assertText('Two');
-      this.expectCacheChanges(
-        {
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 2 : 1,
-        },
-        'toggle back to component-two hits template cache'
-      );
-
-      // render new root append
-      let root = rootFactory.create();
-      try {
-        runAppend(root);
-        this.assertText('TwoOne');
-        // roots have different capabilities so this will hit
-        this.expectCacheChanges(
-          { templateCacheHits: ENV._DEBUG_RENDER_TREE ? 2 : 1 },
-          'append root with component-one no change'
-        );
-
-        // render new root append
-        let root2 = rootFactory.create();
-        try {
-          runAppend(root2);
-          this.assertText('TwoOneOne');
-          this.expectCacheChanges(
-            { templateCacheHits: ENV._DEBUG_RENDER_TREE ? 2 : 1 },
-            'append another root no change'
-          );
-        } finally {
-          runDestroy(root2);
-        }
-      } finally {
-        runDestroy(root);
-      }
     }
 
     getCacheCounters() {

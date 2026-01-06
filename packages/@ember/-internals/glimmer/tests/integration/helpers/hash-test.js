@@ -129,13 +129,13 @@ moduleFor(
 
     ['@test should yield hash of internal properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init(...arguments);
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -161,13 +161,13 @@ moduleFor(
 
     ['@test should yield hash of internal and external properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init(...arguments);
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -203,11 +203,12 @@ moduleFor(
     }
 
     ['@test works with computeds']() {
-      let FooBarComponent = Component.extend({
-        fullName: computed('hash.firstName', 'hash.lastName', function () {
+      let FooBarComponent = class extends Component {
+        @computed('hash.firstName', 'hash.lastName')
+        get fullName() {
           return `${this.hash.firstName} ${this.hash.lastName}`;
-        }),
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,

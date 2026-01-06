@@ -11,6 +11,7 @@ import {
   processNamespace,
   processAllNamespaces,
   removeNamespace,
+  type Namespace as MetalNamespace,
 } from '@ember/-internals/metal'; // Preloaded into namespaces
 import { get } from '@ember/object';
 import { getName, guidFor, setName } from '@ember/-internals/utils';
@@ -22,7 +23,7 @@ import EmberObject from '@ember/object';
   such as an application or framework. Create a namespace anytime you want
   to define one of these new containers.
 
-  # Example Usage
+  ## Example Usage
 
   ```javascript
   MyFramework = Ember.Namespace.create({
@@ -35,8 +36,8 @@ import EmberObject from '@ember/object';
   @public
 */
 class Namespace extends EmberObject {
-  static NAMESPACES = NAMESPACES;
-  static NAMESPACES_BY_ID = NAMESPACES_BY_ID;
+  static NAMESPACES: MetalNamespace[] = NAMESPACES;
+  static NAMESPACES_BY_ID: { [name: string]: MetalNamespace } = NAMESPACES_BY_ID;
   static processAll = processAllNamespaces;
   static byName = findNamespace;
 

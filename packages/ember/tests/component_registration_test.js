@@ -2,15 +2,8 @@ import Application from '@ember/application';
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import {
-  moduleFor,
-  testUnless,
-  ApplicationTestCase,
-  defineComponent,
-  expectDeprecation,
-} from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, defineComponent } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import templateOnly from '@ember/component/template-only';
 
 moduleFor(
@@ -18,7 +11,7 @@ moduleFor(
   class extends ApplicationTestCase {
     // This is necessary for this.application.instanceInitializer to not leak between tests
     createApplication(options) {
-      return super.createApplication(options, Application.extend());
+      return super.createApplication(options, class extends Application {});
     }
 
     ['@test The helper becomes the body of the component']() {
@@ -44,9 +37,9 @@ moduleFor(
             defineComponent(
               {},
               `<p>hello {{yield}}</p>`,
-              Component.extend({
-                classNames: 'testing123',
-              })
+              class extends Component {
+                classNames = ['testing123'];
+              }
             )
           );
         },
@@ -66,10 +59,10 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-hero',
-            Component.extend({
-              classNames: 'testing123',
-              layout: compile('watch him as he GOES'),
-            })
+            class extends Component {
+              classNames = ['testing123'];
+              layout = compile('watch him as he GOES');
+            }
           );
         },
       });
@@ -79,81 +72,6 @@ moduleFor(
         assert.equal(
           text,
           'there goes watch him as he GOES',
-          'The component is composed correctly'
-        );
-      });
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-    )} Late-registered components can be rendered with template registered on the container`](
-      assert
-    ) {
-      expectDeprecation(
-        /resolved templates/,
-        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
-      );
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>`
-      );
-
-      this.application.instanceInitializer({
-        name: 'sally-rutherford-component-template',
-        initialize(applicationInstance) {
-          applicationInstance.register(
-            'template:components/sally-rutherford',
-            compile('funkytowny{{yield}}')
-          );
-        },
-      });
-      this.application.instanceInitializer({
-        name: 'sally-rutherford-component',
-        initialize(applicationInstance) {
-          applicationInstance.register('component:sally-rutherford', Component);
-        },
-      });
-
-      return this.visit('/').then(() => {
-        let text = this.$('#wrapper').text().trim();
-        assert.equal(
-          text,
-          'hello world funkytowny-funkytowny!!!',
-          'The component is composed correctly'
-        );
-      });
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-    )} Late-registered components can be rendered with ONLY the template registered on the container`](
-      assert
-    ) {
-      expectDeprecation(
-        /resolved templates/,
-        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
-      );
-
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>`
-      );
-
-      this.application.instanceInitializer({
-        name: 'borf-snorlax-component-template',
-        initialize(applicationInstance) {
-          applicationInstance.register(
-            'template:components/borf-snorlax',
-            compile('goodfreakingTIMES{{yield}}')
-          );
-        },
-      });
-
-      return this.visit('/').then(() => {
-        let text = this.$('#wrapper').text().trim();
-        assert.equal(
-          text,
-          'hello world goodfreakingTIMES-goodfreakingTIMES!!!',
           'The component is composed correctly'
         );
       });
@@ -173,9 +91,9 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'controller:application',
-            Controller.extend({
-              text: 'outer',
-            })
+            class extends Controller {
+              text = 'outer';
+            }
           );
         },
       });
@@ -184,10 +102,10 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-component',
-            Component.extend({
-              text: 'inner',
-              layoutName: 'foo-bar-baz',
-            })
+            class extends Component {
+              text = 'inner';
+              layoutName = 'foo-bar-baz';
+            }
           );
         },
       });
@@ -212,9 +130,9 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'controller:application',
-            Controller.extend({
-              text: 'outer',
-            })
+            class extends Controller {
+              text = 'outer';
+            }
           );
         },
       });
@@ -223,11 +141,11 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-component',
-            Component.extend({
-              text: 'inner',
-              layoutName: 'foo-bar-baz',
-              layout: compile('{{this.text}}-{{yield}}'),
-            })
+            class extends Component {
+              text = 'inner';
+              layoutName = 'foo-bar-baz';
+              layout = compile('{{this.text}}-{{yield}}');
+            }
           );
         },
       });

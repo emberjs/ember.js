@@ -30,11 +30,11 @@ function checkTemplate(templateName, assert) {
   owner.register('template:-top-level', template);
   owner.register(
     'component:-top-level',
-    Component.extend({
-      layoutName: '-top-level',
-      firstName: 'Tobias',
-      drug: 'teamocil',
-    })
+    class extends Component {
+      layoutName = '-top-level';
+      firstName = 'Tobias';
+      drug = 'teamocil';
+    }
   );
 
   component = owner.lookup('component:-top-level');

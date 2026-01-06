@@ -1,0 +1,33 @@
+{
+  "name": "@glimmer/interfaces",
+  "version": "0.94.6",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "directory": "packages/@glimmer/interfaces"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./index.d.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "index.d.ts",
+    "lib"
+  ],
+  "scripts": {
+    "test:publint": "publint"
+  },
+  "dependencies": {
+    "@simple-dom/interface": "^1.4.0",
+    "type-fest": "^4.35.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.20.1",
+    "publint": "^0.3.2",
+    "typescript": "^5.7.3"
+  }
+}

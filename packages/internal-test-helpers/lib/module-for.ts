@@ -1,19 +1,28 @@
 /* globals URLSearchParams */
-import { DEBUG } from '@glimmer/env';
 import { isEnabled } from '@ember/canary-features';
-import type { Mixin, Generator } from './apply-mixins';
+import { assertDestroyablesDestroyed, enableDestroyableTracking } from '@glimmer/destroyable';
+import { DEBUG } from '@glimmer/env';
+import { all } from 'rsvp';
+import type { Generator, Mixin } from './apply-mixins';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
+import type { TestCase } from './test-cases/abstract';
 import { setContext, unsetContext } from './test-context';
-import { all } from 'rsvp';
-import { enableDestroyableTracking, assertDestroyablesDestroyed } from '@glimmer/destroyable';
-import type AbstractTestCase from './test-cases/abstract';
+import { setupAssertionHelpers } from './ember-dev/assertion';
+import { setupContainersCheck } from './ember-dev/containers';
+import { setupDeprecationHelpers } from './ember-dev/deprecation';
+import { setupNamespacesCheck } from './ember-dev/namespaces';
+import { setupObserversCheck } from './ember-dev/observers';
+import { setupRunLoopCheck } from './ember-dev/run-loop';
+import { setupWarningHelpers } from './ember-dev/warning';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
+import type { DebugEnv } from './ember-dev/utils';
 
-interface TestClass<T extends AbstractTestCase> {
+interface TestClass<T extends TestCase> {
   new (assert: QUnit['assert']): T;
 }
 
-interface TestContext<T extends AbstractTestCase> {
+interface TestContext<T extends TestCase> {
   instance: T | null | undefined;
 }
 
@@ -28,12 +37,11 @@ const ASSERT_DESTROYABLES = (() => {
   return assertDestroyables !== null;
 })();
 
-export function moduleForDevelopment<T extends AbstractTestCase, M extends Generator>(
+export function moduleForDevelopment<T extends TestCase, M extends Generator>(
   description: string,
   TestClass: TestClass<T>,
   ...mixins: Mixin<M>[]
 ) {
-  // @ts-expect-error Our tests run in vite, vite supports this
   if (import.meta.env.MODE === 'development') {
     moduleFor(description, TestClass, ...mixins);
   }
@@ -45,12 +53,24 @@ export async function define<T>(callback: () => T): Promise<T> {
   return result;
 }
 
-export default function moduleFor<T extends AbstractTestCase, M extends Generator>(
+export default function moduleFor<T extends TestCase, M extends Generator>(
   description: string,
   TestClass: TestClass<T>,
   ...mixins: Mixin<M>[]
 ) {
+  let env = {
+    getDebugFunction,
+    setDebugFunction,
+  } as DebugEnv;
+
   QUnit.module(description, function (hooks) {
+    setupContainersCheck(hooks);
+    setupNamespacesCheck(hooks);
+    setupObserversCheck(hooks);
+    setupRunLoopCheck(hooks);
+    setupAssertionHelpers(hooks, env);
+    setupDeprecationHelpers(hooks, env);
+    setupWarningHelpers(hooks, env);
     setupTestClass(hooks, TestClass, ...mixins);
   });
 }
@@ -63,7 +83,7 @@ function afterEachFinally() {
   }
 }
 
-export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
+export function setupTestClass<T extends TestCase, G extends Generator>(
   hooks: NestedHooks,
   TestClass: TestClass<T>,
   ...mixins: Mixin<G>[]
@@ -129,7 +149,7 @@ export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
     });
   }
 
-  function generateTest<T extends AbstractTestCase>(name: keyof T & string) {
+  function generateTest<T extends TestCase>(name: keyof T & string) {
     if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), function (this: TestContext<T>, assert) {
         return (this.instance![name] as any)(assert);

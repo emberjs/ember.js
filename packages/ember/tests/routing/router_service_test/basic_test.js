@@ -65,12 +65,12 @@ moduleFor(
       assert.expect(2);
       this.add(
         `route:parent.child`,
-        Route.extend({
+        class extends Route {
           beforeModel(transition) {
             transition.abort();
             this.intermediateTransitionTo('parent.sister');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/')
@@ -130,12 +130,12 @@ moduleFor(
 
       this.add(
         'route:parent.index',
-        Route.extend({
+        class extends Route {
           init() {
-            this._super();
+            super.init();
             set(this._router, 'rootURL', '/homepage');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {

@@ -386,13 +386,13 @@ moduleFor(
 
     ['@test the result of a get helper can be yielded']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init(...arguments);
           fooBarInstance = this;
           this.mcintosh = 'red';
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,

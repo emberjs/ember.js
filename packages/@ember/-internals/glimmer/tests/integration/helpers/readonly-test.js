@@ -1,9 +1,8 @@
-import { RenderingTestCase, moduleFor, runTask, testUnless } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set, get } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Helpers test: {{readonly}}',
@@ -12,11 +11,11 @@ moduleFor(
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value}}',
       });
 
@@ -37,67 +36,16 @@ moduleFor(
       // No U-R
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} passing an action to {{readonly}} avoids mutable cell wrapping`](assert) {
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
-      assert.expect(5);
-      let outer, inner;
-
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            inner = this;
-          },
-        }),
-      });
-
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            outer = this;
-          },
-        }),
-        template: '{{x-inner onClick=(readonly this.onClick)}}',
-      });
-
-      this.render('{{x-outer onClick=(action this.doIt)}}', {
-        doIt() {
-          assert.ok(true, 'action was called');
-        },
-      });
-
-      assert.equal(
-        typeof outer.attrs.onClick,
-        'function',
-        'function itself is present in outer component attrs'
-      );
-      outer.attrs.onClick();
-
-      assert.equal(
-        typeof inner.attrs.onClick,
-        'function',
-        'function itself is present in inner component attrs'
-      );
-      inner.attrs.onClick();
-    }
-
     '@test updating a {{readonly}} property from above works'(assert) {
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value}}',
       });
 
@@ -128,11 +76,11 @@ moduleFor(
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value.prop}}',
       });
 
@@ -165,11 +113,11 @@ moduleFor(
       let component;
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             component = this;
-          },
-        }),
+          }
+        },
         template: '{{this.value}}',
       });
 
@@ -196,20 +144,20 @@ moduleFor(
       let middle, bottom;
 
       this.registerComponent('x-bottom', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             bottom = this;
-          },
-        }),
+          }
+        },
         template: '{{this.bar}}',
       });
 
       this.registerComponent('x-middle', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             middle = this;
-          },
-        }),
+          }
+        },
         template: '{{this.foo}} {{x-bottom bar=(mut this.foo)}}',
       });
 

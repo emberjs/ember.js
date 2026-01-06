@@ -145,21 +145,23 @@ moduleFor(
     }
 
     ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {
-      let ParentClass = EmberObject.extend({
-        prop: computed({
-          set(key, val) {
-            assert.ok(false, 'incorrect setter called');
-            this._val = val;
-          },
-        }),
-      });
+      let ParentClass = class extends EmberObject {
+        @computed
+        get prop() {
+          return this._val;
+        }
+        set prop(val) {
+          assert.ok(false, 'incorrect setter called');
+          this._val = val;
+        }
+      };
 
-      let SubClass = ParentClass.extend({
+      let SubClass = class extends ParentClass {
         set prop(val) {
           assert.ok(true, 'correct setter called');
           this._val = val;
-        },
-      });
+        }
+      };
 
       let instance = SubClass.create();
 

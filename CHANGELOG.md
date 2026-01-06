@@ -1,6 +1,72 @@
 # Ember Changelog
 
-## v6.3.0-beta.1 (February 03, 2025)
+## v6.11.0-beta.1 (January 6, 2026)
+
+- [#21014](https://github.com/emberjs/ember.js/pull/21014) Rename default export `GlimmerComponent` to `Component` for autocomplete DX
+
+## v6.10.0 (January 6, 2026)
+ 
+- [#21013](https://github.com/emberjs/ember.js/pull/21013) / [#21009](https://github.com/emberjs/ember.js/pull/21009) [DEPRECATION] Deprecate use of amd bundles per [RFC #1101](https://rfcs.emberjs.com/id/1101-deprecate-ember-vendor-bundles).
+- [#21004](https://github.com/emberjs/ember.js/pull/21004) Remove deprecated TypeScript compiler options for TS 6.0 compatibility
+
+## v6.9.0 (November 25, 2025)
+
+- All changes were internal, docs, and/or bugfixes that were backported.
+
+## v6.8.2 (November 17, 2025)
+
+- [#21002](https://github.com/emberjs/ember.js/pull/21002) [BUGFIX] Don't render if we're mid-destroy
+
+## v6.8.1 (October 30, 2025)
+
+- [#20994](https://github.com/emberjs/ember.js/pull/20994) [BUGFIX] Fix loose-mode components invoked from a strict mode component via renderComponent
+
+## v6.8.0 (October 13, 2025)
+ 
+- [#20950](https://github.com/emberjs/ember.js/pull/20950) / [#20961](https://github.com/emberjs/ember.js/pull/20961) / [#20963](https://github.com/emberjs/ember.js/pull/20963) [FEATURE] Upgrade glimmer-vm to build in Tracked Collections (previously provided by `tracked-built-ins`) per [RFC #1068](https://rfcs.emberjs.com/id/1068-tracked-collections).
+  - [WARNING] Drops support for TS 5.0 and TS 5.1 under our [TS Support policy](https://emberjs.com/typescript-support/)
+- [#20962](https://github.com/emberjs/ember.js/pull/20962) / [#20966](https://github.com/emberjs/ember.js/pull/20966) / [#20974](https://github.com/emberjs/ember.js/pull/20974) [FEATURE] Add `renderComponent` per [RFC #1099](https://rfcs.emberjs.com/id/1099-renderComponent).
+- [#20957](https://github.com/emberjs/ember.js/pull/20957) / [#20960](https://github.com/emberjs/ember.js/pull/20960) Add TS 5.8, 5.9 to the TS test matrix
+- [#20988](https://github.com/emberjs/ember.js/pull/20988) [BUGFIX] Drop unnecessary package ember-cli-htmlbars-inline-precompile from component-test blueprint
+
+## v6.7.0 (September  1, 2025)
+
+- [#20939](https://github.com/emberjs/ember.js/pull/20939) [ENHANCEMENT] Add `import { trustHTML } from '@ember/template';` as an alias of `import { htmlSafe } from '@ember/template', for naming that better matches the behavior.
+- [#20941](https://github.com/emberjs/ember.js/pull/20941) [CLEANUP] Remove code from `deprecate-array-prototype-extensions` deprecation that was until 6.0
+- [#20920](https://github.com/emberjs/ember.js/pull/20920) / [#20922](https://github.com/emberjs/ember.js/pull/20922) [INTERNAL] Remove many uses of `.extend`
+- [#20926](https://github.com/emberjs/ember.js/pull/20926) [INTERNAL] Remove all view mixins
+
+## v6.6.0 (July 21, 2025)
+
+- [#20627](https://github.com/emberjs/ember.js/pull/20627) [CLEANUP] Remove `escapeExpression` from `@ember/template`
+- [#20909](https://github.com/emberjs/ember.js/pull/20909) Remove microtask in runtime compiler
+
+## v6.5.0 (June 9, 2025)
+
+- [#20835](https://github.com/emberjs/ember.js/pull/20835) [FEATURE] Add a `--route-authoring-format` option to the route generator to generate template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
+- [#20862](https://github.com/emberjs/ember.js/pull/20862) [FEATURE] Add blueprints to generate strict components (template tag) with `--strict` or `--tt` per [RFC #0779](https://rfcs.emberjs.com/id/0779-first-class-component-templates).
+- [#20813](https://github.com/emberjs/ember.js/pull/20686) / [#20813](https://github.com/emberjs/ember.js/pull/20813) [DEPRECATION] Deprecate `import Ember from 'ember'` per [RFC #1003](https://rfcs.emberjs.com/id/1003-deprecation-import-ember-from-ember).
+- [#20880](https://github.com/emberjs/ember.js/pull/20880) [CLEANUP] Remove the `ember-cli-qunit` tests
+- [#20891](https://github.com/emberjs/ember.js/pull/20891) [CLEANUP] Remove DEPRECATE_COMPONENT_TEMPLATE_RESOLVING deprecation
+
+## v6.4.0 (April 28, 2025)
+
+- [#20842](https://github.com/emberjs/ember.js/pull/20842) [BREAKING] Drop support for TypeScript 4.9 to allow for glimmer-vm upgrade. 
+  * Ember now tests against TypeScript 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7. 
+  Per the rolling support window, following [Semantic Versioning for TypeScript Types](https://www.semver-ts.org/),
+  the supported range of TypeScript versions across two Ember LTS releases must 
+  always overlap.
+  For more examples, see the [Stability heading in this blog post](https://blog.emberjs.com/stable-typescript-types-in-ember-5-1/).
+  * We now require consumers use `verbatimModuleSyntax`.
+- [#20842](https://github.com/emberjs/ember.js/pull/20842) / [#20864](https://github.com/emberjs/ember.js/pull/20864) Upgrade glimmer-vm.
+- [#20872](https://github.com/emberjs/ember.js/pull/20872) [BUGFIX] Fix `{{debugger}}` via upgrade @glimmer/runtime.
+- [#20850](https://github.com/emberjs/ember.js/pull/20850) [BUGFIX] Fix source maps in published packages.
+- [#20867](https://github.com/emberjs/ember.js/pull/20867) [BUGFIX] Fix LOG_VERSIONS.
+- [#20852](https://github.com/emberjs/ember.js/pull/20852) [CLEANUP] Remove ember-auto-import as a dependency.
+- [#20863](https://github.com/emberjs/ember.js/pull/20863) [CLEANUP] Cleanup "octane edition" code
+- [#20856](https://github.com/emberjs/ember.js/pull/20856) [DOCS] Restore @glimmer/component API docs and test against classes and modules generated in api docs to prevent future missing docs.
+
+## v6.3.0 (March 17, 2025)
 
 - [#20800](https://github.com/emberjs/ember.js/pull/20800) [FEATURE] Support use of template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
 - [#20526](https://github.com/emberjs/ember.js/pull/20526) / [#20820](https://github.com/emberjs/ember.js/pull/20820) [DEPRECATION] Deprecate importing `inject` from `@ember/service`. The export is renamed to `service` per [RFC #0752](https://rfcs.emberjs.com/id/0752-inject-service/).

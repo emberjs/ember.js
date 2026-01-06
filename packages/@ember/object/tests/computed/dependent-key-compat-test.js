@@ -32,20 +32,22 @@ moduleFor(
     }
 
     '@test it works with classic classes'(assert) {
-      let Person = EmberObject.extend({
-        firstName: tracked({ value: 'Tom' }),
-        lastName: tracked({ value: 'Dale' }),
+      let Person = class extends EmberObject {
+        @tracked
+        firstName = 'Tom';
+        @tracked
+        lastName = 'Dale';
 
-        givenName: dependentKeyCompat({
-          get() {
-            return this.firstName;
-          },
-        }),
+        @dependentKeyCompat
+        get givenName() {
+          return this.firstName;
+        }
 
-        fullName: computed('givenName', 'lastName', function () {
+        @computed('givenName', 'lastName')
+        get fullName() {
           return `${this.givenName} ${this.lastName}`;
-        }),
-      });
+        }
+      };
 
       let tom = Person.create();
 

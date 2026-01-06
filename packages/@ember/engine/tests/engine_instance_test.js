@@ -93,9 +93,9 @@ moduleFor(
     }
 
     ['@test can build a child instance of a registered engine'](assert) {
-      let ChatEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let ChatEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
       let chatEngineInstance;
 
       engine.register('engine:chat', ChatEngine);

@@ -1,0 +1,141 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "[ignore][properties][shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[javascript][typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.formatDocument": "always"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.rulers": [100]
+  },
+  "[json][jsonc][markdown][yaml]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.formatDocument": "always"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false
+  },
+  "dependi.npm.informPatchUpdates": true,
+  "dependi.npm.lockFileEnabled": true,
+  "editor.formatOnSave": true,
+  "eslint.codeAction.showDocumentation": {
+    "enable": true
+  },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.onIgnoredFiles": "warn",
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.js"
+  },
+  "eslint.problems.shortenToSingleLine": true,
+  "eslint.runtime": "node",
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["javascript", "typescript", "json", "jsonc"],
+  "eslint.workingDirectories": [
+    {
+      "pattern": "."
+    }
+  ],
+  "explorer.excludeGitIgnore": true,
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "tracerbench-results": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true
+  },
+  "inline-bookmarks.expert.custom.styles": {
+    "active": {
+      "dark": {
+        "color": "#00ffff",
+        "fontWeight": "bold"
+      },
+      // teal
+      "gutterIconColor": "#009999",
+      "light": {
+        "color": "#009999",
+        "fontWeight": "bold"
+      },
+      "overviewRulerColor": "rgba(0, 150, 150, 0.7)"
+    },
+    "bandaid": {
+      "dark": {
+        "color": "#ffff00",
+        "fontWeight": "bold"
+      },
+      // teal
+      "gutterIconColor": "#999900",
+      "light": {
+        "color": "#999900",
+        "fontWeight": "bold"
+      },
+      "overviewRulerColor": "rgba(150, 150, 0, 0.7)"
+    },
+    "fixme": {
+      "dark": {
+        "color": "#ff0000",
+        "fontWeight": "bold"
+      },
+      // yellow
+      "gutterIconColor": "#990000",
+      "light": {
+        "color": "#990000",
+        "fontWeight": "bold"
+      },
+      "overviewRulerColor": "rgba(150, 0, 0, 0.7)"
+    },
+    "warn": {
+      "dark": {
+        "color": "#ffff00",
+        "fontWeight": "bold"
+      },
+      // yellow
+      "gutterIconColor": "#999900",
+      "light": {
+        "color": "#999900",
+        "fontWeight": "bold"
+      },
+      "overviewRulerColor": "rgba(150, 150, 0, 0.7)"
+    }
+  },
+  "inline-bookmarks.expert.custom.words.mapping": {
+    "audit": ["@audit(\\s|$)"],
+    "fixme": ["@fixme(\\s|$)"],
+    "warn": ["@premerge(\\s|$)"],
+    "bandaid": [
+      "@bandaid\\(until:[^)]+\\)(\\s|$)",
+      "@bandaid(?=\\{@link [^}]+\\}(\\s|$))",
+      "@bandaid(?!\\()"
+    ]
+  },
+  "inline-bookmarks.view.showVisibleFilesOnly": true,
+  "javascript.preferences.importModuleSpecifier": "project-relative",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "rewrap.autoWrap.enabled": true,
+  "rewrap.onSave": false,
+  "rewrap.reformat": true,
+  "rewrap.wholeComment": false,
+  "surround.custom": {
+    "register": {
+      "label": "register helper",
+      "snippet": "{ ${1:helper}: $TM_SELECTED_TEXT }"
+    }
+  },
+  "typescript.experimental.updateImportsOnPaste": true,
+  "typescript.preferences.importModuleSpecifier": "project-relative",
+  "typescript.preferences.importModuleSpecifierEnding": "auto",
+  "typescript.preferences.useAliasesForRenames": false,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.reportStyleChecksAsWarnings": false
+}

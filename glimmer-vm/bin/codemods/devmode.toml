@@ -1,0 +1,7 @@
+[devmode]
+match = "devmode({ :[block] })"
+rewrite = "devmode(() => ({ :[block] }))"
+
+[devmode2]
+match = "if (import.meta.env.DEV) { :[[name]].description = :[description]; }"
+rewrite = "setDescription(:[name], devmode(() => :[description]));"

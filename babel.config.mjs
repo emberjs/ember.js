@@ -33,7 +33,7 @@ export default {
       {
         compilerPath: resolve(
           dirname(fileURLToPath(import.meta.url)),
-          './broccoli/glimmer-template-compiler'
+          './broccoli/glimmer-template-compiler.mjs'
         ),
       },
     ],

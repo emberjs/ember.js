@@ -1,0 +1,12 @@
+{
+  "name": "@ember/reactive",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./collections": "./collections.ts"
+  },
+  "dependencies": {
+    "@glimmer/validator": "0.95.0"
+  }
+}

@@ -25,6 +25,14 @@ export default [
       '**/smoke-tests/',
       '**/types/',
       '**/type-tests/',
+      'glimmer-vm/repo-metadata/',
+      'glimmer-vm/**/rollup.config.mjs',
+      'glimmer-vm/packages/@glimmer/vm-babel-plugins/',
+      'glimmer-vm/bin/**',
+      'glimmer-vm/guides/**',
+      'glimmer-vm/benchmark/**',
+      'glimmer-vm/*.{js,ts}',
+      'packages/@glimmer-workspace/**',
     ],
   },
   pluginJs.configs.recommended,
@@ -131,6 +139,17 @@ export default [
     },
   },
   {
+    files: ['glimmer-vm/**/*.ts'],
+    languageOptions: {
+      ecmaVersion: 5,
+      sourceType: 'module',
+      parserOptions: {
+        project: './tsconfig-vm.json',
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+  {
     // TODO: files: ['packages/**/*.[jt]s'],
     files: ['packages/**/*.js'],
 
@@ -208,7 +227,14 @@ export default [
       'broccoli/**/*.js',
       '**/ember-cli-build.js',
       '**/*.cjs',
+      'glimmer-vm/server/**/*.js',
     ],
+  },
+  {
+    files: ['bin/changelog.js'],
+    rules: {
+      'n/hashbang': 'off',
+    },
   },
   {
     files: [
@@ -263,6 +289,210 @@ export default [
       globals: {
         ...globals.qunit,
       },
+    },
+  },
+
+  ...tseslint.configs.recommendedTypeChecked.map((config) => {
+    return {
+      ...config,
+      files: ['packages/@glimmer/**/*.ts'],
+    };
+  }),
+  {
+    files: ['packages/@glimmer/**/*.{ts,js}'],
+    rules: {
+      'ember-internal/require-yuidoc-access': 'off',
+      'ember-internal/no-const-outside-module-scope': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/**/*.ts'],
+    rules: {
+      'prefer-const': 'off',
+      'qunit/no-conditional-assertions': 'off',
+      'disable-features/disable-generator-functions': 'off',
+      '@typescript-eslint/no-deprecated': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/restrict-plus-operands': 'error',
+      '@typescript-eslint/no-unnecessary-type-arguments': 'error',
+      '@typescript-eslint/naming-convention': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/no-confusing-void-expression': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+    },
+  },
+  {
+    files: ['packages/@glimmer/constants/**/*.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/global-context/**/*.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/component/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-declaration-merging': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/debug/**/*.ts'],
+    rules: {
+      'no-fallthrough': 'off',
+      'no-implicit-coercion': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/debug-util/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-extraneous-class': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/local-debug-flags/**/*.ts'],
+    rules: {
+      'no-implicit-coercion': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/interfaces/**/*.ts'],
+    rules: {
+      'import/export': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/encoder/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/vm/**/*.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/compiler/**/*.ts'],
+    rules: {
+      'no-implicit-coercion': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/opcode-compiler/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/destroyable/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/reference/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/manager/**/*.ts'],
+    rules: {
+      'no-implicit-coercion': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/node/**/*.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/runtime/**/*.ts'],
+    rules: {
+      'no-implicit-coercion': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/validator/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-deprecated': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/syntax/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/wire-format/**/*.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+    },
+  },
+  {
+    files: ['packages/@glimmer/**/test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-unnecessary-type-arguments': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/naming-convention': 'off',
     },
   },
 ];

@@ -134,14 +134,4 @@ QUnit.module('App Boot', function (hooks) {
 
     return this.renderToHTML('/');
   });
-
-  QUnit.test('Should not attempt to render element modifiers GH#14220', function (assert) {
-    assert.expect(1);
-
-    this.template('application', "<div {{action 'foo'}}></div>");
-
-    return this.renderToHTML('/').then(function (html) {
-      assert.htmlMatches(html, '<body><div></div></body>');
-    });
-  });
 });

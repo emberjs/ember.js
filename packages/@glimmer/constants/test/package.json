@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "@glimmer-test/constants",
+  "version": "0.92.0",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/env": "workspace:*",
+    "@glimmer/util": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/constants": "workspace:*",
+    "@glimmer/debug-util": "workspace:*"
+  }
+}

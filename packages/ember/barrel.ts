@@ -56,7 +56,6 @@ import {
   componentCapabilities,
   modifierCapabilities,
   setComponentManager,
-  escapeExpression,
   getTemplates,
   setTemplates,
   template,
@@ -259,15 +258,19 @@ namespace Ember {
 
   // ****@ember/debug****
   export const _captureRenderTree = captureRenderTree;
-  export const assert = EmberDebug.assert;
-  export const warn = EmberDebug.warn;
+  export const assert: typeof EmberDebug.assert = EmberDebug.assert;
+  export const warn: typeof EmberDebug.warn = EmberDebug.warn;
   export const debug = EmberDebug.debug;
   export const deprecate = EmberDebug.deprecate;
   export const deprecateFunc = EmberDebug.deprecateFunc;
   export const runInDebug = EmberDebug.runInDebug;
   export const inspect = EmberDebug.inspect;
 
-  export const Debug = {
+  export const Debug: {
+    registerDeprecationHandler: typeof EmberDebug.registerDeprecationHandler;
+    registerWarnHandler: typeof EmberDebug.registerWarnHandler;
+    isComputed: typeof metal.isComputed;
+  } = {
     registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
     registerWarnHandler: EmberDebug.registerWarnHandler,
     // ****@ember/-internals/metal****
@@ -604,9 +607,8 @@ Reflect.set(Ember, 'RSVP', _RSVP);
 
 interface EmberHandlebars {
   template: typeof template;
-  Utils: {
-    escapeExpression: typeof escapeExpression;
-  };
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  Utils: {};
   compile?: typeof compile;
   precompile?: typeof precompile;
 }
@@ -672,9 +674,7 @@ applicationRunLoadHooks('Ember.Application', EmberApplication);
 
 let EmberHandlebars: EmberHandlebars = {
   template,
-  Utils: {
-    escapeExpression,
-  },
+  Utils: {},
 };
 
 let EmberHTMLBars: EmberHTMLBars = {

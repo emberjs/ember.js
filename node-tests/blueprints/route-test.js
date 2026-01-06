@@ -14,7 +14,6 @@ const expect = chai.expect;
 const file = chai.file;
 const fs = require('fs-extra');
 
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: route', function () {
@@ -22,15 +21,7 @@ describe('Blueprint: route', function () {
 
   describe('in app', function () {
     beforeEach(function () {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-            { name: 'ember-page-title', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew();
     });
 
     it('route foo', function () {
@@ -39,7 +30,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
       }).then(() => {
@@ -57,7 +48,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
         expect(file('app/router.js')).to.not.contain("this.route('foo.js')");
@@ -83,7 +74,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js'))
           .to.contain("this.route('foo', {")
@@ -102,9 +93,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/templates/child.hbs')).to.equal('{{page-title "Child"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/routes/child-test.js')).to.equal(
-          fixture('route-test/default-child.js')
-        );
+        expect(_file('tests/unit/routes/child-test.js')).to.equal(fixture('route-test/child.js'));
 
         expect(file('app/router.js'))
           .to.contain("this.route('parent', {")
@@ -122,9 +111,7 @@ describe('Blueprint: route', function () {
 
           expect(_file('app/child/template.hbs')).to.equal('{{page-title "Child"}}\n{{outlet}}');
 
-          expect(_file('tests/unit/child/route-test.js')).to.equal(
-            fixture('route-test/default-child.js')
-          );
+          expect(_file('tests/unit/child/route-test.js')).to.equal(fixture('route-test/child.js'));
 
           expect(file('app/router.js'))
             .to.contain("this.route('parent', {")
@@ -162,6 +149,77 @@ describe('Blueprint: route', function () {
       });
     });
 
+    it('route foo --route-authoring-format strict', function () {
+      return emberGenerateDestroy(
+        ['route', 'foo', '--route-authoring-format', 'strict'],
+        (_file) => {
+          expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+
+          expect(_file('app/templates/foo.gjs')).to.equal(
+            fixture('route/strict-route-template.gjs')
+          );
+          expect(_file('app/templates/foo.hbs')).to.not.exist;
+
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
+
+          expect(file('app/router.js')).to.contain("this.route('foo')");
+        }
+      );
+    });
+
+    it('route foo --strict', function () {
+      return emberGenerateDestroy(['route', 'foo', '--strict'], (_file) => {
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+
+        expect(_file('app/templates/foo.gjs')).to.equal(fixture('route/strict-route-template.gjs'));
+        expect(_file('app/templates/foo.hbs')).to.not.exist;
+
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
+
+        expect(file('app/router.js')).to.contain("this.route('foo')");
+      });
+    });
+
+    it('route foo --strict --typescript', function () {
+      return emberGenerateDestroy(['route', 'foo', '--strict', '--typescript'], (_file) => {
+        expect(_file('app/routes/foo.ts')).to.equal(fixture('route/route.js'));
+
+        expect(_file('app/templates/foo.gts')).to.equal(fixture('route/strict-route-template.gts'));
+        expect(_file('app/templates/foo.hbs')).to.not.exist;
+
+        expect(_file('tests/unit/routes/foo-test.ts')).to.equal(fixture('route-test/app.js'));
+
+        expect(file('app/router.js')).to.contain("this.route('foo')");
+      });
+    });
+
+    it('route foo --route-authoring-format loose', function () {
+      return emberGenerateDestroy(
+        ['route', 'foo', '--route-authoring-format', 'loose'],
+        (_file) => {
+          expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+
+          expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
+
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
+
+          expect(file('app/router.js')).to.contain("this.route('foo')");
+        }
+      );
+    });
+
+    it('route foo --loose', function () {
+      return emberGenerateDestroy(['route', 'foo', '--loose'], (_file) => {
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+
+        expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
+
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
+
+        expect(file('app/router.js')).to.contain("this.route('foo')");
+      });
+    });
+
     it('route foo --pod', function () {
       return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo.js/route.js')).to.not.exist;
@@ -172,7 +230,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
       }).then(() => {
@@ -190,7 +248,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
         expect(file('app/router.js')).to.not.contain("this.route('foo.js')");
@@ -247,9 +305,7 @@ describe('Blueprint: route', function () {
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(
-            fixture('route-test/default.js')
-          );
+          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
           expect(file('app/router.js')).to.contain("this.route('foo')");
         }).then(() => {
@@ -267,9 +323,7 @@ describe('Blueprint: route', function () {
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(
-            fixture('route-test/default.js')
-          );
+          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
           expect(file('app/router.js')).to.contain("this.route('foo')");
           expect(file('app/router.js')).to.not.contain("this.route('foo.js')");
@@ -326,15 +380,7 @@ describe('Blueprint: route', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-            { name: 'ember-page-title', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon' });
     });
 
     it('route foo', function () {
@@ -351,7 +397,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/addon.js'));
 
         expect(file('tests/dummy/app/router.js')).to.not.contain("this.route('foo')");
       }).then(() => {
@@ -379,7 +425,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/addon.js'));
 
         expect(file('tests/dummy/app/router.js')).to.not.contain("this.route('foo')");
         expect(file('tests/dummy/app/router.js')).to.not.contain("this.route('foo.js')");
@@ -403,7 +449,7 @@ describe('Blueprint: route', function () {
         );
 
         expect(_file('tests/unit/routes/foo/bar-test.js')).to.equal(
-          fixture('route-test/default-nested.js')
+          fixture('route-test/addon-nested.js')
         );
 
         expect(file('tests/dummy/app/router.js')).to.not.contain("this.route('bar')");
@@ -488,7 +534,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/foo/template';"
         );
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/addon.js'));
       });
     });
 
@@ -512,7 +558,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/foo/template';"
         );
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/addon.js'));
       });
     });
 
@@ -563,15 +609,7 @@ describe('Blueprint: route', function () {
 
   describe('in in-repo-addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-            { name: 'ember-page-title', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'in-repo-addon' });
     });
 
     it('route foo --in-repo-addon=my-addon', function () {
@@ -590,7 +628,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
       });
     });
 
@@ -616,7 +654,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
       });
     });
 
@@ -639,7 +677,7 @@ describe('Blueprint: route', function () {
         );
 
         expect(_file('tests/unit/routes/foo/bar-test.js')).to.equal(
-          fixture('route-test/default-nested.js')
+          fixture('route-test/nested.js')
         );
       });
     });

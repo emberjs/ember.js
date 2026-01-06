@@ -113,30 +113,6 @@ d('@ember/-internals/views/lib/component_lookup', emberinternalsViewsLibComponen
 import * as emberinternalsViewsLibMixinsActionSupport from '@ember/-internals/views/lib/mixins/action_support';
 d('@ember/-internals/views/lib/mixins/action_support', emberinternalsViewsLibMixinsActionSupport);
 
-import * as emberinternalsViewsLibMixinsChildViewsSupport from '@ember/-internals/views/lib/mixins/child_views_support';
-d(
-  '@ember/-internals/views/lib/mixins/child_views_support',
-  emberinternalsViewsLibMixinsChildViewsSupport
-);
-
-import * as emberinternalsViewsLibMixinsClassNamesSupport from '@ember/-internals/views/lib/mixins/class_names_support';
-d(
-  '@ember/-internals/views/lib/mixins/class_names_support',
-  emberinternalsViewsLibMixinsClassNamesSupport
-);
-
-import * as emberinternalsViewsLibMixinsViewStateSupport from '@ember/-internals/views/lib/mixins/view_state_support';
-d(
-  '@ember/-internals/views/lib/mixins/view_state_support',
-  emberinternalsViewsLibMixinsViewStateSupport
-);
-
-import * as emberinternalsViewsLibMixinsViewSupport from '@ember/-internals/views/lib/mixins/view_support';
-d('@ember/-internals/views/lib/mixins/view_support', emberinternalsViewsLibMixinsViewSupport);
-
-import * as emberinternalsViewsLibSystemActionManager from '@ember/-internals/views/lib/system/action_manager';
-d('@ember/-internals/views/lib/system/action_manager', emberinternalsViewsLibSystemActionManager);
-
 import * as emberinternalsViewsLibSystemEventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 d(
   '@ember/-internals/views/lib/system/event_dispatcher',
@@ -497,3 +473,9 @@ d('rsvp', rsvp);
 if (typeof module === 'object' && typeof module.require === 'function') {
   module.exports = emberIndex.default;
 }
+
+emberDebugIndex.deprecate(
+  'Your app loaded Ember via a legacy AMD bundle. Opt into loading it from the modern ES modules by setting the use-ember-modules optional feature.',
+  false,
+  emberinternalsDeprecationsIndex.DEPRECATIONS.DEPRECATE_AMD_BUNDLES.options
+);

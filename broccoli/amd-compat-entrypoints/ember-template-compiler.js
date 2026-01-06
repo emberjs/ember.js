@@ -18,7 +18,7 @@ d('@ember/-internals/utils/index', emberinternalsUtilsIndex);
 import * as emberCanaryFeaturesIndex from '@ember/canary-features/index';
 d('@ember/canary-features/index', emberCanaryFeaturesIndex);
 
-/* 
+/*
 
 The classic build included these modules but not their dependencies, so they
 never worked. Keeping this comment to document why the list of modules differs in
@@ -200,3 +200,7 @@ d('simple-html-tokenizer', simpleHtmlTokenizer);
 if (typeof module === 'object' && module.exports) {
   module.exports = emberTemplateCompilerIndex;
 }
+
+console.log(
+  '\n\n--------\n+ Your app is using the legacy ember-template-compiler.js AMD bundle. This will be removed in ember-source 7.0. See https://deprecations.emberjs.com/id/using-amd-bundles for more details.\n--------'
+);

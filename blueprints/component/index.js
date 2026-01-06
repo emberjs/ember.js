@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
+const SilentError = require('silent-error');
 const { generateComponentSignature } = require('../-utils');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
@@ -40,6 +41,17 @@ module.exports = {
       default: 'flat',
       aliases: [{ fs: 'flat' }, { ns: 'nested' }],
     },
+    {
+      name: 'component-authoring-format',
+      type: ['loose', 'strict'],
+      default: 'loose',
+      aliases: [
+        { loose: 'loose' },
+        { strict: 'strict' },
+        { 'template-tag': 'strict' },
+        { tt: 'strict' },
+      ],
+    },
   ],
 
   init() {
@@ -56,6 +68,18 @@ module.exports = {
     // what's passed to us literally if the user didn't override it.
     if (options.componentClass === '--no-component-class') {
       options.componentClass = '';
+    }
+
+    if (options.componentAuthoringFormat === 'strict') {
+      if (options.componentClass === '@ember/component') {
+        throw new SilentError(
+          'The "@ember/component" component class cannot be used in combination with the "--strict" flag'
+        );
+      }
+
+      if (options.componentClass === '') {
+        options.componentClass = '@ember/component/template-only';
+      }
     }
 
     return this._super.install.apply(this, arguments);
@@ -78,14 +102,16 @@ module.exports = {
   afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
 
-    this.skippedJsFiles.forEach((file) => {
-      let mapped = this.mapFile(file, this.savedLocals);
-      this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
-    });
+    if (options.componentAuthoringFormat === 'loose') {
+      this.skippedJsFiles.forEach((file) => {
+        let mapped = this.mapFile(file, this.savedLocals);
+        this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
+      });
 
-    if (this.skippedJsFiles.size > 0) {
-      let command = `ember generate component-class ${options.entity.name}`;
-      this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
+      if (this.skippedJsFiles.size > 0) {
+        let command = `ember generate component-class ${options.entity.name}`;
+        this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
+      }
     }
   },
 
@@ -135,6 +161,21 @@ module.exports = {
         }
       });
     }
+    if (this.options.componentAuthoringFormat === 'strict') {
+      const strictFilesToRemove =
+        this.options.isTypeScriptProject || this.options.typescript ? '.gjs' : '.gts';
+      files = files.filter(
+        (file) =>
+          !(
+            file.endsWith('.js') ||
+            file.endsWith('.ts') ||
+            file.endsWith('.hbs') ||
+            file.endsWith(strictFilesToRemove)
+          )
+      );
+    } else {
+      files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
+    }
 
     return files;
   },
@@ -157,7 +198,7 @@ module.exports = {
     switch (options.componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
-        defaultExport = `Component.extend({});`;
+        defaultExport = `class extends Component {};`;
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
@@ -172,6 +213,7 @@ module.exports = {
     }
 
     return {
+      classifiedModuleName,
       importTemplate,
       importComponent,
       componentSignature,

@@ -58,18 +58,82 @@ moduleFor(
       let browserEvent;
 
       this.registerComponent('x-button', {
-        ComponentClass: Component.extend(
-          {
-            tagName: 'button',
-          },
-          Object.keys(SUPPORTED_EMBER_EVENTS)
-            .map((browerEvent) => ({
-              [SUPPORTED_EMBER_EVENTS[browerEvent]](event) {
-                receivedEvent = event;
-              },
-            }))
-            .reduce((result, singleEventHandler) => ({ ...result, ...singleEventHandler }), {})
-        ),
+        ComponentClass: class extends Component {
+          tagName = 'button';
+
+          touchMove(event) {
+            receivedEvent = event;
+          }
+          touchStart(event) {
+            receivedEvent = event;
+          }
+          touchEnd(event) {
+            receivedEvent = event;
+          }
+          touchCancel(event) {
+            receivedEvent = event;
+          }
+          keyDown(event) {
+            receivedEvent = event;
+          }
+          keyUp(event) {
+            receivedEvent = event;
+          }
+          keyPress(event) {
+            receivedEvent = event;
+          }
+          mouseDown(event) {
+            receivedEvent = event;
+          }
+          mouseUp(event) {
+            receivedEvent = event;
+          }
+          contextMenu(event) {
+            receivedEvent = event;
+          }
+          click(event) {
+            receivedEvent = event;
+          }
+          doubleClick(event) {
+            receivedEvent = event;
+          }
+          focusIn(event) {
+            receivedEvent = event;
+          }
+          focusOut(event) {
+            receivedEvent = event;
+          }
+          submit(event) {
+            receivedEvent = event;
+          }
+          input(event) {
+            receivedEvent = event;
+          }
+          change(event) {
+            receivedEvent = event;
+          }
+          dragStart(event) {
+            receivedEvent = event;
+          }
+          drag(event) {
+            receivedEvent = event;
+          }
+          dragEnter(event) {
+            receivedEvent = event;
+          }
+          dragLeave(event) {
+            receivedEvent = event;
+          }
+          dragOver(event) {
+            receivedEvent = event;
+          }
+          drop(event) {
+            receivedEvent = event;
+          }
+          dragEnd(event) {
+            receivedEvent = event;
+          }
+        },
       });
 
       this.render(`{{x-button}}`);
@@ -90,15 +154,15 @@ moduleFor(
       let browserEvent;
 
       this.registerComponent('x-button', {
-        ComponentClass: Component.extend({
-          tagName: 'button',
+        ComponentClass: class extends Component {
+          tagName = 'button';
           init() {
-            this._super();
+            super.init();
             Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
               this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
             });
-          },
-        }),
+          }
+        },
       });
 
       this.render(`{{x-button}}`);
@@ -118,11 +182,11 @@ moduleFor(
       let receivedEvent;
 
       this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           change(event) {
             receivedEvent = event;
-          },
-        }),
+          }
+        },
         template: `<input id="is-done" type="checkbox">`,
       });
 
@@ -137,11 +201,11 @@ moduleFor(
       let receivedEvent;
 
       this.registerComponent('x-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           clicked(event) {
             receivedEvent = event;
-          },
-        }),
+          }
+        },
         template: `<button id="is-done" onclick={{this.clicked}}>my button</button>`,
       });
 
@@ -156,11 +220,11 @@ moduleFor(
       let receivedEvent;
 
       this.registerComponent('x-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           clicked(event) {
             receivedEvent = event;
-          },
-        }),
+          }
+        },
         template: `<button id="is-done" onClick={{this.clicked}}>my button</button>`,
       });
 
@@ -175,18 +239,18 @@ moduleFor(
       let receivedEvent;
 
       this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           change(event) {
             receivedEvent = event;
-          },
-        }),
+          }
+        },
         template: `{{yield}}`,
       });
 
       this.registerComponent('x-bar', {
-        ComponentClass: Component.extend({
-          change() {},
-        }),
+        ComponentClass: class extends Component {
+          change() {}
+        },
         template: `<input id="is-done" type="checkbox">`,
       });
 
@@ -201,20 +265,20 @@ moduleFor(
       let hasReceivedEvent;
 
       this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           change() {
             hasReceivedEvent = true;
-          },
-        }),
+          }
+        },
         template: `{{yield}}`,
       });
 
       this.registerComponent('x-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           change() {
             return false;
-          },
-        }),
+          }
+        },
         template: `<input id="is-done" type="checkbox">`,
       });
 
@@ -228,20 +292,20 @@ moduleFor(
       let hasReceivedEvent;
 
       this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           change() {
             hasReceivedEvent = true;
-          },
-        }),
+          }
+        },
         template: `{{yield}}`,
       });
 
       this.registerComponent('x-bar', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           change(e) {
             e.stopPropagation();
-          },
-        }),
+          }
+        },
         template: `<input id="is-done" type="checkbox">`,
       });
 
@@ -253,11 +317,11 @@ moduleFor(
 
     ['@test event handlers are wrapped in a run loop'](assert) {
       this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           change() {
             assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
-          },
-        }),
+          }
+        },
         template: `<input id="is-done" type="checkbox">`,
       });
 
@@ -287,11 +351,11 @@ moduleFor(
       this.dispatcher.setup({ myevent: 'myEvent' });
 
       this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           myEvent() {
             assert.ok(true, 'custom event was triggered');
-          },
-        }),
+          }
+        },
         template: `<p>Hello!</p>`,
       });
 
@@ -313,19 +377,19 @@ moduleFor(
       this.dispatcher.setup({ click: null });
 
       this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           click() {
             assert.ok(false, 'click method was called');
-          },
+          }
 
           null() {
             assert.ok(false, 'null method was called');
-          },
+          }
 
           doubleClick() {
             assert.ok(true, 'a non-disabled event is still handled properly');
-          },
-        }),
+          }
+        },
 
         template: `<p>Hello!</p>`,
       });
@@ -351,11 +415,11 @@ if (canDataTransfer) {
       ['@test dataTransfer property is added to drop event'](assert) {
         let receivedEvent;
         this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
+          ComponentClass: class extends Component {
             drop(event) {
               receivedEvent = event;
-            },
-          }),
+            }
+          },
         });
 
         this.render(`{{x-foo}}`);

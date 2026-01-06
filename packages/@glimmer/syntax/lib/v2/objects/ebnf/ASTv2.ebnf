@@ -1,0 +1,178 @@
+/** Node Categories */
+
+ContentNode
+  ::= HtmlText
+    | HtmlComment
+    | HandlebarsComment
+    | AppendContent
+    | InvokeBlock
+    | InvokeComponent
+    | SimpleElement
+
+ExpressionNode
+  ::=
+    | LiteralExpression
+    | PathExpression
+    | CallExpression
+    | InterpolateExpression
+
+/** Content Body */
+
+ContentBody ::= ContentNode*
+
+ComponentBody
+  ::= ContentBody
+    | NamedBlock*
+
+/** Content Nodes */
+
+/** 1. Append */
+
+AppendContent ::= DynamicContent
+
+/** 2. SimpleElement */
+
+SimpleElement
+  ::= "<" HtmlTagName AttrBlock ">" ContentBody "</" HtmlTagName ">"
+    | "<" HtmlTagName AttrBlock "/>"
+    /* WFC: Element Type Match */
+
+SimpleTagName ::= [a-z] (Char - (WhitespaceChar | ">" | "."))*
+
+AttrBlock ::= AttrBlockItem*
+
+AttrBlockItem
+  ::= SimpleAttribute
+    | ElementArg
+    | SplatAttr
+    | ElementModifier
+
+SplatAttr ::= "...attributes"
+
+SimpleAttribute
+  ::= SimpleAttributeName
+    | SimpleAttributeName "=" AttributeValue
+
+ElementArg ::= ArgName "=" AttributeValue
+
+AttributeValue
+  ::= DynamicContent
+    | InterpolateExpression
+    | HtmlQuotedAttributeValue
+    | HtmlUnquotedAttributeValue
+
+/** 3. InvokeComponent */
+
+InvokeComponent
+  ::= "<" ComponentName AttrBlock BlockParams? ">" ComponentBody "</" ComponentName ">"
+    | "<" ComponentName AttrBlock "/>"
+    /* WFC: Component Tag Match */
+
+ComponentName ::= PathExpression - SimpleTagName
+
+NamedBlock
+  ::= "<:" SimpleTagName AttrBlock ">" ContentBody "</:" SimpleTagName ">"
+
+/** Expression Nodes */
+
+LiteralExpression
+  ::= HandlebarsString
+    | HandlebarsNumber
+    | "true"
+    | "false"
+    | "null"
+    | "undefined"
+
+PathExpression
+  ::= VariableReference ("." HandlebarsID)*
+
+InterpolateExpression
+  ::= "'" InterpolatePart+ "'"
+    | '"' InterpolatePart+ '"'
+
+InterpolatePart
+  ::= HtmlText
+    | DynamicContent
+
+CallExpression ::= "(" CallBody ")"
+
+/** 4. InvokeBlock */
+
+InvokeBlock
+  ::= "{{#" CallBody BlockParams? "}}" ContentBody ElseClause* "{{/" PathExpression "}}"
+  /* WFC: Block Tag Match */
+
+ElseClause ::= "{{else" ? "}}" ContentBody
+
+/** Variable References */
+
+VariableReference ::= ArgName | ThisName | VarName
+
+ArgName ::= "@" HandlebarsID
+
+ThisName ::= "this"
+
+VarName ::= HandlebarsID
+
+/** Whitespace (needed when ws: explicit) */
+
+WhitespaceChar
+  ::=  #x20 | #x9 | #xD | #xA
+  /** this is \s in JS and whitespace in HTML */
+
+Space ::= WhitespaceChar+
+
+Char ::=
+  #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+  /* any Unicode character, excluding the surrogate blocks, FFFE, and FFFF. */
+
+/** Utility Nodes */
+
+SimpleAttributeName ::= [^@]* /* WFC: Valid HTML Attribute Name */
+
+DynamicContent
+  ::= '{{' '}}'
+    | '{{{' '}}}'
+
+CallBody
+  ::= Expression Arguments?
+
+Arguments ::= PositionalArguments? NamedArguments?
+
+PositionalArguments ::= Expr*
+
+NamedArguments ::= NamedArgument*
+
+NamedArgument ::= ID "=" Expr
+
+BlockParams ::= "as" "|" HandlebarsID (Space HandlebarsID)* "|"
+
+/** Externally Defined Terminals */
+
+HandlebarsID
+  ::= [https://handlebarsjs.com/guide/expressions.html#literal-segments]
+
+HandlebarsString
+  ::= [https://github.com/handlebars-lang/handlebars-parser/blob/master/src/handlebars.l#L110-L111]
+
+HandlebarsNumber
+  ::= [https://github.com/handlebars-lang/handlebars-parser/blob/master/src/handlebars.l#L117]
+
+HandlebarsComment
+  ::= [https://handlebarsjs.com/guide/#template-comments]
+  /* named a in ASTv2 */
+
+HtmlText
+  ::= [https://dom.spec.whatwg.org/#interface-text]
+
+HtmlComment
+  ::= [https://dom.spec.whatwg.org/#interface-comment]
+
+HtmlQuotedAttributeValue
+  ::= [https://html.spec.whatwg.org/multipage/parsing.html#before-attribute-value-state]
+
+HtmlUnquotedAttributeValue
+  ::= [https://html.spec.whatwg.org/multipage/parsing.html#before-attribute-value-state]
+
+HtmlTagName
+  ::= [https://html.spec.whatwg.org/multipage/parsing.html#tokenization]

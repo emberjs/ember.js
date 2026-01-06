@@ -1,0 +1,63 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  tests:
+    uses: ./.github/workflows/ci-jobs.yml
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [ tests ]
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          node-version: 20
+      - name: Update npm
+        run: npm install -g npm@latest # npm >= 11.5.1 is needed
+      - name: Build for Publish (Alpha)
+        if: ${{ contains(github.ref, 'alpha') }}
+        env:
+          BUILD_TYPE: alpha
+          OVERRIDE_FEATURES: ''
+        run: node bin/build-for-publishing.js
+      - name: Build for Publish
+        if: ${{ !contains(github.ref, 'alpha') }}
+        run: node bin/build-for-publishing.js
+      - name: publish to npm
+        run: npm publish
+  notify-failure:
+    name: Notify Discord of Release Failure
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: failure()
+    steps:
+      - uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.FRAMEWORK_WEBHOOK }}
+          status: 'Failure'
+          title: 'Failed to release ember-source ${{ github.ref_name }}'
+          color: 0xcc0000
+          url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          username: GitHub Actions
+  notify-success:
+    name: Notify Discord of Release Success
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: success()
+    steps:
+      - uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.FRAMEWORK_WEBHOOK }}
+          status: 'Success'
+          title: 'Released ember-source ${{ github.ref_name }}'
+          color: 0x2ecc71
+          url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          username: GitHub Actions

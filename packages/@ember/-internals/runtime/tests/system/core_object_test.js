@@ -30,11 +30,11 @@ moduleFor(
     }
 
     ['@test should not trigger proxy assertion when retrieving a proxy with (GH#16263)'](assert) {
-      let someProxyishThing = CoreObject.extend({
+      let someProxyishThing = class extends CoreObject {
         unknownProperty() {
           return true;
-        },
-      }).create();
+        }
+      }.create();
 
       let obj = CoreObject.create({
         someProxyishThing,
@@ -49,11 +49,11 @@ moduleFor(
     ) {
       let owner = buildOwner();
 
-      let someProxyishThing = CoreObject.extend({
+      let someProxyishThing = class extends CoreObject {
         unknownProperty() {
           return true;
-        },
-      }).create();
+        }
+      }.create();
 
       // emulates ember-engines's process of registering services provided
       // by the host app down to the engine
@@ -65,11 +65,11 @@ moduleFor(
     }
 
     ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {
-      let proxy = CoreObject.extend({
+      let proxy = class extends CoreObject {
         unknownProperty() {
           return true;
-        },
-      }).create();
+        }
+      }.create();
 
       assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
 
@@ -82,17 +82,19 @@ moduleFor(
       let options = {};
       setOwner(options, owner);
 
-      CoreObject.extend({
+      class TestObj extends CoreObject {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           let localOwner = getOwner(this);
 
           assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
-        },
+        }
         unknownProperty() {
           return undefined;
-        },
-      }).create(options);
+        }
+      }
+
+      TestObj.create(options);
     }
 
     async ['@test observed properties are enumerable when set GH#14594'](assert) {

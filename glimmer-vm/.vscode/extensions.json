@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "foxundermoon.shell-format",
+    "dbaeumer.vscode-eslint",
+    "fill-labs.dependi",
+    "rohit-gohri.format-code-action",
+    "tintinweb.vscode-inline-bookmarks",
+    "herrmannplatz.npm-dependency-links",
+    "esbenp.prettier-vscode",
+    "dnut.rewrap-revived"
+  ]
+}

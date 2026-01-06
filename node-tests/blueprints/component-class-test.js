@@ -4,12 +4,9 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
 const glimmerComponentContents = `import Component from '@glimmer/component';
 
@@ -18,7 +15,7 @@ export default class Foo extends Component {}
 
 const emberComponentContents = `import Component from '@ember/component';
 
-export default Component.extend({});
+export default class extends Component {}
 `;
 
 const templateOnlyContents = `import templateOnly from '@ember/component/template-only';
@@ -31,14 +28,7 @@ describe('Blueprint: component-class', function () {
 
   describe('in app', function () {
     beforeEach(function () {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew();
     });
 
     it('component-class foo', function () {
@@ -147,14 +137,7 @@ describe('Blueprint: component-class', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon' });
     });
 
     it('component-class foo', function () {
@@ -209,14 +192,7 @@ describe('Blueprint: component-class', function () {
 
   describe('in in-repo-addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'in-repo-addon' });
     });
 
     it('component-class foo --in-repo-addon=my-addon', function () {

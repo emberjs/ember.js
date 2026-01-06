@@ -1,33 +1,15 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, runTask, testUnless } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { Component, compile } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: setComponentTemplate',
   class extends RenderingTestCase {
     '@test it basically works'() {
       this.registerComponent('foo-bar', {
-        ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
-      });
-
-      this.render('<FooBar />');
-
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-    )} it takes precedence over resolver`]() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
-        resolveableTemplate: 'noooooo!',
+        ComponentClass: setComponentTemplate(compile('hello'), class extends Component {}),
       });
 
       this.render('<FooBar />');
@@ -95,10 +77,10 @@ moduleFor(
     }
 
     '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
-      let Parent = setComponentTemplate(compile('hello'), Component.extend());
+      let Parent = setComponentTemplate(compile('hello'), class extends Component {});
 
       this.registerComponent('foo-bar', {
-        ComponentClass: Parent.extend(),
+        ComponentClass: class extends Parent {},
       });
 
       this.render('<FooBar />');
@@ -111,7 +93,7 @@ moduleFor(
     }
 
     '@test templates set with setComponentTemplate are inherited (native ES class extends)'() {
-      let Parent = setComponentTemplate(compile('hello'), Component.extend());
+      let Parent = setComponentTemplate(compile('hello'), class extends Component {});
 
       this.registerComponent('foo-bar', {
         ComponentClass: class extends Parent {},
@@ -127,8 +109,8 @@ moduleFor(
     }
 
     '@test it can re-assign templates from another class'() {
-      let Foo = setComponentTemplate(compile('shared'), Component.extend());
-      let Bar = setComponentTemplate(getComponentTemplate(Foo), Component.extend());
+      let Foo = setComponentTemplate(compile('shared'), class extends Component {});
+      let Bar = setComponentTemplate(getComponentTemplate(Foo), class extends Component {});
 
       this.registerComponent('foo', { ComponentClass: Foo });
       this.registerComponent('bar', { ComponentClass: Bar });

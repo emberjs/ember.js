@@ -24,9 +24,10 @@ moduleFor(
     ['@test should update length for null content when there is a computed property watching length'](
       assert
     ) {
-      let proxy = ArrayProxy.extend({
-        isEmpty: not('length'),
-      }).create({
+      let proxy = class extends ArrayProxy {
+        @not('length')
+        isEmpty;
+      }.create({
         content: a([1, 2, 3]),
       });
 
@@ -44,12 +45,12 @@ moduleFor(
     ['@test getting length does not recompute the object cache'](assert) {
       let indexes = [];
 
-      let proxy = ArrayProxy.extend({
+      let proxy = class extends ArrayProxy {
         objectAtContent(index) {
           indexes.push(index);
           return this.content[index];
-        },
-      }).create({
+        }
+      }.create({
         content: a([1, 2, 3, 4, 5]),
       });
 
@@ -79,12 +80,12 @@ moduleFor(
     }
 
     '@test accessing length after content set to null in willDestroy'(assert) {
-      let obj = ArrayProxy.extend({
+      let obj = class extends ArrayProxy {
         willDestroy() {
           this.set('content', null);
           this._super(...arguments);
-        },
-      }).create({
+        }
+      }.create({
         content: ['foo', 'bar'],
       });
 

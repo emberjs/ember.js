@@ -125,21 +125,21 @@ moduleFor(
 
     ['@test asserts when a shared dependency is changed during rendering, and keeps original context']() {
       this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          value: 1,
-          wrapper: EmberObject.create({ content: null }),
-        }),
+        ComponentClass: class extends Component {
+          value = 1;
+          wrapper = EmberObject.create({ content: null });
+        },
         template:
           '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=this.wrapper}}</div>{{x-inner value=this.value wrapper=this.wrapper}}',
       });
 
       this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didReceiveAttrs() {
             this.get('wrapper').set('content', this.get('value'));
-          },
-          value: null,
-        }),
+          }
+          value = null;
+        },
         template: '<div id="inner-value">{{this.wrapper.content}}</div>',
       });
 

@@ -5,8 +5,6 @@ import { compile } from 'ember-template-compiler';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
-import Controller from '@ember/controller';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberObject, { set } from '@ember/object';
 import {
   moduleFor,
@@ -15,11 +13,9 @@ import {
   ModuleBasedTestResolver,
   runDestroy,
   runTask,
-  testUnless,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
-import Mixin from '@ember/object/mixin';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
@@ -120,16 +116,15 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           menuItem = MenuItem.create({ id: id });
 
           return new RSVP.Promise(function (res) {
             resolve = res;
           });
-        },
-      });
+        }
+      };
 
       this.add('model:menu_item', MenuItem);
 
@@ -166,12 +161,11 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           return { id: id };
-        },
-      });
+        }
+      };
 
       this.add('model:menu_item', MenuItem);
 
@@ -185,11 +179,11 @@ moduleFor(
 
       this.add(
         'route:loading',
-        Route.extend({
+        class extends Route {
           enter() {
             assert.ok(false, "LoadingRoute shouldn't have been entered.");
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('special', '<p>{{@model.id}}</p>');
@@ -214,14 +208,14 @@ moduleFor(
 
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model() {
             return new RSVP.Promise((res) => (resolve = res));
-          },
+          }
           setup() {
             throw new Error('Setup error');
-          },
-          actions: {
+          }
+          actions = {
             error(reason) {
               assert.equal(
                 reason.message,
@@ -230,8 +224,8 @@ moduleFor(
               );
               return true;
             },
-          },
-        })
+          };
+        }
       );
 
       runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
@@ -249,20 +243,18 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = EmberObject.extend();
-
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           menuItem = MenuItem.create({ id: id });
           return new RSVP.Promise((res) => (resolve = res));
-        },
-      });
+        }
+      };
       this.add('model:menu_item', MenuItem);
 
       this.add(
         'route:application',
-        Route.extend({
-          actions: {
+        class extends Route {
+          actions = {
             error(reason) {
               assert.equal(
                 reason.message,
@@ -271,21 +263,21 @@ moduleFor(
               );
               return true;
             },
-          },
-        })
+          };
+        }
       );
 
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model({ menu_item_id }) {
             return MenuItem.find(menu_item_id);
-          },
+          }
 
           setup() {
             throw new Error('Setup error');
-          },
-        })
+          }
+        }
       );
 
       let promise = runTask(() => handleURLRejectsWith(this, assert, '/specials/1', 'Setup error'));
@@ -293,309 +285,6 @@ moduleFor(
       resolve(menuItem);
 
       return promise;
-    }
-
-    async [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Events are triggered on the controller if a matching action name is implemented`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      let model = { name: 'Tom Dale' };
-      let stateIsNotCalled = true;
-
-      this.add(
-        'route:home',
-        Route.extend({
-          model() {
-            return model;
-          },
-
-          actions: {
-            showStuff() {
-              stateIsNotCalled = false;
-            },
-          },
-        })
-      );
-
-      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{this.name}}</a>');
-      this.add(
-        'controller:home',
-        Controller.extend({
-          actions: {
-            showStuff(context) {
-              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
-              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
-              done();
-            },
-          },
-        })
-      );
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    async [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Events are triggered on the current state when defined in \`actions\` object`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      let model = { name: 'Tom Dale' };
-      let HomeRoute = Route.extend({
-        model() {
-          return model;
-        },
-
-        actions: {
-          showStuff(obj) {
-            assert.ok(this instanceof HomeRoute, 'the handler is an App.HomeRoute');
-            assert.deepEqual(
-              Object.assign({}, obj),
-              { name: 'Tom Dale' },
-              'the context is correct'
-            );
-            done();
-          },
-        },
-      });
-
-      this.add('route:home', HomeRoute);
-      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{@model.name}}</a>');
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    async [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Events defined in \`actions\` object are triggered on the current state when routes are nested`](
-      assert
-    ) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('root', { path: '/' }, function () {
-          this.route('index', { path: '/' });
-        });
-      });
-
-      let model = { name: 'Tom Dale' };
-
-      let RootRoute = Route.extend({
-        actions: {
-          showStuff(obj) {
-            assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            assert.deepEqual(
-              Object.assign({}, obj),
-              { name: 'Tom Dale' },
-              'the context is correct'
-            );
-            done();
-          },
-        },
-      });
-      this.add('route:root', RootRoute);
-      this.add(
-        'route:root.index',
-        Route.extend({
-          model() {
-            return model;
-          },
-        })
-      );
-
-      this.addTemplate('root.index', '<a {{action "showStuff" @model}}>{{@model.name}}</a>');
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Events can be handled by inherited event handlers`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      assert.expect(5);
-
-      let SuperRoute = Route.extend({
-        actions: {
-          foo() {
-            assert.ok(true, 'foo');
-          },
-          bar(msg) {
-            assert.equal(msg, 'HELLO', 'bar hander in super route');
-          },
-        },
-      });
-
-      let RouteMixin = Mixin.create({
-        actions: {
-          bar(msg) {
-            assert.equal(msg, 'HELLO', 'bar handler in mixin');
-            this._super(msg);
-          },
-        },
-      });
-
-      this.add(
-        'route:home',
-        SuperRoute.extend(RouteMixin, {
-          actions: {
-            baz() {
-              assert.ok(true, 'baz', 'baz hander in route');
-            },
-          },
-        })
-      );
-      this.addTemplate(
-        'home',
-        `
-      <a class="do-foo" {{action "foo"}}>Do foo</a>
-      <a class="do-bar-with-arg" {{action "bar" "HELLO"}}>Do bar with arg</a>
-      <a class="do-baz" {{action "baz"}}>Do bar</a>
-    `
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        rootElement.querySelector('.do-foo').click();
-        rootElement.querySelector('.do-bar-with-arg').click();
-        rootElement.querySelector('.do-baz').click();
-      });
-    }
-
-    async [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Actions are not triggered on the controller if a matching action name is implemented as a method`](
-      assert
-    ) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      let model = { name: 'Tom Dale' };
-      let stateIsNotCalled = true;
-
-      this.add(
-        'route:home',
-        Route.extend({
-          model() {
-            return model;
-          },
-
-          actions: {
-            showStuff(context) {
-              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
-              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
-              done();
-            },
-          },
-        })
-      );
-
-      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{this.name}}</a>');
-
-      this.add(
-        'controller:home',
-        Controller.extend({
-          showStuff() {
-            stateIsNotCalled = false;
-            assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
-          },
-        })
-      );
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    async [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} actions can be triggered with multiple arguments`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      let done = assert.async();
-      this.router.map(function () {
-        this.route('root', { path: '/' }, function () {
-          this.route('index', { path: '/' });
-        });
-      });
-
-      let model1 = { name: 'Tilde' };
-      let model2 = { name: 'Tom Dale' };
-
-      let RootRoute = Route.extend({
-        actions: {
-          showStuff(obj1, obj2) {
-            assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            assert.deepEqual(
-              Object.assign({}, obj1),
-              { name: 'Tilde' },
-              'the first context is correct'
-            );
-            assert.deepEqual(
-              Object.assign({}, obj2),
-              { name: 'Tom Dale' },
-              'the second context is correct'
-            );
-            done();
-          },
-        },
-      });
-
-      this.add('route:root', RootRoute);
-
-      this.add(
-        'controller:root.index',
-        Controller.extend({
-          model1: model1,
-          model2: model2,
-        })
-      );
-
-      this.addTemplate(
-        'root.index',
-        '<a {{action "showStuff" this.model1 this.model2}}>{{this.model1.name}}</a>'
-      );
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     ['@test transitioning multiple times in a single run loop only sets the URL once'](assert) {
@@ -718,18 +407,19 @@ moduleFor(
 
       this.add(
         'route:choose',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             if (destination) {
               this.router.transitionTo(destination);
             }
-          },
+          }
 
           setupController() {
             chooseFollowed++;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -762,24 +452,25 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             this.router.transitionTo('home');
-          },
+          }
           setupController() {
             assert.ok(false, 'Should transition before setupController');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:bar-baz',
-        Route.extend({
+        class extends Route {
           enter() {
             assert.ok(false, 'Should abort transition getting to next route');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -808,27 +499,28 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             return this.router.transitionTo('bar.baz').then(function () {
               successCount++;
             });
-          },
+          }
 
           setupController() {
             assert.ok(true, "Should still invoke bar's setupController");
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:bar.baz',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, "Should still invoke bar.baz's setupController");
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/foo/bar/baz').then(() => {
@@ -858,25 +550,26 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel() {
             if (count++ > 10) {
               assert.ok(false, 'infinite loop');
             } else {
               this.router.transitionTo('bar.baz', model);
             }
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:bar.baz',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, 'Should still invoke setupController');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -903,14 +596,15 @@ moduleFor(
 
       this.add(
         'route:foo',
-        Route.extend({
-          router: service(),
-          actions: {
+        class extends Route {
+          @service
+          router;
+          actions = {
             goToQux() {
               this.router.transitionTo('foo.qux');
             },
-          },
-        })
+          };
+        }
       );
 
       return this.visit('/foo/bar/baz').then(() => {
@@ -965,13 +659,13 @@ moduleFor(
 
       this.add(
         'route:posts',
-        Route.extend({
-          model() {},
+        class extends Route {
+          model() {}
           setupController() {
             postsTemplateRendered = true;
             this._super(...arguments);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -1023,11 +717,11 @@ moduleFor(
 
       this.add(
         'route:post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1').then(() => {
@@ -1070,11 +764,11 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('index', '<p>INDEX</p>');
@@ -1110,9 +804,10 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          router: service(),
-          actions: {
+        class extends Route {
+          @service
+          router;
+          actions = {
             willTransition(transition) {
               assert.ok(true, 'willTransition was called');
               if (redirect) {
@@ -1122,45 +817,45 @@ moduleFor(
                 transition.abort();
               }
             },
-          },
-        })
+          };
+        }
       );
 
       let deferred = null;
 
       this.add(
         'route:loading',
-        Route.extend({
+        class extends Route {
           activate() {
             assert.ok(deferred, 'LoadingRoute should be entered at this time');
-          },
+          }
           deactivate() {
             assert.ok(true, 'LoadingRoute was exited');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:nork',
-        Route.extend({
+        class extends Route {
           activate() {
             assert.ok(true, 'NorkRoute was entered');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           activate() {
             assert.ok(true, 'AboutRoute was entered');
-          },
+          }
           model() {
             if (deferred) {
               return deferred.promise;
             }
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -1194,21 +889,21 @@ moduleFor(
 
       this.add(
         'route:nork',
-        Route.extend({
+        class extends Route {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.on('activate', function (transition) {
               assert.equal(++eventFired, 1, 'activate event is fired once');
               assert.ok(transition, 'transition is passed to activate event');
             });
-          },
+          }
 
           activate(transition) {
             assert.ok(true, 'activate hook is called');
             assert.ok(transition, 'transition is passed to activate hook');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/nork');
@@ -1226,81 +921,24 @@ moduleFor(
 
       this.add(
         'route:nork',
-        Route.extend({
+        class extends Route {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.on('deactivate', function (transition) {
               assert.equal(++eventFired, 1, 'deactivate event is fired once');
               assert.ok(transition, 'transition is passed');
             });
-          },
+          }
 
           deactivate(transition) {
             assert.ok(true, 'deactivate hook is called');
             assert.ok(transition, 'transition is passed');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/nork').then(() => this.visit('/dork'));
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Actions can be handled by inherited action handlers`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      assert.expect(5);
-
-      let SuperRoute = Route.extend({
-        actions: {
-          foo() {
-            assert.ok(true, 'foo');
-          },
-          bar(msg) {
-            assert.equal(msg, 'HELLO');
-          },
-        },
-      });
-
-      let RouteMixin = Mixin.create({
-        actions: {
-          bar(msg) {
-            assert.equal(msg, 'HELLO');
-            this._super(msg);
-          },
-        },
-      });
-
-      this.add(
-        'route:home',
-        SuperRoute.extend(RouteMixin, {
-          actions: {
-            baz() {
-              assert.ok(true, 'baz');
-            },
-          },
-        })
-      );
-
-      this.addTemplate(
-        'home',
-        `
-      <a class="do-foo" {{action "foo"}}>Do foo</a>
-      <a class="do-bar-with-arg" {{action "bar" "HELLO"}}>Do bar with arg</a>
-      <a class="do-baz" {{action "baz"}}>Do bar</a>
-    `
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        rootElement.querySelector('.do-foo').click();
-        rootElement.querySelector('.do-bar-with-arg').click();
-        rootElement.querySelector('.do-baz').click();
-      });
     }
 
     ['@test transitionTo returns Transition when passed a route name'](assert) {
@@ -1393,23 +1031,24 @@ moduleFor(
 
       this.add(
         'route:about',
-        Route.extend({
-          serialize: function (model) {
+        class extends Route {
+          serialize(model) {
             if (model === null) {
               return { hurhurhur: 'TreeklesMcGeekles' };
             }
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:home',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           beforeModel() {
             this.router.transitionTo('about', null);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -1446,14 +1085,14 @@ moduleFor(
 
       this.add(
         'route:yippie',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject({
               message: rejectedMessage,
               stack: rejectedStack,
             });
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(
@@ -1493,13 +1132,13 @@ moduleFor(
 
       this.add(
         'route:yippie',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject({
               errorThrown: { message: rejectedMessage, stack: rejectedStack },
             });
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(
@@ -1528,11 +1167,11 @@ moduleFor(
 
       this.add(
         'route:wowzers',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject();
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/'));
@@ -1561,11 +1200,11 @@ moduleFor(
 
       this.add(
         'route:yondo',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject(rejectedMessage);
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
@@ -1586,22 +1225,22 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          actions: {
+        class extends Route {
+          actions = {
             willChangeModel: shouldNotFire,
             willChangeContext: shouldNotFire,
             willLeave: shouldNotFire,
-          },
-        })
+          };
+        }
       );
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, 'about route was entered');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/about');
@@ -1618,12 +1257,13 @@ moduleFor(
 
       this.add(
         'route:yondo',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             this.router.transitionTo('stink-bomb', { something: 'goes boom' });
-          },
-        })
+          }
+        }
       );
 
       console.error = function () {
@@ -1653,12 +1293,13 @@ moduleFor(
 
       this.add(
         'route:yondo',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
-            this.transitionTo('stink-bomb', { something: 'goes boom' });
-          },
-        })
+            this.router.transitionTo('stink-bomb', { something: 'goes boom' });
+          }
+        }
       );
       console.error = () => {};
 
@@ -1685,20 +1326,20 @@ moduleFor(
 
       let calls = [];
 
-      let SpyRoute = Route.extend({
+      class SpyRoute extends Route {
         setupController(/* controller, model, transition */) {
           calls.push(['setup', this.routeName]);
-        },
+        }
 
         resetController(/* controller */) {
           calls.push(['reset', this.routeName]);
-        },
-      });
+        }
+      }
 
-      this.add('route:a', SpyRoute.extend());
-      this.add('route:b', SpyRoute.extend());
-      this.add('route:c', SpyRoute.extend());
-      this.add('route:out', SpyRoute.extend());
+      this.add('route:a', class extends SpyRoute {});
+      this.add('route:b', class extends SpyRoute {});
+      this.add('route:c', class extends SpyRoute {});
+      this.add('route:out', class extends SpyRoute {});
 
       let router;
       return this.visit('/')
@@ -1738,11 +1379,11 @@ moduleFor(
       });
       this.add(
         'route:boom',
-        Route.extend({
+        class extends Route {
           init() {
             throw new Error('boom!');
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/boom'), /\bboom\b/);
@@ -1754,11 +1395,11 @@ moduleFor(
       });
       this.add(
         'route:boom',
-        Route.extend({
+        class extends Route {
           init() {
             throw new Error('boom!');
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/'), /\bboom\b/);
@@ -1777,13 +1418,13 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          actions: {
+        class extends Route {
+          actions = {
             willTransition() {
               throw new Error('boom');
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visit('/');
@@ -1798,9 +1439,9 @@ moduleFor(
       assert.expect(2);
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      class BlogEngine extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      }
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -1836,9 +1477,9 @@ moduleFor(
       assert.expect(1);
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      class BlogEngine extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      }
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -1854,7 +1495,9 @@ moduleFor(
       await this.visit('/');
 
       let router = this.applicationInstance.lookup('router:main');
-      let PostRoute = Route.extend({ serialize() {} });
+      let PostRoute = class extends Route {
+        serialize() {}
+      };
       this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
 
       try {
@@ -1872,16 +1515,16 @@ moduleFor(
 
       let engineInstance;
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      class BlogEngine extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      }
       this.add('engine:blog', BlogEngine);
-      let EngineIndexRoute = Route.extend({
+      class EngineIndexRoute extends Route {
         init() {
           this._super(...arguments);
           engineInstance = getOwner(this);
-        },
-      });
+        }
+      }
 
       // Register engine route map
       let BlogMap = function () {
@@ -1923,7 +1566,7 @@ moduleFor(
         this.route('posts');
       });
 
-      let AppRoute = Route.extend();
+      let AppRoute = class extends Route {};
       this.add('route:basic', AppRoute);
 
       return this.visit('/posts').then(() => {

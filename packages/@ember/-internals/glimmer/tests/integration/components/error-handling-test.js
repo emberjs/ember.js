@@ -13,14 +13,14 @@ moduleFor(
       assert
     ) {
       let shouldThrow = true;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -58,14 +58,14 @@ moduleFor(
       assert
     ) {
       let shouldThrow = false;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -110,14 +110,14 @@ moduleFor(
       assert
     ) {
       let shouldThrow = true;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         didInsertElement() {
-          this._super(...arguments);
+          super.didInsertElement(...arguments);
           if (shouldThrow) {
             throw new Error('silly mistake!');
           }
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -145,14 +145,14 @@ moduleFor(
 
     ['@test it can recover resets the transaction when an error is thrown during destroy'](assert) {
       let shouldThrow = true;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         destroy() {
-          this._super(...arguments);
+          super.destroy(...arguments);
           if (shouldThrow) {
             throw new Error('silly mistake!');
           }
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,

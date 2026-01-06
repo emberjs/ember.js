@@ -1,0 +1,81 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalEnv": ["NODE_ENV", "CI"],
+  "globalDependencies": [
+    "pnpm-lock.yaml",
+    "patches/**/*",
+    ".env*",
+    ".npmrc",
+    ".prettierrc.json",
+    "eslint.config.js",
+    "rollup.config.mjs",
+    "vite.config.mts",
+    "tsconfig*.json",
+    "packages/@glimmer-workspace/eslint-plugin/**/*",
+    "packages/@glimmer-workspace/build-support/**/*"
+  ],
+  "tasks": {
+    "lint:all": {
+      "cache": false,
+      "dependsOn": ["lint", "test:publint"]
+    },
+    "test:node": {
+      "cache": true,
+      "inputs": ["test/**/*", "lib/**/*", "!**/*.md"],
+      "env": ["NODE_ENV"]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": [
+        "**/*.{js,ts,mjs,mts,cjs,cts,json}",
+        "!dist/**",
+        "!node_modules/**",
+        "!.reference/**"
+      ]
+    },
+    "test:publint": {
+      "cache": true,
+      "dependsOn": ["prepack"],
+      "inputs": ["package.json", "dist/**/*"]
+    },
+    "prepack": {
+      "cache": true,
+      "outputs": ["dist/**"],
+      "dependsOn": ["^prepack"],
+      "inputs": [
+        "lib/**/*",
+        "index.{js,ts,mjs,mts}",
+        "package.json",
+        "rollup.config.mjs",
+        "!**/*.md"
+      ],
+      "env": ["NODE_ENV"]
+    },
+    "//#test:lint": {
+      "dependsOn": ["//#repo:update:conventions", "//#repo:update:metadata"]
+    },
+    "//#repo:update:conventions": {
+      "cache": false
+    },
+    "//#repo:update:metadata": {
+      "cache": false
+    },
+    "//#test:types": {
+      "cache": true,
+      "inputs": ["packages/**/dist/**", "tsconfig.dist.json"],
+      "dependsOn": ["^prepack", "//#benchmark:setup", "//#smoke:setup"],
+      "env": ["NODE_ENV"]
+    },
+    "//#benchmark:setup": {
+      "cache": true,
+      "outputs": ["benchmark/benchmarks/krausest/packages/**"],
+      "dependsOn": ["^prepack"]
+    },
+    "//#smoke:setup": {
+      "cache": true,
+      "outputs": ["smoke-tests/node/packages/**"],
+      "dependsOn": ["^prepack"]
+    }
+  }
+}

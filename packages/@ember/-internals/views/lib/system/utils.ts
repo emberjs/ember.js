@@ -1,4 +1,4 @@
-import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import type { View } from '@ember/-internals/glimmer';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
@@ -205,22 +205,6 @@ export function getViewClientRects(view: View): DOMRectList {
 export function getViewBoundingClientRect(view: View): ClientRect | DOMRect {
   let range = getViewRange(view);
   return range.getBoundingClientRect();
-}
-
-/**
-  Determines if the element matches the specified selector.
-
-  @private
-  @method matches
-  @param {DOMElement} el
-  @param {String} selector
-*/
-export const elMatches: typeof Element.prototype.matches | undefined =
-  typeof Element !== 'undefined' ? Element.prototype.matches : undefined;
-
-export function matches(el: Element, selector: string): boolean {
-  assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
-  return elMatches.call(el, selector);
 }
 
 export function contains(a: Node, b: Node): boolean {

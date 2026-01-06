@@ -226,7 +226,7 @@ Within the [CI workflow](https://github.com/emberjs/ember.js/blob/main/.github/w
 - `Linting` runs `pnpm lint` to check for code style issues.
 - `Type Checking` runs `pnpm type-check` to check for TypeScript type errors. This also runs against several version of TypeScript that are supported.
 - `Basic Test` test suite is closest to what you normally run locally on your machine.
-- `Variant Tests` run the test suite under different combinations of settings. See documentation in run-tests.js for the meaning of each setting.
+- `Variant Tests` run the test suite under different combinations of settings. See documentation in ./testem.js for the meaning of each setting.
 - `BrowserStack` and `Browser Tests` test suites run tests against various supported browsers.
 - `Blueprint Tests` runs tests for the Ember CLI blueprints provided by Ember in this package.
 - `Smoke Tests` builds and runs entire end-to-end apps.
