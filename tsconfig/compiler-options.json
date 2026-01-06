@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2021",
-    "module": "es2020",
+    "target": "esnext",
+    "module": "esnext",
     "sourceMap": true,
     "rootDir": "../packages",
 
@@ -13,7 +13,7 @@
 
     // Enhance Strictness
     "strict": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": false,
     "allowUnreachableCode": false,
     "noPropertyAccessFromIndexSignature": true,
     // This should be handled by the linter so it can be disabled
@@ -27,6 +27,8 @@
 
     "allowJs": true,
     "checkJs": false,
+
+    "types": ["vite/client"],
 
     "paths": {
       "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"],

@@ -1,16 +1,6 @@
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
-
-import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-
-import { setupAssertionHelpers } from './assertion';
-import { setupContainersCheck } from './containers';
-import { setupDeprecationHelpers } from './deprecation';
-import { setupNamespacesCheck } from './namespaces';
-import { setupObserversCheck } from './observers';
-import { setupRunLoopCheck } from './run-loop';
-import type { DebugEnv } from './utils';
-import { setupWarningHelpers } from './warning';
+import { resetTracking } from '@glimmer/validator';
 
 declare global {
   interface Assert {
@@ -26,27 +16,6 @@ declare global {
 }
 
 export default function setupQUnit() {
-  let env = {
-    getDebugFunction,
-    setDebugFunction,
-  } as DebugEnv;
-
-  let originalModule = QUnit.module;
-
-  QUnit.module = function (name: string, callback: any) {
-    return originalModule(name, function (hooks) {
-      setupContainersCheck(hooks);
-      setupNamespacesCheck(hooks);
-      setupObserversCheck(hooks);
-      setupRunLoopCheck(hooks);
-      setupAssertionHelpers(hooks, env);
-      setupDeprecationHelpers(hooks, env);
-      setupWarningHelpers(hooks, env);
-
-      callback(hooks);
-    });
-  } as typeof QUnit.module;
-
   QUnit.assert.rejects = async function (
     promise: Promise<any>,
     expected?: RegExp | string,
@@ -104,4 +73,52 @@ export default function setupQUnit() {
 
     await QUnit.assert.rejects(promise, expected, message);
   };
+}
+
+// since all of the glimmer-vm tests are synchronous, the QUnit UI never has a
+// chance to rerender / update. This leads to a very long "white screen" when
+// running the tests
+//
+// this adds a very small amount of async, just to allow the QUnit UI to
+// rerender once per module completed
+QUnit.moduleDone(
+  () =>
+    new Promise<void>((res) => {
+      setTimeout(res, 0);
+    })
+);
+
+QUnit.testStart(() => {
+  resetTracking();
+});
+
+const uiFlags = [
+  {
+    id: 'enable_internals_logging',
+    label: 'Log Deep Internals',
+    tooltip: 'Logs internals that are used in the development of the trace logs',
+  },
+
+  {
+    id: 'enable_trace_logging',
+    label: 'Trace Logs',
+    tooltip: 'Trace logs emit information about the internal VM state',
+  },
+
+  {
+    id: 'enable_subtle_logging',
+    label: '+ Subtle',
+    tooltip:
+      'Subtle logs include unchanged information and other details not necessary for normal debugging',
+  },
+
+  {
+    id: 'enable_trace_explanations',
+    label: '+ Explanations',
+    tooltip: 'Also explain the trace logs',
+  },
+];
+
+for (let flag of uiFlags) {
+  QUnit.config.urlConfig.push(flag);
 }

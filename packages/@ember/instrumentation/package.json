@@ -13,8 +13,8 @@
     "@ember/object": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/utils": "workspace:*",
-    "@glimmer/env": "^0.1.7",
-    "@glimmer/validator": "0.95.0",
+    "@glimmer/env": "workspace:*",
+    "@glimmer/validator": "workspace:*",
     "internal-test-helpers": "workspace:*"
   }
 }

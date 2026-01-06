@@ -22,8 +22,8 @@
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
     "@ember/utils": "workspace:*",
-    "@glimmer/manager": "0.94.10",
-    "@glimmer/runtime": "0.94.11",
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/runtime": "workspace:*",
     "backburner.js": "^2.7.0",
     "ember": "workspace:*",
     "expect-type": "^0.15.0"

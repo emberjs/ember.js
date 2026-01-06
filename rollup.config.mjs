@@ -16,7 +16,14 @@ const { buildInfo } = require('./broccoli/build-info');
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin');
 const canaryFeatures = require('./broccoli/canary-features');
 
-const testDependencies = ['qunit', 'vite'];
+const testDependencies = [
+  'qunit',
+  'vite',
+  'js-reporters',
+  '@simple-dom/serializer',
+  '@simple-dom/void-map',
+  'expect-type',
+];
 
 let configs = [
   esmConfig(),
@@ -177,7 +184,7 @@ function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
       }),
       resolveTS(),
       version(),
-      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }, isExternal),
+      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }, { isExternal }),
       licenseAndLoader(),
     ],
   };
@@ -211,6 +218,11 @@ function packages() {
       '@ember/-internals/*/type-tests/**' /* internal packages */,
       '*/*/type-tests/**' /* scoped packages */,
       '*/type-tests/**' /* packages */,
+
+      // all the glimmer-vm packages are handled instead as
+      // "exposedDependencies" since they used to actually be dependencies.
+      '@glimmer-workspace/**',
+      '@glimmer/**',
     ],
     cwd: 'packages',
   });
@@ -257,6 +269,12 @@ export function exposedDependencies() {
       '@glimmer/runtime',
       '@glimmer/validator',
     ]),
+    '@glimmer/tracking': resolve(packageCache.appRoot, 'packages/@glimmer/tracking/index.ts'),
+    '@glimmer/tracking/primitives/cache': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/tracking/primitives/cache.ts'
+    ),
+    '@glimmer/env': resolve(packageCache.appRoot, 'packages/@glimmer/env/index.ts'),
   };
 }
 
@@ -312,7 +330,19 @@ function walkGlimmerDeps(packageNames) {
 }
 
 function findFromProject(...names) {
-  let current = packageCache.get(packageCache.appRoot);
+  let current;
+
+  let glimmerVmTarget = resolve(packageCache.appRoot, 'packages', names[0]);
+  if (existsSync(glimmerVmTarget)) {
+    // the glimmer-vm packages were historically deps but are now in our repo.
+    // We don't list them as actual NPM deps of the top-level workspace because
+    // we don't want their types leaking into our type-tests.
+    names.shift();
+    current = packageCache.get(glimmerVmTarget);
+  } else {
+    current = packageCache.get(packageCache.appRoot);
+  }
+
   for (let name of names) {
     current = packageCache.resolve(name, current);
   }
@@ -344,7 +374,7 @@ function resolveTS() {
     name: 'resolve-ts',
     async resolveId(source, importer) {
       let result = await this.resolve(source, importer);
-      if (result === null) {
+      if (result === null && importer) {
         // the rest of rollup couldn't find it
         let stem = resolve(dirname(importer), source);
         for (let candidate of ['.ts', '/index.ts']) {
@@ -359,13 +389,25 @@ function resolveTS() {
   };
 }
 
-export function resolvePackages(deps, isExternal) {
+export function resolvePackages(deps, params) {
+  const isExternal = params?.isExternal;
+  const enableLocalDebug = params?.enableLocalDebug ?? false;
+
   return {
     enforce: 'pre',
     name: 'resolve-packages',
     async resolveId(source) {
       if (source.startsWith('\0')) {
         return;
+      }
+
+      // the actual test entrypoints
+      if (source.endsWith('index.html')) {
+        return;
+      }
+
+      if (source === '@glimmer/local-debug-flags' && !enableLocalDebug) {
+        return resolve(projectRoot, 'packages/@glimmer/local-debug-flags/disabled.ts');
       }
 
       let pkgName = packageName(source);
@@ -400,7 +442,7 @@ export function resolvePackages(deps, isExternal) {
 
         // Anything not explicitliy handled above is an error, because we don't
         // want to accidentally incorporate anything else into the build.
-        throw new Error(`missing ${source}`);
+        throw new Error(`missing in resolvePackages: ${source}`);
       }
     },
   };
@@ -625,10 +667,22 @@ function packageMeta() {
   };
 }
 
+const allowedCycles = [
+  // external and not causing problems
+  'node_modules/rsvp/lib/rsvp',
+
+  // TODO: these would be good to fix once they're in this repo
+  'packages/@glimmer/debug',
+  'packages/@glimmer/runtime',
+  'packages/@glimmer/opcode-compiler',
+  'packages/@glimmer/syntax',
+  'packages/@glimmer/compiler',
+];
+
 function handleRollupWarnings(level, log, handler) {
   switch (log.code) {
     case 'CIRCULAR_DEPENDENCY':
-      if (log.ids.some((id) => id.includes('node_modules/rsvp/lib/rsvp'))) {
+      if (log.ids.some((id) => allowedCycles.some((allowed) => id.includes(allowed)))) {
         // rsvp has some internal cycles but they don't bother us
         return;
       }

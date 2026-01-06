@@ -19,9 +19,22 @@
   "exclude": [
     "../**/type-tests",
     "../**/tests",
+    "../**/@glimmer/*/test",
+    "../**/@glimmer-workspace/*/test",
     "../**/internal-test-helpers",
 
     // @glimmer/component publishes as its own real package
-    "../**/@glimmer/component"
+    "../**/@glimmer/component",
+
+    // glimmer-vm packages that are not historically exposed
+    "../**/@glimmer-workspace/integration-tests/**/*.ts",
+    "../**/@glimmer-workspace/test-utils/**/*.ts",
+    "../**/@glimmer/constants/**/*.ts",
+    "../**/@glimmer/debug/**/*.ts",
+    "../**/@glimmer/debug-util/**/*.ts",
+    "../**/@glimmer/encoder/**/*.ts",
+    "../**/@glimmer/env/**/*.ts",
+    "../**/@glimmer/local-debug-flags/**/*.ts",
+    "../**/@glimmer/wire-format/**/*.ts"
   ]
 }
