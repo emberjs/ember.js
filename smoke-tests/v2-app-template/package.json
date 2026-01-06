@@ -80,7 +80,7 @@
     "stylelint": "^16.19.1",
     "stylelint-config-standard": "^38.0.0",
     "testem": "^3.16.0",
-    "tracked-built-ins": "^4.0.0",
+    "tracked-built-ins": "^4.1.0",
     "vite": "^6.3.5"
   },
   "engines": {
