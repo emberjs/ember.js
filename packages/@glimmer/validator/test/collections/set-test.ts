@@ -5,7 +5,6 @@ import { module, test } from '../-utils';
 
 expectTypeOf<ReturnType<typeof trackedSet<string>>>().toMatchTypeOf<Set<string>>();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFn = (...args: any[]) => any;
 
 module('@glimmer/validator: trackedSet', function () {

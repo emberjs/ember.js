@@ -33,7 +33,7 @@ export class Compilers<PushOp extends PushExpressionOp, TSexpOpcodes extends Sex
     let name = sexp[0];
     let index = unwrap(this.names[name]);
     let func = this.funcs[index];
-    localAssert(!!func, `expected an implementation for ${sexp[0]}`);
+    localAssert(func, `expected an implementation for ${sexp[0]}`);
 
     func(op, sexp);
   }

@@ -376,11 +376,11 @@ export function InvokeNonStaticComponent(
   op: PushStatementOp,
   { capabilities, elementBlock, positional, named, atNames, blocks: namedBlocks, layout }: Component
 ): void {
-  let bindableBlocks = !!namedBlocks;
+  let bindableBlocks = Boolean(namedBlocks);
   let bindableAtNames =
     capabilities === true ||
     hasCapability(capabilities, InternalComponentCapabilities.prepareArgs) ||
-    !!(named && named[0].length !== 0);
+    named?.[0].length !== 0;
 
   let blocks = namedBlocks.with('attrs', elementBlock);
 

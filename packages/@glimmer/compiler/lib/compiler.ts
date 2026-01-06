@@ -16,7 +16,6 @@ import { LOCAL_LOGGER } from '@glimmer/util';
 import pass0 from './passes/1-normalization/index';
 import { visit as pass2 } from './passes/2-encoding/index';
 
-// eslint-disable-next-line unused-imports/no-unused-vars
 declare function require(id: 'crypto'): Crypto;
 declare function require(id: string): unknown;
 

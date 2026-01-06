@@ -193,10 +193,7 @@ APPEND_OPCODES.add(VM_RESOLVE_CURRIED_COMPONENT_OP, (vm) => {
 
   let definition: CurriedValue | ComponentDefinition | null;
 
-  if (
-    DEBUG &&
-    !(typeof value === 'function' || (typeof value === 'object' && value !== null))
-  ) {
+  if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
     throw new Error(
       `Expected a component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must either use the component definition directly, or use the {{component}} helper to create a curried component definition when invoking dynamically.`
     );

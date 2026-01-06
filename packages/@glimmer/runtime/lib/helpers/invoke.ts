@@ -8,9 +8,7 @@ import { createCache, getValue } from '@glimmer/validator';
 
 import { EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL } from '../vm/arguments';
 
-let ARGS_CACHES = DEBUG
-  ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>()
-  : undefined;
+let ARGS_CACHES = DEBUG ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>() : undefined;
 
 function getArgs(proxy: SimpleArgsProxy): Partial<Arguments> {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
@@ -51,7 +49,6 @@ export function invokeHelper(
   definition: object,
   computeArgs?: (context: object) => Partial<Arguments>
 ): Cache {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS usage
   if (DEBUG && (typeof context !== 'object' || context === null)) {
     throw new Error(
       `Expected a context object to be passed as the first parameter to invokeHelper, got ${context}`

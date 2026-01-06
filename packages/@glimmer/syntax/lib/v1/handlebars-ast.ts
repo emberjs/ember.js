@@ -1,6 +1,4 @@
 /**
- * @module
- *
  * This file contains types for the raw AST returned from the Handlebars parser.
  * These types were originally imported from
  * https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/handlebars/index.d.ts.

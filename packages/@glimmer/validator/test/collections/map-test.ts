@@ -21,7 +21,7 @@ module('@glimmer/validator: trackedMap', function () {
 
   test('works with all kinds of keys', (assert) => {
     // Spoiler: they are needed, as without them, types are inferred
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-arguments
+
     const map = trackedMap<unknown, unknown>([
       ['foo', 123],
       [{}, {}],
@@ -110,9 +110,9 @@ module('@glimmer/validator: trackedMap', function () {
 
     map.forEach((v, k) => {
       count++;
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
       values += k;
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+
       values += v;
     });
 

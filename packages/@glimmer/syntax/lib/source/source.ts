@@ -49,6 +49,7 @@ export class Source {
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       let nextLine = this.source.indexOf('\n', seenChars);
 
@@ -78,6 +79,7 @@ export class Source {
       if (seenLines === line - 1) {
         if (seenChars + column > nextLine) return nextLine;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (DEBUG) {
           let roundTrip = this.hbsPosFor(seenChars + column);
           localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
