@@ -278,6 +278,12 @@ d('@ember/object/proxy', emberObjectProxy);
 import * as emberOwnerIndex from '@ember/owner/index';
 d('@ember/owner/index', emberOwnerIndex);
 
+import * as emberReactiveIndex from '@ember/reactive/index';
+d('@ember/reactive/index', emberReactiveIndex);
+
+import * as emberReactiveCollections from '@ember/reactive/collections';
+d('@ember/reactive/collections', emberReactiveCollections);
+
 import * as emberRendererIndex from '@ember/renderer/index';
 d('@ember/renderer/index', emberRendererIndex);
 
