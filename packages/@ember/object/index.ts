@@ -11,6 +11,12 @@ import { setObservers } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from '@ember/-internals/metal/lib/decorator-util';
+import { findDescriptor } from '@ember/-internals/utils/lib/lookup-descriptor';
 
 export {
   notifyPropertyChange,
@@ -181,6 +187,10 @@ export function action(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function action(
   ...args: ElementDescriptor | [PropertyDescriptor]
 ): PropertyDescriptor | ExtendedMethodDecorator {
+  if (isModernDecoratorArgs(args)) {
+    return action2023(args) as unknown as PropertyDescriptor;
+  }
+
   let actionFn: object | Function;
 
   if (!isElementDescriptor(args)) {
@@ -308,4 +318,26 @@ export function observer<T extends AnyFn>(
     sync,
   });
   return func;
+}
+
+function action2023(args: Parameters<Decorator>) {
+  const dec = identifyModernDecoratorArgs(args);
+  assert(
+    'The @action decorator must be applied to methods when used in native classes',
+    dec.kind === 'method'
+  );
+  let needsSetup = true;
+  dec.context.addInitializer(function (this: any) {
+    if (needsSetup) {
+      let found = findDescriptor(this, dec.context.name);
+      if (found?.object) {
+        Object.defineProperty(
+          found.object,
+          dec.context.name,
+          setupAction(found.object, dec.context.name, dec.value)
+        );
+      }
+      needsSetup = false;
+    }
+  });
 }
