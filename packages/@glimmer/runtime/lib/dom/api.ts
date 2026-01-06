@@ -6,10 +6,8 @@ import type {
   SimpleDocument,
   SimpleElement,
 } from '@glimmer/interfaces';
-import { NS_SVG } from '@glimmer/constants';
 import { castToSimple } from '@glimmer/debug-util';
 
-import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { DOMOperations } from './operations';
 
@@ -39,11 +37,6 @@ let appliedTreeConstruction = TreeConstruction;
 appliedTreeConstruction = applyTextNodeMergingFix(
   doc,
   appliedTreeConstruction
-) as typeof TreeConstruction;
-appliedTreeConstruction = applySVGInnerHTMLFix(
-  doc,
-  appliedTreeConstruction,
-  NS_SVG
 ) as typeof TreeConstruction;
 
 export const DOMTreeConstruction = appliedTreeConstruction;

@@ -5,10 +5,8 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import { NS_SVG } from '@glimmer/constants';
 import { castToSimple } from '@glimmer/debug-util';
 
-import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { BLACKLIST_TABLE, DOMOperations } from './operations';
 
@@ -93,7 +91,6 @@ export class DOMChangesImpl extends DOMOperations implements GlimmerTreeChanges 
 let helper = DOMChangesImpl;
 
 helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChangesImpl;
-helper = applySVGInnerHTMLFix(doc, helper, NS_SVG) as typeof DOMChangesImpl;
 
 export const DOMChanges = helper;
 export { DOMTreeConstruction } from './api';
