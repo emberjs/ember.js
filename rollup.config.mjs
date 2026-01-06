@@ -274,6 +274,7 @@ export function exposedDependencies() {
       packageCache.appRoot,
       'packages/@glimmer/tracking/primitives/cache.ts'
     ),
+    '@glimmer/env': resolve(packageCache.appRoot, 'packages/@glimmer/env/index.ts'),
   };
 }
 
