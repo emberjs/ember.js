@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import { getOwner } from '@ember/owner';
+import { service } from '@ember/service';
 
 export const PaddedButton = <template>
   <div class="col-sm-6 smallpad">
@@ -12,7 +12,7 @@ export const PaddedButton = <template>
 </template>;
 
 export class Jumbotron extends Component {
-  state = getOwner(this).lookup('service:state');
+  @service state;
 
   <template>
     <div class="jumbotron">

@@ -1,13 +1,13 @@
 import Service from '@ember/service';
-import { cell } from '#soon/cell.js';
-import { TrackedArray } from '#soon/array.js';
+import { tracked } from '@glimmer/tracking';
+import { trackedArray } from '@ember/reactive/collections';
 
-import { run, runLots, add, update, swapRows, deleteRow } from '#utils';
+import { run, runLots, add, update, swapRows, deleteRow } from './utils.js';
 
 export default class State extends Service {
-  data = new TrackedArray();
+  data = new trackedArray();
   id = 1;
-  selected = cell(undefined);
+  @tracked selected;
 
   create = () => {
     let id = this.id;
@@ -17,7 +17,7 @@ export default class State extends Service {
     this.data.length = 0;
 
     this.data.push(...result.data);
-    this.selected.set(undefined);
+    this.selected = undefined;
   };
 
   add = () => {
@@ -36,12 +36,12 @@ export default class State extends Service {
     this.data.length = 0;
     this.data.push(...result.data);
     this.id = result.id;
-    this.selected.set(undefined);
+    this.selected = undefined;
   };
 
   clear = () => {
     this.data.length = 0;
-    this.selected.set(undefined);
+    this.selected = undefined;
   };
 
   swapRows = () => {
@@ -51,14 +51,13 @@ export default class State extends Service {
   remove = ({ id }) => {
     let idx = this.data.findIndex((d) => d.id === id);
     this.data.splice(idx, 1);
-    // this.selected.set(undefined);
   };
 
   select = ({ id }) => {
-    this.selected.set(id);
+    this.selected = id;
   };
 
   isSelected = ({ id }) => {
-    return this.selected.read() === id;
+    return this.selected === id;
   };
 }

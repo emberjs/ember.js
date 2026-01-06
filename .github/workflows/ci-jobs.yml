@@ -192,3 +192,16 @@ jobs:
       - run: firefox --version
       - name: test
         run: pnpm ember test --path dist -c testem.ci-browsers.js
+
+  perf-check:
+    name: Perf script still works
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Check that the perf script works, so we don't regress
+        run: RUNS='2' pnpm bench
+        env:
+          GIT_LFS_SKIP_SMUDGE: 1

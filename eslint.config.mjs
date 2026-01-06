@@ -33,6 +33,7 @@ export default [
       'glimmer-vm/benchmark/**',
       'glimmer-vm/*.{js,ts}',
       'packages/@glimmer-workspace/**',
+      'tracerbench-testing/',
     ],
   },
   pluginJs.configs.recommended,

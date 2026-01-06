@@ -11,9 +11,12 @@
 </head>
   <body>
   <script type="module">
+     import { runBenchmark } from './app/run-benchmark.js';
+
       import Application from './app/app';
       import environment from './app/config/environment';
 
+      runBenchmark();
       Application.create(environment.APP);
     </script>
  </body>
