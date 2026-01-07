@@ -51,7 +51,10 @@
     <script type="module">
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
       import { setTesting } from './packages/@ember/debug/index.ts';
+      import { setup as setupQUnitDom } from 'qunit-dom';
+
       setupQUnit();
+      setupQUnitDom(QUnit);
       setTesting(true);
 
       let s = document.createElement('script');
