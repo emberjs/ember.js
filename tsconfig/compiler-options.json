@@ -28,7 +28,7 @@
     "allowJs": true,
     "checkJs": false,
 
-    "types": ["vite/client"],
+    "types": ["vite/client", "@glint/ember-tsc/types"],
 
     "paths": {
       "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"],

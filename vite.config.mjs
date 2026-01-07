@@ -12,6 +12,8 @@ import {
   hiddenDependencies,
 } from './rollup.config.mjs';
 
+import { templateTag } from '@embroider/vite';
+
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const { packageName: getPackageName, PackageCache } = require('@embroider/shared-internals');
@@ -32,19 +34,23 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      templateTag(),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
       resolvePackages(
-        { ...exposedDependencies(), ...hiddenDependencies() },
+        {
+          ...exposedDependencies(),
+          ...hiddenDependencies(),
+        },
         { enableLocalDebug: true }
       ),
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
+    optimizeDeps: { noDiscovery: true, include: ['expect-type', 'qunit'] },
     publicDir: 'tests/public',
     build,
     esbuild: false,

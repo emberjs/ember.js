@@ -51,7 +51,10 @@
     <script type="module">
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
       import { setTesting } from './packages/@ember/debug/index.ts';
+      import { setup as setupQUnitDom } from 'qunit-dom';
+
       setupQUnit();
+      setupQUnitDom(QUnit);
       setTesting(true);
 
       let s = document.createElement('script');
@@ -80,6 +83,10 @@
       import.meta.glob('./packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.{js,ts}', {
         eager: true,
       });
+
+      // High-level feature tests using regular testing apis,
+      // similar to how tests would be in real apps
+      import.meta.glob('./tests/browser/**/*.{js,ts,gjs,gts}', { eager: true });
     </script>
 
     <div id="qunit"></div>

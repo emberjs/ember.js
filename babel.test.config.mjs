@@ -10,6 +10,14 @@
 import { createRequire } from 'node:module';
 import baseConfig from './babel.config.mjs';
 
+import { buildMacros } from '@embroider/macros/babel';
+
+const macros = buildMacros({
+  configure(config) {
+    config.setGlobalConfig(import.meta.filename, '@embroider/core', { active: true });
+  },
+});
+
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.js');
@@ -27,5 +35,5 @@ export default {
     ],
   ],
 
-  plugins: [...baseConfig.plugins, buildDebugMacroPlugin(!isProduction)],
+  plugins: [...baseConfig.plugins, buildDebugMacroPlugin(!isProduction), ...macros.babelMacros],
 };
