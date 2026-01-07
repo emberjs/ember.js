@@ -136,7 +136,7 @@
     "node-gzip": "^1.1.2",
     "npm-run-all2": "^6.0.6",
     "prettier": "^3.5.3",
-    "qunit": "^2.19.4",
+    "qunit": "^3.0.0-alpha.4",
     "recast": "^0.22.0",
     "resolve.exports": "^2.0.3",
     "rollup": "^4.2.0",

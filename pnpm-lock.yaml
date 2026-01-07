@@ -228,8 +228,8 @@ importers:
         specifier: ^3.5.3
         version: 3.5.3
       qunit:
-        specifier: ^2.19.4
-        version: 2.24.1
+        specifier: ^3.0.0-alpha.4
+        version: 3.0.0-alpha.4
       recast:
         specifier: ^0.22.0
         version: 0.22.0
@@ -7050,6 +7050,10 @@ packages:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
 
+  commander@12.1.0:
+    resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
+    engines: {node: '>=18'}
+
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
 
@@ -10143,6 +10147,10 @@ packages:
     resolution: {integrity: sha512-3l4E8uMPY1HdMMryPRUAl+oIHtXtyiTlIiESNSVSNxcPfzAFzeTbXFQkZfAwBbo0B1qMSG8nUABx+Gd+YrbKrQ==}
     engines: {node: '>=6'}
 
+  node-watch@0.7.4:
+    resolution: {integrity: sha512-RinNxoz4W1cep1b928fuFhvAQ5ag/+1UlMDV7rbyGthBIgsiEouS4kvRayvvboxii4m8eolKOIBo3OjDqbc+uQ==}
+    engines: {node: '>=6'}
+
   nopt@3.0.6:
     resolution: {integrity: sha512-4GUt3kSEYmk4ITxzB/b9vaIDfUVWN/Ml1Fwl11IlnIG2iaJ9O6WXZ9SrYM9NLI8OCBieN2Y8SWC2oJV0RQ7qYg==}
     hasBin: true
@@ -10829,6 +10837,11 @@ packages:
   qunit@2.24.1:
     resolution: {integrity: sha512-Eu0k/5JDjx0QnqxsE1WavnDNDgL1zgMZKsMw/AoAxnsl9p4RgyLODyo2N7abZY7CEAnvl5YUqFZdkImzbgXzSg==}
     engines: {node: '>=10'}
+    hasBin: true
+
+  qunit@3.0.0-alpha.4:
+    resolution: {integrity: sha512-yd6IkPVis73gMqYqg73zLPB0LSp0luCnfU+tOOpMtZ3dKwBz2YALLptNXf6DV3uND08VhQzz60XwIjIsTWgyPg==}
+    engines: {node: '>=18'}
     hasBin: true
 
   randombytes@2.1.0:
@@ -19666,6 +19679,8 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
+  commander@12.1.0: {}
+
   commander@2.20.3: {}
 
   commander@4.1.1: {}
@@ -23970,6 +23985,8 @@ snapshots:
 
   node-watch@0.7.3: {}
 
+  node-watch@0.7.4: {}
+
   nopt@3.0.6:
     dependencies:
       abbrev: 1.1.1
@@ -24662,6 +24679,12 @@ snapshots:
     dependencies:
       commander: 7.2.0
       node-watch: 0.7.3
+      tiny-glob: 0.2.9
+
+  qunit@3.0.0-alpha.4:
+    dependencies:
+      commander: 12.1.0
+      node-watch: 0.7.4
       tiny-glob: 0.2.9
 
   randombytes@2.1.0:

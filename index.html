@@ -7,7 +7,7 @@
   </head>
   <body>
     <script type="module">
-      import 'qunit/qunit/qunit.js';
+      import 'qunit';
       import 'qunit/qunit/qunit.css';
 
       window.EmberENV = {};
@@ -80,6 +80,8 @@
       import.meta.glob('./packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.{js,ts}', {
         eager: true,
       });
+
+      import.meta.glob('./tests/browser/**/*.{js,ts}', { eager: true });
     </script>
 
     <div id="qunit"></div>
