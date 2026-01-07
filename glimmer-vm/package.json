@@ -98,7 +98,7 @@
     "preval.macro": "^5.0.0",
     "puppeteer": "24.11.2",
     "puppeteer-chromium-resolver": "^24.0.1",
-    "qunit": "^2.24.1",
+    "qunit": "^3.0.0-alpha.4",
     "release-plan": "^0.13.1",
     "rimraf": "^5.0.10",
     "rollup": "^4.34.8",

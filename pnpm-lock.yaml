@@ -1453,8 +1453,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       qunit:
-        specifier: ^2.24.1
-        version: 2.24.1
+        specifier: ^3.0.0-alpha.4
+        version: 3.0.0-alpha.4
       simple-html-tokenizer:
         specifier: ^0.5.11
         version: 0.5.11

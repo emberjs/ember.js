@@ -36,7 +36,7 @@
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",
     "js-reporters": "^2.1.0",
-    "qunit": "^2.24.1",
+    "qunit": "^3.0.0-alpha.4",
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
