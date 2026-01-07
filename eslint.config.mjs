@@ -8,6 +8,7 @@ import nodePlugin from 'eslint-plugin-n';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pluginJs from '@eslint/js';
+import ember from 'eslint-plugin-ember/recommended';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -494,5 +495,17 @@ export default [
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/naming-convention': 'off',
     },
+  },
+  {
+    ...ember.configs.gjs,
+    files: ['**/*.gjs'],
+  },
+  {
+    ...ember.configs.gts,
+    files: ['**/*.gts'],
+  },
+  {
+    files: ['**/*.{gjs,gts}'],
+    rules: { 'disable-features/disable-async-await': 'off' },
   },
 ];
