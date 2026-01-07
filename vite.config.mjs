@@ -12,7 +12,7 @@ import {
   hiddenDependencies,
 } from './rollup.config.mjs';
 
-import { ember, extensions, resolver, templateTag } from '@embroider/vite';
+import { templateTag } from '@embroider/vite';
 
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
+    optimizeDeps: { noDiscovery: true, include: ['expect-type', 'qunit'] },
     publicDir: 'tests/public',
     build,
     esbuild: false,
