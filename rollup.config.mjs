@@ -18,11 +18,16 @@ const canaryFeatures = require('./broccoli/canary-features');
 
 const testDependencies = [
   'qunit',
+  'qunit-dom',
   'vite',
   'js-reporters',
   '@simple-dom/serializer',
   '@simple-dom/void-map',
   'expect-type',
+  'ember-qunit',
+  '@ember/test-helpers',
+  '@ember/test-waiters',
+  'dom-element-descriptors',
 ];
 
 let configs = [
