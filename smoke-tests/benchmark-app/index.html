@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>BenchmarkApp</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/bootstrap.min.css">  
+    <link rel="stylesheet" href="/main.css">
+</head>
+  <body>
+  <script type="module">
+     import { runBenchmark } from './app/run-benchmark.js';
+
+      import Application from './app/app';
+      import environment from './app/config/environment';
+
+      runBenchmark();
+      Application.create(environment.APP);
+    </script>
+ </body>
+</html>
