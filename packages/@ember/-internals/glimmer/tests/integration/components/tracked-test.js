@@ -1,11 +1,17 @@
 import EmberObject from '@ember/object';
-import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+  emberAWithoutDeprecation,
+} from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
 
@@ -91,9 +97,11 @@ moduleFor(
       class LoaderComponent extends GlimmerishComponent {
         get data() {
           if (!this._data) {
-            this._data = PromiseArray.create({
-              promise: Promise.resolve([1, 2, 3]),
-            });
+            expectDeprecation(() => {
+              this._data = PromiseArray.create({
+                promise: Promise.resolve([1, 2, 3]),
+              });
+            }, /Usage of ArrayProxy is deprecated/);
           }
 
           return this._data;
@@ -114,11 +122,15 @@ moduleFor(
       class LoaderComponent extends GlimmerishComponent {
         get data() {
           if (!this._data) {
-            this._data = ArrayProxy.create({
-              content: A(),
-            });
+            expectDeprecation(() => {
+              this._data = ArrayProxy.create({
+                content: emberAWithoutDeprecation(),
+              });
+            }, /Usage of ArrayProxy is deprecated/);
 
-            this._data.content.pushObjects([1, 2, 3]);
+            expectDeprecation(() => {
+              this._data.content.pushObjects([1, 2, 3]);
+            }, /Usage of Ember.Array methods is deprecated/);
           }
 
           return this._data;
@@ -242,9 +254,13 @@ moduleFor(
 
     '@test array properties rerender when updated'() {
       class NumListComponent extends Component {
-        @tracked numbers = A([1, 2, 3]);
+        @tracked numbers = emberAWithoutDeprecation([1, 2, 3]);
 
-        addNumber = () => this.numbers.pushObject(4);
+        addNumber = () => {
+          expectDeprecation(() => {
+            this.numbers.pushObject(4);
+          }, /Usage of Ember.Array methods is deprecated/);
+        };
       }
 
       this.registerComponent('num-list', {

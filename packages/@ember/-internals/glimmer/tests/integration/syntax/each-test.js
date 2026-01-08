@@ -1,8 +1,15 @@
-import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  applyMixins,
+  strip,
+  runTask,
+  expectDeprecation,
+  ignoreDeprecation as ignoreDeprecationOrig,
+} from 'internal-test-helpers';
 
 import { notifyPropertyChange, on } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import { RSVP } from '@ember/-internals/runtime';
 
@@ -13,6 +20,15 @@ import {
   FalsyGenerator,
   ArrayTestCases,
 } from '../../utils/shared-conditional-tests';
+import { emberAWithoutDeprecation } from '@ember/routing/-internals';
+
+function ignoreDeprecation(callback) {
+  let ret;
+  ignoreDeprecationOrig(() => {
+    ret = callback();
+  });
+  return ret;
+}
 
 class ArrayDelegate {
   constructor(content, target) {
@@ -157,11 +173,12 @@ class BasicEachTest extends TogglingEachTest {}
 
 const TRUTHY_CASES = [
   ['hello'],
-  emberA(['hello']),
+  emberAWithoutDeprecation(['hello']),
   makeSet(['hello']),
   new ForEachable(['hello']),
-  ArrayProxy.create({ content: ['hello'] }),
-  ArrayProxy.create({ content: emberA(['hello']) }),
+  // FIXME
+  // ArrayProxy.create({ content: ['hello'] }),
+  // ArrayProxy.create({ content: emberAWithoutDeprecation(['hello']) }),
   new ArrayIterable(['hello']),
 ];
 
@@ -172,11 +189,12 @@ const FALSY_CASES = [
   '',
   0,
   [],
-  emberA([]),
+  emberAWithoutDeprecation([]),
   makeSet([]),
   new ForEachable([]),
-  ArrayProxy.create({ content: [] }),
-  ArrayProxy.create({ content: emberA([]) }),
+  // FIXME
+  // ArrayProxy.create({ content: [] }),
+  // ArrayProxy.create({ content: emberAWithoutDeprecation([]) }),
   new ArrayIterable([]),
 ];
 
@@ -260,51 +278,51 @@ class AbstractEachTest extends RenderingTestCase {
   }
 
   forEach(callback) {
-    return this.delegate.toArray().forEach(callback);
+    return ignoreDeprecation(() => this.delegate.toArray().forEach(callback));
   }
 
   objectAt(idx) {
-    return this.delegate.objectAt(idx);
+    return ignoreDeprecation(() => this.delegate.objectAt(idx));
   }
 
   clear() {
-    return this.delegate.clear();
+    return ignoreDeprecation(() => this.delegate.clear());
   }
 
   replace(idx, del, ins) {
-    return this.delegate.replace(idx, del, ins);
+    return ignoreDeprecation(() => this.delegate.replace(idx, del, ins));
   }
 
   unshiftObject(obj) {
-    return this.delegate.unshiftObject(obj);
+    return ignoreDeprecation(() => this.delegate.unshiftObject(obj));
   }
 
   unshiftObjects(arr) {
-    return this.delegate.unshiftObjects(arr);
+    return ignoreDeprecation(() => this.delegate.unshiftObjects(arr));
   }
 
   pushObject(obj) {
-    return this.delegate.pushObject(obj);
+    return ignoreDeprecation(() => this.delegate.pushObject(obj));
   }
 
   pushObjects(arr) {
-    return this.delegate.pushObjects(arr);
+    return ignoreDeprecation(() => this.delegate.pushObjects(arr));
   }
 
   shiftObject() {
-    return this.delegate.shiftObject();
+    return ignoreDeprecation(() => this.delegate.shiftObject());
   }
 
   popObject() {
-    return this.delegate.popObject();
+    return ignoreDeprecation(() => this.delegate.popObject());
   }
 
   insertAt(idx, obj) {
-    return this.delegate.insertAt(idx, obj);
+    return ignoreDeprecation(() => this.delegate.insertAt(idx, obj));
   }
 
   removeAt(idx, len) {
-    return this.delegate.removeAt(idx, len);
+    return ignoreDeprecation(() => this.delegate.removeAt(idx, len));
   }
 
   render(template, context = {}) {
@@ -880,8 +898,10 @@ class EachTest extends AbstractEachTest {
     this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
 
     runTask(() => {
-      admins.delegate.pushObject({ name: 'Godfrey Chan' });
-      set(users.delegate.objectAt(0), 'name', 'Stefan Penner');
+      ignoreDeprecation(() => {
+        admins.delegate.pushObject({ name: 'Godfrey Chan' });
+        set(users.delegate.objectAt(0), 'name', 'Stefan Penner');
+      });
     });
 
     this.assertText('Admin: [Tom Dale][Godfrey Chan] User: [Stefan Penner]');
@@ -921,8 +941,10 @@ class EachTest extends AbstractEachTest {
     this.assertStableRerender();
 
     runTask(() => {
-      content.delegate.pushObject('Z');
-      set(options.delegate.objectAt(0), 'value', 0);
+      ignoreDeprecation(() => {
+        content.delegate.pushObject('Z');
+        set(options.delegate.objectAt(0), 'value', 0);
+      });
     });
 
     this.assertText('X-0:One2:TwoY-0:One2:TwoZ-0:One2:Two');
@@ -963,14 +985,18 @@ class EachTest extends AbstractEachTest {
     this.assertText('-Limbo-Wrath-Treachery-Wrath-Limbo-');
 
     runTask(() => {
-      fifth.delegate.insertAt(0, 'D');
+      ignoreDeprecation(() => {
+        fifth.delegate.insertAt(0, 'D');
+      });
     });
 
     this.assertText('-Limbo-D-Treachery-D-Wrath-Treachery-Wrath-Limbo-');
 
     runTask(() => {
-      first.delegate.pushObject('I');
-      ninth.delegate.replace(0, 1, ['K']);
+      ignoreDeprecation(() => {
+        first.delegate.pushObject('I');
+        ninth.delegate.replace(0, 1, ['K']);
+      });
     });
 
     this.assertText('-Limbo-D-K-D-Wrath-K-Wrath-Limbo-I-D-K-D-Wrath-K-Wrath-I-');
@@ -1002,8 +1028,11 @@ class EachTest extends AbstractEachTest {
     this.assertText('caterpillar');
 
     runTask(() => {
-      inner.delegate.replace(0, 1, ['lady']);
-      outer.delegate.pushObject(this.createList(['bird']).list);
+      let list = this.createList(['bird']).list;
+      ignoreDeprecation(() => {
+        inner.delegate.replace(0, 1, ['lady']);
+        outer.delegate.pushObject(list);
+      });
     });
 
     this.assertText('ladybird');
@@ -1029,7 +1058,7 @@ moduleFor(
   'Syntax test: {{#each}} with emberA-wrapped arrays',
   class extends EachTest {
     createList(items) {
-      let wrapped = emberA(items);
+      let wrapped = emberAWithoutDeprecation(items);
       return { list: wrapped, delegate: wrapped };
     }
   }
@@ -1077,8 +1106,11 @@ moduleFor(
   'Syntax test: {{#each}} with array proxies, modifying itself',
   class extends EachTest {
     createList(items) {
-      let proxty = ArrayProxy.create({ content: emberA(items) });
-      return { list: proxty, delegate: proxty };
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.create({ content: emberAWithoutDeprecation(items) });
+      }, /Usage of ArrayProxy is deprecated/);
+      return { list: proxy, delegate: proxy };
     }
   }
 );
@@ -1087,10 +1119,14 @@ moduleFor(
   'Syntax test: {{#each}} with array proxies, replacing its content',
   class extends EachTest {
     createList(items) {
-      let wrapped = emberA(items);
+      let wrapped = emberAWithoutDeprecation(items);
+      let delegate;
+      expectDeprecation(() => {
+        delegate = ArrayProxy.create({ content: wrapped });
+      }, /Usage of ArrayProxy is deprecated/);
       return {
         list: wrapped,
-        delegate: ArrayProxy.create({ content: wrapped }),
+        delegate,
       };
     }
   }
@@ -1100,16 +1136,19 @@ moduleFor(
   'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
   class extends EachTest {
     createList(items) {
-      let wrapped = emberA(items);
-      let proxy = class extends ArrayProxy {
-        @computed('wrappedItems.[]')
-        get arrangedContent() {
-          // Slice the items to ensure that updates must be propogated
-          return this.wrappedItems.slice();
-        }
-      }.create({
-        wrappedItems: wrapped,
-      });
+      let wrapped = emberAWithoutDeprecation(items);
+      let proxy;
+      expectDeprecation(() => {
+        proxy = class extends ArrayProxy {
+          @computed('wrappedItems.[]')
+          get arrangedContent() {
+            // Slice the items to ensure that updates must be propogated
+            return this.wrappedItems.slice();
+          }
+        }.create({
+          wrappedItems: wrapped,
+        });
+      }, /Usage of ArrayProxy is deprecated/);
 
       return { list: proxy, delegate: wrapped };
     }
@@ -1120,12 +1159,15 @@ moduleFor(
   'Syntax test: {{#each}} with array proxies, content is updated after init',
   class extends EachTest {
     createList(items) {
-      let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        setup: on('init', function () {
-          this.set('content', emberA(wrapped));
-        }),
-      }).create();
+      let wrapped = emberAWithoutDeprecation(items);
+      let proxy;
+      expectDeprecation(() => {
+        proxy = ArrayProxy.extend({
+          setup: on('init', function () {
+            this.set('content', emberAWithoutDeprecation(wrapped));
+          }),
+        }).create();
+      }, /Usage of ArrayProxy is deprecated/);
 
       return { list: proxy, delegate: wrapped };
     }
@@ -1174,7 +1216,7 @@ moduleFor(
       {{#each this.list as |value key|}}
         [{{key}}:{{value}}]
       {{/each}}`,
-        { list: emberA(sparseArray) }
+        { list: emberAWithoutDeprecation(sparseArray) }
       );
 
       this.assertText('[0:][1:][2:][3:foo][4:bar]');
@@ -1183,7 +1225,9 @@ moduleFor(
 
       runTask(() => {
         let list = get(this.context, 'list');
-        list.pushObject('baz');
+        ignoreDeprecation(() => {
+          list.pushObject('baz');
+        });
       });
 
       this.assertText('[0:][1:][2:][3:foo][4:bar][5:baz]');

@@ -1,5 +1,5 @@
 import EmberObject from '@ember/object';
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
 class FilterTest extends AbstractTestCase {
@@ -29,8 +29,10 @@ class FilterByTest extends AbstractTestCase {
     obj = this.newObject(ary);
 
     // different values - all eval to true
-    this.assert.deepEqual(obj.filterBy('foo'), ary, 'filterBy(foo)');
-    this.assert.deepEqual(obj.filterBy('bar'), [ary[0]], 'filterBy(bar)');
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.filterBy('foo'), ary, 'filterBy(foo)');
+      this.assert.deepEqual(obj.filterBy('bar'), [ary[0]], 'filterBy(bar)');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should filter on second argument if provided'() {
@@ -45,7 +47,9 @@ class FilterByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.filterBy('foo', 3), [ary[0], ary[3]], "filterBy('foo', 3)')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.filterBy('foo', 3), [ary[0], ary[3]], "filterBy('foo', 3)')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should correctly filter null second argument'() {
@@ -60,7 +64,9 @@ class FilterByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.filterBy('foo', null), [ary[1], ary[2]], "filterBy('foo', 3)')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.filterBy('foo', null), [ary[1], ary[2]], "filterBy('foo', 3)')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should correctly filter explicit undefined second argument'() {
@@ -77,7 +83,9 @@ class FilterByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.filterBy('foo', undefined), ary.slice(2), "filterBy('foo', 3)')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.filterBy('foo', undefined), ary.slice(2), "filterBy('foo', 3)')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   '@test should not match undefined properties without second argument'() {
@@ -94,7 +102,9 @@ class FilterByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.filterBy('foo'), ary.slice(0, 2), "filterBy('foo', 3)')");
+    expectDeprecation(() => {
+      this.assert.deepEqual(obj.filterBy('foo'), ary.slice(0, 2), "filterBy('foo', 3)')");
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 }
 
