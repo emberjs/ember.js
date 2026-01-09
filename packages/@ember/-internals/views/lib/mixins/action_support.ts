@@ -3,7 +3,7 @@
 */
 import { get } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
-import { assert, inspect } from '@ember/debug';
+import { assert, deprecate, inspect } from '@ember/debug';
 
 /**
  @class ActionSupport
@@ -15,6 +15,13 @@ interface ActionSupport {
 }
 const ActionSupport = Mixin.create({
   send(actionName: string, ...args: unknown[]) {
+    deprecate('send() is deprecated. Please use direct method calls instead.', false, {
+      for: 'ember-source',
+      id: 'action-support',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
+
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
       !this.isDestroying && !this.isDestroyed
