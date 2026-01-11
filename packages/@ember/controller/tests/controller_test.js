@@ -1,6 +1,7 @@
 import Controller, { inject as injectController } from '@ember/controller';
 import Service, { service } from '@ember/service';
-import EmberObject, { get } from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import Mixin from '@ember/object/mixin';
 import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
@@ -228,12 +229,12 @@ moduleFor(
       let owner = buildOwner();
 
       expectAssertion(function () {
-        let AnObject = class extends EmberObject {
+        let AnObject = class extends CoreObject {
           @injectController('bar')
           foo;
         };
 
-        owner.register('controller:bar', class extends EmberObject {});
+        owner.register('controller:bar', class extends CoreObject {});
         owner.register('foo:main', AnObject);
 
         owner.lookup('foo:main');
