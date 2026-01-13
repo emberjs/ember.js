@@ -61,25 +61,28 @@
 
     <script type="module">
       // tests in internal packages
-      import.meta.glob('./packages/@ember/-internals/*/tests/**/*.{js,ts}', {
+      import.meta.glob('./packages/@ember/-internals/*/tests/**/*.{js,ts,gjs,gts}', {
         eager: true,
       });
 
       // tests in scoped packages
-      import.meta.glob('./packages/*/*/tests/**/*.{js,ts}', {
+      import.meta.glob('./packages/*/*/tests/**/*.{js,ts,gjs,gts}', {
         eager: true,
       });
 
       // tests in non-scoped packages
-      import.meta.glob('./packages/*/tests/**/*.{js,ts}', {
+      import.meta.glob('./packages/*/tests/**/*.{js,ts,gjs,gts}', {
         eager: true,
       });
 
       // packages originally authored in glimmer-vm repo have a different test
       // naming convention
-      import.meta.glob('./packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.{js,ts}', {
-        eager: true,
-      });
+      import.meta.glob(
+        './packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.{js,ts,gjs,gts}',
+        {
+          eager: true,
+        }
+      );
     </script>
 
     <div id="qunit"></div>

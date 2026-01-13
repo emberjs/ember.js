@@ -95,6 +95,7 @@
     "@babel/types": "^7.22.5",
     "@embroider/macros": "^1.18.0",
     "@embroider/shared-internals": "^2.5.0",
+    "@embroider/vite": "^1.1.5",
     "@eslint/js": "^9.21.0",
     "@glimmer/component": "workspace:*",
     "@rollup/plugin-babel": "^6.0.4",
