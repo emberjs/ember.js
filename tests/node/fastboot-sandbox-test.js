@@ -55,7 +55,6 @@ function buildSandboxContext(precompile) {
   let environmentSetupScript = new vm.Script(
     `
 var EmberENV = {
-  _DEFAULT_ASYNC_OBSERVERS: true,
   _JQUERY_INTEGRATION: false,
 };`,
     { filename: 'prepend.js' }
