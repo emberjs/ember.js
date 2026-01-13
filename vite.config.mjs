@@ -11,6 +11,7 @@ import {
   exposedDependencies,
   hiddenDependencies,
 } from './rollup.config.mjs';
+import { templateTag } from '@embroider/vite';
 
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
@@ -32,9 +33,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      templateTag(),
       babel({
         babelHelpers: 'bundled',
-        extensions: ['.js', '.ts'],
+        extensions: ['.js', '.ts', '.gjs', '.gts'],
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
       resolvePackages(
