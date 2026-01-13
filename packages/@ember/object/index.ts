@@ -1,5 +1,4 @@
 import { assert } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment';
 import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
 import {
   isElementDescriptor,
