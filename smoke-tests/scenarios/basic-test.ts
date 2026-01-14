@@ -223,6 +223,72 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
               });
             `,
+            'on-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render, click } from '@ember/test-helpers';
+
+              import Component from '@glimmer/component';
+              import { tracked } from '@glimmer/tracking';
+
+              class Demo extends Component {
+                @tracked message = 'hello';
+                louder = () => this.message = this.message + '!';
+
+                <template>
+                  <button {{on 'click' this.louder}}>{{this.message}}</button>
+                </template>
+              }
+
+              module('{{on}} as keyword', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  await render(Demo);
+                  assert.dom('button').hasText('hello');
+                  await click('button');
+                  assert.dom('button').hasText('hello!');
+                });
+              });
+            `,
+            'on-as-keyword-but-its-shadowed-test.gjs': `
+              import QUnit, { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render, click } from '@ember/test-helpers';
+
+              import Component from '@glimmer/component';
+              import { tracked } from '@glimmer/tracking';
+              import { modifier as eModifier } from 'ember-modifier';
+
+              module('{{on}} as keyword (but it is shadowed)', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  // shadows keyword!
+                  const on = eModifier(() => {
+                    assert.step('shadowed:on:create');
+                  });
+
+                  class Demo extends Component {
+                    @tracked message = 'hello';
+                    louder = () => this.message = this.message + '!';
+
+                    <template>
+                      <button {{on 'click' this.louder}}>{{this.message}}</button>
+                    </template>
+                  }
+
+                  await render(Demo);
+                  assert.verifySteps(['shadowed:on:create']);
+
+                  assert.dom('button').hasText('hello');
+                  await click('button');
+                  assert.dom('button').hasText('hello', 'not changed because this on modifier does not add event listeners');
+
+                  assert.verifySteps([]);
+                });
+              });
+            `,
           },
         },
       });

@@ -20,6 +20,8 @@
     "@glimmer/syntax": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/validator": "workspace:*",
-    "@glimmer/wire-format": "workspace:*"
+    "@glimmer/wire-format": "workspace:*",
+    "@ember/modifier": "workspace:*",
+    "@ember/template-compiler": "workspace:*"
   }
 }
