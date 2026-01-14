@@ -1151,6 +1151,12 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../helper
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../modifier
       '@glimmer/compiler':
         specifier: workspace:*
         version: link:../../@glimmer/compiler
@@ -1407,6 +1413,12 @@ importers:
 
   packages/@glimmer-workspace/integration-tests/test:
     dependencies:
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../../../@ember/modifier
+      '@ember/template-compiler':
+        specifier: workspace:*
+        version: link:../../../@ember/template-compiler
       '@glimmer-workspace/integration-tests':
         specifier: workspace:*
         version: link:..
