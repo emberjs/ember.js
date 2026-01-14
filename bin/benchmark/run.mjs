@@ -190,6 +190,8 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
     );
   }
 
+  await cleanup();
+
   return {
     benchRoot: BENCH_ROOT,
     msgFile,
