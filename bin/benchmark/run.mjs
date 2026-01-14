@@ -182,11 +182,13 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
   const output = await run('node', args, { cwd: EXPERIMENT_DIRS.app });
   const msgFile = join(BENCH_ROOT, 'msg.txt');
 
-  await writeFile(
-    msgFile,
-    output.stdout.split('Benchmark Results Summary').pop() ?? output.stdout,
-    'utf8'
-  );
+  if (!process.env.CI) {
+    await writeFile(
+      msgFile,
+      output.stdout.split('Benchmark Results Summary').pop() ?? output.stdout,
+      'utf8'
+    );
+  }
 
   return {
     benchRoot: BENCH_ROOT,
