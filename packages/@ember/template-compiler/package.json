@@ -12,6 +12,8 @@
     "@ember/-internals": "workspace:*",
     "@ember/component": "workspace:*",
     "@ember/debug": "workspace:*",
+    "@ember/modifier": "workspace:*",
+    "@ember/helper": "workspace:*",
     "@glimmer/compiler": "workspace:*",
     "@glimmer/env": "workspace:*",
     "@glimmer/interfaces": "workspace:*",

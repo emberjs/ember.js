@@ -9,8 +9,10 @@ import TransformInElement from './transform-in-element';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
+import AutoImportBuiltins from './auto-import-builtins';
 
 export const INTERNAL_PLUGINS = {
+  AutoImportBuiltins,
   AssertAgainstAttrs,
   AssertAgainstNamedOutlets,
   AssertInputHelperWithoutBlock,
@@ -40,6 +42,7 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze([
 ]);
 
 export const STRICT_MODE_TRANSFORMS = Object.freeze([
+  AutoImportBuiltins,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
   TransformActionSyntax,
