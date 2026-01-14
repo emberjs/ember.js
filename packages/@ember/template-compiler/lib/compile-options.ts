@@ -1,3 +1,4 @@
+import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,
@@ -14,11 +15,18 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
+const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
+export const keywords = {
+  on,
+};
+
+// Not worth adding a type
+(globalThis as any)[RUNTIME_KEYWORDS_NAME] = keywords;
+
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
 
-  let options: EmberPrecompileOptions & Partial<EmberPrecompileOptions> = {
-    meta: {},
+  let options = {
     isProduction: false,
     plugins: { ast: [] },
     ..._options,
@@ -35,8 +43,25 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     },
   };
 
-  if ('eval' in options) {
-    const localScopeEvaluator = options.eval as (value: string) => unknown;
+  options.meta ||= {};
+  options.meta.emberRuntime ||= {
+    /**
+     * NOTE: when stepping through lexicalScope, or other callbacks here,
+     *       we first detect the keywords as "not in scope",
+     *       and that is what we want, so that we can import them.
+     */
+    lookupKeyword(name: string): string {
+      assert(
+        `${name} is not a known keyword. Available keywords: ${Object.keys(keywords).join(', ')}`,
+        name in keywords
+      );
+
+      return `globalThis.${RUNTIME_KEYWORDS_NAME}.${name}`;
+    },
+  };
+
+  if ('eval' in options && options.eval) {
+    const localScopeEvaluator = options.eval;
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
@@ -57,9 +82,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => {
-      return variable in scope;
-    };
+    options.lexicalScope = (variable: string) => variable in scope || variable in keywords;
 
     delete options.scope;
   }
