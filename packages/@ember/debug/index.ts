@@ -197,7 +197,7 @@ if (DEBUG) {
     ```javascript
     import { deprecateFunc } from '@ember/debug';
 
-    Ember.oldMethod = deprecateFunc('Please use the new, updated method', options, Ember.newMethod);
+    oldMethod = deprecateFunc('Please use the new, updated method', options, newMethod);
     ```
 
     @method deprecateFunc

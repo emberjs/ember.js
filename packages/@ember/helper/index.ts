@@ -216,7 +216,7 @@ export const capabilities = helperCapabilities;
 
   The hook is also run during a time period where state mutations are _disabled_
   in Ember. Any tracked state mutation will throw an error during this time,
-  including changes to tracked properties, changes made using `Ember.set`, updates
+  including changes to tracked properties, changes made using `set`, updates
   to computed properties, etc. This is meant to prevent infinite rerenders and
   other antipatterns.
 

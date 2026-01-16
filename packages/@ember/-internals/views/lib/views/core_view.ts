@@ -7,7 +7,7 @@ import type { ViewState } from './states';
 import states from './states';
 
 /**
-  `Ember.CoreView` is an abstract class that exists to give view-like behavior
+  `CoreView` is an abstract class that exists to give view-like behavior
   to both Ember's main view class `Component` and other classes that don't need
   the full functionality of `Component`.
 

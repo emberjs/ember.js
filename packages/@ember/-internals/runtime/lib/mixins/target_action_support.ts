@@ -9,7 +9,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 /**
-`Ember.TargetActionSupport` is a mixin that can be included in a class
+`TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
 `{{action}}` helper. In normal Ember usage, the `{{action}}` helper is
 usually the best choice. This mixin is most often useful when you are
@@ -50,6 +50,7 @@ const TargetActionSupport = Mixin.create({
   }),
 
   /**
+  The following is private and vestigial.
   Send an `action` with an `actionContext` to a `target`. The action, actionContext
   and target will be retrieved from properties of the object. For example:
 

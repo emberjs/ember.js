@@ -26,7 +26,8 @@ import EmberObject from '@ember/object';
   ## Example Usage
 
   ```javascript
-  MyFramework = Ember.Namespace.create({
+  import Namespace from '@ember/application/namespace';
+  MyFramework = Namespace.create({
     VERSION: '1.0.0'
   });
   ```
