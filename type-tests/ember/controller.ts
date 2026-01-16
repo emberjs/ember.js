@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Controller from "@ember/controller";
 
-class MyController extends Ember.Controller {
+class MyController extends Controller {
   queryParams = ['category'];
   category = null;
   isExpanded = false;

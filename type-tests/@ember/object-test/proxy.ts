@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import EmberObject, { set, computed } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 import { expectTypeOf } from 'expect-type';
 
-declare class X extends Ember.Object {
+declare class X extends EmberObject {
   foo: string;
   bar: number;
 }
@@ -74,12 +74,12 @@ book.setProperties({ title: 1 });
 book.setProperties({ altTitle: 1 });
 book.setProperties({ invalid: true });
 
-class Person extends Ember.Object {
+class Person extends EmberObject {
   firstName = 'Peter';
 
   lastName = 'Wagenet';
 
-  @Ember.computed('firstName', 'lastName')
+  @computed('firstName', 'lastName')
   get fullName() {
     return `${this.firstName} ${this.lastName}`;
   }
@@ -87,8 +87,8 @@ class Person extends Ember.Object {
   set fullName(value: string) {
     const [firstName, lastName] = value.split(' ');
 
-    Ember.set(this, 'firstName', firstName ?? '');
-    Ember.set(this, 'lastName', lastName ?? '');
+    set(this, 'firstName', firstName ?? '');
+    set(this, 'lastName', lastName ?? '');
   }
 }
 

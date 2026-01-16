@@ -1,11 +1,10 @@
-import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
-class AuthService extends Ember.Service {
+class AuthService extends Service {
   declare isAuthenticated: boolean;
 }
 
-class ApplicationController extends Ember.Controller {
+class ApplicationController extends Controller {
   model = {};
   declare string: string;
   transitionToLogin() {}
@@ -23,11 +22,11 @@ declare module '@ember/controller' {
   }
 }
 
-class LoginRoute extends Ember.Route {
-  @Ember.inject.service('auth')
+class LoginRoute extends Route {
+  @service('auth')
   declare auth: AuthService;
 
-  @Ember.inject.controller('emberApplication')
+  @controller('emberApplication')
   declare application: ApplicationController;
 
   didTransition() {
@@ -44,23 +43,27 @@ class LoginRoute extends Ember.Route {
 
 // New module injection style.
 import RouterService from '@ember/routing/router-service';
-import Controller from '@ember/controller';
+import Controller, { inject as controller } from '@ember/controller';
+import Service from '@ember/service';
+import Route from '@ember/routing/route';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-class ComponentInjection extends Ember.Component {
-  @Ember.inject.controller('emberApplication')
+class ComponentInjection extends Component {
+  @controller('emberApplication')
   declare applicationController: ApplicationController;
 
-  @Ember.inject.service('auth')
+  @service('auth')
   declare auth: AuthService;
 
-  @Ember.inject.service('router')
+  @service('router')
   declare router: RouterService;
 
-  @Ember.inject.service
-  declare misc: Ember.Service;
+  @service
+  declare misc: Service;
 
   testem() {
-    expectTypeOf(this.misc).toEqualTypeOf<Ember.Service>();
+    expectTypeOf(this.misc).toEqualTypeOf<Service>();
 
     const url = this.router.urlFor('some-route', 1, 2, 3, {
       queryParams: { seriously: 'yes' },

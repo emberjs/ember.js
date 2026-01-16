@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { run } from "@ember/runloop";
+import { registerAsyncHelper, registerHelper, registerWaiter } from "@ember/test";
+import { asyncEnd, asyncStart } from "ember-testing/lib/test/adapter";
+import TestPromise, { promise} from "ember-testing/lib/test/promise";
 
 const pending = 0;
 
@@ -6,41 +9,30 @@ declare const MyDb: {
   hasPendingTransactions(): boolean;
 };
 
-if (Ember.Test) {
-  Ember.Test.registerWaiter(() => pending !== 0);
 
-  Ember.Test.registerWaiter(MyDb, MyDb.hasPendingTransactions);
+registerWaiter(() => pending !== 0);
 
-  Ember.Test.promise((resolve) => {
+  registerWaiter(MyDb, MyDb.hasPendingTransactions);
+
+  promise((resolve) => {
     window.setTimeout(resolve, 500);
   });
 
-  Ember.Test.registerHelper('boot', (app) => {
-    Ember.run(app, app.advanceReadiness);
+  registerHelper('boot', (app) => {
+    run(app, app.advanceReadiness);
   });
 
-  Ember.Test.registerAsyncHelper('boot', (app) => {
-    Ember.run(app, app.advanceReadiness);
+  registerAsyncHelper('boot', (app) => {
+    run(app, app.advanceReadiness);
   });
 
-  Ember.Test.registerAsyncHelper('waitForPromise', (app, promise) => {
-    if (!Ember.Test) {
-      return;
-    }
-
-    return new Ember.Test.Promise((resolve) => {
-      if (!Ember.Test) {
-        return;
-      }
-      Ember.Test.Adapter.asyncStart();
+  registerAsyncHelper('waitForPromise', (app, promise) => {
+    return new TestPromise((resolve) => {
+      asyncStart();
 
       promise.then(() => {
-        if (!Ember.Test) {
-          return;
-        }
-
-        Ember.Test.Adapter.asyncEnd();
+        asyncEnd();
       });
     });
   });
-}
+

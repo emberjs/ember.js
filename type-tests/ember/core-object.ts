@@ -1,21 +1,19 @@
-import Ember from 'ember';
+import CoreObject from '@ember/object/core';
 import { expectTypeOf } from 'expect-type';
-
-const { CoreObject } = Ember;
 
 /** Newable tests */
 const co1 = new CoreObject();
 
 expectTypeOf(co1.isDestroyed).toBeBoolean();
 expectTypeOf(co1.isDestroying).toBeBoolean();
-expectTypeOf(co1.destroy()).toEqualTypeOf<Ember.CoreObject>();
+expectTypeOf(co1.destroy()).toEqualTypeOf<CoreObject>();
 expectTypeOf(co1.toString()).toBeString();
 
 /** .create tests */
 const co2 = CoreObject.create();
 expectTypeOf(co2.isDestroyed).toBeBoolean();
 expectTypeOf(co2.isDestroying).toBeBoolean();
-expectTypeOf(co2.destroy()).toEqualTypeOf<Ember.CoreObject>();
+expectTypeOf(co2.destroy()).toEqualTypeOf<CoreObject>();
 expectTypeOf(co2.toString()).toBeString();
 
 /** .create tests w/ initial instance data passed in */
