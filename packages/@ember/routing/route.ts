@@ -12,8 +12,7 @@ import EmberObject, { computed, get, set, getProperties, setProperties } from '@
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import { ActionHandler } from '@ember/-internals/runtime';
-import { typeOf } from '@ember/utils';
-import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
+import { isProxy, lookupDescriptor, typeOf } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
