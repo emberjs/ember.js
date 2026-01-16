@@ -12,3 +12,4 @@ package.json
 pnpm-lock.yaml
 glimmer-vm/**/*.md
 glimmer-vm/**/*.yaml
+tracerbench-testing/

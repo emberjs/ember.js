@@ -1,0 +1,43 @@
+{
+  "name": "benchmark-app",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "imports": {
+    "#app/*": "./app/*",
+    "#config": "./app/config/environment",
+    "#components/*": "./app/components/*"
+  },
+  "exports": {
+    "./tests/*": "./tests/*",
+    "./*": "./app/*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "start": "vite"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/plugin-transform-runtime": "^7.28.5",
+    "@babel/runtime": "^7.28.4",
+    "@embroider/core": "^4.4.2",
+    "@embroider/macros": "^1.19.6",
+    "@embroider/router": "^3.0.6",
+    "@embroider/vite": "^1.5.0",
+    "@glimmer/component": "workspace:*",
+    "@rollup/plugin-babel": "^6.1.0",
+    "babel-plugin-ember-template-compilation": "^3.0.1",
+    "decorator-transforms": "^2.3.1",
+    "ember-source": "workspace:*",
+    "ember-strict-application-resolver": "^0.1.1",
+    "vite": "^7.3.0"
+  },
+  "engines": {
+    "node": ">= 24"
+  },
+  "ember": {
+    "edition": "octane"
+  }
+}
