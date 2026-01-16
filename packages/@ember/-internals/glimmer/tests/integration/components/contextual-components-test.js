@@ -1,9 +1,16 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  applyMixins,
+  strip,
+  runTask,
+  expectDeprecation,
+  emberAWithoutDeprecation,
+} from 'internal-test-helpers';
 
 import { isEmpty } from '@ember/utils';
 import { action } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
 
@@ -1160,7 +1167,7 @@ moduleFor(
       });
 
       this.render('{{component (component "my-link") params=this.allParams}}', {
-        allParams: emberA(['a', 'b']),
+        allParams: emberAWithoutDeprecation(['a', 'b']),
       });
 
       this.assertText('ab');
@@ -1169,23 +1176,29 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').pushObject('c'));
+      expectDeprecation(() => {
+        runTask(() => this.context.get('allParams').pushObject('c'));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').popObject());
+      expectDeprecation(() => {
+        runTask(() => this.context.get('allParams').popObject());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').clear());
+      expectDeprecation(() => {
+        runTask(() => this.context.get('allParams').clear());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', emberAWithoutDeprecation(['1', '2'])));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', emberAWithoutDeprecation(['a', 'b'])));
 
       this.assertText('ab');
     }
@@ -1201,7 +1214,7 @@ moduleFor(
       this.render(
         '{{#let (hash link=(component "my-link")) as |c|}}{{c.link params=this.allParams}}{{/let}}',
         {
-          allParams: emberA(['a', 'b']),
+          allParams: emberAWithoutDeprecation(['a', 'b']),
         }
       );
 
@@ -1211,23 +1224,29 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').pushObject('c'));
+      expectDeprecation(() => {
+        runTask(() => this.context.get('allParams').pushObject('c'));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').popObject());
+      expectDeprecation(() => {
+        runTask(() => this.context.get('allParams').popObject());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').clear());
+      expectDeprecation(() => {
+        runTask(() => this.context.get('allParams').clear());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', emberAWithoutDeprecation(['1', '2'])));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', emberAWithoutDeprecation(['a', 'b'])));
 
       this.assertText('ab');
     }
