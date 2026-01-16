@@ -89,8 +89,11 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.731.0
         version: 3.750.0
+      '@babel/plugin-proposal-decorators':
+        specifier: ^7.25.9
+        version: 7.25.9(@babel/core@7.26.9)
       '@babel/plugin-transform-typescript':
-        specifier: ^7.22.9
+        specifier: ^7.26.8
         version: 7.26.8(@babel/core@7.26.9)
       '@babel/preset-env':
         specifier: ^7.16.11
@@ -2964,6 +2967,9 @@ importers:
 
   smoke-tests/scenarios:
     devDependencies:
+      '@babel/plugin-proposal-decorators':
+        specifier: ^7.25.9
+        version: 7.25.9(@babel/core@7.27.4)
       '@embroider/compat':
         specifier: ^3.9.0
         version: 3.9.0(@embroider/core@3.5.6)
@@ -2988,6 +2994,9 @@ importers:
       ember-cli-htmlbars-6:
         specifier: npm:ember-cli-htmlbars@^6.0.0
         version: ember-cli-htmlbars@6.3.0
+      ember-template-imports:
+        specifier: ^4.3.0
+        version: 4.3.0
       qunit:
         specifier: ^2.20.1
         version: 2.24.1

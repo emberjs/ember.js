@@ -2,6 +2,12 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from './decorator-util';
+import { findDescriptor } from '@ember/-internals/utils/lib/lookup-descriptor';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
@@ -34,6 +40,12 @@ export function isElementDescriptor(args: unknown[]): args is ElementDescriptor 
     // Make sure the descriptor is the right shape
     ((typeof maybeDesc === 'object' && maybeDesc !== null) || maybeDesc === undefined)
   );
+}
+
+export function isDecoratorCall(
+  args: unknown[]
+): args is ElementDescriptor | Parameters<Decorator> {
+  return isElementDescriptor(args) || isModernDecoratorArgs(args);
 }
 
 export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
@@ -113,32 +125,23 @@ export function makeComputedDecorator(
   desc: ComputedDescriptor,
   DecoratorClass: { prototype: object }
 ): ExtendedMethodDecorator {
-  let decorator = function COMPUTED_DECORATOR(
-    target: object,
-    key: string,
-    propertyDesc?: DecoratorPropertyDescriptor,
-    maybeMeta?: Meta,
-    isClassicDecorator?: boolean
-  ): DecoratorPropertyDescriptor {
-    assert(
-      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
-      isClassicDecorator ||
-        !propertyDesc ||
-        !propertyDesc.get ||
-        !COMPUTED_GETTERS.has(propertyDesc.get)
-    );
+  let decorator = function COMPUTED_DECORATOR(...args: unknown[]): DecoratorPropertyDescriptor {
+    if (isModernDecoratorArgs(args)) {
+      return computedDecorator2023(args, desc) as unknown as DecoratorPropertyDescriptor;
+    }
 
-    let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
+    let [target, key, propertyDesc, maybeMeta, isClassicDecorator] = args as [
+      object,
+      string,
+      DecoratorPropertyDescriptor | undefined,
+      Meta | undefined,
+      boolean | undefined,
+    ];
+
+    let meta = args.length < 4 ? metaFor(target) : maybeMeta;
     desc.setup(target, key, propertyDesc, meta!);
 
-    let computedDesc: PropertyDescriptor = {
-      enumerable: desc.enumerable,
-      configurable: desc.configurable,
-      get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
-      set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
-    };
-
-    return computedDesc;
+    return makeDescriptor(desc, key, propertyDesc, isClassicDecorator);
   };
 
   setClassicDecorator(decorator, desc);
@@ -146,6 +149,99 @@ export function makeComputedDecorator(
   Object.setPrototypeOf(decorator, DecoratorClass.prototype);
 
   return decorator;
+}
+
+function makeDescriptor(
+  desc: ComputedDescriptor,
+  key: string,
+  propertyDesc?: DecoratorPropertyDescriptor,
+  isClassicDecorator?: boolean
+): PropertyDescriptor {
+  assert(
+    `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
+    isClassicDecorator ||
+      !propertyDesc ||
+      !propertyDesc.get ||
+      !COMPUTED_GETTERS.has(propertyDesc.get)
+  );
+
+  let computedDesc: PropertyDescriptor = {
+    enumerable: desc.enumerable,
+    configurable: desc.configurable,
+    get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
+    set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
+  };
+  return computedDesc;
+}
+
+function once() {
+  let needsToRun = true;
+  return function (fn: () => void): void {
+    if (needsToRun) {
+      fn();
+      needsToRun = false;
+    }
+  };
+}
+
+function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescriptor) {
+  const dec = identifyModernDecoratorArgs(args);
+  let setup = once();
+
+  switch (dec.kind) {
+    case 'field':
+      dec.context.addInitializer(function (this: any) {
+        setup(() => {
+          desc.setup(
+            this.constructor.prototype,
+            dec.context.name as string,
+            undefined,
+            metaFor(this.constructor.prototype)
+          );
+        });
+        Object.defineProperty(
+          this,
+          dec.context.name,
+          makeDescriptor(desc, dec.context.name as string)
+        );
+      });
+      return undefined;
+    case 'setter':
+    case 'getter': {
+      dec.context.addInitializer(function (this: any) {
+        setup(() => {
+          let found = findDescriptor(this, dec.context.name);
+          if (!found) {
+            return;
+          }
+          desc.setup(
+            found.object,
+            dec.context.name as string,
+            found.descriptor,
+            metaFor(found.object)
+          );
+          Object.defineProperty(
+            found.object,
+            dec.context.name,
+            makeDescriptor(desc, dec.context.name as string, found.descriptor)
+          );
+        });
+      });
+      return undefined;
+    }
+    case 'method':
+      assert(
+        `@computed can only be used on accessors or fields, attempted to use it with ${dec.context.name.toString()} but that was a method. Try converting it to a getter (e.g. \`get ${dec.context.name.toString()}() {}\`)`,
+        false
+      );
+    // TS knows "assert()" is terminal and will complain about unreachable code if
+    // I use a break here. ESLint complains if I *don't* use a break here.
+    // eslint-disable-next-line no-fallthrough
+    default:
+      throw new Error(
+        `unimplemented: computedDecorator on ${dec.kind} ${dec.context.name?.toString()}`
+      );
+  }
 }
 
 /////////////
