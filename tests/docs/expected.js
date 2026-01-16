@@ -451,7 +451,6 @@ module.exports = {
     'runInDebug',
     'runInitializers',
     'runInstanceInitializers',
-    'runLoadHooks',
     'schedule',
     'scheduleOnce',
     'send',

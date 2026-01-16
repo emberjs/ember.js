@@ -134,9 +134,6 @@ d('@ember/application/index', emberApplicationIndex);
 import * as emberApplicationInstance from '@ember/application/instance';
 d('@ember/application/instance', emberApplicationInstance);
 
-import * as emberApplicationLibLazyLoad from '@ember/application/lib/lazy_load';
-d('@ember/application/lib/lazy_load', emberApplicationLibLazyLoad);
-
 import * as emberApplicationNamespace from '@ember/application/namespace';
 d('@ember/application/namespace', emberApplicationNamespace);
 
