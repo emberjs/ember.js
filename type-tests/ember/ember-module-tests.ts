@@ -295,3 +295,7 @@ Ember.create;
 Ember.reset;
 // @ts-expect-error
 Ember.unsubscribe;
+
+// Ensure that Ember.Transition is private
+// @ts-expect-error
+Ember.Transition;
