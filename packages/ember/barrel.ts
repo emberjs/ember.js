@@ -79,8 +79,6 @@ import EmberArrayProxy from '@ember/array/proxy';
 import EmberApplication, {
   getOwner as applicationGetOwner,
   setOwner as applicationSetOwner,
-  onLoad as applicationOnLoad,
-  runLoadHooks as applicationRunLoadHooks,
 } from '@ember/application';
 import EmberApplicationInstance from '@ember/application/instance';
 import EmberNamespace from '@ember/application/namespace';
@@ -207,8 +205,6 @@ namespace Ember {
 
   // ****@ember/application****
   export const getOwner = applicationGetOwner;
-  export const onLoad = applicationOnLoad;
-  export const runLoadHooks = applicationRunLoadHooks;
   export const setOwner = applicationSetOwner;
   export const Application = EmberApplication;
   export type Application = EmberApplication;

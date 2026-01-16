@@ -360,7 +360,6 @@ module.exports = {
     'one',
     'oneWay',
     'onInjectHelpers',
-    'onLoad',
     'onUpdateURL',
     'options',
     'optionsForType',
