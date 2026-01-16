@@ -14,9 +14,9 @@ const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
 /**
-  `Ember.EventDispatcher` handles delegating browser events to their
+  `EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
-  `Ember.EventDispatcher` ensures that that view's `mouseDown` method gets
+  `EventDispatcher` ensures that that view's `mouseDown` method gets
   called.
 
   @class EventDispatcher

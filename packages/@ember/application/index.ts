@@ -263,14 +263,14 @@ class Application extends Engine {
   declare _document: SimpleDocument | Document | null;
 
   /**
-    The `Ember.EventDispatcher` responsible for delegating events to this
+    The `EventDispatcher` responsible for delegating events to this
     application's views.
 
     The event dispatcher is created by the application at initialization time
     and sets up event listeners on the DOM element described by the
     application's `rootElement` property.
 
-    See the documentation for `Ember.EventDispatcher` for more information.
+    See the documentation for `EventDispatcher` for more information.
 
     @property eventDispatcher
     @type Ember.EventDispatcher

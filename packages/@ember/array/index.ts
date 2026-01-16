@@ -612,11 +612,12 @@ interface EmberArray<T> extends Enumerable {
     Example:
 
     ```javascript
+    import { A } from '@ember/array';
     function isAdult(person) {
       return person.age > 18;
     };
 
-    let people = Ember.A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
+    let people = A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
 
     people.filter(isAdult); // returns [{ name: 'Joan', age: 45 }];
     ```
@@ -637,7 +638,7 @@ interface EmberArray<T> extends Enumerable {
         super(...arguments);
 
         this.engineering = opts.engineering;
-        this.people = Ember.A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
+        this.people = A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
       }
     }
 
@@ -707,7 +708,8 @@ interface EmberArray<T> extends Enumerable {
     Example Usage:
 
     ```javascript
-    let things = Ember.A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
+    import { A } from '@ember/array';
+    let things = A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
 
     things.filterBy('food', 'beans'); // [{ food: 'beans', isFruit: false }]
     things.filterBy('isFruit'); // [{ food: 'apple', isFruit: true }]
@@ -847,11 +849,12 @@ interface EmberArray<T> extends Enumerable {
     Usage example:
 
     ```javascript
+    import { A } from '@ember/array';
     function isAdult(person) {
       return person.age > 18;
     };
 
-    const people = Ember.A([{ name: 'John', age: 24 }, { name: 'Joan', age: 45 }]);
+    const people = A([{ name: 'John', age: 24 }, { name: 'Joan', age: 45 }]);
     const areAllAdults = people.every(isAdult);
     ```
 
@@ -1853,7 +1856,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 });
 
 /**
-  Creates an `Ember.NativeArray` from an Array-like object.
+  Creates an `NativeArray` from an Array-like object.
   Does not modify the original object's contents.
 
   Example
