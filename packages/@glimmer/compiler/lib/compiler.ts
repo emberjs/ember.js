@@ -83,7 +83,7 @@ export function precompileJSON(
   options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): [block: SerializedTemplateBlock, usedLocals: string[]] {
   const source = new src.Source(string ?? '', options.meta?.moduleName);
-  const [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
+  const [ast, locals] = normalize(source, options);
   const block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);
   });

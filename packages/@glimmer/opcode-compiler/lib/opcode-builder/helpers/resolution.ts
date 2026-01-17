@@ -17,6 +17,7 @@ import type {
 } from '@glimmer/interfaces';
 import { debugToString, expect, localAssert, unwrap } from '@glimmer/debug-util';
 import { SexpOpcodes } from '@glimmer/wire-format';
+import { on } from '@glimmer/runtime/lib/modifiers/on';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;
@@ -192,6 +193,10 @@ export function resolveHelper(
   }
 }
 
+const modifierKeywords: Record<string, object> = {
+  on,
+};
+
 /**
  * <div {{modifier}}/>
  * <div {{modifier arg}}/>
@@ -223,6 +228,8 @@ export function resolveModifier(
     } = assertResolverInvariants(meta);
     let name = unwrap(upvars[expr[1]]);
     let modifier = resolver?.lookupBuiltInModifier?.(name) ?? null;
+
+    modifier ??= modifierKeywords[name] ?? null;
 
     if (DEBUG && modifier === null) {
       localAssert(
