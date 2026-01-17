@@ -7,7 +7,6 @@ let App, appBooted, helperContainer;
 
 function registerHelper() {
   Test.registerHelper('boot', function (app) {
-    run(app, app.advanceReadiness);
     appBooted = true;
     return app.testHelpers.wait();
   });
