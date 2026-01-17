@@ -221,6 +221,8 @@ export function resolveModifier(
       expr[1]
     ];
 
+    definition ??= modifierKeywords[expr[1]];
+
     then(constants.modifier(definition as object, lexical?.at(expr[1]) ?? undefined));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let {
@@ -228,10 +230,6 @@ export function resolveModifier(
     } = assertResolverInvariants(meta);
     let name = unwrap(upvars[expr[1]]);
     let modifier = resolver?.lookupBuiltInModifier?.(name) ?? null;
-
-    if (!modifier) {
-      modifier = modifierKeywords[name] ?? null;
-    }
 
     if (DEBUG && modifier === null) {
       localAssert(
@@ -253,12 +251,6 @@ export function resolveModifier(
     } = assertResolverInvariants(meta);
     let name = unwrap(upvars[expr[1]]);
     let modifier = resolver?.lookupModifier?.(name, owner) ?? null;
-
-
-    if (!modifier) {
-      modifier = modifierKeywords[name] ?? null;
-    }
-
 
     if (DEBUG && modifier === null) {
       localAssert(
