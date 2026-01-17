@@ -666,8 +666,6 @@ Object.defineProperty(Ember, 'testing', {
   enumerable: false,
 });
 
-applicationRunLoadHooks('Ember.Application', EmberApplication);
-
 let EmberHandlebars: EmberHandlebars = {
   template,
   Utils: {},
@@ -747,8 +745,5 @@ function defineEmberTestingLazyLoad(key: 'Test' | 'setupForTesting') {
 
 defineEmberTestingLazyLoad('Test');
 defineEmberTestingLazyLoad('setupForTesting');
-
-// @ts-expect-error Per types, runLoadHooks requires a second parameter. Should we loosen types?
-applicationRunLoadHooks('Ember');
 
 export default Ember;
