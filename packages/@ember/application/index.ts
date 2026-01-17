@@ -962,10 +962,6 @@ class Application extends Engine {
   willDestroy() {
     super.willDestroy();
 
-    if (_loaded['application'] === this) {
-      _loaded['application'] = undefined;
-    }
-
     if (this._applicationInstances.size) {
       this._applicationInstances.forEach((i) => i.destroy());
       this._applicationInstances.clear();
