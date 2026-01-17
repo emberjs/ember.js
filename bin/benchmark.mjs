@@ -29,12 +29,10 @@ const FORCE = hasFlag(process.argv, '--force');
 const REUSE = hasFlag(process.argv, '--reuse');
 
 try {
-  const result = await runBenchmark({
+  await runBenchmark({
     force: FORCE,
     reuse: REUSE,
   });
-
-  console.log(`\nWrote report: ${result.msgFile}`);
 } catch (error) {
   console.error(error);
   process.exit(1);

@@ -8,7 +8,7 @@ import { getOrBuildControlTarball } from './control.mjs';
 import { buildExperimentTarball } from './experiment.mjs';
 import { run, prepareApp, sleep, startVitePreview, lsof } from './utils.mjs';
 
-const { ensureDir, remove, writeFile } = fs;
+const { ensureDir, remove } = fs;
 
 function buildMarkersString(markers) {
   return markers
@@ -57,23 +57,17 @@ const DEFAULT_MARKERS = [
 
 import { REPO_ROOT, BENCH_ROOT } from './utils.mjs';
 
+const CONTROL_DIRS = {
+  repo: join(BENCH_ROOT, 'ember-source-control'),
+  app: join(BENCH_ROOT, 'control'),
+};
+const EXPERIMENT_DIRS = {
+  app: join(BENCH_ROOT, 'experiment'),
+  repo: REPO_ROOT,
+};
+
 export async function runBenchmark({ force = false, reuse = false } = {}) {
-  // Use config constants directly; no local re-assignment
-
   await ensureDir(BENCH_ROOT);
-
-  const CONTROL_DIRS = {
-    repo: join(BENCH_ROOT, 'ember-source-control'),
-    app: join(BENCH_ROOT, 'control'),
-  };
-  const EXPERIMENT_DIRS = {
-    app: join(BENCH_ROOT, 'experiment'),
-    repo: REPO_ROOT,
-  };
-
-  const controlUrl = `http://127.0.0.1:${DEFAULT_CONTROL_PORT}`;
-  const experimentUrl = `http://127.0.0.1:${DEFAULT_EXPERIMENT_PORT}`;
-  const markersString = buildMarkersString(DEFAULT_MARKERS);
 
   if (force) {
     await killPortProcess([DEFAULT_CONTROL_PORT, DEFAULT_EXPERIMENT_PORT]);
@@ -124,18 +118,19 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
     port: DEFAULT_EXPERIMENT_PORT,
   });
 
-  async function cleanup() {
-    console.log(`\n\tCleaning up servers...`);
+  try {
+    await bootAndRun();
+  } finally {
+    console.log(`\n\tCleaning up servers with SIGKILL...`);
 
     await killPortProcess([DEFAULT_CONTROL_PORT, DEFAULT_EXPERIMENT_PORT]);
   }
+}
 
-  process.on('exit', cleanup);
-  process.on('SIGINT', () => {
-    cleanup();
-    // eslint-disable-next-line n/no-process-exit
-    process.exit(1);
-  });
+async function bootAndRun() {
+  const controlUrl = `http://127.0.0.1:${DEFAULT_CONTROL_PORT}`;
+  const experimentUrl = `http://127.0.0.1:${DEFAULT_EXPERIMENT_PORT}`;
+  const markersString = buildMarkersString(DEFAULT_MARKERS);
 
   // give servers a moment to start
   await sleep(5000);
@@ -179,23 +174,5 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
     `"--incognito,--disable-gpu,--mute-audio,--log-level=3,--headless=new"`,
   ];
 
-  const output = await run('node', args, { cwd: EXPERIMENT_DIRS.app });
-  const msgFile = join(BENCH_ROOT, 'msg.txt');
-
-  if (!process.env.CI) {
-    await writeFile(
-      msgFile,
-      output.stdout.split('Benchmark Results Summary').pop() ?? output.stdout,
-      'utf8'
-    );
-  }
-
-  await cleanup();
-
-  return {
-    benchRoot: BENCH_ROOT,
-    msgFile,
-    controlUrl,
-    experimentUrl,
-  };
+  await run('node', args, { cwd: EXPERIMENT_DIRS.app });
 }
