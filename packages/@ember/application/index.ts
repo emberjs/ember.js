@@ -778,7 +778,6 @@ class Application extends Engine {
 
     try {
       this.runInitializers();
-      runLoadHooks('application', this);
       this.advanceReadiness();
       // Continues to `didBecomeReady`
     } catch (error) {
