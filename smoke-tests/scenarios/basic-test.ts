@@ -260,24 +260,24 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { tracked } from '@glimmer/tracking';
               import { modifier as eModifier } from 'ember-modifier';
 
-              // shadows keyword!
-              const on = eModifier(() => {
-                QUnit.assert.step('shadowed:on:create');
-              });
-
-              class Demo extends Component {
-                @tracked message = 'hello';
-                louder = () => this.message = this.message + '!';
-
-                <template>
-                  <button {{on 'click' this.louder}}>{{this.message}}</button>
-                </template>
-              }
-
               module('{{on}} as keyword (but it is shadowed)', function(hooks) {
                 setupRenderingTest(hooks);
 
                 test('it works', async function(assert) {
+                  // shadows keyword!
+                  const on = eModifier(() => {
+                    assert.step('shadowed:on:create');
+                  });
+
+                  class Demo extends Component {
+                    @tracked message = 'hello';
+                    louder = () => this.message = this.message + '!';
+
+                    <template>
+                      <button {{on 'click' this.louder}}>{{this.message}}</button>
+                    </template>
+                  }
+
                   await render(Demo);
                   assert.verifySteps(['shadowed:on:create']);
 
