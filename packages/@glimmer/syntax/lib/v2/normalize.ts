@@ -35,7 +35,7 @@ import {
 
 export function normalize(
   source: Source,
-  options: PrecompileOptionsWithLexicalScope = { lexicalScope: () => false }
+  options: PrecompileOptions & { lexicalScope?: (variable: string) => boolean }
 ): [ast: ASTv2.Template, locals: string[]] {
   let ast = preprocess(source, options);
 
@@ -45,10 +45,12 @@ export function normalize(
     locals: ast.blockParams,
     keywords: options.keywords ?? [],
   };
+  let localsSet = new Set(normalizeOptions.locals);
+  let lexicalScope = options.lexicalScope ?? ((name: string) => localsSet.has(name));
 
   let top = SymbolTable.top(normalizeOptions.locals, normalizeOptions.keywords, {
     customizeComponentName: options.customizeComponentName ?? ((name) => name),
-    lexicalScope: options.lexicalScope,
+    lexicalScope,
   });
   let block = new BlockContext(source, normalizeOptions, top);
   let normalizer = new StatementNormalizer(block);
