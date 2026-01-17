@@ -227,7 +227,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
               import { render, click } from '@ember/test-helpers';
-            
+
               import Component from '@glimmer/component';
               import { tracked } from '@glimmer/tracking';
 
@@ -239,7 +239,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   <button {{on 'click' this.louder}}>{{this.message}}</button>
                 </template>
               }
-             
+
               module('{{on}} as keyword', function(hooks) {
                 setupRenderingTest(hooks);
 
@@ -255,7 +255,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import QUnit, { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
               import { render, click } from '@ember/test-helpers';
-            
+
               import Component from '@glimmer/component';
               import { tracked } from '@glimmer/tracking';
               import { modifier as eModifier } from 'ember-modifier';
@@ -273,8 +273,8 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   <button {{on 'click' this.louder}}>{{this.message}}</button>
                 </template>
               }
-             
-              module('{{on}} as keyword', function(hooks) {
+
+              module('{{on}} as keyword (but it is shadowed)', function(hooks) {
                 setupRenderingTest(hooks);
 
                 test('it works', async function(assert) {
