@@ -121,7 +121,6 @@ import { DEPRECATIONS } from '@ember/-internals/deprecations';
 let allExports = [
   ['Application', '@ember/application', 'default', test0],
   ['getOwner', '@ember/application', 'getOwner', test0],
-  ['onLoad', '@ember/application', 'onLoad', test0],
   ['setOwner', '@ember/application', 'setOwner', test0],
   ['ApplicationInstance', '@ember/application/instance', 'default', test1],
   ['Namespace', '@ember/application/namespace', 'default', test2],
