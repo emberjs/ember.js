@@ -8,9 +8,7 @@ QUnit.module('@glimmer/syntax - normalize', () => {
       // In the real code, keywords is a manually maintained list
       // of some real, some fake things that are implemented as opcodes,
       // rather than just using (for example) import { on } from 'where-on-lives';
-      keywords: [
-        'on',
-      ],
+      keywords: ['on'],
       // The default value used for all invocations of precompileJSON
       //   is () => false.... which doesn't seem right.
       //
