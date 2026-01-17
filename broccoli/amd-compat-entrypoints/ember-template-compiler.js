@@ -155,9 +155,6 @@ d('ember-template-compiler/lib/plugins/utils', emberTemplateCompilerLibPluginsUt
 import * as emberTemplateCompilerLibPublicApi from 'ember-template-compiler/lib/public-api';
 d('ember-template-compiler/lib/public-api', emberTemplateCompilerLibPublicApi);
 
-import * as emberTemplateCompilerLibSystemBootstrap from 'ember-template-compiler/lib/system/bootstrap';
-d('ember-template-compiler/lib/system/bootstrap', emberTemplateCompilerLibSystemBootstrap);
-
 import * as emberTemplateCompilerLibSystemCalculateLocationDisplay from 'ember-template-compiler/lib/system/calculate-location-display';
 d(
   'ember-template-compiler/lib/system/calculate-location-display',
@@ -178,9 +175,6 @@ d(
   'ember-template-compiler/lib/system/dasherize-component-name',
   emberTemplateCompilerLibSystemDasherizeComponentName
 );
-
-import * as emberTemplateCompilerLibSystemInitializer from 'ember-template-compiler/lib/system/initializer';
-d('ember-template-compiler/lib/system/initializer', emberTemplateCompilerLibSystemInitializer);
 
 import * as emberTemplateCompilerLibSystemPrecompile from 'ember-template-compiler/lib/system/precompile';
 d('ember-template-compiler/lib/system/precompile', emberTemplateCompilerLibSystemPrecompile);
