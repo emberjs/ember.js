@@ -5,9 +5,7 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import { castToSimple } from '@glimmer/debug-util';
 
-import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { BLACKLIST_TABLE, DOMOperations } from './operations';
 
 [
@@ -60,9 +58,6 @@ import { BLACKLIST_TABLE, DOMOperations } from './operations';
 const WHITESPACE =
   /[\t\n\v\f\r \xa0\u{1680}\u{180e}\u{2000}-\u{200a}\u{2028}\u{2029}\u{202f}\u{205f}\u{3000}\u{feff}]/u;
 
-const doc: Nullable<SimpleDocument> =
-  typeof document === 'undefined' ? null : castToSimple(document);
-
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
@@ -88,9 +83,5 @@ export class DOMChangesImpl extends DOMOperations implements GlimmerTreeChanges 
   }
 }
 
-let helper = DOMChangesImpl;
-
-helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChangesImpl;
-
-export const DOMChanges = helper;
+export const DOMChanges = DOMChangesImpl;
 export { DOMTreeConstruction } from './api';

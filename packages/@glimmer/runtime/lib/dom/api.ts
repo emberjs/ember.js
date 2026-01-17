@@ -3,16 +3,10 @@ import type {
   ElementNamespace,
   GlimmerTreeConstruction,
   Nullable,
-  SimpleDocument,
   SimpleElement,
 } from '@glimmer/interfaces';
-import { castToSimple } from '@glimmer/debug-util';
 
-import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { DOMOperations } from './operations';
-
-const doc: Nullable<SimpleDocument> =
-  typeof document === 'undefined' ? null : castToSimple(document);
 
 export class TreeConstruction extends DOMOperations implements GlimmerTreeConstruction {
   createElementNS(namespace: ElementNamespace, tag: string): SimpleElement {
@@ -33,11 +27,5 @@ export class TreeConstruction extends DOMOperations implements GlimmerTreeConstr
   }
 }
 
-let appliedTreeConstruction = TreeConstruction;
-appliedTreeConstruction = applyTextNodeMergingFix(
-  doc,
-  appliedTreeConstruction
-) as typeof TreeConstruction;
-
-export const DOMTreeConstruction = appliedTreeConstruction;
+export const DOMTreeConstruction = TreeConstruction;
 export type DOMTreeConstruction = TreeConstruction;

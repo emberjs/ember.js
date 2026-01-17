@@ -97,9 +97,6 @@ export class DOMOperations {
     } else {
       // Non-element nodes do not support insertAdjacentHTML, so add an
       // element and call it on that element. Then remove the element.
-      //
-      // This also protects Edge, IE and Firefox w/o the inspector open
-      // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
       const { uselessElement } = this;
 
       parent.insertBefore(uselessElement, nextSibling);
