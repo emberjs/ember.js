@@ -45,9 +45,6 @@ d('ember-testing/lib/helpers/visit', emberTestingLibHelpersVisit);
 import * as emberTestingLibHelpersWait from 'ember-testing/lib/helpers/wait';
 d('ember-testing/lib/helpers/wait', emberTestingLibHelpersWait);
 
-import * as emberTestingLibInitializers from 'ember-testing/lib/initializers';
-d('ember-testing/lib/initializers', emberTestingLibInitializers);
-
 import * as emberTestingLibPublicApi from 'ember-testing/lib/public-api';
 d('ember-testing/lib/public-api', emberTestingLibPublicApi);
 
