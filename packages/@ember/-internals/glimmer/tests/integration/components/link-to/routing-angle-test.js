@@ -496,7 +496,7 @@ moduleFor(
         this.visit('/'),
         'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
           'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
-          'See https://ember-engines.com/docs/links for more info.'
+          'See https://github.com/ember-engines/ember-engines for more info.'
       );
     }
 
