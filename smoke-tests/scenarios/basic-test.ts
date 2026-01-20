@@ -112,7 +112,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { trackedArray } from '@ember/reactive/collections';
 
               module('tracked-built-ins', function () {
-                test('it works', function (assert) {
+                test('it works', function () {
                   assert.ok(new TrackedArray());
                   assert.ok(trackedArray());
                 });
