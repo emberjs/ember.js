@@ -106,18 +106,6 @@ function basicTest(scenarios: Scenarios, appName: string) {
             `,
           },
           integration: {
-            'tracked-built-ins-macro-test.gjs': `
-              import { module, test } from 'qunit';
-              import { TrackedArray } from 'tracked-built-ins';
-              import { trackedArray } from '@ember/reactive/collections';
-
-              module('tracked-built-ins', function () {
-                test('it works', function () {
-                  assert.ok(new TrackedArray());
-                  assert.ok(trackedArray());
-                });
-              });
-            `,
             'destruction-test.gjs': `
               import { module, test } from 'qunit';
               import { clearRender, render } from '@ember/test-helpers';
