@@ -1,7 +1,6 @@
 /**
   @module ember
 */
-import { helpers, registerHelper, registerAsyncHelper, unregisterHelper } from './test/helpers';
 import { onInjectHelpers } from './test/on_inject_helpers';
 import TestPromise, { promise, resolve } from './test/promise';
 import { checkWaiters, registerWaiter, unregisterWaiter } from './test/waiters';
@@ -21,18 +20,6 @@ import { getAdapter, setAdapter } from './test/adapter';
   @public
 */
 const Test = {
-  /**
-    Hash containing all known test helpers.
-
-    @property _helpers
-    @private
-    @since 1.7.0
-  */
-  _helpers: helpers,
-
-  registerHelper,
-  registerAsyncHelper,
-  unregisterHelper,
   onInjectHelpers,
   Promise: TestPromise,
   promise,
