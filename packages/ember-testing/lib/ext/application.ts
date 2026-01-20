@@ -1,6 +1,5 @@
 import EmberApplication from '@ember/application';
 import setupForTesting from '../setup_for_testing';
-import { helpers } from '../test/helpers';
 import TestPromise, { resolve, getLastPromise } from '../test/promise';
 import run from '../test/run';
 import { invokeInjectHelpersCallbacks } from '../test/on_inject_helpers';
@@ -133,14 +132,6 @@ EmberApplication.reopen({
     });
 
     this.testHelpers = {};
-    for (let name in helpers) {
-      // SAFETY: It is safe to access a property on an object
-      this.originalMethods[name] = (this.helperContainer as any)[name];
-      // SAFETY: It is not quite as safe to do this, but it _seems_ to be ok.
-      this.testHelpers[name] = (this.helperContainer as any)[name] = helper(this, name);
-      // SAFETY: We checked that it exists
-      protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name]!.meta.wait);
-    }
 
     invokeInjectHelpersCallbacks(this);
   },
