@@ -6,6 +6,10 @@ import {
   setClassicDecorator,
 } from '@ember/-internals/metal';
 import type { ElementDescriptor } from '@ember/-internals/metal';
+import {
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from '@ember/-internals/metal/lib/decorator-util';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/validator';
 import { consumeTag, tagFor, track, updateTag } from '@glimmer/validator';
@@ -139,6 +143,25 @@ export function dependentKeyCompat(
     );
 
     return wrapGetterSetter(target, key, desc);
+  } else if (isModernDecoratorArgs(args)) {
+    const dec = identifyModernDecoratorArgs(args);
+    assert(
+      'The @dependentKeyCompat decorator must be applied to getters/setters when used in native classes',
+      dec.kind === 'getter'
+    );
+    return function (this: any) {
+      let propertyTag = tagFor(this, dec.context.name as string) as UpdatableTag;
+      let ret;
+
+      let tag = track(() => {
+        ret = dec.value.call(this);
+      });
+
+      updateTag(propertyTag, tag);
+      consumeTag(tag);
+
+      return ret;
+    };
   } else {
     const desc = args[0];
 

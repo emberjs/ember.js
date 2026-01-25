@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
       output: {
         preserveModules: true,
       },
+      treeshake: false,
     },
     minify: mode === 'production',
   };
@@ -49,6 +50,9 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,
+
+    // the stock esbuild support for typescript is horribly broken. For example,
+    // it will simply remove your decorators.
     esbuild: false,
     envPrefix: 'VM_',
   };
