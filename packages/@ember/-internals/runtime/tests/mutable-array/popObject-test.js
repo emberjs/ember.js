@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class PopObjectTests extends AbstractTestCase {
@@ -7,9 +7,13 @@ class PopObjectTests extends AbstractTestCase {
     let obj = this.newObject([]);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    this.assert.equal(obj.popObject(), undefined, 'popObject results');
+    expectDeprecation(() => {
+      this.assert.equal(obj.popObject(), undefined, 'popObject results');
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -39,9 +43,14 @@ class PopObjectTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    let ret = obj.popObject();
+    let ret;
+    expectDeprecation(() => {
+      ret = obj.popObject();
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -73,9 +82,14 @@ class PopObjectTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    let ret = obj.popObject();
+    let ret;
+    expectDeprecation(() => {
+      ret = obj.popObject();
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();

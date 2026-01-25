@@ -5,7 +5,7 @@ import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, deprecate, DeprecationOptions } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
   type ComputedDecorator,
@@ -14,6 +14,8 @@ import {
   type ComputedPropertySetter,
   type ComputedDescriptor,
   isClassicDecorator,
+  addListener,
+  removeListener,
 } from '@ember/-internals/metal';
 import {
   ComputedProperty,
@@ -27,7 +29,7 @@ import {
   defineDecorator,
   defineValue,
 } from '@ember/-internals/metal';
-import { addListener, removeListener } from '@ember/object/events';
+import { DEPRECATION, findDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
@@ -543,6 +545,9 @@ export default class Mixin {
   /** @internal */
   properties: { [key: string]: any } | undefined;
 
+  /*** @internal */
+  [DEPRECATION]: { message: string; options: DeprecationOptions } | null = null;
+
   /** @internal */
   ownerConstructor: any;
 
@@ -621,6 +626,13 @@ export default class Mixin {
       return this;
     }
 
+    if (DEBUG) {
+      for (let mixin of args) {
+        let deprecation = mixin instanceof Mixin ? findDeprecation(mixin) : null;
+        deprecate(deprecation?.message ?? 'Huh???', !deprecation, deprecation?.options);
+      }
+    }
+
     if (this.properties) {
       let currentMixin = new Mixin(undefined, this.properties);
       this.properties = undefined;
@@ -641,6 +653,11 @@ export default class Mixin {
     @internal
   */
   apply(obj: object, _hideKeys = false) {
+    if (DEBUG) {
+      let deprecation = findDeprecation(this);
+      deprecate(deprecation?.message ?? 'Huh???', !deprecation, deprecation?.options);
+    }
+
     // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
     // mutating a native object prototype like this should _not_ result in enumerable properties being added (or we have significant
     // issues with things like deep equality checks from test frameworks, or things like jQuery.extend(true, [], [])).
@@ -662,6 +679,11 @@ export default class Mixin {
     @internal
   */
   detect(obj: any): boolean {
+    if (DEBUG) {
+      let deprecation = findDeprecation(this);
+      deprecate(deprecation?.message ?? 'Huh???', !deprecation, deprecation?.options);
+    }
+
     if (typeof obj !== 'object' || obj === null) {
       return false;
     }
