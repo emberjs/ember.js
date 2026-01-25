@@ -4,7 +4,6 @@ import config from 'my-app/config/environment';
 import { initialize } from 'my-app/initializers/foo';
 import { module, test } from 'qunit';
 import Resolver from 'ember-resolver';
-import { run } from '@ember/runloop';
 
 module('Unit | Initializer | foo', function (hooks) {
   hooks.beforeEach(function () {
@@ -25,7 +24,7 @@ module('Unit | Initializer | foo', function (hooks) {
   });
 
   hooks.afterEach(function () {
-    run(this.application, 'destroy');
+    this.application.destroy();
   });
 
   // TODO: Replace this with your real tests.
