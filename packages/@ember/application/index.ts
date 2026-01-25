@@ -10,7 +10,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { join, once, run, schedule } from '@ember/runloop';
 import { libraries } from '@ember/-internals/metal';
-import { _loaded, onLoad, runLoadHooks } from './lib/lazy_load';
 import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import Route from '@ember/routing/route';
@@ -779,7 +778,6 @@ class Application extends Engine {
 
     try {
       this.runInitializers();
-      runLoadHooks('application', this);
       this.advanceReadiness();
       // Continues to `didBecomeReady`
     } catch (error) {
@@ -962,10 +960,6 @@ class Application extends Engine {
   // This method must be moved to the application instance object
   willDestroy() {
     super.willDestroy();
-
-    if (_loaded['application'] === this) {
-      _loaded['application'] = undefined;
-    }
 
     if (this._applicationInstances.size) {
       this._applicationInstances.forEach((i) => i.destroy());
@@ -1217,4 +1211,4 @@ function commonSetupRegistry(registry: Registry) {
   registry.register('service:router', RouterService);
 }
 
-export { Application as default, _loaded, onLoad, runLoadHooks };
+export { Application as default };
