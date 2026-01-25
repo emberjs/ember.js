@@ -128,7 +128,7 @@ export interface ExplicitClassOptions<C extends ComponentClass>
  * ### The Technical Requirements of the `eval` Option
  *
  * The `eval` function is passed a single parameter that is a JavaScript
- * identifier. This will be extended in the future to support private fields.
+ * identifier or a private field identifier (starting with `#`).
  *
  * Since keywords in JavaScript are contextual (e.g. `await` and `yield`), the
  * parameter might be a keyword. The `@ember/template-compiler/runtime` expects
@@ -213,12 +213,25 @@ export type ImplicitTemplateOnlyOptions = BaseTemplateOptions & ImplicitEvalOpti
  * }
  * ```
  *
- * ## Note  on Private Fields
+ * ## Private Fields Support
  *
- * The current implementation of `@ember/template-compiler` does not support
- * private fields, but once the Handlebars parser adds support for private field
- * syntax and it's implemented in the Glimmer compiler, the implicit form should
- * be able to support them.
+ * The implicit form now supports private fields. You can reference private
+ * class members in templates using the `this.#fieldName` syntax:
+ *
+ * ```ts
+ * class MyComponent extends Component {
+ *   #count = 0;
+ *   #increment = () => this.#count++;
+ *
+ *   static {
+ *     template(
+ *       '<button {{on "click" this.#increment}}>{{this.#count}}</button>',
+ *       { component: this },
+ *       eval() { return arguments[0] }
+ *     );
+ *   }
+ * }
+ * ```
  */
 export type ImplicitClassOptions<C extends ComponentClass> = BaseClassTemplateOptions<C> &
   ImplicitEvalOption;

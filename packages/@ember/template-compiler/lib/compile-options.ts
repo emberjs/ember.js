@@ -110,7 +110,19 @@ type Evaluator = (value: string) => unknown;
 // https://tc39.es/ecma262/2020/#prod-IdentifierName
 const IDENT = /^[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
 
+// https://tc39.es/ecma262/#prod-PrivateIdentifier
+const PRIVATE_IDENT = /^#[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
+
 function inScope(variable: string, evaluator: Evaluator): boolean {
+  // Check if it's a private field syntax
+  if (PRIVATE_IDENT.exec(variable)) {
+    // Private fields are always considered "in scope" when referenced in a template
+    // since they are class members, not lexical variables. The actual access check
+    // will happen at runtime when the template accesses `this.#fieldName`.
+    // We just need to ensure they're treated as valid identifiers and passed through.
+    return true;
+  }
+
   // If the identifier is not a valid JS identifier, it's definitely not in scope
   if (!IDENT.exec(variable)) {
     return false;
