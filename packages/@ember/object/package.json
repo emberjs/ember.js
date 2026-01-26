@@ -33,8 +33,7 @@
     "@glimmer/util": "workspace:*",
     "@glimmer/validator": "workspace:*",
     "expect-type": "^0.15.0",
-    "internal-test-helpers": "workspace:*",
-    "@lifeart/gxt": "0.0.53"
+    "internal-test-helpers": "workspace:*"
   },
   "devDependencies": {
     "@ember/owner": "workspace:*"

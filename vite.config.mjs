@@ -3,10 +3,8 @@
 import { defineConfig } from 'vite';
 import { babel } from '@rollup/plugin-babel';
 import { resolve, dirname } from 'node:path';
-import { fileURLToPath, URL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
-import { compiler } from '@lifeart/gxt/compiler';
-
 import {
   version,
   resolvePackages,
@@ -18,7 +16,7 @@ import { templateTag } from '@embroider/vite';
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const { packageName: getPackageName, PackageCache } = require('@embroider/shared-internals');
-const owerrideRoot = import.meta.url;
+
 export default defineConfig(({ mode }) => {
   process.env.EMBER_ENV = mode;
 
@@ -33,22 +31,9 @@ export default defineConfig(({ mode }) => {
     minify: mode === 'production',
   };
 
-  // Use GXT_MODE=true to enable glimmer-next integration
-  const useGxt = process.env.GXT_MODE === 'true';
-
   return {
     plugins: [
-      // Use gxt compiler for glimmer-next or templateTag for standard Ember
-      useGxt
-        ? compiler(mode, {
-            flags: {
-              WITH_EMBER_INTEGRATION: true,
-              WITH_HELPER_MANAGER: true,
-              WITH_MODIFIER_MANAGER: true,
-              TRY_CATCH_ERROR_HANDLING: false,
-            },
-          })
-        : templateTag(),
+      templateTag(),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts', '.gjs', '.gts'],
@@ -63,76 +48,9 @@ export default defineConfig(({ mode }) => {
     ],
     optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
-    server: {
-      hmr: {
-        overlay: false,
-      },
-    },
     build,
     esbuild: false,
     envPrefix: 'VM_',
-    resolve: useGxt
-      ? {
-          alias: [
-            {
-              find: '@ember/template-compilation',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/compile`, owerrideRoot)),
-            },
-            {
-              find: '@ember/-internals/deprecations',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/deprecate`, owerrideRoot)),
-            },
-            {
-              find: '@glimmer/application',
-              replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/glimmer-application`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@glimmer/utils',
-              replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/glimmer-util`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@glimmer/manager',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/manager`, owerrideRoot)),
-            },
-            {
-              find: '@glimmer/validator',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/validator`, owerrideRoot)),
-            },
-            {
-              find: '@glimmer/destroyable',
-              replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/destroyable`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@glimmer/reference',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/reference`, owerrideRoot)),
-            },
-            {
-              find: '@lifeart/gxt/glimmer-compatibility',
-              replacement: fileURLToPath(
-                new URL(
-                  `./packages/demo/node_modules/@lifeart/gxt/dist/gxt.glimmer-compat.es.js`,
-                  owerrideRoot
-                )
-              ),
-            },
-            {
-              find: '@lifeart/gxt',
-              replacement: fileURLToPath(
-                new URL(
-                  `./packages/demo/node_modules/@lifeart/gxt/dist/gxt.index.es.js`,
-                  owerrideRoot
-                )
-              ),
-            },
-          ],
-        }
-      : undefined,
   };
 });
 

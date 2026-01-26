@@ -8,12 +8,12 @@ import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import { cellFor } from '@lifeart/gxt';
+import { createComputeRef, updateRef } from '@glimmer/reference';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
-// const { createComputeRef, updateRef } = reference;
 
 export interface BootEnvironment {
   hasDOM: boolean;
@@ -46,7 +46,6 @@ export default class OutletView {
     application: InternalOwner;
     template: TemplateFactory;
   }): OutletView {
-    console.log('outlet-view create', options);
     let { environment: _environment, application: namespace, template: templateFactory } = options;
     let owner = getOwner(options);
     assert('OutletView is unexpectedly missing an owner', owner);
@@ -63,6 +62,7 @@ export default class OutletView {
     public template: Template,
     public namespace: any
   ) {
+    let outletStateTag = createTag();
     let outletState: OutletState = {
       outlets: { main: undefined },
       render: {
@@ -74,11 +74,16 @@ export default class OutletView {
       },
     };
 
-    cellFor(outletState.outlets, 'main');
-
-    let ref = (this.ref = outletState);
-
-    // ref.compute();
+    let ref = (this.ref = createComputeRef(
+      () => {
+        consumeTag(outletStateTag);
+        return outletState;
+      },
+      (state: OutletState) => {
+        dirtyTag(outletStateTag);
+        outletState.outlets['main'] = state;
+      }
+    ));
 
     this.state = {
       ref,
@@ -109,10 +114,7 @@ export default class OutletView {
   }
 
   setOutletState(state: OutletState): void {
-    // debugger;
-    //  @todo - fix re-renders
-    this.ref.outlets['main'] = state;
-    // updateRef(this.ref, state);
+    updateRef(this.ref, state);
   }
 
   destroy(): void {

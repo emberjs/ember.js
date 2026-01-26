@@ -4,7 +4,6 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
-import { destroyElementSync, renderComponent } from '@lifeart/gxt';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
@@ -38,7 +37,7 @@ import type { CurriedValue } from '@glimmer/runtime';
 import {
   clientBuilder,
   createCapturedArgs,
-  curry as glimmerCurry,
+  curry,
   EMPTY_POSITIONAL,
   inTransaction,
   renderComponent as glimmerRenderComponent,
@@ -74,9 +73,6 @@ export interface View {
   isDestroyed: boolean;
   [BOUNDS]: Bounds | null;
 }
-
-// Use glimmerCurry imported from @glimmer/runtime
-const curry = glimmerCurry;
 
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
@@ -273,12 +269,7 @@ class ClassicRootState {
 
        */
 
-      inTransaction(env, () => {
-        // @ts-expect-error foo-bar
-        destroyElementSync(result);
-        // runDestructors(result.ctx);
-        destroy(result!);
-      });
+      inTransaction(env, () => destroy(result!));
     }
   }
 }

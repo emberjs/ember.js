@@ -6,19 +6,17 @@
   test suite.
 */
 
-// import { resolve, dirname } from 'node:path';
-// import { fileURLToPath } from 'node:url';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export default {
   plugins: [
-    // [
-    //   '@babel/plugin-transform-typescript',
-    //   {
-    //     allowDeclareFields: true,
-    //     allExtensions: true,
-    //     onlyRemoveTypeImports: true,
-    //   },
-    // ],
+    [
+      '@babel/plugin-transform-typescript',
+      {
+        allowDeclareFields: true,
+      },
+    ],
     [
       'module:decorator-transforms',
       {
@@ -26,15 +24,14 @@ export default {
         runtime: { import: 'decorator-transforms/runtime' },
       },
     ],
-    // Commented out for glimmer-next integration - using gxt compiler instead
-    // [
-    //   'babel-plugin-ember-template-compilation',
-    //   {
-    //     compilerPath: resolve(
-    //       dirname(fileURLToPath(import.meta.url)),
-    //       './broccoli/glimmer-template-compiler.mjs'
-    //     ),
-    //   },
-    // ],
+    [
+      'babel-plugin-ember-template-compilation',
+      {
+        compilerPath: resolve(
+          dirname(fileURLToPath(import.meta.url)),
+          './broccoli/glimmer-template-compiler.mjs'
+        ),
+      },
+    ],
   ],
 };

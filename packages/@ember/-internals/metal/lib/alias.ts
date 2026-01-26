@@ -2,6 +2,15 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor } from '@ember/-internals/meta';
 import { assert, inspect } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/validator';
+import {
+  consumeTag,
+  tagFor,
+  tagMetaFor,
+  untrack,
+  updateTag,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import type { ExtendedMethodDecorator } from './decorator';
 import {
@@ -13,27 +22,6 @@ import {
 import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
-
-import { validator } from '@lifeart/gxt/glimmer-compatibility';
-
-const {
-  consumeTag,
-  tagFor,
-  tagMetaFor,
-  // updateTag,
-  validateTag,
-  valueForTag,
-} = validator;
-
-function updateTag(tag, args) {
-  console.log('updateTag', tag, args);
-  debugger;
-  // tag.update(tag.value);
-}
-
-function untrack(cb) {
-  cb();
-}
 
 export type AliasDecorator = ExtendedMethodDecorator & PropertyDecorator & AliasDecoratorImpl;
 
@@ -88,27 +76,24 @@ class AliasedProperty extends ComputedDescriptor {
   get(obj: object, keyName: string): any {
     let ret: any;
 
-    // let meta = metaFor(obj);
+    let meta = metaFor(obj);
     let tagMeta = tagMetaFor(obj);
     let propertyTag = tagFor(obj, keyName, tagMeta) as UpdatableTag;
 
     // We don't use the tag since CPs are not automatic, we just want to avoid
     // anything tracking while we get the altKey
-    // debugger;
     untrack(() => {
       ret = get(obj, this.altKey);
     });
 
-    propertyTag.update(ret);
+    let lastRevision = meta.revisionFor(keyName);
 
-    // let lastRevision = meta.revisionFor(keyName);
+    if (lastRevision === undefined || !validateTag(propertyTag, lastRevision)) {
+      updateTag(propertyTag, getChainTagsForKey(obj, this.altKey, tagMeta, meta));
+      meta.setRevisionFor(keyName, valueForTag(propertyTag));
+      finishLazyChains(meta, keyName, ret);
+    }
 
-    // if (lastRevision === undefined || !validateTag(propertyTag, lastRevision)) {
-    //   updateTag(propertyTag, getChainTagsForKey(obj, this.altKey, tagMeta, meta));
-    //   meta.setRevisionFor(keyName, valueForTag(propertyTag));
-    //   finishLazyChains(meta, keyName, ret);
-    // }
-    // finishLazyChains(meta, keyName, ret);
     consumeTag(propertyTag);
 
     return ret;
