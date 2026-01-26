@@ -1,6 +1,40 @@
-import { $_MANAGERS, $PROPS_SYMBOL, formula } from '@lifeart/gxt';
-
 import { CustomHelperManager } from './helper-manager';
+export { CustomHelperManager } from './helper-manager';
+
+// These are provided by gxt runtime - access via globalThis to avoid compiler conflicts
+// The gxt compiler transforms code and injects these, but for non-template files
+// we need to access them differently
+const gxt = (globalThis as any).__gxt__ || {};
+
+// Initialize $_MANAGERS - will be configured below
+const $_MANAGERS = {
+  component: {
+    canHandle: (komp: any): boolean => false,
+    handle: (komp: any, args: any, fw: any, ctx: any): any => null,
+  },
+  helper: {
+    canHandle: (helper: any): boolean => false,
+    handle: (helper: any, params: any, hash: any): any => null,
+  },
+};
+
+// Simple cell implementation for formula
+const createCell = (initialValue: any, name?: string) => {
+  let value = initialValue;
+  return {
+    get value() { return value; },
+    set value(v) { value = v; },
+  };
+};
+
+// Create a simple formula wrapper
+const formula = <T>(fn: () => T, name?: string) => {
+  const c = createCell(fn(), name);
+  return c;
+};
+
+// Props symbol for args forwarding
+const $PROPS_SYMBOL = Symbol.for('gxt-props');
 
 globalThis.EmberFunctionalHelpers = new Set();
 globalThis.COMPONENT_TEMPLATES = globalThis.COMPONENT_TEMPLATES || new WeakMap();
@@ -218,4 +252,89 @@ export function hasValue(capabilities: Record<string, boolean>): boolean {
 
 export function hasDestroyable(capabilities: Record<string, boolean>): boolean {
   return Boolean(capabilities?.willDestroy);
+}
+
+// Custom manager classes for compatibility
+export class CustomComponentManager {
+  capabilities: number;
+  delegate: any;
+
+  constructor(delegate: any) {
+    this.delegate = delegate;
+    this.capabilities = capabilityFlagsFrom(delegate.capabilities || {});
+  }
+
+  create(owner: any, component: any, args: any, env: any, dynamicScope: any, caller: any) {
+    return this.delegate.createComponent(component, args);
+  }
+
+  getDebugName(component: any) {
+    return this.delegate.getDebugName?.(component) || component.name || 'Component';
+  }
+
+  getSelf(instance: any) {
+    return this.delegate.getSelf?.(instance) || instance;
+  }
+
+  getDestroyable(instance: any) {
+    return this.delegate.getDestroyable?.(instance) || instance;
+  }
+
+  didCreate(instance: any) {
+    this.delegate.didCreateComponent?.(instance);
+  }
+
+  didUpdate(instance: any) {
+    this.delegate.didUpdateComponent?.(instance);
+  }
+
+  didRenderLayout(instance: any, bounds: any) {
+    this.delegate.didRenderLayout?.(instance, bounds);
+  }
+
+  didUpdateLayout(instance: any, bounds: any) {
+    this.delegate.didUpdateLayout?.(instance, bounds);
+  }
+
+  getStaticLayout(component: any) {
+    return this.delegate.getStaticLayout?.(component);
+  }
+
+  getDynamicLayout(instance: any) {
+    return this.delegate.getDynamicLayout?.(instance);
+  }
+}
+
+export class CustomModifierManager {
+  capabilities: number;
+  delegate: any;
+
+  constructor(delegate: any) {
+    this.delegate = delegate;
+    this.capabilities = 0;
+  }
+
+  create(owner: any, element: Element, definition: any, args: any) {
+    return this.delegate.createModifier(definition, args);
+  }
+
+  getDebugName(definition: any) {
+    return this.delegate.getDebugName?.(definition) || 'Modifier';
+  }
+
+  getDestroyable(instance: any) {
+    return this.delegate.getDestroyable?.(instance) || instance;
+  }
+
+  install(instance: any, element: Element, args: any) {
+    this.delegate.installModifier?.(instance, element, args);
+  }
+
+  update(instance: any, args: any) {
+    this.delegate.updateModifier?.(instance, args);
+  }
+
+  destroy(instance: any) {
+    this.delegate.destroyModifier?.(instance);
+  }
 }
