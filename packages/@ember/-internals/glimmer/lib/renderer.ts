@@ -251,8 +251,28 @@ class ClassicRootState {
 
         // Check if template has a render method (runtime-compiled gxt template)
         if (typeof (template as any).render === 'function') {
-          // Runtime-compiled template with render method
-          (template as any).render(componentContext, parentElement);
+          // For gxt templates, use the root view directly (e.g., OutletView)
+          // The root parameter has the state we need
+          let renderContext;
+          if (root && 'state' in root && 'ref' in root) {
+            // This is an OutletView - transform to expected format
+            const outletView = root as any;
+            renderContext = {
+              rootState: {
+                root: {
+                  ref: outletView.ref,
+                  template: outletView.state?.template || outletView.template,
+                },
+                render: {
+                  owner: outletView.owner,
+                },
+              },
+            };
+          } else {
+            // Fallback to the component context
+            renderContext = componentContext;
+          }
+          (template as any).render(renderContext, parentElement);
         } else if ('$nodes' in template) {
           // Build-time compiled gxt template with $nodes
           gxtRenderComponent(template as any, parentElement, owner);
