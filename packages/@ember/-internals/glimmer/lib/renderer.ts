@@ -223,14 +223,17 @@ class ClassicRootState {
     this.env = context.env;
 
     this.render = errorLoopTransaction(() => {
-      let layout = unwrapTemplate(template).asLayout();
-
-      // Check if this is a gxt template (has $nodes or gxt markers)
+      // Check if this is a gxt template BEFORE unwrapping
       const templateIsGxt = isGxtTemplate(template);
+
+      let layout = unwrapTemplate(template).asLayout();
 
       if (templateIsGxt) {
         // Use gxt rendering for gxt templates
         console.log('Using gxt rendering for template:', (template as any).moduleName || 'unknown');
+
+        // Get the component context from self reference
+        const componentContext = valueForRef(self);
 
         // Create a minimal result object for compatibility
         const gxtResult = {
@@ -246,11 +249,15 @@ class ClassicRootState {
         this.result = gxtResult as any;
         associateDestroyableChild(owner, gxtResult as any);
 
-        // Render using gxt - template should have $nodes from gxt compilation
-        if ('$nodes' in template) {
+        // Check if template has a render method (runtime-compiled gxt template)
+        if (typeof (template as any).render === 'function') {
+          // Runtime-compiled template with render method
+          (template as any).render(componentContext, parentElement);
+        } else if ('$nodes' in template) {
+          // Build-time compiled gxt template with $nodes
           gxtRenderComponent(template as any, parentElement, owner);
         } else {
-          console.warn('GXT template detected but missing $nodes:', template);
+          console.warn('GXT template detected but cannot render:', template);
         }
 
         this.render = errorLoopTransaction(() => {

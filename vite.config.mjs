@@ -75,6 +75,19 @@ export default defineConfig(({ mode }) => {
       ? {
           alias: [
             {
+              find: 'ember-template-compiler',
+              replacement: fileURLToPath(
+                new URL(`./packages/demo/compat/ember-template-compiler`, owerrideRoot)
+              ),
+            },
+            // Alias internal-test-helpers compile to use gxt compilation
+            {
+              find: /^internal-test-helpers\/lib\/compile$/,
+              replacement: fileURLToPath(
+                new URL(`./packages/demo/compat/test-compile`, owerrideRoot)
+              ),
+            },
+            {
               find: '@ember/template-compilation',
               replacement: fileURLToPath(new URL(`./packages/demo/compat/compile`, owerrideRoot)),
             },

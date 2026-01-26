@@ -9,12 +9,16 @@ export const GXT_TEMPLATE_HANDLE = 999999;
 // Check if a template is a gxt-compiled template
 export function isGxtTemplate(template: any): boolean {
   if (!template) return false;
-  // Check for gxt template markers
-  return (
+  // Check for gxt template markers - use __gxtCompiled which is cross-module safe
+  const hasGxtMarkers = (
+    template.__gxtCompiled === true ||
     GXT_TEMPLATE_SYMBOL in template ||
     '$nodes' in template ||
-    (template.__gxtCompiled === true)
+    'nodes' in template ||
+    typeof template.render === 'function'
   );
+
+  return hasGxtMarkers;
 }
 
 // Create a gxt-compatible CompilableProgram
