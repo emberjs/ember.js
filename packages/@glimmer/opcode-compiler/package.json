@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@glimmer/encoder": "workspace:*",
-    "@glimmer/runtime": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/util": "workspace:*",

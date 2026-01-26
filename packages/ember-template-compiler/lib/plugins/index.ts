@@ -56,7 +56,6 @@ export const STRICT_MODE_KEYWORDS = Object.freeze([
   'mut',
   'readonly',
   'unbound',
-  'on',
 
   // TransformEachInIntoEach
   '-each-in',

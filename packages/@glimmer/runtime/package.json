@@ -9,10 +9,7 @@
     "directory": "packages/@glimmer/runtime"
   },
   "type": "module",
-  "exports": {
-    ".": "./index.ts",
-    "./*": "./*.ts"
-  },
+  "exports": "./index.ts",
   "publishConfig": {
     "access": "public",
     "exports": {
