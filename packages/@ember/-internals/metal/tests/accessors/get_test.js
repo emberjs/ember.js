@@ -1,5 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
-import EmberObject, { observer } from '@ember/object';
+import { observer } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { get } from '../..';
 import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -102,7 +103,7 @@ moduleFor(
       let func = function () {};
       func.bar = 'awesome';
 
-      let destroyedObj = EmberObject.create({ bar: 'great' });
+      let destroyedObj = CoreObject.create({ bar: 'great' });
       run(() => destroyedObj.destroy());
 
       assert.equal(get({ foo: null }, 'foo.bar'), undefined);
