@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.18.3 (January 26, 2026)
+
+- An enterprise user contributed work to backport a [security fix](https://blog.emberjs.com/ember-4-8-1-released/) into this very old 2.x release series.
+
 ### 2.18.2 (February 14, 2018)
 
 - [#16245](https://github.com/emberjs/ember.js/pull/16245) [BUGFIX] Ensure errors in deferred component hooks can be recovered.
