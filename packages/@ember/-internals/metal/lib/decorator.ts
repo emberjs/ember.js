@@ -76,20 +76,14 @@ export abstract class ComputedDescriptor {
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 }
 
-let COMPUTED_GETTERS: WeakSet<() => unknown>;
-
-if (DEBUG) {
-  COMPUTED_GETTERS = new WeakSet();
-}
+export let COMPUTED_GETTERS: WeakSet<() => unknown> = new WeakSet();
 
 function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor): () => unknown {
   function getter(this: object): unknown {
     return descriptor.get(this, name);
   }
 
-  if (DEBUG) {
-    COMPUTED_GETTERS.add(getter);
-  }
+  COMPUTED_GETTERS.add(getter);
 
   return getter;
 }
