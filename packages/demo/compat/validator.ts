@@ -1,86 +1,146 @@
-import { formula } from '@lifeart/gxt';
+import { formula, cell } from '@lifeart/gxt';
 import { validator, caching } from '@lifeart/gxt/glimmer-compatibility';
 
 export const { dirtyTagFor, tagFor, isTracking, tagMetaFor, track, trackedData } = validator;
-export const { getValue, createCache } = caching; // createCache,
+export const { getValue, createCache } = caching;
 
-export function consumeTag(tag) {
+export function consumeTag(tag: any) {
   if (!tag) {
-    console.log('consumeEmptyTag');
+    // Empty tags can be safely ignored
     return;
   }
   return validator.consumeTag(tag);
 }
 
+// A tag that represents the current revision - updates on every access
 export const CURRENT_TAG = formula(() => {
   return Date.now() + Math.random();
-});
+}, 'CURRENT_TAG');
+
+// A constant tag that never changes
 export const CONSTANT_TAG = 11;
+
+// Allow cycles in tag dependencies
 export const ALLOW_CYCLES = true;
-export function combine(tags) {
-  if (tags.some((t => typeof t !== 'object'))) {
-    debugger;
+
+// Combine multiple tags into a single computed tag
+export function combine(tags: any[]) {
+  if (!Array.isArray(tags) || tags.length === 0) {
+    return CONSTANT_TAG;
   }
   return formula(() => {
-    return tags.map((t) => t.value);
+    return tags.map((t) => (typeof t === 'object' && t !== null ? t.value : t));
   }, 'combine');
 }
-const validated = new WeakSet();
-export function validateTag(tag) {
+
+// Track validated tags for memoization
+const validated = new WeakSet<object>();
+
+export function validateTag(tag: any, revision?: number): boolean {
   if (!tag) {
-    debugger;
+    return true; // Null tags are always valid
   }
+  // Formula-based tags are always valid in gxt
   if ('fn' in tag) {
     return true;
   }
+  // For revision-based validation
+  if (revision !== undefined && tag.revision !== undefined) {
+    return tag.revision === revision;
+  }
+  // Memoize validation results
   if (!validated.has(tag)) {
     validated.add(tag);
     return false;
   }
   return true;
 }
+
+// Reset tracking state (used in testing)
+let trackingStack: any[] = [];
+
 export function resetTracking() {
-  console.log('resetTracking', ...arguments);
+  trackingStack = [];
 }
+
+// Special revision values
 export const COMPUTE = 13;
 export const INITIAL = 31;
-export function valueForTag(tag) {
-  return Date.now() + Math.random();
+
+// Get the current revision value for a tag
+export function valueForTag(tag: any): number {
+  if (!tag) return 0;
+  if (typeof tag === 'number') return tag;
+  if ('value' in tag) return tag.value;
+  if ('revision' in tag) return tag.revision;
+  return Date.now();
 }
+
+// Create an updatable tag
 export function createUpdatableTag() {
-  console.log('createUpdatableTag');
+  const value = cell(0, 'updatableTag');
+  return {
+    get value() {
+      return value.value;
+    },
+    dirty() {
+      value.value = Date.now();
+    },
+  };
 }
-export function updateTag() {
-  console.log('updateTag');
+
+// Update a tag to depend on another tag
+export function updateTag(outer: any, inner: any) {
+  if (outer && inner && typeof outer.update === 'function') {
+    outer.update(inner);
+  }
 }
-// TODO: untrack is breaking reactivity here
-export function untrack(cb) {
-    // console.log('untrack', cb);
+
+// TODO: untrack is breaking reactivity in some cases
+// This is a known issue that needs investigation
+export function untrack<T>(cb: () => T): T {
+  // For now, just execute the callback
+  // In a full implementation, this would pause tracking
   return cb();
-  // console.log('untrack', cb);
 }
-export function isConst() {
-  console.log('isConst');
+
+// Check if a tag represents a constant value
+export function isConst(tag: any): boolean {
+  return tag === CONSTANT_TAG || (tag && tag.isConst === true);
 }
+
+// Frame-based tracking for nested computations
 export function beginUntrackFrame() {
-  console.log('beginUntrackFrame');
+  trackingStack.push({ untrack: true });
 }
+
 export function endUntrackFrame() {
-  console.log('endUntrackFrame');
+  trackingStack.pop();
 }
 
 export function beginTrackFrame() {
-  console.log('beginTrackFrame');
+  trackingStack.push({ track: true });
 }
+
 export function endTrackFrame() {
-  console.log('endTrackFrame');
+  return trackingStack.pop();
 }
+
+// Create a basic tag
 export function createTag() {
-  console.log('createTag');
+  return createUpdatableTag();
 }
-export function dirtyTag() {
-  console.log('dirtyTag');
+
+// Mark a tag as dirty
+export function dirtyTag(tag: any) {
+  if (tag && typeof tag.dirty === 'function') {
+    tag.dirty();
+  }
 }
-export function debug() {
-  console.log('debug');
+
+// Debug utility for tags
+export function debug(tag: any, label?: string) {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[Tag Debug${label ? `: ${label}` : ''}]`, tag);
+  }
 }

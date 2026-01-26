@@ -15,12 +15,11 @@ $_MANAGERS.component.canHandle = function (komp) {
   } else if (globalThis.COMPONENT_MANAGERS.has(komp)) {
     return true;
   }
-  if (komp.create) {
-    debugger;
+  // Classic Ember components have a create method
+  if (komp.create && typeof komp.create === 'function') {
+    return true;
   }
   return false;
-  // console.log('canHandle', komp);
-  // debugger;
 };
 $_MANAGERS.helper.canHandle = function (helper: unknown) {
   if (typeof helper === 'string') {
@@ -37,9 +36,9 @@ $_MANAGERS.helper.handle = function (helper: any, params: any, hash: any) {
       const manager = getInternalHelperManager(maybeHelper);
       if (manager) {
         return manager.getHelper(maybeHelper)(params, owner);
-      } else {
-        debugger;
       }
+      // Helper not found - this may happen during initialization
+      console.warn(`Helper "${helper}" not found or has no manager`);
     }
   }
 };
@@ -85,9 +84,31 @@ $_MANAGERS.component.handle = function (komp, args, fw, ctx) {
 };
 // console.log('$_MANAGERS', $_MANAGERS);
 
-export function capabilityFlagsFrom(capabilities) {
-  console.log('capabilityFlagsFrom', ...arguments);
-  return {};
+export function capabilityFlagsFrom(capabilities: Record<string, boolean>) {
+  // Convert capability object to flags
+  // Each capability is a boolean that can be checked
+  let flags = 0;
+  const capabilityNames = [
+    'dynamicLayout',
+    'dynamicTag',
+    'prepareArgs',
+    'createArgs',
+    'attributeHook',
+    'elementHook',
+    'createCaller',
+    'dynamicScope',
+    'updateHook',
+    'createInstance',
+    'wrapped',
+    'willDestroy',
+    'hasSubOwner',
+  ];
+  capabilityNames.forEach((name, index) => {
+    if (capabilities[name]) {
+      flags |= 1 << index;
+    }
+  });
+  return flags;
 }
 
 export function setInternalComponentManager(manager: any, handle: any) {
@@ -104,11 +125,12 @@ export function getInternalHelperManager(helper: any) {
 export function helperCapabilities(v: string, value: any) {
   return value;
 }
-export function modifierCapabilities() {
-  console.log('modifierCapabilities', ...arguments);
+export function modifierCapabilities(_version: string, capabilities?: Record<string, boolean>) {
+  return capabilities || {};
 }
-export function componentCapabilities() {
-  console.log('componentCapabilities', ...arguments);
+
+export function componentCapabilities(_version: string, capabilities?: Record<string, boolean>) {
+  return capabilities || {};
 }
 export function setHelperManager(factory: any, helper: any) {
   return setInternalHelperManager(new CustomHelperManager(factory), helper);
@@ -143,20 +165,20 @@ export function getComponentManager(component: any) {
   return globalThis.COMPONENT_MANAGERS.get(component);
 }
 
-export function setModifierManager() {
-  console.log('setModifierManager', ...arguments);
+export function setModifierManager(factory: any, modifier: any) {
+  // Create a manager from the factory and store it
+  globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, factory);
+  return modifier;
 }
+
+const CUSTOM_TAG_FOR = new WeakMap<object, (obj: object, key: string) => any>();
+
 export function getCustomTagFor(obj: any) {
-  console.log('getCustomTagFor', ...arguments);
-  return undefined;
-  // return function (obj, key) {
-  //   console.log('getCustomTagFor usage', obj, key);
-  //   return obj[key];
-  // };
-  // console.log('getCustomTagFor', ...arguments);
+  return CUSTOM_TAG_FOR.get(obj);
 }
-export function setCustomTagFor() {
-  console.log('setCustomTagFor', ...arguments);
+
+export function setCustomTagFor(obj: any, tagFn: (obj: object, key: string) => any) {
+  CUSTOM_TAG_FOR.set(obj, tagFn);
 }
 
 export function setInternalHelperManager(manager: any, helper: any) {
@@ -168,26 +190,32 @@ export function hasInternalHelperManager(helper: any) {
   return globalThis.INTERNAL_HELPER_MANAGERS.has(helper);
 }
 
-export function hasCapability() {
-  console.log('hasCapability', ...arguments);
+export function hasCapability(
+  capabilities: number,
+  capability: number
+): boolean {
+  return (capabilities & capability) !== 0;
 }
 
 export function getInternalModifierManager(modifier: any) {
   return globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
 }
 
-export function managerHasCapability() {
-  console.log('managerHasCapability', ...arguments);
+export function managerHasCapability(
+  manager: { capabilities: number },
+  capability: number
+): boolean {
+  return hasCapability(manager.capabilities, capability);
 }
 
-export function hasInternalComponentManager() {
-  console.log('hasInternalComponentManager', ...arguments);
+export function hasInternalComponentManager(component: any): boolean {
+  return globalThis.INTERNAL_MANAGERS.has(component);
 }
 
-export function hasValue() {
-  console.log('hasValue', ...arguments);
+export function hasValue(capabilities: Record<string, boolean>): boolean {
+  return Boolean(capabilities?.hasValue);
 }
 
-export function hasDestroyable() {
-  console.log('hasDestroyable', ...arguments);
+export function hasDestroyable(capabilities: Record<string, boolean>): boolean {
+  return Boolean(capabilities?.willDestroy);
 }
