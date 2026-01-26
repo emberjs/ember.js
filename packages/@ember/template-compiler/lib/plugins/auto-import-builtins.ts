@@ -27,7 +27,7 @@ import { isPath, trackLocals } from './utils';
   @class TransformActionSyntax
 */
 
-export default function transformActionSyntax(env: EmberASTPluginEnvironment): ASTPlugin {
+export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTPlugin {
   let { hasLocal, visitor } = trackLocals(env);
 
   return {
