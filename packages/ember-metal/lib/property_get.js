@@ -70,7 +70,7 @@ export function get(obj, keyName) {
   }
 }
 
-export function _getPath(root, path) {
+export function _getPath(root, path, forSet) {
   let obj = root;
   let parts = path.split('.');
 
@@ -79,7 +79,12 @@ export function _getPath(root, path) {
       return undefined;
     }
 
-    obj = get(obj, parts[i]);
+    let part = parts[i];
+    if (forSet && (part === '__proto__' || part === 'constructor')) {
+      return;
+    }
+
+    obj = get(obj, part);
 
     if (obj && obj.isDestroyed) {
       return undefined;

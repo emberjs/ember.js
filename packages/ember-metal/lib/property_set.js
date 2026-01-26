@@ -102,7 +102,7 @@ function setPath(root, path, value, tolerant) {
 
   let newPath = parts.join('.');
 
-  let newRoot = getPath(root, newPath);
+  let newRoot = getPath(root, newPath, true);
 
   if (newRoot) {
     return set(newRoot, keyName, value);
