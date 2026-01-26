@@ -46,7 +46,7 @@ import {
   runtimeOptions,
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import { unwrapTemplate } from './component-managers/unwrap-template';
+import { unwrapTemplate, GXT_TEMPLATE_HANDLE, isGxtTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -225,26 +225,60 @@ class ClassicRootState {
     this.render = errorLoopTransaction(() => {
       let layout = unwrapTemplate(template).asLayout();
 
-      let iterator = renderMain(
-        context,
-        owner,
-        self,
-        builder(context.env, { element: parentElement, nextSibling: null }),
-        layout,
-        dynamicScope
-      );
+      // Check if this is a gxt template (has $nodes or gxt markers)
+      const templateIsGxt = isGxtTemplate(template);
 
-      let result = (this.result = iterator.sync());
+      if (templateIsGxt) {
+        // Use gxt rendering for gxt templates
+        console.log('Using gxt rendering for template:', (template as any).moduleName || 'unknown');
 
-      associateDestroyableChild(this, result);
+        // Create a minimal result object for compatibility
+        const gxtResult = {
+          rerender: () => {
+            // gxt handles re-rendering internally via reactivity
+          },
+          destroy: () => {
+            // Cleanup handled by gxt's destroyable system
+            destroyElementSync(parentElement);
+          },
+        };
 
-      this.render = errorLoopTransaction(() => {
-        if (isDestroying(result) || isDestroyed(result)) return;
+        this.result = gxtResult as any;
+        associateDestroyableChild(owner, gxtResult as any);
 
-        return result.rerender({
-          alwaysRevalidate: false,
+        // Render using gxt - template should have $nodes from gxt compilation
+        if ('$nodes' in template) {
+          gxtRenderComponent(template as any, parentElement, owner);
+        } else {
+          console.warn('GXT template detected but missing $nodes:', template);
+        }
+
+        this.render = errorLoopTransaction(() => {
+          // gxt handles updates via reactivity
         });
-      });
+      } else {
+        // Use standard glimmer rendering
+        let iterator = renderMain(
+          context,
+          owner,
+          self,
+          builder(context.env, { element: parentElement, nextSibling: null }),
+          layout,
+          dynamicScope
+        );
+
+        let result = (this.result = iterator.sync());
+
+        associateDestroyableChild(owner, result);
+
+        this.render = errorLoopTransaction(() => {
+          if (isDestroying(result) || isDestroyed(result)) return;
+
+          return result.rerender({
+            alwaysRevalidate: false,
+          });
+        });
+      }
     });
   }
 
