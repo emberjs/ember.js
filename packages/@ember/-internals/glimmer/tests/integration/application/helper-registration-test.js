@@ -2,12 +2,16 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { Helper, helper } from '@ember/-internals/glimmer';
+import { hbs } from '@lifeart/gxt';
 
 moduleFor(
   'Application Lifecycle - Helper Registration',
   class extends ApplicationTestCase {
     ['@test Unbound dashed helpers registered on the container can be late-invoked'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`);
+      this.addTemplate(
+        'application',
+        () => hbs`<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`
+      );
 
       let myHelper = helper((params) => params[0] || 'BORF');
       this.application.register('helper:x-borf', myHelper);
@@ -22,10 +26,9 @@ moduleFor(
     }
 
     ['@test Bound helpers registered on the container can be late-invoked'](assert) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{x-reverse}} {{x-reverse this.foo}}</div>`
-      );
+      this.addTemplate('application', function () {
+        return hbs`<div id='wrapper'>{{x-reverse}} {{x-reverse this.foo}}</div>`;
+      });
 
       this.add(
         'controller:application',
@@ -51,10 +54,9 @@ moduleFor(
     }
 
     ['@test Undashed helpers registered on the container can be invoked'](assert) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`
-      );
+      this.addTemplate('application', function () {
+        return hbs`<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`;
+      });
 
       this.application.register(
         'helper:omg',
@@ -76,7 +78,9 @@ moduleFor(
     }
 
     ['@test Helpers can receive injections'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{full-name}}</div>`);
+      this.addTemplate('application', function () {
+        return hbs`<div id='wrapper'>{{full-name}}</div>`;
+      });
 
       let serviceCalled = false;
 

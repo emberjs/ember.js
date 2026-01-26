@@ -23,6 +23,8 @@
     "noUnusedParameters": true,
     "isolatedModules": true,
 
+    "allowImportingTsExtensions": true,
+
     "newLine": "LF",
 
     "allowJs": true,

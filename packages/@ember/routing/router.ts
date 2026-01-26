@@ -673,6 +673,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       // not great on multiple fronts!
       instance.didCreateRootView(this._toplevelView as any);
     } else {
+      // here we need to figure out how to provide atomic reactivity per outlet level
       this._toplevelView.setOutletState(root);
     }
   }
