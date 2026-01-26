@@ -1,11 +1,40 @@
 import { Component, renderComponent } from '@lifeart/gxt';
-// @ts-ignore - $template is injected by gxt compiler
-import OutletHelper from './outlet-helper-component';
 
-// OutletTemplate component - renders the outlet hierarchy
+// Simplified OutletTemplate - renders the route's template directly
+// TODO: Reimplement full outlet hierarchy for nested routes
 class OutletTemplate extends Component<{ state: any }> {
+  get outletState() {
+    return this.args.state;
+  }
+
+  get hasRender() {
+    return !!this.outletState?.render;
+  }
+
+  get renderTemplate() {
+    const template = this.outletState?.render?.template;
+    if (typeof template === 'function') {
+      return template;
+    }
+    return null;
+  }
+
+  get model() {
+    return this.outletState?.render?.model;
+  }
+
   <template>
-    <OutletHelper @state={{@state}} @root={{true}} />
+    {{#if this.hasRender}}
+      <div class="outlet-content">
+        {{!-- Render the route template --}}
+        {{#if this.renderTemplate}}
+          {{!-- Route template will be rendered here --}}
+          <this.renderTemplate @model={{this.model}} />
+        {{else}}
+          {{!-- No template to render --}}
+        {{/if}}
+      </div>
+    {{/if}}
   </template>
 }
 

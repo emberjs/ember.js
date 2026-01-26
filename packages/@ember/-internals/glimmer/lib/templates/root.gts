@@ -12,24 +12,48 @@ interface RootState {
 }
 
 // RootTemplate component - wraps the top-level route rendering
+// This is a special component that bridges Ember templates to gxt rendering
 class RootTemplate extends Component<{ rootState: RootState }> {
-  get state() {
+  private renderedElement: Element | null = null;
+
+  // The outlet ref contains the outlet state structure
+  get outletRef() {
     return this.args.rootState?.root?.ref;
+  }
+
+  // The main outlet contains the application route's render info
+  get mainOutlet() {
+    return this.outletRef?.outlets?.main;
   }
 
   get owner() {
     return this.args.rootState?.render?.owner;
   }
 
+  // The application template is in the main outlet's render
   get routeTemplate() {
-    return this.args.rootState?.root?.template;
+    return this.mainOutlet?.render?.template;
+  }
+
+  get routeModel() {
+    return this.mainOutlet?.render?.model;
+  }
+
+  get outletState() {
+    return this.mainOutlet;
+  }
+
+  get hasRouteTemplate() {
+    return !!this.routeTemplate;
   }
 
   <template>
-    {{!-- The root template renders the route's template --}}
-    {{#if this.routeTemplate}}
-      <this.routeTemplate @state={{this.state}} @owner={{this.owner}} @root={{true}} />
-    {{/if}}
+    {{!-- The root template placeholder - actual content rendered imperatively --}}
+    <div class="ember-root-outlet" id="ember-root-outlet">
+      {{#if this.hasRouteTemplate}}
+        {{!-- Route template will be rendered here by the render method --}}
+      {{/if}}
+    </div>
   </template>
 }
 
@@ -68,6 +92,28 @@ export default function createRootTemplate(_owner: any) {
       const templateResult = templateFn.call(instance);
       // Use gxt's renderComponent with the template result
       renderComponent(templateResult, parentElement, instance);
+
+      // After gxt renders the placeholder, render the route template into it
+      setTimeout(() => {
+        const outlet = parentElement.querySelector('#ember-root-outlet');
+        if (outlet && instance.routeTemplate) {
+          const routeTemplate = instance.routeTemplate;
+          // Check if it's a gxt-compiled template with render method
+          if (typeof routeTemplate.render === 'function') {
+            routeTemplate.render({ model: instance.routeModel }, outlet);
+          } else if (typeof routeTemplate === 'function') {
+            // It's a factory function - call it to get the template
+            const template = routeTemplate(instance.owner);
+            if (template && typeof template.render === 'function') {
+              template.render({ model: instance.routeModel }, outlet);
+            } else {
+              console.warn('Route template factory did not return renderable template:', template);
+            }
+          } else {
+            console.warn('Route template is not renderable:', routeTemplate);
+          }
+        }
+      }, 0);
     } else {
       console.warn('RootTemplate did not produce template function', instance);
     }
