@@ -66,14 +66,18 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('eval' in options) {
     const localScopeEvaluator = options.eval as (value: string) => unknown;
     // TODO: what is this for?
-    const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
+    //       we have no tests covering this
+    //       test suite passes without it
+    // const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
       if (inScope(variable, localScopeEvaluator)) {
         return true;
+        // test suite passes without this
+        // return !inScope(variable, globalScopeEvaluator);
       }
 
-      return false;
+      return variable in globalThis['__ember-secret-runtime-for-testing-purposes__'];
     };
 
     delete options.eval;
@@ -82,7 +86,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope;
+    options.lexicalScope = (variable: string) => variable in scope || variable in globalThis['__ember-secret-runtime-for-testing-purposes__'];
 
     delete options.scope;
   }
@@ -104,7 +108,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   }
 
   if (options.strictMode) {
-    options.keywords = [...STRICT_MODE_KEYWORDS, ...(Object.keys(keywords) || [])];
+    options.keywords = STRICT_MODE_KEYWORDS
   }
 
   return options;

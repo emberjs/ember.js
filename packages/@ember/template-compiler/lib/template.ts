@@ -252,7 +252,6 @@ export function template(
 }
 
 const evaluator = (source: string) => {
-  console.log( 'evaluator called with', source );
   return new Function(`return  ${source}`)();
 };
 
@@ -264,20 +263,18 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
      * This is ran before the template is compiled, 
      * so we cannot use any information gathered during template compilation.
      */
-    const scope = {
-      ...keywords,
-      ...options.scope?.()
-    };
+    let scope = options.scope?.();
     
     if (!scope) {
       return evaluator;
     }
+
+    scope = Object.assign({ globalThis }, keywords, scope);
     
     return (source: string) => {
       const argNames = Object.keys(scope);
       const argValues = Object.values(scope);
 
-      console.log({ options, argNames, argValues, source, scope });
       return new Function(...argNames, `return (${source})`)(...argValues);
     };
   }

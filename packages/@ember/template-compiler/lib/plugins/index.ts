@@ -12,6 +12,7 @@ import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
 import AutoImportBuiltins from './auto-import-builtins';
 
 export const INTERNAL_PLUGINS = {
+  AutoImportBuiltins,
   AssertAgainstAttrs,
   AssertAgainstNamedOutlets,
   AssertInputHelperWithoutBlock,
