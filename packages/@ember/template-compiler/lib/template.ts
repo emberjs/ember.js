@@ -258,11 +258,6 @@ const evaluator = (source: string) => {
 
 function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
-    console.log('using provided eval function');
-    return function () {
-      console.log(arguments[0]);
-      return options.eval!.apply(null, arguments);
-    }
     return options.eval;
   } else {
     /**
@@ -279,11 +274,10 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
     }
     
     return (source: string) => {
-      const ourScope = { ...keywords, ...scope };
-      const argNames = Object.keys(ourScope);
-      const argValues = Object.values(ourScope);
+      const argNames = Object.keys(scope);
+      const argValues = Object.values(scope);
 
-      console.log({ options, argNames, argValues, source, ourScope });
+      console.log({ options, argNames, argValues, source, scope });
       return new Function(...argNames, `return (${source})`)(...argValues);
     };
   }

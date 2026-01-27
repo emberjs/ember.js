@@ -1,4 +1,5 @@
 import { on } from '@ember/modifier';
+import type { AST } from '@glimmer/syntax';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,
@@ -7,6 +8,7 @@ import {
 } from './plugins/index';
 import type { EmberPrecompileOptions, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
+import { global } from '@ember/-internals/environment';
 
 let USER_PLUGINS: PluginFunc[] = [];
 
@@ -17,6 +19,8 @@ function malformedComponentLookup(string: string) {
 export const keywords = {
   on,
 };
+
+globalThis['__ember-secret-runtime-for-testing-purposes__'] = keywords;
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
@@ -31,10 +35,11 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
          *       we first detect the keywords as "not in scope", and that is what we
          *       want, so we can import them.
          */
-        bindImport(module: string, name: string) {
-          if (module === '@ember/modifier' && name === 'on') {
+        bindImport(module: string, name: string, node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression) {
+          if (module === '@ember/modifier' && name === 'on' && node.type === 'ElementModifierStatement') {
             usedKeywords['on'] = keywords.on;
-            return on;
+            node.path.original = 'globalThis.__ember-secret-runtime-for-testing-purposes__.on';
+            return;
           }
 
           throw new Error(`Unknown import ${name} from module ${module}`);
@@ -68,7 +73,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
         return true;
       }
 
-      return variable in usedKeywords;
+      return false;
     };
 
     delete options.eval;
@@ -77,7 +82,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope || variable in usedKeywords;
+    options.lexicalScope = (variable: string) => variable in scope;
 
     delete options.scope;
   }
@@ -99,7 +104,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   }
 
   if (options.strictMode) {
-    options.keywords = STRICT_MODE_KEYWORDS;
+    options.keywords = [...STRICT_MODE_KEYWORDS, ...(Object.keys(keywords) || [])];
   }
 
   return options;
@@ -142,8 +147,12 @@ function inScope(variable: string, evaluator: Evaluator): boolean {
   }
 
   try {
-    return evaluator(`typeof ${variable} !== "undefined"`) === true || variable in keywords;
+    return evaluator(`typeof ${variable} !== "undefined"`) === true;
   } catch (e) {
+    if (variable in globalThis['__ember-secret-runtime-for-testing-purposes__']) {
+      return true;
+    }
+
     // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
     // If the variable is a reserved word, it's definitely not in scope, so return false. Since
     // reserved words are somewhat contextual, we don't try to identify them purely by their
