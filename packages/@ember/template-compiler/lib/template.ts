@@ -3,7 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import compileOptions from './compile-options';
+import compileOptions, { keywords } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
@@ -237,11 +237,12 @@ export function template(
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
+  
+  const normalizedOptions = compileOptions(options);
   const evaluate = buildEvaluator(options);
 
-  const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
-
+  
   const source = glimmerPrecompile(templateString, normalizedOptions);
   const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
 
@@ -251,27 +252,38 @@ export function template(
 }
 
 const evaluator = (source: string) => {
+  console.log( 'evaluator called with', source );
   return new Function(`return  ${source}`)();
 };
 
-function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
-  if (options === undefined) {
-    return evaluator;
-  }
-
+function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
+    console.log('using provided eval function');
+    return function () {
+      console.log(arguments[0]);
+      return options.eval!.apply(null, arguments);
+    }
     return options.eval;
   } else {
-    const scope = options.scope?.();
-
+    /**
+     * This is ran before the template is compiled, 
+     * so we cannot use any information gathered during template compilation.
+     */
+    const scope = {
+      ...keywords,
+      ...options.scope?.()
+    };
+    
     if (!scope) {
       return evaluator;
     }
-
+    
     return (source: string) => {
-      const argNames = Object.keys(scope);
-      const argValues = Object.values(scope);
+      const ourScope = { ...keywords, ...scope };
+      const argNames = Object.keys(ourScope);
+      const argValues = Object.values(ourScope);
 
+      console.log({ options, argNames, argValues, source, ourScope });
       return new Function(...argNames, `return (${source})`)(...argValues);
     };
   }
