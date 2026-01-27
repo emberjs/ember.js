@@ -1,0 +1,74 @@
+{
+  "name": "@handlebars/parser",
+  "version": "2.2.2",
+  "description": "The parser for the Handlebars language",
+  "homepage": "https://github.com/handlebars-lang/handlebars-parser#readme",
+  "bugs": {
+    "url": "https://github.com/handlebars-lang/handlebars-parser/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/handlebars-lang/handlebars-parser.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "import": {
+        "types": "./types/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "default": {
+        "types": "./types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "prepublishOnly": "pnpm run build",
+    "build": "npm-run-all build:parser build:esm build:cjs",
+    "build:cjs": "tsc --module commonjs --moduleResolution node --target es5 --outDir dist/cjs",
+    "build:esm": "tsc --module es2015 --target es5 --outDir dist/esm",
+    "build:jison": "jison -m js src/handlebars.yy src/handlebars.l -o lib/parser.js",
+    "build:parser": "npm-run-all build:jison build:parser-suffix",
+    "build:parser-suffix": "combine-files lib/parser.js,src/parser-suffix.js lib/parser.js",
+    "pretest": "pnpm run build",
+    "test": "mocha --inline-diffs spec",
+    "pretest:bail": "pnpm run build",
+    "test:bail": "mocha --bail --inline-diffs spec"
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2
+  },
+  "devDependencies": {
+    "combine-files": "^1.1.8",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-compat": "^6.0.1",
+    "jison": "^0.4.18",
+    "mocha": "^10.7.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.1.1",
+    "release-plan": "^0.16.0",
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "pnpm@9.12.2",
+  "engines": {
+    "node": "^18 || ^20 || ^22 || >=24"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}
