@@ -3,6 +3,7 @@ packages:
   - 'packages/@ember/*'
   - 'packages/@glimmer/*'
   - 'packages/@glimmer-workspace/*'
+  - 'packages/@handlebars/*'
   - 'packages/*/*/test'
   - 'smoke-tests/*'
   - 'glimmer-vm/repo-metadata'
