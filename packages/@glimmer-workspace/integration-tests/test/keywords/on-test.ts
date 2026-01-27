@@ -98,3 +98,5 @@ jitSuite(KeywordOn);
 const hide = (variable: unknown) => {
   new Function(`return (${JSON.stringify(variable)});`);
 };
+
+hide(on);
