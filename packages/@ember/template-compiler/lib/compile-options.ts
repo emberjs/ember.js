@@ -1,3 +1,4 @@
+import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,
@@ -13,11 +14,25 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
+
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
 
+  let boundImports = new Set<string>();
+
   let options: EmberPrecompileOptions & Partial<EmberPrecompileOptions> = {
-    meta: {},
+    meta: { 
+      jsutils: {
+        bindImport(module: string, name: string) {
+          if (module === '@ember/modifier' && name === 'on') {
+            boundImports.add('on');
+            return on;
+          }
+
+          throw new Error(`Unknown import ${name} from module ${module}`);
+        }
+      }
+    },
     isProduction: false,
     plugins: { ast: [] },
     ..._options,
@@ -39,6 +54,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
+      debugger;
       if (inScope(variable, localScopeEvaluator)) {
         return !inScope(variable, globalScopeEvaluator);
       }
@@ -52,7 +68,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope;
+    options.lexicalScope = (variable: string) => variable in scope || boundImports.has(variable);
 
     delete options.scope;
   }
