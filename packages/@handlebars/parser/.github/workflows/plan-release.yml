@@ -1,0 +1,93 @@
+name: Plan Release
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+  pull_request_target: # This workflow has permissions on the repo, do NOT run code from PRs in this workflow. See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    types:
+      - labeled
+      - unlabeled
+
+concurrency:
+  group: plan-release # only the latest one of these should ever be running
+  cancel-in-progress: true
+
+jobs:
+  is-this-a-release:
+    name: "Is this a release?"
+    runs-on: ubuntu-latest
+    outputs:
+      command: ${{ steps.check-release.outputs.command }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: 'master'
+      # This will only cause the `is-this-a-release` job to have a "command" of `release`
+      # when the .release-plan.json file was changed on the last commit.
+      - id: check-release
+        run: if git diff --name-only HEAD HEAD~1 | grep -w -q ".release-plan.json"; then echo "command=release"; fi >> $GITHUB_OUTPUT
+
+  create-prepare-release-pr:
+    name: Create Prepare Release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: is-this-a-release
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: write
+    # only run on push event or workflow dispatch if plan wasn't updated (don't create a release plan when we're releasing)
+    # only run on labeled event if the PR has already been merged
+    if: ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.is-this-a-release.outputs.command != 'release') || (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true)
+
+    steps:
+      - uses: actions/checkout@v4
+        # We need to download lots of history so that
+        # github-changelog can discover what's changed since the last release
+        with:
+          fetch-depth: 0
+          ref: 'master'
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: "Generate Explanation and Prep Changelogs"
+        id: explanation
+        run: |
+          set +e
+          pnpm release-plan prepare 2> >(tee -a release-plan-stderr.txt >&2)
+
+          if [ $? -ne 0 ]; then
+            release_plan_output=$(cat release-plan-stderr.txt)
+          else
+            release_plan_output=$(jq .description .release-plan.json -r)
+            rm release-plan-stderr.txt
+
+            if [ $(jq '.solution | length' .release-plan.json) -eq 1 ]; then
+              new_version=$(jq -r '.solution[].newVersion' .release-plan.json)
+              echo "new_version=v$new_version" >> $GITHUB_OUTPUT
+            fi
+          fi
+            echo 'text<<EOF' >> $GITHUB_OUTPUT
+          echo "$release_plan_output" >> $GITHUB_OUTPUT
+            echo 'EOF' >> $GITHUB_OUTPUT
+        env:
+          GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Prepare Release ${{ steps.explanation.outputs.new_version}} using 'release-plan'"
+          labels: "internal"
+          branch: release-preview
+          title: Prepare Release ${{ steps.explanation.outputs.new_version }}
+          body: |
+            This PR is a preview of the release that [release-plan](https://github.com/embroider-build/release-plan) has prepared. To release you should just merge this PR 👍
+
+            -----------------------------------------
+
+            ${{ steps.explanation.outputs.text }}

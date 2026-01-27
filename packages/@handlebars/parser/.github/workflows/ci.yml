@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - next
+      - 'release-*'
+      - 'v*'
+  pull_request: {}
+
+jobs:
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: 
+          cache: pnpm
+          node-version: 22
+
+      - name: install dependencies
+        run: pnpm i
+      - run: pnpm run lint
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node-vesion:
+          - 18
+          - 20
+          - 22
+          - 24
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: 
+          cache: pnpm
+          node-version: ${{matrix.node-vesion}}
+
+      - name: install dependencies
+        run: pnpm i
+        env:
+          CI: true
+
+      - run: pnpm test
