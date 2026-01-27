@@ -239,7 +239,7 @@ export function template(
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
   
   const normalizedOptions = compileOptions(options);
-  const evaluate = buildEvaluator(options);
+  const evaluate = buildEvaluator(normalizedOptions);
 
   const component = normalizedOptions.component ?? templateOnly();
   
@@ -252,9 +252,13 @@ export function template(
 }
 
 const evaluator = (source: string) => {
-  return new Function(`return  ${source}`)();
+  return new Function(`{on}`, `return  ${source}`)(keywords);
 };
 
+/**
+ * @param options 
+ * @returns 
+ */
 function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
     return options.eval;

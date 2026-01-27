@@ -35,10 +35,18 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
          *       we first detect the keywords as "not in scope", and that is what we
          *       want, so we can import them.
          */
-        bindImport(module: string, name: string, node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression) {
-          if (module === '@ember/modifier' && name === 'on' && node.type === 'ElementModifierStatement') {
-            usedKeywords['on'] = keywords.on;
-            node.path.original = 'globalThis.__ember-secret-runtime-for-testing-purposes__.on';
+        bindImport(
+          module: string,
+          name: string,
+          node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression
+        ) {
+          if (
+            module === '@ember/modifier' &&
+            name === 'on' &&
+            node.type === 'ElementModifierStatement'
+          ) {
+            // usedKeywords['on'] = keywords.on;
+            // node.path.original = 'globalThis.__ember-secret-runtime-for-testing-purposes__.on';
             return;
           }
 
@@ -63,33 +71,33 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     },
   };
 
-  if ('eval' in options) {
-    const localScopeEvaluator = options.eval as (value: string) => unknown;
-    // TODO: what is this for?
-    //       we have no tests covering this
-    //       test suite passes without it
-    // const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
+  const scope = options.scope;
+  const localScopeEvaluator = options.eval;
+  delete options.scope;
+  delete options.eval;
 
-    options.lexicalScope = (variable: string) => {
+  options.lexicalScope = (variable: string) => {
+    const invokedScopeBag = scope?.() ?? {};
+
+    if (variable in invokedScopeBag) {
+      return true;
+    }
+
+    if (localScopeEvaluator) {
+      // TODO: what is this for?
+      //       we have no tests covering this
+      //       test suite passes without it
+      const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
+
       if (inScope(variable, localScopeEvaluator)) {
-        return true;
-        // test suite passes without this
-        // return !inScope(variable, globalScopeEvaluator);
+        return !inScope(variable, globalScopeEvaluator);
       }
 
-      return variable in globalThis['__ember-secret-runtime-for-testing-purposes__'];
-    };
+      return variable in keywords;
+    }
 
-    delete options.eval;
-  }
-
-  if ('scope' in options) {
-    const scope = (options.scope as () => Record<string, unknown>)();
-
-    options.lexicalScope = (variable: string) => variable in scope || variable in globalThis['__ember-secret-runtime-for-testing-purposes__'];
-
-    delete options.scope;
-  }
+    return false;
+  };
 
   if ('locals' in options && !options.locals) {
     // Glimmer's precompile options declare `locals` like:
@@ -108,7 +116,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   }
 
   if (options.strictMode) {
-    options.keywords = STRICT_MODE_KEYWORDS
+    options.keywords = STRICT_MODE_KEYWORDS;
   }
 
   return options;
@@ -153,7 +161,7 @@ function inScope(variable: string, evaluator: Evaluator): boolean {
   try {
     return evaluator(`typeof ${variable} !== "undefined"`) === true;
   } catch (e) {
-    if (variable in globalThis['__ember-secret-runtime-for-testing-purposes__']) {
+    if (variable in keywords) {
       return true;
     }
 
