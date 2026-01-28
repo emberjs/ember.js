@@ -36,8 +36,7 @@ class KeywordOn extends RenderTest {
     const compiled = template('<button {{on "click" handleClick}}>Click</button>', {
       strictMode: true,
       eval() {
-        // @ts-expect-error we're too dynamic for TS to understand
-        return eval(...arguments[0]);
+        return eval(arguments[0]);
       },
     });
 
