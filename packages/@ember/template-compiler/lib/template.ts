@@ -3,7 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import compileOptions from './compile-options';
+import compileOptions, { keywords } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
@@ -237,8 +237,8 @@ export function template(
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
-  const evaluate = buildEvaluator(options);
 
+  const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
@@ -250,23 +250,31 @@ export function template(
   return component;
 }
 
+Object.assign(template, keywords);
+
 const evaluator = (source: string) => {
-  return new Function(`return  ${source}`)();
+  return new Function('template', `return  ${source}`)(template);
 };
 
-function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
-  if (options === undefined) {
-    return evaluator;
-  }
-
+/**
+ * @param options
+ * @returns
+ */
+function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
     return options.eval;
   } else {
-    const scope = options.scope?.();
+    /**
+     * This is ran before the template is compiled,
+     * so we cannot use any information gathered during template compilation.
+     */
+    let scope = options.scope?.();
 
     if (!scope) {
       return evaluator;
     }
+
+    scope = Object.assign({}, keywords, scope);
 
     return (source: string) => {
       const argNames = Object.keys(scope);

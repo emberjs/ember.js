@@ -1,4 +1,5 @@
 import type {
+  AST,
   ASTPluginEnvironment,
   builders,
   PrecompileOptions,
@@ -21,6 +22,10 @@ export type LexicalScope = NonNullable<PrecompileOptionsWithLexicalScope['lexica
 
 interface Plugins {
   ast: PluginFunc[];
+}
+
+export interface JSUtils {
+  bindImport(module: string, name: string, node: AST.Node): void;
 }
 
 export interface EmberPrecompileOptions extends PrecompileOptions {
