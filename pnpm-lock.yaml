@@ -1239,6 +1239,12 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../helper
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../modifier
       '@glimmer/compiler':
         specifier: workspace:*
         version: link:../../@glimmer/compiler
