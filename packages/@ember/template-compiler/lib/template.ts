@@ -268,11 +268,13 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
      * This is ran before the template is compiled,
      * so we cannot use any information gathered during template compilation.
      */
-    const scope = options.scope?.();
+    let scope = options.scope?.();
 
     if (!scope) {
       return evaluator;
     }
+
+    scope = Object.assign({}, keywords, scope);
 
     return (source: string) => {
       const argNames = Object.keys(scope);

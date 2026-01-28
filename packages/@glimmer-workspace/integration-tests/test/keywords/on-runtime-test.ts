@@ -1,6 +1,5 @@
 import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
-import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 
 import { template } from '@ember/template-compiler/runtime';
 
