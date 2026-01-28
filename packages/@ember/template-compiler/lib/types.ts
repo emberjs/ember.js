@@ -41,7 +41,10 @@ export interface EmberPrecompileOptions extends PrecompileOptions {
    * ```ts
    * class MyComponent {
    *   static {
-   *     template()
+   *     template(templateContent, {
+   *       component: this,
+   *       eval: () => eval(arguments[0])
+   *     })
    *   }
    * }
    * ```
