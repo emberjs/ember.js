@@ -4,7 +4,7 @@
   "devDependencies": {
     "@embroider/compat": "^3.9.0",
     "@embroider/core": "^3.5.6",
-    "@embroider/webpack": "^4.1.0",
+    "@embroider/webpack": "^4.1.2",
     "@swc-node/register": "^1.6.8",
     "@swc/core": "^1.4.17",
     "@swc/types": "^0.1.6",

@@ -17,14 +17,14 @@
   "repository": "https://github.com/emberjs/ember.js",
   "scripts": {},
   "dependencies": {
-    "@embroider/addon-shim": "^1.8.9",
+    "@embroider/addon-shim": "^1.10.2",
     "@glimmer/env": "workspace:*"
   },
   "devDependencies": {
     "@ember/component": "workspace:*",
     "@ember/destroyable": "workspace:*",
-    "@ember/runloop": "workspace:*",
     "@ember/owner": "workspace:*",
+    "@ember/runloop": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "typescript": "^5.7.3"
   },
