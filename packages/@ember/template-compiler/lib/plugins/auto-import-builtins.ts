@@ -37,8 +37,8 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
       ...visitor,
       ElementModifierStatement(node: AST.ElementModifierStatement) {
         if (isOn(node, hasLocal)) {
-          // @ts-expect-error doesn't exist on types
-          env.meta.jsutils.bindImport('@ember/modifier', 'on', node, { name: 'on' });
+          // @ts-expect-error may not exist in all environments (the deprecated runtime compiler, for example)
+          env.meta?.jsutils?.bindImport?.('@ember/modifier', 'on', node, { name: 'on' });
         }
       },
     },

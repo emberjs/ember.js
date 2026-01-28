@@ -6,9 +6,8 @@ import {
   STRICT_MODE_KEYWORDS,
   STRICT_MODE_TRANSFORMS,
 } from './plugins/index';
-import type { EmberPrecompileOptions, PluginFunc } from './types';
+import type { EmberPrecompileOptions, JSUtils, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
-import { global } from '@ember/-internals/environment';
 
 let USER_PLUGINS: PluginFunc[] = [];
 
@@ -20,41 +19,15 @@ export const keywords = {
   on,
 };
 
-globalThis['__ember-secret-runtime-for-testing-purposes__'] = keywords;
+type Options = EmberPrecompileOptions &
+  Partial<EmberPrecompileOptions> & {
+    meta?: EmberPrecompileOptions['meta'] & { jsutils?: JSUtils };
+  };
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
 
-  let usedKeywords: Record<string, unknown> = {};
-
-  let options: EmberPrecompileOptions & Partial<EmberPrecompileOptions> = {
-    meta: {
-      jsutils: {
-        /**
-         * NOTE: when stepping through lexicalScope, or other callbacks here,
-         *       we first detect the keywords as "not in scope", and that is what we
-         *       want, so we can import them.
-         */
-        bindImport(
-          module: string,
-          name: string,
-          node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression
-        ) {
-          if (
-            module === '@ember/modifier' &&
-            name === 'on' &&
-            node.type === 'ElementModifierStatement'
-          ) {
-            // usedKeywords['on'] = keywords.on;
-            // node.path.original = 'globalThis.__ember-secret-runtime-for-testing-purposes__.on';
-            return;
-          }
-
-          throw new Error(`Unknown import ${name} from module ${module}`);
-        },
-      },
-      usedKeywords,
-    },
+  let options: Options = {
     isProduction: false,
     plugins: { ast: [] },
     ..._options,
@@ -71,33 +44,56 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     },
   };
 
-  const scope = options.scope;
-  const localScopeEvaluator = options.eval;
-  delete options.scope;
-  delete options.eval;
+  options.meta ||= {};
+  options.meta.jsutils ||= {
+    /**
+     * NOTE: when stepping through lexicalScope, or other callbacks here,
+     *       we first detect the keywords as "not in scope",
+     *       and that is what we want, so that we can import them.
+     */
+    bindImport(
+      module: string,
+      name: string,
+      node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression
+    ) {
+      if (module === '@ember/modifier' && name === 'on') {
+        /**
+         * We rely on an old JS technique of assiging properties to functions.
+         * Since template() is what was used to runtime-compile the template,
+         * we know it to be in scope.
+         */
+        if (node.path.type === 'PathExpression') {
+          node.path.original = 'template.on';
+          return;
+        }
+      }
 
-  options.lexicalScope = (variable: string) => {
-    const invokedScopeBag = scope?.() ?? {};
+      throw new Error(`Unknown import ${name} from module ${module}`);
+    },
+  };
 
-    if (variable in invokedScopeBag) {
-      return true;
-    }
+  if ('eval' in options) {
+    const localScopeEvaluator = options.eval as (value: string) => unknown;
+    const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
-    if (localScopeEvaluator) {
-      // TODO: what is this for?
-      //       we have no tests covering this
-      //       test suite passes without it
-      const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
-
+    options.lexicalScope = (variable: string) => {
       if (inScope(variable, localScopeEvaluator)) {
         return !inScope(variable, globalScopeEvaluator);
       }
 
-      return variable in keywords;
-    }
+      return false;
+    };
 
-    return false;
-  };
+    delete options.eval;
+  }
+
+  if ('scope' in options) {
+    const scope = (options.scope as () => Record<string, unknown>)();
+
+    options.lexicalScope = (variable: string) => variable in scope;
+
+    delete options.scope;
+  }
 
   if ('locals' in options && !options.locals) {
     // Glimmer's precompile options declare `locals` like:

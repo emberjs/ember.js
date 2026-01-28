@@ -237,12 +237,12 @@ export function template(
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
-  
+
   const normalizedOptions = compileOptions(options);
   const evaluate = buildEvaluator(normalizedOptions);
 
   const component = normalizedOptions.component ?? templateOnly();
-  
+
   const source = glimmerPrecompile(templateString, normalizedOptions);
   const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
 
@@ -251,30 +251,30 @@ export function template(
   return component;
 }
 
+Object.assign(template, keywords);
+
 const evaluator = (source: string) => {
-  return new Function(`{on}`, `return  ${source}`)(keywords);
+  return new Function('template', `return  ${source}`)(template);
 };
 
 /**
- * @param options 
- * @returns 
+ * @param options
+ * @returns
  */
 function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
     return options.eval;
   } else {
     /**
-     * This is ran before the template is compiled, 
+     * This is ran before the template is compiled,
      * so we cannot use any information gathered during template compilation.
      */
-    let scope = options.scope?.();
-    
+    const scope = options.scope?.();
+
     if (!scope) {
       return evaluator;
     }
 
-    scope = Object.assign({ globalThis }, keywords, scope);
-    
     return (source: string) => {
       const argNames = Object.keys(scope);
       const argValues = Object.values(scope);

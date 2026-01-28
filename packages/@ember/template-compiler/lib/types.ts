@@ -1,4 +1,5 @@
 import type {
+  AST,
   ASTPluginEnvironment,
   builders,
   PrecompileOptions,
@@ -23,6 +24,10 @@ interface Plugins {
   ast: PluginFunc[];
 }
 
+export interface JSUtils {
+  bindImport(module: string, name: string, node: AST.Node): void;
+}
+
 export interface EmberPrecompileOptions extends PrecompileOptions {
   isProduction?: boolean;
   moduleName?: string;
@@ -36,10 +41,7 @@ export interface EmberPrecompileOptions extends PrecompileOptions {
    * ```ts
    * class MyComponent {
    *   static {
-   *     template(templateContent, {
-   *       component: this,
-   *       eval: () => eval(arguments[0])
-   *     })
+   *     template()
    *   }
    * }
    * ```
