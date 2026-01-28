@@ -7,21 +7,7 @@ import { isPath, trackLocals } from './utils';
 */
 
 /**
-  A Glimmer2 AST transformation that replaces all instances of
-
-  ```handlebars
- <button {{action 'foo'}}>
- <button onblur={{action 'foo'}}>
- <button onblur={{action (action 'foo') 'bar'}}>
-  ```
-
-  with
-
-  ```handlebars
- <button {{action this 'foo'}}>
- <button onblur={{action this 'foo'}}>
- <button onblur={{action this (action this 'foo') 'bar'}}>
-  ```
+  A Glimmer2 AST transformation that makes importable keywords work
 
   @private
   @class TransformActionSyntax
