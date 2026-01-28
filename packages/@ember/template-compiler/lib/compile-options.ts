@@ -157,10 +157,6 @@ function inScope(variable: string, evaluator: Evaluator): boolean {
   try {
     return evaluator(`typeof ${variable} !== "undefined"`) === true;
   } catch (e) {
-    if (variable in keywords) {
-      return true;
-    }
-
     // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
     // If the variable is a reserved word, it's definitely not in scope, so return false. Since
     // reserved words are somewhat contextual, we don't try to identify them purely by their

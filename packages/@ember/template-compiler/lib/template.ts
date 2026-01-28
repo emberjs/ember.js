@@ -238,9 +238,8 @@ export function template(
 ): object {
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
 
+  const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);
-  const evaluate = buildEvaluator(normalizedOptions);
-
   const component = normalizedOptions.component ?? templateOnly();
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
