@@ -1,0 +1,14 @@
+{
+  "name": "ember",
+  "repo": "components/ember",
+  "version": "2.18.3+96faeee4",
+  "license": "MIT",
+  "homepage": "https://github.com/emberjs/ember.js",
+  "main": "ember.debug.js",
+  "scripts": [
+    "ember.debug.js"
+  ],
+  "dependencies": {
+    "components/jquery": ">= 1.7.0 < 4.0.0"
+  }
+}

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ember</title>
+    <link rel="stylesheet" href="../qunit/qunit.css">
+    <style type="text/css">
+      #qunit-tests.hideskipped li.skipped {
+        display: none;
+      }
+    </style>
+    <script src="../qunit/qunit.js"></script>
+    <script src="/testem.js"></script>
+
+    <script type="text/javascript">
+      window.loadScript = function(url) {
+        document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
+      };
+    </script>
+
+    <script type="text/javascript">
+      // Load custom version of jQuery if possible (assign to window so IE8 can use in later blocks)
+      var jQueryVersion = QUnit.urlParams.jquery;
+      if (jQueryVersion) {
+        loadScript('https://code.jquery.com/jquery-'+jQueryVersion+'.js');
+      }
+      // Close the script tag to make sure document.write happens
+    </script>
+
+    <script type="text/javascript">
+      // Fallback to default jQuery
+      if (jQueryVersion !== 'none' && !window.jQuery) {
+        loadScript('../jquery/jquery.js');
+      }
+      // Close the script tag to make sure document.write happens
+    </script>
+
+    <script>
+      (function() {
+        window.ENV = window.ENV || {};
+
+        window.printTestCounts = function() {
+          var passing = $("li[id^='qunit-'].pass").length;
+          var failing = $("li[id^='qunit-'].fail").length;
+          var total = passing + failing;
+
+          console.table([{ passing: passing, failing: failing, total: total }], ["passing", "failing", "total"]);
+        }
+
+        window.findPassingSkippedTests = function() {
+          console.log($("li[id^='qunit-'].pass:contains(SKIPPED)").map(function() { return $("strong", this).text() }).toArray().join("\n"));
+        };
+
+        // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
+        ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
+        ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
+        ENV.__test_hook_count__ = 0;
+        ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
+          ENV.__test_hook_count__ += object;
+        });
+
+        window.ENV.FEATURES = !!QUnit.urlParams.prod ? {"features-stripped-test":false,"ember-libraries-isregistered":false,"ember-improved-instrumentation":false,"ember-metal-weakmap":false,"ember-glimmer-allow-backtracking-rerender":false,"ember-routing-router-service":true,"ember-engines-mount-params":true,"ember-module-unification":false,"glimmer-custom-component-manager":false,"mandatory-setter":false,"ember-glimmer-detect-backtracking-rerender":false} : {"features-stripped-test":false,"ember-libraries-isregistered":false,"ember-improved-instrumentation":false,"ember-metal-weakmap":false,"ember-glimmer-allow-backtracking-rerender":false,"ember-routing-router-service":true,"ember-engines-mount-params":true,"ember-module-unification":false,"glimmer-custom-component-manager":false,"mandatory-setter":true,"ember-glimmer-detect-backtracking-rerender":true};
+
+        // Handle extending prototypes
+        ENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
+
+        // Handle testing feature flags
+        if (QUnit.urlParams.enableoptionalfeatures) {
+          for (var feature in window.ENV.FEATURES) {
+            if (window.ENV.FEATURES[feature] === null) {
+              window.ENV.FEATURES[feature] = true;
+            }
+          }
+        }
+
+        ENV['RAISE_ON_DEPRECATION'] = true;
+      })();
+    </script>
+
+    <script>
+      var dist = QUnit.urlParams.dist;
+
+      if (dist) {
+        loadScript('../ember.' + dist + '.js');
+      } else {
+        loadScript('../ember.debug.js');
+      }
+    </script>
+
+    <script type="text/javascript">
+      Ember.testing = true;
+    </script>
+
+    <script>
+      loadScript('../ember-template-compiler.js');
+    </script>
+
+    <script>
+      var prod = QUnit.urlParams.prod;
+
+      if (prod) {
+        loadScript('../ember-tests.prod.js');
+      } else {
+        loadScript('../ember-tests.js');
+      }
+    </script>
+
+    <script>
+      (function() {
+        if (QUnit.urlParams.forceskip) {
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return QUnit.test(string, callback);
+          };
+        } else {
+          var skip = QUnit.skip;
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return skip(string, callback);
+          }
+        }
+
+        Ember.Debug.registerDeprecationHandler(function (message, options, next) {
+          var id = options && options.id;
+          next(message, options);
+        });
+
+        window.EmberDev = window.EmberDev || {};
+        EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
+
+        // hack qunit to not suck for Ember objects
+        var originalTypeof = QUnit.jsDump.typeOf;
+
+        QUnit.jsDump.typeOf = function(obj) {
+          if (Ember && Ember.Object && Ember.Object.detectInstance(obj)) {
+            return "emberObject";
+          }
+
+          return originalTypeof.call(this, obj);
+        };
+
+        QUnit.jsDump.parsers.emberObject = function(obj) {
+          return obj.toString();
+        };
+
+        var EmberDevTestHelperAssert = window.Ember.__loader.require('ember-dev/test-helper/index')['default'];
+        var setupQUnit = window.Ember.__loader.require('ember-dev/test-helper/setup-qunit')['default'];
+        var debugModule = window.Ember.__loader.require('ember-debug');
+        var testHelpers = new EmberDevTestHelperAssert({
+          Ember: window.Ember,
+          runningProdBuild: EmberDev.runningProdBuild,
+          getDebugFunction: debugModule.getDebugFunction,
+          setDebugFunction: debugModule.setDebugFunction
+        });
+        setupQUnit(testHelpers);
+
+        // Tests should time out after 15 seconds
+        QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;
+        // Hide skipped tests
+        QUnit.config.urlConfig.push({ id: 'hideskipped', label: "Hide skipped tests"});
+        // Handle testing feature flags
+        QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
+        // Handle extending prototypes
+        QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
+        // Enable/disable livereload
+        QUnit.config.urlConfig.push({ id: 'livereload', label: 'Live Reload'});
+        // Handle JSHint
+        QUnit.config.urlConfig.push({ id: 'nolint', label: 'Skip ESLint'});
+        QUnit.config.urlConfig.push('forceskip');
+
+        if (QUnit.config.seed) {
+          QUnit.config.reorder = false;
+        }
+
+        QUnit.begin(function() {
+          if (QUnit.urlParams.hideskipped) {
+            $('#qunit-tests').addClass('hideskipped');
+          }
+        });
+      })();
+    </script>
+
+    <script>
+      var packages     = QUnit.urlParams.package;
+      packages = (packages && packages.split(',')) || [".*"];
+      var packageRegexp   = new RegExp('^('+packages.join('|')+')/');
+
+      var skipPackages = QUnit.urlParams.skipPackage;
+      skipPackages = (skipPackages && skipPackages.split(',')) || [];
+      var skipPackageRegexp   = new RegExp('^('+skipPackages.join('|')+')/');
+
+      for (var moduleName in Ember.__loader.registry) {
+        if (!moduleName.match(packageRegexp))   { continue; }
+        if (moduleName.match(skipPackageRegexp)) { continue; }
+        if (QUnit.urlParams.nolint && moduleName.match(/lint-test$/)) { continue; }
+
+        if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
+      }
+    </script>
+
+    <script>
+      if (QUnit.urlParams.livereload) {
+        (function() {
+          var src = (location.protocol || 'http:') + '//' + (location.hostname || 'localhost') + ':' + (parseInt(location.port, 10) + 31529) + '/livereload.js?snipver=1';
+          var script    = document.createElement('script');
+          script.type   = 'text/javascript';
+          script.src    = src;
+          document.getElementsByTagName('head')[0].appendChild(script);
+        }());
+      }
+    </script>
+
+  </head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+</body>
+</html>
