@@ -1,0 +1,32 @@
+{
+  "exclude": ["__tests__"],
+  "compilerOptions": {
+    "target": "ES2020",
+    // Node16 allows top-level `await`, which was also unflagged in Node 14.8
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    // changing this was necessary for WeakRef to be available (required/referenced in Volar)
+    "lib": ["ES2021", "dom"],
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    // added because lru-cache has incorrect types
+    // (used by @babel/eslint-parser)
+    "skipLibCheck": true,
+
+    // new
+    "allowSyntheticDefaultImports": true,
+
+    // esModuleInterop needs to be false so that the fs.readFileSync monkeypatch in vscode/src/extension.ts
+    // continues to work (setting esModuleInterop to true will wrap require() in __importStar
+    // which breaks the monkeypatch)
+    "esModuleInterop": false,
+
+    "types": []
+  }
+}
