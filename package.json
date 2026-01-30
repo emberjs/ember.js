@@ -142,7 +142,7 @@
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
     "resolve.exports": "^2.0.3",
-    "rollup": "^4.2.0",
+    "rollup": "^4.57.1",
     "rsvp": "^4.8.5",
     "simple-dom": "^1.4.0",
     "table": "^6.9.0",
