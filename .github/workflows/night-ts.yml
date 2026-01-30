@@ -1,0 +1,35 @@
+name: Nightly TypeScript Run
+
+permissions:
+  contents: read
+
+jobs:
+  ts-next:
+    name: typescript@next
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+      - run: pnpm add --save-dev typescript@next --workspace-root
+      - run: pnpm type-check
+  notify:
+    name: Notify Discord
+    runs-on: ubuntu-latest
+    needs: [ ts-next ]
+    if: failure()
+    steps:
+      - uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.TYPESCRIPT_WEBHOOK }}
+          status: "Failure"
+          title: "Ember.js Nightly TypeScript Run"
+          color: 0xcc0000
+          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          username: GitHub Actions
+
+# ...nightly at midnight
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:

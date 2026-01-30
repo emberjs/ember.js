@@ -1,0 +1,34 @@
+name: Cron
+
+on:
+  schedule:
+    - cron:  '0 7 * * *' # daily, 7am
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-ci:
+    permissions:
+      contents: read # the push uses a personal-access token so it will trigger workflows, so this permission is read-only
+      checks: read
+
+    name: Trigger cron build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [main, beta, release]
+    steps:
+      - uses: kategengler/ci-cron@v1.0.2
+        with:
+          branch: ${{ matrix.branch }}
+          # This must use a personal access token because of a Github Actions
+          # limitation where it will not trigger workflows from pushes from
+          # other workflows with the token it provides.
+          # The PERSONAL_ACCESS secret must be a token with `repo` scope.
+          # See https://help.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token
+          personal_token: ${{ secrets.PERSONAL_TOKEN }}
+          committer_email: 'cron@example.com'
+          committer_name: 'Ember.js Cron CI'
