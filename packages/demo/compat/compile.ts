@@ -81,6 +81,31 @@ const blockParamsStack: any[][] = [];
   return currentParams ? currentParams[index] : undefined;
 };
 
+// Set up global $_bp0, $_bp1, etc. as getters that read from the block params stack
+// This allows arrow functions in templates to access block params via this.$_bp0
+// We define them on Object.prototype so they're accessible on any object used as `this`
+const bpDescriptors: Record<string, PropertyDescriptor> = {};
+for (let i = 0; i < 10; i++) {
+  const bpName = `$_bp${i}`;
+  bpDescriptors[bpName] = {
+    get() {
+      const stack = (globalThis as any).__blockParamsStack;
+      const currentParams = stack && stack[stack.length - 1];
+      return currentParams ? currentParams[i] : undefined;
+    },
+    configurable: true,
+    enumerable: false,
+  };
+}
+try {
+  Object.defineProperties(Object.prototype, bpDescriptors);
+} catch (e) {
+  // If we can't define on Object.prototype, fall back to globalThis
+  for (let i = 0; i < 10; i++) {
+    Object.defineProperty(globalThis, `$_bp${i}`, bpDescriptors[`$_bp${i}`]);
+  }
+}
+
 // Also expose through EmberFunctionalHelpers for GXT's helper resolution
 if (typeof (globalThis as any).EmberFunctionalHelpers === 'undefined') {
   (globalThis as any).EmberFunctionalHelpers = new Set();
@@ -251,6 +276,8 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
               for (const child of slotChildren) {
                 if (typeof child === 'function') {
                   try {
+                    // Call child function - block params accessible via this.$_bp0 etc.
+                    // (defined on Object.prototype to read from __blockParamsStack)
                     const childResult = child();
                     results.push(childResult);
                   } catch (e) {
@@ -649,18 +676,29 @@ function transformBlockParams(templateString: string): { transformed: string; bl
     // Extract the block content
     const blockContent = result.slice(openTagEnd, endIndex - `</${componentName}>`.length);
 
-    // Replace each param reference with ($_blockParam N) helper call
+    // Replace each param reference with a positional accessor
+    // Transform {{param}} to {{this.$_bp0}} and {{param.prop}} to {{this.$_bp0.prop}}
+    // The slot function will set up $_bp0, $_bp1, etc. on the context
     let transformedContent = blockContent;
     for (let j = 0; j < params.length; j++) {
       const param = params[j];
-      // Replace {{param}} with {{($_blockParam N)}}
-      // This uses a helper that retrieves block params from a global stack
-      const mustachePattern = new RegExp(`\\{\\{\\s*${param}\\s*\\}\\}`, 'g');
-      transformedContent = transformedContent.replace(mustachePattern, `{{($_blockParam ${j})}}`);
+      const bpVar = `$_bp${j}`;
 
-      // Replace {{param}} in attribute values: @attr={{param}}
+      // Replace {{param.property}} with {{this.$_bp0.property}} (do this first for longer matches)
+      const pathPattern = new RegExp(`\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.]+)\\s*\\}\\}`, 'g');
+      transformedContent = transformedContent.replace(pathPattern, `{{this.${bpVar}$1}}`);
+
+      // Replace {{param}} with {{this.$_bp0}} (simple case)
+      const simplePattern = new RegExp(`\\{\\{\\s*${param}\\s*\\}\\}`, 'g');
+      transformedContent = transformedContent.replace(simplePattern, `{{this.${bpVar}}}`);
+
+      // Replace in attribute values: @attr={{param.property}}
+      const attrPathPattern = new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}(\\.[a-zA-Z0-9_.]+)\\}\\}`, 'g');
+      transformedContent = transformedContent.replace(attrPathPattern, `$1{{this.${bpVar}$2}}`);
+
+      // Replace in attribute values: @attr={{param}}
       const attrPattern = new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}\\}\\}`, 'g');
-      transformedContent = transformedContent.replace(attrPattern, `$1{{($_blockParam ${j})}}`);
+      transformedContent = transformedContent.replace(attrPattern, `$1{{this.${bpVar}}}`);
     }
 
     // Reconstruct the element without the `as |...|` part
@@ -776,8 +814,18 @@ function transformCurlyBlockComponents(code: string): string {
 
       // Transform to angle-bracket syntax
       const pascalName = toPascalCase(name);
-      const transformedAttrs = transformAttrs(attrs);
-      const replacement = `<${pascalName}${transformedAttrs}>${content}</${pascalName}>`;
+
+      // Check for block params: `as |param1 param2|`
+      const blockParamMatch = attrs.match(/\s+as\s*\|([^|]+)\|/);
+      let blockParamClause = '';
+      let attrsWithoutBlockParams = attrs;
+      if (blockParamMatch) {
+        blockParamClause = ` as |${blockParamMatch[1]}|`;
+        attrsWithoutBlockParams = attrs.replace(blockParamMatch[0], '');
+      }
+
+      const transformedAttrs = transformAttrs(attrsWithoutBlockParams);
+      const replacement = `<${pascalName}${transformedAttrs}${blockParamClause}>${content}</${pascalName}>`;
 
       output = output.slice(0, startIndex) + replacement + output.slice(endIndex);
     }
@@ -1002,6 +1050,7 @@ export function precompileTemplate(templateString: string, options?: {
 
           g.$slots = context[$SLOTS_SYMBOL] || context.$slots || {};
           g.$fw = context.$fw || [[], [], []];
+
 
           // Initialize GXT context symbols on the render context if not present
           // GXT requires these for proper parent/child tracking
