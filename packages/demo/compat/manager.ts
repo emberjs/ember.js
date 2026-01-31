@@ -346,7 +346,8 @@ function buildWrapperElement(
   args: any,
   componentDef: any
 ): HTMLElement {
-  const tagName = instance?.tagName === '' ? null : (instance?.tagName || 'div');
+  const instanceTagName = instance?.tagName;
+  const tagName = instanceTagName === '' ? null : (instanceTagName || 'div');
 
   if (!tagName) {
     // Tagless component - return a fragment marker
@@ -411,6 +412,13 @@ function createRenderContext(
   owner: any
 ): any {
   const renderContext = instance ? Object.create(instance) : {};
+
+  // CRITICAL: Pass slots from fw[1] to the render context
+  // GXT templates use $slots.default() for {{yield}}
+  const slots = fw?.[1] || {};
+  renderContext[$SLOTS_SYMBOL] = slots;
+  renderContext.$slots = slots;
+  renderContext.$fw = fw || [[], {}, []];
 
   // Set up attrs proxy for this.attrs.argName.value access
   const attrsProxy: Record<string, any> = {};
