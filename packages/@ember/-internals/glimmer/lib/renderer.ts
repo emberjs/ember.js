@@ -3,8 +3,57 @@ import { ENV } from '@ember/-internals/environment';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { getViewElement, getViewId } from '@ember/-internals/views';
-import { destroyElementSync, renderComponent as gxtRenderComponent } from '@lifeart/gxt';
+import { getViewElement, getViewId, setViewElement } from '@ember/-internals/views';
+
+// Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
+(globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
+
+import { pushParentView, popParentView } from '@glimmer/manager';
+import {
+  destroyElementSync as _destroyElementSync,
+  renderComponent as gxtRenderComponent,
+  createRoot as gxtCreateRoot,
+  setParentContext as gxtSetParentContext,
+  getParentContext as gxtGetParentContext,
+  provideContext as gxtProvideContext,
+  RENDERING_CONTEXT as GXT_RENDERING_CONTEXT,
+  HTMLBrowserDOMApi as GxtHTMLBrowserDOMApi,
+} from '@lifeart/gxt';
+
+// Cached GXT DOM API for destroyElementSync
+let gxtDomApi: any = null;
+
+function getGxtDomApi() {
+  if (!gxtDomApi) {
+    gxtDomApi = new GxtHTMLBrowserDOMApi(document);
+  }
+  return gxtDomApi;
+}
+
+// Wrapper that provides the GXT DOM API
+function destroyElementSync(component: any, skipDom = false) {
+  _destroyElementSync(component, skipDom, getGxtDomApi());
+}
+
+// Cached GXT root context for the document
+let gxtRootContext: any = null;
+
+// Ensure GXT context is initialized before any GXT rendering
+function ensureGxtContext() {
+  if (!gxtRootContext) {
+    gxtRootContext = gxtCreateRoot(document);
+    // CRITICAL: Provide the rendering context with DOM API
+    // This sets fastRenderingContext which is checked first by initDOM
+    const domApi = getGxtDomApi();
+    gxtProvideContext(gxtRootContext, GXT_RENDERING_CONTEXT, domApi);
+  }
+  // Always ensure context is set before rendering
+  const currentContext = gxtGetParentContext();
+  if (!currentContext) {
+    gxtSetParentContext(gxtRootContext);
+  }
+  return gxtRootContext;
+}
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
@@ -47,7 +96,8 @@ import {
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { unwrapTemplate, GXT_TEMPLATE_HANDLE, isGxtTemplate } from './component-managers/unwrap-template';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
+import { CURRENT_TAG, validateTag, valueForTag, type Tag } from '@glimmer/validator';
+import { tagForObject } from '@ember/-internals/metal';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
@@ -201,6 +251,10 @@ class ClassicRootState {
   public destroyed: boolean;
   public render: () => void;
   readonly env: Environment;
+  public isGxt: boolean = false; // Track if this root uses GXT templates
+  public gxtNeedsRerender: boolean = false; // Flag for GXT re-render scheduling
+  public gxtComponentTag: Tag | null = null; // Track component's dirty tag for GXT reactivity
+  public gxtLastTagValue: number = 0; // Last known tag value for comparison
 
   constructor(
     public root: Component | OutletView,
@@ -223,15 +277,23 @@ class ClassicRootState {
     this.env = context.env;
 
     this.render = errorLoopTransaction(() => {
+      // Set globalThis.owner for GXT manager system to access
+      (globalThis as any).owner = owner;
+
       // Check if this is a gxt template BEFORE unwrapping
       const templateIsGxt = isGxtTemplate(template);
 
       let layout = unwrapTemplate(template).asLayout();
 
       if (templateIsGxt) {
-        // Use gxt rendering for gxt templates
-        console.log('Using gxt rendering for template:', (template as any).moduleName || 'unknown');
+        // Mark this root as using GXT templates (for forced re-render)
+        this.isGxt = true;
 
+        // CRITICAL: Ensure GXT context is set up before any GXT rendering
+        // This provides the parent context chain that GXT's $_if, $_c, etc. need
+        ensureGxtContext();
+
+        // Use gxt rendering for gxt templates
         // Get the component context from self reference
         const componentContext = valueForRef(self);
 
@@ -249,11 +311,26 @@ class ClassicRootState {
         this.result = gxtResult as any;
         associateDestroyableChild(owner, gxtResult as any);
 
+        // Track the actual render target (may be a wrapper element for classic components)
+        let actualRenderTarget: SimpleElement = parentElement;
+
         // Check if template has a render method (runtime-compiled gxt template)
         if (typeof (template as any).render === 'function') {
           // For gxt templates, use the root view directly (e.g., OutletView)
           // The root parameter has the state we need
           let renderContext;
+
+          // Debug: log what root looks like
+          if ((globalThis as any).__DEBUG_GXT_RENDER) {
+            console.log('[ClassicRootState] root type:', root?.constructor?.name || typeof root);
+            console.log('[ClassicRootState] root instanceof OutletView:', root instanceof OutletView);
+            console.log('[ClassicRootState] has state:', 'state' in (root || {}));
+            console.log('[ClassicRootState] has ref:', 'ref' in (root || {}));
+            console.log('[ClassicRootState] has layoutName:', 'layoutName' in (root || {}));
+            console.log('[ClassicRootState] layoutName value:', (root as any)?.layoutName);
+            console.log('[ClassicRootState] root keys:', root ? Object.keys(root).slice(0, 10).join(',') : 'null');
+          }
+
           if (root && 'state' in root && 'ref' in root) {
             // This is an OutletView - transform to expected format
             const outletView = root as any;
@@ -268,11 +345,165 @@ class ClassicRootState {
                 },
               },
             };
+          } else if (root && 'layoutName' in root) {
+            // This is a ClassicComponent (from RenderingTestCase)
+            // Use Object.create to preserve the prototype chain so methods are accessible
+            // via this.methodName() in templates
+            const component = root as any;
+
+            // Create context that inherits from component (preserves prototype methods)
+            renderContext = Object.create(component);
+
+            // Add GXT-required symbols for template rendering
+            const $ARGS_SYMBOL = Symbol.for('gxt-args');
+            const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
+
+            renderContext[$ARGS_SYMBOL] = component.args || {};
+            renderContext[$SLOTS_SYMBOL] = {};
+            renderContext.$fw = [[], [], []]; // [domAttrs, slots, events]
+            renderContext.owner = owner;
+
+            // Copy enumerable properties (including inherited) as GETTERS
+            // so changes to the component are reflected in the renderContext.
+            // This is critical for reactivity: when set(component, 'foo', newVal) is called,
+            // renderContext.foo should return the new value.
+            // NOTE: We use for...in to include prototype properties (from Component.extend(attrs))
+            // since test context values like { customId: 'bizz' } are on the prototype.
+            const definedProps: string[] = [];
+            for (const key in component) {
+              if (key === 'args' || key === 'constructor') continue;
+              // Skip methods and internal Ember properties
+              const value = component[key];
+              if (typeof value === 'function' && key !== 'element') continue;
+              // Skip if already defined (e.g., from $ARGS_SYMBOL setup above)
+              if (Object.prototype.hasOwnProperty.call(renderContext, key)) continue;
+
+              const propKey = key;
+              const comp = component;
+              try {
+                Object.defineProperty(renderContext, propKey, {
+                  get() {
+                    return comp[propKey];
+                  },
+                  set(v) { comp[propKey] = v; },
+                  enumerable: true,
+                  configurable: true,
+                });
+                definedProps.push(propKey);
+              } catch (err) {
+                // Property might already exist or be non-configurable
+              }
+            }
+            if ((globalThis as any).__DEBUG_LIFECYCLE) {
+              console.log(`[ClassicRootState] Defined getters for:`, definedProps.slice(0, 20).join(', '));
+              console.log(`[ClassicRootState] customId in definedProps:`, definedProps.includes('customId'));
+            }
           } else {
             // Fallback to the component context
             renderContext = componentContext;
           }
-          (template as any).render(renderContext, parentElement);
+
+          // For classic components with a wrapper element (tagName !== ''),
+          // create the wrapper with Ember-specific attributes before GXT renders
+          if (root && 'tagName' in root) {
+            const component = root as any;
+            const tagName = component.tagName;
+
+            // Only create wrapper if tagName is truthy (non-empty string)
+            // tagless components have tagName set to '' or are null/undefined
+            if (tagName && tagName !== '') {
+              console.log('[ClassicRootState] Creating wrapper for tagName:', tagName);
+              const wrapperTag = tagName; // Already checked it's truthy
+              const wrapper = document.createElement(wrapperTag);
+
+              // Set the Ember-specific id attribute
+              const elementId = component.elementId || guidFor(component);
+              wrapper.id = elementId;
+
+              // Build class list starting with ember-view
+              const classList: string[] = ['ember-view'];
+
+              // Add classNames if present
+              if (component.classNames && Array.isArray(component.classNames)) {
+                classList.push(...component.classNames);
+              }
+
+              // Add classNameBindings values if present
+              if (component.classNameBindings && Array.isArray(component.classNameBindings)) {
+                for (const binding of component.classNameBindings) {
+                  // Parse simple bindings like 'isEnabled:enabled:disabled' or 'propertyName'
+                  const parts = binding.split(':');
+                  const propName = parts[0];
+                  const propValue = component[propName];
+
+                  if (parts.length === 1) {
+                    // Just property name - add as class if truthy
+                    if (propValue) {
+                      const className = typeof propValue === 'string' ? propValue : propName.replace(/([A-Z])/g, '-$1').toLowerCase();
+                      classList.push(className);
+                    }
+                  } else if (parts.length >= 2) {
+                    // property:trueClass or property:trueClass:falseClass
+                    if (propValue && parts[1]) {
+                      classList.push(parts[1]);
+                    } else if (!propValue && parts[2]) {
+                      classList.push(parts[2]);
+                    }
+                  }
+                }
+              }
+
+              wrapper.className = classList.join(' ');
+
+              // Add ariaRole if present
+              if (component.ariaRole) {
+                wrapper.setAttribute('role', component.ariaRole);
+              }
+
+              // Apply attributeBindings if present
+              if (component.attributeBindings && Array.isArray(component.attributeBindings)) {
+                for (const binding of component.attributeBindings) {
+                  const [propName, attrName] = binding.includes(':')
+                    ? binding.split(':')
+                    : [binding, binding];
+                  const value = component[propName];
+                  if (value !== undefined && value !== null && attrName !== 'id' && attrName !== 'class') {
+                    if (typeof value === 'boolean') {
+                      if (value) {
+                        wrapper.setAttribute(attrName, '');
+                      }
+                    } else {
+                      wrapper.setAttribute(attrName, String(value));
+                    }
+                  }
+                }
+              }
+
+              // Append wrapper to parent and render GXT into wrapper
+              parentElement.appendChild(wrapper);
+              actualRenderTarget = wrapper as unknown as SimpleElement;
+
+              // Store wrapper reference for component.element access
+              // This uses Ember's view element tracking
+              if (typeof setViewElement === 'function') {
+                setViewElement(component, wrapper);
+              }
+            }
+          }
+
+          // Push root component onto parentView stack before rendering
+          // This allows nested components to access their parentView
+          if (root && 'layoutName' in root) {
+            pushParentView(root);
+          }
+          try {
+            (template as any).render(renderContext, actualRenderTarget);
+          } finally {
+            // Pop from parentView stack after rendering
+            if (root && 'layoutName' in root) {
+              popParentView();
+            }
+          }
         } else if ('$nodes' in template) {
           // Build-time compiled gxt template with $nodes
           gxtRenderComponent(template as any, parentElement, owner);
@@ -280,8 +511,67 @@ class ClassicRootState {
           console.warn('GXT template detected but cannot render:', template);
         }
 
+        // Store references for re-rendering
+        const gxtTemplate = template;
+        const gxtRoot = root;
+        const gxtOwner = owner;
+        // Use actualRenderTarget (the wrapper element if created) for re-rendering
+        const gxtRenderTarget = actualRenderTarget;
+        const gxtRootState = this;
+
+        // Capture the component's self tag for reactivity tracking
+        // This allows us to detect when Ember's set() changes properties
+        // set() calls markObjectAsDirty which dirties the SELF_TAG via tagForObject
+        if (gxtRoot && 'layoutName' in gxtRoot) {
+          const component = gxtRoot as any;
+          const componentTag = tagForObject(component);
+          this.gxtComponentTag = componentTag;
+          this.gxtLastTagValue = valueForTag(componentTag);
+        }
+
         this.render = errorLoopTransaction(() => {
-          // gxt handles updates via reactivity
+          // Re-render GXT template with fresh context from the component
+          // This is needed because GXT doesn't automatically track Ember's set() changes
+          if (gxtRoot && 'layoutName' in gxtRoot) {
+            const component = gxtRoot as any;
+
+            // Use Object.create to preserve prototype chain for method access
+            const freshContext = Object.create(component);
+
+            // Add GXT-required symbols
+            const $ARGS_SYMBOL = Symbol.for('gxt-args');
+            const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
+
+            freshContext[$ARGS_SYMBOL] = component.args || {};
+            freshContext[$SLOTS_SYMBOL] = {};
+            freshContext.$fw = [[], [], []];
+            freshContext.owner = gxtOwner;
+
+            // Copy own enumerable properties that aren't functions
+            for (const key of Object.keys(component)) {
+              if (key === 'args') continue;
+              const value = component[key];
+              if (typeof value !== 'function' || key === 'element') {
+                freshContext[key] = value;
+              }
+            }
+
+            // Clear and re-render into the wrapper element (or parent if no wrapper)
+            gxtRenderTarget.innerHTML = '';
+            // Push component onto parentView stack before re-rendering
+            pushParentView(component);
+            try {
+              (gxtTemplate as any).render(freshContext, gxtRenderTarget);
+            } finally {
+              popParentView();
+            }
+
+            // Update the tag value after successful render
+            // This ensures we only re-render once per property change
+            if (gxtRootState.gxtComponentTag) {
+              gxtRootState.gxtLastTagValue = valueForTag(gxtRootState.gxtComponentTag);
+            }
+          }
         });
       } else {
         // Use standard glimmer rendering
@@ -580,9 +870,20 @@ class RendererState {
   }
 
   isValid(): boolean {
-    return (
-      this.#destroyed || this.#roots.length === 0 || validateTag(CURRENT_TAG, this.#lastRevision)
-    );
+    // Check if any GXT roots have dirty component tags
+    // This replaces the standard validateTag check for GXT templates
+    // because GXT templates don't consume Ember's tags during render
+    for (const root of this.#roots) {
+      const classicRoot = root as ClassicRootState;
+      if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
+        const currentTagValue = valueForTag(classicRoot.gxtComponentTag);
+        if (currentTagValue !== classicRoot.gxtLastTagValue) {
+          return false;
+        }
+      }
+    }
+
+    return this.#destroyed || this.#roots.length === 0 || validateTag(CURRENT_TAG, this.#lastRevision);
   }
 
   revalidate(renderer: BaseRenderer): void {
@@ -926,6 +1227,11 @@ export class Renderer extends BaseRenderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
+    // Debug: log that appendOutletView was called
+    if ((globalThis as any).__DEBUG_GXT_RENDER) {
+      console.log('[Renderer.appendOutletView] called');
+    }
+
     // TODO: This bypasses the {{outlet}} syntax so logically duplicates
     // some of the set up code. Since this is all internal (or is it?),
     // we can refactor this to do something more direct/less convoluted
@@ -962,12 +1268,167 @@ export class Renderer extends BaseRenderer {
   }
 
   appendTo(view: ClassicComponent, target: SimpleElement): void {
+    // Debug: log that appendTo was called
+    if ((globalThis as any).__DEBUG_GXT_RENDER) {
+      console.log('[Renderer.appendTo] called with view type:', view?.constructor?.name || typeof view);
+      console.log('[Renderer.appendTo] view has layoutName:', 'layoutName' in (view || {}), 'value:', (view as any)?.layoutName);
+    }
+
+    // NOTE: _tryGxtRender is disabled because the GXT runtime compiler generates
+    // code that expects $slots, $fw, and block params in scope, but Ember's
+    // rendering integration can't easily inject these. Let ClassicRootState
+    // handle rendering which has more complete template resolution.
+
+    // Fall back to Glimmer VM rendering (which has GXT handling in ClassicRootState)
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(
       view,
       curry(0 as CurriedComponent, definition, this.state.owner, null, true),
       target
     );
+  }
+
+  /**
+   * Try to render using GXT directly. Returns true if successful, false to fall back to Glimmer.
+   */
+  private _tryGxtRender(view: ClassicComponent, target: Element): boolean {
+    const owner = this.state.owner;
+
+    // Set global owner for manager system
+    (globalThis as any).owner = owner;
+
+    // Get the component's template
+    const template = this._getGxtTemplate(view, owner);
+
+    if (!template) {
+      return false;
+    }
+
+    // Check if it's a GXT template
+    const isGxtTemplate =
+      template.__gxtCompiled === true ||
+      (typeof template.render === 'function' && template.render.__gxtRender === true) ||
+      template.$nodes !== undefined;
+
+    if (!isGxtTemplate) {
+      return false;
+    }
+
+    // Build render context from the component
+    const context = this._buildGxtContext(view, owner);
+
+    // Clear target
+    target.innerHTML = '';
+
+    // Render directly using GXT
+    if (typeof template.render === 'function') {
+      template.render(context, target);
+    } else if (typeof template === 'function') {
+      // Factory function
+      const resolved = template(owner);
+      if (resolved && typeof resolved.render === 'function') {
+        resolved.render(context, target);
+      }
+    }
+
+    // Create a minimal root state for tracking
+    const gxtRootState = {
+      type: 'classic' as const,
+      id: view.elementId || `gxt-root-${Math.random().toString(36).slice(2)}`,
+      destroyed: false,
+      result: {
+        rerender: () => { /* GXT handles reactivity */ },
+        destroy: () => { target.innerHTML = ''; },
+      },
+      render: () => { /* Already rendered */ },
+      isFor: (c: unknown) => c === view,
+      destroy: () => {
+        target.innerHTML = '';
+        gxtRootState.destroyed = true;
+      },
+    };
+
+    // Register as a root
+    this.state.roots.push(gxtRootState as any);
+
+    return true;
+  }
+
+  /**
+   * Get a GXT template for a component
+   */
+  private _getGxtTemplate(view: ClassicComponent, owner: object): any {
+    // Try layout property first
+    if ((view as any).layout) {
+      return (view as any).layout;
+    }
+
+    // Try layoutName lookup
+    const layoutName = (view as any).layoutName;
+    if (layoutName) {
+      const template = (owner as any).lookup?.(`template:${layoutName}`);
+      if (template) return template;
+    }
+
+    // Try getComponentTemplate from manager system
+    const ComponentClass = view.constructor;
+    if (ComponentClass) {
+      // Check globalThis.COMPONENT_TEMPLATES
+      const globalTemplates = (globalThis as any).COMPONENT_TEMPLATES;
+      if (globalTemplates) {
+        const template = globalTemplates.get(ComponentClass) || globalTemplates.get(view);
+        if (template) return template;
+      }
+    }
+
+    // Try component name lookup
+    const componentName = (view as any)._debugContainerKey?.replace('component:', '');
+    if (componentName) {
+      const template = (owner as any).lookup?.(`template:components/${componentName}`);
+      if (template) return template;
+    }
+
+    return null;
+  }
+
+  /**
+   * Build a render context for GXT from a classic component
+   */
+  private _buildGxtContext(view: ClassicComponent, owner: object): Record<string, unknown> {
+    const context: Record<string, unknown> = {};
+
+    // Copy all own properties from the component
+    for (const key of Object.keys(view)) {
+      if (typeof (view as any)[key] !== 'function') {
+        context[key] = (view as any)[key];
+      }
+    }
+
+    // Copy prototype properties that might be accessed via {{this.xxx}}
+    const proto = Object.getPrototypeOf(view);
+    if (proto) {
+      for (const key of Object.getOwnPropertyNames(proto)) {
+        if (key !== 'constructor' && !(key in context)) {
+          const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+          if (descriptor && (descriptor.value !== undefined || descriptor.get)) {
+            try {
+              const value = (view as any)[key];
+              if (typeof value !== 'function') {
+                context[key] = value;
+              }
+            } catch {
+              // Getter might throw
+            }
+          }
+        }
+      }
+    }
+
+    // Standard properties
+    context.args = (view as any).args || {};
+    context.owner = owner;
+
+    return context;
   }
 
   _appendDefinition(
