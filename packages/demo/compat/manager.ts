@@ -706,9 +706,21 @@ function handleStringComponent(
     // Resolve template
     let resolvedTemplate = template;
     if (!resolvedTemplate && instance) {
-      resolvedTemplate = getComponentTemplate(instance) ||
-                         getComponentTemplate(instance.constructor) ||
-                         getComponentTemplate(factory?.class);
+      // Check for layoutName property (looks up template by name)
+      if (instance.layoutName && owner) {
+        resolvedTemplate = owner.lookup(`template:${instance.layoutName}`) ||
+                           owner.lookup(`template:components/${instance.layoutName}`);
+      }
+      // Check for layout property (directly assigned template)
+      if (!resolvedTemplate && instance.layout) {
+        resolvedTemplate = instance.layout;
+      }
+      // Fallback to template registry
+      if (!resolvedTemplate) {
+        resolvedTemplate = getComponentTemplate(instance) ||
+                           getComponentTemplate(instance.constructor) ||
+                           getComponentTemplate(factory?.class);
+      }
     }
 
     // If template is a factory function, call it to get the actual template
@@ -780,9 +792,24 @@ function handleClassicComponent(
 
     const instance = getCachedOrCreateInstance(factory, args, factory.class, owner);
 
-    const template = getComponentTemplate(instance) ||
-                     getComponentTemplate(instance?.constructor) ||
-                     getComponentTemplate(factory.class);
+    // Resolve template with layoutName/layout support
+    let template;
+    if (instance?.layoutName && owner) {
+      template = owner.lookup(`template:${instance.layoutName}`) ||
+                 owner.lookup(`template:components/${instance.layoutName}`);
+    }
+    if (!template && instance?.layout) {
+      template = instance.layout;
+    }
+    if (!template) {
+      template = getComponentTemplate(instance) ||
+                 getComponentTemplate(instance?.constructor) ||
+                 getComponentTemplate(factory.class);
+    }
+    // If template is a factory function, call it to get the actual template
+    if (typeof template === 'function' && !template.render) {
+      template = template(owner);
+    }
 
     if (!template?.render) {
       return null;
