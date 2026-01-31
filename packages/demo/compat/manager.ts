@@ -33,6 +33,7 @@ interface PoolEntry {
 
 const $PROPS_SYMBOL = Symbol.for('gxt-props');
 const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
+const $ARGS_SYMBOL = Symbol.for('gxt-args');
 
 // Auto-incrementing ID for wrapper elements
 let emberViewIdCounter = 0;
@@ -292,6 +293,7 @@ function extractArgKeys(args: any): string[] {
   return Object.keys(args).filter(key =>
     !key.startsWith('__') &&
     key !== 'class' &&
+    key !== 'classNames' &&  // Don't overwrite component's classNames property
     !key.startsWith('Symbol')
   );
 }
@@ -437,12 +439,23 @@ function createRenderContext(
     }
   }
   renderContext.attrs = attrsProxy;
+  // GXT accesses @foo as this.args.foo, so also set args
+  renderContext.args = attrsProxy;
+  // GXT runtime compiler uses Symbol.for('gxt-args') for this[$args].foo
+  renderContext[$ARGS_SYMBOL] = attrsProxy;
 
   if (instance && !instance.attrs) {
     instance.attrs = attrsProxy;
   }
+  if (instance && !instance.args) {
+    instance.args = attrsProxy;
+  }
+  if (instance && !instance[$ARGS_SYMBOL]) {
+    instance[$ARGS_SYMBOL] = attrsProxy;
+  }
 
   // Set up reactive getters for args on render context
+  // First, try instance.__argGetters (for components with arg processing)
   const argGetters = instance?.__argGetters || {};
   for (const key of Object.keys(argGetters)) {
     try {
@@ -455,6 +468,33 @@ function createRenderContext(
       });
     } catch {
       // Property might already exist
+    }
+  }
+
+  // Also set up getters directly from args for @arg access (template-only components)
+  // This handles cases where instance.__argGetters is empty but args exist
+  if (args && typeof args === 'object') {
+    for (const key of Object.keys(args)) {
+      // Skip internal/special keys and keys already defined
+      if (key === 'class' || key === 'classNames' || key.startsWith('__') || key.startsWith('Symbol')) {
+        continue;
+      }
+      // Skip if already defined via argGetters
+      if (key in renderContext) {
+        continue;
+      }
+      try {
+        const argRef = args[key];
+        Object.defineProperty(renderContext, key, {
+          get() {
+            return typeof argRef === 'function' ? argRef() : argRef;
+          },
+          enumerable: true,
+          configurable: true,
+        });
+      } catch {
+        // Property might already exist on prototype
+      }
     }
   }
 
