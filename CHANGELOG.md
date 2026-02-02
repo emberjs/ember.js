@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.11.0-beta.2 (February 2, 2026)
+
+- [#21024](https://github.com/emberjs/ember.js/pull/21024) [Bugfix] Add @ember/reactive into the AMD bundles
+
 ## v6.11.0-beta.1 (January 6, 2026)
 
 - [#21014](https://github.com/emberjs/ember.js/pull/21014) Rename default export `GlimmerComponent` to `Component` for autocomplete DX
