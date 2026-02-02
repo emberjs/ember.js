@@ -1,6 +1,10 @@
 # Ember Changelog
 
-## v6.10.0 (January 6, 2025)
+## v6.10.1 (February 2, 2026)
+
+- [#21024](https://github.com/emberjs/ember.js/pull/21024) [BUGFIX] Add @ember/reactive into the AMD bundles
+
+## v6.10.0 (January 6, 2026)
  
 - [#21013](https://github.com/emberjs/ember.js/pull/21013) / [#21009](https://github.com/emberjs/ember.js/pull/21009) [DEPRECATION] Deprecate use of amd bundles per [RFC #1101](https://rfcs.emberjs.com/id/1101-deprecate-ember-vendor-bundles).
 - [#21004](https://github.com/emberjs/ember.js/pull/21004) Remove deprecated TypeScript compiler options for TS 6.0 compatibility
