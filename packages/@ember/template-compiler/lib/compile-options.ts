@@ -14,10 +14,13 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
-export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
+const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 export const keywords = {
   on,
 };
+
+// Not worth adding a type
+(globalThis as any)[RUNTIME_KEYWORDS_NAME] = keywords;
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
@@ -52,24 +55,24 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
         name in keywords
       );
 
-      return `${RUNTIME_KEYWORDS_NAME}.${name}`;
+      return `globalThis.${RUNTIME_KEYWORDS_NAME}.${name}`;
     },
   };
 
-  if ('eval' in options) {
-    const localScopeEvaluator = options.eval as (value: string) => unknown;
+  if ('eval' in options && options.eval) {
+    const localScopeEvaluator = options.eval;
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
-    options.lexicalScope = (variable: string) => {
-      if (variable === RUNTIME_KEYWORDS_NAME) {
-        return true;
-      }
-      if (inScope(variable, localScopeEvaluator)) {
-        return !inScope(variable, globalScopeEvaluator);
-      }
+    /**
+     * Receives either typeof x !== undefined
+     * or
+     * x
+     */
+    options.lexicalScope = (variableOrExpression: string) => {
+      if (variableOrExpression === 'globalThis') return true;
 
-      if (variable in keywords) {
-        return true;
+      if (inScope(variableOrExpression, localScopeEvaluator)) {
+        return !inScope(variableOrExpression, globalScopeEvaluator);
       }
 
       return false;
@@ -82,7 +85,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const scope = (options.scope as () => Record<string, unknown>)();
 
     options.lexicalScope = (variable: string) =>
-      variable in scope || variable in keywords || variable === RUNTIME_KEYWORDS_NAME;
+      variable in scope || variable in keywords || variable === 'globalThis';
 
     delete options.scope;
   }
@@ -147,7 +150,7 @@ function inScope(variable: string, evaluator: Evaluator): boolean {
   }
 
   try {
-    return evaluator(`typeof ${variable} !== "undefined"`) === true || variable in keywords;
+    return evaluator(`typeof ${variable} !== "undefined"`) === true;
   } catch (e) {
     // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
     // If the variable is a reserved word, it's definitely not in scope, so return false. Since

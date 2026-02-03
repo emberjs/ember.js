@@ -243,24 +243,7 @@ export function template(
   const component = normalizedOptions.component ?? templateOnly();
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
-  let wire = evaluate(`(${source})`) as SerializedTemplateWithLazyBlock;
-
-  // http://localhost:5173/?testId=5647f530&notrycatch
-  console.log({ wire });
-  /**
-   * This is an array, and we don't actually know what what each entry is...
-   */
-  let originalScope = wire.scope;
-  if (originalScope) {
-    wire.scope = () => {
-      let fn = new Function(RUNTIME_KEYWORDS_NAME, `return ${originalScope.toString()}()`);
-
-      console.log(fn, fn.toString(), fn()());
-
-      // should still return an array
-      return fn(keywords)();
-    };
-  }
+  const wire = evaluate(`(${source})`) as SerializedTemplateWithLazyBlock;
 
   const template = templateFactory(wire);
 
@@ -270,7 +253,7 @@ export function template(
 }
 
 const evaluator = (source: string) => {
-  return new Function(RUNTIME_KEYWORDS_NAME, `return  ${source}`)(keywords);
+  return new Function(`return ${source}`)();
 };
 
 /**
