@@ -250,10 +250,8 @@ export function template(
   return component;
 }
 
-Object.assign(template, keywords);
-
 const evaluator = (source: string) => {
-  return new Function('template', `return  ${source}`)(template);
+  return new Function('__ember_keywords__', `return  ${source}`)(keywords);
 };
 
 /**

@@ -24,10 +24,6 @@ interface Plugins {
   ast: PluginFunc[];
 }
 
-export interface JSUtils {
-  bindImport(module: string, name: string, node: AST.Node): void;
-}
-
 export interface EmberPrecompileOptions extends PrecompileOptions {
   isProduction?: boolean;
   moduleName?: string;

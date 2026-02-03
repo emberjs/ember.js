@@ -6,7 +6,7 @@ import {
   STRICT_MODE_KEYWORDS,
   STRICT_MODE_TRANSFORMS,
 } from './plugins/index';
-import type { EmberPrecompileOptions, JSUtils, PluginFunc } from './types';
+import type { EmberPrecompileOptions, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
 let USER_PLUGINS: PluginFunc[] = [];
@@ -45,30 +45,14 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   };
 
   options.meta ||= {};
-  options.meta.jsutils ||= {
+  options.meta.emberRuntime ||= {
     /**
      * NOTE: when stepping through lexicalScope, or other callbacks here,
      *       we first detect the keywords as "not in scope",
      *       and that is what we want, so that we can import them.
      */
-    bindImport(
-      module: string,
-      name: string,
-      node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression
-    ) {
-      if (module === '@ember/modifier' && name === 'on') {
-        /**
-         * We rely on an old JS technique of assiging properties to functions.
-         * Since template() is what was used to runtime-compile the template,
-         * we know it to be in scope.
-         */
-        if (node.path.type === 'PathExpression') {
-          node.path.original = 'template.on';
-          return;
-        }
-      }
-
-      throw new Error(`Unknown import ${name} from module ${module}`);
+    lookupKeyword(name: string): string {
+      return `__ember_keywords__.${name}`;
     },
   };
 
