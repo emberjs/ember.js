@@ -164,7 +164,7 @@ jobs:
           SHOULD_TRANSPILE_FOR_NODE: true
         run: pnpm build
       - name: test
-        run: pnpm test:node
+        run: pnpm test:node && pnpm --filter "@handlebars/parser" test
 
   blueprint-test:
     name: Blueprint Tests
