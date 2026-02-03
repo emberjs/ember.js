@@ -1,5 +1,4 @@
 import { on } from '@ember/modifier';
-import type { AST } from '@glimmer/syntax';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,
@@ -15,19 +14,15 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
+export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 export const keywords = {
   on,
 };
 
-type Options = EmberPrecompileOptions &
-  Partial<EmberPrecompileOptions> & {
-    meta?: EmberPrecompileOptions['meta'] & { jsutils?: JSUtils };
-  };
-
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
 
-  let options: Options = {
+  let options = {
     isProduction: false,
     plugins: { ast: [] },
     ..._options,
@@ -52,7 +47,12 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
      *       and that is what we want, so that we can import them.
      */
     lookupKeyword(name: string): string {
-      return `__ember_keywords__.${name}`;
+      assert(
+        `${name} is not a known keyword. Available keywords: ${Object.keys(keywords).join(', ')}`,
+        name in keywords
+      );
+
+      return `${RUNTIME_KEYWORDS_NAME}.${name}`;
     },
   };
 
@@ -61,8 +61,15 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
+      if (variable === RUNTIME_KEYWORDS_NAME) {
+        return true;
+      }
       if (inScope(variable, localScopeEvaluator)) {
         return !inScope(variable, globalScopeEvaluator);
+      }
+
+      if (variable in keywords) {
+        return true;
       }
 
       return false;
@@ -74,7 +81,8 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope || variable in keywords;
+    options.lexicalScope = (variable: string) =>
+      variable in scope || variable in keywords || variable === RUNTIME_KEYWORDS_NAME;
 
     delete options.scope;
   }
@@ -139,7 +147,7 @@ function inScope(variable: string, evaluator: Evaluator): boolean {
   }
 
   try {
-    return evaluator(`typeof ${variable} !== "undefined"`) === true;
+    return evaluator(`typeof ${variable} !== "undefined"`) === true || variable in keywords;
   } catch (e) {
     // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
     // If the variable is a reserved word, it's definitely not in scope, so return false. Since

@@ -3,7 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import compileOptions, { keywords } from './compile-options';
+import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
@@ -236,14 +236,33 @@ export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
-  const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
+  const options = { strictMode: true, ...providedOptions };
 
   const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
-  const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
+  let wire = evaluate(`(${source})`) as SerializedTemplateWithLazyBlock;
+
+  // http://localhost:5173/?testId=5647f530&notrycatch
+  console.log({ wire });
+  /**
+   * This is an array, and we don't actually know what what each entry is...
+   */
+  let originalScope = wire.scope;
+  if (originalScope) {
+    wire.scope = () => {
+      let fn = new Function(RUNTIME_KEYWORDS_NAME, `return ${originalScope.toString()}()`);
+
+      console.log(fn, fn.toString(), fn()());
+
+      // should still return an array
+      return fn(keywords)();
+    };
+  }
+
+  const template = templateFactory(wire);
 
   setComponentTemplate(template, component);
 
@@ -251,10 +270,12 @@ export function template(
 }
 
 const evaluator = (source: string) => {
-  return new Function('__ember_keywords__', `return  ${source}`)(keywords);
+  return new Function(RUNTIME_KEYWORDS_NAME, `return  ${source}`)(keywords);
 };
 
 /**
+ * Builds the source wireformat JSON block
+ *
  * @param options
  * @returns
  */
