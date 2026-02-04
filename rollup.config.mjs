@@ -291,10 +291,14 @@ export function hiddenDependencies() {
       'module'
     ).path,
     ...walkGlimmerDeps(['@glimmer/compiler']),
-    'decorator-transforms/runtime': resolve(
-      findFromProject('decorator-transforms').root,
-      'dist/runtime.js'
-    ),
+    ...(process.env.VITE_STABLE_DECORATORS
+      ? {}
+      : {
+          'decorator-transforms/runtime': resolve(
+            findFromProject('decorator-transforms').root,
+            'dist/runtime.js'
+          ),
+        }),
   };
 }
 
