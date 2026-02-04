@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.8.3 (February 4, 2026)
+ 
+- [#21024](https://github.com/emberjs/ember.js/pull/21024) [BUGFIX] Add @ember/reactive into the AMD bundles
+
 ## v6.8.2 (November 17, 2025)
 
 - [#21002](https://github.com/emberjs/ember.js/pull/21002) [BUGFIX] Don't render if we're mid-destroy
