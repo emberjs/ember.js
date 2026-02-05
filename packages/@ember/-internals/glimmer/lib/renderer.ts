@@ -632,7 +632,7 @@ export function renderComponent(
     env && 'document' in env
       ? (env?.['document'] as SimpleDocument | Document)
       : globalThis.document;
-  
+
   // Reuse renderer per owner to avoid creating multiple EvaluationContexts
   // which can cause tracking frame conflicts
   let renderer = RENDERER_CACHE.get(owner);

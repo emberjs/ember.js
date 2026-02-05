@@ -666,13 +666,13 @@ moduleFor(
       }, /but that value was not in scope: a-helper/);
     }
 
-    '@test rendering multiple times to adjacent elements'(assert: Assert) {
+    '@test rendering multiple times to adjacent elements'() {
       this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
       let Loose = defineComponent(null, `Hi: {{a-helper "there"}}`);
-      let get = (id) => this.element.querySelector(id);
+      let get = (id: string) => this.element.querySelector(id);
       function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
-          into: get(`#${id}`),
+          into: get(`#${id}`)!,
           owner,
         });
       }
