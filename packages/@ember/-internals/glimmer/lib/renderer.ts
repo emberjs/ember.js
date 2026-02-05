@@ -632,11 +632,18 @@ export function renderComponent(
     env && 'document' in env
       ? (env?.['document'] as SimpleDocument | Document)
       : globalThis.document;
-  let renderer = BaseRenderer.strict(owner, document, {
-    ...env,
-    isInteractive: env?.isInteractive ?? true,
-    hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
-  });
+  
+  // Reuse renderer per owner to avoid creating multiple EvaluationContexts
+  // which can cause tracking frame conflicts
+  let renderer = RENDERER_CACHE.get(owner);
+  if (!renderer) {
+    renderer = BaseRenderer.strict(owner, document, {
+      ...env,
+      isInteractive: env?.isInteractive ?? true,
+      hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
+    });
+    RENDERER_CACHE.set(owner, renderer);
+  }
 
   /**
    * Replace all contents, if we've rendered multiple times.
@@ -678,6 +685,7 @@ export function renderComponent(
 }
 
 const RENDER_CACHE = new WeakMap<IntoTarget, RenderResult>();
+const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
 export class BaseRenderer {
   static strict(
