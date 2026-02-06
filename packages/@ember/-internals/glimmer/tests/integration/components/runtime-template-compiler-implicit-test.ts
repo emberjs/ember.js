@@ -469,26 +469,24 @@ moduleFor(
 
 moduleFor(
   'Strict Mode - Runtime Template Compiler (implicit) - allowed globals from RFC#1070',
-  (function () {
-    class AllowedGlobalsTest extends RenderingTestCase {}
-
-    for (let globalName of ALLOWED_GLOBALS) {
-      // @ts-expect-error - this *is* generally unsafe
-      AllowedGlobalsTest.prototype[`@test Can use ${globalName}`] = async function () {
-        await this.renderComponentModule(() => {
-          return template(`{{log ${globalName}}}`, {
-            eval() {
-              return eval(arguments[0]);
-            },
+  class AllowedGlobalsTest extends RenderingTestCase {
+    static {
+      for (let globalName of ALLOWED_GLOBALS) {
+        // @ts-expect-error - this *is* generally unsafe
+        AllowedGlobalsTest.prototype[`@test Can use ${globalName}`] = async function () {
+          await this.renderComponentModule(() => {
+            return template(`{{log ${globalName}}}`, {
+              eval() {
+                return eval(arguments[0]);
+              },
+            });
           });
-        });
 
-        this.assertStableRerender();
-      };
+          this.assertStableRerender();
+        };
+      }
     }
-
-    return AllowedGlobalsTest;
-  })()
+  }
 );
 
 /**
