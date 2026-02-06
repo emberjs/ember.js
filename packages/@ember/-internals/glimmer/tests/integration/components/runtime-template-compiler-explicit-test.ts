@@ -1,4 +1,5 @@
 import { template } from '@ember/template-compiler/runtime';
+import { ALLOWED_GLOBALS } from '@ember/template-compiler';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { on } from '@ember/modifier/on';
@@ -333,6 +334,35 @@ moduleFor(
 
       this.assertText('[before]after');
       this.assertStableRerender();
+    }
+  }
+);
+
+// These tests are more to ensure that we don't accidentally break anything from
+// RFC#1070 -- but explicit scope does not _implicitly_ get access to anything
+// so the globals here are still just passed in to the scope bag, as if they were
+// normal variables.
+moduleFor(
+  'Strict Mode - Runtime Template Compiler (explicit) - allowed globals from RFC#1070',
+  class AllowedGlobalsTest extends RenderingTestCase {
+    static {
+      for (let globalName of ALLOWED_GLOBALS) {
+        if (!(globalName in globalThis)) continue;
+
+        // @ts-expect-error - this *is* generally unsafe
+        this.prototype[`@test Can use ${globalName}`] = async function () {
+          await this.renderComponentModule(() => {
+            return template(`{{if ${globalName} "exists"}}`, {
+              scope: () => ({
+                // @ts-expect-error - dynamic test gets minimally type safety
+                [globalName]: globalThis[globalName],
+              }),
+            });
+          });
+
+          this.assertStableRerender();
+        };
+      }
     }
   }
 );
