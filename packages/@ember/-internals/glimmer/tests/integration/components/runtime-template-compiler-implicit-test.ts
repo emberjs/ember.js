@@ -473,6 +473,7 @@ moduleFor(
     class AllowedGlobalsTest extends RenderingTestCase {}
 
     for (let globalName of ALLOWED_GLOBALS) {
+      // @ts-expect-error - this *is* generally unsafe
       AllowedGlobalsTest.prototype[`@test Can use ${globalName}`] = async function () {
         await this.renderComponentModule(() => {
           return template(`{{log ${globalName}}}`, {
