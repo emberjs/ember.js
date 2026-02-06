@@ -657,6 +657,50 @@ moduleFor(
       this.renderComponent(Root, {
         expect: [`<div id="a">a:Hi: THEREa:Hi: THERE</div><br>`, '', ''].join('\n'),
       });
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
+
+    async '@test async rendering multiple times to adjacent elements'() {
+      let Child = defComponent(`Hi`, { scope: {} });
+      let get = (id: string) => this.element.querySelector(id);
+      let promises: Promise<unknown>[] = [];
+
+      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+        let promise = (async () => {
+          await Promise.resolve();
+          let element = get(`#${id}`);
+
+          renderComponent(Comp, {
+            into: element!,
+            owner,
+          });
+        })();
+
+        promises.push(promise);
+
+        return;
+      }
+      let A = defComponent('a:<Child />', { scope: { Child } });
+      let B = defComponent('b:<Child />', { scope: { Child } });
+      let Root = defComponent(
+        [
+          `<div id="a"></div><br>`,
+          `<div id="b"></div>`,
+          `{{render A 'a' owner}}`,
+          `{{render B 'b' owner}}`,
+        ].join('\n'),
+        { scope: { render, A, B, owner: this.owner } }
+      );
+
+      this.renderComponent(Root, {
+        expect: [`<div id="a"></div><br>`, `<div id="b"></div>`, ``, ``].join('\n'),
+      });
+
+      await Promise.all(promises);
+
+      assertHTML([`<div id="a">a:Hi</div><br>`, `<div id="b">b:Hi</div>`, ``, ``].join('\n'));
 
       run(() => destroy(this));
 
