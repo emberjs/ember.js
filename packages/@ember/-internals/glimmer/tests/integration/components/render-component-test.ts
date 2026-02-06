@@ -650,12 +650,12 @@ moduleFor(
       }
       let A = defComponent('a:<Child />', { scope: { Child } });
       let Root = defComponent(
-        [`<div id="a"></div><br>`, `{{render A 'a' owner}}`, `{{render A 'a'}}`, '', ''].join('\n'),
+        [`<div id="a"></div><br>`, `{{render A 'a' owner}}`, `{{render A 'a'}}`].join('\n'),
         { scope: { render, A, owner: this.owner } }
       );
 
       this.renderComponent(Root, {
-        expect: [`<div id="a">a:Hi: THEREa:Hi: THERE</div><br>`, ``].join('\n'),
+        expect: [`<div id="a">a:Hi: THEREa:Hi: THERE</div><br>`, '', ''].join('\n'),
       });
 
       run(() => destroy(this));
