@@ -9,7 +9,6 @@ import type {
   HandleResult,
   HighLevelOp,
   LayoutWithContext,
-  Nullable,
   SerializedBlock,
   SerializedInlineBlock,
   Statement,
@@ -37,7 +36,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
     }
   }
 
-  compiled: Nullable<HandleResult> = null;
+  compiled: WeakMap<EvaluationContext, HandleResult> = new WeakMap();
 
   constructor(
     readonly statements: WireFormat.Statement[],
@@ -70,14 +69,16 @@ function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
   context: EvaluationContext
 ): HandleResult {
-  if (compilable.compiled !== null) return compilable.compiled;
+  if (compilable.compiled.has(context)) {
+    return compilable.compiled.get(context) as HandleResult;
+  }
 
-  compilable.compiled = PLACEHOLDER_HANDLE;
+  compilable.compiled.set(context, PLACEHOLDER_HANDLE);
 
   let { statements, meta } = compilable;
 
   let result = compileStatements(statements, meta, context);
-  compilable.compiled = result;
+  compilable.compiled.set(context, result);
 
   return result;
 }
