@@ -650,7 +650,7 @@ moduleFor(
       }
       let A = defComponent('a:<Child />', { scope: { Child } });
       let Root = defComponent(
-        [`<div id="a"></div><br>`, `{{render A 'a' owner}}`, `{{render A 'a'}}`].join('\n'),
+        [`<div id="a"></div><br>`, `{{render A 'a' owner}}`, `{{render A 'a'}}`, ''].join('\n'),
         { scope: { render, A, owner: this.owner } }
       );
 
