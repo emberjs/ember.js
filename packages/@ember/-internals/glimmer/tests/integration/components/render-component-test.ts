@@ -655,7 +655,7 @@ moduleFor(
       );
 
       this.renderComponent(Root, {
-        expect: [`<div id="a">a:Hi: THERE</div><br>`, ``].join('\n'),
+        expect: [`<div id="a">a:Hi: THEREa:Hi: THERE</div><br>`, ``].join('\n'),
       });
 
       run(() => destroy(this));
