@@ -637,6 +637,31 @@ moduleFor(
 
       assertHTML('');
     }
+
+    '@test multiple calls to render in to the same element'() {
+      let aHelper = (str: string) => str.toUpperCase();
+      let Child = defComponent(`Hi: {{aHelper "there"}}`, { scope: { aHelper } });
+      let get = (id: string) => this.element.querySelector(id);
+      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+        renderComponent(Comp, {
+          into: get(`#${id}`)!,
+          owner,
+        });
+      }
+      let A = defComponent('a:<Child />', { scope: { Child } });
+      let Root = defComponent(
+        [`<div id="a"></div><br>`, `{{render A 'a' owner}}`, `{{render A 'a'}}`].join('\n'),
+        { scope: { render, A, owner: this.owner } }
+      );
+
+      this.renderComponent(Root, {
+        expect: [`<div id="a">a:Hi: THERE</div><br>`, ``].join('\n'),
+      });
+
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
   }
 );
 
