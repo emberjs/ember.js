@@ -109,12 +109,15 @@ export function resolveComponent(
       expr[1]
     ];
 
+    // Extract invocation name from wire format if available (expr[2] contains the names array)
+    let invocationName = Array.isArray(expr[2]) ? expr[2][0] : lexical?.at(expr[1]);
+
     then(
       constants.component(
         definition as object,
         expect(owner, 'BUG: expected owner when resolving component definition'),
         false,
-        lexical?.at(expr[1])
+        invocationName
       )
     );
   } else {
@@ -287,11 +290,14 @@ export function resolveComponentOrHelper(
       expr[1]
     ];
 
+    // Extract invocation name from wire format if available (expr[2] contains the names array)
+    let invocationName = Array.isArray(expr[2]) ? expr[2][0] : lexical?.at(expr[1]);
+
     let component = constants.component(
       definition as object,
       expect(owner, 'BUG: expected owner when resolving component definition'),
       true,
-      lexical?.at(expr[1])
+      invocationName
     );
 
     if (component !== null) {
@@ -396,7 +402,7 @@ export function resolveOptionalComponentOrHelper(
       definition,
       expect(owner, 'BUG: expected owner when resolving component definition'),
       true,
-      lexical?.at(expr[1])
+      Array.isArray(expr[2]) ? expr[2][0] : lexical?.at(expr[1])
     );
 
     if (component !== null) {
