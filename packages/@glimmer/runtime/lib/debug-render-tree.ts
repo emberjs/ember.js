@@ -207,5 +207,10 @@ export function getDebugName(
   manager = definition.manager,
   invocationName?: string
 ): string {
-  return invocationName ?? definition.resolvedName ?? definition.debugName ?? manager.getDebugName(definition.state);
+  return (
+    invocationName ??
+    definition.resolvedName ??
+    definition.debugName ??
+    manager.getDebugName(definition.state)
+  );
 }
