@@ -261,7 +261,6 @@ export default class CurlyComponentManager
 
     beginTrackFrame();
     let props = processComponentArgs(capturedArgs);
-    props[ARGS] = capturedArgs;
     let argsTag = endTrackFrame();
 
     // Alias `id` argument to `elementId` property on the component instance.
@@ -270,11 +269,6 @@ export default class CurlyComponentManager
     // Set component instance's parentView property to point to nearest concrete
     // component.
     props.parentView = parentView;
-
-    // Set whether this component was invoked with a block
-    // (`{{#my-component}}{{/my-component}}`) or without one
-    // (`{{my-component}}`).
-    props[HAS_BLOCK] = hasBlock;
 
     // Save the current `this` context of the template as the component's
     // `_target`, so bubbled actions are routed to the right place.
@@ -292,6 +286,12 @@ export default class CurlyComponentManager
     // actually create it.
     beginUntrackFrame();
     let component = ComponentClass.create(props);
+
+    // Set internal symbol-keyed properties directly on the instance.
+    // These are not passed through create() because Object.keys() doesn't
+    // enumerate Symbol properties.
+    (component as any)[ARGS] = capturedArgs;
+    (component as any)[HAS_BLOCK] = hasBlock;
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
