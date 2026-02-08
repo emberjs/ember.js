@@ -271,7 +271,6 @@ class CoreObject {
             // init called will be set on the proxy, not the target, so get with the receiver
             !initCalled!.has(receiver) ||
             typeof property === 'symbol' ||
-            isInternalSymbol(property) ||
             property === 'toJSON' ||
             property === 'toString' ||
             property === 'toStringExtension' ||
