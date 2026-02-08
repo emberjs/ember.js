@@ -2,14 +2,14 @@
 @module @ember/object
 */
 import type { _ProxyMixin as ProxyMixin } from '@ember/-internals/runtime';
-import { setProxy, symbol } from '@ember/-internals/utils';
+import { setProxy } from '@ember/-internals/utils';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, isTracking, tagFor, track } from '@glimmer/validator';
 import { isPath } from './path_cache';
 
-export const PROXY_CONTENT = symbol('PROXY_CONTENT');
+export const PROXY_CONTENT = Symbol('PROXY_CONTENT');
 
 export let getPossibleMandatoryProxyValue: (obj: object, keyName: string) => any;
 
