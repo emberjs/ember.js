@@ -4,7 +4,7 @@ import {
   getOwner,
   setOwner,
 } from '@ember/-internals/owner';
-import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
+import { guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
@@ -53,8 +53,8 @@ import {
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 
-export const ARGS = enumerableSymbol('ARGS');
-export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
+export const ARGS = Symbol('ARGS');
+export const HAS_BLOCK = Symbol('HAS_BLOCK');
 
 export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
