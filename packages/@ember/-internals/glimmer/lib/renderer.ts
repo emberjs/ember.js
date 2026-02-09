@@ -553,6 +553,16 @@ export interface RenderResult {
   destroy(): void;
 }
 
+interface RenderCacheEntry {
+  result: RenderResult;
+  /**
+   * The GlimmerRenderResult from the last render. Used to get positional
+   * information (firstNode) when a re-render replaces the content, so
+   * that the new content is placed at the same DOM position.
+   */
+  glimmerResult: GlimmerRenderResult | undefined;
+}
+
 function intoTarget(into: IntoTarget): Cursor {
   if ('element' in into) {
     return into;
@@ -655,7 +665,7 @@ export function renderComponent(
    * NOTE: destruction is async
    */
   let existing = RENDER_CACHE.get(into);
-  existing?.destroy();
+  existing?.result.destroy();
   /**
    * We can only replace the inner HTML the first time.
    * Because destruction is async, it won't be safe to
@@ -665,13 +675,33 @@ export function renderComponent(
     into.innerHTML = '';
   }
 
-  let innerResult = renderer.render(component, { into, args }).result;
+  /**
+   * If there's an existing render result with valid bounds, use its
+   * firstNode as the nextSibling so that new content is inserted at
+   * the same DOM position. This ensures stable ordering when multiple
+   * renderComponent calls target the same element and one is re-invoked
+   * (e.g., due to tracked dependency changes).
+   *
+   * The old content's DOM nodes are still present (destruction is async),
+   * so firstNode() is a valid position reference. The new content is placed
+   * BEFORE the old content. When the old content is eventually destroyed
+   * (async clear of bounds), the new content remains in the correct position.
+   */
+  let renderTarget: IntoTarget = into;
+  if (existing?.glimmerResult) {
+    let parentElement =
+      into instanceof Element ? (into as unknown as SimpleElement) : (into as Cursor).element;
+    let firstNode = existing.glimmerResult.firstNode();
+    renderTarget = { element: parentElement, nextSibling: firstNode };
+  }
+
+  let innerResult = renderer.render(component, { into: renderTarget, args }).result;
 
   if (innerResult) {
     associateDestroyableChild(owner, innerResult);
   }
 
-  let result = {
+  let result: RenderResult = {
     destroy() {
       if (innerResult) {
         destroy(innerResult);
@@ -679,12 +709,12 @@ export function renderComponent(
     },
   };
 
-  RENDER_CACHE.set(into, result);
+  RENDER_CACHE.set(into, { result, glimmerResult: innerResult });
 
   return result;
 }
 
-const RENDER_CACHE = new WeakMap<IntoTarget, RenderResult>();
+const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
 export class BaseRenderer {
