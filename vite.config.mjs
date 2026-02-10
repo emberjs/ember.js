@@ -1,5 +1,3 @@
-/* global process */
-
 import { defineConfig } from 'vite';
 import { babel } from '@rollup/plugin-babel';
 import { resolve, dirname } from 'node:path';
@@ -13,6 +11,7 @@ import {
 } from './rollup.config.mjs';
 import { templateTag } from '@embroider/vite';
 
+// eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const { packageName: getPackageName, PackageCache } = require('@embroider/shared-internals');
