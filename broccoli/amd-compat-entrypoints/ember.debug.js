@@ -461,9 +461,6 @@ d('backburner.js', backburnerjs);
 import * as dagMap from 'dag-map';
 d('dag-map', dagMap);
 
-import * as emberIndex from 'ember/index';
-d('ember/index', emberIndex);
-
 import * as emberVersion from 'ember/version';
 d('ember/version', emberVersion);
 

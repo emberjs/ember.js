@@ -368,8 +368,6 @@
       "ember-testing/lib/test/promise.js": "ember-source/ember-testing/lib/test/promise.js",
       "ember-testing/lib/test/run.js": "ember-source/ember-testing/lib/test/run.js",
       "ember-testing/lib/test/waiters.js": "ember-source/ember-testing/lib/test/waiters.js",
-      "ember/barrel.js": "ember-source/ember/barrel.js",
-      "ember/index.js": "ember-source/ember/index.js",
       "ember/version.js": "ember-source/ember/version.js",
       "route-recognizer/index.js": "ember-source/route-recognizer/index.js",
       "router_js/index.js": "ember-source/router_js/index.js",
