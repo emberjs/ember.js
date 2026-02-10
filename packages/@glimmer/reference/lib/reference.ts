@@ -131,12 +131,11 @@ export function isInvokableRef(ref: Reference) {
 }
 
 export function createInvokableRef(inner: Reference): Reference {
-  const ref = createComputeRef(
-    () => valueForRef(inner),
-    (value) => updateRef(inner, value)
-  );
-  ref.debugLabel = inner.debugLabel;
-  ref[REFERENCE] = INVOKABLE;
+  const ref = new ReferenceImpl(INVOKABLE);
+
+  ref.compute = () => valueForRef(inner);
+  ref.update = (value) => updateRef(inner, value);
+  ref.debugLabel = inner.debugLabel === false ? undefined : inner.debugLabel;
 
   return ref;
 }
