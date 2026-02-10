@@ -1271,6 +1271,10 @@ moduleFor(
     }
 
     async [`@test it does not call preventDefault if 'target' attribute is provided`](assert) {
+      if (QUnit.urlParams.skip_tests_with_target_blank) {
+        assert.ok('skipped');
+        return;
+      }
       this.addTemplate(
         'index',
         `
@@ -1299,6 +1303,11 @@ moduleFor(
     }
 
     async [`@test it should not transition if target is not equal to _self or empty`](assert) {
+      if (QUnit.urlParams.skip_tests_with_target_blank) {
+        assert.ok('skipped');
+        return;
+      }
+
       this.addTemplate(
         'index',
         `
