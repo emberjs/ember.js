@@ -988,6 +988,32 @@ class DynamicStrictModeTest extends RenderTest {
   }
 
   @test
+  'calling a method on a class component works'() {
+    const Bar = defineComponent(
+      { on },
+      '<output>{{this.data.count}}</output><button {{on "click" this.increment}}>inc</button>',
+      {
+        definition: class extends GlimmerishComponent {
+          data = trackedObj({ count: 0 }) as { count: number };
+
+          increment() {
+            this.data.count++;
+          }
+        },
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('<output>0</output><button>inc</button>');
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    this.rerender();
+
+    this.assertHTML('<output>1</output><button>inc</button>');
+    this.assertStableRerender();
+  }
+
+  @test
   'Can use a dynamic modifier with a changing definition'(assert: Assert) {
     const modifier1 = defineSimpleModifier((element: Element) => {
       element.innerHTML = 'Hello, world!';
