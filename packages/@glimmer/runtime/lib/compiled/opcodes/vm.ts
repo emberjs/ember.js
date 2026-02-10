@@ -20,6 +20,7 @@ import {
   VM_JUMP_IF_OP,
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
+  VM_INVOKABLE_REFERENCE_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
   VM_POP_OP,
   VM_POP_SCOPE_OP,
@@ -46,6 +47,7 @@ import { toBool } from '@glimmer/global-context';
 import {
   createComputeRef,
   createConstRef,
+  createInvokableRef,
   createPrimitiveRef,
   FALSE_REFERENCE,
   isConstRef,
@@ -118,6 +120,12 @@ APPEND_OPCODES.add(VM_PRIMITIVE_REFERENCE_OP, (vm) => {
   }
 
   stack.push(ref);
+});
+
+APPEND_OPCODES.add(VM_INVOKABLE_REFERENCE_OP, (vm) => {
+  let stack = vm.stack;
+  let ref = check(stack.pop(), CheckReference);
+  stack.push(createInvokableRef(ref));
 });
 
 APPEND_OPCODES.add(VM_DUP_OP, (vm, { op1: register, op2: offset }) => {
