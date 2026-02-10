@@ -36,6 +36,9 @@ export default [
       'tracerbench-testing/',
     ],
   },
+  // Apply eslint:recommended rules to all files.
+  // This is the base configuration that applies globally unless overridden by
+  // file-specific configurations below.
   pluginJs.configs.recommended,
   importPlugin.flatConfigs.errors,
   importPlugin.flatConfigs.typescript,
