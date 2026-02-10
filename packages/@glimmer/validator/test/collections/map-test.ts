@@ -49,6 +49,38 @@ module('@glimmer/validator: trackedMap', function () {
     assert.strictEqual(map.get('foo'), 456);
   });
 
+  test('getOrInsert', (assert) => {
+    const map = trackedMap();
+
+    if ('getOrInsert' in map && typeof map.getOrInsert === 'function') {
+      let v = map.getOrInsert('foo', 123);
+      assert.strictEqual(v, 123);
+
+      assert.strictEqual(map.get('foo'), 123);
+
+      // eslint-disable-next-line qunit/no-early-return
+      return;
+    }
+
+    assert.ok('This browser has not implemented getOrInsert');
+  });
+
+  test('getOrInsertComputed', (assert) => {
+    const map = trackedMap();
+
+    if ('getOrInsertComputed' in map && typeof map.getOrInsertComputed === 'function') {
+      let v = map.getOrInsertComputed('foo', (key: string) => `${key}!`);
+      assert.strictEqual(v, 'foo!');
+
+      assert.strictEqual(map.get('foo'), 'foo!');
+
+      // eslint-disable-next-line qunit/no-early-return
+      return;
+    }
+
+    assert.ok('This browser has not implemented getOrInsert');
+  });
+
   test('has', (assert) => {
     const map = trackedMap();
 
