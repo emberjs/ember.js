@@ -57,6 +57,24 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
     return this.#vals.entries();
   }
 
+  getOrInsert(key: K, defaultValue: V): V {
+    consumeTag(this.#storageFor(key));
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore -- older versions of TS don't yet have this method
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+    return this.#vals.getOrInsert(key, defaultValue);
+  }
+
+  getOrInsertComputed(key: K, creator: (key: K) => V): V {
+    consumeTag(this.#storageFor(key));
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore -- older versions of TS don't yet have this method
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+    return this.#vals.getOrInsertComputed(key, creator);
+  }
+
   keys() {
     consumeTag(this.#collection);
 
