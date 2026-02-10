@@ -10,6 +10,7 @@ import {
   VM_HAS_BLOCK_OP,
   VM_HAS_BLOCK_PARAMS_OP,
   VM_IF_INLINE_OP,
+  VM_INVOKABLE_REFERENCE_OP,
   VM_LOG_OP,
   VM_NOT_OP,
   VM_POP_FRAME_OP,
@@ -45,6 +46,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expression, positional, named]) => {
     });
   } else {
     expr(op, expression);
+    op(VM_INVOKABLE_REFERENCE_OP);
     CallDynamic(op, positional, named);
   }
 });

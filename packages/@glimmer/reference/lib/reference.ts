@@ -192,6 +192,65 @@ export function updateRef(_ref: Reference, value: unknown) {
   update(value);
 }
 
+function bindPrototypeMethod(parent: object, path: string, value: unknown): unknown {
+  if (
+    typeof value === 'function' &&
+    !Object.prototype.hasOwnProperty.call(parent, path) &&
+    Object.keys(value).length === 0
+  ) {
+    return value.bind(parent);
+  }
+
+  return value;
+}
+
+function readChildValue(
+  parent: unknown,
+  path: string,
+  getter: (obj: object, path: string) => unknown
+): unknown {
+  if (!isDict(parent)) return undefined;
+
+  const value = getter(parent, path);
+  return bindPrototypeMethod(parent, path, value);
+}
+
+function createUnboundChildRef(parentRef: ReferenceImpl, path: string): Reference {
+  const parent = valueForRef(parentRef);
+
+  if (!isDict(parent)) return UNDEFINED_REFERENCE;
+
+  const value = readChildValue(
+    parent,
+    path,
+    (obj, key) => (obj as Record<string, unknown>)[key]
+  );
+
+  return createUnboundRef(value, DEBUG && `${parentRef.debugLabel}.${path}`);
+}
+
+function createComputeChildRef(parentRef: ReferenceImpl, path: string): Reference {
+  const child = createComputeRef(
+    () => {
+      const parent = valueForRef(parentRef);
+      return readChildValue(parent, path, getProp);
+    },
+    (val) => {
+      const parent = valueForRef(parentRef);
+
+      if (isDict(parent)) {
+        return setProp(parent, path, val);
+      }
+    }
+  );
+
+  if (DEBUG) {
+    child.debugLabel = `${parentRef.debugLabel}.${path}`;
+  }
+
+  return child;
+}
+
 export function childRefFor(_parentRef: Reference, path: string): Reference {
   const parentRef = _parentRef as ReferenceImpl;
 
@@ -208,59 +267,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     if (next) return next;
   }
 
-  if (type === UNBOUND) {
-    const parent = valueForRef(parentRef);
-
-    if (isDict(parent)) {
-      const value = (parent as Record<string, unknown>)[path];
-
-      // If the value is a prototype method, bind it to the parent to preserve `this` context
-      let boundValue: unknown = value;
-      if (
-        typeof value === 'function' &&
-        !Object.prototype.hasOwnProperty.call(parent, path) &&
-        Object.keys(value).length === 0
-      ) {
-        boundValue = value.bind(parent);
-      }
-
-      child = createUnboundRef(boundValue, DEBUG && `${parentRef.debugLabel}.${path}`);
-    } else {
-      child = UNDEFINED_REFERENCE;
-    }
-  } else {
-    child = createComputeRef(
-      () => {
-        const parent = valueForRef(parentRef);
-
-        if (isDict(parent)) {
-          const value = getProp(parent, path);
-
-          // If the value is a prototype method, bind it to the parent to preserve `this` context
-          if (
-            typeof value === 'function' &&
-            !Object.prototype.hasOwnProperty.call(parent, path) &&
-            Object.keys(value).length === 0
-          ) {
-            return value.bind(parent) as () => unknown;
-          }
-
-          return value;
-        }
-      },
-      (val) => {
-        const parent = valueForRef(parentRef);
-
-        if (isDict(parent)) {
-          return setProp(parent, path, val);
-        }
-      }
-    );
-
-    if (DEBUG) {
-      child.debugLabel = `${parentRef.debugLabel}.${path}`;
-    }
-  }
+  child = type === UNBOUND ? createUnboundChildRef(parentRef, path) : createComputeChildRef(parentRef, path);
 
   children.set(path, child);
 

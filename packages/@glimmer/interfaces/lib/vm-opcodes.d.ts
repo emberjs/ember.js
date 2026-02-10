@@ -111,7 +111,8 @@ export type VmIfInline = 109;
 export type VmNot = 110;
 export type VmGetDynamicVar = 111;
 export type VmLog = 112;
-export type VmSize = 113;
+export type VmInvokableReference = 113;
+export type VmSize = 114;
 
 export type VmOp =
   | VmHelper
@@ -206,6 +207,7 @@ export type VmOp =
   | VmIfInline
   | VmNot
   | VmGetDynamicVar
-  | VmLog;
+  | VmLog
+  | VmInvokableReference;
 
-export type SomeVmOp = VmOp | VmMachineOp;
+export type VmSize = 114;
