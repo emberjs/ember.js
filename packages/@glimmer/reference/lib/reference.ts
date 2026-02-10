@@ -213,10 +213,15 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     const parent = valueForRef(parentRef);
 
     if (isDict(parent)) {
-      child = createUnboundRef(
-        (parent as Record<string, unknown>)[path],
-        DEBUG && `${parentRef.debugLabel}.${path}`
-      );
+      const value = (parent as Record<string, unknown>)[path];
+
+      // If the value is a function, bind it to the parent to preserve `this` context
+      let boundValue: unknown = value;
+      if (typeof value === 'function') {
+        boundValue = value.bind(parent);
+      }
+
+      child = createUnboundRef(boundValue, DEBUG && `${parentRef.debugLabel}.${path}`);
     } else {
       child = UNDEFINED_REFERENCE;
     }
@@ -226,7 +231,14 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
         const parent = valueForRef(parentRef);
 
         if (isDict(parent)) {
-          return getProp(parent, path);
+          const value = getProp(parent, path);
+
+          // If the value is a function, bind it to the parent to preserve `this` context
+          if (typeof value === 'function') {
+            return value.bind(parent) as () => unknown;
+          }
+
+          return value;
         }
       },
       (val) => {
