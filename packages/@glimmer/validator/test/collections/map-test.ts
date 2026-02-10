@@ -52,7 +52,11 @@ module('@glimmer/validator: trackedMap', function () {
   test('getOrInsert', (assert) => {
     const map = trackedMap();
 
-    if ('getOrInsert' in map && typeof map.getOrInsert === 'function') {
+    if (
+      'getOrInsert' in map &&
+      typeof map.getOrInsert === 'function' &&
+      'getOrInsert' in Map.prototype
+    ) {
       let v = map.getOrInsert('foo', 123);
       assert.strictEqual(v, 123);
 
@@ -68,7 +72,11 @@ module('@glimmer/validator: trackedMap', function () {
   test('getOrInsertComputed', (assert) => {
     const map = trackedMap();
 
-    if ('getOrInsertComputed' in map && typeof map.getOrInsertComputed === 'function') {
+    if (
+      'getOrInsertComputed' in map &&
+      typeof map.getOrInsertComputed === 'function' &&
+      'getOrInsertComputed' in Map.prototype
+    ) {
       let v = map.getOrInsertComputed('foo', (key: string) => `${key}!`);
       assert.strictEqual(v, 'foo!');
 
