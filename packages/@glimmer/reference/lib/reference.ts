@@ -215,9 +215,13 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     if (isDict(parent)) {
       const value = (parent as Record<string, unknown>)[path];
 
-      // If the value is a function, bind it to the parent to preserve `this` context
+      // If the value is a prototype method, bind it to the parent to preserve `this` context
       let boundValue: unknown = value;
-      if (typeof value === 'function') {
+      if (
+        typeof value === 'function' &&
+        !Object.prototype.hasOwnProperty.call(parent, path) &&
+        Object.keys(value).length === 0
+      ) {
         boundValue = value.bind(parent);
       }
 
@@ -233,8 +237,12 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
         if (isDict(parent)) {
           const value = getProp(parent, path);
 
-          // If the value is a function, bind it to the parent to preserve `this` context
-          if (typeof value === 'function') {
+          // If the value is a prototype method, bind it to the parent to preserve `this` context
+          if (
+            typeof value === 'function' &&
+            !Object.prototype.hasOwnProperty.call(parent, path) &&
+            Object.keys(value).length === 0
+          ) {
             return value.bind(parent) as () => unknown;
           }
 
