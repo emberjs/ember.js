@@ -56,9 +56,9 @@ export class Ref<T extends object> {
   }
 }
 
-export default class DebugRenderTreeImpl<TBucket extends object>
-  implements DebugRenderTree<TBucket>
-{
+export default class DebugRenderTreeImpl<
+  TBucket extends object,
+> implements DebugRenderTree<TBucket> {
   private stack = new Stack<TBucket>();
 
   private refs = new WeakMap<TBucket, Ref<TBucket>>();

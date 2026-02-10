@@ -177,9 +177,11 @@ const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
   { strictMode: true }
 );
 
-export class OutletComponent
-  implements ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
-{
+export class OutletComponent implements ComponentDefinition<
+  OutletDefinitionState,
+  OutletInstanceState,
+  OutletComponentManager
+> {
   // handle is not used by this custom definition
   public handle = -1;
   public resolvedName = null;

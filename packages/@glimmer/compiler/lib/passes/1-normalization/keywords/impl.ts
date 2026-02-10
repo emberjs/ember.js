@@ -138,9 +138,10 @@ function getCalleeExpression(
   }
 }
 
-export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = never>
-  implements Keyword<K, OutFor<KeywordList>>
-{
+export class Keywords<
+  K extends KeywordType,
+  KeywordList extends Keyword<K> = never,
+> implements Keyword<K, OutFor<KeywordList>> {
   _keywords: Keyword[] = [];
   _type: K;
 

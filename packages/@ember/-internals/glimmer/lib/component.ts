@@ -796,10 +796,7 @@ declare const SIGNATURE: unique symbol;
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Component<S = unknown>
-  extends CoreView,
-    TargetActionSupport,
-    ActionSupport,
-    ComponentMethods {}
+  extends CoreView, TargetActionSupport, ActionSupport, ComponentMethods {}
 
 class Component<S = unknown>
   extends CoreView.extend(

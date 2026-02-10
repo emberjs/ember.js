@@ -52,9 +52,10 @@ class InternalModifierState implements Destroyable {
   constructor(readonly instance: InternalModifier) {}
 }
 
-export abstract class InternalModifierManager
-  implements ModifierManager<InternalModifierState, typeof InternalModifier>
-{
+export abstract class InternalModifierManager implements ModifierManager<
+  InternalModifierState,
+  typeof InternalModifier
+> {
   constructor(
     private ModifierClass: typeof InternalModifier,
     private name: string
