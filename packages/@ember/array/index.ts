@@ -1933,8 +1933,10 @@ type RETURN_SELF_ARRAY_METHODS =
   | 'setEach';
 
 // This is the same as MutableArray, but removes the actual native methods that exist on Array.prototype.
-interface MutableArrayWithoutNative<T>
-  extends Omit<MutableArray<T>, IGNORED_MUTABLE_ARRAY_METHODS | RETURN_SELF_ARRAY_METHODS> {
+interface MutableArrayWithoutNative<T> extends Omit<
+  MutableArray<T>,
+  IGNORED_MUTABLE_ARRAY_METHODS | RETURN_SELF_ARRAY_METHODS
+> {
   /**
    * Remove all elements from the array. This is useful if you
    * want to reuse an existing array without having to recreate it.

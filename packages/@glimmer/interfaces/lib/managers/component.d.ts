@@ -26,23 +26,27 @@ export interface ComponentManager<ComponentStateBucket> {
   getContext(instance: ComponentStateBucket): unknown;
 }
 
-export interface ComponentManagerWithAsyncLifeCycleCallbacks<ComponentStateBucket>
-  extends ComponentManager<ComponentStateBucket> {
+export interface ComponentManagerWithAsyncLifeCycleCallbacks<
+  ComponentStateBucket,
+> extends ComponentManager<ComponentStateBucket> {
   didCreateComponent(instance: ComponentStateBucket): void;
 }
 
-export interface ComponentManagerWithUpdateHook<ComponentStateBucket>
-  extends ComponentManager<ComponentStateBucket> {
+export interface ComponentManagerWithUpdateHook<
+  ComponentStateBucket,
+> extends ComponentManager<ComponentStateBucket> {
   updateComponent(instance: ComponentStateBucket, args: Arguments): void;
 }
 
 export interface ComponentManagerWithAsyncUpdateHook<ComponentStateBucket>
-  extends ComponentManagerWithAsyncLifeCycleCallbacks<ComponentStateBucket>,
+  extends
+    ComponentManagerWithAsyncLifeCycleCallbacks<ComponentStateBucket>,
     ComponentManagerWithUpdateHook<ComponentStateBucket> {
   didUpdateComponent(instance: ComponentStateBucket): void;
 }
 
-export interface ComponentManagerWithDestructors<ComponentStateBucket>
-  extends ComponentManager<ComponentStateBucket> {
+export interface ComponentManagerWithDestructors<
+  ComponentStateBucket,
+> extends ComponentManager<ComponentStateBucket> {
   destroyComponent(instance: ComponentStateBucket): void;
 }

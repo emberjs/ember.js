@@ -93,8 +93,9 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
  * }
  * ```
  */
-export interface ExplicitClassOptions<C extends ComponentClass>
-  extends BaseClassTemplateOptions<C> {
+export interface ExplicitClassOptions<
+  C extends ComponentClass,
+> extends BaseClassTemplateOptions<C> {
   scope(instance?: InstanceType<C>): Record<string, unknown>;
 }
 

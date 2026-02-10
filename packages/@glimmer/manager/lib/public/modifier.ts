@@ -70,9 +70,10 @@ export interface CustomModifierState<ModifierInstance> {
   * `updateModifier()` - invoked when the arguments passed to a modifier change
   * `destroyModifier()` - invoked when the modifier is about to be destroyed
 */
-export class CustomModifierManager<O extends Owner, ModifierInstance>
-  implements InternalModifierManager<CustomModifierState<ModifierInstance>>
-{
+export class CustomModifierManager<
+  O extends Owner,
+  ModifierInstance,
+> implements InternalModifierManager<CustomModifierState<ModifierInstance>> {
   private componentManagerDelegates = new WeakMap<O, ModifierManager<ModifierInstance>>();
 
   constructor(private factory: ManagerFactory<O, ModifierManager<ModifierInstance>>) {}
