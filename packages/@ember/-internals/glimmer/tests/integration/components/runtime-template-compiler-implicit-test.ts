@@ -467,19 +467,24 @@ moduleFor(
     async '@test Can access private fields in templates'() {
       await this.renderComponentModule(() => {
         return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
           #count = 0;
 
+          // eslint-disable-next-line no-unused-private-class-members
           #increment = () => {
             this.#count++;
           };
 
           static {
-            template('<p>Count: {{this.#count}}</p><button {{on "click" this.#increment}}>Increment</button>', {
-              component: this,
-              eval() {
-                return eval(arguments[0]);
-              },
-            });
+            template(
+              '<p>Count: {{this.#count}}</p><button {{on "click" this.#increment}}>Increment</button>',
+              {
+                component: this,
+                eval() {
+                  return eval(arguments[0]);
+                },
+              }
+            );
           }
         };
       });
@@ -493,8 +498,10 @@ moduleFor(
         hide(on);
 
         return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
           #message = 'Hello';
 
+          // eslint-disable-next-line no-unused-private-class-members
           #updateMessage = () => {
             this.#message = 'Updated!';
           };
