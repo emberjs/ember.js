@@ -1,4 +1,4 @@
-import { Visitor, parse, print, Exception } from '../dist/esm/index.js';
+import { Visitor, parse, print, Exception } from '../lib/index.js';
 import { equals, shouldThrow } from './utils.js';
 
 describe('Visitor', function () {

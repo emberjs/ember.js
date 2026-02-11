@@ -42,10 +42,9 @@
   },
   "scripts": {
     "bench": "node ./bin/benchmark.mjs",
-    "build:handlebars-parser": "pnpm --filter @handlebars/parser run build:parser",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
-    "build": "npm-run-all build:handlebars-parser build:js build:types",
+    "build": "npm-run-all build:*",
     "docs": "ember ember-cli-yuidoc",
     "start": "vite dev",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
@@ -61,7 +60,7 @@
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
-    "type-check:handlebars": "pnpm --filter @handlebars/parser run build:parser && tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
+    "type-check:handlebars": "tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
     "type-check:types": "tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },

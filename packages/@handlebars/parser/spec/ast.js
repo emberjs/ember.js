@@ -1,4 +1,4 @@
-import { parse, parseWithoutProcessing } from '../dist/esm/index.js';
+import { parse, parseWithoutProcessing } from '../lib/index.js';
 import { equals } from './utils.js';
 
 describe('ast', function () {
