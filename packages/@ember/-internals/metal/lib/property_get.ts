@@ -102,9 +102,34 @@ export function get(obj: unknown, keyName: string): unknown {
   return isPath(keyName) ? _getPath(obj, keyName) : _getProp(obj, keyName);
 }
 
+/**
+ * Well-known symbol key for private field getter closures stored on a
+ * component class. Must match the symbol defined in
+ * `@ember/template-compiler/lib/template.ts`.
+ */
+const PRIVATE_FIELD_GETTERS = Symbol.for('ember:private-field-getters');
+
 export function _getProp(obj: unknown, keyName: string) {
   if (obj == null) {
     return;
+  }
+
+  // Private field access: use the getter closure stored on the class
+  // constructor instead of bracket notation (which cannot access # fields).
+  if (keyName.length > 0 && keyName[0] === '#') {
+    const getters = (obj as any)?.constructor?.[PRIVATE_FIELD_GETTERS] as
+      | Record<string, (obj: object) => unknown>
+      | undefined;
+    if (getters?.[keyName]) {
+      let value = getters[keyName]!(obj as object);
+
+      if (isTracking()) {
+        consumeTag(tagFor(obj, keyName));
+      }
+
+      return value;
+    }
+    return undefined;
   }
 
   let value: unknown;

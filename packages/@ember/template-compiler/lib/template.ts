@@ -246,6 +246,29 @@ export function template<C extends ComponentClass>(
   templateString: string,
   options: ExplicitClassOptions<C> | ImplicitClassOptions<C> | BaseClassTemplateOptions<C>
 ): C;
+/**
+ * Well-known symbol key used to store private field getter closures on a
+ * component class. The getters are created via `eval` inside the class's
+ * `static` block so they retain access to the class's private field brand.
+ *
+ * Shape: `Record<string, (instance: object) => unknown>`
+ */
+export const PRIVATE_FIELD_GETTERS = Symbol.for('ember:private-field-getters');
+
+/**
+ * Extract private field names (e.g. `#count`, `#increment`) referenced
+ * via `this.#field` paths in a Handlebars template string.
+ */
+function extractPrivateFields(templateString: string): string[] {
+  const re = /this\.#([\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*)/gu;
+  const fields = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(templateString)) !== null) {
+    fields.add(`#${match[1]}`);
+  }
+  return [...fields];
+}
+
 export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
@@ -255,6 +278,20 @@ export function template(
 
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
+
+  // If the template references private fields (this.#field) and we have an
+  // eval function from the class scope, create getter closures that can
+  // access the private fields. These are stored on the component class and
+  // looked up by _getProp at runtime.
+  const privateFields = extractPrivateFields(templateString);
+  if (privateFields.length > 0 && evaluate !== evaluator) {
+    const getterEntries = privateFields.map((f) => `${JSON.stringify(f)}: (obj) => obj.${f}`);
+    const getters = evaluate(`({${getterEntries.join(', ')}})`) as Record<
+      string,
+      (obj: object) => unknown
+    >;
+    (component as any)[PRIVATE_FIELD_GETTERS] = getters;
+  }
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
   const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
