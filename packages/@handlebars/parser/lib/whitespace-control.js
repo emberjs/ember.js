@@ -24,8 +24,7 @@ WhitespaceControl.prototype.Program = function (program) {
       _isNextWhitespace = isNextWhitespace(body, i, isRoot),
       openStandalone = strip.openStandalone && _isPrevWhitespace,
       closeStandalone = strip.closeStandalone && _isNextWhitespace,
-      inlineStandalone =
-        strip.inlineStandalone && _isPrevWhitespace && _isNextWhitespace;
+      inlineStandalone = strip.inlineStandalone && _isPrevWhitespace && _isNextWhitespace;
 
     if (strip.close) {
       omitRight(body, i, true);
@@ -128,13 +127,14 @@ WhitespaceControl.prototype.BlockStatement =
       return strip;
     };
 
-WhitespaceControl.prototype.Decorator =
-  WhitespaceControl.prototype.MustacheStatement = function (mustache) {
-    return mustache.strip;
-  };
+WhitespaceControl.prototype.Decorator = WhitespaceControl.prototype.MustacheStatement = function (
+  mustache
+) {
+  return mustache.strip;
+};
 
-WhitespaceControl.prototype.PartialStatement =
-  WhitespaceControl.prototype.CommentStatement = function (node) {
+WhitespaceControl.prototype.PartialStatement = WhitespaceControl.prototype.CommentStatement =
+  function (node) {
     /* istanbul ignore next */
     let strip = node.strip || {};
     return {
@@ -158,9 +158,7 @@ function isPrevWhitespace(body, i, isRoot) {
   }
 
   if (prev.type === 'ContentStatement') {
-    return (sibling || !isRoot ? /\r?\n\s*?$/ : /(^|\r?\n)\s*?$/).test(
-      prev.original
-    );
+    return (sibling || !isRoot ? /\r?\n\s*?$/ : /(^|\r?\n)\s*?$/).test(prev.original);
   }
 }
 function isNextWhitespace(body, i, isRoot) {
@@ -175,9 +173,7 @@ function isNextWhitespace(body, i, isRoot) {
   }
 
   if (next.type === 'ContentStatement') {
-    return (sibling || !isRoot ? /^\s*?\r?\n/ : /^\s*?(\r?\n|$)/).test(
-      next.original
-    );
+    return (sibling || !isRoot ? /^\s*?\r?\n/ : /^\s*?(\r?\n|$)/).test(next.original);
   }
 }
 
@@ -190,19 +186,12 @@ function isNextWhitespace(body, i, isRoot) {
 // content is met.
 function omitRight(body, i, multiple) {
   let current = body[i == null ? 0 : i + 1];
-  if (
-    !current ||
-    current.type !== 'ContentStatement' ||
-    (!multiple && current.rightStripped)
-  ) {
+  if (!current || current.type !== 'ContentStatement' || (!multiple && current.rightStripped)) {
     return;
   }
 
   let original = current.value;
-  current.value = current.value.replace(
-    multiple ? /^\s+/ : /^[ \t]*\r?\n?/,
-    ''
-  );
+  current.value = current.value.replace(multiple ? /^\s+/ : /^[ \t]*\r?\n?/, '');
   current.rightStripped = current.value !== original;
 }
 
@@ -215,11 +204,7 @@ function omitRight(body, i, multiple) {
 // content is met.
 function omitLeft(body, i, multiple) {
   let current = body[i == null ? body.length - 1 : i - 1];
-  if (
-    !current ||
-    current.type !== 'ContentStatement' ||
-    (!multiple && current.leftStripped)
-  ) {
+  if (!current || current.type !== 'ContentStatement' || (!multiple && current.leftStripped)) {
     return;
   }
 

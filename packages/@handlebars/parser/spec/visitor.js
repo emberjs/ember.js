@@ -44,9 +44,7 @@ describe('Visitor', function () {
     };
 
     visitor.accept(
-      parse(
-        '{{#foo.bar (foo.bar 1 "2" true) foo=@foo.bar}}{{!comment}}{{> bar }} {{/foo.bar}}'
-      )
+      parse('{{#foo.bar (foo.bar 1 "2" true) foo=@foo.bar}}{{!comment}}{{> bar }} {{/foo.bar}}')
     );
   });
 

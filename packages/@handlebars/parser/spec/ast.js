@@ -28,9 +28,7 @@ describe('ast', function () {
       });
 
       it('block statements', function () {
-        let ast = parseWithoutProcessing(
-          ' {{# comment~}} \nfoo\n {{~/comment}}'
-        );
+        let ast = parseWithoutProcessing(' {{# comment~}} \nfoo\n {{~/comment}}');
 
         equals(ast.body[0].value, ' ');
         equals(ast.body[1].program.body[0].value, ' \nfoo\n ');
@@ -119,9 +117,7 @@ describe('ast', function () {
         equals(block.program.body[0].value, ' \nfoo\n ');
       });
       it('mustaches with children', function () {
-        let ast = parseWithoutProcessing(
-            '{{# comment}} \n{{foo}}\n {{/comment}}'
-          ),
+        let ast = parseWithoutProcessing('{{# comment}} \n{{foo}}\n {{/comment}}'),
           block = ast.body[0];
 
         equals(block.program.body[0].value, ' \n');
@@ -156,9 +152,7 @@ describe('ast', function () {
     });
     describe('blocks', function () {
       it('marks block mustaches as standalone', function () {
-        let ast = parse(
-            ' {{# comment}} \nfoo\n {{else}} \n  bar \n  {{/comment}} '
-          ),
+        let ast = parse(' {{# comment}} \nfoo\n {{else}} \n  bar \n  {{/comment}} '),
           block = ast.body[1];
 
         equals(ast.body[0].value, '');
@@ -211,9 +205,7 @@ describe('ast', function () {
         equals(body[0].omit, undefined);
       });
       it('does not mark nested initial block mustaches as standalone', function () {
-        let ast = parse(
-            '{{#foo}}{{# comment}} \nfoo\n {{else}} \n  bar \n  {{/comment}}{{/foo}}'
-          ),
+        let ast = parse('{{#foo}}{{# comment}} \nfoo\n {{else}} \n  bar \n  {{/comment}}{{/foo}}'),
           body = ast.body[0].program.body,
           block = body[0];
 
@@ -224,9 +216,7 @@ describe('ast', function () {
       });
 
       it('marks column 0 block mustaches as standalone', function () {
-        let ast = parse(
-            'test\n{{# comment}} \nfoo\n {{else}} \n  bar \n  {{/comment}} '
-          ),
+        let ast = parse('test\n{{# comment}} \nfoo\n {{else}} \n  bar \n  {{/comment}} '),
           block = ast.body[1];
 
         equals(ast.body[0].omit, undefined);

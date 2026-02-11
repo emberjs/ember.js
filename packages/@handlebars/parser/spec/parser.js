@@ -56,12 +56,7 @@ describe('parser', function () {
       options: {
         syntax: {
           hash: (hash, loc, { yy }) => {
-            return yy.preparePath(
-              true,
-              false,
-              [{ part: yy.id('hello'), original: 'hello' }],
-              loc
-            );
+            return yy.preparePath(true, false, [{ part: yy.id('hello'), original: 'hello' }], loc);
           },
         },
       },
@@ -143,21 +138,12 @@ describe('parser', function () {
     equalsAst('{{foo bar=false}}', '{{ p%foo HASH{bar=b%false} }}');
     equalsAst('{{foo bar=@baz}}', '{{ p%foo HASH{bar=p%@baz} }}');
 
-    equalsAst(
-      '{{foo bar=baz bat=bam}}',
-      '{{ p%foo HASH{bar=p%baz bat=p%bam} }}'
-    );
-    equalsAst(
-      '{{foo bar=baz bat="bam"}}',
-      '{{ p%foo HASH{bar=p%baz bat="bam"} }}'
-    );
+    equalsAst('{{foo bar=baz bat=bam}}', '{{ p%foo HASH{bar=p%baz bat=p%bam} }}');
+    equalsAst('{{foo bar=baz bat="bam"}}', '{{ p%foo HASH{bar=p%baz bat="bam"} }}');
 
     equalsAst("{{foo bat='bam'}}", '{{ p%foo HASH{bat="bam"} }}');
 
-    equalsAst(
-      '{{foo omg bar=baz bat="bam"}}',
-      '{{ p%foo [p%omg] HASH{bar=p%baz bat="bam"} }}'
-    );
+    equalsAst('{{foo omg bar=baz bat="bam"}}', '{{ p%foo [p%omg] HASH{bar=p%baz bat="bam"} }}');
     equalsAst(
       '{{foo omg bar=baz bat="bam" baz=1}}',
       '{{ p%foo [p%omg] HASH{bar=p%baz bat="bam" baz=n%1} }}'
@@ -191,24 +177,15 @@ describe('parser', function () {
   });
 
   it('parses a partial with context and hash', function () {
-    equalsAst(
-      '{{> foo bar bat=baz}}',
-      '{{> PARTIAL:foo p%bar HASH{bat=p%baz} }}'
-    );
+    equalsAst('{{> foo bar bat=baz}}', '{{> PARTIAL:foo p%bar HASH{bat=p%baz} }}');
   });
 
   it('parses a partial with a complex name', function () {
-    equalsAst(
-      '{{> shared/partial?.bar}}',
-      '{{> PARTIAL:shared/partial?.bar }}'
-    );
+    equalsAst('{{> shared/partial?.bar}}', '{{> PARTIAL:shared/partial?.bar }}');
   });
 
   it('parsers partial blocks', function () {
-    equalsAst(
-      '{{#> foo}}bar{{/foo}}',
-      "{{> PARTIAL BLOCK:foo PROGRAM:\n  CONTENT[ 'bar' ]\n }}"
-    );
+    equalsAst('{{#> foo}}bar{{/foo}}', "{{> PARTIAL BLOCK:foo PROGRAM:\n  CONTENT[ 'bar' ]\n }}");
   });
   it('should handle parser block mismatch', function () {
     shouldThrow(
@@ -231,10 +208,7 @@ describe('parser', function () {
   });
 
   it('parses a multi-line comment', function () {
-    equalsAst(
-      '{{!\nthis is a multi-line comment\n}}',
-      "{{! '\nthis is a multi-line comment\n' }}"
-    );
+    equalsAst('{{!\nthis is a multi-line comment\n}}', "{{! '\nthis is a multi-line comment\n' }}");
   });
 
   it('parses an inverse section', function () {
@@ -267,10 +241,7 @@ describe('parser', function () {
   });
 
   it('parses empty blocks with empty inverse (else-style) section', function () {
-    equalsAst(
-      '{{#foo}}{{else}}{{/foo}}',
-      'BLOCK:\n  p%foo\n  PROGRAM:\n  {{^}}'
-    );
+    equalsAst('{{#foo}}{{else}}{{/foo}}', 'BLOCK:\n  p%foo\n  PROGRAM:\n  {{^}}');
   });
 
   it('parses non-empty blocks with empty inverse section', function () {
@@ -302,10 +273,7 @@ describe('parser', function () {
   });
 
   it('parses a standalone inverse section', function () {
-    equalsAst(
-      '{{^foo}}bar{{/foo}}',
-      "BLOCK:\n  p%foo\n  {{^}}\n    CONTENT[ 'bar' ]"
-    );
+    equalsAst('{{^foo}}bar{{/foo}}', "BLOCK:\n  p%foo\n  {{^}}\n    CONTENT[ 'bar' ]");
   });
 
   it('throws on old inverse section', function () {
@@ -334,10 +302,7 @@ describe('parser', function () {
   });
 
   it('parses sub-expressions with a sub-expression as the callable (with args)', function () {
-    equalsAst(
-      '{{((my-helper foo) bar)}}',
-      '{{ ((p%my-helper [p%foo]) [p%bar]) }}'
-    );
+    equalsAst('{{((my-helper foo) bar)}}', '{{ ((p%my-helper [p%foo]) [p%bar]) }}');
   });
 
   it('parses arguments with a sub-expression as the callable (with args)', function () {
@@ -352,17 +317,11 @@ describe('parser', function () {
   });
 
   it('parses paths with sub-expressions as the root as a callable', function () {
-    equalsAst(
-      '{{((my-helper foo).bar baz)}}',
-      '{{ (p%[(p%my-helper [p%foo])]/bar [p%baz]) }}'
-    );
+    equalsAst('{{((my-helper foo).bar baz)}}', '{{ (p%[(p%my-helper [p%foo])]/bar [p%baz]) }}');
   });
 
   it('parses paths with sub-expressions as the root as an argument', function () {
-    equalsAst(
-      '{{(foo (my-helper bar).baz)}}',
-      '{{ (p%foo [p%[(p%my-helper [p%bar])]/baz]) }}'
-    );
+    equalsAst('{{(foo (my-helper bar).baz)}}', '{{ (p%foo [p%[(p%my-helper [p%bar])]/baz]) }}');
   });
 
   it('parses paths with sub-expressions as the root as a named argument', function () {

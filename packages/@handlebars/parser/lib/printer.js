@@ -56,37 +56,34 @@ PrintVisitor.prototype.Decorator = function (mustache) {
   return this.pad('{{ DIRECTIVE ' + this.callBody(mustache) + ' }}');
 };
 
-PrintVisitor.prototype.BlockStatement = PrintVisitor.prototype.DecoratorBlock =
-  function (block) {
-    let out = '';
+PrintVisitor.prototype.BlockStatement = PrintVisitor.prototype.DecoratorBlock = function (block) {
+  let out = '';
 
-    out += this.pad(
-      (block.type === 'DecoratorBlock' ? 'DIRECTIVE ' : '') + 'BLOCK:'
-    );
+  out += this.pad((block.type === 'DecoratorBlock' ? 'DIRECTIVE ' : '') + 'BLOCK:');
+  this.padding++;
+  out += this.pad(this.callBody(block));
+  if (block.program) {
+    out += this.pad('PROGRAM:');
     this.padding++;
-    out += this.pad(this.callBody(block));
-    if (block.program) {
-      out += this.pad('PROGRAM:');
-      this.padding++;
-      out += this.accept(block.program);
-      this.padding--;
-    }
-    if (block.inverse) {
-      if (block.program) {
-        this.padding++;
-      }
-      out += this.pad('{{^}}');
-      this.padding++;
-      out += this.accept(block.inverse);
-      this.padding--;
-      if (block.program) {
-        this.padding--;
-      }
-    }
+    out += this.accept(block.program);
     this.padding--;
+  }
+  if (block.inverse) {
+    if (block.program) {
+      this.padding++;
+    }
+    out += this.pad('{{^}}');
+    this.padding++;
+    out += this.accept(block.inverse);
+    this.padding--;
+    if (block.program) {
+      this.padding--;
+    }
+  }
+  this.padding--;
 
-    return out;
-  };
+  return out;
+};
 
 PrintVisitor.prototype.PartialStatement = function (partial) {
   let content = 'PARTIAL:' + partial.name.original;
@@ -136,8 +133,7 @@ PrintVisitor.prototype.callBody = function (callExpr) {
     paramStrings.push(this.accept(params[i]));
   }
 
-  params =
-    paramStrings.length === 0 ? '' : ' [' + paramStrings.join(', ') + ']';
+  params = paramStrings.length === 0 ? '' : ' [' + paramStrings.join(', ') + ']';
 
   hash = callExpr.hash ? ' ' + this.accept(callExpr.hash) : '';
 
@@ -145,8 +141,7 @@ PrintVisitor.prototype.callBody = function (callExpr) {
 };
 
 PrintVisitor.prototype.PathExpression = function (id) {
-  let head =
-    typeof id.head === 'string' ? id.head : `[${this.accept(id.head)}]`;
+  let head = typeof id.head === 'string' ? id.head : `[${this.accept(id.head)}]`;
   let path = [head, ...id.tail].join('/');
   return 'p%' + prefix(id) + path;
 };

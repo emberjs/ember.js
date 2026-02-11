@@ -20,14 +20,6 @@
     "newLine": "LF",
     "allowJs": true
   },
-  "include": [
-    "lib/**/*.js",
-    "lib/**/*.d.ts"
-  ],
-  "exclude": [
-    "lib/parser.js",
-    "dist",
-    "node_modules",
-    ".vscode"
-  ]
+  "include": ["lib/**/*.js", "lib/**/*.d.ts"],
+  "exclude": ["lib/parser.js", "dist", "node_modules", ".vscode"]
 }

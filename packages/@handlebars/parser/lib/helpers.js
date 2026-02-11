@@ -6,10 +6,7 @@ function validateClose(open, close) {
   if (open.path.original !== close) {
     let errorNode = { loc: open.path.loc };
 
-    throw new Exception(
-      open.path.original + " doesn't match " + close,
-      errorNode
-    );
+    throw new Exception(open.path.original + " doesn't match " + close, errorNode);
   }
 }
 
@@ -138,14 +135,7 @@ export function prepareRawBlock(openRawBlock, contents, close, locInfo) {
   };
 }
 
-export function prepareBlock(
-  openBlock,
-  program,
-  inverseAndProgram,
-  close,
-  inverted,
-  locInfo
-) {
+export function prepareBlock(openBlock, program, inverseAndProgram, close, inverted, locInfo) {
   if (close && close.path) {
     validateClose(openBlock, close);
   }
@@ -158,10 +148,7 @@ export function prepareBlock(
 
   if (inverseAndProgram) {
     if (decorator) {
-      throw new Exception(
-        'Unexpected inverse block on decorator',
-        inverseAndProgram
-      );
+      throw new Exception('Unexpected inverse block on decorator', inverseAndProgram);
     }
 
     if (inverseAndProgram.chain) {

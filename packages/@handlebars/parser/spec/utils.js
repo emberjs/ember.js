@@ -23,8 +23,7 @@ if (Error.captureStackTrace) {
 export function equals(actual, expected, msg) {
   if (actual !== expected) {
     const error = new AssertError(
-      `\n       Actual: ${actual}     Expected: ${expected}` +
-        (msg ? `\n${msg}` : ''),
+      `\n       Actual: ${actual}     Expected: ${expected}` + (msg ? `\n${msg}` : ''),
       equals
     );
     error.expected = expected;
@@ -35,24 +34,18 @@ export function equals(actual, expected, msg) {
 
 export function equalsAst(source, expected, options) {
   const msg = typeof options === 'string' ? options : options?.msg;
-  const parserOptions =
-    typeof options === 'string' ? undefined : options?.options;
+  const parserOptions = typeof options === 'string' ? undefined : options?.options;
   const ast = astFor(source, parserOptions);
   const padding = ` `.repeat(8);
 
   if (ast !== `${expected}\n`) {
     let sourceMsg = `${padding}Source: ${source}`;
     if (parserOptions) {
-      let formattedOptions = printOptions(parserOptions)
-        .split('\n')
-        .join(`\n${padding}`);
+      let formattedOptions = printOptions(parserOptions).split('\n').join(`\n${padding}`);
 
       sourceMsg += `\n${padding}Options: ${formattedOptions}`;
     }
-    const error = new AssertError(
-      `\n${sourceMsg}${msg ? `\n${msg}` : ''}\n`,
-      equalsAst
-    );
+    const error = new AssertError(`\n${sourceMsg}${msg ? `\n${msg}` : ''}\n`, equalsAst);
 
     error.expected = expected;
     error.actual = ast;
@@ -74,14 +67,10 @@ function printOptions(options) {
     outOptions.syntax = {};
 
     if (options.syntax.hash) {
-      outOptions.syntax.hash = `{function ${
-        options.syntax.hash.name ?? 'anonymous'
-      }}`;
+      outOptions.syntax.hash = `{function ${options.syntax.hash.name ?? 'anonymous'}}`;
     }
     if (options.syntax.square) {
-      outOptions.syntax.square = `{function ${
-        options.syntax.square.name ?? 'anonymous'
-      }}`;
+      outOptions.syntax.square = `{function ${options.syntax.square.name ?? 'anonymous'}}`;
     }
   }
 
@@ -101,17 +90,9 @@ export function shouldThrow(callback, type, msg) {
     if (type && !(caught instanceof type)) {
       throw new AssertError('Type failure: ' + caught);
     }
-    if (
-      msg &&
-      !(msg.test ? msg.test(caught.message) : msg === caught.message)
-    ) {
+    if (msg && !(msg.test ? msg.test(caught.message) : msg === caught.message)) {
       throw new AssertError(
-        'Throw mismatch: Expected ' +
-          caught.message +
-          ' to match ' +
-          msg +
-          '\n\n' +
-          caught.stack,
+        'Throw mismatch: Expected ' + caught.message + ' to match ' + msg + '\n\n' + caught.stack,
         shouldThrow
       );
     }

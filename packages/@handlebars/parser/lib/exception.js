@@ -6,7 +6,7 @@ const errorProps = [
   'message',
   'name',
   'number',
-  'stack'
+  'stack',
 ];
 
 function Exception(message, node) {
@@ -47,11 +47,11 @@ function Exception(message, node) {
       if (Object.defineProperty) {
         Object.defineProperty(this, 'column', {
           value: column,
-          enumerable: true
+          enumerable: true,
         });
         Object.defineProperty(this, 'endColumn', {
           value: endColumn,
-          enumerable: true
+          enumerable: true,
         });
       } else {
         this.column = column;
