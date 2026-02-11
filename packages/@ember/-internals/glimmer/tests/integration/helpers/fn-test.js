@@ -127,7 +127,7 @@ moduleFor(
     }
 
     '@test there is no `this` context within the callback'(assert) {
-      const context = {
+      let context = {
         myFunc() {
           if (this === null) {
             assert.ok(true, 'this is null in production builds');
