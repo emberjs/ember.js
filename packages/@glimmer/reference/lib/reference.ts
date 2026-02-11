@@ -220,11 +220,7 @@ function createUnboundChildRef(parentRef: ReferenceImpl, path: string): Referenc
 
   if (!isDict(parent)) return UNDEFINED_REFERENCE;
 
-  const value = readChildValue(
-    parent,
-    path,
-    (obj, key) => (obj as Record<string, unknown>)[key]
-  );
+  const value = readChildValue(parent, path, (obj, key) => (obj as Record<string, unknown>)[key]);
 
   return createUnboundRef(value, DEBUG && `${parentRef.debugLabel}.${path}`);
 }
@@ -267,7 +263,10 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     if (next) return next;
   }
 
-  child = type === UNBOUND ? createUnboundChildRef(parentRef, path) : createComputeChildRef(parentRef, path);
+  child =
+    type === UNBOUND
+      ? createUnboundChildRef(parentRef, path)
+      : createComputeChildRef(parentRef, path);
 
   children.set(path, child);
 
