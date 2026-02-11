@@ -33,6 +33,8 @@ jobs:
         run: pnpm build:types
       - name: Check internal types
         run: pnpm type-check:internals
+      - name: Check @handlebars/parser types
+        run: pnpm type-check:handlebars
       - name: Check published types
         run: pnpm type-check:types
 

@@ -1,4 +1,3 @@
-/* eslint-disable new-cap */
 import Visitor from './visitor.js';
 
 export function print(ast) {
@@ -208,4 +207,3 @@ PrintVisitor.prototype.hashPairs = function (hash) {
 PrintVisitor.prototype.HashPair = function (pair) {
   return pair.key + '=' + this.accept(pair.value);
 };
-/* eslint-enable new-cap */

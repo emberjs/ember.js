@@ -42,9 +42,10 @@
   },
   "scripts": {
     "bench": "node ./bin/benchmark.mjs",
+    "build:handlebars-parser": "pnpm --filter @handlebars/parser run build:parser",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
-    "build": "npm-run-all build:*",
+    "build": "npm-run-all build:handlebars-parser build:js build:types",
     "docs": "ember ember-cli-yuidoc",
     "start": "vite dev",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
@@ -60,6 +61,7 @@
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
+    "type-check:handlebars": "pnpm --filter @handlebars/parser run build:parser && tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
     "type-check:types": "tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },
@@ -343,7 +345,6 @@
       "@simple-dom/document/index.js": "ember-source/@simple-dom/document/index.js",
       "backburner.js/index.js": "ember-source/backburner.js/index.js",
       "dag-map/index.js": "ember-source/dag-map/index.js",
-      "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
       "ember-testing/lib/adapters/adapter.js": "ember-source/ember-testing/lib/adapters/adapter.js",
       "ember-testing/lib/adapters/qunit.js": "ember-source/ember-testing/lib/adapters/qunit.js",

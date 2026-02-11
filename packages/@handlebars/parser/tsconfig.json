@@ -12,6 +12,7 @@
     "verbatimModuleSyntax": true,
     // Enhance Strictness
     "strict": true,
+    "skipLibCheck": true,
     "suppressImplicitAnyIndexErrors": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -24,6 +25,7 @@
     "lib/**/*.d.ts"
   ],
   "exclude": [
+    "lib/parser.js",
     "dist",
     "node_modules",
     ".vscode"
