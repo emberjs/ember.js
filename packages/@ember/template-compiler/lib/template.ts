@@ -237,15 +237,6 @@ export type ImplicitTemplateOnlyOptions = BaseTemplateOptions & ImplicitEvalOpti
 export type ImplicitClassOptions<C extends ComponentClass> = BaseClassTemplateOptions<C> &
   ImplicitEvalOption;
 
-export function template(
-  templateString: string,
-  options?: ExplicitTemplateOnlyOptions | ImplicitTemplateOnlyOptions
-): TemplateOnlyComponent;
-
-export function template<C extends ComponentClass>(
-  templateString: string,
-  options: ExplicitClassOptions<C> | ImplicitClassOptions<C> | BaseClassTemplateOptions<C>
-): C;
 /**
  * Well-known symbol key used to store private field getter closures on a
  * component class. The getters are created via `eval` inside the class's
@@ -269,6 +260,15 @@ function extractPrivateFields(templateString: string): string[] {
   return [...fields];
 }
 
+export function template(
+  templateString: string,
+  options?: ExplicitTemplateOnlyOptions | ImplicitTemplateOnlyOptions
+): TemplateOnlyComponent;
+
+export function template<C extends ComponentClass>(
+  templateString: string,
+  options: ExplicitClassOptions<C> | ImplicitClassOptions<C> | BaseClassTemplateOptions<C>
+): C;
 export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
