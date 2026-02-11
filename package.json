@@ -166,7 +166,10 @@
       "@swc/core",
       "core-js",
       "esbuild"
-    ]
+    ],
+    "patchedDependencies": {
+      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch"
+    }
   },
   "peerDependencies": {
     "@glimmer/component": ">= 1.1.2"
