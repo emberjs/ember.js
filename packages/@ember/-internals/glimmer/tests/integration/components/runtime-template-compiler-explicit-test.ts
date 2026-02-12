@@ -336,3 +336,136 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'Strict Mode - Runtime Template Compiler (explicit) - private fields',
+  class extends RenderingTestCase {
+    async '@test Can render a private field value'() {
+      await this.renderComponentModule(() => {
+        return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #greeting = 'Hello, world!';
+
+          static {
+            template('<p>{{this.#greeting}}</p>', {
+              component: this,
+              scope: (instance: any) => ({
+                '#greeting': instance.#greeting,
+              }),
+            });
+          }
+        };
+      });
+
+      this.assertHTML('<p>Hello, world!</p>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can render multiple private fields'() {
+      await this.renderComponentModule(() => {
+        return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #firstName = 'Jane';
+          // eslint-disable-next-line no-unused-private-class-members
+          #lastName = 'Doe';
+
+          static {
+            template('<p>{{this.#firstName}} {{this.#lastName}}</p>', {
+              component: this,
+              scope: (instance: any) => ({
+                '#firstName': instance.#firstName,
+                '#lastName': instance.#lastName,
+              }),
+            });
+          }
+        };
+      });
+
+      this.assertHTML('<p>Jane Doe</p>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can use private field method with on modifier'() {
+      await this.renderComponentModule(() => {
+        return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #message = 'Hello';
+
+          // eslint-disable-next-line no-unused-private-class-members
+          #updateMessage = () => {
+            this.#message = 'Updated!';
+          };
+
+          static {
+            template('<button type="button" {{on "click" this.#updateMessage}}>Click</button>', {
+              component: this,
+              scope: (instance: any) => ({
+                on,
+                '#updateMessage': instance.#updateMessage,
+              }),
+            });
+          }
+        };
+      });
+
+      this.assertHTML('<button type="button">Click</button>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can mix private fields with local scope variables'() {
+      await this.renderComponentModule(() => {
+        let Greeting = template('<span>{{yield}}</span>');
+
+        return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #name = 'Ember';
+
+          static {
+            template('<Greeting>Hello, {{this.#name}}!</Greeting>', {
+              component: this,
+              scope: (instance: any) => ({
+                Greeting,
+                '#name': instance.#name,
+              }),
+            });
+          }
+        };
+      });
+
+      this.assertHTML('<span>Hello, Ember!</span>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can use private field with on modifier and fn helper'(assert: QUnit['assert']) {
+      assert.expect(1);
+
+      await this.renderComponentModule(() => {
+        let checkValue = (value: number) => {
+          assert.equal(value, 42);
+        };
+
+        return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #secretValue = 42;
+
+          static {
+            template(
+              '<button {{on "click" (fn checkValue this.#secretValue)}}>Click</button>',
+              {
+                component: this,
+                scope: (instance: any) => ({
+                  on,
+                  fn,
+                  checkValue,
+                  '#secretValue': instance.#secretValue,
+                }),
+              }
+            );
+          }
+        };
+      });
+
+      this.click('button');
+    }
+  }
+);
