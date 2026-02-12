@@ -87,7 +87,7 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
  *   static {
  *     template('{{this.#greeting}}, {{@place}}!',
  *       { component: this },
- *       scope: (instance) => ({ '#greeting': instance?.#greeting }),
+ *       scope: (instance) => ({ '#greeting': instance ? instance.#greeting : undefined }),
  *     );
  *   }
  * }
@@ -96,7 +96,7 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
 export interface ExplicitClassOptions<
   C extends ComponentClass,
 > extends BaseClassTemplateOptions<C> {
-  scope(instance?: InstanceType<C>): Record<string, unknown>;
+  scope: (instance: InstanceType<C>) => Record<string, unknown>;
 }
 
 /**
@@ -262,12 +262,17 @@ function extractPrivateFields(templateString: string): string[] {
 
 export function template(
   templateString: string,
-  options?: ExplicitTemplateOnlyOptions | ImplicitTemplateOnlyOptions
+  options?: (ExplicitTemplateOnlyOptions | ImplicitTemplateOnlyOptions) & { component?: never }
 ): TemplateOnlyComponent;
 
 export function template<C extends ComponentClass>(
   templateString: string,
-  options: ExplicitClassOptions<C> | ImplicitClassOptions<C> | BaseClassTemplateOptions<C>
+  options: ExplicitClassOptions<C>
+): C;
+
+export function template<C extends ComponentClass>(
+  templateString: string,
+  options: (ImplicitClassOptions<C> | BaseClassTemplateOptions<C> & { scope?: never })
 ): C;
 export function template(
   templateString: string,
@@ -295,12 +300,7 @@ export function template(
   // component class, which _getProp looks up when it encounters a `#` key.
   let originalScopeWithInstance: ((instance: any) => Record<string, unknown>) | undefined;
 
-  if (
-    privateFields.length > 0 &&
-    options.scope &&
-    !options.eval &&
-    options.component
-  ) {
+  if (privateFields.length > 0 && options.scope && !options.eval && options.component) {
     originalScopeWithInstance = options.scope as (instance: any) => Record<string, unknown>;
     const origScope = originalScopeWithInstance;
 

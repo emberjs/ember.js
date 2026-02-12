@@ -342,19 +342,20 @@ moduleFor(
   class extends RenderingTestCase {
     async '@test Can render a private field value'() {
       await this.renderComponentModule(() => {
-        return class extends GlimmerishComponent {
+        class TestComponent extends GlimmerishComponent {
           // eslint-disable-next-line no-unused-private-class-members
           #greeting = 'Hello, world!';
 
           static {
             template('<p>{{this.#greeting}}</p>', {
               component: this,
-              scope: (instance: any) => ({
-                '#greeting': instance?.#greeting,
+              scope: (instance) => ({
+                '#greeting': instance ? instance.#greeting : undefined,
               }),
             });
           }
-        };
+        }
+        return TestComponent;
       });
 
       this.assertHTML('<p>Hello, world!</p>');
@@ -363,7 +364,7 @@ moduleFor(
 
     async '@test Can render multiple private fields'() {
       await this.renderComponentModule(() => {
-        return class extends GlimmerishComponent {
+        class TestComponent extends GlimmerishComponent {
           // eslint-disable-next-line no-unused-private-class-members
           #firstName = 'Jane';
           // eslint-disable-next-line no-unused-private-class-members
@@ -372,13 +373,14 @@ moduleFor(
           static {
             template('<p>{{this.#firstName}} {{this.#lastName}}</p>', {
               component: this,
-              scope: (instance: any) => ({
-                '#firstName': instance?.#firstName,
-                '#lastName': instance?.#lastName,
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
+                '#firstName': instance ? instance.#firstName : undefined,
+                '#lastName': instance ? instance.#lastName : undefined,
               }),
             });
           }
-        };
+        }
+        return TestComponent;
       });
 
       this.assertHTML('<p>Jane Doe</p>');
@@ -387,7 +389,7 @@ moduleFor(
 
     async '@test Can use private field method with on modifier'() {
       await this.renderComponentModule(() => {
-        return class extends GlimmerishComponent {
+        class TestComponent extends GlimmerishComponent {
           // eslint-disable-next-line no-unused-private-class-members
           #message = 'Hello';
 
@@ -399,13 +401,14 @@ moduleFor(
           static {
             template('<button type="button" {{on "click" this.#updateMessage}}>Click</button>', {
               component: this,
-              scope: (instance: any) => ({
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
                 on,
-                '#updateMessage': instance?.#updateMessage,
+                '#updateMessage': instance ? instance.#updateMessage : undefined,
               }),
             });
           }
-        };
+        }
+        return TestComponent;
       });
 
       this.assertHTML('<button type="button">Click</button>');
@@ -416,20 +419,21 @@ moduleFor(
       await this.renderComponentModule(() => {
         let Greeting = template('<span>{{yield}}</span>');
 
-        return class extends GlimmerishComponent {
+        class TestComponent extends GlimmerishComponent {
           // eslint-disable-next-line no-unused-private-class-members
           #name = 'Ember';
 
           static {
             template('<Greeting>Hello, {{this.#name}}!</Greeting>', {
               component: this,
-              scope: (instance: any) => ({
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
                 Greeting,
-                '#name': instance?.#name,
+                '#name': instance ? instance.#name : undefined,
               }),
             });
           }
-        };
+        }
+        return TestComponent;
       });
 
       this.assertHTML('<span>Hello, Ember!</span>');
@@ -444,7 +448,7 @@ moduleFor(
           assert.equal(value, 42);
         };
 
-        return class extends GlimmerishComponent {
+        class TestComponent extends GlimmerishComponent {
           // eslint-disable-next-line no-unused-private-class-members
           #secretValue = 42;
 
@@ -453,16 +457,17 @@ moduleFor(
               '<button {{on "click" (fn checkValue this.#secretValue)}}>Click</button>',
               {
                 component: this,
-                scope: (instance: any) => ({
+                scope: (instance?: InstanceType<typeof TestComponent>) => ({
                   on,
                   fn,
                   checkValue,
-                  '#secretValue': instance?.#secretValue,
+                  '#secretValue': instance ? instance.#secretValue : undefined,
                 }),
               }
             );
           }
-        };
+        }
+        return TestComponent;
       });
 
       this.click('button');
