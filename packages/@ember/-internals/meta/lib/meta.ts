@@ -1,5 +1,5 @@
 import type { ComputedProperty } from '@ember/-internals/metal';
-import { symbol, toString } from '@ember/-internals/utils';
+import { toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -58,7 +58,7 @@ if (DEBUG) {
 @module ember
 */
 
-export const UNDEFINED = symbol('undefined');
+export const UNDEFINED = Symbol('undefined');
 
 const enum ListenerKind {
   ADD = 0,
