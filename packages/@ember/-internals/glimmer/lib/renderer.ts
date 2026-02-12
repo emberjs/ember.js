@@ -62,47 +62,7 @@ import OutletView from './views/outlet';
 import { makeRouteTemplate } from './component-managers/route-template';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
 
-export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
-
-export interface View {
-  parentView: Nullable<View>;
-  renderer: Renderer;
-  tagName: string | null;
-  elementId: string | null;
-  isDestroying: boolean;
-  isDestroyed: boolean;
-  [BOUNDS]: Bounds | null;
-}
-
-export class DynamicScope implements GlimmerDynamicScope {
-  constructor(
-    public view: View | null,
-    public outletState: Reference<OutletState | undefined>
-  ) {}
-
-  child() {
-    return new DynamicScope(this.view, this.outletState);
-  }
-
-  get(key: 'outletState'): Reference<OutletState | undefined> {
-    assert(
-      `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-      key === 'outletState'
-    );
-    return this.outletState;
-  }
-
-  set(key: 'outletState', value: Reference<OutletState | undefined>) {
-    assert(
-      `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-      key === 'outletState'
-    );
-    this.outletState = value;
-    return value;
-  }
-}
-
-const NO_OP = () => {};
+type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 
 // This wrapper logic prevents us from rerendering in case of a hard failure
 // during render. This prevents infinite revalidation type loops from occuring,
@@ -276,10 +236,6 @@ class ClassicRootState {
 
 const renderers: BaseRenderer[] = [];
 
-export function _resetRenderers() {
-  renderers.length = 0;
-}
-
 function register(renderer: BaseRenderer): void {
   assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
   renderers.push(renderer);
@@ -363,7 +319,7 @@ interface RendererData {
   builder: IBuilder;
 }
 
-export class RendererState {
+class RendererState {
   static create(data: RendererData, renderer: BaseRenderer): RendererState {
     const state = new RendererState(data, renderer);
     associateDestroyableChild(renderer, state);
@@ -613,6 +569,16 @@ export function renderComponent(
        *  so passing additional things here is also considered private API)
        */
       [rendererOption: string]: unknown;
+
+      // Proposed public API?
+      // this family of functions could render to anything
+      // (terminal, mobile, webgl, database, whatever)
+      emitText;
+      emitComponent;
+      emitElement;
+      applyAttributes;
+      applyModifier;
+      emitTemplate;
     };
 
     /**
@@ -693,13 +659,7 @@ export class BaseRenderer {
     document: SimpleDocument | Document,
     options: { isInteractive: boolean; hasDOM?: boolean }
   ) {
-    return new BaseRenderer(
-      owner,
-      { hasDOM: hasDOM, ...options },
-      document as SimpleDocument,
-      new ResolverImpl(),
-      clientBuilder
-    );
+    /* ... */
   }
 
   readonly state: RendererState;
@@ -770,209 +730,5 @@ export class BaseRenderer {
 
   rerender(): void {
     this.state.scheduleRevalidate(this);
-  }
-
-  // render(component: Component, options: { into: Cursor; args?: Record<string, unknown> }): void {
-  //   this.state.renderRoot(component);
-  // }
-}
-
-export class Renderer extends BaseRenderer {
-  static strict(
-    owner: object,
-    document: SimpleDocument | Document,
-    options: { isInteractive: boolean; hasDOM?: boolean }
-  ): BaseRenderer {
-    return new BaseRenderer(
-      owner,
-      { hasDOM: hasDOM, ...options },
-      document as SimpleDocument,
-      new ResolverImpl(),
-      clientBuilder
-    );
-  }
-
-  private _rootTemplate: Template;
-  private _viewRegistry: ViewRegistry;
-
-  static create(props: { _viewRegistry: any }): Renderer {
-    let { _viewRegistry } = props;
-    let owner = getOwner(props);
-    assert('Renderer is unexpectedly missing an owner', owner);
-    let document = owner.lookup('service:-document') as SimpleDocument;
-    let env = owner.lookup('-environment:main') as {
-      isInteractive: boolean;
-      hasDOM: boolean;
-    };
-    let rootTemplate = owner.lookup(P`template:-root`) as TemplateFactory;
-    let builder = owner.lookup('service:-dom-builder') as IBuilder;
-    return new this(owner, document, env, rootTemplate, _viewRegistry, builder);
-  }
-
-  constructor(
-    owner: InternalOwner,
-    document: SimpleDocument,
-    env: { isInteractive: boolean; hasDOM: boolean },
-    rootTemplate: TemplateFactory,
-    viewRegistry: ViewRegistry,
-    builder = clientBuilder,
-    resolver = new ResolverImpl()
-  ) {
-    super(owner, env, document, resolver, builder);
-    this._rootTemplate = rootTemplate(owner);
-    this._viewRegistry = viewRegistry || owner.lookup('-view-registry:main');
-  }
-
-  // renderer HOOKS
-
-  appendOutletView(view: OutletView, target: SimpleElement): void {
-    // TODO: This bypasses the {{outlet}} syntax so logically duplicates
-    // some of the set up code. Since this is all internal (or is it?),
-    // we can refactor this to do something more direct/less convoluted
-    // and with less setup, but get it working first
-    let outlet = createRootOutlet(view);
-    let { name, /* controller, */ template } = view.state;
-
-    let named = dict<Reference>();
-
-    named['Component'] = createConstRef(
-      makeRouteTemplate(view.owner, name, template as Template),
-      '@Component'
-    );
-
-    // TODO: is this guaranteed to be undefined? It seems to be the
-    // case in the `OutletView` class. Investigate how much that class
-    // exists as an internal implementation detail only, or if it was
-    // used outside of core. As far as I can tell, test-helpers uses
-    // it but only for `setOutletState`.
-    // named['controller'] = createConstRef(controller, '@controller');
-    // Update: at least according to the debug render tree tests, we
-    // appear to always expect this to be undefined. Not a definitive
-    // source by any means, but is useful evidence
-    named['controller'] = UNDEFINED_REFERENCE;
-    named['model'] = UNDEFINED_REFERENCE;
-
-    let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-
-    this._appendDefinition(
-      view,
-      curry(0 as CurriedComponent, outlet, view.owner, args, true),
-      target
-    );
-  }
-
-  appendTo(view: ClassicComponent, target: SimpleElement): void {
-    let definition = new RootComponentDefinition(view);
-    this._appendDefinition(
-      view,
-      curry(0 as CurriedComponent, definition, this.state.owner, null, true),
-      target
-    );
-  }
-
-  _appendDefinition(
-    root: OutletView | ClassicComponent,
-    definition: CurriedValue,
-    target: SimpleElement
-  ): void {
-    let self = createConstRef(definition, 'this');
-    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
-    let rootState = new ClassicRootState(
-      root,
-      this.state.context,
-      this.state.owner,
-      this._rootTemplate,
-      self,
-      target,
-      dynamicScope,
-      this.state.builder
-    );
-    this.state.renderRoot(rootState, this);
-  }
-
-  cleanupRootFor(component: ClassicComponent): void {
-    // no need to cleanup roots if we have already been destroyed
-    if (isDestroyed(this)) {
-      return;
-    }
-
-    let roots = this.state.roots;
-
-    // traverse in reverse so we can remove items
-    // without mucking up the index
-    let i = roots.length;
-    while (i--) {
-      let root = roots[i];
-      assert('has root', root);
-      if (root.type === 'classic' && root.isFor(component)) {
-        root.destroy();
-        roots.splice(i, 1);
-      }
-    }
-  }
-
-  remove(view: ClassicComponent): void {
-    view._transitionTo('destroying');
-
-    this.cleanupRootFor(view);
-
-    if (this.state.isInteractive) {
-      view.trigger('didDestroyElement');
-    }
-  }
-
-  get _roots() {
-    return this.state.debug.roots;
-  }
-
-  get _inRenderTransaction() {
-    return this.state.debug.inRenderTransaction;
-  }
-
-  get _isInteractive() {
-    return this.state.debug.isInteractive;
-  }
-
-  get _context() {
-    return this.state.context;
-  }
-
-  register(view: any): void {
-    let id = getViewId(view);
-    assert(
-      'Attempted to register a view with an id already in use: ' + id,
-      !this._viewRegistry[id]
-    );
-    this._viewRegistry[id] = view;
-  }
-
-  unregister(view: any): void {
-    delete this._viewRegistry[getViewId(view)];
-  }
-
-  getElement(component: View): Nullable<Element> {
-    if (this._isInteractive) {
-      return getViewElement(component);
-    } else {
-      throw new Error(
-        'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
-      );
-    }
-  }
-
-  getBounds(component: View): {
-    parentElement: SimpleElement;
-    firstNode: SimpleNode;
-    lastNode: SimpleNode;
-  } {
-    let bounds: Bounds | null = component[BOUNDS];
-
-    assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
-
-    let parentElement = bounds.parentElement();
-    let firstNode = bounds.firstNode();
-    let lastNode = bounds.lastNode();
-
-    return { parentElement, firstNode, lastNode };
   }
 }
