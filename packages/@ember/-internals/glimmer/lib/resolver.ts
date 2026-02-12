@@ -91,6 +91,7 @@ export const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   mut,
   readonly,
   unbound,
+  fn,
   '-hash': hash,
   '-each-in': eachIn,
   '-normalize-class': normalizeClassHelper,

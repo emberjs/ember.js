@@ -39,7 +39,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   })
                 }
 
-                louder = () => {
+                louder() {
                   this.message = this.message + '!';
                 }
 
