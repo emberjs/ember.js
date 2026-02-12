@@ -42,7 +42,7 @@
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/wire-format": "workspace:*",
-    "@handlebars/parser": "~2.2.0",
+    "@handlebars/parser": "workspace:*",
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {

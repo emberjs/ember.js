@@ -223,6 +223,9 @@ function packages() {
       // "exposedDependencies" since they used to actually be dependencies.
       '@glimmer-workspace/**',
       '@glimmer/**',
+
+      // @handlebars/parser is a hidden dependency, not an explicit entrypoint
+      '@handlebars/**',
     ],
     cwd: 'packages',
   });
@@ -286,10 +289,7 @@ export function hiddenDependencies() {
       findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
       'module'
     ).path,
-    '@handlebars/parser': entrypoint(
-      findFromProject('@glimmer/syntax', '@handlebars/parser'),
-      'module'
-    ).path,
+    '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
     ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(
       findFromProject('decorator-transforms').root,
