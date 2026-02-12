@@ -1,7 +1,7 @@
 import { template } from '@ember/template-compiler/runtime';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
-import { on } from '@ember/modifier/on';
+import { on } from '@ember/modifier';
 import { fn } from '@ember/helper';
 
 moduleFor(
@@ -350,7 +350,7 @@ moduleFor(
             template('<p>{{this.#greeting}}</p>', {
               component: this,
               scope: (instance: any) => ({
-                '#greeting': instance.#greeting,
+                '#greeting': instance?.#greeting,
               }),
             });
           }
@@ -373,8 +373,8 @@ moduleFor(
             template('<p>{{this.#firstName}} {{this.#lastName}}</p>', {
               component: this,
               scope: (instance: any) => ({
-                '#firstName': instance.#firstName,
-                '#lastName': instance.#lastName,
+                '#firstName': instance?.#firstName,
+                '#lastName': instance?.#lastName,
               }),
             });
           }
@@ -401,7 +401,7 @@ moduleFor(
               component: this,
               scope: (instance: any) => ({
                 on,
-                '#updateMessage': instance.#updateMessage,
+                '#updateMessage': instance?.#updateMessage,
               }),
             });
           }
@@ -425,7 +425,7 @@ moduleFor(
               component: this,
               scope: (instance: any) => ({
                 Greeting,
-                '#name': instance.#name,
+                '#name': instance?.#name,
               }),
             });
           }
@@ -457,7 +457,7 @@ moduleFor(
                   on,
                   fn,
                   checkValue,
-                  '#secretValue': instance.#secretValue,
+                  '#secretValue': instance?.#secretValue,
                 }),
               }
             );

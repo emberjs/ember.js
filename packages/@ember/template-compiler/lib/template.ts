@@ -87,7 +87,7 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
  *   static {
  *     template('{{this.#greeting}}, {{@place}}!',
  *       { component: this },
- *       scope: (instance) => ({ '#greeting': instance.#greeting }),
+ *       scope: (instance) => ({ '#greeting': instance?.#greeting }),
  *     );
  *   }
  * }
@@ -274,23 +274,84 @@ export function template(
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
+
+  const privateFields = extractPrivateFields(templateString);
+
+  // When using the explicit scope form with private fields, the scope
+  // function has the shape:
+  //
+  //   (instance) => ({ Section, '#secret': instance?.#secret })
+  //
+  // The optional chaining (`?.`) on the instance parameter is required so
+  // that calling the scope function without an instance (at compile time)
+  // returns `undefined` for private field entries instead of crashing.
+  //
+  // At compile time we use the scope to:
+  //   1. Discover which variables are in lexical scope (non-private entries)
+  //   2. Build an evaluator that can resolve the compiled wire format
+  //
+  // Private fields are not resolved through the evaluator. Instead, at
+  // runtime they are accessed via PRIVATE_FIELD_GETTERS stored on the
+  // component class, which _getProp looks up when it encounters a `#` key.
+  let originalScopeWithInstance: ((instance: any) => Record<string, unknown>) | undefined;
+
+  if (
+    privateFields.length > 0 &&
+    options.scope &&
+    !options.eval &&
+    options.component
+  ) {
+    originalScopeWithInstance = options.scope as (instance: any) => Record<string, unknown>;
+    const origScope = originalScopeWithInstance;
+
+    // Wrap the scope function so that compile-time callers (compileOptions
+    // and buildEvaluator) receive only non-private entries. The private
+    // field names are injected as placeholders so lexicalScope recognises
+    // them as in-scope.
+    options.scope = () => {
+      // Call with no instance — private fields evaluate to `undefined`
+      // thanks to optional chaining in the scope function.
+      const fullScope = origScope(undefined);
+      const safeScope: Record<string, unknown> = {};
+      for (const key of Object.keys(fullScope)) {
+        if (key[0] !== '#') {
+          safeScope[key] = fullScope[key];
+        }
+      }
+      // Inject private field names so lexicalScope reports them as in-scope.
+      for (const field of privateFields) {
+        safeScope[field] = true;
+      }
+      return safeScope;
+    };
+  }
+
   const evaluate = buildEvaluator(options);
 
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
-  // If the template references private fields (this.#field) and we have an
-  // eval function from the class scope, create getter closures that can
-  // access the private fields. These are stored on the component class and
-  // looked up by _getProp at runtime.
-  const privateFields = extractPrivateFields(templateString);
-  if (privateFields.length > 0 && evaluate !== evaluator) {
-    const getterEntries = privateFields.map((f) => `${JSON.stringify(f)}: (obj) => obj.${f}`);
-    const getters = evaluate(`({${getterEntries.join(', ')}})`) as Record<
-      string,
-      (obj: object) => unknown
-    >;
-    (component as any)[PRIVATE_FIELD_GETTERS] = getters;
+  // If the template references private fields (this.#field), create getter
+  // closures that can access the private fields at runtime. These are stored
+  // on the component class and looked up by _getProp.
+  if (privateFields.length > 0) {
+    if (originalScopeWithInstance) {
+      // Explicit form: build getters from the scope(instance) function.
+      const scopeFn = originalScopeWithInstance;
+      const getters: Record<string, (obj: object) => unknown> = {};
+      for (const field of privateFields) {
+        getters[field] = (obj: object) => scopeFn(obj)[field];
+      }
+      (component as any)[PRIVATE_FIELD_GETTERS] = getters;
+    } else if (evaluate !== evaluator) {
+      // Implicit (eval) form: generate getter closures via eval.
+      const getterEntries = privateFields.map((f) => `${JSON.stringify(f)}: (obj) => obj.${f}`);
+      const getters = evaluate(`({${getterEntries.join(', ')}})`) as Record<
+        string,
+        (obj: object) => unknown
+      >;
+      (component as any)[PRIVATE_FIELD_GETTERS] = getters;
+    }
   }
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
@@ -319,10 +380,23 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
       return evaluator;
     }
 
-    return (source: string) => {
-      const argNames = Object.keys(scope);
-      const argValues = Object.values(scope);
+    // Filter out private field entries (#-prefixed keys) — those are not
+    // lexical variables and cannot be used as Function parameter names.
+    // Private fields are handled separately via PRIVATE_FIELD_GETTERS.
+    const argNames: string[] = [];
+    const argValues: unknown[] = [];
+    for (const [key, value] of Object.entries(scope)) {
+      if (key[0] !== '#') {
+        argNames.push(key);
+        argValues.push(value);
+      }
+    }
 
+    if (argNames.length === 0) {
+      return evaluator;
+    }
+
+    return (source: string) => {
       return new Function(...argNames, `return (${source})`)(...argValues);
     };
   }
