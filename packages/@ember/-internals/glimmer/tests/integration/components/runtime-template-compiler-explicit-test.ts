@@ -343,7 +343,6 @@ moduleFor(
     async '@test Can render a private field value'() {
       await this.renderComponentModule(() => {
         class TestComponent extends GlimmerishComponent {
-          // eslint-disable-next-line no-unused-private-class-members
           #greeting = 'Hello, world!';
 
           static {
@@ -365,9 +364,8 @@ moduleFor(
     async '@test Can render multiple private fields'() {
       await this.renderComponentModule(() => {
         class TestComponent extends GlimmerishComponent {
-          // eslint-disable-next-line no-unused-private-class-members
           #firstName = 'Jane';
-          // eslint-disable-next-line no-unused-private-class-members
+
           #lastName = 'Doe';
 
           static {
@@ -393,7 +391,6 @@ moduleFor(
           // eslint-disable-next-line no-unused-private-class-members
           #message = 'Hello';
 
-          // eslint-disable-next-line no-unused-private-class-members
           #updateMessage = () => {
             this.#message = 'Updated!';
           };
@@ -420,7 +417,6 @@ moduleFor(
         let Greeting = template('<span>{{yield}}</span>');
 
         class TestComponent extends GlimmerishComponent {
-          // eslint-disable-next-line no-unused-private-class-members
           #name = 'Ember';
 
           static {
@@ -449,22 +445,18 @@ moduleFor(
         };
 
         class TestComponent extends GlimmerishComponent {
-          // eslint-disable-next-line no-unused-private-class-members
           #secretValue = 42;
 
           static {
-            template(
-              '<button {{on "click" (fn checkValue this.#secretValue)}}>Click</button>',
-              {
-                component: this,
-                scope: (instance?: InstanceType<typeof TestComponent>) => ({
-                  on,
-                  fn,
-                  checkValue,
-                  '#secretValue': instance ? instance.#secretValue : undefined,
-                }),
-              }
-            );
+            template('<button {{on "click" (fn checkValue this.#secretValue)}}>Click</button>', {
+              component: this,
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
+                on,
+                fn,
+                checkValue,
+                '#secretValue': instance ? instance.#secretValue : undefined,
+              }),
+            });
           }
         }
         return TestComponent;
