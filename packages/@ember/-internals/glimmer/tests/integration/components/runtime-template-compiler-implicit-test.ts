@@ -463,6 +463,63 @@ moduleFor(
       this.assertText('[before]after');
       this.assertStableRerender();
     }
+
+    async '@test Can access private fields in templates'() {
+      await this.renderComponentModule(() => {
+        return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #count = 0;
+
+          // eslint-disable-next-line no-unused-private-class-members
+          #increment = () => {
+            this.#count++;
+          };
+
+          static {
+            template(
+              '<p>Count: {{this.#count}}</p><button {{on "click" this.#increment}}>Increment</button>',
+              {
+                component: this,
+                eval() {
+                  return eval(arguments[0]);
+                },
+              }
+            );
+          }
+        };
+      });
+
+      this.assertHTML('<p>Count: 0</p><button>Increment</button>');
+      this.assertStableRerender();
+    }
+
+    async '@test Private field methods work with on modifier'() {
+      await this.renderComponentModule(() => {
+        hide(on);
+
+        return class extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #message = 'Hello';
+
+          // eslint-disable-next-line no-unused-private-class-members
+          #updateMessage = () => {
+            this.#message = 'Updated!';
+          };
+
+          static {
+            template('<button type="button" {{on "click" this.#updateMessage}}>Click</button>', {
+              component: this,
+              eval() {
+                return eval(arguments[0]);
+              },
+            });
+          }
+        };
+      });
+
+      this.assertHTML('<button type="button">Click</button>');
+      this.assertStableRerender();
+    }
   }
 );
 
