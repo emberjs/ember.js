@@ -66,7 +66,7 @@ const EXPERIMENT_DIRS = {
   repo: REPO_ROOT,
 };
 
-export async function runBenchmark({ force = false, reuse = false } = {}) {
+export async function runBenchmark({ force = false, reuse = false, headless = true } = {}) {
   await ensureDir(BENCH_ROOT);
 
   if (force) {
@@ -119,7 +119,7 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
   });
 
   try {
-    await bootAndRun();
+    await bootAndRun({ headless });
   } finally {
     console.log(`\n\tCleaning up servers with SIGKILL...`);
 
@@ -127,7 +127,7 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
   }
 }
 
-async function bootAndRun() {
+async function bootAndRun({ headless = true } = {}) {
   const controlUrl = `http://127.0.0.1:${DEFAULT_CONTROL_PORT}`;
   const experimentUrl = `http://127.0.0.1:${DEFAULT_EXPERIMENT_PORT}`;
   const markersString = buildMarkersString(DEFAULT_MARKERS);
@@ -164,14 +164,44 @@ async function bootAndRun() {
     '--experimentURL',
     experimentUrl,
     '--report',
-    '--headless',
     '--cpuThrottleRate',
     DEFAULT_THROTTLE,
     '--markers',
     markersString,
     '--debug',
     '--browserArgs',
-    `"--incognito,--disable-gpu,--mute-audio,--log-level=3,--headless=new"`,
+    [
+      '--no-sandbox',
+      '--crash-dumps-dir=./tmp',
+      // Disable task throttling (also in TracerBench defaults, but explicit here for clarity)
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      // Disable caching and unnecessary subsystems
+      '--disable-dev-shm-usage',
+      '--disable-cache',
+      '--disable-v8-idle-tasks',
+      '--disable-breakpad',
+      '--disable-component-update',
+      '--disable-background-networking',
+      '--disable-notifications',
+      '--disable-hang-monitor',
+      '--safebrowsing-disable-auto-update',
+      '--ignore-certificate-errors',
+      '--v8-cache-options=none',
+      // Use the new headless mode to support multiple targets
+      ...(headless ? ['--headless=new'] : []),
+      // GPU: use software rendering via SwiftShader, but do NOT
+      // combine --disable-gpu with --use-gl or --disable-software-rasterizer
+      // as the contradictory flags cause use-after-free crashes on macOS
+      '--disable-gpu',
+      '--disable-gpu-compositing',
+      // Disable Chrome ML/TFLite features (suppresses XNNPACK/TFLite init)
+      '--disable-features=TranslateUI',
+      '--disable-features=UseChromiumML',
+      '--disable-features=UseTfLite',
+      '--disable-features=TensorFlowLite',
+    ].join(','),
   ];
 
   await run('node', args, { cwd: EXPERIMENT_DIRS.app });

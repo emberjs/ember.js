@@ -33,6 +33,21 @@ export function waitForIdle() {
   });
 }
 
+/**
+ * After heavy DOM operations (e.g. rendering/clearing 5000 items), Chrome's
+ * internal trace-writer thread may fall behind. requestIdleCallback only waits
+ * for the *main* thread to be idle — the trace-writer is a separate thread.
+ * This explicit delay gives the trace writer time to flush its buffer so that
+ * subsequent performance.mark() events are not lost to packet drops.
+ */
+export function waitForTraceFlush() {
+  return new Promise((resolve) => {
+    requestIdleCallback(() => {
+      setTimeout(resolve, 100);
+    });
+  });
+}
+
 
 export function enforcePaintEvent() {
   const docElem = document.documentElement;
@@ -64,12 +79,12 @@ async function renderBenchmark() {
   let resolveRender
 
   await measureRender('render', 'renderStart', 'renderEnd', () => {
-    requestIdleCallback(() => {
+      requestIdleCallback(() => {
         if (!resolveRender) return;
 
         resolveRender();
         resolveRender = undefined;
-    });
+      });
     
   });
 
@@ -134,25 +149,25 @@ export async function runBenchmark() {
     emitDomClickEvent(ButtonSelectors.Clear);
   });
 
-  await waitForIdle();
+  await waitForTraceFlush();
 
   await app('render5000Items1', () => {
     emitDomClickEvent(ButtonSelectors.Create5000);
   });
 
-  await waitForIdle();
+  await waitForTraceFlush();
 
   await app('clearManyItems1', () => {
     emitDomClickEvent(ButtonSelectors.Clear);
   });
 
-  await waitForIdle();
+  await waitForTraceFlush();
 
   await app('render5000Items2', () => {
     emitDomClickEvent(ButtonSelectors.Create5000);
   });
 
-  await waitForIdle();
+  await waitForTraceFlush();
 
   await app('clearManyItems2', () => {
     emitDomClickEvent(ButtonSelectors.Clear);
