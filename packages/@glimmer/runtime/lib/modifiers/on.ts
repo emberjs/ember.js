@@ -73,14 +73,16 @@ export class OnModifierState {
       arg1 ? valueForRef(arg1) : undefined,
       CheckFunction,
       (actual) => {
-        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${actual === null ? 'null' : typeof actual
-          }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
+        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+          actual === null ? 'null' : typeof actual
+        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
       }
     ) as EventListener;
 
     localAssert(
       typeof userProvidedCallback === 'function',
-      `You must pass a function as the second argument to the \`on\` modifier; you passed ${userProvidedCallback === null ? 'null' : typeof userProvidedCallback
+      `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+        userProvidedCallback === null ? 'null' : typeof userProvidedCallback
       }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`
     );
 
@@ -101,21 +103,21 @@ export class OnModifierState {
         return `You must pass a boolean or undefined as the \`once\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           args.named['once']!.debugLabel ?? `{unlabeled value}`
-          }`;
+        }`;
       });
 
       passive = check(_passive, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
         return `You must pass a boolean or undefined as the \`passive\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           args.named['passive']!.debugLabel ?? `{unlabeled value}`
-          }`;
+        }`;
       });
 
       capture = check(_capture, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
         return `You must pass a boolean or undefined as the \`capture\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           args.named['capture']!.debugLabel ?? `{unlabeled value}`
-          }`;
+        }`;
       });
 
       if (Object.keys(extra).length > 0) {
@@ -176,7 +178,8 @@ export class OnModifierState {
           callback = (event) => {
             event.preventDefault = () => {
               throw new Error(
-                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${userProvidedCallback.name || `{anonymous function}`
+                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
+                  userProvidedCallback.name || `{anonymous function}`
                 }`
               );
             };
