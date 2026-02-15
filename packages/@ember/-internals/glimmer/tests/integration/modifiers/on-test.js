@@ -313,7 +313,5 @@ moduleFor(
 
       this.assertCounts({ adds: 0, removes: 0 });
     }
-
-
   }
 );
