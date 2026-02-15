@@ -297,19 +297,18 @@ moduleFor(
 
       runTask(() => this.context.set('showButton', false));
 
-      this.assertCounts({ adds: 0, removes: 0 });
-    }
+      [`@test it throws a helpful error when callback is undefined`](assert) {
+        const expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
+        assert.throws(() => {
+          this.render('<button {{on "click" undefined}}>Click Me</button>');
+        }, expectedMessage);
+      }
 
-    [`@test it throws a helpful error when callback is undefined`](assert) {
-      assert.throws(() => {
-        this.render('<button {{on "click" undefined}}>Click Me</button>');
-      }, /You must pass a function as the second argument to the `on` modifier/);
+      [`@test it throws a helpful error when callback is null`](assert) {
+        const expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
+        assert.throws(() => {
+          this.render('<button {{on "click" null}}>Click Me</button>');
+        }, expectedMessage);
+      }
     }
-
-    [`@test it throws a helpful error when callback is null`](assert) {
-      assert.throws(() => {
-        this.render('<button {{on "click" null}}>Click Me</button>');
-      }, /You must pass a function as the second argument to the `on` modifier/);
-    }
-  }
 );
