@@ -2,6 +2,8 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
 
+import { DEBUG } from '@glimmer/env';
+
 import { Component } from '../../utils/helpers';
 
 moduleFor(
@@ -31,7 +33,7 @@ moduleFor(
       );
     }
 
-    ['@test it adds an event listener'](assert) {
+    [`@test it adds an event listener`](assert) {
       let count = 0;
 
       this.render('<button {{on "click" this.callback}}>Click Me</button>', {
@@ -243,18 +245,27 @@ moduleFor(
       this.assertCounts({ adds: 1, removes: 1 });
     }
 
+
     [`@test it throws a helpful error when callback is undefined`](assert) {
-      let expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
-      assert.throws(() => {
-        this.render('<button {{on "click" undefined}}>Click Me</button>');
-      }, expectedMessage);
+      if (DEBUG) {
+        let expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
+        assert.throws(() => {
+          this.render('<button {{on "click" undefined}}>Click Me</button>');
+        }, expectedMessage);
+      } else {
+        assert.expect(0);
+      }
     }
 
     [`@test it throws a helpful error when callback is null`](assert) {
-      let expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
-      assert.throws(() => {
-        this.render('<button {{on "click" null}}>Click Me</button>');
-      }, expectedMessage);
+      if (DEBUG) {
+        let expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
+        assert.throws(() => {
+          this.render('<button {{on "click" null}}>Click Me</button>');
+        }, expectedMessage);
+      } else {
+        assert.expect(0);
+      }
     }
   }
 );
