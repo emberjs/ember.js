@@ -245,10 +245,10 @@ moduleFor(
       this.assertCounts({ adds: 1, removes: 1 });
     }
 
-
     [`@test it throws a helpful error when callback is undefined`](assert) {
       if (DEBUG) {
-        let expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
+        let expectedMessage =
+          /You must pass a function as the second argument to the `on` modifier/;
         assert.throws(() => {
           this.render('<button {{on "click" undefined}}>Click Me</button>');
         }, expectedMessage);
@@ -259,7 +259,8 @@ moduleFor(
 
     [`@test it throws a helpful error when callback is null`](assert) {
       if (DEBUG) {
-        let expectedMessage = /You must pass a function as the second argument to the `on` modifier/;
+        let expectedMessage =
+          /You must pass a function as the second argument to the `on` modifier/;
         assert.throws(() => {
           this.render('<button {{on "click" null}}>Click Me</button>');
         }, expectedMessage);
