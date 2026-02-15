@@ -79,6 +79,14 @@ export class OnModifierState {
       }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
     }) as EventListener;
 
+    if (DEBUG && typeof userProvidedCallback !== 'function') {
+      throw new Error(
+        `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+          userProvidedCallback === null ? 'null' : typeof userProvidedCallback
+        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`
+      );
+    }
+
     if (DEBUG && args.positional.length !== 2) {
       throw new Error(
         `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`
