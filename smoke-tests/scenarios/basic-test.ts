@@ -118,6 +118,20 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'template-compiler-macro-test.gjs': `
+              import { module, test } from 'qunit';
+              import { template } from '@ember/template-compiler';
+              import { template as runtimeTemplate } from '@ember/template-compiler/runtime';
+
+              module('template-compiler', function () {
+                test('it works', function (assert) {
+                  assert.ok(template);
+                  assert.strictEqual(typeof template, 'function');
+                  assert.ok(runtimeTemplate);
+                  assert.strictEqual(typeof runtimeTemplate, 'function');
+                });
+              });
+            `,
             'destruction-test.gjs': `
               import { module, test } from 'qunit';
               import { clearRender, render } from '@ember/test-helpers';
