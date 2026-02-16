@@ -68,16 +68,23 @@ export class OnModifierState {
       () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
 
-    localAssert(
-      args.positional[1],
-      'You must pass a function as the second argument to the `on` modifier'
-    );
+    let arg1 = args.positional[1];
+    let userProvidedCallback = check(
+      arg1 ? valueForRef(arg1) : undefined,
+      CheckFunction,
+      (actual) => {
+        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+          actual === null ? 'null' : typeof actual
+        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
+      }
+    ) as EventListener;
 
-    let userProvidedCallback = check(valueForRef(args.positional[1]), CheckFunction, (actual) => {
-      return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
-        actual === null ? 'null' : typeof actual
-      }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
-    }) as EventListener;
+    localAssert(
+      typeof userProvidedCallback === 'function',
+      `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+        userProvidedCallback === null ? 'null' : typeof userProvidedCallback
+      }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`
+    );
 
     if (DEBUG && args.positional.length !== 2) {
       throw new Error(
