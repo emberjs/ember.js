@@ -368,6 +368,12 @@ d('@ember/template-factory/index', emberTemplateFactoryIndex);
 import * as emberTemplateIndex from '@ember/template/index';
 d('@ember/template/index', emberTemplateIndex);
 
+import * as emberTemplateCompilerIndex from '@ember/template-compiler/index';
+d('@ember/template-compiler/index', emberTemplateCompilerIndex);
+
+import * as emberTemplateCompilerRuntime from '@ember/template-compiler/runtime';
+d('@ember/template-compiler/runtime', emberTemplateCompilerRuntime);
+
 import * as emberTestAdapter from '@ember/test/adapter';
 d('@ember/test/adapter', emberTestAdapter);
 
