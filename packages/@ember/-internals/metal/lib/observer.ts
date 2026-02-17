@@ -84,12 +84,7 @@ export function removeObserver(
     deactivateObserver(obj, eventName, sync);
   }
 
-  removeListener(
-    obj,
-    eventName,
-    target as any,
-    method as string | ((...args: any[]) => void)
-  );
+  removeListener(obj, eventName, target as any, method as string | ((...args: any[]) => void));
 }
 
 function getOrCreateActiveObserversFor(target: object, sync: boolean) {

@@ -69,6 +69,7 @@ class RouterService extends Service {
     @param {Function|String} method A function or the name of a function to be called on `target`
     @return this
   */
+  on(name: 'routeWillChange' | 'routeDidChange', callback: (transition: Transition) => void): this;
   on<Target>(
     name: EventName,
     target: Target,
@@ -117,9 +118,10 @@ class RouterService extends Service {
     @method trigger
     @param {String} name The name of the event
     @param {Object...} args Optional arguments to pass on
+    @return {boolean} true if listeners were notified, false otherwise
   */
-  trigger(name: string, ...args: any[]) {
-    sendEvent(this, name, args);
+  trigger(name: string, ...args: any[]): boolean {
+    return sendEvent(this, name, args);
   }
 
   /**
