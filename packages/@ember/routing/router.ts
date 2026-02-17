@@ -51,7 +51,7 @@ import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
 import { sendEvent } from '@ember/-internals/metal';
-import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
+import { disableDeprecations } from '@ember/-internals/utils';
 
 /**
 @module @ember/routing/router

@@ -1,6 +1,6 @@
 import { addListener, removeListener, hasListeners, sendEvent } from '@ember/-internals/metal';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
-import { setDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
+import { setDeprecation } from '@ember/-internals/utils';
 import Mixin from '@ember/object/mixin';
 
 export { on } from '@ember/-internals/metal';

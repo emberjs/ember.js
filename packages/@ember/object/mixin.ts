@@ -4,7 +4,14 @@
 import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
+import {
+  guidFor,
+  observerListenerMetaFor,
+  ROOT,
+  wrap,
+  DEPRECATION,
+  findDeprecation,
+} from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { deprecateUntil, type DeprecationObject } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
@@ -30,7 +37,6 @@ import {
   defineDecorator,
   defineValue,
 } from '@ember/-internals/metal';
-import { DEPRECATION, findDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
@@ -388,10 +394,12 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
   }
 
   if (listeners !== undefined) {
-    let updateListener = add ? addListener : removeListener;
-
     for (let listener of listeners) {
-      updateListener(obj, listener, null, key);
+      if (add) {
+        addListener(obj, listener, null, key as PropertyKey);
+      } else {
+        removeListener(obj, listener, null, key);
+      }
     }
   }
 }

@@ -5,7 +5,7 @@ import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
 import Evented from '@ember/object/evented';
-import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
+import { disableDeprecations } from '@ember/-internals/utils';
 
 /**
   `CoreView` is an abstract class that exists to give view-like behavior

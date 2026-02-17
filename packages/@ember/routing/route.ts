@@ -37,7 +37,7 @@ import {
   prefixRouteNameArg,
   stashParamNames,
 } from './lib/utils';
-import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
+import { disableDeprecations } from '@ember/-internals/utils';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   _names?: unknown[];
