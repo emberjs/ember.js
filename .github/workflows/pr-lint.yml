@@ -1,0 +1,27 @@
+name: PR Lint
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - edited
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint:
+    name: PR title and commit tag lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: lint PR title and commit tags
+        run: node ./bin/pr-lint.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
