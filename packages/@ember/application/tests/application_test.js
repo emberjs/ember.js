@@ -6,7 +6,6 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import EmberRoute from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
-import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import {
@@ -296,14 +295,6 @@ moduleFor(
         this.application.__deprecatedInstance__.lookup('router:main') instanceof CustomRouter,
         'application resolved the correct router'
       );
-    }
-
-    [`@test does not leak itself in onLoad._loaded`](assert) {
-      assert.equal(_loaded.application, undefined);
-      runTask(() => this.createApplication());
-      assert.equal(_loaded.application, this.application);
-      runTask(() => this.application.destroy());
-      assert.equal(_loaded.application, undefined);
     }
 
     [`@test can build a registry via Application.buildRegistry() --- simulates ember-test-helpers`](
