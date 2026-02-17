@@ -38,7 +38,7 @@ if (!owner || !repoName || !number) {
 const errors = [];
 
 const allowedDocChannels = new Set(['canary', 'beta', 'release']);
-const bugfixChannelPattern = /^(beta|release(-\d+(?:-\d+)*)?)$/;
+const bugfixChannelPattern = /^(beta|release(-\d+(?:-\d+)*)?|lts(-\d+(?:-\d+)*)?)$/;
 const featureNamePattern = /^[a-zA-Z0-9._-]+$/;
 
 function parseTagLine(line, sourceLabel) {

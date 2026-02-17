@@ -88,6 +88,26 @@ describe('bin/pr-lint', function () {
     expect(result.stdout).to.contain('PR lint passed');
   });
 
+  it('passes with BUGFIX lts tags', function () {
+    const result = runLint({
+      title: '[BUGFIX lts] Fix LTS regression',
+      commits: [
+        {
+          sha: 'abc1234',
+          commit: { message: '[BUGFIX lts] Fix LTS regression' },
+        },
+        {
+          sha: 'def5678',
+          commit: { message: '[BUGFIX lts-5-12] Fix older LTS regression' },
+        },
+      ],
+    });
+
+    expect(result.status).to.equal(0);
+    expect(result.stderr).to.equal('');
+    expect(result.stdout).to.contain('PR lint passed');
+  });
+
   it('fails on invalid CLEANUP tag in PR title', function () {
     const result = runLint({
       title: '[CLEANUP beta] Cleanup stuff',
