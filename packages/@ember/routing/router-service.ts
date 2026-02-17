@@ -80,7 +80,7 @@ class RouterService extends Service {
     target: object | ((...args: any[]) => void) | string,
     method?: string | ((...args: any[]) => void)
   ) {
-    // SAFETY: The types are not actaully correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
     addListener(this, name, target, method as any);
     return this;
   }
@@ -106,7 +106,7 @@ class RouterService extends Service {
     target: object | string | ((...args: any[]) => void),
     method?: string | Function
   ) {
-    // SAFETY: The types are not actaully correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
     addListener(this, name, target, method as any, true);
     return this;
   }
@@ -142,7 +142,7 @@ class RouterService extends Service {
     target: object | string | ((...args: any[]) => void),
     method?: string | Function
   ) {
-    // SAFETY: The types are not actaully correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
     removeListener(this, name, target as any, method as any);
     return this;
   }

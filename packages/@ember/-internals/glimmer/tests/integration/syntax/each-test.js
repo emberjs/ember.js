@@ -6,6 +6,7 @@ import {
   runTask,
   expectDeprecation,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 import { notifyPropertyChange, on } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
@@ -1135,7 +1136,7 @@ moduleFor(
             this.set('content', emberA(wrapped));
           }),
         }).create();
-      }, /`on` is deprecated/);
+      }, /`on\(\)` event decorator is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       return { list: proxy, delegate: wrapped };
     }

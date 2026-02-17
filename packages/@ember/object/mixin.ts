@@ -546,7 +546,7 @@ export default class Mixin {
   /** @internal */
   properties: { [key: string]: any } | undefined;
 
-  /*** @internal */
+  /** @internal */
   [DEPRECATION]: { message: string; deprecation: DeprecationObject } | null = null;
 
   /** @internal */
