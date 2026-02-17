@@ -1,7 +1,7 @@
 import { template } from '@ember/template-compiler/runtime';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
-import { on } from '@ember/modifier/on';
+import { on } from '@ember/modifier';
 import { fn } from '@ember/helper';
 
 moduleFor(
@@ -333,6 +333,136 @@ moduleFor(
 
       this.assertText('[before]after');
       this.assertStableRerender();
+    }
+  }
+);
+
+moduleFor(
+  'Strict Mode - Runtime Template Compiler (explicit) - private fields',
+  class extends RenderingTestCase {
+    async '@test Can render a private field value'() {
+      await this.renderComponentModule(() => {
+        class TestComponent extends GlimmerishComponent {
+          #greeting = 'Hello, world!';
+
+          static {
+            template('<p>{{this.#greeting}}</p>', {
+              component: this,
+              scope: (instance) => ({
+                '#greeting': instance ? instance.#greeting : undefined,
+              }),
+            });
+          }
+        }
+        return TestComponent;
+      });
+
+      this.assertHTML('<p>Hello, world!</p>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can render multiple private fields'() {
+      await this.renderComponentModule(() => {
+        class TestComponent extends GlimmerishComponent {
+          #firstName = 'Jane';
+
+          #lastName = 'Doe';
+
+          static {
+            template('<p>{{this.#firstName}} {{this.#lastName}}</p>', {
+              component: this,
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
+                '#firstName': instance ? instance.#firstName : undefined,
+                '#lastName': instance ? instance.#lastName : undefined,
+              }),
+            });
+          }
+        }
+        return TestComponent;
+      });
+
+      this.assertHTML('<p>Jane Doe</p>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can use private field method with on modifier'() {
+      await this.renderComponentModule(() => {
+        class TestComponent extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #message = 'Hello';
+
+          #updateMessage = () => {
+            this.#message = 'Updated!';
+          };
+
+          static {
+            template('<button type="button" {{on "click" this.#updateMessage}}>Click</button>', {
+              component: this,
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
+                on,
+                '#updateMessage': instance ? instance.#updateMessage : undefined,
+              }),
+            });
+          }
+        }
+        return TestComponent;
+      });
+
+      this.assertHTML('<button type="button">Click</button>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can mix private fields with local scope variables'() {
+      await this.renderComponentModule(() => {
+        let Greeting = template('<span>{{yield}}</span>');
+
+        class TestComponent extends GlimmerishComponent {
+          #name = 'Ember';
+
+          static {
+            template('<Greeting>Hello, {{this.#name}}!</Greeting>', {
+              component: this,
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
+                Greeting,
+                '#name': instance ? instance.#name : undefined,
+              }),
+            });
+          }
+        }
+        return TestComponent;
+      });
+
+      this.assertHTML('<span>Hello, Ember!</span>');
+      this.assertStableRerender();
+    }
+
+    async '@test Can use private field with on modifier and fn helper'(assert: QUnit['assert']) {
+      assert.expect(1);
+
+      await this.renderComponentModule(() => {
+        let checkValue = (value: number) => {
+          assert.equal(value, 42);
+        };
+
+        class TestComponent extends GlimmerishComponent {
+          #secretValue = 42;
+
+          static {
+            template('<button {{on "click" (fn checkValue this.#secretValue)}}>Click</button>', {
+              component: this,
+              scope: (instance?: InstanceType<typeof TestComponent>) => ({
+                on,
+                fn,
+                checkValue,
+                '#secretValue': instance ? instance.#secretValue : undefined,
+              }),
+            });
+          }
+        }
+        return TestComponent;
+      });
+
+      this.click('button');
     }
   }
 );
