@@ -63,9 +63,13 @@ class AbstractAppendTest extends RenderingTestCase {
           }
           componentsByName[name] = this;
           pushHook('init');
-          expectDeprecation(() => {
-            this.on('init', () => pushHook('on(init)'));
-          }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+          expectDeprecation(
+            () => {
+              this.on('init', () => pushHook('on(init)'));
+            },
+            /Evented#on` is deprecated/,
+            DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+          );
         }
 
         didReceiveAttrs() {
@@ -308,9 +312,13 @@ class AbstractAppendTest extends RenderingTestCase {
             }
             componentsByName[name] = this;
             pushHook('init');
-            expectDeprecation(() => {
-              this.on('init', () => pushHook('on(init)'));
-            }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+            expectDeprecation(
+              () => {
+                this.on('init', () => pushHook('on(init)'));
+              },
+              /Evented#on` is deprecated/,
+              DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+            );
           }
 
           didReceiveAttrs() {

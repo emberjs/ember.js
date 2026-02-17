@@ -895,12 +895,16 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            expectDeprecation(() => {
-              this.on('activate', function (transition) {
-                assert.equal(++eventFired, 1, 'activate event is fired once');
-                assert.ok(transition, 'transition is passed to activate event');
-              });
-            }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+            expectDeprecation(
+              () => {
+                this.on('activate', function (transition) {
+                  assert.equal(++eventFired, 1, 'activate event is fired once');
+                  assert.ok(transition, 'transition is passed to activate event');
+                });
+              },
+              /Evented#on` is deprecated/,
+              DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+            );
           }
 
           activate(transition) {
@@ -929,12 +933,16 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            expectDeprecation(() => {
-              this.on('deactivate', function (transition) {
-                assert.equal(++eventFired, 1, 'deactivate event is fired once');
-                assert.ok(transition, 'transition is passed');
-              });
-            }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+            expectDeprecation(
+              () => {
+                this.on('deactivate', function (transition) {
+                  assert.equal(++eventFired, 1, 'deactivate event is fired once');
+                  assert.ok(transition, 'transition is passed');
+                });
+              },
+              /Evented#on` is deprecated/,
+              DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+            );
           }
 
           deactivate(transition) {

@@ -1,11 +1,4 @@
-import {
-  classes,
-  expectDeprecation,
-  moduleFor,
-  RenderingTestCase,
-  runTask,
-  strip,
-} from 'internal-test-helpers';
+import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';

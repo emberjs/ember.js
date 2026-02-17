@@ -290,34 +290,38 @@ moduleFor(
       let someEventA = 0;
       let someEventB = 0;
       let A;
-      expectDeprecation(() => {
-        A = class extends (
-          EmberObject.extend({
-            fooDidChange: observer('foo', function () {
-              fooDidChangeBase++;
-            }),
+      expectDeprecation(
+        () => {
+          A = class extends (
+            EmberObject.extend({
+              fooDidChange: observer('foo', function () {
+                fooDidChangeBase++;
+              }),
 
-            onSomeEvent: on('someEvent', function () {
-              someEventBase++;
-            }),
-          })
-        ) {
-          init() {
-            super.init();
-            this.foo = 'bar';
-          }
+              onSomeEvent: on('someEvent', function () {
+                someEventBase++;
+              }),
+            })
+          ) {
+            init() {
+              super.init();
+              this.foo = 'bar';
+            }
 
-          fooDidChange() {
-            super.fooDidChange();
-            fooDidChangeA++;
-          }
+            fooDidChange() {
+              super.fooDidChange();
+              fooDidChangeA++;
+            }
 
-          onSomeEvent() {
-            super.onSomeEvent();
-            someEventA++;
-          }
-        };
-      }, /`on\(\)` event decorator is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+            onSomeEvent() {
+              super.onSomeEvent();
+              someEventA++;
+            }
+          };
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       class B extends A {
         fooDidChange() {

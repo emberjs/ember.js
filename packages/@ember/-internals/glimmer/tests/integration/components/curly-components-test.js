@@ -3168,45 +3168,53 @@ moduleFor(
 
       let payload = ['arbitrary', 'event', 'data'];
 
-      expectDeprecation(() => {
-        this.registerComponent('evented-component', {
-          ComponentClass: Component.extend({
-            someTruthyProperty: true,
+      expectDeprecation(
+        () => {
+          this.registerComponent('evented-component', {
+            ComponentClass: Component.extend({
+              someTruthyProperty: true,
 
-            init() {
-              this._super(...arguments);
-              expectDeprecation(() => {
-                this.trigger('someMethod', ...payload);
-                this.trigger('someTruthyProperty', ...payload);
-              }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
-            },
+              init() {
+                this._super(...arguments);
+                expectDeprecation(
+                  () => {
+                    this.trigger('someMethod', ...payload);
+                    this.trigger('someTruthyProperty', ...payload);
+                  },
+                  /Evented#trigger` is deprecated/,
+                  DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+                );
+              },
 
-            someMethod(...data) {
-              assert.deepEqual(
-                data,
-                payload,
-                'the method `someMethod` should be called, when `someMethod` is triggered'
-              );
-            },
+              someMethod(...data) {
+                assert.deepEqual(
+                  data,
+                  payload,
+                  'the method `someMethod` should be called, when `someMethod` is triggered'
+                );
+              },
 
-            listenerForSomeMethod: on('someMethod', function (...data) {
-              assert.deepEqual(
-                data,
-                payload,
-                'the listener `listenerForSomeMethod` should be called, when `someMethod` is triggered'
-              );
+              listenerForSomeMethod: on('someMethod', function (...data) {
+                assert.deepEqual(
+                  data,
+                  payload,
+                  'the listener `listenerForSomeMethod` should be called, when `someMethod` is triggered'
+                );
+              }),
+
+              listenerForSomeTruthyProperty: on('someTruthyProperty', function (...data) {
+                assert.deepEqual(
+                  data,
+                  payload,
+                  'the listener `listenerForSomeTruthyProperty` should be called, when `someTruthyProperty` is triggered'
+                );
+              }),
             }),
-
-            listenerForSomeTruthyProperty: on('someTruthyProperty', function (...data) {
-              assert.deepEqual(
-                data,
-                payload,
-                'the listener `listenerForSomeTruthyProperty` should be called, when `someTruthyProperty` is triggered'
-              );
-            }),
-          }),
-        });
-      }, /`on\(\)` event decorator is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+          });
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       this.render(`{{evented-component}}`);
     }

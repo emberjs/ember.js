@@ -1130,13 +1130,17 @@ moduleFor(
     createList(items) {
       let wrapped = emberA(items);
       let proxy;
-      expectDeprecation(() => {
-        proxy = ArrayProxy.extend({
-          setup: on('init', function () {
-            this.set('content', emberA(wrapped));
-          }),
-        }).create();
-      }, /`on\(\)` event decorator is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+      expectDeprecation(
+        () => {
+          proxy = ArrayProxy.extend({
+            setup: on('init', function () {
+              this.set('content', emberA(wrapped));
+            }),
+          }).create();
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       return { list: proxy, delegate: wrapped };
     }

@@ -1,9 +1,4 @@
-import {
-  expectDeprecation,
-  moduleFor,
-  RenderingTestCase,
-  runTask,
-} from 'internal-test-helpers';
+import { expectDeprecation, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 
 import { Component } from '../utils/helpers';
@@ -165,9 +160,13 @@ moduleFor(
           init() {
             super.init();
             Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
-              expectDeprecation(() => {
-                this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
-              }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
+              expectDeprecation(
+                () => {
+                  this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
+                },
+                /Evented#on` is deprecated/,
+                DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+              );
             });
           }
         },
