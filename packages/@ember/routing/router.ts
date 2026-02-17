@@ -348,7 +348,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
           // SAFETY: this is configured in `commonSetupRegistry` in the
           // `@ember/application/lib` package.
           let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
-          routeOwner.register(fullRouteName, class extends DefaultRoute { });
+          routeOwner.register(fullRouteName, class extends DefaultRoute {});
           route = routeOwner.lookup(fullRouteName) as Route;
 
           if (DEBUG) {
