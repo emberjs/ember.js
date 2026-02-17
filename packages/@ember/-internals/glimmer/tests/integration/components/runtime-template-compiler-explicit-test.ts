@@ -71,6 +71,19 @@ moduleFor(
       this.assertStableRerender();
     }
 
+    async '@test Can use `this` from explicit scope'() {
+      await this.renderComponentModule(() => {
+        let state = { cls: 'Hello, world!' };
+
+        return template('<div>{{this.cls}}</div>', {
+          scope: () => ({ this: state }),
+        });
+      });
+
+      this.assertHTML('<div>Hello, world!</div>');
+      this.assertStableRerender();
+    }
+
     async '@test Can use inline if and unless in strict mode templates'() {
       await this.renderComponentModule(() => {
         return template('{{if true "foo" "bar"}}{{unless true "foo" "bar"}}');
