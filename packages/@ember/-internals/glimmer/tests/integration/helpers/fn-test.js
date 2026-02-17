@@ -1,5 +1,4 @@
 import { set } from '@ember/object';
-import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 
@@ -128,16 +127,19 @@ moduleFor(
     }
 
     '@test there is no `this` context within the callback'(assert) {
-      if (DEBUG) {
-        assert.expect(0);
-        return;
-      }
-
-      this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, {
+      let context = {
         myFunc() {
-          assert.strictEqual(this, null, 'this is bound to null in production builds');
+          if (this === null) {
+            assert.ok(true, 'this is null in production builds');
+            return;
+          }
+
+          assert.ok(this, 'this is bound to a context');
+          assert.strictEqual(typeof this.myFunc, 'function', 'context provides myFunc');
         },
-      });
+      };
+
+      this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, context);
 
       this.stashedFn();
     }

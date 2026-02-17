@@ -47,6 +47,7 @@ import {
   VM_HAS_BLOCK_PARAMS_OP,
   VM_HELPER_OP,
   VM_IF_INLINE_OP,
+  VM_INVOKABLE_REFERENCE_OP,
   VM_INVOKE_COMPONENT_LAYOUT_OP,
   VM_INVOKE_STATIC_OP,
   VM_INVOKE_VIRTUAL_OP,
@@ -288,6 +289,12 @@ if (LOCAL_DEBUG) {
   METADATA[VM_PRIMITIVE_REFERENCE_OP] = {
     name: 'PrimitiveReference',
     mnemonic: 'ptoref',
+    stackChange: 0,
+  };
+
+  METADATA[VM_INVOKABLE_REFERENCE_OP] = {
+    name: 'InvokableReference',
+    mnemonic: 'invref',
     stackChange: 0,
   };
 
