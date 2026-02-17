@@ -5,6 +5,7 @@ import {
   runTask,
   expectDeprecation,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 import { set } from '@ember/object';
 
@@ -64,7 +65,7 @@ class AbstractAppendTest extends RenderingTestCase {
           pushHook('init');
           expectDeprecation(() => {
             this.on('init', () => pushHook('on(init)'));
-          }, /`on` is deprecated/);
+          }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
         }
 
         didReceiveAttrs() {
@@ -309,7 +310,7 @@ class AbstractAppendTest extends RenderingTestCase {
             pushHook('init');
             expectDeprecation(() => {
               this.on('init', () => pushHook('on(init)'));
-            }, /`on` is deprecated/);
+            }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
           }
 
           didReceiveAttrs() {

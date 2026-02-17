@@ -5,7 +5,8 @@ import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
-import { assert, deprecate, DeprecationOptions } from '@ember/debug';
+import { assert } from '@ember/debug';
+import { deprecateUntil, type DeprecationObject } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
 import {
   type ComputedDecorator,
@@ -546,7 +547,7 @@ export default class Mixin {
   properties: { [key: string]: any } | undefined;
 
   /*** @internal */
-  [DEPRECATION]: { message: string; options: DeprecationOptions } | null = null;
+  [DEPRECATION]: { message: string; deprecation: DeprecationObject } | null = null;
 
   /** @internal */
   ownerConstructor: any;
@@ -628,8 +629,10 @@ export default class Mixin {
 
     if (DEBUG) {
       for (let mixin of args) {
-        let deprecation = mixin instanceof Mixin ? findDeprecation(mixin) : null;
-        deprecate(deprecation?.message ?? 'Huh???', !deprecation, deprecation?.options);
+        let dep = mixin instanceof Mixin ? findDeprecation(mixin) : null;
+        if (dep) {
+          deprecateUntil(dep.message, dep.deprecation);
+        }
       }
     }
 

@@ -15,6 +15,7 @@ import {
   runLoopSettled,
   expectDeprecation,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../-internals/deprecations';
 
 moduleFor(
   'EmberObject ES Compatibility',
@@ -316,7 +317,7 @@ moduleFor(
             someEventA++;
           }
         };
-      }, /`on` is deprecated/);
+      }, /`on\(\)` event decorator is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       class B extends A {
         fooDidChange() {

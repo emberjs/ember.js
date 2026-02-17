@@ -9,6 +9,7 @@ import {
   runLoopSettled,
   expectDeprecation,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 import { action } from '@ember/object';
 import { run } from '@ember/runloop';
@@ -3177,7 +3178,7 @@ moduleFor(
               expectDeprecation(() => {
                 this.trigger('someMethod', ...payload);
                 this.trigger('someTruthyProperty', ...payload);
-              }, /`trigger` is deprecated/);
+              }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
             },
 
             someMethod(...data) {
@@ -3205,7 +3206,7 @@ moduleFor(
             }),
           }),
         });
-      }, /`on` is deprecated/);
+      }, /`on\(\)` event decorator is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       this.render(`{{evented-component}}`);
     }

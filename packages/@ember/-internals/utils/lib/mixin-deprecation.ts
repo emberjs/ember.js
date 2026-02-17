@@ -1,4 +1,4 @@
-import type { DeprecationOptions } from '@ember/debug';
+import type { DeprecationObject } from '@ember/-internals/deprecations';
 import type Mixin from '@ember/object/mixin';
 
 /** @internal */
@@ -7,21 +7,23 @@ export const DEPRECATION = Symbol('DEPRECATION');
 /** @internal */
 export function setDeprecation(
   mixin: Mixin,
-  value: { message: string; options: DeprecationOptions } | null
+  value: { message: string; deprecation: DeprecationObject } | null
 ) {
-  mixin[DEPRECATION] = value;
+  // SAFETY: Using symbol as index on Mixin - this is internal deprecated API tooling
+  (mixin as any)[DEPRECATION] = value;
 }
 
 let deprecationsEnabled = true;
 
 export function findDeprecation(
   mixin: Mixin
-): { message: string; options: DeprecationOptions } | null {
+): { message: string; deprecation: DeprecationObject } | null {
   if (!deprecationsEnabled) {
     return null;
   }
-  if (mixin[DEPRECATION]) {
-    return mixin[DEPRECATION];
+  // SAFETY: Using symbol as index on Mixin - this is internal deprecated API tooling
+  if ((mixin as any)[DEPRECATION]) {
+    return (mixin as any)[DEPRECATION];
   }
   for (let childMixin of mixin.mixins ?? []) {
     let deprecation = findDeprecation(childMixin);

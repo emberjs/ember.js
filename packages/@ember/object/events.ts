@@ -3,37 +3,28 @@ import {
   removeListener as originalRemoveListener,
   sendEvent as originalSendEvent,
 } from '@ember/-internals/metal';
-import { deprecateFunc } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
-export const addListener = deprecateFunc(
-  '`addListener is deprecated',
-  {
-    for: 'ember-source',
-    id: 'ember-object-add-listener',
-    since: { available: '6.8.0' },
-    until: '7.0.0',
-  },
-  originalAddListener
-);
+export const addListener = (...args: Parameters<typeof originalAddListener>) => {
+  deprecateUntil(
+    'Importing `addListener` from `@ember/object/events` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+    DEPRECATIONS.DEPRECATE_EVENTED
+  );
+  return originalAddListener(...args);
+};
 
-export const removeListener = deprecateFunc(
-  '`removeListener is deprecated',
-  {
-    for: 'ember-source',
-    id: 'ember-object-remove-listener',
-    since: { available: '6.8.0' },
-    until: '7.0.0',
-  },
-  originalRemoveListener
-);
+export const removeListener = (...args: Parameters<typeof originalRemoveListener>) => {
+  deprecateUntil(
+    'Importing `removeListener` from `@ember/object/events` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+    DEPRECATIONS.DEPRECATE_EVENTED
+  );
+  return originalRemoveListener(...args);
+};
 
-export const sendEvent = deprecateFunc(
-  '`sendEvent is deprecated',
-  {
-    for: 'ember-source',
-    id: 'ember-object-send-event',
-    since: { available: '6.8.0' },
-    until: '7.0.0',
-  },
-  originalSendEvent
-);
+export const sendEvent = (...args: Parameters<typeof originalSendEvent>) => {
+  deprecateUntil(
+    'Importing `sendEvent` from `@ember/object/events` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+    DEPRECATIONS.DEPRECATE_EVENTED
+  );
+  return originalSendEvent(...args);
+};

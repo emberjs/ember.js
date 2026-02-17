@@ -1,11 +1,19 @@
 import EmberObject from '@ember/object';
-import { Evented } from '@ember/-internals/runtime';
-import { moduleFor, AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
+import Evented from '@ember/object/evented';
+import {
+  moduleFor,
+  AbstractTestCase,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../-internals/deprecations';
 
 moduleFor(
   'Object events',
   class extends AbstractTestCase {
-    ['@test a listener can be added to an object'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test a listener can be added to an object`](assert) {
       let count = 0;
       let F = function () {
         count++;
@@ -15,21 +23,23 @@ moduleFor(
 
       expectDeprecation(() => {
         obj.on('event!', F);
-      }, /`on` is deprecated/);
+      }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
       expectDeprecation(() => {
         obj.trigger('event!');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.equal(count, 1, 'the event was triggered');
 
       expectDeprecation(() => {
         obj.trigger('event!');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.equal(count, 2, 'the event was triggered');
     }
 
-    ['@test a listener can be added and removed automatically the first time it is triggered'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test a listener can be added and removed automatically the first time it is triggered`](
       assert
     ) {
       let count = 0;
@@ -41,22 +51,24 @@ moduleFor(
 
       expectDeprecation(() => {
         obj.one('event!', F);
-      }, /`one` is deprecated/);
+      }, /Evented#one` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         obj.trigger('event!');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.equal(count, 1, 'the event was triggered');
 
       expectDeprecation(() => {
         obj.trigger('event!');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.equal(count, 1, 'the event was not triggered again');
     }
 
-    ['@test triggering an event can have arguments'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test triggering an event can have arguments`](assert) {
       let self, args;
 
       let obj = EmberObject.extend(Evented).create();
@@ -66,17 +78,19 @@ moduleFor(
           args = [].slice.call(arguments);
           self = this;
         });
-      }, /`on` is deprecated/);
+      }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         obj.trigger('event!', 'foo', 'bar');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(self, obj);
     }
 
-    ['@test a listener can be added and removed automatically and have arguments'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test a listener can be added and removed automatically and have arguments`](assert) {
       let self, args;
       let count = 0;
 
@@ -88,11 +102,11 @@ moduleFor(
           self = this;
           count++;
         });
-      }, /`one` is deprecated/);
+      }, /Evented#one` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         obj.trigger('event!', 'foo', 'bar');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(self, obj);
@@ -100,14 +114,16 @@ moduleFor(
 
       expectDeprecation(() => {
         obj.trigger('event!', 'baz', 'bat');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(count, 1, 'the event was not triggered again');
       assert.equal(self, obj);
     }
 
-    ['@test binding an event can specify a different target'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test binding an event can specify a different target`](assert) {
       let self, args;
 
       let obj = EmberObject.extend(Evented).create();
@@ -118,17 +134,19 @@ moduleFor(
           args = [].slice.call(arguments);
           self = this;
         });
-      }, /`on` is deprecated/);
+      }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         obj.trigger('event!', 'foo', 'bar');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.deepEqual(args, ['foo', 'bar']);
       assert.equal(self, target);
     }
 
-    ['@test a listener registered with one can take method as string and can be added with different target'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test a listener registered with one can take method as string and can be added with different target`](
       assert
     ) {
       let count = 0;
@@ -141,22 +159,24 @@ moduleFor(
 
       expectDeprecation(() => {
         obj.one('event!', target, 'fn');
-      }, /`one` is deprecated/);
+      }, /Evented#one` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         obj.trigger('event!');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.equal(count, 1, 'the event was triggered');
 
       expectDeprecation(() => {
         obj.trigger('event!');
-      }, /`trigger` is deprecated/);
+      }, /Evented#trigger` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.equal(count, 1, 'the event was not triggered again');
     }
 
-    ['@test a listener registered with one can be removed with off'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test a listener registered with one can be removed with off`](assert) {
       let obj = class extends EmberObject.extend(Evented) {
         F() {}
       }.create();
@@ -164,34 +184,36 @@ moduleFor(
 
       expectDeprecation(() => {
         obj.one('event!', F);
-      }, /`one` is deprecated/);
+      }, /Evented#one` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         obj.one('event!', obj, 'F');
-      }, /`one` is deprecated/);
+      }, /Evented#one` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       let objHas;
       expectDeprecation(() => {
         objHas = obj.has('event!');
-      }, /`has` is deprecated/);
+      }, /Evented#has` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
       assert.equal(objHas, true, 'has events');
 
       expectDeprecation(() => {
         obj.off('event!', F);
-      }, /`off` is deprecated/);
+      }, /Evented#off` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         obj.off('event!', obj, 'F');
-      }, /`off` is deprecated/);
+      }, /Evented#off` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       expectDeprecation(() => {
         objHas = obj.has('event!');
-      }, /`has` is deprecated/);
+      }, /Evented#has` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
 
       assert.equal(objHas, false, 'has no more events');
     }
 
-    ['@test adding and removing listeners should be chainable'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test adding and removing listeners should be chainable`](assert) {
       let obj = EmberObject.extend(Evented).create();
       let F = function () {};
 
@@ -199,17 +221,17 @@ moduleFor(
 
       expectDeprecation(() => {
         ret = obj.on('event!', F);
-      }, /`on` is deprecated/);
+      }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
       assert.equal(ret, obj, '#on returns self');
 
       expectDeprecation(() => {
         ret = obj.off('event!', F);
-      }, /`off` is deprecated/);
+      }, /Evented#off` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
       assert.equal(ret, obj, '#off returns self');
 
       expectDeprecation(() => {
         ret = obj.one('event!', F);
-      }, /`one` is deprecated/);
+      }, /Evented#one` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
       assert.equal(ret, obj, '#one returns self');
     }
   }

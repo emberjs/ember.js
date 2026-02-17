@@ -1,6 +1,6 @@
 import { addListener, removeListener, hasListeners, sendEvent } from '@ember/-internals/metal';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { setDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
-import { deprecate } from '@ember/debug';
 import Mixin from '@ember/object/mixin';
 
 export { on } from '@ember/-internals/metal';
@@ -154,74 +154,47 @@ interface Evented {
 }
 const Evented = Mixin.create({
   on(name: string, target: object, method?: string | Function) {
-    deprecate(
-      '`on` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      false,
-      {
-        for: 'ember-source',
-        id: 'ember-evented',
-        since: { available: '6.8.0' },
-        until: '7.0.0',
-      }
+    deprecateUntil(
+      '`Evented#on` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      DEPRECATIONS.DEPRECATE_EVENTED
     );
-    addListener(this, name, target, method);
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we're deprecating this API.
+    addListener(this, name, target, method as PropertyKey | ((...args: any[]) => void));
     return this;
   },
 
   one(name: string, target: object, method?: string | Function) {
-    deprecate(
-      '`one` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      false,
-      {
-        for: 'ember-source',
-        id: 'ember-evented',
-        since: { available: '6.8.0' },
-        until: '7.0.0',
-      }
+    deprecateUntil(
+      '`Evented#one` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      DEPRECATIONS.DEPRECATE_EVENTED
     );
-    addListener(this, name, target, method, true);
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we're deprecating this API.
+    addListener(this, name, target, method as PropertyKey | ((...args: any[]) => void), true);
     return this;
   },
 
   trigger(name: string, ...args: any[]) {
-    deprecate(
-      '`trigger` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      false,
-      {
-        for: 'ember-source',
-        id: 'ember-evented',
-        since: { available: '6.8.0' },
-        until: '7.0.0',
-      }
+    deprecateUntil(
+      '`Evented#trigger` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      DEPRECATIONS.DEPRECATE_EVENTED
     );
     sendEvent(this, name, args);
   },
 
   off(name: string, target: object, method?: string | Function) {
-    deprecate(
-      '`off` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      false,
-      {
-        for: 'ember-source',
-        id: 'ember-evented',
-        since: { available: '6.8.0' },
-        until: '7.0.0',
-      }
+    deprecateUntil(
+      '`Evented#off` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      DEPRECATIONS.DEPRECATE_EVENTED
     );
-    removeListener(this, name, target, method);
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we're deprecating this API.
+    removeListener(this, name, target, method as string | ((...args: any[]) => void));
     return this;
   },
 
   has(name: string) {
-    deprecate(
-      '`has` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      false,
-      {
-        for: 'ember-source',
-        id: 'ember-evented',
-        since: { available: '6.8.0' },
-        until: '7.0.0',
-      }
+    deprecateUntil(
+      '`Evented#has` is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      DEPRECATIONS.DEPRECATE_EVENTED
     );
     return hasListeners(this, name);
   },
@@ -229,13 +202,8 @@ const Evented = Mixin.create({
 
 setDeprecation(Evented, {
   message:
-    'Evented mixin is deprecated. Use native JavaScript events or a dedicated event library instead.',
-  options: {
-    for: 'ember-source',
-    id: 'ember-evented',
-    since: { available: '6.8.0' },
-    until: '7.0.0',
-  },
+    'Evented is deprecated. Use native JavaScript events or a dedicated event library instead.',
+  deprecation: DEPRECATIONS.DEPRECATE_EVENTED,
 });
 
 export default Evented;

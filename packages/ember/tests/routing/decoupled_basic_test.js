@@ -15,6 +15,7 @@ import {
   runTask,
   expectDeprecation,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
 import { service } from '@ember/service';
@@ -899,7 +900,7 @@ moduleFor(
                 assert.equal(++eventFired, 1, 'activate event is fired once');
                 assert.ok(transition, 'transition is passed to activate event');
               });
-            }, /`on` is deprecated/);
+            }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
           }
 
           activate(transition) {
@@ -933,7 +934,7 @@ moduleFor(
                 assert.equal(++eventFired, 1, 'deactivate event is fired once');
                 assert.ok(transition, 'transition is passed');
               });
-            }, /`on` is deprecated/);
+            }, /Evented#on` is deprecated/, DEPRECATIONS.DEPRECATE_EVENTED.isEnabled);
           }
 
           deactivate(transition) {

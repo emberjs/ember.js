@@ -5,7 +5,8 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { setListeners } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -170,7 +171,7 @@ export function sendEvent(
       continue;
     }
     if (once) {
-      removeListener(obj, eventName, target, method);
+      removeListener(obj, eventName, target, method as string | ((...args: any[]) => void));
     }
     if (!target) {
       target = obj;
@@ -234,15 +235,9 @@ export function hasListeners(obj: object, eventName: string): boolean {
   @public
 */
 export function on<T extends AnyFn>(...args: [...eventNames: string[], func: T]): T {
-  deprecate(
-    '`on` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-    false,
-    {
-      for: 'ember-source',
-      id: 'ember-evented',
-      since: { available: '6.8.0' },
-      until: '7.0.0',
-    }
+  deprecateUntil(
+    'The `on()` event decorator is deprecated. Use native JavaScript events or a dedicated event library instead.',
+    DEPRECATIONS.DEPRECATE_EVENTED
   );
 
   let func = args.pop();
