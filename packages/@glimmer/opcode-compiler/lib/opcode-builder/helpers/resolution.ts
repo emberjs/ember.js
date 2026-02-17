@@ -109,12 +109,14 @@ export function resolveComponent(
       expr[1]
     ];
 
+    let invocationName = lexical?.at(expr[1]);
+
     then(
       constants.component(
         definition as object,
         expect(owner, 'BUG: expected owner when resolving component definition'),
         false,
-        lexical?.at(expr[1])
+        invocationName
       )
     );
   } else {
@@ -287,11 +289,13 @@ export function resolveComponentOrHelper(
       expr[1]
     ];
 
+    let invocationName = lexical?.at(expr[1]);
+
     let component = constants.component(
       definition as object,
       expect(owner, 'BUG: expected owner when resolving component definition'),
       true,
-      lexical?.at(expr[1])
+      invocationName
     );
 
     if (component !== null) {
