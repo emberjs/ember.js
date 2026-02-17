@@ -348,7 +348,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
           // SAFETY: this is configured in `commonSetupRegistry` in the
           // `@ember/application/lib` package.
           let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
-          routeOwner.register(fullRouteName, class extends DefaultRoute {});
+          routeOwner.register(fullRouteName, class extends DefaultRoute { });
           route = routeOwner.lookup(fullRouteName) as Route;
 
           if (DEBUG) {
@@ -664,19 +664,14 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       this._toplevelView = OutletView.create({ environment, template, application });
       this._toplevelView.setOutletState(root);
 
-      // TODO(SAFETY): At least one test runs without this set correctly. At a
-      // later time, update the test to configure this correctly. The test ID:
       // `Router Service - non application test:  RouterService#transitionTo with basic route`
       let instance = owner.lookup('-application-instance:main') as ApplicationInstance;
-      // let instance = owner.lookup('-application-instance:main') as ApplicationInstance | undefined;
-      // assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
+      assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
 
-      if (instance) {
-        // SAFETY: LOL. This is calling a deprecated API with a type that we
-        // cannot actually confirm at a type level *is* a `ViewMixin`. Seems:
-        // not great on multiple fronts!
-        instance.didCreateRootView(this._toplevelView as any);
-      }
+      // SAFETY: LOL. This is calling a deprecated API with a type that we
+      // cannot actually confirm at a type level *is* a `ViewMixin`. Seems:
+      // not great on multiple fronts!
+      instance.didCreateRootView(this._toplevelView as any);
     } else {
       this._toplevelView.setOutletState(root);
     }
