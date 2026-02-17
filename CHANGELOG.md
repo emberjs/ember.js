@@ -1,5 +1,20 @@
 # Ember Changelog
 
+- [#20908](https://github.com/emberjs/ember.js/pull/20908) / [#21020](https://github.com/emberjs/ember.js/pull/21020) Merge [glimmerjs/glimmer-vm](https://github.com/glimmerjs/glimmer-vm) into the `emberjs/ember.js` monorepo.
+  - All `@glimmer/*` packages that were formerly dependencies of `ember-source` are now included in the monorepo. This enables us to more easily iterate 
+    on the Glimmer VM and related packages, avoid an integration step with `ember.js` and to more easily share code between them and `ember-source`.
+  - Only a few of the packages from the `glimmer-vm` repo will continue to be published as separate packages, for example, `@glimmer/syntax` will be published.
+  - The `glimmer-vm` repo has been archived and relevant issues have been moved to the `emberjs/ember.js` repo. If you have an issue that was not moved, please reopen it on ember.js, after a search.
+- [#20995](https://github.com/emberjs/ember.js/pull/20995) [BUGFIX] `renderComponent` error: 'attempted to close a tracking frame, but one was not open'
+- [#20996](https://github.com/emberjs/ember.js/pull/20996) [BUGFIX] `renderComponent` error: 'Cannot read property of undefined: reading syscall'
+- [#21091](https://github.com/emberjs/ember.js/pull/21091) [BUGFIX] Fix 'on' modifier error message regression
+- [#21025](https://github.com/emberjs/ember.js/pull/21025) [CLEANUP] Remove applySVGInnerHTMLFix
+- [#21061](https://github.com/emberjs/ember.js/pull/21061) [CLEANUP] Remove 'text-node-merging-fix'
+- [#21059](https://github.com/emberjs/ember.js/pull/21059) [DOC] Remove doc references to `Ember.` and add import where necessary
+- [#21014](https://github.com/emberjs/ember.js/pull/21014) Rename default export `GlimmerComponent` to `Component`
+- [#21046](https://github.com/emberjs/ember.js/pull/21046) Add benchmark infrastructure
+- [#21090](https://github.com/emberjs/ember.js/pull/21090) Swap nightly ts test of ts-nightly with ts-latest for better signal-to-noise
+
 ## v6.11.0 (February 17, 2026)
 
 - [#21024](https://github.com/emberjs/ember.js/pull/21024) [Bugfix] Add @ember/reactive into the AMD bundles
