@@ -520,17 +520,26 @@ namespace Ember {
   export declare let lookup: Record<string, unknown>;
 
   /**
-   This should not be needed.
-   You may be able to use an event listener for the error event on window.
+    A function may be assigned to `Ember.onerror` to be called when Ember
+    internals encounter an error. This is useful for specialized error handling
+    and reporting code.
 
-   `window.addEventListener('error', eventHandler);`
+    ```javascript
 
-   For promise rejections, you'll want to use the unhandledrejection event.
-   `window.addEventListener('unhandledrejection', eventHandler);`
+    Ember.onerror = function(error) {
+      const payload = {
+        stack: error.stack,
+        otherInformation: 'whatever app state you want to provide'
+      };
 
-   If you really need the original behavior:
+      fetch('/report-error', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    };
+    ```
 
-   `import { getOnerror, setOnerror } from '@ember/-internals/error-handling';`
+    Internally, `Ember.onerror` is used as Backburner's error handler.
 
     @event onerror
     @for Ember

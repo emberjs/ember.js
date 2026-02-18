@@ -50,6 +50,8 @@ import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
+import { sendEvent } from '@ember/-internals/metal';
+import { disableDeprecations } from '@ember/-internals/utils';
 
 /**
 @module @ember/routing/router
@@ -135,7 +137,10 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject.extend(Evented) implements Evented {
+class EmberRouter
+  extends disableDeprecations(() => EmberObject.extend(Evented))
+  implements Evented
+{
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -415,7 +420,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       routeWillChange(transition: Transition) {
-        router.trigger('routeWillChange', transition);
+        sendEvent(router, 'routeWillChange', [transition]);
 
         if (DEBUG) {
           freezeRouteInfo(transition);
@@ -433,7 +438,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       routeDidChange(transition: Transition) {
         router.set('currentRoute', transition.to);
         once(() => {
-          router.trigger('routeDidChange', transition);
+          sendEvent(router, 'routeDidChange', [transition]);
 
           if (DEBUG) {
             freezeRouteInfo(transition);

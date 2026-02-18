@@ -211,6 +211,7 @@
       "@ember/-internals/views/lib/mixins/action_support.js": "ember-source/@ember/-internals/views/lib/mixins/action_support.js",
       "@ember/-internals/views/lib/system/event_dispatcher.js": "ember-source/@ember/-internals/views/lib/system/event_dispatcher.js",
       "@ember/-internals/views/lib/system/utils.js": "ember-source/@ember/-internals/views/lib/system/utils.js",
+      "@ember/-internals/views/lib/views/core-view-utils.js": "ember-source/@ember/-internals/views/lib/views/core-view-utils.js",
       "@ember/-internals/views/lib/views/core_view.js": "ember-source/@ember/-internals/views/lib/views/core_view.js",
       "@ember/-internals/views/lib/views/states.js": "ember-source/@ember/-internals/views/lib/views/states.js",
       "@ember/application/index.js": "ember-source/@ember/application/index.js",
