@@ -199,7 +199,6 @@
       "@ember/-internals/runtime/lib/mixins/action_handler.js": "ember-source/@ember/-internals/runtime/lib/mixins/action_handler.js",
       "@ember/-internals/runtime/lib/mixins/comparable.js": "ember-source/@ember/-internals/runtime/lib/mixins/comparable.js",
       "@ember/-internals/runtime/lib/mixins/container_proxy.js": "ember-source/@ember/-internals/runtime/lib/mixins/container_proxy.js",
-      "@ember/-internals/runtime/lib/mixins/evented.js": "ember-source/@ember/-internals/runtime/lib/mixins/evented.js",
       "@ember/-internals/runtime/lib/mixins/registry_proxy.js": "ember-source/@ember/-internals/runtime/lib/mixins/registry_proxy.js",
       "@ember/-internals/runtime/lib/mixins/target_action_support.js": "ember-source/@ember/-internals/runtime/lib/mixins/target_action_support.js",
       "@ember/-internals/string/index.js": "ember-source/@ember/-internals/string/index.js",
