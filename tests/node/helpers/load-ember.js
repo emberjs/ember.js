@@ -1,7 +1,7 @@
 const path = require('path');
 const distPath = path.join(__dirname, '../../../dist');
 const emberPath = path.join(distPath, 'ember.debug.js');
-const templateCompilerPath = path.join(distPath, 'ember-template-compiler');
+const templateCompilerPath = path.join(distPath, 'packages/ember-template-compiler/index');
 
 // We store the global symbols beforehand so that we can reset the state
 // properly to avoid the @glimmer/validator assertion

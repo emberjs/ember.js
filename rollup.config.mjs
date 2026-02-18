@@ -40,7 +40,6 @@ let configs = [
       return !source.startsWith('ember-testing');
     },
   }),
-  templateCompilerConfig(),
   glimmerComponent(),
 ];
 
@@ -576,56 +575,6 @@ function licenseAndLoader() {
       }
     },
   };
-}
-
-function templateCompilerConfig() {
-  // These are modules that, when used in the legacy template compiler bundle,
-  // need to be discovered from ember.debug.js instead when running in the
-  // browser, and stubbed to ember-template-compiler.js in node.
-  const externals = {
-    '@ember/template-compilation': `{
-      __esModule: true,
-      __registerTemplateCompiler(){},
-    }`,
-    ember: `{
-      __esModule: true,
-      default: {
-        get ENV() { return require('@ember/-internals/environment').ENV },
-        get FEATURES() { return require('@ember/canary-features').FEATURES },
-        get VERSION() { return require('ember/version').default },
-      },
-    }`,
-    '@ember/-internals/glimmer': `{
-      __esModule: true,
-    }`,
-    '@ember/application': `{
-      __esModule: true,
-    }`,
-  };
-  let config = legacyBundleConfig(
-    './broccoli/amd-compat-entrypoints/ember-template-compiler.js',
-    'ember-template-compiler.js',
-    { isDeveloping: true }
-  );
-  config.plugins.unshift({
-    enforce: 'pre',
-    name: 'template-compiler-externals',
-    async resolveId(source) {
-      if (externals[source]) {
-        return { id: source, external: true };
-      }
-    },
-  });
-  config.output.globals = (id) => {
-    return `(() => {
-      try {
-        return require('${id}');
-      } catch (err) {
-        return ${externals[id]}
-      }
-    })()`;
-  };
-  return config;
 }
 
 function pruneEmptyBundles() {

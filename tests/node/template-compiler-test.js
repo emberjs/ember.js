@@ -4,7 +4,7 @@ const distPath = path.join(__dirname, '../../dist');
 
 let templateCompiler;
 
-QUnit.module('ember-template-compiler.js', function () {
+QUnit.module('ember-template-compiler/index.js', function () {
   QUnit.module('modern', function (hooks) {
     hooks.beforeEach(function () {
       this.templateCompilerPath = path.resolve(path.join(distPath, 'ember-template-compiler.js'));
