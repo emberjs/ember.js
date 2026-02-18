@@ -14,7 +14,14 @@ moduleFor(
         count++;
       };
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -54,7 +61,14 @@ moduleFor(
         count++;
       };
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -90,7 +104,14 @@ moduleFor(
     )} @test triggering an event can have arguments`](assert) {
       let self, args;
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -121,7 +142,14 @@ moduleFor(
       let self, args;
       let count = 0;
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -165,7 +193,14 @@ moduleFor(
     )} @test binding an event can specify a different target`](assert) {
       let self, args;
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
       let target = {};
 
       expectDeprecation(
@@ -202,7 +237,14 @@ moduleFor(
         count++;
       };
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -236,9 +278,16 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test a listener registered with one can be removed with off`](assert) {
-      let obj = class extends EmberObject.extend(Evented) {
-        F() {}
-      }.create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = class extends EmberObject.extend(Evented) {
+            F() {}
+          }.create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
       let F = function () {};
 
       expectDeprecation(
@@ -297,7 +346,14 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test adding and removing listeners should be chainable`](assert) {
-      let obj = EmberObject.extend(Evented).create();
+      let obj;
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /Evented is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
       let F = function () {};
 
       let ret;

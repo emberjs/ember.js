@@ -14,6 +14,7 @@ import {
   runDestroy,
   runTask,
   expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
@@ -880,7 +881,9 @@ moduleFor(
       });
     }
 
-    ['@test `activate` event fires on the route'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test \`activate\` event fires on the route`](
+      assert
+    ) {
       assert.expect(5);
 
       let eventFired = 0;
@@ -917,7 +920,9 @@ moduleFor(
       return this.visit('/nork');
     }
 
-    ['@test `deactivate` event fires on the route'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test \`deactivate\` event fires on the route`](
+      assert
+    ) {
       assert.expect(5);
 
       let eventFired = 0;

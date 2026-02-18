@@ -8,6 +8,7 @@ import {
   runTask,
   runLoopSettled,
   expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../../deprecations';
 
@@ -3161,7 +3162,7 @@ moduleFor(
       runTask(() => set(this.context, 'foo', 5));
     }
 
-    ['@test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)`](
       assert
     ) {
       assert.expect(5);

@@ -4,6 +4,7 @@ import {
   strip,
   runTask,
   expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../../deprecations';
 
@@ -45,7 +46,9 @@ class AbstractAppendTest extends RenderingTestCase {
     this.ids.push(component.elementId);
   }
 
-  [`@test (new) lifecycle hooks during component append`](assert) {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test (new) lifecycle hooks during component append`](
+    assert
+  ) {
     let hooks = [];
 
     let componentsByName = {};
@@ -291,7 +294,9 @@ class AbstractAppendTest extends RenderingTestCase {
     );
   }
 
-  [`@test lifecycle hooks during component append`](assert) {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test lifecycle hooks during component append`](
+    assert
+  ) {
     let hooks = [];
 
     let oldRegisterComponent = this.registerComponent;

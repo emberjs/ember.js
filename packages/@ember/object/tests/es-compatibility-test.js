@@ -14,6 +14,7 @@ import {
   AbstractTestCase,
   runLoopSettled,
   expectDeprecation,
+  testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
 
@@ -282,7 +283,9 @@ moduleFor(
       SubEmberObject.metaForProperty('foo');
     }
 
-    '@test observes / removeObserver on / removeListener interop'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test observes / removeObserver on / removeListener interop`](
+      assert
+    ) {
       let fooDidChangeBase = 0;
       let fooDidChangeA = 0;
       let fooDidChangeB = 0;

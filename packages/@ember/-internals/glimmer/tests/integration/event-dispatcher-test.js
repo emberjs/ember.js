@@ -1,4 +1,10 @@
-import { expectDeprecation, moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 
 import { Component } from '../utils/helpers';
@@ -150,7 +156,9 @@ moduleFor(
       }
     }
 
-    ['@test event listeners are called when event is triggered'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test event listeners are called when event is triggered`](
+      assert
+    ) {
       let receivedEvent;
       let browserEvent;
 

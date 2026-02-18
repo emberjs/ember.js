@@ -1124,28 +1124,30 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, content is updated after init',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy;
-      expectDeprecation(
-        () => {
-          proxy = ArrayProxy.extend({
-            setup: on('init', function () {
-              this.set('content', emberA(wrapped));
-            }),
-          }).create();
-        },
-        /`on\(\)` event decorator is deprecated/,
-        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
-      );
+if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, content is updated after init',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        let proxy;
+        expectDeprecation(
+          () => {
+            proxy = ArrayProxy.extend({
+              setup: on('init', function () {
+                this.set('content', emberA(wrapped));
+              }),
+            }).create();
+          },
+          /`on\(\)` event decorator is deprecated/,
+          DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+        );
 
-      return { list: proxy, delegate: wrapped };
+        return { list: proxy, delegate: wrapped };
+      }
     }
-  }
-);
+  );
+}
 
 moduleFor(
   'Syntax test: {{#each as}} undefined path',
