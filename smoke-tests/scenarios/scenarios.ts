@@ -29,6 +29,12 @@ function embroiderWebpack(project: Project) {
 
 function embroiderVite(project: Project) {}
 
+function node(project: Project) {
+  project.linkDevDependency('ember-source', {
+    baseDir: dirname(require.resolve('../app-template/package.json')),
+  });
+}
+
 export const v1AppScenarios = Scenarios.fromProject(() =>
   Project.fromDir(dirname(require.resolve('../app-template/package.json')), { linkDevDeps: true })
 ).expand({
@@ -43,4 +49,12 @@ export const v2AppScenarios = Scenarios.fromProject(() =>
   })
 ).expand({
   embroiderVite,
+});
+
+export const nodeScenarios = Scenarios.fromProject(() =>
+  Project.fromDir(dirname(require.resolve('../node-template/package.json')), {
+    linkDevDeps: true,
+  })
+).expand({
+  node,
 });
