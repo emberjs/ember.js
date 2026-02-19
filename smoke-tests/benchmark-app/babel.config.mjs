@@ -9,7 +9,6 @@ export default {
     [
       'babel-plugin-ember-template-compilation',
       {
-        compilerPath: 'ember-source/ember-template-compiler/index.js',
         transforms: [...macros.templateMacros],
       },
     ],
