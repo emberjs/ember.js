@@ -1,0 +1,17 @@
+{
+  "name": "ember-test-node-template",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node-focused smoke test template for ember-source",
+  "scripts": {
+    "test:node": "node --import ./tests/node/helpers/register-loader.js --test tests/node/*.test.js"
+  },
+  "dependencies": {
+    "simple-dom": "^1.4.0",
+    "html-differ": "^1.4.0"
+  },
+  "engines": {
+    "node": ">= 20.6.0"
+  }
+}
