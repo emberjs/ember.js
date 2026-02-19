@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const stubUrl = pathToFileURL(`${__dirname}/embroider-macros-stub.mjs`).href;
 
-export async function resolve(specifier, context, nextResolve) {
+export function resolve(specifier, context, nextResolve) {
   if (specifier === '@embroider/macros') {
     return { shortCircuit: true, url: stubUrl };
   }
