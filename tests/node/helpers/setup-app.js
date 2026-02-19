@@ -5,6 +5,56 @@
 const SimpleDOM = require('simple-dom');
 const { loadEmberModules } = require('./ember-esm');
 
+/*
+ * This helper sets up a QUnit test module with all of the environment and
+ * helper methods necessary to test an Ember.js application running in the
+ * server-side environment.
+ *
+ * On each test, it loads the compiled Ember.js ESM packages from `dist`,
+ * just like how FastBoot works. It uses the `visit()` API to simulate a
+ * FastBoot environment.
+ *
+ * To test an app, register the objects that make up the app. For example,
+ * to register a component:
+ *
+ *     this.component('component-name', {
+ *       componentProperty: true
+ *     });
+ *
+ * Or a template:
+ *
+ *    this.template('application', '{{outlet}}');
+ *    this.template('components/foo-bar', '<h1>Hello world</h1>');
+ *
+ * Or a controller:
+ *
+ *    this.controller('controller-name', {
+ *      actions: {
+ *        sendEmail: function() { }
+ *      }
+ *    });
+ *
+ * You can also provide the routes for the application by calling `this.routes()`,
+ * which is equivalent to `App.Router.map()`:
+ *
+ *     this.routes(function() {
+ *       this.route('photos');
+ *       this.route('admin', function() {
+ *         this.route('logout');
+ *       });
+ *     });
+ *
+ * Once all of the constituent parts of the app are registered, you can kick off
+ * app boot by calling either `this.visit(url)` or `this.renderToHTML(url)`.
+ *
+ * `visit` returns a promise that resolves to the application instance, and
+ * `renderToHTML` returns a promise that resolves to the rendered HTML of the
+ * application.
+ *
+ *     return this.renderToHTML('/photos').then(function(html) {
+ *       assert.ok(html.matches('<h1>Hello world</h1>'));
+ *     });
+ */
 module.exports = function (hooks) {
   hooks.beforeEach(async function () {
     let m = await loadEmberModules();
