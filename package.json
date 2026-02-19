@@ -6,6 +6,7 @@
     "ember-addon"
   ],
   "exports": {
+    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./*": "./dist/packages/*",
     "./types": {
       "types": "./types/stable/index.d.ts"
@@ -21,6 +22,8 @@
   "files": [
     "build-metadata.json",
     "blueprints",
+    "dist/package.json",
+    "dist/ember-template-compiler.js",
     "dist/packages",
     "dist/dependencies",
     "docs/data.json",

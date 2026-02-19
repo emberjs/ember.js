@@ -1,5 +1,5 @@
 import { dirname, parse, resolve, join } from 'node:path';
-import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
@@ -469,6 +469,16 @@ function packageMeta() {
       }
       pkg['ember-addon']['renamed-modules'] = renamedModules;
       writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+
+      // Mark all dist/ files as ESM so Node 20.19+ require(esm) works
+      mkdirSync('dist', { recursive: true });
+      writeFileSync('dist/package.json', JSON.stringify({ type: 'module' }));
+
+      // ESM re-export at the legacy path that @embroider/compat and babel-plugin hardcode
+      writeFileSync(
+        'dist/ember-template-compiler.js',
+        "export * from './packages/ember-template-compiler/index.js';\n"
+      );
     },
   };
 }
