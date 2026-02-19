@@ -171,24 +171,6 @@ async function bootAndRun({ headless = true } = {}) {
     '--debug',
     '--browserArgs',
     [
-      '--no-sandbox',
-      '--crash-dumps-dir=./tmp',
-      // Disable task throttling (also in TracerBench defaults, but explicit here for clarity)
-      '--disable-background-timer-throttling',
-      '--disable-backgrounding-occluded-windows',
-      '--disable-renderer-backgrounding',
-      // Disable caching and unnecessary subsystems
-      '--disable-dev-shm-usage',
-      '--disable-cache',
-      '--disable-v8-idle-tasks',
-      '--disable-breakpad',
-      '--disable-component-update',
-      '--disable-background-networking',
-      '--disable-notifications',
-      '--disable-hang-monitor',
-      '--safebrowsing-disable-auto-update',
-      '--ignore-certificate-errors',
-      '--v8-cache-options=none',
       // Use the new headless mode to support multiple targets
       ...(headless ? ['--headless=new'] : []),
       // GPU: use software rendering via SwiftShader, but do NOT
@@ -196,11 +178,6 @@ async function bootAndRun({ headless = true } = {}) {
       // as the contradictory flags cause use-after-free crashes on macOS
       '--disable-gpu',
       '--disable-gpu-compositing',
-      // Disable Chrome ML/TFLite features (suppresses XNNPACK/TFLite init)
-      '--disable-features=TranslateUI',
-      '--disable-features=UseChromiumML',
-      '--disable-features=UseTfLite',
-      '--disable-features=TensorFlowLite',
     ].join(','),
   ];
 

@@ -1,15 +1,60 @@
 diff --git a/dist/create-trace-benchmark.js b/dist/create-trace-benchmark.js
-index 5918e8f7665b3e796ef88283fc40c2b3286a564f..e1a8768964de8b3c16d38bfb6280d836b45aba0b 100644
+index 5918e8f7665b3e796ef88283fc40c2b3286a564f..b9927ba8f639c0a9ecc70144362da439468f1b3a 100644
 --- a/dist/create-trace-benchmark.js
 +++ b/dist/create-trace-benchmark.js
-@@ -45,9 +45,8 @@ function createTraceBenchmark(group, sampleTrace, options = {}) {
+@@ -45,35 +45,27 @@ function createTraceBenchmark(group, sampleTrace, options = {}) {
  }
  exports.default = createTraceBenchmark;
  function getCategories(isTrial, options) {
 -    const categories = ['-*', ...defaultCategories];
-+    const categories = [...defaultCategories];
-     if (isTrial) {
+-    if (isTrial) {
 -        categories.push(...captureAllDevtoolsTimelineCategories, ...captureCpuProfileCategories, captureCpuProfilesHiresCategory, captureFilmStripCategory, ...capturePaintProfileCategories);
-         if (options.additionalTrialCategories) {
-             categories.push(...options.additionalTrialCategories);
-         }
+-        if (options.additionalTrialCategories) {
+-            categories.push(...options.additionalTrialCategories);
+-        }
++    const categories = [...defaultCategories];
++    // include the basic disabled by default devtools categories
++    if (options.captureDevtoolsTimeline) {
++        categories.push(...captureDevtoolsTimelineCategories);
+     }
+-    else {
+-        // include the basic disabled by default devtools categories
+-        if (options.captureDevtoolsTimeline) {
+-            categories.push(...captureDevtoolsTimelineCategories);
+-        }
+-        if (options.captureV8RuntimeStats) {
+-            // this breaks devtools display of CPU profile in dev tools
+-            categories.push(...captureV8RuntimeStatsCategories);
+-        }
+-        if (options.captureCpuProfile) {
+-            // includes runtime samples
+-            categories.push(...captureCpuProfileCategories);
+-        }
+-        if (options.captureFilmStrip) {
+-            categories.push(captureFilmStripCategory);
+-        }
+-        if (options.capturePaintProfile) {
+-            categories.push(...capturePaintProfileCategories);
+-        }
+-        if (options.additionalCategories) {
+-            categories.push(...options.additionalCategories);
+-        }
++    if (options.captureV8RuntimeStats) {
++        // this breaks devtools display of CPU profile in dev tools
++        categories.push(...captureV8RuntimeStatsCategories);
++    }
++    if (options.captureCpuProfile) {
++        // includes runtime samples
++        categories.push(...captureCpuProfileCategories);
++    }
++    if (options.captureFilmStrip) {
++        categories.push(captureFilmStripCategory);
++    }
++    if (options.capturePaintProfile) {
++        categories.push(...capturePaintProfileCategories);
++    }
++    if (options.additionalCategories) {
++        categories.push(...options.additionalCategories);
+     }
+     return categories;
+ }

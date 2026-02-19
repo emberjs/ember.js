@@ -11,7 +11,7 @@ overrides:
 
 patchedDependencies:
   '@tracerbench/core@8.0.1':
-    hash: 94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846
+    hash: ee5cfa4adb0f65df07ef51d9be56c31150b4330d7ac7e1fbbb0a87329938af0a
     path: patches/@tracerbench__core@8.0.1.patch
 
 importers:
@@ -17184,7 +17184,7 @@ snapshots:
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
-  '@tracerbench/core@8.0.1(patch_hash=94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846)':
+  '@tracerbench/core@8.0.1(patch_hash=ee5cfa4adb0f65df07ef51d9be56c31150b4330d7ac7e1fbbb0a87329938af0a)':
     dependencies:
       '@tracerbench/har': 8.0.0
       '@tracerbench/trace-event': 8.0.0
@@ -25906,7 +25906,7 @@ snapshots:
       '@oclif/parser': 3.8.17
       '@oclif/plugin-help': 5.2.20(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
       '@oclif/plugin-warn-if-update-available': 2.1.1(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
-      '@tracerbench/core': 8.0.1(patch_hash=94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846)
+      '@tracerbench/core': 8.0.1(patch_hash=ee5cfa4adb0f65df07ef51d9be56c31150b4330d7ac7e1fbbb0a87329938af0a)
       '@tracerbench/stats': 8.0.1
       '@tracerbench/trace-event': 8.0.0
       archiver: 5.3.2
