@@ -50,7 +50,7 @@
     "lint:format:fix": "prettier --write .",
     "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
-    "test:node": "qunit tests/node/**/*-test.js",
+    "test:node": "NODE_OPTIONS=\"--import ./tests/node/helpers/register-loader.mjs ${NODE_OPTIONS:-}\" qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
