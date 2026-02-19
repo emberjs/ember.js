@@ -5,6 +5,7 @@
   "exports": {
     ".": "./index.ts",
     "./container-debug-adapter": "./container-debug-adapter.ts",
+    "./ember-inspector": "./ember-inspector.ts",
     "./data-adapter": "./data-adapter.ts"
   },
   "dependencies": {
