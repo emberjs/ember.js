@@ -1,12 +1,14 @@
 'use strict';
 
-const { loadEmber, clearEmber } = require('./helpers/load-ember');
+const path = require('path');
+const distPath = path.join(__dirname, '../../dist/packages/@ember/instrumentation/index.js');
 
-const { Ember } = loadEmber();
+let mod;
 
 QUnit.module('instrumentation', function (hooks) {
-  hooks.afterEach(function () {
-    clearEmber();
+  hooks.beforeEach(async function () {
+    if (!mod) mod = await import(distPath);
+    mod.reset();
   });
 
   QUnit.test('it works in FastBoot environment', function (assert) {
@@ -14,7 +16,7 @@ QUnit.module('instrumentation', function (hooks) {
 
     global.window = {}; // mock window without `performance` property
 
-    let result = Ember.instrument('render', {}, function () {
+    let result = mod.instrument('render', {}, function () {
       return 'hello';
     });
 

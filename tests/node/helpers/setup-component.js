@@ -2,17 +2,12 @@
 
 const SimpleDOM = require('simple-dom');
 const buildOwner = require('./build-owner');
-const { loadEmber, clearEmber } = require('./load-ember');
+const { loadEmberModules } = require('./ember-esm');
 
 module.exports = function (hooks) {
-  hooks.beforeEach(function () {
-    let { Ember, compile } = loadEmber();
-
-    this.compile = compile;
-    this.Ember = Ember;
-
-    Ember.testing = true;
-    this.run = Ember.run;
+  hooks.beforeEach(async function () {
+    let m = await loadEmberModules();
+    this._m = m;
 
     setupComponentTest.call(this);
   });
@@ -21,26 +16,25 @@ module.exports = function (hooks) {
     let module = this;
 
     if (this.component) {
-      this.run(function () {
+      this._m.run(function () {
         module.component.destroy();
       });
 
       this.component = null;
     }
 
-    this.run(this.owner, 'destroy');
+    this._m.run(this.owner, 'destroy');
     this.owner = null;
-    this.Ember = null;
-
-    clearEmber();
+    this._m = null;
   });
 };
 
 function setupComponentTest() {
   let module = this;
+  let m = this._m;
 
   module.element = new SimpleDOM.Document();
-  module.owner = buildOwner(this.Ember, { resolve: function () {} });
+  module.owner = buildOwner(m, { resolve: function () {} });
   module.owner.register('service:-document', new SimpleDOM.Document(), {
     instantiate: false,
   });
@@ -62,22 +56,25 @@ function setupComponentTest() {
     outlets: {},
   };
 
-  this.run(function () {
+  m.run(function () {
     module.component.setOutletState(module._outletState);
   });
 
   module.render = render;
   module.serializeElement = serializeElement;
   module.set = function (property, value) {
-    module.run(function () {
-      module.Ember.set(module, property, value);
+    module._m.run(function () {
+      module[property] = value;
     });
   };
+
+  // Expose Component for tests that reference this.Ember.Component
+  module.Ember = { Component: m.Component };
 }
 
 function render(_template) {
   let module = this;
-  let templateFactory = this.compile(_template);
+  let templateFactory = this._m.compile(_template);
 
   let stateToRender = {
     owner: this.owner,
@@ -90,12 +87,12 @@ function render(_template) {
   stateToRender.name = 'index';
   this._outletState.outlets.main = { render: stateToRender, outlets: {} };
 
-  this.run(function () {
+  this._m.run(function () {
     module.component.setOutletState(module._outletState);
   });
 
   if (!this._hasRendered) {
-    this.run(function () {
+    this._m.run(function () {
       module.component.appendTo(module.element);
     });
     this._hasRendered = true;

@@ -1,7 +1,7 @@
-module.exports = function buildOwner(Ember, resolver) {
-  let Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin);
+module.exports = function buildOwner(m, resolver) {
+  let Owner = m.EmberObject.extend(m.RegistryProxyMixin, m.ContainerProxyMixin);
 
-  let namespace = Ember.Object.create({
+  let namespace = m.EmberObject.create({
     Resolver: {
       create: function () {
         return resolver;
@@ -9,12 +9,12 @@ module.exports = function buildOwner(Ember, resolver) {
     },
   });
 
-  let fallbackRegistry = Ember.Application.buildRegistry(namespace);
-  let registry = new Ember.Registry({
+  let fallbackRegistry = m.Application.buildRegistry(namespace);
+  let registry = new m.Registry({
     fallback: fallbackRegistry,
   });
 
-  Ember.ApplicationInstance.setupRegistry(registry);
+  m.ApplicationInstance.setupRegistry(registry);
 
   let owner = Owner.create({
     __registry__: registry,

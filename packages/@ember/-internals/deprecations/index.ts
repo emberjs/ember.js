@@ -112,16 +112,6 @@ export const DEPRECATIONS = {
     until: '7.0.0',
     url: 'https://deprecations.emberjs.com/id/importing-inject-from-ember-service',
   }),
-  DEPRECATE_AMD_BUNDLES: deprecation({
-    for: 'ember-source',
-    id: 'using-amd-bundles',
-    since: {
-      available: '6.10.0',
-      enabled: '6.10.0',
-    },
-    until: '7.0.0',
-    url: 'https://deprecations.emberjs.com/id/using-amd-bundles',
-  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

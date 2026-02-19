@@ -6,11 +6,11 @@
     "ember-addon"
   ],
   "exports": {
+    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./*": "./dist/packages/*",
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
-    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./package.json": "./package.json"
   },
   "homepage": "https://emberjs.com/",
@@ -22,16 +22,10 @@
   "files": [
     "build-metadata.json",
     "blueprints",
+    "dist/package.json",
+    "dist/ember-template-compiler.js",
     "dist/packages",
     "dist/dependencies",
-    "dist/ember-template-compiler.js",
-    "dist/ember-template-compiler.js.map",
-    "dist/ember.debug.js",
-    "dist/ember.debug.js.map",
-    "dist/ember.prod.js",
-    "dist/ember.prod.js.map",
-    "dist/ember-testing.js",
-    "dist/ember-testing.js.map",
     "docs/data.json",
     "lib",
     "types/stable"
@@ -56,7 +50,7 @@
     "lint:format:fix": "prettier --write .",
     "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
-    "test:node": "qunit tests/node/**/*-test.js",
+    "test:node": "NODE_OPTIONS=\"--import ./tests/node/helpers/register-loader.mjs ${NODE_OPTIONS:-}\" qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
@@ -346,7 +340,6 @@
       "@simple-dom/document/index.js": "ember-source/@simple-dom/document/index.js",
       "backburner.js/index.js": "ember-source/backburner.js/index.js",
       "dag-map/index.js": "ember-source/dag-map/index.js",
-      "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
       "ember-testing/lib/adapters/adapter.js": "ember-source/ember-testing/lib/adapters/adapter.js",
       "ember-testing/lib/adapters/qunit.js": "ember-source/ember-testing/lib/adapters/qunit.js",

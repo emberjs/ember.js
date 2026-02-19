@@ -1,17 +1,18 @@
 /* eslint-disable no-console */
 
+'use strict';
+
 const SimpleDOM = require('simple-dom');
-const { loadEmber, clearEmber } = require('./load-ember');
+const { loadEmberModules } = require('./ember-esm');
 
 /*
  * This helper sets up a QUnit test module with all of the environment and
  * helper methods necessary to test an Ember.js application running in the
  * server-side environment.
  *
- * On each test, it loads a fresh version of the compiled Ember.js library
- * from `dist`, just like how FastBoot works. It uses the new `visit()` API
- * to simulate a FastBoot environment (enabling that feature flag if it is
- * not already turned on).
+ * On each test, it loads the compiled Ember.js ESM packages from `dist`,
+ * just like how FastBoot works. It uses the `visit()` API to simulate a
+ * FastBoot environment.
  *
  * To test an app, register the objects that make up the app. For example,
  * to register a component:
@@ -50,24 +51,20 @@ const { loadEmber, clearEmber } = require('./load-ember');
  * `renderToHTML` returns a promise that resolves to the rendered HTML of the
  * application.
  *
- *     return this.renderToHTML('/'photos).then(function(html) {
+ *     return this.renderToHTML('/photos').then(function(html) {
  *       assert.ok(html.matches('<h1>Hello world</h1>'));
  *     });
  */
-
 module.exports = function (hooks) {
-  hooks.beforeEach(function () {
-    let { Ember, compile } = loadEmber();
+  hooks.beforeEach(async function () {
+    let m = await loadEmberModules();
+    this._m = m;
 
-    this.Ember = Ember;
-    this.compile = compile;
-    this.setComponentTemplate = Ember._setComponentTemplate;
-    this.templateOnlyComponent = Ember._templateOnlyComponent;
-
-    Ember.testing = true;
-
-    this.run = Ember.run;
-    this.all = Ember.RSVP.all;
+    this.compile = m.compile;
+    this.setComponentTemplate = m.setComponentTemplate;
+    this.templateOnlyComponent = m.templateOnly;
+    this.run = m.run;
+    this.all = m.all;
 
     this.visit = visit;
     this.createApplication = createApplication;
@@ -83,16 +80,20 @@ module.exports = function (hooks) {
   });
 
   hooks.afterEach(function () {
-    this.run(this.app, 'destroy');
-
-    clearEmber();
+    if (this.app) {
+      this.run(this.app, 'destroy');
+      this.app = null;
+    }
+    this._m = null;
   });
 };
 
 function createApplication() {
   if (this.app) return this.app;
 
-  let app = class extends this.Ember.Application {}.create({
+  let m = this._m;
+
+  let app = class extends m.Application {}.create({
     autoboot: false,
     Resolver: {
       create: (specifier) => {
@@ -101,7 +102,7 @@ function createApplication() {
     },
   });
 
-  let Router = class extends this.Ember.Router {
+  let Router = class extends m.Router {
     location = 'none';
   };
 
@@ -169,28 +170,32 @@ function registerTemplate(name, template) {
 }
 
 function registerComponent(name, componentProps, templateContents) {
-  let component = this.setComponentTemplate(
-    this.compile(templateContents),
-    componentProps ? this.Ember.Component.extend(componentProps) : this.templateOnlyComponent()
+  let m = this._m;
+  let component = m.setComponentTemplate(
+    m.compile(templateContents),
+    componentProps ? m.Component.extend(componentProps) : m.templateOnly()
   );
   this.register('component:' + name, component);
 }
 
 function registerController(name, controllerProps) {
-  let controller = this.Ember.Controller.extend(controllerProps);
+  let m = this._m;
+  let controller = m.Controller.extend(controllerProps);
   this.register('controller:' + name, controller);
 }
 
 function registerRoute(name, routeProps) {
-  let route = this.Ember.Route.extend({
-    router: this.Ember.inject.service('router'),
+  let m = this._m;
+  let route = m.Route.extend({
+    router: m.service('router'),
     ...routeProps,
   });
   this.register('route:' + name, route);
 }
 
 function registerService(name, serviceProps) {
-  let service = this.Ember.Object.extend(serviceProps);
+  let m = this._m;
+  let service = m.EmberObject.extend(serviceProps);
   this.register('service:' + name, service);
 }
 
