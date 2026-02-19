@@ -10,7 +10,6 @@
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
-    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./package.json": "./package.json"
   },
   "homepage": "https://emberjs.com/",
@@ -24,14 +23,6 @@
     "blueprints",
     "dist/packages",
     "dist/dependencies",
-    "dist/ember-template-compiler.js",
-    "dist/ember-template-compiler.js.map",
-    "dist/ember.debug.js",
-    "dist/ember.debug.js.map",
-    "dist/ember.prod.js",
-    "dist/ember.prod.js.map",
-    "dist/ember-testing.js",
-    "dist/ember-testing.js.map",
     "docs/data.json",
     "lib",
     "types/stable"
@@ -346,7 +337,6 @@
       "@simple-dom/document/index.js": "ember-source/@simple-dom/document/index.js",
       "backburner.js/index.js": "ember-source/backburner.js/index.js",
       "dag-map/index.js": "ember-source/dag-map/index.js",
-      "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
       "ember-testing/lib/adapters/adapter.js": "ember-source/ember-testing/lib/adapters/adapter.js",
       "ember-testing/lib/adapters/qunit.js": "ember-source/ember-testing/lib/adapters/qunit.js",

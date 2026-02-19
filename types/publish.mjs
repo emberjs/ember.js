@@ -161,19 +161,12 @@ async function main() {
   process.exit(status === 'success' ? 0 : 1);
 }
 
-const REMAPPED_LOCATION_MODULES = [
-  {
-    input: 'packages/loader/lib/index.d.ts',
-    output: 'require.d.ts',
-  },
-];
+const REMAPPED_LOCATION_MODULES = [];
 
 /**
   "Emit" hand-authored `.d.ts` modules for modules which need to live in a
-  different location in the output than in the input tree, e.g. for the loader,
-  which creates runtime modules at a different location than its source location
-  naturally corresponds to. These represent modules which need to be copied over
-  and then *left exactly as they are*.
+  different location in the output than in the input tree. These represent
+  modules which need to be copied over and then *left exactly as they are*.
 
   @returns {Promise<string[]>} an array of module names to exclude from the rest of the
     post-processing steps

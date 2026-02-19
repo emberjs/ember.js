@@ -1,68 +1,39 @@
 const path = require('path');
 
-const distPath = path.join(__dirname, '../../dist');
+const esmCompilerPath = path.join(
+  __dirname,
+  '../../dist/packages/ember-template-compiler/index.js'
+);
 
 let templateCompiler;
 
-QUnit.module('ember-template-compiler.js', function () {
-  QUnit.module('modern', function (hooks) {
-    hooks.beforeEach(function () {
-      this.templateCompilerPath = path.resolve(path.join(distPath, 'ember-template-compiler.js'));
-      templateCompiler = require(this.templateCompilerPath);
-    });
+QUnit.module('ember-template-compiler (ESM)', function (hooks) {
+  hooks.beforeEach(async function () {
+    templateCompiler = await import(esmCompilerPath);
+  });
 
-    hooks.afterEach(function () {
-      // clear the previously cached version of this module
-      delete require.cache[this.templateCompilerPath];
-    });
+  QUnit.test('exports precompile', function (assert) {
+    assert.strictEqual(typeof templateCompiler.precompile, 'function', 'precompile is present');
+  });
 
-    QUnit.test('can be required', function (assert) {
-      assert.strictEqual(
-        typeof templateCompiler.precompile,
-        'function',
-        'precompile function is present'
-      );
-      assert.strictEqual(
-        typeof templateCompiler.compile,
-        'function',
-        'compile function is present'
-      );
-    });
-
-    QUnit.test('can access _Ember.ENV (private API used by ember-cli-htmlbars)', function (assert) {
-      assert.equal(typeof templateCompiler._Ember.ENV, 'object', '_Ember.ENV is present');
-      assert.notEqual(typeof templateCompiler._Ember.ENV, null, '_Ember.ENV is not null');
-    });
-
-    QUnit.test('_Ember.ENV (private API used by ember-cli-htmlbars) is stable', function (assert) {
-      assert.strictEqual(
-        templateCompiler._Ember.ENV,
-        templateCompiler._Ember.ENV,
-        '_Ember.ENV is stable'
-      );
-    });
-
-    QUnit.test(
-      'can access _Ember.FEATURES (private API used by ember-cli-htmlbars)',
-      function (assert) {
-        assert.equal(
-          typeof templateCompiler._Ember.FEATURES,
-          'object',
-          '_Ember.FEATURES is present'
-        );
-        assert.notEqual(
-          typeof templateCompiler._Ember.FEATURES,
-          null,
-          '_Ember.FEATURES is not null'
-        );
-      }
+  QUnit.test('exports _buildCompileOptions', function (assert) {
+    assert.strictEqual(
+      typeof templateCompiler._buildCompileOptions,
+      'function',
+      '_buildCompileOptions is present'
     );
+  });
 
-    QUnit.test(
-      'can access _Ember.VERSION (private API used by ember-cli-htmlbars)',
-      function (assert) {
-        assert.equal(typeof templateCompiler._Ember.VERSION, 'string', '_Ember.VERSION is present');
-      }
-    );
+  QUnit.test('exports _preprocess', function (assert) {
+    assert.strictEqual(typeof templateCompiler._preprocess, 'function', '_preprocess is present');
+  });
+
+  QUnit.test('exports _print', function (assert) {
+    assert.strictEqual(typeof templateCompiler._print, 'function', '_print is present');
+  });
+
+  QUnit.test('precompile produces valid output', function (assert) {
+    let result = templateCompiler.precompile('<h1>Hello</h1>');
+    assert.strictEqual(typeof result, 'string', 'precompile returns a string');
   });
 });
