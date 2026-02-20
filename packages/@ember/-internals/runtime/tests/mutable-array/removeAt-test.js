@@ -1,4 +1,4 @@
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { AbstractTestCase, expectDeprecation, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 import { removeAt } from '@ember/array';
 import { get } from '@ember/object';
@@ -10,7 +10,9 @@ class RemoveAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(removeAt(obj, 0), obj, 'return self');
 
@@ -48,7 +50,9 @@ class RemoveAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(removeAt(obj, 0), obj, 'return self');
 
@@ -82,7 +86,9 @@ class RemoveAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(removeAt(obj, 1), obj, 'return self');
 
@@ -116,7 +122,9 @@ class RemoveAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(removeAt(obj, 1), obj, 'return self');
 
@@ -150,7 +158,9 @@ class RemoveAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
     this.assert.equal(removeAt(obj, 1, 2), obj, 'return self');
 
@@ -185,9 +195,14 @@ class RemoveAtTests extends AbstractTestCase {
     after = [before[0], before[3]];
     obj = this.newObject(before);
     observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-    this.assert.equal(obj.removeAt(1, 2), obj, 'return self');
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
+
+    expectDeprecation(() => {
+      this.assert.equal(obj.removeAt(1, 2), obj, 'return self');
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();

@@ -1,6 +1,7 @@
 import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
+  expectDeprecation,
   moduleFor,
   runTask,
 } from 'internal-test-helpers';
@@ -13,6 +14,7 @@ import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
+import { emberAWithoutDeprecation } from '@ember/routing/-internals';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -1545,7 +1547,7 @@ moduleFor(
             controller = this;
           }
 
-          routeNames = emberA(['foo', 'bar', 'rar']);
+          routeNames = emberAWithoutDeprecation(['foo', 'bar', 'rar']);
           route1 = 'bar';
           route2 = 'foo';
         }
@@ -1588,7 +1590,9 @@ moduleFor(
 
       linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
-      runTask(() => controller.routeNames.shiftObject());
+      expectDeprecation(() => {
+        runTask(() => controller.routeNames.shiftObject());
+      }, /Usage of Ember.Array methods is deprecated/);
 
       linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
     }

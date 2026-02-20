@@ -1,5 +1,10 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  AbstractTestCase,
+  expectDeprecation,
+  ignoreDeprecation,
+  runLoopSettled,
+} from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class InsertAtTests extends AbstractTestCase {
@@ -8,9 +13,13 @@ class InsertAtTests extends AbstractTestCase {
     let obj = this.newObject([]);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.insertAt(0, after[0]);
+    expectDeprecation(() => {
+      obj.insertAt(0, after[0]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -46,7 +55,9 @@ class InsertAtTests extends AbstractTestCase {
   '@test [].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception'() {
     let obj = this.newObject([]);
     let item = newFixture(1)[0];
-    expectAssertion(() => obj.insertAt(200, item), /`insertAt` index provided is out of range/);
+    expectDeprecation(() => {
+      expectAssertion(() => obj.insertAt(200, item), /`insertAt` index provided is out of range/);
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   async '@test [A].insertAt(0, X) => [X,A] + notify'() {
@@ -56,9 +67,13 @@ class InsertAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.insertAt(0, item);
+    expectDeprecation(() => {
+      obj.insertAt(0, item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -91,9 +106,13 @@ class InsertAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.insertAt(1, item);
+    expectDeprecation(() => {
+      obj.insertAt(1, item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -123,7 +142,9 @@ class InsertAtTests extends AbstractTestCase {
     let obj = this.newObject(newFixture(1));
     let that = this;
 
-    this.assert.throws(() => obj.insertAt(200, that.newFixture(1)[0]), Error);
+    ignoreDeprecation(() => {
+      this.assert.throws(() => obj.insertAt(200, that.newFixture(1)[0]), Error);
+    });
   }
 
   async '@test [A,B,C].insertAt(0,X) => [X,A,B,C] + notify'() {
@@ -133,9 +154,13 @@ class InsertAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.insertAt(0, item);
+    expectDeprecation(() => {
+      obj.insertAt(0, item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     await runLoopSettled();
 
@@ -174,11 +199,15 @@ class InsertAtTests extends AbstractTestCase {
       return objectAt.call(obj, ix);
     };
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
     objectAtCalls.splice(0, objectAtCalls.length);
 
-    obj.insertAt(1, item);
+    expectDeprecation(() => {
+      obj.insertAt(1, item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -213,9 +242,13 @@ class InsertAtTests extends AbstractTestCase {
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.insertAt(3, item);
+    expectDeprecation(() => {
+      obj.insertAt(3, item);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -242,4 +275,4 @@ class InsertAtTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('instertAt', InsertAtTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('insertAt', InsertAtTests, 'MutableArray', 'NativeArray', 'ArrayProxy');

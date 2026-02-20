@@ -24,6 +24,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
+import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
@@ -1038,7 +1039,7 @@ class CoreObject {
       // If the prototype mixin exists, apply it. In the case of native classes,
       // it will not exist (unless the class has been reopened).
       if (prototypeMixinMap.has(this)) {
-        this.PrototypeMixin.apply(p);
+        disableDeprecations(() => this.PrototypeMixin.apply(p));
       }
     }
     return p;

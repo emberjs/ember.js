@@ -2,7 +2,6 @@ import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
 import EmberObject, { action, get, computed } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
-import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
 import { tracked } from '@ember/-internals/metal';
@@ -10,7 +9,14 @@ import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';
 
-import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
+import {
+  QueryParamTestCase,
+  moduleFor,
+  getTextOf,
+  runLoopSettled,
+  emberAWithoutDeprecation as emberA,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   'Query Params - main',
@@ -1294,7 +1300,7 @@ moduleFor(
     }
 
     async ['@test Array query params can be pushed/popped'](assert) {
-      assert.expect(17);
+      assert.expect(25);
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -1305,42 +1311,66 @@ moduleFor(
       await this.visitAndAssert('/');
       let controller = this.getController('home');
 
-      controller.foo.pushObject(1);
+      expectDeprecation(() => {
+        controller.foo.pushObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.popObject();
+      expectDeprecation(() => {
+        controller.foo.popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/');
       assert.deepEqual(controller.foo, []);
 
-      controller.foo.pushObject(1);
+      expectDeprecation(() => {
+        controller.foo.pushObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.popObject();
+      expectDeprecation(() => {
+        controller.foo.popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/');
       assert.deepEqual(controller.foo, []);
 
-      controller.foo.pushObject(1);
+      expectDeprecation(() => {
+        controller.foo.pushObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.pushObject(2);
+      expectDeprecation(() => {
+        controller.foo.pushObject(2);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%2C2%5D');
       assert.deepEqual(controller.foo, [1, 2]);
 
-      controller.foo.popObject();
+      expectDeprecation(() => {
+        controller.foo.popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.unshiftObject('lol');
+      expectDeprecation(() => {
+        controller.foo.unshiftObject('lol');
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B%22lol%22%2C1%5D');
       assert.deepEqual(controller.foo, ['lol', 1]);

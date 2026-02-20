@@ -1,4 +1,4 @@
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
 import { alias } from '@ember/-internals/metal';
 import {
   and,
@@ -66,13 +66,15 @@ moduleFor(
     }
 
     ['@test collect throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @collect foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @collect foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @collect/);
+          new Foo();
+        }, /You attempted to use @collect/);
+      }, /The @collect decorator is deprecated/);
     }
 
     ['@test deprecatingAlias throws an error if used without parameters']() {
@@ -106,23 +108,27 @@ moduleFor(
     }
 
     ['@test filter throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @filter foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @filter foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @filter/);
+          new Foo();
+        }, /You attempted to use @filter/);
+      }, /The @filter decorator is deprecated/);
     }
 
     ['@test filterBy throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @filterBy foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @filterBy foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @filterBy/);
+          new Foo();
+        }, /You attempted to use @filterBy/);
+      }, /The @filterBy decorator is deprecated/);
     }
 
     ['@test gt throws an error if used without parameters']() {
@@ -146,13 +152,15 @@ moduleFor(
     }
 
     ['@test intersect throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @intersect foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @intersect foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @intersect/);
+          new Foo();
+        }, /You attempted to use @intersect/);
+      }, /The @intersect decorator is deprecated/);
     }
 
     ['@test lt throws an error if used without parameters']() {
@@ -176,23 +184,27 @@ moduleFor(
     }
 
     ['@test map throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @map foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @map foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @map/);
+          new Foo();
+        }, /You attempted to use @map/);
+      }, /The @map decorator is deprecated/);
     }
 
     ['@test mapBy throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @mapBy foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @mapBy foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @mapBy/);
+          new Foo();
+        }, /You attempted to use @mapBy/);
+      }, /The @mapBy decorator is deprecated/);
     }
 
     ['@test match throws an error if used without parameters']() {
@@ -206,23 +218,27 @@ moduleFor(
     }
 
     ['@test max throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @max foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @max foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @max/);
+          new Foo();
+        }, /You attempted to use @max/);
+      }, /The @max decorator is deprecated/);
     }
 
     ['@test min throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @min foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @min foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @min/);
+          new Foo();
+        }, /You attempted to use @min/);
+      }, /The @min decorator is deprecated/);
     }
 
     ['@test not throws an error if used without parameters']() {
@@ -276,63 +292,75 @@ moduleFor(
     }
 
     ['@test setDiff throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @setDiff foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @setDiff foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @setDiff/);
+          new Foo();
+        }, /You attempted to use @setDiff/);
+      }, /The @setDiff decorator is deprecated/);
     }
 
     ['@test sort throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @sort foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @sort foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @sort/);
+          new Foo();
+        }, /You attempted to use @sort/);
+      }, /The @sort decorator is deprecated/);
     }
 
     ['@test sum throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @sum foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @sum foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @sum/);
+          new Foo();
+        }, /You attempted to use @sum/);
+      }, /The @sum decorator is deprecated/);
     }
 
     ['@test union throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @union foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @union foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @uniq\/@union/);
+          new Foo();
+        }, /You attempted to use @uniq\/@union/);
+      }, /The @uniq\/@union decorator is deprecated/);
     }
 
     ['@test uniq throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @uniq foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @uniq foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @uniq\/@union/);
+          new Foo();
+        }, /You attempted to use @uniq/);
+      }, /The @uniq\/@union decorator is deprecated/);
     }
 
     ['@test uniqBy throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @uniqBy foo;
-        }
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          class Foo {
+            @uniqBy foo;
+          }
 
-        new Foo();
-      }, /You attempted to use @uniqBy/);
+          new Foo();
+        }, /You attempted to use @uniqBy/);
+      }, /The @uniqBy decorator is deprecated/);
     }
   }
 );

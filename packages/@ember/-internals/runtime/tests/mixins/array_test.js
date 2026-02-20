@@ -7,54 +7,71 @@ import {
   arrayContentWillChange,
 } from '@ember/-internals/metal';
 import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
-import EmberArray, { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import EmberArray from '@ember/array';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+} from 'internal-test-helpers';
+import { emberAWithoutDeprecation } from '@ember/routing/-internals';
 
-/*
-  Implement a basic fake mutable array.  This validates that any non-native
-  enumerable can impl this API.
-*/
-const TestArray = class extends EmberObject.extend(EmberArray) {
-  _content = null;
-
-  init() {
-    this._content = this._content || [];
-  }
-
-  // some methods to modify the array so we can test changes.  Note that
-  // arrays can be modified even if they don't implement MutableArray.  The
-  // MutableArray is just a standard API for mutation but not required.
-  addObject(obj) {
-    let idx = this._content.length;
-    arrayContentWillChange(this, idx, 0, 1);
-    this._content.push(obj);
-    arrayContentDidChange(this, idx, 0, 1);
-  }
-
-  removeFirst() {
-    arrayContentWillChange(this, 0, 1, 0);
-    this._content.shift();
-    arrayContentDidChange(this, 0, 1, 0);
-  }
-
-  objectAt(idx) {
-    return this._content[idx];
-  }
-
-  get length() {
-    return this._content.length;
-  }
-};
+let TestArray;
 
 moduleFor(
   'Ember.Array',
   class extends AbstractTestCase {
+    beforeEach() {
+      expectDeprecation(() => {
+        /*
+          Implement a basic fake mutable array.  This validates that any non-native
+          enumerable can impl this API.
+        */
+        TestArray = class extends EmberObject.extend(EmberArray) {
+          _content = null;
+
+          init() {
+            this._content = this._content || [];
+          }
+
+          // some methods to modify the array so we can test changes.  Note that
+          // arrays can be modified even if they don't implement MutableArray.  The
+          // MutableArray is just a standard API for mutation but not required.
+          addObject(obj) {
+            let idx = this._content.length;
+            arrayContentWillChange(this, idx, 0, 1);
+            this._content.push(obj);
+            arrayContentDidChange(this, idx, 0, 1);
+          }
+
+          removeFirst() {
+            arrayContentWillChange(this, 0, 1, 0);
+            this._content.shift();
+            arrayContentDidChange(this, 0, 1, 0);
+          }
+
+          objectAt(idx) {
+            return this._content[idx];
+          }
+
+          get length() {
+            return this._content.length;
+          }
+        };
+      }, /Usage of EmberArray is deprecated/);
+    }
+
     ['@test the return value of slice has Ember.Array applied'](assert) {
-      let x = EmberObject.extend(EmberArray).create({
-        length: 0,
-      });
+      let x;
+      expectDeprecation(() => {
+        x = EmberObject.extend(EmberArray).create({
+          length: 0,
+        });
+      }, /Usage of EmberArray is deprecated/);
       let y = x.slice(1);
-      assert.equal(EmberArray.detect(y), true, 'mixin should be applied');
+      expectDeprecation(() => {
+        assert.equal(EmberArray.detect(y), true, 'mixin should be applied');
+      }, /Usage of EmberArray is deprecated/);
     }
 
     ['@test slice supports negative index arguments'](assert) {
@@ -80,14 +97,7 @@ moduleFor(
 // CONTENT DID CHANGE
 //
 
-class DummyArray extends EmberObject.extend(EmberArray) {
-  length = 0;
-  objectAt(idx) {
-    return 'ITEM-' + idx;
-  }
-}
-
-let obj, observer;
+let DummyArray, obj, observer;
 
 // ..........................................................
 // NOTIFY ARRAY OBSERVERS
@@ -96,6 +106,16 @@ let obj, observer;
 moduleFor(
   'mixins/array/arrayContent[Will|Did]Change',
   class extends AbstractTestCase {
+    beforeEach() {
+      expectDeprecation(() => {
+        DummyArray = class extends EmberObject.extend(EmberArray) {
+          length = 0;
+          objectAt(idx) {
+            return 'ITEM-' + idx;
+          }
+        };
+      }, /Usage of EmberArray is deprecated/);
+    }
     async ['@test should notify observers of []'](assert) {
       obj = DummyArray.extend({
         enumerablePropertyDidChange: emberObserver('[]', function () {
@@ -345,7 +365,7 @@ moduleFor(
       let obj = class extends EmberObject {
         init() {
           super.init(...arguments);
-          set(this, 'resources', emberA());
+          set(this, 'resources', emberAWithoutDeprecation());
         }
 
         @computed('resources.@each.common')
@@ -354,7 +374,9 @@ moduleFor(
         }
       }.create();
 
-      get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      expectDeprecation(() => {
+        get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      }, /Usage of Ember.Array methods is deprecated/);
       assert.equal('HI!', get(obj, 'common'));
 
       set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
@@ -370,14 +392,17 @@ moduleFor(
         init() {
           this._super(...arguments);
           // Observer does not fire on init
-          set(this, 'resources', emberA());
+          set(this, 'resources', emberAWithoutDeprecation());
         },
 
         commonDidChange: emberObserver('resources.@each.common', () => count++),
       }).create();
 
       // Observer fires first time when new object is added
-      get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      expectDeprecation(() => {
+        get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
 
       // Observer fires second time when property on an object is changed

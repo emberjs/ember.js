@@ -1,7 +1,11 @@
 import { get } from '@ember/object';
-import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  AbstractTestCase,
+  runLoopSettled,
+  emberAWithoutDeprecation as emberA,
+  expectDeprecation,
+} from 'internal-test-helpers';
 import { runArrayTests, newFixture, newObjectsFixture } from '../helpers/array';
-import { A as emberA } from '@ember/array';
 import { destroy } from '@glimmer/destroyable';
 
 class RemoveObjectsTests extends AbstractTestCase {
@@ -9,7 +13,9 @@ class RemoveObjectsTests extends AbstractTestCase {
     let before = emberA(newFixture(3));
     let obj = before;
 
-    this.assert.equal(obj.removeObjects(before[1]), obj, 'should return receiver');
+    expectDeprecation(() => {
+      this.assert.equal(obj.removeObjects(before[1]), obj, 'should return receiver');
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   async '@test [A,B,C].removeObjects([B]) => [A,C] + notify'() {
@@ -18,9 +24,13 @@ class RemoveObjectsTests extends AbstractTestCase {
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.removeObjects([before[1]]);
+    expectDeprecation(() => {
+      obj.removeObjects([before[1]]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -53,9 +63,13 @@ class RemoveObjectsTests extends AbstractTestCase {
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.removeObjects([before[1]]);
+    expectDeprecation(() => {
+      obj.removeObjects([before[1]]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -88,9 +102,13 @@ class RemoveObjectsTests extends AbstractTestCase {
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.removeObjects([before[0], before[1]]);
+    expectDeprecation(() => {
+      obj.removeObjects([before[0], before[1]]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -119,9 +137,13 @@ class RemoveObjectsTests extends AbstractTestCase {
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.removeObjects([before[0], before[1]]);
+    expectDeprecation(() => {
+      obj.removeObjects([before[0], before[1]]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -150,9 +172,13 @@ class RemoveObjectsTests extends AbstractTestCase {
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.removeObjects([before[0], before[1], before[2]]);
+    expectDeprecation(() => {
+      obj.removeObjects([before[0], before[1], before[2]]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -177,9 +203,13 @@ class RemoveObjectsTests extends AbstractTestCase {
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.removeObjects(before);
+    expectDeprecation(() => {
+      obj.removeObjects(before);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();
@@ -205,9 +235,13 @@ class RemoveObjectsTests extends AbstractTestCase {
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-    obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    expectDeprecation(() => {
+      obj.getProperties('firstObject', 'lastObject'); // Prime the cache
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    obj.removeObjects([item]); // Note: item not in set
+    expectDeprecation(() => {
+      obj.removeObjects([item]); // Note: item not in set
+    }, /Usage of Ember.Array methods is deprecated/);
 
     // flush observers
     await runLoopSettled();

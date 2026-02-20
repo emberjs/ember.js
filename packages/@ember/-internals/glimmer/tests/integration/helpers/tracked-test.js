@@ -7,7 +7,14 @@ import {
   notifyPropertyChange,
 } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+  emberAWithoutDeprecation,
+} from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
 
@@ -142,10 +149,12 @@ moduleFor(
 
     '@test array properties rerender when updated'() {
       class NumListComponent extends Component {
-        @tracked numbers = A([1, 2, 3]);
+        @tracked numbers = emberAWithoutDeprecation([1, 2, 3]);
 
         addNumber = () => {
-          this.numbers.pushObject(4);
+          expectDeprecation(() => {
+            this.numbers.pushObject(4);
+          }, /Usage of Ember.Array methods is deprecated/);
         };
       }
 
@@ -172,35 +181,40 @@ moduleFor(
     }
 
     '@test custom ember array properties rerender when updated'() {
-      let CustomArray = class extends EmberObject.extend(MutableArray) {
-        init() {
-          super.init(...arguments);
-          this._vals = [1, 2, 3];
-        }
+      let CustomArray;
+      expectDeprecation(() => {
+        CustomArray = class extends EmberObject.extend(MutableArray) {
+          init() {
+            super.init(...arguments);
+            this._vals = [1, 2, 3];
+          }
 
-        objectAt(index) {
-          return this._vals[index];
-        }
+          objectAt(index) {
+            return this._vals[index];
+          }
 
-        replace(start, deleteCount, items = []) {
-          this._vals.splice(start, deleteCount, ...items);
-          notifyPropertyChange(this, '[]');
-        }
+          replace(start, deleteCount, items = []) {
+            this._vals.splice(start, deleteCount, ...items);
+            notifyPropertyChange(this, '[]');
+          }
 
-        join() {
-          return this._vals.join(...arguments);
-        }
+          join() {
+            return this._vals.join(...arguments);
+          }
 
-        get length() {
-          return this._vals.length;
-        }
-      };
+          get length() {
+            return this._vals.length;
+          }
+        };
+      }, /Usage of MutableArray is deprecated/);
 
       class NumListComponent extends Component {
         @tracked numbers = CustomArray.create();
 
         addNumber = () => {
-          this.numbers.pushObject(4);
+          expectDeprecation(() => {
+            this.numbers.pushObject(4);
+          }, /Usage of Ember.Array methods is deprecated/);
         };
       }
 
@@ -389,7 +403,7 @@ moduleFor(
     }
 
     '@test each-in autotracks arrays acorrectly'() {
-      let obj = EmberObject.create({ arr: A([1]) });
+      let obj = EmberObject.create({ arr: emberAWithoutDeprecation([1]) });
 
       this.registerComponent('person', {
         ComponentClass: class extends Component {
@@ -406,7 +420,9 @@ moduleFor(
 
       this.assertText('1');
 
-      runTask(() => obj.arr.pushObject(2));
+      expectDeprecation(() => {
+        runTask(() => obj.arr.pushObject(2));
+      }, /Usage of Ember.Array methods is deprecated/);
 
       this.assertText('12');
     }

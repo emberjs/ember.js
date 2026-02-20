@@ -13,14 +13,24 @@ import {
 } from '@ember/-internals/metal';
 import { get, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
 import { compare, typeOf } from '@ember/utils';
 import Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
-import { isEmberArray, setEmberArray } from '@ember/array/-internals';
+import {
+  deprecationsAreDisabled,
+  disableDeprecations,
+  isEmberArray,
+  setEmberArray,
+} from '@ember/array/-internals';
+import {
+  disableDeprecations as disableMixinDeprecations,
+  setDeprecation,
+} from '@ember/-internals/utils/lib/mixin-deprecation';
+import ArrayProxy from './proxy';
 
 export { default as makeArray } from './make';
 
@@ -178,7 +188,7 @@ export function isArray(obj: unknown): obj is ArrayLike<unknown> | EmberArray<un
     return false;
   }
 
-  if (Array.isArray(obj) || EmberArray.detect(obj)) {
+  if (Array.isArray(obj) || disableMixinDeprecations(() => EmberArray.detect(obj))) {
     return true;
   }
 
@@ -206,6 +216,12 @@ function nonEnumerableComputed(callback: ComputedPropertyCallback) {
 }
 
 function mapBy<T>(this: EmberArray<T>, key: string) {
+  deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  });
   return this.map((next) => get(next, key));
 }
 
@@ -1205,6 +1221,12 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 
   objectsAt(indexes: number[]) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return indexes.map((idx) => objectAt(this, idx));
   },
 
@@ -1219,16 +1241,28 @@ const EmberArray = Mixin.create(Enumerable, {
   }),
 
   firstObject: nonEnumerableComputed(function () {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return objectAt(this, 0);
   }).readOnly(),
 
   lastObject: nonEnumerableComputed(function () {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return objectAt(this, this.length - 1);
   }).readOnly(),
 
   // Add any extra methods to EmberArray that are native to the built-in Array.
   slice(beginIndex = 0, endIndex?: number) {
-    let ret = A();
+    let ret = disableDeprecations(() => A());
     let length = this.length;
 
     if (beginIndex < 0) {
@@ -1291,6 +1325,12 @@ const EmberArray = Mixin.create(Enumerable, {
   getEach: mapBy,
 
   setEach(key: string, value: unknown) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return this.forEach((item: object) => set(item, key, value));
   },
 
@@ -1301,7 +1341,7 @@ const EmberArray = Mixin.create(Enumerable, {
   ) {
     assert('`map` expects a function as first argument.', typeof callback === 'function');
 
-    let ret = A();
+    let ret = disableDeprecations(() => A());
 
     this.forEach((x, idx, i) => (ret[idx] = callback.call(target, x, idx, i)));
 
@@ -1317,7 +1357,7 @@ const EmberArray = Mixin.create(Enumerable, {
   ) {
     assert('`filter` expects a function as first argument.', typeof callback === 'function');
 
-    let ret = A();
+    let ret = disableDeprecations(() => A());
 
     this.forEach((x, idx, i) => {
       if (callback.call(target, x, idx, i)) {
@@ -1333,6 +1373,12 @@ const EmberArray = Mixin.create(Enumerable, {
     callback: (item: T, index: number, arr: EmberArray<T>) => unknown,
     target = null
   ) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     assert('`reject` expects a function as first argument.', typeof callback === 'function');
     return this.filter(function () {
       // @ts-expect-error TS doesn't like us using arguments like this
@@ -1341,11 +1387,23 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 
   filterBy() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     // @ts-expect-error TS doesn't like the ...arguments spread here.
     return this.filter(iter(...arguments));
   },
 
   rejectBy() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     // @ts-expect-error TS doesn't like the ...arguments spread here.
     return this.reject(iter(...arguments));
   },
@@ -1356,6 +1414,12 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 
   findBy() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     // @ts-expect-error TS doesn't like the ...arguments spread here.
     let callback = iter(...arguments);
     return find(this, callback);
@@ -1367,17 +1431,35 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 
   isEvery() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     // @ts-expect-error TS doesn't like the ...arguments spread here.
     let callback = iter(...arguments);
     return every(this, callback);
   },
 
   any(callback: <T>(item: T, index: number, arr: EmberArray<T>) => unknown, target = null) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     assert('`any` expects a function as first argument.', typeof callback === 'function');
     return any(this, callback, target);
   },
 
   isAny() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     // @ts-expect-error TS doesn't like us using arguments like this
     let callback = iter(...arguments);
     return any(this, callback);
@@ -1401,19 +1483,33 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 
   invoke<T>(this: EmberArray<T>, methodName: string, ...args: unknown[]) {
-    let ret = A();
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
+    let ret;
+    disableDeprecations(() => {
+      ret = A();
 
-    // SAFETY: This is not entirely safe and the code will not work with Ember proxies
-    this.forEach((item: T) => ret.push((item as any)[methodName]?.(...args)));
-
+      // SAFETY: This is not entirely safe and the code will not work with Ember proxies
+      this.forEach((item: T) => ret.push((item as any)[methodName]?.(...args)));
+    });
     return ret;
   },
 
   toArray<T>(this: EmberArray<T>) {
-    return this.map((item: T) => item);
+    return disableDeprecations(() => this.map((item: T) => item));
   },
 
   compact<T>(this: EmberArray<T>) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return this.filter((value: T) => value != null);
   },
 
@@ -1422,6 +1518,12 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 
   sortBy<T>(this: EmberArray<T>) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     let sortKeys = arguments;
 
     return this.toArray().sort((a: T, b: T) => {
@@ -1441,14 +1543,33 @@ const EmberArray = Mixin.create(Enumerable, {
   },
 
   uniq() {
-    return uniqBy(this);
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
+
+    return disableDeprecations(() => uniqBy(this));
   },
 
   uniqBy(key: string) {
-    return uniqBy(this, key);
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
+    return disableDeprecations(() => uniqBy(this, key));
   },
 
   without<T>(this: EmberArray<T>, value: T) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     if (!this.includes(value)) {
       return this; // nothing to do
     }
@@ -1456,6 +1577,16 @@ const EmberArray = Mixin.create(Enumerable, {
     // SameValueZero comparison (NaN !== NaN)
     let predicate = value === value ? (item: T) => item !== value : (item: T) => item === item;
     return this.filter(predicate);
+  },
+});
+
+setDeprecation(EmberArray, {
+  message: 'Usage of EmberArray is deprecated',
+  options: {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
   },
 });
 
@@ -1737,6 +1868,12 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
 }
 const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   clear() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     let len = this.length;
     if (len === 0) {
       return this;
@@ -1747,24 +1884,54 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   insertAt(idx: number, object: unknown) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     insertAt(this, idx, object);
     return this;
   },
 
   removeAt(start: number, len?: number) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return removeAt(this, start, len);
   },
 
   pushObject<T>(this: MutableArray<T>, obj: T) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return insertAt(this, this.length, obj);
   },
 
   pushObjects<T>(this: MutableArray<T>, objects: T[]) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     this.replace(this.length, 0, objects);
     return this;
   },
 
   popObject() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     let len = this.length;
     if (len === 0) {
       return null;
@@ -1776,6 +1943,12 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   shiftObject() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     if (this.length === 0) {
       return null;
     }
@@ -1786,15 +1959,33 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   unshiftObject<T>(this: MutableArray<T>, obj: T) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return insertAt(this, 0, obj);
   },
 
   unshiftObjects<T>(this: MutableArray<T>, objects: T[]) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     this.replace(0, 0, objects);
     return this;
   },
 
   reverseObjects() {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     let len = this.length;
     if (len === 0) {
       return this;
@@ -1806,6 +1997,12 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   setObjects<T>(this: MutableArray<T>, objects: T[]) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     if (objects.length === 0) {
       return this.clear();
     }
@@ -1816,6 +2013,12 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   removeObject<T>(this: MutableArray<T>, obj: T) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     let loc = this.length || 0;
     while (--loc >= 0) {
       let curObject = objectAt(this, loc);
@@ -1828,6 +2031,12 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   removeObjects<T>(this: MutableArray<T>, objects: T[]) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     beginPropertyChanges();
     for (let i = objects.length - 1; i >= 0; i--) {
       // SAFETY: Due to the loop structure we know this will always exist.
@@ -1838,6 +2047,12 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   addObject<T>(this: MutableArray<T>, obj: T) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     let included = this.includes(obj);
 
     if (!included) {
@@ -1848,10 +2063,26 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   addObjects<T>(this: MutableArray<T>, objects: T[]) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     beginPropertyChanges();
     objects.forEach((obj) => this.addObject(obj));
     endPropertyChanges();
     return this;
+  },
+});
+
+setDeprecation(MutableArray, {
+  message: 'Usage of MutableArray is deprecated',
+  options: {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
   },
 });
 
@@ -2069,11 +2300,23 @@ interface NativeArray<T> extends Array<T>, Observable, MutableArrayWithoutNative
 
 let NativeArray = Mixin.create(MutableArray, Observable, {
   objectAt(idx: number) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     return this[idx];
   },
 
   // primitive for array support.
   replace(start: number, deleteCount: number, items = EMPTY_ARRAY) {
+    deprecate('Usage of Ember.Array methods is deprecated', deprecationsAreDisabled(), {
+      for: 'ember-source',
+      id: 'ember-array',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     assert('The third argument to replace needs to be an array.', Array.isArray(items));
 
     replaceInNativeArray(this, start, deleteCount, items);
@@ -2093,9 +2336,26 @@ NativeArray.keys().forEach((methodName) => {
 
 NativeArray = NativeArray.without(...ignore);
 
+setDeprecation(NativeArray, {
+  message: 'Usage of EmberArray is deprecated',
+  options: {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  },
+});
+
 let A: <T>(arr?: Array<T>) => NativeArray<T>;
 
 A = function <T>(this: unknown, arr?: Array<T>) {
+  deprecate('Usage of Ember.A is deprecated', deprecationsAreDisabled(), {
+    for: 'ember-source',
+    id: 'ember-array',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  });
+
   assert(
     'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
     !(this instanceof A)
@@ -2106,7 +2366,7 @@ A = function <T>(this: unknown, arr?: Array<T>) {
     return arr as unknown as NativeArray<T>;
   } else {
     // SAFETY: This will return an NativeArray but TS can't infer that.
-    return NativeArray.apply(arr ?? []) as NativeArray<T>;
+    return disableMixinDeprecations(() => NativeArray.apply(arr ?? []) as NativeArray<T>);
   }
 };
 

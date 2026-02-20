@@ -1,8 +1,13 @@
-import { A as emberA, isArray } from '@ember/array';
+import { isArray } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import EmberObject from '@ember/object';
 import { window } from '@ember/-internals/browser-environment';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  emberAWithoutDeprecation as emberA,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 const global = this;
 
@@ -19,7 +24,10 @@ moduleFor(
       let strangeLength = { length: 'yes' };
       let fn = function () {};
       let asyncFn = async function () {};
-      let arrayProxy = ArrayProxy.create({ content: emberA() });
+      let arrayProxy;
+      expectDeprecation(() => {
+        arrayProxy = ArrayProxy.create({ content: emberA() });
+      }, /Usage of ArrayProxy is deprecated/);
 
       assert.equal(isArray(numarray), true, '[1,2,3]');
       assert.equal(isArray(number), false, '23');

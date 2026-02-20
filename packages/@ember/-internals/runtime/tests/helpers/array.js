@@ -9,7 +9,8 @@ import {
   arrayContentDidChange,
 } from '@ember/-internals/metal';
 import EmberObject, { get, computed } from '@ember/object';
-import { moduleFor } from 'internal-test-helpers';
+import { emberAWithoutDeprecation, expectDeprecation, moduleFor } from 'internal-test-helpers';
+import { disableDeprecations } from '../../../utils/lib/mixin-deprecation';
 
 export function newFixture(cnt) {
   let ret = [];
@@ -142,21 +143,29 @@ class AbstractArrayHelper {
 
 class NativeArrayHelpers extends AbstractArrayHelper {
   newObject(ary) {
-    return emberA(super.newObject(ary));
+    return emberAWithoutDeprecation(super.newObject(ary));
   }
 
   mutate(obj) {
-    obj.pushObject(obj.length + 1);
+    expectDeprecation(() => {
+      obj.pushObject(obj.length + 1);
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 }
 
 class ArrayProxyHelpers extends AbstractArrayHelper {
   newObject(ary) {
-    return ArrayProxy.create({ content: emberA(super.newObject(ary)) });
+    let proxy;
+    expectDeprecation(() => {
+      proxy = ArrayProxy.create({ content: emberAWithoutDeprecation(super.newObject(ary)) });
+    }, /Usage of ArrayProxy is deprecated/);
+    return proxy;
   }
 
   mutate(obj) {
-    obj.pushObject(get(obj, 'length') + 1);
+    expectDeprecation(() => {
+      obj.pushObject(get(obj, 'length') + 1);
+    }, /Usage of Ember.Array methods is deprecated/);
   }
 
   toArray(obj) {
@@ -168,75 +177,79 @@ class ArrayProxyHelpers extends AbstractArrayHelper {
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = EmberObject.extend(EmberArray, {
-  _content: null,
+const TestArray = disableDeprecations(() =>
+  EmberObject.extend(EmberArray, {
+    _content: null,
 
-  init() {
-    this._content = this._content || [];
-  },
+    init() {
+      this._content = this._content || [];
+    },
 
-  // some methods to modify the array so we can test changes.  Note that
-  // arrays can be modified even if they don't implement MutableArray.  The
-  // MutableArray is just a standard API for mutation but not required.
-  addObject(obj) {
-    let idx = this._content.length;
-    arrayContentWillChange(this, idx, 0, 1);
-    this._content.push(obj);
-    arrayContentDidChange(this, idx, 0, 1);
-  },
+    // some methods to modify the array so we can test changes.  Note that
+    // arrays can be modified even if they don't implement MutableArray.  The
+    // MutableArray is just a standard API for mutation but not required.
+    addObject(obj) {
+      let idx = this._content.length;
+      arrayContentWillChange(this, idx, 0, 1);
+      this._content.push(obj);
+      arrayContentDidChange(this, idx, 0, 1);
+    },
 
-  removeFirst() {
-    arrayContentWillChange(this, 0, 1, 0);
-    this._content.shift();
-    arrayContentDidChange(this, 0, 1, 0);
-  },
+    removeFirst() {
+      arrayContentWillChange(this, 0, 1, 0);
+      this._content.shift();
+      arrayContentDidChange(this, 0, 1, 0);
+    },
 
-  objectAt(idx) {
-    return this._content[idx];
-  },
+    objectAt(idx) {
+      return this._content[idx];
+    },
 
-  length: computed(function () {
-    return this._content.length;
-  }),
-});
+    length: computed(function () {
+      return this._content.length;
+    }),
+  })
+);
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestMutableArray = EmberObject.extend(MutableArray, {
-  _content: null,
+const TestMutableArray = disableDeprecations(() =>
+  EmberObject.extend(MutableArray, {
+    _content: null,
 
-  init(ary = []) {
-    this._content = emberA(ary);
-  },
+    init(ary = []) {
+      this._content = emberAWithoutDeprecation(ary);
+    },
 
-  replace(idx, amt, objects) {
-    let args = objects ? objects.slice() : [];
-    let removeAmt = amt;
-    let addAmt = args.length;
+    replace(idx, amt, objects) {
+      let args = objects ? objects.slice() : [];
+      let removeAmt = amt;
+      let addAmt = args.length;
 
-    arrayContentWillChange(this, idx, removeAmt, addAmt);
+      arrayContentWillChange(this, idx, removeAmt, addAmt);
 
-    args.unshift(amt);
-    args.unshift(idx);
-    this._content.splice.apply(this._content, args);
-    arrayContentDidChange(this, idx, removeAmt, addAmt);
-    return this;
-  },
+      args.unshift(amt);
+      args.unshift(idx);
+      this._content.splice.apply(this._content, args);
+      arrayContentDidChange(this, idx, removeAmt, addAmt);
+      return this;
+    },
 
-  objectAt(idx) {
-    return this._content[idx];
-  },
+    objectAt(idx) {
+      return this._content[idx];
+    },
 
-  length: computed(function () {
-    return this._content.length;
-  }),
+    length: computed(function () {
+      return this._content.length;
+    }),
 
-  slice() {
-    return this._content.slice();
-  },
-});
+    slice() {
+      return this._content.slice();
+    },
+  })
+);
 
 class MutableArrayHelpers extends NativeArrayHelpers {
   newObject(ary) {
