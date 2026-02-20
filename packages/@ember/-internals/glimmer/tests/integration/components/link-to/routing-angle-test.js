@@ -2,6 +2,7 @@ import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
   moduleFor,
+  runLoopSettled,
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
@@ -129,6 +130,34 @@ moduleFor(
         1,
         'The other link was rendered without active class'
       );
+    }
+
+    async ['@test [GH#19891] it navigates into the named route when inside an inline SVG'](assert) {
+      this.addTemplate(
+        'index',
+        `
+        <h3 class="home">Home</h3>
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <LinkTo @route='about' id='svg-about-link'>
+            <rect x="0" y="0" width="200" height="100"></rect>
+          </LinkTo>
+        </svg>
+        `
+      );
+
+      await this.visit('/');
+
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+
+      // SVGAElement does not have a .click() method like HTMLElement,
+      // so we dispatch a click event manually.
+      let svgLink = document.querySelector('#svg-about-link');
+      let clickEvent = document.createEvent('MouseEvents');
+      clickEvent.initMouseEvent('click', true, true);
+      svgLink.dispatchEvent(clickEvent);
+      await runLoopSettled();
+
+      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
     }
 
     async [`@test it applies a 'disabled' class when disabled`](assert) {
