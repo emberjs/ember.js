@@ -1,5 +1,5 @@
 import { getOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
+import { assert, warn } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
 import { getElementView } from './utils';
@@ -160,7 +160,7 @@ export default class EventDispatcher extends EmberObject {
       `You cannot use the same root element (${specifiedRootElement}) multiple times in an Ember.Application`,
       !rootElement.classList.contains(ROOT_ELEMENT_CLASS)
     );
-    assert(
+    warn(
       'You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application',
       (() => {
         let target = rootElement.parentNode;
