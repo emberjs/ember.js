@@ -21,7 +21,7 @@ import type {
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { typeOf } from '@ember/utils';
+import { typeOf } from '@ember/-internals/utils';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';

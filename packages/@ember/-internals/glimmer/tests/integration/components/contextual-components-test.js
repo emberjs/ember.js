@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { isEmpty } from '@ember/utils';
 import { action } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
@@ -956,35 +955,35 @@ moduleFor(
         }
       );
 
-      assert.ok(!isEmpty(instance), 'a instance was created');
+      assert.ok(instance, 'the component instance exinstance was created');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.context.set('isOpen', false));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.context.set('isOpen', true));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
@@ -1021,35 +1020,35 @@ moduleFor(
         }
       );
 
-      assert.ok(!isEmpty(instance), 'a instance was created');
+      assert.ok(instance, 'a instance was created');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.context.set('isOpen', false));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.context.set('isOpen', true));
 
-      assert.ok(!isEmpty(instance), 'the component instance exists');
+      assert.ok(instance, 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
@@ -1099,22 +1098,22 @@ moduleFor(
         }
       );
 
-      assert.ok(!isEmpty(instance), 'a instance was created');
+      assert.ok(instance, 'a instance was created');
       assert.equal(previousInstance, undefined, 'there is no previous instance');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
       runTask(() => this.rerender());
 
-      assert.ok(!isEmpty(instance), 'a instance exists after rerender');
+      assert.ok(instance, 'a instance exists after rerender');
       assert.equal(previousInstance, undefined, 'there is no previous instance after rerender');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
       runTask(() => this.context.set('compName', 'your-comp'));
 
-      assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
-      assert.ok(!isEmpty(previousInstance), 'a previous instance now exists');
+      assert.ok(instance, 'an instance was created after component name changed');
+      assert.ok(previousInstance, 'a previous instance now exists');
       assert.notEqual(
         instance,
         previousInstance,
@@ -1125,11 +1124,8 @@ moduleFor(
 
       runTask(() => this.rerender());
 
-      assert.ok(
-        !isEmpty(instance),
-        'an instance was created after component name changed (rerender)'
-      );
-      assert.ok(!isEmpty(previousInstance), 'a previous instance now exists (rerender)');
+      assert.ok(instance, 'an instance was created after component name changed (rerender)');
+      assert.ok(previousInstance, 'a previous instance now exists (rerender)');
       assert.notEqual(
         instance,
         previousInstance,
@@ -1140,8 +1136,8 @@ moduleFor(
 
       runTask(() => this.context.set('compName', 'my-comp'));
 
-      assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
-      assert.ok(!isEmpty(previousInstance), 'a previous instance still exists');
+      assert.ok(instance, 'an instance was created after component name changed');
+      assert.ok(previousInstance, 'a previous instance still exists');
       assert.notEqual(
         instance,
         previousInstance,
