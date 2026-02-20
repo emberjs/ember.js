@@ -3,7 +3,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { action, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 
 import { Component } from '../../utils/helpers';
 
@@ -157,7 +157,7 @@ moduleFor(
         });
       }, /`actions` must be provided at extend time, not at create time/);
       // but should be OK on an object that doesn't mix in Ember.ActionHandler
-      EmberObject.create({
+      CoreObject.create({
         actions: ['foo'],
       });
     }

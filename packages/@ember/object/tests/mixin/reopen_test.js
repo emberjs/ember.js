@@ -1,4 +1,5 @@
-import EmberObject, { get } from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import Mixin from '@ember/object/mixin';
 import { run } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -20,7 +21,7 @@ moduleFor(
     ['@test using reopen() and calling _super where there is not a super function does not cause infinite recursion'](
       assert
     ) {
-      let Taco = class extends EmberObject {
+      let Taco = class extends CoreObject {
         createBreakfast() {
           // There is no original createBreakfast function.
           // Calling the wrapped _super function here

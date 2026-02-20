@@ -1,12 +1,12 @@
 import { get } from '@ember/object';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'system/object/reopenClass',
   class extends AbstractTestCase {
     ['@test adds new properties to subclass'](assert) {
-      let Subclass = class extends EmberObject {};
+      let Subclass = class extends CoreObject {};
       Subclass.reopenClass({
         foo() {
           return 'FOO';
@@ -19,7 +19,7 @@ moduleFor(
     }
 
     ['@test class properties inherited by subclasses'](assert) {
-      let Subclass = class extends EmberObject {};
+      let Subclass = class extends CoreObject {};
       Subclass.reopenClass({
         foo() {
           return 'FOO';

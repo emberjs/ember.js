@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import EmberApplication from '@ember/application';
 import {
   moduleFor,
@@ -21,11 +21,11 @@ moduleFor(
         Resolver: ModuleBasedTestResolver,
       });
 
-      application.Person = class extends EmberObject {};
-      application.Orange = class extends EmberObject {};
-      application.Email = class extends EmberObject {};
-      application.User = class extends EmberObject {};
-      application.PostIndexController = class extends EmberObject {};
+      application.Person = class extends CoreObject {};
+      application.Orange = class extends CoreObject {};
+      application.Email = class extends CoreObject {};
+      application.User = class extends CoreObject {};
+      application.PostIndexController = class extends CoreObject {};
 
       application.register('model:person', application.Person, {
         singleton: false,

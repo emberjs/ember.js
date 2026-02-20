@@ -1,11 +1,11 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'strict mode tests',
   class extends AbstractTestCase {
     ['@test __superWrapper does not throw errors in strict mode'](assert) {
-      let Foo = class extends EmberObject {
+      let Foo = class extends CoreObject {
         blah() {
           return 'foo';
         }

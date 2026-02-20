@@ -1,4 +1,5 @@
-import EmberObject, { get, set } from '@ember/object';
+import { get, set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*
@@ -29,7 +30,7 @@ moduleFor(
   'A new EmberObject instance',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.create({
+      obj = CoreObject.create({
         foo: 'bar',
         total: 12345,
         aMethodThatExists() {},
@@ -49,12 +50,12 @@ moduleFor(
       obj = undefined;
     }
 
-    ['@test Should return its properties when requested using EmberObject#get'](assert) {
+    ['@test Should return its properties when requested using get'](assert) {
       assert.equal(get(obj, 'foo'), 'bar');
       assert.equal(get(obj, 'total'), 12345);
     }
 
-    ['@test Should allow changing of those properties by calling EmberObject#set'](assert) {
+    ['@test Should allow changing of those properties by calling set'](assert) {
       assert.equal(get(obj, 'foo'), 'bar');
       assert.equal(get(obj, 'total'), 12345);
 
@@ -68,10 +69,10 @@ moduleFor(
 );
 
 moduleFor(
-  'EmberObject superclass and subclasses',
+  'CoreObject superclass and subclasses',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
+      obj = class extends CoreObject {
         method1() {
           return 'hello';
         }
@@ -90,7 +91,7 @@ moduleFor(
     }
 
     ['@test Checking the detectInstance() function on an object and its subclass'](assert) {
-      assert.ok(EmberObject.detectInstance(obj.create()));
+      assert.ok(CoreObject.detectInstance(obj.create()));
       assert.ok(obj.detectInstance(obj.create()));
     }
   }

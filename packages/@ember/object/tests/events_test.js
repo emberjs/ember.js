@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import Evented from '@ember/object/evented';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -11,7 +11,7 @@ moduleFor(
         count++;
       };
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj = CoreObject.extend(Evented).create();
 
       obj.on('event!', F);
       obj.trigger('event!');
@@ -31,7 +31,7 @@ moduleFor(
         count++;
       };
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj = CoreObject.extend(Evented).create();
 
       obj.one('event!', F);
       obj.trigger('event!');
@@ -46,7 +46,7 @@ moduleFor(
     ['@test triggering an event can have arguments'](assert) {
       let self, args;
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj = CoreObject.extend(Evented).create();
 
       obj.on('event!', function () {
         args = [].slice.call(arguments);
@@ -63,7 +63,7 @@ moduleFor(
       let self, args;
       let count = 0;
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj = CoreObject.extend(Evented).create();
 
       obj.one('event!', function () {
         args = [].slice.call(arguments);
@@ -87,7 +87,7 @@ moduleFor(
     ['@test binding an event can specify a different target'](assert) {
       let self, args;
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj = CoreObject.extend(Evented).create();
       let target = {};
 
       obj.on('event!', target, function () {
@@ -110,7 +110,7 @@ moduleFor(
         count++;
       };
 
-      let obj = EmberObject.extend(Evented).create();
+      let obj = CoreObject.extend(Evented).create();
 
       obj.one('event!', target, 'fn');
       obj.trigger('event!');
@@ -123,7 +123,7 @@ moduleFor(
     }
 
     ['@test a listener registered with one can be removed with off'](assert) {
-      let obj = class extends EmberObject.extend(Evented) {
+      let obj = class extends CoreObject.extend(Evented) {
         F() {}
       }.create();
       let F = function () {};
@@ -140,7 +140,7 @@ moduleFor(
     }
 
     ['@test adding and removing listeners should be chainable'](assert) {
-      let obj = EmberObject.extend(Evented).create();
+      let obj = CoreObject.extend(Evented).create();
       let F = function () {};
 
       let ret = obj.on('event!', F);
