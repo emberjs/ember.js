@@ -1,0 +1,39 @@
+{
+  "name": "@handlebars/parser",
+  "version": "2.2.2",
+  "description": "The parser for the Handlebars language",
+  "homepage": "https://github.com/handlebars-lang/handlebars-parser#readme",
+  "bugs": {
+    "url": "https://github.com/handlebars-lang/handlebars-parser/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/handlebars-lang/handlebars-parser.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "build:jison": "jison -m js src/handlebars.yy src/handlebars.l -o lib/parser.js",
+    "build:parser": "npm-run-all build:jison build:parser-suffix build:parser-ts-nocheck",
+    "build:parser-suffix": "combine-files lib/parser.js,src/parser-suffix.js lib/parser.js",
+    "build:parser-ts-nocheck": "node -e \"const fs=require('fs');const f='lib/parser.js';fs.writeFileSync(f,'// @ts-nocheck\\n'+fs.readFileSync(f,'utf8'))\"",
+    "test": "mocha --inline-diffs spec"
+  },
+  "devDependencies": {
+    "combine-files": "^1.1.8",
+    "jison": "^0.4.18",
+    "mocha": "^10.7.3",
+    "npm-run-all": "^4.1.5"
+  }
+}

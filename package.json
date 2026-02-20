@@ -60,6 +60,7 @@
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
+    "type-check:handlebars": "tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
     "type-check:types": "tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },

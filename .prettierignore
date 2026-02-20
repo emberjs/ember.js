@@ -7,6 +7,8 @@ docs/
 **/smoke-tests/
 **/types/
 **/type-tests/
+packages/@handlebars/**/*.l
+packages/@handlebars/**/*.yy
 CHANGELOG.md
 package.json
 pnpm-lock.yaml
