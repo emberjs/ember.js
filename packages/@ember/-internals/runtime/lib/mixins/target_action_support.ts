@@ -5,7 +5,7 @@
 import { context } from '@ember/-internals/environment';
 import { get, computed } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 /**
@@ -103,11 +103,23 @@ const TargetActionSupport = Mixin.create({
   ```
 
   @method triggerAction
+  @deprecated Use a direct method call or closure action instead.
   @param opts {Object} (optional, with the optional keys action, target and/or actionContext)
   @return {Boolean} true if the action was sent successfully and did not return false
   @private
   */
   triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
+    deprecate(
+      'triggerAction is deprecated. Please use a direct method call or closure action instead.',
+      false,
+      {
+        for: 'ember-source',
+        id: 'target-action-support',
+        since: { available: '6.8.0' },
+        until: '7.0.0',
+      }
+    );
+
     let { action, target, actionContext } = opts;
     action = action || get(this, 'action');
     target = target || getTarget(this);

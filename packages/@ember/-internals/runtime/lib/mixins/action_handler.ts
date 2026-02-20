@@ -4,7 +4,7 @@
 
 import Mixin from '@ember/object/mixin';
 import { get } from '@ember/-internals/metal';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 
 /**
   `ActionHandler` is available on some familiar classes including
@@ -164,6 +164,7 @@ const ActionHandler = Mixin.create({
     ```
 
     @property actions
+    @deprecated Use the `@action` decorator instead.
     @type Object
     @default null
     @public
@@ -197,11 +198,18 @@ const ActionHandler = Mixin.create({
     ```
 
     @method send
+    @deprecated Use direct method calls instead.
     @param {String} actionName The action to trigger
     @param {*} context a context to send with the action
     @public
   */
   send(actionName: string, ...args: any[]) {
+    deprecate('send() is deprecated. Please use direct method calls instead.', false, {
+      for: 'ember-source',
+      id: 'action-handler',
+      since: { available: '6.8.0' },
+      until: '7.0.0',
+    });
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
       !this.isDestroying && !this.isDestroyed
