@@ -248,8 +248,7 @@ export default class CurlyComponentManager
     args: VMArguments,
     { isInteractive }: Environment,
     dynamicScope: DynamicScope,
-    callerSelfRef: Reference,
-    _hasBlock: boolean
+    callerSelfRef: Reference
   ): ComponentStateBucket {
     // Get the nearest concrete component instance from the scope. "Virtual"
     // components will be skipped.
