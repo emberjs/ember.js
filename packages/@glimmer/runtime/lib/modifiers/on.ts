@@ -14,7 +14,7 @@ import {
   CheckString,
   CheckUndefined,
 } from '@glimmer/debug';
-import { buildUntouchableThis, localAssert } from '@glimmer/debug-util';
+import { buildUntouchableThis } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
@@ -57,13 +57,16 @@ export class OnModifierState {
   updateListener(): void {
     let { element, args, listener } = this;
 
-    localAssert(
-      args.positional[0],
-      'You must pass a valid DOM event name as the first argument to the `on` modifier'
-    );
+    let arg0 = args.positional[0];
+
+    if (DEBUG && !arg0) {
+      throw new Error(
+        'You must pass a valid DOM event name as the first argument to the `on` modifier'
+      );
+    }
 
     let eventName = check(
-      valueForRef(args.positional[0]),
+      arg0 ? valueForRef(arg0) : undefined,
       CheckString,
       () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
