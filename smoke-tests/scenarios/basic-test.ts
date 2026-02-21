@@ -223,6 +223,44 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
               });
             `,
+            'on-modifier-error-test.gjs': `
+              import { module, test } from 'qunit';
+              import { render, setupOnerror, resetOnerror } from '@ember/test-helpers';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { on } from '@ember/modifier';
+
+              module('on modifier | error handling', function (hooks) {
+                setupRenderingTest(hooks);
+
+                hooks.afterEach(function () {
+                  resetOnerror();
+                });
+
+                test('throws helpful error when callback is missing', async function (assert) {
+                  assert.expect(1);
+                  const noop = undefined;
+                  setupOnerror((error) => {
+                    assert.true(
+                      /You must pass a function as the second argument to the \`on\` modifier/.test(error.message),
+                      'Expected helpful error message, got: ' + error.message
+                    );
+                  });
+                  await render(<template><div {{on "click" noop}}>Click</div></template>);
+                });
+
+                test('throws helpful error when event name is missing', async function (assert) {
+                  assert.expect(1);
+                  const noop = () => {};
+                  setupOnerror((error) => {
+                    assert.true(
+                      /You must pass a valid DOM event name as the first argument to the \`on\` modifier/.test(error.message),
+                      'Expected helpful error message, got: ' + error.message
+                    );
+                  });
+                  await render(<template><div {{on}}>Click</div></template>);
+                });
+              });
+            `,
           },
         },
       });

@@ -14,7 +14,7 @@ import {
   CheckString,
   CheckUndefined,
 } from '@glimmer/debug';
-import { buildUntouchableThis, localAssert } from '@glimmer/debug-util';
+import { buildUntouchableThis } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
@@ -57,16 +57,18 @@ export class OnModifierState {
   updateListener(): void {
     let { element, args, listener } = this;
 
-    localAssert(
-      args.positional[0],
-      'You must pass a valid DOM event name as the first argument to the `on` modifier'
-    );
-
+    let arg0 = args.positional[0];
     let eventName = check(
-      valueForRef(args.positional[0]),
+      arg0 ? valueForRef(arg0) : undefined,
       CheckString,
       () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
+
+    if (DEBUG && !eventName) {
+      throw new Error(
+        'You must pass a valid DOM event name as the first argument to the `on` modifier'
+      );
+    }
 
     let arg1 = args.positional[1];
     let userProvidedCallback = check(
@@ -79,12 +81,13 @@ export class OnModifierState {
       }
     ) as EventListener;
 
-    localAssert(
-      typeof userProvidedCallback === 'function',
-      `You must pass a function as the second argument to the \`on\` modifier; you passed ${
-        userProvidedCallback === null ? 'null' : typeof userProvidedCallback
-      }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`
-    );
+    if (DEBUG && typeof userProvidedCallback !== 'function') {
+      throw new Error(
+        `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+          userProvidedCallback === null ? 'null' : typeof userProvidedCallback
+        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`
+      );
+    }
 
     if (DEBUG && args.positional.length !== 2) {
       throw new Error(
