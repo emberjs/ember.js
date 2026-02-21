@@ -338,7 +338,7 @@ moduleFor(
   }
 );
 
-// These tests are more to ensure that we don't accidentally break anything from 
+// These tests are more to ensure that we don't accidentally break anything from
 // RFC#1070 -- but explicit scope does not _implicitly_ get access to anything
 // so the globals here are still just passed in to the scope bag, as if they were
 // normal variables.
