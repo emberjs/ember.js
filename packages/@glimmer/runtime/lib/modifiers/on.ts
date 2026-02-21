@@ -58,18 +58,17 @@ export class OnModifierState {
     let { element, args, listener } = this;
 
     let arg0 = args.positional[0];
-
-    if (DEBUG && !arg0) {
-      throw new Error(
-        'You must pass a valid DOM event name as the first argument to the `on` modifier'
-      );
-    }
-
     let eventName = check(
       arg0 ? valueForRef(arg0) : undefined,
       CheckString,
       () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
+
+    if (DEBUG && !eventName) {
+      throw new Error(
+        'You must pass a valid DOM event name as the first argument to the `on` modifier'
+      );
+    }
 
     let arg1 = args.positional[1];
     let userProvidedCallback = check(
