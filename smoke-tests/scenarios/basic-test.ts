@@ -236,7 +236,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   resetOnerror();
                 });
 
-                test('throws helpful error when callback is undefined', async function (assert) {
+                test('throws helpful error when callback is missing', async function (assert) {
                   assert.expect(1);
                   const noop = undefined;
                   setupOnerror((error) => {
@@ -248,16 +248,16 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   await render(<template><div {{on "click" noop}}>Click</div></template>);
                 });
 
-                test('throws helpful error when callback is null', async function (assert) {
+                test('throws helpful error when event name is missing', async function (assert) {
                   assert.expect(1);
-                  const noop = null;
+                  const noop = () => {};
                   setupOnerror((error) => {
                     assert.true(
-                      /You must pass a function as the second argument to the \`on\` modifier/.test(error.message),
+                      /You must pass a valid DOM event name as the first argument to the \`on\` modifier/.test(error.message),
                       'Expected helpful error message, got: ' + error.message
                     );
                   });
-                  await render(<template><div {{on "click" noop}}>Click</div></template>);
+                  await render(<template><div {{on}}>Click</div></template>);
                 });
               });
             `,
