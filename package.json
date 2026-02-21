@@ -346,7 +346,6 @@
       "@simple-dom/document/index.js": "ember-source/@simple-dom/document/index.js",
       "backburner.js/index.js": "ember-source/backburner.js/index.js",
       "dag-map/index.js": "ember-source/dag-map/index.js",
-      "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
       "ember-testing/lib/adapters/adapter.js": "ember-source/ember-testing/lib/adapters/adapter.js",
       "ember-testing/lib/adapters/qunit.js": "ember-source/ember-testing/lib/adapters/qunit.js",
