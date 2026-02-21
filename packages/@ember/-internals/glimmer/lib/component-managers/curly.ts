@@ -53,9 +53,6 @@ import {
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 
-export const ARGS = Symbol('ARGS');
-export const HAS_BLOCK = Symbol('HAS_BLOCK');
-
 // WeakMap to store capturedArgs for each component instance, avoiding
 // symbol-keyed properties on the instance itself.
 const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
