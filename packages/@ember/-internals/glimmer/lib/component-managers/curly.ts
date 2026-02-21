@@ -53,8 +53,15 @@ import {
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 
-export const ARGS = Symbol('ARGS');
-export const HAS_BLOCK = Symbol('HAS_BLOCK');
+// WeakMap to store capturedArgs for each component instance, avoiding
+// symbol-keyed properties on the instance itself.
+const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
+
+export function getComponentCapturedArgs(
+  component: object
+): CapturedArguments['named'] | undefined {
+  return COMPONENT_ARGS_MAP.get(component);
+}
 
 export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
@@ -285,6 +292,11 @@ export default class CurlyComponentManager
     // actually create it.
     beginUntrackFrame();
     let component = ComponentClass.create(props);
+
+    // Store capturedArgs in a WeakMap keyed by the component instance so that
+    // PROPERTY_DID_CHANGE can look them up without requiring symbol-keyed
+    // properties on the instance.
+    COMPONENT_ARGS_MAP.set(component, capturedArgs);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
