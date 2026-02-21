@@ -58,10 +58,6 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const scope = (options.scope as () => Record<string, unknown>)();
 
     options.lexicalScope = (variable: string) => {
-      if (ALLOWED_GLOBALS.has(variable)) {
-        return variable in globalThis;
-      }
-
       return variable in scope;
     };
 
