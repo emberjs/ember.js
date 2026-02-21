@@ -4,7 +4,7 @@
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
 import { type default as Owner, getOwner } from '@ember/-internals/owner';
-import { guidFor, isInternalSymbol } from '@ember/-internals/utils';
+import { guidFor } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
 import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/metal';
 import {
@@ -271,7 +271,6 @@ class CoreObject {
             // init called will be set on the proxy, not the target, so get with the receiver
             !initCalled!.has(receiver) ||
             typeof property === 'symbol' ||
-            isInternalSymbol(property) ||
             property === 'toJSON' ||
             property === 'toString' ||
             property === 'toStringExtension' ||

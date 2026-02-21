@@ -6,7 +6,6 @@ import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-int
 import Mixin from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/routing/-internals';
 import { ActionHandler } from '@ember/-internals/runtime';
-import { symbol } from '@ember/-internals/utils';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
@@ -15,7 +14,7 @@ export type ControllerQueryParam =
   | Record<string, { type: ControllerQueryParamType }>
   | Record<string, string>;
 
-const MODEL = symbol('MODEL');
+const MODEL = Symbol('MODEL');
 
 /**
 @module @ember/controller
