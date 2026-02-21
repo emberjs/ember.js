@@ -353,7 +353,10 @@ moduleFor(
         this.prototype[`@test Can use ${globalName}`] = async function () {
           await this.renderComponentModule(() => {
             return template(`{{if ${globalName} "exists"}}`, {
-              scope: () => ({ [globalName]: globalThis[globalName] }),
+              scope: () => ({
+                // @ts-expect-error - dynamic test gets minimally type safety
+                [globalName]: globalThis[globalName],
+              }),
             });
           });
 
