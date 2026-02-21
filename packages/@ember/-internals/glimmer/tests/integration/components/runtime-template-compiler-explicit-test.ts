@@ -338,6 +338,10 @@ moduleFor(
   }
 );
 
+// These tests are more to ensure that we don't accidentally break anything from 
+// RFC#1070 -- but explicit scope does not _implicitly_ get access to anything
+// so the globals here are still just passed in to the scope bag, as if they were
+// normal variables.
 moduleFor(
   'Strict Mode - Runtime Template Compiler (explicit) - allowed globals from RFC#1070',
   class AllowedGlobalsTest extends RenderingTestCase {
@@ -349,7 +353,7 @@ moduleFor(
         this.prototype[`@test Can use ${globalName}`] = async function () {
           await this.renderComponentModule(() => {
             return template(`{{if ${globalName} "exists"}}`, {
-              scope: () => ({}),
+              scope: () => ({ [globalName]: globalThis[globalName] }),
             });
           });
 
