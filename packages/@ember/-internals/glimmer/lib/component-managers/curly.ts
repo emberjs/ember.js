@@ -286,12 +286,6 @@ export default class CurlyComponentManager
     beginUntrackFrame();
     let component = ComponentClass.create(props);
 
-    // Set internal symbol-keyed properties directly on the instance.
-    // These are not passed through create() because Object.keys() doesn't
-    // enumerate Symbol properties.
-    (component as any)[ARGS] = capturedArgs;
-    (component as any)[HAS_BLOCK] = hasBlock;
-
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
     // We become the new parentView for downstream components, so save our
