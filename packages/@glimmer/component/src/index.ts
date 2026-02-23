@@ -331,7 +331,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
     @service myAnimations;
 
     willDestroy() {
-      super.willDestroy(...arguments);
+      super.willDestroy();
 
       this.myAnimations.unregister(this);
     }
