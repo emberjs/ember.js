@@ -59,7 +59,6 @@ function esmConfig() {
   return sharedESMConfig({
     input: esmInputs(),
     debugMacrosMode: '@embroider/macros',
-    outputDir: 'dist',
     includePackageMeta: true,
   });
 }
@@ -68,7 +67,6 @@ function esmProdConfig() {
   return sharedESMConfig({
     input: esmInputs(),
     debugMacrosMode: 'production',
-    outputDir: 'dist-prod',
   });
 }
 
@@ -95,7 +93,6 @@ function esmTemplateCompiler() {
     // the template compiler is always in debug mode (and doesn't use
     // embroider/macros, so it's directly invokable on node)
     debugMacrosMode: true,
-    outputDir: 'dist',
   });
 }
 
@@ -105,11 +102,11 @@ function esmTemplateCompilerProd() {
       'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
     },
     debugMacrosMode: 'production',
-    outputDir: 'dist-prod',
   });
 }
 
-function sharedESMConfig({ input, debugMacrosMode, outputDir = 'dist', includePackageMeta = false }) {
+function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false }) {
+  let outputDir = debugMacrosMode === 'production' ? 'dist-prod' : 'dist';
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
