@@ -29,7 +29,6 @@
     "dist/packages",
     "dist/dependencies",
     "dist-prod/packages",
-    "dist-prod/dependencies",
     "dist/ember-template-compiler.js",
     "dist/ember-template-compiler.js.map",
     "dist/ember.debug.js",
