@@ -13,7 +13,7 @@ export function importMetaRemoval(debugMacrosMode) {
         return;
       }
 
-      if (debugMacrosMode === false) {
+      if (debugMacrosMode === false || debugMacrosMode === 'production') {
         if (hasDEV(code)) {
           return code.replace(/import.meta.env\??.DEV/g, 'false');
         }
