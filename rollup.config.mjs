@@ -69,7 +69,6 @@ function esmProdConfig() {
     input: esmInputs(),
     debugMacrosMode: 'production',
     outputDir: 'dist-prod',
-    includePackageMeta: false,
   });
 }
 
@@ -97,7 +96,6 @@ function esmTemplateCompiler() {
     // embroider/macros, so it's directly invokable on node)
     debugMacrosMode: true,
     outputDir: 'dist',
-    includePackageMeta: true,
   });
 }
 
@@ -108,11 +106,10 @@ function esmTemplateCompilerProd() {
     },
     debugMacrosMode: 'production',
     outputDir: 'dist-prod',
-    includePackageMeta: false,
   });
 }
 
-function sharedESMConfig({ input, debugMacrosMode, outputDir = 'dist', includePackageMeta = true }) {
+function sharedESMConfig({ input, debugMacrosMode, outputDir = 'dist', includePackageMeta = false }) {
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
