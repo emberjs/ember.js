@@ -6,7 +6,7 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import {
   type ComputedDecorator,
   type ComputedPropertyGetter,
@@ -173,7 +173,7 @@ function applyConcatenatedProperties(key: string, value: any, values: { [key: st
   let baseValue = values[key];
   let ret = simpleMakeArray(baseValue).concat(simpleMakeArray(value));
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     // it is possible to use concatenatedProperties with strings (which cannot be frozen)
     // only freeze objects...
     if (typeof ret === 'object' && ret !== null) {
@@ -559,8 +559,8 @@ export default class Mixin {
     this.ownerConstructor = undefined;
     this._without = undefined;
 
-    if (DEBUG) {
-      // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
+    if (import.meta.env?.DEV) {
+      // Eagerly add INIT_FACTORY to avoid issues in import.meta.env?.DEV as a result of Object.seal(mixin)
       this[INIT_FACTORY] = null;
       /*
         In debug builds, we seal mixins to help avoid performance pitfalls.
@@ -695,7 +695,7 @@ export default class Mixin {
   }
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   Object.defineProperty(Mixin, '_disableDebugSeal', {
     configurable: true,
     enumerable: false,
@@ -732,7 +732,7 @@ function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined 
 
 type MixinLike = Mixin | { [key: string]: any };
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   Object.seal(Mixin.prototype);
 }
 

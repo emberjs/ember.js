@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import global from './global';
 
 /**
@@ -91,7 +90,7 @@ export const ENV = {
     @default false
     @private
   */
-  _DEBUG_RENDER_TREE: DEBUG,
+  _DEBUG_RENDER_TREE: import.meta.env?.DEV,
 
   /**
    Whether to force all deprecations to be enabled. This is used internally by
@@ -200,7 +199,7 @@ export const ENV = {
     }
   }
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     ENV._DEBUG_RENDER_TREE = true;
   }
 })(global.EmberENV);

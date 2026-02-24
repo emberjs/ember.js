@@ -7,7 +7,6 @@ import {
   runTask,
 } from 'internal-test-helpers';
 
-import { DEBUG } from '@glimmer/env';
 import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
@@ -116,7 +115,7 @@ moduleFor(
     }
 
     async ['@test it emits a useful backtracking re-render assertion message'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
         return;
       }

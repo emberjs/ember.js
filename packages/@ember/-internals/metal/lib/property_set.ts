@@ -1,6 +1,6 @@
 import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
@@ -74,7 +74,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
   }
 
   let currentValue: any;
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
     currentValue = (obj as any)[keyName];
@@ -89,7 +89,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
     /* unknown property */
     (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
       (obj as any)[keyName] = value;

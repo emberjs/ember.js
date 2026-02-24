@@ -1,6 +1,6 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import type { AnyFn } from '@ember/-internals/utility-types';
-import { DEBUG } from '@glimmer/env';
+
 import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
 import defaultDeprecate from './lib/deprecate';
 import { isTesting } from './lib/testing';
@@ -86,7 +86,7 @@ export function deprecate(...args: Parameters<DeprecateFunc>): ReturnType<Deprec
   return (currentDeprecate ?? defaultDeprecate)(...args);
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   setDebugFunction = function (type: DebugFunctionType, callback: Function) {
     switch (type) {
       case 'assert':
@@ -143,7 +143,7 @@ if (DEBUG) {
 @module @ember/debug
 */
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   /**
     Display a debug notice.
 
@@ -162,7 +162,7 @@ if (DEBUG) {
     @public
   */
   setDebugFunction('debug', function debug(message) {
-    console.debug(`DEBUG: ${message}`); /* eslint-disable-line no-console */
+    console.debug(`import.meta.env?.DEV: ${message}`); /* eslint-disable-line no-console */
   });
 
   /**
@@ -279,7 +279,7 @@ if (DEBUG) {
 
 let _warnIfUsingStrippedFeatureFlags;
 
-if (DEBUG && !isTesting()) {
+if (import.meta.env?.DEV && !isTesting()) {
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener(
       'load',

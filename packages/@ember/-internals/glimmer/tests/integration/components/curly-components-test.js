@@ -11,7 +11,7 @@ import {
 
 import { action } from '@ember/object';
 import { run } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
+
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import { on } from '@ember/object/evented';
@@ -98,7 +98,7 @@ moduleFor(
         content: 'blahzorz',
       });
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let willThrow = () => run(null, set, component, 'elementId', 'herpyderpy');
 
         assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);

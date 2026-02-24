@@ -1,7 +1,7 @@
 import { isObject, setupMandatorySetter, symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
+
 import { getCustomTagFor } from '@glimmer/manager';
 import type { Tag, TagMeta } from '@glimmer/validator';
 import { CONSTANT_TAG, dirtyTagFor, tagFor } from '@glimmer/validator';
@@ -31,7 +31,7 @@ export function tagForProperty(
 
   let tag = tagFor(obj, propertyKey, meta);
 
-  if (DEBUG && addMandatorySetter) {
+  if (import.meta.env?.DEV && addMandatorySetter) {
     setupMandatorySetter!(tag, obj, propertyKey);
   }
 
@@ -40,7 +40,7 @@ export function tagForProperty(
 
 export function tagForObject(obj: unknown | null): Tag {
   if (isObject(obj)) {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       assert(
         isDestroyed(obj)
           ? `Cannot create a new tag for \`${toString(obj)}\` after it has been destroyed.`

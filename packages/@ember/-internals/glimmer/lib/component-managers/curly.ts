@@ -9,7 +9,7 @@ import { addChildView, setElementView, setViewElement } from '@ember/-internals/
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
-import { DEBUG } from '@glimmer/env';
+
 import type {
   Bounds,
   CapturedArguments,
@@ -337,7 +337,7 @@ export default class CurlyComponentManager
       bucket.classRef = args.named.get('class');
     }
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       processComponentInitializationAssertions(component, props);
     }
 

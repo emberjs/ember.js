@@ -5,7 +5,7 @@ import type { _ProxyMixin as ProxyMixin } from '@ember/-internals/runtime';
 import { setProxy, symbol } from '@ember/-internals/utils';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import { consumeTag, isTracking, tagFor, track } from '@glimmer/validator';
 import { isPath } from './path_cache';
 
@@ -13,7 +13,7 @@ export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
 export let getPossibleMandatoryProxyValue: (obj: object, keyName: string) => any;
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   getPossibleMandatoryProxyValue = function getPossibleMandatoryProxyValue(obj, keyName): any {
     let content = (obj as any)[PROXY_CONTENT];
     if (content === undefined) {
@@ -110,7 +110,7 @@ export function _getProp(obj: unknown, keyName: string) {
   let value: unknown;
 
   if (typeof obj === 'object' || typeof obj === 'function') {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       value = getPossibleMandatoryProxyValue(obj, keyName);
     } else {
       value = (obj as any)[keyName];

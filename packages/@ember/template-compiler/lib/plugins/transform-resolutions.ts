@@ -1,5 +1,5 @@
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import { print } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
@@ -179,7 +179,7 @@ function transformParams(
       ),
       ...rest,
     ];
-  } else if (DEBUG) {
+  } else if (import.meta.env?.DEV) {
     return [
       b.sexpr(
         b.path('-disallow-dynamic-resolution', first.loc),

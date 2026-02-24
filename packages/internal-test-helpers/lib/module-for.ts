@@ -1,7 +1,7 @@
 /* globals URLSearchParams */
 import { isEnabled } from '@ember/canary-features';
 import { assertDestroyablesDestroyed, enableDestroyableTracking } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
+
 import { all } from 'rsvp';
 import type { Generator, Mixin } from './apply-mixins';
 import applyMixins from './apply-mixins';
@@ -78,7 +78,7 @@ export default function moduleFor<T extends TestCase, M extends Generator>(
 function afterEachFinally() {
   unsetContext();
 
-  if (DEBUG && ASSERT_DESTROYABLES) {
+  if (import.meta.env?.DEV && ASSERT_DESTROYABLES) {
     assertDestroyablesDestroyed!();
   }
 }
@@ -89,7 +89,7 @@ export function setupTestClass<T extends TestCase, G extends Generator>(
   ...mixins: Mixin<G>[]
 ) {
   hooks.beforeEach(function (this: TestContext<T>, assert: QUnit['assert']) {
-    if (DEBUG && ASSERT_DESTROYABLES) {
+    if (import.meta.env?.DEV && ASSERT_DESTROYABLES) {
       enableDestroyableTracking!();
     }
 

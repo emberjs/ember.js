@@ -13,7 +13,7 @@ import {
   isDestroying,
   registerDestructor,
 } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
+
 import type {
   Bounds,
   Cursor,
@@ -108,7 +108,7 @@ const NO_OP = () => {};
 // during render. This prevents infinite revalidation type loops from occuring,
 // and ensures that errors are not swallowed by subsequent follow on failures.
 function errorLoopTransaction(fn: () => void) {
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     return () => {
       let didError = true;
 

@@ -21,7 +21,7 @@ import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
+
 import { hasInternalComponentManager } from '@glimmer/manager';
 import type { RenderState } from '@ember/-internals/glimmer';
 import type { TemplateFactory } from '@glimmer/interfaces';
@@ -1827,7 +1827,7 @@ function buildRenderState(route: Route): RenderState {
     if (hasInternalComponentManager(templateFactoryOrComponent)) {
       template = templateFactoryOrComponent;
     } else {
-      if (DEBUG && typeof templateFactoryOrComponent !== 'function') {
+      if (import.meta.env?.DEV && typeof templateFactoryOrComponent !== 'function') {
         let label: string;
 
         try {
@@ -1859,7 +1859,7 @@ function buildRenderState(route: Route): RenderState {
     template,
   };
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     let LOG_VIEW_LOOKUPS = get(route._router, 'namespace.LOG_VIEW_LOOKUPS');
     // This is covered by tests and the existing code was deliberately
     // targeting the value prior to normalization, but is this message actually

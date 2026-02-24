@@ -3,7 +3,7 @@
 */
 import type { FullName, InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
@@ -30,7 +30,7 @@ export default internalHelper(
       ((s: string): s is FullName => s.split(':').length === 2)(fullName)
     );
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       let [type, name] = fullName.split(':');
 
       assert(

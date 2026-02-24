@@ -1,6 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import Service from '@ember/service';
-import { DEBUG } from '@glimmer/env';
+
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
 
@@ -447,7 +447,7 @@ moduleFor(
     }
 
     ['@test Lazy injection validations are cached'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

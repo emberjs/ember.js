@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import {
   moduleFor,
   RenderingTestCase,
@@ -15,7 +14,7 @@ import { backtrackingMessageFor } from '../utils/debug-stack';
 
 class ModifierManagerTest extends RenderingTestCase {
   '@test throws a useful error when missing capabilities'(assert) {
-    if (!DEBUG) {
+    if (!import.meta.env?.DEV) {
       assert.expect(0);
       return;
     }
@@ -283,7 +282,7 @@ class ModifierManagerTest extends RenderingTestCase {
   }
 
   '@test capabilities helper function must be used to generate capabilities'(assert) {
-    if (!DEBUG) {
+    if (!import.meta.env?.DEV) {
       assert.expect(0);
       return;
     }
@@ -483,7 +482,7 @@ moduleFor(
         defineSimpleModifier((element) => (element.innerHTML = 'Hello, world!'))
       );
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         expectAssertion(
           () =>
             this.render(

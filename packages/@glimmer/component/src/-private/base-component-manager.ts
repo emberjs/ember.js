@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type { Arguments, ComponentManager, ComponentCapabilities } from '@glimmer/interfaces';
 import { type default as BaseComponent, ARGS_SET } from './component';
 
@@ -21,7 +20,7 @@ export default abstract class BaseComponentManager<
     ComponentClass: Constructor<GlimmerComponent>,
     args: Arguments
   ): GlimmerComponent {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       ARGS_SET.set(args.named, true);
     }
 

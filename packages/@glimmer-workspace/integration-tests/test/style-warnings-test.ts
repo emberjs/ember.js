@@ -4,7 +4,6 @@ import { testOverrideGlobalContext } from '@glimmer/global-context';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { assert } from './support';
-import { DEBUG } from '@glimmer/env';
 
 let warnings = 0;
 let originalContext: GlobalContext | null;
@@ -38,7 +37,7 @@ class StyleWarningsTest extends RenderTest {
     assert.strictEqual(warnings, 0);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'Standard element with dynamic style and element modifier gives you 1 warning'() {
     this.registerModifier('foo', class {});
     this.render('<button style={{this.dynAttr}} {{foo}}>click me</button>', {

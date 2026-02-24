@@ -276,9 +276,7 @@ There are helpers for many of these functions, which will resolve this for you: 
 If your tests can't or aren't covered by a helper, one common solution is the use of `DEBUG` flag. Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
 
 ```javascript
-import { DEBUG } from '@glimmer/env';
-
-if (DEBUG) {
+if (import.meta.env?.DEV ?? true) {
   // Development-only test goes here
 }
 ```

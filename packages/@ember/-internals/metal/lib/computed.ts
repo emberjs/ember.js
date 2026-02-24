@@ -3,7 +3,7 @@ import { meta as metaFor } from '@ember/-internals/meta';
 import { toString } from '@ember/-internals/utils';
 import { assert, inspect } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
+
 import type { UpdatableTag } from '@glimmer/validator';
 import {
   ALLOW_CYCLES,
@@ -420,7 +420,7 @@ export class ComputedProperty extends ComputedDescriptor {
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
 
-        if (DEBUG) {
+        if (import.meta.env?.DEV) {
           ALLOW_CYCLES!.set(propertyTag, true);
         }
       }
@@ -498,7 +498,7 @@ export class ComputedProperty extends ComputedDescriptor {
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
 
-        if (DEBUG) {
+        if (import.meta.env?.DEV) {
           ALLOW_CYCLES!.set(propertyTag, true);
         }
       }

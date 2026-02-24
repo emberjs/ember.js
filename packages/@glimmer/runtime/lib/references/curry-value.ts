@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   CapturedArguments,
   ClassicResolver,
@@ -39,7 +38,7 @@ export default function createCurryRef(
       // Only components should enter this path, as helpers and modifiers do not
       // support string based resolution
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         if (isStrict) {
           throw new Error(
             `Attempted to resolve a dynamic component with a string definition, \`${value}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`

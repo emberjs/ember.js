@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { addObserver, removeObserver } from '@ember/-internals/metal';
 import { computed, get, set, observer } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
@@ -98,7 +97,7 @@ moduleFor(
     }
 
     ['@test calling a function on the proxy avoids the assertion'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let proxy = class extends ObjectProxy {
           init() {
             super.init();
@@ -151,7 +150,7 @@ moduleFor(
     }
 
     ['@test getting proxied properties with [] should be an error'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let proxy = ObjectProxy.create({
           content: {
             foo: 'FOO',

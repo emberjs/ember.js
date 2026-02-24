@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   Helper,
   InternalComponentManager,
@@ -39,7 +38,7 @@ function setManager<Def extends object>(
   manager: object,
   obj: Def
 ): Def {
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     debugAssert(
       obj !== null && (typeof obj === 'object' || typeof obj === 'function'),
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
@@ -96,7 +95,7 @@ export function getInternalModifierManager(
   definition: object,
   isOptional?: true
 ): InternalModifierManager | null {
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     debugAssert(
       (typeof definition === 'object' && definition !== null) || typeof definition === 'function',
       () =>
@@ -108,7 +107,7 @@ export function getInternalModifierManager(
   const manager = getManager(MODIFIER_MANAGERS, definition);
 
   if (manager === undefined) {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       debugAssert(
         isOptional,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
@@ -161,7 +160,7 @@ export function getInternalHelperManager(
     return manager;
   } else if (isOptional === true) {
     return null;
-  } else if (DEBUG) {
+  } else if (import.meta.env?.DEV) {
     throw new Error(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${debugToString!(

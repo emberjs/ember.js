@@ -1,5 +1,4 @@
 import { ENV } from '@ember/-internals/environment';
-import { DEBUG } from '@glimmer/env';
 
 import { assert } from './assert';
 import type { HandlerCallback } from './handlers';
@@ -80,7 +79,7 @@ let missingOptionsIdDeprecation: string;
 let missingOptionDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   registerHandler = function registerHandler(handler: HandlerCallback<DeprecationOptions>): void {
     genericRegisterHandler('deprecate', handler);
   };

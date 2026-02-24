@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 export interface AssertFunc {
   (desc: string, condition: unknown): asserts condition;
   (desc: string): never;
@@ -12,7 +10,7 @@ export function setAssert(implementation: typeof assert): typeof assert {
   return implementation;
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   /**
     Verify that a certain expectation is met, or throw a exception otherwise.
 

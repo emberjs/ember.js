@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 import { assert } from './assert';
 import type { HandlerCallback } from './handlers';
 import { invoke, registerHandler as genericRegisterHandler } from './handlers';
@@ -25,7 +23,7 @@ let missingOptionsIdDeprecation: string;
 @module @ember/debug
 */
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   /**
     Allows for runtime registration of handler functions that override the default warning behavior.
     Warnings are invoked by calls made to [@ember/debug/warn](/ember/release/classes/@ember%2Fdebug/methods/warn?anchor=warn).

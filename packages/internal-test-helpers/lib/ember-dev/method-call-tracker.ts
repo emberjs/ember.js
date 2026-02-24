@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { assert as emberAssert } from '@ember/debug';
 import type { DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
 import { checkTest } from './utils';
@@ -82,7 +81,7 @@ export default class MethodCallTracker {
       return;
     }
 
-    if (!DEBUG) {
+    if (!import.meta.env?.DEV) {
       assert.ok(true, `calls to Ember.${methodName} disabled in production builds.`);
       return;
     }

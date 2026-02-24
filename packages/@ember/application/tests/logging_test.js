@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
@@ -45,7 +43,7 @@ moduleFor(
     }
 
     ['@test log class generation if logging enabled'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }
@@ -56,7 +54,7 @@ moduleFor(
     }
 
     ['@test actively generated classes get logged'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }
@@ -124,7 +122,7 @@ moduleFor(
     }
 
     [`@test log when template and view are missing when flag is active`](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }

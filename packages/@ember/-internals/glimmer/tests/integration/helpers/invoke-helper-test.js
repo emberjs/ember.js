@@ -5,7 +5,7 @@ import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Service, { service } from '@ember/service';
-import { DEBUG } from '@glimmer/env';
+
 import { getValue } from '@glimmer/validator';
 import { destroy, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { invokeHelper } from '@glimmer/runtime';
@@ -414,7 +414,7 @@ moduleFor(
     }
 
     '@test throws an error if value is accessed after it is destroyed'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -434,7 +434,7 @@ moduleFor(
     }
 
     '@test asserts if no context object is passed'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -590,7 +590,7 @@ moduleFor(
     }
 
     '@test args are frozen in debug builds'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
       } else {
         assert.expect(1);

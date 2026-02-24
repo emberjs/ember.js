@@ -6,7 +6,7 @@ import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { assert, deprecate, warn } from '@ember/debug';
 import type { DeprecationOptions } from '@ember/debug';
 import { schedule, _backburner } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
+
 import setGlobalContext from '@glimmer/global-context';
 import type { EnvironmentDelegate } from '@glimmer/runtime';
 import { debug } from '@glimmer/validator';
@@ -57,7 +57,7 @@ setGlobalContext({
   },
 
   assert(test: unknown, msg: string, options?: { id: string }) {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       let id = options?.id;
 
       let override = VM_ASSERTION_OVERRIDES.filter((o) => o.id === id)[0];
@@ -67,7 +67,7 @@ setGlobalContext({
   },
 
   deprecate(msg: string, test: unknown, options: { id: string }) {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       let { id } = options;
 
       if (id === 'argument-less-helper-paren-less-invocation') {
@@ -91,7 +91,7 @@ setGlobalContext({
   },
 });
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   debug?.setTrackingTransactionEnv?.({
     debugMessage(obj, keyName) {
       let dirtyString = keyName

@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import {
   CURRIED_COMPONENT,
   CURRIED_HELPER,
@@ -58,7 +57,11 @@ function toDynamicContentType(value: unknown) {
   if (isCurriedType(value, CURRIED_COMPONENT) || hasInternalComponentManager(value)) {
     return ContentType.Component;
   } else {
-    if (DEBUG && !isCurriedType(value, CURRIED_HELPER) && !hasInternalHelperManager(value)) {
+    if (
+      import.meta.env?.DEV &&
+      !isCurriedType(value, CURRIED_HELPER) &&
+      !hasInternalHelperManager(value)
+    ) {
       throw new Error(
         // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
         `Attempted use a dynamic value as a component or helper, but that value did not have an associated component or helper manager. The value was: ${value}`

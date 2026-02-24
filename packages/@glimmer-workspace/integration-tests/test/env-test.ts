@@ -1,10 +1,10 @@
 import { castToSimple } from '@glimmer/debug-util';
-import { DEBUG } from '@glimmer/env';
+
 import { EnvironmentImpl } from '@glimmer/runtime';
 
 QUnit.module('[integration] env');
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   QUnit.test('assert against nested transactions', (assert) => {
     let env = new EnvironmentImpl(
       { document: castToSimple(document) },

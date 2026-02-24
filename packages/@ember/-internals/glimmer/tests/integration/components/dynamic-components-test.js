@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
@@ -473,7 +472,7 @@ moduleFor(
     }
 
     ['@test component with dynamic name argument resolving to non-existent component'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -486,7 +485,7 @@ moduleFor(
     }
 
     ['@test component with static name argument for non-existent component'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

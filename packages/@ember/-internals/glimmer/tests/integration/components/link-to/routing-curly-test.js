@@ -11,7 +11,7 @@ import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
-import { DEBUG } from '@glimmer/env';
+
 import { compile } from '../../../utils/helpers';
 
 // IE includes the host name
@@ -1496,7 +1496,7 @@ moduleFor(
     }
 
     async [`@test it throws a useful error if you invoke it wrong`](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

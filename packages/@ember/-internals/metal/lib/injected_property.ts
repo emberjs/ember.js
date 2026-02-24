@@ -1,6 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import { computed } from './computed';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
 import { isElementDescriptor } from './decorator';
@@ -8,7 +8,7 @@ import { defineProperty } from './properties';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   DEBUG_INJECTION_FUNCTIONS = new WeakMap();
 }
 
@@ -66,7 +66,7 @@ function inject(
     return owner.lookup(`${type}:${name || propertyName}`);
   };
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
       type,
       name,

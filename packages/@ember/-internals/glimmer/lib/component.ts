@@ -19,7 +19,7 @@ import {
 } from '@ember/-internals/views';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
@@ -939,7 +939,12 @@ class Component<S = unknown>
       }
     }
 
-    if (DEBUG && eventDispatcher && this.renderer._isInteractive && this.tagName === '') {
+    if (
+      import.meta.env?.DEV &&
+      eventDispatcher &&
+      this.renderer._isInteractive &&
+      this.tagName === ''
+    ) {
       let eventNames = [];
       let events = eventDispatcher.finalEventNameMapping;
 

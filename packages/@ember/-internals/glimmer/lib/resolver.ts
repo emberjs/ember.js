@@ -2,7 +2,7 @@ import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
-import { DEBUG } from '@glimmer/env';
+
 import type {
   ClassicResolver,
   HelperDefinitionState,
@@ -111,7 +111,7 @@ export const BUILTIN_HELPERS: Record<string, object> = {
   'unique-id': uniqueId,
 };
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 } else {
   // Bug: this may be a quirk of our test setup?
@@ -171,8 +171,8 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       // than the raw value (`factoryFor(...).class`). This is because injections are already
       // bound in the factoryFor result, including type-based injections
 
-      if (DEBUG) {
-        // In DEBUG we need to only set the associated value once, otherwise
+      if (import.meta.env?.DEV) {
+        // In import.meta.env?.DEV we need to only set the associated value once, otherwise
         // we'll trigger an assertion
         if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
           CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);

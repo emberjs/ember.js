@@ -1,5 +1,5 @@
 import { assert, debug, warn } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import VERSION from 'ember/version';
 import { get } from './property_get';
 
@@ -73,7 +73,7 @@ export class Libraries {
   declare logVersions?: () => void;
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   Libraries.prototype.logVersions = function (): void {
     let libs = this._registry;
     let nameLengths = libs.map((item) => get(item, 'name.length'));

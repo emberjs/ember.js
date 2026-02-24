@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import {
   beginTrackFrame,
   consumeTag,
@@ -262,7 +261,7 @@ module('@glimmer/validator: tracking', () => {
       endTrackFrame();
     });
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       test('asserts if track frame was ended without one existing', (assert) => {
         assert.throws(
           () => endTrackFrame(),
@@ -398,7 +397,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(isConst(nonConstCache), 'non-constant cache returns false');
     });
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       test('createCache throws an error in import.meta.env.DEV mode if users to use with a non-function', (assert) => {
         assert.throws(
           () => createCache(123 as any),
@@ -485,7 +484,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(tag, snapshot));
     });
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       test('it errors when attempting to update a value already consumed in the same transaction', (assert) => {
         class Foo {
           foo = 123;
@@ -511,7 +510,7 @@ module('@glimmer/validator: tracking', () => {
     }
   });
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     module('debug', () => {
       test('it errors when attempting to update a value that has already been consumed in the same transaction', (assert) => {
         let tag = createTag();

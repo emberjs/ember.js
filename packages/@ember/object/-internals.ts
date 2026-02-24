@@ -4,7 +4,7 @@ export { guidFor } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { symbol } from '@ember/-internals/utils';
-import { DEBUG } from '@glimmer/env';
+
 import EmberObject from '.';
 
 // Here we have runtime shenanigans to add debug-only errors to the class in dev
@@ -25,7 +25,7 @@ import EmberObject from '.';
 interface FrameworkObject extends EmberObject {}
 let FrameworkObject: typeof EmberObject = class FrameworkObject extends EmberObject {};
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   const INIT_WAS_CALLED = Symbol('INIT_WAS_CALLED');
   let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
 

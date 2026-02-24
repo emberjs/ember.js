@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Libraries } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -46,7 +45,7 @@ moduleFor(
     }
 
     ['@test attempting to register a library that is already registered warns you'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }

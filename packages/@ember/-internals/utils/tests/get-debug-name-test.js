@@ -1,8 +1,7 @@
 import { getDebugName } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { DEBUG } from '@glimmer/env';
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   moduleFor(
     '@ember/-internals/utils getDebugName',
     class extends AbstractTestCase {

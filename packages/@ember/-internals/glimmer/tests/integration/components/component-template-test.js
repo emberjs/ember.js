@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
@@ -22,7 +21,7 @@ moduleFor(
     }
 
     '@test calling it with primitives asserts'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -57,7 +56,7 @@ moduleFor(
     }
 
     '@test calling it twice on the same object asserts'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

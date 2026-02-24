@@ -2,8 +2,6 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
 
-import { DEBUG } from '@glimmer/env';
-
 import { Component } from '../../utils/helpers';
 
 moduleFor(
@@ -246,7 +244,7 @@ moduleFor(
     }
 
     [`@test it throws a helpful error when callback is undefined`](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let expectedMessage =
           /You must pass a function as the second argument to the `on` modifier/;
         assert.throws(() => {
@@ -258,7 +256,7 @@ moduleFor(
     }
 
     [`@test it throws a helpful error when callback is null`](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let expectedMessage =
           /You must pass a function as the second argument to the `on` modifier/;
         assert.throws(() => {

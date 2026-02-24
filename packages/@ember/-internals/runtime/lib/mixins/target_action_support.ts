@@ -6,7 +6,6 @@ import { context } from '@ember/-internals/environment';
 import { get, computed } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
 
 /**
 `TargetActionSupport` is a mixin that can be included in a class
@@ -170,7 +169,7 @@ function getTarget(instance: TargetActionSupport) {
   return null;
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   Object.seal(TargetActionSupport);
 }
 

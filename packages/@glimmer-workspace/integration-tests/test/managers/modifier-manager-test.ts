@@ -10,7 +10,6 @@ import {
   trackedObj,
 } from '@glimmer-workspace/integration-tests';
 import { consume } from '@glimmer-workspace/test-utils';
-import { DEBUG } from '@glimmer/env';
 
 abstract class CustomModifier {
   static create<This extends { new (owner: object, args: Arguments): unknown }>(
@@ -216,7 +215,7 @@ abstract class ModifierManagerTest extends RenderTest {
     assert.strictEqual(updateCount, 2);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'provides a helpful deprecation when mutating a tracked value that was consumed already within constructor'(
     assert: Assert
   ) {

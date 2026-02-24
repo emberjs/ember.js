@@ -2,7 +2,6 @@ import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'inte
 
 import Controller from '@ember/controller';
 import { set } from '@ember/object';
-import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   '{{link-to}} component (rendering tests)',
@@ -10,7 +9,7 @@ moduleFor(
     async [`@test it throws a useful error if you invoke it wrong`](assert) {
       this.addTemplate('application', `{{#link-to}}Index{{/link-to}}`);
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         await assert.rejects(
           this.visit('/'),
           /You must provide at least one of the `@route`, `@model`, `@models` or `@query` arguments to `<LinkTo>`./
@@ -23,7 +22,7 @@ moduleFor(
     async [`@test it throws a useful error if you pass the href argument`](assert) {
       this.addTemplate('application', `{{#link-to href="nope" route="index"}}Index{{/link-to}}`);
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         await assert.rejects(
           this.visit('/'),
           /Passing the `@href` argument to <LinkTo> is not supported\./

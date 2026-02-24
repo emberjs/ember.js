@@ -12,7 +12,6 @@ import {
   TestHelper,
   trackedObj,
 } from '@glimmer-workspace/integration-tests';
-import { DEBUG } from '@glimmer/env';
 
 class GeneralStrictModeTest extends RenderTest {
   static suiteName = 'strict mode: general properties';
@@ -124,7 +123,7 @@ class GeneralStrictModeTest extends RenderTest {
     }, /\(component\) cannot resolve string values in strict mode templates/u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   '{{component}} throws an error if a string is used indirectly in strict (append position)'() {
     const Foo = defineComponent({}, '{{component this.bar}}', {
       definition: class extends GlimmerishComponent {
@@ -146,7 +145,7 @@ class GeneralStrictModeTest extends RenderTest {
     }, /The `component` keyword was used incorrectly. It was used as `component.foo`, but it cannot be used with additional path segments./u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   '{{component}} throws an error if a string is used indirectly in strict after first render (append position)'() {
     const Bar = defineComponent({}, 'Hello, world!');
 
@@ -172,7 +171,7 @@ class GeneralStrictModeTest extends RenderTest {
     }, /\(component\) cannot resolve string values in strict mode templates/u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   '{{component}} throws an error if a string is used indirectly in strict (block position)'() {
     const Foo = defineComponent({}, '{{#component this.bar}}{{/component}}', {
       definition: class extends GlimmerishComponent {
@@ -185,7 +184,7 @@ class GeneralStrictModeTest extends RenderTest {
     }, /Error: Attempted to resolve a dynamic component with a string definition, `bar` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly./u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   '{{component}} throws an error if a string is used indirectly in strict after first render (block position)'() {
     const Bar = defineComponent({}, 'Hello, world!');
 
@@ -211,7 +210,7 @@ class GeneralStrictModeTest extends RenderTest {
     }, /\(component\) cannot resolve string values in strict mode templates/u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   '{{component}} throws an error if a string is used indirectly in strict (expression position)'() {
     const Bar = defineComponent({}, '{{#let (component this.bar) as |bar|}}<bar/>{{/let}}', {
       definition: class extends GlimmerishComponent {
@@ -224,7 +223,7 @@ class GeneralStrictModeTest extends RenderTest {
     }, /Error: Attempted to resolve a dynamic component with a string definition, `bar` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly./u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   '{{component}} throws an error if a string is used indirectly in strict after first render (expression position)'() {
     const Bar = defineComponent({}, 'Hello, world!');
 
@@ -560,7 +559,7 @@ class StaticStrictModeTest extends RenderTest {
     );
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'Throws an error if a non-component is used as a component'() {
     const Foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({ Foo }, '<Foo/>');
@@ -570,7 +569,7 @@ class StaticStrictModeTest extends RenderTest {
     }, /Attempted to load a component, but there wasn't a component manager associated with the definition. The definition was:/u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'Throws an error if a non-helper is used as a helper'() {
     const foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent({ foo }, '{{#if (foo)}}{{/if}}');
@@ -580,7 +579,7 @@ class StaticStrictModeTest extends RenderTest {
     }, /Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was:/u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'Throws an error if a non-modifier is used as a modifier'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({ foo }, '<div {{foo}}></div>');
@@ -1104,7 +1103,7 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'Throws an error if a non-modifier is used as a modifier'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({}, '<div {{this.foo}}></div>', {
@@ -1205,7 +1204,7 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'Throws an error if a non-component is used as a component'() {
     const Foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({}, '<this.Foo/>', {
@@ -1273,7 +1272,7 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'Throws an error if a non-helper is used as a helper'() {
     const foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent({}, '{{#if (this.foo)}}{{/if}}', {

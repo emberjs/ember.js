@@ -14,7 +14,7 @@ import {
 } from '@ember/-internals/metal';
 import { setProxy, setupMandatorySetter, isObject, isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import { setCustomTagFor } from '@glimmer/manager';
 import type { UpdatableTag, Tag } from '@glimmer/validator';
 import { combine, updateTag, tagFor, tagMetaFor } from '@glimmer/validator';
@@ -34,14 +34,14 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
   let meta = tagMetaFor(proxy);
   let tag = tagFor(proxy, key, meta);
 
-  if (DEBUG) {
-    // TODO: Replace this with something more first class for tracking tags in DEBUG
+  if (import.meta.env?.DEV) {
+    // TODO: Replace this with something more first class for tracking tags in import.meta.env?.DEV
     // SAFETY: This is not an officially supported property but setting shouldn't cause issues.
     (tag as any)._propertyKey = key;
   }
 
   if (key in proxy) {
-    if (DEBUG && addMandatorySetter) {
+    if (import.meta.env?.DEV && addMandatorySetter) {
       assert('[BUG] setupMandatorySetter should be set when debugging', setupMandatorySetter);
       setupMandatorySetter(tag, proxy, key);
     }

@@ -1,7 +1,7 @@
 import { getFactoryFor } from '@ember/-internals/container';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
-import { DEBUG } from '@glimmer/env';
+
 import type {
   ComponentDefinition,
   Environment,
@@ -57,7 +57,7 @@ class RootComponentManager extends CurlyComponentManager {
       }
     }
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       processComponentInitializationAssertions(component, {});
     }
 

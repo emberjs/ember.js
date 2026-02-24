@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   ArgumentError,
   BlockArguments,
@@ -308,7 +307,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
     let ref = stack.get<Reference>(idx, base);
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return createDebugAliasRef!(atNames ? name : `@${name}`, ref);
     } else {
@@ -321,7 +320,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     let map = dict<Reference>();
 
     for (const [i, name] of enumerate(names)) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         map[name] = createDebugAliasRef!(`@${name}`, unwrap(references[i]));
       } else {

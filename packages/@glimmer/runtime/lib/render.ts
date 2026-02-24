@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   CompilableProgram,
   ComponentDefinitionState,
@@ -28,7 +27,7 @@ class TemplateIteratorImpl implements TemplateIterator {
   }
 
   sync(): RenderResult {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return debug.runInTrackingTransaction!(() => this.vm.execute(), '- While rendering:');
     } else {

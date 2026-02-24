@@ -1,7 +1,7 @@
 import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
@@ -95,7 +95,7 @@ export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorProp
       args.length === 0 || (typeof propertyDesc === 'object' && propertyDesc !== null)
     );
 
-    if (DEBUG && propertyDesc) {
+    if (import.meta.env?.DEV && propertyDesc) {
       let keys = Object.keys(propertyDesc);
 
       assert(
@@ -140,7 +140,7 @@ export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorProp
   return descriptorForField(args);
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   // Normally this isn't a classic decorator, but we want to throw a helpful
   // error in development so we need it to treat it like one
   setClassicDecorator(tracked);

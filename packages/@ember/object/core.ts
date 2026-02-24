@@ -21,7 +21,7 @@ import Mixin, { applyMixin } from '@ember/object/mixin';
 import { ActionHandler } from '@ember/-internals/runtime';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
@@ -59,7 +59,7 @@ const reopen = Mixin.prototype.reopen;
 const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
 
-const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
+const initCalled = import.meta.env?.DEV ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
 const destroyCalled = new Set();
 
@@ -143,7 +143,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
       } else if (hasSetUnknownProperty(obj) && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
-        if (DEBUG) {
+        if (import.meta.env?.DEV) {
           defineProperty(obj, keyName, null, value, m); // setup mandatory setter
         } else {
           (obj as any)[keyName] = value;
@@ -152,8 +152,8 @@ function initialize(obj: CoreObject, properties?: unknown) {
     }
   }
 
-  // using DEBUG here to avoid the extraneous variable when not needed
-  if (DEBUG) {
+  // using import.meta.env?.DEV here to avoid the extraneous variable when not needed
+  if (import.meta.env?.DEV) {
     initCalled!.add(obj);
   }
   obj.init(properties);
@@ -247,7 +247,7 @@ class CoreObject {
     (this.constructor as typeof CoreObject).proto();
 
     let self;
-    if (DEBUG && hasUnknownProperty(this)) {
+    if (import.meta.env?.DEV && hasUnknownProperty(this)) {
       let messageFor = (obj: unknown, property: unknown) => {
         return (
           `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
@@ -308,7 +308,7 @@ class CoreObject {
     m.setInitializing();
 
     // only return when in debug builds and `self` is the proxy created above
-    if (DEBUG && self !== this) {
+    if (import.meta.env?.DEV && self !== this) {
       return self;
     }
   }
@@ -1080,7 +1080,7 @@ function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, un
   return initProperties;
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   /**
     Provides lookup-time type validation for injected properties.
 

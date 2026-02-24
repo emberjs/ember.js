@@ -1,7 +1,7 @@
 // NOTE: copied from: https://github.com/glimmerjs/glimmer.js/pull/358
 // Both glimmerjs/glimmer.js and emberjs/ember.js have the exact same implementation
 // of @cached, so any changes made to one should also be made to the other
-import { DEBUG } from '@glimmer/env';
+
 import { createCache, getValue } from '@glimmer/validator';
 
 /**
@@ -97,9 +97,9 @@ export const cached: MethodDecorator = (...args: any[]) => {
   const [target, key, descriptor] = args;
 
   // Error on `@cached()`, `@cached(...args)`, and `@cached propName = value;`
-  if (DEBUG && target === undefined) throwCachedExtraneousParens();
+  if (import.meta.env?.DEV && target === undefined) throwCachedExtraneousParens();
   if (
-    DEBUG &&
+    import.meta.env?.DEV &&
     (typeof target !== 'object' ||
       typeof key !== 'string' ||
       typeof descriptor !== 'object' ||
@@ -107,7 +107,7 @@ export const cached: MethodDecorator = (...args: any[]) => {
   ) {
     throwCachedInvalidArgsError(args);
   }
-  if (DEBUG && (!('get' in descriptor) || typeof descriptor.get !== 'function')) {
+  if (import.meta.env?.DEV && (!('get' in descriptor) || typeof descriptor.get !== 'function')) {
     throwCachedGetterOnlyError(key);
   }
 

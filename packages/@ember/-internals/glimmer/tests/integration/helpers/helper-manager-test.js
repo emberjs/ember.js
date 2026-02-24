@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { tracked } from '@ember/-internals/metal';
@@ -239,7 +238,7 @@ moduleFor(
     }
 
     ['@test asserts against using both `hasValue` and `hasScheduledEffect`'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -253,7 +252,7 @@ moduleFor(
     }
 
     ['@test asserts requiring either `hasValue` or `hasScheduledEffect`'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -264,7 +263,7 @@ moduleFor(
     }
 
     ['@test asserts against using `hasScheduledEffect`'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -277,7 +276,7 @@ moduleFor(
     }
 
     ['@test asserts against using incorrect version for capabilities'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -311,7 +310,7 @@ moduleFor(
     }
 
     '@test capabilities helper function must be used to generate capabilities'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

@@ -1,5 +1,5 @@
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type { Tag } from '@glimmer/validator';
 import lookupDescriptor from './lookup-descriptor';
 
@@ -24,7 +24,7 @@ function isPositiveInt(num: number) {
   return num >= 0 && num % 1 === 0;
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   let SEEN_TAGS = new WeakSet();
 
   let MANDATORY_SETTERS: WeakMap<object, { [key: string | symbol]: PropertyDescriptorWithMeta }> =

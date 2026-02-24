@@ -1,5 +1,5 @@
 import { inject } from '@ember/-internals/metal';
-import { DEBUG } from '@glimmer/env';
+
 import EmberObject from '@ember/object';
 import { buildOwner } from 'internal-test-helpers';
 import { runDestroy, moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -24,7 +24,7 @@ moduleFor(
     }
 
     ['@test factories should return a list of lazy injection full names'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let AnObject = class extends EmberObject {
           @inject('foo', 'bar')
           foo;

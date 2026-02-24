@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type { DebugEnv, Message } from './utils';
 import { callWithStub, checkTest } from './utils';
 
@@ -35,7 +34,7 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv): void {
 
   hooks.beforeEach(function (assert) {
     let expectAssertion: ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'Assertions disabled in production builds.');
         return;
       }

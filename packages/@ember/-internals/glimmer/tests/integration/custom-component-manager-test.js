@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { componentCapabilities } from '@glimmer/manager';
@@ -525,7 +524,7 @@ moduleFor(
     }
 
     '@test capabilities helper function must be used to generate capabilities'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -841,7 +840,7 @@ moduleFor(
     }
 
     '@test capabilities helper function must be used to generate capabilities'(assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

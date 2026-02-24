@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@glimmer/interfaces';
 import { localAssert, setLocalDebugType } from '@glimmer/debug-util';
 
@@ -80,7 +79,7 @@ export class Source {
         if (seenChars + column > nextLine) return nextLine;
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (DEBUG) {
+        if (import.meta.env?.DEV) {
           let roundTrip = this.hbsPosFor(seenChars + column);
           localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
           localAssert(

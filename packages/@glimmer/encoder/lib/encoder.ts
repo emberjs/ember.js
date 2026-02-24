@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   CompilerBuffer,
   InstructionEncoder,
@@ -27,7 +26,7 @@ export class InstructionEncoderImpl implements InstructionEncoder {
     this.buffer.push(first);
 
     for (const op of args) {
-      if (DEBUG && typeof op === 'number' && op > MAX_SIZE) {
+      if (import.meta.env?.DEV && typeof op === 'number' && op > MAX_SIZE) {
         throw new Error(`Operand over 32-bits. Got ${op}.`);
       }
       this.buffer.push(op);

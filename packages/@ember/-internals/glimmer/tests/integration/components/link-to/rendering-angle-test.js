@@ -9,7 +9,6 @@ import Router from '@ember/routing/router';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { set } from '@ember/object';
-import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   '<LinkTo /> component (rendering tests)',
@@ -26,7 +25,7 @@ moduleFor(
     async [`@test it throws a useful error if you pass the href argument`](assert) {
       this.addTemplate('application', `<LinkTo @href="nope" @route="index">Index</LinkTo>`);
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         await assert.rejects(
           this.visit('/'),
           /Passing the `@href` argument to <LinkTo> is not supported\./

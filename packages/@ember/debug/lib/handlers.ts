@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 export type Options = object;
 export type Handler<O extends Options> = (message: string, options?: O) => void;
 export type HandlerCallback<O extends Options> = (
@@ -26,7 +24,7 @@ let registerHandler = function registerHandler<O extends Options>(
 ) {};
 let invoke: InvokeFunc = () => {};
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   registerHandler = function registerHandler<O extends Options>(
     type: string,
     callback: HandlerCallback<O>

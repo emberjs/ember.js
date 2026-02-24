@@ -1,12 +1,12 @@
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type { CapturedArguments, Helper } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 let helper: Helper;
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   helper = (args: CapturedArguments) => {
     const inner = args.positional[0];
     assert('expected at least one positional arg', inner);

@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
 import { ENV } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';
@@ -251,7 +250,7 @@ moduleFor(
     }
 
     [`@test enable log of libraries with an ENV var`](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }

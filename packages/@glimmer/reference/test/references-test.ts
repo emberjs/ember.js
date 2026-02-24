@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type { GlobalContext } from '@glimmer/global-context';
 import { unwrap } from '@glimmer/debug-util';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
@@ -36,7 +35,7 @@ class TrackedDict<T> {
     return (this.data[key] = value);
   }
 }
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   module('References', (hooks) => {
     let originalContext: GlobalContext | null;
     let getCount = 0;
@@ -385,7 +384,7 @@ if (DEBUG) {
       });
     });
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       module('debugAliasRef', () => {
         test('debug alias refs are transparent', (assert) => {
           class Foo {

@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { assert as emberAssert, runInDebug } from '@ember/debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -6,7 +5,7 @@ moduleFor(
   'production builds',
   class extends AbstractTestCase {
     ['@test assert does not throw in production builds'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(1);
 
         try {
@@ -21,7 +20,7 @@ moduleFor(
     }
 
     ['@test runInDebug does not run the callback in production builds'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         let fired = false;
         runInDebug(() => (fired = true));
 

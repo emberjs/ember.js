@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import { DEBUG } from '@glimmer/env';
+
 import { assert } from '@ember/debug';
 import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
 import { computed, get } from '@ember/object';
@@ -1191,7 +1191,7 @@ export function sort(
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     let argumentsValid = false;
 
     if (arguments.length === 2) {

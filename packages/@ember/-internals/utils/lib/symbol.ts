@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { GUID_KEY } from './guid';
 import intern from './intern';
 
@@ -18,7 +17,7 @@ export function enumerableSymbol(debugName: string): string {
   let id = GUID_KEY + Math.floor(Math.random() * Date.now()).toString();
   let symbol = intern(`__${debugName}${id}__`);
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     GENERATED_SYMBOLS.push(symbol);
   }
 

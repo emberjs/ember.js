@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   Arguments,
   ComponentCapabilities,
@@ -45,7 +44,7 @@ export function componentCapabilities<Version extends keyof ComponentCapabilitie
   managerAPI: Version,
   options: ComponentCapabilitiesVersions[Version] = {}
 ): ComponentCapabilities {
-  if (DEBUG && managerAPI !== '3.13') {
+  if (import.meta.env?.DEV && managerAPI !== '3.13') {
     throw new Error('Invalid component manager compatibility specified');
   }
 
@@ -124,7 +123,7 @@ export class CustomComponentManager<
       delegate = factory(owner);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+      if (import.meta.env?.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
           `Custom component managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.13')\` (imported via \`import { capabilities } from '@ember/component';\`). Received: \`${JSON.stringify(

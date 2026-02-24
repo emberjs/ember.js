@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 const DESTROYING = new WeakMap<GlimmerComponent<object>, boolean>();
 const DESTROYED = new WeakMap<GlimmerComponent<object>, boolean>();
 
@@ -20,11 +18,11 @@ interface ArgsSetMap extends WeakMap<Args<unknown>, boolean> {
   has<S>(key: Args<S>): boolean;
 }
 
-// SAFETY: this only holds because we *only* acces this when `DEBUG` is `true`.
+// SAFETY: this only holds because we *only* acces this when `import.meta.env?.DEV` is `true`.
 // There is not a great way to connect that data in TS at present.
 export let ARGS_SET: ArgsSetMap;
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   ARGS_SET = new WeakMap() as ArgsSetMap;
 }
 
@@ -233,7 +231,10 @@ export default class GlimmerComponent<S = unknown> {
    * @param args
    */
   constructor(owner: unknown, args: Args<S>) {
-    if (DEBUG && !(owner !== null && typeof owner === 'object' && ARGS_SET.has(args))) {
+    if (
+      import.meta.env?.DEV &&
+      !(owner !== null && typeof owner === 'object' && ARGS_SET.has(args))
+    ) {
       throw new Error(
         `You must pass both the owner and args to super() in your component: ${this.constructor.name}. You can pass them directly, or use ...arguments to pass all arguments through.`
       );

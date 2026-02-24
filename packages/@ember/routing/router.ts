@@ -25,7 +25,7 @@ import { typeOf } from '@ember/utils';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
+
 import {
   type QueryParamMeta,
   type default as Route,
@@ -63,7 +63,7 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
   this.notifyPropertyChange('url');
   this.set('currentState', this.targetState);
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     // @ts-expect-error namespace isn't public
     if (this.namespace.LOG_TRANSITIONS) {
       // eslint-disable-next-line no-console
@@ -77,7 +77,7 @@ function defaultWillTransition(
   oldInfos: InternalRouteInfo<Route>[],
   newInfos: InternalRouteInfo<Route>[]
 ) {
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     // @ts-expect-error namespace isn't public
     if (this.namespace.LOG_TRANSITIONS) {
       // eslint-disable-next-line no-console
@@ -91,7 +91,7 @@ function defaultWillTransition(
 }
 
 let freezeRouteInfo: Function;
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   freezeRouteInfo = (transition: Transition) => {
     if (transition.from !== null && !Object.isFrozen(transition.from)) {
       Object.freeze(transition.from);
@@ -351,7 +351,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
           routeOwner.register(fullRouteName, class extends DefaultRoute {});
           route = routeOwner.lookup(fullRouteName) as Route;
 
-          if (DEBUG) {
+          if (import.meta.env?.DEV) {
             if (router.namespace.LOG_ACTIVE_GENERATION) {
               info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
             }
@@ -417,7 +417,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       routeWillChange(transition: Transition) {
         router.trigger('routeWillChange', transition);
 
-        if (DEBUG) {
+        if (import.meta.env?.DEV) {
           freezeRouteInfo(transition);
         }
         router._routerService.trigger('routeWillChange', transition);
@@ -435,7 +435,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         once(() => {
           router.trigger('routeDidChange', transition);
 
-          if (DEBUG) {
+          if (import.meta.env?.DEV) {
             freezeRouteInfo(transition);
           }
           router._routerService.trigger('routeDidChange', transition);
@@ -495,7 +495,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
     );
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       if (this.namespace.LOG_TRANSITIONS_INTERNAL) {
         routerMicrolib.log = console.log.bind(console); // eslint-disable-line no-console
       }
@@ -726,7 +726,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     updatePaths(this);
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       let infos = this._routerMicrolib.currentRouteInfos;
       if (this.namespace.LOG_TRANSITIONS) {
         assert('expected infos to be set', infos);
@@ -1151,7 +1151,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let shouldCache = true;
     let map: QueryParamMeta['map'] = {};
     let qps = [];
-    let qpsByUrlKey: Record<string, QueryParam> | null = DEBUG ? {} : null;
+    let qpsByUrlKey: Record<string, QueryParam> | null = import.meta.env?.DEV ? {} : null;
     let qpMeta;
     let urlKey;
     let qpOther;
@@ -1166,7 +1166,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
       // Loop over each QP to make sure we don't have any collisions by urlKey
       for (let qp of qpMeta.qps) {
-        if (DEBUG) {
+        if (import.meta.env?.DEV) {
           urlKey = qp.urlKey;
           qpOther = qpsByUrlKey![urlKey];
           if (qpOther && qpOther.controllerName !== qp.controllerName) {

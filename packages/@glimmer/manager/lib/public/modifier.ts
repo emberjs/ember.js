@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   Arguments,
   CapturedArguments,
@@ -87,7 +86,7 @@ export class CustomModifierManager<
       delegate = factory(owner);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+      if (import.meta.env?.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
           `Custom modifier managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.22')\` (imported via \`import { capabilities } from '@ember/modifier';\`). Received: \`${JSON.stringify(

@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   BlockMetadata,
   BlockSymbolNames,
@@ -56,7 +55,7 @@ interface ResolvedBlockMetadata extends BlockMetadata {
 }
 
 function assertResolverInvariants(meta: BlockMetadata): ResolvedBlockMetadata {
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     if (!meta.symbols.upvars) {
       throw new Error(
         'Attempted to resolve a component, helper, or modifier, but no free vars were found'
@@ -88,7 +87,7 @@ export function resolveComponent(
 
   let type = expr[0];
 
-  if (DEBUG && expr[0] === SexpOpcodes.GetStrictKeyword) {
+  if (import.meta.env?.DEV && expr[0] === SexpOpcodes.GetStrictKeyword) {
     localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     throw new Error(
@@ -126,7 +125,7 @@ export function resolveComponent(
     let name = unwrap(upvars[expr[1]]);
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
-    if (DEBUG && (typeof definition !== 'object' || definition === null)) {
+    if (import.meta.env?.DEV && (typeof definition !== 'object' || definition === null)) {
       localAssert(
         !meta.isStrictMode,
         'Strict mode errors should already be handled at compile time'
@@ -176,7 +175,7 @@ export function resolveHelper(
     let name = unwrap(upvars[expr[1]]);
     let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
-    if (DEBUG && helper === null) {
+    if (import.meta.env?.DEV && helper === null) {
       localAssert(
         !meta.isStrictMode,
         'Strict mode errors should already be handled at compile time'
@@ -224,7 +223,7 @@ export function resolveModifier(
     let name = unwrap(upvars[expr[1]]);
     let modifier = resolver?.lookupBuiltInModifier?.(name) ?? null;
 
-    if (DEBUG && modifier === null) {
+    if (import.meta.env?.DEV && modifier === null) {
       localAssert(
         !meta.isStrictMode,
         'Strict mode errors should already be handled at compile time'
@@ -245,7 +244,7 @@ export function resolveModifier(
     let name = unwrap(upvars[expr[1]]);
     let modifier = resolver?.lookupModifier?.(name, owner) ?? null;
 
-    if (DEBUG && modifier === null) {
+    if (import.meta.env?.DEV && modifier === null) {
       localAssert(
         !meta.isStrictMode,
         'Strict mode errors should already be handled at compile time'
@@ -301,7 +300,7 @@ export function resolveComponentOrHelper(
 
     let helper = constants.helper(definition as object, null, true);
 
-    if (DEBUG && helper === null) {
+    if (import.meta.env?.DEV && helper === null) {
       localAssert(
         !meta.isStrictMode,
         'Strict mode errors should already be handled at compile time'
@@ -340,7 +339,7 @@ export function resolveComponentOrHelper(
     } else {
       let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
-      if (DEBUG && helper === null) {
+      if (import.meta.env?.DEV && helper === null) {
         localAssert(
           !meta.isStrictMode,
           'Strict mode errors should already be handled at compile time'
@@ -452,7 +451,7 @@ function lookupBuiltInHelper(
   let name = unwrap(upvars[expr[1]]);
   let helper = resolver?.lookupBuiltInHelper?.(name) ?? null;
 
-  if (DEBUG && helper === null) {
+  if (import.meta.env?.DEV && helper === null) {
     localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     // Keyword helper did not exist, which means that we're attempting to use a

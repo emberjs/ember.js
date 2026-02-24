@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   AttributeHookCapability,
   Capabilities,
@@ -27,10 +26,10 @@ import type {
 import { check, CheckNumber } from '@glimmer/debug';
 import { InternalComponentCapabilities } from '@glimmer/vm';
 
-export const FROM_CAPABILITIES = DEBUG ? new WeakSet() : undefined;
+export const FROM_CAPABILITIES = import.meta.env?.DEV ? new WeakSet() : undefined;
 
 export function buildCapabilities<T extends object>(capabilities: T): T & Capabilities {
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     FROM_CAPABILITIES!.add(capabilities);
     Object.freeze(capabilities);

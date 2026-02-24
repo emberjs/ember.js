@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   Arguments,
   CapturedArguments,
@@ -86,7 +85,7 @@ class NamedArgsProxy implements ProxyHandler<{}> {
 
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme
   getOwnPropertyDescriptor(_target: {}, prop: string | number | symbol) {
-    if (DEBUG && !(prop in this.named)) {
+    if (import.meta.env?.DEV && !(prop in this.named)) {
       throw new Error(
         `args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys(). Attempted to get the descriptor for \`${String(
           prop
@@ -152,7 +151,7 @@ export const argsProxyFor = (
   const namedTarget = Object.create(null);
   const positionalTarget: unknown[] = [];
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     const setHandler = function (_target: unknown, prop: symbol | string | number): never {
       throw new Error(
         `You attempted to set ${String(

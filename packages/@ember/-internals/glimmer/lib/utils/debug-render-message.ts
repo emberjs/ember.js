@@ -1,8 +1,6 @@
-import { DEBUG } from '@glimmer/env';
-
 let debugRenderMessage: undefined | ((renderingStack: string) => string);
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   debugRenderMessage = (renderingStack: string) => {
     return `While rendering:\n----------------\n${renderingStack.replace(/^/gm, '  ')}`;
   };

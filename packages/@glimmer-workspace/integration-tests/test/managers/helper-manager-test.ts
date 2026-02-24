@@ -13,7 +13,6 @@ import {
   trackedObj,
 } from '@glimmer-workspace/integration-tests';
 import { consume } from '@glimmer-workspace/test-utils';
-import { DEBUG } from '@glimmer/env';
 
 class HelperManagerTest extends RenderTest {
   static suiteName = 'Helper Managers';
@@ -352,7 +351,9 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('hello');
   }
 
-  @test({ skip: !DEBUG }) 'debug name is used for backtracking message'(assert: Assert) {
+  @test({ skip: !import.meta.env?.DEV }) 'debug name is used for backtracking message'(
+    assert: Assert
+  ) {
     class Hello extends TestHelper {
       @tracked foo = 123;
 
@@ -367,9 +368,8 @@ class HelperManagerTest extends RenderTest {
     }, /You attempted to update `foo` on/u);
   }
 
-  @test({ skip: !DEBUG }) 'asserts against using both `hasValue` and `hasScheduledEffect`'(
-    assert: Assert
-  ) {
+  @test({ skip: !import.meta.env?.DEV })
+  'asserts against using both `hasValue` and `hasScheduledEffect`'(assert: Assert) {
     assert.throws(() => {
       helperCapabilities('3.23', {
         hasValue: true,
@@ -378,15 +378,16 @@ class HelperManagerTest extends RenderTest {
     }, /You must pass either the `hasValue` OR the `hasScheduledEffect` capability when defining a helper manager. Passing neither, or both, is not permitted./u);
   }
 
-  @test({ skip: !DEBUG }) 'asserts requiring either `hasValue` or `hasScheduledEffect`'(
-    assert: Assert
-  ) {
+  @test({ skip: !import.meta.env?.DEV })
+  'asserts requiring either `hasValue` or `hasScheduledEffect`'(assert: Assert) {
     assert.throws(() => {
       helperCapabilities('3.23', {});
     }, /You must pass either the `hasValue` OR the `hasScheduledEffect` capability when defining a helper manager. Passing neither, or both, is not permitted./u);
   }
 
-  @test({ skip: !DEBUG }) 'asserts against using `hasScheduledEffect`'(assert: Assert) {
+  @test({ skip: !import.meta.env?.DEV }) 'asserts against using `hasScheduledEffect`'(
+    assert: Assert
+  ) {
     assert.throws(() => {
       helperCapabilities('3.23', {
         hasScheduledEffect: true,
@@ -394,7 +395,7 @@ class HelperManagerTest extends RenderTest {
     }, /The `hasScheduledEffect` capability has not yet been implemented for helper managers. Please pass `hasValue` instead/u);
   }
 
-  @test({ skip: !DEBUG }) 'asserts against using incorrect version for capabilities'(
+  @test({ skip: !import.meta.env?.DEV }) 'asserts against using incorrect version for capabilities'(
     assert: Assert
   ) {
     assert.throws(() => {
@@ -424,9 +425,8 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('hello');
   }
 
-  @test({ skip: !DEBUG }) 'capabilities helper function must be used to generate capabilities'(
-    assert: Assert
-  ) {
+  @test({ skip: !import.meta.env?.DEV })
+  'capabilities helper function must be used to generate capabilities'(assert: Assert) {
     class OverrideTestHelperManager extends TestHelperManager {
       override capabilities = {
         hasValue: true,
@@ -450,7 +450,7 @@ class HelperManagerTest extends RenderTest {
     }, /Custom helper managers must have a `capabilities` property that is the result of calling the `capabilities\('3.23'\)` \(imported via `import \{ capabilities \} from '@ember\/helper';`\). /u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'custom helpers gives helpful assertion when reading then mutating a tracked value within constructor'(
     assert: Assert
   ) {
@@ -478,7 +478,7 @@ class HelperManagerTest extends RenderTest {
     }, /You attempted to update `foo` on /u);
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'custom helpers gives helpful assertion when reading then mutating a tracked value within value'(
     assert: Assert
   ) {

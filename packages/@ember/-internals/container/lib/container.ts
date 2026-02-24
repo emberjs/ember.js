@@ -9,7 +9,7 @@ import type {
 import { setOwner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type { DebugRegistry } from './registry';
 import type Registry from './registry';
 
@@ -24,7 +24,7 @@ declare const gc: undefined | (() => void);
 
 let leakTracking: LeakTracking;
 let containers: WeakSet<Container>;
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   // requires v8
   // chrome --js-flags="--allow-natives-syntax --expose-gc"
   // node --allow-natives-syntax --expose-gc
@@ -92,7 +92,7 @@ export default class Container {
     this.isDestroyed = false;
     this.isDestroying = false;
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       this.validationCache = dictionary(options.validationCache || null);
       if (containers !== undefined) {
         containers.add(this);
@@ -232,7 +232,7 @@ export default class Container {
   }
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   Container._leakTracking = leakTracking!;
 }
 
@@ -312,13 +312,13 @@ function factoryFor(
     return;
   }
 
-  if (DEBUG && factory && typeof factory._onLookup === 'function') {
+  if (import.meta.env?.DEV && factory && typeof factory._onLookup === 'function') {
     factory._onLookup(fullName);
   }
 
   let manager = new InternalFactoryManager(container, factory, fullName, normalizedName);
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     manager = wrapManagerInDeprecationProxy(manager);
   }
 
@@ -541,7 +541,7 @@ export class InternalFactoryManager<
     setOwner(props, container.owner!);
     setFactoryFor(props, this);
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       let lazyInjections;
       let validationCache = this.container.validationCache;
       // Ensure that all lazy injections are valid at instantiation time

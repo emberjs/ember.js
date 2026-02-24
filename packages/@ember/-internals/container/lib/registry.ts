@@ -10,7 +10,7 @@ import type {
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import type { set } from '@ember/object';
-import { DEBUG } from '@glimmer/env';
+
 import type { ContainerOptions, LazyInjection } from './container';
 import Container from './container';
 
@@ -468,7 +468,7 @@ export declare class DebugRegistry extends Registry {
   validateInjections(injections: Injection[]): void;
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   const proto = Registry.prototype as DebugRegistry;
   proto.normalizeInjectionsHash = function (hash: { [key: string]: LazyInjection }) {
     let injections: Injection[] = [];

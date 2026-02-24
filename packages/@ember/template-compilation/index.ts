@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type { TemplateFactory } from '@glimmer/interfaces';
 import type * as ETC from 'ember-template-compiler';
 
@@ -31,7 +30,7 @@ export const compileTemplate: typeof ETC.compile = (...args: Parameters<typeof E
 
 export let precompileTemplate: PrecompileTemplate;
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   precompileTemplate = () => {
     throw new Error(
       'Attempted to call `precompileTemplate` at runtime, but this API is meant to be used at compile time. You should use `compileTemplate` instead.'

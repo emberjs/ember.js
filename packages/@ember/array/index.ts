@@ -1,7 +1,7 @@
 /**
 @module @ember/array
 */
-import { DEBUG } from '@glimmer/env';
+
 import { PROXY_CONTENT } from '@ember/-internals/metal';
 import {
   objectAt,
@@ -165,7 +165,7 @@ function insertAt<T>(array: MutableArray<T>, index: number, item: T) {
   @public
 */
 export function isArray(obj: unknown): obj is ArrayLike<unknown> | EmberArray<unknown> {
-  if (DEBUG && typeof obj === 'object' && obj !== null) {
+  if (import.meta.env?.DEV && typeof obj === 'object' && obj !== null) {
     // SAFETY: Property read checks are safe if it's an object
     let possibleProxyContent = (obj as any)[PROXY_CONTENT];
     if (possibleProxyContent !== undefined) {

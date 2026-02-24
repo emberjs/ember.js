@@ -2,7 +2,7 @@ import type { ComputedProperty } from '@ember/-internals/metal';
 import { symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
+
 import type { Revision, UpdatableTag } from '@glimmer/validator';
 
 type ObjMap<T> = { [key: string]: T };
@@ -31,7 +31,7 @@ export interface MetaCounters {
 }
 
 let counters: MetaCounters | undefined;
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   counters = {
     peekCalls: 0,
     peekPrototypeWalks: 0,
@@ -115,10 +115,10 @@ export class Meta {
   /** @internal */
   _flattenedVersion = 0;
 
-  // DEBUG
+  // import.meta.env?.DEV
   /** @internal */
   constructor(obj: object) {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.metaInstantiated++;
     }
     this._parent = undefined;
@@ -236,7 +236,7 @@ export class Meta {
 
   /** @internal */
   writableLazyChainsFor(key: string): [UpdatableTag, unknown][] {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.writableLazyChainsCalls++;
     }
 
@@ -253,7 +253,7 @@ export class Meta {
 
   /** @internal */
   readableLazyChainsFor(key: string): [UpdatableTag, unknown][] | undefined {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.readableLazyChainsCalls++;
     }
 
@@ -359,7 +359,7 @@ export class Meta {
     once: boolean,
     sync: boolean
   ) {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.addToListenersCalls++;
     }
 
@@ -368,7 +368,7 @@ export class Meta {
 
   /** @internal */
   removeFromListeners(eventName: string, target: object | null, method: Function | string): void {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.removeFromListenersCalls++;
     }
 
@@ -456,7 +456,7 @@ export class Meta {
       this._flattenedVersion === currentListenerVersion &&
       (this.source === this.proto || this._inheritedEnd === -1)
     ) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         counters!.reopensAfterFlatten++;
       }
 
@@ -487,12 +487,12 @@ export class Meta {
     be updated very often in practice.
   */
   private flattenedListeners(): Listener[] | undefined {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.flattenedListenersCalls++;
     }
 
     if (this._flattenedVersion < currentListenerVersion) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         counters!.listenersFlattened++;
       }
 
@@ -507,7 +507,7 @@ export class Meta {
             // If this instance doesn't have any of its own listeners (writableListeners
             // has never been called) then we don't need to do any flattening, return
             // the parent's listeners instead.
-            if (DEBUG) {
+            if (import.meta.env?.DEV) {
               counters!.parentListenersUsed++;
             }
 
@@ -529,7 +529,7 @@ export class Meta {
               );
 
               if (index === -1) {
-                if (DEBUG) {
+                if (import.meta.env?.DEV) {
                   counters!.listenersInherited++;
                 }
 
@@ -552,7 +552,7 @@ export class Meta {
     let listeners = this.flattenedListeners();
     let result;
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.matchingListenersCalls++;
     }
 
@@ -583,7 +583,7 @@ export class Meta {
     let listeners = this.flattenedListeners();
     let result;
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.observerEventsCalls++;
     }
 
@@ -621,7 +621,7 @@ export function setMeta(obj: object, meta: Meta) {
     typeof obj === 'object' || typeof obj === 'function'
   );
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     counters!.setCalls++;
   }
   metaStore.set(obj, meta);
@@ -635,7 +635,7 @@ export function peekMeta(obj: object): Meta | null {
     typeof obj === 'object' || typeof obj === 'function'
   );
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     counters!.peekCalls++;
   }
 
@@ -648,7 +648,7 @@ export function peekMeta(obj: object): Meta | null {
   let pointer = getPrototypeOf(obj);
 
   while (pointer !== null) {
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       counters!.peekPrototypeWalks++;
     }
 
@@ -699,7 +699,7 @@ export const meta: {
     typeof obj === 'object' || typeof obj === 'function'
   );
 
-  if (DEBUG) {
+  if (import.meta.env?.DEV) {
     counters!.metaCalls++;
   }
 
@@ -715,7 +715,7 @@ export const meta: {
   return newMeta;
 };
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   meta._counters = counters;
 }
 

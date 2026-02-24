@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 import {
   RenderingTestCase,
   moduleFor,
@@ -34,7 +32,7 @@ moduleFor(
     }
 
     ['@test it does not resolve helpers with a `.` (period)'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
         return;
       }
@@ -453,7 +451,7 @@ moduleFor(
     }
 
     ['@test simple helper not usable with a block'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -465,7 +463,7 @@ moduleFor(
     }
 
     ['@test class-based helper not usable with a block'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -480,7 +478,7 @@ moduleFor(
     }
 
     ['@test simple helper not usable within element'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -493,7 +491,7 @@ moduleFor(
     }
 
     ['@test class-based helper not usable within element'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -724,7 +722,7 @@ moduleFor(
     '@test Cannot dynamically resolve a helper'(assert) {
       this.registerHelper('hello-world', () => 'Hello, world!');
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         expectAssertion(
           () => this.render('{{helper this.name}}', { name: 'hello-world' }),
           /Passing a dynamic string to the `\(helper\)` keyword is disallowed\./
@@ -785,7 +783,7 @@ moduleFor(
   }
 );
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   class HelperMutatingArgsTests extends RenderingTestCase {
     buildCompute() {
       return (params, hash) => {

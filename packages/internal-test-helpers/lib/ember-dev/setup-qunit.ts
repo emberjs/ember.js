@@ -1,5 +1,5 @@
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
-import { DEBUG } from '@glimmer/env';
+
 import { resetTracking } from '@glimmer/validator';
 
 declare global {
@@ -52,7 +52,7 @@ export default function setupQUnit() {
     expected?: string | RegExp,
     message?: string
   ) {
-    if (!DEBUG) {
+    if (!import.meta.env?.DEV) {
       QUnit.assert.ok(true, 'Assertions disabled in production builds.');
       return;
     }
@@ -65,7 +65,7 @@ export default function setupQUnit() {
     expected?: string | RegExp,
     message?: string
   ) {
-    if (!DEBUG) {
+    if (!import.meta.env?.DEV) {
       QUnit.assert.ok(true, 'Assertions disabled in production builds.');
 
       return promise;

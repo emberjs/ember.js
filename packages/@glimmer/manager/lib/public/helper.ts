@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type {
   Helper,
   HelperCapabilities,
@@ -30,7 +29,7 @@ export function helperCapabilities<Version extends keyof HelperCapabilitiesVersi
   );
 
   if (
-    DEBUG &&
+    import.meta.env?.DEV &&
     (!(options.hasValue || options.hasScheduledEffect) ||
       (options.hasValue && options.hasScheduledEffect))
   ) {
@@ -39,7 +38,7 @@ export function helperCapabilities<Version extends keyof HelperCapabilitiesVersi
     );
   }
 
-  if (DEBUG && options.hasScheduledEffect) {
+  if (import.meta.env?.DEV && options.hasScheduledEffect) {
     throw new Error(
       'The `hasScheduledEffect` capability has not yet been implemented for helper managers. Please pass `hasValue` instead'
     );
@@ -82,7 +81,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
       delegate = factory(owner);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+      if (import.meta.env?.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
           `Custom helper managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.23')\` (imported via \`import { capabilities } from '@ember/helper';\`). Received: \`${JSON.stringify(
@@ -124,7 +123,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
         let cache = createComputeRef(
           () => manager.getValue(bucket),
           null,
-          DEBUG && manager.getDebugName && manager.getDebugName(definition)
+          import.meta.env?.DEV && manager.getDebugName && manager.getDebugName(definition)
         );
 
         if (hasDestroyable(manager)) {
@@ -135,7 +134,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
       } else if (hasDestroyable(manager)) {
         let ref = createConstRef(
           undefined,
-          DEBUG && (manager.getDebugName?.(definition) ?? 'unknown helper')
+          import.meta.env?.DEV && (manager.getDebugName?.(definition) ?? 'unknown helper')
         );
 
         associateDestroyableChild(ref, manager.getDestroyable(bucket));

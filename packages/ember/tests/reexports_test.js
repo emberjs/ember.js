@@ -7,7 +7,6 @@ import {
   moduleFor,
   testUnless,
 } from 'internal-test-helpers';
-import { DEBUG } from '@glimmer/env';
 
 class ReExportTests extends AbstractTestCase {
   [`${testUnless(
@@ -166,12 +165,12 @@ let allExports = [
   ['_captureRenderTree', '@ember/debug', 'captureRenderTree', test11],
   ['ContainerDebugAdapter', '@ember/debug/container-debug-adapter', 'default', test12],
   ['DataAdapter', '@ember/debug/data-adapter', 'default', test13],
-  DEBUG
+  import.meta.env?.DEV
     ? ['_assertDestroyablesDestroyed', '@ember/destroyable', 'assertDestroyablesDestroyed', test14]
     : null,
   ['_associateDestroyableChild', '@ember/destroyable', 'associateDestroyableChild', test14],
   ['destroy', '@ember/destroyable', 'destroy', test14],
-  DEBUG
+  import.meta.env?.DEV
     ? ['_enableDestroyableTracking', '@ember/destroyable', 'enableDestroyableTracking', test14]
     : null,
   ['_isDestroyed', '@ember/destroyable', 'isDestroyed', test14],

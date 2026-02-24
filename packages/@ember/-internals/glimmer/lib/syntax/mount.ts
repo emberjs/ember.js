@@ -3,7 +3,7 @@
 */
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { CapturedArguments, CurriedComponent } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
@@ -64,7 +64,7 @@ export const mountHelper = internalHelper(
       args.positional.length === 1
     );
 
-    if (DEBUG && args.named) {
+    if (import.meta.env?.DEV && args.named) {
       let keys = Object.keys(args.named);
       let extra = keys.filter((k) => k !== 'model');
 

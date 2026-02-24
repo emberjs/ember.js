@@ -19,7 +19,6 @@ import {
 } from '@glimmer-workspace/integration-tests';
 
 import { assert } from './support';
-import { DEBUG } from '@glimmer/env';
 
 function makeSafeString(value: string): SafeString {
   return new SafeStringImpl(value);
@@ -873,7 +872,7 @@ class UpdatingTest extends RenderTest {
     this.assertHTML('<div>Godfrey</div>', 'After reset');
   }
 
-  @test({ skip: !DEBUG })
+  @test({ skip: !import.meta.env?.DEV })
   'missing helper'(assert: Assert) {
     this.registerHelper('hello', () => 'hello');
 

@@ -3,7 +3,7 @@ import { getOwner, setOwner } from '@ember/-internals/owner';
 import { addObserver } from '@ember/object/observers';
 import Mixin from '@ember/object/mixin';
 import Service, { service } from '@ember/service';
-import { DEBUG } from '@glimmer/env';
+
 import EmberObject, { computed, observer } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
@@ -56,7 +56,7 @@ moduleFor(
     }
 
     ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let MyClass = EmberObject.extend({
           foo: null,
           bar: null,
@@ -79,7 +79,7 @@ moduleFor(
     }
 
     ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let MyClass = class extends EmberObject {
           foo = null;
           bar = null;
@@ -105,7 +105,7 @@ moduleFor(
     }
 
     ['@test sets up mandatory setters for simple properties watched with aliases'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let MyClass = class extends EmberObject {
           foo = null;
           bar = null;
@@ -129,7 +129,7 @@ moduleFor(
     }
 
     ['@test does not sets up separate mandatory setters on getters'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let MyClass = EmberObject.extend({
           get foo() {
             return 'bar';
@@ -151,7 +151,7 @@ moduleFor(
     }
 
     ['@test does not sets up separate mandatory setters on arrays'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         let arr = [123];
 
         addObserver(arr, 0, function () {});

@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
@@ -1694,7 +1692,7 @@ moduleFor(
   }
 );
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   moduleFor(
     'Inline style tests - warnings',
     class extends StyleTest {

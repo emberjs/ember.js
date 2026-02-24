@@ -1,5 +1,5 @@
 import { set } from '@ember/object';
-import { DEBUG } from '@glimmer/env';
+
 import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 
@@ -128,7 +128,7 @@ moduleFor(
     }
 
     '@test there is no `this` context within the callback'(assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import type { Dict, Nullable } from '@glimmer/interfaces';
 import { getPath, toIterator } from '@glimmer/global-context';
 import { EMPTY_ARRAY, isIndexable } from '@glimmer/util';
@@ -49,7 +48,7 @@ const IDENTITY: KeyFor = (item) => {
 };
 
 function keyForPath(path: string): KeyFor {
-  if (DEBUG && path[0] === '@') {
+  if (import.meta.env?.DEV && path[0] === '@') {
     throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
   }
   return uniqueKeyFor((item) => getPath(item as object, path));

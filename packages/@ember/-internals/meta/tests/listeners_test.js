@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { meta, counters } from '..';
 
@@ -77,7 +76,7 @@ moduleFor(
     }
 
     ['@test parent caching'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         counters.flattenedListenersCalls = 0;
         counters.parentListenersUsed = 0;
       }
@@ -92,21 +91,21 @@ moduleFor(
       let matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 3);
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         assert.equal(counters.flattenedListenersCalls, 2);
         assert.equal(counters.parentListenersUsed, 1);
       }
       matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 3);
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         assert.equal(counters.flattenedListenersCalls, 3);
         assert.equal(counters.parentListenersUsed, 1);
       }
     }
 
     ['@test parent cache invalidation'](assert) {
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         counters.flattenedListenersCalls = 0;
         counters.parentListenersUsed = 0;
         counters.listenersInherited = 0;
@@ -122,7 +121,7 @@ moduleFor(
       let matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 3);
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         assert.equal(counters.flattenedListenersCalls, 2);
         assert.equal(counters.parentListenersUsed, 1);
         assert.equal(counters.listenersInherited, 0);
@@ -133,7 +132,7 @@ moduleFor(
       matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 6);
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         assert.equal(counters.flattenedListenersCalls, 4);
         assert.equal(counters.parentListenersUsed, 1);
         assert.equal(counters.listenersInherited, 1);
@@ -141,7 +140,7 @@ moduleFor(
     }
 
     ['@test reopen after flatten'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

@@ -14,7 +14,7 @@ import type {
   WithCustomDebugRenderTree,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { DEBUG } from '@glimmer/env';
+
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createDebugAliasRef, valueForRef } from '@glimmer/reference';
@@ -61,7 +61,7 @@ class RouteTemplateManager
   ): RouteTemplateInstanceState {
     let self = args.named.get('controller');
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       self = createDebugAliasRef!('this', self);
     }
 

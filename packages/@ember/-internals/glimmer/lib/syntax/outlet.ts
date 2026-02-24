@@ -1,6 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import type {
   CapturedArguments,
   CurriedComponent,
@@ -100,7 +100,7 @@ export const outletHelper = internalHelper(
           if (hasInternalComponentManager(template)) {
             component = template;
           } else {
-            if (DEBUG) {
+            if (import.meta.env?.DEV) {
               // We don't appear to have a standard way or a brand to check, but for the
               // purpose of avoiding obvious user errors, this probably gets you close
               // enough.
@@ -163,7 +163,7 @@ export const outletHelper = internalHelper(
             return model;
           });
 
-          if (DEBUG) {
+          if (import.meta.env?.DEV) {
             named['model'] = createDebugAliasRef!('@model', named['model']);
           }
 

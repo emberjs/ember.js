@@ -7,7 +7,7 @@ import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+
 import { join, once, run, schedule } from '@ember/runloop';
 import { libraries } from '@ember/-internals/metal';
 import { _loaded, onLoad, runLoadHooks } from './lib/lazy_load';
@@ -415,7 +415,7 @@ class Application extends Engine {
     this._document ??= hasDOM ? window.document : null;
     this._globalsMode ??= true;
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       if (ENV.LOG_VERSION) {
         // we only need to see this once per Application#init
         ENV.LOG_VERSION = false;

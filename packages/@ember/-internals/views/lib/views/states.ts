@@ -3,7 +3,6 @@ import type Component from '@ember/component';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
 
 export interface ViewState {
   enter?(view: Component): void;
@@ -65,11 +64,11 @@ const IN_DOM: Readonly<ViewState> = Object.freeze({
     // Ember.EventDispatcher to dispatch incoming events.
     view.renderer.register(view);
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       let elementId = view.elementId;
 
       assert(
-        '[BUG] Expected teardownMandatorySetter to be set in DEBUG mode',
+        '[BUG] Expected teardownMandatorySetter to be set in import.meta.env?.DEV mode',
         teardownMandatorySetter
       );
       teardownMandatorySetter(view, 'elementId');

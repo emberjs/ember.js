@@ -7,7 +7,7 @@ import type EngineInstance from '@ember/engine/instance';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
 import { service } from '@ember/service';
-import { DEBUG } from '@glimmer/env';
+
 import type { Maybe } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
@@ -344,7 +344,7 @@ class _LinkTo extends InternalComponent {
     // TODO: can we narrow this down to QP changes only?
     consumeTag(tagFor(routing, 'currentState'));
 
-    if (DEBUG) {
+    if (import.meta.env?.DEV) {
       try {
         return routing.generateURL(route, models, query);
       } catch (e) {

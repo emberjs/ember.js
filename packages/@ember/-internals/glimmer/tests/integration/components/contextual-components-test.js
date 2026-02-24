@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { isEmpty } from '@ember/utils';
@@ -586,7 +585,7 @@ moduleFor(
     }
 
     ['@test raises an assertion when component path is not a component name (static)'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }
@@ -597,7 +596,7 @@ moduleFor(
     }
 
     ['@test raises an assertion when component path is not a component name (dynamic)'](assert) {
-      if (!DEBUG) {
+      if (!import.meta.env?.DEV) {
         assert.expect(0);
         return;
       }

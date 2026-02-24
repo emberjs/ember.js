@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- @fixme */
 import type { Tag } from '@glimmer/interfaces';
 import { asPresentArray, getLast } from '@glimmer/debug-util';
@@ -31,7 +30,7 @@ interface Transaction {
   debugLabel?: string | undefined;
 }
 
-if (DEBUG) {
+if (import.meta.env?.DEV) {
   let CONSUMED_TAGS: WeakMap<Tag, Transaction> | null = null;
 
   const TRANSACTION_STACK: Transaction[] = [];

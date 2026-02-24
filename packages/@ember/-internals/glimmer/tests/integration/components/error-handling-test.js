@@ -1,5 +1,3 @@
-import { DEBUG } from '@glimmer/env';
-
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
@@ -47,7 +45,7 @@ moduleFor(
 
       runTask(() => set(this.context, 'switch', true));
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         this.assertText('', 'it does not rerender after error in development');
       } else {
         this.assertText('hello', 'it rerenders after error in production');
@@ -99,7 +97,7 @@ moduleFor(
 
       runTask(() => set(this.context, 'switch', true));
 
-      if (DEBUG) {
+      if (import.meta.env?.DEV) {
         this.assertText('', 'it does not rerender after error in development');
       } else {
         this.assertText('hello', 'it does rerender after error in production');
