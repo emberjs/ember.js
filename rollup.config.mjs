@@ -128,7 +128,7 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
   ];
 
   if (includePackageMeta) {
-    plugins.push(packageMeta({ outputDir }));
+    plugins.push(packageMeta());
   }
 
   return {
@@ -670,13 +670,13 @@ function pruneEmptyBundles() {
   };
 }
 
-function packageMeta({ outputDir = 'dist' } = {}) {
+function packageMeta() {
   return {
     name: 'package-meta',
     generateBundle() {
       let renamedModules = Object.fromEntries(
         glob
-          .sync('packages/**/*.js', { cwd: outputDir, nodir: true })
+          .sync('packages/**/*.js', { cwd: 'dist', nodir: true })
           .filter((name) => !name.startsWith('packages/shared-chunks/'))
           .sort()
           .map((name) => {
