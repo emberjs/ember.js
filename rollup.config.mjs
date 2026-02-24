@@ -673,11 +673,15 @@ function pruneEmptyBundles() {
 function packageMeta() {
   return {
     name: 'package-meta',
-    generateBundle() {
+    generateBundle(_outputOptions, bundle) {
       let renamedModules = Object.fromEntries(
-        glob
-          .sync('packages/**/*.js', { cwd: 'dist', nodir: true })
-          .filter((name) => !name.startsWith('packages/shared-chunks/'))
+        Object.keys(bundle)
+          .filter(
+            (name) =>
+              name.startsWith('packages/') &&
+              !name.startsWith('packages/shared-chunks/') &&
+              name.endsWith('.js')
+          )
           .sort()
           .map((name) => {
             return [
