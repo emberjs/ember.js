@@ -1,4 +1,5 @@
-module.exports = function buildDebugMacrosPlugin(isDebug) {
+module.exports = function buildDebugMacrosPlugin(debugMode) {
+  let isDebug = debugMode === 'production' ? false : debugMode;
   return [
     require.resolve('babel-plugin-debug-macros'),
     {

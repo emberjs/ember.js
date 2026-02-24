@@ -27,7 +27,9 @@ const testDependencies = [
 
 let configs = [
   esmConfig(),
+  esmProdConfig(),
   esmTemplateCompiler(),
+  esmTemplateCompilerProd(),
   legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js', {
     isDeveloping: true,
   }),
@@ -55,12 +57,27 @@ export default configs;
 
 function esmConfig() {
   return sharedESMConfig({
-    input: {
-      ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
-      ...renameEntrypoints(packages(), (name) => join('packages', name)),
-    },
+    input: esmInputs(),
     debugMacrosMode: '@embroider/macros',
+    outputDir: 'dist',
+    includePackageMeta: true,
   });
+}
+
+function esmProdConfig() {
+  return sharedESMConfig({
+    input: esmInputs(),
+    debugMacrosMode: 'production',
+    outputDir: 'dist-prod',
+    includePackageMeta: false,
+  });
+}
+
+function esmInputs() {
+  return {
+    ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
+    ...renameEntrypoints(packages(), (name) => join('packages', name)),
+  };
 }
 
 function esmTemplateCompiler() {
@@ -79,10 +96,23 @@ function esmTemplateCompiler() {
     // the template compiler is always in debug mode (and doesn't use
     // embroider/macros, so it's directly invokable on node)
     debugMacrosMode: true,
+    outputDir: 'dist',
+    includePackageMeta: true,
   });
 }
 
-function sharedESMConfig({ input, debugMacrosMode }) {
+function esmTemplateCompilerProd() {
+  return sharedESMConfig({
+    input: {
+      'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
+    },
+    debugMacrosMode: 'production',
+    outputDir: 'dist-prod',
+    includePackageMeta: false,
+  });
+}
+
+function sharedESMConfig({ input, debugMacrosMode, outputDir = 'dist', includePackageMeta = true }) {
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
@@ -90,29 +120,34 @@ function sharedESMConfig({ input, debugMacrosMode }) {
     canaryFeatures(),
   ];
 
+  let plugins = [
+    babel({
+      babelHelpers: 'bundled',
+      extensions: ['.js', '.ts'],
+      configFile: false,
+      ...babelConfig,
+    }),
+    resolveTS(),
+    version(),
+    resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+    pruneEmptyBundles(),
+  ];
+
+  if (includePackageMeta) {
+    plugins.push(packageMeta({ outputDir }));
+  }
+
   return {
     onLog: handleRollupWarnings,
     input,
     output: {
       format: 'es',
-      dir: 'dist',
+      dir: outputDir,
       hoistTransitiveImports: false,
       generatedCode: 'es2015',
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
-    plugins: [
-      babel({
-        babelHelpers: 'bundled',
-        extensions: ['.js', '.ts'],
-        configFile: false,
-        ...babelConfig,
-      }),
-      resolveTS(),
-      version(),
-      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
-      pruneEmptyBundles(),
-      packageMeta(),
-    ],
+    plugins,
   };
 }
 
@@ -641,13 +676,13 @@ function pruneEmptyBundles() {
   };
 }
 
-function packageMeta() {
+function packageMeta({ outputDir = 'dist' } = {}) {
   return {
     name: 'package-meta',
     generateBundle() {
       let renamedModules = Object.fromEntries(
         glob
-          .sync('packages/**/*.js', { cwd: 'dist', nodir: true })
+          .sync('packages/**/*.js', { cwd: outputDir, nodir: true })
           .filter((name) => !name.startsWith('packages/shared-chunks/'))
           .sort()
           .map((name) => {

@@ -21,6 +21,7 @@ export default [
       'docs/',
       '**/.*',
       '**/dist/',
+      '**/dist-prod/',
       '**/tmp/',
       '**/smoke-tests/',
       '**/types/',

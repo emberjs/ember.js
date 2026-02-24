@@ -6,7 +6,11 @@
     "ember-addon"
   ],
   "exports": {
-    "./*": "./dist/packages/*",
+    "./*": {
+      "development": "./dist/packages/*",
+      "production": "./dist-prod/packages/*",
+      "default": "./dist/packages/*"
+    },
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
@@ -24,6 +28,8 @@
     "blueprints",
     "dist/packages",
     "dist/dependencies",
+    "dist-prod/packages",
+    "dist-prod/dependencies",
     "dist/ember-template-compiler.js",
     "dist/ember-template-compiler.js.map",
     "dist/ember.debug.js",
