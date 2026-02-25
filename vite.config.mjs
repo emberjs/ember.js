@@ -34,6 +34,21 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       templateTag(),
+      {
+        name: 'define custom import.meta.env',
+        transform(code) {
+          if (mode === 'development') {
+            if (code.includes('import.meta.env?.DEV')) {
+              return code.replace(/import.meta.env\?.DEV/g, 'true');
+            }
+          } else if (mode === 'production') {
+            if (code.includes('import.meta.env?.DEV')) {
+              return code.replace(/import.meta.env\?.DEV/g, 'false');
+            }
+          }
+          return undefined;
+        },
+      },
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts', '.gjs', '.gts'],
