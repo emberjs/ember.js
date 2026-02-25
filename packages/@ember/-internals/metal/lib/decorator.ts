@@ -75,11 +75,7 @@ export abstract class ComputedDescriptor {
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 }
 
-export let COMPUTED_GETTERS: WeakSet<() => unknown>;
-
-if (import.meta.env?.DEV) {
-  COMPUTED_GETTERS = new WeakSet();
-}
+export const COMPUTED_GETTERS = new WeakSet<() => unknown>();
 
 function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor): () => unknown {
   function getter(this: object): unknown {
