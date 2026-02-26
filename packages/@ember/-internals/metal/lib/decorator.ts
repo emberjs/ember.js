@@ -124,7 +124,7 @@ export function makeComputedDecorator(
       isClassicDecorator ||
         !propertyDesc ||
         !propertyDesc.get ||
-        !COMPUTED_GETTERS.has(propertyDesc.get)
+        !(import.meta.env?.DEV && COMPUTED_GETTERS.has(propertyDesc.get))
     );
 
     let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
