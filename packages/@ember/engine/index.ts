@@ -108,7 +108,7 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     ```
 
     ```bash
-    // import.meta.env?.DEV: First initializer!
+    // DEBUG: First initializer!
     ```
 
     We add another initializer named `second`, specifying that it should run
@@ -129,8 +129,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     ```
 
     ```
-    // import.meta.env?.DEV: First initializer!
-    // import.meta.env?.DEV: Second initializer!
+    // DEBUG: First initializer!
+    // DEBUG: Second initializer!
     ```
 
     Afterwards we add a further initializer named `pre`, this time specifying
@@ -151,9 +151,9 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     ```
 
     ```bash
-    // import.meta.env?.DEV: Pre initializer!
-    // import.meta.env?.DEV: First initializer!
-    // import.meta.env?.DEV: Second initializer!
+    // DEBUG: Pre initializer!
+    // DEBUG: First initializer!
+    // DEBUG: Second initializer!
     ```
 
     Finally we add an initializer named `post`, specifying it should run after
@@ -174,10 +174,10 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     ```
 
     ```bash
-    // import.meta.env?.DEV: Pre initializer!
-    // import.meta.env?.DEV: First initializer!
-    // import.meta.env?.DEV: Second initializer!
-    // import.meta.env?.DEV: Post initializer!
+    // DEBUG: Pre initializer!
+    // DEBUG: First initializer!
+    // DEBUG: Second initializer!
+    // DEBUG: Post initializer!
     ```
 
     * `initialize` is a callback function that receives one argument,
