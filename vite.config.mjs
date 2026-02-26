@@ -12,6 +12,7 @@ import {
   hiddenDependencies,
 } from './rollup.config.mjs';
 import { templateTag } from '@embroider/vite';
+import { importMetaRemoval } from './broccoli/import-meta.js';
 
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
@@ -34,21 +35,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       templateTag(),
-      {
-        name: 'define custom import.meta.env',
-        transform(code) {
-          if (mode === 'development') {
-            if (code.includes('import.meta.env?.DEV')) {
-              return code.replace(/import.meta.env\?.DEV/g, 'true');
-            }
-          } else if (mode === 'production') {
-            if (code.includes('import.meta.env?.DEV')) {
-              return code.replace(/import.meta.env\?.DEV/g, 'false');
-            }
-          }
-          return undefined;
-        },
-      },
+      importMetaRemoval(mode === 'development'),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts', '.gjs', '.gts'],

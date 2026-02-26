@@ -12,8 +12,6 @@ import baseConfig from './babel.config.mjs';
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
-const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.js');
-const isProduction = process.env.EMBER_ENV === 'production';
 
 export default {
   ...baseConfig,
@@ -27,5 +25,5 @@ export default {
     ],
   ],
 
-  plugins: [...baseConfig.plugins, buildDebugMacroPlugin(!isProduction)],
+  plugins: [...baseConfig.plugins],
 };
