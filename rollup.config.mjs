@@ -6,6 +6,7 @@ import glob from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
+import { importMetaRemoval } from './broccoli/import-meta.js';
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
@@ -13,7 +14,6 @@ const { PackageCache, packageName } = require('@embroider/shared-internals');
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
 const { buildInfo } = require('./broccoli/build-info');
-const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin');
 const canaryFeatures = require('./broccoli/canary-features');
 
 const testDependencies = [
@@ -84,11 +84,7 @@ function esmTemplateCompiler() {
 
 function sharedESMConfig({ input, debugMacrosMode }) {
   let babelConfig = { ...sharedBabelConfig };
-  babelConfig.plugins = [
-    ...babelConfig.plugins,
-    // buildDebugMacroPlugin(debugMacrosMode),
-    canaryFeatures(),
-  ];
+  babelConfig.plugins = [...babelConfig.plugins, canaryFeatures()];
 
   return {
     onLog: handleRollupWarnings,
@@ -101,21 +97,7 @@ function sharedESMConfig({ input, debugMacrosMode }) {
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
     plugins: [
-      {
-        name: 'define custom import.meta.env',
-        async transform(code) {
-          if (debugMacrosMode === true) {
-            if (code.includes('import.meta.env?.DEV')) {
-              return code.replace(/import.meta.env\?.DEV/g, 'true');
-            }
-          } else if (debugMacrosMode === false) {
-            if (code.includes('import.meta.env?.DEV')) {
-              return code.replace(/import.meta.env\?.DEV/g, 'false');
-            }
-          }
-          return undefined;
-        },
-      },
+      importMetaRemoval(debugMacrosMode),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
@@ -163,7 +145,7 @@ function renameEntrypoints(entrypoints, fn) {
 function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
   let babelConfig = { ...sharedBabelConfig };
 
-  babelConfig.plugins = [...babelConfig.plugins, buildDebugMacroPlugin(isDeveloping)];
+  babelConfig.plugins = [...babelConfig.plugins];
 
   return {
     input,
@@ -189,6 +171,7 @@ function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
     },
     onLog: handleRollupWarnings,
     plugins: [
+      importMetaRemoval(isDeveloping),
       amdDefineSupport(),
       ...(isDeveloping ? [concatenateAMDEntrypoints()] : []),
       babel({
