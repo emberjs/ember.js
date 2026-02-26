@@ -790,7 +790,7 @@ APPEND_OPCODES.add(VM_MAIN_OP, (vm, { op1: register }) => {
 APPEND_OPCODES.add(VM_POPULATE_LAYOUT_OP, (vm, { op1: register }) => {
   let { stack } = vm;
 
-  // In import.meta.env.DEV handles could be ErrHandle objects
+  // In DEV mode handles could be ErrHandle objects
   let handle = check(stack.pop(), CheckHandle);
   let table = check(stack.pop(), CheckProgramSymbolTable);
 

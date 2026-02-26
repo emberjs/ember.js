@@ -398,21 +398,21 @@ module('@glimmer/validator: tracking', () => {
     });
 
     if (import.meta.env?.DEV) {
-      test('createCache throws an error in import.meta.env.DEV mode if users to use with a non-function', (assert) => {
+      test('createCache throws an error in DEV mode if users to use with a non-function', (assert) => {
         assert.throws(
           () => createCache(123 as any),
           /Error: createCache\(\) must be passed a function as its first parameter. Called with: 123/u
         );
       });
 
-      test('getValue throws an error in import.meta.env.DEV mode if users to use with a non-cache', (assert) => {
+      test('getValue throws an error in DEV mode if users to use with a non-cache', (assert) => {
         assert.throws(
           () => getValue(123 as any),
           /Error: getValue\(\) can only be used on an instance of a cache created with createCache\(\). Called with: 123/u
         );
       });
 
-      test('isConst throws an error in import.meta.env.DEV mode if users attempt to check a function before it has been called', (assert) => {
+      test('isConst throws an error in DEV mode if users attempt to check a function before it has been called', (assert) => {
         let cache = createCache(() => {
           // do nothing;
         });
@@ -423,7 +423,7 @@ module('@glimmer/validator: tracking', () => {
         );
       });
 
-      test('isConst throws an error in import.meta.env.DEV mode if users attempt to use with a non-cache', (assert) => {
+      test('isConst throws an error in DEV mode if users attempt to use with a non-cache', (assert) => {
         assert.throws(
           () => isConst(123 as any),
           /Error: isConst\(\) can only be used on an instance of a cache created with createCache\(\). Called with: 123/u

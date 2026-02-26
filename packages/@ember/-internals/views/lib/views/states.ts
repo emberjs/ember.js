@@ -68,8 +68,8 @@ const IN_DOM: Readonly<ViewState> = Object.freeze({
       let elementId = view.elementId;
 
       assert(
-        '[BUG] Expected teardownMandatorySetter to be set in import.meta.env?.DEV mode',
-        teardownMandatorySetter
+        '[BUG] Expected teardownMandatorySetter to be set in DEV mode',
+        teardownMandatorySetter !== undefined
       );
       teardownMandatorySetter(view, 'elementId');
 
