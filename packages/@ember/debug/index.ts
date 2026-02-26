@@ -162,7 +162,7 @@ if (import.meta.env?.DEV) {
     @public
   */
   setDebugFunction('debug', function debug(message) {
-    console.debug(`Ember: ${message}`); /* eslint-disable-line no-console */
+    console.debug(`DEBUG: ${message}`); /* eslint-disable-line no-console */
   });
 
   /**
