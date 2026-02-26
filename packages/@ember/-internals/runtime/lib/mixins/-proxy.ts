@@ -42,7 +42,10 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
 
   if (key in proxy) {
     if (import.meta.env?.DEV && addMandatorySetter) {
-      assert('[BUG] setupMandatorySetter should be set when debugging', setupMandatorySetter !== undefined);
+      assert(
+        '[BUG] setupMandatorySetter should be set when debugging',
+        setupMandatorySetter !== undefined
+      );
       setupMandatorySetter(tag, proxy, key);
     }
 
