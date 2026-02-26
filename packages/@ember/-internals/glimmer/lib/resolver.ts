@@ -172,7 +172,7 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       // bound in the factoryFor result, including type-based injections
 
       if (import.meta.env?.DEV) {
-        // In import.meta.env?.DEV we need to only set the associated value once, otherwise
+        // In DEV mode we need to only set the associated value once, otherwise
         // we'll trigger an assertion
         if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
           CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
