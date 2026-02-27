@@ -38,5 +38,33 @@ moduleFor(
       this.assertHTML('<ul><li>2</li><li>4</li><li>6</li></ul>');
       this.assertStableRerender();
     }
+
+    ['@test survives undefined item with key']() {
+      let myArray = [1, undefined];
+
+      let Root = defineComponent(
+        { myArray },
+        `<ul>{{#each myArray key="anything" as |item|}}<li>{{item}}</li>{{/each}}</ul>`
+      );
+      this.registerComponent('root', { ComponentClass: Root });
+
+      this.render('<Root />');
+      this.assertHTML('<ul><li>1</li><li></li></ul>');
+      this.assertStableRerender();
+    }
+
+    ['@test survives null item with key']() {
+      let myArray = [1, null];
+
+      let Root = defineComponent(
+        { myArray },
+        `<ul>{{#each myArray key="anything" as |item|}}<li>{{item}}</li>{{/each}}</ul>`
+      );
+      this.registerComponent('root', { ComponentClass: Root });
+
+      this.render('<Root />');
+      this.assertHTML('<ul><li>1</li><li></li></ul>');
+      this.assertStableRerender();
+    }
   }
 );
