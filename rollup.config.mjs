@@ -27,7 +27,7 @@ const testDependencies = [
 
 let configs = [
   esmConfig(),
-  esmTemplateCompiler(),
+  esmProdConfig(),
   legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js', {
     isDeveloping: true,
   }),
@@ -55,34 +55,36 @@ export default configs;
 
 function esmConfig() {
   return sharedESMConfig({
-    input: {
-      ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
-      ...renameEntrypoints(packages(), (name) => join('packages', name)),
-    },
-    debugMacrosMode: '@embroider/macros',
-  });
-}
-
-function esmTemplateCompiler() {
-  return sharedESMConfig({
-    input: {
-      // the actual authored "./packages/ember-template-compiler/index.ts" is
-      // part of what powers the historical dist/ember-template-compiler.js AMD
-      // bundle. It has historical cruft that has never been present in our ESM
-      // builds.
-      //
-      // On the ESM build, the main entrypoint of ember-template-compiler is the
-      // "minimal.ts" version, which has a lot less in it.
-
-      'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
-    },
-    // the template compiler is always in debug mode (and doesn't use
-    // embroider/macros, so it's directly invokable on node)
+    input: esmInputs(),
     debugMacrosMode: true,
+    includePackageMeta: true,
   });
 }
 
-function sharedESMConfig({ input, debugMacrosMode }) {
+function esmProdConfig() {
+  return sharedESMConfig({
+    input: esmInputs(),
+    debugMacrosMode: false,
+  });
+}
+
+function esmInputs() {
+  return {
+    ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
+    ...renameEntrypoints(packages(), (name) => join('packages', name)),
+    // the actual authored "./packages/ember-template-compiler/index.ts" is
+    // part of what powers the historical dist/ember-template-compiler.js AMD
+    // bundle. It has historical cruft that has never been present in our ESM
+    // builds.
+    //
+    // On the ESM build, the main entrypoint of ember-template-compiler is the
+    // "minimal.ts" version, which has a lot less in it.
+    'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
+  };
+}
+
+function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false }) {
+  let outputDir = debugMacrosMode === false ? 'dist-prod' : 'dist';
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
@@ -90,29 +92,34 @@ function sharedESMConfig({ input, debugMacrosMode }) {
     canaryFeatures(),
   ];
 
+  let plugins = [
+    babel({
+      babelHelpers: 'bundled',
+      extensions: ['.js', '.ts'],
+      configFile: false,
+      ...babelConfig,
+    }),
+    resolveTS(),
+    version(),
+    resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+    pruneEmptyBundles(),
+  ];
+
+  if (includePackageMeta) {
+    plugins.push(packageMeta());
+  }
+
   return {
     onLog: handleRollupWarnings,
     input,
     output: {
       format: 'es',
-      dir: 'dist',
+      dir: outputDir,
       hoistTransitiveImports: false,
       generatedCode: 'es2015',
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
-    plugins: [
-      babel({
-        babelHelpers: 'bundled',
-        extensions: ['.js', '.ts'],
-        configFile: false,
-        ...babelConfig,
-      }),
-      resolveTS(),
-      version(),
-      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
-      pruneEmptyBundles(),
-      packageMeta(),
-    ],
+    plugins,
   };
 }
 
@@ -148,7 +155,7 @@ function renameEntrypoints(entrypoints, fn) {
 function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
   let babelConfig = { ...sharedBabelConfig };
 
-  babelConfig.plugins = [...babelConfig.plugins, buildDebugMacroPlugin(isDeveloping)];
+  babelConfig.plugins = [...babelConfig.plugins];
 
   return {
     input,
@@ -644,11 +651,15 @@ function pruneEmptyBundles() {
 function packageMeta() {
   return {
     name: 'package-meta',
-    generateBundle() {
+    generateBundle(_outputOptions, bundle) {
       let renamedModules = Object.fromEntries(
-        glob
-          .sync('packages/**/*.js', { cwd: 'dist', nodir: true })
-          .filter((name) => !name.startsWith('packages/shared-chunks/'))
+        Object.keys(bundle)
+          .filter(
+            (name) =>
+              name.startsWith('packages/') &&
+              !name.startsWith('packages/shared-chunks/') &&
+              name.endsWith('.js')
+          )
           .sort()
           .map((name) => {
             return [
