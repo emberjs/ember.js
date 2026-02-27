@@ -247,6 +247,7 @@
       "@ember/enumerable/index.js": "ember-source/@ember/enumerable/index.js",
       "@ember/enumerable/mutable.js": "ember-source/@ember/enumerable/mutable.js",
       "@ember/helper/index.js": "ember-source/@ember/helper/index.js",
+      "@ember/inspector-support/api.js": "ember-source/@ember/inspector-support/api.js",
       "@ember/inspector-support/index.js": "ember-source/@ember/inspector-support/index.js",
       "@ember/inspector-support/lib/computed.js": "ember-source/@ember/inspector-support/lib/computed.js",
       "@ember/inspector-support/lib/debug.js": "ember-source/@ember/inspector-support/lib/debug.js",
