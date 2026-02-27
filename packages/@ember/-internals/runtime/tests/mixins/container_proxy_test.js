@@ -33,6 +33,7 @@ moduleFor(
         'service:auth',
         class extends EmberObject {
           willDestroy() {
+            super.willDestroy();
             assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
           }
         }
@@ -55,6 +56,7 @@ moduleFor(
         'service:foo',
         class FooService extends EmberObject {
           willDestroy() {
+            super.willDestroy();
             assert.ok(true, 'is properly destroyed');
           }
         }
