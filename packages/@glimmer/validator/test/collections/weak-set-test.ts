@@ -47,11 +47,12 @@ module('@glimmer/validator: trackedWeakSet()', function () {
     const set = trackedWeakSet();
 
     assert.false(set.has(obj));
+    assert.false(set.delete(obj), 'returns false when value does not exist');
 
     set.add(obj);
     assert.true(set.has(obj));
 
-    set.delete(obj);
+    assert.true(set.delete(obj), 'returns true when value exists');
     assert.false(set.has(obj));
   });
 });
