@@ -56,7 +56,7 @@ export default configs;
 function esmConfig() {
   return sharedESMConfig({
     input: esmInputs(),
-    debugMacrosMode: '@embroider/macros',
+    debugMacrosMode: true,
     includePackageMeta: true,
   });
 }
