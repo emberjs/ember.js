@@ -1473,6 +1473,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   }
 
   willDestroy() {
+    super.willDestroy();
     this.teardownViews();
   }
 

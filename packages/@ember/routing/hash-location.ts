@@ -161,6 +161,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @method willDestroy
   */
   willDestroy(): void {
+    super.willDestroy();
     this._removeEventListener();
   }
 

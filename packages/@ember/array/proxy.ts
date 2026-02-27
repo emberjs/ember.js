@@ -211,6 +211,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   }
 
   willDestroy() {
+    super.willDestroy();
     this._removeArrangedContentArrayObserver();
   }
 
