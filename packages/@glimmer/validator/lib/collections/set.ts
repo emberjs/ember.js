@@ -140,7 +140,7 @@ class TrackedSet<T = unknown> implements Set<T> {
   }
 
   delete(value: T): boolean {
-    if (!this.#vals.has(value)) return true;
+    if (!this.#vals.has(value)) return false;
 
     this.#dirtyStorageFor(value);
     DIRTY_TAG(this.#collection);

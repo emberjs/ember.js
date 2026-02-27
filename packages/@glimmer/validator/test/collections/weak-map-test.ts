@@ -68,11 +68,12 @@ module('@glimmer/validator: trackedWeakMap()', function () {
     const map = trackedWeakMap();
 
     assert.false(map.has(obj));
+    assert.false(map.delete(obj), 'returns false when key does not exist');
 
     map.set(obj, 123);
     assert.true(map.has(obj));
 
-    map.delete(obj);
+    assert.true(map.delete(obj), 'returns true when key exists');
     assert.false(map.has(obj));
   });
 });

@@ -151,7 +151,7 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
   }
 
   delete(key: K): boolean {
-    if (!this.#vals.has(key)) return true;
+    if (!this.#vals.has(key)) return false;
 
     this.#dirtyStorageFor(key);
     DIRTY_TAG(this.#collection);

@@ -348,11 +348,12 @@ module('@glimmer/validator: trackedSet', function () {
     const set = trackedSet();
 
     assert.false(set.has(0));
+    assert.false(set.delete(0), 'returns false when value does not exist');
 
     set.add(0);
     assert.true(set.has(0));
 
-    set.delete(0);
+    assert.true(set.delete(0), 'returns true when value exists');
     assert.false(set.has(0));
   });
 
