@@ -51,10 +51,8 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
   }
 
   // **** ALL GETTERS ****
-  entries() {
-    consumeTag(this.#collection);
-
-    return this.#vals.entries();
+  entries(): MapIterator<[K, V]> {
+    return this[Symbol.iterator]();
   }
 
   getOrInsert(key: K, defaultValue: V): V {
@@ -82,15 +80,23 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
   }
 
   values() {
-    consumeTag(this.#collection);
+    let iterator = this[Symbol.iterator]();
 
-    return this.#vals.values();
+    return {
+      next() {
+        let { value, done } = iterator.next();
+        return { value: done ? (undefined as V) : value![1], done };
+      },
+      [Symbol.iterator]() {
+        return this;
+      },
+    } as MapIterator<V>;
   }
 
   forEach(fn: (value: V, key: K, map: Map<K, V>) => void): void {
-    consumeTag(this.#collection);
-
-    this.#vals.forEach(fn);
+    for (let [key, value] of this) {
+      fn(value, key, this);
+    }
   }
 
   get size(): number {
@@ -121,6 +127,9 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return { value: [currentKey, self.get(currentKey!)], done: false };
       },
+      [Symbol.iterator]() {
+        return this;
+      },
     } as MapIterator<[K, V]>;
   }
 
@@ -129,10 +138,10 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
   }
 
   set(key: K, value: V): this {
-    let existing = this.#vals.get(key);
+    let existing = this.#vals.has(key);
 
     if (existing) {
-      let isUnchanged = this.#options.equals(existing, value);
+      let isUnchanged = this.#options.equals(this.#vals.get(key) as V, value);
 
       if (isUnchanged) {
         return this;
