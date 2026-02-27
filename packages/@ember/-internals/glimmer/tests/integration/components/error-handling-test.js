@@ -9,6 +9,36 @@ import { Component } from '../../utils/helpers';
 moduleFor(
   'Errors thrown during render',
   class extends RenderingTestCase {
+    ['@test using an unresolved variable in argument position produces a helpful error (GH#21035)'](
+      assert
+    ) {
+      // In non-strict mode, {{range}} (without this.) is a free variable.
+      // Ember should produce a helpful error suggesting this.range — not
+      // "Cannot read properties of undefined (reading 'Symbol(TAG_COMPUTE)')".
+      this.registerComponent('my-component', {
+        ComponentClass: class extends Component {},
+        template: '{{@value}}',
+      });
+
+      assert.throws(() => {
+        this.render('<MyComponent @value={{range}} />', {
+          range: 'hello',
+        });
+      }, /range was not in scope/);
+    }
+
+    ['@test using an unresolved variable in content position does not produce a cryptic TAG_COMPUTE error (GH#21035)'](
+      assert
+    ) {
+      // {{range}} in content position when range is not in scope should
+      // either render empty or produce a helpful error — not a cryptic
+      // TAG_COMPUTE error.
+      this.render('{{range}}', { range: 'hello' });
+      // If this renders, it should be empty (range is a free variable, not this.range)
+      // The important thing is no TAG_COMPUTE error
+      assert.ok(true, 'did not throw a cryptic TAG_COMPUTE error');
+    }
+
     ['@test it can recover resets the transaction when an error is thrown during initial render'](
       assert
     ) {
