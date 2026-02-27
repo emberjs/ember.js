@@ -122,6 +122,16 @@ export const DEPRECATIONS = {
     until: '7.0.0',
     url: 'https://deprecations.emberjs.com/id/using-amd-bundles',
   }),
+  DEPRECATE_MISSING_SUPER_IN_WILL_DESTROY: deprecation({
+    for: 'ember-source',
+    id: 'missing-super-in-will-destroy',
+    since: {
+      available: '7.0.0',
+      enabled: '7.0.0',
+    },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/missing-super-in-will-destroy',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {
