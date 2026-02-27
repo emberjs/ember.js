@@ -51,9 +51,9 @@ class TrackedWeakMap<K extends WeakKey = object, V = unknown> implements WeakMap
   }
 
   set(key: K, value: V): this {
-    let existing = this.#vals.has(key);
+    let hasExisting = this.#vals.has(key);
 
-    if (existing) {
+    if (hasExisting) {
       let isUnchanged = this.#options.equals(this.#vals.get(key) as V, value);
 
       if (isUnchanged) {
