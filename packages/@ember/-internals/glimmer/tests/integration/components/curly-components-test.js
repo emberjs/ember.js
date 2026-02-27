@@ -2931,7 +2931,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
-      }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
+      }, /You must call `super.init\(...arguments\);` when overriding `init` on a framework object. Please update .*/);
     }
 
     ['@test it can use readDOMAttr to read input value']() {

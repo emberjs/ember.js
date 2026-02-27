@@ -77,7 +77,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render('{{hello-world}}');
-      }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
+      }, /You must call `super.init\(...arguments\);` when overriding `init` on a framework object. Please update .*/);
     }
 
     ['@test class-based helper can recompute a new value'](assert) {
