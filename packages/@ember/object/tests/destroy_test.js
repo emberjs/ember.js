@@ -79,6 +79,7 @@ moduleFor(
         objs: objs,
         isAlive: true,
         willDestroy() {
+          this._super();
           this.set('isAlive', false);
         },
         bDidChange: observer('objs.b.isAlive', function () {
@@ -93,6 +94,7 @@ moduleFor(
         objs: objs,
         isAlive: true,
         willDestroy() {
+          this._super();
           this.set('isAlive', false);
         },
         aDidChange: observer('objs.a.isAlive', function () {
@@ -107,6 +109,7 @@ moduleFor(
         objs: objs,
         isAlive: true,
         willDestroy() {
+          this._super();
           this.set('isAlive', false);
         },
         aDidChange: observer('objs.a.isAlive', function () {
