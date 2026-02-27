@@ -187,6 +187,24 @@ class TrackedWeakMapTest extends RenderTest {
     );
   }
 
+  @test
+  'set existing falsy value triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        obj = {};
+        map = trackedWeakMap<object, number>([[this.obj, 0]]);
+
+        get value() {
+          return this.map.get(this.obj);
+        }
+
+        update() {
+          this.map.set(this.obj, 123);
+        }
+      }
+    );
+  }
+
   @test 'delete unrelated value'() {
     this.assertReactivity(
       class extends Component {

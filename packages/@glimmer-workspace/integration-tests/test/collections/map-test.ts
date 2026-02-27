@@ -269,6 +269,82 @@ class TrackedMapTest extends RenderTest {
   }
 
   @test
+  'values: set existing value triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        map = trackedMap([['foo', 123]]);
+
+        get value() {
+          let sum = 0;
+          for (const v of this.map.values()) sum += v;
+          return sum;
+        }
+
+        update() {
+          this.map.set('foo', 456);
+        }
+      }
+    );
+  }
+
+  @test
+  'entries: set existing value triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        map = trackedMap([['foo', 123]]);
+
+        get value() {
+          let result = '';
+          for (const [k, v] of this.map.entries()) result += `${k}:${v}`;
+          return result;
+        }
+
+        update() {
+          this.map.set('foo', 456);
+        }
+      }
+    );
+  }
+
+  @test
+  'forEach: set existing value triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        map = trackedMap([['foo', 123]]);
+
+        get value() {
+          let sum = 0;
+          this.map.forEach((v) => {
+            sum += v;
+          });
+          return sum;
+        }
+
+        update() {
+          this.map.set('foo', 456);
+        }
+      }
+    );
+  }
+
+  @test
+  'set existing falsy value triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        map = trackedMap<string, number>([['foo', 0]]);
+
+        get value() {
+          return this.map.get('foo');
+        }
+
+        update() {
+          this.map.set('foo', 123);
+        }
+      }
+    );
+  }
+
+  @test
   'each: set'() {
     this.assertEachReactivity(
       class extends Component {
