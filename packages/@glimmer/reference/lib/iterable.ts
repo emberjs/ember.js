@@ -52,7 +52,12 @@ function keyForPath(path: string): KeyFor {
   if (DEBUG && path[0] === '@') {
     throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
   }
-  return uniqueKeyFor((item) => getPath(item as object, path));
+  return uniqueKeyFor((item) => {
+    if (item === null || item === undefined) {
+      return item;
+    }
+    return getPath(item as object, path);
+  });
 }
 
 function makeKeyFor(key: string) {
