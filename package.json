@@ -14,7 +14,6 @@
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
-    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./package.json": "./package.json"
   },
   "homepage": "https://emberjs.com/",
@@ -69,7 +68,7 @@
     "broccoli-funnel": "^3.0.8",
     "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
-    "ember-cli-babel": "^8.2.0",
+    "ember-cli-babel": "^8.3.1",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
@@ -148,7 +147,9 @@
   "pnpm": {
     "overrides": {
       "rollup": "^4.2.0",
-      "ember-cli-htmlbars": "^7.0.0"
+      "ember-cli-htmlbars": "^7.0.0",
+      "babel-plugin-ember-template-compilation": "^4.0.0",
+      "ember-cli-babel": "^8.3.1"
     },
     "onlyBuiltDependencies": [
       "@swc/core",

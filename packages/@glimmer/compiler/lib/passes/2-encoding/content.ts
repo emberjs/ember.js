@@ -128,7 +128,7 @@ export class ContentEncoder {
 
   SimpleElement({ tag, params, body, dynamicFeatures }: mir.SimpleElement): WireStatements {
     let op = dynamicFeatures ? SexpOpcodes.OpenElementWithSplat : SexpOpcodes.OpenElement;
-    return new WireStatements<WireFormat.Statement | WireFormat.ElementParameter>([
+    return new WireStatements([
       [op, deflateTagName(tag.chars)],
       ...CONTENT.ElementParameters(params).toArray(),
       [SexpOpcodes.FlushElement],

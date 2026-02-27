@@ -94,7 +94,7 @@ export function castToBrowser<S extends SugaryNodeCheck>(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-  return checkBrowserNode<S>(node, sugaryCheck!);
+  return checkBrowserNode(node, sugaryCheck!);
 }
 
 function checkError(from: string, check: SugaryNodeCheck): Error {
