@@ -156,7 +156,7 @@ moduleFor(
       assert.deepEqual(hooks, ['init', 'compute', 'compute', 'destroy', 'willDestroy']);
     }
 
-    ['@test throws if `this._super` is not called from `willDestory`']() {
+    ['@test warns if `this._super` is not called from `willDestroy`']() {
       this.registerHelper('hello-world', {
         compute() {},
         willDestroy() {},
@@ -166,7 +166,7 @@ moduleFor(
         show: true,
       });
 
-      expectAssertion(() => {
+      expectDeprecation(() => {
         runTask(() => set(this.context, 'show', false));
       }, /You must call `super.willDestroy\(\);` or `this._super\(\);` when overriding `willDestroy` on a framework object. Please update .*/);
     }

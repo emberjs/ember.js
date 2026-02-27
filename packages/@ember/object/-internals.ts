@@ -2,6 +2,7 @@ export { getCachedValueFor as cacheFor } from '@ember/-internals/metal';
 export { guidFor } from '@ember/-internals/utils';
 
 import { addListener } from '@ember/-internals/metal';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { assert } from '@ember/debug';
 import { symbol } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
@@ -29,7 +30,7 @@ if (DEBUG) {
   const INIT_WAS_CALLED = Symbol('INIT_WAS_CALLED');
   const WILL_DESTROY_WAS_CALLED = Symbol('WILL_DESTROY_WAS_CALLED');
   let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
-  let ASSERT_WILL_DESTROY_WAS_CALLED = symbol('ASSERT_WILL_DESTROY_WAS_CALLED');
+  let DEPRECATE_WILL_DESTROY_WAS_CALLED = symbol('DEPRECATE_WILL_DESTROY_WAS_CALLED');
 
   FrameworkObject = class DebugFrameworkObject extends EmberObject {
     [INIT_WAS_CALLED] = false;
@@ -52,16 +53,18 @@ if (DEBUG) {
       );
     }
 
-    [ASSERT_WILL_DESTROY_WAS_CALLED]() {
-      assert(
-        `You must call \`super.willDestroy();\` or \`this._super();\` when overriding \`willDestroy\` on a framework object. Please update ${this} to call \`super.willDestroy();\` from \`willDestroy\` when using native classes or \`this._super();\` when using \`EmberObject.extend()\`.`,
-        this[WILL_DESTROY_WAS_CALLED]
-      );
+    [DEPRECATE_WILL_DESTROY_WAS_CALLED]() {
+      if (!this[WILL_DESTROY_WAS_CALLED]) {
+        deprecateUntil(
+          `You must call \`super.willDestroy();\` or \`this._super();\` when overriding \`willDestroy\` on a framework object. Please update ${this} to call \`super.willDestroy();\` from \`willDestroy\` when using native classes or \`this._super();\` when using \`EmberObject.extend()\`.`,
+          DEPRECATIONS.DEPRECATE_MISSING_SUPER_IN_WILL_DESTROY
+        );
+      }
     }
   };
 
   addListener(FrameworkObject.prototype, 'init', null, ASSERT_INIT_WAS_CALLED);
-  addListener(FrameworkObject.prototype, 'willDestroy', null, ASSERT_WILL_DESTROY_WAS_CALLED);
+  addListener(FrameworkObject.prototype, 'willDestroy', null, DEPRECATE_WILL_DESTROY_WAS_CALLED);
 }
 
 export { FrameworkObject };

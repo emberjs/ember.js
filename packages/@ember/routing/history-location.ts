@@ -276,6 +276,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method willDestroy
   */
   willDestroy(): void {
+    super.willDestroy();
     this._removeEventListener();
   }
 
