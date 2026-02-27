@@ -107,8 +107,10 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
 
   /**
    * When iterating:
-   * - we entangle with the collection (as we iterate over the whole thing
+   * - we entangle with the collection (as we iterate over the whole thing)
+   *   via keys() → consumeTag(#collection)
    * - for each individual item, we entangle with the item as well
+   *   via get() → consumeTag(#storageFor(key))
    */
   [Symbol.iterator]() {
     let keys = this.keys();
@@ -138,9 +140,9 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
   }
 
   set(key: K, value: V): this {
-    let existing = this.#vals.has(key);
+    let hasExisting = this.#vals.has(key);
 
-    if (existing) {
+    if (hasExisting) {
       let isUnchanged = this.#options.equals(this.#vals.get(key) as V, value);
 
       if (isUnchanged) {
@@ -150,7 +152,7 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
 
     this.#dirtyStorageFor(key);
 
-    if (!existing) {
+    if (!hasExisting) {
       DIRTY_TAG(this.#collection);
     }
 
