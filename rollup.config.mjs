@@ -99,6 +99,7 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
       dir: outputDir,
       hoistTransitiveImports: false,
       generatedCode: 'es2015',
+      sourcemap: true,
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
     plugins,
@@ -116,6 +117,7 @@ function glimmerComponent() {
       dir: 'packages/@glimmer/component/dist',
       hoistTransitiveImports: false,
       generatedCode: 'es2015',
+      sourcemap: true,
     },
     plugins: [
       babel({
@@ -442,12 +444,22 @@ export function version() {
   };
 }
 
+
 function pruneEmptyBundles() {
   return {
     name: 'prune-empty-bundles',
     generateBundle(options, bundles) {
+      function isIgnored(key){
+        if (key.endsWith('.map')) return true;
+        if (key.includes('/-private/')) return true;
+        if (key.endsWith('@ember/template-compiler/lib/public-types.js')) return true;
+        if (key.endsWith('@glimmer/interfaces/index.js')) return true;
+        if (key.endsWith('@ember/template-compiler/lib/types.js')) return true;
+        return false;
+      }
+
       for (let [key, bundle] of Object.entries(bundles)) {
-        if (bundle.code.trim() === '') {
+        if (isIgnored(key) || bundle.code.trim() === '') {
           delete bundles[key];
         }
       }
