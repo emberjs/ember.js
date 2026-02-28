@@ -11,6 +11,7 @@
       "production": "./dist-prod/packages/*",
       "default": "./dist/packages/*"
     },
+    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler/index.js",
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
