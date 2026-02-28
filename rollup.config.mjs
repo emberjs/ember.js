@@ -54,11 +54,6 @@ function esmInputs() {
   return {
     ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
     ...renameEntrypoints(packages(), (name) => join('packages', name)),
-    // the actual authored "./packages/ember-template-compiler/index.ts" is
-    // part of what powers the historical dist/ember-template-compiler.js AMD
-    // bundle. It has historical cruft that has never been present in our ESM
-    // builds.
-    //
     // On the ESM build, the main entrypoint of ember-template-compiler is the
     // "minimal.ts" version, which has a lot less in it.
     'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
@@ -449,17 +444,8 @@ function pruneEmptyBundles() {
   return {
     name: 'prune-empty-bundles',
     generateBundle(options, bundles) {
-      function isIgnored(key){
-        if (key.endsWith('.map')) return true;
-        if (key.includes('/-private/')) return true;
-        if (key.endsWith('@ember/template-compiler/lib/public-types.js')) return true;
-        if (key.endsWith('@glimmer/interfaces/index.js')) return true;
-        if (key.endsWith('@ember/template-compiler/lib/types.js')) return true;
-        return false;
-      }
-
       for (let [key, bundle] of Object.entries(bundles)) {
-        if (isIgnored(key) || bundle.code.trim() === '') {
+        if (bundle.code && bundle.code.trim() === '') {
           delete bundles[key];
         }
       }

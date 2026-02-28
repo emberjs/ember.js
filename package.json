@@ -14,7 +14,6 @@
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
-    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./package.json": "./package.json"
   },
   "homepage": "https://emberjs.com/",
@@ -156,7 +155,9 @@
   },
   "pnpm": {
     "overrides": {
-      "rollup": "^4.2.0"
+      "rollup": "^4.2.0",
+      "ember-cli-htmlbars": "^7.0.0",
+      "babel-plugin-ember-template-compilation": "^4.0.0"
     },
     "onlyBuiltDependencies": [
       "@swc/core",
@@ -287,6 +288,7 @@
       "@ember/routing/router-service.js": "ember-source/@ember/routing/router-service.js",
       "@ember/routing/router.js": "ember-source/@ember/routing/router.js",
       "@ember/routing/transition.js": "ember-source/@ember/routing/transition.js",
+      "@ember/runloop/-private/backburner.js": "ember-source/@ember/runloop/-private/backburner.js",
       "@ember/runloop/index.js": "ember-source/@ember/runloop/index.js",
       "@ember/service/index.js": "ember-source/@ember/service/index.js",
       "@ember/template-compilation/index.js": "ember-source/@ember/template-compilation/index.js",
@@ -310,6 +312,7 @@
       "@ember/template-compiler/lib/plugins/transform-wrap-mount-and-outlet.js": "ember-source/@ember/template-compiler/lib/plugins/transform-wrap-mount-and-outlet.js",
       "@ember/template-compiler/lib/plugins/utils.js": "ember-source/@ember/template-compiler/lib/plugins/utils.js",
       "@ember/template-compiler/lib/public-api.js": "ember-source/@ember/template-compiler/lib/public-api.js",
+      "@ember/template-compiler/lib/public-types.js": "ember-source/@ember/template-compiler/lib/public-types.js",
       "@ember/template-compiler/lib/runtime.js": "ember-source/@ember/template-compiler/lib/runtime.js",
       "@ember/template-compiler/lib/system/calculate-location-display.js": "ember-source/@ember/template-compiler/lib/system/calculate-location-display.js",
       "@ember/template-compiler/lib/template.js": "ember-source/@ember/template-compiler/lib/template.js",
@@ -332,6 +335,7 @@
       "@glimmer/encoder/index.js": "ember-source/@glimmer/encoder/index.js",
       "@glimmer/env/index.js": "ember-source/@glimmer/env/index.js",
       "@glimmer/global-context/index.js": "ember-source/@glimmer/global-context/index.js",
+      "@glimmer/interfaces/index.js": "ember-source/@glimmer/interfaces/index.js",
       "@glimmer/manager/index.js": "ember-source/@glimmer/manager/index.js",
       "@glimmer/node/index.js": "ember-source/@glimmer/node/index.js",
       "@glimmer/opcode-compiler/index.js": "ember-source/@glimmer/opcode-compiler/index.js",
