@@ -439,7 +439,6 @@ export function version() {
   };
 }
 
-
 function pruneEmptyBundles() {
   return {
     name: 'prune-empty-bundles',
