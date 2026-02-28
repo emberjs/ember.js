@@ -7,7 +7,6 @@ settings:
 overrides:
   socket.io: ^4.7.0
   rollup: ^4.2.0
-  ember-cli-htmlbars: ^7.0.0
 
 patchedDependencies:
   '@tracerbench/core@8.0.1':
@@ -2915,7 +2914,7 @@ importers:
         version: 3.5.0
       tracked-built-ins:
         specifier: ^4.1.0
-        version: 4.1.0(@babel/core@7.29.0)(ember-source@)
+        version: 4.1.0(@babel/core@7.29.0)
       webpack:
         specifier: ^5.74.0
         version: 5.105.1
@@ -3164,7 +3163,7 @@ importers:
         version: 3.17.0(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
       tracked-built-ins:
         specifier: ^4.1.0
-        version: 4.1.0(@babel/core@7.29.0)(ember-source@)
+        version: 4.1.0(@babel/core@7.29.0)
       vite:
         specifier: ^6.3.5
         version: 6.4.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2)
@@ -7555,6 +7554,10 @@ packages:
   common-path-prefix@3.0.0:
     resolution: {integrity: sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==}
 
+  common-tags@1.8.2:
+    resolution: {integrity: sha512-gk/Z852D2Wtb//0I+kRFNKKE9dIIVirjoqPoA1wJU+XePVXZfGeBpk45+A1rKO4Q43prqWBNY/MiIeRLbPWUaA==}
+    engines: {node: '>=4.0.0'}
+
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
 
@@ -8244,6 +8247,10 @@ packages:
 
   ember-cli-get-component-path-option@1.0.0:
     resolution: {integrity: sha512-k47TDwcJ2zPideBCZE8sCiShSxQSpebY2BHcX2DdipMmBox5gsfyVrbKJWIHeSTTKyEUgmBIvQkqTOozEziCZA==}
+
+  ember-cli-htmlbars@5.7.2:
+    resolution: {integrity: sha512-Uj6R+3TtBV5RZoJY14oZn/sNPnc+UgmC8nb5rI4P3fR/gYoyTFIZSXiIM7zl++IpMoIrocxOrgt+mhonKphgGg==}
+    engines: {node: 10.* || >= 12.*}
 
   ember-cli-htmlbars@6.3.0:
     resolution: {integrity: sha512-N9Y80oZfcfWLsqickMfRd9YByVcTGyhYRnYQ2XVPVrp6jyUyOeRWmEAPh7ERSXpp8Ws4hr/JB9QVQrn/yZa+Ag==}
@@ -20383,6 +20390,8 @@ snapshots:
 
   common-path-prefix@3.0.0: {}
 
+  common-tags@1.8.2: {}
+
   commondir@1.0.1: {}
 
   component-emitter@1.3.1: {}
@@ -21077,6 +21086,27 @@ snapshots:
 
   ember-cli-get-component-path-option@1.0.0: {}
 
+  ember-cli-htmlbars@5.7.2:
+    dependencies:
+      '@ember/edition-utils': 1.2.0
+      babel-plugin-htmlbars-inline-precompile: 5.3.1
+      broccoli-debug: 0.6.5
+      broccoli-persistent-filter: 3.1.3
+      broccoli-plugin: 4.0.7
+      common-tags: 1.8.2
+      ember-cli-babel-plugin-helpers: 1.1.1
+      ember-cli-version-checker: 5.1.2
+      fs-tree-diff: 2.0.1
+      hash-for-dep: 1.5.2
+      heimdalljs-logger: 0.1.10
+      json-stable-stringify: 1.3.0
+      semver: 7.7.4
+      silent-error: 1.1.1
+      strip-bom: 4.0.0
+      walk-sync: 2.2.0
+    transitivePeerDependencies:
+      - supports-color
+
   ember-cli-htmlbars@6.3.0:
     dependencies:
       '@ember/edition-utils': 1.2.0
@@ -21725,13 +21755,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-tracked-storage-polyfill@1.0.0(@babel/core@7.29.0)(ember-source@):
+  ember-tracked-storage-polyfill@1.0.0:
     dependencies:
       ember-cli-babel: 7.26.11
-      ember-cli-htmlbars: 7.0.0(@babel/core@7.29.0)(ember-source@)
+      ember-cli-htmlbars: 5.7.2
     transitivePeerDependencies:
-      - '@babel/core'
-      - ember-source
       - supports-color
 
   ember-welcome-page@7.0.2:
@@ -27046,14 +27074,13 @@ snapshots:
       - zen-observable
       - zenObservable
 
-  tracked-built-ins@4.1.0(@babel/core@7.29.0)(ember-source@):
+  tracked-built-ins@4.1.0(@babel/core@7.29.0):
     dependencies:
       '@embroider/addon-shim': 1.10.2
       decorator-transforms: 2.3.1(@babel/core@7.29.0)
-      ember-tracked-storage-polyfill: 1.0.0(@babel/core@7.29.0)(ember-source@)
+      ember-tracked-storage-polyfill: 1.0.0
     transitivePeerDependencies:
       - '@babel/core'
-      - ember-source
       - supports-color
 
   tree-kill@1.2.2: {}
