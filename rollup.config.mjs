@@ -80,7 +80,6 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
     version(),
     resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     pruneEmptyBundles(),
-    templateCompilerShim(),
   ];
 
   if (includePackageMeta) {
@@ -449,20 +448,6 @@ function pruneEmptyBundles() {
           delete bundles[key];
         }
       }
-    },
-  };
-}
-
-// @embroider/compat's ember-source adapter expects dist/ember-template-compiler.js
-// to exist on disk (accessed via broccoli-funnel, not module resolution).
-function templateCompilerShim() {
-  return {
-    name: 'template-compiler-shim',
-    writeBundle({ dir }) {
-      writeFileSync(
-        join(dir, 'ember-template-compiler.js'),
-        "export * from './packages/ember-template-compiler/index.js';\n"
-      );
     },
   };
 }
