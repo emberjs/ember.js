@@ -12,11 +12,17 @@ overrides:
 
 patchedDependencies:
   '@embroider/compat@4.1.14':
-    hash: 3f20a673596ad1fb2a85bd656534b6337fdb4f71efa2990fcd075d48906a5898
+    hash: a852f27d31b881bafd6463fc975dbd50a5f30760108b48db854d65e342d4c319
     path: patches/@embroider__compat@4.1.14.patch
+  '@embroider/macros@1.20.0':
+    hash: bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb
+    path: patches/@embroider__macros@1.20.0.patch
   '@tracerbench/core@8.0.1':
     hash: 94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846
     path: patches/@tracerbench__core@8.0.1.patch
+  broccoli-babel-transpiler@7.8.1:
+    hash: 7f387255c1f49339ca8d1e5004c30105e1a45549acf35f2d4dea3af208fafca4
+    path: patches/broccoli-babel-transpiler@7.8.1.patch
 
 importers:
 
@@ -3048,7 +3054,7 @@ importers:
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/compat':
         specifier: ^4.1.14
-        version: 4.1.14(patch_hash=3f20a673596ad1fb2a85bd656534b6337fdb4f71efa2990fcd075d48906a5898)(@embroider/core@4.4.4)
+        version: 4.1.14(patch_hash=a852f27d31b881bafd6463fc975dbd50a5f30760108b48db854d65e342d4c319)(@embroider/core@4.4.4)
       '@embroider/config-meta-loader':
         specifier: ^1.0.0
         version: 1.0.0
@@ -3057,7 +3063,7 @@ importers:
         version: 4.4.4
       '@embroider/macros':
         specifier: ^1.20.0
-        version: 1.20.0(@babel/core@7.29.0)
+        version: 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@embroider/router':
         specifier: ^3.0.6
         version: 3.0.6(@babel/core@7.29.0)(@embroider/core@4.4.4)
@@ -14638,7 +14644,7 @@ snapshots:
   '@ember-data/adapter@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14653,7 +14659,7 @@ snapshots:
   '@ember-data/debug@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
     transitivePeerDependencies:
@@ -14663,7 +14669,7 @@ snapshots:
 
   '@ember-data/graph@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -14672,7 +14678,7 @@ snapshots:
 
   '@ember-data/json-api@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/json-api': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14683,7 +14689,7 @@ snapshots:
 
   '@ember-data/legacy-compat@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14695,7 +14701,7 @@ snapshots:
   '@ember-data/model@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14709,7 +14715,7 @@ snapshots:
 
   '@ember-data/request-utils@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
     transitivePeerDependencies:
@@ -14719,7 +14725,7 @@ snapshots:
 
   '@ember-data/request@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -14731,7 +14737,7 @@ snapshots:
   '@ember-data/serializer@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14745,7 +14751,7 @@ snapshots:
 
   '@ember-data/store@5.8.1(@babel/core@7.29.0)(@ember-data/tracking@5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0)))(@ember/test-waiters@4.1.1(@babel/core@7.29.0))':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     optionalDependencies:
       '@ember-data/tracking': 5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))
@@ -14758,7 +14764,7 @@ snapshots:
   '@ember-data/tracking@5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))':
     dependencies:
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -14783,7 +14789,7 @@ snapshots:
     dependencies:
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@simple-dom/interface': 1.4.0
       decorator-transforms: 2.3.1(@babel/core@7.29.0)
       dom-element-descriptors: 0.5.1
@@ -14795,7 +14801,7 @@ snapshots:
   '@ember/test-waiters@4.1.1(@babel/core@7.29.0)':
     dependencies:
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
       - '@glint/template'
@@ -14882,7 +14888,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/compat@4.1.14(patch_hash=3f20a673596ad1fb2a85bd656534b6337fdb4f71efa2990fcd075d48906a5898)(@embroider/core@4.4.4)':
+  '@embroider/compat@4.1.14(patch_hash=a852f27d31b881bafd6463fc975dbd50a5f30760108b48db854d65e342d4c319)(@embroider/core@4.4.4)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0(supports-color@8.1.1)
@@ -14894,7 +14900,7 @@ snapshots:
       '@babel/runtime': 7.28.6
       '@babel/traverse': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.4
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@types/babel__code-frame': 7.27.0
       assert-never: 1.4.0
       babel-import-util: 3.0.1
@@ -15012,7 +15018,7 @@ snapshots:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/parser': 7.29.0
       '@babel/traverse': 7.29.0(supports-color@8.1.1)
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 3.0.2
       assert-never: 1.4.0
@@ -15068,7 +15074,7 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  '@embroider/macros@1.20.0(@babel/core@7.29.0)':
+  '@embroider/macros@1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)':
     dependencies:
       '@embroider/shared-internals': 3.0.2
       assert-never: 1.4.0
@@ -15213,7 +15219,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.4
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       assert-never: 1.4.0
       browserslist: 4.28.1
@@ -17448,7 +17454,7 @@ snapshots:
   '@warp-drive/build-config@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       babel-import-util: 2.1.1
       babel-plugin-debug-macros: 2.0.0(@babel/core@7.29.0)
       semver: 7.7.4
@@ -17459,7 +17465,7 @@ snapshots:
 
   '@warp-drive/core-types@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -17468,7 +17474,7 @@ snapshots:
 
   '@warp-drive/core@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/build-config': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -17478,7 +17484,7 @@ snapshots:
   '@warp-drive/ember@5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))':
     dependencies:
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -17487,7 +17493,7 @@ snapshots:
 
   '@warp-drive/json-api@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       fuse.js: 7.1.0
       json-to-ast: 2.1.0
@@ -17499,7 +17505,7 @@ snapshots:
   '@warp-drive/legacy@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
       ember-cli-string-utils: 1.1.0
@@ -17512,7 +17518,7 @@ snapshots:
 
   '@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))':
     dependencies:
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -18323,7 +18329,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  broccoli-babel-transpiler@7.8.1:
+  broccoli-babel-transpiler@7.8.1(patch_hash=7f387255c1f49339ca8d1e5004c30105e1a45549acf35f2d4dea3af208fafca4):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/polyfill': 7.12.1
@@ -19650,7 +19656,7 @@ snapshots:
       '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@7.29.0)
       '@babel/plugin-transform-class-static-block': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 2.9.2(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.29.0)(webpack@5.105.1)
@@ -19694,7 +19700,7 @@ snapshots:
       '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@7.29.0)
       '@babel/plugin-transform-class-static-block': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 2.9.2(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.29.0)(webpack@5.105.1)
@@ -19759,7 +19765,7 @@ snapshots:
       babel-plugin-ember-data-packages-polyfill: 0.1.2
       babel-plugin-ember-modules-api-polyfill: 3.5.0
       babel-plugin-module-resolver: 3.2.0
-      broccoli-babel-transpiler: 7.8.1
+      broccoli-babel-transpiler: 7.8.1(patch_hash=7f387255c1f49339ca8d1e5004c30105e1a45549acf35f2d4dea3af208fafca4)
       broccoli-debug: 0.6.5
       broccoli-funnel: 2.0.2
       broccoli-source: 2.1.2
@@ -20274,7 +20280,7 @@ snapshots:
       '@ember-data/tracking': 5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))
       '@ember/edition-utils': 1.2.0
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/core-types': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/ember': 5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))
@@ -20348,7 +20354,7 @@ snapshots:
     dependencies:
       '@ember/test-helpers': 5.4.1(@babel/core@7.29.0)
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
       qunit: 2.25.0
       qunit-theme-ember: 1.0.0
     transitivePeerDependencies:

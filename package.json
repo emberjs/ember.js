@@ -166,7 +166,9 @@
     ],
     "patchedDependencies": {
       "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
-      "@embroider/compat@4.1.14": "patches/@embroider__compat@4.1.14.patch"
+      "@embroider/compat@4.1.14": "patches/@embroider__compat@4.1.14.patch",
+      "broccoli-babel-transpiler@7.8.1": "patches/broccoli-babel-transpiler@7.8.1.patch",
+      "@embroider/macros@1.20.0": "patches/@embroider__macros@1.20.0.patch"
     }
   },
   "peerDependencies": {

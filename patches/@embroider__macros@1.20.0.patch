@@ -1,0 +1,41 @@
+diff --git a/src/macros-config.js b/src/macros-config.js
+index 26cdf1ec71daeda8dfd941ddd743fb164d9333b6..3824bb3c8ec0af09668e4f153e7fff8193fdadde 100644
+--- a/src/macros-config.js
++++ b/src/macros-config.js
+@@ -71,9 +71,14 @@ class MacrosConfig {
+                 globalConfigs: {},
+                 configSources: new WeakMap(),
+                 mergers: new Map(),
++                configWritable: true,
+             };
+             g.__embroider_macros_global__.set(key, shared);
+         }
++        // Upgrade older shared state that doesn't have configWritable
++        if (!('configWritable' in shared)) {
++            shared.configWritable = true;
++        }
+         let config = new MacrosConfig(appRoot, shared);
+         localSharedState.set(key, config);
+         return config;
+@@ -108,7 +113,7 @@ class MacrosConfig {
+         this.mode = 'compile-time';
+         this.isDevelopingPackageRoots = new Set();
+         this._importSyncImplementation = 'cjs';
+-        this._configWritable = true;
++        this._shared = shared;
+         this.configs = shared.configs;
+         this.globalConfig = shared.globalConfigs;
+         this.configSources = shared.configSources;
+@@ -351,6 +356,12 @@ class MacrosConfig {
+             return this.packageCache.original(us);
+         }
+     }
++    get _configWritable() {
++        return this._shared.configWritable;
++    }
++    set _configWritable(value) {
++        this._shared.configWritable = value;
++    }
+     finalize() {
+         this._configWritable = false;
+     }

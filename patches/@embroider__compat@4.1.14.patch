@@ -12,7 +12,7 @@ index 1ddeafdf2dd2a653b1647c03a01f6a9acf6e6ea2..9ac08ccd66494eec299f5a74ccabd680
      // versions of ember-source prior to
      // https://github.com/emberjs/ember.js/pull/20675 ship dist/packages and
 diff --git a/dist/src/compat-app.js b/dist/src/compat-app.js
-index e22220b687d2434136227e16c15bf1826a483c98..90ced926adfe192ddde1e0c04a6f9933fbbbf15e 100644
+index e22220b687d2434136227e16c15bf1826a483c98..7e42a68b794162a2e6e6f5d25fe5916dbe773040 100644
 --- a/dist/src/compat-app.js
 +++ b/dist/src/compat-app.js
 @@ -243,8 +243,8 @@ class CompatApp {
@@ -26,3 +26,15 @@ index e22220b687d2434136227e16c15bf1826a483c98..90ced926adfe192ddde1e0c04a6f9933
          }
          if (this.vendorTree) {
              trees.push((0, broccoli_funnel_1.default)(this.vendorTree, {
+@@ -506,6 +506,11 @@ class CompatApp {
+         });
+         // Embroider 4.x always requires eager importSync
+         this.macrosConfig.importSyncImplementation = 'eager';
++        // Finalize macros config now that all addon included() hooks have run
++        // and all configuration is set. This must happen before broccoli builds
++        // addon trees, because the macros babel plugin accesses userConfigs
++        // which requires finalization.
++        this.macrosConfig.finalize();
+     }
+     inTrees(prevStageTree) {
+         let configTree = this.config;
