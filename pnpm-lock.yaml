@@ -2797,8 +2797,6 @@ importers:
         specifier: ^0.5.11
         version: 0.5.11
 
-  packages/loader: {}
-
   smoke-tests/app-template:
     devDependencies:
       '@babel/core':
@@ -3030,8 +3028,8 @@ importers:
         specifier: ^7.27.1
         version: 7.28.6
       '@ember/optional-features':
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^3.0.0
+        version: 3.0.0(@types/node@25.3.2)
       '@ember/string':
         specifier: ^4.0.1
         version: 4.0.1
@@ -3072,8 +3070,8 @@ importers:
         specifier: ~5.5.0
         version: 5.5.0(@babel/core@7.29.0)(@ember-data/request-utils@5.8.1(@babel/core@7.29.0))(@ember-data/request@5.8.1(@babel/core@7.29.0))(@ember-data/store@5.8.1(@babel/core@7.29.0)(@ember-data/tracking@5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0)))(@ember/test-waiters@4.1.1(@babel/core@7.29.0)))(@ember/test-waiters@4.1.1(@babel/core@7.29.0))(@warp-drive/core-types@5.8.1(@babel/core@7.29.0))(ember-source@)
       babel-plugin-ember-template-compilation:
-        specifier: ^2.4.1
-        version: 2.4.1
+        specifier: ^4.0.0
+        version: 4.0.0
       concurrently:
         specifier: ^9.1.2
         version: 9.2.1
@@ -4186,10 +4184,6 @@ packages:
 
   '@ember/edition-utils@1.2.0':
     resolution: {integrity: sha512-VmVq/8saCaPdesQmftPqbFtxJWrzxNGSQ+e8x8LLe3Hjm36pJ04Q8LeORGZkAeOhldoUX9seLGmSaHeXkIqoog==}
-
-  '@ember/optional-features@2.3.0':
-    resolution: {integrity: sha512-+M8CkPledQEaDbfIlwlq6Phgpm5jdT3a6WVDJk7b/zadw5xAJkuQKVK7DgR0SFgHGiWlyn6a8AU5p2mCA706RA==}
-    engines: {node: 10.* || 12.* || >= 14}
 
   '@ember/optional-features@3.0.0':
     resolution: {integrity: sha512-HMQqZoBb16I4NyHfQglIYjopSG6folcEJah2WPa0FuolWRA/8cS5ozQmFK5BQx7cijTQJxj6viLpQK9KrXuYdw==}
@@ -6834,6 +6828,10 @@ packages:
     resolution: {integrity: sha512-kk7cGyblE9n4MB98rqw2wuUW7YLD5FM+Tr97gNSYL4e8DBMQndLuWaWNx1wfd7o00NjFhhoTR+HZs2nj23g2Lw==}
     engines: {node: '>= 18.*'}
 
+  babel-plugin-ember-template-compilation@4.0.0:
+    resolution: {integrity: sha512-J2dR6ZPfPNuIR7vzhneO9xR0aTvOHITszuGif2EOYw3Qg3KlIVEd/hNnEeubyWgjYXn06Sgm6/NdNXEMNSsWYQ==}
+    engines: {node: '>= 18.*'}
+
   babel-plugin-htmlbars-inline-precompile@5.3.1:
     resolution: {integrity: sha512-QWjjFgSKtSRIcsBhJmEwS2laIdrA6na8HAlc/pEAhjHgQsah/gMiBFRZvbQTy//hWxR4BMwV7/Mya7q5H8uHeA==}
     engines: {node: 10.* || >= 12.*}
@@ -7446,10 +7444,6 @@ packages:
 
   cli-width@2.2.1:
     resolution: {integrity: sha512-GRMWDxpOB6Dgk2E5Uo+3eEBvtOOlimMmpbFiKuLFnQzYDavtLFY3K5ona41jgN/WdRZtG7utuVSVTL4HbZHGkw==}
-
-  cli-width@3.0.0:
-    resolution: {integrity: sha512-FxqpkPPwu1HjuN93Omfm4h8uIanXofW0RxVEW3k5RKx+mJJYSthzNhp32Kzxxy3YAEZ/Dc/EWN1vZRY0+kOhbw==}
-    engines: {node: '>= 10'}
 
   cli-width@4.1.0:
     resolution: {integrity: sha512-ouuZd4/dm2Sw5Gmqy6bGyNNNe1qt9RpmxveLSO7KcgsTnU7RXfsw+/bukWGo1abgBiMAic068rclZsO4IWmmxQ==}
@@ -8970,10 +8964,6 @@ packages:
     resolution: {integrity: sha512-Oa2M9atig69ZkfwiApY8F2Yy+tzMbazyvqv21R0NsSC8floSOC09BbT1ITWAdoMGQvJ/aZnR1KMwdx9tvHnTNA==}
     engines: {node: '>=4'}
 
-  figures@3.2.0:
-    resolution: {integrity: sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==}
-    engines: {node: '>=8'}
-
   figures@6.1.0:
     resolution: {integrity: sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==}
     engines: {node: '>=18'}
@@ -9775,10 +9765,6 @@ packages:
   inquirer@6.5.2:
     resolution: {integrity: sha512-cntlB5ghuB0iuO65Ovoi8ogLHiWGs/5yNrtUcKjFhSSiVeAIVpD7koaSU9RM8mpXw5YDi9RdYXGQMaOURB7ycQ==}
     engines: {node: '>=6.0.0'}
-
-  inquirer@7.3.3:
-    resolution: {integrity: sha512-JG3eIAj5V9CwcGvuOmoo6LB9kbAYT8HXffUl6memuszlwDC/qvFAJw49XJ5NROSFNPxp3iQg1GqkFhaY/CR0IA==}
-    engines: {node: '>=8.0.0'}
 
   inquirer@9.3.8:
     resolution: {integrity: sha512-pFGGdaHrmRKMh4WoDDSowddgjT1Vkl90atobmTeSmcPGdYiwikch/m/Ef5wRaiamHejtw0cUUMMerzDUXCci2w==}
@@ -10800,9 +10786,6 @@ packages:
 
   mute-stream@0.0.7:
     resolution: {integrity: sha512-r65nCZhrbXXb6dXOACihYApHw2Q6pV0M3V0PSxd74N0+D8nzAdEAITq2oAjA1jVnKI+tGvEBUpqiMh0+rW6zDQ==}
-
-  mute-stream@0.0.8:
-    resolution: {integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==}
 
   mute-stream@1.0.0:
     resolution: {integrity: sha512-avsJQhyd+680gKXyG/sQc0nXaC6rBkPOfyHYcFb9+hdkqQkR9bdnkJ0AMZhke0oesPqIO+mFFJ+IdBc7mst4IA==}
@@ -15956,17 +15939,6 @@ snapshots:
 
   '@ember/edition-utils@1.2.0': {}
 
-  '@ember/optional-features@2.3.0':
-    dependencies:
-      chalk: 4.1.2
-      ember-cli-version-checker: 5.1.2
-      glob: 7.2.3
-      inquirer: 7.3.3
-      mkdirp: 1.0.4
-      silent-error: 1.1.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@ember/optional-features@3.0.0(@types/node@25.3.2)':
     dependencies:
       ember-cli-version-checker: 5.1.2
@@ -19272,6 +19244,12 @@ snapshots:
       babel-import-util: 3.0.1
       import-meta-resolve: 4.2.0
 
+  babel-plugin-ember-template-compilation@4.0.0:
+    dependencies:
+      '@glimmer/syntax': 0.95.0
+      babel-import-util: 3.0.1
+      import-meta-resolve: 4.2.0
+
   babel-plugin-htmlbars-inline-precompile@5.3.1:
     dependencies:
       babel-plugin-ember-modules-api-polyfill: 3.5.0
@@ -20318,8 +20296,6 @@ snapshots:
       string-width: 4.2.3
 
   cli-width@2.2.1: {}
-
-  cli-width@3.0.0: {}
 
   cli-width@4.1.0: {}
 
@@ -22613,10 +22589,6 @@ snapshots:
     dependencies:
       escape-string-regexp: 1.0.5
 
-  figures@3.2.0:
-    dependencies:
-      escape-string-regexp: 1.0.5
-
   figures@6.1.0:
     dependencies:
       is-unicode-supported: 2.1.0
@@ -23618,22 +23590,6 @@ snapshots:
       rxjs: 6.6.7
       string-width: 2.1.1
       strip-ansi: 5.2.0
-      through: 2.3.8
-
-  inquirer@7.3.3:
-    dependencies:
-      ansi-escapes: 4.3.2
-      chalk: 4.1.2
-      cli-cursor: 3.1.0
-      cli-width: 3.0.0
-      external-editor: 3.1.0
-      figures: 3.2.0
-      lodash: 4.17.23
-      mute-stream: 0.0.8
-      run-async: 2.4.1
-      rxjs: 6.6.7
-      string-width: 4.2.3
-      strip-ansi: 6.0.1
       through: 2.3.8
 
   inquirer@9.3.8(@types/node@25.3.2):
@@ -24692,8 +24648,6 @@ snapshots:
   mustache@4.2.0: {}
 
   mute-stream@0.0.7: {}
-
-  mute-stream@0.0.8: {}
 
   mute-stream@1.0.0: {}
 
