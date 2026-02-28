@@ -11,7 +11,6 @@
       "production": "./dist-prod/packages/*",
       "default": "./dist/packages/*"
     },
-    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler/index.js",
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
@@ -166,7 +165,8 @@
       "esbuild"
     ],
     "patchedDependencies": {
-      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch"
+      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
+      "@embroider/compat@4.1.14": "patches/@embroider__compat@4.1.14.patch"
     }
   },
   "peerDependencies": {

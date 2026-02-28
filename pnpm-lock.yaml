@@ -11,6 +11,9 @@ overrides:
   babel-plugin-ember-template-compilation: ^4.0.0
 
 patchedDependencies:
+  '@embroider/compat@4.1.14':
+    hash: 3f20a673596ad1fb2a85bd656534b6337fdb4f71efa2990fcd075d48906a5898
+    path: patches/@embroider__compat@4.1.14.patch
   '@tracerbench/core@8.0.1':
     hash: 94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846
     path: patches/@tracerbench__core@8.0.1.patch
@@ -3045,7 +3048,7 @@ importers:
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/compat':
         specifier: ^4.1.14
-        version: 4.1.14(@embroider/core@4.4.4)
+        version: 4.1.14(patch_hash=3f20a673596ad1fb2a85bd656534b6337fdb4f71efa2990fcd075d48906a5898)(@embroider/core@4.4.4)
       '@embroider/config-meta-loader':
         specifier: ^1.0.0
         version: 1.0.0
@@ -14879,7 +14882,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/compat@4.1.14(@embroider/core@4.4.4)':
+  '@embroider/compat@4.1.14(patch_hash=3f20a673596ad1fb2a85bd656534b6337fdb4f71efa2990fcd075d48906a5898)(@embroider/core@4.4.4)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0(supports-color@8.1.1)
