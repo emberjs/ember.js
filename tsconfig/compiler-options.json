@@ -31,8 +31,7 @@
     "types": ["vite/client"],
 
     "paths": {
-      "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"],
-      "require": ["./loader/lib/index.d.ts"]
+      "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"]
     }
   }
 }

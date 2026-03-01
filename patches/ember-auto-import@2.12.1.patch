@@ -1,0 +1,25 @@
+diff --git a/js/auto-import.js b/js/auto-import.js
+index af5f060958aa719e3c54c747837fc9eacc47e489..a5235bc0a54bbecd477fedb2ff5bb56e5880cbf4 100644
+--- a/js/auto-import.js
++++ b/js/auto-import.js
+@@ -128,12 +128,20 @@ class AutoImport {
+                                     for (let [renamed, original] of Object.entries(meta['renamed-modules'])) {
+                                         if (specifier === original) {
+                                             specifier = renamed;
++                                            break;
++                                        }
++                                        if (specifier.endsWith('.js') && specifier.slice(0, -3) + '/index.js' === original) {
++                                            specifier = renamed;
++                                            break;
+                                         }
+                                     }
+                                 }
+                                 if (specifier.endsWith('.js')) {
+                                     specifier = specifier.slice(0, -3);
+                                 }
++                                if (specifier.endsWith('/index')) {
++                                    specifier = specifier.slice(0, -6);
++                                }
+                                 output.push(specifier);
+                             }
+                         }

@@ -1,0 +1,40 @@
+diff --git a/dist/src/compat-adapters/ember-source.js b/dist/src/compat-adapters/ember-source.js
+index 1ddeafdf2dd2a653b1647c03a01f6a9acf6e6ea2..9ac08ccd66494eec299f5a74ccabd6809ef18591 100644
+--- a/dist/src/compat-adapters/ember-source.js
++++ b/dist/src/compat-adapters/ember-source.js
+@@ -22,7 +22,7 @@ const broccoli_plugin_1 = __importDefault(require("broccoli-plugin"));
+ const fs_1 = require("fs");
+ class default_1 extends v1_addon_1.default {
+     get v2Tree() {
+-        return (0, broccoli_merge_trees_1.default)([super.v2Tree, (0, broccoli_funnel_1.default)(this.rootTree, { include: ['dist/ember-template-compiler.js'] })]);
++        return super.v2Tree;
+     }
+     // versions of ember-source prior to
+     // https://github.com/emberjs/ember.js/pull/20675 ship dist/packages and
+diff --git a/dist/src/compat-app.js b/dist/src/compat-app.js
+index e22220b687d2434136227e16c15bf1826a483c98..7e42a68b794162a2e6e6f5d25fe5916dbe773040 100644
+--- a/dist/src/compat-app.js
++++ b/dist/src/compat-app.js
+@@ -243,8 +243,8 @@ class CompatApp {
+             // still app.import the traditional runtime template compiler.
+             trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember.js', () => ''));
+             trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-testing.js', () => ''));
+-            const templateCompilerSrc = (0, fs_1.readFileSync)((0, path_1.join)(emberSource.root, 'dist/ember-template-compiler.js'), 'utf8');
+-            trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-template-compiler.js', () => templateCompilerSrc));
++            
++            trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-template-compiler.js', () => ''));
+         }
+         if (this.vendorTree) {
+             trees.push((0, broccoli_funnel_1.default)(this.vendorTree, {
+@@ -506,6 +506,11 @@ class CompatApp {
+         });
+         // Embroider 4.x always requires eager importSync
+         this.macrosConfig.importSyncImplementation = 'eager';
++        // Finalize macros config now that all addon included() hooks have run
++        // and all configuration is set. This must happen before broccoli builds
++        // addon trees, because the macros babel plugin accesses userConfigs
++        // which requires finalization.
++        this.macrosConfig.finalize();
+     }
+     inTrees(prevStageTree) {
+         let configTree = this.config;

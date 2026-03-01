@@ -1,0 +1,55 @@
+diff --git a/lib/parallel-api.js b/lib/parallel-api.js
+index 4453bebeef0e60f266be800e0ba2b536887914bc..098b9c72275dc88448e811667730a1abc8c60928 100644
+--- a/lib/parallel-api.js
++++ b/lib/parallel-api.js
+@@ -262,9 +262,7 @@ function transformString(string, options, buildOptions) {
+       _logger.info('transformString is NOT parallelizable');
+     }
+ 
+-    return new Promise(resolve => {
+-      resolve(transpiler.transform(string, deserialize(options)));
+-    });
++    return transpiler.transformAsync(string, deserialize(options));
+   }
+ }
+ 
+diff --git a/lib/worker.js b/lib/worker.js
+index c2888422b44d28f97d0d80c7efe7a9e95297879a..c552630a7ce559ef9fb498b6a6a28c764f2b53c5 100644
+--- a/lib/worker.js
++++ b/lib/worker.js
+@@ -6,22 +6,20 @@ const Promise = require('rsvp').Promise;
+ const ParallelApi = require('./parallel-api');
+ 
+ // transpile the input string, using the input options
+-function transform(string, options) {
+-  return Promise.resolve().then(() => {
+-    try {
+-      let result = transpiler.transform(string, ParallelApi.deserialize(options));
++async function transform(string, options) {
++  try {
++    let result = await transpiler.transformAsync(string, ParallelApi.deserialize(options));
+ 
+-      return {
+-        code: result.code,
+-        metadata: result.metadata
+-      };
+-    } catch (error) {
+-      return {
+-        error: error.message,
+-        stack: error.stack,
+-      };
+-    }
+-  });
++    return {
++      code: result.code,
++      metadata: result.metadata
++    };
++  } catch (error) {
++    return {
++      error: error.message,
++      stack: error.stack,
++    };
++  }
+ }
+ 
+ // create worker and register public functions

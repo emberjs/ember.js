@@ -35,21 +35,21 @@
     "@babel/eslint-parser": "^7.27.1",
     "@babel/plugin-transform-runtime": "^7.27.1",
     "@babel/runtime": "^7.27.1",
-    "@ember/optional-features": "^2.3.0",
+    "@ember/optional-features": "^3.0.0",
     "@ember/string": "^4.0.1",
     "@ember/test-helpers": "^5.2.2",
     "@ember/test-waiters": "^4.1.0",
-    "@embroider/compat": "^4.1.13",
+    "@embroider/compat": "^4.1.14",
     "@embroider/config-meta-loader": "^1.0.0",
-    "@embroider/core": "^4.4.3",
-    "@embroider/macros": "^1.19.7",
+    "@embroider/core": "^4.4.4",
+    "@embroider/macros": "^1.20.0",
     "@embroider/router": "^3.0.6",
-    "@embroider/vite": "^1.5.2",
+    "@embroider/vite": "^1.6.0",
     "@eslint/js": "^9.27.0",
     "@glimmer/component": "workspace:^",
-    "@rollup/plugin-babel": "^6.0.4",
-    "@warp-drive/ember": "~5.5.0",
-    "babel-plugin-ember-template-compilation": "^2.4.1",
+    "@rollup/plugin-babel": "^6.1.0",
+    "@warp-drive/ember": "~5.8.1",
+    "babel-plugin-ember-template-compilation": "^4.0.0",
     "concurrently": "^9.1.2",
     "decorator-transforms": "^2.3.0",
     "ember-auto-import": "^2.12.0",
@@ -57,7 +57,7 @@
     "ember-cli-babel": "^8.2.0",
     "ember-cli-deprecation-workflow": "^3.3.0",
     "ember-cli-htmlbars": "^7.0.0",
-    "ember-data": "~5.5.0",
+    "ember-data": "~5.8.1",
     "ember-load-initializers": "^3.0.1",
     "ember-modifier": "^4.2.2",
     "ember-page-title": "^9.0.2",
@@ -84,7 +84,7 @@
     "vite": "^6.3.5"
   },
   "engines": {
-    "node": ">= 18"
+    "node": ">= 22.19"
   },
   "ember": {
     "edition": "octane"
