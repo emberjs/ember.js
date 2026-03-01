@@ -1,0 +1,30 @@
+diff --git a/src/portable-babel-launcher.js b/src/portable-babel-launcher.js
+index c338f171cb3ebc94a78e709c88404c26d0eafd25..bab5fe16513bdd9d929ad73f622cb0f360e96684 100644
+--- a/src/portable-babel-launcher.js
++++ b/src/portable-babel-launcher.js
+@@ -2,7 +2,7 @@
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.default = babelLauncher;
+ const portable_1 = require("./portable");
+-function babelLauncher(babel, launch, key) {
++async function babelLauncher(babel, launch, key) {
+     let p = new portable_1.Portable({ hints: launch.hints });
+     let hydrated = p.hydrate(launch);
+     let module;
+@@ -12,11 +12,15 @@ function babelLauncher(babel, launch, key) {
+         if (module.__esModule) {
+             module = module.default;
+         }
++        else if (typeof module !== 'function' && module && typeof module.default === 'function') {
++            // Native ESM module namespace loaded via require() in Node 22+
++            module = module.default;
++        }
+     }
+     else {
+         module = hydrated.module;
+     }
+-    let plugin = module.call(this, babel, hydrated.arg, key);
++    let plugin = await module.call(this, babel, hydrated.arg, key);
+     let innerStates = new WeakMap();
+     function convertState(state) {
+         let innerState = innerStates.get(state);

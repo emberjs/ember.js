@@ -1,0 +1,41 @@
+diff --git a/src/compat-adapters/ember-source.js b/src/compat-adapters/ember-source.js
+index 70f4dbd408cf142d66661bd8e4d11161731d0857..2a4c1dc654617b0d2105036bd0b65c3cbee11504 100644
+--- a/src/compat-adapters/ember-source.js
++++ b/src/compat-adapters/ember-source.js
+@@ -22,7 +22,7 @@ const broccoli_plugin_1 = __importDefault(require("broccoli-plugin"));
+ const fs_1 = require("fs");
+ class default_1 extends v1_addon_1.default {
+     get v2Tree() {
+-        return (0, broccoli_merge_trees_1.default)([super.v2Tree, (0, broccoli_funnel_1.default)(this.rootTree, { include: ['dist/ember-template-compiler.js'] })]);
++        return super.v2Tree;
+     }
+     get useStaticEmber() {
+         return this.app.options.staticEmberSource;
+diff --git a/src/compat-app-builder.js b/src/compat-app-builder.js
+index da02d39ce386c6035e3b53b6a92417a1c42c7b5c..4dd91262b9af49401358aac8b96ec1ec6c2de7d1 100644
+--- a/src/compat-app-builder.js
++++ b/src/compat-app-builder.js
+@@ -890,7 +890,7 @@ class CompatAppBuilder {
+             transforms.push([require.resolve('./resolver-transform'), opts]);
+         }
+         let resolver = new core_1.Resolver(resolverConfig);
+-        let resolution = resolver.nodeResolve('ember-source/dist/ember-template-compiler.js', (0, path_1.resolve)(this.root, 'package.json'));
++        let resolution = resolver.nodeResolve('ember-source/ember-template-compiler/index.js', (0, path_1.resolve)(this.root, 'package.json'));
+         if (resolution.type !== 'real') {
+             throw new Error(`bug: unable to resolve ember-template-compiler from ${this.root}`);
+         }
+diff --git a/src/compat-app.js b/src/compat-app.js
+index 80325d2175e115a2769595d47ea75d7d6c849b63..d0d3da2f88017aeb7b459840cf1a7ffd17a41c9a 100644
+--- a/src/compat-app.js
++++ b/src/compat-app.js
+@@ -302,8 +302,8 @@ class CompatApp {
+             // still app.import the traditional runtime template compiler.
+             trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember.js', () => ''));
+             trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-testing.js', () => ''));
+-            const templateCompilerSrc = (0, fs_1.readFileSync)((0, path_1.join)(emberSource.root, 'dist/ember-template-compiler.js'), 'utf8');
+-            trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-template-compiler.js', () => templateCompilerSrc));
++            
++            trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-template-compiler.js', () => ''));
+         }
+         if (this.vendorTree) {
+             trees.push((0, broccoli_funnel_1.default)(this.vendorTree, {
