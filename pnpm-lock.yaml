@@ -12,7 +12,7 @@ overrides:
 
 patchedDependencies:
   '@embroider/compat@3.9.3':
-    hash: 8b05a44e8428ed982465c598783f97a9337713dca522af70379c9a0ad8c23b98
+    hash: 84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8
     path: patches/@embroider__compat@3.9.3.patch
   '@embroider/compat@4.1.14':
     hash: a852f27d31b881bafd6463fc975dbd50a5f30760108b48db854d65e342d4c319
@@ -2835,7 +2835,7 @@ importers:
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/test-setup':
         specifier: ^4.0.0
-        version: 4.0.0(@embroider/compat@3.9.3(patch_hash=8b05a44e8428ed982465c598783f97a9337713dca522af70379c9a0ad8c23b98)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)))(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1))
+        version: 4.0.0(@embroider/compat@3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)))(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1))
       '@glimmer/component':
         specifier: workspace:^
         version: link:../../packages/@glimmer/component
@@ -2997,7 +2997,7 @@ importers:
     devDependencies:
       '@embroider/compat':
         specifier: ^3.9.3
-        version: 3.9.3(patch_hash=8b05a44e8428ed982465c598783f97a9337713dca522af70379c9a0ad8c23b98)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))
+        version: 3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))
       '@embroider/core':
         specifier: ^3.5.9
         version: 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
@@ -14844,7 +14844,7 @@ snapshots:
       - webpack
     optional: true
 
-  '@embroider/compat@3.9.3(patch_hash=8b05a44e8428ed982465c598783f97a9337713dca522af70379c9a0ad8c23b98)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))':
+  '@embroider/compat@3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0(supports-color@8.1.1)
@@ -15159,12 +15159,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@embroider/test-setup@4.0.0(@embroider/compat@3.9.3(patch_hash=8b05a44e8428ed982465c598783f97a9337713dca522af70379c9a0ad8c23b98)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)))(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1))':
+  '@embroider/test-setup@4.0.0(@embroider/compat@3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)))(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1))':
     dependencies:
       lodash: 4.17.23
       resolve: 1.22.11
     optionalDependencies:
-      '@embroider/compat': 3.9.3(patch_hash=8b05a44e8428ed982465c598783f97a9337713dca522af70379c9a0ad8c23b98)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))
+      '@embroider/compat': 3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))
       '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
       '@embroider/webpack': 4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1)
 

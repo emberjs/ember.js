@@ -39,3 +39,13 @@ index 80325d2175e115a2769595d47ea75d7d6c849b63..d0d3da2f88017aeb7b459840cf1a7ffd
          }
          if (this.vendorTree) {
              trees.push((0, broccoli_funnel_1.default)(this.vendorTree, {
+diff --git a/src/detect-babel-plugins.js b/src/detect-babel-plugins.js
+index 7c8f22a0c9b2b5e3f3c4c2b0e9f42d6e8a3d1b57..a1d3e4f5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1 100644
+--- a/src/detect-babel-plugins.js
++++ b/src/detect-babel-plugins.js
+@@ -78,4 +78,5 @@ const htmlbarPathMatches = [
+     ['ember-cli-htmlbars', 'index'].join(path_1.sep),
+     ['ember-cli-htmlbars', 'lib', 'require-from-worker'].join(path_1.sep),
+     ['babel-plugin-ember-template-compilation', 'src', 'node-main.js'].join(path_1.sep),
++    ['babel-plugin-ember-template-compilation', 'dist', 'src', 'node-main.js'].join(path_1.sep),
+ ];
