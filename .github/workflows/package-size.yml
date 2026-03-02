@@ -1,0 +1,26 @@
+name: Package Size Report
+
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  pkg-size-report:
+    name: Package Size Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - uses: preactjs/compressed-size-action@v2
+        with:
+          compression: "brotli"
+          pattern: "./{dist,dist-prod}/**/*"
+          minimum-change-threshold: 60
