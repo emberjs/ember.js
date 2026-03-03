@@ -1,4 +1,5 @@
-import { descriptorForProperty, isComputed } from '@ember/-internals/metal';
+import { descriptorForProperty, isComputed, CACHED_GETTER_SYMBOL } from '@ember/-internals/metal';
+import { MANDATORY_SETTER_SYMBOL } from '@ember/-internals/utils';
 import type { ComputedMetadata } from '../types';
 
 export const computed = {
@@ -67,7 +68,7 @@ export const computed = {
 
   /**
    * Check if a descriptor is Ember's mandatory setter.
-   * Replaces checking for "You attempted to update" string in setter code.
+   * Uses the MANDATORY_SETTER_SYMBOL instead of string matching.
    *
    * @param descriptor - The property descriptor
    * @returns true if this is a mandatory setter
@@ -78,16 +79,13 @@ export const computed = {
     const desc = descriptor as any;
     if (typeof desc.set !== 'function') return false;
 
-    try {
-      return Function.prototype.toString.call(desc.set).includes('You attempted to update');
-    } catch {
-      return false;
-    }
+    return desc.set[MANDATORY_SETTER_SYMBOL] === true;
   },
 
   /**
    * Check if a property uses the @cached decorator from @glimmer/tracking.
    * The @cached decorator memoizes getter results and invalidates when dependencies change.
+   * Uses the CACHED_GETTER_SYMBOL instead of string matching.
    *
    * @param obj - The object
    * @param key - The property name
@@ -106,14 +104,7 @@ export const computed = {
       while (proto !== null && proto !== Object.prototype) {
         const nativeDesc = Object.getOwnPropertyDescriptor(proto, key);
         if (nativeDesc?.get) {
-          // @cached wraps the getter with a WeakMap-based cache using @glimmer/validator's createCache
-          // We detect it by checking if the getter's source references the cache WeakMap pattern
-          // This is a best-effort heuristic
-          const src = Function.prototype.toString.call(nativeDesc.get);
-          if (src.includes('caches') && src.includes('getValue')) {
-            return true;
-          }
-          break;
+          return (nativeDesc.get as any)[CACHED_GETTER_SYMBOL] === true;
         }
         proto = Object.getPrototypeOf(proto);
       }
