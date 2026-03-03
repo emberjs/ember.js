@@ -235,6 +235,16 @@ module('Destroyables', (hooks) => {
     assert.verifySteps(['parent'], 'parent destructor run');
   });
 
+  test('parent can be an array', (assert) => {
+    const parent: unknown[] = ['a'];
+    const child = {};
+    associateDestroyableChild(parent, child);
+    registerDestructor(child, () => assert.step('child'));
+    destroy(child);
+    flush();
+    assert.verifySteps(['child'], 'child destructor run');
+  });
+
   test('children can have multiple parents, but only destroy once', (assert) => {
     const parent1 = {};
     const parent2 = {};
