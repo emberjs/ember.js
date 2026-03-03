@@ -1,0 +1,29 @@
+// Docs:
+// https://docs.renovatebot.com/configuration-options/
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:recommended",
+  ],
+  automerge: false,
+  dependencyDashboard: true,
+  schedule: ["every weekend"],
+  minimumReleaseAge: "10 days",
+  packageRules: [
+    {
+      description: "All @babel/* packages",
+      matchPackagePrefixes: ["@babel/"],
+      groupName: "babel",
+    },
+    {
+      description: "All @embroider/* packages",
+      matchPackagePrefixes: ["@embroider/"],
+      groupName: "embroider",
+    },
+    {
+      description: "eslint and releated packages",
+      matchPackagePrefixes: ["eslint"],
+      groupName: "eslint",
+    },
+  ],
+}
