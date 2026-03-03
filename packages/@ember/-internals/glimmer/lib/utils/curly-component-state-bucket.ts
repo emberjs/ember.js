@@ -57,8 +57,6 @@ export default class ComponentStateBucket {
         clearViewElement(component);
       }
     }
-
-    component.renderer.unregister(component);
   }
 
   finalize(): void {
