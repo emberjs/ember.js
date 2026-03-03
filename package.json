@@ -9,7 +9,7 @@
     "./*": {
       "development": "./dist/packages/*",
       "production": "./dist-prod/packages/*",
-      "default": "./dist/packages/*"
+      "default": "./dist-prod/packages/*"
     },
     "./types": {
       "types": "./types/stable/index.d.ts"
