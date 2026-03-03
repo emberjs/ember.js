@@ -1,0 +1,17 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:recommended",
+  ],
+  automerge: false,
+  dependencyDashboard: true,
+  schedule: ["every weekend"],
+  minimumReleaseAge: "10 days",
+  packageRules: [
+    {
+      description: "Batch all @babel packages into a single PR",
+      matchPackagePrefixes: ["@babel/"],
+      groupName: "babel",
+    },
+  ],
+}
