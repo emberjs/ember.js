@@ -2,9 +2,6 @@ name: Package Size Report
 
 on:
   pull_request: {}
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
