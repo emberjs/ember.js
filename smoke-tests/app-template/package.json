@@ -34,7 +34,6 @@
     "broccoli-asset-rev": "^3.0.0",
     "ember-auto-import": "^2.12.1",
     "ember-cli": "~5.7.0",
-    "ember-cli-app-version": "^7.0.0",
     "ember-cli-babel": "^8.2.0",
     "ember-cli-dependency-checker": "^3.3.1",
     "ember-cli-htmlbars": "^7.0.0",
@@ -61,7 +60,6 @@
     "prettier": "^3.2.5",
     "qunit": "^2.19.2",
     "qunit-dom": "^3.1.1",
-    "tracked-built-ins": "^4.1.0",
     "webpack": "^5.74.0"
   },
   "engines": {

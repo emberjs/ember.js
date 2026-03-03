@@ -9,29 +9,7 @@ overrides:
   rollup: ^4.2.0
   ember-cli-htmlbars: ^7.0.0
   babel-plugin-ember-template-compilation: ^4.0.0
-
-patchedDependencies:
-  '@embroider/compat@3.9.3':
-    hash: 84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8
-    path: patches/@embroider__compat@3.9.3.patch
-  '@embroider/compat@4.1.14':
-    hash: a852f27d31b881bafd6463fc975dbd50a5f30760108b48db854d65e342d4c319
-    path: patches/@embroider__compat@4.1.14.patch
-  '@embroider/core@3.5.9':
-    hash: dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768
-    path: patches/@embroider__core@3.5.9.patch
-  '@embroider/macros@1.20.0':
-    hash: bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb
-    path: patches/@embroider__macros@1.20.0.patch
-  '@tracerbench/core@8.0.1':
-    hash: 94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846
-    path: patches/@tracerbench__core@8.0.1.patch
-  broccoli-babel-transpiler@7.8.1:
-    hash: 7f387255c1f49339ca8d1e5004c30105e1a45549acf35f2d4dea3af208fafca4
-    path: patches/broccoli-babel-transpiler@7.8.1.patch
-  ember-auto-import@2.12.1:
-    hash: 8d2ddf2ca33365a986af60a2bba4a6488ae60656c67aa2b7bbf62d4149dc9646
-    path: patches/ember-auto-import@2.12.1.patch
+  ember-cli-babel: 8.2.0
 
 importers:
 
@@ -65,8 +43,8 @@ importers:
         specifier: ^4.0.0
         version: 4.1.2
       ember-cli-babel:
-        specifier: ^8.2.0
-        version: 8.3.1(@babel/core@7.29.0)
+        specifier: 8.2.0
+        version: 8.2.0(@babel/core@7.29.0)
       ember-cli-get-component-path-option:
         specifier: ^1.0.0
         version: 1.0.0
@@ -130,7 +108,7 @@ importers:
         version: 2.9.2(supports-color@8.1.1)
       '@embroider/vite':
         specifier: ^1.5.2
-        version: 1.5.2(@embroider/core@4.4.4)(rollup@4.57.1)(vite@5.4.21(@types/node@25.3.2)(terser@5.46.0))
+        version: 1.5.2(@embroider/core@4.4.4)(rollup@4.57.1)(vite@5.4.21(@types/node@22.19.11)(terser@5.46.0))
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.39.2
@@ -181,7 +159,7 @@ importers:
         version: 2.0.0(@babel/core@7.29.0)
       ember-cli:
         specifier: ^6.3.0
-        version: 6.5.0(@types/node@25.3.2)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
+        version: 6.5.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
       ember-cli-blueprint-test-helpers:
         specifier: ^0.19.2
         version: 0.19.2
@@ -190,7 +168,7 @@ importers:
         version: 2.1.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@6.5.0(@types/node@25.3.2)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7))
+        version: 3.3.3(ember-cli@6.5.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -289,7 +267,7 @@ importers:
         version: 1.0.0(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
       tracerbench:
         specifier: ^8.0.1
-        version: 8.0.1(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)
+        version: 8.0.1(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
@@ -298,7 +276,7 @@ importers:
         version: 8.55.0(eslint@9.39.2)(typescript@5.9.3)
       vite:
         specifier: ^5.4.12
-        version: 5.4.21(@types/node@25.3.2)(terser@5.46.0)
+        version: 5.4.21(@types/node@22.19.11)(terser@5.46.0)
 
   glimmer-vm/packages/@types/eslint-community__eslint-plugin-eslint-comments:
     dependencies:
@@ -2823,7 +2801,7 @@ importers:
         version: 7.29.0(supports-color@8.1.1)
       '@ember/optional-features':
         specifier: ^3.0.0
-        version: 3.0.0(@types/node@25.3.2)
+        version: 3.0.0(@types/node@22.19.11)
       '@ember/string':
         specifier: ^4.0.1
         version: 4.0.1
@@ -2835,7 +2813,7 @@ importers:
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/test-setup':
         specifier: ^4.0.0
-        version: 4.0.0(@embroider/compat@3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)))(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1))
+        version: 4.0.0(@embroider/compat@3.9.3(@embroider/core@3.5.9))(@embroider/core@3.5.9)(@embroider/webpack@4.1.2(@embroider/core@3.5.9)(webpack@5.105.1))
       '@glimmer/component':
         specifier: workspace:^
         version: link:../../packages/@glimmer/component
@@ -2847,19 +2825,16 @@ importers:
         version: 3.0.0
       ember-auto-import:
         specifier: ^2.12.1
-        version: 2.12.1(patch_hash=8d2ddf2ca33365a986af60a2bba4a6488ae60656c67aa2b7bbf62d4149dc9646)(webpack@5.105.1)
+        version: 2.12.1(webpack@5.105.1)
       ember-cli:
         specifier: ~5.7.0
-        version: 5.7.0(@types/node@25.3.2)
-      ember-cli-app-version:
-        specifier: ^7.0.0
-        version: 7.0.0(ember-source@)
+        version: 5.7.0(@types/node@22.19.11)
       ember-cli-babel:
-        specifier: ^8.2.0
-        version: 8.3.1(@babel/core@7.29.0)
+        specifier: 8.2.0
+        version: 8.2.0(@babel/core@7.29.0)
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@5.7.0(@types/node@25.3.2))
+        version: 3.3.3(ember-cli@5.7.0(@types/node@22.19.11))
       ember-cli-htmlbars:
         specifier: ^7.0.0
         version: 7.0.0(@babel/core@7.29.0)(ember-source@)
@@ -2932,9 +2907,6 @@ importers:
       qunit-dom:
         specifier: ^3.1.1
         version: 3.5.0
-      tracked-built-ins:
-        specifier: ^4.1.0
-        version: 4.1.0(@babel/core@7.29.0)(ember-source@)
       webpack:
         specifier: ^5.74.0
         version: 5.105.1
@@ -2961,7 +2933,7 @@ importers:
         version: 3.0.6(@babel/core@7.29.0)(@embroider/core@4.4.3)
       '@embroider/vite':
         specifier: ^1.5.2
-        version: 1.5.2(@embroider/core@4.4.3)(rollup@4.57.1)(vite@7.3.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2))
+        version: 1.5.2(@embroider/core@4.4.3)(rollup@4.57.1)(vite@7.3.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2))
       '@glimmer/component':
         specifier: workspace:*
         version: link:../../packages/@glimmer/component
@@ -2982,7 +2954,7 @@ importers:
         version: 0.1.1(@babel/core@7.29.0)
       vite:
         specifier: ^7.3.0
-        version: 7.3.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2)
+        version: 7.3.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2)
 
   smoke-tests/node-template:
     dependencies:
@@ -2997,13 +2969,13 @@ importers:
     devDependencies:
       '@embroider/compat':
         specifier: ^3.9.3
-        version: 3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))
+        version: 3.9.3(@embroider/core@3.5.9)
       '@embroider/core':
         specifier: ^3.5.9
-        version: 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
+        version: 3.5.9
       '@embroider/webpack':
         specifier: ^4.1.2
-        version: 4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1(@swc/core@1.15.11))
+        version: 4.1.2(@embroider/core@3.5.9)(webpack@5.105.1(@swc/core@1.15.11))
       '@swc-node/register':
         specifier: ^1.6.8
         version: 1.11.1(@swc/core@1.15.11)(@swc/types@0.1.25)(typescript@5.1.6)
@@ -3028,6 +3000,9 @@ importers:
       scenario-tester:
         specifier: ^4.0.0
         version: 4.1.1
+      tracked-built-ins:
+        specifier: ^4.1.0
+        version: 4.1.0(@babel/core@7.29.0)(ember-source@)
       typescript:
         specifier: '5.1'
         version: 5.1.6
@@ -3051,7 +3026,7 @@ importers:
         version: 7.28.6
       '@ember/optional-features':
         specifier: ^3.0.0
-        version: 3.0.0(@types/node@25.3.2)
+        version: 3.0.0(@types/node@22.19.11)
       '@ember/string':
         specifier: ^4.0.1
         version: 4.0.1
@@ -3063,7 +3038,7 @@ importers:
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/compat':
         specifier: ^4.1.14
-        version: 4.1.14(patch_hash=a852f27d31b881bafd6463fc975dbd50a5f30760108b48db854d65e342d4c319)(@embroider/core@4.4.4)
+        version: 4.1.14(@embroider/core@4.4.4)
       '@embroider/config-meta-loader':
         specifier: ^1.0.0
         version: 1.0.0
@@ -3072,13 +3047,13 @@ importers:
         version: 4.4.4
       '@embroider/macros':
         specifier: ^1.20.0
-        version: 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+        version: 1.20.0(@babel/core@7.29.0)
       '@embroider/router':
         specifier: ^3.0.6
         version: 3.0.6(@babel/core@7.29.0)(@embroider/core@4.4.4)
       '@embroider/vite':
         specifier: ^1.6.0
-        version: 1.6.0(@embroider/core@4.4.4)(vite@6.4.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2))
+        version: 1.6.0(@embroider/core@4.4.4)(vite@6.4.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2))
       '@eslint/js':
         specifier: ^9.27.0
         version: 9.39.2
@@ -3105,10 +3080,10 @@ importers:
         version: 2.12.0(webpack@5.105.1)
       ember-cli:
         specifier: ~6.5.0-beta.0
-        version: 6.5.0(@types/node@25.3.2)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
+        version: 6.5.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
       ember-cli-babel:
-        specifier: ^8.2.0
-        version: 8.3.1(@babel/core@7.29.0)
+        specifier: 8.2.0
+        version: 8.2.0(@babel/core@7.29.0)
       ember-cli-deprecation-workflow:
         specifier: ^3.3.0
         version: 3.4.0(ember-source@)
@@ -3131,8 +3106,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.4(@babel/core@7.29.0)(@ember/test-helpers@5.4.1(@babel/core@7.29.0))(qunit@2.25.0)
       ember-resolver:
-        specifier: ^13.1.1
-        version: 13.1.1
+        specifier: ^13.2.0
+        version: 13.2.0
       ember-source:
         specifier: workspace:*
         version: link:../..
@@ -3184,12 +3159,9 @@ importers:
       testem:
         specifier: ^3.16.0
         version: 3.17.0(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
-      tracked-built-ins:
-        specifier: ^4.1.0
-        version: 4.1.0(@babel/core@7.29.0)(ember-source@)
       vite:
         specifier: ^6.3.5
-        version: 6.4.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2)
+        version: 6.4.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2)
 
 packages:
 
@@ -3919,10 +3891,6 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0
-
-  '@babel/polyfill@7.12.1':
-    resolution: {integrity: sha512-X0pi0V6gxLi6lFZpGmeNa4zxtwEmCs42isWLNjZZDE0Y8yVfgu0T2OAHlzBbdYlqbW/YXVvoBHpATEM+goCj8g==}
-    deprecated: 🚨 This package has been deprecated in favor of separate inclusion of a polyfill and regenerator-runtime (when needed). See the @babel/polyfill docs (https://babeljs.io/docs/en/babel-polyfill) for more information.
 
   '@babel/preset-env@7.29.0':
     resolution: {integrity: sha512-fNEdfc0yi16lt6IZo2Qxk3knHVdfMYX33czNb4v8yWhemoBhibCpQK/uYHtSKIiO+p/zd3+8fYVXhQdOVV608w==}
@@ -6018,9 +5986,6 @@ packages:
   '@types/fs-extra@11.0.4':
     resolution: {integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==}
 
-  '@types/fs-extra@5.1.0':
-    resolution: {integrity: sha512-AInn5+UBFIK9FK5xc9yP5e3TQSPNNgjHByqYcj9g5elVBnDQcQL7PlO1CIRy2gWlbwK7UPYqi7vRvFA44dCmYQ==}
-
   '@types/fs-extra@8.1.5':
     resolution: {integrity: sha512-0dzKcwO+S8s2kuF5Z9oUWatQJj5Uq/iqphEtE3GQJVRRYm/tD1LglU2UnXi2A8jLq5umkGouOXOR9y0n613ZwQ==}
 
@@ -6074,9 +6039,6 @@ packages:
 
   '@types/node@22.19.11':
     resolution: {integrity: sha512-BH7YwL6rA93ReqeQS1c4bsPpcfOmJasG+Fkr6Y59q83f9M1WcBRHR2vM+P9eOisYRcN3ujQoiZY8uk5W+1WL8w==}
-
-  '@types/node@25.3.2':
-    resolution: {integrity: sha512-RpV6r/ij22zRRdyBPcxDeKAzH43phWVKEjL2iksqo1Vz3CuBUrgmPpPhALKiRfU7OMCmeeO9vECBMsV0hMTG8Q==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -6709,10 +6671,6 @@ packages:
     resolution: {integrity: sha512-QWjjFgSKtSRIcsBhJmEwS2laIdrA6na8HAlc/pEAhjHgQsah/gMiBFRZvbQTy//hWxR4BMwV7/Mya7q5H8uHeA==}
     engines: {node: 10.* || >= 12.*}
 
-  babel-plugin-module-resolver@3.2.0:
-    resolution: {integrity: sha512-tjR0GvSndzPew/Iayf4uICWZqjBwnlMWjSx6brryfQ81F9rxBVqwDJtFCV8oOs0+vJeefK9TmdZtkIFdFe1UnA==}
-    engines: {node: '>= 6.0.0'}
-
   babel-plugin-module-resolver@5.0.2:
     resolution: {integrity: sha512-9KtaCazHee2xc0ibfqsDeamwDps6FZNo5S0Q81dUqEuFzVwPhcT4J5jOqIVvgCA3Q/wO9hKYxN/Ds3tIsp5ygg==}
 
@@ -6901,10 +6859,6 @@ packages:
   broccoli-asset-rewrite@2.0.0:
     resolution: {integrity: sha512-dqhxdQpooNi7LHe8J9Jdxp6o3YPFWl4vQmint6zrsn2sVbOo+wpyiX3erUSt0IBtjNkAxqJjuvS375o2cLBHTA==}
 
-  broccoli-babel-transpiler@7.8.1:
-    resolution: {integrity: sha512-6IXBgfRt7HZ61g67ssBc6lBb3Smw3DPZ9dEYirgtvXWpRZ2A9M22nxy6opEwJDgDJzlu/bB7ToppW33OFkA1gA==}
-    engines: {node: '>= 6'}
-
   broccoli-babel-transpiler@8.0.2:
     resolution: {integrity: sha512-XIGsUyJgehSRNVVrOnRuW+tijYBqkoGEONc/UHkiOBW+C0trPv9c/Icc/Cf+2l1McQlHW/Mc6SksHg6qFlEClg==}
     engines: {node: 16.* || >= 18}
@@ -7018,10 +6972,6 @@ packages:
 
   broccoli-slow-trees@3.1.0:
     resolution: {integrity: sha512-FRI7mRTk2wjIDrdNJd6znS7Kmmne4VkAkl8Ix1R/VoePFMD0g0tEl671xswzFqaRjpT9Qu+CC4hdXDLDJBuzMw==}
-
-  broccoli-source@2.1.2:
-    resolution: {integrity: sha512-1lLayO4wfS0c0Sj50VfHJXNWf94FYY0WUhxj0R77thbs6uWI7USiOWFqQV5dRmhAJnoKaGN4WyLGQbgjgiYFwQ==}
-    engines: {node: 6.* || 8.* || >= 10.*}
 
   broccoli-source@3.0.1:
     resolution: {integrity: sha512-ZbGVQjivWi0k220fEeIUioN6Y68xjMy0xiLAc0LdieHI99gw+tafU8w0CggBDYVNsJMKUr006AZaM7gNEwCxEg==}
@@ -7678,10 +7628,6 @@ packages:
   core-js-compat@3.48.0:
     resolution: {integrity: sha512-OM4cAF3D6VtH/WkLtWvyNC56EZVXsZdU3iqaMG2B4WvYrlqU831pc4UtG5yp0sE9z8Y02wVN7PjW5Zf9Gt0f1Q==}
 
-  core-js@2.6.12:
-    resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
-    deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
-
   core-object@3.1.5:
     resolution: {integrity: sha512-sA2/4+/PZ/KV6CKgjrVrrUVBKCkdDO02CUlQ0YKTQoYUwPYNOtOAcWlbYhd5v/1JqYaA6oZ4sDlOU4ppVw6Wbg==}
     engines: {node: '>= 4'}
@@ -8074,22 +8020,12 @@ packages:
     resolution: {integrity: sha512-wyvl+aJJKOKbRSLqq6CyMsNrvurmX4SIWHHqZdC5giZ7P8ECGmcn9W9HFoVLpwXkFJoXhNV4L7mqqcU6881t0w==}
     engines: {node: 12.* || 14.* || >= 16}
 
-  ember-cli-app-version@7.0.0:
-    resolution: {integrity: sha512-zWIkxvlRrW7w1/vp+bGkmS27QsVum7NKp8N9DgAjhFMWuKewVqGyl/jeYaujMS/I4WSKBzSG9WHwBy2rjbUWxA==}
-    engines: {node: '>= 18'}
-    peerDependencies:
-      ember-source: ^3.28.0 || >= 4.0.0
-
   ember-cli-babel-plugin-helpers@1.1.1:
     resolution: {integrity: sha512-sKvOiPNHr5F/60NLd7SFzMpYPte/nnGkq/tMIfXejfKHIhaiIkYFqX8Z9UFTKWLLn+V7NOaby6niNPZUdvKCRw==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  ember-cli-babel@7.26.11:
-    resolution: {integrity: sha512-JJYeYjiz/JTn34q7F5DSOjkkZqy8qwFOOxXfE6pe9yEJqWGu4qErKxlz8I22JoVEQ/aBUO+OcKTpmctvykM9YA==}
-    engines: {node: 6.* || 8.* || >= 10.*}
-
-  ember-cli-babel@8.3.1:
-    resolution: {integrity: sha512-Pxm5JP0jQ6fCBlXuh1BFmhrg2/5YXjhf16JI/n8ReOR6Nl+fEbudMpdO69LlqZRsMmTgdjCRmfSxMh26Wsw/rw==}
+  ember-cli-babel@8.2.0:
+    resolution: {integrity: sha512-8H4+jQElCDo6tA7CamksE66NqBXWs7VNpS3a738L9pZCjg2kXIX4zoyHzkORUqCtr0Au7YsCnrlAMi1v2ALo7A==}
     engines: {node: 16.* || 18.* || >= 20}
     peerDependencies:
       '@babel/core': ^7.12.0
@@ -8170,10 +8106,6 @@ packages:
     resolution: {integrity: sha512-PZNSvpzwWgv68hcXxyjREpj3WWb81A7rtYNQq1lLEgrWIchF8ApKJjWP3NBpHjaatwILkZAV8klair5WFlXAKg==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  ember-cli-version-checker@4.1.1:
-    resolution: {integrity: sha512-bzEWsTMXUGEJfxcAGWPe6kI7oHEGD3jaxUWDYPTqzqGhNkgPwXTBgoWs9zG1RaSMaOPFnloWuxRcoHi4TrYS3Q==}
-    engines: {node: 8.* || 10.* || >= 12.*}
-
   ember-cli-version-checker@5.1.2:
     resolution: {integrity: sha512-rk7GY+FmLn/2e22HsZs0Ycrz8HQ1W3Fv+2TFOuEFW9optnDXDgkntPBIl6gact/LHsfBM5RKbM3dHsIIeLgl0Q==}
     engines: {node: 10.* || >= 12.*}
@@ -8232,10 +8164,6 @@ packages:
     peerDependencies:
       '@ember/test-helpers': '>=3.0.3'
       qunit: ^2.13.0
-
-  ember-resolver@13.1.1:
-    resolution: {integrity: sha512-rA4RDuTm/F9AzYX2+g7EY3QWU48kyF9+Ck8IE8VQipnlwv2Q42kdRWiw7hfeQbRxx6XoSZCak6nzAG9ePd/+Ug==}
-    engines: {node: 14.* || 16.* || >= 18}
 
   ember-resolver@13.2.0:
     resolution: {integrity: sha512-A+BffoSKC0ngiczbgaz/IOY66ovZVRRHHIDDi+d7so5i0By8xuB4nXgZZ6Dv3u/3WwoUyixgUvb0xTUO+MtupA==}
@@ -8855,10 +8783,6 @@ packages:
     resolution: {integrity: sha512-aA4RyPcd3badbdABGDuTXCMTtOneUCAYH/gxoYRTZlIJdF0YPWuGqiAsIrhNnnqdXGswYk6dGujem4w80UJFhg==}
     engines: {node: '>= 0.8'}
 
-  find-babel-config@1.2.2:
-    resolution: {integrity: sha512-oK59njMyw2y3yxto1BCfVK7MQp/OYf4FleHu0RgosH3riFJ1aOuo/7naLDLAObfrgn3ueFhw5sAT/cp0QuJI3Q==}
-    engines: {node: '>=4.0.0'}
-
   find-babel-config@2.1.2:
     resolution: {integrity: sha512-ZfZp1rQyp4gyuxqt1ZqjFGVeVBvmpURMqdIWXbPRfB97Bf6BzdK/xSIbylEINzQ0kB5tlDQfn9HkNXXWsqTqLg==}
 
@@ -8872,10 +8796,6 @@ packages:
 
   find-index@1.1.1:
     resolution: {integrity: sha512-XYKutXMrIK99YMUPf91KX5QVJoG31/OsgftD6YoTPAObfQIxM4ziA9f0J1AsqKhJmo+IeaIPP0CFopTD4bdUBw==}
-
-  find-up@2.1.0:
-    resolution: {integrity: sha512-NWzkk0jSJtTt08+FBFMvXoeZnOJD+jTtsRmBYbAIzJdX6l7dLgR7CTubCM5/eDdPUBvLCeVasP1brfVR/9/EZQ==}
-    engines: {node: '>=4'}
 
   find-up@3.0.0:
     resolution: {integrity: sha512-1yD6RmLI1XBfxugvORwlck6f75tYL+iR0jqwsOrOxMZyGYqUuDhJ0l4AXdO1iX/FTs9cBAMEk1gWSEx1kSbylg==}
@@ -8911,9 +8831,6 @@ packages:
   fireworm@0.7.2:
     resolution: {integrity: sha512-GjebTzq+NKKhfmDxjKq3RXwQcN9xRmZWhnnuC9L+/x5wBQtR0aaQM50HsjrzJ2wc28v1vSdfOpELok0TKR4ddg==}
 
-  fixturify-project@1.10.0:
-    resolution: {integrity: sha512-L1k9uiBQuN0Yr8tA9Noy2VSQ0dfg0B8qMdvT7Wb5WQKc7f3dn3bzCbSrqlb+etLW+KDV4cBC7R1OvcMg3kcxmA==}
-
   fixturify-project@2.1.1:
     resolution: {integrity: sha512-sP0gGMTr4iQ8Kdq5Ez0CVJOZOGWqzP5dv/veOTdFNywioKjkNWCHBi1q65DMpcNGUGeoOUWehyji274Q2wRgxA==}
     engines: {node: 10.* || >= 12.*}
@@ -8921,10 +8838,6 @@ packages:
   fixturify-project@7.1.3:
     resolution: {integrity: sha512-araEoNawWCIV9xT/+kAQ+H3aiFTVVH1nUDuYU7syhbWnlyA6BzuRE7vhdZQ7m+1+T5A3zG2JljGxRkNP1EhvXQ==}
     engines: {node: '>= 14.*'}
-
-  fixturify@1.3.0:
-    resolution: {integrity: sha512-tL0svlOy56pIMMUQ4bU1xRe6NZbFSa/ABTWMxW2mH38lFGc9TrNAKWcMBQ7eIjo3wqSS8f2ICabFaatFyFmrVQ==}
-    engines: {node: 6.* || 8.* || >= 10.*}
 
   fixturify@2.1.1:
     resolution: {integrity: sha512-SRgwIMXlxkb6AUgaVjIX+jCEqdhyXu9hah7mcK+lWynjKtX73Ux1TDv71B7XyaQ+LJxkYRHl5yCL8IycAvQRUw==}
@@ -10182,10 +10095,6 @@ packages:
   loader.js@4.7.0:
     resolution: {integrity: sha512-9M2KvGT6duzGMgkOcTkWb+PR/Q2Oe54df/tLgHGVmFpAmtqJ553xJh6N63iFYI2yjo2PeJXbS5skHi/QpJq4vA==}
 
-  locate-path@2.0.0:
-    resolution: {integrity: sha512-NCI2kiDkyR7VeEKm27Kda/iQHyKJe1Bu0FlTbYp3CqJu+9IFe9bLyAjMxf5ZDDbEg+iMPzB5zYyUTSm8wVTKmA==}
-    engines: {node: '>=4'}
-
   locate-path@3.0.0:
     resolution: {integrity: sha512-7AO748wWnIhNqAuaty2ZWHkQHRSNfPVIsPIfwEOWO22AmaoVrWavlOcMR5nzTLNYvp36X220/maaRsrec1G65A==}
     engines: {node: '>=6'}
@@ -10944,10 +10853,6 @@ packages:
     resolution: {integrity: sha512-Y3W0wlRPK8ZMRbNq97l4M5otioeA5lm1z7bkNkxCka8HSPjR0xRWmpCmc9utiaLP9Jb1eD8BgeIxTW4AIF45Pg==}
     engines: {node: '>=6'}
 
-  p-limit@1.3.0:
-    resolution: {integrity: sha512-vvcXsLAJ9Dr5rQOPk7toZQZJApBl2K4J6dANSsEuh6QI41JYcsS/qhTGa9ErIUUgK3WNQoJYvylxvjqmiqEA9Q==}
-    engines: {node: '>=4'}
-
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
     engines: {node: '>=6'}
@@ -10959,10 +10864,6 @@ packages:
   p-limit@4.0.0:
     resolution: {integrity: sha512-5b0R4txpzjPWVw/cXXUResoD4hb6U/x9BH08L7nw+GN1sezDzPdxeRvpc9c433fZhBan/wusjbCsqwqm4EIBIQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
-  p-locate@2.0.0:
-    resolution: {integrity: sha512-nQja7m7gSKuewoVRen45CtVfODR3crN3goVQ0DDZ9N3yHxgpkuBhZqsaiotSQRrADUrne346peY7kT3TSACykg==}
-    engines: {node: '>=4'}
 
   p-locate@3.0.0:
     resolution: {integrity: sha512-x+12w/To+4GFfgJhBEpiDcLozRJGegY+Ei7/z0tSLkMmxGZNybVMSfWj9aJn8Z5Fc7dBUNJOOVgPv2H7IwulSQ==}
@@ -10983,10 +10884,6 @@ packages:
   p-map@2.1.0:
     resolution: {integrity: sha512-y3b8Kpd8OAN444hxfBbFfj1FY/RjtTd8tzYwhUqNYXx0fXx2iX4maP4Qr6qhIKbQXI02wTLAda4fYUbDagTUFw==}
     engines: {node: '>=6'}
-
-  p-try@1.0.0:
-    resolution: {integrity: sha512-U1etNYuMJoIz3ZXSrrySFjsXQTWOx2/jdi86L+2pRvph/qMKL6sbcCYdH23fqsbm8TH2Gn0OybpT4eSFlCVHww==}
-    engines: {node: '>=4'}
 
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
@@ -11202,10 +11099,6 @@ packages:
 
   pkg-entry-points@1.1.1:
     resolution: {integrity: sha512-BhZa7iaPmB4b3vKIACoppyUoYn8/sFs17VJJtzrzPZvEnN2nqrgg911tdL65lA2m1ml6UI3iPeYbZQ4VXpn1mA==}
-
-  pkg-up@2.0.0:
-    resolution: {integrity: sha512-fjAPuiws93rm7mPUu21RdBnkeZNrbfCFCwfAhPWY+rR3zG0ubpe5cEReHOw5fIbfmsxEV/g2kSxGTATY3Bpnwg==}
-    engines: {node: '>=4'}
 
   pkg-up@3.1.0:
     resolution: {integrity: sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==}
@@ -11634,9 +11527,6 @@ packages:
   requires-port@1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
 
-  reselect@3.0.1:
-    resolution: {integrity: sha512-b/6tFZCmRhtBMa4xGqiiRp9jh9Aqi2A687Lo265cN0/QohJQEBPiQ52f4QB6i0eF3yp3hmLL21LSGBcML2dlxA==}
-
   reselect@4.1.8:
     resolution: {integrity: sha512-ab9EmR80F/zQTMNeneUr4cv+jSwPJgIlvEmVwLerwrWVbpLlBuls9XHzIeTFy4cegU2NHBp3va0LKOzU5qFEYQ==}
 
@@ -11654,10 +11544,6 @@ packages:
 
   resolve-package-path@1.2.7:
     resolution: {integrity: sha512-fVEKHGeK85bGbVFuwO9o1aU0n3vqQGrezPc51JGu9UTXpFQfWq5qCeKxyaRUSvephs+06c5j5rPq/dzHGEo8+Q==}
-
-  resolve-package-path@2.0.0:
-    resolution: {integrity: sha512-/CLuzodHO2wyyHTzls5Qr+EFeG6RcW4u6//gjYvUfcfyuplIX1SSccU+A5A9A78Gmezkl3NBkFAMxLbzTY9TJA==}
-    engines: {node: 8.* || 10.* || >= 12}
 
   resolve-package-path@3.1.0:
     resolution: {integrity: sha512-2oC2EjWbMJwvSN6Z7DbDfJMnD8MYEouaLn5eIX0j8XwPsYCVIyY9bbnX88YHVkbr8XHqvZrYbxaLPibfTYKZMA==}
@@ -12731,9 +12617,6 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  undici-types@7.18.2:
-    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
-
   unicode-canonical-property-names-ecmascript@2.0.1:
     resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
     engines: {node: '>=4'}
@@ -13119,9 +13002,6 @@ packages:
 
   wordwrap@1.0.0:
     resolution: {integrity: sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==}
-
-  workerpool@3.1.2:
-    resolution: {integrity: sha512-WJFA0dGqIK7qj7xPTqciWBH5DlJQzoPjsANvc3Y4hNB0SScT+Emjvt0jPPkDBUjBNngX1q9hHgt1Gfwytu6pug==}
 
   workerpool@6.5.1:
     resolution: {integrity: sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==}
@@ -14455,11 +14335,6 @@ snapshots:
       '@babel/helper-create-regexp-features-plugin': 7.28.5(@babel/core@7.29.0)
       '@babel/helper-plugin-utils': 7.28.6
 
-  '@babel/polyfill@7.12.1':
-    dependencies:
-      core-js: 2.6.12
-      regenerator-runtime: 0.13.11
-
   '@babel/preset-env@7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)':
     dependencies:
       '@babel/compat-data': 7.29.0
@@ -14653,7 +14528,7 @@ snapshots:
   '@ember-data/adapter@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14668,7 +14543,7 @@ snapshots:
   '@ember-data/debug@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
     transitivePeerDependencies:
@@ -14678,7 +14553,7 @@ snapshots:
 
   '@ember-data/graph@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -14687,7 +14562,7 @@ snapshots:
 
   '@ember-data/json-api@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/json-api': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14698,7 +14573,7 @@ snapshots:
 
   '@ember-data/legacy-compat@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14710,7 +14585,7 @@ snapshots:
   '@ember-data/model@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14724,7 +14599,7 @@ snapshots:
 
   '@ember-data/request-utils@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
     transitivePeerDependencies:
@@ -14734,7 +14609,7 @@ snapshots:
 
   '@ember-data/request@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -14746,7 +14621,7 @@ snapshots:
   '@ember-data/serializer@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/legacy': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
@@ -14760,7 +14635,7 @@ snapshots:
 
   '@ember-data/store@5.8.1(@babel/core@7.29.0)(@ember-data/tracking@5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0)))(@ember/test-waiters@4.1.1(@babel/core@7.29.0))':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     optionalDependencies:
       '@ember-data/tracking': 5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))
@@ -14773,7 +14648,7 @@ snapshots:
   '@ember-data/tracking@5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))':
     dependencies:
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -14782,10 +14657,10 @@ snapshots:
 
   '@ember/edition-utils@1.2.0': {}
 
-  '@ember/optional-features@3.0.0(@types/node@25.3.2)':
+  '@ember/optional-features@3.0.0(@types/node@22.19.11)':
     dependencies:
       ember-cli-version-checker: 5.1.2
-      inquirer: 13.3.0(@types/node@25.3.2)
+      inquirer: 13.3.0(@types/node@22.19.11)
       silent-error: 1.1.1
       tinyglobby: 0.2.15
     transitivePeerDependencies:
@@ -14798,7 +14673,7 @@ snapshots:
     dependencies:
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@simple-dom/interface': 1.4.0
       decorator-transforms: 2.3.1(@babel/core@7.29.0)
       dom-element-descriptors: 0.5.1
@@ -14810,7 +14685,7 @@ snapshots:
   '@ember/test-waiters@4.1.1(@babel/core@7.29.0)':
     dependencies:
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
       - '@glint/template'
@@ -14825,26 +14700,26 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@embroider/babel-loader-9@3.1.3(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(supports-color@8.1.1)(webpack@5.105.1(@swc/core@1.15.11))':
+  '@embroider/babel-loader-9@3.1.3(@embroider/core@3.5.9)(supports-color@8.1.1)(webpack@5.105.1(@swc/core@1.15.11))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
+      '@embroider/core': 3.5.9
       babel-loader: 9.2.1(@babel/core@7.29.0)(webpack@5.105.1(@swc/core@1.15.11))
     transitivePeerDependencies:
       - supports-color
       - webpack
 
-  '@embroider/babel-loader-9@3.1.3(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(supports-color@8.1.1)(webpack@5.105.1)':
+  '@embroider/babel-loader-9@3.1.3(@embroider/core@3.5.9)(supports-color@8.1.1)(webpack@5.105.1)':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
+      '@embroider/core': 3.5.9
       babel-loader: 9.2.1(@babel/core@7.29.0)(webpack@5.105.1)
     transitivePeerDependencies:
       - supports-color
       - webpack
     optional: true
 
-  '@embroider/compat@3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))':
+  '@embroider/compat@3.9.3(@embroider/core@3.5.9)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0(supports-color@8.1.1)
@@ -14855,7 +14730,7 @@ snapshots:
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/runtime': 7.28.6
       '@babel/traverse': 7.29.0(supports-color@8.1.1)
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
+      '@embroider/core': 3.5.9
       '@embroider/macros': 1.19.7(@babel/core@7.29.0)
       '@types/babel__code-frame': 7.27.0
       '@types/yargs': 17.0.35
@@ -14897,7 +14772,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/compat@4.1.14(patch_hash=a852f27d31b881bafd6463fc975dbd50a5f30760108b48db854d65e342d4c319)(@embroider/core@4.4.4)':
+  '@embroider/compat@4.1.14(@embroider/core@4.4.4)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0(supports-color@8.1.1)
@@ -14909,7 +14784,7 @@ snapshots:
       '@babel/runtime': 7.28.6
       '@babel/traverse': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.4
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@types/babel__code-frame': 7.27.0
       assert-never: 1.4.0
       babel-import-util: 3.0.1
@@ -14952,7 +14827,7 @@ snapshots:
 
   '@embroider/config-meta-loader@1.0.0': {}
 
-  '@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)':
+  '@embroider/core@3.5.9':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/parser': 7.29.0
@@ -15027,7 +14902,7 @@ snapshots:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/parser': 7.29.0
       '@babel/traverse': 7.29.0(supports-color@8.1.1)
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 3.0.2
       assert-never: 1.4.0
@@ -15058,14 +14933,14 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/hbs-loader@3.0.5(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1(@swc/core@1.15.11))':
+  '@embroider/hbs-loader@3.0.5(@embroider/core@3.5.9)(webpack@5.105.1(@swc/core@1.15.11))':
     dependencies:
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
+      '@embroider/core': 3.5.9
       webpack: 5.105.1(@swc/core@1.15.11)
 
-  '@embroider/hbs-loader@3.0.5(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1)':
+  '@embroider/hbs-loader@3.0.5(@embroider/core@3.5.9)(webpack@5.105.1)':
     dependencies:
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
+      '@embroider/core': 3.5.9
       webpack: 5.105.1
     optional: true
 
@@ -15074,7 +14949,7 @@ snapshots:
       '@embroider/shared-internals': 3.0.2
       assert-never: 1.4.0
       babel-import-util: 3.0.1
-      ember-cli-babel: 8.3.1(@babel/core@7.29.0)
+      ember-cli-babel: 8.2.0(@babel/core@7.29.0)
       find-up: 5.0.0
       lodash: 4.17.23
       resolve: 1.22.11
@@ -15083,12 +14958,12 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  '@embroider/macros@1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)':
+  '@embroider/macros@1.20.0(@babel/core@7.29.0)':
     dependencies:
       '@embroider/shared-internals': 3.0.2
       assert-never: 1.4.0
       babel-import-util: 3.0.1
-      ember-cli-babel: 8.3.1(@babel/core@7.29.0)
+      ember-cli-babel: 8.2.0(@babel/core@7.29.0)
       find-up: 5.0.0
       lodash: 4.17.23
       resolve: 1.22.11
@@ -15159,16 +15034,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@embroider/test-setup@4.0.0(@embroider/compat@3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)))(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1))':
+  '@embroider/test-setup@4.0.0(@embroider/compat@3.9.3(@embroider/core@3.5.9))(@embroider/core@3.5.9)(@embroider/webpack@4.1.2(@embroider/core@3.5.9)(webpack@5.105.1))':
     dependencies:
       lodash: 4.17.23
       resolve: 1.22.11
     optionalDependencies:
-      '@embroider/compat': 3.9.3(patch_hash=84850872e171d0abdbc5e267fea13492264be7732538010daaf3fd8312b1c8e8)(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
-      '@embroider/webpack': 4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1)
+      '@embroider/compat': 3.9.3(@embroider/core@3.5.9)
+      '@embroider/core': 3.5.9
+      '@embroider/webpack': 4.1.2(@embroider/core@3.5.9)(webpack@5.105.1)
 
-  '@embroider/vite@1.5.2(@embroider/core@4.4.3)(rollup@4.57.1)(vite@7.3.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2))':
+  '@embroider/vite@1.5.2(@embroider/core@4.4.3)(rollup@4.57.1)(vite@7.3.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.3
@@ -15187,7 +15062,7 @@ snapshots:
       send: 0.18.0
       source-map-url: 0.4.1
       terser: 5.46.0
-      vite: 7.3.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@glint/template'
       - bufferutil
@@ -15196,7 +15071,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/vite@1.5.2(@embroider/core@4.4.4)(rollup@4.57.1)(vite@5.4.21(@types/node@25.3.2)(terser@5.46.0))':
+  '@embroider/vite@1.5.2(@embroider/core@4.4.4)(rollup@4.57.1)(vite@5.4.21(@types/node@22.19.11)(terser@5.46.0))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.4
@@ -15215,7 +15090,7 @@ snapshots:
       send: 0.18.0
       source-map-url: 0.4.1
       terser: 5.46.0
-      vite: 5.4.21(@types/node@25.3.2)(terser@5.46.0)
+      vite: 5.4.21(@types/node@22.19.11)(terser@5.46.0)
     transitivePeerDependencies:
       - '@glint/template'
       - bufferutil
@@ -15224,11 +15099,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/vite@1.6.0(@embroider/core@4.4.4)(vite@6.4.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2))':
+  '@embroider/vite@1.6.0(@embroider/core@4.4.4)(vite@6.4.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.4
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       assert-never: 1.4.0
       browserslist: 4.28.1
@@ -15242,7 +15117,7 @@ snapshots:
       send: 0.18.0
       source-map-url: 0.4.1
       terser: 5.46.0
-      vite: 6.4.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2)
+      vite: 6.4.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@glint/template'
       - bufferutil
@@ -15250,13 +15125,13 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1(@swc/core@1.15.11))':
+  '@embroider/webpack@4.1.2(@embroider/core@3.5.9)(webpack@5.105.1(@swc/core@1.15.11))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@embroider/babel-loader-9': 3.1.3(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(supports-color@8.1.1)(webpack@5.105.1(@swc/core@1.15.11))
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
-      '@embroider/hbs-loader': 3.0.5(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1(@swc/core@1.15.11))
+      '@embroider/babel-loader-9': 3.1.3(@embroider/core@3.5.9)(supports-color@8.1.1)(webpack@5.105.1(@swc/core@1.15.11))
+      '@embroider/core': 3.5.9
+      '@embroider/hbs-loader': 3.0.5(@embroider/core@3.5.9)(webpack@5.105.1(@swc/core@1.15.11))
       '@embroider/shared-internals': 2.9.2(supports-color@8.1.1)
       '@types/supports-color': 8.1.3
       assert-never: 1.4.0
@@ -15281,13 +15156,13 @@ snapshots:
       - canvas
       - utf-8-validate
 
-  '@embroider/webpack@4.1.2(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1)':
+  '@embroider/webpack@4.1.2(@embroider/core@3.5.9)(webpack@5.105.1)':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@embroider/babel-loader-9': 3.1.3(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(supports-color@8.1.1)(webpack@5.105.1)
-      '@embroider/core': 3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768)
-      '@embroider/hbs-loader': 3.0.5(@embroider/core@3.5.9(patch_hash=dd05d45ecef84c8228beae13b189fdbfd7a3eedf4aaa1c014520efade0e65768))(webpack@5.105.1)
+      '@embroider/babel-loader-9': 3.1.3(@embroider/core@3.5.9)(supports-color@8.1.1)(webpack@5.105.1)
+      '@embroider/core': 3.5.9
+      '@embroider/hbs-loader': 3.0.5(@embroider/core@3.5.9)(webpack@5.105.1)
       '@embroider/shared-internals': 2.9.2(supports-color@8.1.1)
       '@types/supports-color': 8.1.3
       assert-never: 1.4.0
@@ -15783,131 +15658,131 @@ snapshots:
 
   '@inquirer/ansi@2.0.3': {}
 
-  '@inquirer/checkbox@5.1.0(@types/node@25.3.2)':
+  '@inquirer/checkbox@5.1.0(@types/node@22.19.11)':
     dependencies:
       '@inquirer/ansi': 2.0.3
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
       '@inquirer/figures': 2.0.3
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/confirm@6.0.8(@types/node@25.3.2)':
+  '@inquirer/confirm@6.0.8(@types/node@22.19.11)':
     dependencies:
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/core@11.1.5(@types/node@25.3.2)':
+  '@inquirer/core@11.1.5(@types/node@22.19.11)':
     dependencies:
       '@inquirer/ansi': 2.0.3
       '@inquirer/figures': 2.0.3
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
       cli-width: 4.1.0
       fast-wrap-ansi: 0.2.0
       mute-stream: 3.0.0
       signal-exit: 4.1.0
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/editor@5.0.8(@types/node@25.3.2)':
+  '@inquirer/editor@5.0.8(@types/node@22.19.11)':
     dependencies:
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/external-editor': 2.0.3(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/external-editor': 2.0.3(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/expand@5.0.8(@types/node@25.3.2)':
+  '@inquirer/expand@5.0.8(@types/node@22.19.11)':
     dependencies:
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/external-editor@1.0.3(@types/node@25.3.2)':
-    dependencies:
-      chardet: 2.1.1
-      iconv-lite: 0.7.2
-    optionalDependencies:
-      '@types/node': 25.3.2
-
-  '@inquirer/external-editor@2.0.3(@types/node@25.3.2)':
+  '@inquirer/external-editor@1.0.3(@types/node@22.19.11)':
     dependencies:
       chardet: 2.1.1
       iconv-lite: 0.7.2
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
+
+  '@inquirer/external-editor@2.0.3(@types/node@22.19.11)':
+    dependencies:
+      chardet: 2.1.1
+      iconv-lite: 0.7.2
+    optionalDependencies:
+      '@types/node': 22.19.11
 
   '@inquirer/figures@1.0.15': {}
 
   '@inquirer/figures@2.0.3': {}
 
-  '@inquirer/input@5.0.8(@types/node@25.3.2)':
+  '@inquirer/input@5.0.8(@types/node@22.19.11)':
     dependencies:
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/number@4.0.8(@types/node@25.3.2)':
+  '@inquirer/number@4.0.8(@types/node@22.19.11)':
     dependencies:
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/password@5.0.8(@types/node@25.3.2)':
-    dependencies:
-      '@inquirer/ansi': 2.0.3
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
-    optionalDependencies:
-      '@types/node': 25.3.2
-
-  '@inquirer/prompts@8.3.0(@types/node@25.3.2)':
-    dependencies:
-      '@inquirer/checkbox': 5.1.0(@types/node@25.3.2)
-      '@inquirer/confirm': 6.0.8(@types/node@25.3.2)
-      '@inquirer/editor': 5.0.8(@types/node@25.3.2)
-      '@inquirer/expand': 5.0.8(@types/node@25.3.2)
-      '@inquirer/input': 5.0.8(@types/node@25.3.2)
-      '@inquirer/number': 4.0.8(@types/node@25.3.2)
-      '@inquirer/password': 5.0.8(@types/node@25.3.2)
-      '@inquirer/rawlist': 5.2.4(@types/node@25.3.2)
-      '@inquirer/search': 4.1.4(@types/node@25.3.2)
-      '@inquirer/select': 5.1.0(@types/node@25.3.2)
-    optionalDependencies:
-      '@types/node': 25.3.2
-
-  '@inquirer/rawlist@5.2.4(@types/node@25.3.2)':
-    dependencies:
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
-    optionalDependencies:
-      '@types/node': 25.3.2
-
-  '@inquirer/search@4.1.4(@types/node@25.3.2)':
-    dependencies:
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/figures': 2.0.3
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
-    optionalDependencies:
-      '@types/node': 25.3.2
-
-  '@inquirer/select@5.1.0(@types/node@25.3.2)':
+  '@inquirer/password@5.0.8(@types/node@22.19.11)':
     dependencies:
       '@inquirer/ansi': 2.0.3
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/figures': 2.0.3
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
-  '@inquirer/type@4.0.3(@types/node@25.3.2)':
+  '@inquirer/prompts@8.3.0(@types/node@22.19.11)':
+    dependencies:
+      '@inquirer/checkbox': 5.1.0(@types/node@22.19.11)
+      '@inquirer/confirm': 6.0.8(@types/node@22.19.11)
+      '@inquirer/editor': 5.0.8(@types/node@22.19.11)
+      '@inquirer/expand': 5.0.8(@types/node@22.19.11)
+      '@inquirer/input': 5.0.8(@types/node@22.19.11)
+      '@inquirer/number': 4.0.8(@types/node@22.19.11)
+      '@inquirer/password': 5.0.8(@types/node@22.19.11)
+      '@inquirer/rawlist': 5.2.4(@types/node@22.19.11)
+      '@inquirer/search': 4.1.4(@types/node@22.19.11)
+      '@inquirer/select': 5.1.0(@types/node@22.19.11)
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
+
+  '@inquirer/rawlist@5.2.4(@types/node@22.19.11)':
+    dependencies:
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
+    optionalDependencies:
+      '@types/node': 22.19.11
+
+  '@inquirer/search@4.1.4(@types/node@22.19.11)':
+    dependencies:
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/figures': 2.0.3
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
+    optionalDependencies:
+      '@types/node': 22.19.11
+
+  '@inquirer/select@5.1.0(@types/node@22.19.11)':
+    dependencies:
+      '@inquirer/ansi': 2.0.3
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/figures': 2.0.3
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
+    optionalDependencies:
+      '@types/node': 22.19.11
+
+  '@inquirer/type@4.0.3(@types/node@22.19.11)':
+    optionalDependencies:
+      '@types/node': 22.19.11
 
   '@isaacs/balanced-match@4.0.1': {}
 
@@ -16027,7 +15902,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@oclif/core@2.16.0(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)':
+  '@oclif/core@2.16.0(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)':
     dependencies:
       '@types/cli-progress': 3.11.6
       ansi-escapes: 4.3.2
@@ -16052,7 +15927,7 @@ snapshots:
       strip-ansi: 6.0.1
       supports-color: 8.1.1
       supports-hyperlinks: 2.3.0
-      ts-node: 10.9.2(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)
+      ts-node: 10.9.2(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
       tslib: 2.8.1
       widest-line: 3.1.0
       wordwrap: 1.0.0
@@ -16094,18 +15969,18 @@ snapshots:
       chalk: 4.1.2
       tslib: 2.8.1
 
-  '@oclif/plugin-help@5.2.20(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)':
+  '@oclif/plugin-help@5.2.20(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)':
     dependencies:
-      '@oclif/core': 2.16.0(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)
+      '@oclif/core': 2.16.0(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
       - '@types/node'
       - typescript
 
-  '@oclif/plugin-warn-if-update-available@2.1.1(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)':
+  '@oclif/plugin-warn-if-update-available@2.1.1(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)':
     dependencies:
-      '@oclif/core': 2.16.0(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)
+      '@oclif/core': 2.16.0(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
       chalk: 4.1.2
       debug: 4.4.3(supports-color@8.1.1)
       http-call: 5.3.0
@@ -17063,7 +16938,7 @@ snapshots:
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
-  '@tracerbench/core@8.0.1(patch_hash=94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846)':
+  '@tracerbench/core@8.0.1':
     dependencies:
       '@tracerbench/har': 8.0.0
       '@tracerbench/trace-event': 8.0.0
@@ -17233,10 +17108,6 @@ snapshots:
       '@types/jsonfile': 6.1.4
       '@types/node': 22.19.11
 
-  '@types/fs-extra@5.1.0':
-    dependencies:
-      '@types/node': 25.3.2
-
   '@types/fs-extra@8.1.5':
     dependencies:
       '@types/node': 22.19.11
@@ -17291,10 +17162,6 @@ snapshots:
   '@types/node@22.19.11':
     dependencies:
       undici-types: 6.21.0
-
-  '@types/node@25.3.2':
-    dependencies:
-      undici-types: 7.18.2
 
   '@types/normalize-package-data@2.4.4': {}
 
@@ -17463,7 +17330,7 @@ snapshots:
   '@warp-drive/build-config@5.8.1(@babel/core@7.29.0)':
     dependencies:
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       babel-import-util: 2.1.1
       babel-plugin-debug-macros: 2.0.0(@babel/core@7.29.0)
       semver: 7.7.4
@@ -17474,7 +17341,7 @@ snapshots:
 
   '@warp-drive/core-types@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -17483,7 +17350,7 @@ snapshots:
 
   '@warp-drive/core@5.8.1(@babel/core@7.29.0)':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/build-config': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -17493,7 +17360,7 @@ snapshots:
   '@warp-drive/ember@5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))':
     dependencies:
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -17502,7 +17369,7 @@ snapshots:
 
   '@warp-drive/json-api@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       fuse.js: 7.1.0
       json-to-ast: 2.1.0
@@ -17514,7 +17381,7 @@ snapshots:
   '@warp-drive/legacy@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))(@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0)))':
     dependencies:
       '@ember/edition-utils': 1.2.0
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/utilities': 5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))
       ember-cli-string-utils: 1.1.0
@@ -17527,7 +17394,7 @@ snapshots:
 
   '@warp-drive/utilities@5.8.1(@babel/core@7.29.0)(@warp-drive/core@5.8.1(@babel/core@7.29.0))':
     dependencies:
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
@@ -18079,14 +17946,6 @@ snapshots:
       parse-static-imports: 1.1.0
       string.prototype.matchall: 4.0.12
 
-  babel-plugin-module-resolver@3.2.0:
-    dependencies:
-      find-babel-config: 1.2.2
-      glob: 7.2.3
-      pkg-up: 2.0.0
-      reselect: 3.0.1
-      resolve: 1.22.11
-
   babel-plugin-module-resolver@5.0.2:
     dependencies:
       find-babel-config: 2.1.2
@@ -18338,29 +18197,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  broccoli-babel-transpiler@7.8.1(patch_hash=7f387255c1f49339ca8d1e5004c30105e1a45549acf35f2d4dea3af208fafca4):
-    dependencies:
-      '@babel/core': 7.29.0(supports-color@8.1.1)
-      '@babel/polyfill': 7.12.1
-      broccoli-funnel: 2.0.2
-      broccoli-merge-trees: 3.0.2
-      broccoli-persistent-filter: 2.3.1
-      clone: 2.1.2
-      hash-for-dep: 1.5.2
-      heimdalljs: 0.2.6
-      heimdalljs-logger: 0.1.10
-      json-stable-stringify: 1.3.0
-      rsvp: 4.8.5
-      workerpool: 3.1.2
-    transitivePeerDependencies:
-      - supports-color
-
   broccoli-babel-transpiler@8.0.2(@babel/core@7.29.0):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       broccoli-persistent-filter: 3.1.3
       clone: 2.1.2
-      hash-for-dep: 1.5.1
+      hash-for-dep: 1.5.2
       heimdalljs: 0.2.6
       heimdalljs-logger: 0.1.10
       json-stable-stringify: 1.3.0
@@ -18655,8 +18497,6 @@ snapshots:
   broccoli-slow-trees@3.1.0:
     dependencies:
       heimdalljs: 0.2.6
-
-  broccoli-source@2.1.2: {}
 
   broccoli-source@3.0.1:
     dependencies:
@@ -19289,8 +19129,6 @@ snapshots:
     dependencies:
       browserslist: 4.28.1
 
-  core-js@2.6.12: {}
-
   core-object@3.1.5:
     dependencies:
       chalk: 2.4.2
@@ -19665,7 +19503,7 @@ snapshots:
       '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@7.29.0)
       '@babel/plugin-transform-class-static-block': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 2.9.2(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.29.0)(webpack@5.105.1)
@@ -19701,7 +19539,7 @@ snapshots:
       - supports-color
       - webpack
 
-  ember-auto-import@2.12.1(patch_hash=8d2ddf2ca33365a986af60a2bba4a6488ae60656c67aa2b7bbf62d4149dc9646)(webpack@5.105.1):
+  ember-auto-import@2.12.1(webpack@5.105.1):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.29.0)
@@ -19709,7 +19547,7 @@ snapshots:
       '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@7.29.0)
       '@babel/plugin-transform-class-static-block': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 2.9.2(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.29.0)(webpack@5.105.1)
@@ -19745,17 +19583,9 @@ snapshots:
       - supports-color
       - webpack
 
-  ember-cli-app-version@7.0.0(ember-source@):
-    dependencies:
-      ember-cli-babel: 7.26.11
-      ember-source: 'link:'
-      git-repo-info: 2.1.1
-    transitivePeerDependencies:
-      - supports-color
-
   ember-cli-babel-plugin-helpers@1.1.1: {}
 
-  ember-cli-babel@7.26.11:
+  ember-cli-babel@8.2.0(@babel/core@7.29.0):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/helper-compilation-targets': 7.28.6
@@ -19763,43 +19593,8 @@ snapshots:
       '@babel/plugin-proposal-decorators': 7.29.0(@babel/core@7.29.0)
       '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@7.29.0)
       '@babel/plugin-proposal-private-property-in-object': 7.21.11(@babel/core@7.29.0)
-      '@babel/plugin-transform-modules-amd': 7.27.1(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@babel/plugin-transform-runtime': 7.29.0(@babel/core@7.29.0)
-      '@babel/plugin-transform-typescript': 7.28.6(@babel/core@7.29.0)
-      '@babel/polyfill': 7.12.1
-      '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@babel/runtime': 7.12.18
-      amd-name-resolver: 1.3.1
-      babel-plugin-debug-macros: 0.3.4(@babel/core@7.29.0)
-      babel-plugin-ember-data-packages-polyfill: 0.1.2
-      babel-plugin-ember-modules-api-polyfill: 3.5.0
-      babel-plugin-module-resolver: 3.2.0
-      broccoli-babel-transpiler: 7.8.1(patch_hash=7f387255c1f49339ca8d1e5004c30105e1a45549acf35f2d4dea3af208fafca4)
-      broccoli-debug: 0.6.5
-      broccoli-funnel: 2.0.2
-      broccoli-source: 2.1.2
-      calculate-cache-key-for-tree: 2.0.0
-      clone: 2.1.2
-      ember-cli-babel-plugin-helpers: 1.1.1
-      ember-cli-version-checker: 4.1.1
-      ensure-posix-path: 1.1.1
-      fixturify-project: 1.10.0
-      resolve-package-path: 3.1.0
-      rimraf: 3.0.2
-      semver: 5.7.2
-    transitivePeerDependencies:
-      - supports-color
-
-  ember-cli-babel@8.3.1(@babel/core@7.29.0):
-    dependencies:
-      '@babel/core': 7.29.0(supports-color@8.1.1)
-      '@babel/helper-compilation-targets': 7.28.6
-      '@babel/plugin-proposal-decorators': 7.29.0(@babel/core@7.29.0)
-      '@babel/plugin-transform-class-properties': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/plugin-transform-class-static-block': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/plugin-transform-modules-amd': 7.27.1(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@babel/plugin-transform-private-methods': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
-      '@babel/plugin-transform-private-property-in-object': 7.28.6(@babel/core@7.29.0)(supports-color@8.1.1)
       '@babel/plugin-transform-runtime': 7.29.0(@babel/core@7.29.0)
       '@babel/plugin-transform-typescript': 7.28.6(@babel/core@7.29.0)
       '@babel/preset-env': 7.29.0(@babel/core@7.29.0)(supports-color@8.1.1)
@@ -19846,19 +19641,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@5.7.0(@types/node@25.3.2)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@5.7.0(@types/node@22.19.11)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 5.7.0(@types/node@25.3.2)
+      ember-cli: 5.7.0(@types/node@22.19.11)
       find-yarn-workspace-root: 2.0.0
       is-git-url: 1.0.0
       resolve: 1.22.11
       semver: 5.7.2
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@6.5.0(@types/node@25.3.2)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@6.5.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 6.5.0(@types/node@25.3.2)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
+      ember-cli: 6.5.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
       find-yarn-workspace-root: 2.0.0
       is-git-url: 1.0.0
       resolve: 1.22.11
@@ -19867,7 +19662,7 @@ snapshots:
   ember-cli-deprecation-workflow@3.4.0(ember-source@):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
-      ember-cli-babel: 8.3.1(@babel/core@7.29.0)
+      ember-cli-babel: 8.2.0(@babel/core@7.29.0)
       ember-source: 'link:'
     transitivePeerDependencies:
       - supports-color
@@ -19962,14 +19757,6 @@ snapshots:
       resolve-package-path: 1.2.7
       semver: 5.7.2
 
-  ember-cli-version-checker@4.1.1:
-    dependencies:
-      resolve-package-path: 2.0.0
-      semver: 6.3.1
-      silent-error: 1.1.1
-    transitivePeerDependencies:
-      - supports-color
-
   ember-cli-version-checker@5.1.2:
     dependencies:
       resolve-package-path: 3.1.0
@@ -19988,7 +19775,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli@5.7.0(@types/node@25.3.2):
+  ember-cli@5.7.0(@types/node@22.19.11):
     dependencies:
       '@pnpm/find-workspace-dir': 6.0.3
       broccoli: 3.5.2
@@ -20040,7 +19827,7 @@ snapshots:
       heimdalljs-logger: 0.1.10
       http-proxy: 1.18.1
       inflection: 2.0.1
-      inquirer: 9.3.8(@types/node@25.3.2)
+      inquirer: 9.3.8(@types/node@22.19.11)
       is-git-url: 1.0.0
       is-language-code: 3.1.0
       isbinaryfile: 5.0.7
@@ -20132,7 +19919,7 @@ snapshots:
       - walrus
       - whiskers
 
-  ember-cli@6.5.0(@types/node@25.3.2)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7):
+  ember-cli@6.5.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7):
     dependencies:
       '@pnpm/find-workspace-dir': 1000.1.4
       babel-remove-types: 1.1.0
@@ -20183,7 +19970,7 @@ snapshots:
       heimdalljs-logger: 0.1.10
       http-proxy: 1.18.1
       inflection: 2.0.1
-      inquirer: 9.3.8(@types/node@25.3.2)
+      inquirer: 9.3.8(@types/node@22.19.11)
       is-git-url: 1.0.0
       is-language-code: 3.1.0
       isbinaryfile: 5.0.7
@@ -20289,7 +20076,7 @@ snapshots:
       '@ember-data/tracking': 5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))
       '@ember/edition-utils': 1.2.0
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.0)
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       '@warp-drive/core': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/core-types': 5.8.1(@babel/core@7.29.0)
       '@warp-drive/ember': 5.8.1(@babel/core@7.29.0)(@ember/test-waiters@4.1.1(@babel/core@7.29.0))
@@ -20363,18 +20150,12 @@ snapshots:
     dependencies:
       '@ember/test-helpers': 5.4.1(@babel/core@7.29.0)
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.0(patch_hash=bbd9623dae57d04f3d13e61490342e14c70d4e9488b064c61b5fec3a9f2c79cb)(@babel/core@7.29.0)
+      '@embroider/macros': 1.20.0(@babel/core@7.29.0)
       qunit: 2.25.0
       qunit-theme-ember: 1.0.0
     transitivePeerDependencies:
       - '@babel/core'
       - '@glint/template'
-      - supports-color
-
-  ember-resolver@13.1.1:
-    dependencies:
-      ember-cli-babel: 7.26.11
-    transitivePeerDependencies:
       - supports-color
 
   ember-resolver@13.2.0: {}
@@ -20474,7 +20255,7 @@ snapshots:
 
   ember-tracked-storage-polyfill@1.0.0(@babel/core@7.29.0)(ember-source@):
     dependencies:
-      ember-cli-babel: 7.26.11
+      ember-cli-babel: 8.2.0(@babel/core@7.29.0)
       ember-cli-htmlbars: 7.0.0(@babel/core@7.29.0)(ember-source@)
     transitivePeerDependencies:
       - '@babel/core'
@@ -21393,11 +21174,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  find-babel-config@1.2.2:
-    dependencies:
-      json5: 1.0.2
-      path-exists: 3.0.0
-
   find-babel-config@2.1.2:
     dependencies:
       json5: 2.2.3
@@ -21414,10 +21190,6 @@ snapshots:
       pkg-dir: 7.0.0
 
   find-index@1.1.1: {}
-
-  find-up@2.1.0:
-    dependencies:
-      locate-path: 2.0.0
 
   find-up@3.0.0:
     dependencies:
@@ -21470,11 +21242,6 @@ snapshots:
       lodash.flatten: 3.0.2
       minimatch: 3.1.5
 
-  fixturify-project@1.10.0:
-    dependencies:
-      fixturify: 1.3.0
-      tmp: 0.0.33
-
   fixturify-project@2.1.1:
     dependencies:
       fixturify: 2.1.1
@@ -21498,14 +21265,6 @@ snapshots:
       walk-sync: 3.0.0
     transitivePeerDependencies:
       - supports-color
-
-  fixturify@1.3.0:
-    dependencies:
-      '@types/fs-extra': 5.1.0
-      '@types/minimatch': 3.0.5
-      '@types/rimraf': 2.0.5
-      fs-extra: 7.0.1
-      matcher-collection: 2.0.1
 
   fixturify@2.1.1:
     dependencies:
@@ -22311,17 +22070,17 @@ snapshots:
 
   ini@3.0.1: {}
 
-  inquirer@13.3.0(@types/node@25.3.2):
+  inquirer@13.3.0(@types/node@22.19.11):
     dependencies:
       '@inquirer/ansi': 2.0.3
-      '@inquirer/core': 11.1.5(@types/node@25.3.2)
-      '@inquirer/prompts': 8.3.0(@types/node@25.3.2)
-      '@inquirer/type': 4.0.3(@types/node@25.3.2)
+      '@inquirer/core': 11.1.5(@types/node@22.19.11)
+      '@inquirer/prompts': 8.3.0(@types/node@22.19.11)
+      '@inquirer/type': 4.0.3(@types/node@22.19.11)
       mute-stream: 3.0.0
       run-async: 4.0.6
       rxjs: 7.8.2
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
 
   inquirer@6.5.2:
     dependencies:
@@ -22339,9 +22098,9 @@ snapshots:
       strip-ansi: 5.2.0
       through: 2.3.8
 
-  inquirer@9.3.8(@types/node@25.3.2):
+  inquirer@9.3.8(@types/node@22.19.11):
     dependencies:
-      '@inquirer/external-editor': 1.0.3(@types/node@25.3.2)
+      '@inquirer/external-editor': 1.0.3(@types/node@22.19.11)
       '@inquirer/figures': 1.0.15
       ansi-escapes: 4.3.2
       cli-width: 4.1.0
@@ -22922,11 +22681,6 @@ snapshots:
       json5: 2.2.3
 
   loader.js@4.7.0: {}
-
-  locate-path@2.0.0:
-    dependencies:
-      p-locate: 2.0.0
-      path-exists: 3.0.0
 
   locate-path@3.0.0:
     dependencies:
@@ -23753,10 +23507,6 @@ snapshots:
 
   p-is-promise@2.1.0: {}
 
-  p-limit@1.3.0:
-    dependencies:
-      p-try: 1.0.0
-
   p-limit@2.3.0:
     dependencies:
       p-try: 2.2.0
@@ -23768,10 +23518,6 @@ snapshots:
   p-limit@4.0.0:
     dependencies:
       yocto-queue: 1.2.2
-
-  p-locate@2.0.0:
-    dependencies:
-      p-limit: 1.3.0
 
   p-locate@3.0.0:
     dependencies:
@@ -23790,8 +23536,6 @@ snapshots:
       p-limit: 4.0.0
 
   p-map@2.1.0: {}
-
-  p-try@1.0.0: {}
 
   p-try@2.2.0: {}
 
@@ -23981,10 +23725,6 @@ snapshots:
       find-up: 6.3.0
 
   pkg-entry-points@1.1.1: {}
-
-  pkg-up@2.0.0:
-    dependencies:
-      find-up: 2.1.0
 
   pkg-up@3.1.0:
     dependencies:
@@ -24464,8 +24204,6 @@ snapshots:
 
   requires-port@1.0.0: {}
 
-  reselect@3.0.1: {}
-
   reselect@4.1.8: {}
 
   resolve-dir@1.0.1:
@@ -24478,11 +24216,6 @@ snapshots:
   resolve-from@5.0.0: {}
 
   resolve-package-path@1.2.7:
-    dependencies:
-      path-root: 0.1.1
-      resolve: 1.22.11
-
-  resolve-package-path@2.0.0:
     dependencies:
       path-root: 0.1.1
       resolve: 1.22.11
@@ -25754,15 +25487,15 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  tracerbench@8.0.1(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3):
+  tracerbench@8.0.1(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3):
     dependencies:
       '@oclif/command': 1.8.36
       '@oclif/config': 1.18.17
       '@oclif/errors': 1.3.6
       '@oclif/parser': 3.8.17
-      '@oclif/plugin-help': 5.2.20(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)
-      '@oclif/plugin-warn-if-update-available': 2.1.1(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3)
-      '@tracerbench/core': 8.0.1(patch_hash=94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846)
+      '@oclif/plugin-help': 5.2.20(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
+      '@oclif/plugin-warn-if-update-available': 2.1.1(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3)
+      '@tracerbench/core': 8.0.1
       '@tracerbench/stats': 8.0.1
       '@tracerbench/trace-event': 8.0.0
       archiver: 5.3.2
@@ -25836,14 +25569,14 @@ snapshots:
       picomatch: 4.0.3
       typescript: 5.9.3
 
-  ts-node@10.9.2(@swc/core@1.15.11)(@types/node@25.3.2)(typescript@5.9.3):
+  ts-node@10.9.2(@swc/core@1.15.11)(@types/node@22.19.11)(typescript@5.9.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.12
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
       acorn: 8.15.0
       acorn-walk: 8.3.4
       arg: 4.1.3
@@ -25989,8 +25722,6 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  undici-types@7.18.2: {}
-
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 
   unicode-match-property-ecmascript@2.0.0:
@@ -26101,17 +25832,17 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite@5.4.21(@types/node@25.3.2)(terser@5.46.0):
+  vite@5.4.21(@types/node@22.19.11)(terser@5.46.0):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.6
       rollup: 4.57.1
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
       fsevents: 2.3.3
       terser: 5.46.0
 
-  vite@6.4.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2):
+  vite@6.4.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -26120,12 +25851,12 @@ snapshots:
       rollup: 4.57.1
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
       fsevents: 2.3.3
       terser: 5.46.0
       yaml: 2.8.2
 
-  vite@7.3.1(@types/node@25.3.2)(terser@5.46.0)(yaml@2.8.2):
+  vite@7.3.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.27.3
       fdir: 6.5.0(picomatch@4.0.3)
@@ -26134,7 +25865,7 @@ snapshots:
       rollup: 4.57.1
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 25.3.2
+      '@types/node': 22.19.11
       fsevents: 2.3.3
       terser: 5.46.0
       yaml: 2.8.2
@@ -26371,14 +26102,6 @@ snapshots:
   word-wrap@1.2.5: {}
 
   wordwrap@1.0.0: {}
-
-  workerpool@3.1.2:
-    dependencies:
-      '@babel/core': 7.29.0(supports-color@8.1.1)
-      object-assign: 4.1.1
-      rsvp: 4.8.5
-    transitivePeerDependencies:
-      - supports-color
 
   workerpool@6.5.1: {}
 

@@ -6,6 +6,8 @@ const { module: Qmodule, test } = QUnit;
 function basicTest(scenarios: Scenarios, appName: string) {
   scenarios
     .map('basics', (project) => {
+      project.linkDevDependency('tracked-built-ins', { baseDir: __dirname });
+      
       project.mergeFiles({
         app: {
           'router.js': `

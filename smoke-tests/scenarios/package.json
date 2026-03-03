@@ -13,6 +13,7 @@
     "ember-cli-htmlbars": "^7.0.0",
     "qunit": "^2.20.1",
     "scenario-tester": "^4.0.0",
+    "tracked-built-ins": "^4.1.0",
     "typescript": "5.1",
     "webpack": "^5.91.0"
   },
