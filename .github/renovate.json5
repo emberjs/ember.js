@@ -1,3 +1,5 @@
+// Docs:
+// https://docs.renovatebot.com/configuration-options/
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: [
@@ -9,9 +11,19 @@
   minimumReleaseAge: "10 days",
   packageRules: [
     {
-      description: "Batch all @babel packages into a single PR",
+      description: "All @babel/* packages",
       matchPackagePrefixes: ["@babel/"],
       groupName: "babel",
+    },
+    {
+      description: "All @embroider/* packages",
+      matchPackagePrefixes: ["@embroider/"],
+      groupName: "embroider",
+    },
+    {
+      description: "eslint and releated packages",
+      matchPackagePrefixes: ["eslint"],
+      groupName: "eslint",
     },
   ],
 }
