@@ -20,7 +20,7 @@ export function isRemoved(options: DeprecationOptions) {
   return emberVersionGte(options.until);
 }
 
-interface DeprecationObject {
+export interface DeprecationObject {
   options: DeprecationOptions;
   test: boolean;
   isEnabled: boolean;
@@ -121,6 +121,13 @@ export const DEPRECATIONS = {
     },
     until: '7.0.0',
     url: 'https://deprecations.emberjs.com/id/using-amd-bundles',
+  }),
+  DEPRECATE_EVENTED: deprecation({
+    id: 'ember-evented',
+    for: 'ember-source',
+    since: { available: '6.12.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/ember-evented',
   }),
 };
 

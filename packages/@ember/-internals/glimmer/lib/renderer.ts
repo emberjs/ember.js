@@ -3,7 +3,7 @@ import { ENV } from '@ember/-internals/environment';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { getViewElement, getViewId } from '@ember/-internals/views';
+import { getViewElement, getViewId, sendCoreViewEvent } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
@@ -917,7 +917,7 @@ export class Renderer extends BaseRenderer {
     this.cleanupRootFor(view);
 
     if (this.state.isInteractive) {
-      view.trigger('didDestroyElement');
+      sendCoreViewEvent(view, 'didDestroyElement');
     }
   }
 

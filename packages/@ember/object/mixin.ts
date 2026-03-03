@@ -4,8 +4,16 @@
 import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
+import {
+  guidFor,
+  observerListenerMetaFor,
+  ROOT,
+  wrap,
+  DEPRECATION,
+  findDeprecation,
+} from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import { deprecateUntil, type DeprecationObject } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
 import {
   type ComputedDecorator,
@@ -14,6 +22,8 @@ import {
   type ComputedPropertySetter,
   type ComputedDescriptor,
   isClassicDecorator,
+  addListener,
+  removeListener,
 } from '@ember/-internals/metal';
 import {
   ComputedProperty,
@@ -27,7 +37,6 @@ import {
   defineDecorator,
   defineValue,
 } from '@ember/-internals/metal';
-import { addListener, removeListener } from '@ember/object/events';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
@@ -385,10 +394,12 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
   }
 
   if (listeners !== undefined) {
-    let updateListener = add ? addListener : removeListener;
-
     for (let listener of listeners) {
-      updateListener(obj, listener, null, key);
+      if (add) {
+        addListener(obj, listener, null, key as PropertyKey);
+      } else {
+        removeListener(obj, listener, null, key);
+      }
     }
   }
 }
@@ -544,6 +555,9 @@ export default class Mixin {
   properties: { [key: string]: any } | undefined;
 
   /** @internal */
+  [DEPRECATION]: { message: string; deprecation: DeprecationObject } | null = null;
+
+  /** @internal */
   ownerConstructor: any;
 
   /** @internal */
@@ -619,6 +633,15 @@ export default class Mixin {
   reopen(...args: Array<Mixin | Record<string, unknown>>): this {
     if (args.length === 0) {
       return this;
+    }
+
+    if (DEBUG) {
+      for (let mixin of args) {
+        let dep = mixin instanceof Mixin ? findDeprecation(mixin) : null;
+        if (dep) {
+          deprecateUntil(dep.message, dep.deprecation);
+        }
+      }
     }
 
     if (this.properties) {

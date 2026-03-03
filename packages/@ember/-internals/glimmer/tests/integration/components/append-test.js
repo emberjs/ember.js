@@ -1,4 +1,12 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 import { set } from '@ember/object';
 
@@ -38,7 +46,9 @@ class AbstractAppendTest extends RenderingTestCase {
     this.ids.push(component.elementId);
   }
 
-  [`@test (new) lifecycle hooks during component append`](assert) {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test (new) lifecycle hooks during component append`](
+    assert
+  ) {
     let hooks = [];
 
     let componentsByName = {};
@@ -56,7 +66,13 @@ class AbstractAppendTest extends RenderingTestCase {
           }
           componentsByName[name] = this;
           pushHook('init');
-          this.on('init', () => pushHook('on(init)'));
+          expectDeprecation(
+            () => {
+              this.on('init', () => pushHook('on(init)'));
+            },
+            /Evented#on` is deprecated/,
+            DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+          );
         }
 
         didReceiveAttrs() {
@@ -278,7 +294,9 @@ class AbstractAppendTest extends RenderingTestCase {
     );
   }
 
-  [`@test lifecycle hooks during component append`](assert) {
+  [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test lifecycle hooks during component append`](
+    assert
+  ) {
     let hooks = [];
 
     let oldRegisterComponent = this.registerComponent;
@@ -299,7 +317,13 @@ class AbstractAppendTest extends RenderingTestCase {
             }
             componentsByName[name] = this;
             pushHook('init');
-            this.on('init', () => pushHook('on(init)'));
+            expectDeprecation(
+              () => {
+                this.on('init', () => pushHook('on(init)'));
+              },
+              /Evented#on` is deprecated/,
+              DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+            );
           }
 
           didReceiveAttrs() {
