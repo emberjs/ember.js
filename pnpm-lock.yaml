@@ -1244,6 +1244,12 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../helper
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../modifier
       '@glimmer/compiler':
         specifier: workspace:*
         version: link:../../@glimmer/compiler
@@ -1500,6 +1506,12 @@ importers:
 
   packages/@glimmer-workspace/integration-tests/test:
     dependencies:
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../../../@ember/modifier
+      '@ember/template-compiler':
+        specifier: workspace:*
+        version: link:../../../@ember/template-compiler
       '@glimmer-workspace/integration-tests':
         specifier: workspace:*
         version: link:..
@@ -2858,6 +2870,9 @@ importers:
       ember-load-initializers:
         specifier: ^2.1.2
         version: 2.1.2(@babel/core@7.29.0)
+      ember-modifier:
+        specifier: ^4.2.2
+        version: 4.3.0(@babel/core@7.29.0)
       ember-page-title:
         specifier: ^8.2.3
         version: 8.2.4(ember-source@)
