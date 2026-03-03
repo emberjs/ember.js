@@ -232,7 +232,16 @@ class ClassicRootState {
 
       let result = (this.result = iterator.sync());
 
-      associateDestroyableChild(owner, result);
+      // Associate the result with the root state (not the owner) so that
+      // destruction cascades through:
+      //   Owner → Container → Renderer → RendererState → ClassicRootState → result
+      // This ensures the container is still alive when component destructors
+      // run (e.g. willDestroy looking up the renderer via injection).
+      // Previously, associating with the owner made the result a sibling of
+      // the Container, causing the Container to be destroyed first — which
+      // broke FastBoot where the container was already dead by the time
+      // component teardown tried to do lookups. (See: emberjs/ember.js#20984)
+      associateDestroyableChild(this, result);
 
       this.render = errorLoopTransaction(() => {
         if (isDestroying(result) || isDestroyed(result)) return;
