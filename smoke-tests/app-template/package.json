@@ -41,7 +41,7 @@
     "ember-cli-inject-live-reload": "^2.1.0",
     "ember-cli-sri": "^2.1.1",
     "ember-cli-terser": "^4.0.2",
-    "ember-data": "~5.3.3",
+    "ember-data": "~5.8.1",
     "ember-load-initializers": "^2.1.2",
     "ember-page-title": "^8.2.3",
     "ember-qunit": "^8.0.2",
