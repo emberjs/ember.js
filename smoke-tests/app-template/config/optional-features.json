@@ -1,4 +1,5 @@
 {
   "default-async-observers": true,
-  "jquery-integration": false
+  "jquery-integration": false,
+  "use-ember-modules": true
 }
