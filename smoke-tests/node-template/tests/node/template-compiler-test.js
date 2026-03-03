@@ -1,6 +1,7 @@
 const path = require('path');
 
-const distPath = path.join(__dirname, '../../dist');
+const emberSourceRoot = path.dirname(require.resolve('ember-source/package.json'));
+const distPath = path.join(emberSourceRoot, 'dist');
 
 let templateCompiler;
 

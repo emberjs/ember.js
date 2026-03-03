@@ -44,3 +44,17 @@ export const v2AppScenarios = Scenarios.fromProject(() =>
 ).expand({
   embroiderVite,
 });
+
+function node(project: Project) {
+  project.linkDevDependency('ember-source', {
+    baseDir: dirname(require.resolve('../app-template/package.json')),
+  });
+}
+
+export const nodeScenarios = Scenarios.fromProject(() =>
+  Project.fromDir(dirname(require.resolve('../node-template/package.json')), {
+    linkDevDeps: true,
+  })
+).expand({
+  node,
+});

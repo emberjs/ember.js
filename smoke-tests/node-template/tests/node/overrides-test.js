@@ -1,7 +1,9 @@
 'use strict';
 
+const path = require('path');
+const emberSourceRoot = path.dirname(require.resolve('ember-source/package.json'));
 const Project = require('./fixtures/project');
-const Overrides = require('../../lib/overrides');
+const Overrides = require(path.join(emberSourceRoot, 'lib', 'overrides'));
 
 function cmp(a, b) {
   if (a == undefined || a < b) {
