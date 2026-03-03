@@ -1,0 +1,27 @@
+name: Package Size Report
+
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  pkg-size-report:
+    name: Package Size Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - uses: pkg-size/action@v1
+        with:
+          build-command: "pnpm build"
+          display-size: uncompressed, brotli
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
