@@ -1,4 +1,4 @@
-name: Update ember-test-app on ember-cli minor release
+name: Update smoke-test templates
 
 on:
   workflow_dispatch:
