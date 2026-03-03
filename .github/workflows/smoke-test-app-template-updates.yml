@@ -48,10 +48,11 @@ jobs:
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.PERSONAL_TOKEN }}
           branch: smoke-tests/update-app-template
           delete-branch: false
-          commit-message: "Update ember-test-app template"
-          title: "Update ember-test-app template (ember-cli latest)"
+          commit-message: "Update smoke-tests/app-template"
+          title: "Update smoke tests app-template"
           body: |
             Regenerated the smoke-tests app-template using ember-cli latest.
 
@@ -79,10 +80,11 @@ jobs:
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.PERSONAL_TOKEN }}
           branch: smoke-tests/update-v2-app-template
           delete-branch: false
-          commit-message: "Update v2-app-template"
-          title: "Update v2-app-template (ember-cli latest)"
+          commit-message: "Update smoke-tests/v2-app-template"
+          title: "Update smoke tests v2-app-template"
           body: |
             Regenerated the smoke-tests v2-app-template using ember-cli latest.
 
