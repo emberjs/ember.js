@@ -19,8 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
-      - uses: preactjs/compressed-size-action@v2
+      - uses: pkg-size/action@v1
         with:
-          compression: "brotli"
-          pattern: "./{dist,dist-prod}/**/*"
-          minimum-change-threshold: 60
+          build-command: "pnpm build"
+          display-size: uncompressed, brotli
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
