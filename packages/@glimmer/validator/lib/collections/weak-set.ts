@@ -71,7 +71,7 @@ class TrackedWeakSet<T extends WeakKey = object> implements WeakSet<T> {
   }
 
   delete(value: T): boolean {
-    if (!this.#vals.has(value)) return true;
+    if (!this.#vals.has(value)) return false;
 
     this.#dirtyStorageFor(value);
 

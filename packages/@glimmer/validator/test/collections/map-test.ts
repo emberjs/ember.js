@@ -181,11 +181,12 @@ module('@glimmer/validator: trackedMap', function () {
     const map = trackedMap();
 
     assert.false(map.has(0));
+    assert.false(map.delete(0), 'returns false when key does not exist');
 
     map.set(0, 123);
     assert.true(map.has(0));
 
-    map.delete(0);
+    assert.true(map.delete(0), 'returns true when key exists');
     assert.false(map.has(0));
   });
 
