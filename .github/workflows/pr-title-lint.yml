@@ -1,0 +1,58 @@
+name: PR Title Lint
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint-pr-title:
+    name: Lint PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate title
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = context.payload.pull_request.title || "";
+
+            const bracketedAllowed = [
+              /^\[BREAKING\]/,
+              /^\[BUGFIX\]/,
+              /^\[BUGFIX beta\]/,
+              /^\[BUGFIX lts\]/,
+              /^\[BUGFIX release\]/,
+              /^\[BUGFIX lts-\d+-\d+\]/,
+              /^\[DOC\]/,
+              /^\[DOC beta\]/,
+              /^\[DOC release\]/,
+              /^\[SECURITY\]/,
+              /^\[SECURITY CVE-\d+\]/,
+              /^\[FEATURE [^\]]+\]/,
+              /^\[CLEANUP\]/
+            ];
+
+            const bracketMatch = title.match(/^\[[^\]]+\]/);
+            if (bracketMatch) {
+              const ok = bracketedAllowed.some((re) => re.test(title));
+              if (!ok) {
+                core.setFailed(
+                  `Invalid bracket tag in PR title: "${bracketMatch[0]}". ` +
+                  "Allowed: [BREAKING], [BUGFIX], [BUGFIX beta], [BUGFIX lts], [BUGFIX release], " +
+                  "[BUGFIX lts-6-8], [DOC], [DOC beta], [DOC release], [SECURITY], [SECURITY CVE-1234], " +
+                  "[FEATURE any-feature-flag-name], [CLEANUP]."
+                );
+              }
+              return;
+            }
+
+            const conventionalMatch = title.match(/^([a-z]+)(\([^)]+\))?:\s/);
+            if (conventionalMatch) {
+              core.setFailed(
+                "Conventional or semantic prefixes are not allowed in PR titles. (ex: `fix:` or `feat:`) " +
+                "Use an allowed bracket tag or no prefix."
+              );
+            }
