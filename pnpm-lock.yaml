@@ -220,9 +220,6 @@ importers:
       globals:
         specifier: ^16.0.0
         version: 16.5.0
-      html-differ:
-        specifier: ^1.4.0
-        version: 1.4.0
       kill-port-process:
         specifier: ^3.2.1
         version: 3.2.1
@@ -253,9 +250,6 @@ importers:
       rsvp:
         specifier: ^4.8.5
         version: 4.8.5
-      simple-dom:
-        specifier: ^1.4.0
-        version: 1.4.0
       table:
         specifier: ^6.9.0
         version: 6.9.0
@@ -2963,6 +2957,24 @@ importers:
       vite:
         specifier: ^7.3.0
         version: 7.3.1(@types/node@22.19.11)(terser@5.46.0)(yaml@2.8.2)
+
+  smoke-tests/node-template:
+    dependencies:
+      git-repo-info:
+        specifier: ^2.1.1
+        version: 2.1.1
+      html-differ:
+        specifier: ^1.4.0
+        version: 1.4.0
+      qunit:
+        specifier: ^2.20.1
+        version: 2.25.0
+      semver:
+        specifier: ^7.6.0
+        version: 7.7.4
+      simple-dom:
+        specifier: ^1.4.0
+        version: 1.4.0
 
   smoke-tests/scenarios:
     devDependencies:
