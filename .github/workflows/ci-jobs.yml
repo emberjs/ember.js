@@ -188,7 +188,7 @@ jobs:
       - name: build
         run: pnpm vite build --mode=development
       - name: Setup firefox
-        uses: browser-actions/setup-firefox@latest
+        uses: browser-actions/setup-firefox@fcf821c621167805dd63a29662bd7cb5676c81a8 # v1.7.1
         with:
           firefox-version: 115.9.1esr
       - run: firefox --version
