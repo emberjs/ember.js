@@ -638,6 +638,112 @@ moduleFor(
       assertHTML('');
     }
 
+    '@test multiple calls to render in to the same element appear as siblings'() {
+      let aHelper = (str: string) => str.toUpperCase();
+      let Child = defComponent(`Hi: {{aHelper "there"}}`, { scope: { aHelper } });
+      let get = (id: string) => this.element.querySelector(id);
+      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+        renderComponent(Comp, {
+          into: get(`#${id}`)!,
+          owner,
+        });
+      }
+      let A = defComponent('a:<Child />', { scope: { Child } });
+      let Root = defComponent(
+        [
+          `<div id="a"></div><br>`,
+          // both of these go in the div
+          `{{render A 'a' owner}}`,
+          `{{render A 'a'}}`,
+        ].join('\n'),
+        { scope: { render, A, owner: this.owner } }
+      );
+
+      this.renderComponent(Root, {
+        expect: [`<div id="a">a:Hi: THEREa:Hi: THERE</div><br>`, '', ''].join('\n'),
+      });
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
+
+    /**
+     * NOTE: subsequent renders to the same element are prepended to the element's children
+     */
+    '@test multiple calls to render in to the same element appear as siblings and can be updated'() {
+      let aHelper = (str: string) => str.toUpperCase();
+      let dataA = trackedObject({ count: 1 });
+      let dataB = trackedObject({ count: -1 });
+      let Child = defComponent(`Hi: {{aHelper "there"}}`, { scope: { aHelper } });
+
+      let get = (id: string) => this.element.querySelector(id);
+      function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
+        renderComponent(Comp, {
+          into: get(`#${id}`)!,
+          owner,
+        });
+      }
+      let A = defComponent('\n<output>a:<Child />:{{data.count}}</output>\n', {
+        scope: { Child, data: dataA },
+      });
+      let B = defComponent('\n<output>b:<Child />:{{data.count}}</output>', {
+        scope: { Child, data: dataB },
+      });
+
+      let Root = defComponent(
+        [
+          `<div id="a"></div><br>`,
+          // both of these go in the div
+          `{{render A 'a' owner}}`,
+          `{{render B 'a'}}`,
+        ].join('\n'),
+        { scope: { render, A, B, owner: this.owner } }
+      );
+
+      this.renderComponent(Root, {
+        expect: [
+          `<div id="a">`,
+          `<output>b:Hi: THERE:-1</output>`,
+          `<output>a:Hi: THERE:1</output>`,
+          `</div><br>`,
+          '',
+          '',
+        ].join('\n'),
+      });
+
+      this.assertChange({
+        change: () => dataA.count++,
+        expect: [
+          `<div id="a">`,
+          `<output>b:Hi: THERE:-1</output>`,
+          `<output>a:Hi: THERE:2</output>`,
+          `</div><br>`,
+          '',
+          '',
+        ].join('\n'),
+      });
+
+      /**
+       * ERROR in conflict with the NOTE on this test.
+       * the elementns flip locations... which is kinda bonkers
+       */
+      this.assertChange({
+        change: () => dataB.count--,
+        expect: [
+          `<div id="a">`,
+          `<output>b:Hi: THERE:-2</output>`,
+          `<output>a:Hi: THERE:2</output>`,
+          `</div><br>`,
+          '',
+          '',
+        ].join('\n'),
+      });
+
+      run(() => destroy(this));
+
+      assertHTML('');
+    }
+
     async '@test async rendering multiple times to adjacent elements'() {
       let Child = defComponent(`Hi`, { scope: {} });
       let get = (id: string) => this.element.querySelector(id);
