@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
   pull-requests: read
 
 jobs:
@@ -56,3 +57,44 @@ jobs:
                 "Use an allowed bracket tag or no prefix."
               );
             }
+
+  comment-if-fix:
+    name: Comment on PR if title includes "Fix" without a bracket tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate title
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = context.payload.pull_request.title || "";
+            const prNumber = context.payload.pull_request.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const marker = "<!-- pr-title-lint-fix-suggestion -->";
+            const bracketMatch = title.match(/^\[[^\]]+\]/);
+            if (!bracketMatch && /\bFix\b/i.test(title)) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number: prNumber
+              });
+
+              const alreadyCommented = comments.some(
+                (comment) =>
+                  comment.user?.type === "Bot" &&
+                  typeof comment.body === "string" &&
+                  comment.body.includes(marker)
+              );
+
+              if (!alreadyCommented) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body:
+                    `${marker}\n` +
+                    "This PR title includes \"Fix\". Should it include `[BUGFIX]` at the start? See https://github.com/emberjs/ember.js/blob/main/CONTRIBUTING.md#commit-tagging"
+                });
+              }
+            }      
