@@ -110,6 +110,51 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
+  @test 'strict-mode template-only invocation names'() {
+    const Greeter = defComponent('Hello');
+    const Actual = defComponent('Hi');
+
+    const Root = defComponent(`<Greeter /><Alias />`, {
+      scope: { Greeter, Alias: Actual },
+      emit: { moduleName: 'root.hbs' },
+    });
+
+    this.renderComponent(Root);
+
+    const element = this.delegate.getInitialElement();
+
+    this.assertRenderTree([
+      {
+        type: 'component',
+        name: '{ROOT}',
+        args: { positional: [], named: {} },
+        instance: null,
+        template: 'root.hbs',
+        bounds: this.elementBounds(element),
+        children: [
+          {
+            type: 'component',
+            name: 'Greeter',
+            args: { positional: [], named: {} },
+            instance: null,
+            template: '(unknown template module)',
+            bounds: this.nodeBounds(element.firstChild),
+            children: [],
+          },
+          {
+            type: 'component',
+            name: 'Alias',
+            args: { positional: [], named: {} },
+            instance: null,
+            template: '(unknown template module)',
+            bounds: this.nodeBounds(element.lastChild),
+            children: [],
+          },
+        ],
+      },
+    ]);
+  }
+
   @test 'strict-mode modifiers'() {
     const state = trackedObj({ showSecond: false });
 
