@@ -2,9 +2,11 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: ["config:recommended"],
   automerge: false,
+  lockFileMaintenance: true,
   dependencyDashboard: true,
   schedule: ["every weekend"],
   minimumReleaseAge: "10 days",
+  prConcurrentLimit: 5,
   packageRules: [
     {
       description: "All @babel/* packages",
