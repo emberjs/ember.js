@@ -21,7 +21,7 @@ jobs:
       matrix:
         branch: [main, beta, release]
     steps:
-      - uses: kategengler/ci-cron@v1.0.2
+      - uses: kategengler/ci-cron@d54b69bfd9147fb125899da4a2891f7fdf35f786 # v1.0.2
         with:
           branch: ${{ matrix.branch }}
           # This must use a personal access token because of a Github Actions

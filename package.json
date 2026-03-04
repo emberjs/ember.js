@@ -41,6 +41,7 @@
     "url": "git+https://github.com/emberjs/ember.js.git"
   },
   "scripts": {
+    "actions-up": "pnpm dlx actions-up",
     "bench": "node ./bin/benchmark.mjs",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
