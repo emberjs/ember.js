@@ -5,14 +5,14 @@ on:
     - cron: '0 20 * * 3' # weekly (Wednesday)
   workflow_dispatch:
 
+permissions:
+  contents: read # PAT used for push
+  
 jobs:
   tests:
     uses: ./.github/workflows/ci-jobs.yml
 
   release:
-    permissions:
-      contents: read # PAT used for push
-
     name: Tag + Push
     runs-on: ubuntu-latest
     needs: [ tests ]
@@ -31,9 +31,9 @@ jobs:
           export NEXT_ALPHA=`node bin/next-alpha-version.js ${LATEST_ALPHA}`
           echo "NEXT_ALPHA=$NEXT_ALPHA" >> $GITHUB_ENV
       - name: bump version
-        run: npm version ${{env.NEXT_ALPHA}} --allow-same-version --no-git-tag-version
+        run: npm version ${NEXT_ALPHA} --allow-same-version --no-git-tag-version
       - name: create tag
-        run: git tag v${{env.NEXT_ALPHA}}-ember-source
+        run: git tag v${NEXT_ALPHA}-ember-source
       - name: push tag
         # Push in a way that WILL trigger other workflows
-        run: git push https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_TOKEN }}@github.com/${GITHUB_REPOSITORY} v${{env.NEXT_ALPHA}}-ember-source
+        run: git push https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_TOKEN }}@github.com/${GITHUB_REPOSITORY} v${NEXT_ALPHA}-ember-source
