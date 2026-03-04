@@ -232,7 +232,7 @@ class ClassicRootState {
 
       let result = (this.result = iterator.sync());
 
-      associateDestroyableChild(owner, result);
+      associateDestroyableChild(this, result);
 
       this.render = errorLoopTransaction(() => {
         if (isDestroying(result) || isDestroyed(result)) return;
