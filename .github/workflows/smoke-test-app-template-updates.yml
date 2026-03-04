@@ -52,7 +52,7 @@ jobs:
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.PERSONAL_TOKEN }}
+          token: ${{ secrets.SMOKE_TEST_TEMPLATE_GEN_TOKEN }}
           branch: smoke-tests/update-app-template
           delete-branch: false
           commit-message: "Update smoke-tests/app-template"
@@ -88,7 +88,7 @@ jobs:
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.PERSONAL_TOKEN }}
+          token: ${{ secrets.SMOKE_TEST_TEMPLATE_GEN_TOKEN }}
           branch: smoke-tests/update-v2-app-template
           delete-branch: false
           commit-message: "Update smoke-tests/v2-app-template"
