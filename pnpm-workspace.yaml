@@ -4,7 +4,6 @@ packages:
   - 'packages/@glimmer/*'
   - 'packages/@glimmer-workspace/*'
   - 'packages/@handlebars/*'
+  - 'packages/@types/*'
   - 'packages/*/*/test'
   - 'smoke-tests/*'
-  - 'glimmer-vm/repo-metadata'
-  - 'glimmer-vm/packages/@types/*'
