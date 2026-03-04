@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+  
 jobs:
   tests:
     uses: ./.github/workflows/ci-jobs.yml
@@ -16,7 +19,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2 # zizmor: ignore[artipacked] creds are used for build-for-publishing.js
       - uses: ./.github/actions/setup
         with:
           node-version: 20

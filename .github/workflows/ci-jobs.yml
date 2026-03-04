@@ -14,6 +14,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: linting
         run: pnpm lint
@@ -28,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build types
         run: pnpm build:types
@@ -47,6 +51,8 @@ jobs:
         ts-version: ["5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build stable type definitions
         run: pnpm build:types
@@ -60,6 +66,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
@@ -94,6 +102,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
@@ -114,6 +124,8 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         env:
@@ -144,6 +156,8 @@ jobs:
       matrix: ${{fromJson(needs.lint.outputs.matrix)}}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
         with:
           use_lockfile: "false"
@@ -152,7 +166,9 @@ jobs:
       - name: test
         working-directory: smoke-tests/scenarios
         run: |
-          ${{ matrix.command }}
+          ${MATRIX_COMMAND}
+        env:
+          MATRIX_COMMAND: ${{ matrix.command }}
 
   node-test:
     name: Node.js Tests
@@ -160,6 +176,8 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         env:
@@ -174,6 +192,8 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: test
         run: pnpm test:blueprints
@@ -184,6 +204,8 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
@@ -202,6 +224,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Check that the perf script works, so we don't regress
         run: RUNS='2' pnpm bench

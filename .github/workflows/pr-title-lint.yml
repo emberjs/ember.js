@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
   pull-requests: read
 
 jobs:
@@ -61,6 +60,8 @@ jobs:
   comment-if-fix:
     name: Comment on PR if title includes "Fix" without a bracket tag
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Validate title
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
