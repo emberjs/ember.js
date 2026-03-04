@@ -235,7 +235,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
         });
 
         test(`ember test`, async function (assert) {
-          let result = await app.execute(`pnpm test:ember`);
+          let result = await app.execute(`pnpm test`);
           assert.equal(result.exitCode, 0, result.output);
         });
       });
