@@ -47,7 +47,7 @@ jobs:
             "$tmpdir/ember-test-app" \
             "$GITHUB_WORKSPACE/smoke-tests/app-template"
       - name: Install workspace deps
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
@@ -83,7 +83,7 @@ jobs:
             "$tmpdir/v2-app-template" \
             "$GITHUB_WORKSPACE/smoke-tests/v2-app-template"
       - name: Install workspace deps
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
