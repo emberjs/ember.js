@@ -88,7 +88,7 @@
     "eslint-plugin-unused-imports": "4.1.4",
     "execa": "^7.2.0",
     "fast-glob": "^3.3.3",
-    "glob": "^10.4.5",
+    "glob": "^11.0.0",
     "globals": "^15.15.0",
     "js-yaml": "^4.1.0",
     "knip": "^5.44.4",
