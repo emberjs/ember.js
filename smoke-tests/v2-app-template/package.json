@@ -23,7 +23,7 @@
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",
     "start": "vite",
-    "test": "vite build --mode test && testem ci"
+    "test": "NODE_ENV=development vite build --mode development && testem ci"
   },
   "exports": {
     "./tests/*": "./tests/*",
