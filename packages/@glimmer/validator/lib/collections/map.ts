@@ -85,7 +85,7 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
     return {
       next() {
         let { value, done } = iterator.next();
-        return { value: done ? (undefined as V) : value![1], done };
+        return { value: done ? (undefined as V) : value?.[1], done };
       },
       [Symbol.iterator]() {
         return this;
