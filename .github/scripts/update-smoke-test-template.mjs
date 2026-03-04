@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 const [appDir, targetDir, replaceTestScript = "false"] = process.argv.slice(2);
 
@@ -42,6 +43,12 @@ if (pkg.devDependencies && pkg.devDependencies["@glimmer/component"]) {
 if (pkg.devDependencies && pkg.devDependencies["ember-source"]) {
   pkg.devDependencies["ember-source"] = "workspace:*";
 }
+
+pkg.devDependencies = pkg.devDependencies || {};
+const trackedBuiltInsVersion = execSync("npm view tracked-built-ins version", {
+  encoding: "utf8"
+}).trim();
+pkg.devDependencies["tracked-built-ins"] = `^${trackedBuiltInsVersion}`;
 
 writeJson(pkgPath, pkg);
 
