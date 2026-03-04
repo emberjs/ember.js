@@ -206,7 +206,7 @@ async function copyHandwrittenDefinitions(inputDir) {
   let definitionModules = glob
     .sync('**/*.d.ts', {
       cwd: inputDir,
-      ignore: ['**/node_modules/**'],
+      ignore: ['**/node_modules/**', '**/@types/js-reporters/**'],
     })
     .filter((moduleName) => !REMAPPED_LOCATION_MODULES.some(({ input }) => input === moduleName));
 
