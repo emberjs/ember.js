@@ -34,16 +34,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Generate ember-test-app using classic blueprint
         run: |
           set -euo pipefail
           tmpdir=$(mktemp -d)
           echo "Using temp dir: $tmpdir"
           cd "$tmpdir"
-          npx ember-cli@latest new ember-test-app -b @ember-tooling/classic-build-app-blueprint --no-welcome --skip-git --skip-npm --ember-data=false
+          pnpm dlx ember-cli@latest new ember-test-app -b @ember-tooling/classic-build-app-blueprint --no-welcome --skip-git --skip-npm --ember-data=false
           node "$GITHUB_WORKSPACE/.github/scripts/update-smoke-test-template.mjs" \
             "$tmpdir/ember-test-app" \
             "$GITHUB_WORKSPACE/smoke-tests/app-template"
+      - name: Install workspace deps
+        run: pnpm install
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
@@ -66,16 +70,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Generate v2-app-template
         run: |
           set -euo pipefail
           tmpdir=$(mktemp -d)
           echo "Using temp dir: $tmpdir"
           cd "$tmpdir"
-          npx ember-cli@latest new v2-app-template --no-welcome --skip-git --skip-npm --ember-data=false
+          pnpm dlx ember-cli@latest new v2-app-template --no-welcome --skip-git --skip-npm --ember-data=false
           node "$GITHUB_WORKSPACE/.github/scripts/update-smoke-test-template.mjs" \
             "$tmpdir/v2-app-template" \
             "$GITHUB_WORKSPACE/smoke-tests/v2-app-template"
+      - name: Install workspace deps
+        run: pnpm install
 
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
