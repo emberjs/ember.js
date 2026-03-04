@@ -1,18 +1,23 @@
-'use strict';
+import SimpleDOM from 'simple-dom';
+import Component from 'ember-source/@ember/component/index.js';
+import { set } from 'ember-source/@ember/object/index.js';
+import { run } from 'ember-source/@ember/runloop/index.js';
+import { precompile } from 'ember-source/ember-template-compiler/index.js';
+import { createTemplateFactory } from 'ember-source/@ember/template-factory/index.js';
+import buildOwner from './build-owner.js';
 
-const SimpleDOM = require('simple-dom');
-const buildOwner = require('./build-owner');
-const { loadEmber, clearEmber } = require('./load-ember');
+function compile(templateString, options) {
+  let templateSpec = precompile(templateString, options);
+  return createTemplateFactory(JSON.parse(templateSpec));
+}
 
-module.exports = function (hooks) {
+export default function (hooks) {
   hooks.beforeEach(function () {
-    let { Ember, compile } = loadEmber();
-
     this.compile = compile;
-    this.Ember = Ember;
+    this.Ember = { Component, set };
+    this.Component = Component;
 
-    Ember.testing = true;
-    this.run = Ember.run;
+    this.run = run;
 
     setupComponentTest.call(this);
   });
@@ -30,17 +35,14 @@ module.exports = function (hooks) {
 
     this.run(this.owner, 'destroy');
     this.owner = null;
-    this.Ember = null;
-
-    clearEmber();
   });
-};
+}
 
 function setupComponentTest() {
   let module = this;
 
   module.element = new SimpleDOM.Document();
-  module.owner = buildOwner(this.Ember, { resolve: function () {} });
+  module.owner = buildOwner({ resolve: function () {} });
   module.owner.register('service:-document', new SimpleDOM.Document(), {
     instantiate: false,
   });
@@ -70,7 +72,7 @@ function setupComponentTest() {
   module.serializeElement = serializeElement;
   module.set = function (property, value) {
     module.run(function () {
-      module.Ember.set(module, property, value);
+      set(module, property, value);
     });
   };
 }

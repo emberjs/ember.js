@@ -1,6 +1,7 @@
-const setupAppTest = require('./helpers/setup-app');
+import setupAppTest from './helpers/setup-app.js';
+import { register } from './helpers/assert-html-matches.js';
 
-require('./helpers/assert-html-matches').register();
+register();
 
 QUnit.module('App Boot', function (hooks) {
   setupAppTest(hooks);
