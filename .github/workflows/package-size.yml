@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
-      - uses: wyvox/pkg-size@copilot/fix-deprecation-warning
+      - uses: wyvox/pkg-size@copilot/upgrade-all-dependencies
         with:
           build-command: "pnpm build"
           display-size: uncompressed, brotli
