@@ -1,11 +1,13 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 
-const emberSourceRoot = path.dirname(require.resolve('ember-source/package.json'));
+const require = createRequire(import.meta.url);
+const emberSourceRoot = dirname(require.resolve('ember-source/package.json'));
 
 QUnit.module('sourcemap validation', function () {
   QUnit.test(`ember.js has only a single sourcemaps comment`, function (assert) {
-    let jsPath = path.join(emberSourceRoot, 'dist', 'ember.debug.js');
+    let jsPath = join(emberSourceRoot, 'dist', 'ember.debug.js');
     assert.ok(fs.existsSync(jsPath));
 
     let contents = fs.readFileSync(jsPath, 'utf-8');

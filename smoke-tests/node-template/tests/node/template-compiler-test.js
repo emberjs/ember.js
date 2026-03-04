@@ -1,14 +1,16 @@
-const path = require('path');
+import { createRequire } from 'node:module';
+import { dirname, join, resolve } from 'node:path';
 
-const emberSourceRoot = path.dirname(require.resolve('ember-source/package.json'));
-const distPath = path.join(emberSourceRoot, 'dist');
+const require = createRequire(import.meta.url);
+const emberSourceRoot = dirname(require.resolve('ember-source/package.json'));
+const distPath = join(emberSourceRoot, 'dist');
 
 let templateCompiler;
 
 QUnit.module('ember-template-compiler.js', function () {
   QUnit.module('modern', function (hooks) {
     hooks.beforeEach(function () {
-      this.templateCompilerPath = path.resolve(path.join(distPath, 'ember-template-compiler.js'));
+      this.templateCompilerPath = resolve(join(distPath, 'ember-template-compiler.js'));
       templateCompiler = require(this.templateCompilerPath);
     });
 
