@@ -295,6 +295,7 @@
       "@ember/template-compiler/lib/-internal/primitives.js": "ember-source/@ember/template-compiler/lib/-internal/primitives.js",
       "@ember/template-compiler/lib/compile-options.js": "ember-source/@ember/template-compiler/lib/compile-options.js",
       "@ember/template-compiler/lib/dasherize-component-name.js": "ember-source/@ember/template-compiler/lib/dasherize-component-name.js",
+      "@ember/template-compiler/lib/plugins/allowed-globals.js": "ember-source/@ember/template-compiler/lib/plugins/allowed-globals.js",
       "@ember/template-compiler/lib/plugins/assert-against-attrs.js": "ember-source/@ember/template-compiler/lib/plugins/assert-against-attrs.js",
       "@ember/template-compiler/lib/plugins/assert-against-named-outlets.js": "ember-source/@ember/template-compiler/lib/plugins/assert-against-named-outlets.js",
       "@ember/template-compiler/lib/plugins/assert-input-helper-without-block.js": "ember-source/@ember/template-compiler/lib/plugins/assert-input-helper-without-block.js",
