@@ -4,6 +4,7 @@ import {
   STRICT_MODE_KEYWORDS,
   STRICT_MODE_TRANSFORMS,
 } from './plugins/index';
+import { ALLOWED_GLOBALS } from './plugins/allowed-globals';
 import type { EmberPrecompileOptions, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
@@ -39,6 +40,10 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
+      if (ALLOWED_GLOBALS.has(variable)) {
+        return variable in globalThis;
+      }
+
       if (inScope(variable, localScopeEvaluator)) {
         return !inScope(variable, globalScopeEvaluator);
       }
@@ -52,7 +57,9 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope;
+    options.lexicalScope = (variable: string) => {
+      return variable in scope;
+    };
 
     delete options.scope;
   }
