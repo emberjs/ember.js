@@ -95,7 +95,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
       (obj as any)[keyName] = value;
     }
 
-    if (currentValue !== value) {
+    if (!Object.is(currentValue, value)) {
       notifyPropertyChange(obj, keyName);
     }
   }

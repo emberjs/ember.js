@@ -72,7 +72,7 @@ export type ComputedPropertyCallback = ComputedPropertyGetterFunction | Computed
 
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
-function noop(): void {}
+function noop(): void { }
 /**
   `@computed` is a decorator that turns a JavaScript getter and setter into a
   computed property, which is a _cached, trackable value_. By default the getter
@@ -345,7 +345,7 @@ export class ComputedProperty extends ComputedDescriptor {
       assert(
         `Attempted to use @computed on ${keyName}, but it did not have a getter or a setter. You must either pass a get a function or getter/setter to @computed directly (e.g. \`@computed({ get() { ... } })\`) or apply @computed directly to a getter/setter`,
         propertyDesc &&
-          (typeof propertyDesc.get === 'function' || typeof propertyDesc.set === 'function')
+        (typeof propertyDesc.get === 'function' || typeof propertyDesc.set === 'function')
       );
 
       let { get, set } = propertyDesc;
@@ -374,9 +374,9 @@ export class ComputedProperty extends ComputedDescriptor {
     function addArg(property: string): void {
       assert(
         `Dependent keys containing @each only work one level deep. ` +
-          `You used the key "${property}" which is invalid. ` +
-          `Please create an intermediary computed property or ` +
-          `switch to using tracked properties.`,
+        `You used the key "${property}" which is invalid. ` +
+        `Please create an intermediary computed property or ` +
+        `switch to using tracked properties.`,
         DEEP_EACH_REGEX.test(property) === false
       );
 
@@ -531,7 +531,7 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     // allows setter to return the same value that is cached already
-    if (hadCachedValue && cachedValue === ret) {
+    if (hadCachedValue && Object.is(cachedValue, ret)) {
       return ret;
     }
 
