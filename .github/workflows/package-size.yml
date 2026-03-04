@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
-      - uses: wyvox/pkg-size@aab2f41c280b474f905b17f92a34063b8b8a5507
+      - uses: wyvox/pkg-size@029acee084efc5ab835fee5f515ae5c3fc7549c1
         with:
           build-command: "pnpm build"
           display-size: uncompressed, brotli
