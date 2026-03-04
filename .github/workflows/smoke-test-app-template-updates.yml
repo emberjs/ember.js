@@ -45,7 +45,8 @@ jobs:
           pnpm dlx ember-cli@latest new ember-test-app -b @ember-tooling/classic-build-app-blueprint --no-welcome --skip-git --skip-npm --ember-data=false
           node "$GITHUB_WORKSPACE/.github/scripts/update-smoke-test-template.mjs" \
             "$tmpdir/ember-test-app" \
-            "$GITHUB_WORKSPACE/smoke-tests/app-template"
+            "$GITHUB_WORKSPACE/smoke-tests/app-template" \
+            "true"
       - name: Install workspace deps
         run: pnpm install --no-frozen-lockfile
 

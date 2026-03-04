@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const [appDir, targetDir] = process.argv.slice(2);
+const [appDir, targetDir, replaceTestScript = "false"] = process.argv.slice(2);
 
 if (!appDir || !targetDir) {
   console.error("Usage: update-smoke-test-template.sh <appDir> <targetDir>");
@@ -25,7 +25,10 @@ fs.rmSync(path.join(resolvedAppDir, ".ember-cli"), { force: true });
 const pkgPath = path.join(resolvedAppDir, "package.json");
 const pkg = readJson(pkgPath);
 pkg.scripts = pkg.scripts || {};
-pkg.scripts.test = "ember test";
+const shouldReplaceTest = replaceTestScript === "true";
+if (shouldReplaceTest) {
+  pkg.scripts.test = "ember test";
+}
 
 if (pkg.devDependencies && pkg.devDependencies["@glimmer/component"]) {
   pkg.devDependencies["@glimmer/component"] = "workspace:^";
