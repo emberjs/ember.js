@@ -151,6 +151,27 @@ jobs:
         working-directory: smoke-tests/scenarios
         run: |
           ${{ matrix.command }}
+          
+  smoke-test-with-deprecations-removed:
+    name: Smoke tests with Deprecations Removed (Full Ember Apps)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.lint.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          use_lockfile: "false"
+      - name: build
+        run: pnpm build
+      - name: test
+        env:
+          OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+        working-directory: smoke-tests/scenarios
+        run: |
+          ${{ matrix.command }}
 
   node-test:
     name: Node.js Tests
