@@ -24,5 +24,7 @@ runs:
         registry-url: 'https://registry.npmjs.org'
         cache: pnpm
 
-    - run: pnpm install ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
+    - run: pnpm install ${INSTALL_OPTIONS}
+      env: 
+        INSTALL_OPTIONS: ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
       shell: bash
