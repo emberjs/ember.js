@@ -183,12 +183,6 @@ export function destroy(destroyable: Destroyable) {
     });
 
     meta.state = DESTROYED_STATE;
-
-    // Release references so GC can reclaim the destroyed tree
-    meta.parents = null;
-    meta.children = null;
-    meta.eagerDestructors = null;
-    meta.destructors = null;
   });
 }
 
