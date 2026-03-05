@@ -2778,7 +2778,7 @@ importers:
         version: 2.12.1(webpack@5.105.1)
       ember-cli:
         specifier: ~6.11.0
-        version: 6.11.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
+        version: 6.11.0(@types/node@22.19.11)
       ember-cli-babel:
         specifier: ^8.2.0
         version: 8.3.1(@babel/core@7.29.0)
@@ -3032,14 +3032,14 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1(@babel/core@7.29.0)
       ember-cli:
-        specifier: ~6.11.0
-        version: 6.11.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
+        specifier: ~6.10.2
+        version: 6.10.2(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
       ember-cli-babel:
         specifier: ^8.3.1
         version: 8.3.1(@babel/core@7.29.0)
       ember-cli-deprecation-workflow:
-        specifier: ^4.0.0
-        version: 4.0.1(@babel/core@7.29.0)
+        specifier: ^3.4.0
+        version: 3.4.0(ember-source@)
       ember-load-initializers:
         specifier: ^3.0.1
         version: 3.0.1(ember-source@)
@@ -3979,11 +3979,20 @@ packages:
   '@ember-tooling/blueprint-model@0.5.0':
     resolution: {integrity: sha512-2zAebSmmzpUO2wt6EyfX5TlcmvB9cTkteuZ3QhPmXLMthUpU5nUifcz3hlYcXPK7WM0HdO9qL4GdGQCoxhzaGg==}
 
+  '@ember-tooling/classic-build-addon-blueprint@6.10.0':
+    resolution: {integrity: sha512-pxXtpcU2VAHNow6L3x7Fqz8XShB6MyvivFl87meDQmHIKNQVUTOH1KltyQekfDTwnEzM8pmtoAU/FqOe0TkFVw==}
+
   '@ember-tooling/classic-build-addon-blueprint@6.11.0':
     resolution: {integrity: sha512-YDZlXLg+nzp2wDGEA7eJKTxF7d9d6WEjgALQkoOnardWQCS0Trr3Ce2itVySsadB8CX1Sqrze4qCQjw1XMAjqg==}
 
+  '@ember-tooling/classic-build-app-blueprint@6.10.0':
+    resolution: {integrity: sha512-lTyYGTnsq4FFeTAJ7ZxGwmwF0T6fuiZeqdMp34IHoiUC2lMV0yFLFpSChiaxiWgz1yTaagz8pJ9Kv+XbUZZVmA==}
+
   '@ember-tooling/classic-build-app-blueprint@6.11.0':
     resolution: {integrity: sha512-ZqwAC+3X3HFcBcmbyyBRh0KXkQSuW+L6Rry9Q7vmGFoQ+wQQnDQ9MS+TXz72VqP47+MGfZRJXWfCeqEUTpuSRg==}
+
+  '@ember/app-blueprint@6.10.4':
+    resolution: {integrity: sha512-9MrxcopYDau1s7icCoQJxPGYg+x0g86PPMqr4YzKKyzLYl33PbyH2zFwZahGOiUNVfc9itdB1TfXdIU64fBnqQ==}
 
   '@ember/app-blueprint@6.11.1':
     resolution: {integrity: sha512-Bq9+s/EQYPYVFNU3ZXgwxLuF9WbPtyEcv0sSi5f29WIvt7vxVbeF+IADLlLimT+GYTBYfqjdFCsUlkhyM1pI8A==}
@@ -7799,8 +7808,11 @@ packages:
     peerDependencies:
       ember-cli: ^3.2.0 || >=4.0.0
 
-  ember-cli-deprecation-workflow@4.0.1:
-    resolution: {integrity: sha512-XJzUZVXyb6/nFKU7GzGRlHlcAl4KtkioBTjfuIHp1aysbRZ6XxYLSPtP090EbOxQBtYwAPsH2kPAtPS86tL2RA==}
+  ember-cli-deprecation-workflow@3.4.0:
+    resolution: {integrity: sha512-Ksrmib4mjD4xa0dqFgxJLBwkSp9EVYH6jSqe2NpODlBKEAZhsVzQj5wKPnC1dXfK3Erq/r1Fh3q4g46FZiCUiw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      ember-source: '>= 3.28.0'
 
   ember-cli-get-component-path-option@1.0.0:
     resolution: {integrity: sha512-k47TDwcJ2zPideBCZE8sCiShSxQSpebY2BHcX2DdipMmBox5gsfyVrbKJWIHeSTTKyEUgmBIvQkqTOozEziCZA==}
@@ -7876,6 +7888,11 @@ packages:
   ember-cli-yuidoc@0.9.1:
     resolution: {integrity: sha512-4pb3OKXhHCeUux6a7SDKziLDWdDciJwzmUld3Fumt60RLcH/nIk5lPdI0o+UXJ9NfP+WcSvvpWWroFmWqWAWWA==}
     engines: {node: '>= 4.0.0'}
+
+  ember-cli@6.10.2:
+    resolution: {integrity: sha512-NsVKAphIjU2chk/rskIjnIqU5ZN9mbDsczDrn7Mu5RZYa60cULjt2XMWQAcMMak6XO8ve8KDf7UyYe6IyKoTXQ==}
+    engines: {node: '>= 20.19.0'}
+    hasBin: true
 
   ember-cli@6.11.0:
     resolution: {integrity: sha512-c+5m4KgPr1hi7+64+SAfphIeCFZMuKTR+QSM0PPmEJhXibtCJd+8Ag5IrBMJ5urhX4jUtZ3skc0/Zln67CiGjQ==}
@@ -15243,6 +15260,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@ember-tooling/classic-build-addon-blueprint@6.10.0':
+    dependencies:
+      '@ember-tooling/blueprint-model': 0.5.0
+      chalk: 5.6.2
+      ember-cli-normalize-entity-name: 1.0.0
+      ember-cli-string-utils: 1.1.0
+      fs-extra: 11.3.3
+      lodash: 4.17.23
+      silent-error: 1.1.1
+      sort-package-json: 2.15.1
+      walk-sync: 3.0.0
+    transitivePeerDependencies:
+      - supports-color
+
   '@ember-tooling/classic-build-addon-blueprint@6.11.0':
     dependencies:
       '@ember-tooling/blueprint-model': 0.5.0
@@ -15257,6 +15288,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@ember-tooling/classic-build-app-blueprint@6.10.0':
+    dependencies:
+      '@ember-tooling/blueprint-model': 0.5.0
+      chalk: 5.6.2
+      ember-cli-string-utils: 1.1.0
+    transitivePeerDependencies:
+      - supports-color
+
   '@ember-tooling/classic-build-app-blueprint@6.11.0':
     dependencies:
       '@ember-tooling/blueprint-model': 0.5.0
@@ -15264,6 +15303,15 @@ snapshots:
       ember-cli-string-utils: 1.1.0
     transitivePeerDependencies:
       - supports-color
+
+  '@ember/app-blueprint@6.10.4':
+    dependencies:
+      chalk: 4.1.2
+      ejs: 3.1.10
+      ember-cli-string-utils: 1.1.0
+      lodash: 4.17.23
+      sort-package-json: 3.6.1
+      walk-sync: 3.0.0
 
   '@ember/app-blueprint@6.11.1':
     dependencies:
@@ -20109,7 +20157,7 @@ snapshots:
   ember-cli-dependency-checker@3.3.3(ember-cli@6.11.0(@types/node@22.19.11)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 6.11.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
+      ember-cli: 6.11.0(@types/node@22.19.11)
       find-yarn-workspace-root: 2.0.0
       is-git-url: 1.0.0
       resolve: 1.22.11
@@ -20124,12 +20172,12 @@ snapshots:
       resolve: 1.22.11
       semver: 5.7.2
 
-  ember-cli-deprecation-workflow@4.0.1(@babel/core@7.29.0):
+  ember-cli-deprecation-workflow@3.4.0(ember-source@):
     dependencies:
-      '@embroider/addon-shim': 1.10.2
-      decorator-transforms: 2.3.1(@babel/core@7.29.0)
+      '@babel/core': 7.29.0
+      ember-cli-babel: 8.3.1(@babel/core@7.29.0)
+      ember-source: 'link:'
     transitivePeerDependencies:
-      - '@babel/core'
       - supports-color
 
   ember-cli-get-component-path-option@1.0.0: {}
@@ -20289,7 +20337,152 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli@6.11.0(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7):
+  ember-cli@6.10.2(@types/node@22.19.11)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7):
+    dependencies:
+      '@ember-tooling/blueprint-blueprint': 0.2.1
+      '@ember-tooling/blueprint-model': 0.5.0
+      '@ember-tooling/classic-build-addon-blueprint': 6.10.0
+      '@ember-tooling/classic-build-app-blueprint': 6.10.0
+      '@ember/app-blueprint': 6.10.4
+      '@pnpm/find-workspace-dir': 1000.1.4
+      babel-remove-types: 1.1.0
+      broccoli: 4.0.0
+      broccoli-concat: 4.2.5
+      broccoli-config-loader: 1.0.1
+      broccoli-config-replace: 1.1.2
+      broccoli-debug: 0.6.5
+      broccoli-funnel: 3.0.8
+      broccoli-funnel-reducer: 1.0.0
+      broccoli-merge-trees: 4.2.0
+      broccoli-middleware: 2.1.1
+      broccoli-slow-trees: 3.1.0
+      broccoli-source: 3.0.1
+      broccoli-stew: 3.0.0
+      calculate-cache-key-for-tree: 2.0.0
+      capture-exit: 2.0.0
+      chalk: 5.6.2
+      ci-info: 4.4.0
+      clean-base-url: 1.0.0
+      compression: 1.8.1
+      configstore: 7.1.0
+      console-ui: 3.1.2
+      content-tag: 4.1.0
+      core-object: 3.1.5
+      dag-map: 2.0.2
+      diff: 8.0.3
+      ember-cli-is-package-missing: 1.0.0
+      ember-cli-normalize-entity-name: 1.0.0
+      ember-cli-preprocess-registry: 5.0.1
+      ember-cli-string-utils: 1.1.0
+      ensure-posix-path: 1.1.1
+      execa: 9.6.1
+      exit: 0.1.2
+      express: 5.2.1
+      filesize: 11.0.13
+      find-up: 8.0.0
+      find-yarn-workspace-root: 2.0.0
+      fs-extra: 11.3.3
+      fs-tree-diff: 2.0.1
+      get-caller-file: 2.0.5
+      git-repo-info: 2.1.1
+      glob: 13.0.2
+      heimdalljs: 0.2.6
+      heimdalljs-fs-monitor: 1.1.2
+      heimdalljs-graph: 1.0.0
+      heimdalljs-logger: 0.1.10
+      http-proxy: 1.18.1
+      inflection: 3.0.2
+      inquirer: 13.3.0(@types/node@22.19.11)
+      is-git-url: 1.0.0
+      is-language-code: 5.1.3
+      lodash: 4.17.23
+      markdown-it: 14.1.0
+      markdown-it-terminal: 0.4.0(markdown-it@14.1.0)
+      minimatch: 10.2.4
+      morgan: 1.10.1
+      nopt: 3.0.6
+      npm-package-arg: 13.0.2
+      os-locale: 6.0.2
+      p-defer: 4.0.1
+      portfinder: 1.0.38
+      promise-map-series: 0.3.0
+      promise.hash.helper: 1.0.8
+      quick-temp: 0.1.9
+      resolve: 1.22.11
+      resolve-package-path: 4.0.3
+      safe-stable-stringify: 2.5.0
+      sane: 5.0.1
+      semver: 7.7.4
+      silent-error: 1.1.1
+      sort-package-json: 3.6.1
+      symlink-or-copy: 1.3.1
+      temp: 0.9.4
+      testem: 3.17.0(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.7)
+      tiny-lr: 2.0.0
+      tree-sync: 2.1.0
+      walk-sync: 4.0.1
+      watch-detector: 1.0.2
+      workerpool: 10.0.1
+      yam: 1.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - arc-templates
+      - atpl
+      - babel-core
+      - bracket-template
+      - bufferutil
+      - coffee-script
+      - debug
+      - dot
+      - dust
+      - dustjs-helpers
+      - dustjs-linkedin
+      - eco
+      - ect
+      - ejs
+      - haml-coffee
+      - hamlet
+      - hamljs
+      - handlebars
+      - hogan.js
+      - htmling
+      - jade
+      - jazz
+      - jqtpl
+      - just
+      - liquid-node
+      - liquor
+      - marko
+      - mote
+      - nunjucks
+      - plates
+      - pug
+      - qejs
+      - ractive
+      - razor-tmpl
+      - react
+      - react-dom
+      - slm
+      - squirrelly
+      - supports-color
+      - swig
+      - swig-templates
+      - teacup
+      - templayed
+      - then-jade
+      - then-pug
+      - tinyliquid
+      - toffee
+      - twig
+      - twing
+      - underscore
+      - utf-8-validate
+      - vash
+      - velocityjs
+      - walrus
+      - whiskers
+
+  ember-cli@6.11.0(@types/node@22.19.11):
     dependencies:
       '@ember-tooling/blueprint-blueprint': 0.2.1
       '@ember-tooling/blueprint-model': 0.5.0
