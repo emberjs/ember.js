@@ -2,6 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import type { GlobalContext } from '@glimmer/global-context';
 import { unwrap } from '@glimmer/debug-util';
 import {
+  _hasDestroyableChildren,
   assertDestroyablesDestroyed,
   associateDestroyableChild,
   destroy,
@@ -382,6 +383,23 @@ module('Destroyables', (hooks) => {
     flush();
 
     assert.verifySteps(['child destructor', 'parent destructor'], 'destructors run bottom up');
+  });
+
+  test('parent no longer references child after cascaded destruction', (assert) => {
+    const parent = {};
+    const child = {};
+
+    associateDestroyableChild(parent, child);
+
+    assert.true(_hasDestroyableChildren(parent), 'parent has children before destruction');
+
+    destroy(parent);
+    flush();
+
+    assert.false(
+      _hasDestroyableChildren(parent),
+      'parent metadata releases child reference during cascaded destruction, allowing GC to reclaim the tree'
+    );
   });
 
   if (DEBUG) {
