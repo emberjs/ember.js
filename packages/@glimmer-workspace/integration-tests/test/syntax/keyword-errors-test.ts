@@ -24,7 +24,7 @@ for (const keyword of KEYWORDS) {
     'keyword can be used as a value in strict mode'() {
       preprocess(`{{some-helper ${keyword}}}`, {
         strictMode: true,
-        locals: ['some-helper', keyword],
+        scope: Object.fromEntries(['some-helper', keyword].map((k) => [k, undefined])),
         meta: { moduleName: 'test-module' },
       });
     }
@@ -49,7 +49,11 @@ for (const keyword of KEYWORDS) {
             {{some-helper ${keyword}}}
           {{/let}}
         `,
-        { strictMode: true, locals: ['some-helper'], meta: { moduleName: 'test-module' } }
+        {
+          strictMode: true,
+          scope: { 'some-helper': undefined },
+          meta: { moduleName: 'test-module' },
+        }
       );
     }
 
@@ -75,7 +79,7 @@ for (const keyword of KEYWORDS) {
         `,
         {
           strictMode: true,
-          locals: ['my-component', 'some-helper'],
+          scope: { 'my-component': undefined, 'some-helper': undefined },
           meta: { moduleName: 'test-module' },
         }
       );
@@ -103,7 +107,7 @@ for (const keyword of KEYWORDS) {
         `,
         {
           strictMode: true,
-          locals: ['SomeComponent', 'some-helper'],
+          scope: { SomeComponent: undefined, 'some-helper': undefined },
           meta: { moduleName: 'test-module' },
         }
       );
@@ -135,7 +139,7 @@ for (const keyword of KEYWORDS) {
         `,
         {
           strictMode: true,
-          locals: ['SomeComponent', 'some-helper'],
+          scope: { SomeComponent: undefined, 'some-helper': undefined },
           meta: { moduleName: 'test-module' },
         }
       );

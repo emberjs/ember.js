@@ -13,6 +13,9 @@ patchedDependencies:
   '@tracerbench/core@8.0.1':
     hash: 94ed69d4e124c0c94f1c1e3332668ae5d3265509b12cc97dd634feee8ed7e846
     path: patches/@tracerbench__core@8.0.1.patch
+  babel-plugin-ember-template-compilation@3.0.0-alpha.4:
+    hash: db79106617e190620c0f57fb4e6fac7177711d439755438cbedfbe69fb676362
+    path: patches/babel-plugin-ember-template-compilation@3.0.0-alpha.4.patch
 
 importers:
 
@@ -150,7 +153,7 @@ importers:
         version: 1.0.0(@babel/core@7.29.0)
       babel-plugin-ember-template-compilation:
         specifier: 3.0.0-alpha.4
-        version: 3.0.0-alpha.4
+        version: 3.0.0-alpha.4(patch_hash=db79106617e190620c0f57fb4e6fac7177711d439755438cbedfbe69fb676362)
       brotli:
         specifier: ^1.3.3
         version: 1.3.3
@@ -18631,7 +18634,7 @@ snapshots:
       '@glimmer/syntax': 0.95.0
       babel-import-util: 3.0.1
 
-  babel-plugin-ember-template-compilation@3.0.0-alpha.4:
+  babel-plugin-ember-template-compilation@3.0.0-alpha.4(patch_hash=db79106617e190620c0f57fb4e6fac7177711d439755438cbedfbe69fb676362):
     dependencies:
       '@glimmer/syntax': 0.95.0
       babel-import-util: 3.0.1

@@ -33,6 +33,13 @@ export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrec
     }
   );
 
+  // Preserve lazy-evaluated property descriptors (e.g., scope getter from babel plugin)
+  // Object.assign eagerly evaluates getters, so we re-apply the original descriptor.
+  const scopeDesc = Object.getOwnPropertyDescriptor(_options, 'scope');
+  if (scopeDesc && 'get' in scopeDesc) {
+    Object.defineProperty(options, 'scope', scopeDesc);
+  }
+
   // move `moduleName` into `meta` property
   if (options.moduleName) {
     let meta = options.meta;

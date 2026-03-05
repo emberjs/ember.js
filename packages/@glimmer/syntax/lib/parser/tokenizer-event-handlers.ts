@@ -799,10 +799,7 @@ export function preprocess(
     end: offsets.endPosition,
   };
 
-  let template = new TokenizerEventHandlers(source, entityParser, mode).parse(
-    ast,
-    []
-  );
+  let template = new TokenizerEventHandlers(source, entityParser, mode).parse(ast, []);
 
   if (options.plugins?.ast) {
     for (const transform of options.plugins.ast) {

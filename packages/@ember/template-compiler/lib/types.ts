@@ -1,8 +1,4 @@
-import type {
-  ASTPluginEnvironment,
-  builders,
-  PrecompileOptions,
-} from '@glimmer/syntax';
+import type { ASTPluginEnvironment, builders, PrecompileOptions } from '@glimmer/syntax';
 
 export type Builders = typeof builders;
 
@@ -12,15 +8,13 @@ export type Builders = typeof builders;
  * typing. Here export the interface subclass with no modification.
  */
 
-export type PluginFunc = NonNullable<
-  NonNullable<PrecompileOptions['plugins']>['ast']
->[number];
+export type PluginFunc = NonNullable<NonNullable<PrecompileOptions['plugins']>['ast']>[number];
 
 interface Plugins {
   ast: PluginFunc[];
 }
 
-export interface EmberPrecompileOptions extends PrecompileOptions {
+export interface EmberPrecompileOptions extends Omit<PrecompileOptions, 'scope'> {
   isProduction?: boolean;
   moduleName?: string;
   plugins?: Plugins;

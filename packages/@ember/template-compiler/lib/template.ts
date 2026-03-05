@@ -3,7 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { getTemplateLocals } from '@glimmer/syntax';
+import { type PrecompileOptions, getTemplateLocals } from '@glimmer/syntax';
 import compileOptions from './compile-options';
 import { ALLOWED_GLOBALS } from './plugins/allowed-globals';
 import type { EmberPrecompileOptions } from './types';
@@ -252,7 +252,8 @@ export function template(
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
-  const source = glimmerPrecompile(templateString, normalizedOptions);
+  // compileOptions() resolves function-form scope to a plain object, so the cast is safe
+  const source = glimmerPrecompile(templateString, normalizedOptions as PrecompileOptions);
   const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
 
   setComponentTemplate(template, component);

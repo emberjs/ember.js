@@ -4,10 +4,7 @@ import type {
   SerializedTemplateWithLazyBlock,
   TemplateJavascript,
 } from '@glimmer/interfaces';
-import type {
-  PrecompileOptions,
-  TemplateIdFn,
-} from '@glimmer/syntax';
+import type { PrecompileOptions, TemplateIdFn } from '@glimmer/syntax';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { normalize, src } from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';

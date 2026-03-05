@@ -100,12 +100,10 @@ export function resolveComponent(
   }
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let {
-      scopeValues,
-      owner,
-    } = meta;
+    let lexicalName = (expr as Expressions.GetLexicalSymbol)[1];
+    let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
-      expr[1]
+      lexicalName
     ];
 
     then(
@@ -113,16 +111,17 @@ export function resolveComponent(
         definition as object,
         expect(owner, 'BUG: expected owner when resolving component definition'),
         false,
-        expr[1]
+        lexicalName
       )
     );
   } else {
+    let freeExpr = expr as Expressions.GetFree;
     let {
       symbols: { upvars },
       owner,
     } = assertResolverInvariants(meta);
 
-    let name = unwrap(upvars[expr[1]]);
+    let name = unwrap(upvars[freeExpr[1]]);
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (DEBUG && (typeof definition !== 'object' || definition === null)) {
@@ -156,9 +155,10 @@ export function resolveHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
+    let lexicalName = (expr as Expressions.GetLexicalSymbol)[1];
     let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
-      expr[1]
+      lexicalName
     ];
 
     then(constants.helper(definition as object));
@@ -167,12 +167,13 @@ export function resolveHelper(
       lookupBuiltInHelper(expr as Expressions.GetStrictFree, resolver, meta, constants, 'helper')
     );
   } else {
+    let freeExpr = expr as Expressions.GetFree;
     let {
       symbols: { upvars },
       owner,
     } = assertResolverInvariants(meta);
 
-    let name = unwrap(upvars[expr[1]]);
+    let name = unwrap(upvars[freeExpr[1]]);
     let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
     if (DEBUG && helper === null) {
@@ -207,20 +208,19 @@ export function resolveModifier(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let {
-      scopeValues,
-      symbols: { lexical },
-    } = meta;
+    let lexicalName = (expr as Expressions.GetLexicalSymbol)[1];
+    let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
-      expr[1]
+      lexicalName
     ];
 
-    then(constants.modifier(definition as object, expr[1]));
+    then(constants.modifier(definition as object, lexicalName));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
+    let freeExpr = expr as Expressions.GetFree;
     let {
       symbols: { upvars },
     } = assertResolverInvariants(meta);
-    let name = unwrap(upvars[expr[1]]);
+    let name = unwrap(upvars[freeExpr[1]]);
     let modifier = resolver?.lookupBuiltInModifier?.(name) ?? null;
 
     if (DEBUG && modifier === null) {
@@ -237,11 +237,12 @@ export function resolveModifier(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     then(constants.modifier(modifier!, name));
   } else {
+    let freeExpr = expr as Expressions.GetFree;
     let {
       symbols: { upvars },
       owner,
     } = assertResolverInvariants(meta);
-    let name = unwrap(upvars[expr[1]]);
+    let name = unwrap(upvars[freeExpr[1]]);
     let modifier = resolver?.lookupModifier?.(name, owner) ?? null;
 
     if (DEBUG && modifier === null) {
@@ -277,19 +278,17 @@ export function resolveComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let {
-      scopeValues,
-      owner,
-    } = meta;
+    let lexicalName = (expr as Expressions.GetLexicalSymbol)[1];
+    let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
-      expr[1]
+      lexicalName
     ];
 
     let component = constants.component(
       definition as object,
       expect(owner, 'BUG: expected owner when resolving component definition'),
       true,
-      expr[1]
+      lexicalName
     );
 
     if (component !== null) {
@@ -325,12 +324,13 @@ export function resolveComponentOrHelper(
       )
     );
   } else {
+    let freeExpr = expr as Expressions.GetFree;
     let {
       symbols: { upvars },
       owner,
     } = assertResolverInvariants(meta);
 
-    let name = unwrap(upvars[expr[1]]);
+    let name = unwrap(upvars[freeExpr[1]]);
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {
@@ -372,12 +372,10 @@ export function resolveOptionalComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let {
-      scopeValues,
-      owner,
-    } = meta;
+    let lexicalName = (expr as Expressions.GetLexicalSymbol)[1];
+    let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
-      expr[1]
+      lexicalName
     ];
 
     if (
@@ -393,7 +391,7 @@ export function resolveOptionalComponentOrHelper(
       definition,
       expect(owner, 'BUG: expected owner when resolving component definition'),
       true,
-      expr[1]
+      lexicalName
     );
 
     if (component !== null) {
@@ -414,12 +412,13 @@ export function resolveOptionalComponentOrHelper(
       lookupBuiltInHelper(expr as Expressions.GetStrictFree, resolver, meta, constants, 'value')
     );
   } else {
+    let freeExpr = expr as Expressions.GetFree;
     let {
       symbols: { upvars },
       owner,
     } = assertResolverInvariants(meta);
 
-    let name = unwrap(upvars[expr[1]]);
+    let name = unwrap(upvars[freeExpr[1]]);
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {

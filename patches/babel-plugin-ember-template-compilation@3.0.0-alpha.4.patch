@@ -1,0 +1,20 @@
+diff --git a/src/plugin.js b/src/plugin.js
+index dafce0966141cbf1ec4793454259c722172e55db..b5de73c1772c5a521711ce8c7c5f388121955f72 100644
+--- a/src/plugin.js
++++ b/src/plugin.js
+@@ -225,12 +225,12 @@ function buildPrecompileOptions(babel, target, state, normalizedOpts, template,
+     };
+     for (let [key, value] of Object.entries(userTypedOptions)) {
+         if (key !== 'scope') {
+-            // `scope` in the user-facing API becomes `locals` in the low-level
+-            // ember-template-compiler API
++            // `scope` in the user-facing API becomes `scope` (Record<string, unknown>) in the low-level
++            // ember-template-compiler API (as a scope bag object)
+             output[key] = value;
+         }
+     }
+-    output.locals = scope.locals;
++    Object.defineProperty(output, "scope", { get: () => Object.fromEntries(scope.locals.map(l => [l, undefined])), enumerable: true, configurable: true });
+     if (config.rfc931Support) {
+         output.strictMode = true;
+     }

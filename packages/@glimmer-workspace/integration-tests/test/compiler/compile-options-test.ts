@@ -28,10 +28,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     assert.strictEqual(wire.moduleName, 'my/module-name', 'Template has correct meta');
   });
 
-  function compile(
-    template: string,
-    scopeObj: Record<string, unknown>,
-  ) {
+  function compile(template: string, scopeObj: Record<string, unknown>) {
     let source = precompile(template, {
       scope: scopeObj,
     });
