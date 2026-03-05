@@ -16,17 +16,11 @@
     "access": "public",
     "exports": {
       ".": {
-        "development": {
-          "types": "./dist/dev/index.d.ts",
-          "default": "./dist/dev/index.js"
+        "node": {
+          "require": "./dist/cjs/index.cjs",
+          "import": "./dist/es/index.js"
         },
-        "require": {
-          "default": "./dist/dev/index.cjs"
-        },
-        "default": {
-          "types": "./dist/prod/index.d.ts",
-          "default": "./dist/prod/index.js"
-        }
+        "default": "./dist/es/index.js"
       }
     },
     "types": "dist/dev/index.d.ts"
@@ -35,7 +29,6 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "rollup -c rollup.config.mjs",
     "test:publint": "publint"
   },
   "dependencies": {
