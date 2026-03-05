@@ -30,14 +30,25 @@ module('[glimmer-compiler] precompile', ({ test }) => {
 
   function compile(
     template: string,
-    locals: string[],
-    evaluate: (source: string) => WireFormat.SerializedTemplateWithLazyBlock
+    scopeObj: Record<string, unknown>,
   ) {
     let source = precompile(template, {
-      lexicalScope: (variable: string) => locals.includes(variable),
+      scope: scopeObj,
     });
 
-    let wire = evaluate(`(${source})`);
+    // Build an evaluator that puts scope values into local variable scope.
+    // We avoid using `new Function(name, ...)` because some scope keys like
+    // `this` are reserved words and can't be used as parameter names.
+    const argNames = Object.keys(scopeObj).filter((n) => n !== 'this');
+    const argValues = argNames.map((n) => scopeObj[n]);
+    const hasThis = 'this' in scopeObj;
+    const fn = new Function(...argNames, `return (${source})`);
+    let wire: WireFormat.SerializedTemplateWithLazyBlock;
+    if (hasThis) {
+      wire = fn.call(scopeObj['this'], ...argValues) as WireFormat.SerializedTemplateWithLazyBlock;
+    } else {
+      wire = fn(...argValues) as WireFormat.SerializedTemplateWithLazyBlock;
+    }
 
     return {
       ...wire,
@@ -45,11 +56,9 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     };
   }
 
-  test('lexicalScope is used if present', (assert) => {
-    let wire = compile(`<hello /><div />`, ['hello'], (source) => eval(source));
-
+  test('scope is used if present', (assert) => {
     const hello = { varname: 'hello' };
-    assert.ok(hello, 'avoid unused variable lint');
+    let wire = compile(`<hello /><div />`, { hello });
 
     let [statements] = wire.block;
     let [[, componentNameExpr], ...divExpr] = statements as [
@@ -57,12 +66,12 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       ...WireFormat.Statement[],
     ];
 
-    assert.deepEqual(wire.scope?.(), [hello]);
+    assert.deepEqual(wire.scope?.(), { hello });
 
     assert.deepEqual(
       componentNameExpr,
-      [SexpOpcodes.GetLexicalSymbol, 0],
-      'The component invocation is for the lexical symbol `hello` (the 0th lexical entry)'
+      [SexpOpcodes.GetLexicalSymbol, 'hello'],
+      'The component invocation is for the lexical symbol `hello`'
     );
 
     assert.deepEqual(divExpr, [
@@ -72,11 +81,9 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     ]);
   });
 
-  test('lexicalScope works if the component name is a path', (assert) => {
-    let wire = compile(`<f.hello /><div />`, ['f'], (source) => eval(source));
-
+  test('scope works if the component name is a path', (assert) => {
     const f = {};
-    assert.ok(f, 'avoid unused variable lint');
+    let wire = compile(`<f.hello /><div />`, { f });
 
     let [statements] = wire.block;
     let [[, componentNameExpr], ...divExpr] = statements as [
@@ -84,11 +91,11 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       ...WireFormat.Statement[],
     ];
 
-    assert.deepEqual(wire.scope?.(), [f]);
+    assert.deepEqual(wire.scope?.(), { f });
     assert.deepEqual(
       componentNameExpr,
-      [SexpOpcodes.GetLexicalSymbol, 0, ['hello']],
-      'The component invocation is for the lexical symbol `hello` (the 0th lexical entry)'
+      [SexpOpcodes.GetLexicalSymbol, 'f', ['hello']],
+      'The component invocation is for the lexical symbol `f` with path `hello`'
     );
 
     assert.deepEqual(divExpr, [
@@ -213,19 +220,15 @@ module('[glimmer-compiler] precompile', ({ test }) => {
 
   test('when "this" in in locals, it compiles to GetLexicalSymbol', (assert) => {
     let target = { message: 'hello' };
-    let _wire: ReturnType<typeof compile>;
-    (function () {
-      _wire = compile(`{{this.message}}`, ['this'], (source) => eval(source));
-    }).call(target);
-    let wire = _wire!;
-    assert.deepEqual(wire.scope?.(), [target]);
+    let wire = compile(`{{this.message}}`, { this: target });
+    assert.deepEqual(wire.scope?.(), { this: target });
     assert.deepEqual(wire.block[0], [
-      [SexpOpcodes.Append, [SexpOpcodes.GetLexicalSymbol, 0, ['message']]],
+      [SexpOpcodes.Append, [SexpOpcodes.GetLexicalSymbol, 'this', ['message']]],
     ]);
   });
 
   test('when "this" is not in locals, it compiles to GetSymbol', (assert) => {
-    let wire = compile(`{{this.message}}`, [], (source) => eval(source));
+    let wire = compile(`{{this.message}}`, {});
     assert.strictEqual(wire.scope, undefined);
     assert.deepEqual(wire.block[0], [
       [SexpOpcodes.Append, [SexpOpcodes.GetSymbol, 0, ['message']]],

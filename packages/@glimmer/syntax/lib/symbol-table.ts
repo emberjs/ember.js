@@ -12,7 +12,7 @@ export interface Upvar {
 
 interface SymbolTableOptions {
   customizeComponentName: (input: string) => string;
-  lexicalScope: (variable: string) => boolean;
+  scope: Record<string, unknown>;
 }
 
 export abstract class SymbolTable {
@@ -81,7 +81,7 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   hasLexical(name: string): boolean {
-    return this.options.lexicalScope(name);
+    return name in this.options.scope;
   }
 
   hasKeyword(name: string): boolean {
@@ -97,7 +97,7 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   has(name: string): boolean {
-    return this.templateLocals.includes(name);
+    return this.hasLexical(name);
   }
 
   get(name: string): [number, boolean] {
@@ -117,7 +117,11 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   getDebugInfo(): Core.DebugSymbols {
-    return [this.getLocalsMap(), this.named];
+    return [
+      this.getLocalsMap(),
+      this.named,
+      Object.fromEntries(this.usedTemplateLocals.map((s, i) => [s, i])),
+    ];
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
@@ -220,12 +224,16 @@ export class BlockSymbolTable extends SymbolTable {
     return dict;
   }
 
-  getDebugInfo(): [locals: Record<string, number>, upvars: Record<string, number>] {
+  getDebugInfo(): Core.DebugSymbols {
     const locals = this.getLocalsMap();
     const root = this.root();
     const named = root.named;
 
-    return [{ ...locals, ...named }, Object.fromEntries(root.upvars.map((s, i) => [s, i]))];
+    return [
+      { ...locals, ...named },
+      Object.fromEntries(root.upvars.map((s, i) => [s, i])),
+      Object.fromEntries(root.usedTemplateLocals.map((s, i) => [s, i])),
+    ];
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {

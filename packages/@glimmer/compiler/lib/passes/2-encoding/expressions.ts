@@ -86,11 +86,14 @@ export class ExpressionEncoder {
 
   Local({
     isTemplateLocal,
+    name,
     symbol,
   }: ASTv2.LocalVarReference):
     | WireFormat.Expressions.GetSymbol
     | WireFormat.Expressions.GetLexicalSymbol {
-    return [isTemplateLocal ? SexpOpcodes.GetLexicalSymbol : SexpOpcodes.GetSymbol, symbol];
+    return isTemplateLocal
+      ? [SexpOpcodes.GetLexicalSymbol, name]
+      : [SexpOpcodes.GetSymbol, symbol];
   }
 
   Keyword({ symbol }: ASTv2.KeywordExpression): WireFormat.Expressions.GetStrictFree {

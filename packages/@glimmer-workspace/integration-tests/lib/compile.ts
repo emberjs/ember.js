@@ -4,7 +4,7 @@ import type {
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
-import type { PrecompileOptions, PrecompileOptionsWithLexicalScope } from '@glimmer/syntax';
+import type { PrecompileOptions } from '@glimmer/syntax';
 import { precompileJSON } from '@glimmer/compiler';
 import { templateFactory } from '@glimmer/opcode-compiler';
 
@@ -19,12 +19,14 @@ let templateId = 0;
 
 export function createTemplate(
   templateSource: Nullable<string>,
-  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = {},
+  options: PrecompileOptions = {},
   scopeValues: Record<string, unknown> = {}
 ): TemplateFactory {
-  options.locals = options.locals ?? Object.keys(scopeValues ?? {});
+  options.scope = options.scope ?? scopeValues ?? {};
   let [block, usedLocals] = precompileJSON(templateSource, options);
-  let reifiedScopeValues = usedLocals.map((key) => scopeValues[key]);
+  let reifiedScopeValues: Record<string, unknown> = Object.fromEntries(
+    usedLocals.map((key) => [key, scopeValues[key]])
+  );
 
   if ('emit' in options && options.emit?.debugSymbols) {
     block.push(usedLocals);
@@ -34,7 +36,7 @@ export function createTemplate(
     id: String(templateId++),
     block: JSON.stringify(block),
     moduleName: options.meta?.moduleName ?? '(unknown template module)',
-    scope: reifiedScopeValues.length > 0 ? () => reifiedScopeValues : null,
+    scope: usedLocals.length > 0 ? () => reifiedScopeValues : null,
     isStrictMode: options.strictMode ?? false,
   };
 

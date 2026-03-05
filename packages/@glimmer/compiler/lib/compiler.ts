@@ -6,7 +6,6 @@ import type {
 } from '@glimmer/interfaces';
 import type {
   PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
   TemplateIdFn,
 } from '@glimmer/syntax';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
@@ -80,10 +79,10 @@ const defaultOptions: PrecompileOptions = {
  */
 export function precompileJSON(
   string: Nullable<string>,
-  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
+  options: PrecompileOptions = defaultOptions
 ): [block: SerializedTemplateBlock, usedLocals: string[]] {
   const source = new src.Source(string ?? '', options.meta?.moduleName);
-  const [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
+  const [ast, locals] = normalize(source, options);
   const block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);
   });
@@ -119,7 +118,7 @@ const SCOPE_PLACEHOLDER = '796d24e6-2450-4fb0-8cdf-b65638b5ef70';
  */
 export function precompile(
   source: string,
-  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
+  options: PrecompileOptions = defaultOptions
 ): TemplateJavascript {
   const [block, usedLocals] = precompileJSON(source, options);
 
@@ -148,7 +147,7 @@ export function precompile(
   let stringified = JSON.stringify(templateJSONObject);
 
   if (usedLocals.length > 0) {
-    const scopeFn = `()=>[${usedLocals.join(',')}]`;
+    const scopeFn = `()=>({${usedLocals.map((l) => `${l}:${l}`).join(',')}})`;
 
     stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, scopeFn);
   }

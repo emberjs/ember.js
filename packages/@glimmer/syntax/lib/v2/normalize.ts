@@ -4,7 +4,6 @@ import { assign } from '@glimmer/util';
 
 import type {
   PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
 } from '../parser/tokenizer-event-handlers';
 import type { SourceLocation } from '../source/location';
 import type { Source } from '../source/source';
@@ -35,20 +34,30 @@ import {
 
 export function normalize(
   source: Source,
-  options: PrecompileOptionsWithLexicalScope = { lexicalScope: () => false }
+  options: PrecompileOptions = {}
 ): [ast: ASTv2.Template, locals: string[]] {
   let ast = preprocess(source, options);
+
+  // Build a scope bag from the available sources.
+  // `options.scope` is the primary mechanism (an object whose keys are in-scope variables).
+  // `locals` (set by babel-plugin-ember-template-compilation) is supported for backward compat.
+  let scope: Record<string, unknown> = options.scope ?? {};
+  if ('locals' in options) {
+    const locals: string[] = (options as Record<string, unknown>).locals as string[] ?? [];
+    if (locals.length > 0) {
+      scope = { ...scope, ...Object.fromEntries(locals.map((l) => [l, undefined])) };
+    }
+  }
 
   let normalizeOptions = {
     strictMode: false,
     ...options,
-    locals: ast.blockParams,
     keywords: options.keywords ?? [],
   };
 
-  let top = SymbolTable.top(normalizeOptions.locals, normalizeOptions.keywords, {
+  let top = SymbolTable.top([], normalizeOptions.keywords, {
     customizeComponentName: options.customizeComponentName ?? ((name) => name),
-    lexicalScope: options.lexicalScope,
+    scope,
   });
   let block = new BlockContext(source, normalizeOptions, top);
   let normalizer = new StatementNormalizer(block);

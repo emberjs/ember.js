@@ -18,7 +18,7 @@ export interface LayoutWithContext {
   readonly block: SerializedTemplateBlock;
   readonly moduleName: string;
   readonly owner: Owner | null;
-  readonly scope: (() => unknown[]) | undefined | null;
+  readonly scope: (() => Record<string, unknown>) | undefined | null;
   readonly isStrictMode: boolean;
 }
 
@@ -118,7 +118,7 @@ export interface DebuggerInfo {
 
 export interface BlockMetadata {
   symbols: BlockSymbolNames;
-  scopeValues: unknown[] | null;
+  scopeValues: Record<string, unknown> | null;
   isStrictMode: boolean;
   moduleName: string | undefined;
   owner: Owner | null;

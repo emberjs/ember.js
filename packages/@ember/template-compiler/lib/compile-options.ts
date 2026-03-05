@@ -4,7 +4,6 @@ import {
   STRICT_MODE_KEYWORDS,
   STRICT_MODE_TRANSFORMS,
 } from './plugins/index';
-import { ALLOWED_GLOBALS } from './plugins/allowed-globals';
 import type { EmberPrecompileOptions, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
@@ -36,41 +35,13 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   };
 
   if ('eval' in options) {
-    const localScopeEvaluator = options.eval as (value: string) => unknown;
-    const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
-
-    options.lexicalScope = (variable: string) => {
-      if (ALLOWED_GLOBALS.has(variable)) {
-        return variable in globalThis;
-      }
-
-      if (inScope(variable, localScopeEvaluator)) {
-        return !inScope(variable, globalScopeEvaluator);
-      }
-
-      return false;
-    };
-
+    // eval→scope conversion is handled by template() which has access to the template string
+    // and can use getTemplateLocals() to discover free variables. Here we just clean up.
     delete options.eval;
   }
 
-  if ('scope' in options) {
-    const scope = (options.scope as () => Record<string, unknown>)();
-
-    options.lexicalScope = (variable: string) => {
-      return variable in scope;
-    };
-
-    delete options.scope;
-  }
-
-  if ('locals' in options && !options.locals) {
-    // Glimmer's precompile options declare `locals` like:
-    //    locals?: string[]
-    // but many in-use versions of babel-plugin-htmlbars-inline-precompile will
-    // set locals to `null`. This used to work but only because glimmer was
-    // ignoring locals for non-strict templates, and now it supports that case.
-    delete options.locals;
+  if ('scope' in options && typeof options.scope === 'function') {
+    options.scope = (options.scope as () => Record<string, unknown>)();
   }
 
   // move `moduleName` into `meta` property
@@ -110,31 +81,4 @@ export default function compileOptions(
   }
 
   return options;
-}
-
-type Evaluator = (value: string) => unknown;
-
-// https://tc39.es/ecma262/2020/#prod-IdentifierName
-const IDENT = /^[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
-
-function inScope(variable: string, evaluator: Evaluator): boolean {
-  // If the identifier is not a valid JS identifier, it's definitely not in scope
-  if (!IDENT.exec(variable)) {
-    return false;
-  }
-
-  try {
-    return evaluator(`typeof ${variable} !== "undefined"`) === true;
-  } catch (e) {
-    // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
-    // If the variable is a reserved word, it's definitely not in scope, so return false. Since
-    // reserved words are somewhat contextual, we don't try to identify them purely by their
-    // name. See https://tc39.es/ecma262/#sec-keywords-and-reserved-words
-    if (e && e instanceof SyntaxError) {
-      return false;
-    }
-
-    // If it's another kind of error, don't swallow it.
-    throw e;
-  }
 }

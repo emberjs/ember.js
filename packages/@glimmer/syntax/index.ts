@@ -9,7 +9,6 @@ export {
   type ASTPluginBuilder,
   type ASTPluginEnvironment,
   type PrecompileOptions,
-  type PrecompileOptionsWithLexicalScope,
   preprocess,
   type Syntax,
   type TemplateIdFn,

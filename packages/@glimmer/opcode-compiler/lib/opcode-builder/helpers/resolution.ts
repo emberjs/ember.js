@@ -103,7 +103,6 @@ export function resolveComponent(
     let {
       scopeValues,
       owner,
-      symbols: { lexical },
     } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
@@ -114,7 +113,7 @@ export function resolveComponent(
         definition as object,
         expect(owner, 'BUG: expected owner when resolving component definition'),
         false,
-        lexical?.at(expr[1])
+        expr[1]
       )
     );
   } else {
@@ -216,7 +215,7 @@ export function resolveModifier(
       expr[1]
     ];
 
-    then(constants.modifier(definition as object, lexical?.at(expr[1]) ?? undefined));
+    then(constants.modifier(definition as object, expr[1]));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let {
       symbols: { upvars },
@@ -281,7 +280,6 @@ export function resolveComponentOrHelper(
     let {
       scopeValues,
       owner,
-      symbols: { lexical },
     } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
@@ -291,7 +289,7 @@ export function resolveComponentOrHelper(
       definition as object,
       expect(owner, 'BUG: expected owner when resolving component definition'),
       true,
-      lexical?.at(expr[1])
+      expr[1]
     );
 
     if (component !== null) {
@@ -377,7 +375,6 @@ export function resolveOptionalComponentOrHelper(
     let {
       scopeValues,
       owner,
-      symbols: { lexical },
     } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
@@ -396,7 +393,7 @@ export function resolveOptionalComponentOrHelper(
       definition,
       expect(owner, 'BUG: expected owner when resolving component definition'),
       true,
-      lexical?.at(expr[1])
+      expr[1]
     );
 
     if (component !== null) {
