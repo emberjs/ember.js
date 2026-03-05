@@ -33,7 +33,7 @@ import {
 export function normalize(
   source: Source,
   options: PrecompileOptions = {}
-): [ast: ASTv2.Template, locals: string[]] {
+): [ast: ASTv2.Template, lexicals: string[]] {
   let ast = preprocess(source, options);
 
   let scope: Record<string, unknown> = options.scope ?? {};
@@ -44,7 +44,7 @@ export function normalize(
     keywords: options.keywords ?? [],
   };
 
-  let top = SymbolTable.top([], normalizeOptions.keywords, {
+  let top = SymbolTable.top(normalizeOptions.keywords, {
     customizeComponentName: options.customizeComponentName ?? ((name) => name),
     scope,
   });
@@ -57,9 +57,9 @@ export function normalize(
     block
   ).assertTemplate(top);
 
-  let locals = top.getUsedTemplateLocals();
+  let lexicals = top.getUsedLexicals();
 
-  return [astV2, locals];
+  return [astV2, lexicals];
 }
 
 /**
@@ -140,7 +140,7 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
   }
 
   hasBinding(name: string): boolean {
-    return this.table.has(name) || this.table.hasLexical(name);
+    return this.table.has(name);
   }
 
   child(blockParams: string[]): BlockContext<BlockSymbolTable> {

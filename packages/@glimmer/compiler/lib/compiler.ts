@@ -77,9 +77,9 @@ const defaultOptions: PrecompileOptions = {
 export function precompileJSON(
   string: Nullable<string>,
   options: PrecompileOptions = defaultOptions
-): [block: SerializedTemplateBlock, usedLocals: string[]] {
+): [block: SerializedTemplateBlock, usedLexicals: string[]] {
   const source = new src.Source(string ?? '', options.meta?.moduleName);
-  const [ast, locals] = normalize(source, options);
+  const [ast, lexicals] = normalize(source, options);
   const block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);
   });
@@ -89,7 +89,7 @@ export function precompileJSON(
   }
 
   if (block.isOk) {
-    return [block.value, locals];
+    return [block.value, lexicals];
   } else {
     throw block.reason;
   }
@@ -117,10 +117,10 @@ export function precompile(
   source: string,
   options: PrecompileOptions = defaultOptions
 ): TemplateJavascript {
-  const [block, usedLocals] = precompileJSON(source, options);
+  const [block, usedLexicals] = precompileJSON(source, options);
 
-  if ('emit' in options && options.emit?.debugSymbols && usedLocals.length > 0) {
-    block.push(usedLocals);
+  if ('emit' in options && options.emit?.debugSymbols && usedLexicals.length > 0) {
+    block.push(usedLexicals);
   }
 
   const moduleName = options.meta?.moduleName;
@@ -136,15 +136,15 @@ export function precompile(
     isStrictMode: options.strictMode ?? false,
   };
 
-  if (usedLocals.length === 0) {
+  if (usedLexicals.length === 0) {
     delete templateJSONObject.scope;
   }
 
   // JSON is javascript
   let stringified = JSON.stringify(templateJSONObject);
 
-  if (usedLocals.length > 0) {
-    const scopeFn = `()=>({${usedLocals.map((l) => `${l}:${l}`).join(',')}})`;
+  if (usedLexicals.length > 0) {
+    const scopeFn = `()=>({${usedLexicals.map((l) => `${l}:${l}`).join(',')}})`;
 
     stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, scopeFn);
   }

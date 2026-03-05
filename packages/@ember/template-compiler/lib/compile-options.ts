@@ -4,6 +4,7 @@ import {
   STRICT_MODE_KEYWORDS,
   STRICT_MODE_TRANSFORMS,
 } from './plugins/index';
+import { ALLOWED_GLOBALS } from './plugins/allowed-globals';
 import type { EmberPrecompileOptions, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
@@ -35,8 +36,17 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   };
 
   if ('eval' in options) {
-    // eval→scope conversion is handled by template() which has access to the template string
-    // and can use getTemplateLocals() to discover free variables. Here we just clean up.
+    const evalFn = options.eval as (value: string) => unknown;
+    const globalEval = (value: string) => new Function(`return ${value};`)();
+
+    options.scope = new Proxy({} as Record<string, unknown>, {
+      has(_, name) {
+        if (typeof name !== 'string' || !IDENT.test(name)) return false;
+        if (ALLOWED_GLOBALS.has(name)) return name in globalThis;
+        return inScope(name, evalFn) && !inScope(name, globalEval);
+      },
+    });
+
     delete options.eval;
   }
 
@@ -60,6 +70,18 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
 
 function transformsFor(options: EmberPrecompileOptions): readonly PluginFunc[] {
   return options.strictMode ? STRICT_MODE_TRANSFORMS : RESOLUTION_MODE_TRANSFORMS;
+}
+
+// https://tc39.es/ecma262/2020/#prod-IdentifierName
+const IDENT = /^[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
+
+function inScope(variable: string, evaluator: (value: string) => unknown): boolean {
+  try {
+    return evaluator(`typeof ${variable} !== "undefined"`) === true;
+  } catch (e) {
+    if (e instanceof SyntaxError) return false;
+    throw e;
+  }
 }
 
 export default function compileOptions(

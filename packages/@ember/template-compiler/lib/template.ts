@@ -3,9 +3,8 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { type PrecompileOptions, getTemplateLocals } from '@glimmer/syntax';
+import type { PrecompileOptions } from '@glimmer/syntax';
 import compileOptions from './compile-options';
-import { ALLOWED_GLOBALS } from './plugins/allowed-globals';
 import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
@@ -242,13 +241,6 @@ export function template(
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
   const evaluate = buildEvaluator(options);
 
-  // Convert `eval` option into a `scope` bag by discovering free variables in the template
-  // and evaluating each one to check if it's in the caller's lexical scope.
-  if ('eval' in options && options.eval) {
-    options.scope = resolveEvalScope(templateString, options.eval);
-    delete options.eval;
-  }
-
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
@@ -286,55 +278,4 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
       return new Function(...argNames, `return (${source})`)(...argValues);
     };
   }
-}
-
-// https://tc39.es/ecma262/2020/#prod-IdentifierName
-const IDENT = /^[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
-
-type ScopeEvaluator = (value: string) => unknown;
-
-function isInEvalScope(variable: string, evalFn: ScopeEvaluator): boolean {
-  if (!IDENT.exec(variable)) {
-    return false;
-  }
-
-  try {
-    return evalFn(`typeof ${variable} !== "undefined"`) === true;
-  } catch (e) {
-    if (e && e instanceof SyntaxError) {
-      return false;
-    }
-    throw e;
-  }
-}
-
-/**
- * Given a template string and an `eval` function from the caller's scope,
- * discovers all free variables in the template and builds a scope bag by
- * evaluating each variable to get its value.
- */
-function resolveEvalScope(
-  templateString: string,
-  evalFn: (value: string) => unknown
-): Record<string, unknown> {
-  const freeVars = getTemplateLocals(templateString, { includeKeywords: true });
-  const globalScopeEvaluator: ScopeEvaluator = (value: string) =>
-    new Function(`return ${value};`)();
-
-  const scope: Record<string, unknown> = {};
-
-  for (const variable of freeVars) {
-    if (ALLOWED_GLOBALS.has(variable)) {
-      if (variable in globalThis) {
-        scope[variable] = evalFn(variable);
-      }
-    } else if (isInEvalScope(variable, evalFn)) {
-      // Only include if it's in the local scope but NOT just a global
-      if (!isInEvalScope(variable, globalScopeEvaluator)) {
-        scope[variable] = evalFn(variable);
-      }
-    }
-  }
-
-  return scope;
 }

@@ -16,12 +16,8 @@ interface SymbolTableOptions {
 }
 
 export abstract class SymbolTable {
-  static top(
-    locals: readonly string[],
-    keywords: readonly string[],
-    options: SymbolTableOptions
-  ): ProgramSymbolTable {
-    return new ProgramSymbolTable(locals, keywords, options);
+  static top(keywords: readonly string[], options: SymbolTableOptions): ProgramSymbolTable {
+    return new ProgramSymbolTable(keywords, options);
   }
 
   abstract root(): ProgramSymbolTable;
@@ -50,7 +46,6 @@ export abstract class SymbolTable {
 
 export class ProgramSymbolTable extends SymbolTable {
   constructor(
-    private templateLocals: readonly string[],
     private keywords: readonly string[],
     private options: SymbolTableOptions
   ) {
@@ -58,7 +53,6 @@ export class ProgramSymbolTable extends SymbolTable {
 
     setLocalDebugType('syntax:symbol-table:program', this, {
       debug: () => ({
-        templateLocals: this.templateLocals,
         keywords: this.keywords,
         symbols: this.symbols,
         upvars: this.upvars,
@@ -74,7 +68,7 @@ export class ProgramSymbolTable extends SymbolTable {
   private size = 1;
   readonly named = dict<number>();
   readonly blocks = dict<number>();
-  readonly usedTemplateLocals: string[] = [];
+  readonly usedLexicals: string[] = [];
 
   root(): this {
     return this;
@@ -92,8 +86,8 @@ export class ProgramSymbolTable extends SymbolTable {
     return this.allocateFree(name, ASTv2.STRICT_RESOLUTION);
   }
 
-  getUsedTemplateLocals(): string[] {
-    return this.usedTemplateLocals;
+  getUsedLexicals(): string[] {
+    return this.usedLexicals;
   }
 
   has(name: string): boolean {
@@ -101,14 +95,14 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   get(name: string): [number, boolean] {
-    let index = this.usedTemplateLocals.indexOf(name);
+    let index = this.usedLexicals.indexOf(name);
 
     if (index !== -1) {
       return [index, true];
     }
 
-    index = this.usedTemplateLocals.length;
-    this.usedTemplateLocals.push(name);
+    index = this.usedLexicals.length;
+    this.usedLexicals.push(name);
     return [index, true];
   }
 
@@ -120,7 +114,7 @@ export class ProgramSymbolTable extends SymbolTable {
     return [
       this.getLocalsMap(),
       this.named,
-      Object.fromEntries(this.usedTemplateLocals.map((s, i) => [s, i])),
+      Object.fromEntries(this.usedLexicals.map((s, i) => [s, i])),
     ];
   }
 
@@ -232,7 +226,7 @@ export class BlockSymbolTable extends SymbolTable {
     return [
       { ...locals, ...named },
       Object.fromEntries(root.upvars.map((s, i) => [s, i])),
-      Object.fromEntries(root.usedTemplateLocals.map((s, i) => [s, i])),
+      Object.fromEntries(root.usedLexicals.map((s, i) => [s, i])),
     ];
   }
 
