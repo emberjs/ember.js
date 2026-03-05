@@ -1,20 +1,12 @@
-'use strict';
+import { instrument } from 'ember-source/@ember/instrumentation/index.js';
 
-const { loadEmber, clearEmber } = require('./helpers/load-ember');
-
-const { Ember } = loadEmber();
-
-QUnit.module('instrumentation', function (hooks) {
-  hooks.afterEach(function () {
-    clearEmber();
-  });
-
+QUnit.module('instrumentation', function () {
   QUnit.test('it works in FastBoot environment', function (assert) {
     let _originalWindow = global.window;
 
     global.window = {}; // mock window without `performance` property
 
-    let result = Ember.instrument('render', {}, function () {
+    let result = instrument('render', {}, function () {
       return 'hello';
     });
 

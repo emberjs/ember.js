@@ -1,59 +1,3 @@
-module.exports = class Project {
-  static withDep(depOptions = {}, projectOptions = {}) {
-    let addons = projectOptions.addons || [];
-
-    return new Project({
-      ...projectOptions,
-      addons: [...addons, new Addon(depOptions)],
-    });
-  }
-
-  static withTransientDep(transientDepOptions = {}, depOptions = {}, projectOptions = {}) {
-    let addons = depOptions.addons || [];
-
-    return Project.withDep(
-      {
-        ...depOptions,
-        addons: [
-          ...addons,
-          new Addon({
-            name: 'my-nested-addon',
-            version: '0.1.0',
-            ...transientDepOptions,
-          }),
-        ],
-      },
-      projectOptions
-    );
-  }
-
-  constructor({
-    name = 'my-app',
-    emberCliBabel,
-    dependencies = {},
-    devDependencies = {},
-    addons = [],
-  } = {}) {
-    this.name = () => name;
-    this.parent = null;
-    this.pkg = {
-      name,
-      dependencies: { ...dependencies },
-      devDependencies: { ...devDependencies },
-    };
-    this.addons = [...addons];
-
-    if (typeof emberCliBabel === 'string') {
-      this.pkg.devDependencies['ember-cli-babel'] = emberCliBabel;
-    }
-
-    reifyAddons(this);
-    addMissingAddons(this, this.pkg.devDependencies);
-    addMissingAddons(this, this.pkg.dependencies);
-    addMissingDeps(this, true);
-  }
-};
-
 class Addon {
   constructor({
     parent,
@@ -144,5 +88,61 @@ function addMissingDeps(parent, devDeps = false) {
     if (isMissing) {
       target[addon.name] = `^${addon.pkg.version}`;
     }
+  }
+}
+
+export default class Project {
+  static withDep(depOptions = {}, projectOptions = {}) {
+    let addons = projectOptions.addons || [];
+
+    return new Project({
+      ...projectOptions,
+      addons: [...addons, new Addon(depOptions)],
+    });
+  }
+
+  static withTransientDep(transientDepOptions = {}, depOptions = {}, projectOptions = {}) {
+    let addons = depOptions.addons || [];
+
+    return Project.withDep(
+      {
+        ...depOptions,
+        addons: [
+          ...addons,
+          new Addon({
+            name: 'my-nested-addon',
+            version: '0.1.0',
+            ...transientDepOptions,
+          }),
+        ],
+      },
+      projectOptions
+    );
+  }
+
+  constructor({
+    name = 'my-app',
+    emberCliBabel,
+    dependencies = {},
+    devDependencies = {},
+    addons = [],
+  } = {}) {
+    this.name = () => name;
+    this.parent = null;
+    this.pkg = {
+      name,
+      dependencies: { ...dependencies },
+      devDependencies: { ...devDependencies },
+    };
+    this.addons = [...addons];
+
+    if (typeof emberCliBabel === 'string') {
+      this.pkg.devDependencies['ember-cli-babel'] = emberCliBabel;
+    }
+
+    reifyAddons(this);
+    addMissingAddons(this, this.pkg.devDependencies);
+    addMissingAddons(this, this.pkg.dependencies);
+    addMissingDeps(this, true);
   }
 }

@@ -2911,18 +2911,12 @@ importers:
 
   smoke-tests/node-template:
     dependencies:
-      git-repo-info:
-        specifier: ^2.1.1
-        version: 2.1.1
       html-differ:
         specifier: ^1.4.0
         version: 1.4.0
       qunit:
         specifier: ^2.20.1
         version: 2.25.0
-      semver:
-        specifier: ^7.6.0
-        version: 7.7.4
       simple-dom:
         specifier: ^1.4.0
         version: 1.4.0
