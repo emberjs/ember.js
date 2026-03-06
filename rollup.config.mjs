@@ -42,6 +42,8 @@ let configs = [
   }),
   templateCompilerConfig(),
   glimmerComponent(),
+  glimmerSyntaxESM(),
+  glimmerSyntaxCJS(),
 ];
 
 if (process.env.DEBUG_SINGLE_CONFIG) {
@@ -112,6 +114,49 @@ function sharedESMConfig({ input, debugMacrosMode }) {
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
       pruneEmptyBundles(),
       packageMeta(),
+    ],
+  };
+}
+
+function glimmerSyntaxESM() {
+  return {
+    onLog: handleRollupWarnings,
+    input: './packages/@glimmer/syntax/index.ts',
+    output: {
+      format: 'es',
+      file: 'packages/@glimmer/syntax/dist/es/index.js',
+      hoistTransitiveImports: false,
+    },
+    plugins: [
+      babel({
+        babelHelpers: 'bundled',
+        extensions: ['.js', '.ts'],
+        configFile: false,
+        ...sharedBabelConfig,
+      }),
+      resolveTS(),
+      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+    ],
+  };
+}
+function glimmerSyntaxCJS() {
+  return {
+    onLog: handleRollupWarnings,
+    input: './packages/@glimmer/syntax/index.ts',
+    output: {
+      format: 'cjs',
+      file: 'packages/@glimmer/syntax/dist/cjs/index.cjs',
+      hoistTransitiveImports: false,
+    },
+    plugins: [
+      babel({
+        babelHelpers: 'bundled',
+        extensions: ['.js', '.ts'],
+        configFile: false,
+        ...sharedBabelConfig,
+      }),
+      resolveTS(),
+      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     ],
   };
 }
