@@ -14,12 +14,11 @@ export class ThisReference extends node('This').fields() {}
 export class ArgReference extends node('Arg').fields<{ name: SourceSlice; symbol: number }>() {}
 
 /**
- * Corresponds to `<ident>` at the beginning of an expression, when `<ident>` is in the current
- * block's scope.
+ * Corresponds to `<ident>` at the beginning of an expression, when `<ident>` is a block
+ * param (e.g. from `{{#each items as |item|}}`), i.e. in the current block's scope.
  */
 export class LocalVarReference extends node('Local').fields<{
   name: string;
-  isTemplateLocal: boolean;
   symbol: number;
 }>() {}
 
@@ -27,10 +26,10 @@ export class LocalVarReference extends node('Local').fields<{
  * Corresponds to `<ident>` at the beginning of an expression, when `<ident>` is *not* in the
  * current block's scope.
  *
- * The `resolution: FreeVarResolution` field describes how to resolve the free variable.
- *
- * Note: In strict mode, it must always be a variable that is in a concrete JavaScript scope that
- * the template will be installed into.
+ * The `resolution` field describes how to resolve the variable:
+ * - `LexicalResolution`: a JavaScript scope variable from the `scope` option
+ * - `StrictResolution`: a strict-mode keyword
+ * - `LooseModeResolution`: a resolver-based lookup (classic .hbs)
  */
 export class FreeVarReference extends node('Free').fields<{
   name: string;

@@ -152,11 +152,34 @@ type Namespaces =
   | [COMPONENT_VAR_NS]
   | [COMPONENT_VAR_NS, HELPER_VAR_NS];
 
-export type FreeVarResolution = StrictResolution | HtmlResolution | LooseModeResolution;
+/**
+ * Lexical resolution is used when a variable is provided via the `scope` option
+ * (e.g. imported values in `.gjs` files). The value is looked up by name from
+ * the template's scope values at compile time.
+ */
+export const LEXICAL_RESOLUTION = {
+  serialize: (): SerializedResolution => 'Lexical' as SerializedResolution,
+  isAngleBracket: false as const,
+};
+
+export type LexicalResolution = typeof LEXICAL_RESOLUTION;
+
+export function isLexicalResolution(
+  resolution: FreeVarResolution
+): resolution is LexicalResolution {
+  return resolution === LEXICAL_RESOLUTION;
+}
+
+export type FreeVarResolution =
+  | StrictResolution
+  | HtmlResolution
+  | LooseModeResolution
+  | LexicalResolution;
 
 // Serialization
 export type SerializedResolution =
   | 'Strict'
+  | 'Lexical'
   | 'Helper'
   | 'Modifier'
   | 'Component'
@@ -165,6 +188,8 @@ export type SerializedResolution =
 export function loadResolution(resolution: SerializedResolution): FreeVarResolution {
   if (resolution === 'Strict') {
     return STRICT_RESOLUTION;
+  } else if (resolution === 'Lexical') {
+    return LEXICAL_RESOLUTION;
   } else if (resolution === 'ComponentOrHelper') {
     return LooseModeResolution.append();
   } else {

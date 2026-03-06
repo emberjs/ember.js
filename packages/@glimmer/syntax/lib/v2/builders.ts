@@ -177,18 +177,14 @@ export class Builder {
   freeVar({
     name,
     context,
-    symbol,
+    symbol = -1,
     loc,
   }: {
     name: string;
     context: ASTv2.FreeVarResolution;
-    symbol: number;
+    symbol?: number;
     loc: SourceSpan;
   }): ASTv2.FreeVarReference {
-    localAssert(
-      name !== 'this',
-      `You called builders.freeVar() with 'this'. Call builders.this instead`
-    );
     localAssert(
       name[0] !== '@',
       `You called builders.freeVar() with '${name}'. Call builders.at('${name}') instead`
@@ -202,12 +198,7 @@ export class Builder {
     });
   }
 
-  localVar(
-    name: string,
-    symbol: number,
-    isTemplateLocal: boolean,
-    loc: SourceSpan
-  ): ASTv2.VariableReference {
+  localVar(name: string, symbol: number, loc: SourceSpan): ASTv2.VariableReference {
     localAssert(
       name[0] !== '@',
       `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
@@ -216,7 +207,6 @@ export class Builder {
     return new ASTv2.LocalVarReference({
       loc,
       name,
-      isTemplateLocal,
       symbol,
     });
   }

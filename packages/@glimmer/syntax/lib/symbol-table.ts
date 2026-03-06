@@ -4,6 +4,7 @@ import { dict } from '@glimmer/util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 import * as ASTv2 from './v2/api';
+import { isLexicalResolution } from './v2/objects/resolution';
 
 export interface Upvar {
   readonly name: string;
@@ -23,7 +24,8 @@ export abstract class SymbolTable {
   abstract root(): ProgramSymbolTable;
 
   abstract has(name: string): boolean;
-  abstract get(name: string): [symbol: number, isRoot: boolean];
+  abstract hasLocal(name: string): boolean;
+  abstract get(name: string): number;
 
   abstract hasKeyword(name: string): boolean;
   abstract getKeyword(name: string): number;
@@ -94,16 +96,20 @@ export class ProgramSymbolTable extends SymbolTable {
     return this.hasLexical(name);
   }
 
-  get(name: string): [number, boolean] {
-    let index = this.usedLexicals.indexOf(name);
+  hasLocal(_name: string): boolean {
+    return false;
+  }
 
-    if (index !== -1) {
-      return [index, true];
+  get(_name: string): number {
+    // ProgramSymbolTable.get() should not be called for lexical lookups.
+    // Lexical usage is tracked via useLexical().
+    throw new Error('BUG: ProgramSymbolTable.get() should not be called directly');
+  }
+
+  useLexical(name: string): void {
+    if (!this.usedLexicals.includes(name)) {
+      this.usedLexicals.push(name);
     }
-
-    index = this.usedLexicals.length;
-    this.usedLexicals.push(name);
-    return [index, true];
   }
 
   getLocalsMap(): Dict<number> {
@@ -122,6 +128,7 @@ export class ProgramSymbolTable extends SymbolTable {
     // If the name in question is an uppercase (i.e. angle-bracket) component invocation, run
     // the optional `customizeComponentName` function provided to the precompiler.
     if (
+      !isLexicalResolution(resolution) &&
       resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead &&
       resolution.isAngleBracket
     ) {
@@ -202,9 +209,14 @@ export class BlockSymbolTable extends SymbolTable {
     return this.symbols.indexOf(name) !== -1 || this.parent.has(name);
   }
 
-  get(name: string): [number, boolean] {
+  hasLocal(name: string): boolean {
+    return this.symbols.indexOf(name) !== -1 || this.parent.hasLocal(name);
+  }
+
+  get(name: string): number {
     let local = this.#get(name);
-    return local ? [local, false] : this.parent.get(name);
+    if (local !== null) return local;
+    return this.parent.get(name);
   }
 
   #get(name: string): number | null {
@@ -214,7 +226,7 @@ export class BlockSymbolTable extends SymbolTable {
 
   getLocalsMap(): Dict<number> {
     let dict = this.parent.getLocalsMap();
-    this.symbols.forEach((symbol) => (dict[symbol] = this.get(symbol)[0]));
+    this.symbols.forEach((symbol) => (dict[symbol] = this.get(symbol)));
     return dict;
   }
 

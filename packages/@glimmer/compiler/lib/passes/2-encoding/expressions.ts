@@ -1,5 +1,6 @@
 import type { PresentArray, WireFormat } from '@glimmer/interfaces';
 import type { ASTv2 } from '@glimmer/syntax';
+import { isLexicalResolution } from '@glimmer/syntax';
 import {
   assertPresentArray,
   isPresentArray,
@@ -28,10 +29,13 @@ export class ExpressionEncoder {
       case 'Arg':
         return [SexpOpcodes.GetSymbol, expr.symbol];
       case 'Local':
-        return this.Local(expr);
+        return [SexpOpcodes.GetSymbol, expr.symbol];
       case 'This':
         return [SexpOpcodes.GetSymbol, 0];
       case 'Free':
+        if (isLexicalResolution(expr.resolution)) {
+          return [SexpOpcodes.GetLexicalSymbol, expr.name];
+        }
         return [expr.resolution.resolution(), expr.symbol];
       case 'HasBlock':
         return this.HasBlock(expr);
@@ -82,16 +86,6 @@ export class ExpressionEncoder {
       EXPR.Positional(args.positional),
       EXPR.NamedArguments(args.named),
     ];
-  }
-
-  Local({
-    isTemplateLocal,
-    name,
-    symbol,
-  }: ASTv2.LocalVarReference):
-    | WireFormat.Expressions.GetSymbol
-    | WireFormat.Expressions.GetLexicalSymbol {
-    return isTemplateLocal ? [SexpOpcodes.GetLexicalSymbol, name] : [SexpOpcodes.GetSymbol, symbol];
   }
 
   Keyword({ symbol }: ASTv2.KeywordExpression): WireFormat.Expressions.GetStrictFree {

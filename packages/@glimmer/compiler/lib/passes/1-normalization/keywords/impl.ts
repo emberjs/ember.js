@@ -1,6 +1,11 @@
 import type { ASTv2, KeywordType } from '@glimmer/syntax';
 import { exhausted } from '@glimmer/debug-util';
-import { generateSyntaxError, isKeyword, KEYWORDS_TYPES } from '@glimmer/syntax';
+import {
+  generateSyntaxError,
+  isKeyword,
+  isLexicalResolution,
+  KEYWORDS_TYPES,
+} from '@glimmer/syntax';
 
 import type { Result } from '../../../shared/result';
 import type { NormalizationState } from '../context';
@@ -49,6 +54,9 @@ class KeywordImpl<
     let path = getCalleeExpression(node);
 
     if (path !== null && path.type === 'Path' && path.ref.type === 'Free') {
+      // Lexical vars shadow keywords — if a scope value overrides a keyword name,
+      // treat it as a user value, not a keyword.
+      if (isLexicalResolution(path.ref.resolution)) return false;
       return path.ref.name === this.keyword;
     } else {
       return false;

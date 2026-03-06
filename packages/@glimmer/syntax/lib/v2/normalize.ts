@@ -322,8 +322,16 @@ class ExpressionNormalizer {
     switch (head.type) {
       case 'ThisHead':
         if (block.hasBinding('this')) {
-          let [symbol, isRoot] = table.get('this');
-          return block.builder.localVar('this', symbol, isRoot, offsets);
+          if (table.hasLexical('this')) {
+            table.root().useLexical('this');
+            return builder.freeVar({
+              name: 'this',
+              context: ASTv2.LEXICAL_RESOLUTION,
+              loc: offsets,
+            });
+          }
+          let thisSymbol = table.get('this');
+          return builder.localVar('this', thisSymbol, offsets);
         }
         return builder.self(offsets);
       case 'AtHead': {
@@ -332,9 +340,16 @@ class ExpressionNormalizer {
       }
       case 'VarHead': {
         if (block.hasBinding(head.name)) {
-          let [symbol, isRoot] = table.get(head.name);
-
-          return block.builder.localVar(head.name, symbol, isRoot, offsets);
+          if (table.hasLexical(head.name) && !table.hasLocal(head.name)) {
+            table.root().useLexical(head.name);
+            return builder.freeVar({
+              name: head.name,
+              context: ASTv2.LEXICAL_RESOLUTION,
+              loc: offsets,
+            });
+          }
+          let symbol = table.get(head.name);
+          return builder.localVar(head.name, symbol, offsets);
         } else {
           let context = block.strict ? ASTv2.STRICT_RESOLUTION : resolution;
           let symbol = block.table.allocateFree(head.name, context);
