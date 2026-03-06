@@ -258,7 +258,7 @@ interface BasicContainer {
     For example:
 
     ```javascript
-    import { getOwner } from '@ember/application';
+    import { getOwner } from '@ember/owner';
 
     let owner = getOwner(otherInstance);
     // the owner is commonly the `applicationInstance`, and can be accessed via
@@ -581,7 +581,7 @@ export interface ContainerProxy extends BasicContainer {
    Example:
 
    ```
-   import { getOwner } from '@ember/application';
+   import { getOwner } from '@ember/owner';
 
    let owner = getOwner(this);
 

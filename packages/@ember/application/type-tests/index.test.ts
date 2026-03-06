@@ -1,7 +1,8 @@
 import type { EventDispatcher } from '@ember/-internals/views';
 import type Owner from '@ember/owner';
-import Application, { getOwner, setOwner } from '@ember/application';
+import Application from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
+import { getOwner, setOwner } from '@ember/owner';
 
 import { expectTypeOf } from 'expect-type';
 
@@ -61,7 +62,7 @@ class App2 extends Application {
 
 new App2(owner);
 
-// getOwner and setOwner should work with explicit `owner` when imported here.
+// getOwner and setOwner work when imported from '@ember/owner'.
 expectTypeOf(getOwner({})).toEqualTypeOf<Owner | undefined>();
 expectTypeOf(setOwner({}, owner)).toEqualTypeOf<void>();
 

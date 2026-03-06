@@ -77,11 +77,10 @@ import EmberArray, {
 import EmberMutableArray from '@ember/array/mutable';
 import EmberArrayProxy from '@ember/array/proxy';
 import EmberApplication, {
-  getOwner as applicationGetOwner,
-  setOwner as applicationSetOwner,
   onLoad as applicationOnLoad,
   runLoadHooks as applicationRunLoadHooks,
 } from '@ember/application';
+import { getOwner as applicationGetOwner, setOwner as applicationSetOwner } from '@ember/owner';
 import EmberApplicationInstance from '@ember/application/instance';
 import EmberNamespace from '@ember/application/namespace';
 import EmberComponent, { Input as EmberInput } from '@ember/component';
