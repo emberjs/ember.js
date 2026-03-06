@@ -1,4 +1,4 @@
-import type { Core, Dict } from '@glimmer/interfaces';
+import type { Dict } from '@glimmer/interfaces';
 import { setLocalDebugType, unwrap } from '@glimmer/debug-util';
 import { dict } from '@glimmer/util';
 import { SexpOpcodes } from '@glimmer/wire-format';
@@ -33,7 +33,7 @@ export abstract class SymbolTable {
   abstract hasLexical(name: string): boolean;
 
   abstract getLocalsMap(): Dict<number>;
-  abstract getDebugInfo(): Core.DebugSymbols;
+  abstract getDebugInfo(): Record<string, number>;
 
   abstract allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number;
   abstract allocateNamed(name: string): number;
@@ -116,12 +116,11 @@ export class ProgramSymbolTable extends SymbolTable {
     return dict();
   }
 
-  getDebugInfo(): Core.DebugSymbols {
-    return [
-      this.getLocalsMap(),
-      this.named,
-      Object.fromEntries(this.usedLexicals.map((s, i) => [s, i])),
-    ];
+  getDebugInfo(): Record<string, number> {
+    return {
+      ...this.getLocalsMap(),
+      ...this.named,
+    };
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
@@ -230,16 +229,12 @@ export class BlockSymbolTable extends SymbolTable {
     return dict;
   }
 
-  getDebugInfo(): Core.DebugSymbols {
+  getDebugInfo(): Record<string, number> {
     const locals = this.getLocalsMap();
     const root = this.root();
     const named = root.named;
 
-    return [
-      { ...locals, ...named },
-      Object.fromEntries(root.upvars.map((s, i) => [s, i])),
-      Object.fromEntries(root.usedLexicals.map((s, i) => [s, i])),
-    ];
+    return { ...locals, ...named };
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {

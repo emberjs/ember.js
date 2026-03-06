@@ -1,7 +1,7 @@
 import type { PresentArray } from './array.js';
 import type { EncoderError } from './compile/encoder.js';
 import type { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile/index.js';
-import type { Nullable, Optional } from './core.js';
+import type { Nullable } from './core.js';
 import type { InternalComponentCapabilities } from './managers/internal/component.js';
 import type { ConstantPool, EvaluationContext, SerializedHeap } from './program.js';
 import type { Owner } from './runtime.js';
@@ -105,16 +105,10 @@ export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
 }
 
 export interface BlockSymbolNames {
-  locals: Nullable<string[]>;
-  lexical?: Optional<string[]>;
   upvars: Nullable<string[]>;
 }
 
-export interface DebuggerInfo {
-  locals: Record<string, number>;
-  lexical: Record<string, number>;
-  upvars: Record<string, number>;
-}
+export type DebuggerInfo = Record<string, number>;
 
 export interface BlockMetadata {
   symbols: BlockSymbolNames;

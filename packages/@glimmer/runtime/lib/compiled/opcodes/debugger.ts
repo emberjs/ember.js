@@ -35,18 +35,13 @@ export function resetDebuggerCallback() {
 }
 
 class ScopeInspector {
-  #symbols: DebuggerInfo;
-
   constructor(
     private scope: Scope,
-    symbols: DebuggerInfo
-  ) {
-    this.#symbols = symbols;
-  }
+    private symbols: DebuggerInfo
+  ) {}
 
   get(path: string): Reference {
-    let { scope } = this;
-    let symbols = this.#symbols;
+    let { scope, symbols } = this;
 
     let parts = path.split('.');
     let [head, ...tail] = path.split('.') as [string, ...string[]];
@@ -55,8 +50,8 @@ class ScopeInspector {
 
     if (head === 'this') {
       ref = scope.getSelf();
-    } else if (symbols.locals[head]) {
-      ref = unwrap(scope.getSymbol(symbols.locals[head]));
+    } else if (symbols[head]) {
+      ref = unwrap(scope.getSymbol(symbols[head]));
     } else {
       ref = this.scope.getSelf();
       tail = parts;

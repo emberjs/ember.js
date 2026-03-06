@@ -119,10 +119,6 @@ export function precompile(
 ): TemplateJavascript {
   const [block, usedLexicals] = precompileJSON(source, options);
 
-  if ('emit' in options && options.emit?.debugSymbols && usedLexicals.length > 0) {
-    block.push(usedLexicals);
-  }
-
   const moduleName = options.meta?.moduleName;
   const idFn = options.id || defaultId;
   const blockJSON = JSON.stringify(block);

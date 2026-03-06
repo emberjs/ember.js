@@ -91,8 +91,8 @@ export const OPERANDS = Disassembler.build((d) => {
     ])
     .add(['register'], ({ value }) => ['register', decodeRegister(value)])
     .add(['const/any'], ({ value, constants }) => ['dynamic', constants.getValue<unknown>(value)])
-    .add(['variable'], ({ value, meta }) => {
-      return ['variable', value, { name: meta?.symbols.lexical?.at(value) ?? null }];
+    .add(['variable'], ({ value }) => {
+      return ['variable', value, { name: value === 0 ? 'this' : null }];
     })
     .add(['register/instruction'], ({ value }) => ['instruction', value])
     .add(['imm/enum<curry>'], ({ value }) => ['enum<curry>', decodeCurry(value)])

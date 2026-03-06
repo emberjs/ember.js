@@ -118,7 +118,6 @@ export function compileStd(context: EvaluationContext): StdLib {
 
 export const STDLIB_META: BlockMetadata = {
   symbols: {
-    locals: null,
     upvars: null,
   },
   moduleName: 'stdlib',

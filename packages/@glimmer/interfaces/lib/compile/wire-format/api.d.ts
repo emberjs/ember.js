@@ -72,11 +72,7 @@ export type SexpOpcode = keyof SexpOpcodeMap;
 export namespace Core {
   export type Expression = Expressions.Expression;
 
-  export type DebugSymbols = [
-    locals: Record<string, number>,
-    upvars: Record<string, number>,
-    lexical: Record<string, number>,
-  ];
+  export type DebugSymbols = Record<string, number>;
 
   export type CallArgs = [Params, Hash];
   export type Path = [string, ...string[]];
@@ -259,12 +255,7 @@ export namespace Statements {
     | TrustingDynamicAttr
     | TrustingComponentAttr;
 
-  export type Debugger = [
-    op: DebuggerOpcode,
-    locals: Record<string, number>,
-    upvars: Record<string, number>,
-    lexical: Record<string, number>,
-  ];
+  export type Debugger = [op: DebuggerOpcode, locals: Record<string, number>];
   export type InElement = [
     op: InElementOpcode,
     block: SerializedInlineBlock,
@@ -375,9 +366,8 @@ export type SerializedInlineBlock = [statements: Statements.Statement[], paramet
  */
 export type SerializedTemplateBlock = [
   statements: Statements.Statement[],
-  locals: string[],
+  symbols: string[],
   upvars: string[],
-  lexicalSymbols?: string[],
 ];
 
 /**

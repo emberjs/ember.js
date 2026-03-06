@@ -63,7 +63,7 @@ export function value(item: unknown, options?: ValueRefOptions): Fragment {
         table.parameters.length === 0
           ? empty()
           : frag` as |${join(
-              table.parameters.map((s) => item.meta.symbols.lexical?.at(s - 1) ?? `?${s}`),
+              table.parameters.map((s) => `?${s}`),
               ' '
             )}|`;
       return debugValue(item, {

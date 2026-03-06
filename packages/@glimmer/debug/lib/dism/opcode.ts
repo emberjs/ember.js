@@ -21,11 +21,7 @@ import { array } from '../render/combinators';
 import { as, frag, Fragment } from '../render/fragment';
 
 export class SerializeBlockContext {
-  readonly #symbols: Nullable<BlockSymbolNames>;
-
-  constructor(symbols: Nullable<BlockSymbolNames>) {
-    this.#symbols = symbols;
-  }
+  constructor(_symbols: Nullable<BlockSymbolNames>) {}
 
   serialize(param: SomeDisassembledOperand): IntoFragment {
     switch (param.type) {
@@ -47,12 +43,6 @@ export class SerializeBlockContext {
         const value = param.value;
         if (value === 0) {
           return frag`{${as.kw('this')}}`;
-        } else if (this.#symbols?.lexical && this.#symbols.lexical.length >= value) {
-          // @fixme something is wrong here -- remove the `&&` to get test failures
-          return frag`${as.varReference(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-            this.#symbols.lexical[value - 1]!
-          )}${frag`:${value}`.subtle()}`;
         } else {
           return frag`{${as.register('$fp')}+${value}}`;
         }
@@ -87,8 +77,6 @@ export class SerializeBlockContext {
       case 'variable': {
         if (value === 0) {
           return `{this}`;
-        } else if (this.#symbols?.lexical && this.#symbols.lexical.length >= (value as number)) {
-          return `{${this.#symbols.lexical[(value as number) - 1]}:${value}}`;
         } else {
           return `{$fp+${value}}`;
         }
