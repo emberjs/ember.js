@@ -5,7 +5,7 @@ import type {
   ModifierManager,
   Owner,
 } from '@glimmer/interfaces';
-import type { PrecompileOptionsWithLexicalScope } from '@glimmer/syntax';
+import type { PrecompileOptions } from '@glimmer/syntax';
 import { registerDestructor } from '@glimmer/destroyable';
 import {
   helperCapabilities,
@@ -101,7 +101,7 @@ export interface DefineComponentOptions {
   // additional strict-mode keywords
   keywords?: string[];
 
-  emit?: PrecompileOptionsWithLexicalScope['emit'];
+  emit?: PrecompileOptions['emit'];
 }
 
 export function defComponent(

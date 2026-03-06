@@ -4,11 +4,7 @@ import type {
   SerializedTemplateWithLazyBlock,
   TemplateJavascript,
 } from '@glimmer/interfaces';
-import type {
-  PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
-  TemplateIdFn,
-} from '@glimmer/syntax';
+import type { PrecompileOptions, TemplateIdFn } from '@glimmer/syntax';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { normalize, src } from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
@@ -80,10 +76,10 @@ const defaultOptions: PrecompileOptions = {
  */
 export function precompileJSON(
   string: Nullable<string>,
-  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
-): [block: SerializedTemplateBlock, usedLocals: string[]] {
+  options: PrecompileOptions = defaultOptions
+): [block: SerializedTemplateBlock, usedLexicals: string[]] {
   const source = new src.Source(string ?? '', options.meta?.moduleName);
-  const [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
+  const [ast, lexicals] = normalize(source, options);
   const block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);
   });
@@ -93,7 +89,7 @@ export function precompileJSON(
   }
 
   if (block.isOk) {
-    return [block.value, locals];
+    return [block.value, lexicals];
   } else {
     throw block.reason;
   }
@@ -119,13 +115,9 @@ const SCOPE_PLACEHOLDER = '796d24e6-2450-4fb0-8cdf-b65638b5ef70';
  */
 export function precompile(
   source: string,
-  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
+  options: PrecompileOptions = defaultOptions
 ): TemplateJavascript {
-  const [block, usedLocals] = precompileJSON(source, options);
-
-  if ('emit' in options && options.emit?.debugSymbols && usedLocals.length > 0) {
-    block.push(usedLocals);
-  }
+  const [block, usedLexicals] = precompileJSON(source, options);
 
   const moduleName = options.meta?.moduleName;
   const idFn = options.id || defaultId;
@@ -140,15 +132,15 @@ export function precompile(
     isStrictMode: options.strictMode ?? false,
   };
 
-  if (usedLocals.length === 0) {
+  if (usedLexicals.length === 0) {
     delete templateJSONObject.scope;
   }
 
   // JSON is javascript
   let stringified = JSON.stringify(templateJSONObject);
 
-  if (usedLocals.length > 0) {
-    const scopeFn = `()=>[${usedLocals.join(',')}]`;
+  if (usedLexicals.length > 0) {
+    const scopeFn = `()=>({${usedLexicals.map((l) => `${l}:${l}`).join(',')}})`;
 
     stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, scopeFn);
   }

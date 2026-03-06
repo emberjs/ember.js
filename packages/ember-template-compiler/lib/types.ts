@@ -3,7 +3,6 @@ import type {
   ASTPluginEnvironment,
   builders,
   PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
 } from '@glimmer/syntax';
 
 export type Builders = typeof builders;
@@ -20,13 +19,10 @@ interface Plugins {
   ast: PluginFunc[];
 }
 
-export type LexicalScope = NonNullable<PrecompileOptionsWithLexicalScope['lexicalScope']>;
-
 export interface EmberPrecompileOptions extends PrecompileOptions {
   isProduction?: boolean;
   moduleName?: string;
   plugins?: Plugins;
-  lexicalScope?: LexicalScope;
 }
 
 export type EmberASTPluginEnvironment = ASTPluginEnvironment & EmberPrecompileOptions;

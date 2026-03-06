@@ -2,10 +2,7 @@ import type { PresentArray } from '@glimmer/interfaces';
 import { asPresentArray, isPresentArray, localAssert } from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
 
-import type {
-  PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
-} from '../parser/tokenizer-event-handlers';
+import type { PrecompileOptions } from '../parser/tokenizer-event-handlers';
 import type { SourceLocation } from '../source/location';
 import type { Source } from '../source/source';
 import type { SourceSpan } from '../source/span';
@@ -35,20 +32,21 @@ import {
 
 export function normalize(
   source: Source,
-  options: PrecompileOptionsWithLexicalScope = { lexicalScope: () => false }
-): [ast: ASTv2.Template, locals: string[]] {
+  options: PrecompileOptions = {}
+): [ast: ASTv2.Template, lexicals: string[]] {
   let ast = preprocess(source, options);
+
+  let scope: Record<string, unknown> = options.scope ?? {};
 
   let normalizeOptions = {
     strictMode: false,
     ...options,
-    locals: ast.blockParams,
     keywords: options.keywords ?? [],
   };
 
-  let top = SymbolTable.top(normalizeOptions.locals, normalizeOptions.keywords, {
+  let top = SymbolTable.top(normalizeOptions.keywords, {
     customizeComponentName: options.customizeComponentName ?? ((name) => name),
-    lexicalScope: options.lexicalScope,
+    scope,
   });
   let block = new BlockContext(source, normalizeOptions, top);
   let normalizer = new StatementNormalizer(block);
@@ -59,9 +57,9 @@ export function normalize(
     block
   ).assertTemplate(top);
 
-  let locals = top.getUsedTemplateLocals();
+  let lexicals = top.getUsedLexicals();
 
-  return [astV2, locals];
+  return [astV2, lexicals];
 }
 
 /**
@@ -142,7 +140,7 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
   }
 
   hasBinding(name: string): boolean {
-    return this.table.has(name) || this.table.hasLexical(name);
+    return this.table.has(name);
   }
 
   child(blockParams: string[]): BlockContext<BlockSymbolTable> {
@@ -324,8 +322,16 @@ class ExpressionNormalizer {
     switch (head.type) {
       case 'ThisHead':
         if (block.hasBinding('this')) {
-          let [symbol, isRoot] = table.get('this');
-          return block.builder.localVar('this', symbol, isRoot, offsets);
+          if (table.hasLexical('this')) {
+            table.root().useLexical('this');
+            return builder.freeVar({
+              name: 'this',
+              context: ASTv2.LEXICAL_RESOLUTION,
+              loc: offsets,
+            });
+          }
+          let thisSymbol = table.get('this');
+          return builder.localVar('this', thisSymbol, offsets);
         }
         return builder.self(offsets);
       case 'AtHead': {
@@ -334,9 +340,16 @@ class ExpressionNormalizer {
       }
       case 'VarHead': {
         if (block.hasBinding(head.name)) {
-          let [symbol, isRoot] = table.get(head.name);
-
-          return block.builder.localVar(head.name, symbol, isRoot, offsets);
+          if (table.hasLexical(head.name) && !table.hasLocal(head.name)) {
+            table.root().useLexical(head.name);
+            return builder.freeVar({
+              name: head.name,
+              context: ASTv2.LEXICAL_RESOLUTION,
+              loc: offsets,
+            });
+          }
+          let symbol = table.get(head.name);
+          return builder.localVar(head.name, symbol, offsets);
         } else {
           let context = block.strict ? ASTv2.STRICT_RESOLUTION : resolution;
           let symbol = block.table.allocateFree(head.name, context);
