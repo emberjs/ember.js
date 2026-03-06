@@ -346,13 +346,17 @@ describe('Blueprint: route', function () {
 
         it('route foo', function () {
           return emberGenerateDestroy(['route', 'foo'], (_file) => {
-            expect(_file('app/templates/foo.gjs')).to.equal(strictRouteTemplate('Foo', { addTitle: false }));
+            expect(_file('app/templates/foo.gjs')).to.equal(
+              strictRouteTemplate('Foo', { addTitle: false })
+            );
           });
         });
 
         it('route foo/bar', function () {
           return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
-            expect(_file('app/templates/foo/bar.gjs')).to.equal(strictRouteTemplate('Bar', { addTitle: false }));
+            expect(_file('app/templates/foo/bar.gjs')).to.equal(
+              strictRouteTemplate('Bar', { addTitle: false })
+            );
           });
         });
       });
@@ -507,9 +511,7 @@ describe('Blueprint: route', function () {
           fixture('route/route-nested.js')
         );
 
-        expect(_file('tests/dummy/app/templates/foo/bar.gjs')).to.equal(
-          strictRouteTemplate('Bar')
-        );
+        expect(_file('tests/dummy/app/templates/foo/bar.gjs')).to.equal(strictRouteTemplate('Bar'));
 
         expect(_file('app/routes/foo/bar.js')).to.not.exist;
         expect(_file('app/templates/foo/bar.hbs')).to.not.exist;
@@ -572,13 +574,17 @@ describe('Blueprint: route', function () {
 
       it('route foo', function () {
         return emberGenerateDestroy(['route', 'foo'], (_file) => {
-          expect(_file('addon/templates/foo.gjs')).to.equal(strictRouteTemplate('Foo', { addTitle: false }));
+          expect(_file('addon/templates/foo.gjs')).to.equal(
+            strictRouteTemplate('Foo', { addTitle: false })
+          );
         });
       });
 
       it('route foo/bar', function () {
         return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
-          expect(_file('addon/templates/foo/bar.gjs')).to.equal(strictRouteTemplate('Bar', { addTitle: false }));
+          expect(_file('addon/templates/foo/bar.gjs')).to.equal(
+            strictRouteTemplate('Bar', { addTitle: false })
+          );
         });
       });
     });

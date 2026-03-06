@@ -11,19 +11,9 @@ const expect = chai.expect;
 
 const fixture = require('../helpers/fixture');
 
-const glimmerComponentContents = `import Component from '@glimmer/component';
-
-export default class Foo extends Component {}
-`;
-
 const emberComponentContents = `import Component from '@ember/component';
 
 export default class extends Component {}
-`;
-
-const templateOnlyContents = `import templateOnly from '@ember/component/template-only';
-
-export default templateOnly();
 `;
 
 describe('Blueprint: component', function () {
