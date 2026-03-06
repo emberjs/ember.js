@@ -116,14 +116,15 @@ import * as test57 from '@ember/-internals/runtime';
 import * as test58 from '@ember/-internals/routing';
 import * as test59 from 'backburner.js';
 import * as test60 from 'rsvp';
+import * as testOwner from '@ember/owner';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 let allExports = [
   ['Application', '@ember/application', 'default', test0],
-  ['getOwner', '@ember/application', 'getOwner', test0],
+  ['getOwner', '@ember/owner', 'getOwner', testOwner],
   ['onLoad', '@ember/application', 'onLoad', test0],
   ['runLoadHooks', '@ember/application', 'runLoadHooks', test0],
-  ['setOwner', '@ember/application', 'setOwner', test0],
+  ['setOwner', '@ember/owner', 'setOwner', testOwner],
   ['ApplicationInstance', '@ember/application/instance', 'default', test1],
   ['Namespace', '@ember/application/namespace', 'default', test2],
   ['Array', '@ember/array', 'default', test3],
