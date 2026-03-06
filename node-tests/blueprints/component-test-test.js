@@ -57,6 +57,19 @@ describe('Blueprint: component-test', function () {
       );
     });
 
+    it('component-test foo --loose', function () {
+      return emberGenerateDestroy(['component-test', 'foo', '--loose'], (_file) => {
+        expect(_file('tests/integration/components/foo-test.js')).to.equal(
+          fixture('component-test/app.js', {
+            replace: {
+              component: 'foo',
+              componentInvocation: 'Foo',
+            },
+          })
+        );
+      });
+    });
+
     it('component-test x-foo --unit', function () {
       return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], (_file) => {
         expect(_file('tests/unit/components/x-foo-test.gjs')).to.equal(
@@ -67,6 +80,14 @@ describe('Blueprint: component-test', function () {
               testDescription: 'Unit | Component | x-foo',
             },
           })
+        );
+      });
+    });
+
+    it('component-test x-foo --unit --loose', function () {
+      return emberGenerateDestroy(['component-test', 'x-foo', '--unit', '--loose'], (_file) => {
+        expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+          fixture('component-test/unit.js')
         );
       });
     });
@@ -129,6 +150,27 @@ describe('Blueprint: component-test', function () {
         }
       );
     });
+
+    it('component-test foo --loose', function () {
+      return emberGenerateDestroy(['component-test', 'foo', '--loose'], (_file) => {
+        expect(_file('tests/integration/components/foo-test.js')).to.equal(
+          fixture('component-test/addon.js', {
+            replace: {
+              component: 'foo',
+              componentInvocation: 'Foo',
+            },
+          })
+        );
+      });
+    });
+
+    it('component-test foo --unit --loose', function () {
+      return emberGenerateDestroy(['component-test', 'foo', '--unit', '--loose'], (_file) => {
+        expect(_file('tests/unit/components/foo-test.js')).to.equal(
+          fixture('component-test/addon-unit.js')
+        );
+      });
+    });
   });
 
   describe('in in-repo-addon', function () {
@@ -165,6 +207,33 @@ describe('Blueprint: component-test', function () {
                 testDescription: 'Unit | Component | x-foo',
               },
             })
+          );
+        }
+      );
+    });
+
+    it('component-test foo --in-repo-addon=my-addon --loose', function () {
+      return emberGenerateDestroy(
+        ['component-test', 'foo', '--in-repo-addon=my-addon', '--loose'],
+        (_file) => {
+          expect(_file('tests/integration/components/foo-test.js')).to.equal(
+            fixture('component-test/app.js', {
+              replace: {
+                component: 'foo',
+                componentInvocation: 'Foo',
+              },
+            })
+          );
+        }
+      );
+    });
+
+    it('component-test x-foo --in-repo-addon=my-addon --unit --loose', function () {
+      return emberGenerateDestroy(
+        ['component-test', 'x-foo', '--in-repo-addon=my-addon', '--unit', '--loose'],
+        (_file) => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/unit.js')
           );
         }
       );
