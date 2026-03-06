@@ -269,7 +269,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo/x-foo.js')).to.not.exist;
           expect(_file('app/components/foo/x-foo.hbs')).to.not.exist;
           expect(_file('app/components/foo/x-foo.gjs')).to.equal(
-            fixture('component/glimmer-component.gjs').replace('Foo', 'FooXFoo')
+            fixture('component/glimmer-component.gjs', {}).replace('Foo', 'FooXFoo')
           );
 
           expect(_file('tests/integration/components/foo/x-foo-test.gjs')).to.equal(
