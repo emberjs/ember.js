@@ -9,6 +9,9 @@ import type {
   KnownForTypeResult,
 } from '@ember/owner';
 import Component from '@glimmer/component';
+import EngineInstance from '@ember/engine/instance';
+import ApplicationInstance from '@ember/application/instance';
+import Service from '@ember/service';
 import { expectTypeOf } from 'expect-type';
 
 // Just a class we can construct in the Factory and FactoryManager tests
@@ -183,6 +186,24 @@ class ExampleComponent<T> extends Component<Sig<T>> {
 
 declare let example: ExampleComponent<string>;
 expectTypeOf(getOwner(example)).toEqualTypeOf<Owner | undefined>();
+
+// Confirm that Service subclasses work as expected.
+declare class MyService extends Service {
+  withStuff: true;
+}
+declare let myService: MyService;
+expectTypeOf(getOwner(myService)).toEqualTypeOf<Owner | undefined>();
+
+// @ts-expect-error
+getOwner();
+
+expectTypeOf(setOwner({}, owner)).toBeVoid();
+
+declare let engine: EngineInstance;
+expectTypeOf(setOwner({}, engine)).toBeVoid();
+
+declare let appInstance: ApplicationInstance;
+expectTypeOf(setOwner({}, appInstance)).toBeVoid();
 
 // ----- Minimal further coverage for POJOs ----- //
 // `Factory` and `FactoryManager` don't have to deal in actual classes. :sigh:
