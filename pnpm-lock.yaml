@@ -1090,9 +1090,6 @@ importers:
       '@ember/application':
         specifier: workspace:*
         version: link:../application
-      '@ember/runloop':
-        specifier: workspace:*
-        version: link:../runloop
       '@glimmer/node':
         specifier: workspace:*
         version: link:../../@glimmer/node

@@ -7,125 +7,112 @@ import voidMap from '@simple-dom/void-map';
 const GLIMMER_COMMENT_PATTERN = /<!--%[^%]*%-->/g;
 
 /**
- * Patches a SimpleDOM element (and its descendants) with a minimal
- * `querySelectorAll` implementation. SimpleDOM doesn't support CSS selectors;
- * this shim returns an empty NodeList for any query, which is sufficient for
- * SSR where the document starts empty and addons only need to *check* whether
- * elements exist (not actually query them).
- * @param {object} node - A SimpleDOM node
- */
-function patchQuerySelectorAll(node) {
+  Patches a SimpleDOM node tree with minimal selector stubs so that
+  SSR-unaware addons that call `querySelector`/`querySelectorAll` during
+  render don't throw. SimpleDOM is a minimal server-side DOM implementation
+  that does not implement CSS selectors.
+
+  @method patchSimpleDocument
+  @param {object} node - a SimpleDOM node
+  @private
+*/
+function patchSimpleDocument(node) {
   if (node && typeof node === 'object' && !node.querySelectorAll) {
-    // Minimal querySelectorAll that always returns an empty array-like.
-    node.querySelectorAll = () => ({ length: 0 });
-    node.querySelector = () => null;
-    // Walk children
+    node.querySelectorAll = function () {
+      return { length: 0 };
+    };
+    node.querySelector = function () {
+      return null;
+    };
     let child = node.firstChild;
     while (child) {
-      patchQuerySelectorAll(child);
+      patchSimpleDocument(child);
       child = child.nextSibling;
     }
   }
 }
 
 /**
- * Renders an Ember application to an HTML string suitable for server-side
- * rendering (SSR). The output includes Glimmer rehydration markers so the
- * client can efficiently rehydrate the server-rendered DOM rather than
- * re-rendering from scratch.
- *
- * This is compatible with Vite's SSR mode. Use this in your `entry-server.js`
- * to render the app on the server, then use `_renderMode: 'rehydrate'` on the
- * client to rehydrate the result.
- *
- * @param {string} url - The URL path to render (e.g. '/', '/about')
- * @param {object} AppClass - Your Ember Application subclass
- * @returns {Promise<{ html: string }>} A promise resolving to the rendered HTML
- *
- * @example
- * ```js
- * // entry-server.js
- * import App from './app/app.js';
- * import { renderToHTML } from '@ember/server-rendering';
- *
- * export async function render(url) {
- *   return await renderToHTML(url, App);
- * }
- * ```
- */
-export async function renderToHTML(url, AppClass) {
-  const document = createHTMLDocument();
-  const rootElement = document.body;
+  Renders an Ember application to an HTML string suitable for server-side
+  rendering (SSR). The output includes Glimmer rehydration markers so the
+  client can efficiently rehydrate the server-rendered DOM rather than
+  re-rendering from scratch.
 
-  // Patch the SimpleDOM document with minimal selector support so addons
-  // that call document.querySelectorAll / document.head.querySelectorAll
-  // don't throw. SimpleDOM is a minimal implementation without CSS selectors.
-  patchQuerySelectorAll(document);
+  This is compatible with Vite's SSR mode. Use this in your `entry-server.js`
+  to render the app on the server, then use `_renderMode: 'rehydrate'` on the
+  client to rehydrate the result.
 
-  // Some addons (e.g. ember-page-title) access the global `document` directly
-  // rather than the Ember `-document` service. Temporarily install the
-  // SimpleDOM document as the global so these accesses don't throw in Node.js.
-  const previousDocument = globalThis.document;
-  globalThis.document = document;
+  @method renderToHTML
+  @param {string} url The URL path to render (e.g. '/', '/about')
+  @param {object} AppClass Your Ember Application subclass
+  @return {Promise} resolves to `{ html }` with the serialized body HTML
+  @public
+*/
+export function renderToHTML(url, AppClass) {
+  let ssrDocument = createHTMLDocument();
+  let rootElement = ssrDocument.body;
 
-  try {
-    const app = AppClass.create({ autoboot: false });
+  // Patch the SimpleDOM nodes with minimal selector stubs so that
+  // SSR-unaware addons (e.g. ember-page-title in development mode) that
+  // call `document.head.querySelectorAll()` don't throw.
+  patchSimpleDocument(ssrDocument);
 
-    try {
-      // app.visit() manages the Ember run loop internally via boot() -> run(this, '_bootSync').
-      const instance = await app.visit(url, {
-        isBrowser: false,
-        document,
-        rootElement,
-        _renderMode: 'serialize',
-      });
+  // Some addons access the global `document` directly rather than via Ember's
+  // DI container. Set it to our SimpleDOM instance during rendering so those
+  // accesses don't throw in Node.js, then restore the previous value.
+  let previousDocument = window.document;
+  window.document = ssrDocument;
 
-      const serializer = new HTMLSerializer(voidMap);
-      const html = serializer.serializeChildren(rootElement);
+  let app = AppClass.create({ autoboot: false });
 
-      instance.destroy();
-
-      return { html };
-    } finally {
-      app.destroy();
-    }
-  } finally {
-    // Restore the previous global document value (typically undefined in Node.js).
+  function cleanup() {
     if (previousDocument === undefined) {
-      delete globalThis.document;
+      delete window.document;
     } else {
-      globalThis.document = previousDocument;
+      window.document = previousDocument;
     }
   }
+
+  return app
+    .visit(url, {
+      isBrowser: false,
+      document: ssrDocument,
+      rootElement: rootElement,
+      _renderMode: 'serialize',
+    })
+    .then(
+      function (instance) {
+        let serializer = new HTMLSerializer(voidMap);
+        let html = serializer.serializeChildren(rootElement);
+        instance.destroy();
+        app.destroy();
+        cleanup();
+        return { html };
+      },
+      function (err) {
+        app.destroy();
+        cleanup();
+        throw err;
+      }
+    );
 }
 
 /**
- * Pre-renders an Ember application to a clean HTML string for static site
- * generation (SSG). Unlike `renderToHTML`, the output does NOT include
- * Glimmer rehydration markers, making it suitable for use in documentation
- * sites or any scenario where the client will perform a full render rather
- * than rehydrating the server output.
- *
- * @param {string} url - The URL path to render (e.g. '/', '/about')
- * @param {object} AppClass - Your Ember Application subclass
- * @returns {Promise<{ html: string }>} A promise resolving to the clean HTML
- *
- * @example
- * ```js
- * // scripts/prerender.js
- * import App from './app/app.js';
- * import { prerender } from '@ember/server-rendering';
- *
- * const { html } = await prerender('/', App);
- * fs.writeFileSync('dist/index.html', `<html><body>${html}</body></html>`);
- * ```
- */
-export async function prerender(url, AppClass) {
-  const { html: rawHtml } = await renderToHTML(url, AppClass);
-  // Strip Glimmer's serialization markers (block boundaries, HTML markers, etc.)
-  const html = rawHtml.replace(GLIMMER_COMMENT_PATTERN, '');
-  return { html };
+  Pre-renders an Ember application to a clean HTML string for static site
+  generation (SSG). Unlike `renderToHTML`, the output does NOT include
+  Glimmer rehydration markers, making it suitable for documentation sites
+  or any scenario where the client performs a full render.
+
+  @method prerender
+  @param {string} url The URL path to render (e.g. '/', '/about')
+  @param {object} AppClass Your Ember Application subclass
+  @return {Promise} resolves to `{ html }` with clean static HTML
+  @public
+*/
+export function prerender(url, AppClass) {
+  return renderToHTML(url, AppClass).then(function (result) {
+    // Strip Glimmer's serialization markers (block boundaries, etc.)
+    let html = result.html.replace(GLIMMER_COMMENT_PATTERN, '');
+    return { html };
+  });
 }
-
-
-
