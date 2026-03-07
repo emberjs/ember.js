@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "build:ssr": "vite build && vite build --ssr entry-server.js --outDir dist/server",
     "format": "prettier . --cache --write",
     "lint": "concurrently \"npm:lint:*(!fix)\" --names \"lint:\" --prefixColors auto",
     "lint:css": "stylelint \"**/*.css\"",
@@ -26,8 +27,11 @@
     "lint:hbs:fix": "ember-template-lint . --fix",
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",
+    "preview:ssr": "NODE_ENV=production node server.js",
     "start": "vite",
-    "test": "vite build --mode development && ember test --path dist"
+    "start:ssr": "node server.js",
+    "test": "vite build --mode development && ember test --path dist",
+    "test:ssr": "node --test tests/ssr/ssr-test.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
@@ -35,6 +39,7 @@
     "@babel/plugin-transform-runtime": "^7.29.0",
     "@babel/runtime": "^7.28.6",
     "@ember/optional-features": "^2.3.0",
+    "@ember/server-rendering": "workspace:*",
     "@ember/string": "^4.0.1",
     "@ember/test-helpers": "^5.4.1",
     "@ember/test-waiters": "^4.1.1",
