@@ -46,6 +46,14 @@ export default defineConfig(({ mode }) => {
       viteResolverBug(),
       version(),
     ],
+    resolve: {
+      alias: {
+        '@glimmer/component': resolve(
+          dirname(fileURLToPath(import.meta.url)),
+          './packages/@glimmer/component/dist/index.js'
+        ),
+      },
+    },
     optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,
