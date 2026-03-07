@@ -308,6 +308,18 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   });
                   await render(<template><div {{on}}>Click</div></template>);
                 });
+
+                test('error message includes element selector', async function (assert) {
+                  assert.expect(1);
+                  const noop = undefined;
+                  setupOnerror((error) => {
+                    assert.true(
+                      /button#my-id\\.class1\\.class2/.test(error.message),
+                      'Expected element selector in error, got: ' + error.message
+                    );
+                  });
+                  await render(<template><button id="my-id" class="class1 class2" {{on "click" noop}}>Click</button></template>);
+                });
               });
             `,
           },
