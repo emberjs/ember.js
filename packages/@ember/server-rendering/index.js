@@ -1,3 +1,8 @@
+/**
+  @module @ember/server-rendering
+  @public
+*/
+
 import createHTMLDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
@@ -6,16 +11,9 @@ import voidMap from '@simple-dom/void-map';
 // When pre-rendering (SSG), we strip these to produce clean static HTML.
 const GLIMMER_COMMENT_PATTERN = /<!--%[^%]*%-->/g;
 
-/**
-  Patches a SimpleDOM node tree with minimal selector stubs so that
-  SSR-unaware addons that call `querySelector`/`querySelectorAll` during
-  render don't throw. SimpleDOM is a minimal server-side DOM implementation
-  that does not implement CSS selectors.
-
-  @method patchSimpleDocument
-  @param {object} node - a SimpleDOM node
-  @private
-*/
+// Patches a SimpleDOM node tree with minimal selector stubs so that
+// SSR-unaware addons that call `querySelector`/`querySelectorAll` during
+// render don't throw. SimpleDOM does not implement CSS selectors.
 function patchSimpleDocument(node) {
   if (node && typeof node === 'object' && !node.querySelectorAll) {
     node.querySelectorAll = function () {
@@ -43,6 +41,7 @@ function patchSimpleDocument(node) {
   client to rehydrate the result.
 
   @method renderToHTML
+  @for @ember/server-rendering
   @param {string} url The URL path to render (e.g. '/', '/about')
   @param {object} AppClass Your Ember Application subclass
   @return {Promise} resolves to `{ html }` with the serialized body HTML
@@ -104,6 +103,7 @@ export function renderToHTML(url, AppClass) {
   or any scenario where the client performs a full render.
 
   @method prerender
+  @for @ember/server-rendering
   @param {string} url The URL path to render (e.g. '/', '/about')
   @param {object} AppClass Your Ember Application subclass
   @return {Promise} resolves to `{ html }` with clean static HTML

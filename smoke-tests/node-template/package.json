@@ -7,6 +7,7 @@
     "test:node": "qunit tests/node/**/*-test.js"
   },
   "dependencies": {
+    "ember-source": "workspace:*",
     "git-repo-info": "^2.1.1",
     "html-differ": "^1.4.0",
     "qunit": "^2.20.1",

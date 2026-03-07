@@ -2929,6 +2929,9 @@ importers:
 
   smoke-tests/node-template:
     dependencies:
+      ember-source:
+        specifier: workspace:*
+        version: link:../..
       git-repo-info:
         specifier: ^2.1.1
         version: 2.1.1
