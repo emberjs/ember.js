@@ -57,6 +57,17 @@ export class OnModifierState {
   updateListener(): void {
     let { element, args, listener } = this;
 
+    let selector: string | undefined;
+    if (DEBUG) {
+      const el = this.element;
+      selector =
+        el.tagName.toLowerCase() +
+        (el.id ? `#${el.id}` : '') +
+        Array.from(el.classList)
+          .map((c) => `.${c}`)
+          .join('');
+    }
+
     let arg0 = args.positional[0];
     let eventName = check(
       arg0 ? valueForRef(arg0) : undefined,
@@ -66,7 +77,7 @@ export class OnModifierState {
 
     if (DEBUG && !eventName) {
       throw new Error(
-        'You must pass a valid DOM event name as the first argument to the `on` modifier'
+        `You must pass a valid DOM event name as the first argument to the \`on\` modifier on ${selector}`
       );
     }
 
@@ -85,13 +96,13 @@ export class OnModifierState {
       throw new Error(
         `You must pass a function as the second argument to the \`on\` modifier; you passed ${
           userProvidedCallback === null ? 'null' : typeof userProvidedCallback
-        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? '(unknown)'} on <${this.element.tagName.toLowerCase()}>`
+        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? '(unknown)'} on ${selector}`
       );
     }
 
     if (DEBUG && args.positional.length !== 2) {
       throw new Error(
-        `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`
+        `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback on ${selector}`
       );
     }
 
@@ -127,7 +138,7 @@ export class OnModifierState {
         throw new Error(
           `You can only \`once\`, \`passive\` or \`capture\` named arguments to the \`on\` modifier, but you provided ${Object.keys(
             extra
-          ).join(', ')}.`
+          ).join(', ')} on ${selector}`
         );
       }
     } else {
