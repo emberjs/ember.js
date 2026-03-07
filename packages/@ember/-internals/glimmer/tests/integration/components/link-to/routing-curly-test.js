@@ -966,6 +966,37 @@ moduleFor(
       );
     }
 
+    async [`@test it supports custom, nested, current-when with route params`](assert) {
+      assert.expect(2);
+      this.router.map(function () {
+        this.route('index', { path: '/' });
+        this.route('foo', { path: '/foo/:fooId' }, function () {
+          this.route('bar', { path: '/bar/:barId' });
+        });
+      });
+
+      this.addTemplate('index', `{{outlet}}`);
+      this.addTemplate(
+        'foo',
+        `{{#link-to route='foo.index' model=1 current-when='foo.index foo.bar'}}Foo Index{{/link-to}} {{outlet}}`
+      );
+      this.addTemplate(
+        'foo.bar',
+        `{{#link-to route='foo.bar' models=(array 1 2)}}Foo Bar{{/link-to}}`
+      );
+
+      await this.visit('/foo/1/bar/2');
+
+      assert.ok(
+        this.$('a[href="/foo/1"]').is('.active'),
+        'The link to foo.index should be active when on foo.bar'
+      );
+      assert.ok(
+        this.$('a[href="/foo/1/bar/2"]').is('.active'),
+        'The link to foo.bar should be active when on foo.bar'
+      );
+    }
+
     async ['@test it does not disregard current-when when it is set via a bound param'](assert) {
       this.router.map(function () {
         this.route('index', { path: '/' }, function () {
