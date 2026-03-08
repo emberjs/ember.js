@@ -39,7 +39,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
               export default class ModelProbe extends Component {
                 willDestroy() {
-                  super.willDestroy(...arguments);
+                  super.willDestroy();
                   destroyedModels.push(this.args.model);
                 }
                 <template>{{@model}}</template>
