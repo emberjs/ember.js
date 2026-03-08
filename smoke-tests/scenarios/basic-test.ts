@@ -27,6 +27,12 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 this.route('e');
               });
               this.route('f');
+              this.route('item', { path: '/item/:item_id' });
+              this.route('g', function () {
+                this.route('h', function () {
+                  this.route('i');
+                });
+              });
             });
           `,
           components: {
@@ -117,6 +123,26 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import Route from '@ember/routing/route';
               export default class extends Route { model() { return 'f'; } }
             `,
+            'item.js': `
+              import Route from '@ember/routing/route';
+              export default class extends Route { model(params) { return params.item_id; } }
+            `,
+            'g.js': `
+              import Route from '@ember/routing/route';
+              export default class extends Route { model() { return 'g'; } }
+            `,
+            g: {
+              'h.js': `
+                import Route from '@ember/routing/route';
+                export default class extends Route { model() { return 'h'; } }
+              `,
+              h: {
+                'i.js': `
+                  import Route from '@ember/routing/route';
+                  export default class extends Route { model() { return 'i'; } }
+                `,
+              },
+            },
           },
           templates: {
             'example-gjs-route.gjs': `
@@ -140,6 +166,20 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 import ModelProbe from '${appName}/components/model-probe';
                 <template><ModelProbe @model={{@model}} /></template>
               `,
+            },
+            'item.gjs': `
+              import ModelProbe from '${appName}/components/model-probe';
+              <template><ModelProbe @model={{@model}} /></template>
+            `,
+            'g.gjs': `<template>{{outlet}}</template>`,
+            g: {
+              'h.gjs': `<template>{{outlet}}</template>`,
+              h: {
+                'i.gjs': `
+                  import ModelProbe from '${appName}/components/model-probe';
+                  <template><ModelProbe @model={{@model}} /></template>
+                `,
+              },
             },
           },
         },
@@ -192,6 +232,37 @@ function basicTest(scenarios: Scenarios, appName: string) {
                     getDestroyedModels(),
                     ['b', 'b', 'b', 'b', 'b'],
                     'The @model value should remain stable in willDestroy for all transition types'
+                  );
+                });
+
+                test('@model should update when the model changes on the same route', async function (assert) {
+                  await visit('/item/first');
+                  assert.dom().containsText('first');
+
+                  await visit('/item/second');
+                  assert.dom().containsText('second');
+
+                  await visit('/item/third');
+                  assert.dom().containsText('third');
+
+                  // Leave the route entirely — the destroyed model should be the latest one
+                  await visit('/f');
+
+                  assert.deepEqual(
+                    getDestroyedModels(),
+                    ['third'],
+                    'The @model value should be the latest model when finally destroyed'
+                  );
+                });
+
+                test('@model should be stable when grandparent outlet tears down', async function (assert) {
+                  await visit('/g/h/i');
+                  await visit('/f');
+
+                  assert.deepEqual(
+                    getDestroyedModels(),
+                    ['i'],
+                    'The @model value should remain stable when grandparent outlet tears down'
                   );
                 });
               });
