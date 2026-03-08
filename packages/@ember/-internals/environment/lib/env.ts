@@ -154,15 +154,7 @@ export const ENV = {
   },
 };
 
-((
-  EmberENV:
-    | (Record<string, unknown> & {
-        EXTEND_PROTOTYPES?: boolean;
-        EMBER_LOAD_HOOKS?: Record<string, unknown>;
-        FEATURES?: Record<string, unknown>;
-      })
-    | undefined
-) => {
+((EmberENV) => {
   if (typeof EmberENV !== 'object' || EmberENV === null) return;
 
   for (let flag in EmberENV) {
