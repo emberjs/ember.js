@@ -554,12 +554,12 @@ class _LinkTo extends InternalComponent {
     if (typeof currentWhen === 'boolean') {
       return currentWhen;
     } else if (typeof currentWhen === 'string') {
-      let { models, routing } = this;
+      let { routing } = this;
 
       return currentWhen
         .split(' ')
         .some((route) =>
-          routing.isActiveForRoute(models, undefined, this.namespaceRoute(route), state)
+          routing.isActiveForRoute([], undefined, this.namespaceRoute(route), state)
         );
     } else {
       let { route, models, query, routing } = this;
