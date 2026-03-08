@@ -1,14 +1,11 @@
 /* eslint-disable no-var */
-/* globals globalThis */
 /* eslint-disable-next-line no-unused-vars */
 var define, require;
 
 (function () {
-  var globalObj = globalThis;
-
-  if (typeof globalObj.define === 'function' && typeof globalObj.require === 'function') {
-    define = globalObj.define;
-    require = globalObj.require;
+  if (typeof globalThis.define === 'function' && typeof globalThis.require === 'function') {
+    define = globalThis.define;
+    require = globalThis.require;
 
     return;
   }
