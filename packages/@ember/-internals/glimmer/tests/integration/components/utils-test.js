@@ -1,4 +1,3 @@
-/* globals DOMRect DOMRectList */
 import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { tracked } from '@glimmer/tracking';

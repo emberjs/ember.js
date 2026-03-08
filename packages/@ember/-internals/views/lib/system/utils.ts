@@ -204,7 +204,3 @@ export function getViewBoundingClientRect(view: View): DOMRect {
   let range = getViewRange(view);
   return range.getBoundingClientRect();
 }
-
-export function contains(a: Node, b: Node): boolean {
-  return a.contains(b);
-}

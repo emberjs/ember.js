@@ -1,4 +1,3 @@
-/* globals MouseEvent */
 import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
