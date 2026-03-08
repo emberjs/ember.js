@@ -21,9 +21,6 @@ importers:
       '@babel/core':
         specifier: ^7.24.4
         version: 7.29.0(supports-color@8.1.1)
-      '@ember/edition-utils':
-        specifier: ^1.2.0
-        version: 1.2.0
       '@embroider/addon-shim':
         specifier: ^1.10.2
         version: 1.10.2
@@ -51,9 +48,6 @@ importers:
       ember-cli-get-component-path-option:
         specifier: ^1.0.0
         version: 1.0.0
-      ember-cli-is-package-missing:
-        specifier: ^1.0.0
-        version: 1.0.0
       ember-cli-normalize-entity-name:
         specifier: ^1.0.0
         version: 1.0.0
@@ -66,9 +60,6 @@ importers:
       ember-cli-typescript-blueprint-polyfill:
         specifier: ^0.1.0
         version: 0.1.0
-      ember-cli-version-checker:
-        specifier: ^5.1.2
-        version: 5.1.2
       ember-router-generator:
         specifier: ^2.0.0
         version: 2.0.0
@@ -151,9 +142,6 @@ importers:
       babel-plugin-ember-template-compilation:
         specifier: 3.0.0-alpha.4
         version: 3.0.0-alpha.4
-      brotli:
-        specifier: ^1.3.3
-        version: 1.3.3
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -202,9 +190,6 @@ importers:
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
-      filesize:
-        specifier: ^10.1.6
-        version: 10.1.6
       fs-extra:
         specifier: ^11.1.1
         version: 11.3.4
@@ -226,9 +211,6 @@ importers:
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
-      node-gzip:
-        specifier: ^1.1.2
-        version: 1.1.2
       npm-run-all2:
         specifier: ^6.0.6
         version: 6.2.6
@@ -250,9 +232,6 @@ importers:
       rsvp:
         specifier: ^4.8.5
         version: 4.8.5
-      table:
-        specifier: ^6.9.0
-        version: 6.9.0
       terser:
         specifier: ^5.42.0
         version: 5.46.0
@@ -2911,18 +2890,12 @@ importers:
 
   smoke-tests/node-template:
     dependencies:
-      git-repo-info:
-        specifier: ^2.1.1
-        version: 2.1.1
       html-differ:
         specifier: ^1.4.0
         version: 1.4.0
       qunit:
         specifier: ^2.20.1
         version: 2.25.0
-      semver:
-        specifier: ^7.6.0
-        version: 7.7.4
       simple-dom:
         specifier: ^1.4.0
         version: 1.4.0
@@ -6700,9 +6673,6 @@ packages:
     resolution: {integrity: sha512-p5el5/ig0QeRGFPkLMPdm7KblkTm44eicEWfwnRTz6hncghVuRZ0+XDAtCi7ynxobeE/mey5Q7lAulFkgNzxVA==}
     engines: {node: '>= 20.19.*'}
 
-  brotli@1.3.3:
-    resolution: {integrity: sha512-oTKjJdShmDuGW94SyyaoQvAjf30dZaHnjJ8uAF+u2/vGJkJbJPJAT1gDiOJP5v1Zb6f9KEyW/1HpuaWIXtGHPg==}
-
   browser-stdout@1.3.1:
     resolution: {integrity: sha512-qhAVI1+Av2X7qelOfAIYwXONood6XlZE/fXaBSmW/T5SzLAmCgzi+eiWE7fUvbHaeNBQH13UftjpXxsfLkMpgw==}
 
@@ -10300,9 +10270,6 @@ packages:
 
   no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
-
-  node-gzip@1.1.2:
-    resolution: {integrity: sha512-ZB6zWpfZHGtxZnPMrJSKHVPrRjURoUzaDbLFj3VO70mpLTW5np96vXyHwft4Id0o+PYIzgDkBUjIzaNHhQ8srw==}
 
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
@@ -18253,10 +18220,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  brotli@1.3.3:
-    dependencies:
-      base64-js: 1.5.1
-
   browser-stdout@1.3.1: {}
 
   browserslist-to-esbuild@2.1.1(browserslist@4.28.1):
@@ -22708,8 +22671,6 @@ snapshots:
     dependencies:
       lower-case: 2.0.2
       tslib: 2.8.1
-
-  node-gzip@1.1.2: {}
 
   node-int64@0.4.0: {}
 

@@ -5,20 +5,11 @@ import type {
   Nullable,
   Optional,
   Program,
-  ProgramConstants,
   RuntimeOp,
 } from '@glimmer/interfaces';
-import {
-  CURRIED_COMPONENT,
-  CURRIED_HELPER,
-  CURRIED_MODIFIER,
-  decodeHandle,
-  decodeImmediate,
-} from '@glimmer/constants';
 import { exhausted, expect, unreachable } from '@glimmer/debug-util';
 import { LOCAL_DEBUG, LOCAL_SUBTLE_LOGGING, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { enumerate, LOCAL_LOGGER } from '@glimmer/util';
-import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
 
 import type { Primitive, RegisterName } from './dism/dism';
 import type { NormalizedOperand, OperandType, ShorthandOperand } from './dism/operand-types';

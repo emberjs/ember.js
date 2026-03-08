@@ -363,7 +363,7 @@ interface RendererData {
   builder: IBuilder;
 }
 
-export class RendererState {
+class RendererState {
   static create(data: RendererData, renderer: BaseRenderer): RendererState {
     const state = new RendererState(data, renderer);
     associateDestroyableChild(renderer, state);
@@ -717,7 +717,7 @@ export function renderComponent(
 const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
-export class BaseRenderer {
+class BaseRenderer {
   static strict(
     owner: object,
     document: SimpleDocument | Document,

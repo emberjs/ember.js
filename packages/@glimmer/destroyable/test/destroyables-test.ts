@@ -1,5 +1,4 @@
 import { DEBUG } from '@glimmer/env';
-import type { GlobalContext } from '@glimmer/global-context';
 import { unwrap } from '@glimmer/debug-util';
 import {
   assertDestroyablesDestroyed,

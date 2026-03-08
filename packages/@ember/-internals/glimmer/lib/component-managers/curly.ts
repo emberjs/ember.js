@@ -531,11 +531,11 @@ export function initialRenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: true });
 }
 
-export function rerenderInstrumentDetails(component: any): any {
+function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
 
-export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
+const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,
