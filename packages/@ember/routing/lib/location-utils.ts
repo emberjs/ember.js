@@ -38,10 +38,6 @@ export function getFullPath(location: Location): string {
   return getPath(location) + getQuery(location) + getHash(location);
 }
 
-export function getOrigin(location: Location): string {
-  return location.origin;
-}
-
 /**
   Replaces the current location, making sure we explicitly include the origin
   to prevent redirecting to a different origin.
@@ -49,5 +45,5 @@ export function getOrigin(location: Location): string {
   @private
 */
 export function replacePath(location: Location, path: string): void {
-  location.replace(getOrigin(location) + path);
+  location.replace(location.origin + path);
 }
