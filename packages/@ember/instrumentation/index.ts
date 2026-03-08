@@ -94,12 +94,7 @@ function populateListeners(name: string) {
   return listeners;
 }
 
-const time = ((): (() => number) => {
-  if (typeof performance !== 'undefined' && performance.now) {
-    return () => performance.now();
-  }
-  return Date.now;
-})();
+const time = (): number => performance.now();
 
 type InstrumentCallback<Binding, Result> = (this: Binding) => Result;
 

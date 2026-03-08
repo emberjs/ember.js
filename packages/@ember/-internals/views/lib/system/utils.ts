@@ -16,7 +16,7 @@ export function isSimpleClick(event: Event): boolean {
     return false;
   }
   let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
-  let secondaryClick = event.which > 1;
+  let secondaryClick = event.button !== 0;
 
   return !modifier && !secondaryClick;
 }
