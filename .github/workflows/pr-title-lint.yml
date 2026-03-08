@@ -1,7 +1,7 @@
 name: PR Title Lint
 
 on:
-  pull_request:
+  pull_request_target: # This workflow has permissions on the repo, do NOT run code from PRs in this workflow. See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/ # zizmor: ignore[dangerous-triggers] we know what we are doing here
     types: [opened, edited, reopened, synchronize]
 
 permissions:
