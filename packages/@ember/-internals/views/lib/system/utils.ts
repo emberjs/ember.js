@@ -16,7 +16,7 @@ export function isSimpleClick(event: Event): boolean {
     return false;
   }
   let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
-  let secondaryClick = event.which > 1; // IE9 may return undefined
+  let secondaryClick = event.which > 1;
 
   return !modifier && !secondaryClick;
 }
@@ -179,8 +179,7 @@ export function getViewRange(view: View): Range {
   `getViewClientRects` provides information about the position of the border
   box edges of a view relative to the viewport.
 
-  It is only intended to be used by development tools like the Ember Inspector
-  and may not work on older browsers.
+  It is only intended to be used by development tools like the Ember Inspector.
 
   @private
   @method getViewClientRects
@@ -195,29 +194,17 @@ export function getViewClientRects(view: View): DOMRectList {
   `getViewBoundingClientRect` provides information about the position of the
   bounding border box edges of a view relative to the viewport.
 
-  It is only intended to be used by development tools like the Ember Inspector
-  and may not work on older browsers.
+  It is only intended to be used by development tools like the Ember Inspector.
 
   @private
   @method getViewBoundingClientRect
   @param {Ember.View} view
 */
-export function getViewBoundingClientRect(view: View): ClientRect | DOMRect {
+export function getViewBoundingClientRect(view: View): DOMRect {
   let range = getViewRange(view);
   return range.getBoundingClientRect();
 }
 
 export function contains(a: Node, b: Node): boolean {
-  if (a.contains !== undefined) {
-    return a.contains(b);
-  }
-
-  let current: Nullable<Node> = b.parentNode;
-
-  while (current && (current = current.parentNode)) {
-    if (current === a) {
-      return true;
-    }
-  }
-  return false;
+  return a.contains(b);
 }

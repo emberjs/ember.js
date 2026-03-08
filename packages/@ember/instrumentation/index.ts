@@ -23,14 +23,6 @@ export interface StructuredProfilePayload {
   object: string | object;
 }
 
-interface MaybePerf {
-  now?: () => number;
-  mozNow?: () => number;
-  webkitNow?: () => number;
-  msNow?: () => number;
-  oNow?: () => number;
-}
-
 /**
 @module @ember/instrumentation
 @private
@@ -103,10 +95,10 @@ function populateListeners(name: string) {
 }
 
 const time = ((): (() => number) => {
-  let perf: MaybePerf = 'undefined' !== typeof window ? window.performance || {} : {};
-  let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
-
-  return fn ? fn.bind(perf) : Date.now;
+  if (typeof performance !== 'undefined' && performance.now) {
+    return () => performance.now();
+  }
+  return Date.now;
 })();
 
 type InstrumentCallback<Binding, Result> = (this: Binding) => Result;

@@ -15,11 +15,6 @@ import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
 
-// IE includes the host name
-function normalizeUrl(url) {
-  return url.replace(/https?:\/\/[^/]+/, '');
-}
-
 function shouldNotBeActive(assert, element) {
   checkActive(assert, element, false);
 }
@@ -152,9 +147,7 @@ moduleFor(
       // SVGAElement does not have a .click() method like HTMLElement,
       // so we dispatch a click event manually.
       let svgLink = document.querySelector('#svg-about-link');
-      let clickEvent = document.createEvent('MouseEvents');
-      clickEvent.initMouseEvent('click', true, true);
-      svgLink.dispatchEvent(clickEvent);
+      svgLink.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
       await runLoopSettled();
 
       assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
@@ -870,7 +863,7 @@ moduleFor(
 
       await this.visit('/about/item');
 
-      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+      assert.equal(this.$('#item a').attr('href'), '/about');
     }
 
     async [`@test it supports custom, nested, current-when`](assert) {
@@ -1196,7 +1189,7 @@ moduleFor(
 
       assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
       assert.equal(
-        normalizeUrl(this.$('#home-link').attr('href')),
+        this.$('#home-link').attr('href'),
         '/',
         'The home link points back at /'
       );
@@ -1210,9 +1203,9 @@ moduleFor(
 
       await this.click('#about-link');
 
-      assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
-      assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
-      assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+      assert.equal(this.$('li a#yehuda').attr('href'), '/item/yehuda');
+      assert.equal(this.$('li a#tom').attr('href'), '/item/tom');
+      assert.equal(this.$('li a#erik').attr('href'), '/item/erik');
 
       await this.click('#erik');
 
@@ -1391,11 +1384,11 @@ moduleFor(
 
       await this.visit('/filters/popular');
 
-      assert.equal(normalizeUrl(this.$('#link').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#path-link').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#post-path-link').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#post-number-link').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#repo-object-link').attr('href')), '/repo/ember/ember.js');
+      assert.equal(this.$('#link').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#path-link').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#post-path-link').attr('href'), '/post/123');
+      assert.equal(this.$('#post-number-link').attr('href'), '/post/123');
+      assert.equal(this.$('#repo-object-link').attr('href'), '/repo/ember/ember.js');
     }
 
     async [`@test [GH#4201] Shorthand for route.index shouldn't throw errors about context arguments`](
@@ -1463,8 +1456,8 @@ moduleFor(
       );
 
       let assertEquality = (href) => {
-        assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
-        assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
+        assert.equal(this.$('#string-link').attr('href'), '/');
+        assert.equal(this.$('#path-link').attr('href'), href);
       };
 
       await this.visit('/');
@@ -1506,7 +1499,7 @@ moduleFor(
       runTask(() => controller.set('post', post));
 
       assert.equal(
-        normalizeUrl(this.$('#post').attr('href')),
+        this.$('#post').attr('href'),
         '/posts/1',
         'precond - Link has rendered href attr properly'
       );
@@ -1600,9 +1593,8 @@ moduleFor(
         let idx;
         for (idx = 0; idx < links.length; idx++) {
           let href = this.$(links[idx]).attr('href');
-          // Old IE includes the whole hostname as well
           assert.equal(
-            href.slice(-expected[idx].length),
+            href,
             expected[idx],
             `Expected link to be '${expected[idx]}', but was '${href}'`
           );
@@ -1910,10 +1902,10 @@ moduleFor(
 
       function assertLinkStatus(link, url) {
         if (url) {
-          assert.equal(normalizeUrl(link.attr('href')), url, 'loaded link-to has expected href');
+          assert.equal(link.attr('href'), url, 'loaded link-to has expected href');
           assert.ok(!link.hasClass('i-am-loading'), 'loaded linkComponent has no loadingClass');
         } else {
-          assert.equal(normalizeUrl(link.attr('href')), '#', "unloaded link-to has href='#'");
+          assert.equal(link.attr('href'), '#', "unloaded link-to has href='#'");
           assert.ok(link.hasClass('i-am-loading'), 'loading linkComponent has loadingClass');
         }
       }

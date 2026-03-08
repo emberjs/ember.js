@@ -220,10 +220,8 @@ moduleFor(
       let done = assert.async();
       // Rationale: The old run loop code was susceptible to an occasional
       // bug where invokeLaterTimers would be scheduled with a setTimeout
-      // with a negative wait. Modern browsers normalize this to 0, but
-      // older browsers (IE <= 8) break with a negative wait, which
-      // happens when an expired timer callback takes a while to run,
-      // which is what we simulate here.
+      // with a negative wait. Browsers normalize this to 0, but we verify
+      // that the wait is always a non-negative number.
       let newSetTimeoutUsed;
       _backburner._platform = Object.assign({}, originalPlatform, {
         setTimeout() {

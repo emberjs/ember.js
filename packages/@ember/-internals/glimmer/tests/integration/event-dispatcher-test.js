@@ -3,11 +3,8 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { Component } from '../utils/helpers';
 import { _getCurrentRunLoop } from '@ember/runloop';
 
-let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
-
 function fireNativeWithDataTransfer(node, type, dataTransfer) {
-  let event = document.createEvent('HTMLEvents');
-  event.initEvent(type, true, true);
+  let event = new Event(type, { bubbles: true, cancelable: true });
   event.dataTransfer = dataTransfer;
   node.dispatchEvent(event);
 }
@@ -408,25 +405,23 @@ moduleFor(
   }
 );
 
-if (canDataTransfer) {
-  moduleFor(
-    'EventDispatcher - Event Properties',
-    class extends RenderingTestCase {
-      ['@test dataTransfer property is added to drop event'](assert) {
-        let receivedEvent;
-        this.registerComponent('x-foo', {
-          ComponentClass: class extends Component {
-            drop(event) {
-              receivedEvent = event;
-            }
-          },
-        });
+moduleFor(
+  'EventDispatcher - Event Properties',
+  class extends RenderingTestCase {
+    ['@test dataTransfer property is added to drop event'](assert) {
+      let receivedEvent;
+      this.registerComponent('x-foo', {
+        ComponentClass: class extends Component {
+          drop(event) {
+            receivedEvent = event;
+          }
+        },
+      });
 
-        this.render(`{{x-foo}}`);
+      this.render(`{{x-foo}}`);
 
-        fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
-        assert.equal(receivedEvent.dataTransfer, 'success');
-      }
+      fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
+      assert.equal(receivedEvent.dataTransfer, 'success');
     }
-  );
-}
+  }
+);

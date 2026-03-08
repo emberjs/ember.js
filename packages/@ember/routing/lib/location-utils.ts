@@ -1,11 +1,10 @@
 /**
   @private
 
-  Returns the current `location.pathname`, normalized for IE inconsistencies.
+  Returns the current `location.pathname`, ensuring it has a leading slash.
 */
 export function getPath(location: Location): string {
   let pathname = location.pathname;
-  // Various versions of IE/Opera don't always return a leading slash
   if (pathname[0] !== '/') {
     pathname = `/${pathname}`;
   }
@@ -40,18 +39,7 @@ export function getFullPath(location: Location): string {
 }
 
 export function getOrigin(location: Location): string {
-  let origin = location.origin;
-
-  // Older browsers, especially IE, don't have origin
-  if (!origin) {
-    origin = `${location.protocol}//${location.hostname}`;
-
-    if (location.port) {
-      origin += `:${location.port}`;
-    }
-  }
-
-  return origin;
+  return location.origin;
 }
 
 /**

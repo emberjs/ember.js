@@ -265,13 +265,7 @@ if (DEBUG) {
   });
 
   setDebugFunction('debugFreeze', function debugFreeze(obj) {
-    // re-freezing an already frozen object introduces a significant
-    // performance penalty on Chrome (tested through 59).
-    //
-    // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
-    if (!Object.isFrozen(obj)) {
-      Object.freeze(obj);
-    }
+    Object.freeze(obj);
   });
 
   setDebugFunction('warn', _warn);

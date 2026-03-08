@@ -14,11 +14,6 @@ import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
 
-// IE includes the host name
-function normalizeUrl(url) {
-  return url.replace(/https?:\/\/[^/]+/, '');
-}
-
 function shouldNotBeActive(assert, element) {
   checkActive(assert, element, false);
 }
@@ -911,7 +906,7 @@ moduleFor(
 
       await this.visit('/about/item');
 
-      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+      assert.equal(this.$('#item a').attr('href'), '/about');
     }
 
     async [`@test it supports custom, nested, current-when`](assert) {
@@ -1192,7 +1187,7 @@ moduleFor(
 
       assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
       assert.equal(
-        normalizeUrl(this.$('#home-link > a').attr('href')),
+        this.$('#home-link > a').attr('href'),
         '/',
         'The home link points back at /'
       );
@@ -1206,9 +1201,9 @@ moduleFor(
 
       await this.click('#about-link > a');
 
-      assert.equal(normalizeUrl(this.$('li#yehuda > a').attr('href')), '/item/yehuda');
-      assert.equal(normalizeUrl(this.$('li#tom > a').attr('href')), '/item/tom');
-      assert.equal(normalizeUrl(this.$('li#erik > a').attr('href')), '/item/erik');
+      assert.equal(this.$('li#yehuda > a').attr('href'), '/item/yehuda');
+      assert.equal(this.$('li#tom > a').attr('href'), '/item/tom');
+      assert.equal(this.$('li#erik > a').attr('href'), '/item/erik');
 
       await this.click('#erik > a');
 
@@ -1261,12 +1256,12 @@ moduleFor(
 
       await this.visit('/filters/popular');
 
-      assert.equal(normalizeUrl(this.$('#link > a').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#path-link > a').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#post-path-link > a').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#post-number-link > a').attr('href')), '/post/123');
+      assert.equal(this.$('#link > a').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#path-link > a').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#post-path-link > a').attr('href'), '/post/123');
+      assert.equal(this.$('#post-number-link > a').attr('href'), '/post/123');
       assert.equal(
-        normalizeUrl(this.$('#repo-object-link > a').attr('href')),
+        this.$('#repo-object-link > a').attr('href'),
         '/repo/ember/ember.js'
       );
     }
@@ -1336,8 +1331,8 @@ moduleFor(
       );
 
       let assertEquality = (href) => {
-        assert.equal(normalizeUrl(this.$('#string-link > a').attr('href')), '/');
-        assert.equal(normalizeUrl(this.$('#path-link > a').attr('href')), href);
+        assert.equal(this.$('#string-link > a').attr('href'), '/');
+        assert.equal(this.$('#path-link > a').attr('href'), href);
       };
 
       await this.visit('/');
@@ -1379,7 +1374,7 @@ moduleFor(
       runTask(() => controller.set('post', post));
 
       assert.equal(
-        normalizeUrl(this.$('#post > a').attr('href')),
+        this.$('#post > a').attr('href'),
         '/posts/1',
         'precond - Link has rendered href attr properly'
       );
@@ -1473,9 +1468,8 @@ moduleFor(
         let idx;
         for (idx = 0; idx < links.length; idx++) {
           let href = this.$(links[idx]).attr('href');
-          // Old IE includes the whole hostname as well
           assert.equal(
-            href.slice(-expected[idx].length),
+            href,
             expected[idx],
             `Expected link to be '${expected[idx]}', but was '${href}'`
           );
@@ -1797,10 +1791,10 @@ moduleFor(
 
       function assertLinkStatus(link, url) {
         if (url) {
-          assert.equal(normalizeUrl(link.attr('href')), url, 'loaded link-to has expected href');
+          assert.equal(link.attr('href'), url, 'loaded link-to has expected href');
           assert.ok(!link.hasClass('i-am-loading'), 'loaded linkComponent has no loadingClass');
         } else {
-          assert.equal(normalizeUrl(link.attr('href')), '#', "unloaded link-to has href='#'");
+          assert.equal(link.attr('href'), '#', "unloaded link-to has href='#'");
           assert.ok(link.hasClass('i-am-loading'), 'loading linkComponent has loadingClass');
         }
       }

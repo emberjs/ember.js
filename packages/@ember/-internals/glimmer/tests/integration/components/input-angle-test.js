@@ -61,8 +61,7 @@ class InputRenderingTest extends RenderingTestCase {
   }
 
   triggerEvent(type, options, selector) {
-    let event = document.createEvent('Events');
-    event.initEvent(type, true, true);
+    let event = new Event(type, { bubbles: true, cancelable: true });
     Object.assign(event, options);
 
     let element = this.$(selector || 'input')[0];
