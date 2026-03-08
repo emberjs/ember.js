@@ -18,10 +18,33 @@ function basicTest(scenarios: Scenarios, appName: string) {
             }
 
             Router.map(function () {
-              this.route('example-gjs-route')
+              this.route('example-gjs-route');
+              this.route('a', function () {
+                this.route('b');
+                this.route('c');
+              });
+              this.route('d', function () {
+                this.route('e');
+              });
+              this.route('f');
             });
           `,
           components: {
+            'model-probe.gjs': `
+              import Component from '@glimmer/component';
+
+              const destroyedModels = [];
+              export function getDestroyedModels() { return destroyedModels; }
+              export function clearDestroyedModels() { destroyedModels.length = 0; }
+
+              export default class ModelProbe extends Component {
+                willDestroy() {
+                  super.willDestroy(...arguments);
+                  destroyedModels.push(this.args.model);
+                }
+                <template>{{@model}}</template>
+              }
+            `,
             'interactive-example.js': `
               import { template } from '@ember/template-compiler';
               import Component from '@glimmer/component';
@@ -66,6 +89,34 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 }
               }
             `,
+            'a.js': `
+              import Route from '@ember/routing/route';
+              export default class extends Route { model() { return 'a'; } }
+            `,
+            a: {
+              'b.js': `
+                import Route from '@ember/routing/route';
+                export default class extends Route { model() { return 'b'; } }
+              `,
+              'c.js': `
+                import Route from '@ember/routing/route';
+                export default class extends Route { model() { return 'c'; } }
+              `,
+            },
+            'd.js': `
+              import Route from '@ember/routing/route';
+              export default class extends Route { model() { return 'd'; } }
+            `,
+            d: {
+              'e.js': `
+                import Route from '@ember/routing/route';
+                export default class extends Route { model() { return 'e'; } }
+              `,
+            },
+            'f.js': `
+              import Route from '@ember/routing/route';
+              export default class extends Route { model() { return 'f'; } }
+            `,
           },
           templates: {
             'example-gjs-route.gjs': `
@@ -83,6 +134,13 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 </template>
               }
             `,
+            'a.gjs': `<template>{{outlet}}</template>`,
+            a: {
+              'b.gjs': `
+                import ModelProbe from '${appName}/components/model-probe';
+                <template><ModelProbe @model={{@model}} /></template>
+              `,
+            },
           },
         },
         tests: {
@@ -101,6 +159,40 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   assert.dom('[data-test="model-field"]').containsText('I am the model');
                   assert.dom('[data-test="controller-field"]').containsText('This is on the controller');
                   assert.dom('[data-test="component-getter"]').containsText('I am on the component');
+                });
+              });
+            `,
+            'model-stability-test.js': `
+              import { module, test } from 'qunit';
+              import { visit } from '@ember/test-helpers';
+              import { setupApplicationTest } from '${appName}/tests/helpers';
+              import { getDestroyedModels, clearDestroyedModels } from '${appName}/components/model-probe';
+
+              module('Acceptance | @model stability during route transitions', function (hooks) {
+                setupApplicationTest(hooks);
+                hooks.beforeEach(function () { clearDestroyedModels(); });
+
+                test('@model should be stable when transitioning out of the route', async function (assert) {
+                  await visit('/a/b');
+                  await visit('/a');
+
+                  await visit('/a/b');
+                  await visit('/a/c');
+
+                  await visit('/a/b');
+                  await visit('/d');
+
+                  await visit('/a/b');
+                  await visit('/d/e');
+
+                  await visit('/a/b');
+                  await visit('/f');
+
+                  assert.deepEqual(
+                    getDestroyedModels(),
+                    ['b', 'b', 'b', 'b', 'b'],
+                    'The @model value should remain stable in willDestroy for all transition types'
+                  );
                 });
               });
             `,
