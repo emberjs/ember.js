@@ -1186,11 +1186,7 @@ moduleFor(
       await this.visit('/about');
 
       assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-      assert.equal(
-        this.$('#home-link > a').attr('href'),
-        '/',
-        'The home link points back at /'
-      );
+      assert.equal(this.$('#home-link > a').attr('href'), '/', 'The home link points back at /');
 
       await this.click('#yehuda > a');
 
@@ -1260,10 +1256,7 @@ moduleFor(
       assert.equal(this.$('#path-link > a').attr('href'), '/filters/unpopular');
       assert.equal(this.$('#post-path-link > a').attr('href'), '/post/123');
       assert.equal(this.$('#post-number-link > a').attr('href'), '/post/123');
-      assert.equal(
-        this.$('#repo-object-link > a').attr('href'),
-        '/repo/ember/ember.js'
-      );
+      assert.equal(this.$('#repo-object-link > a').attr('href'), '/repo/ember/ember.js');
     }
 
     async [`@test [GH#4201] Shorthand for route.index shouldn't throw errors about context arguments`](

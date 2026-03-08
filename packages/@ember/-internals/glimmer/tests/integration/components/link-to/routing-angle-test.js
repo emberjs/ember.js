@@ -1,3 +1,4 @@
+/* globals MouseEvent */
 import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
@@ -1188,11 +1189,7 @@ moduleFor(
       await this.visit('/about');
 
       assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-      assert.equal(
-        this.$('#home-link').attr('href'),
-        '/',
-        'The home link points back at /'
-      );
+      assert.equal(this.$('#home-link').attr('href'), '/', 'The home link points back at /');
 
       await this.click('#yehuda');
 
