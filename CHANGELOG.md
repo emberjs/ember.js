@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v6.12.0-beta.2 (March 9, 2026)
+
+- [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
+
+## v6.12.0-beta.1 (February 17, 2026)
 - [#20908](https://github.com/emberjs/ember.js/pull/20908) / [#21020](https://github.com/emberjs/ember.js/pull/21020) Merge [glimmerjs/glimmer-vm](https://github.com/glimmerjs/glimmer-vm) into the `emberjs/ember.js` monorepo.
   - All `@glimmer/*` packages that were formerly dependencies of `ember-source` are now included in the monorepo. This enables us to more easily iterate 
     on the Glimmer VM and related packages, avoid an integration step with `ember.js` and to more easily share code between them and `ember-source`.
