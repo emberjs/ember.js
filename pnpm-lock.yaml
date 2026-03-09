@@ -3038,8 +3038,8 @@ importers:
         specifier: ^8.3.1
         version: 8.3.1(@babel/core@7.29.0)
       ember-cli-deprecation-workflow:
-        specifier: ^4.0.0
-        version: 4.0.1(@babel/core@7.29.0)
+        specifier: ^3.4.0
+        version: 3.4.0(ember-source@)
       ember-load-initializers:
         specifier: ^3.0.1
         version: 3.0.1(ember-source@)
@@ -7753,8 +7753,11 @@ packages:
     peerDependencies:
       ember-cli: ^3.2.0 || >=4.0.0
 
-  ember-cli-deprecation-workflow@4.0.1:
-    resolution: {integrity: sha512-XJzUZVXyb6/nFKU7GzGRlHlcAl4KtkioBTjfuIHp1aysbRZ6XxYLSPtP090EbOxQBtYwAPsH2kPAtPS86tL2RA==}
+  ember-cli-deprecation-workflow@3.4.0:
+    resolution: {integrity: sha512-Ksrmib4mjD4xa0dqFgxJLBwkSp9EVYH6jSqe2NpODlBKEAZhsVzQj5wKPnC1dXfK3Erq/r1Fh3q4g46FZiCUiw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      ember-source: '>= 3.28.0'
 
   ember-cli-get-component-path-option@1.0.0:
     resolution: {integrity: sha512-k47TDwcJ2zPideBCZE8sCiShSxQSpebY2BHcX2DdipMmBox5gsfyVrbKJWIHeSTTKyEUgmBIvQkqTOozEziCZA==}
@@ -19291,12 +19294,12 @@ snapshots:
       resolve: 1.22.11
       semver: 5.7.2
 
-  ember-cli-deprecation-workflow@4.0.1(@babel/core@7.29.0):
+  ember-cli-deprecation-workflow@3.4.0(ember-source@):
     dependencies:
-      '@embroider/addon-shim': 1.10.2
-      decorator-transforms: 2.3.1(@babel/core@7.29.0)
+      '@babel/core': 7.29.0(supports-color@8.1.1)
+      ember-cli-babel: 8.3.1(@babel/core@7.29.0)
+      ember-source: 'link:'
     transitivePeerDependencies:
-      - '@babel/core'
       - supports-color
 
   ember-cli-get-component-path-option@1.0.0: {}
