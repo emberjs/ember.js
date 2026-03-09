@@ -1,5 +1,4 @@
 import { DEBUG } from '@glimmer/env';
-import global from './global';
 
 /**
   The hash of environment variables used to control various configuration
@@ -154,9 +153,15 @@ export const ENV = {
   },
 };
 
-((EmberENV) => {
-  if (typeof EmberENV !== 'object' || EmberENV === null) return;
+interface EmberENVConfig extends Record<string, unknown> {
+  EXTEND_PROTOTYPES?: boolean;
+  EMBER_LOAD_HOOKS?: Record<string, unknown>;
+  FEATURES?: Record<string, unknown>;
+}
 
+const EmberENV = (globalThis as { EmberENV?: EmberENVConfig }).EmberENV;
+
+if (typeof EmberENV === 'object' && EmberENV !== null) {
   for (let flag in EmberENV) {
     if (
       !Object.prototype.hasOwnProperty.call(EmberENV, flag) ||
@@ -197,7 +202,7 @@ export const ENV = {
   if (DEBUG) {
     ENV._DEBUG_RENDER_TREE = true;
   }
-})(global.EmberENV);
+}
 
 export function getENV(): object {
   return ENV;
