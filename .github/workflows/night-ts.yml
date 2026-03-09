@@ -8,7 +8,7 @@ jobs:
     name: typescript@latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: ./.github/actions/setup
       - run: pnpm build
       - run: pnpm add --save-dev typescript@latest --workspace-root
@@ -19,7 +19,7 @@ jobs:
     needs: [ts-next]
     if: failure()
     steps:
-      - uses: sarisia/actions-status-discord@v1
+      - uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
         with:
           webhook: ${{ secrets.TYPESCRIPT_WEBHOOK }}
           status: "Failure"
