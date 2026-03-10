@@ -204,7 +204,13 @@ export default class DebugRenderTreeImpl<
 
 export function getDebugName(
   definition: ComponentDefinition,
-  manager = definition.manager
+  manager = definition.manager,
+  invocationName?: string
 ): string {
-  return definition.resolvedName ?? definition.debugName ?? manager.getDebugName(definition.state);
+  return (
+    invocationName ??
+    definition.resolvedName ??
+    definition.debugName ??
+    manager.getDebugName(definition.state)
+  );
 }
