@@ -294,6 +294,7 @@ function rolledUpPackages() {
     '@ember/-internals/metal',
     '@ember/-internals/utils',
     '@ember/-internals/container',
+    'router_js',
   ];
 }
 

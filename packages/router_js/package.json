@@ -5,8 +5,7 @@
   "license": "MIT",
   "author": "Tilde, Inc.",
   "exports": {
-    ".": "./lib/router/index.ts",
-    "./*": "./lib/router/*.ts"
+    ".": "./index.ts"
   },
   "scripts": {
     "lint": "npm-run-all lint:*",
