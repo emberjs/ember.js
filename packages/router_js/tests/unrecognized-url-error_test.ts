@@ -1,4 +1,4 @@
-import UnrecognizedURLError from 'router/unrecognized-url-error';
+import UnrecognizedURLError from '../lib/router/unrecognized-url-error';
 import { module, test } from './test_helpers';
 
 module('unrecognized-url-error');

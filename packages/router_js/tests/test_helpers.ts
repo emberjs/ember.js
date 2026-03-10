@@ -1,12 +1,12 @@
-import Backburner from 'backburner';
-import Router, { Route, Transition } from 'router';
-import { Dict } from 'router/core';
-import RouteInfo, { IModel, UnresolvedRouteInfoByParam } from 'router/route-info';
-import { logAbort, PublicTransition } from 'router/transition';
-import { TransitionError } from 'router/transition-state';
-import { UnrecognizedURLError } from 'router/unrecognized-url-error';
+import Backburner from 'backburner.js';
+import Router, { Route, Transition } from '../lib/router';
+import { Dict } from '../lib/router/core';
+import RouteInfo, { IModel, UnresolvedRouteInfoByParam } from '../lib/router/route-info';
+import { logAbort, PublicTransition } from '../lib/router/transition';
+import { TransitionError } from '../lib/router/transition-state';
+import { UnrecognizedURLError } from '../lib/router/unrecognized-url-error';
 import { configure, resolve } from 'rsvp';
-import { isTransitionAborted } from 'router/transition-aborted-error';
+import { isTransitionAborted } from '../lib/router/transition-aborted-error';
 
 QUnit.config.testTimeout = 1000;
 

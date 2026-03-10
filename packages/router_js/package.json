@@ -2,38 +2,22 @@
   "name": "router_js",
   "version": "8.0.6",
   "description": "A lightweight JavaScript library is built on top of route-recognizer and rsvp.js to provide an API for handling routes",
-  "keywords": [
-    "route-recognizer",
-    "router",
-    "rsvp"
-  ],
-  "bugs": {
-    "url": "https://github.com/tildeio/router.js/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tildeio/router.js.git"
-  },
   "license": "MIT",
   "author": "Tilde, Inc.",
-  "main": "dist/cjs/index.js",
-  "module": "dist/modules/index.js",
-  "files": [
-    "dist/cjs",
-    "dist/modules"
-  ],
-  "types": "dist/modules/index.d.ts",
+  "exports": {
+    ".": "./lib/router/index.ts",
+    "./*": "./lib/router/*.ts"
+  },
   "scripts": {
     "lint": "npm-run-all lint:*",
     "lint:ts": "eslint --cache .",
     "lint:types": "tsc -p tsconfig.json --noEmit",
-    "prepare": "ember build",
     "problems": "tsc -p tsconfig.json --noEmit",
     "start": "ember server",
     "test": "ember test"
   },
   "dependencies": {
-    "@glimmer/env": "^0.1.7"
+    "@glimmer/env": "workspace:*"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-amd": "^7.12.1",

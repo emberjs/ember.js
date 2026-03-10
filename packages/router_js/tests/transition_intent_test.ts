@@ -1,15 +1,15 @@
-import NamedTransitionIntent from 'router/transition-intent/named-transition-intent';
-import URLTransitionIntent from 'router/transition-intent/url-transition-intent';
-import TransitionState from 'router/transition-state';
+import NamedTransitionIntent from '../lib/router/transition-intent/named-transition-intent';
+import URLTransitionIntent from '../lib/router/transition-intent/url-transition-intent';
+import TransitionState from '../lib/router/transition-state';
 import { createHandler, module, test, TestRouter } from './test_helpers';
 
-import Router, { Route } from 'router';
-import { Dict } from 'router/core';
+import Router, { Route } from '../lib/router';
+import { Dict } from '../lib/router/core';
 import InternalRouteInfo, {
   ResolvedRouteInfo,
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,
-} from 'router/route-info';
+} from '../lib/router/route-info';
 import { Promise } from 'rsvp';
 
 let handlers: Dict<Route>, recognizer: any;

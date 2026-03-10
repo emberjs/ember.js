@@ -1,14 +1,14 @@
 import { MatchCallback } from 'route-recognizer';
-import Router, { Route, Transition } from 'router';
-import { Dict, Maybe } from 'router/core';
+import Router, { Route, Transition } from '../lib/router';
+import { Dict, Maybe } from '../lib/router/core';
 import RouteInfo, {
   IModel,
   RouteInfo as PublicRouteInfo,
   RouteInfoWithAttributes,
-} from 'router/route-info';
-import { SerializerFunc } from 'router/router';
-import { logAbort, PARAMS_SYMBOL, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from 'router/transition';
-import { TransitionError } from 'router/transition-state';
+} from '../lib/router/route-info';
+import { SerializerFunc } from '../lib/router/router';
+import { logAbort, PARAMS_SYMBOL, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from '../lib/router/transition';
+import { TransitionError } from '../lib/router/transition-state';
 import { Promise, reject } from 'rsvp';
 import {
   assertAbort,

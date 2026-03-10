@@ -1,4 +1,4 @@
-import { getChangelist } from 'router/utils';
+import { getChangelist } from '../lib/router/utils';
 import { module, test } from './test_helpers';
 
 module('utils');

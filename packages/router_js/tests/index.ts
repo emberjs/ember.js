@@ -1,5 +1,4 @@
 import './async_get_handler_test';
-import './handler_info_test';
 import './query_params_test';
 import './router_test';
 import './transition-aborted-error_test';
