@@ -1,7 +1,20 @@
 import loadConfigFromMeta from '@embroider/config-meta-loader';
 import { assert } from '@ember/debug';
 
-const config = loadConfigFromMeta('v2-app-template');
+// In SSR (Node.js) context there is no DOM to read meta tags from,
+// so we provide a default configuration that works for server-side rendering.
+// The locationType is set to 'none' since there is no browser history API.
+const config =
+  typeof document !== 'undefined'
+    ? loadConfigFromMeta('v2-app-template')
+    : {
+        modulePrefix: 'v2-app-template',
+        podModulePrefix: '',
+        environment: 'production',
+        rootURL: '/',
+        locationType: 'none',
+        APP: {},
+      };
 
 assert(
   'config is not an object',

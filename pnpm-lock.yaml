@@ -1085,6 +1085,24 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
 
+  packages/@ember/server-rendering:
+    dependencies:
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@glimmer/node':
+        specifier: workspace:*
+        version: link:../../@glimmer/node
+      '@simple-dom/document':
+        specifier: ^1.4.0
+        version: 1.4.0
+      '@simple-dom/serializer':
+        specifier: ^1.4.0
+        version: 1.4.0
+      '@simple-dom/void-map':
+        specifier: ^1.4.0
+        version: 1.4.0
+
   packages/@ember/service:
     dependencies:
       '@ember/-internals':
@@ -2911,6 +2929,9 @@ importers:
 
   smoke-tests/node-template:
     dependencies:
+      ember-source:
+        specifier: workspace:*
+        version: link:../..
       git-repo-info:
         specifier: ^2.1.1
         version: 2.1.1
@@ -2983,6 +3004,9 @@ importers:
       '@ember/optional-features':
         specifier: ^2.3.0
         version: 2.3.0
+      '@ember/server-rendering':
+        specifier: workspace:*
+        version: link:../../packages/@ember/server-rendering
       '@ember/string':
         specifier: ^4.0.1
         version: 4.0.1

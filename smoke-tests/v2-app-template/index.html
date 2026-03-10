@@ -16,13 +16,10 @@
   <body>
     {{content-for "body"}}
 
-    <script src="/@embroider/virtual/vendor.js"></script>
-    <script type="module">
-      import Application from './app/app';
-      import environment from './app/config/environment';
+    <!--app-html-->
 
-      Application.create(environment.APP);
-    </script>
+    <script src="/@embroider/virtual/vendor.js"></script>
+    <script type="module" src="/entry-client.js"></script>
 
     {{content-for "body-footer"}}
   </body>
