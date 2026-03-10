@@ -220,6 +220,8 @@ jobs:
   perf-check:
     name: Perf script still works
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }} # Don't run on tags
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
