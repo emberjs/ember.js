@@ -1,9 +1,4 @@
-import type {
-  ASTPluginEnvironment,
-  builders,
-  PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
-} from '@glimmer/syntax';
+import type { ASTPluginEnvironment, builders, PrecompileOptions } from '@glimmer/syntax';
 
 export type Builders = typeof builders;
 
@@ -13,21 +8,16 @@ export type Builders = typeof builders;
  * typing. Here export the interface subclass with no modification.
  */
 
-export type PluginFunc = NonNullable<
-  NonNullable<PrecompileOptionsWithLexicalScope['plugins']>['ast']
->[number];
-
-export type LexicalScope = NonNullable<PrecompileOptionsWithLexicalScope['lexicalScope']>;
+export type PluginFunc = NonNullable<NonNullable<PrecompileOptions['plugins']>['ast']>[number];
 
 interface Plugins {
   ast: PluginFunc[];
 }
 
-export interface EmberPrecompileOptions extends PrecompileOptions {
+export interface EmberPrecompileOptions extends Omit<PrecompileOptions, 'scope'> {
   isProduction?: boolean;
   moduleName?: string;
   plugins?: Plugins;
-  lexicalScope?: LexicalScope;
   /**
    * This supports template blocks defined in class bodies.
    *
@@ -54,7 +44,7 @@ export interface EmberPrecompileOptions extends PrecompileOptions {
    */
   component?: object;
   eval?: (value: string) => unknown;
-  scope?: () => Record<string, unknown>;
+  scope?: (() => Record<string, unknown>) | Record<string, unknown>;
 }
 
 export type EmberASTPluginEnvironment = ASTPluginEnvironment & EmberPrecompileOptions;

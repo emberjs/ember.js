@@ -93,7 +93,7 @@ export type ResolveOptionalComponentOrHelperOp = [
 
 export type ResolveTemplateLocalOp = [
   op: HighLevelResolveTemplateLocal,
-  op1: number,
+  op1: string,
   op2: (handle: number) => void,
 ];
 

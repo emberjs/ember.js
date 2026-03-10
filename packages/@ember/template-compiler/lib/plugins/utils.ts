@@ -14,7 +14,7 @@ export function isStringLiteral(node: AST.Expression): node is AST.StringLiteral
 }
 
 export function inScope(env: EmberASTPluginEnvironment, name: string): boolean {
-  return Boolean(env.lexicalScope?.(name));
+  return env.scope != null && name in env.scope;
 }
 
 function getLocalName(node: string | AST.VarHead): string {

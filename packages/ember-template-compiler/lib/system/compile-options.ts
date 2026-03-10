@@ -33,13 +33,11 @@ export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrec
     }
   );
 
-  if ('locals' in options && !options.locals) {
-    // Glimmer's precompile options declare `locals` like:
-    //    locals?: string[]
-    // but many in-use versions of babel-plugin-htmlbars-inline-precompile will
-    // set locals to `null`. This used to work but only because glimmer was
-    // ignoring locals for non-strict templates, and now it supports that case.
-    delete options.locals;
+  // Preserve lazy-evaluated property descriptors (e.g., scope getter from babel plugin)
+  // Object.assign eagerly evaluates getters, so we re-apply the original descriptor.
+  const scopeDesc = Object.getOwnPropertyDescriptor(_options, 'scope');
+  if (scopeDesc && 'get' in scopeDesc) {
+    Object.defineProperty(options, 'scope', scopeDesc);
   }
 
   // move `moduleName` into `meta` property

@@ -684,10 +684,16 @@ export interface PrecompileOptions extends PreprocessOptions {
    * classic-only feature and it seems fine to leave it alone for classic consumers.
    */
   customizeComponentName?: ((input: string) => string) | undefined;
-}
 
-export interface PrecompileOptionsWithLexicalScope extends PrecompileOptions {
-  lexicalScope: (variable: string) => boolean;
+  /**
+   * An object whose keys are the JavaScript variables that are in scope for
+   * the template. In strict mode, free variables must be present in this
+   * object. In loose mode, scope values take priority over runtime resolution.
+   *
+   * The values in the scope object are only used at runtime; the compiler only
+   * inspects the keys.
+   */
+  scope?: Record<string, unknown> | undefined;
 
   /**
    * If `emit.debugSymbols` is set to `true`, the name of lexical local variables
@@ -702,7 +708,6 @@ export interface PrecompileOptionsWithLexicalScope extends PrecompileOptions {
 
 export interface PreprocessOptions {
   strictMode?: boolean | undefined;
-  locals?: string[] | undefined;
   meta?:
     | {
         moduleName?: string | undefined;
@@ -794,10 +799,7 @@ export function preprocess(
     end: offsets.endPosition,
   };
 
-  let template = new TokenizerEventHandlers(source, entityParser, mode).parse(
-    ast,
-    options.locals ?? []
-  );
+  let template = new TokenizerEventHandlers(source, entityParser, mode).parse(ast, []);
 
   if (options.plugins?.ast) {
     for (const transform of options.plugins.ast) {

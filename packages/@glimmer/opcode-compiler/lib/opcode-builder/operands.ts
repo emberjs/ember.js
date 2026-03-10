@@ -38,12 +38,8 @@ export function labelOperand(value: string): LabelOperand {
   return { type: HighLevelOperands.Label, value };
 }
 
-export function debugSymbolsOperand(
-  locals: Record<string, number>,
-  upvars: Record<string, number>,
-  lexical: Record<string, number>
-): DebugSymbolsOperand {
-  return { type: HighLevelOperands.DebugSymbols, value: { locals, upvars, lexical } };
+export function debugSymbolsOperand(locals: Record<string, number>): DebugSymbolsOperand {
+  return { type: HighLevelOperands.DebugSymbols, value: locals };
 }
 
 export function isStrictMode(): IsStrictModeOperand {

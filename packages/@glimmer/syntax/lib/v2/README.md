@@ -60,12 +60,12 @@ In `ASTv2`, every variable name is represented as a `VariableReference`.
 
 > The first part of a `PathExpression` is a `VariableReference`.
 
-| type                | description                                                                    |
-| ------------------- | ------------------------------------------------------------------------------ | --- | --- |
-| `ThisReference`     | the literal `this`                                                             |
-| `ArgReference`      | a variable reference that begins with with `@`                                 |
-| `LocalVarReference` | a reference to an in-scope variable binding                                    |
-| `FreeVarReference`  | a reference to a variable binding that was not introduced by block params (`as | foo | `)  |
+| type                | description                                                                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ThisReference`     | the literal `this`                                                                                                                           |
+| `ArgReference`      | a variable reference that begins with with `@`                                                                                               |
+| `LocalVarReference` | a reference to an in-scope block param binding                                                                                               |
+| `FreeVarReference`  | a reference to a variable not introduced by block params; resolution strategy determines lookup (lexical scope, resolver, or strict keyword) |
 
 **Important Note**: The remainder of this README is a description of the loose mode rules for free variable resolution. Strict mode free variable references always refer to an in-scope JavaScript binding, regardless of their syntactic position.
 

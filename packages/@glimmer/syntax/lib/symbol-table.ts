@@ -1,9 +1,10 @@
-import type { Core, Dict } from '@glimmer/interfaces';
+import type { Dict } from '@glimmer/interfaces';
 import { setLocalDebugType, unwrap } from '@glimmer/debug-util';
 import { dict } from '@glimmer/util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 import * as ASTv2 from './v2/api';
+import { isLexicalResolution } from './v2/objects/resolution';
 
 export interface Upvar {
   readonly name: string;
@@ -12,22 +13,19 @@ export interface Upvar {
 
 interface SymbolTableOptions {
   customizeComponentName: (input: string) => string;
-  lexicalScope: (variable: string) => boolean;
+  scope: Record<string, unknown>;
 }
 
 export abstract class SymbolTable {
-  static top(
-    locals: readonly string[],
-    keywords: readonly string[],
-    options: SymbolTableOptions
-  ): ProgramSymbolTable {
-    return new ProgramSymbolTable(locals, keywords, options);
+  static top(keywords: readonly string[], options: SymbolTableOptions): ProgramSymbolTable {
+    return new ProgramSymbolTable(keywords, options);
   }
 
   abstract root(): ProgramSymbolTable;
 
   abstract has(name: string): boolean;
-  abstract get(name: string): [symbol: number, isRoot: boolean];
+  abstract hasLocal(name: string): boolean;
+  abstract get(name: string): number;
 
   abstract hasKeyword(name: string): boolean;
   abstract getKeyword(name: string): number;
@@ -35,7 +33,7 @@ export abstract class SymbolTable {
   abstract hasLexical(name: string): boolean;
 
   abstract getLocalsMap(): Dict<number>;
-  abstract getDebugInfo(): Core.DebugSymbols;
+  abstract getDebugInfo(): Record<string, number>;
 
   abstract allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number;
   abstract allocateNamed(name: string): number;
@@ -50,7 +48,6 @@ export abstract class SymbolTable {
 
 export class ProgramSymbolTable extends SymbolTable {
   constructor(
-    private templateLocals: readonly string[],
     private keywords: readonly string[],
     private options: SymbolTableOptions
   ) {
@@ -58,7 +55,6 @@ export class ProgramSymbolTable extends SymbolTable {
 
     setLocalDebugType('syntax:symbol-table:program', this, {
       debug: () => ({
-        templateLocals: this.templateLocals,
         keywords: this.keywords,
         symbols: this.symbols,
         upvars: this.upvars,
@@ -74,14 +70,14 @@ export class ProgramSymbolTable extends SymbolTable {
   private size = 1;
   readonly named = dict<number>();
   readonly blocks = dict<number>();
-  readonly usedTemplateLocals: string[] = [];
+  readonly usedLexicals: string[] = [];
 
   root(): this {
     return this;
   }
 
   hasLexical(name: string): boolean {
-    return this.options.lexicalScope(name);
+    return name in this.options.scope;
   }
 
   hasKeyword(name: string): boolean {
@@ -92,38 +88,46 @@ export class ProgramSymbolTable extends SymbolTable {
     return this.allocateFree(name, ASTv2.STRICT_RESOLUTION);
   }
 
-  getUsedTemplateLocals(): string[] {
-    return this.usedTemplateLocals;
+  getUsedLexicals(): string[] {
+    return this.usedLexicals;
   }
 
   has(name: string): boolean {
-    return this.templateLocals.includes(name);
+    return this.hasLexical(name);
   }
 
-  get(name: string): [number, boolean] {
-    let index = this.usedTemplateLocals.indexOf(name);
+  hasLocal(_name: string): boolean {
+    return false;
+  }
 
-    if (index !== -1) {
-      return [index, true];
+  get(_name: string): number {
+    // ProgramSymbolTable.get() should not be called for lexical lookups.
+    // Lexical usage is tracked via useLexical().
+    throw new Error('BUG: ProgramSymbolTable.get() should not be called directly');
+  }
+
+  useLexical(name: string): void {
+    if (!this.usedLexicals.includes(name)) {
+      this.usedLexicals.push(name);
     }
-
-    index = this.usedTemplateLocals.length;
-    this.usedTemplateLocals.push(name);
-    return [index, true];
   }
 
   getLocalsMap(): Dict<number> {
     return dict();
   }
 
-  getDebugInfo(): Core.DebugSymbols {
-    return [this.getLocalsMap(), this.named];
+  getDebugInfo(): Record<string, number> {
+    return {
+      ...this.getLocalsMap(),
+      ...this.named,
+    };
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
     // If the name in question is an uppercase (i.e. angle-bracket) component invocation, run
     // the optional `customizeComponentName` function provided to the precompiler.
     if (
+      !isLexicalResolution(resolution) &&
       resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead &&
       resolution.isAngleBracket
     ) {
@@ -204,9 +208,14 @@ export class BlockSymbolTable extends SymbolTable {
     return this.symbols.indexOf(name) !== -1 || this.parent.has(name);
   }
 
-  get(name: string): [number, boolean] {
+  hasLocal(name: string): boolean {
+    return this.symbols.indexOf(name) !== -1 || this.parent.hasLocal(name);
+  }
+
+  get(name: string): number {
     let local = this.#get(name);
-    return local ? [local, false] : this.parent.get(name);
+    if (local !== null) return local;
+    return this.parent.get(name);
   }
 
   #get(name: string): number | null {
@@ -216,16 +225,16 @@ export class BlockSymbolTable extends SymbolTable {
 
   getLocalsMap(): Dict<number> {
     let dict = this.parent.getLocalsMap();
-    this.symbols.forEach((symbol) => (dict[symbol] = this.get(symbol)[0]));
+    this.symbols.forEach((symbol) => (dict[symbol] = this.get(symbol)));
     return dict;
   }
 
-  getDebugInfo(): [locals: Record<string, number>, upvars: Record<string, number>] {
+  getDebugInfo(): Record<string, number> {
     const locals = this.getLocalsMap();
     const root = this.root();
     const named = root.named;
 
-    return [{ ...locals, ...named }, Object.fromEntries(root.upvars.map((s, i) => [s, i]))];
+    return { ...locals, ...named };
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {

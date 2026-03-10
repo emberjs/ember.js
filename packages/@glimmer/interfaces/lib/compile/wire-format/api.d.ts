@@ -72,7 +72,7 @@ export type SexpOpcode = keyof SexpOpcodeMap;
 export namespace Core {
   export type Expression = Expressions.Expression;
 
-  export type DebugSymbols = [locals: Record<string, number>, upvars: Record<string, number>];
+  export type DebugSymbols = Record<string, number>;
 
   export type CallArgs = [Params, Hash];
   export type Path = [string, ...string[]];
@@ -95,7 +95,7 @@ export namespace Expressions {
   export type Hash = Core.Hash;
 
   export type GetSymbol = [GetSymbolOpcode, number];
-  export type GetLexicalSymbol = [GetLexicalSymbolOpcode, number];
+  export type GetLexicalSymbol = [GetLexicalSymbolOpcode, string];
   export type GetStrictFree = [GetStrictKeywordOpcode, number];
   export type GetFreeAsComponentOrHelperHead = [GetFreeAsComponentOrHelperHeadOpcode, number];
   export type GetFreeAsHelperHead = [GetFreeAsHelperHeadOpcode, number];
@@ -111,7 +111,7 @@ export namespace Expressions {
   export type GetVar = GetSymbol | GetLexicalSymbol | GetFree;
 
   export type GetPathSymbol = [GetSymbolOpcode, number, Path];
-  export type GetPathTemplateSymbol = [GetLexicalSymbolOpcode, number, Path];
+  export type GetPathTemplateSymbol = [GetLexicalSymbolOpcode, string, Path];
   export type GetPathFreeAsComponentOrHelperHead = [
     GetFreeAsComponentOrHelperHeadOpcode,
     number,
@@ -255,12 +255,7 @@ export namespace Statements {
     | TrustingDynamicAttr
     | TrustingComponentAttr;
 
-  export type Debugger = [
-    op: DebuggerOpcode,
-    locals: Record<string, number>,
-    upvars: Record<string, number>,
-    lexical: Record<string, number>,
-  ];
+  export type Debugger = [op: DebuggerOpcode, locals: Record<string, number>];
   export type InElement = [
     op: InElementOpcode,
     block: SerializedInlineBlock,
@@ -371,9 +366,8 @@ export type SerializedInlineBlock = [statements: Statements.Statement[], paramet
  */
 export type SerializedTemplateBlock = [
   statements: Statements.Statement[],
-  locals: string[],
+  symbols: string[],
   upvars: string[],
-  lexicalSymbols?: string[],
 ];
 
 /**
@@ -397,7 +391,7 @@ export interface SerializedTemplateWithLazyBlock {
   id?: Nullable<string>;
   block: SerializedTemplateBlockJSON;
   moduleName: string;
-  scope?: (() => unknown[]) | undefined | null;
+  scope?: (() => Record<string, unknown>) | undefined | null;
   isStrictMode: boolean;
 }
 

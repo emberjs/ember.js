@@ -74,7 +74,6 @@ export interface LocalDebugMap {
 }
 
 export interface DebugProgramSymbolTable {
-  readonly templateLocals: readonly string[];
   readonly keywords: readonly string[];
   readonly symbols: readonly string[];
   readonly upvars: readonly string[];

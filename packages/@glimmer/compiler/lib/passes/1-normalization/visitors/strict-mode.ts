@@ -1,6 +1,6 @@
 import type { HasSourceSpan } from '@glimmer/syntax';
 import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants';
-import { generateSyntaxError, loc } from '@glimmer/syntax';
+import { generateSyntaxError, isLexicalResolution, loc } from '@glimmer/syntax';
 
 import type { Result } from '../../../shared/result';
 import type * as mir from '../../2-encoding/mir';
@@ -134,6 +134,7 @@ export default class StrictModeValidationPass {
         return this.Expression(expression.head, span, resolution);
 
       case 'Free':
+        if (isLexicalResolution(expression.resolution)) return Ok(null);
         return this.errorFor(expression.name, span, resolution);
 
       case 'InterpolateExpression':
