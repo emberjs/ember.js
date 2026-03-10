@@ -8,13 +8,7 @@ import type {
   Template,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import {
-  childRefFromParts,
-  createComputeRef,
-  createConstRef,
-  createDebugAliasRef,
-  valueForRef,
-} from '@glimmer/reference';
+import { createComputeRef, createConstRef, valueForRef } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
