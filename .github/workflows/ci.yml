@@ -28,7 +28,7 @@ jobs:
     # Only run on pushes to branches that are not from the cron workflow
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
@@ -46,7 +46,7 @@ jobs:
     # Only run on pushes to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
@@ -65,7 +65,7 @@ jobs:
     needs: [ tests ]
     if: failure() && contains(github.ref, 'cron') == true
     steps:
-      - uses: sarisia/actions-status-discord@v1
+      - uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
         with:
           webhook: ${{ secrets.FRAMEWORK_WEBHOOK }}
           status: 'Failure'

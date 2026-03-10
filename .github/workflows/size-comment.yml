@@ -27,14 +27,14 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      - uses: dawidd6/action-download-artifact@v9
+      - uses: dawidd6/action-download-artifact@2536c51d3d126276eb39f74d6bc9c72ac6ef30d3 # v16
         with:
           run_id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
           workflow: size-pr.yml
           path: pr
           if_no_artifact_found: fail
 
-      - uses: dawidd6/action-download-artifact@v9
+      - uses: dawidd6/action-download-artifact@2536c51d3d126276eb39f74d6bc9c72ac6ef30d3 # v16
         with:
           name: sizes-main
           path: main
@@ -126,7 +126,7 @@ jobs:
       #  |   x2    |  y2  |
       #
       #########################
-      - uses: mshick/add-pr-comment@v2
+      - uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2
         with:
           issue: ${{ steps.find-pr-number.outputs.prNumber }}
           message: |
