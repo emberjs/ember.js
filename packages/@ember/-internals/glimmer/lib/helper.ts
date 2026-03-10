@@ -14,7 +14,7 @@ import { getInternalHelperManager, helperCapabilities, setHelperManager } from '
 import type { DirtyableTag } from '@glimmer/validator';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
-export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
+const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 
 // Signature type utilities
 type GetOr<T, K, Else> = K extends keyof T ? T[K] : Else;
@@ -293,7 +293,7 @@ class SimpleClassicHelperManager implements HelperManager<() => unknown> {
   }
 }
 
-export const SIMPLE_CLASSIC_HELPER_MANAGER = new SimpleClassicHelperManager();
+const SIMPLE_CLASSIC_HELPER_MANAGER = new SimpleClassicHelperManager();
 
 setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
 

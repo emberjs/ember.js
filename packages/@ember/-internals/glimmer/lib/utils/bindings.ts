@@ -131,7 +131,7 @@ export function createSimpleClassNameBindingRef(inner: Reference, path?: string)
   });
 }
 
-export function createColonClassNameBindingRef(
+function createColonClassNameBindingRef(
   inner: Reference,
   truthy: string,
   falsy: string | undefined

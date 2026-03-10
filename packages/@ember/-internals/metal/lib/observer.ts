@@ -113,7 +113,7 @@ export function activateObserver(target: object, eventName: string, sync = false
 let DEACTIVATE_SUSPENDED = false;
 let SCHEDULED_DEACTIVATE: [object, string, boolean][] = [];
 
-export function deactivateObserver(target: object, eventName: string, sync = false) {
+function deactivateObserver(target: object, eventName: string, sync = false) {
   if (DEACTIVATE_SUSPENDED === true) {
     SCHEDULED_DEACTIVATE.push([target, eventName, sync]);
     return;
@@ -265,7 +265,7 @@ export function setObserverSuspended(target: object, property: string, suspended
   }
 }
 
-export function destroyObservers(target: object) {
+function destroyObservers(target: object) {
   if (SYNC_OBSERVERS.size > 0) SYNC_OBSERVERS.delete(target);
   if (ASYNC_OBSERVERS.size > 0) ASYNC_OBSERVERS.delete(target);
 }
