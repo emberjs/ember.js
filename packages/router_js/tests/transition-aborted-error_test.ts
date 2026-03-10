@@ -2,7 +2,7 @@ import {
   throwIfAborted,
   isTransitionAborted,
   buildTransitionAborted,
-} from 'router/transition-aborted-error';
+} from '../lib/router/transition-aborted-error';
 import { module, test } from './test_helpers';
 
 module('transition-aborted-error');

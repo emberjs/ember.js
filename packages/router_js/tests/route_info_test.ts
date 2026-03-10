@@ -1,5 +1,5 @@
-import { Transition } from 'router';
-import { Dict } from 'router/core';
+import { Transition } from '../lib/router';
+import { Dict } from '../lib/router/core';
 import {
   IModel,
   ResolvedRouteInfo,
@@ -7,9 +7,9 @@ import {
   toReadOnlyRouteInfo,
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,
-} from 'router/route-info';
-import InternalTransition from 'router/transition';
-import URLTransitionIntent from 'router/transition-intent/url-transition-intent';
+} from '../lib/router/route-info';
+import InternalTransition from '../lib/router/transition';
+import URLTransitionIntent from '../lib/router/transition-intent/url-transition-intent';
 import { resolve } from 'rsvp';
 import { createHandler, createHandlerInfo, module, test, TestRouter } from './test_helpers';
 
