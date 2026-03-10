@@ -189,7 +189,7 @@ export function destroy(destroyable: Destroyable) {
 function removeChildFromParent(child: Destroyable, parent: Destroyable) {
   let parentMeta = getDestroyableMeta(parent);
 
-  if (parentMeta.state === LIVE_STATE) {
+  if (parentMeta.state !== DESTROYED_STATE) {
     parentMeta.children = remove(
       parentMeta.children,
       child,
