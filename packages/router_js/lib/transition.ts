@@ -163,11 +163,11 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
 
       let len = state.routeInfos.length;
       if (len) {
-        this.targetName = state.routeInfos[len - 1].name;
+        this.targetName = state.routeInfos[len - 1]!.name;
       }
 
       for (let i = 0; i < len; ++i) {
-        let handlerInfo = state.routeInfos[i];
+        let handlerInfo = state.routeInfos[i]!;
 
         // TODO: this all seems hacky
         if (!handlerInfo.isResolved) {
@@ -268,6 +268,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     @public
    */
   finally<T>(callback?: T | undefined, label?: string) {
+    // @ts-expect-error @types/rsvp doesn't have the correct signiture for RSVP.Promise.finally
     return this.promise!.finally(callback, label);
   }
 

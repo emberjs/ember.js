@@ -1,5 +1,5 @@
-import { Route } from 'router';
-import { Dict } from 'router/core';
+import { Route } from '../index';
+import { Dict } from '../lib/core';
 import { Promise } from 'rsvp';
 import { createHandler, TestRouter } from './test_helpers';
 
@@ -48,12 +48,12 @@ QUnit.test('can transition to lazily-resolved routes', function (assert) {
   let fooCalled = false;
   let fooBarCalled = false;
 
-  routes.foo = createHandler('foo', {
+  routes['foo'] = createHandler('foo', {
     model() {
       fooCalled = true;
     },
   });
-  routes.fooBar = createHandler('fooBar', {
+  routes['fooBar'] = createHandler('fooBar', {
     model: function () {
       fooBarCalled = true;
     },
@@ -89,12 +89,12 @@ QUnit.test('calls hooks of lazily-resolved routes in order', function (assert) {
   router = new LazyRouter();
   map(router);
 
-  routes.foo = createHandler('foo', {
+  routes['foo'] = createHandler('foo', {
     model: function () {
       operations.push('model foo');
     },
   });
-  routes.fooBar = createHandler('fooBar', {
+  routes['fooBar'] = createHandler('fooBar', {
     model: function () {
       operations.push('model fooBar');
     },

@@ -90,7 +90,7 @@ export default abstract class Router<R extends Route> {
   map(callback: MatchCallback) {
     this.recognizer.map(callback, function (recognizer, routes) {
       for (let i = routes.length - 1, proceed = true; i >= 0 && proceed; --i) {
-        let route = routes[i];
+        let route = routes[i]!;
         let handler = route.handler as string;
         recognizer.add(routes, { as: handler });
         proceed = route.path === '/' || route.path === '' || handler.slice(-6) === '.index';
@@ -196,7 +196,7 @@ export default abstract class Router<R extends Route> {
           localizeMapUpdates: false,
         }
       ) as RouteInfoWithAttributes[];
-      return routeInfosWithAttributes[routeInfosWithAttributes.length - 1];
+      return routeInfosWithAttributes[routeInfosWithAttributes.length - 1]!;
     });
   }
 
@@ -325,7 +325,7 @@ export default abstract class Router<R extends Route> {
       let { routeInfos } = this.state!;
       intent = new NamedTransitionIntent<R>(
         this,
-        routeInfos[routeInfos.length - 1].name,
+        routeInfos[routeInfos.length - 1]!.name,
         undefined,
         [],
         queryParams
@@ -390,11 +390,11 @@ export default abstract class Router<R extends Route> {
       log(this, transition.sequence, 'TRANSITION COMPLETE.');
 
       // Resolve with the final route.
-      return routeInfos[routeInfos.length - 1].route!;
+      return routeInfos[routeInfos.length - 1]!.route!;
     } catch (e) {
       if (!isTransitionAborted(e)) {
         let infos = transition[STATE_SYMBOL]!.routeInfos;
-        transition.trigger(true, 'error', e, transition, infos[infos.length - 1].route);
+        transition.trigger(true, 'error', e, transition, infos[infos.length - 1]!.route);
         transition.abort();
       }
 
@@ -448,7 +448,7 @@ export default abstract class Router<R extends Route> {
     let i, l, route;
 
     for (i = 0, l = partition.exited.length; i < l; i++) {
-      route = partition.exited[i].route;
+      route = partition.exited[i]!.route;
       delete route!.context;
 
       if (route !== undefined) {
@@ -468,7 +468,7 @@ export default abstract class Router<R extends Route> {
 
     try {
       for (i = 0, l = partition.reset.length; i < l; i++) {
-        route = partition.reset[i].route;
+        route = partition.reset[i]!.route;
         if (route !== undefined) {
           if (route._internalReset !== undefined) {
             route._internalReset(false, transition);
@@ -479,14 +479,14 @@ export default abstract class Router<R extends Route> {
       for (i = 0, l = partition.updatedContext.length; i < l; i++) {
         this.routeEnteredOrUpdated(
           currentRouteInfos,
-          partition.updatedContext[i],
+          partition.updatedContext[i]!,
           false,
           transition!
         );
       }
 
       for (i = 0, l = partition.entered.length; i < l; i++) {
-        this.routeEnteredOrUpdated(currentRouteInfos, partition.entered[i], true, transition!);
+        this.routeEnteredOrUpdated(currentRouteInfos, partition.entered[i]!, true, transition!);
       }
     } catch (e) {
       this.state = oldState;
@@ -631,8 +631,8 @@ export default abstract class Router<R extends Route> {
       l;
 
     for (i = 0, l = newRouteInfos.length; i < l; i++) {
-      let oldRouteInfo = oldRouteInfos[i],
-        newRouteInfo = newRouteInfos[i];
+      let oldRouteInfo = oldRouteInfos[i]!,
+        newRouteInfo = newRouteInfos[i]!;
 
       if (!oldRouteInfo || oldRouteInfo.route !== newRouteInfo.route) {
         routeChanged = true;
@@ -652,7 +652,7 @@ export default abstract class Router<R extends Route> {
     }
 
     for (i = newRouteInfos.length, l = oldRouteInfos.length; i < l; i++) {
-      routes.exited.unshift(oldRouteInfos[i]);
+      routes.exited.unshift(oldRouteInfos[i]!);
     }
 
     routes.reset = routes.updatedContext.slice();
@@ -669,11 +669,11 @@ export default abstract class Router<R extends Route> {
     }
 
     let { routeInfos } = state;
-    let { name: routeName } = routeInfos[routeInfos.length - 1];
+    let { name: routeName } = routeInfos[routeInfos.length - 1]!;
     let params: Dict<unknown> = {};
 
     for (let i = routeInfos.length - 1; i >= 0; --i) {
-      let routeInfo = routeInfos[i];
+      let routeInfo = routeInfos[i]!;
       merge(params, routeInfo.params);
       if (routeInfo.route!.inaccessibleByURL) {
         urlMethod = null;
@@ -681,7 +681,7 @@ export default abstract class Router<R extends Route> {
     }
 
     if (urlMethod) {
-      params.queryParams = transition._visibleQueryParams || state.queryParams;
+      params['queryParams'] = transition._visibleQueryParams || state.queryParams;
       let url = this.recognizer.generate(routeName, params as Params);
 
       // transitions during the initial transition must always use replaceURL.
@@ -761,7 +761,7 @@ export default abstract class Router<R extends Route> {
 
     let finalQueryParams: Dict<unknown> = {};
     for (let i = 0, len = finalQueryParamsArray.length; i < len; ++i) {
-      let qp = finalQueryParamsArray[i];
+      let qp = finalQueryParamsArray[i]!;
       finalQueryParams[qp.key] = qp.value;
       if (transition && qp.visible !== false) {
         transition._visibleQueryParams[qp.key] = qp.value;
@@ -798,7 +798,7 @@ export default abstract class Router<R extends Route> {
         Object.assign({}, newTransition[QUERY_PARAMS_SYMBOL]),
         { includeAttributes, localizeMapUpdates: false }
       );
-      newTransition!.to = toInfos[toInfos.length - 1] || null;
+      newTransition!.to = toInfos[toInfos.length - 1]! || null;
     }
   }
 
@@ -815,7 +815,7 @@ export default abstract class Router<R extends Route> {
 
     oldRouteInfoLen = oldRouteInfos.length;
     for (i = 0; i < oldRouteInfoLen; i++) {
-      oldHandler = oldRouteInfos[i];
+      oldHandler = oldRouteInfos[i]!;
       newRouteInfo = newState.routeInfos[i];
 
       if (!newRouteInfo || oldHandler.name !== newRouteInfo.name) {
@@ -904,11 +904,11 @@ export default abstract class Router<R extends Route> {
     let routeInfos = state!.routeInfos;
 
     if (pivotRoute === undefined) {
-      pivotRoute = routeInfos[0].route;
+      pivotRoute = routeInfos[0]!.route;
     }
 
     log(this, 'Starting a refresh transition');
-    let name = routeInfos[routeInfos.length - 1].name;
+    let name = routeInfos[routeInfos.length - 1]!.name;
     let intent = new NamedTransitionIntent(
       this,
       name,
@@ -961,7 +961,7 @@ export default abstract class Router<R extends Route> {
 
     let params: Params = {};
     for (let i = 0, len = state.routeInfos.length; i < len; ++i) {
-      let routeInfo = state.routeInfos[i];
+      let routeInfo = state.routeInfos[i]!;
       let routeParams = routeInfo.serialize();
       merge(params, routeParams);
     }
@@ -993,12 +993,12 @@ export default abstract class Router<R extends Route> {
       return false;
     }
 
-    let targetHandler = targetRouteInfos[targetRouteInfos.length - 1].name;
+    let targetHandler = targetRouteInfos[targetRouteInfos.length - 1]!.name;
     let recognizerHandlers: ParsedHandler[] = this.recognizer.handlersFor(targetHandler);
 
     let index = 0;
     for (len = recognizerHandlers.length; index < len; ++index) {
-      routeInfo = targetRouteInfos[index];
+      routeInfo = targetRouteInfos[index]!;
       if (routeInfo.name === routeName) {
         break;
       }
@@ -1072,11 +1072,11 @@ function routeInfosSameExceptQueryParams<R1 extends Route, R2 extends Route>(
   }
 
   for (let i = 0, len = routeInfos.length; i < len; ++i) {
-    if (routeInfos[i].name !== otherRouteInfos[i].name) {
+    if (routeInfos[i]!.name !== otherRouteInfos[i]!.name) {
       return false;
     }
 
-    if (!paramsEqual(routeInfos[i].params, otherRouteInfos[i].params)) {
+    if (!paramsEqual(routeInfos[i]!.params, otherRouteInfos[i]!.params)) {
       return false;
     }
   }
@@ -1102,7 +1102,7 @@ function paramsEqual(params: Dict<unknown> | undefined, otherParams: Dict<unknow
   }
 
   for (let i = 0, len = keys.length; i < len; ++i) {
-    let key = keys[i];
+    let key = keys[i]!;
 
     if (params[key] !== otherParams[key]) {
       return false;

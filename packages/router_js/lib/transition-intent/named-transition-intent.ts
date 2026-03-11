@@ -36,7 +36,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
   applyToState(oldState: TransitionState<R>, isIntermediate: boolean): TransitionState<R> {
     let handlers: ParsedHandler[] = this.router.recognizer.handlersFor(this.name);
 
-    let targetRouteName = handlers[handlers.length - 1].handler;
+    let targetRouteName = handlers[handlers.length - 1]!.handler;
 
     return this.applyToHandlers(oldState, handlers, targetRouteName, isIntermediate, false);
   }
@@ -57,7 +57,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
     // Pivot handlers are provided for refresh transitions
     if (this.pivotHandler) {
       for (i = 0, len = parsedHandlers.length; i < len; ++i) {
-        if (parsedHandlers[i].handler === this.pivotHandler._internalName) {
+        if (parsedHandlers[i]!.handler === this.pivotHandler._internalName) {
           invalidateIndex = i;
           break;
         }
@@ -65,10 +65,10 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
     }
 
     for (i = parsedHandlers.length - 1; i >= 0; --i) {
-      let result = parsedHandlers[i];
+      let result = parsedHandlers[i]!;
       let name = result.handler;
 
-      let oldHandlerInfo = oldState.routeInfos[i];
+      let oldHandlerInfo = oldState.routeInfos[i]!;
       let newHandlerInfo:
         | InternalRouteInfo<R>
         | UnresolvedRouteInfoByObject<R>
@@ -161,9 +161,9 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
 
   invalidateChildren(handlerInfos: InternalRouteInfo<R>[], invalidateIndex: number) {
     for (let i = invalidateIndex, l = handlerInfos.length; i < l; ++i) {
-      let handlerInfo = handlerInfos[i];
+      let handlerInfo = handlerInfos[i]!;
       if (handlerInfo.isResolved) {
-        let { name, params, route, paramNames } = handlerInfos[i];
+        let { name, params, route, paramNames } = handlerInfos[i]!;
         handlerInfos[i] = new UnresolvedRouteInfoByParam(
           this.router,
           name,
@@ -233,7 +233,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
         (oldHandlerInfo && name === oldHandlerInfo.name && oldHandlerInfo.params) || {};
 
       let peek = objects[objects.length - 1];
-      let paramName = names[numNames];
+      let paramName = names[numNames]!;
       if (isParam(peek)) {
         params[paramName] = '' + objects.pop();
       } else {

@@ -1,7 +1,7 @@
 import { MatchCallback } from 'route-recognizer';
-import Router, { Route, Transition } from 'router';
-import { Dict, Maybe } from 'router/core';
-import RouteInfo from 'router/route-info';
+import Router, { Route, Transition } from '../index';
+import { Dict, Maybe } from '../lib/core';
+import RouteInfo from '../lib/route-info';
 import { Promise } from 'rsvp';
 import {
   createHandler,
@@ -91,7 +91,7 @@ scenarios.forEach(function (scenario) {
     assert.expect(7);
 
     let count = 0;
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       setup: function () {
         assert.equal(
           count,
@@ -136,7 +136,7 @@ scenarios.forEach(function (scenario) {
   test('transitioning between routes fires a queryParamsDidChange event', function (assert) {
     assert.expect(8);
     let count = 0;
-    handlers.parent = createHandler('parent', {
+    handlers['parent'] = createHandler('parent', {
       events: {
         finalizeQueryParamChange: consumeAllFinalQueryParams,
         queryParamsDidChange: function (changed: Dict<unknown>, all: Dict<unknown>) {
@@ -164,7 +164,7 @@ scenarios.forEach(function (scenario) {
       },
     });
 
-    handlers.parentChild = createHandler('parentChild', {
+    handlers['parentChild'] = createHandler('parentChild', {
       events: {
         finalizeQueryParamChange: function () {
           // Do nothing since this handler isn't consuming the QPs
@@ -202,7 +202,7 @@ scenarios.forEach(function (scenario) {
       assert.ok(expectReplace, 'Replace was called but update was expected');
     };
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       events: {
         finalizeQueryParamChange: function (
           _params: Dict<unknown>,
@@ -223,7 +223,7 @@ scenarios.forEach(function (scenario) {
       },
     });
 
-    handlers.child = createHandler('child', {
+    handlers['child'] = createHandler('child', {
       events: {
         finalizeQueryParamChange: function (
           _params: Dict<unknown>,
@@ -284,7 +284,7 @@ scenarios.forEach(function (scenario) {
     assert.expect(3);
 
     let count = 0;
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       model: function () {
         switch (count) {
           case 0:
@@ -324,7 +324,7 @@ scenarios.forEach(function (scenario) {
 
     let eventHandled = false;
     let count = 0;
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       setup: function () {
         assert.notOk(eventHandled, 'setup should happen before eventHandled');
       },
@@ -361,7 +361,7 @@ scenarios.forEach(function (scenario) {
   test('failing to consume QPs in finalize event tells the router it no longer has those params', function (assert) {
     assert.expect(2);
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       setup: function () {
         assert.ok(true, 'setup was entered');
       },
@@ -375,10 +375,10 @@ scenarios.forEach(function (scenario) {
   test('consuming QPs in finalize event tells the router those params are active', function (assert) {
     assert.expect(1);
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       events: {
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
-          finalParams.push({ key: 'foo', value: params.foo });
+          finalParams.push({ key: 'foo', value: params['foo'] });
         },
       },
     });
@@ -390,11 +390,11 @@ scenarios.forEach(function (scenario) {
   test("can hide query params from URL if they're marked as visible=false in finalizeQueryParamChange", function (assert) {
     assert.expect(2);
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       events: {
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
-          finalParams.push({ key: 'foo', value: params.foo, visible: false });
-          finalParams.push({ key: 'bar', value: params.bar });
+          finalParams.push({ key: 'foo', value: params['foo'], visible: false });
+          finalParams.push({ key: 'bar', value: params['bar'] });
         },
       },
     });
@@ -407,11 +407,11 @@ scenarios.forEach(function (scenario) {
   test('transitionTo() works with single query param arg', function (assert) {
     assert.expect(2);
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       events: {
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
-          finalParams.push({ key: 'foo', value: params.foo });
-          finalParams.push({ key: 'bar', value: params.bar });
+          finalParams.push({ key: 'foo', value: params['foo'] });
+          finalParams.push({ key: 'bar', value: params['bar'] });
         },
       },
     });
@@ -436,7 +436,7 @@ scenarios.forEach(function (scenario) {
   test('model hook receives queryParams', function (assert) {
     assert.expect(1);
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       model: function (params: Dict<unknown>) {
         assert.deepEqual(params, { queryParams: { foo: '5' } });
       },
@@ -449,7 +449,7 @@ scenarios.forEach(function (scenario) {
     assert.expect(5);
 
     let modelCount = 0;
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       model: function (params: Dict<unknown>) {
         ++modelCount;
         if (modelCount === 1) {
@@ -484,7 +484,7 @@ scenarios.forEach(function (scenario) {
 
     let redirect = false;
     let indexTransition: Transition;
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       model: function (_params: Dict<unknown>, transition: Transition) {
         if (redirect) {
           indexTransition = transition;
@@ -501,13 +501,13 @@ scenarios.forEach(function (scenario) {
           router.refresh(this as Route);
         },
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
-          (finalParams as any).foo = params.foo; // TODO wat
-          finalParams.push({ key: 'foo', value: params.foo });
+          (finalParams as any).foo = params['foo']; // TODO wat
+          finalParams.push({ key: 'foo', value: params['foo'] });
         },
       },
     });
 
-    handlers.login = createHandler('login', {
+    handlers['login'] = createHandler('login', {
       setup: function () {
         assert.ok(true, 'login#setup');
       },
@@ -529,11 +529,11 @@ scenarios.forEach(function (scenario) {
   test('tests whether query params to transitionTo are considered active', function (assert) {
     assert.expect(6);
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       events: {
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
-          finalParams.push({ key: 'foo', value: params.foo });
-          finalParams.push({ key: 'bar', value: params.bar });
+          finalParams.push({ key: 'foo', value: params['foo'] });
+          finalParams.push({ key: 'bar', value: params['bar'] });
         },
       },
     });
@@ -567,10 +567,10 @@ scenarios.forEach(function (scenario) {
   test('tests whether array query params to transitionTo are considered active', function (assert) {
     assert.expect(7);
 
-    handlers.index = createHandler('index', {
+    handlers['index'] = createHandler('index', {
       events: {
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
-          finalParams.push({ key: 'foo', value: params.foo });
+          finalParams.push({ key: 'foo', value: params['foo'] });
         },
       },
     });

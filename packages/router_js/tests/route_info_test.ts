@@ -184,7 +184,7 @@ test('RouteInfo.find', function (assert) {
     grandChild,
   }
 
-  root.find((routInfo, i) => {
+  root!.find((routInfo, i) => {
     assert.equal(RouteInfoNames[i], routInfo.name);
     return false;
   });
@@ -204,7 +204,7 @@ test('RouteInfo.find returns matched', function (assert) {
     grandChild,
   }
 
-  let childInfo = root.find((routInfo, i) => {
+  let childInfo = root!.find((routInfo, i) => {
     assert.equal(RouteInfoNames[i], routInfo.name);
     return routInfo.name === 'child';
   });

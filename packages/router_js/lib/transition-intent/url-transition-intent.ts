@@ -64,7 +64,7 @@ export default class URLTransitionIntent<R extends Route> extends TransitionInte
         newRouteInfo.routePromise = newRouteInfo.routePromise.then(checkHandlerAccessibility);
       }
 
-      let oldRouteInfo = oldState.routeInfos[i];
+      let oldRouteInfo = oldState.routeInfos[i]!;
       if (statesDiffer || newRouteInfo.shouldSupersede(oldRouteInfo)) {
         statesDiffer = true;
         newState.routeInfos[i] = newRouteInfo;

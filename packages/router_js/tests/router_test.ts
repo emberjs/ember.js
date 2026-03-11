@@ -6,7 +6,7 @@ import RouteInfo, {
   RouteInfo as PublicRouteInfo,
   RouteInfoWithAttributes,
 } from '../lib/route-info';
-import { SerializerFunc } from '../lib';
+import { SerializerFunc } from '../lib/router';
 import { logAbort, PARAMS_SYMBOL, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from '../lib/transition';
 import { TransitionError } from '../lib/transition-state';
 import { Promise, reject } from 'rsvp';
@@ -162,7 +162,7 @@ scenarios.forEach(function (scenario) {
     let path = [];
 
     for (let i = 0, l = infos.length; i < l; i++) {
-      path.push(infos[i].name);
+      path.push(infos[i]!.name);
     }
 
     return path.join('.');
@@ -183,7 +183,7 @@ scenarios.forEach(function (scenario) {
         setup: function (object: Dict<unknown>) {
           assert.strictEqual(object, post, 'setup was called with expected model');
           assert.equal(
-            routes.showPost.context,
+            routes['showPost']!.context,
             post,
             'context was properly set on showPost handler'
           );
@@ -220,8 +220,8 @@ scenarios.forEach(function (scenario) {
             assert.ok(true, 'finalizeQueryParamChange');
             // need to consume the params so that the router
             // knows that they're active
-            finalParams.push({ key: 'sort', value: params.sort });
-            finalParams.push({ key: 'filter', value: params.filter });
+            finalParams.push({ key: 'sort', value: params['sort'] });
+            finalParams.push({ key: 'filter', value: params['filter'] });
           },
         },
       }),
@@ -603,7 +603,7 @@ scenarios.forEach(function (scenario) {
       }),
       post: createHandler('post', {
         model(params: Dict<any>) {
-          return Promise.resolve(params.id);
+          return Promise.resolve(params['id']);
         },
       }),
     };
@@ -706,7 +706,7 @@ scenarios.forEach(function (scenario) {
     routes = {
       posts: createHandler('posts', {
         model(params: { id: string }) {
-          return { name: 'posts', data: params.id };
+          return { name: 'posts', data: params['id'] };
         },
       }),
     };
@@ -785,7 +785,7 @@ scenarios.forEach(function (scenario) {
       postIndex: createHandler('postIndex'),
       showFilteredPosts: createHandler('showFilteredPosts', {
         model(params: { filter_id: string }) {
-          return { name: 'showFilteredPosts', data: params.filter_id };
+          return { name: 'showFilteredPosts', data: params['filter_id'] };
         },
       }),
     };
@@ -866,7 +866,7 @@ scenarios.forEach(function (scenario) {
       postsIndex: createHandler('postsIndex'),
       showFilteredPosts: createHandler('showFilteredPosts', {
         model(params: { filter_id: string }) {
-          return { name: 'showFilteredPosts', data: params.filter_id };
+          return { name: 'showFilteredPosts', data: params['filter_id'] };
         },
       }),
     };
@@ -1854,7 +1854,7 @@ scenarios.forEach(function (scenario) {
       postDetails: createHandler<Post>('postDetails', {
         name: 'postDetails',
         afterModel: function (_model: Post, transition: Transition) {
-          contexts.push(transition.resolvedModels.post as Post | undefined);
+          contexts.push(transition.resolvedModels['post'] as Post | undefined);
         },
       }),
     };
@@ -2040,8 +2040,8 @@ scenarios.forEach(function (scenario) {
             'showFilteredPosts',
             'going to same route'
           );
-          assert.equal(transition.from?.params?.filter_id, 'amazing', 'old params');
-          assert.equal(transition.to?.params?.filter_id, 'sad', 'new params');
+          assert.equal(transition.from?.params?.['filter_id'], 'amazing', 'old params');
+          assert.equal(transition.to?.params?.['filter_id'], 'sad', 'new params');
           assert.equal(
             postIndexHandler.context,
             posts,
@@ -2168,9 +2168,9 @@ scenarios.forEach(function (scenario) {
         if (!params) {
           return;
         }
-        if (params.filter_id === 'amazing') {
+        if (params['filter_id'] === 'amazing') {
           return amazingPosts;
-        } else if (params.filter_id === 'sad') {
+        } else if (params['filter_id'] === 'sad') {
           return sadPosts;
         }
         return;
@@ -2178,7 +2178,7 @@ scenarios.forEach(function (scenario) {
 
       serialize: function (context: Dict<unknown>, params: string[]) {
         assert.deepEqual(params, ['filter_id'], 'showFilteredPosts should get correct serialize');
-        return { filter_id: context.filter };
+        return { filter_id: context['filter'] };
       },
 
       setup: function (context: Dict<unknown>) {
@@ -2302,17 +2302,17 @@ scenarios.forEach(function (scenario) {
 
       showPost: createHandler('showPost', {
         model: function (params: Dict<unknown>) {
-          let id = parseInt(params.id as string, 10);
+          let id = parseInt(params['id'] as string, 10);
           return postsStore[id];
         },
 
         serialize: function (post: Dict<unknown>) {
-          return { id: post.id };
+          return { id: post['id'] };
         },
 
         setup: function (post: Dict<unknown>) {
           currentPath = 'showPost';
-          assert.equal(post.id, currentId, 'The post id is ' + currentId);
+          assert.equal(post['id'], currentId, 'The post id is ' + currentId);
         },
       }),
     };
@@ -2343,7 +2343,7 @@ scenarios.forEach(function (scenario) {
         beforeModel: function (transition: Transition) {
           assert.equal(
             transition.pivotHandler,
-            routes.postIndex,
+            routes['postIndex'],
             'showAllPosts -> showPopularPosts pivotHandler is postIndex'
           );
         },
@@ -2393,7 +2393,7 @@ scenarios.forEach(function (scenario) {
       peter: createHandler('peter', {
         model: function (_params: Dict<unknown>, transition: Transition) {
           assert.deepEqual(
-            transition.resolvedModels.application as Application,
+            transition.resolvedModels['application'] as Application,
             app,
             'peter: resolvedModel correctly stored in resolvedModels for parent route'
           );
@@ -2403,7 +2403,7 @@ scenarios.forEach(function (scenario) {
       wagenet: createHandler('wagenet', {
         model: function (_params: Dict<unknown>, transition: Transition) {
           assert.deepEqual(
-            transition.resolvedModels.application as Application | undefined,
+            transition.resolvedModels['application'] as Application | undefined,
             app,
             'wagenet: resolvedModel correctly stored in resolvedModels for parent route'
           );
@@ -2431,7 +2431,7 @@ scenarios.forEach(function (scenario) {
       adminPosts: createHandler('adminPosts', {
         model: function (_params: Dict<unknown>, transition: Transition) {
           assert.deepEqual(
-            transition.resolvedModels.admin as Admin | undefined,
+            transition.resolvedModels['admin'] as Admin | undefined,
             admin,
             'resolvedModel correctly stored in resolvedModels for parent route'
           );
@@ -2483,24 +2483,24 @@ scenarios.forEach(function (scenario) {
       admin: createHandler('admin', {
         currentModel: -1,
         model: function (params: Dict<unknown>) {
-          return (this.currentModel = admins[params.id as string]);
+          return (this['currentModel'] = admins[params['id'] as string]);
         },
       }),
 
       adminPosts: createHandler('adminPosts', {
         model: function () {
-          return adminPosts[(routes.admin as any).currentModel.id];
+          return adminPosts[(routes['admin'] as any).currentModel.id];
         },
       }),
     };
 
     transitionTo(router, '/posts/admin/1/posts');
-    assert.equal(routes.admin.context, admins[1]);
-    assert.equal(routes.adminPosts.context, adminPosts[1]);
+    assert.equal(routes['admin']!.context, admins[1]);
+    assert.equal(routes['adminPosts']!.context, adminPosts[1]);
 
     transitionTo(router, '/posts/admin/2/posts');
-    assert.equal(routes.admin.context, admins[2]);
-    assert.equal(routes.adminPosts.context, adminPosts[2]);
+    assert.equal(routes['admin']!.context, admins[2]);
+    assert.equal(routes['adminPosts']!.context, adminPosts[2]);
   });
 
   test('Moving to a sibling route only triggers exit callbacks on the current route (when transitioned internally)', function (assert) {
@@ -2542,7 +2542,7 @@ scenarios.forEach(function (scenario) {
       },
 
       model: function (params: Dict<unknown>) {
-        let id = params.filter_id as string;
+        let id = params['filter_id'] as string;
         if (!filters[id]) {
           filters[id] = { id: id };
         }
@@ -2551,13 +2551,13 @@ scenarios.forEach(function (scenario) {
       },
 
       serialize: function (filter: Dict<unknown>) {
-        assert.equal(filter.id, 'favorite', "The filter should be 'favorite'");
-        return { filter_id: filter.id };
+        assert.equal(filter['id'], 'favorite', "The filter should be 'favorite'");
+        return { filter_id: filter['id'] };
       },
 
       setup: function (filter: Dict<unknown>) {
         assert.equal(
-          filter.id,
+          filter['id'],
           'favorite',
           'showFilteredPostsHandler#setup was called with the favorite filter'
         );
@@ -2625,9 +2625,9 @@ scenarios.forEach(function (scenario) {
       },
 
       model: function (params: Dict<unknown>) {
-        assert.equal(params.filter_id, 'favorite', "The filter should be 'favorite'");
+        assert.equal(params['filter_id'], 'favorite', "The filter should be 'favorite'");
 
-        let id = params.filter_id as string;
+        let id = params['filter_id'] as string;
         if (!filters[id]) {
           filters[id] = { id: id };
         }
@@ -2636,12 +2636,12 @@ scenarios.forEach(function (scenario) {
       },
 
       serialize: function (filter: Dict<unknown>) {
-        return { filter_id: filter.id };
+        return { filter_id: filter['id'] };
       },
 
       setup: function (filter: Dict<unknown>) {
         assert.equal(
-          filter.id,
+          filter['id'],
           'favorite',
           'showFilteredPostsHandler#setup was called with the favorite filter'
         );
@@ -2683,7 +2683,7 @@ scenarios.forEach(function (scenario) {
 
         events: {
           expand: function () {
-            assert.equal(this, routes.showPost, 'The handler is the `this` for the event');
+            assert.equal(this, routes['showPost'], 'The handler is the `this` for the event');
           },
         },
       }),
@@ -2703,7 +2703,7 @@ scenarios.forEach(function (scenario) {
 
         actions: {
           expand: function () {
-            assert.equal(this, routes.showPost, 'The handler is the `this` for the event');
+            assert.equal(this, routes['showPost'], 'The handler is the `this` for the event');
           },
         },
       }),
@@ -2723,7 +2723,7 @@ scenarios.forEach(function (scenario) {
 
       for (let i = handlerInfos.length - 1; i >= 0; i--) {
         let handlerInfo = handlerInfos[i],
-          handler = handlerInfo.route as any;
+          handler = handlerInfo!.route as any;
 
         if (handler.actions && handler.actions[name]) {
           if (handler.actions[name].apply(handler, args) !== true) {
@@ -2756,7 +2756,7 @@ scenarios.forEach(function (scenario) {
 
         events: {
           expand: function () {
-            assert.equal(this, routes.postIndex, 'The handler is the `this` in events');
+            assert.equal(this, routes['postIndex'], 'The handler is the `this` in events');
           },
         },
       }),
@@ -2782,7 +2782,7 @@ scenarios.forEach(function (scenario) {
 
         events: {
           expand: function () {
-            assert.equal(this, routes.postIndex, 'The handler is the `this` in events');
+            assert.equal(this, routes['postIndex'], 'The handler is the `this` in events');
           },
         },
       }),
@@ -2792,7 +2792,7 @@ scenarios.forEach(function (scenario) {
         },
         events: {
           expand: function () {
-            assert.equal(this, routes.showAllPosts, 'The handler is the `this` in events');
+            assert.equal(this, routes['showAllPosts'], 'The handler is the `this` in events');
             return true;
           },
         },
@@ -2820,7 +2820,7 @@ scenarios.forEach(function (scenario) {
         },
         events: {
           expand: function () {
-            assert.equal(this, routes.showAllPosts, 'The handler is the `this` in events');
+            assert.equal(this, routes['showAllPosts'], 'The handler is the `this` in events');
             return true;
           },
         },
@@ -2856,7 +2856,7 @@ scenarios.forEach(function (scenario) {
           expand: function (passedContext1: Dict<unknown>, passedContext2: Dict<unknown>) {
             assert.equal(context1, passedContext1, 'A context is passed along');
             assert.equal(context2, passedContext2, 'A second context is passed along');
-            assert.equal(this, routes.showAllPosts, 'The handler is passed into events as `this`');
+            assert.equal(this, routes['showAllPosts'], 'The handler is passed into events as `this`');
           },
         },
       }),
@@ -2975,23 +2975,23 @@ scenarios.forEach(function (scenario) {
     routes = {
       admin: createHandler('admin', {
         serialize: function (object: Dict<unknown>) {
-          assert.equal(object.id, 47, 'The object passed to serialize is correct');
+          assert.equal(object['id'], 47, 'The object passed to serialize is correct');
           return { id: 47 };
         },
 
         model: function (params: Dict<unknown>) {
-          assert.equal(params.id, 47, 'The object passed to serialize is correct');
+          assert.equal(params['id'], 47, 'The object passed to serialize is correct');
           return admin;
         },
       }),
 
       adminPost: createHandler('adminPost', {
         serialize: function (object: Dict<unknown>) {
-          return { post_id: object.id };
+          return { post_id: object['id'] };
         },
 
         model: function (params: Dict<unknown>) {
-          assert.equal(params.id, 74, 'The object passed to serialize is correct');
+          assert.equal(params['id'], 74, 'The object passed to serialize is correct');
           return adminPost;
         },
       }),
@@ -3013,11 +3013,11 @@ scenarios.forEach(function (scenario) {
 
     let showPostHandler = createHandler('showPost', {
       serialize: function (object: Dict<unknown>) {
-        return (object && { id: object.id }) || null;
+        return (object && { id: object['id'] }) || null;
       },
 
       model: function (params: Dict<unknown>) {
-        let id = params.id as string;
+        let id = params['id'] as string;
         return posts[id];
       },
     });
@@ -3065,7 +3065,7 @@ scenarios.forEach(function (scenario) {
 
     let adminPostHandler = createHandler('adminPost', {
       serialize: function (object: Dict<unknown>) {
-        return { post_id: object.id };
+        return { post_id: object['id'] };
       },
 
       model: function () {
@@ -3075,11 +3075,11 @@ scenarios.forEach(function (scenario) {
 
     let showPostHandler = createHandler('showPost', {
       serialize: function (object: Dict<unknown>) {
-        return (object && { id: object.id }) || null;
+        return (object && { id: object['id'] }) || null;
       },
 
       model: function (params: Dict<unknown>) {
-        return posts[params.id as string];
+        return posts[params['id'] as string];
       },
     });
 
@@ -3140,9 +3140,9 @@ scenarios.forEach(function (scenario) {
     };
 
     router.handleURL('/projects').then(function () {
-      assert.equal(routes.projects.context, projects, 'projects handler has correct context');
+      assert.equal(routes['projects']!.context, projects, 'projects handler has correct context');
       router.generate('projectIndex');
-      assert.equal(routes.projects.context, projects, 'projects handler retains correct context');
+      assert.equal(routes['projects']!.context, projects, 'projects handler retains correct context');
     });
   });
 
@@ -3157,14 +3157,14 @@ scenarios.forEach(function (scenario) {
 
     let projectHandler = createHandler<Project>('project', {
       model: function (params: Dict<unknown>) {
-        delete params.queryParams;
+        delete params['queryParams'];
         return params;
       },
     });
 
     let projectIndexHandler = createHandler<Project>('projectIndex', {
       model: function (_params: Dict<unknown>, transition: Transition) {
-        return transition.resolvedModels.project;
+        return transition.resolvedModels['project'];
       },
     });
 
@@ -3310,21 +3310,21 @@ scenarios.forEach(function (scenario) {
     returnPromise = true;
     testStartup(assert);
 
-    delete routes.index.beforeModel;
+    delete routes['index']!.beforeModel;
     returnPromise = false;
     testStartup(assert);
 
     returnPromise = true;
     testStartup(assert);
 
-    delete routes.index.model;
+    delete routes['index']!.model;
     returnPromise = false;
     testStartup(assert);
 
     returnPromise = true;
     testStartup(assert);
 
-    delete routes.index.afterModel;
+    delete routes['index']!.afterModel;
     setupShouldBeEntered = true;
     testStartup(assert, '/');
   });
@@ -3418,21 +3418,21 @@ scenarios.forEach(function (scenario) {
         return testStartup(assert);
       })
       .then(function () {
-        delete routes.index.beforeModel;
+        delete routes['index']!.beforeModel;
         return testStartup(assert);
       })
       .then(function () {
         return testStartup(assert);
       })
       .then(function () {
-        delete routes.index.model;
+        delete routes['index']!.model;
         return testStartup(assert);
       })
       .then(function () {
         return testStartup(assert);
       })
       .then(function () {
-        delete routes.index.afterModel;
+        delete routes['index']!.afterModel;
         setupShouldBeEntered = true;
         return testStartup(assert);
       });
@@ -3596,12 +3596,12 @@ scenarios.forEach(function (scenario) {
     router.handleURL('/index').then(shouldNotHappen(assert), assertAbort(assert));
 
     function secondAttempt() {
-      delete routes.index.enter;
+      delete routes['index']!.enter;
       router.transitionTo('index').then(shouldNotHappen(assert), assertAbort(assert));
     }
 
     function thirdAttempt() {
-      delete routes.index.setup;
+      delete routes['index']!.setup;
       router.transitionTo('index').then(null, shouldNotHappen(assert));
     }
   });
@@ -3942,14 +3942,14 @@ scenarios.forEach(function (scenario) {
           willTransition: function (transition: Transition) {
             assert.ok(true, "index's willTransition was called");
             if (shouldPrevent) {
-              transition.data.foo = 'hello';
+              transition.data['foo'] = 'hello';
               (transition as any).foo = 'hello';
               transition.abort();
               lastTransition = transition;
             } else {
               assert.ok(!(transition as any).foo, 'no foo property exists on new transition');
               assert.equal(
-                transition.data.foo,
+                transition.data['foo'],
                 'hello',
                 'values stored in data hash of old transition persist when retried'
               );
@@ -4043,14 +4043,14 @@ scenarios.forEach(function (scenario) {
           willTransition: function (transition: Transition) {
             assert.ok(true, "index's willTransition was called");
             if (shouldPrevent) {
-              transition.data.foo = 'hello';
+              transition.data['foo'] = 'hello';
               (transition as any).foo = 'hello';
               transition.abort();
               lastTransition = transition;
             } else {
               assert.ok(!(transition as any).foo, 'no foo property exists on new transition');
               assert.equal(
-                transition.data.foo,
+                transition.data['foo'],
                 'hello',
                 'values stored in data hash of old transition persist when retried'
               );
@@ -4351,7 +4351,7 @@ scenarios.forEach(function (scenario) {
         return router.transitionTo('about');
       }, shouldNotHappen(assert))
       .then(function (result: Dict<unknown>) {
-        assert.ok(result.borfAbout, 'resolved to about handler');
+        assert.ok(result['borfAbout'], 'resolved to about handler');
       });
   });
 
@@ -4376,7 +4376,7 @@ scenarios.forEach(function (scenario) {
     routes = {
       showPostsForDate: createHandler('showPostsForDate', {
         serialize: function (date: any) {
-          assert.equal(this, routes.showPostsForDate);
+          assert.equal(this, routes['showPostsForDate']);
           return {
             date: date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate(),
           };
@@ -4402,12 +4402,12 @@ scenarios.forEach(function (scenario) {
 
     let adminHandler = createHandler('admin', {
       serialize: function (object: Dict<unknown>) {
-        assert.equal(object.id, 47, 'The object passed to serialize is correct');
+        assert.equal(object['id'], 47, 'The object passed to serialize is correct');
         return { id: 47 };
       },
 
       model: function (params: Dict<unknown>) {
-        assert.equal(params.id, 47, 'The object passed to serialize is correct');
+        assert.equal(params['id'], 47, 'The object passed to serialize is correct');
         return admin;
       },
 
@@ -4418,7 +4418,7 @@ scenarios.forEach(function (scenario) {
 
     let adminPostHandler = createHandler('adminPost', {
       serialize: function (object: Dict<unknown>) {
-        return { post_id: object.id };
+        return { post_id: object['id'] };
       },
 
       setup: function () {
@@ -4509,7 +4509,7 @@ scenarios.forEach(function (scenario) {
 
     function assertOnRoute(name: string) {
       let last = router.currentRouteInfos![router.currentRouteInfos!.length - 1];
-      assert.equal(last.name, name);
+      assert.equal(last!.name, name);
     }
 
     transitionTo(router, 'app');
@@ -4534,7 +4534,7 @@ scenarios.forEach(function (scenario) {
         afterModel: function (resolvedModel: Dict<unknown>, transition: Transition) {
           assert.equal(
             resolvedModel,
-            transition.resolvedModels.index,
+            transition.resolvedModels['index'],
             "passed-in resolved model equals model in transition's hash"
           );
           assert.equal(
@@ -4542,7 +4542,7 @@ scenarios.forEach(function (scenario) {
             modelPre,
             'passed-in resolved model equals model returned from `model`'
           );
-          transition.resolvedModels.index = modelPost;
+          transition.resolvedModels['index'] = modelPost;
         },
         setup: function (model: Dict<unknown>) {
           assert.equal(
@@ -4567,7 +4567,7 @@ scenarios.forEach(function (scenario) {
     routes = {
       admin: createHandler('admin', {
         model: function (params: Dict<unknown>) {
-          delete params.queryParams;
+          delete params['queryParams'];
           assert.deepEqual(
             params,
             adminParams,
@@ -4578,7 +4578,7 @@ scenarios.forEach(function (scenario) {
       }),
       adminPost: createHandler('adminPost', {
         model: function (params: Dict<unknown>) {
-          delete params.queryParams;
+          delete params['queryParams'];
           assert.deepEqual(
             params,
             { post_id: '2' },
@@ -4648,15 +4648,15 @@ scenarios.forEach(function (scenario) {
 
     testStartup(assert)
       .then(function () {
-        delete routes.index.beforeModel;
+        delete routes['index']!.beforeModel;
         return testStartup(assert);
       })
       .then(function () {
-        delete routes.index.model;
+        delete routes['index']!.model;
         return testStartup(assert);
       })
       .then(function () {
-        delete routes.index.afterModel;
+        delete routes['index']!.afterModel;
         return testStartup(assert);
       });
   });
@@ -4705,7 +4705,7 @@ scenarios.forEach(function (scenario) {
   test('Transition#followRedirects() returns a promise that fulfills when any redirecting transitions complete', function (assert) {
     assert.expect(3);
 
-    routes.about = createHandler('about', {
+    routes['about'] = createHandler('about', {
       redirect: function () {
         router.transitionTo('faq').then(null, shouldNotHappen(assert));
       },
@@ -4717,7 +4717,7 @@ scenarios.forEach(function (scenario) {
       .then(function (handler: Route) {
         assert.equal(
           handler,
-          routes.index,
+          routes['index'],
           'followRedirects works with non-redirecting transitions'
         );
 
@@ -4726,11 +4726,11 @@ scenarios.forEach(function (scenario) {
       .then(function (handler: Route) {
         assert.equal(
           handler,
-          routes.faq,
+          routes['faq'],
           'followRedirects promise resolved with redirected faq handler'
         );
 
-        (routes.about as Route).beforeModel = function (transition: Transition) {
+        (routes['about'] as Route).beforeModel = function (transition: Transition) {
           transition.abort();
           return undefined;
         };
@@ -4746,7 +4746,7 @@ scenarios.forEach(function (scenario) {
   test('Transition#followRedirects() works correctly when redirecting from an async model hook', function (assert) {
     assert.expect(2);
 
-    routes.index = createHandler('index', {
+    routes['index'] = createHandler('index', {
       beforeModel: function () {
         return Promise.resolve(true).then(() => {
           return router.transitionTo('about');
@@ -4754,7 +4754,7 @@ scenarios.forEach(function (scenario) {
       },
     });
 
-    routes.about = createHandler('about', {
+    routes['about'] = createHandler('about', {
       setup: function () {
         assert.ok(true, 'about#setup was called');
       },
@@ -4766,7 +4766,7 @@ scenarios.forEach(function (scenario) {
       .then(function (handler: Route) {
         assert.equal(
           handler,
-          routes.about,
+          routes['about'],
           'followRedirects works with redirect from async hook transitions'
         );
       });
@@ -4775,13 +4775,13 @@ scenarios.forEach(function (scenario) {
   test("Returning a redirecting Transition from a model hook doesn't cause things to explode", function (assert) {
     assert.expect(2);
 
-    routes.index = createHandler('index', {
+    routes['index'] = createHandler('index', {
       beforeModel: function () {
         return router.transitionTo('about');
       },
     });
 
-    routes.about = createHandler('about', {
+    routes['about'] = createHandler('about', {
       setup: function () {
         assert.ok(true, 'about#setup was called');
       },
@@ -4860,12 +4860,12 @@ scenarios.forEach(function (scenario) {
       .then(shouldNotHappen(assert), function (reason: string) {
         assert.equal(reason, 'OMG ENTER', "enters's error was propagated");
         count++;
-        delete routes.index.enter;
+        delete routes['index']!.enter;
         return router.handleURL('/index');
       })
       .then<Error, void>(shouldNotHappen(assert), function (reason: string) {
         assert.equal(reason, 'OMG SETUP', "setup's error was propagated");
-        delete routes.index.setup;
+        delete routes['index']!.setup;
       });
   });
 
@@ -4883,7 +4883,7 @@ scenarios.forEach(function (scenario) {
       parent: createHandler('parent', {
         model: function (params: Dict<unknown>) {
           assert.ok(true, 'parent model called');
-          return { id: params.p };
+          return { id: params['p'] };
         },
         setup: function (model: Dict<unknown>) {
           if (count === 0) {
@@ -4896,7 +4896,7 @@ scenarios.forEach(function (scenario) {
       child: createHandler('child', {
         model: function (params: Dict<unknown>) {
           assert.ok(true, 'child model called');
-          return { id: params.c };
+          return { id: params['c'] };
         },
         setup: function (model: Dict<unknown>) {
           if (count === 0) {
@@ -4954,7 +4954,7 @@ scenarios.forEach(function (scenario) {
     flushBackburner();
 
     assert.ok(didFinish, 'did enter auth route');
-    assert.equal((routes.user.context as any).user, 'machty', 'User was remembered upon retry');
+    assert.equal((routes['user']!.context as any).user, 'machty', 'User was remembered upon retry');
   });
 
   test('A failed transition calls the catch and finally callbacks', function (assert) {
@@ -5094,16 +5094,16 @@ scenarios.forEach(function (scenario) {
         parent: createHandler('parent', {
           serialize: function (obj: Dict<unknown>) {
             return {
-              one: obj.one,
-              two: obj.two,
+              one: obj['one'],
+              two: obj['two'],
             };
           },
         }),
         child: createHandler('child', {
           serialize: function (obj: Dict<unknown>) {
             return {
-              three: obj.three,
-              four: obj.four,
+              three: obj['three'],
+              four: obj['four'],
             };
           },
         }),
@@ -5116,15 +5116,15 @@ scenarios.forEach(function (scenario) {
             let castObj = obj as Dict<unknown>;
             // TODO: Review this
             return {
-              one: castObj.one,
-              two: castObj.two,
+              one: castObj['one'],
+              two: castObj['two'],
             };
           },
           child: function (obj) {
             let castObj = obj as Dict<unknown>;
             return {
-              three: castObj.three,
-              four: castObj.four,
+              three: castObj['three'],
+              four: castObj['four'],
             };
           },
         };
@@ -5232,8 +5232,8 @@ scenarios.forEach(function (scenario) {
         foo: createHandler('foo', {
           modelCount: undefined,
           model: function (params: Dict<unknown>) {
-            this.modelCount = this.modelCount ? (this as any).modelCount + 1 : 1;
-            return { id: params.foo_id };
+            this['modelCount'] = this['modelCount'] ? (this as any).modelCount + 1 : 1;
+            return { id: params['foo_id'] };
           },
           afterModel: function () {
             router.transitionTo('barIndex', '789');
@@ -5242,8 +5242,8 @@ scenarios.forEach(function (scenario) {
 
         bar: createHandler('bar', {
           model: function (params: Dict<unknown>) {
-            this.modelCount = this.modelCount ? (this as any).modelCount + 1 : 1;
-            return { id: params.bar_id };
+            this['modelCount'] = this['modelCount'] ? (this as any).modelCount + 1 : 1;
+            return { id: params['bar_id'] };
           },
         }),
       };
@@ -5258,13 +5258,13 @@ scenarios.forEach(function (scenario) {
     transitionTo(router, 'barIndex', '123', '456');
 
     assert.equal(
-      (routes.foo as any).modelCount,
+      (routes['foo'] as any).modelCount,
       2,
       'redirect in foo#afterModel should run foo#model twice (since validation failed)'
     );
 
-    assert.deepEqual(routes.foo.context, { id: '123' });
-    assert.deepEqual(routes.bar.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(routes['foo']!.context, { id: '123' });
+    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
 
     // Try setting foo's context to 200; this should redirect
     // bar to '789' but preserve the new foo 200.
@@ -5272,18 +5272,18 @@ scenarios.forEach(function (scenario) {
     transitionTo(router, 'fooIndex', '200');
 
     assert.equal(
-      (routes.foo as any).modelCount,
+      (routes['foo'] as any).modelCount,
       4,
       'redirect in foo#afterModel should re-run foo#model'
     );
 
-    assert.deepEqual(routes.foo.context, { id: '200' });
-    assert.deepEqual(routes.bar.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(routes['foo']!.context, { id: '200' });
+    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
   });
 
   test("Starting on '/' root index, using redirect", function (assert) {
-    (routes.foo.redirect as any) = routes.foo.afterModel;
-    delete routes.foo.afterModel;
+    (routes['foo']!.redirect as any) = routes['foo']!.afterModel;
+    delete routes['foo']!.afterModel;
 
     transitionTo(router, '/');
 
@@ -5292,13 +5292,13 @@ scenarios.forEach(function (scenario) {
     transitionTo(router, 'barIndex', '123', '456');
 
     assert.equal(
-      (routes.foo as any).modelCount,
+      (routes['foo'] as any).modelCount,
       1,
       'redirect in foo#redirect should NOT run foo#model (since validation succeeded)'
     );
 
-    assert.deepEqual(routes.foo.context, { id: '123' });
-    assert.deepEqual(routes.bar.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(routes['foo']!.context, { id: '123' });
+    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
 
     // Try setting foo's context to 200; this should redirect
     // bar to '789' but preserve the new foo 200.
@@ -5306,19 +5306,19 @@ scenarios.forEach(function (scenario) {
     transitionTo(router, 'fooIndex', '200');
 
     assert.equal(
-      (routes.foo as any).modelCount,
+      (routes['foo'] as any).modelCount,
       2,
       'redirect in foo#redirect should NOT foo#model'
     );
 
-    assert.deepEqual(routes.foo.context, { id: '200' });
-    assert.deepEqual(routes.bar.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(routes['foo']!.context, { id: '200' });
+    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
   });
 
   test('Starting on non root index', function (assert) {
     transitionTo(router, '/123/456');
-    assert.deepEqual(routes.foo.context, { id: '123' });
-    assert.deepEqual(routes.bar.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(routes['foo']!.context, { id: '123' });
+    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
 
     // Try setting foo's context to 200; this should redirect
     // bar to '789' but preserve the new foo 200.
@@ -5326,8 +5326,8 @@ scenarios.forEach(function (scenario) {
 
     transitionTo(router, 'fooIndex', '200');
 
-    assert.deepEqual(routes.foo.context, { id: '200' });
-    assert.deepEqual(routes.bar.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(routes['foo']!.context, { id: '200' });
+    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
   });
 
   /* TODO revisit
@@ -5394,8 +5394,8 @@ scenarios.forEach(function (scenario) {
           peopleBeforeModelCalled = true;
         },
         model: function (params: Dict<unknown>) {
-          assert.ok(params.id, 'people#model called');
-          return peopleModels[params.id as number];
+          assert.ok(params['id'], 'people#model called');
+          return peopleModels[params['id'] as number];
         },
       }),
       peopleIndex: createHandler('peopleIndex', {
@@ -5519,10 +5519,10 @@ scenarios.forEach(function (scenario) {
     router.routeWillChange = (transition: Transition) => {
       if (enteredCount === 0) {
         assert.equal(transition.to!.name, 'foo', 'going to');
-        assert.equal(transition.to!.queryParams.qux, '42', 'going to with query params');
+        assert.equal(transition.to!.queryParams['qux'], '42', 'going to with query params');
       } else if (enteredCount === 1) {
         assert.equal(transition.to!.name, 'loading', 'entering');
-        assert.equal(transition.to!.queryParams.qux, '42', 'intermediate also has query params');
+        assert.equal(transition.to!.queryParams['qux'], '42', 'intermediate also has query params');
         // https://github.com/emberjs/ember.js/issues/14438
         assert.equal(transition[STATE_SYMBOL].routeInfos.length, 2, 'with routeInfos present');
       }
@@ -5598,7 +5598,7 @@ scenarios.forEach(function (scenario) {
       }),
     };
 
-    willResolves = [routes.application, routes.foo];
+    willResolves = [routes['application']!, routes['foo']!];
 
     transitionTo(router, '/foo');
 
@@ -6353,7 +6353,7 @@ scenarios.forEach(function (scenario) {
     let projectSetupCount = 0;
     let projectHandler = createHandler('project', {
       model: function (params: Dict<unknown>) {
-        delete params.queryParams;
+        delete params['queryParams'];
         return params;
       },
       enter: function () {
