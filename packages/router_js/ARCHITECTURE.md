@@ -5,7 +5,6 @@ This is a guide to `router.js`'s internals.
 `router.js` is a stand-alone microlibrary for client-side routing in JavaScript
 applications. It's notably used by the [Ember.js Router][Ember Router].
 
-
 ## Scope of `router.js` and its Dependencies
 
 Ember.js's router consumes `router.js`, which in turn consumes
@@ -45,13 +44,12 @@ The [Ember Router][] adds a DSL for declaring your app's routes on top of
 `router.js`. It defines the API for the `Ember.Route` class that handles
 intelligent defaults, rendering templates, and loading data into controllers.
 
-
 ## History
 
 `router.js` has gone through a few iterations between 2013 and 2014:
 
-* July of 2013 – `router.js` adds promise-awareness.
-* Jan 2014 – refactored `router.js`'s primitives to handle corner cases.
+- July of 2013 – `router.js` adds promise-awareness.
+- Jan 2014 – refactored `router.js`'s primitives to handle corner cases.
 
 ### Corner Cases
 
@@ -64,15 +62,13 @@ intelligent defaults, rendering templates, and loading data into controllers.
    avoid re-running the hooks to load Article 123 again.
 
 3. Handle two different approaches to transitions:
-
-   * URL based (where a URL is parsed into route parameters that are used to
+   - URL based (where a URL is parsed into route parameters that are used to
      load all the data needed to enter a route (e.g. `{ article_id: 123 }`).
 
-   * direct named transition-based, where a route name and any context objects
+   - direct named transition-based, where a route name and any context objects
      are provided (e.g. `transitionTo('article', articleObject)`), and the
      provided context object(s) might be promises that can't be serialized
      into URL params until they've fulfilled.
-
 
 ## Classes
 
@@ -98,20 +94,24 @@ hierarchy.
 `HandlerInfo` is a top-level class with 3 subclasses:
 
 #### `UnresolvedHandlerInfoByParam`
+
 `UnresolvedHandlerInfoByParam` has the URL params stored on it which it can use
 to resolve itself (by calling the handler's `beforeModel`/`model`/`afterModel`
 hooks).
 
 #### `UnresolvedHandlerInfoByObject`
+
 `UnresolvedHandlerInfoByObject` has a context object, but no URL params.
 It can use the context to resolve itself and serialize into URL params once
 the context object is fulfilled.
 
 #### `ResolvedHandlerInfo`
+
 `ResolvedHandlerInfo` has calculated its URL params and resolved context/model
 object.
 
 #### Public API
+
 `HandlerInfo` has just a `resolve` method which fires all `model` hooks and
 ultimately resolves to a `ResolvedHandlerInfo` object.
 
@@ -124,6 +124,7 @@ The `TransitionState` object consists of an array of `HandlerInfo`s
 (though more might be added to it; not sure yet).
 
 #### Public API
+
 It too has a public API consisting only of a `resolve` method that
 will loop through all of its `HandlerInfo`s, swapping unresolved
 `HandlerInfo`s with `ResolvedHandlerInfo`s as it goes.
@@ -139,14 +140,16 @@ unresolved HandlerInfos.
 
 A `TransitionIntent` describes an attempt to transition.
 
- via URL
+via URL
 or by named transition (via its subclasses `URLTransitionIntent` and
 `NamedTransitionIntent`).
 
 #### `URLTransitionIntent`
+
 A `URLTransitionIntent` has a `url` property.
 
 #### `NamedTransitionIntent`
+
 A `NamedTransitionIntent` has a target route `name` and `contexts` array
 property.
 

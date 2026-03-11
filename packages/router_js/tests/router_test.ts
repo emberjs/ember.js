@@ -2286,7 +2286,7 @@ scenarios.forEach(function (scenario) {
         },
 
         setup: function (posts: Dict<unknown>, transition: Transition) {
-          assert.ok(!isExiting((this as unknown) as Route, transition.routeInfos));
+          assert.ok(!isExiting(this as unknown as Route, transition.routeInfos));
           assert.equal(
             posts,
             allPosts,
@@ -2296,7 +2296,7 @@ scenarios.forEach(function (scenario) {
         },
 
         exit: function (transition: Transition) {
-          assert.ok(isExiting((this as unknown) as Route, transition.routeInfos));
+          assert.ok(isExiting(this as unknown as Route, transition.routeInfos));
         },
       }),
 
@@ -2856,7 +2856,11 @@ scenarios.forEach(function (scenario) {
           expand: function (passedContext1: Dict<unknown>, passedContext2: Dict<unknown>) {
             assert.equal(context1, passedContext1, 'A context is passed along');
             assert.equal(context2, passedContext2, 'A second context is passed along');
-            assert.equal(this, routes['showAllPosts'], 'The handler is passed into events as `this`');
+            assert.equal(
+              this,
+              routes['showAllPosts'],
+              'The handler is passed into events as `this`'
+            );
           },
         },
       }),
@@ -3142,7 +3146,11 @@ scenarios.forEach(function (scenario) {
     router.handleURL('/projects').then(function () {
       assert.equal(routes['projects']!.context, projects, 'projects handler has correct context');
       router.generate('projectIndex');
-      assert.equal(routes['projects']!.context, projects, 'projects handler retains correct context');
+      assert.equal(
+        routes['projects']!.context,
+        projects,
+        'projects handler retains correct context'
+      );
     });
   });
 
@@ -4132,13 +4140,16 @@ scenarios.forEach(function (scenario) {
         shouldRedirectToLogin = false;
         return lastTransition.retry();
       })
-      .then(function () {
-        assert.equal(currentURL, '/', 'after retry currentURL is updated');
-        assert.deepEqual(urlStack, [
-          ['replaceURL', '/login'],
-          ['updateURL', '/'],
-        ]);
-      }, shouldNotHappen(assert, 'final catch'));
+      .then(
+        function () {
+          assert.equal(currentURL, '/', 'after retry currentURL is updated');
+          assert.deepEqual(urlStack, [
+            ['replaceURL', '/login'],
+            ['updateURL', '/'],
+          ]);
+        },
+        shouldNotHappen(assert, 'final catch')
+      );
   });
 
   test('completed transitions can be saved and later retried', function (assert) {
@@ -5264,7 +5275,11 @@ scenarios.forEach(function (scenario) {
     );
 
     assert.deepEqual(routes['foo']!.context, { id: '123' });
-    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(
+      routes['bar']!.context,
+      { id: '789' },
+      'bar should have redirected to bar 789'
+    );
 
     // Try setting foo's context to 200; this should redirect
     // bar to '789' but preserve the new foo 200.
@@ -5278,7 +5293,11 @@ scenarios.forEach(function (scenario) {
     );
 
     assert.deepEqual(routes['foo']!.context, { id: '200' });
-    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(
+      routes['bar']!.context,
+      { id: '789' },
+      'bar should have redirected to bar 789'
+    );
   });
 
   test("Starting on '/' root index, using redirect", function (assert) {
@@ -5298,7 +5317,11 @@ scenarios.forEach(function (scenario) {
     );
 
     assert.deepEqual(routes['foo']!.context, { id: '123' });
-    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(
+      routes['bar']!.context,
+      { id: '789' },
+      'bar should have redirected to bar 789'
+    );
 
     // Try setting foo's context to 200; this should redirect
     // bar to '789' but preserve the new foo 200.
@@ -5312,13 +5335,21 @@ scenarios.forEach(function (scenario) {
     );
 
     assert.deepEqual(routes['foo']!.context, { id: '200' });
-    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(
+      routes['bar']!.context,
+      { id: '789' },
+      'bar should have redirected to bar 789'
+    );
   });
 
   test('Starting on non root index', function (assert) {
     transitionTo(router, '/123/456');
     assert.deepEqual(routes['foo']!.context, { id: '123' });
-    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(
+      routes['bar']!.context,
+      { id: '789' },
+      'bar should have redirected to bar 789'
+    );
 
     // Try setting foo's context to 200; this should redirect
     // bar to '789' but preserve the new foo 200.
@@ -5327,7 +5358,11 @@ scenarios.forEach(function (scenario) {
     transitionTo(router, 'fooIndex', '200');
 
     assert.deepEqual(routes['foo']!.context, { id: '200' });
-    assert.deepEqual(routes['bar']!.context, { id: '789' }, 'bar should have redirected to bar 789');
+    assert.deepEqual(
+      routes['bar']!.context,
+      { id: '789' },
+      'bar should have redirected to bar 789'
+    );
   });
 
   /* TODO revisit

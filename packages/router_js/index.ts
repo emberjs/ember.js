@@ -15,5 +15,5 @@ export {
   type Route,
   type RouteInfo,
   type RouteInfoWithAttributes,
-  type ModelFor
+  type ModelFor,
 } from './lib/route-info';

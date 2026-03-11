@@ -4,7 +4,6 @@ Releases are mostly automated using
 [release-it](https://github.com/release-it/release-it/) and
 [lerna-changelog](https://github.com/lerna/lerna-changelog/).
 
-
 ## Preparation
 
 Since the majority of the actual release process is automated, the primary
@@ -18,25 +17,24 @@ guiding principle here is that changelogs are for humans, not machines.
 
 When reviewing merged PR's the labels to be used are:
 
-* breaking - Used when the PR is considered a breaking change.
-* enhancement - Used when the PR adds a new feature or enhancement.
-* bug - Used when the PR fixes a bug included in a previous release.
-* documentation - Used when the PR adds or updates documentation.
-* internal - Used for internal changes that still require a mention in the
+- breaking - Used when the PR is considered a breaking change.
+- enhancement - Used when the PR adds a new feature or enhancement.
+- bug - Used when the PR fixes a bug included in a previous release.
+- documentation - Used when the PR adds or updates documentation.
+- internal - Used for internal changes that still require a mention in the
   changelog/release notes.
-
 
 ## Release
 
 Once the prep work is completed, the actual release is straight forward:
 
-* First, ensure that you have installed your projects dependencies:
+- First, ensure that you have installed your projects dependencies:
 
 ```
 yarn install
 ```
 
-* Second, ensure that you have obtained a
+- Second, ensure that you have obtained a
   [GitHub personal access token][generate-token] with the `repo` scope (no
   other permissions are needed). Make sure the token is available as the
   `GITHUB_AUTH` environment variable.
@@ -49,7 +47,7 @@ yarn install
 
 [generate-token]: https://github.com/settings/tokens/new?scopes=repo&description=GITHUB_AUTH+env+variable
 
-* And last (but not least 😁) do your release.
+- And last (but not least 😁) do your release.
 
 ```
 npx release-it

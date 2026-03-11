@@ -311,9 +311,8 @@ export default abstract class Router<R extends Route> {
     if (lastArg && Object.prototype.hasOwnProperty.call(lastArg, 'queryParams')) {
       // We just checked this.
       // TODO: Use an assertion?
-      queryParams = (modelsArray.pop() as { queryParams: QueryParams }).queryParams as Dict<
-        unknown
-      >;
+      queryParams = (modelsArray.pop() as { queryParams: QueryParams })
+        .queryParams as Dict<unknown>;
     }
 
     let intent;
@@ -1056,7 +1055,7 @@ function routeInfosEqual<R1 extends Route, R2 extends Route>(
 
   for (let i = 0, len = routeInfos.length; i < len; ++i) {
     // SAFETY: Just casting for comparison
-    if (routeInfos[i] !== ((otherRouteInfos[i] as unknown) as InternalRouteInfo<R1>)) {
+    if (routeInfos[i] !== (otherRouteInfos[i] as unknown as InternalRouteInfo<R1>)) {
       return false;
     }
   }

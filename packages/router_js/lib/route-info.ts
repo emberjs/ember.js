@@ -73,7 +73,7 @@ export function toReadOnlyRouteInfo<R extends Route>(
   return routeInfos.map((info, i) => {
     let { name, params, paramNames, context, route } = info;
     // SAFETY: This should be safe since it is just for use as a key
-    let key = (info as unknown) as RouteInfosKey;
+    let key = info as unknown as RouteInfosKey;
     if (ROUTE_INFOS.has(key) && options.includeAttributes) {
       let routeInfo = ROUTE_INFOS.get(key)!;
       routeInfo = attachMetadata(route!, routeInfo);
@@ -98,13 +98,13 @@ export function toReadOnlyRouteInfo<R extends Route>(
         if (predicate.length === 3) {
           arr = routeInfos.map(
             // SAFETY: This should be safe since it is just for use as a key
-            (info) => routeInfosRef.get((info as unknown) as RouteInfosKey)!
+            (info) => routeInfosRef.get(info as unknown as RouteInfosKey)!
           );
         }
 
         for (let i = 0; routeInfos.length > i; i++) {
           // SAFETY: This should be safe since it is just for use as a key
-          publicInfo = routeInfosRef.get((routeInfos[i] as unknown) as RouteInfosKey)!;
+          publicInfo = routeInfosRef.get(routeInfos[i] as unknown as RouteInfosKey)!;
           if (predicate.call(thisArg, publicInfo, i, arr)) {
             return publicInfo;
           }
@@ -133,7 +133,7 @@ export function toReadOnlyRouteInfo<R extends Route>(
         }
 
         // SAFETY: This should be safe since it is just for use as a key
-        return routeInfosRef.get((parent as unknown) as RouteInfosKey)!;
+        return routeInfosRef.get(parent as unknown as RouteInfosKey)!;
       },
 
       get child() {
@@ -144,7 +144,7 @@ export function toReadOnlyRouteInfo<R extends Route>(
         }
 
         // SAFETY: This should be safe since it is just for use as a key
-        return routeInfosRef.get((child as unknown) as RouteInfosKey)!;
+        return routeInfosRef.get(child as unknown as RouteInfosKey)!;
       },
 
       get localName() {
@@ -166,11 +166,11 @@ export function toReadOnlyRouteInfo<R extends Route>(
     }
 
     // SAFETY: This should be safe since it is just for use as a key
-    LOCAL_ROUTE_INFOS.set((info as unknown) as RouteInfosKey, routeInfo);
+    LOCAL_ROUTE_INFOS.set(info as unknown as RouteInfosKey, routeInfo);
 
     if (!options.localizeMapUpdates) {
       // SAFETY: This should be safe since it is just for use as a key
-      ROUTE_INFOS.set((info as unknown) as RouteInfosKey, routeInfo);
+      ROUTE_INFOS.set(info as unknown as RouteInfosKey, routeInfo);
     }
 
     return routeInfo;
@@ -281,7 +281,7 @@ export default class InternalRouteInfo<R extends Route> {
     }
 
     // SAFETY: Since this is just for lookup, it should be safe
-    let cached = ROUTE_INFOS.get((this as unknown) as InternalRouteInfo<Route>);
+    let cached = ROUTE_INFOS.get(this as unknown as InternalRouteInfo<Route>);
     let resolved = new ResolvedRouteInfo<R>(
       this.router,
       this.name,
@@ -293,7 +293,7 @@ export default class InternalRouteInfo<R extends Route> {
 
     if (cached !== undefined) {
       // SAFETY: This is potentially a bit risker, but for what we're doing, it should be ok.
-      ROUTE_INFOS.set((resolved as unknown) as InternalRouteInfo<Route>, cached);
+      ROUTE_INFOS.set(resolved as unknown as InternalRouteInfo<Route>, cached);
     }
 
     return resolved;
@@ -400,7 +400,7 @@ export default class InternalRouteInfo<R extends Route> {
       // Return the value stashed in resolvedModels, which
       // might have been swapped out in afterModel.
       // SAFTEY: We expect this to be of type T, though typing it as such is challenging.
-      return (transition.resolvedModels[name]! as unknown) as ModelFor<R>;
+      return transition.resolvedModels[name]! as unknown as ModelFor<R>;
     });
   }
 

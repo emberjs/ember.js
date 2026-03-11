@@ -16,7 +16,7 @@ that does one thing and does it well.
 
 ## NPM
 
-To install using npm, run the following command: 
+To install using npm, run the following command:
 
 ```
 npm install --save router_js rsvp route-recognizer
@@ -33,10 +33,10 @@ var router = new Router();
 Add a simple new route description:
 
 ```javascript
-router.map(function(match) {
-  match("/posts/:id").to("showPost");
-  match("/posts").to("postIndex");
-  match("/posts/new").to("newPost");
+router.map(function (match) {
+  match('/posts/:id').to('showPost');
+  match('/posts').to('postIndex');
+  match('/posts/new').to('newPost');
 });
 ```
 
@@ -44,34 +44,34 @@ Add your handlers. Note that you're responsible for implementing your
 own handler lookup.
 
 ```javascript
-var myHandlers = {}
+var myHandlers = {};
 myHandlers.showPost = {
-  model: function(params) {
+  model: function (params) {
     return App.Post.find(params.id);
   },
 
-  setup: function(post) {
+  setup: function (post) {
     // render a template with the post
-  }
+  },
 };
 
 myHandlers.postIndex = {
-  model: function(params) {
+  model: function (params) {
     return App.Post.findAll();
   },
 
-  setup: function(posts) {
+  setup: function (posts) {
     // render a template with the posts
-  }
+  },
 };
 
 myHandlers.newPost = {
-  setup: function(post) {
+  setup: function (post) {
     // render a template with the post
-  }
+  },
 };
 
-router.getRoute = function(name) {
+router.getRoute = function (name) {
   return myHandlers[name];
 };
 ```
@@ -80,7 +80,7 @@ Use another modular library to listen for URL changes, and
 tell the router to handle a URL:
 
 ```javascript
-urlWatcher.onUpdate(function(url) {
+urlWatcher.onUpdate(function (url) {
   router.handleURL(url);
 });
 ```
@@ -107,19 +107,19 @@ method to extract the parameters. Let's flesh out the
 myHandlers.showPost = {
   // when coming in from a URL, convert parameters into
   // an object
-  model: function(params) {
+  model: function (params) {
     return App.Post.find(params.id);
   },
 
   // when coming in from `transitionTo`, convert an
   // object into parameters
-  serialize: function(post) {
+  serialize: function (post) {
     return { id: post.id };
   },
 
-  setup: function(post) {
+  setup: function (post) {
     // render a template with the post
-  }
+  },
 };
 ```
 
@@ -135,7 +135,7 @@ an opportunity to update the browser's physical URL
 as you desire:
 
 ```javascript
-router.updateURL = function(url) {
+router.updateURL = function (url) {
   window.location.hash = url;
 };
 ```
@@ -153,15 +153,15 @@ or via `transitionTo`, you will get the same behavior.
 If you enter a state represented by a handler through a
 URL:
 
-* the handler will convert the URL's parameters into an
+- the handler will convert the URL's parameters into an
   object, and pass it in to setup
-* the URL is already up to date
+- the URL is already up to date
 
 If you enter a state via `transitionTo`:
 
-* the handler will convert the object into params, and
+- the handler will convert the object into params, and
   update the URL.
-* the object is already available to pass into `setup`
+- the object is already available to pass into `setup`
 
 This means that you can be sure that your application's
 top-level objects will always be in sync with the URL,
@@ -180,19 +180,19 @@ methods already return promises, this is easy!
 
 ```javascript
 myHandlers.showPost = {
-  model: function(params) {
-    return $.getJSON("/posts/" + params.id).then(function(json) {
+  model: function (params) {
+    return $.getJSON('/posts/' + params.id).then(function (json) {
       return new App.Post(json.post);
     });
   },
 
-  serialize: function(post) {
+  serialize: function (post) {
     return { id: post.get('id') };
   },
 
-  setup: function(post) {
+  setup: function (post) {
     // receives the App.Post instance
-  }
+  },
 };
 ```
 
@@ -207,7 +207,7 @@ that you want to run after the transition has finished
 must be placed in the success handler of `.then`, e.g.:
 
 ```javascript
-router.transitionTo('showPost', post).then(function() {
+router.transitionTo('showPost', post).then(function () {
   // Fire a 'displayWelcomeBanner' event on the
   // newly entered route.
   router.send('displayWelcomeBanner');
@@ -226,16 +226,16 @@ to a different object.
 Consider a master-detail view.
 
 ```javascript
-router.map(function(match) {
-  match("/posts").to("posts", function(match) {
-    match("/").to("postIndex");
-    match("/:id").to("showPost");
+router.map(function (match) {
+  match('/posts').to('posts', function (match) {
+    match('/').to('postIndex');
+    match('/:id').to('showPost');
   });
 });
 
 myHandlers.posts = {
-  model: function() {
-    return $.getJSON("/posts").then(function(json) {
+  model: function () {
+    return $.getJSON('/posts').then(function (json) {
       return App.Post.loadPosts(json.posts);
     });
   },
@@ -243,24 +243,24 @@ myHandlers.posts = {
   // no serialize needed because there are no
   // dynamic segments
 
-  setup: function(posts) {
+  setup: function (posts) {
     var postsView = new App.PostsView(posts);
-    $("#master").append(postsView.el);
-  }
+    $('#master').append(postsView.el);
+  },
 };
 
 myHandlers.postIndex = {
-  setup: function() {
-    $("#detail").hide();
-  }
+  setup: function () {
+    $('#detail').hide();
+  },
 };
 
 myHandlers.showPost = {
-  model: function(params) {
-    return $.getJSON("/posts/" + params.id, function(json) {
+  model: function (params) {
+    return $.getJSON('/posts/' + params.id, function (json) {
       return new App.Post(json.post);
     });
-  }
+  },
 };
 ```
 
@@ -303,11 +303,11 @@ argument to `transitionTo`.
 There are two other hooks you can use that will always
 fire when attempting to enter a route:
 
-* **beforeModel** is called before `model` is called,
+- **beforeModel** is called before `model` is called,
   or before the passed-in model is attempted to be
   resolved. It receives a `transition` as its sole
   parameter (see below).
-* **afterModel** is called after `model` is called,
+- **afterModel** is called after `model` is called,
   or after the passed-in model has resolved. It
   receives both the resolved model and `transition`
   as its two parameters.
@@ -331,9 +331,9 @@ The following hooks are called after all
 model resolution / route validation hooks
 have resolved:
 
-* **enter** only when the handler becomes active, not when
+- **enter** only when the handler becomes active, not when
   it remains active after a change
-* **setup** when the handler becomes active, or when the
+- **setup** when the handler becomes active, or when the
   handler's context changes
 
 For handlers that are no longer active after a change,
@@ -341,9 +341,9 @@ For handlers that are no longer active after a change,
 
 The order of callbacks are:
 
-* **exit** in reverse order
-* **enter** starting from the first new handler
-* **setup** starting from the first handler whose context
+- **exit** in reverse order
+- **enter** starting from the first new handler
+- **setup** starting from the first handler whose context
   has changed
 
 For example, consider the following tree of handlers. Each handler is
@@ -379,9 +379,9 @@ Consider the following transitions:
       `afterModel`.
    1. Triggers the `exit` callback on `newPost`
       and `posts`
-   2. Triggers the `serialize` callback on `about`
-   3. Triggers the `enter` callback on `about`
-   4. Triggers the `setup` callback on `about`
+   1. Triggers the `serialize` callback on `about`
+   1. Triggers the `enter` callback on `about`
+   1. Triggers the `setup` callback on `about`
 
 ### Nesting Without Handlers
 
@@ -390,25 +390,25 @@ You can also nest without extra handlers, for clarity.
 For example, instead of writing:
 
 ```javascript
-router.map(function(match) {
-  match("/posts").to("postIndex");
-  match("/posts/new").to("newPost");
-  match("/posts/:id/edit").to("editPost");
-  match("/posts/:id").to("showPost");
+router.map(function (match) {
+  match('/posts').to('postIndex');
+  match('/posts/new').to('newPost');
+  match('/posts/:id/edit').to('editPost');
+  match('/posts/:id').to('showPost');
 });
 ```
 
 You could write:
 
 ```javascript
-router.map(function(match) {
-  match("/posts", function(match) {
-    match("/").to("postIndex");
-    match("/new").to("newPost");
+router.map(function (match) {
+  match('/posts', function (match) {
+    match('/').to('postIndex');
+    match('/new').to('newPost');
 
-    match("/:id", function(match) {
-      match("/").to("showPost");
-      match("/edit").to("editPost");
+    match('/:id', function (match) {
+      match('/').to('showPost');
+      match('/edit').to('editPost');
     });
   });
 });
@@ -434,31 +434,31 @@ handler definition:
 ```javascript
 handlers.postIndex = {
   events: {
-    expand: function(handler) {
+    expand: function (handler) {
       // the event gets a reference to the handler
       // it is triggered on as the first argument
-    }
-  }
-}
+    },
+  },
+};
 ```
 
 For example:
 
 ```javascript
-router.map(function(match) {
-  match("/posts").to("posts", function(match) {
-    match("/").to("postIndex");
-    match("/:id").to("showPost");
-    match("/edit").to("editPost");
+router.map(function (match) {
+  match('/posts').to('posts', function (match) {
+    match('/').to('postIndex');
+    match('/:id').to('showPost');
+    match('/edit').to('editPost');
   });
 });
 
 myHandlers.posts = {
   events: {
-    collapseSidebar: function(handler) {
+    collapseSidebar: function (handler) {
       // do something to collapse the sidebar
-    }
-  }
+    },
+  },
 };
 
 myHandlers.postIndex = {};
@@ -466,11 +466,11 @@ myHandlers.showPost = {};
 
 myHandlers.editPost = {
   events: {
-    collapseSidebar: function(handler) {
+    collapseSidebar: function (handler) {
       // override the collapseSidebar handler from
       // the posts handler
-    }
-  }
+    },
+  },
 };
 
 // trigger the event
@@ -513,12 +513,12 @@ or decorating the transition from the currently active routes.
 ```js
 var formRoute = {
   events: {
-    willTransition: function(transition) {
-      if (!formEmpty() && !confirm("Discard Changes?")) {
+    willTransition: function (transition) {
+      if (!formEmpty() && !confirm('Discard Changes?')) {
         transition.abort();
       }
-    }
-  }
+    },
+  },
 };
 ```
 
@@ -546,14 +546,14 @@ routes:
 
 ```js
 var adminRoute = {
-  beforeModel: function() {
-    throw "bad things!";
+  beforeModel: function () {
+    throw 'bad things!';
     // ...or, equivalently:
-    return RSVP.reject("bad things!");
+    return RSVP.reject('bad things!');
   },
 
   events: {
-    error: function(error, transition) {
+    error: function (error, transition) {
       // Assuming we got here due to the error in `beforeModel`,
       // we can expect that error === "bad things!",
       // but a promise model rejecting would also
@@ -565,8 +565,8 @@ var adminRoute = {
       // `.retry()`d if desired.
 
       router.transitionTo('login');
-    }
-  }
+    },
+  },
 };
 ```
 
@@ -575,59 +575,59 @@ var adminRoute = {
 Often, you'll want to be able to generate URLs from their components. To do so, use the `router.generate(*parts)` method.
 
 ```js
-myRouter = new Router()
-  myRouter.map(function(match){
-    match("/posts/:id/:mode").to("showPost", function(match){
-      match("/version/:versionId", "postVersion");
-    });
+myRouter = new Router();
+myRouter.map(function (match) {
+  match('/posts/:id/:mode').to('showPost', function (match) {
+    match('/version/:versionId', 'postVersion');
   });
-  
+});
+
 myHandlers.showPost = {
-  serialize: function(obj) {
+  serialize: function (obj) {
     return {
       id: obj.id,
-      tag: obj.modeName
+      tag: obj.modeName,
     };
-  } //...
+  }, //...
 };
 
 myHandlers.postVersion = {
-  serialize: function(obj) {
+  serialize: function (obj) {
     return {
-      versionId: obj.id
+      versionId: obj.id,
     };
-  }
+  },
   //...
 };
 
 //...
 ```
 
-`*parts` can accept either a set of primitives, or a set of objects. If it is a set of strings, `router.generate` will attempt to build the route using each string in order. 
+`*parts` can accept either a set of primitives, or a set of objects. If it is a set of strings, `router.generate` will attempt to build the route using each string in order.
 
 ```js
-myRouter.generate("showPost", 4, 'a'); // returns '/posts/4/a'
+myRouter.generate('showPost', 4, 'a'); // returns '/posts/4/a'
 ```
 
 If it is a set of objects, it will attempt to build the route by serializing each object.
 
 ```js
-myRouter.generate("showPost", {id: 4, modeName: 'a'}); // returns '/posts/4/a'
+myRouter.generate('showPost', { id: 4, modeName: 'a' }); // returns '/posts/4/a'
 ```
 
 One can also use `generate` with nested routes. With strings, one simply provides all the URL fragments for each route in order:
 
 ```js
-myRouter.generate("postVersion", 4, 'a', 'first'); // returns '/posts/4/a/version/first'
+myRouter.generate('postVersion', 4, 'a', 'first'); // returns '/posts/4/a/version/first'
 ```
 
 With objects, one provides one object for each route in the chain; each route will then deserialize the corresponding object.
 
 ```js
-myRouter.generate("postVersion", {id: 4, modeName: 'a'}, {id: 'first'}); // returns '/posts/4/a/version/first'
+myRouter.generate('postVersion', { id: 4, modeName: 'a' }, { id: 'first' }); // returns '/posts/4/a/version/first'
 ```
 
-One *can* mix and match between strings and objects; however, this is not recommended, as it can be extremely confusing and error prone:
+One _can_ mix and match between strings and objects; however, this is not recommended, as it can be extremely confusing and error prone:
 
 ```js
 myRouter.generate("postVersion", 4, modeName: 'a', {id: 'first'}); // returns '/posts/4/a/version/first'
@@ -642,11 +642,11 @@ to match routes. This means that even somewhat elaborate
 routes will work:
 
 ```javascript
-router.map(function(match) {
+router.map(function (match) {
   // this will match anything, followed by a slash,
   // followed by a dynamic segment (one or more non-
   // slash characters)
-  match("/*page/:location").to("showPage");
+  match('/*page/:location').to('showPage');
 });
 ```
 
