@@ -1,15 +1,18 @@
 import { Promise } from 'rsvp';
-import { Dict, Maybe, Option } from './core';
-import InternalRouteInfo, {
+import type { Dict, Maybe, Option } from './core';
+import type {
   ModelFor,
   Route,
   RouteInfo,
   RouteInfoWithAttributes,
 } from './route-info';
-import Router from './router';
-import { TransitionAbortedError, buildTransitionAborted } from './transition-aborted-error';
-import { OpaqueIntent } from './transition-intent';
-import TransitionState, { TransitionError } from './transition-state';
+import type InternalRouteInfo from './route-info';
+import type Router from './router';
+import type { TransitionAbortedError} from './transition-aborted-error';
+import { buildTransitionAborted } from './transition-aborted-error';
+import type { OpaqueIntent } from './transition-intent';
+import type { TransitionError } from './transition-state';
+import type TransitionState from './transition-state';
 import { log, promiseLabel } from './utils';
 import { DEBUG } from '@glimmer/env';
 
@@ -59,7 +62,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   [PARAMS_SYMBOL]: Dict<unknown>;
   routeInfos: InternalRouteInfo<R>[];
   targetName: Maybe<string>;
-  pivotHandler: Maybe<{}>;
+  pivotHandler: Maybe<object>;
   sequence: number;
   isAborted = false;
   isActive = true;
@@ -145,13 +148,13 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     // is actually part of the first transition or not. Any further redirects
     // in the initial transition also need to know if they are part of the
     // initial transition
-    this.isCausedByAbortingTransition = !!previousTransition;
+    this.isCausedByAbortingTransition = Boolean(previousTransition);
     this.isCausedByInitialTransition =
-      !!previousTransition &&
+      Boolean(previousTransition) &&
       (previousTransition.isCausedByInitialTransition || previousTransition.sequence === 0);
     // Every transition in the chain is a replace
     this.isCausedByAbortingReplaceTransition =
-      !!previousTransition &&
+      Boolean(previousTransition) &&
       previousTransition.urlMethod === 'replace' &&
       (!previousTransition.isCausedByAbortingTransition ||
         previousTransition.isCausedByAbortingReplaceTransition);

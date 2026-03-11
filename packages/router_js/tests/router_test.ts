@@ -1,14 +1,17 @@
-import { MatchCallback } from 'route-recognizer';
-import Router, { Route, Transition } from '../index';
-import { Dict, Maybe } from '../lib/core';
-import RouteInfo, {
+/* eslint-disable qunit/no-conditional-assertions, qunit/no-assert-logical-expression, qunit/no-early-return, no-console, no-throw-literal, qunit/no-setup-teardown */
+import type { MatchCallback } from 'route-recognizer';
+import type { Route, Transition } from '../index';
+import type Router from '../index';
+import type { Dict, Maybe } from '../lib/core';
+import type {
   IModel,
   RouteInfo as PublicRouteInfo,
   RouteInfoWithAttributes,
 } from '../lib/route-info';
-import { SerializerFunc } from '../lib/router';
+import type RouteInfo from '../lib/route-info';
+import type { SerializerFunc } from '../lib/router';
 import { logAbort, PARAMS_SYMBOL, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from '../lib/transition';
-import { TransitionError } from '../lib/transition-state';
+import type { TransitionError } from '../lib/transition-state';
 import { Promise, reject } from 'rsvp';
 import {
   assertAbort,
@@ -1525,7 +1528,7 @@ scenarios.forEach(function (scenario) {
         assert.equal(isPresent(transition.from) && transition.from.localName, 'index');
         assert.equal(transition.to!.parent!.localName, 'foo');
       } else if (aborted) {
-        assert.equal(transition.isAborted, true);
+        assert.true(transition.isAborted);
         assert.equal(transition.to, transition.from);
         assert.equal(transition.to!.localName, 'index');
       } else {
@@ -1794,7 +1797,7 @@ scenarios.forEach(function (scenario) {
         assert.equal(isPresent(transition.from) && transition.from!.localName, 'index');
         assert.equal(transition.to!.parent!.localName, 'foo');
       } else if (errored) {
-        assert.equal(transition.isAborted, false);
+        assert.false(transition.isAborted);
         assert.equal(isPresent(transition.from) && transition.from!.localName, 'index');
         assert.equal(transition.to!.localName, 'fooError');
       } else {
@@ -2286,7 +2289,7 @@ scenarios.forEach(function (scenario) {
         },
 
         setup: function (posts: Dict<unknown>, transition: Transition) {
-          assert.ok(!isExiting(this as unknown as Route, transition.routeInfos));
+          assert.notOk(isExiting(this as unknown as Route, transition.routeInfos));
           assert.equal(
             posts,
             allPosts,
@@ -2335,7 +2338,7 @@ scenarios.forEach(function (scenario) {
     routes = {
       showAllPosts: createHandler('showAllPosts', {
         beforeModel: function (transition: Transition) {
-          assert.ok(!transition.pivotHandler, 'First route transition has no pivot route');
+          assert.notOk(transition.pivotHandler, 'First route transition has no pivot route');
         },
       }),
 
@@ -2353,7 +2356,7 @@ scenarios.forEach(function (scenario) {
 
       about: createHandler('about', {
         beforeModel: function (transition: Transition) {
-          assert.ok(!transition.pivotHandler, 'top-level transition has no pivotHandler');
+          assert.notOk(transition.pivotHandler, 'top-level transition has no pivotHandler');
         },
       }),
     };
@@ -3099,15 +3102,9 @@ scenarios.forEach(function (scenario) {
       router.isActive('showPost', posts[1]),
       'The showPost handler is active with the appropriate context'
     );
-    assert.ok(
-      !router.isActive('showPost', posts[2]),
-      'The showPost handler is inactive when the context is different'
-    );
-    assert.ok(!router.isActive('adminPost'), 'The adminPost handler is inactive');
-    assert.ok(
-      !router.isActive('showPost', null),
-      'The showPost handler is inactive with a null context'
-    );
+    assert.notOk(router.isActive('showPost', posts[2]), 'The showPost handler is inactive when the context is different');
+    assert.notOk(router.isActive('adminPost'), 'The adminPost handler is inactive');
+    assert.notOk(router.isActive('showPost', null), 'The showPost handler is inactive with a null context');
 
     transitionTo(router, 'adminPost', admin, adminPost);
     assert.ok(router.isActive('adminPost'), 'The adminPost handler is active');
@@ -3955,7 +3952,7 @@ scenarios.forEach(function (scenario) {
               transition.abort();
               lastTransition = transition;
             } else {
-              assert.ok(!(transition as any).foo, 'no foo property exists on new transition');
+              assert.notOk((transition as any).foo, 'no foo property exists on new transition');
               assert.equal(
                 transition.data['foo'],
                 'hello',
@@ -4056,7 +4053,7 @@ scenarios.forEach(function (scenario) {
               transition.abort();
               lastTransition = transition;
             } else {
-              assert.ok(!(transition as any).foo, 'no foo property exists on new transition');
+              assert.notOk((transition as any).foo, 'no foo property exists on new transition');
               assert.equal(
                 transition.data['foo'],
                 'hello',
@@ -5023,8 +5020,8 @@ scenarios.forEach(function (scenario) {
 
     let transition = router.handleURL('/example');
 
-    assert.equal(transition.isActive, true);
-    assert.equal(transition.isAborted, false);
+    assert.true(transition.isActive);
+    assert.false(transition.isAborted);
   });
 
   test('transition sets isActive to false when aborted', function (assert) {
@@ -5038,13 +5035,13 @@ scenarios.forEach(function (scenario) {
 
     let transition = router.handleURL('/example');
 
-    assert.equal(transition.isActive, true, 'precond');
-    assert.equal(transition.isAborted, false, 'precond');
+    assert.true(transition.isActive, 'precond');
+    assert.false(transition.isAborted, 'precond');
 
     transition.abort();
 
-    assert.equal(transition.isActive, false, 'isActive should be false after abort');
-    assert.equal(transition.isAborted, true, 'isAborted is set to true after abort');
+    assert.false(transition.isActive, 'isActive should be false after abort');
+    assert.true(transition.isAborted, 'isAborted is set to true after abort');
   });
 
   if (scenario.async) {
@@ -5162,67 +5159,61 @@ scenarios.forEach(function (scenario) {
     assert.ok(router.isActive('child', 'b', 'c', 'd'), 'child b c d');
     assert.ok(router.isActive('child', 'a', 'b', 'c', 'd'), 'child a b c d');
 
-    assert.ok(!router.isActive('child', 'e'), '!child e');
-    assert.ok(!router.isActive('child', 'c', 'e'), '!child c e');
-    assert.ok(!router.isActive('child', 'e', 'd'), '!child e d');
-    assert.ok(!router.isActive('child', 'x', 'x'), '!child x x');
-    assert.ok(!router.isActive('child', 'b', 'c', 'e'), '!child b c e');
-    assert.ok(!router.isActive('child', 'b', 'e', 'd'), 'child b e d');
-    assert.ok(!router.isActive('child', 'e', 'c', 'd'), 'child e c d');
-    assert.ok(!router.isActive('child', 'a', 'b', 'c', 'e'), 'child a b c e');
-    assert.ok(!router.isActive('child', 'a', 'b', 'e', 'd'), 'child a b e d');
-    assert.ok(!router.isActive('child', 'a', 'e', 'c', 'd'), 'child a e c d');
-    assert.ok(!router.isActive('child', 'e', 'b', 'c', 'd'), 'child e b c d');
+    assert.notOk(router.isActive('child', 'e'), '!child e');
+    assert.notOk(router.isActive('child', 'c', 'e'), '!child c e');
+    assert.notOk(router.isActive('child', 'e', 'd'), '!child e d');
+    assert.notOk(router.isActive('child', 'x', 'x'), '!child x x');
+    assert.notOk(router.isActive('child', 'b', 'c', 'e'), '!child b c e');
+    assert.notOk(router.isActive('child', 'b', 'e', 'd'), 'child b e d');
+    assert.notOk(router.isActive('child', 'e', 'c', 'd'), 'child e c d');
+    assert.notOk(router.isActive('child', 'a', 'b', 'c', 'e'), 'child a b c e');
+    assert.notOk(router.isActive('child', 'a', 'b', 'e', 'd'), 'child a b e d');
+    assert.notOk(router.isActive('child', 'a', 'e', 'c', 'd'), 'child a e c d');
+    assert.notOk(router.isActive('child', 'e', 'b', 'c', 'd'), 'child e b c d');
 
     assert.ok(router.isActive('parent', 'b'), 'parent b');
     assert.ok(router.isActive('parent', 'a', 'b'), 'parent a b');
 
-    assert.ok(!router.isActive('parent', 'c'), '!parent c');
-    assert.ok(!router.isActive('parent', 'a', 'c'), '!parent a c');
-    assert.ok(!router.isActive('parent', 'c', 'b'), '!parent c b');
-    assert.ok(!router.isActive('parent', 'c', 't'), '!parent c t');
+    assert.notOk(router.isActive('parent', 'c'), '!parent c');
+    assert.notOk(router.isActive('parent', 'a', 'c'), '!parent a c');
+    assert.notOk(router.isActive('parent', 'c', 'b'), '!parent c b');
+    assert.notOk(router.isActive('parent', 'c', 't'), '!parent c t');
   });
 
   test('isActive supports multiple soaked up string/number params (via serialized objects)', function (assert) {
     assert.ok(router.isActive('child', { three: 'c', four: 'd' }), 'child(3:c, 4:d)');
-    assert.ok(!router.isActive('child', { three: 'e', four: 'd' }), '!child(3:e, 4:d)');
-    assert.ok(!router.isActive('child', { three: 'c', four: 'e' }), '!child(3:c, 4:e)');
-    assert.ok(!router.isActive('child', { three: 'c' }), '!child(3:c)');
-    assert.ok(!router.isActive('child', { four: 'd' }), '!child(4:d)');
-    assert.ok(!router.isActive('child', {}), '!child({})');
+    assert.notOk(router.isActive('child', { three: 'e', four: 'd' }), '!child(3:e, 4:d)');
+    assert.notOk(router.isActive('child', { three: 'c', four: 'e' }), '!child(3:c, 4:e)');
+    assert.notOk(router.isActive('child', { three: 'c' }), '!child(3:c)');
+    assert.notOk(router.isActive('child', { four: 'd' }), '!child(4:d)');
+    assert.notOk(router.isActive('child', {}), '!child({})');
 
     assert.ok(router.isActive('parent', { one: 'a', two: 'b' }), 'parent(1:a, 2:b)');
-    assert.ok(!router.isActive('parent', { one: 'e', two: 'b' }), '!parent(1:e, 2:b)');
-    assert.ok(!router.isActive('parent', { one: 'a', two: 'e' }), '!parent(1:a, 2:e)');
-    assert.ok(!router.isActive('parent', { one: 'a' }), '!parent(1:a)');
-    assert.ok(!router.isActive('parent', { two: 'b' }), '!parent(2:b)');
+    assert.notOk(router.isActive('parent', { one: 'e', two: 'b' }), '!parent(1:e, 2:b)');
+    assert.notOk(router.isActive('parent', { one: 'a', two: 'e' }), '!parent(1:a, 2:e)');
+    assert.notOk(router.isActive('parent', { one: 'a' }), '!parent(1:a)');
+    assert.notOk(router.isActive('parent', { two: 'b' }), '!parent(2:b)');
 
     assert.ok(
       router.isActive('child', { one: 'a', two: 'b' }, { three: 'c', four: 'd' }),
       'child(1:a, 2:b, 3:c, 4:d)'
     );
-    assert.ok(
-      !router.isActive('child', { one: 'e', two: 'b' }, { three: 'c', four: 'd' }),
-      '!child(1:e, 2:b, 3:c, 4:d)'
-    );
-    assert.ok(
-      !router.isActive('child', { one: 'a', two: 'b' }, { three: 'c', four: 'e' }),
-      '!child(1:a, 2:b, 3:c, 4:e)'
-    );
+    assert.notOk(router.isActive('child', { one: 'e', two: 'b' }, { three: 'c', four: 'd' }), '!child(1:e, 2:b, 3:c, 4:d)');
+    assert.notOk(router.isActive('child', { one: 'a', two: 'b' }, { three: 'c', four: 'e' }), '!child(1:a, 2:b, 3:c, 4:e)');
   });
 
   test('isActive supports multiple soaked up string/number params (mixed)', function (assert) {
     assert.ok(router.isActive('child', 'a', 'b', { three: 'c', four: 'd' }));
     assert.ok(router.isActive('child', 'b', { three: 'c', four: 'd' }));
-    assert.ok(!router.isActive('child', 'a', { three: 'c', four: 'd' }));
+    assert.notOk(router.isActive('child', 'a', { three: 'c', four: 'd' }));
     assert.ok(router.isActive('child', { one: 'a', two: 'b' }, 'c', 'd'));
     assert.ok(router.isActive('child', { one: 'a', two: 'b' }, 'd'));
-    assert.ok(!router.isActive('child', { one: 'a', two: 'b' }, 'c'));
+    assert.notOk(router.isActive('child', { one: 'a', two: 'b' }, 'c'));
 
-    assert.ok(!router.isActive('child', 'a', 'b', { three: 'e', four: 'd' }));
-    assert.ok(!router.isActive('child', 'b', { three: 'e', four: 'd' }));
-    assert.ok(!router.isActive('child', { one: 'e', two: 'b' }, 'c', 'd'));
-    assert.ok(!router.isActive('child', { one: 'e', two: 'b' }, 'd'));
+    assert.notOk(router.isActive('child', 'a', 'b', { three: 'e', four: 'd' }));
+    assert.notOk(router.isActive('child', 'b', { three: 'e', four: 'd' }));
+    assert.notOk(router.isActive('child', { one: 'e', two: 'b' }, 'c', 'd'));
+    assert.notOk(router.isActive('child', { one: 'e', two: 'b' }, 'd'));
   });
 
   module('Preservation of params between redirects (' + scenario.name + ')', {
@@ -5425,7 +5416,7 @@ scenarios.forEach(function (scenario) {
     routes = {
       people: createHandler('people', {
         beforeModel: function () {
-          assert.ok(!peopleBeforeModelCalled, 'people#beforeModel should only be called once');
+          assert.notOk(peopleBeforeModelCalled, 'people#beforeModel should only be called once');
           peopleBeforeModelCalled = true;
         },
         model: function (params: Dict<unknown>) {

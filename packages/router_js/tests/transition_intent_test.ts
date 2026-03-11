@@ -1,11 +1,13 @@
+/* eslint-disable qunit/no-setup-teardown */
 import NamedTransitionIntent from '../lib/transition-intent/named-transition-intent';
 import URLTransitionIntent from '../lib/transition-intent/url-transition-intent';
 import TransitionState from '../lib/transition-state';
 import { createHandler, module, test, TestRouter } from './test_helpers';
 
-import Router, { Route } from '../index';
-import { Dict } from '../lib/core';
-import InternalRouteInfo, {
+import type { default as Router, Route } from '../index';
+import type { Dict } from '../lib/core';
+import {
+  type default as InternalRouteInfo,
   ResolvedRouteInfo,
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,
@@ -224,10 +226,7 @@ scenarios.forEach(function (scenario) {
     let handlerInfos = newState.routeInfos;
 
     assert.equal(handlerInfos.length, 2);
-    assert.ok(
-      handlerInfos[0] !== startingHandlerInfo,
-      'The starting foo resolved handlerInfo was overridden because the new had different params'
-    );
+    assert.notStrictEqual(handlerInfos[0], startingHandlerInfo, 'The starting foo resolved handlerInfo was overridden because the new had different params');
     assert.ok(
       handlerInfos[1] instanceof UnresolvedRouteInfoByParam,
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
@@ -248,10 +247,7 @@ scenarios.forEach(function (scenario) {
     let handlerInfos = newState.routeInfos;
 
     assert.equal(handlerInfos.length, 2);
-    assert.ok(
-      handlerInfos[0] !== startingHandlerInfo,
-      'The starting foo resolved handlerInfo gets overridden because the new one has a different name'
-    );
+    assert.notStrictEqual(handlerInfos[0], startingHandlerInfo, 'The starting foo resolved handlerInfo gets overridden because the new one has a different name');
     assert.ok(
       handlerInfos[1] instanceof UnresolvedRouteInfoByParam,
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
