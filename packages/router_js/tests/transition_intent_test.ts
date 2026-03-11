@@ -148,7 +148,13 @@ scenarios.forEach(function (scenario) {
   test('URLTransitionIntent applied to single unresolved URL handlerInfo', function (assert) {
     let state = new TransitionState();
 
-    let startingHandlerInfo = new UnresolvedRouteInfoByParam(router, 'foo', [], {}, handlers['foo']);
+    let startingHandlerInfo = new UnresolvedRouteInfoByParam(
+      router,
+      'foo',
+      [],
+      {},
+      handlers['foo']
+    );
 
     // This single unresolved handler info will be preserved
     // in the new array of handlerInfos.

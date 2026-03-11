@@ -127,10 +127,10 @@ export {
 };
 
 export function createHandler<T extends IModel>(name: string, options?: Dict<unknown>): Route<T> {
-  return (Object.assign(
+  return Object.assign(
     { name, routeName: name, context: {}, names: [], handler: name, _internalName: name },
     options
-  ) as unknown) as Route<T>;
+  ) as unknown as Route<T>;
 }
 
 export class TestRouter<R extends Route = Route> extends Router<R> {
