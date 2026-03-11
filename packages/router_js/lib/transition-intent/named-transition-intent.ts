@@ -1,12 +1,16 @@
-import { Dict } from '../core';
-import InternalRouteInfo, {
+/* eslint-disable no-prototype-builtins */
+import type { Dict } from '../core';
+import type {
   ModelFor,
   ResolvedRouteInfo,
-  Route,
+  Route} from '../route-info';
+import type InternalRouteInfo from '../route-info';
+import {
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,
 } from '../route-info';
-import Router, { ParsedHandler } from '../router';
+import type { ParsedHandler } from '../router';
+import type Router from '../router';
 import { TransitionIntent } from '../transition-intent';
 import TransitionState from '../transition-state';
 import { isParam, merge } from '../utils';
@@ -24,7 +28,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
     pivotHandler: Route | undefined,
     contexts: ModelFor<R>[] = [],
     queryParams: Dict<unknown> = {},
-    data?: {}
+    data?: object
   ) {
     super(router, data);
     this.name = name;
@@ -235,7 +239,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
       let peek = objects[objects.length - 1];
       let paramName = names[numNames]!;
       if (isParam(peek)) {
-        params[paramName] = '' + objects.pop();
+        params[paramName] = String(objects.pop());
       } else {
         // If we're here, this means only some of the params
         // were string/number params, so try and use a param

@@ -1,9 +1,10 @@
-import { Transition } from '../index';
-import { Dict } from '../lib/core';
-import {
+import type { Transition } from '../index';
+import type { Dict } from '../lib/core';
+import type {
   IModel,
+  Route} from '../lib/route-info';
+import {
   ResolvedRouteInfo,
-  Route,
   toReadOnlyRouteInfo,
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,

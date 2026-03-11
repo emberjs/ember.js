@@ -1,7 +1,8 @@
 import { Promise } from 'rsvp';
-import { Dict } from './core';
-import InternalRouteInfo, { Route, ResolvedRouteInfo } from './route-info';
-import Transition from './transition';
+import type { Dict } from './core';
+import type { Route, ResolvedRouteInfo } from './route-info';
+import type InternalRouteInfo from './route-info';
+import type Transition from './transition';
 import { forEach, promiseLabel } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
 

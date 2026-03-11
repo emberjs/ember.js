@@ -1,7 +1,9 @@
-import { MatchCallback } from 'route-recognizer';
-import Router, { Route, Transition } from '../index';
-import { Dict, Maybe } from '../lib/core';
-import RouteInfo from '../lib/route-info';
+/* eslint-disable qunit/no-conditional-assertions, qunit/no-setup-teardown */
+import type { MatchCallback } from 'route-recognizer';
+import type { Route, Transition } from '../index';
+import type Router from '../index';
+import type { Dict, Maybe } from '../lib/core';
+import type RouteInfo from '../lib/route-info';
 import { Promise } from 'rsvp';
 import {
   createHandler,

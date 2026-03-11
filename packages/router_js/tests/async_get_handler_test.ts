@@ -1,5 +1,5 @@
-import { Route } from '../index';
-import { Dict } from '../lib/core';
+import type { Route } from '../index';
+import type { Dict } from '../lib/core';
 import { Promise } from 'rsvp';
 import { createHandler, TestRouter } from './test_helpers';
 
@@ -65,8 +65,8 @@ QUnit.test('can transition to lazily-resolved routes', function (assert) {
     done();
   });
 
-  assert.ok(!fooCalled, 'foo is not called synchronously');
-  assert.ok(!fooBarCalled, 'fooBar is not called synchronously');
+  assert.notOk(fooCalled, 'foo is not called synchronously');
+  assert.notOk(fooBarCalled, 'fooBar is not called synchronously');
 });
 
 QUnit.test('calls hooks of lazily-resolved routes in order', function (assert) {

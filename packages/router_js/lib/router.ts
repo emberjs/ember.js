@@ -1,33 +1,40 @@
-import RouteRecognizer, { MatchCallback, Params, QueryParams } from 'route-recognizer';
+/* eslint-disable no-prototype-builtins */
+import type { MatchCallback, Params, QueryParams } from 'route-recognizer';
+import RouteRecognizer from 'route-recognizer';
 import { Promise } from 'rsvp';
-import { Dict, Maybe, Option } from './core';
-import InternalRouteInfo, {
+import type { Dict, Maybe, Option } from './core';
+import type {
   ModelFor,
   Route,
   RouteInfo,
-  RouteInfoWithAttributes,
+  RouteInfoWithAttributes} from './route-info';
+import type InternalRouteInfo from './route-info';
+import {
   toReadOnlyRouteInfo,
 } from './route-info';
+import type {
+  OpaqueTransition,
+  PublicTransition as Transition} from './transition';
 import InternalTransition, {
   logAbort,
-  OpaqueTransition,
-  PublicTransition as Transition,
   QUERY_PARAMS_SYMBOL,
   STATE_SYMBOL,
 } from './transition';
 import { throwIfAborted, isTransitionAborted } from './transition-aborted-error';
-import { TransitionIntent } from './transition-intent';
+import type { TransitionIntent } from './transition-intent';
 import NamedTransitionIntent from './transition-intent/named-transition-intent';
 import URLTransitionIntent from './transition-intent/url-transition-intent';
-import TransitionState, { TransitionError } from './transition-state';
-import {
+import type { TransitionError } from './transition-state';
+import TransitionState from './transition-state';
+import type {
   ChangeList,
+  ModelsAndQueryParams} from './utils';
+import {
   extractQueryParams,
   forEach,
   getChangelist,
   log,
   merge,
-  ModelsAndQueryParams,
   promiseLabel,
 } from './utils';
 
@@ -203,7 +210,7 @@ export default abstract class Router<R extends Route> {
   private generateNewState(intent: TransitionIntent<R>): Option<TransitionState<R>> {
     try {
       return intent.applyToState(this.state!, false);
-    } catch (e) {
+    } catch (_e) {
       return null;
     }
   }
@@ -212,7 +219,7 @@ export default abstract class Router<R extends Route> {
     intent: TransitionIntent<R>,
     isIntermediate: boolean
   ): InternalTransition<R> {
-    let wasTransitioning = !!this.activeTransition;
+    let wasTransitioning = Boolean(this.activeTransition);
     let oldState = wasTransitioning ? this.activeTransition![STATE_SYMBOL] : this.state;
     let newTransition: InternalTransition<R>;
 
