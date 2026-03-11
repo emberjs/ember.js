@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "es2015",
+    "moduleResolution": "node",
+    "baseUrl": "lib",
+    "rootDirs": ["lib", "test"],
+    "target": "es2017",
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "dist",
+    "noEmit": true,
+    "strict": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "paths": {
+    "router": ["lib/router/index.ts"]
+  },
+  "files": ["./lib/router/index.ts", "./tests/index.ts"],
+  "include": ["lib/**/*.ts", "tests/**/*.ts"]
+}

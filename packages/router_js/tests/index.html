@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Router.js Tests</title>
+  <link rel="stylesheet" href="/vendor/qunit.css">
+  <script src="/ember-cli-live-reload.js" type="text/javascript"></script>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="/vendor/qunit.js"></script>
+  <script src="/vendor/loader.js"></script>
+  <script src="/vendor/vendor.js"></script>
+
+  <script src="/testem.js"></script>
+  <script src="./router.amd.js"></script>
+  <script src="./tests.js"></script>
+  <script>
+   for (var moduleName in requirejs.entries) {
+     if (moduleName.match(/[_-]test$/)) { require(moduleName); }
+   }
+  </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+{
+  "name": "router_js",
+  "version": "8.0.6",
+  "description": "A lightweight JavaScript library is built on top of route-recognizer and rsvp.js to provide an API for handling routes",
+  "keywords": [
+    "route-recognizer",
+    "router",
+    "rsvp"
+  ],
+  "bugs": {
+    "url": "https://github.com/tildeio/router.js/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tildeio/router.js.git"
+  },
+  "license": "MIT",
+  "author": "Tilde, Inc.",
+  "main": "dist/cjs/index.js",
+  "module": "dist/modules/index.js",
+  "files": [
+    "dist/cjs",
+    "dist/modules"
+  ],
+  "types": "dist/modules/index.d.ts",
+  "scripts": {
+    "lint": "npm-run-all lint:*",
+    "lint:ts": "eslint --cache .",
+    "lint:types": "tsc -p tsconfig.json --noEmit",
+    "prepare": "ember build",
+    "problems": "tsc -p tsconfig.json --noEmit",
+    "start": "ember server",
+    "test": "ember test"
+  },
+  "dependencies": {
+    "@glimmer/env": "^0.1.7"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-modules-amd": "^7.12.1",
+    "@babel/plugin-transform-modules-commonjs": "^7.12.1",
+    "@types/node": "^14.14.6",
+    "@types/qunit": "^2.9.6",
+    "@types/rsvp": "^4.0.4",
+    "@typescript-eslint/eslint-plugin": "^5.10.2",
+    "@typescript-eslint/parser": "^5.10.2",
+    "babel-plugin-debug-macros": "^0.3.3",
+    "backburner.js": "^2.6.0",
+    "broccoli-babel-transpiler": "^7.8.0",
+    "broccoli-concat": "^4.2.4",
+    "broccoli-funnel": "^3.0.3",
+    "broccoli-merge-trees": "^4.2.0",
+    "broccoli-typescript-compiler": "^8.0.0",
+    "ember-cli": "~3.22.0",
+    "ember-cli-inject-live-reload": "^2.0.2",
+    "ensure-posix-path": "^1.1.1",
+    "eslint": "^7.12.1",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "loader.js": "^4.7.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.1.2",
+    "qunit": "^2.11.3",
+    "release-it": "^14.2.1",
+    "release-it-lerna-changelog": "^3.1.0",
+    "route-recognizer": "^0.3.4",
+    "rsvp": "^4.8.5",
+    "typescript": "~4.5.5"
+  },
+  "peerDependencies": {
+    "route-recognizer": "^0.3.4",
+    "rsvp": "^4.8.5"
+  },
+  "engines": {
+    "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "namespace": "Router",
+  "release-it": {
+    "plugins": {
+      "release-it-lerna-changelog": {
+        "infile": "CHANGELOG.md",
+        "launchEditor": true
+      }
+    },
+    "git": {
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "tokenRef": "GITHUB_AUTH"
+    }
+  },
+  "volta": {
+    "node": "14.17.0",
+    "yarn": "1.22.10"
+  }
+}
