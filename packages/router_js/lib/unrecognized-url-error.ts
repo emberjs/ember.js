@@ -16,7 +16,9 @@ const UnrecognizedURLError: UnrecognizedURLConstructor = (function () {
     this.name = 'UnrecognizedURLError';
     this.message = message || 'UnrecognizedURL';
 
+    // @ts-expect-error I don't know why this is failing
     if (Error.captureStackTrace) {
+      // @ts-expect-error I don't know why this is failing
       Error.captureStackTrace(this, UnrecognizedURLError);
     } else {
       this.stack = error.stack;

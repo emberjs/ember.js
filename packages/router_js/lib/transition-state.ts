@@ -24,7 +24,7 @@ function handleError<R extends Route>(
 
   throw new TransitionError(
     error,
-    currentState.routeInfos[errorHandlerIndex].route!,
+    currentState.routeInfos[errorHandlerIndex]!.route!,
     wasAborted,
     currentState
   );
@@ -40,7 +40,7 @@ function resolveOneRouteInfo<R extends Route>(
     return;
   }
 
-  let routeInfo = currentState.routeInfos[transition.resolveIndex];
+  let routeInfo = currentState.routeInfos[transition.resolveIndex]!;
 
   let callback = proceed.bind(null, currentState, transition) as (
     resolvedRouteInfo: ResolvedRouteInfo<R>
@@ -54,7 +54,7 @@ function proceed<R extends Route>(
   transition: Transition<R>,
   resolvedRouteInfo: ResolvedRouteInfo<R>
 ): void | Promise<void> {
-  let wasAlreadyResolved = currentState.routeInfos[transition.resolveIndex].isResolved;
+  let wasAlreadyResolved = currentState.routeInfos[transition.resolveIndex]!.isResolved;
 
   // Swap the previously unresolved routeInfo with
   // the resolved routeInfo

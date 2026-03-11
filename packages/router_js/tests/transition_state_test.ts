@@ -1,4 +1,4 @@
-import { Transition } from '../lib/index';
+import { Transition } from '../index';
 import { Dict } from '../lib/core';
 import { Route, UnresolvedRouteInfoByObject, UnresolvedRouteInfoByParam } from '../lib/route-info';
 import TransitionState, { TransitionError } from '../lib/transition-state';
@@ -94,7 +94,7 @@ test('Integration w/ HandlerInfos', function (assert) {
       createHandler('foo', {
         model: function (params: Dict<unknown>, payload: Dict<unknown>) {
           assert.equal(payload, transition);
-          assert.equal(params.foo_id, '123', 'foo#model received expected params');
+          assert.equal(params['foo_id'], '123', 'foo#model received expected params');
           return resolve(fooModel);
         },
       })
@@ -107,7 +107,7 @@ test('Integration w/ HandlerInfos', function (assert) {
     .then(function (result: TransitionState<Route>) {
       let models = [];
       for (let i = 0; i < result.routeInfos.length; i++) {
-        models.push(result.routeInfos[i].context);
+        models.push(result.routeInfos[i]!.context);
       }
 
       assert.equal(models[0], fooModel);

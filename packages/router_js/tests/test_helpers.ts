@@ -91,7 +91,7 @@ function shouldNotHappen(assert: Assert, _message?: string) {
 export function isExiting(route: Route | string, routeInfos: RouteInfo<Route>[]) {
   for (let i = 0, len = routeInfos.length; i < len; ++i) {
     let routeInfo = routeInfos[i];
-    if (routeInfo.name === route || routeInfo.route === route) {
+    if (routeInfo!.name === route || routeInfo!.route === route) {
       return false;
     }
   }
@@ -176,8 +176,8 @@ export function createHandlerInfo(name: string, options: Dict<unknown> = {}): Ro
     }
   }
 
-  let handler = (options.handler as Route) || createHandler('foo');
-  delete options.handler;
+  let handler = (options['handler'] as Route) || createHandler('foo');
+  delete options['handler'];
 
   Object.assign(Stub.prototype, options);
   let stub = new Stub(name, new TestRouter(), handler);
@@ -200,14 +200,14 @@ export function trigger(
   let eventWasHandled = false;
 
   for (let i = handlerInfos.length - 1; i >= 0; i--) {
-    let currentHandlerInfo = handlerInfos[i],
+    let currentHandlerInfo = handlerInfos[i]!,
       currentHandler = currentHandlerInfo.route;
 
     // If there is no handler, it means the handler hasn't resolved yet which
     // means that we should trigger the event later when the handler is available
     if (!currentHandler) {
       currentHandlerInfo.routePromise!.then(function (resolvedHandler) {
-        resolvedHandler.events![name].apply(resolvedHandler, args);
+        resolvedHandler.events![name]!.apply(resolvedHandler, args);
       });
       continue;
     }

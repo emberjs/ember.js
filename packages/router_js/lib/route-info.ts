@@ -149,7 +149,7 @@ export function toReadOnlyRouteInfo<R extends Route>(
 
       get localName() {
         let parts = this.name.split('.');
-        return parts[parts.length - 1];
+        return parts[parts.length - 1]!;
       },
 
       get params() {
@@ -479,12 +479,12 @@ export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteIn
     }
   }
 
-  getModel(transition: InternalTransition<R>): Promise<ModelFor<R> | undefined> {
+  getModel(transition: InternalTransition<R>): Promise<ModelFor<R>> {
     let fullParams = this.params;
     if (transition && transition[QUERY_PARAMS_SYMBOL]) {
       fullParams = {};
       merge(fullParams, this.params);
-      fullParams.queryParams = transition[QUERY_PARAMS_SYMBOL];
+      fullParams['queryParams'] = transition[QUERY_PARAMS_SYMBOL];
     }
 
     let route = this.route!;
@@ -552,7 +552,7 @@ export class UnresolvedRouteInfoByObject<R extends Route> extends InternalRouteI
 
     let object: Dict<unknown> = {};
     if (isParam(model)) {
-      object[paramNames[0]] = model;
+      object[paramNames[0]!] = model;
       return object;
     }
 
@@ -570,7 +570,7 @@ export class UnresolvedRouteInfoByObject<R extends Route> extends InternalRouteI
       return;
     }
 
-    let name = paramNames[0];
+    let name = paramNames[0]!;
 
     if (/_id$/.test(name)) {
       // SAFETY: Model is supposed to extend IModel already

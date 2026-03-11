@@ -3,7 +3,7 @@ import URLTransitionIntent from '../lib/transition-intent/url-transition-intent'
 import TransitionState from '../lib/transition-state';
 import { createHandler, module, test, TestRouter } from './test_helpers';
 
-import Router, { Route } from '../lib';
+import Router, { Route } from '../index';
 import { Dict } from '../lib/core';
 import InternalRouteInfo, {
   ResolvedRouteInfo,
@@ -62,10 +62,10 @@ scenarios.forEach(function (scenario) {
     setup: function () {
       handlers = {};
 
-      handlers.foo = createHandler('foo');
-      handlers.bar = createHandler('bar');
-      handlers.articles = createHandler('articles');
-      handlers.comments = createHandler('comments');
+      handlers['foo'] = createHandler('foo');
+      handlers['bar'] = createHandler('bar');
+      handlers['articles'] = createHandler('articles');
+      handlers['comments'] = createHandler('comments');
 
       recognizer = {
         handlersFor: function (name: string) {
@@ -132,23 +132,23 @@ scenarios.forEach(function (scenario) {
 
     assert.equal(handlerInfos.length, 2);
     assert.notOk(
-      handlerInfos[0].isResolved,
+      handlerInfos[0]!.isResolved,
       'generated state consists of unresolved handler info, 1'
     );
     assert.notOk(
-      handlerInfos[1].isResolved,
+      handlerInfos[1]!.isResolved,
       'generated state consists of unresolved handler info, 2'
     );
     Promise.all([
-      assertHandlerEquals(assert, handlerInfos[0], handlers.foo),
-      assertHandlerEquals(assert, handlerInfos[1], handlers.bar),
+      assertHandlerEquals(assert, handlerInfos[0]!, handlers['foo']!),
+      assertHandlerEquals(assert, handlerInfos[1]!, handlers['bar']!),
     ]);
   });
 
   test('URLTransitionIntent applied to single unresolved URL handlerInfo', function (assert) {
     let state = new TransitionState();
 
-    let startingHandlerInfo = new UnresolvedRouteInfoByParam(router, 'foo', [], {}, handlers.foo);
+    let startingHandlerInfo = new UnresolvedRouteInfoByParam(router, 'foo', [], {}, handlers['foo']);
 
     // This single unresolved handler info will be preserved
     // in the new array of handlerInfos.
@@ -171,13 +171,13 @@ scenarios.forEach(function (scenario) {
       handlerInfos[1] instanceof UnresolvedRouteInfoByParam,
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
     );
-    assertHandlerEquals(assert, handlerInfos[1], handlers.bar);
+    assertHandlerEquals(assert, handlerInfos[1]!, handlers['bar']!);
   });
 
   test('URLTransitionIntent applied to an already-resolved handlerInfo', function (assert) {
     let state = new TransitionState();
 
-    let startingHandlerInfo = new ResolvedRouteInfo(router, 'foo', [], {}, handlers.foo);
+    let startingHandlerInfo = new ResolvedRouteInfo(router, 'foo', [], {}, handlers['foo']!);
 
     state.routeInfos = [startingHandlerInfo];
 
@@ -195,7 +195,7 @@ scenarios.forEach(function (scenario) {
       handlerInfos[1] instanceof UnresolvedRouteInfoByParam,
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
     );
-    assertHandlerEquals(assert, handlerInfos[1], handlers.bar);
+    assertHandlerEquals(assert, handlerInfos[1]!, handlers['bar']!);
   });
 
   test('URLTransitionIntent applied to an already-resolved handlerInfo (non-empty params)', function (assert) {
@@ -227,13 +227,13 @@ scenarios.forEach(function (scenario) {
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
     );
 
-    assertHandlerEquals(assert, handlerInfos[1], handlers.comments);
+    assertHandlerEquals(assert, handlerInfos[1]!, handlers['comments']!);
   });
 
   test('URLTransitionIntent applied to an already-resolved handlerInfo of different route', function (assert) {
     let state = new TransitionState();
 
-    let startingHandlerInfo = new ResolvedRouteInfo(router, 'alex', [], {}, handlers.foo);
+    let startingHandlerInfo = new ResolvedRouteInfo(router, 'alex', [], {}, handlers['foo']!);
 
     state.routeInfos = [startingHandlerInfo];
 
@@ -250,7 +250,7 @@ scenarios.forEach(function (scenario) {
       handlerInfos[1] instanceof UnresolvedRouteInfoByParam,
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
     );
-    assertHandlerEquals(assert, handlerInfos[1], handlers.bar);
+    assertHandlerEquals(assert, handlerInfos[1]!, handlers['bar']!);
   });
 
   test('NamedTransitionIntent applied to an already-resolved handlerInfo (non-empty params)', function (assert) {
@@ -277,12 +277,12 @@ scenarios.forEach(function (scenario) {
 
     assert.equal(handlerInfos.length, 2);
     assert.equal(handlerInfos[0], startingHandlerInfo);
-    assert.equal(handlerInfos[0].context, article);
+    assert.equal(handlerInfos[0]!.context, article);
     assert.ok(
       handlerInfos[1] instanceof UnresolvedRouteInfoByObject,
       'generated state consists of UnresolvedHandlerInfoByObject, 2'
     );
-    assert.equal(handlerInfos[1].context, comment);
-    assertHandlerEquals(assert, handlerInfos[1], handlers.comments);
+    assert.equal(handlerInfos[1]!.context, comment);
+    assertHandlerEquals(assert, handlerInfos[1]!, handlers['comments']!);
   });
 });

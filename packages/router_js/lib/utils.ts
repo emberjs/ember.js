@@ -103,7 +103,7 @@ export function isParam(object: any): object is string | number {
 }
 
 export function forEach<T>(array: T[], callback: (item: T) => boolean) {
-  for (let i = 0, l = array.length; i < l && callback(array[i]) !== false; i++) {
+  for (let i = 0, l = array.length; i < l && callback(array[i]!) !== false; i++) {
     // empty intentionally
   }
 }
