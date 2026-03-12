@@ -9,6 +9,7 @@ import {
   jitComponentSuite,
   jitSuite,
   ScopeSuite,
+  ShadowDOMSuite,
   ShadowingSuite,
   TemplateOnlyComponents,
   WithDynamicVarsSuite,
@@ -18,6 +19,7 @@ import {
 jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
+jitSuite(ShadowDOMSuite);
 
 jitComponentSuite(GlimmerishComponents);
 jitComponentSuite(TemplateOnlyComponents);

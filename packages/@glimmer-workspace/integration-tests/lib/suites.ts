@@ -9,6 +9,7 @@ export * from './suites/has-block-params';
 export * from './suites/in-element';
 export * from './suites/initial-render';
 export * from './suites/scope';
+export * from './suites/shadow-dom';
 export * from './suites/shadowing';
 export * from './suites/ssr';
 export * from './suites/with-dynamic-vars';
