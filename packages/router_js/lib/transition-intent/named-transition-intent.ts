@@ -1,14 +1,8 @@
 /* eslint-disable no-prototype-builtins */
 import type { Dict } from '../core';
-import type {
-  ModelFor,
-  ResolvedRouteInfo,
-  Route} from '../route-info';
+import type { ModelFor, ResolvedRouteInfo, Route } from '../route-info';
 import type InternalRouteInfo from '../route-info';
-import {
-  UnresolvedRouteInfoByObject,
-  UnresolvedRouteInfoByParam,
-} from '../route-info';
+import { UnresolvedRouteInfoByObject, UnresolvedRouteInfoByParam } from '../route-info';
 import type { ParsedHandler } from '../router';
 import type Router from '../router';
 import { TransitionIntent } from '../transition-intent';

@@ -2,7 +2,7 @@ import Backburner from 'backburner.js';
 import type { Route, Transition } from '../index';
 import Router from '../index';
 import type { Dict } from '../lib/core';
-import type { IModel} from '../lib/route-info';
+import type { IModel } from '../lib/route-info';
 import RouteInfo, { UnresolvedRouteInfoByParam } from '../lib/route-info';
 import type { PublicTransition } from '../lib/transition';
 import { logAbort } from '../lib/transition';

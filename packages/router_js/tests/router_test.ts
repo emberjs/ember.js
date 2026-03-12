@@ -3102,9 +3102,15 @@ scenarios.forEach(function (scenario) {
       router.isActive('showPost', posts[1]),
       'The showPost handler is active with the appropriate context'
     );
-    assert.notOk(router.isActive('showPost', posts[2]), 'The showPost handler is inactive when the context is different');
+    assert.notOk(
+      router.isActive('showPost', posts[2]),
+      'The showPost handler is inactive when the context is different'
+    );
     assert.notOk(router.isActive('adminPost'), 'The adminPost handler is inactive');
-    assert.notOk(router.isActive('showPost', null), 'The showPost handler is inactive with a null context');
+    assert.notOk(
+      router.isActive('showPost', null),
+      'The showPost handler is inactive with a null context'
+    );
 
     transitionTo(router, 'adminPost', admin, adminPost);
     assert.ok(router.isActive('adminPost'), 'The adminPost handler is active');
@@ -5198,8 +5204,14 @@ scenarios.forEach(function (scenario) {
       router.isActive('child', { one: 'a', two: 'b' }, { three: 'c', four: 'd' }),
       'child(1:a, 2:b, 3:c, 4:d)'
     );
-    assert.notOk(router.isActive('child', { one: 'e', two: 'b' }, { three: 'c', four: 'd' }), '!child(1:e, 2:b, 3:c, 4:d)');
-    assert.notOk(router.isActive('child', { one: 'a', two: 'b' }, { three: 'c', four: 'e' }), '!child(1:a, 2:b, 3:c, 4:e)');
+    assert.notOk(
+      router.isActive('child', { one: 'e', two: 'b' }, { three: 'c', four: 'd' }),
+      '!child(1:e, 2:b, 3:c, 4:d)'
+    );
+    assert.notOk(
+      router.isActive('child', { one: 'a', two: 'b' }, { three: 'c', four: 'e' }),
+      '!child(1:a, 2:b, 3:c, 4:e)'
+    );
   });
 
   test('isActive supports multiple soaked up string/number params (mixed)', function (assert) {
