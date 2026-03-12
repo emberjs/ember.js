@@ -53,7 +53,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   from: Maybe<RouteInfoWithAttributes> = null;
   to?: RouteInfo | RouteInfoWithAttributes = undefined;
   router: Router<R>;
-  data: Dict<unknown>;
+  data: Dict<any>;
   intent: Maybe<OpaqueIntent>;
   resolvedModels: Dict<ModelFor<R> | undefined>;
   [QUERY_PARAMS_SYMBOL]: Dict<unknown>;
@@ -151,13 +151,13 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     this.isCausedByAbortingTransition = Boolean(previousTransition);
     this.isCausedByInitialTransition =
       Boolean(previousTransition) &&
-      (previousTransition.isCausedByInitialTransition || previousTransition.sequence === 0);
+      (previousTransition!.isCausedByInitialTransition || previousTransition!.sequence === 0);
     // Every transition in the chain is a replace
     this.isCausedByAbortingReplaceTransition =
       Boolean(previousTransition) &&
-      previousTransition.urlMethod === 'replace' &&
-      (!previousTransition.isCausedByAbortingTransition ||
-        previousTransition.isCausedByAbortingReplaceTransition);
+      previousTransition!.urlMethod === 'replace' &&
+      (!previousTransition!.isCausedByAbortingTransition ||
+        previousTransition!.isCausedByAbortingReplaceTransition);
 
     if (state) {
       this[PARAMS_SYMBOL] = state.params;
