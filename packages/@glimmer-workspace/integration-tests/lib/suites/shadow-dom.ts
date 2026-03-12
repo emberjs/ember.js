@@ -16,10 +16,9 @@ export class ShadowDOMSuite extends RenderTest {
     // Render a template that uses declarative shadow DOM syntax.
     // The <template shadowrootmode="open"> should cause Glimmer to attach a
     // shadow root to the parent element and render children into it.
-    this.render(
-      '<div><template shadowrootmode="open"><p>{{this.message}}</p></template></div>',
-      { message: 'shadow content' }
-    );
+    this.render('<div><template shadowrootmode="open"><p>{{this.message}}</p></template></div>', {
+      message: 'shadow content',
+    });
 
     const rootEl = castToBrowser(this.element, 'HTML');
     const host = rootEl.firstElementChild as HTMLElement | null;

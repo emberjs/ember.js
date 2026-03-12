@@ -570,12 +570,16 @@ export class InElementSuite extends RenderTest {
     const hostElement = document.createElement('div');
     const shadowRoot = hostElement.attachShadow({ mode: 'open' });
 
-    this.render(
-      '{{#in-element this.shadowRoot}}[{{this.foo}}]{{/in-element}}',
-      { shadowRoot, foo: 'Hello Shadow!' }
-    );
+    this.render('{{#in-element this.shadowRoot}}[{{this.foo}}]{{/in-element}}', {
+      shadowRoot,
+      foo: 'Hello Shadow!',
+    });
 
-    this.assert.strictEqual(shadowRoot.textContent, '[Hello Shadow!]', 'content rendered in shadow root');
+    this.assert.strictEqual(
+      shadowRoot.textContent,
+      '[Hello Shadow!]',
+      'content rendered in shadow root'
+    );
     this.assertHTML('<!---->');
     this.assertStableRerender();
 
@@ -585,7 +589,11 @@ export class InElementSuite extends RenderTest {
     this.assertStableNodes();
 
     this.rerender({ foo: 'Hello Shadow!' });
-    this.assert.strictEqual(shadowRoot.textContent, '[Hello Shadow!]', 'content reverted in shadow root');
+    this.assert.strictEqual(
+      shadowRoot.textContent,
+      '[Hello Shadow!]',
+      'content reverted in shadow root'
+    );
     this.assertHTML('<!---->');
     this.assertStableNodes();
   }
@@ -600,22 +608,34 @@ export class InElementSuite extends RenderTest {
     const templateElement = document.createElement('template');
     const fragment = templateElement.content;
 
-    this.render(
-      '{{#in-element this.fragment}}[{{this.foo}}]{{/in-element}}',
-      { fragment, foo: 'Hello Fragment!' }
-    );
+    this.render('{{#in-element this.fragment}}[{{this.foo}}]{{/in-element}}', {
+      fragment,
+      foo: 'Hello Fragment!',
+    });
 
-    this.assert.strictEqual(fragment.textContent, '[Hello Fragment!]', 'content rendered in document fragment');
+    this.assert.strictEqual(
+      fragment.textContent,
+      '[Hello Fragment!]',
+      'content rendered in document fragment'
+    );
     this.assertHTML('<!---->');
     this.assertStableRerender();
 
     this.rerender({ foo: 'Updated Fragment!' });
-    this.assert.strictEqual(fragment.textContent, '[Updated Fragment!]', 'content updated in document fragment');
+    this.assert.strictEqual(
+      fragment.textContent,
+      '[Updated Fragment!]',
+      'content updated in document fragment'
+    );
     this.assertHTML('<!---->');
     this.assertStableNodes();
 
     this.rerender({ foo: 'Hello Fragment!' });
-    this.assert.strictEqual(fragment.textContent, '[Hello Fragment!]', 'content reverted in fragment');
+    this.assert.strictEqual(
+      fragment.textContent,
+      '[Hello Fragment!]',
+      'content reverted in fragment'
+    );
     this.assertHTML('<!---->');
     this.assertStableNodes();
   }
