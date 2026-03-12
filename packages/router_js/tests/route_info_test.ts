@@ -1,8 +1,6 @@
 import type { Transition } from '../index';
 import type { Dict } from '../lib/core';
-import type {
-  IModel,
-  Route} from '../lib/route-info';
+import type { IModel, Route } from '../lib/route-info';
 import {
   ResolvedRouteInfo,
   toReadOnlyRouteInfo,

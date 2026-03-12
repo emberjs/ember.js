@@ -1,14 +1,9 @@
 import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
-import type {
-  ModelFor,
-  Route,
-  RouteInfo,
-  RouteInfoWithAttributes,
-} from './route-info';
+import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
 import type Router from './router';
-import type { TransitionAbortedError} from './transition-aborted-error';
+import type { TransitionAbortedError } from './transition-aborted-error';
 import { buildTransitionAborted } from './transition-aborted-error';
 import type { OpaqueIntent } from './transition-intent';
 import type { TransitionError } from './transition-state';

@@ -1,4 +1,4 @@
-import type { Route} from '../route-info';
+import type { Route } from '../route-info';
 import { UnresolvedRouteInfoByParam } from '../route-info';
 import type Router from '../router';
 import { TransitionIntent } from '../transition-intent';

@@ -3,40 +3,19 @@ import type { MatchCallback, Params, QueryParams } from 'route-recognizer';
 import RouteRecognizer from 'route-recognizer';
 import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
-import type {
-  ModelFor,
-  Route,
-  RouteInfo,
-  RouteInfoWithAttributes} from './route-info';
+import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
-import {
-  toReadOnlyRouteInfo,
-} from './route-info';
-import type {
-  OpaqueTransition,
-  PublicTransition as Transition} from './transition';
-import InternalTransition, {
-  logAbort,
-  QUERY_PARAMS_SYMBOL,
-  STATE_SYMBOL,
-} from './transition';
+import { toReadOnlyRouteInfo } from './route-info';
+import type { OpaqueTransition, PublicTransition as Transition } from './transition';
+import InternalTransition, { logAbort, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from './transition';
 import { throwIfAborted, isTransitionAborted } from './transition-aborted-error';
 import type { TransitionIntent } from './transition-intent';
 import NamedTransitionIntent from './transition-intent/named-transition-intent';
 import URLTransitionIntent from './transition-intent/url-transition-intent';
 import type { TransitionError } from './transition-state';
 import TransitionState from './transition-state';
-import type {
-  ChangeList,
-  ModelsAndQueryParams} from './utils';
-import {
-  extractQueryParams,
-  forEach,
-  getChangelist,
-  log,
-  merge,
-  promiseLabel,
-} from './utils';
+import type { ChangeList, ModelsAndQueryParams } from './utils';
+import { extractQueryParams, forEach, getChangelist, log, merge, promiseLabel } from './utils';
 
 export interface SerializerFunc<T> {
   (model: T, params: string[]): Dict<unknown>;

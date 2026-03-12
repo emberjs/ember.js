@@ -226,7 +226,11 @@ scenarios.forEach(function (scenario) {
     let handlerInfos = newState.routeInfos;
 
     assert.equal(handlerInfos.length, 2);
-    assert.notStrictEqual(handlerInfos[0], startingHandlerInfo, 'The starting foo resolved handlerInfo was overridden because the new had different params');
+    assert.notStrictEqual(
+      handlerInfos[0],
+      startingHandlerInfo,
+      'The starting foo resolved handlerInfo was overridden because the new had different params'
+    );
     assert.ok(
       handlerInfos[1] instanceof UnresolvedRouteInfoByParam,
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
@@ -247,7 +251,11 @@ scenarios.forEach(function (scenario) {
     let handlerInfos = newState.routeInfos;
 
     assert.equal(handlerInfos.length, 2);
-    assert.notStrictEqual(handlerInfos[0], startingHandlerInfo, 'The starting foo resolved handlerInfo gets overridden because the new one has a different name');
+    assert.notStrictEqual(
+      handlerInfos[0],
+      startingHandlerInfo,
+      'The starting foo resolved handlerInfo gets overridden because the new one has a different name'
+    );
     assert.ok(
       handlerInfos[1] instanceof UnresolvedRouteInfoByParam,
       'generated state consists of UnresolvedHandlerInfoByParam, 2'
