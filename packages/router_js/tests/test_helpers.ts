@@ -24,6 +24,7 @@ function flushBackburner() {
 }
 
 let test = QUnit.test;
+let skip = QUnit.skip;
 
 function module(name: string, options?: any) {
   options = options || {};
@@ -119,6 +120,7 @@ test('backburnerized testing works as expected', function (assert) {
 export {
   module,
   test,
+  skip,
   flushBackburner,
   handleURL,
   transitionTo,
