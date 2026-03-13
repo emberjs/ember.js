@@ -218,11 +218,11 @@ export default class InternalRouteInfo<R extends Route> {
   private _routePromise?: Promise<R> = undefined;
   private _route?: Option<R> = null;
   protected router: Router<R>;
-  paramNames: string[];
-  name: string;
+  declare paramNames: string[];
+  declare name: string;
   params: Dict<unknown> | undefined = {};
-  queryParams?: Dict<unknown>;
-  context?: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
+  declare queryParams?: Dict<unknown>;
+  declare context?: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
   isResolved = false;
 
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
