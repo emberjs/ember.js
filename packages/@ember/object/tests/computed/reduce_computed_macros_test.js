@@ -9,7 +9,7 @@ import EmberObject, {
   observer,
 } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
-import { isArray, A as emberA, removeAt } from '@ember/array';
+import { isArray, removeAt } from '@ember/array';
 import {
   sum,
   min,
@@ -26,26 +26,34 @@ import {
   intersect,
   collect,
 } from '@ember/object/computed';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  emberAWithoutDeprecation as emberA,
+} from 'internal-test-helpers';
 
 let obj;
 moduleFor(
   'map',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @map('array.@each.v', (item) => item.v)
-        mapped;
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @map('array.@each.v', (item) => item.v)
+          mapped;
 
-        @map('arrayObjects.@each.v', (item) => ({
-          name: item.v.name,
-        }))
-        mappedObjects;
-      }.create({
-        arrayObjects: emberA([{ v: { name: 'Robert' } }, { v: { name: 'Leanna' } }]),
+          @map('arrayObjects.@each.v', (item) => ({
+            name: item.v.name,
+          }))
+          mappedObjects;
+        }.create({
+          arrayObjects: emberA([{ v: { name: 'Robert' } }, { v: { name: 'Leanna' } }]),
 
-        array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
-      });
+          array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+        });
+      }, /The @map decorator is deprecated/);
     }
 
     afterEach() {
@@ -61,7 +69,9 @@ moduleFor(
     ['@test it maps simple properties'](assert) {
       assert.deepEqual(obj.get('mapped'), [1, 3, 2, 1]);
 
-      obj.get('array').pushObject({ v: 5 });
+      expectDeprecation(() => {
+        obj.get('array').pushObject({ v: 5 });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(obj.get('mapped'), [1, 3, 2, 1, 5]);
 
@@ -73,18 +83,24 @@ moduleFor(
     ['@test it maps simple unshifted properties'](assert) {
       let array = emberA();
 
-      obj = class extends EmberObject {
-        @map('array', (item) => item.toUpperCase())
-        mapped;
-      }.create({
-        array,
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @map('array', (item) => item.toUpperCase())
+          mapped;
+        }.create({
+          array,
+        });
+      }, /The @map decorator is deprecated/);
 
-      array.unshiftObject('c');
-      array.unshiftObject('b');
-      array.unshiftObject('a');
+      expectDeprecation(() => {
+        array.unshiftObject('c');
+        array.unshiftObject('b');
+        array.unshiftObject('a');
+      }, /Usage of Ember.Array methods is deprecated/);
 
-      array.popObject();
+      expectDeprecation(() => {
+        array.popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('mapped'),
@@ -94,19 +110,21 @@ moduleFor(
     }
 
     ['@test it has the correct `this`'](assert) {
-      obj = class extends EmberObject {
-        @map('array', function (item) {
-          assert.equal(this, obj, 'should have correct context');
-          return this.upperCase(item);
-        })
-        mapped;
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @map('array', function (item) {
+            assert.equal(this, obj, 'should have correct context');
+            return this.upperCase(item);
+          })
+          mapped;
 
-        upperCase(string) {
-          return string.toUpperCase();
-        }
-      }.create({
-        array: ['a', 'b', 'c'],
-      });
+          upperCase(string) {
+            return string.toUpperCase();
+          }
+        }.create({
+          array: ['a', 'b', 'c'],
+        });
+      }, /The @map decorator is deprecated/);
 
       assert.deepEqual(
         obj.get('mapped'),
@@ -118,12 +136,14 @@ moduleFor(
     ['@test it passes the index to the callback'](assert) {
       let array = ['a', 'b', 'c'];
 
-      obj = class extends EmberObject {
-        @map('array', (item, index) => index)
-        mapped;
-      }.create({
-        array,
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @map('array', (item, index) => index)
+          mapped;
+        }.create({
+          array,
+        });
+      }, /The @map decorator is deprecated/);
 
       assert.deepEqual(obj.get('mapped'), [0, 1, 2], 'index is passed to callback correctly');
     }
@@ -131,9 +151,11 @@ moduleFor(
     ['@test it maps objects'](assert) {
       assert.deepEqual(obj.get('mappedObjects'), [{ name: 'Robert' }, { name: 'Leanna' }]);
 
-      obj.get('arrayObjects').pushObject({
-        v: { name: 'Eddard' },
-      });
+      expectDeprecation(() => {
+        obj.get('arrayObjects').pushObject({
+          v: { name: 'Eddard' },
+        });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(obj.get('mappedObjects'), [
         { name: 'Robert' },
@@ -154,20 +176,28 @@ moduleFor(
       let array = emberA();
       let cObj = { v: 'c' };
 
-      obj = class extends EmberObject {
-        @map('array.@each.v', (item) => get(item, 'v').toUpperCase())
-        mapped;
-      }.create({
-        array,
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @map('array.@each.v', (item) => get(item, 'v').toUpperCase())
+          mapped;
+        }.create({
+          array,
+        });
+      }, /The @map decorator is deprecated/);
 
-      array.unshiftObject(cObj);
-      array.unshiftObject({ v: 'b' });
-      array.unshiftObject({ v: 'a' });
+      expectDeprecation(() => {
+        array.unshiftObject(cObj);
+        array.unshiftObject({ v: 'b' });
+        array.unshiftObject({ v: 'a' });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       set(cObj, 'v', 'd');
 
-      assert.deepEqual(array.mapBy('v'), ['a', 'b', 'd'], 'precond - unmapped array is correct');
+      assert.deepEqual(
+        array.map((i) => i.v),
+        ['a', 'b', 'd'],
+        'precond - unmapped array is correct'
+      );
       assert.deepEqual(
         obj.get('mapped'),
         ['A', 'B', 'D'],
@@ -176,15 +206,17 @@ moduleFor(
     }
 
     ['@test it updates if additional dependent keys are modified'](assert) {
-      obj = class extends EmberObject {
-        @map('array', ['key'], function (item) {
-          return item[this.key];
-        })
-        mapped;
-      }.create({
-        key: 'name',
-        array: emberA([{ name: 'Cercei', house: 'Lannister' }]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @map('array', ['key'], function (item) {
+            return item[this.key];
+          })
+          mapped;
+        }.create({
+          key: 'name',
+          array: emberA([{ name: 'Cercei', house: 'Lannister' }]),
+        });
+      }, /The @map decorator is deprecated/);
 
       assert.deepEqual(
         obj.get('mapped'),
@@ -201,21 +233,23 @@ moduleFor(
     }
 
     ['@test it throws on bad inputs']() {
-      expectAssertion(() => {
-        map('items.@each.{prop}', 'foo');
-      }, /The final parameter provided to map must be a callback function/);
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          map('items.@each.{prop}', 'foo');
+        }, /The final parameter provided to map must be a callback function/);
 
-      expectAssertion(() => {
-        map('items.@each.{prop}', 'foo', function () {});
-      }, /The second parameter provided to map must either be the callback or an array of additional dependent keys/);
+        expectAssertion(() => {
+          map('items.@each.{prop}', 'foo', function () {});
+        }, /The second parameter provided to map must either be the callback or an array of additional dependent keys/);
 
-      expectAssertion(() => {
-        map('items.@each.{prop}', function () {}, ['foo']);
-      }, /The final parameter provided to map must be a callback function/);
+        expectAssertion(() => {
+          map('items.@each.{prop}', function () {}, ['foo']);
+        }, /The final parameter provided to map must be a callback function/);
 
-      expectAssertion(() => {
-        map('items.@each.{prop}', ['foo']);
-      }, /The final parameter provided to map must be a callback function/);
+        expectAssertion(() => {
+          map('items.@each.{prop}', ['foo']);
+        }, /The final parameter provided to map must be a callback function/);
+      }, /The @map decorator is deprecated/);
     }
   }
 );
@@ -224,12 +258,14 @@ moduleFor(
   'mapBy',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @mapBy('array', 'v')
-        mapped;
-      }.create({
-        array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @mapBy('array', 'v')
+          mapped;
+        }.create({
+          array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+        });
+      }, /The @mapBy decorator is deprecated/);
     }
 
     afterEach() {
@@ -245,7 +281,9 @@ moduleFor(
     ['@test it maps properties'](assert) {
       assert.deepEqual(obj.get('mapped'), [1, 3, 2, 1]);
 
-      obj.get('array').pushObject({ v: 5 });
+      expectDeprecation(() => {
+        obj.get('array').pushObject({ v: 5 });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(obj.get('mapped'), [1, 3, 2, 1, 5]);
 
@@ -261,7 +299,10 @@ moduleFor(
 
       addObserver(obj, 'mapped.@each', () => calls++);
 
-      obj.get('array').pushObject({ v: 5 });
+      expectDeprecation(() => {
+        obj.get('array').pushObject({ v: 5 });
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
 
       assert.equal(calls, 1, 'mapBy is observable');
@@ -273,12 +314,14 @@ moduleFor(
   'filter',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @filter('array', (item) => item % 2 === 0)
-        filtered;
-      }.create({
-        array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filter('array', (item) => item % 2 === 0)
+          filtered;
+        }.create({
+          array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
+        });
+      }, /The @filter decorator is deprecated/);
     }
 
     afterEach() {
@@ -300,41 +343,47 @@ moduleFor(
     }
 
     ['@test it passes the index to the callback'](assert) {
-      obj = class extends EmberObject {
-        @filter('array', (item, index) => index === 1)
-        filtered;
-      }.create({
-        array: ['a', 'b', 'c'],
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filter('array', (item, index) => index === 1)
+          filtered;
+        }.create({
+          array: ['a', 'b', 'c'],
+        });
+      }, /The @filter decorator is deprecated/);
 
       assert.deepEqual(get(obj, 'filtered'), ['b'], 'index is passed to callback correctly');
     }
 
     ['@test it has the correct `this`'](assert) {
-      obj = class extends EmberObject {
-        @filter('array', function (item, index) {
-          assert.equal(this, obj);
-          return this.isOne(index);
-        })
-        filtered;
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filter('array', function (item, index) {
+            assert.equal(this, obj);
+            return this.isOne(index);
+          })
+          filtered;
 
-        isOne(value) {
-          return value === 1;
-        }
-      }.create({
-        array: ['a', 'b', 'c'],
-      });
+          isOne(value) {
+            return value === 1;
+          }
+        }.create({
+          array: ['a', 'b', 'c'],
+        });
+      }, /The @filter decorator is deprecated/);
 
       assert.deepEqual(get(obj, 'filtered'), ['b'], 'index is passed to callback correctly');
     }
 
     ['@test it passes the array to the callback'](assert) {
-      obj = class extends EmberObject {
-        @filter('array', (item, index, array) => index === get(array, 'length') - 2)
-        filtered;
-      }.create({
-        array: emberA(['a', 'b', 'c']),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filter('array', (item, index, array) => index === get(array, 'length') - 2)
+          filtered;
+        }.create({
+          array: emberA(['a', 'b', 'c']),
+        });
+      }, /The @filter decorator is deprecated/);
 
       assert.deepEqual(obj.get('filtered'), ['b'], 'array is passed to callback correctly');
     }
@@ -345,7 +394,10 @@ moduleFor(
       let filtered = obj.get('filtered');
       assert.ok(filtered === obj.get('filtered'));
 
-      array.addObject(11);
+      expectDeprecation(() => {
+        array.addObject(11);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       let newFiltered = obj.get('filtered');
 
       assert.ok(filtered !== newFiltered);
@@ -362,22 +414,30 @@ moduleFor(
         'precond - filtered array is initially correct'
       );
 
-      array.addObject(11);
+      expectDeprecation(() => {
+        array.addObject(11);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       assert.deepEqual(
         obj.get('filtered'),
         [2, 4, 6, 8],
         'objects not passing the filter are not added'
       );
 
-      array.addObject(12);
+      expectDeprecation(() => {
+        array.addObject(12);
+      }, /Usage of Ember.Array methods is deprecated/);
+
       assert.deepEqual(
         obj.get('filtered'),
         [2, 4, 6, 8, 12],
         'objects passing the filter are added'
       );
 
-      array.removeObject(3);
-      array.removeObject(4);
+      expectDeprecation(() => {
+        array.removeObject(3);
+        array.removeObject(4);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('filtered'),
@@ -395,15 +455,16 @@ moduleFor(
         'precond - filtered array is initially correct'
       );
 
-      // clear 1-8 but in a random order
-      array.removeObject(3);
-      array.removeObject(1);
-      array.removeObject(2);
-      array.removeObject(4);
-      array.removeObject(8);
-      array.removeObject(6);
-      array.removeObject(5);
-      array.removeObject(7);
+      expectDeprecation(() => {
+        array.removeObject(3);
+        array.removeObject(1);
+        array.removeObject(2);
+        array.removeObject(4);
+        array.removeObject(8);
+        array.removeObject(6);
+        array.removeObject(5);
+        array.removeObject(7);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(obj.get('filtered'), [], 'filtered array cleared correctly');
     }
@@ -415,7 +476,9 @@ moduleFor(
         'precond - filtered array is initially correct'
       );
 
-      obj.get('array').clear();
+      expectDeprecation(() => {
+        obj.get('array').clear();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(obj.get('filtered'), [], 'filtered array cleared correctly');
     }
@@ -439,12 +502,14 @@ moduleFor(
     ['@test it updates properly on @each with {} dependencies'](assert) {
       let item = EmberObject.create({ prop: true });
 
-      obj = class extends EmberObject {
-        @filter('items.@each.{prop}', (item) => item.get('prop') === true)
-        filtered;
-      }.create({
-        items: emberA([item]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filter('items.@each.{prop}', (item) => item.get('prop') === true)
+          filtered;
+        }.create({
+          items: emberA([item]),
+        });
+      }, /The @filter decorator is deprecated/);
 
       assert.deepEqual(obj.get('filtered'), [item]);
 
@@ -454,15 +519,17 @@ moduleFor(
     }
 
     ['@test it updates if additional dependent keys are modified'](assert) {
-      obj = class extends EmberObject {
-        @filter('array', ['modulo'], function (item) {
-          return item % this.modulo === 0;
-        })
-        filtered;
-      }.create({
-        modulo: 2,
-        array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filter('array', ['modulo'], function (item) {
+            return item % this.modulo === 0;
+          })
+          filtered;
+        }.create({
+          modulo: 2,
+          array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
+        });
+      }, /The @filter decorator is deprecated/);
 
       assert.deepEqual(
         obj.get('filtered'),
@@ -479,21 +546,23 @@ moduleFor(
     }
 
     ['@test it throws on bad inputs']() {
-      expectAssertion(() => {
-        filter('items.@each.{prop}', 'foo');
-      }, /The final parameter provided to filter must be a callback function/);
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          filter('items.@each.{prop}', 'foo');
+        }, /The final parameter provided to filter must be a callback function/);
 
-      expectAssertion(() => {
-        filter('items.@each.{prop}', 'foo', function () {});
-      }, /The second parameter provided to filter must either be the callback or an array of additional dependent keys/);
+        expectAssertion(() => {
+          filter('items.@each.{prop}', 'foo', function () {});
+        }, /The second parameter provided to filter must either be the callback or an array of additional dependent keys/);
 
-      expectAssertion(() => {
-        filter('items.@each.{prop}', function () {}, ['foo']);
-      }, /The final parameter provided to filter must be a callback function/);
+        expectAssertion(() => {
+          filter('items.@each.{prop}', function () {}, ['foo']);
+        }, /The final parameter provided to filter must be a callback function/);
 
-      expectAssertion(() => {
-        filter('items.@each.{prop}', ['foo']);
-      }, /The final parameter provided to filter must be a callback function/);
+        expectAssertion(() => {
+          filter('items.@each.{prop}', ['foo']);
+        }, /The final parameter provided to filter must be a callback function/);
+      }, /The @filter decorator is deprecated/);
     }
   }
 );
@@ -502,21 +571,23 @@ moduleFor(
   'filterBy',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @filterBy('array', 'a', 1)
-        a1s;
-        @filterBy('array', 'a')
-        as;
-        @filterBy('array', 'b')
-        bs;
-      }.create({
-        array: emberA([
-          { name: 'one', a: 1, b: false },
-          { name: 'two', a: 2, b: false },
-          { name: 'three', a: 1, b: true },
-          { name: 'four', b: true },
-        ]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filterBy('array', 'a', 1)
+          a1s;
+          @filterBy('array', 'a')
+          as;
+          @filterBy('array', 'b')
+          bs;
+        }.create({
+          array: emberA([
+            { name: 'one', a: 1, b: false },
+            { name: 'two', a: 2, b: false },
+            { name: 'three', a: 1, b: true },
+            { name: 'four', b: true },
+          ]),
+        });
+      }, /The @filterBy decorator is deprecated/);
     }
 
     afterEach() {
@@ -531,11 +602,15 @@ moduleFor(
 
     ['@test properties can be filtered by truthiness'](assert) {
       assert.deepEqual(
-        obj.get('as').mapBy('name'),
+        obj.get('as').map((i) => i.name),
         ['one', 'two', 'three'],
         'properties can be filtered by existence'
       );
-      assert.deepEqual(obj.get('bs').mapBy('name'), ['three', 'four'], 'booleans can be filtered');
+      assert.deepEqual(
+        obj.get('bs').map((i) => i.name),
+        ['three', 'four'],
+        'booleans can be filtered'
+      );
 
       set(obj.get('array')[0], 'a', undefined);
       set(obj.get('array')[3], 'a', true);
@@ -544,38 +619,42 @@ moduleFor(
       set(obj.get('array')[3], 'b', false);
 
       assert.deepEqual(
-        obj.get('as').mapBy('name'),
+        obj.get('as').map((i) => i.name),
         ['two', 'three', 'four'],
         'arrays computed by filter property respond to property changes'
       );
       assert.deepEqual(
-        obj.get('bs').mapBy('name'),
+        obj.get('bs').map((i) => i.name),
         ['one', 'three'],
         'arrays computed by filtered property respond to property changes'
       );
 
-      obj.get('array').pushObject({ name: 'five', a: 6, b: true });
+      expectDeprecation(() => {
+        obj.get('array').pushObject({ name: 'five', a: 6, b: true });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('as').mapBy('name'),
+        obj.get('as').map((i) => i.name),
         ['two', 'three', 'four', 'five'],
         'arrays computed by filter property respond to added objects'
       );
       assert.deepEqual(
-        obj.get('bs').mapBy('name'),
+        obj.get('bs').map((i) => i.name),
         ['one', 'three', 'five'],
         'arrays computed by filtered property respond to added objects'
       );
 
-      obj.get('array').popObject();
+      expectDeprecation(() => {
+        obj.get('array').popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('as').mapBy('name'),
+        obj.get('as').map((i) => i.name),
         ['two', 'three', 'four'],
         'arrays computed by filter property respond to removed objects'
       );
       assert.deepEqual(
-        obj.get('bs').mapBy('name'),
+        obj.get('bs').map((i) => i.name),
         ['one', 'three'],
         'arrays computed by filtered property respond to removed objects'
       );
@@ -583,12 +662,12 @@ moduleFor(
       obj.set('array', [{ name: 'six', a: 12, b: true }]);
 
       assert.deepEqual(
-        obj.get('as').mapBy('name'),
+        obj.get('as').map((i) => i.name),
         ['six'],
         'arrays computed by filter property respond to array changes'
       );
       assert.deepEqual(
-        obj.get('bs').mapBy('name'),
+        obj.get('bs').map((i) => i.name),
         ['six'],
         'arrays computed by filtered property respond to array changes'
       );
@@ -596,23 +675,27 @@ moduleFor(
 
     ['@test properties can be filtered by values'](assert) {
       assert.deepEqual(
-        obj.get('a1s').mapBy('name'),
+        obj.get('a1s').map((i) => i.name),
         ['one', 'three'],
         'properties can be filtered by matching value'
       );
 
-      obj.get('array').pushObject({ name: 'five', a: 1 });
+      expectDeprecation(() => {
+        obj.get('array').pushObject({ name: 'five', a: 1 });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('a1s').mapBy('name'),
+        obj.get('a1s').map((i) => i.name),
         ['one', 'three', 'five'],
         'arrays computed by matching value respond to added objects'
       );
 
-      obj.get('array').popObject();
+      expectDeprecation(() => {
+        obj.get('array').popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('a1s').mapBy('name'),
+        obj.get('a1s').map((i) => i.name),
         ['one', 'three'],
         'arrays computed by matching value respond to removed objects'
       );
@@ -621,24 +704,26 @@ moduleFor(
       set(obj.get('array')[2], 'a', 2);
 
       assert.deepEqual(
-        obj.get('a1s').mapBy('name'),
+        obj.get('a1s').map((i) => i.name),
         ['one', 'two'],
         'arrays computed by matching value respond to modified properties'
       );
     }
 
     ['@test properties values can be replaced'](assert) {
-      obj = class extends EmberObject {
-        @filterBy('array', 'a', 1)
-        a1s;
-        @filterBy('a1s', 'b')
-        a1bs;
-      }.create({
-        array: [],
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filterBy('array', 'a', 1)
+          a1s;
+          @filterBy('a1s', 'b')
+          a1bs;
+        }.create({
+          array: [],
+        });
+      }, /The @filterBy decorator is deprecated/);
 
       assert.deepEqual(
-        obj.get('a1bs').mapBy('name'),
+        obj.get('a1bs').map((i) => i.name),
         [],
         'properties can be filtered by matching value'
       );
@@ -646,7 +731,7 @@ moduleFor(
       set(obj, 'array', [{ name: 'item1', a: 1, b: true }]);
 
       assert.deepEqual(
-        obj.get('a1bs').mapBy('name'),
+        obj.get('a1bs').map((i) => i.name),
         ['item1'],
         'properties can be filtered by matching value'
       );
@@ -664,14 +749,16 @@ moduleFor(
     `CP macro \`${name}\``,
     class extends AbstractTestCase {
       beforeEach() {
-        obj = class extends EmberObject {
-          @macro('array', 'array2', 'array3')
-          union;
-        }.create({
-          array: emberA([1, 2, 3, 4, 5, 6]),
-          array2: emberA([4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9]),
-          array3: emberA([1, 8, 10]),
-        });
+        expectDeprecation(() => {
+          obj = class extends EmberObject {
+            @macro('array', 'array2', 'array3')
+            union;
+          }.create({
+            array: emberA([1, 2, 3, 4, 5, 6]),
+            array2: emberA([4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9]),
+            array3: emberA([1, 8, 10]),
+          });
+        }, /The @uniq\/@union decorator is deprecated/);
       }
 
       afterEach() {
@@ -694,7 +781,9 @@ moduleFor(
           name + ' does not include duplicates'
         );
 
-        array.pushObject(8);
+        expectDeprecation(() => {
+          array.pushObject(8);
+        }, /Usage of Ember.Array methods is deprecated/);
 
         assert.deepEqual(
           obj.get('union').sort((x, y) => x - y),
@@ -702,7 +791,9 @@ moduleFor(
           name + ' does not add existing items'
         );
 
-        array.pushObject(11);
+        expectDeprecation(() => {
+          array.pushObject(11);
+        }, /Usage of Ember.Array methods is deprecated/);
 
         assert.deepEqual(
           obj.get('union').sort((x, y) => x - y),
@@ -718,7 +809,9 @@ moduleFor(
           name + ' does not remove items that are still in the dependent array'
         );
 
-        array2.removeObject(7);
+        expectDeprecation(() => {
+          array2.removeObject(7);
+        }, /Usage of Ember.Array methods is deprecated/);
 
         assert.deepEqual(
           obj.get('union').sort((x, y) => x - y),
@@ -736,7 +829,9 @@ moduleFor(
           name + ' is initially correct'
         );
 
-        array.removeObject(6);
+        expectDeprecation(() => {
+          array.removeObject(6);
+        }, /Usage of Ember.Array methods is deprecated/);
 
         assert.deepEqual(
           obj.get('union').sort((x, y) => x - y),
@@ -744,7 +839,9 @@ moduleFor(
           'objects are not removed if they exist in other dependent arrays'
         );
 
-        array.clear();
+        expectDeprecation(() => {
+          array.clear();
+        }, /Usage of Ember.Array methods is deprecated/);
 
         assert.deepEqual(
           obj.get('union').sort((x, y) => x - y),
@@ -760,17 +857,19 @@ moduleFor(
   'CP Macro `uniqBy`',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        list = null;
-        @uniqBy('list', 'id')
-        uniqueById;
-      }.create({
-        list: emberA([
-          { id: 1, value: 'one' },
-          { id: 2, value: 'two' },
-          { id: 1, value: 'one' },
-        ]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          list = null;
+          @uniqBy('list', 'id')
+          uniqueById;
+        }.create({
+          list: emberA([
+            { id: 1, value: 'one' },
+            { id: 2, value: 'two' },
+            { id: 1, value: 'one' },
+          ]),
+        });
+      }, /The @uniqBy decorator is deprecated/);
     }
 
     afterEach() {
@@ -790,11 +889,14 @@ moduleFor(
     }
 
     ['@test it does not share state among instances'](assert) {
-      let MyObject = class extends EmberObject {
-        list = [];
-        @uniqBy('list', 'name')
-        uniqueByName;
-      };
+      let MyObject;
+      expectDeprecation(() => {
+        MyObject = class extends EmberObject {
+          list = [];
+          @uniqBy('list', 'name')
+          uniqueByName;
+        };
+      }, /The @uniqBy decorator is deprecated/);
       let a = MyObject.create({
         list: [{ name: 'bob' }, { name: 'mitch' }, { name: 'mitch' }],
       });
@@ -808,7 +910,9 @@ moduleFor(
     }
 
     ['@test it handles changes to the dependent array'](assert) {
-      obj.get('list').pushObject({ id: 3, value: 'three' });
+      expectDeprecation(() => {
+        obj.get('list').pushObject({ id: 3, value: 'three' });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('uniqueById'),
@@ -820,7 +924,9 @@ moduleFor(
         'The list includes three'
       );
 
-      obj.get('list').pushObject({ id: 3, value: 'three' });
+      expectDeprecation(() => {
+        obj.get('list').pushObject({ id: 3, value: 'three' });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('uniqueById'),
@@ -834,11 +940,15 @@ moduleFor(
     }
 
     ['@test it returns an empty array when computed on a non-array'](assert) {
-      let MyObject = class extends EmberObject {
-        list = null;
-        @uniqBy('list', 'name')
-        uniq;
-      };
+      let MyObject;
+      expectDeprecation(() => {
+        MyObject = class extends EmberObject {
+          list = null;
+          @uniqBy('list', 'name')
+          uniq;
+        };
+      }, /The @uniqBy decorator is deprecated/);
+
       let a = MyObject.create({ list: 'not an array' });
 
       assert.deepEqual(a.get('uniq'), []);
@@ -850,14 +960,16 @@ moduleFor(
   'CP Macro `intersect`',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @intersect('array', 'array2', 'array3')
-        intersection;
-      }.create({
-        array: emberA([1, 2, 3, 4, 5, 6]),
-        array2: emberA([3, 3, 3, 4, 5]),
-        array3: emberA([3, 5, 6, 7, 8]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @intersect('array', 'array2', 'array3')
+          intersection;
+        }.create({
+          array: emberA([1, 2, 3, 4, 5, 6]),
+          array2: emberA([3, 3, 3, 4, 5]),
+          array3: emberA([3, 5, 6, 7, 8]),
+        });
+      }, /The @intersect decorator is deprecated/);
     }
 
     afterEach() {
@@ -880,7 +992,9 @@ moduleFor(
         'intersection is initially correct'
       );
 
-      array2.shiftObject();
+      expectDeprecation(() => {
+        array2.shiftObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('intersection').sort((x, y) => x - y),
@@ -888,7 +1002,9 @@ moduleFor(
         'objects are not removed when they are still in all dependent arrays'
       );
 
-      array2.shiftObject();
+      expectDeprecation(() => {
+        array2.shiftObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('intersection').sort((x, y) => x - y),
@@ -896,7 +1012,9 @@ moduleFor(
         'objects are not removed when they are still in all dependent arrays'
       );
 
-      array2.shiftObject();
+      expectDeprecation(() => {
+        array2.shiftObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('intersection'),
@@ -904,7 +1022,9 @@ moduleFor(
         'objects are removed once they are gone from all dependent arrays'
       );
 
-      array2.pushObject(1);
+      expectDeprecation(() => {
+        array2.pushObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('intersection'),
@@ -912,7 +1032,9 @@ moduleFor(
         'objects are not added as long as they are missing from any dependent array'
       );
 
-      array3.pushObject(1);
+      expectDeprecation(() => {
+        array3.pushObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('intersection').sort((x, y) => x - y),
@@ -927,13 +1049,15 @@ moduleFor(
   'setDiff',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @setDiff('array', 'array2')
-        diff;
-      }.create({
-        array: emberA([1, 2, 3, 4, 5, 6, 7]),
-        array2: emberA([3, 4, 5, 10]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @setDiff('array', 'array2')
+          diff;
+        }.create({
+          array: emberA([1, 2, 3, 4, 5, 6, 7]),
+          array2: emberA([3, 4, 5, 10]),
+        });
+      }, /The @setDiff decorator is deprecated/);
     }
 
     afterEach() {
@@ -949,10 +1073,13 @@ moduleFor(
     ['@test it asserts if given fewer or more than two dependent properties']() {
       expectAssertion(
         function () {
-          let TestClass = class extends EmberObject {
-            @setDiff('array')
-            diff;
-          };
+          let TestClass;
+          expectDeprecation(() => {
+            TestClass = class extends EmberObject {
+              @setDiff('array')
+              diff;
+            };
+          }, /The @setDiff decorator is deprecated/);
           TestClass.create({
             array: emberA([1, 2, 3, 4, 5, 6, 7]),
             array2: emberA([3, 4, 5]),
@@ -964,10 +1091,13 @@ moduleFor(
 
       expectAssertion(
         function () {
-          let TestClass = class extends EmberObject {
-            @setDiff('array', 'array2', 'array3')
-            diff;
-          };
+          let TestClass;
+          expectDeprecation(() => {
+            TestClass = class extends EmberObject {
+              @setDiff('array', 'array2', 'array3')
+              diff;
+            };
+          }, /The @setDiff decorator is deprecated/);
           TestClass.create({
             array: emberA([1, 2, 3, 4, 5, 6, 7]),
             array2: emberA([3, 4, 5]),
@@ -989,7 +1119,9 @@ moduleFor(
         'set-diff is initially correct'
       );
 
-      array2.popObject();
+      expectDeprecation(() => {
+        array2.popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('diff').sort((x, y) => x - y),
@@ -997,7 +1129,9 @@ moduleFor(
         'removing objects from the remove set has no effect if the object is not in the keep set'
       );
 
-      array2.shiftObject();
+      expectDeprecation(() => {
+        array2.shiftObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('diff').sort((x, y) => x - y),
@@ -1005,7 +1139,9 @@ moduleFor(
         "removing objects from the remove set adds them if they're in the keep set"
       );
 
-      array1.removeObject(3);
+      expectDeprecation(() => {
+        array1.removeObject(3);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('diff').sort((x, y) => x - y),
@@ -1013,7 +1149,9 @@ moduleFor(
         'removing objects from the keep array removes them from the computed array'
       );
 
-      array1.pushObject(5);
+      expectDeprecation(() => {
+        array1.pushObject(5);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('diff').sort((x, y) => x - y),
@@ -1021,7 +1159,9 @@ moduleFor(
         'objects added to the keep array that are in the remove array are not added to the computed array'
       );
 
-      array1.pushObject(22);
+      expectDeprecation(() => {
+        array1.pushObject(22);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
         obj.get('diff').sort((x, y) => x - y),
@@ -1051,7 +1191,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
   ['@test arrays are initially sorted'](assert) {
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'array is initially sorted'
     );
@@ -1059,7 +1199,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
   ['@test default sort order is correct'](assert) {
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'array is initially sorted'
     );
@@ -1067,7 +1207,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
   ['@test changing the dependent array updates the sorted array'](assert) {
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1080,7 +1220,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     ]);
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Stannis', 'Ramsey', 'Roose', 'Theon'],
       'changing dependent array updates sorted array'
     );
@@ -1090,18 +1230,20 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     let items = this.obj.items;
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
 
-    items.pushObject({
-      fname: 'Tyrion',
-      lname: 'Lannister',
-    });
+    expectDeprecation(() => {
+      items.pushObject({
+        fname: 'Tyrion',
+        lname: 'Lannister',
+      });
+    }, /Usage of Ember.Array methods is deprecated/);
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'],
       'Adding to the dependent array updates the sorted array'
     );
@@ -1109,15 +1251,17 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
   ['@test removing from the dependent array updates the sorted array'](assert) {
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
 
-    this.obj.items.popObject();
+    expectDeprecation(() => {
+      this.obj.items.popObject();
+    }, /Usage of Ember.Array methods is deprecated/);
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Robb'],
       'Removing from the dependent array updates the sorted array'
     );
@@ -1142,11 +1286,13 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
     let items = this.obj.items;
 
-    items.replace(0, 1, [jaime]);
-    items.replace(1, 1, [jaimeInDisguise]);
+    expectDeprecation(() => {
+      items.replace(0, 1, [jaime]);
+      items.replace(1, 1, [jaimeInDisguise]);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1154,7 +1300,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(jaimeInDisguise, 'fname', 'Jaime');
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Jaime', 'Jaime', 'Bran', 'Robb'],
       'sorted array is updated'
     );
@@ -1162,7 +1308,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(jaimeInDisguise, 'fname', 'Cersei');
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'sorted array is updated'
     );
@@ -1184,33 +1330,30 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
     let items = this.obj.items;
 
-    items.pushObject(tyrion);
+    expectDeprecation(() => {
+      items.pushObject(tyrion);
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), [
-      'Cersei',
-      'Jaime',
-      'Tyrion',
-      'Bran',
-      'Robb',
-    ]);
+    assert.deepEqual(
+      this.obj.sortedItems.map((i) => i.fname),
+      ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']
+    );
 
-    items.pushObject(tyrionInDisguise);
+    expectDeprecation(() => {
+      items.pushObject(tyrionInDisguise);
+    }, /Usage of Ember.Array methods is deprecated/);
 
-    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), [
-      'Yollo',
-      'Cersei',
-      'Jaime',
-      'Tyrion',
-      'Bran',
-      'Robb',
-    ]);
+    assert.deepEqual(
+      this.obj.sortedItems.map((i) => i.fname),
+      ['Yollo', 'Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']
+    );
   }
 
   ['@test updating sort properties detaches observers for old sort properties'](assert) {
     let objectToRemove = this.obj.items[3];
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1218,15 +1361,17 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(this.obj, 'itemSorting', emberA(['fname:desc']));
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Robb', 'Jaime', 'Cersei', 'Bran'],
       'after updating sort properties array is updated'
     );
 
-    this.obj.items.removeObject(objectToRemove);
+    expectDeprecation(() => {
+      this.obj.items.removeObject(objectToRemove);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Robb', 'Jaime', 'Cersei'],
       'after removing item array is updated'
     );
@@ -1234,7 +1379,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(objectToRemove, 'lname', 'Updated-Stark');
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Robb', 'Jaime', 'Cersei'],
       'after changing removed item array is not updated'
     );
@@ -1251,7 +1396,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
   ['@test updating sort properties updates the sorted array'](assert) {
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1259,7 +1404,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(this.obj, 'itemSorting', emberA(['fname:desc']));
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Robb', 'Jaime', 'Cersei', 'Bran'],
       'after updating sort properties array is updated'
     );
@@ -1269,16 +1414,18 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     let sortProps = this.obj.itemSorting;
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
 
-    sortProps.clear();
-    sortProps.pushObject('fname');
+    expectDeprecation(() => {
+      sortProps.clear();
+      sortProps.pushObject('fname');
+    }, /Usage of Ember.Array methods is deprecated/);
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Bran', 'Cersei', 'Jaime', 'Robb'],
       'after updating sort properties array is updated'
     );
@@ -1286,7 +1433,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
 
   ['@test updating new sort properties invalidates the sorted array'](assert) {
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1294,7 +1441,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(this.obj, 'itemSorting', emberA(['age:desc', 'fname:asc']));
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Robb', 'Bran'],
       'precond - array is correct after item sorting is changed'
     );
@@ -1302,19 +1449,22 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(this.obj.items[1], 'age', 29);
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Jaime', 'Cersei', 'Robb', 'Bran'],
       'after updating sort properties array is updated'
     );
   }
 
   ['@test sort direction defaults to ascending'](assert) {
-    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb']);
+    assert.deepEqual(
+      this.obj.sortedItems.map((i) => i.fname),
+      ['Cersei', 'Jaime', 'Bran', 'Robb']
+    );
   }
 
   ['@test sort direction defaults to ascending (with sort property change)'](assert) {
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1322,7 +1472,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(this.obj, 'itemSorting', emberA(['fname']));
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Bran', 'Cersei', 'Jaime', 'Robb'],
       'sort direction defaults to ascending'
     );
@@ -1332,7 +1482,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     let tyrionInDisguise = this.obj.items[1];
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1340,7 +1490,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     set(tyrionInDisguise, 'fname', 'Tyrion');
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Jaime', 'Tyrion', 'Bran', 'Robb'],
       "updating an item's sort properties updates the sorted array"
     );
@@ -1350,7 +1500,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     let sansaInDisguise = this.obj.items[1];
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Cersei', 'Jaime', 'Bran', 'Robb'],
       'precond - array is initially sorted'
     );
@@ -1361,7 +1511,7 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     });
 
     assert.deepEqual(
-      this.obj.sortedItems.mapBy('fname'),
+      this.obj.sortedItems.map((i) => i.fname),
       ['Jaime', 'Bran', 'Robb', 'Sansa'],
       "updating an item's sort properties updates the sorted array"
     );
@@ -1441,7 +1591,9 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
       'array is not changed'
     );
 
-    this.obj.items.pushObject(12);
+    expectDeprecation(() => {
+      this.obj.items.pushObject(12);
+    }, /Usage of Ember.Array methods is deprecated/);
 
     assert.deepEqual(
       this.obj.sortedItems,
@@ -1464,9 +1616,11 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     this.cleanupObject();
 
     try {
-      sortProps.pushObject({
-        name: 'Anna',
-      });
+      expectDeprecation(() => {
+        sortProps.pushObject({
+          name: 'Anna',
+        });
+      }, /Usage of Ember.Array methods is deprecated/);
       assert.ok(true);
     } catch (e) {
       assert.ok(false, e);
@@ -1541,13 +1695,17 @@ moduleFor(
 
       let itemSorting = _itemSorting || emberA(['lname', 'fname']);
 
-      return class extends EmberObject {
-        @sort('items', 'itemSorting')
-        sortedItems;
-      }.create({
-        itemSorting,
-        items,
-      });
+      let ret;
+      expectDeprecation(() => {
+        ret = class extends EmberObject {
+          @sort('items', 'itemSorting')
+          sortedItems;
+        }.create({
+          itemSorting,
+          items,
+        });
+      }, /The @sort decorator is deprecated/);
+      return ret;
     }
 
     cleanupObject() {
@@ -1571,13 +1729,18 @@ moduleFor(
 
       let itemSorting = _itemSorting || emberA(['lname', 'fname']);
 
-      return new (class {
-        items = items;
-        itemSorting = itemSorting;
+      let ret;
+      expectDeprecation(() => {
+        ret = new (class {
+          items = items;
+          itemSorting = itemSorting;
 
-        @sort('items', 'itemSorting')
-        sortedItems;
-      })();
+          @sort('items', 'itemSorting')
+          sortedItems;
+        })();
+      }, /The @sort decorator is deprecated/);
+
+      return ret;
     }
 
     cleanupObject() {}
@@ -1609,17 +1772,19 @@ moduleFor(
   'sort - sort function',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @sort('items.@each.fname', sortByLnameFname)
-        sortedItems;
-      }.create({
-        items: emberA([
-          { fname: 'Jaime', lname: 'Lannister', age: 34 },
-          { fname: 'Cersei', lname: 'Lannister', age: 34 },
-          { fname: 'Robb', lname: 'Stark', age: 16 },
-          { fname: 'Bran', lname: 'Stark', age: 8 },
-        ]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @sort('items.@each.fname', sortByLnameFname)
+          sortedItems;
+        }.create({
+          items: emberA([
+            { fname: 'Jaime', lname: 'Lannister', age: 34 },
+            { fname: 'Cersei', lname: 'Lannister', age: 34 },
+            { fname: 'Robb', lname: 'Stark', age: 16 },
+            { fname: 'Bran', lname: 'Stark', age: 8 },
+          ]),
+        });
+      }, /The @sort decorator is deprecated/);
     }
 
     afterEach() {
@@ -1627,23 +1792,26 @@ moduleFor(
     }
 
     ['@test sort has correct `this`'](assert) {
-      let obj = class extends EmberObject {
-        @sort('items.@each.fname', function (a, b) {
-          assert.equal(this, obj, 'expected the object to be `this`');
-          return this.sortByLastName(a, b);
-        })
-        sortedItems;
-        sortByLastName(a, b) {
-          return sortByFnameAsc(a, b);
-        }
-      }.create({
-        items: emberA([
-          { fname: 'Jaime', lname: 'Lannister', age: 34 },
-          { fname: 'Cersei', lname: 'Lannister', age: 34 },
-          { fname: 'Robb', lname: 'Stark', age: 16 },
-          { fname: 'Bran', lname: 'Stark', age: 8 },
-        ]),
-      });
+      let obj;
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @sort('items.@each.fname', function (a, b) {
+            assert.equal(this, obj, 'expected the object to be `this`');
+            return this.sortByLastName(a, b);
+          })
+          sortedItems;
+          sortByLastName(a, b) {
+            return sortByFnameAsc(a, b);
+          }
+        }.create({
+          items: emberA([
+            { fname: 'Jaime', lname: 'Lannister', age: 34 },
+            { fname: 'Cersei', lname: 'Lannister', age: 34 },
+            { fname: 'Robb', lname: 'Stark', age: 16 },
+            { fname: 'Bran', lname: 'Stark', age: 8 },
+          ]),
+        });
+      }, /The @sort decorator is deprecated/);
 
       obj.get('sortedItems');
     }
@@ -1656,7 +1824,7 @@ moduleFor(
 
     ['@test arrays are initially sorted'](assert) {
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'array is initially sorted'
       );
@@ -1664,7 +1832,7 @@ moduleFor(
 
     ['@test default sort order is correct'](assert) {
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'array is initially sorted'
       );
@@ -1672,7 +1840,7 @@ moduleFor(
 
     ['@test changing the dependent array updates the sorted array'](assert) {
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'precond - array is initially sorted'
       );
@@ -1685,7 +1853,7 @@ moduleFor(
       ]);
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Stannis', 'Ramsey', 'Roose', 'Theon'],
         'changing dependent array updates sorted array'
       );
@@ -1695,18 +1863,20 @@ moduleFor(
       let items = obj.get('items');
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'precond - array is initially sorted'
       );
 
-      items.pushObject({
-        fname: 'Tyrion',
-        lname: 'Lannister',
-      });
+      expectDeprecation(() => {
+        items.pushObject({
+          fname: 'Tyrion',
+          lname: 'Lannister',
+        });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'],
         'Adding to the dependent array updates the sorted array'
       );
@@ -1714,15 +1884,17 @@ moduleFor(
 
     ['@test removing from the dependent array updates the sorted array'](assert) {
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'precond - array is initially sorted'
       );
 
-      obj.get('items').popObject();
+      expectDeprecation(() => {
+        obj.get('items').popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Robb'],
         'Removing from the dependent array updates the sorted array'
       );
@@ -1747,11 +1919,13 @@ moduleFor(
 
       let items = obj.get('items');
 
-      items.replace(0, 1, [jaime]);
-      items.replace(1, 1, [jaimeInDisguise]);
+      expectDeprecation(() => {
+        items.replace(0, 1, [jaime]);
+        items.replace(1, 1, [jaimeInDisguise]);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'precond - array is initially sorted'
       );
@@ -1759,7 +1933,7 @@ moduleFor(
       set(jaimeInDisguise, 'fname', 'Jaime');
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Jaime', 'Jaime', 'Bran', 'Robb'],
         'sorted array is updated'
       );
@@ -1767,7 +1941,7 @@ moduleFor(
       set(jaimeInDisguise, 'fname', 'Cersei');
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'sorted array is updated'
       );
@@ -1789,26 +1963,23 @@ moduleFor(
 
       let items = obj.get('items');
 
-      items.pushObject(tyrion);
+      expectDeprecation(() => {
+        items.pushObject(tyrion);
+      }, /Usage of Ember.Array methods is deprecated/);
 
-      assert.deepEqual(obj.get('sortedItems').mapBy('fname'), [
-        'Cersei',
-        'Jaime',
-        'Tyrion',
-        'Bran',
-        'Robb',
-      ]);
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.fname),
+        ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']
+      );
 
-      items.pushObject(tyrionInDisguise);
+      expectDeprecation(() => {
+        items.pushObject(tyrionInDisguise);
+      }, /Usage of Ember.Array methods is deprecated/);
 
-      assert.deepEqual(obj.get('sortedItems').mapBy('fname'), [
-        'Yollo',
-        'Cersei',
-        'Jaime',
-        'Tyrion',
-        'Bran',
-        'Robb',
-      ]);
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.fname),
+        ['Yollo', 'Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']
+      );
     }
 
     ['@test changing item properties specified via @each triggers a resort of the modified item'](
@@ -1819,7 +1990,7 @@ moduleFor(
       let tyrionInDisguise = items[1];
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'precond - array is initially sorted'
       );
@@ -1827,30 +1998,32 @@ moduleFor(
       set(tyrionInDisguise, 'fname', 'Tyrion');
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Jaime', 'Tyrion', 'Bran', 'Robb'],
         'updating a specified property on an item resorts it'
       );
     }
 
     ['@test sort updates if additional dependent keys are present'](assert) {
-      obj = class extends EmberObject {
-        @sort('items', ['sortFunction'], function () {
-          return this.sortFunction(...arguments);
-        })
-        sortedItems;
-      }.create({
-        sortFunction: sortByLnameFname,
-        items: emberA([
-          { fname: 'Jaime', lname: 'Lannister', age: 34 },
-          { fname: 'Cersei', lname: 'Lannister', age: 34 },
-          { fname: 'Robb', lname: 'Stark', age: 16 },
-          { fname: 'Bran', lname: 'Stark', age: 8 },
-        ]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @sort('items', ['sortFunction'], function () {
+            return this.sortFunction(...arguments);
+          })
+          sortedItems;
+        }.create({
+          sortFunction: sortByLnameFname,
+          items: emberA([
+            { fname: 'Jaime', lname: 'Lannister', age: 34 },
+            { fname: 'Cersei', lname: 'Lannister', age: 34 },
+            { fname: 'Robb', lname: 'Stark', age: 16 },
+            { fname: 'Bran', lname: 'Stark', age: 8 },
+          ]),
+        });
+      }, /The @sort decorator is deprecated/);
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'array is initially sorted'
       );
@@ -1866,28 +2039,30 @@ moduleFor(
       });
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
+        obj.get('sortedItems').map((i) => i.fname),
         ['Jaime', 'Cersei', 'Robb', 'Bran'],
         'array is updated when dependent key changes'
       );
     }
 
     ['@test it throws on bad inputs']() {
-      expectAssertion(() => {
-        sort('foo', 'bar', 'baz');
-      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
+      expectDeprecation(() => {
+        expectAssertion(() => {
+          sort('foo', 'bar', 'baz');
+        }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
 
-      expectAssertion(() => {
-        sort('foo', ['bar'], 'baz');
-      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
+        expectAssertion(() => {
+          sort('foo', ['bar'], 'baz');
+        }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
 
-      expectAssertion(() => {
-        sort('foo', 'bar', function () {});
-      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
+        expectAssertion(() => {
+          sort('foo', 'bar', function () {});
+        }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
 
-      expectAssertion(() => {
-        sort('foo', ['bar'], function () {}, 'baz');
-      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
+        expectAssertion(() => {
+          sort('foo', ['bar'], function () {}, 'baz');
+        }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
+      }, /The @sort decorator is deprecated/);
     }
   }
 );
@@ -1896,18 +2071,20 @@ moduleFor(
   'sort - stability',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        sortProps = ['count', 'name'];
-        @sort('items', 'sortProps')
-        sortedItems;
-      }.create({
-        items: [
-          { name: 'A', count: 1, thing: 4 },
-          { name: 'B', count: 1, thing: 3 },
-          { name: 'C', count: 1, thing: 2 },
-          { name: 'D', count: 1, thing: 4 },
-        ],
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          sortProps = ['count', 'name'];
+          @sort('items', 'sortProps')
+          sortedItems;
+        }.create({
+          items: [
+            { name: 'A', count: 1, thing: 4 },
+            { name: 'B', count: 1, thing: 3 },
+            { name: 'C', count: 1, thing: 2 },
+            { name: 'D', count: 1, thing: 4 },
+          ],
+        });
+      }, /The @sort decorator is deprecated/);
     }
 
     afterEach() {
@@ -1915,11 +2092,19 @@ moduleFor(
     }
 
     ['@test sorts correctly as only one property changes'](assert) {
-      assert.deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.name),
+        ['A', 'B', 'C', 'D'],
+        'initial'
+      );
 
       set(obj.get('items')[3], 'count', 2);
 
-      assert.deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'final');
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.name),
+        ['A', 'B', 'C', 'D'],
+        'final'
+      );
     }
   }
 );
@@ -1929,13 +2114,15 @@ moduleFor(
   'sort - concurrency',
   class extends AbstractTestCase {
     beforeEach() {
-      klass = class extends EmberObject {
-        sortProps = ['count'];
-        @sort('items', 'sortProps')
-        sortedItems;
-        @sort('items.@each.count', (a, b) => a.count - b.count)
-        customSortedItems;
-      };
+      expectDeprecation(() => {
+        klass = class extends EmberObject {
+          sortProps = ['count'];
+          @sort('items', 'sortProps')
+          sortedItems;
+          @sort('items.@each.count', (a, b) => a.count - b.count)
+          customSortedItems;
+        };
+      }, /The @sort decorator is deprecated/);
       obj = klass.create({
         items: emberA([
           { name: 'A', count: 1, thing: 4, id: 1 },
@@ -1952,23 +2139,43 @@ moduleFor(
 
     ['@test sorts correctly after mutation to the sort properties'](assert) {
       let sorted = obj.get('sortedItems');
-      assert.deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
+      assert.deepEqual(
+        sorted.map((i) => i.name),
+        ['A', 'B', 'C', 'D'],
+        'initial'
+      );
 
       set(obj.get('items')[1], 'count', 5);
       set(obj.get('items')[2], 'count', 6);
 
-      assert.deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.name),
+        ['A', 'D', 'B', 'C'],
+        'final'
+      );
     }
 
     ['@test sort correctly after mutation to the sort'](assert) {
-      assert.deepEqual(obj.get('customSortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
+      assert.deepEqual(
+        obj.get('customSortedItems').map((i) => i.name),
+        ['A', 'B', 'C', 'D'],
+        'initial'
+      );
 
       set(obj.get('items')[1], 'count', 5);
       set(obj.get('items')[2], 'count', 6);
 
-      assert.deepEqual(obj.get('customSortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
+      assert.deepEqual(
+        obj.get('customSortedItems').map((i) => i.name),
+        ['A', 'D', 'B', 'C'],
+        'final'
+      );
 
-      assert.deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.name),
+        ['A', 'D', 'B', 'C'],
+        'final'
+      );
     }
 
     ['@test sort correctly on multiple instances of the same class'](assert) {
@@ -1981,27 +2188,53 @@ moduleFor(
         ]),
       });
 
-      assert.deepEqual(obj2.get('sortedItems').mapBy('name'), ['W', 'X', 'Y', 'Z'], 'initial');
-      assert.deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
+      assert.deepEqual(
+        obj2.get('sortedItems').map((i) => i.name),
+        ['W', 'X', 'Y', 'Z'],
+        'initial'
+      );
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.name),
+        ['A', 'B', 'C', 'D'],
+        'initial'
+      );
 
       set(obj.get('items')[1], 'count', 5);
       set(obj.get('items')[2], 'count', 6);
       set(obj2.get('items')[1], 'count', 27);
       set(obj2.get('items')[2], 'count', 28);
 
-      assert.deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
-      assert.deepEqual(obj2.get('sortedItems').mapBy('name'), ['W', 'Z', 'X', 'Y'], 'final');
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.name),
+        ['A', 'D', 'B', 'C'],
+        'final'
+      );
+      assert.deepEqual(
+        obj2.get('sortedItems').map((i) => i.name),
+        ['W', 'Z', 'X', 'Y'],
+        'final'
+      );
 
       obj.set('sortProps', ['thing']);
 
-      assert.deepEqual(obj.get('sortedItems').mapBy('name'), ['D', 'C', 'B', 'A'], 'final');
+      assert.deepEqual(
+        obj.get('sortedItems').map((i) => i.name),
+        ['D', 'C', 'B', 'A'],
+        'final'
+      );
 
       obj2.notifyPropertyChange('sortedItems'); // invalidate to flush, to get DK refreshed
       obj2.get('sortedItems'); // flush to get updated DK
 
-      obj2.set('items.firstObject.count', 9999);
+      expectDeprecation(() => {
+        obj2.set('items.firstObject.count', 9999);
+      }, /Usage of Ember.Array methods is deprecated/);
 
-      assert.deepEqual(obj2.get('sortedItems').mapBy('name'), ['Z', 'X', 'Y', 'W'], 'final');
+      assert.deepEqual(
+        obj2.get('sortedItems').map((i) => i.name),
+        ['Z', 'X', 'Y', 'W'],
+        'final'
+      );
     }
 
     ['@test sort correctly when multiple sorts are chained on the same instance of a class'](
@@ -2037,12 +2270,12 @@ moduleFor(
     */
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('name'),
+        obj.get('sortedItems').map((i) => i.name),
         ['A', 'B', 'C', 'D'],
         'obj.sortedItems.name should be sorted alpha'
       );
       assert.deepEqual(
-        obj2.get('sortedItems').mapBy('name'),
+        obj2.get('sortedItems').map((i) => i.name),
         ['A', 'B', 'C', 'D'],
         'obj2.sortedItems.name should be sorted alpha'
       );
@@ -2051,12 +2284,12 @@ moduleFor(
       set(obj.get('items')[2], 'count', 6);
 
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('name'),
+        obj.get('sortedItems').map((i) => i.name),
         ['A', 'D', 'B', 'C'],
         'obj.sortedItems.name should now have changed'
       );
       assert.deepEqual(
-        obj2.get('sortedItems').mapBy('name'),
+        obj2.get('sortedItems').map((i) => i.name),
         ['A', 'D', 'B', 'C'],
         'obj2.sortedItems.name should still mirror sortedItems2'
       );
@@ -2065,12 +2298,12 @@ moduleFor(
       obj2.set('sortProps', ['id']);
 
       assert.deepEqual(
-        obj2.get('sortedItems').mapBy('name'),
+        obj2.get('sortedItems').map((i) => i.name),
         ['A', 'B', 'C', 'D'],
         'we now sort obj2 by id, so we expect a b c d'
       );
       assert.deepEqual(
-        obj.get('sortedItems').mapBy('name'),
+        obj.get('sortedItems').map((i) => i.name),
         ['D', 'C', 'B', 'A'],
         'we now sort obj by thing'
       );
@@ -2084,12 +2317,14 @@ moduleFor(
   'max',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @max('items')
-        max;
-      }.create({
-        items: emberA([1, 2, 3]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @max('items')
+          max;
+        }.create({
+          items: emberA([1, 2, 3]),
+        });
+      }, /The @max decorator is deprecated/);
     }
 
     afterEach() {
@@ -2107,11 +2342,15 @@ moduleFor(
 
       let items = obj.get('items');
 
-      items.pushObject(5);
+      expectDeprecation(() => {
+        items.pushObject(5);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('max'), 5, 'max updates when a larger number is added');
 
-      items.pushObject(2);
+      expectDeprecation(() => {
+        items.pushObject(2);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('max'), 5, 'max does not update when a smaller number is added');
     }
@@ -2119,11 +2358,15 @@ moduleFor(
     ['@test max recomputes when the current max is removed'](assert) {
       assert.equal(obj.get('max'), 3, 'precond - max is initially correct');
 
-      obj.get('items').removeObject(2);
+      expectDeprecation(() => {
+        obj.get('items').removeObject(2);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('max'), 3, 'max is unchanged when a non-max item is removed');
 
-      obj.get('items').removeObject(3);
+      expectDeprecation(() => {
+        obj.get('items').removeObject(3);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('max'), 1, 'max is recomputed when the current max is removed');
     }
@@ -2134,12 +2377,14 @@ moduleFor(
   'min',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @min('items')
-        min;
-      }.create({
-        items: emberA([1, 2, 3]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @min('items')
+          min;
+        }.create({
+          items: emberA([1, 2, 3]),
+        });
+      }, /The @min decorator is deprecated/);
     }
 
     afterEach() {
@@ -2155,11 +2400,15 @@ moduleFor(
     ['@test min tracks the min number as objects are added'](assert) {
       assert.equal(obj.get('min'), 1, 'precond - min is initially correct');
 
-      obj.get('items').pushObject(-2);
+      expectDeprecation(() => {
+        obj.get('items').pushObject(-2);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('min'), -2, 'min updates when a smaller number is added');
 
-      obj.get('items').pushObject(2);
+      expectDeprecation(() => {
+        obj.get('items').pushObject(2);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('min'), -2, 'min does not update when a larger number is added');
     }
@@ -2169,11 +2418,15 @@ moduleFor(
 
       assert.equal(obj.get('min'), 1, 'precond - min is initially correct');
 
-      items.removeObject(2);
+      expectDeprecation(() => {
+        items.removeObject(2);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('min'), 1, 'min is unchanged when a non-min item is removed');
 
-      items.removeObject(1);
+      expectDeprecation(() => {
+        items.removeObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('min'), 3, 'min is recomputed when the current min is removed');
     }
@@ -2184,27 +2437,29 @@ moduleFor(
   'Ember.arrayComputed - mixed sugar',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @filterBy('items', 'lname', 'Lannister')
-        lannisters;
-        lannisterSorting = emberA(['fname']);
-        @sort('lannisters', 'lannisterSorting')
-        sortedLannisters;
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @filterBy('items', 'lname', 'Lannister')
+          lannisters;
+          lannisterSorting = emberA(['fname']);
+          @sort('lannisters', 'lannisterSorting')
+          sortedLannisters;
 
-        @filterBy('items', 'lname', 'Stark')
-        starks;
-        @mapBy('starks', 'age')
-        starkAges;
-        @max('starkAges')
-        oldestStarkAge;
-      }.create({
-        items: emberA([
-          { fname: 'Jaime', lname: 'Lannister', age: 34 },
-          { fname: 'Cersei', lname: 'Lannister', age: 34 },
-          { fname: 'Robb', lname: 'Stark', age: 16 },
-          { fname: 'Bran', lname: 'Stark', age: 8 },
-        ]),
-      });
+          @filterBy('items', 'lname', 'Stark')
+          starks;
+          @mapBy('starks', 'age')
+          starkAges;
+          @max('starkAges')
+          oldestStarkAge;
+        }.create({
+          items: emberA([
+            { fname: 'Jaime', lname: 'Lannister', age: 34 },
+            { fname: 'Cersei', lname: 'Lannister', age: 34 },
+            { fname: 'Robb', lname: 'Stark', age: 16 },
+            { fname: 'Bran', lname: 'Stark', age: 8 },
+          ]),
+        });
+      }, /The .+ decorator is deprecated/);
     }
 
     afterEach() {
@@ -2215,17 +2470,19 @@ moduleFor(
       let items = obj.get('items');
 
       assert.deepEqual(
-        obj.get('sortedLannisters').mapBy('fname'),
+        obj.get('sortedLannisters').map((i) => i.fname),
         ['Cersei', 'Jaime'],
         'precond - array is initially filtered and sorted'
       );
 
-      items.pushObject({ fname: 'Tywin', lname: 'Lannister' });
-      items.pushObject({ fname: 'Lyanna', lname: 'Stark' });
-      items.pushObject({ fname: 'Gerion', lname: 'Lannister' });
+      expectDeprecation(() => {
+        items.pushObject({ fname: 'Tywin', lname: 'Lannister' });
+        items.pushObject({ fname: 'Lyanna', lname: 'Stark' });
+        items.pushObject({ fname: 'Gerion', lname: 'Lannister' });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.deepEqual(
-        obj.get('sortedLannisters').mapBy('fname'),
+        obj.get('sortedLannisters').map((i) => i.fname),
         ['Cersei', 'Gerion', 'Jaime', 'Tywin'],
         'updates propagate to array'
       );
@@ -2236,11 +2493,15 @@ moduleFor(
 
       assert.equal(16, obj.get('oldestStarkAge'), 'precond - end of chain is initially correct');
 
-      items.pushObject({ fname: 'Rickon', lname: 'Stark', age: 5 });
+      expectDeprecation(() => {
+        items.pushObject({ fname: 'Rickon', lname: 'Stark', age: 5 });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(16, obj.get('oldestStarkAge'), 'chain is updated correctly');
 
-      items.pushObject({ fname: 'Eddard', lname: 'Stark', age: 35 });
+      expectDeprecation(() => {
+        items.pushObject({ fname: 'Eddard', lname: 'Stark', age: 35 });
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(35, obj.get('oldestStarkAge'), 'chain is updated correctly');
     }
@@ -2268,14 +2529,16 @@ moduleFor(
   'Ember.arrayComputed - chains',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @sort('todos.@each.priority', priorityComparator)
-        sorted;
-        @filter('sorted.@each.priority', evenPriorities)
-        filtered;
-      }.create({
-        todos: emberA([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @sort('todos.@each.priority', priorityComparator)
+          sorted;
+          @filter('sorted.@each.priority', evenPriorities)
+          filtered;
+        }.create({
+          todos: emberA([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)]),
+        });
+      }, /The .+ decorator is deprecated/);
     }
 
     afterEach() {
@@ -2284,17 +2547,17 @@ moduleFor(
 
     ['@test it can filter and sort when both depend on the same item property'](assert) {
       assert.deepEqual(
-        obj.get('todos').mapBy('name'),
+        obj.get('todos').map((i) => i.name),
         ['E', 'D', 'C', 'B', 'A'],
         'precond - todos initially correct'
       );
       assert.deepEqual(
-        obj.get('sorted').mapBy('name'),
+        obj.get('sorted').map((i) => i.name),
         ['A', 'B', 'C', 'D', 'E'],
         'precond - sorted initially correct'
       );
       assert.deepEqual(
-        obj.get('filtered').mapBy('name'),
+        obj.get('filtered').map((i) => i.name),
         ['A', 'C', 'E'],
         'precond - filtered initially correct'
       );
@@ -2302,17 +2565,17 @@ moduleFor(
       set(obj.get('todos')[1], 'priority', 6);
 
       assert.deepEqual(
-        obj.get('todos').mapBy('name'),
+        obj.get('todos').map((i) => i.name),
         ['E', 'D', 'C', 'B', 'A'],
         'precond - todos remain correct'
       );
       assert.deepEqual(
-        obj.get('sorted').mapBy('name'),
+        obj.get('sorted').map((i) => i.name),
         ['A', 'B', 'C', 'E', 'D'],
         'precond - sorted updated correctly'
       );
       assert.deepEqual(
-        obj.get('filtered').mapBy('name'),
+        obj.get('filtered').map((i) => i.name),
         ['A', 'C', 'E', 'D'],
         'filtered updated correctly'
       );
@@ -2326,16 +2589,18 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       userFnCalls = 0;
-      obj = class extends EmberObject {
-        @mapBy('array', 'v')
-        mapped;
-        @max('mapped')
-        max;
-        @observer('max', () => userFnCalls++)
-        maxDidChange;
-      }.create({
-        array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @mapBy('array', 'v')
+          mapped;
+          @max('mapped')
+          max;
+          @observer('max', () => userFnCalls++)
+          maxDidChange;
+        }.create({
+          array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+        });
+      }, /The .+ decorator is deprecated/);
     }
 
     afterEach() {
@@ -2349,7 +2614,10 @@ moduleFor(
 
       addObserver(obj, 'max', () => calls++);
 
-      obj.get('array').pushObject({ v: 5 });
+      expectDeprecation(() => {
+        obj.get('array').pushObject({ v: 5 });
+      }, /Usage of Ember.Array methods is deprecated/);
+
       await runLoopSettled();
 
       assert.equal(obj.get('max'), 5, 'maximum value is updated correctly');
@@ -2363,12 +2631,14 @@ moduleFor(
   'sum',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = class extends EmberObject {
-        @sum('array')
-        total;
-      }.create({
-        array: emberA([1, 2, 3]),
-      });
+      expectDeprecation(() => {
+        obj = class extends EmberObject {
+          @sum('array')
+          total;
+        }.create({
+          array: emberA([1, 2, 3]),
+        });
+      }, /The @sum decorator is deprecated/);
     }
 
     afterEach() {
@@ -2397,11 +2667,15 @@ moduleFor(
     }
 
     ['@test updates when array is modified'](assert) {
-      obj.get('array').pushObject(1);
+      expectDeprecation(() => {
+        obj.get('array').pushObject(1);
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('total'), 7, 'recomputed when elements are added');
 
-      obj.get('array').popObject();
+      expectDeprecation(() => {
+        obj.get('array').popObject();
+      }, /Usage of Ember.Array methods is deprecated/);
 
       assert.equal(obj.get('total'), 6, 'recomputes when elements are removed');
     }
@@ -2413,7 +2687,9 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test works'](assert) {
       let obj = { one: 'foo', two: 'bar', three: null };
-      defineProperty(obj, 'all', collect('one', 'two', 'three', 'four'));
+      expectDeprecation(() => {
+        defineProperty(obj, 'all', collect('one', 'two', 'three', 'four'));
+      }, /The @collect decorator is deprecated/);
 
       assert.deepEqual(get(obj, 'all'), ['foo', 'bar', null, null], 'have all of them');
 
