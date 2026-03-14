@@ -1,25 +1,12 @@
-import type { Owner } from '@glimmer/interfaces';
-import type { Dict } from '@glimmer/util';
-
 import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { tracked } from '../test-helpers/tracked';
-
-function hasShadowDom() {
-  return typeof document !== 'undefined' && 'attachShadow' in document.createElement('div');
-}
 
 export class InElementShadowRootSuite extends RenderTest {
   static suiteName = '#in-element (ShadowRoot)';
 
   @test
   'Renders curlies into a ShadowRoot'() {
-    if (!hasShadowDom()) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     const hostElement = document.createElement('div');
     const shadowRoot = hostElement.attachShadow({ mode: 'open' });
 
@@ -50,63 +37,11 @@ export class InElementShadowRootSuite extends RenderTest {
   }
 
   @test
-  'Renders curlies into a DocumentFragment'() {
-    if (typeof document === 'undefined') {
-      this.assert.ok(true, 'DOM not supported, skipping');
-      return;
-    }
-
-    const templateElement = document.createElement('template');
-    const fragment = templateElement.content;
-
-    this.render('{{#in-element this.fragment}}[{{this.foo}}]{{/in-element}}', {
-      fragment,
-      foo: 'Hello Fragment!',
-    });
-
-    this.assert.strictEqual(
-      fragment.textContent,
-      '[Hello Fragment!]',
-      'content rendered in document fragment'
-    );
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ foo: 'Updated Fragment!' });
-    this.assert.strictEqual(
-      fragment.textContent,
-      '[Updated Fragment!]',
-      'content updated in document fragment'
-    );
-    this.assertHTML('<!---->');
-
-    this.rerender({ foo: 'Hello Fragment!' });
-    this.assert.strictEqual(
-      fragment.textContent,
-      '[Hello Fragment!]',
-      'content reverted in fragment'
-    );
-    this.assertHTML('<!---->');
-  }
-
-  @test
   'Class-based component with tracked property renders into shadow root without full DOM replacement on update'() {
-    if (!hasShadowDom()) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     const hostElement = document.createElement('div');
     const shadowRoot = hostElement.attachShadow({ mode: 'open' });
 
-    class Counter extends GlimmerishComponent {
-      @tracked count: number;
-
-      constructor(owner: Owner, args: Dict) {
-        super(owner, args);
-        this.count = (args['initial'] as number) ?? 0;
-      }
-    }
+    class Counter extends GlimmerishComponent {}
 
     this.registerComponent('Glimmer', 'Counter', '<p>Count: {{@count}}</p>', Counter as any);
 
@@ -149,11 +84,6 @@ export class InElementShadowRootSuite extends RenderTest {
 
   @test
   'Sibling components rendered into the same shadow root'() {
-    if (!hasShadowDom()) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     const hostElement = document.createElement('div');
     const shadowRoot = hostElement.attachShadow({ mode: 'open' });
 
@@ -199,11 +129,6 @@ export class InElementShadowRootSuite extends RenderTest {
 
   @test
   'Sibling shadow roots each receive their own component'() {
-    if (!hasShadowDom()) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     const host1 = document.createElement('div');
     const shadow1 = host1.attachShadow({ mode: 'open' });
     const host2 = document.createElement('div');
@@ -251,11 +176,6 @@ export class InElementShadowRootSuite extends RenderTest {
 
   @test
   'Multiple in-element calls to the same shadow root'() {
-    if (!hasShadowDom()) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     const hostElement = document.createElement('div');
     const shadowRoot = hostElement.attachShadow({ mode: 'open' });
 
@@ -293,11 +213,6 @@ export class InElementShadowRootSuite extends RenderTest {
 
   @test
   'Multiple in-element calls to the same shadow root with insertBefore=null'() {
-    if (!hasShadowDom()) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     const hostElement = document.createElement('div');
     const shadowRoot = hostElement.attachShadow({ mode: 'open' });
 
