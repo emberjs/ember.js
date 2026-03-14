@@ -1,6 +1,7 @@
 import type { Dict, Owner } from '@glimmer/interfaces';
 import { trackedArray } from '@glimmer/validator';
 import {
+  defineComponent,
   GlimmerishComponent as Component,
   jitSuite,
   RenderTest,
@@ -156,6 +157,24 @@ class TrackedArrayTest extends RenderTest {
         }
       }
     );
+  }
+
+  @test
+  'it works when setting a previously missing index via direct template access'() {
+    const arr = trackedArray<string>([]);
+
+    const getFirst = () => arr[0];
+    const Foo = defineComponent({ getFirst }, '{{(getFirst)}}');
+
+    this.renderComponent(Foo);
+
+    this.assertHTML('');
+
+    arr[0] = 'hello';
+    this.rerender();
+
+    this.assertHTML('hello');
+    this.assertStableRerender();
   }
 
   @test

@@ -126,6 +126,24 @@ class TrackedMapTest extends RenderTest {
   }
 
   @test
+  'it works when getting a previously missing key via direct template access'() {
+    const map = trackedMap<string, unknown>();
+
+    const getFoo = () => map.get('foo');
+    const Foo = defineComponent({ getFoo }, '{{(getFoo)}}');
+
+    this.renderComponent(Foo);
+
+    this.assertHTML('');
+
+    map.set('foo', 2);
+    this.rerender();
+
+    this.assertHTML('2');
+    this.assertStableRerender();
+  }
+
+  @test
   'has: setting missing key to undefined triggers reactivity'() {
     this.assertReactivity(
       class extends Component {

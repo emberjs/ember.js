@@ -79,6 +79,24 @@ class TrackedSetTest extends RenderTest {
   }
 
   @test
+  'it works when checking a previously missing value via direct template access'() {
+    const set = trackedSet<string>();
+
+    const hasFoo = () => set.has('foo');
+    const Foo = defineComponent({ hasFoo }, '{{(hasFoo)}}');
+
+    this.renderComponent(Foo);
+
+    this.assertHTML('false');
+
+    set.add('foo');
+    this.rerender();
+
+    this.assertHTML('true');
+    this.assertStableRerender();
+  }
+
+  @test
   'has: checking missing value then adding it triggers reactivity via size'() {
     this.assertReactivity(
       class extends Component {

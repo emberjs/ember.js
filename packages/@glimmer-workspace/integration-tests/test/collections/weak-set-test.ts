@@ -61,6 +61,25 @@ class TrackedWeakSetTest extends RenderTest {
   }
 
   @test
+  'it works when checking a previously missing value via direct template access'() {
+    const key = {};
+    const set = trackedWeakSet<object>();
+
+    const hasKey = () => set.has(key);
+    const Foo = defineComponent({ hasKey }, '{{(hasKey)}}');
+
+    this.renderComponent(Foo);
+
+    this.assertHTML('false');
+
+    set.add(key);
+    this.rerender();
+
+    this.assertHTML('true');
+    this.assertStableRerender();
+  }
+
+  @test
   'add/has'() {
     this.assertReactivity(
       class extends Component {

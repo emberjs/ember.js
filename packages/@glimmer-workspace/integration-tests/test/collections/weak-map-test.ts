@@ -171,6 +171,25 @@ class TrackedWeakMapTest extends RenderTest {
   }
 
   @test
+  'it works when getting a previously missing key via direct template access'() {
+    const key = {};
+    const map = trackedWeakMap<object, unknown>();
+
+    const getFoo = () => map.get(key);
+    const Foo = defineComponent({ getFoo }, '{{(getFoo)}}');
+
+    this.renderComponent(Foo);
+
+    this.assertHTML('');
+
+    map.set(key, 2);
+    this.rerender();
+
+    this.assertHTML('2');
+    this.assertStableRerender();
+  }
+
+  @test
   'has: setting missing key to undefined triggers reactivity'() {
     this.assertReactivity(
       class extends Component {
