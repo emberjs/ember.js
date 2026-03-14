@@ -126,6 +126,23 @@ class TrackedMapTest extends RenderTest {
   }
 
   @test
+  'has: setting missing key to undefined triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        map = trackedMap<string, unknown>();
+
+        get value() {
+          return this.map.has('foo');
+        }
+
+        update() {
+          this.map.set('foo', undefined);
+        }
+      }
+    );
+  }
+
+  @test
   entries() {
     this.assertReactivity(
       class extends Component {

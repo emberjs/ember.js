@@ -159,6 +159,40 @@ class TrackedArrayTest extends RenderTest {
   }
 
   @test
+  'reading a missing index then setting it triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        arr = trackedArray<string | undefined>([]);
+
+        get value() {
+          return this.arr[0];
+        }
+
+        update() {
+          this.arr[0] = 'hello';
+        }
+      }
+    );
+  }
+
+  @test
+  'reading length then pushing triggers reactivity'() {
+    this.assertReactivity(
+      class extends Component {
+        arr = trackedArray<number>([]);
+
+        get value() {
+          return this.arr.length;
+        }
+
+        update() {
+          this.arr.push(1);
+        }
+      }
+    );
+  }
+
+  @test
   ARRAY_GETTER_METHODS() {
     ARRAY_GETTER_METHODS.forEach((method) => {
       this.assertReactivity(

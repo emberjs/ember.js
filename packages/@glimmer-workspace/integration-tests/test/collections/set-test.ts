@@ -79,6 +79,23 @@ class TrackedSetTest extends RenderTest {
   }
 
   @test
+  'has: checking missing value then adding it triggers reactivity via size'() {
+    this.assertReactivity(
+      class extends Component {
+        set = trackedSet<string>();
+
+        get value() {
+          return this.set.size;
+        }
+
+        update() {
+          this.set.add('foo');
+        }
+      }
+    );
+  }
+
+  @test
   'add/has existing value'() {
     this.assertReactivity(
       class extends Component {
