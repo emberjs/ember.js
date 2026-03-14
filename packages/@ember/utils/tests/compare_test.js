@@ -1,10 +1,9 @@
 import { compare, typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
-import { Comparable } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let data = [];
-let Comp = EmberObject.extend(Comparable);
+let Comp = EmberObject.extend();
 
 Comp.reopenClass({
   compare(obj) {
@@ -64,17 +63,9 @@ moduleFor(
     }
 
     ['@test comparables should return values in the range of -1, 0, 1'](assert) {
-      let negOne = Comp.create({
-        val: -1,
-      });
-
-      let zero = Comp.create({
-        val: 0,
-      });
-
-      let one = Comp.create({
-        val: 1,
-      });
+      let negOne = Comp.create({ val: -1 });
+      let zero = Comp.create({ val: 0 });
+      let one = Comp.create({ val: 1 });
 
       assert.equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
       assert.equal(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');

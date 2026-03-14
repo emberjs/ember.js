@@ -1,6 +1,5 @@
 import type { TypeName } from './type-of';
 import typeOf from './type-of';
-import { Comparable } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 
 const TYPE_ORDER: Record<TypeName, number> = {
@@ -104,11 +103,11 @@ export default function compare<T>(v: T, w: T): Compare {
   let type1 = typeOf(v);
   let type2 = typeOf(w);
 
-  if (type1 === 'instance' && isComparable(v) && v.constructor.compare) {
+  if (type1 === 'instance' && hasConstructorCompare(v)) {
     return v.constructor.compare(v, w);
   }
 
-  if (type2 === 'instance' && isComparable(w) && w.constructor.compare) {
+  if (type2 === 'instance' && hasConstructorCompare(w)) {
     // SAFETY: Multiplying by a negative just changes the sign
     return (w.constructor.compare(w, v) * -1) as Compare;
   }
@@ -149,7 +148,7 @@ export default function compare<T>(v: T, w: T): Compare {
       return spaceship(vLen, wLen);
     }
     case 'instance':
-      if (isComparable(v) && v.compare) {
+      if (hasInstanceCompare(v)) {
         return v.compare(v, w);
       }
       return 0;
@@ -163,10 +162,27 @@ export default function compare<T>(v: T, w: T): Compare {
   }
 }
 
-interface ComparableConstructor {
-  constructor: Comparable;
+interface WithConstructorCompare {
+  constructor: { compare: (a: unknown, b: unknown) => Compare };
 }
 
-function isComparable(value: unknown): value is Comparable & ComparableConstructor {
-  return Comparable.detect(value);
+interface WithInstanceCompare {
+  compare: (a: unknown, b: unknown) => Compare;
 }
+
+function hasConstructorCompare(value: unknown): value is WithConstructorCompare {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as WithConstructorCompare).constructor?.compare === 'function'
+  );
+}
+
+function hasInstanceCompare(value: unknown): value is WithInstanceCompare {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof (value as WithInstanceCompare).compare === 'function'
+  );
+}
+
