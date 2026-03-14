@@ -28,6 +28,23 @@ class TrackedObjectTest extends RenderTest {
   }
 
   @test
+  'it works when setting a previously missing property via direct template access'() {
+    const obj = trackedObject<Record<PropertyKey, unknown>>();
+
+    const Foo = defineComponent({ obj }, '{{obj.foo}}');
+
+    this.renderComponent(Foo);
+
+    this.assertHTML('');
+
+    obj['foo'] = 2;
+    this.rerender();
+
+    this.assertHTML('2');
+    this.assertStableRerender();
+  }
+
+  @test
   'options.equals: default equals does not dirty on no-op changes'(assert: Assert) {
     const obj = trackedObject({ foo: '123' });
     const step = (x: string) => {
