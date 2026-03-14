@@ -4,7 +4,7 @@
 import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
+import { observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -562,14 +562,6 @@ export default class Mixin {
     if (DEBUG) {
       // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
       this[INIT_FACTORY] = null;
-      /*
-        In debug builds, we seal mixins to help avoid performance pitfalls.
-
-        In IE11 there is a quirk that prevents sealed objects from being added
-        to a WeakMap. Unfortunately, the mixin system currently relies on
-        weak maps in `guidFor`, so we need to prime the guid cache weak map.
-      */
-      guidFor(this);
 
       if (Mixin._disableDebugSeal !== true) {
         Object.seal(this);

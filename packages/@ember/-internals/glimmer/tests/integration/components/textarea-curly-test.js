@@ -16,8 +16,7 @@ class TextAreaRenderingTest extends RenderingTestCase {
   }
 
   triggerEvent(type, options = {}) {
-    let event = document.createEvent('Events');
-    event.initEvent(type, true, true);
+    let event = new Event(type, { bubbles: true, cancelable: true });
     Object.assign(event, options);
 
     this.firstChild.dispatchEvent(event);

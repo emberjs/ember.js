@@ -1,17 +1,15 @@
-import global from './global';
-
 export interface GlobalContext {
   imports: object;
   exports: object;
   lookup: Record<string, unknown>;
 }
 
+const global = globalThis as Record<string, unknown>;
+const Ember = global['Ember'] as Partial<GlobalContext> | undefined;
+
 // legacy imports/exports/lookup stuff (should we keep this??)
-export const context = (function (
-  global: Record<string, unknown>,
-  Ember: Partial<GlobalContext> | undefined
-): GlobalContext {
-  return Ember === undefined
+export const context: GlobalContext =
+  Ember === undefined
     ? { imports: global, exports: global, lookup: global }
     : {
         // import jQuery
@@ -21,7 +19,6 @@ export const context = (function (
         // search for Namespaces
         lookup: Ember.lookup || global,
       };
-})(global, global.Ember);
 
 export function getLookup(): Record<string, unknown> {
   return context.lookup;

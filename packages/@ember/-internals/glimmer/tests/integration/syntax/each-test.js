@@ -96,21 +96,6 @@ class ArrayDelegate {
   }
 }
 
-const makeSet = (() => {
-  // IE11 does not support `new Set(items);`
-  let set = new Set([1, 2, 3]);
-
-  if (set.size === 3) {
-    return (items) => new Set(items);
-  } else {
-    return (items) => {
-      let s = new Set();
-      items.forEach((value) => s.add(value));
-      return s;
-    };
-  }
-})();
-
 class SetDelegate extends ArrayDelegate {
   constructor(set) {
     let array = [];
@@ -158,7 +143,7 @@ class BasicEachTest extends TogglingEachTest {}
 const TRUTHY_CASES = [
   ['hello'],
   emberA(['hello']),
-  makeSet(['hello']),
+  new Set(['hello']),
   new ForEachable(['hello']),
   ArrayProxy.create({ content: ['hello'] }),
   ArrayProxy.create({ content: emberA(['hello']) }),
@@ -173,7 +158,7 @@ const FALSY_CASES = [
   0,
   [],
   emberA([]),
-  makeSet([]),
+  new Set([]),
   new ForEachable([]),
   ArrayProxy.create({ content: [] }),
   ArrayProxy.create({ content: emberA([]) }),
@@ -1039,7 +1024,7 @@ moduleFor(
   'Syntax test: {{#each}} with native Set',
   class extends EachTest {
     createList(items) {
-      let set = makeSet(items);
+      let set = new Set(items);
       return { list: set, delegate: new SetDelegate(set) };
     }
 

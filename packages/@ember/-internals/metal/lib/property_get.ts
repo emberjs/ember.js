@@ -58,15 +58,9 @@ interface MaybeHasIsDestroyed {
   get(obj, "name");
   ```
 
-  If you plan to run on IE8 and older browsers then you should use this
-  method anytime you want to retrieve a property on an object that you don't
-  know for sure is private. (Properties beginning with an underscore '_'
-  are considered private.)
-
-  On all newer browsers, you only need to use this method to retrieve
-  properties if the property might not be defined on the object and you want
-  to respect the `unknownProperty` handler. Otherwise you can ignore this
-  method.
+  You only need to use this method to retrieve properties if the property
+  might not be defined on the object and you want to respect the
+  `unknownProperty` handler. Otherwise you can access the property directly.
 
   Note that if the object itself is `undefined`, this method will throw
   an error.

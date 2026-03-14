@@ -81,22 +81,6 @@ moduleFor(
       createLocation();
     }
 
-    ["@test webkit doesn't fire popstate on page load"](assert) {
-      assert.expect(1);
-
-      HistoryTestLocation.reopen({
-        initState() {
-          this._super(...arguments);
-          // these two should be equal to be able
-          // to successfully detect webkit initial popstate
-          assert.equal(this._previousURL, this.getURL());
-        },
-      });
-
-      createLocation();
-      location.initState();
-    }
-
     ['@test <base> with href sets `baseURL`'](assert) {
       assert.expect(1);
 

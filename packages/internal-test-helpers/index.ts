@@ -57,5 +57,4 @@ export {
   ModuleBasedResolver as ModuleBasedTestResolver,
 } from './lib/test-resolver';
 
-export { isEdge } from './lib/browser-detect';
 export { verifyRegistration } from './lib/registry-check';

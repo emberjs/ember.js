@@ -154,6 +154,11 @@ export default [
         Symbol: true,
         WeakMap: true,
         Event: true,
+        MouseEvent: true,
+        KeyboardEvent: true,
+        DOMRect: true,
+        DOMRectList: true,
+        globalThis: true,
       },
 
       ecmaVersion: 2017,
