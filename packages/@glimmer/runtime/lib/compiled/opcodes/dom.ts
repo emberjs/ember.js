@@ -103,6 +103,9 @@ APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
       name: 'in-element',
       args,
       instance: null,
+      meta: {
+        parentElement: vm.elements().element,
+      },
     });
 
     registerDestructor(block, () => {

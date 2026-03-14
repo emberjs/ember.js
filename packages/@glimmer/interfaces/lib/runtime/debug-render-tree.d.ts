@@ -17,6 +17,7 @@ export interface RenderNode {
   args: CapturedArguments;
   instance: unknown;
   template?: string | undefined;
+  meta?: Record<string, any>;
 }
 
 export interface CapturedRenderNode {
@@ -26,6 +27,7 @@ export interface CapturedRenderNode {
   args: Arguments;
   instance: unknown;
   template: string | null;
+  meta: Record<string, any> | null;
   bounds: null | {
     parentElement: SimpleElement;
     firstNode: SimpleNode;
