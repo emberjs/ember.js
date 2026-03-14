@@ -149,15 +149,29 @@ export const outletHelper = internalHelper(
           // Store the value of the model
           let model = valueForRef(modelRef);
 
+          // The controller for this outlet, used to verify the outletRef
+          // still points to the correct route's data.
+          let outletController = state.controller;
+
           // Create a compute ref which we pass in as the `{{@model}}` reference
           // for the outlet. This ref will update and return the value of the
           // model _until_ the outlet itself changes. Once the outlet changes,
           // dynamic scope also changes, and so the original model ref would not
           // provide the correct updated value. So we stop updating and return
           // the _last_ model value for that outlet.
+          //
+          // We also verify that the outletRef still resolves to this route's
+          // data by comparing controller identity. This handles the case where
+          // a parent outlet is torn down first: the dynamic scope refs now
+          // point to the new route's outlet state, but this outlet's outer
+          // compute ref hasn't re-evaluated yet, so `lastState === state` is
+          // still true. The controller check catches this case.
           named['model'] = createComputeRef(() => {
             if (lastState === state) {
-              model = valueForRef(modelRef);
+              let currentOutlet = valueForRef(outletRef);
+              if (currentOutlet?.render?.controller === outletController) {
+                model = valueForRef(modelRef);
+              }
             }
 
             return model;
