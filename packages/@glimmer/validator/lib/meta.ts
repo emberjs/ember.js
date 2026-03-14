@@ -1,7 +1,8 @@
 import { DEBUG } from '@glimmer/env';
-import type { ConstantTag, UpdatableTag } from '@glimmer/interfaces';
+import type { ConstantTag, Tag, UpdatableTag } from '@glimmer/interfaces';
 
 import type { Indexable } from './utils';
+import type { MonomorphicTagImpl } from './validators';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
@@ -65,8 +66,13 @@ export function tagFor<T extends object>(
 
   if (tag === undefined) {
     tag = createUpdatableTag();
+    (tag as MonomorphicTagImpl).meta = { propertyKey: key, object: obj };
     tags.set(key, tag);
   }
 
   return tag;
+}
+
+export function infoForTag(tag: Tag) {
+  return (tag as MonomorphicTagImpl).meta;
 }
