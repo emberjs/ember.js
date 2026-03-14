@@ -7,6 +7,7 @@ export * from './suites/entry-point';
 export * from './suites/has-block';
 export * from './suites/has-block-params';
 export * from './suites/in-element';
+export * from './suites/in-element-shadow-root';
 export * from './suites/initial-render';
 export * from './suites/scope';
 export * from './suites/shadow-dom';
