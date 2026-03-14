@@ -1,5 +1,5 @@
-const SimpleDOM = require('simple-dom');
-const setupAppTest = require('./helpers/setup-app');
+import SimpleDOM from 'simple-dom';
+import setupAppTest from './helpers/setup-app.js';
 
 function assertHTMLMatches(assert, actualHTML, expectedHTML) {
   assert.ok(actualHTML.match(expectedHTML), actualHTML + ' matches ' + expectedHTML);
