@@ -127,14 +127,18 @@ class TrackedArray<T = unknown> {
       },
 
       set(target, prop, value /*, _receiver */) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-        let isUnchanged = self.#options.equals((target as any)[prop], value);
-        if (isUnchanged) return true;
+        const index = convertToInt(prop);
+
+        // Only apply equals check if the property already exists on the target.
+        // For new properties (e.g. extending array length), always proceed with the set.
+        if (index !== null ? index < target.length : prop in target) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+          let isUnchanged = self.#options.equals((target as any)[prop], value);
+          if (isUnchanged) return true;
+        }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         (target as any)[prop] = value;
-
-        const index = convertToInt(prop);
 
         if (index !== null) {
           self.#dirtyStorageFor(index);

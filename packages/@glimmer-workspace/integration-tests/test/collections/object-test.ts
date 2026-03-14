@@ -147,6 +147,23 @@ class TrackedObjectTest extends RenderTest {
   }
 
   @test
+  'setting a missing property to undefined triggers reactivity for in operator'() {
+    this.assertReactivity(
+      class extends Component {
+        obj = trackedObject<{ foo?: unknown }>();
+
+        get value() {
+          return 'foo' in this.obj;
+        }
+
+        update() {
+          this.obj['foo'] = undefined;
+        }
+      }
+    );
+  }
+
+  @test
   'in operator works'() {
     this.assertReactivity(
       class extends Component {

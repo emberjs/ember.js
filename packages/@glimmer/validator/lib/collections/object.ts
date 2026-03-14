@@ -71,11 +71,13 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
       },
 
       set(target, prop, value) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        let isUnchanged = self.#options.equals(target[prop as keyof ObjectType], value);
+        if (prop in target) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          let isUnchanged = self.#options.equals(target[prop as keyof ObjectType], value);
 
-        if (isUnchanged) {
-          return true;
+          if (isUnchanged) {
+            return true;
+          }
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

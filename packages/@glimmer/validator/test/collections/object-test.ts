@@ -27,6 +27,19 @@ module('@glimmer/validator: trackedObject', function () {
     assert.strictEqual(original.foo, 123, 'original object was not updated');
   });
 
+  test('setting a new property to undefined adds the property', (assert) => {
+    let obj = trackedObject<{ foo?: unknown }>();
+
+    assert.false('foo' in obj, 'foo does not exist initially');
+    assert.deepEqual(Object.keys(obj), [], 'no keys initially');
+
+    obj.foo = undefined;
+
+    assert.true('foo' in obj, 'foo exists after setting to undefined');
+    assert.deepEqual(Object.keys(obj), ['foo'], 'foo shows up in keys');
+    assert.strictEqual(obj.foo, undefined, 'value is undefined');
+  });
+
   test('preserves getters', (assert) => {
     let obj = trackedObject({
       foo: 123,

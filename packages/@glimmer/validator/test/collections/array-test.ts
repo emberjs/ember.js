@@ -25,6 +25,17 @@ module('@glimmer/validator: trackedArray()', () => {
     assert.strictEqual(arr[0], 123);
   });
 
+  test('setting beyond bounds with undefined extends the array', (assert) => {
+    let arr = trackedArray([1, 2, 3]);
+
+    assert.strictEqual(arr.length, 3);
+
+    arr[5] = undefined as any;
+
+    assert.strictEqual(arr.length, 6, 'length is extended');
+    assert.strictEqual(arr[5], undefined, 'value at index 5 is undefined');
+  });
+
   test('Can set length on array directly', (assert) => {
     let arr = trackedArray();
     arr.length = 123;
