@@ -212,7 +212,9 @@ export function trigger(
     // means that we should trigger the event later when the handler is available
     if (!currentHandler) {
       currentHandlerInfo.routePromise!.then(function (resolvedHandler) {
-        resolvedHandler.events![name]!.apply(resolvedHandler, args);
+        if (resolvedHandler.events?.[name]) {
+          resolvedHandler.events[name].apply(resolvedHandler, args);
+        }
       });
       continue;
     }

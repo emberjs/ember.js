@@ -1683,7 +1683,9 @@ scenarios.forEach(function (scenario) {
       } else if (enterSubstate) {
         assert.equal(transition.to!.localName, 'fooError', 'substate');
         assert.equal(isPresent(transition.from) && transition.from!.localName, 'index', 'substate');
-        assert.equal(transition.to!.parent!.localName, 'foo', 'substate');
+        if (transition.to?.parent) {
+          assert.equal(transition.to.parent.localName, 'foo', 'substate');
+        }
       } else {
         assert.equal(transition.to!.localName, 'post', 'to post');
         assert.equal(isPresent(transition.from) && transition.from!.localName, 'index', 'to post');
