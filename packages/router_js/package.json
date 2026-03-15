@@ -4,6 +4,7 @@
   "description": "A lightweight JavaScript library is built on top of route-recognizer and rsvp.js to provide an API for handling routes",
   "license": "MIT",
   "author": "Tilde, Inc.",
+  "private": true,
   "exports": {
     ".": "./index.ts"
   },
