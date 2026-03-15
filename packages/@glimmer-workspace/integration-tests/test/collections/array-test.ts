@@ -178,6 +178,27 @@ class TrackedArrayTest extends RenderTest {
   }
 
   @test
+  'it works when setting a sparse array 0th index via direct template access'() {
+    const arr = trackedArray<number>([]);
+
+    arr[1] = 1;
+    arr[2] = 2;
+
+    const getFirst = () => arr[0];
+    const Foo = defineComponent({ getFirst }, '{{(getFirst)}}');
+
+    this.renderComponent(Foo);
+
+    this.assertHTML('');
+
+    arr[0] = 42;
+    this.rerender();
+
+    this.assertHTML('42');
+    this.assertStableRerender();
+  }
+
+  @test
   'reading a missing index then setting it triggers reactivity'() {
     this.assertReactivity(
       class extends Component {
