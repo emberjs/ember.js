@@ -34,7 +34,6 @@ export default [
   },
   pluginJs.configs.recommended,
   importPlugin.flatConfigs.errors,
-  importPlugin.flatConfigs.typescript,
   qunitPluginRecommended,
   {
     plugins: {

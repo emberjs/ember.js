@@ -83,7 +83,6 @@
     "ember-router-generator": "^2.0.0",
     "inflection": "^2.0.1",
     "route-recognizer": "^0.3.4",
-    "router_js": "^8.0.5",
     "semver": "^7.5.2",
     "silent-error": "^1.1.1",
     "simple-html-tokenizer": "^0.5.11"
@@ -138,6 +137,7 @@
     "recast": "^0.22.0",
     "resolve.exports": "^2.0.3",
     "rollup": "^4.57.1",
+    "router_js": "workspace:*",
     "rsvp": "^4.8.5",
     "terser": "^5.42.0",
     "testem": "^3.10.1",
