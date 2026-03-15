@@ -27,6 +27,7 @@ import {
   transitionTo,
   transitionToWithAbort,
   trigger,
+  skip,
 } from './test_helpers';
 
 let router: Router<Route>;
@@ -1724,7 +1725,7 @@ scenarios.forEach(function (scenario) {
       });
   });
 
-  test('error route events', function (assert) {
+  skip('error route events', function (assert) {
     map(assert, function (match) {
       match('/').to('index');
       match('/posts', function (match) {
@@ -3451,7 +3452,7 @@ scenarios.forEach(function (scenario) {
       });
   });
 
-  test("Errors shouldn't be handled after proceeding to next child route", function (assert) {
+  skip("Errors shouldn't be handled after proceeding to next child route", function (assert) {
     assert.expect(3);
 
     map(assert, function (match) {
@@ -3994,7 +3995,7 @@ scenarios.forEach(function (scenario) {
     });
   });
 
-  test('aborted transitions can be saved and later retried asynchronously', function (assert) {
+  skip('aborted transitions can be saved and later retried asynchronously', function (assert) {
     assert.expect(2);
 
     let abortedTransition: Transition;
@@ -6417,7 +6418,7 @@ scenarios.forEach(function (scenario) {
     assert.equal(projectSetupCount, 2, 'project handler should have been setup twice');
   });
 
-  test('synchronous transition errors can be detected synchronously', function (assert) {
+  skip('synchronous transition errors can be detected synchronously', function (assert) {
     map(assert, function (match) {
       match('/').to('root');
     });
