@@ -11,8 +11,6 @@ import type {
   ResettableBlock,
   Scope,
   SimpleComment,
-  SimpleElement,
-  SimpleNode,
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
@@ -204,9 +202,6 @@ export class ListBlockOpcode extends BlockOpcode {
   private opcodeMap = new Map<unknown, ListItemOpcode>();
   private marker: SimpleComment | null = null;
   private lastIterator: OpaqueIterator;
-  // DocumentFragment for batching multiple insertions into a single DOM operation.
-  // Typed as SimpleElement to satisfy the TreeBuilder API; at runtime this is a DocumentFragment.
-  private _batchFragment: SimpleElement | null = null;
 
   declare protected readonly bounds: AppendingBlockList;
 
@@ -258,21 +253,6 @@ export class ListBlockOpcode extends BlockOpcode {
     let seenIndex = 0;
 
     this.children = this.bounds.boundList = [];
-
-    // Enable DocumentFragment batching when we're inserting into an empty list
-    // (all items are new). This batches all DOM insertions into a single
-    // insertBefore call instead of one per row.
-    let batchMode = children.length === 0 && itemMap.size === 0;
-    let parent = this.bounds.parentElement();
-    if (batchMode) {
-      // Create a DocumentFragment to collect all new items
-      let doc = parent.ownerDocument;
-      if (doc) {
-        this._batchFragment = doc.createDocumentFragment() as unknown as SimpleElement;
-      } else {
-        batchMode = false;
-      }
-    }
 
     while (true) {
       let item = iterator.next();
@@ -332,13 +312,6 @@ export class ListBlockOpcode extends BlockOpcode {
       }
     }
 
-    // Flush the DocumentFragment batch if we were in batch mode
-    if (batchMode && this._batchFragment) {
-      let nextSibling = this.marker;
-      parent.insertBefore(this._batchFragment as unknown as SimpleNode, nextSibling);
-      this._batchFragment = null;
-    }
-
     for (const opcode of children) {
       if (!opcode.retained) {
         this.deleteItem(opcode);
@@ -380,13 +353,9 @@ export class ListBlockOpcode extends BlockOpcode {
     let { key } = item;
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
-    // Use DocumentFragment for batched inserts when we have a pending batch
-    let element = this._batchFragment ?? bounds.parentElement();
-    let sibling = this._batchFragment ? null : nextSibling;
-
     let elementStack = NewTreeBuilder.forInitialRender(env, {
-      element,
-      nextSibling: sibling,
+      element: bounds.parentElement(),
+      nextSibling,
     });
 
     let vm = state.evaluate(elementStack);
