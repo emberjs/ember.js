@@ -16,7 +16,7 @@ import type {
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
 import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
-import { expect, unwrap } from '@glimmer/debug-util';
+import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference';
@@ -307,6 +307,7 @@ export class ListBlockOpcode extends BlockOpcode {
           // the position of the item's opcode, and determine if they are all
           // retained.
           for (let i = currentOpcodeIndex + 1; i < seenIndex; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
             if (!children[i]!.retained) {
               seenUnretained = true;
               break;
@@ -341,6 +342,7 @@ export class ListBlockOpcode extends BlockOpcode {
     // when clearing a list or replacing it entirely.
     let anyRetained = false;
     for (let i = 0; i < children.length; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
       if (children[i]!.retained) {
         anyRetained = true;
         break;
@@ -349,10 +351,13 @@ export class ListBlockOpcode extends BlockOpcode {
 
     if (!anyRetained && children.length > 0) {
       // Bulk destroy and clear: destroy all opcodes, then clear DOM in one pass
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length > 0 checked above
       let firstNode = children[0]!.firstNode();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length > 0 checked above
       let lastNode = children[children.length - 1]!.lastNode();
 
       for (let i = 0; i < children.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
         let opcode = children[i]!;
         destroy(opcode);
         this.opcodeMap.delete(opcode.key);
@@ -365,7 +370,7 @@ export class ListBlockOpcode extends BlockOpcode {
         parent.textContent = '';
       } else {
         // Partial clear - walk and remove
-        let current = firstNode as SimpleNode;
+        let current = firstNode;
         while (true) {
           let next = current.nextSibling;
           parent.removeChild(current);
@@ -375,6 +380,7 @@ export class ListBlockOpcode extends BlockOpcode {
       }
     } else {
       for (let i = 0; i < children.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
         let opcode = children[i]!;
         if (!opcode.retained) {
           this.deleteItem(opcode);
