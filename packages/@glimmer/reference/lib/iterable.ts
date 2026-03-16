@@ -74,38 +74,25 @@ function makeKeyFor(key: string) {
 }
 
 class WeakMapWithPrimitives<T> {
-  private _weakMap?: WeakMap<object, T>;
-  private _primitiveMap?: Map<unknown, T>;
-
-  private get weakMap() {
-    if (this._weakMap === undefined) {
-      this._weakMap = new WeakMap();
-    }
-
-    return this._weakMap;
-  }
-
-  private get primitiveMap() {
-    if (this._primitiveMap === undefined) {
-      this._primitiveMap = new Map();
-    }
-
-    return this._primitiveMap;
-  }
+  // Eagerly initialize maps to avoid getter overhead on every access.
+  // These are short-lived (one per iteration pass), so the allocation
+  // cost is negligible compared to the per-item getter overhead.
+  private _weakMap = new WeakMap<object, T>();
+  private _primitiveMap = new Map<unknown, T>();
 
   set(key: unknown, value: T) {
     if (isIndexable(key)) {
-      this.weakMap.set(key, value);
+      this._weakMap.set(key, value);
     } else {
-      this.primitiveMap.set(key, value);
+      this._primitiveMap.set(key, value);
     }
   }
 
   get(key: unknown): T | undefined {
     if (isIndexable(key)) {
-      return this.weakMap.get(key);
+      return this._weakMap.get(key);
     } else {
-      return this.primitiveMap.get(key);
+      return this._primitiveMap.get(key);
     }
   }
 }
@@ -167,10 +154,18 @@ export function createIteratorRef(listRef: Reference, key: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let iterable = valueForRef(listRef) as { [Symbol.iterator]: any } | null | false;
 
+    // makeKeyFor must be called per-evaluation because uniqueKeyFor tracks
+    // seen keys within a single iteration pass via a fresh `seen` map.
     let keyFor = makeKeyFor(key);
 
     if (Array.isArray(iterable)) {
-      return new ArrayIterator(iterable, keyFor);
+      // When iterating a TrackedArray (Proxy), each index access goes through
+      // the proxy trap: convertToInt + tag lookup + consumeTag for every element.
+      // By calling .slice(), we consume the collection tag once via the proxy's
+      // ARRAY_GETTER_METHODS path, then iterate a plain array with zero proxy overhead.
+      // For 5000 items, this eliminates ~5000 proxy trap invocations.
+      let plainArray = iterable.length > 0 ? iterable.slice() : (EMPTY_ARRAY as unknown[]);
+      return new ArrayIterator(plainArray, keyFor);
     }
 
     let maybeIterator = toIterator(iterable);
@@ -223,42 +218,39 @@ class IteratorWrapper implements OpaqueIterator {
 }
 
 class ArrayIterator implements OpaqueIterator {
-  private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
   private pos = 0;
+  private started = false;
+  // Reuse a single result object to avoid allocating one per iteration item.
+  // The consumer (ListBlockOpcode.sync) reads key/value/memo immediately,
+  // so reusing is safe.
+  private result: IterationItem<unknown, number> = { key: null, value: null, memo: 0 };
 
   constructor(
     private iterator: unknown[] | readonly unknown[],
     private keyFor: KeyFor
-  ) {
-    if (iterator.length === 0) {
-      this.current = { kind: 'empty' };
-    } else {
-      this.current = { kind: 'first', value: iterator[this.pos] };
-    }
-  }
+  ) {}
 
   isEmpty(): boolean {
-    return this.current.kind === 'empty';
+    return this.iterator.length === 0;
   }
 
   next(): Nullable<IterationItem<unknown, number>> {
     let value: unknown;
 
-    let current = this.current;
-    if (current.kind === 'first') {
-      this.current = { kind: 'progress' };
-      value = current.value;
+    if (!this.started) {
+      this.started = true;
+      value = this.iterator[0];
     } else if (this.pos >= this.iterator.length - 1) {
       return null;
     } else {
       value = this.iterator[++this.pos];
     }
 
-    let { keyFor } = this;
+    let result = this.result;
+    result.key = this.keyFor(value as Dict, this.pos);
+    result.value = value;
+    result.memo = this.pos;
 
-    let key = keyFor(value as Dict, this.pos);
-    let memo = this.pos;
-
-    return { key, value, memo };
+    return result;
   }
 }

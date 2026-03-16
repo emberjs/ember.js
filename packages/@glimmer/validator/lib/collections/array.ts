@@ -39,6 +39,13 @@ const ARRAY_WRITE_THEN_READ_METHODS = new Set<string | symbol>(['fill', 'push', 
 
 function convertToInt(prop: number | string | symbol): number | null {
   if (typeof prop === 'symbol') return null;
+  if (typeof prop === 'number') return prop % 1 === 0 ? prop : null;
+
+  // Fast path: check first char before doing expensive Number() conversion.
+  // Array indices are always non-negative integers, so reject strings that
+  // can't be array indices early.
+  const c = prop.charCodeAt(0);
+  if (c < 48 || c > 57) return null; // not '0'-'9'
 
   const num = Number(prop);
 
@@ -46,6 +53,11 @@ function convertToInt(prop: number | string | symbol): number | null {
 
   return num % 1 === 0 ? num : null;
 }
+
+// Pre-allocated array of storage tags to avoid Map overhead for small indices.
+// Most array accesses are sequential (iteration), so an array lookup is much
+// faster than a Map lookup for numeric indices.
+const INDEX_STORAGE_THRESHOLD = 10000;
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 class TrackedArray<T = unknown> {
@@ -154,21 +166,32 @@ class TrackedArray<T = unknown> {
 
   #collection = createUpdatableTag();
 
-  #storages = new Map<number, ReturnType<typeof createUpdatableTag>>();
+  // Use a flat array instead of Map for index-based storage lookups.
+  // Array index access is significantly faster than Map.get/set for numeric keys,
+  // which matters when iterating thousands of items.
+  #storages: Array<ReturnType<typeof createUpdatableTag> | undefined> = [];
 
   #readStorageFor(index: number) {
-    let storage = this.#storages.get(index);
+    if (index >= INDEX_STORAGE_THRESHOLD) {
+      // For extremely large indices, just use the collection tag
+      consumeTag(this.#collection);
+      return;
+    }
+
+    let storage = this.#storages[index];
 
     if (storage === undefined) {
       storage = createUpdatableTag();
-      this.#storages.set(index, storage);
+      this.#storages[index] = storage;
     }
 
     consumeTag(storage);
   }
 
   #dirtyStorageFor(index: number): void {
-    const storage = this.#storages.get(index);
+    if (index >= INDEX_STORAGE_THRESHOLD) return;
+
+    const storage = this.#storages[index];
 
     if (storage) {
       DIRTY_TAG(storage);
@@ -177,7 +200,7 @@ class TrackedArray<T = unknown> {
 
   #dirtyCollection() {
     DIRTY_TAG(this.#collection);
-    this.#storages.clear();
+    this.#storages.length = 0;
   }
 }
 

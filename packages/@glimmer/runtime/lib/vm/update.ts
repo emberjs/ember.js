@@ -11,6 +11,7 @@ import type {
   ResettableBlock,
   Scope,
   SimpleComment,
+  SimpleNode,
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
@@ -252,7 +253,23 @@ export class ListBlockOpcode extends BlockOpcode {
     let currentOpcodeIndex = 0;
     let seenIndex = 0;
 
-    this.children = this.bounds.boundList = [];
+    let newChildren: ListItemOpcode[] = [];
+    this.children = this.bounds.boundList = newChildren;
+
+    // Enable DocumentFragment batching when we're inserting into an empty list
+    // (all items are new). This batches all DOM insertions into a single
+    // insertBefore call instead of one per row.
+    let batchMode = children.length === 0 && itemMap.size === 0;
+    let parent = this.bounds.parentElement();
+    if (batchMode) {
+      // Create a DocumentFragment to collect all new items
+      let doc = parent.ownerDocument;
+      if (doc) {
+        this._batchFragment = doc.createDocumentFragment() as unknown as SimpleNode;
+      } else {
+        batchMode = false;
+      }
+    }
 
     while (true) {
       let item = iterator.next();
@@ -290,7 +307,7 @@ export class ListBlockOpcode extends BlockOpcode {
           // the position of the item's opcode, and determine if they are all
           // retained.
           for (let i = currentOpcodeIndex + 1; i < seenIndex; i++) {
-            if (!unwrap(children[i]).retained) {
+            if (!children[i]!.retained) {
               seenUnretained = true;
               break;
             }
@@ -312,11 +329,58 @@ export class ListBlockOpcode extends BlockOpcode {
       }
     }
 
-    for (const opcode of children) {
-      if (!opcode.retained) {
-        this.deleteItem(opcode);
+    // Flush the DocumentFragment batch if we were in batch mode
+    if (batchMode && this._batchFragment) {
+      let nextSibling = this.marker;
+      parent.insertBefore(this._batchFragment, nextSibling);
+      this._batchFragment = null;
+    }
+
+    // Fast path: if NO items were retained, we can bulk-clear the DOM
+    // instead of removing each item's bounds individually. This is common
+    // when clearing a list or replacing it entirely.
+    let anyRetained = false;
+    for (let i = 0; i < children.length; i++) {
+      if (children[i]!.retained) {
+        anyRetained = true;
+        break;
+      }
+    }
+
+    if (!anyRetained && children.length > 0) {
+      // Bulk destroy and clear: destroy all opcodes, then clear DOM in one pass
+      let firstNode = children[0]!.firstNode();
+      let lastNode = children[children.length - 1]!.lastNode();
+
+      for (let i = 0; i < children.length; i++) {
+        let opcode = children[i]!;
+        destroy(opcode);
+        this.opcodeMap.delete(opcode.key);
+      }
+
+      // Use the fastest available method to clear DOM nodes
+      let parent = this.parentElement() as SimpleNode & { textContent?: string };
+      if (firstNode === parent.firstChild && lastNode === parent.lastChild && parent.textContent !== undefined) {
+        // We own all children - use textContent='' which is a single atomic DOM op
+        parent.textContent = '';
       } else {
-        opcode.reset();
+        // Partial clear - walk and remove
+        let current = firstNode as SimpleNode;
+        while (true) {
+          let next = current.nextSibling;
+          parent.removeChild(current);
+          if (current === lastNode) break;
+          current = next as SimpleNode;
+        }
+      }
+    } else {
+      for (let i = 0; i < children.length; i++) {
+        let opcode = children[i]!;
+        if (!opcode.retained) {
+          this.deleteItem(opcode);
+        } else {
+          opcode.reset();
+        }
       }
     }
   }
@@ -353,9 +417,13 @@ export class ListBlockOpcode extends BlockOpcode {
     let { key } = item;
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
+    // Use DocumentFragment for batched inserts when we have a pending batch
+    let element = this._batchFragment ?? bounds.parentElement();
+    let sibling = this._batchFragment ? null : nextSibling;
+
     let elementStack = NewTreeBuilder.forInitialRender(env, {
-      element: bounds.parentElement(),
-      nextSibling,
+      element,
+      nextSibling: sibling,
     });
 
     let vm = state.evaluate(elementStack);
@@ -369,6 +437,9 @@ export class ListBlockOpcode extends BlockOpcode {
       associateDestroyableChild(this, opcode);
     });
   }
+
+  // DocumentFragment for batching multiple insertions into a single DOM operation
+  private _batchFragment: SimpleNode | null = null;
 
   private moveItem(
     opcode: ListItemOpcode,
