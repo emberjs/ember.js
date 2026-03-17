@@ -698,7 +698,11 @@ moduleFor(
         // if we transition in this test we will receive failures
         // if the tests are run from a static file
         _doURLTransition() {
-          return RSVP.resolve('');
+          return {
+            followRedirects() {
+              return RSVP.resolve('');
+            },
+          };
         },
       });
 
