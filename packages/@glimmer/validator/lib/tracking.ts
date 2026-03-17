@@ -44,7 +44,10 @@ class Tracker {
   }
 
   reset() {
-    this.tags.length = 0;
+    // Create a new array rather than clearing — combine() passes this.tags
+    // by reference to MonomorphicTagImpl.combine, which stores it as subtag.
+    // Mutating the old array would corrupt previously created combinator tags.
+    this.tags = [];
     this.tagSet.clear();
     this.last = null;
   }

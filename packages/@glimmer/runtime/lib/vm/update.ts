@@ -11,6 +11,7 @@ import type {
   ResettableBlock,
   Scope,
   SimpleComment,
+  SimpleElement,
   SimpleNode,
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
@@ -254,7 +255,8 @@ export class ListBlockOpcode extends BlockOpcode {
     let seenIndex = 0;
 
     let newChildren: ListItemOpcode[] = [];
-    this.children = this.bounds.boundList = newChildren;
+    this.children = newChildren;
+    this.bounds.boundList = newChildren as unknown as AppendingBlock[];
 
     // Enable DocumentFragment batching when we're inserting into an empty list
     // (all items are new). This batches all DOM insertions into a single
@@ -365,7 +367,11 @@ export class ListBlockOpcode extends BlockOpcode {
 
       // Use the fastest available method to clear DOM nodes
       let parent = this.parentElement() as SimpleNode & { textContent?: string };
-      if (firstNode === parent.firstChild && lastNode === parent.lastChild && parent.textContent !== undefined) {
+      if (
+        firstNode === parent.firstChild &&
+        lastNode === parent.lastChild &&
+        parent.textContent !== undefined
+      ) {
         // We own all children - use textContent='' which is a single atomic DOM op
         parent.textContent = '';
       } else {
@@ -424,7 +430,9 @@ export class ListBlockOpcode extends BlockOpcode {
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
     // Use DocumentFragment for batched inserts when we have a pending batch
-    let element = this._batchFragment ?? bounds.parentElement();
+    let element: SimpleElement = this._batchFragment
+      ? (this._batchFragment as unknown as SimpleElement)
+      : bounds.parentElement();
     let sibling = this._batchFragment ? null : nextSibling;
 
     let elementStack = NewTreeBuilder.forInitialRender(env, {

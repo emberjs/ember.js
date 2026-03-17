@@ -147,7 +147,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     if (subtag !== null) {
       if (Array.isArray(subtag)) {
         for (let i = 0; i < subtag.length; i++) {
-          let value = subtag[i]![COMPUTE]();
+          let subtagItem = subtag[i] as Tag;
+          let value = subtagItem[COMPUTE]();
           if (value > revision) revision = value;
         }
       } else {
