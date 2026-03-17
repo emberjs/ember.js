@@ -230,6 +230,17 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { captureRenderTree } from '@ember/debug';
               import Component from '@glimmer/component';
 
+              function flattenTree(nodes) {
+                let result = [];
+                for (let node of nodes) {
+                  result.push(node);
+                  if (node.children) {
+                    result.push(...flattenTree(node.children));
+                  }
+                }
+                return result;
+              }
+
               class HelloWorld extends Component {
                 <template>{{@arg}}</template>
               }
@@ -241,7 +252,8 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   await render(<template><HelloWorld @arg="first" /></template>);
 
                   let tree = captureRenderTree(this.owner);
-                  let names = tree.filter(n => n.type === 'component').map(n => n.name);
+                  let allNodes = flattenTree(tree);
+                  let names = allNodes.filter(n => n.type === 'component').map(n => n.name);
                   assert.true(names.includes('HelloWorld'), 'HelloWorld component name is preserved in the render tree (found: ' + names.join(', ') + ')');
                 });
               });
