@@ -148,7 +148,14 @@ export function precompile(
   let stringified = JSON.stringify(templateJSONObject);
 
   if (usedLocals.length > 0) {
-    const scopeFn = `()=>[${usedLocals.join(',')}]`;
+    const scopeEntries = usedLocals.map((name) => {
+      // Reserved words like "this" can't use shorthand property syntax
+      if (name === 'this') {
+        return `"this":this`;
+      }
+      return name;
+    });
+    const scopeFn = `()=>({${scopeEntries.join(',')}})`;
 
     stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, scopeFn);
   }

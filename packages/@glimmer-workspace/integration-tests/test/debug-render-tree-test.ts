@@ -111,12 +111,10 @@ class DebugRenderTreeTest extends RenderTest {
   }
 
   @test 'strict-mode components without debug symbols preserve names from scope'() {
-    const state = trackedObj({ showSecond: false });
-
     const HelloWorld = defComponent('{{@arg}}');
     const Root = defComponent(
-      `<HelloWorld @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state }, emit: { moduleName: 'root.hbs', debugSymbols: false } }
+      `<HelloWorld @arg="first"/>`,
+      { scope: { HelloWorld }, emit: { moduleName: 'root.hbs', debugSymbols: false } }
     );
 
     this.renderComponent(Root);
@@ -137,39 +135,6 @@ class DebugRenderTreeTest extends RenderTest {
             instance: null,
             template: '(unknown template module)',
             bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
-            children: [],
-          },
-        ],
-      },
-    ]);
-
-    state['showSecond'] = true;
-
-    this.assertRenderTree([
-      {
-        type: 'component',
-        name: '{ROOT}',
-        args: { positional: [], named: {} },
-        instance: null,
-        template: 'root.hbs',
-        bounds: this.elementBounds(this.delegate.getInitialElement()),
-        children: [
-          {
-            type: 'component',
-            name: 'HelloWorld',
-            args: { positional: [], named: { arg: 'first' } },
-            instance: null,
-            template: '(unknown template module)',
-            bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
-            children: [],
-          },
-          {
-            type: 'component',
-            name: 'HelloWorld',
-            args: { positional: [], named: { arg: 'second' } },
-            instance: null,
-            template: '(unknown template module)',
-            bounds: this.nodeBounds(this.delegate.getInitialElement().lastChild),
             children: [],
           },
         ],

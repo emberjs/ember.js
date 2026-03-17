@@ -397,7 +397,7 @@ export interface SerializedTemplateWithLazyBlock {
   id?: Nullable<string>;
   block: SerializedTemplateBlockJSON;
   moduleName: string;
-  scope?: (() => unknown[]) | undefined | null;
+  scope?: (() => Record<string, unknown>) | undefined | null;
   isStrictMode: boolean;
 }
 

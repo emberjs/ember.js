@@ -57,7 +57,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       ...WireFormat.Statement[],
     ];
 
-    assert.deepEqual(wire.scope?.(), [hello]);
+    assert.deepEqual(wire.scope?.(), { hello });
 
     assert.deepEqual(
       componentNameExpr,
@@ -84,7 +84,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       ...WireFormat.Statement[],
     ];
 
-    assert.deepEqual(wire.scope?.(), [f]);
+    assert.deepEqual(wire.scope?.(), { f });
     assert.deepEqual(
       componentNameExpr,
       [SexpOpcodes.GetLexicalSymbol, 0, ['hello']],
@@ -218,7 +218,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       _wire = compile(`{{this.message}}`, ['this'], (source) => eval(source));
     }).call(target);
     let wire = _wire!;
-    assert.deepEqual(wire.scope?.(), [target]);
+    assert.deepEqual(wire.scope?.(), { this: target });
     assert.deepEqual(wire.block[0], [
       [SexpOpcodes.Append, [SexpOpcodes.GetLexicalSymbol, 0, ['message']]],
     ]);
