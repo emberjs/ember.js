@@ -124,45 +124,50 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   [COMPUTE](): Revision {
     let { lastChecked } = this;
 
+    if (lastChecked === $REVISION) {
+      // Fast path: already checked this revision, return cached value.
+      // This is the most common case during a single validation pass.
+      return this.lastValue;
+    }
+
     if (this.isUpdating) {
       if (DEBUG && !allowsCycles(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
 
       this.lastChecked = ++$REVISION;
-    } else if (lastChecked !== $REVISION) {
-      this.isUpdating = true;
-      this.lastChecked = $REVISION;
+      return this.lastValue;
+    }
 
-      try {
-        let { subtag, revision } = this;
+    this.isUpdating = true;
+    this.lastChecked = $REVISION;
 
-        if (subtag !== null) {
-          if (Array.isArray(subtag)) {
-            for (const tag of subtag) {
-              let value = tag[COMPUTE]();
-              revision = Math.max(value, revision);
-            }
-          } else {
-            let subtagValue = subtag[COMPUTE]();
+    let { subtag, revision } = this;
 
-            if (subtagValue === this.subtagBufferCache) {
-              revision = Math.max(revision, this.lastValue);
-            } else {
-              // Clear the temporary buffer cache
-              this.subtagBufferCache = null;
-              revision = Math.max(revision, subtagValue);
-            }
-          }
+    if (subtag !== null) {
+      if (Array.isArray(subtag)) {
+        for (let i = 0; i < subtag.length; i++) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
+          let value = subtag[i]![COMPUTE]();
+          if (value > revision) revision = value;
         }
+      } else {
+        let subtagValue = subtag[COMPUTE]();
 
-        this.lastValue = revision;
-      } finally {
-        this.isUpdating = false;
+        if (subtagValue === this.subtagBufferCache) {
+          if (this.lastValue > revision) revision = this.lastValue;
+        } else {
+          // Clear the temporary buffer cache
+          this.subtagBufferCache = null;
+          if (subtagValue > revision) revision = subtagValue;
+        }
       }
     }
 
-    return this.lastValue;
+    this.lastValue = revision;
+    this.isUpdating = false;
+
+    return revision;
   }
 
   static updateTag(this: void, _tag: UpdatableTag, _subtag: Tag) {

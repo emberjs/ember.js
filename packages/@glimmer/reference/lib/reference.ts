@@ -14,10 +14,11 @@ import { expect } from '@glimmer/debug-util';
 import { getProp, setProp } from '@glimmer/global-context';
 import { isDict } from '@glimmer/util';
 import {
+  beginTrackFrame,
   CONSTANT_TAG,
   consumeTag,
+  endTrackFrame,
   INITIAL,
-  track,
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
@@ -166,16 +167,19 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   let lastValue;
 
   if (tag === null || !validateTag(tag, lastRevision)) {
-    const { compute } = ref;
+    // Inline the tracking frame instead of using track() to avoid creating
+    // a closure on every recomputation. This is the hottest path in the
+    // rendering pipeline — called for every reference in every template.
+    beginTrackFrame(DEBUG && ref.debugLabel);
 
-    const newTag = track(() => {
+    try {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      lastValue = ref.lastValue = compute!();
-    }, DEBUG && ref.debugLabel);
-
-    tag = ref.tag = newTag;
-
-    ref.lastRevision = valueForTag(newTag);
+      lastValue = ref.lastValue = ref.compute!();
+    } finally {
+      const newTag = endTrackFrame();
+      tag = ref.tag = newTag;
+      ref.lastRevision = valueForTag(newTag);
+    }
   } else {
     lastValue = ref.lastValue;
   }
