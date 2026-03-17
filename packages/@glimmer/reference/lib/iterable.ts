@@ -220,10 +220,6 @@ class IteratorWrapper implements OpaqueIterator {
 class ArrayIterator implements OpaqueIterator {
   private pos = 0;
   private started = false;
-  // Reuse a single result object to avoid allocating one per iteration item.
-  // The consumer (ListBlockOpcode.sync) reads key/value/memo immediately,
-  // so reusing is safe.
-  private result: IterationItem<unknown, number> = { key: null, value: null, memo: 0 };
 
   constructor(
     private iterator: unknown[] | readonly unknown[],
@@ -246,11 +242,9 @@ class ArrayIterator implements OpaqueIterator {
       value = this.iterator[++this.pos];
     }
 
-    let result = this.result;
-    result.key = this.keyFor(value as Dict, this.pos);
-    result.value = value;
-    result.memo = this.pos;
+    let key = this.keyFor(value as Dict, this.pos);
+    let memo = this.pos;
 
-    return result;
+    return { key, value, memo };
   }
 }

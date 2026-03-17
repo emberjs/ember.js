@@ -142,32 +142,34 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     this.isUpdating = true;
     this.lastChecked = $REVISION;
 
-    let { subtag, revision } = this;
+    try {
+      let { subtag, revision } = this;
 
-    if (subtag !== null) {
-      if (Array.isArray(subtag)) {
-        for (let i = 0; i < subtag.length; i++) {
-          let subtagItem = subtag[i] as Tag;
-          let value = subtagItem[COMPUTE]();
-          if (value > revision) revision = value;
-        }
-      } else {
-        let subtagValue = subtag[COMPUTE]();
-
-        if (subtagValue === this.subtagBufferCache) {
-          if (this.lastValue > revision) revision = this.lastValue;
+      if (subtag !== null) {
+        if (Array.isArray(subtag)) {
+          for (let i = 0; i < subtag.length; i++) {
+            let subtagItem = subtag[i] as Tag;
+            let value = subtagItem[COMPUTE]();
+            revision = Math.max(value, revision);
+          }
         } else {
-          // Clear the temporary buffer cache
-          this.subtagBufferCache = null;
-          if (subtagValue > revision) revision = subtagValue;
+          let subtagValue = subtag[COMPUTE]();
+
+          if (subtagValue === this.subtagBufferCache) {
+            revision = Math.max(revision, this.lastValue);
+          } else {
+            // Clear the temporary buffer cache
+            this.subtagBufferCache = null;
+            revision = Math.max(revision, subtagValue);
+          }
         }
       }
+
+      this.lastValue = revision;
+      return revision;
+    } finally {
+      this.isUpdating = false;
     }
-
-    this.lastValue = revision;
-    this.isUpdating = false;
-
-    return revision;
   }
 
   static updateTag(this: void, _tag: UpdatableTag, _subtag: Tag) {
