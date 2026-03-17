@@ -132,7 +132,7 @@
     "globals": "^16.0.0",
     "kill-port-process": "^3.2.1",
     "mocha": "^10.2.0",
-    "npm-run-all2": "^6.0.6",
+    "npm-run-all2": "^8.0.0",
     "prettier": "^3.5.3",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
