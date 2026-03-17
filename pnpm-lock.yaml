@@ -70,7 +70,7 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
       semver:
         specifier: ^7.5.2
@@ -395,7 +395,7 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
       rsvp:
         specifier: ^4.8.5
@@ -477,7 +477,7 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/@ember/array:
@@ -742,7 +742,7 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/@ember/enumerable:
@@ -1025,7 +1025,7 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/@ember/runloop:
@@ -2451,7 +2451,7 @@ importers:
         specifier: workspace:*
         version: link:../internal-test-helpers
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
       rsvp:
         specifier: ^4.8.5
@@ -2610,7 +2610,7 @@ importers:
         specifier: workspace:*
         version: link:../internal-test-helpers
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/internal-test-helpers:
@@ -2712,7 +2712,7 @@ importers:
         specifier: workspace:*
         version: link:../ember-template-compiler
       router_js:
-        specifier: ^8.0.5
+        specifier: ^8.0.6
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
       rsvp:
         specifier: ^4.8.5
