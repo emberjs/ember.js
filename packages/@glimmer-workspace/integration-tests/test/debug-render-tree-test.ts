@@ -112,10 +112,10 @@ class DebugRenderTreeTest extends RenderTest {
 
   @test 'strict-mode components without debug symbols preserve names from scope'() {
     const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(
-      `<HelloWorld @arg="first"/>`,
-      { scope: { HelloWorld }, emit: { moduleName: 'root.hbs', debugSymbols: false } }
-    );
+    const Root = defComponent(`<HelloWorld @arg="first"/>`, {
+      scope: { HelloWorld },
+      emit: { moduleName: 'root.hbs', debugSymbols: false },
+    });
 
     this.renderComponent(Root);
 
