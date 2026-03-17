@@ -39,15 +39,14 @@ class Tracker {
     } else if (tags.length === 1) {
       return this.last as Tag;
     } else {
-      return combine(tags);
+      // Slice because MonomorphicTagImpl.combine stores the array by reference
+      // as subtag. Without this, reset() would corrupt the combinator tag.
+      return combine(tags.slice());
     }
   }
 
   reset() {
-    // Create a new array rather than clearing — combine() passes this.tags
-    // by reference to MonomorphicTagImpl.combine, which stores it as subtag.
-    // Mutating the old array would corrupt previously created combinator tags.
-    this.tags = [];
+    this.tags.length = 0;
     this.tagSet.clear();
     this.last = null;
   }
