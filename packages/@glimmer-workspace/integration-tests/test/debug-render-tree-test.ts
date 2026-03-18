@@ -185,9 +185,10 @@ class DebugRenderTreeTest extends RenderTest {
 
     this.assert.ok(componentNode, 'found a component child node');
 
+    // For <@Greeting>, the invocation-site name "Greeting" is used
     this.assert.strictEqual(
       componentNode?.name,
-      'HelloWorld',
+      'Greeting',
       `dynamic <@X> component name (got "${componentNode?.name}")`
     );
   }
