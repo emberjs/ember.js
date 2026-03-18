@@ -186,8 +186,7 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
   if (DEBUG && !isCurriedValue(definition) && !definition.resolvedName && !definition.debugName) {
     let debugLabel = ref.debugLabel;
     if (debugLabel) {
-      // Extract the last segment of the path (e.g. "this.Foo" → "Foo", "Foo" → "Foo")
-      definition.debugName = debugLabel.split('.').pop();
+      definition.debugName = debugLabel;
     }
   }
 
@@ -229,12 +228,7 @@ APPEND_OPCODES.add(VM_RESOLVE_CURRIED_COMPONENT_OP, (vm) => {
   if (DEBUG && definition && !isCurriedValue(definition) && !definition.resolvedName && !definition.debugName) {
     let debugLabel = ref.debugLabel;
     if (debugLabel) {
-      // Extract the component name from the arg path (e.g. "@Greeting" → "Greeting")
-      let name = debugLabel.split('.').pop()!;
-      if (name.startsWith('@')) {
-        name = name.slice(1);
-      }
-      definition.debugName = name;
+      definition.debugName = debugLabel;
     }
   }
 
