@@ -142,6 +142,56 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
+  @test 'dynamic component via <this.dynamicComponent>'() {
+    const HelloWorld = defComponent('{{@arg}}');
+
+    class Root extends GlimmerishComponent {
+      HelloWorld = HelloWorld;
+    }
+
+    const RootDef = defComponent(`<this.HelloWorld @arg="first"/>`, {
+      component: Root,
+      emit: { moduleName: 'root.hbs' },
+    });
+
+    this.renderComponent(RootDef);
+
+    const rootChildren = this.delegate.getCapturedRenderTree()[0]?.children ?? [];
+    const componentNode = rootChildren.find(
+      (n: CapturedRenderNode) => n.type === 'component' && n.name !== '{ROOT}'
+    );
+
+    this.assert.ok(componentNode, 'found a component child node');
+
+    this.assert.strictEqual(
+      componentNode?.name,
+      'HelloWorld',
+      `dynamic <this.X> component name (got "${componentNode?.name}")`
+    );
+  }
+
+  @test 'dynamic component via <@argComponent>'() {
+    const HelloWorld = defComponent('{{@arg}}');
+    const Root = defComponent(`<@Greeting @arg="first"/>`, {
+      emit: { moduleName: 'root.hbs' },
+    });
+
+    this.renderComponent(Root, { Greeting: HelloWorld });
+
+    const rootChildren = this.delegate.getCapturedRenderTree()[0]?.children ?? [];
+    const componentNode = rootChildren.find(
+      (n: CapturedRenderNode) => n.type === 'component' && n.name !== '{ROOT}'
+    );
+
+    this.assert.ok(componentNode, 'found a component child node');
+
+    this.assert.strictEqual(
+      componentNode?.name,
+      'HelloWorld',
+      `dynamic <@X> component name (got "${componentNode?.name}")`
+    );
+  }
+
   @test 'strict-mode modifiers'() {
     const state = trackedObj({ showSecond: false });
 
