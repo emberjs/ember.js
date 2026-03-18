@@ -11,6 +11,7 @@ import type {
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
 import type { EmberishCurlyComponent } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
+import { DEBUG } from '@glimmer/env';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import { assign } from '@glimmer/util';
@@ -142,7 +143,7 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
-  @test 'dynamic component via <this.dynamicComponent>'() {
+  @test({ skip: !DEBUG }) 'dynamic component via <this.dynamicComponent>'() {
     const HelloWorld = defComponent('{{@arg}}');
 
     class Root extends GlimmerishComponent {
@@ -170,7 +171,7 @@ class DebugRenderTreeTest extends RenderTest {
     );
   }
 
-  @test 'dynamic component via <@argComponent>'() {
+  @test({ skip: !DEBUG }) 'dynamic component via <@argComponent>'() {
     const HelloWorld = defComponent('{{@arg}}');
     const Root = defComponent(`<@Greeting @arg="first"/>`, {
       emit: { moduleName: 'root.hbs' },
