@@ -203,6 +203,15 @@ if (DEBUG) {
 
     if (!transaction) return;
 
+    // Allow get/set/get (lazy initialization) within the same tracking frame.
+    // If the tag was consumed in the current transaction, un-consume it so that
+    // a subsequent read can re-consume it with the updated value.
+    let currentTransaction = TRANSACTION_STACK[TRANSACTION_STACK.length - 1];
+    if (transaction === currentTransaction) {
+      CONSUMED_TAGS.delete(tag);
+      return;
+    }
+
     // This hack makes the assertion message nicer, we can cut off the first
     // few lines of the stack trace and let users know where the actual error
     // occurred.

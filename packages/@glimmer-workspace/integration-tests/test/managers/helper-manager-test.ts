@@ -352,19 +352,19 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('hello');
   }
 
-  @test({ skip: !DEBUG }) 'debug name is used for backtracking message'(assert: Assert) {
+  @test({ skip: !DEBUG }) 'allows get/set within the same tracking frame (lazy initialization)'() {
     class Hello extends TestHelper {
       @tracked foo = 123;
 
       value() {
         consume(this.foo);
         this.foo = 456;
+        return this.foo;
       }
     }
 
-    assert.throws(() => {
-      this.renderComponent(defineComponent({ hello: Hello }, '{{hello}}'));
-    }, /You attempted to update `foo` on/u);
+    this.renderComponent(defineComponent({ hello: Hello }, '{{hello}}'));
+    this.assertHTML('456');
   }
 
   @test({ skip: !DEBUG }) 'asserts against using both `hasValue` and `hasScheduledEffect`'(
@@ -451,21 +451,18 @@ class HelperManagerTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG })
-  'custom helpers gives helpful assertion when reading then mutating a tracked value within constructor'(
-    assert: Assert
-  ) {
+  'custom helpers allows get/set/get (lazy initialization) within constructor'() {
     class Hello extends TestHelper {
-      @tracked foo = 123;
+      @tracked foo: number | undefined;
 
       constructor(owner: Owner, args: Arguments) {
         super(owner, args);
 
-        // first read the tracked property
-
-        consume(this.foo);
-
-        // then attempt to update the tracked property
-        this.foo = 456;
+        // get/set/get pattern (lazy initialization)
+        let val = this.foo;
+        if (val === undefined) {
+          this.foo = 456;
+        }
       }
 
       value() {
@@ -473,31 +470,27 @@ class HelperManagerTest extends RenderTest {
       }
     }
 
-    assert.throws(() => {
-      this.renderComponent(defineComponent({ hello: Hello }, '{{hello}}'));
-    }, /You attempted to update `foo` on /u);
+    this.renderComponent(defineComponent({ hello: Hello }, '{{hello}}'));
+    this.assertHTML('456');
   }
 
   @test({ skip: !DEBUG })
-  'custom helpers gives helpful assertion when reading then mutating a tracked value within value'(
-    assert: Assert
-  ) {
+  'custom helpers allows get/set/get (lazy initialization) within value'() {
     class Hello extends TestHelper {
-      @tracked foo = 123;
+      @tracked foo: number | undefined;
 
       value() {
-        // first read the tracked property
-
-        consume(this.foo);
-
-        // then attempt to update the tracked property
-        this.foo = 456;
+        // get/set/get pattern (lazy initialization)
+        let val = this.foo;
+        if (val === undefined) {
+          this.foo = 456;
+        }
+        return this.foo;
       }
     }
 
-    assert.throws(() => {
-      this.renderComponent(defineComponent({ hello: Hello }, '{{hello}}'));
-    }, /You attempted to update `foo` on /u);
+    this.renderComponent(defineComponent({ hello: Hello }, '{{hello}}'));
+    this.assertHTML('456');
   }
 }
 

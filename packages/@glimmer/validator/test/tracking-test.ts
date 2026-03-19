@@ -486,7 +486,34 @@ module('@glimmer/validator: tracking', () => {
     });
 
     if (DEBUG) {
-      test('it errors when attempting to update a value already consumed in the same transaction', (assert) => {
+      test('it allows get/set/get (lazy initialization) within the same tracking frame', (assert) => {
+        class Foo {
+          foo = 123;
+          bar = 456;
+        }
+
+        let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
+          return this.bar;
+        });
+
+        let foo = new Foo();
+
+        let result: number | undefined;
+
+        // get/set/get within the same tracking frame should not throw
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        debug.runInTrackingTransaction!(() => {
+          track(() => {
+            getter(foo);
+            setter(foo, 789);
+            result = getter(foo);
+          });
+        });
+
+        assert.strictEqual(result, 789, 'get after set returns the updated value');
+      });
+
+      test('it still errors when updating a value consumed in a previous tracking frame', (assert) => {
         class Foo {
           foo = 123;
           bar = 456;
@@ -503,6 +530,9 @@ module('@glimmer/validator: tracking', () => {
           debug.runInTrackingTransaction!(() => {
             track(() => {
               getter(foo);
+            });
+
+            track(() => {
               setter(foo, 789);
             });
           });
@@ -513,18 +543,19 @@ module('@glimmer/validator: tracking', () => {
 
   if (DEBUG) {
     module('debug', () => {
-      test('it errors when attempting to update a value that has already been consumed in the same transaction', (assert) => {
+      test('it allows consume/dirty/consume (lazy initialization) within the same tracking frame', (assert) => {
+        assert.expect(0);
         let tag = createTag();
 
-        assert.throws(() => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-          debug.runInTrackingTransaction!(() => {
-            track(() => {
-              consumeTag(tag);
-              dirtyTag(tag);
-            });
+        // consume/dirty within the same frame should not throw (supports get/set/get pattern)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        debug.runInTrackingTransaction!(() => {
+          track(() => {
+            consumeTag(tag);
+            dirtyTag(tag);
+            consumeTag(tag);
           });
-        }, /Error: Assertion Failed: You attempted to update `undefined`/u);
+        });
       });
 
       test('it throws errors across track frames within the same debug transaction', (assert) => {
