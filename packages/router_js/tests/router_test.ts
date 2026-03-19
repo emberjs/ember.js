@@ -27,7 +27,6 @@ import {
   transitionTo,
   transitionToWithAbort,
   trigger,
-  skip,
 } from './test_helpers';
 
 let router: Router<Route>;
@@ -1725,7 +1724,7 @@ scenarios.forEach(function (scenario) {
       });
   });
 
-  skip('error route events', function (assert) {
+  test('error route events', function (assert) {
     map(assert, function (match) {
       match('/').to('index');
       match('/posts', function (match) {
@@ -1822,7 +1821,7 @@ scenarios.forEach(function (scenario) {
       }
     };
 
-    router
+    const transition = router
       .transitionTo('/')
       .then(() => {
         return router.transitionTo('/posts/1');
@@ -1835,6 +1834,8 @@ scenarios.forEach(function (scenario) {
         assert.equal(enteredWillChange, 4);
         assert.equal(enteredDidChange, 2);
       });
+
+    assert.rejects(transition);
   });
 
   test("when transitioning to a new parent and child state, the parent's context should be available to the child's model", function (assert) {
@@ -3452,8 +3453,8 @@ scenarios.forEach(function (scenario) {
       });
   });
 
-  skip("Errors shouldn't be handled after proceeding to next child route", function (assert) {
-    assert.expect(3);
+  test("Errors shouldn't be handled after proceeding to next child route", function (assert) {
+    assert.expect(4);
 
     map(assert, function (match) {
       match('/parent').to('parent', function (match) {
@@ -3466,7 +3467,7 @@ scenarios.forEach(function (scenario) {
       articles: createHandler('articles', {
         beforeModel: function () {
           assert.ok(true, 'articles beforeModel was entered');
-          return reject('blorg');
+          return Promise.reject('blorg in beforeModel in articles');
         },
         events: {
           error: function () {
@@ -3491,7 +3492,8 @@ scenarios.forEach(function (scenario) {
       }),
     };
 
-    router.handleURL('/parent/articles');
+    let transition = router.handleURL('/parent/articles');
+    assert.rejects(transition as unknown as Promise<any>);
   });
 
   test("Error handling shouldn't trigger for transitions that are already aborted", function (assert) {
@@ -3995,7 +3997,7 @@ scenarios.forEach(function (scenario) {
     });
   });
 
-  skip('aborted transitions can be saved and later retried asynchronously', function (assert) {
+  test('aborted transitions can be saved and later retried asynchronously', function (assert) {
     assert.expect(2);
 
     let abortedTransition: Transition;
@@ -4006,7 +4008,9 @@ scenarios.forEach(function (scenario) {
           willTransition: function (transition: Transition) {
             if (shouldPrevent) {
               abortedTransition = transition.abort();
-              router.intermediateTransitionTo('loading');
+
+              const t = router.intermediateTransitionTo('loading');
+              assert.rejects(t as unknown as Promise<any>);
             }
           },
         },
@@ -6418,7 +6422,7 @@ scenarios.forEach(function (scenario) {
     assert.equal(projectSetupCount, 2, 'project handler should have been setup twice');
   });
 
-  skip('synchronous transition errors can be detected synchronously', function (assert) {
+  test('synchronous transition errors can be detected synchronously', function (assert) {
     map(assert, function (match) {
       match('/').to('root');
     });
@@ -6427,6 +6431,9 @@ scenarios.forEach(function (scenario) {
       throw new Error('boom!');
     };
 
-    assert.equal((transitionTo(router, '/').error as Error).message, 'boom!');
+    const transition = transitionTo(router, '/');
+
+    assert.rejects(transition as unknown as Promise<any>);
+    assert.equal((transition.error as Error).message, 'boom!');
   });
 });
