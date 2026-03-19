@@ -150,17 +150,19 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
           for (let i = 0; i < subtag.length; i++) {
             let subtagItem = subtag[i] as Tag;
             let value = subtagItem[COMPUTE]();
-            revision = Math.max(value, revision);
+            // Use > for the common case; NaN !== NaN handles volatile tags
+            if (value > revision || value !== value) revision = value;
           }
         } else {
           let subtagValue = subtag[COMPUTE]();
 
           if (subtagValue === this.subtagBufferCache) {
-            revision = Math.max(revision, this.lastValue);
+            let lv = this.lastValue;
+            if (lv > revision || lv !== lv) revision = lv;
           } else {
             // Clear the temporary buffer cache
             this.subtagBufferCache = null;
-            revision = Math.max(revision, subtagValue);
+            if (subtagValue > revision || subtagValue !== subtagValue) revision = subtagValue;
           }
         }
       }

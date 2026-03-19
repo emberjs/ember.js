@@ -90,6 +90,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   capture(items: number): unknown[] {
+    if (items === 0) return [];
     let end = this.registers[$sp] + 1;
     let start = end - items;
     return this.stack.slice(start, end);

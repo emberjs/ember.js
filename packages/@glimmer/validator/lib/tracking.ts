@@ -39,14 +39,25 @@ class Tracker {
     } else if (tags.length === 1) {
       return this.last as Tag;
     } else {
-      // Slice because MonomorphicTagImpl.combine stores the array by reference
-      // as subtag. Without this, reset() would corrupt the combinator tag.
-      return combine(tags.slice());
+      // Hand off the tags array to combine() which stores it by reference.
+      // We'll allocate a fresh array in reset() instead of copying here.
+      let result = combine(tags);
+      this._handedOff = true;
+      return result;
     }
   }
 
+  private _handedOff = false;
+
   reset() {
-    this.tags.length = 0;
+    if (this._handedOff) {
+      // The tags array was handed to a combinator tag — must allocate fresh.
+      this.tags = [];
+      this._handedOff = false;
+    } else {
+      // Safe to clear in-place — no external reference.
+      this.tags.length = 0;
+    }
     this.tagSet.clear();
     this.last = null;
   }
@@ -86,7 +97,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
 }
 
 export function endTrackFrame(): Tag {
-  let current = CURRENT_TRACKER;
+  let current = CURRENT_TRACKER as Tracker;
 
   if (DEBUG) {
     if (OPEN_TRACK_FRAMES.length === 0) {
@@ -98,12 +109,12 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  let tag = unwrap(current).combine();
+  let tag = current.combine();
 
   // Return tracker to pool for reuse
   if (TRACKER_POOL.length < MAX_POOL_SIZE) {
-    unwrap(current).reset();
-    TRACKER_POOL.push(current as Tracker);
+    current.reset();
+    TRACKER_POOL.push(current);
   }
 
   return tag;

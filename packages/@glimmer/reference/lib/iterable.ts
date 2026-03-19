@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import type { Dict, Nullable } from '@glimmer/interfaces';
 import { getPath, toIterator } from '@glimmer/global-context';
 import { EMPTY_ARRAY, isIndexable } from '@glimmer/util';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { createTag } from '@glimmer/validator';
 
 import type { Reference, ReferenceEnvironment } from './reference';
 
@@ -179,21 +179,13 @@ export function createIteratorRef(listRef: Reference, key: string) {
 }
 
 export function createIteratorItemRef(_value: unknown) {
-  let value = _value;
-  let tag = createTag();
-
-  return createComputeRef(
-    () => {
-      consumeTag(tag);
-      return value;
-    },
-    (newValue) => {
-      if (value !== newValue) {
-        value = newValue;
-        dirtyTag(tag);
-      }
-    }
-  );
+  let ref = createComputeRef(null as never, null) as Reference & {
+    _iterTag: unknown;
+    lastValue: unknown;
+  };
+  ref._iterTag = createTag();
+  ref.lastValue = _value;
+  return ref as Reference;
 }
 
 class IteratorWrapper implements OpaqueIterator {

@@ -339,60 +339,13 @@ export class ListBlockOpcode extends BlockOpcode {
       this._batchFragment = null;
     }
 
-    // Fast path: if NO items were retained, we can bulk-clear the DOM
-    // instead of removing each item's bounds individually. This is common
-    // when clearing a list or replacing it entirely.
-    let anyRetained = false;
     for (let i = 0; i < children.length; i++) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
-      if (children[i]!.retained) {
-        anyRetained = true;
-        break;
-      }
-    }
-
-    if (!anyRetained && children.length > 0) {
-      // Bulk destroy and clear: destroy all opcodes, then clear DOM in one pass
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length > 0 checked above
-      let firstNode = children[0]!.firstNode();
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length > 0 checked above
-      let lastNode = children[children.length - 1]!.lastNode();
-
-      for (let i = 0; i < children.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
-        let opcode = children[i]!;
-        destroy(opcode);
-        this.opcodeMap.delete(opcode.key);
-      }
-
-      // Use the fastest available method to clear DOM nodes
-      let parent = this.parentElement() as SimpleNode & { textContent?: string };
-      if (
-        firstNode === parent.firstChild &&
-        lastNode === parent.lastChild &&
-        parent.textContent !== undefined
-      ) {
-        // We own all children - use textContent='' which is a single atomic DOM op
-        parent.textContent = '';
+      let opcode = children[i]!;
+      if (!opcode.retained) {
+        this.deleteItem(opcode);
       } else {
-        // Partial clear - walk and remove
-        let current = firstNode;
-        while (true) {
-          let next = current.nextSibling;
-          parent.removeChild(current);
-          if (current === lastNode) break;
-          current = next as SimpleNode;
-        }
-      }
-    } else {
-      for (let i = 0; i < children.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- index is within bounds
-        let opcode = children[i]!;
-        if (!opcode.retained) {
-          this.deleteItem(opcode);
-        } else {
-          opcode.reset();
-        }
+        opcode.reset();
       }
     }
   }
