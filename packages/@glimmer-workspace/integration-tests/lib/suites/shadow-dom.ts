@@ -1,7 +1,9 @@
 import { castToBrowser } from '@glimmer/debug-util';
 
+import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
+import { tracked } from '../test-helpers/tracked';
 
 export class ShadowDOMSuite extends RenderTest {
   static suiteName = 'Shadow DOM';
@@ -73,6 +75,139 @@ export class ShadowDOMSuite extends RenderTest {
       shadowHost?.querySelector('template'),
       null,
       '<template> element is not in the regular DOM'
+    );
+  }
+
+  @test
+  '<template shadowrootmode="open"> as component root renders into the parent element shadow root'() {
+    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
+      this.assert.ok(true, 'Shadow DOM not supported, skipping');
+      return;
+    }
+
+    this.registerComponent(
+      'TemplateOnly',
+      'ShadowComp',
+      '<template shadowrootmode="open"><p>{{@message}}</p></template>'
+    );
+
+    // When the component root is <template shadowrootmode="open">, the shadow root is
+    // attached to the element that immediately contains the component (in this case, the
+    // <div class="host">).
+    this.render('<div class="host"><ShadowComp @message={{this.msg}} /></div>', {
+      msg: 'initial',
+    });
+
+    const rootEl = castToBrowser(this.element, 'HTML');
+    const host = rootEl.querySelector('.host') as HTMLElement | null;
+
+    this.assert.ok(host !== null, 'host element exists');
+    this.assert.ok(host?.shadowRoot !== null, 'shadow root is attached to the host element');
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      'initial',
+      'initial content rendered into shadow root'
+    );
+
+    this.assertStableRerender();
+
+    // Rerender with new arg — shadow root content should update
+    this.rerender({ msg: 'updated' });
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      'updated',
+      'shadow root content updated after rerender'
+    );
+  }
+
+  @test
+  '<template shadowrootmode="open"> as component root re-renders correctly after full component recreation'() {
+    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
+      this.assert.ok(true, 'Shadow DOM not supported, skipping');
+      return;
+    }
+
+    this.registerComponent(
+      'TemplateOnly',
+      'ShadowComp',
+      '<template shadowrootmode="open"><span>{{@label}}</span></template>'
+    );
+
+    // Wrap in a conditional so we can force component destruction + recreation
+    this.render(
+      '{{#if this.show}}<div class="host"><ShadowComp @label={{this.label}} /></div>{{/if}}',
+      { show: true, label: 'first' }
+    );
+
+    const rootEl = castToBrowser(this.element, 'HTML');
+    const getHost = () => rootEl.querySelector('.host') as HTMLElement | null;
+
+    this.assert.ok(getHost()?.shadowRoot !== null, 'shadow root attached on first render');
+    this.assert.strictEqual(
+      getHost()?.shadowRoot?.querySelector('span')?.textContent,
+      'first',
+      'first render content correct'
+    );
+
+    // Remove the component from the DOM
+    this.rerender({ show: false, label: 'first' });
+    this.assert.strictEqual(getHost(), null, 'host element removed from DOM');
+
+    // Re-insert the component — the shadow root is on a fresh <div class="host">,
+    // so attachShadow should succeed on the new element
+    this.rerender({ show: true, label: 'second' });
+    this.assert.ok(getHost()?.shadowRoot !== null, 'shadow root attached on second render');
+    this.assert.strictEqual(
+      getHost()?.shadowRoot?.querySelector('span')?.textContent,
+      'second',
+      're-rendered content correct in shadow root'
+    );
+  }
+
+  @test
+  '<template shadowrootmode="open"> as component root with tracked state re-renders into same shadow root'() {
+    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
+      this.assert.ok(true, 'Shadow DOM not supported, skipping');
+      return;
+    }
+
+    class Counter extends GlimmerishComponent {
+      @tracked count = 0;
+    }
+
+    this.registerComponent(
+      'Glimmer',
+      'Counter',
+      '<template shadowrootmode="open"><p>{{@count}}</p></template>',
+      Counter as any
+    );
+
+    // Render the counter component with a wrapping div
+    this.render('<div class="host"><Counter @count={{this.count}} /></div>', { count: 0 });
+
+    const rootEl = castToBrowser(this.element, 'HTML');
+    const host = rootEl.querySelector('.host') as HTMLElement | null;
+
+    this.assert.ok(host?.shadowRoot !== null, 'shadow root attached');
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      '0',
+      'initial count renders in shadow root'
+    );
+
+    // Update tracked state — shadow root should be reused (not recreated)
+    const shadowRootRef = host?.shadowRoot;
+    this.rerender({ count: 1 });
+
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      '1',
+      'count updated in shadow root'
+    );
+    this.assert.strictEqual(
+      host?.shadowRoot,
+      shadowRootRef,
+      'same shadow root instance reused (not recreated)'
     );
   }
 }

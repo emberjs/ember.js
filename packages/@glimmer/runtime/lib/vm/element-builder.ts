@@ -251,6 +251,12 @@ export class NewTreeBuilder implements TreeBuilder {
    *
    * This handles the `<template shadowrootmode="open|closed">` pattern, enabling
    * Glimmer to render directly into a shadow root without an extra render pass.
+   *
+   * When `<template shadowrootmode="open|closed">` is used as a component's root element
+   * (without a wrapping element), the same parent element receives the shadow root on
+   * every render pass. On re-render, `attachShadow` would throw because the shadow root
+   * already exists. In that case we reuse the existing open shadow root after clearing
+   * its children, so the component can re-render into it correctly.
    */
   protected __tryAttachShadowRoot(
     parent: SimpleElement,
@@ -267,10 +273,19 @@ export class NewTreeBuilder implements TreeBuilder {
     const rawParent = parent as unknown as Element;
     if (typeof rawParent.attachShadow !== 'function') return null;
 
+    // If parent already has an open shadow root (e.g. on re-render when the component's
+    // root is <template shadowrootmode="open"> without a wrapping element), reuse it after
+    // clearing its children rather than calling attachShadow again (which would throw).
+    const existingShadowRoot = rawParent.shadowRoot;
+    if (existingShadowRoot) {
+      existingShadowRoot.replaceChildren();
+      return existingShadowRoot as unknown as SimpleElement;
+    }
+
     try {
       return rawParent.attachShadow({ mode: mode as ShadowRootMode }) as unknown as SimpleElement;
     } catch {
-      // attachShadow can fail if the element already has a shadow root
+      // attachShadow can fail if the element already has a closed shadow root
       // or doesn't support shadow DOM. Fall back to normal rendering.
       return null;
     }
