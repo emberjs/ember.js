@@ -39,7 +39,7 @@ if (DEBUG) {
   // Any remaining entries at end-of-frame trigger the backtracking assertion.
   let PENDING_SAME_FRAME_ASSERTIONS: Map<
     Tag,
-    { obj?: unknown; keyName?: string | symbol; transaction: Transaction }
+    { obj?: unknown; keyName?: PropertyKey; transaction: Transaction }
   > | null = null;
 
   const TRANSACTION_STACK: Transaction[] = [];
@@ -99,7 +99,10 @@ if (DEBUG) {
         if (pending.transaction === closingTransaction) {
           // This tag was dirtied after being consumed but never re-consumed
           // before the frame ended — this is likely a bug, not lazy init.
-          let message = TRANSACTION_ENV.debugMessage(pending.obj, pending.keyName && String(pending.keyName));
+          let message = TRANSACTION_ENV.debugMessage(
+            pending.obj,
+            pending.keyName != null ? String(pending.keyName) : undefined
+          );
           PENDING_SAME_FRAME_ASSERTIONS = null;
           assert(false, message);
         }
