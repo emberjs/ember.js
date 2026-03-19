@@ -513,6 +513,29 @@ module('@glimmer/validator: tracking', () => {
         assert.strictEqual(result, 789, 'get after set returns the updated value');
       });
 
+      test('it errors when get/set is not followed by a re-get in the same frame', (assert) => {
+        class Foo {
+          foo = 123;
+          bar = 456;
+        }
+
+        let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
+          return this.bar;
+        });
+
+        let foo = new Foo();
+
+        assert.throws(() => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+          debug.runInTrackingTransaction!(() => {
+            track(() => {
+              getter(foo);
+              setter(foo, 789);
+            });
+          });
+        }, /You attempted to update `foo` on `Foo`/);
+      });
+
       test('it still errors when updating a value consumed in a previous tracking frame', (assert) => {
         class Foo {
           foo = 123;
@@ -547,7 +570,7 @@ module('@glimmer/validator: tracking', () => {
         assert.expect(0);
         let tag = createTag();
 
-        // consume/dirty within the same frame should not throw (supports get/set/get pattern)
+        // consume/dirty/consume within the same frame should not throw (get/set/get pattern)
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         debug.runInTrackingTransaction!(() => {
           track(() => {
@@ -556,6 +579,20 @@ module('@glimmer/validator: tracking', () => {
             consumeTag(tag);
           });
         });
+      });
+
+      test('it errors when consume/dirty is not followed by a re-consume in the same frame', (assert) => {
+        let tag = createTag();
+
+        assert.throws(() => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+          debug.runInTrackingTransaction!(() => {
+            track(() => {
+              consumeTag(tag);
+              dirtyTag(tag);
+            });
+          });
+        }, /Error: Assertion Failed: You attempted to update/u);
       });
 
       test('it throws errors across track frames within the same debug transaction', (assert) => {

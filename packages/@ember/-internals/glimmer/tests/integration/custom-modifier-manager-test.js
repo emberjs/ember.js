@@ -11,7 +11,6 @@ import { Component } from '@ember/-internals/glimmer';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import EmberObject, { set } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../utils/debug-stack';
 
 class ModifierManagerTest extends RenderingTestCase {
   '@test throws a useful error when missing capabilities'(assert) {
@@ -272,6 +271,7 @@ class ModifierManagerTest extends RenderingTestCase {
           let val = person.name;
           if (val === undefined) {
             person.name = 'sam';
+            val = person.name;
           }
         }
       }

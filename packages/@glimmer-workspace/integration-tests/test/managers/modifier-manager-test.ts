@@ -228,6 +228,7 @@ abstract class ModifierManagerTest extends RenderTest {
         let val = this.foo;
         if (val === undefined) {
           this.foo = 456;
+          val = this.foo;
         }
       }
 
