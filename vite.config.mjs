@@ -126,6 +126,15 @@ export default defineConfig(({ mode }) => {
               replacement: fileURLToPath(new URL(`./packages/demo/compat/reference`, owerrideRoot)),
             },
             {
+              find: '@lifeart/gxt/runtime-compiler',
+              replacement: fileURLToPath(
+                new URL(
+                  `./packages/demo/node_modules/@lifeart/gxt/dist/gxt.runtime-compiler.es.js`,
+                  owerrideRoot
+                )
+              ),
+            },
+            {
               find: '@lifeart/gxt/glimmer-compatibility',
               replacement: fileURLToPath(
                 new URL(
