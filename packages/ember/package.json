@@ -46,7 +46,7 @@
     "ember-testing": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
-    "router_js": "^8.0.6",
+    "router_js": "workspace:*",
     "rsvp": "^4.8.5"
   }
 }

@@ -294,6 +294,7 @@ function rolledUpPackages() {
     '@ember/-internals/metal',
     '@ember/-internals/utils',
     '@ember/-internals/container',
+    'router_js',
   ];
 }
 
@@ -305,7 +306,7 @@ export function exposedDependencies() {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
     rsvp: require.resolve('rsvp/lib/rsvp.js'),
     'dag-map': require.resolve('dag-map/dag-map.js'),
-    router_js: require.resolve('router_js/dist/modules/index.js'),
+    router_js: require.resolve('router_js'),
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
     ...walkGlimmerDeps([
       '@glimmer/node',
