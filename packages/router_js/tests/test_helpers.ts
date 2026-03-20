@@ -1,4 +1,3 @@
-import Backburner from 'backburner.js';
 import type { Route, Transition } from '../index';
 import Router from '../index';
 import type { Dict } from '../lib/core';
@@ -8,43 +7,17 @@ import type { PublicTransition } from '../lib/transition';
 import { logAbort } from '../lib/transition';
 import type { TransitionError } from '../lib/transition-state';
 import type { UnrecognizedURLError } from '../lib/unrecognized-url-error';
-import { configure, resolve } from 'rsvp';
 import { isTransitionAborted } from '../lib/transition-aborted-error';
 
 QUnit.config.testTimeout = 1000;
 
-let bb = new Backburner(['promises']);
-function customAsync(callback: (...args: unknown[]) => unknown, promise: Promise<unknown>) {
-  bb.defer('promises', promise, callback, promise);
-}
-
-function flushBackburner() {
-  bb.end();
-  bb.begin();
-}
-
-let test = QUnit.test;
-let skip = QUnit.skip;
-
-function module(name: string, options?: any) {
-  options = options || {};
-  QUnit.module(name, {
-    beforeEach: function (...args: unknown[]) {
-      configure('async', customAsync);
-      bb.begin();
-
-      if (options.setup) {
-        options.setup.apply(this, args);
-      }
-    },
-    afterEach: function (...args: unknown[]) {
-      bb.end();
-
-      if (options.teardown) {
-        options.teardown.apply(this, args);
-      }
-    },
-  });
+// A useful function to allow you to ignore transition errors in a testing context
+export async function ignoreTransitionError(transition: Transition) {
+  try {
+    await transition;
+  } catch {
+    // if it errors we don't do anything
+  }
 }
 
 function assertAbort(assert: Assert) {
@@ -53,34 +26,12 @@ function assertAbort(assert: Assert) {
   };
 }
 
-// Helper method that performs a transition and flushes
-// the backburner queue. Helpful for when you want to write
-// tests that avoid .then callbacks.
-function transitionTo(
-  router: Router<Route>,
-  path: string | { queryParams: Dict<unknown> },
-  ...context: any[]
-) {
-  let result = router.transitionTo.apply(router, [path, ...context]);
-  flushBackburner();
-  return result;
-}
-
 function transitionToWithAbort(assert: Assert, router: Router<Route>, path: string) {
-  router.transitionTo(path).then(shouldNotHappen(assert), assertAbort(assert));
-  flushBackburner();
+  return router.transitionTo(path).then(shouldNotHappen(assert), assertAbort(assert));
 }
 
 function replaceWith(router: Router<Route>, path: string) {
-  let result = router.transitionTo.apply(router, [path]).method('replace');
-  flushBackburner();
-  return result;
-}
-
-function handleURL(router: Router<Route>, url: string) {
-  let result = router.handleURL.apply(router, [url]);
-  flushBackburner();
-  return result;
+  return router.transitionTo.apply(router, [path]).method('replace');
 }
 
 function shouldNotHappen(assert: Assert, _message?: string) {
@@ -108,22 +59,7 @@ function stubbedHandlerInfoFactory(name: string, props: Dict<unknown>) {
   return obj;
 }
 
-module('backburner sanity test');
-
-test('backburnerized testing works as expected', function (assert) {
-  assert.expect(1);
-  resolve('hello').then(function (word: string) {
-    assert.equal(word, 'hello', 'backburner flush in teardown resolved this promise');
-  });
-});
-
 export {
-  module,
-  test,
-  skip,
-  flushBackburner,
-  handleURL,
-  transitionTo,
   transitionToWithAbort,
   replaceWith,
   shouldNotHappen,

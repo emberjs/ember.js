@@ -7,23 +7,16 @@ import {
 } from '../lib/route-info';
 import TransitionState, { type TransitionError } from '../lib/transition-state';
 import { Promise, resolve } from 'rsvp';
-import {
-  createHandler,
-  createHandlerInfo,
-  flushBackburner,
-  module,
-  test,
-  TestRouter,
-} from './test_helpers';
+import { createHandler, createHandlerInfo, TestRouter } from './test_helpers';
 
-module('TransitionState');
+QUnit.module('TransitionState');
 
-test('it starts off with default state', function (assert) {
+QUnit.test('it starts off with default state', function (assert) {
   let state = new TransitionState();
   assert.deepEqual(state.routeInfos, [], 'it has an array of handlerInfos');
 });
 
-test("#resolve delegates to handleInfo objects' resolve()", function (assert) {
+QUnit.test("#resolve delegates to handleInfo objects' resolve()", function (assert) {
   assert.expect(3);
 
   let state = new TransitionState();
@@ -54,7 +47,7 @@ test("#resolve delegates to handleInfo objects' resolve()", function (assert) {
   });
 });
 
-test('State resolution can be halted', function (assert) {
+QUnit.test('State resolution can be halted', async function (assert) {
   assert.expect(1);
 
   let state = new TransitionState();
@@ -73,14 +66,12 @@ test('State resolution can be halted', function (assert) {
   let fakeTransition = {} as Transition;
   fakeTransition.isAborted = true;
 
-  state.resolve(fakeTransition).catch(function (reason: TransitionError) {
+  await state.resolve(fakeTransition).catch(function (reason: TransitionError) {
     assert.ok(reason.wasAborted, 'state resolution was correctly marked as aborted');
   });
-
-  flushBackburner();
 });
 
-test('Integration w/ HandlerInfos', function (assert) {
+QUnit.test('Integration w/ HandlerInfos', function (assert) {
   assert.expect(4);
 
   let state = new TransitionState();

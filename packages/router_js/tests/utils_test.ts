@@ -1,9 +1,8 @@
 import { getChangelist } from '../lib/utils';
-import { module, test } from './test_helpers';
 
-module('utils');
+QUnit.module('utils');
 
-test('getChangelist', function (assert) {
+QUnit.test('getChangelist', function (assert) {
   let result = getChangelist({}, { foo: '123' });
   assert.deepEqual(result, {
     all: { foo: '123' },

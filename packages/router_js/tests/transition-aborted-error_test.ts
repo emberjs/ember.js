@@ -3,11 +3,10 @@ import {
   isTransitionAborted,
   buildTransitionAborted,
 } from '../lib/transition-aborted-error';
-import { module, test } from './test_helpers';
 
-module('transition-aborted-error');
+QUnit.module('transition-aborted-error');
 
-test('correct inheritance and name', function (assert) {
+QUnit.test('correct inheritance and name', function (assert) {
   let error;
 
   try {
@@ -27,7 +26,7 @@ test('correct inheritance and name', function (assert) {
   assert.ok(error instanceof Error);
 });
 
-test('throwIfAborted', function (assert) {
+QUnit.test('throwIfAborted', function (assert) {
   throwIfAborted(undefined);
   throwIfAborted(null);
   throwIfAborted({});

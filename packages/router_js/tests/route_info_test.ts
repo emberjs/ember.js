@@ -10,11 +10,11 @@ import {
 import InternalTransition from '../lib/transition';
 import URLTransitionIntent from '../lib/transition-intent/url-transition-intent';
 import { resolve } from 'rsvp';
-import { createHandler, createHandlerInfo, module, test, skip, TestRouter } from './test_helpers';
+import { createHandler, createHandlerInfo, TestRouter } from './test_helpers';
 
-module('RouteInfo');
+QUnit.module('RouteInfo');
 
-test('ResolvedRouteInfo resolve to themselves', function (assert) {
+QUnit.test('ResolvedRouteInfo resolve to themselves', function (assert) {
   assert.expect(1);
   let router = new TestRouter();
   let routeInfo = new ResolvedRouteInfo(router, 'foo', [], {}, createHandler('empty'));
@@ -27,7 +27,7 @@ test('ResolvedRouteInfo resolve to themselves', function (assert) {
   });
 });
 
-test('UnresolvedRouteInfoByParam defaults params to {}', function (assert) {
+QUnit.test('UnresolvedRouteInfoByParam defaults params to {}', function (assert) {
   let router = new TestRouter();
   let routeInfo = new UnresolvedRouteInfoByParam(router, 'empty', [], {});
   assert.deepEqual(routeInfo.params, {});
@@ -36,7 +36,7 @@ test('UnresolvedRouteInfoByParam defaults params to {}', function (assert) {
   assert.deepEqual(routeInfo2.params, { foo: 5 });
 });
 
-test('RouteInfo can be aborted mid-resolve', function (assert) {
+QUnit.test('RouteInfo can be aborted mid-resolve', function (assert) {
   assert.expect(1);
 
   let routeInfo = createHandlerInfo('stub');
@@ -54,7 +54,7 @@ test('RouteInfo can be aborted mid-resolve', function (assert) {
     });
 });
 
-test('RouteInfo#resolve resolves with a ResolvedRouteInfo', function (assert) {
+QUnit.test('RouteInfo#resolve resolves with a ResolvedRouteInfo', function (assert) {
   assert.expect(1);
 
   let routeInfo = createHandlerInfo('stub');
@@ -63,7 +63,7 @@ test('RouteInfo#resolve resolves with a ResolvedRouteInfo', function (assert) {
   });
 });
 
-test('RouteInfo#resolve runs beforeModel hook on handler', function (assert) {
+QUnit.test('RouteInfo#resolve runs beforeModel hook on handler', function (assert) {
   assert.expect(1);
 
   let transition = {} as Transition;
@@ -85,7 +85,7 @@ test('RouteInfo#resolve runs beforeModel hook on handler', function (assert) {
   });
 });
 
-test('RouteInfo#resolve runs getModel hook', async function (assert) {
+QUnit.test('RouteInfo#resolve runs getModel hook', async function (assert) {
   assert.expect(2);
 
   let transition = {} as Transition;
@@ -111,7 +111,7 @@ test('RouteInfo#resolve runs getModel hook', async function (assert) {
  *
  * TODO: unskip this test
  */
-skip('RouteInfo#resolve runs afterModel hook on handler', function (assert) {
+QUnit.skip('RouteInfo#resolve runs afterModel hook on handler', function (assert) {
   assert.expect(3);
 
   let transition = {} as Transition;
@@ -135,7 +135,7 @@ skip('RouteInfo#resolve runs afterModel hook on handler', function (assert) {
   });
 });
 
-test('UnresolvedRouteInfoByParam gets its model hook called', function (assert) {
+QUnit.test('UnresolvedRouteInfoByParam gets its model hook called', function (assert) {
   assert.expect(2);
   let router = new TestRouter();
 
@@ -160,7 +160,7 @@ test('UnresolvedRouteInfoByParam gets its model hook called', function (assert) 
   routeInfo.resolve(transition);
 });
 
-test('UnresolvedRouteInfoByObject does NOT get its model hook called', function (assert) {
+QUnit.test('UnresolvedRouteInfoByObject does NOT get its model hook called', function (assert) {
   type Dorkleton = { name: string } & IModel;
 
   assert.expect(1);
@@ -194,7 +194,7 @@ test('UnresolvedRouteInfoByObject does NOT get its model hook called', function 
   });
 });
 
-test('RouteInfo.find', function (assert) {
+QUnit.test('RouteInfo.find', function (assert) {
   assert.expect(3);
   let router = new TestRouter();
   let parent = new ResolvedRouteInfo(router, 'parent', [], {}, createHandler('parent'));
@@ -214,7 +214,7 @@ test('RouteInfo.find', function (assert) {
   });
 });
 
-test('RouteInfo.find returns matched', function (assert) {
+QUnit.test('RouteInfo.find returns matched', function (assert) {
   assert.expect(3);
   let router = new TestRouter();
   let parent = new ResolvedRouteInfo(router, 'parent', [], {}, createHandler('parent'));
