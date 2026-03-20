@@ -25,19 +25,62 @@ const g = globalThis as any;
  * - Helper lookup from Ember's container via owner
  * - Component invocation for kebab-case names ({{foo-bar}})
  */
+/**
+ * Unwrap GXT args: GXT may pass getters (functions) for reactive values.
+ * Helpers expect resolved values in positional/named args.
+ */
+function unwrapArgs(args: any[]): any[] {
+  if (!Array.isArray(args)) return [];
+  return args.map(a => typeof a === 'function' ? a() : a);
+}
+
+function unwrapHash(hash: Record<string, any>): Record<string, any> {
+  if (!hash || typeof hash !== 'object') return {};
+  const result: Record<string, any> = {};
+  for (const key of Object.keys(hash)) {
+    const val = hash[key];
+    result[key] = typeof val === 'function' ? val() : val;
+  }
+  return result;
+}
+
+/**
+ * Walk the prototype chain to find a helper manager registered via
+ * setHelperManager / setInternalHelperManager.
+ */
+function findHelperManager(obj: any): any {
+  const managers = g.INTERNAL_HELPER_MANAGERS;
+  if (!managers) return null;
+  let current = obj;
+  const visited = new Set();
+  while (current && !visited.has(current)) {
+    visited.add(current);
+    const mgr = managers.get(current);
+    if (mgr) return mgr;
+    current = Object.getPrototypeOf(current);
+  }
+  return null;
+}
+
 function createEmberMaybeHelper(original: Function) {
   const wrapped = function $_maybeHelper_ember(
     nameOrFn: string | Function,
     args: any[],
-    options?: any
+    hashOrCtx?: any,
+    maybeCtx?: any
   ): any {
-    // Function arguments (e.g., $_blockParam) - call directly
+    // GXT's $_maybeHelper signature: (value, args[], hashOrCtx?, maybeCtx?)
+    // Determine which param is the hash (named args) and which is the context.
+    // If maybeCtx is provided, hashOrCtx is the hash and maybeCtx is context.
+    // If only hashOrCtx and it looks like a context (has $_eval or $-prefixed symbol), it's context.
+    const isCtx = !maybeCtx && hashOrCtx && typeof hashOrCtx === 'object' &&
+      (hashOrCtx.hasOwnProperty?.('$_eval') || hashOrCtx.args !== undefined);
+    const hash = maybeCtx ? hashOrCtx : (isCtx ? {} : (hashOrCtx ?? {}));
+
+    // Function arguments (e.g., $_blockParam) - delegate to original GXT handler
     if (typeof nameOrFn === 'function') {
-      try {
-        return nameOrFn(args[0]);
-      } catch {
-        return undefined;
-      }
+      // Let original GXT $_maybeHelper handle function-type helpers
+      return original(nameOrFn, args, hashOrCtx, maybeCtx);
     }
 
     const name = nameOrFn;
@@ -47,108 +90,96 @@ function createEmberMaybeHelper(original: Function) {
     if (BUILTIN_HELPERS && BUILTIN_HELPERS[name]) {
       const helper = BUILTIN_HELPERS[name];
       if (Array.isArray(args) && args.length > 0) {
-        const arg = args[0];
-        const value = typeof arg === 'function' ? arg() : arg;
-        return helper(value);
+        const unwrappedArgs = unwrapArgs(args);
+        return helper(...unwrappedArgs);
       }
-      return undefined;
+      return helper();
     }
 
     // Try Ember container lookup
     const owner = g.owner;
     if (owner) {
-      const helper = owner.lookup(`helper:${name}`);
-      if (helper) {
-        try {
-          const positional = args || [];
-          const named = options?.hash || options || {};
+      // First try factoryFor to get the registered class/factory
+      const factory = owner.factoryFor(`helper:${name}`);
 
-          // Check for helper manager
-          const manager = g.INTERNAL_HELPER_MANAGERS?.get(helper);
-          if (manager && typeof manager.getValue === 'function') {
-            const state = manager.createHelper?.(helper, { positional, named }) || helper;
+      if (factory) {
+        const positional = unwrapArgs(args || []);
+        const named = unwrapHash(hash);
+
+        // Check for helper manager on the factory class (walks prototype chain)
+        const factoryClass = factory.class;
+        const manager = findHelperManager(factoryClass) || findHelperManager(factoryClass?.prototype);
+
+        if (manager) {
+          // Use the helper manager protocol
+          if (typeof manager.getHelper === 'function') {
+            // CustomHelperManager.getHelper returns (capturedArgs, owner) => value
+            const helperFn = manager.getHelper(factoryClass);
+            if (typeof helperFn === 'function') {
+              const capturedArgs = { positional, named };
+              const result = helperFn(capturedArgs, owner);
+              return result;
+            }
+          }
+          if (typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
+            // Direct manager protocol (SimpleClassicHelperManager, ClassicHelperManager)
+            const state = manager.createHelper(factoryClass, { positional, named });
             const result = manager.getValue(state);
-            return document.createTextNode(String(result ?? ''));
+            return result;
           }
+        }
 
-          // Function-based helper
-          if (typeof helper === 'function') {
-            // Try factory-based first
-            try {
-              const factory = owner.factoryFor(`helper:${name}`);
-              if (factory && typeof factory.create === 'function') {
-                const instance = factory.create();
-                if (typeof instance.compute === 'function') {
-                  const result = instance.compute(positional, named);
-                  return document.createTextNode(String(result ?? ''));
-                }
-              }
-            } catch {
-              // Fall through
-            }
-
-            // Check for class-based helper
-            const hasComputePrototype = helper.prototype && typeof helper.prototype.compute === 'function';
-            const str = helper.toString();
-            const looksLikeClass = str.startsWith('class ') || str.startsWith('class{') || hasComputePrototype;
-
-            if (looksLikeClass) {
-              try {
-                const instance = new helper();
-                if (typeof instance.compute === 'function') {
-                  const result = instance.compute(positional, named);
-                  return document.createTextNode(String(result ?? ''));
-                }
-              } catch {
-                // Fall through
-              }
-            }
-
-            // Simple function helper
-            try {
-              const result = helper(positional, named);
-              return document.createTextNode(String(result ?? ''));
-            } catch (e) {
-              if (e instanceof TypeError && e.message.includes('cannot be invoked without')) {
-                const instance = new helper();
-                if (typeof instance.compute === 'function') {
-                  const result = instance.compute(positional, named);
-                  return document.createTextNode(String(result ?? ''));
-                }
-              }
-              throw e;
-            }
+        // No manager found - create instance and call compute directly
+        try {
+          const instance = factory.create();
+          if (instance && typeof instance.compute === 'function') {
+            const result = instance.compute(positional, named);
+            return result;
           }
+        } catch {
+          // Fall through
+        }
+      }
 
-          // Classic helper with compute method
-          if (helper && typeof helper.compute === 'function') {
-            const positional = args || [];
-            const named = options?.hash || options || {};
-            const result = helper.compute(positional, named);
-            return document.createTextNode(String(result ?? ''));
-          }
-        } catch (e) {
-          console.error(`[ember-gxt] Error invoking helper "${name}":`, e);
+      // Also try direct lookup (for programmatically registered helpers)
+      const helper = owner.lookup(`helper:${name}`);
+      if (helper && !factory) {
+        const positional = unwrapArgs(args || []);
+        const named = unwrapHash(hash);
+
+        // Check for helper manager on the instance
+        const manager = findHelperManager(helper) || findHelperManager(helper?.constructor);
+        if (manager && typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
+          const state = manager.createHelper(helper, { positional, named });
+          const result = manager.getValue(state);
+          return result;
+        }
+
+        // Object with compute method (class-based helper instance)
+        if (typeof helper.compute === 'function') {
+          const result = helper.compute(positional, named);
+          return result;
+        }
+
+        // Function helper
+        if (typeof helper === 'function') {
+          const result = helper(positional, named);
+          return result;
         }
       }
 
       // For kebab-case names, try component lookup
       if (name.includes('-')) {
-        const factory = owner.factoryFor(`component:${name}`);
-        if (factory) {
+        const compFactory = owner.factoryFor(`component:${name}`);
+        if (compFactory) {
           const $_MANAGERS = g.$_MANAGERS;
           if ($_MANAGERS?.component?.handle) {
             const componentArgs: Record<string, any> = {};
-            if (options && typeof options === 'object') {
-              for (const key of Object.keys(options)) {
+            if (hash && typeof hash === 'object') {
+              for (const key of Object.keys(hash)) {
                 if (!key.startsWith('$_') && key !== 'hash') {
-                  componentArgs[key] = options[key];
+                  componentArgs[key] = hash[key];
                 }
-              }
-            }
-            if (options?.hash && typeof options.hash === 'object') {
-              for (const [k, v] of Object.entries(options.hash)) {
-                componentArgs[k] = v;
               }
             }
             const result = $_MANAGERS.component.handle(name, componentArgs, [[], [], []], null);
@@ -180,7 +211,7 @@ function createEmberMaybeHelper(original: Function) {
     }
 
     // Fall back to GXT's native maybeHelper
-    return original(name, args, options);
+    return original(name, args, hashOrCtx, maybeCtx);
   };
   (wrapped as any).__emberWrapped = true;
   (wrapped as any).__emberAware = true;

@@ -113,16 +113,40 @@ setInterval(() => {
 (globalThis as any).__EMBER_BUILTIN_HELPERS__ = {
   // readonly: Returns the value as-is (GXT doesn't have two-way binding to protect against)
   readonly: (value: any) => {
-    // Unwrap if it's a function/getter
     return typeof value === 'function' ? value() : value;
   },
   // mut: Returns the value as-is (GXT doesn't need the mutable wrapper)
   mut: (value: any) => {
     return typeof value === 'function' ? value() : value;
   },
-  // unbound: Returns the value without tracking (GXT handles this differently)
+  // unbound: Returns the value without tracking
   unbound: (value: any) => {
     return typeof value === 'function' ? value() : value;
+  },
+  // concat: Concatenates arguments into a string
+  concat: (...args: any[]) => {
+    return args.map(a => typeof a === 'function' ? a() : a).join('');
+  },
+  // array: Creates an array from arguments
+  array: (...args: any[]) => {
+    return args.map(a => typeof a === 'function' ? a() : a);
+  },
+  // hash: Creates an object from named arguments (handled specially)
+  hash: (obj: any) => obj,
+  // get: Dynamic property lookup
+  get: (obj: any, key: any) => {
+    const resolvedObj = typeof obj === 'function' ? obj() : obj;
+    const resolvedKey = typeof key === 'function' ? key() : key;
+    if (resolvedObj == null) return undefined;
+    return resolvedObj[resolvedKey];
+  },
+  // fn: Partially applies a function with arguments
+  fn: (func: any, ...args: any[]) => {
+    const resolvedFn = typeof func === 'function' ? func : () => func;
+    return (...callArgs: any[]) => {
+      const resolvedArgs = args.map(a => typeof a === 'function' ? a() : a);
+      return resolvedFn(...resolvedArgs, ...callArgs);
+    };
   },
 };
 

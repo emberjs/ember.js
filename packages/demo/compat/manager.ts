@@ -11,8 +11,10 @@
  */
 
 import { assert } from '@ember/debug';
-import { CustomHelperManager } from './helper-manager';
-export { CustomHelperManager } from './helper-manager';
+import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+export { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+
+const DEFAULT_HELPER_MANAGER = new CustomHelperManager(() => new FunctionHelperManager());
 
 // =============================================================================
 // Types and Interfaces
@@ -929,19 +931,25 @@ const $_MANAGERS = {
       if (typeof helper === 'string') {
         const owner = (globalThis as any).owner;
 
+        // Build captured args from GXT params/hash
+        const capturedArgs = {
+          positional: Array.isArray(params) ? params : [],
+          named: hash && typeof hash === 'object' ? hash : {},
+        };
+
         // First check built-in keyword helpers
-        // These are imported from @ember/-internals/glimmer/lib/resolver
         const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
         if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) {
           const builtinHelper = BUILTIN_HELPERS[helper];
-          const manager = getInternalHelperManager(builtinHelper);
-          if (manager) {
-            return manager.getHelper(builtinHelper)(params, owner);
+          const internalManager = getInternalHelperManager(builtinHelper);
+          if (internalManager) {
+            if (typeof internalManager.getHelper === 'function') {
+              return internalManager.getHelper(builtinHelper)(capturedArgs, owner);
+            }
           }
           // Some built-in helpers can be called directly
           if (typeof builtinHelper === 'function') {
             try {
-              // Try calling as a simple function helper
               const unwrappedParams = params.map((p: any) => typeof p === 'function' ? p() : p);
               return builtinHelper(...unwrappedParams);
             } catch {
@@ -950,11 +958,38 @@ const $_MANAGERS = {
           }
         }
 
-        // Then try container lookup
-        const maybeHelper = owner?.lookup(`helper:${helper}`);
-        const manager = getInternalHelperManager(maybeHelper);
-        if (manager) {
-          return manager.getHelper(maybeHelper)(params, owner);
+        // Try container lookup using factoryFor (like the real Ember resolver)
+        const factory = owner?.factoryFor?.(`helper:${helper}`);
+        if (factory) {
+          const definition = factory.class || factory;
+          const internalManager = getInternalHelperManager(definition);
+          if (internalManager) {
+            if (typeof internalManager.getDelegateFor === 'function') {
+              const delegate = internalManager.getDelegateFor(owner);
+              if (delegate && typeof delegate.createHelper === 'function') {
+                const bucket = delegate.createHelper(definition, capturedArgs);
+                if (delegate.capabilities?.hasValue) {
+                  return delegate.getValue(bucket);
+                }
+              }
+            }
+            if (typeof internalManager.getHelper === 'function') {
+              return internalManager.getHelper(definition)(capturedArgs, owner);
+            }
+          }
+        }
+
+        // Fallback: direct lookup (for helpers registered as instances)
+        if (!factory) {
+          const maybeHelper = owner?.lookup(`helper:${helper}`);
+          if (maybeHelper != null) {
+            const internalManager = getInternalHelperManager(maybeHelper);
+            if (internalManager) {
+              if (typeof internalManager.getHelper === 'function') {
+                return internalManager.getHelper(maybeHelper)(capturedArgs, owner);
+              }
+            }
+          }
         }
       }
       return null;
@@ -1358,15 +1393,62 @@ export function setInternalComponentManager(manager: any, handle: any) {
   return handle;
 }
 
-export function getInternalHelperManager(helper: any) {
-  return (
-    globalThis.INTERNAL_HELPER_MANAGERS.get(helper) ||
-    globalThis.INTERNAL_HELPER_MANAGERS.get(Object.getPrototypeOf(helper))
-  );
+export function getInternalHelperManager(helper: any, isOptional?: boolean) {
+  if (helper === null || helper === undefined) {
+    if (isOptional) return null;
+    return undefined;
+  }
+  // Walk the full prototype chain
+  let pointer = helper;
+  while (pointer !== null && pointer !== undefined) {
+    const manager = globalThis.INTERNAL_HELPER_MANAGERS.get(pointer);
+    if (manager !== undefined) {
+      return manager;
+    }
+    try {
+      pointer = Object.getPrototypeOf(pointer);
+    } catch {
+      break;
+    }
+  }
+  // Functions are the default helper type (simple function helpers)
+  if (typeof helper === 'function') {
+    return DEFAULT_HELPER_MANAGER;
+  }
+  if (isOptional) return null;
+  return undefined;
 }
 
-export function helperCapabilities(v: string, value: any) {
-  return value;
+export function helperCapabilities(v: string, value: any = {}) {
+  if (v !== '3.23') {
+    throw new Error(
+      `Invalid helper manager compatibility specified`
+    );
+  }
+
+  if (
+    (!(value.hasValue || value.hasScheduledEffect) ||
+      (value.hasValue && value.hasScheduledEffect))
+  ) {
+    throw new Error(
+      'You must pass either the `hasValue` OR the `hasScheduledEffect` capability when defining a helper manager. Passing neither, or both, is not permitted.'
+    );
+  }
+
+  if (value.hasScheduledEffect) {
+    throw new Error(
+      'The `hasScheduledEffect` capability has not yet been implemented for helper managers. Please pass `hasValue` instead'
+    );
+  }
+
+  const capabilities = {
+    hasValue: Boolean(value.hasValue),
+    hasDestroyable: Boolean(value.hasDestroyable),
+    hasScheduledEffect: Boolean(value.hasScheduledEffect),
+  };
+  FROM_CAPABILITIES.add(capabilities);
+  Object.freeze(capabilities);
+  return capabilities;
 }
 
 export function modifierCapabilities(_version: string, capabilities?: Record<string, boolean>) {
@@ -1432,7 +1514,22 @@ export function setInternalHelperManager(manager: any, helper: any) {
 }
 
 export function hasInternalHelperManager(helper: any) {
-  return globalThis.INTERNAL_HELPER_MANAGERS.has(helper);
+  if (helper === null || helper === undefined) return false;
+  // Functions are always default helpers
+  if (typeof helper === 'function') return true;
+  // Walk the prototype chain
+  let pointer = helper;
+  while (pointer !== null && pointer !== undefined) {
+    if (globalThis.INTERNAL_HELPER_MANAGERS.has(pointer)) {
+      return true;
+    }
+    try {
+      pointer = Object.getPrototypeOf(pointer);
+    } catch {
+      break;
+    }
+  }
+  return false;
 }
 
 export function hasCapability(capabilities: number, capability: number): boolean {
@@ -1451,12 +1548,12 @@ export function hasInternalComponentManager(component: any): boolean {
   return globalThis.INTERNAL_MANAGERS.has(component);
 }
 
-export function hasValue(capabilities: Record<string, boolean>): boolean {
-  return Boolean(capabilities?.hasValue);
+export function hasValue(manager: any): boolean {
+  return Boolean(manager?.capabilities?.hasValue);
 }
 
-export function hasDestroyable(capabilities: Record<string, boolean>): boolean {
-  return Boolean(capabilities?.willDestroy);
+export function hasDestroyable(manager: any): boolean {
+  return Boolean(manager?.capabilities?.hasDestroyable);
 }
 
 // =============================================================================
