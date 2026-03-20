@@ -484,6 +484,17 @@ function createEmberTag(original: Function) {
 
         // Build fw (forwarding) structure matching compile.ts convention:
         // fw[0] = props (empty), fw[1] = domAttrs, fw[2] = events
+        // Also merge parent forwarding from tagProps[3] (from ...attributes)
+        const parentFw = tagProps?.[3];
+        if (parentFw && typeof parentFw === 'object') {
+          // Merge parent's forwarded attrs/events into ours
+          if (Array.isArray(parentFw[1])) {
+            domAttrs.push(...parentFw[1]);
+          }
+          if (Array.isArray(parentFw[2])) {
+            events.push(...parentFw[2]);
+          }
+        }
         const fw = [[], domAttrs, events];
 
         // Pass slots via args so manager.ts can access them
