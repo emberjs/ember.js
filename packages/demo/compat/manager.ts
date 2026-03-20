@@ -620,7 +620,80 @@ function createRenderContext(
     }
   }
 
-  return renderContext;
+  // Wrap renderContext in a Proxy so that GXT template property reads
+  // (e.g. `this.cond1`) go through the same GXT cell that
+  // __gxtTriggerReRender uses, making Ember `set()` changes reactive.
+  const SKIP_CELL_PROPS = new Set([
+    'constructor', 'args', 'attrs', '$slots', '$fw',
+    '$_hasBlock', '$_hasBlockParams', $ARGS_KEY,
+  ]);
+
+  const proxy = new Proxy(renderContext, {
+    get(target, prop, receiver) {
+      // Only intercept string property reads
+      if (typeof prop !== 'string' || SKIP_CELL_PROPS.has(prop)) {
+        return Reflect.get(target, prop, receiver);
+      }
+
+      const value = Reflect.get(target, prop, receiver);
+
+      // Don't wrap functions or undefined through cells
+      if (typeof value === 'function' || value === undefined) {
+        return value;
+      }
+
+      // Find the actual owner object in the prototype chain
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (!_cellFor) {
+        return value;
+      }
+
+      try {
+        let owner = target;
+        while (owner && !Object.prototype.hasOwnProperty.call(owner, prop)) {
+          owner = Object.getPrototypeOf(owner);
+        }
+        if (owner) {
+          const cell = _cellFor(owner, prop);
+          if (cell) {
+            return cell.value;
+          }
+        }
+      } catch {
+        // cellFor may not apply to all objects
+      }
+
+      return value;
+    },
+
+    set(target, prop, value, receiver) {
+      if (typeof prop !== 'string' || SKIP_CELL_PROPS.has(prop)) {
+        return Reflect.set(target, prop, value, receiver);
+      }
+
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (_cellFor) {
+        try {
+          let owner = target;
+          while (owner && !Object.prototype.hasOwnProperty.call(owner, prop)) {
+            owner = Object.getPrototypeOf(owner);
+          }
+          if (owner) {
+            const cell = _cellFor(owner, prop);
+            if (cell) {
+              cell.update(value);
+            }
+          }
+        } catch {
+          // cellFor may not apply
+        }
+      }
+
+      return Reflect.set(target, prop, value, receiver);
+    },
+  });
+
+  return proxy;
 }
 
 // =============================================================================

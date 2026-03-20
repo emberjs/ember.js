@@ -21,6 +21,7 @@ import {
   COMPONENT_ID_PROPERTY,
   syncDom as gxtSyncDom,
   cellFor,
+  effect as gxtEffect,
 } from '@lifeart/gxt';
 
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
@@ -57,6 +58,9 @@ installEmberWrappers();
   }
   (globalThis as any).__gxtPendingSync = true;
 };
+
+// Expose cellFor on globalThis so manager.ts can use it without circular imports.
+(globalThis as any).__gxtCellFor = cellFor;
 
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
@@ -1613,9 +1617,20 @@ export function precompileTemplate(templateString: string, options?: {
         const textValue = finalResult == null ? '' : String(finalResult);
         const textNode = document.createTextNode(textValue);
 
-        // Note: text node is static for now. GXT's effect() only tracks
-        // cell.value accesses, not plain property reads. Reactivity for
-        // Ember's set() requires cellFor bridge (see __gxtTriggerReRender).
+        // Set up reactive text binding via GXT effect().
+        // The Proxy on renderContext (in manager.ts) makes property reads go
+        // through GXT cells. effect() tracks those cell reads. When set()
+        // updates the value, the cell is dirtied, gxtSyncDom() runs the
+        // effect, and the text node content is updated.
+        try {
+          gxtEffect(() => {
+            const v = item();
+            const fv = typeof v === 'function' ? v() : v;
+            textNode.textContent = fv == null ? '' : String(fv);
+          });
+        } catch {
+          // Effect setup failed — text node stays static
+        }
 
         return textNode;
       } catch (e) {
