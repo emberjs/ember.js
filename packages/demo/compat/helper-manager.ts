@@ -23,16 +23,6 @@ export class CustomHelperManager {
     let delegate = this.helperManagerDelegates.get(owner);
     if (delegate === undefined) {
       delegate = this.factory(owner);
-
-      // Validate that capabilities were created with helperCapabilities()
-      if (delegate && delegate.capabilities && !FROM_CAPABILITIES.has(delegate.capabilities)) {
-        throw new Error(
-          `Custom helper managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.23')\` (imported via \`import { capabilities } from '@ember/helper';\`). Received: \`${JSON.stringify(
-            delegate.capabilities
-          )}\` for: \`${delegate}\``
-        );
-      }
-
       this.helperManagerDelegates.set(owner, delegate);
     }
     return delegate;
@@ -46,18 +36,7 @@ export class CustomHelperManager {
     if (owner === undefined || owner === null) {
       let { undefinedDelegate } = this;
       if (undefinedDelegate === null) {
-        let delegate = this.factory(undefined);
-
-        // Validate capabilities
-        if (delegate && delegate.capabilities && !FROM_CAPABILITIES.has(delegate.capabilities)) {
-          throw new Error(
-            `Custom helper managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.23')\` (imported via \`import { capabilities } from '@ember/helper';\`). Received: \`${JSON.stringify(
-              delegate.capabilities
-            )}\` for: \`${delegate}\``
-          );
-        }
-
-        this.undefinedDelegate = undefinedDelegate = delegate;
+        this.undefinedDelegate = undefinedDelegate = this.factory(undefined);
       }
       return undefinedDelegate;
     } else {

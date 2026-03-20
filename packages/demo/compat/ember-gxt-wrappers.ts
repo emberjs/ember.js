@@ -34,10 +34,14 @@ function unwrapArgs(args: any[]): any[] {
   return args.map(a => typeof a === 'function' ? a() : a);
 }
 
+// GXT internal hash keys that should not be passed to Ember helpers
+const GXT_INTERNAL_KEYS = new Set(['$_hasBlock', '$_hasBlockParams', '$_scope', '$_eval', 'hash']);
+
 function unwrapHash(hash: Record<string, any>): Record<string, any> {
   if (!hash || typeof hash !== 'object') return {};
   const result: Record<string, any> = {};
   for (const key of Object.keys(hash)) {
+    if (GXT_INTERNAL_KEYS.has(key) || key.startsWith('$_')) continue;
     const val = hash[key];
     result[key] = typeof val === 'function' ? val() : val;
   }
@@ -72,9 +76,10 @@ function createEmberMaybeHelper(original: Function) {
     // GXT's $_maybeHelper signature: (value, args[], hashOrCtx?, maybeCtx?)
     // Determine which param is the hash (named args) and which is the context.
     // If maybeCtx is provided, hashOrCtx is the hash and maybeCtx is context.
-    // If only hashOrCtx and it looks like a context (has $_eval or $-prefixed symbol), it's context.
+    // If only hashOrCtx and it looks like a context (has $_eval or GXT symbols), it's context.
+    const $PROPS = Symbol.for('gxt-props');
     const isCtx = !maybeCtx && hashOrCtx && typeof hashOrCtx === 'object' &&
-      (hashOrCtx.hasOwnProperty?.('$_eval') || hashOrCtx.args !== undefined);
+      (hashOrCtx.hasOwnProperty?.('$_eval') || hashOrCtx[$PROPS] !== undefined || hashOrCtx.hasOwnProperty?.($PROPS));
     const hash = maybeCtx ? hashOrCtx : (isCtx ? {} : (hashOrCtx ?? {}));
 
     // Function arguments (e.g., $_blockParam) - delegate to original GXT handler
@@ -136,9 +141,13 @@ function createEmberMaybeHelper(original: Function) {
             const result = instance.compute(positional, named);
             return result;
           }
-        } catch {
-          // Fall through
+        } catch (e) {
+          console.error(`[ember-gxt] Error invoking helper "${name}":`, e);
         }
+
+        // Helper was found in registry but couldn't be invoked - return undefined
+        // rather than falling through to GXT's native handler
+        return undefined;
       }
 
       // Also try direct lookup (for programmatically registered helpers)

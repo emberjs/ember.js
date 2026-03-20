@@ -922,7 +922,15 @@ const $_MANAGERS = {
   helper: {
     canHandle(helper: any): boolean {
       if (typeof helper === 'string') {
-        return true;
+        const owner = (globalThis as any).owner;
+        if (owner) {
+          // Only claim we can handle if the helper actually exists
+          const factory = owner.factoryFor?.(`helper:${helper}`);
+          if (factory) return true;
+          // Also check built-in helpers
+          const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
+          if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) return true;
+        }
       }
       return false;
     },
@@ -931,30 +939,22 @@ const $_MANAGERS = {
       if (typeof helper === 'string') {
         const owner = (globalThis as any).owner;
 
-        // Build captured args from GXT params/hash
-        const capturedArgs = {
-          positional: Array.isArray(params) ? params : [],
-          named: hash && typeof hash === 'object' ? hash : {},
+        // Unwrap GXT getter args for the helper, filtering out GXT internal keys
+        const unwrapVal = (v: any) => typeof v === 'function' ? v() : v;
+        const isGxtInternal = (k: string) => k.startsWith('$_') || k === 'hash';
+        const unwrappedArgs = {
+          positional: Array.isArray(params) ? params.map(unwrapVal) : [],
+          named: hash && typeof hash === 'object'
+            ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+            : {},
         };
 
         // First check built-in keyword helpers
         const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
         if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) {
           const builtinHelper = BUILTIN_HELPERS[helper];
-          const internalManager = getInternalHelperManager(builtinHelper);
-          if (internalManager) {
-            if (typeof internalManager.getHelper === 'function') {
-              return internalManager.getHelper(builtinHelper)(capturedArgs, owner);
-            }
-          }
-          // Some built-in helpers can be called directly
           if (typeof builtinHelper === 'function') {
-            try {
-              const unwrappedParams = params.map((p: any) => typeof p === 'function' ? p() : p);
-              return builtinHelper(...unwrappedParams);
-            } catch {
-              // Fall through to container lookup
-            }
+            return builtinHelper(...unwrappedArgs.positional);
           }
         }
 
@@ -962,20 +962,32 @@ const $_MANAGERS = {
         const factory = owner?.factoryFor?.(`helper:${helper}`);
         if (factory) {
           const definition = factory.class || factory;
+          // Walk prototype chain to find helper manager
           const internalManager = getInternalHelperManager(definition);
           if (internalManager) {
             if (typeof internalManager.getDelegateFor === 'function') {
               const delegate = internalManager.getDelegateFor(owner);
               if (delegate && typeof delegate.createHelper === 'function') {
-                const bucket = delegate.createHelper(definition, capturedArgs);
+                const bucket = delegate.createHelper(definition, unwrappedArgs);
                 if (delegate.capabilities?.hasValue) {
                   return delegate.getValue(bucket);
                 }
               }
             }
             if (typeof internalManager.getHelper === 'function') {
-              return internalManager.getHelper(definition)(capturedArgs, owner);
+              return internalManager.getHelper(definition)(unwrappedArgs, owner);
             }
+          }
+
+          // No helper manager found via prototype chain - try direct factory create
+          // This handles classic Helper.extend() helpers and other factory-based helpers
+          try {
+            const instance = factory.create();
+            if (instance && typeof instance.compute === 'function') {
+              return instance.compute(unwrappedArgs.positional, unwrappedArgs.named);
+            }
+          } catch {
+            // Fall through
           }
         }
 
@@ -983,11 +995,11 @@ const $_MANAGERS = {
         if (!factory) {
           const maybeHelper = owner?.lookup(`helper:${helper}`);
           if (maybeHelper != null) {
-            const internalManager = getInternalHelperManager(maybeHelper);
-            if (internalManager) {
-              if (typeof internalManager.getHelper === 'function') {
-                return internalManager.getHelper(maybeHelper)(capturedArgs, owner);
-              }
+            if (typeof maybeHelper.compute === 'function') {
+              return maybeHelper.compute(unwrappedArgs.positional, unwrappedArgs.named);
+            }
+            if (typeof maybeHelper === 'function') {
+              return maybeHelper(unwrappedArgs.positional, unwrappedArgs.named);
             }
           }
         }
