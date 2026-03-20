@@ -455,40 +455,33 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
     }
 
     // Special handling for EmberHtmlRaw component (triple mustaches)
-    // This component outputs raw HTML without escaping
+    // This component outputs raw HTML without escaping.
+    // Returns an object with __htmlRaw marker so itemToNode can handle
+    // it with proper reactive updates (using the same effect scope).
     if (resolvedTag === 'EmberHtmlRaw') {
-      // Extract the value from tagProps
-      let value: any;
+      let valueGetter: any;
       if (tagProps && tagProps !== g.$_edp) {
         const attrs = tagProps[1];
         if (Array.isArray(attrs)) {
           for (const [key, val] of attrs) {
             if (key === '@value') {
-              value = typeof val === 'function' ? val() : val;
+              valueGetter = val;
               break;
             }
           }
         }
       }
 
-      // Return a thunk that creates a span with innerHTML
-      return function __htmlRawThunk() {
-        const actualValue = typeof value === 'function' ? value() : value;
-        if (actualValue == null) {
-          return document.createTextNode('');
-        }
-        // Check if it's an htmlSafe string (has toHTML method)
-        const htmlContent = actualValue?.toHTML?.() ?? String(actualValue);
-        // Create a document fragment with the HTML content
-        const template = document.createElement('template');
-        template.innerHTML = htmlContent;
-        // Return the fragment's children
-        const fragment = document.createDocumentFragment();
-        while (template.content.firstChild) {
-          fragment.appendChild(template.content.firstChild);
-        }
-        return fragment;
+      // Return a getter function that itemToNode will call inside gxtEffect.
+      // Mark it as __htmlRaw so itemToNode uses innerHTML instead of textContent.
+      const htmlGetter = () => {
+        const raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
+        const actual = typeof raw === 'function' ? raw() : raw;
+        if (actual == null) return '';
+        return actual?.toHTML?.() ?? String(actual);
       };
+      (htmlGetter as any).__htmlRaw = true;
+      return htmlGetter;
     }
 
     // Check if this looks like a component name (PascalCase or contains hyphen)
@@ -973,10 +966,8 @@ function transformOutletHelper(code: string): string {
  */
 function transformTripleMustaches(code: string): string {
   // Match {{{...}}} but not {{{{...}}}}
-  // The expression inside can contain dots, this., @, etc.
+  // Transform to <EmberHtmlRaw @value={{expr}} /> component
   return code.replace(/\{\{\{([^}]+)\}\}\}/g, (match, expr) => {
-    // Transform to a call to the htmlSafe helper wrapped in a span
-    // Use PascalCase so GXT treats it as a component
     return `<EmberHtmlRaw @value={{${expr.trim()}}} />`;
   });
 }
@@ -1752,6 +1743,51 @@ export function precompileTemplate(templateString: string, options?: {
     // Create a REACTIVE text node that updates when dependencies change
     if (typeof item === 'function') {
       try {
+        // Triple-stache (raw HTML): use marker comments with innerHTML updates
+        if ((item as any).__htmlRaw) {
+          const startMarker = document.createComment('');
+          const endMarker = document.createComment('');
+          const fragment = document.createDocumentFragment();
+          fragment.appendChild(startMarker);
+
+          // Initial render
+          const initialHtml = item();
+          if (initialHtml) {
+            const tpl = document.createElement('template');
+            tpl.innerHTML = initialHtml;
+            while (tpl.content.firstChild) {
+              fragment.appendChild(tpl.content.firstChild);
+            }
+          }
+          fragment.appendChild(endMarker);
+
+          // Reactive update — replaces content between markers
+          try {
+            gxtEffect(() => {
+              const html = item();
+              const parent = startMarker.parentNode;
+              if (!parent) return;
+              // Remove existing content between markers
+              let node = startMarker.nextSibling;
+              while (node && node !== endMarker) {
+                const next = node.nextSibling;
+                parent.removeChild(node);
+                node = next;
+              }
+              // Insert new HTML content
+              if (html) {
+                const tpl = document.createElement('template');
+                tpl.innerHTML = html;
+                while (tpl.content.firstChild) {
+                  parent.insertBefore(tpl.content.firstChild, endMarker);
+                }
+              }
+            });
+          } catch { /* effect setup may fail */ }
+
+          return fragment;
+        }
+
         const result = item();
         // If result is a function, it's a nested getter (e.g., from $__if)
         const finalResult = typeof result === 'function' ? result() : result;
@@ -1759,6 +1795,54 @@ export function precompileTemplate(templateString: string, options?: {
         if (finalResult instanceof Node) {
           return finalResult;
         }
+
+        // Check if the result is a raw HTML value (from triple-stache {{{expr}}})
+        // These have __htmlRaw or toHTML marker and need innerHTML rendering
+        if (finalResult && typeof finalResult === 'object' && (finalResult.__htmlRaw || typeof finalResult.toHTML === 'function')) {
+          const getHtml = () => {
+            const v = item();
+            const fv = typeof v === 'function' ? v() : v;
+            if (fv == null) return '';
+            if (fv.toHTML) return fv.toHTML();
+            return String(fv);
+          };
+          const startMarker = document.createComment('');
+          const endMarker = document.createComment('');
+          const fragment = document.createDocumentFragment();
+          fragment.appendChild(startMarker);
+          const initialHtml = getHtml();
+          if (initialHtml) {
+            const tpl = document.createElement('template');
+            tpl.innerHTML = initialHtml;
+            while (tpl.content.firstChild) {
+              fragment.appendChild(tpl.content.firstChild);
+            }
+          }
+          fragment.appendChild(endMarker);
+          // Reactive update
+          try {
+            gxtEffect(() => {
+              const html = getHtml();
+              const parent = startMarker.parentNode;
+              if (!parent) return;
+              let node = startMarker.nextSibling;
+              while (node && node !== endMarker) {
+                const next = node.nextSibling;
+                parent.removeChild(node);
+                node = next;
+              }
+              if (html) {
+                const tpl = document.createElement('template');
+                tpl.innerHTML = html;
+                while (tpl.content.firstChild) {
+                  parent.insertBefore(tpl.content.firstChild, endMarker);
+                }
+              }
+            });
+          } catch { /* effect setup may fail */ }
+          return fragment;
+        }
+
         // If result is an object with GXT node structure, process it
         if (finalResult && typeof finalResult === 'object' && !(finalResult instanceof Node)) {
           return itemToNode(finalResult, depth + 1);
@@ -1769,10 +1853,10 @@ export function precompileTemplate(templateString: string, options?: {
         const textNode = document.createTextNode(textValue);
 
         // Set up reactive text binding via GXT effect().
-        // The Proxy on renderContext (in manager.ts) makes property reads go
-        // through GXT cells. effect() tracks those cell reads. When set()
-        // updates the value, the cell is dirtied, gxtSyncDom() runs the
-        // effect, and the text node content is updated.
+        // Cell-backed getters on the instance make property reads trackable.
+        // effect() tracks those cell reads. When set() updates the value,
+        // the cell is dirtied, gxtSyncDom() runs the effect, and the
+        // text node content is updated.
         try {
           gxtEffect(() => {
             const v = item();

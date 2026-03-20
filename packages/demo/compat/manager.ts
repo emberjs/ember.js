@@ -667,14 +667,50 @@ function createRenderContext(
 
   const proxy = new Proxy(renderContext, {
     get(target, prop, _receiver) {
-      // Pass target (the instance) as receiver so getters run with
-      // this = instance, not this = proxy. This is critical for @tracked,
-      // computed properties, and trackedData which key storage on `this`.
-      return Reflect.get(target, prop, target);
+      if (typeof prop !== 'string' || SKIP_CELL_PROPS.has(prop)) {
+        return Reflect.get(target, prop, target);
+      }
+
+      // Check if the property already has a cell getter (pre-installed)
+      // by checking the property descriptor chain
+      let hasGetter = false;
+      let obj: any = target;
+      while (obj) {
+        const desc = Object.getOwnPropertyDescriptor(obj, prop);
+        if (desc) {
+          hasGetter = !!desc.get;
+          break;
+        }
+        obj = Object.getPrototypeOf(obj);
+      }
+
+      if (hasGetter) {
+        // Property has a getter (cell or @tracked) — use it directly
+        return Reflect.get(target, prop, target);
+      }
+
+      // Property has no getter — create a cell lazily for GXT tracking
+      // This handles properties set via Ember's extend() which puts them
+      // on the prototype as data properties (not caught by pre-installation)
+      const value = Reflect.get(target, prop, target);
+      if (typeof value === 'function') {
+        return value;
+      }
+
+      if (_cellFor) {
+        try {
+          const cell = _cellFor(target, prop, /* skipDefine */ false);
+          if (cell) {
+            return cell.value;
+          }
+        } catch { /* ignore */ }
+      }
+
+      return value;
     },
 
     set(target, prop, value, _receiver) {
-      // Pass target as receiver for same reason as get
+      // Pass target as receiver so setters run with this = instance
       return Reflect.set(target, prop, value, target);
     },
   });
@@ -857,6 +893,8 @@ const $_MANAGERS = {
     canHandle(komp: any): boolean {
       // Handle string component names
       if (typeof komp === 'string') {
+        // EmberHtmlRaw is always handled (triple-stache)
+        if (komp === 'ember-html-raw') return true;
         const owner = (globalThis as any).owner;
         if (owner) {
           const resolved = resolveComponent(komp, owner);
@@ -887,6 +925,25 @@ const $_MANAGERS = {
 
     handle(komp: any, args: any, fw: any, ctx: any): any {
       const owner = (globalThis as any).owner;
+
+      // EmberHtmlRaw — triple-stache {{{expr}}} compiled as <EmberHtmlRaw @value={{expr}} />
+      // Returns a getter function marked __htmlRaw for reactive innerHTML updates
+      if (komp === 'ember-html-raw') {
+        // Capture the raw getter from args to preserve reactivity.
+        // Accessing args.value directly evaluates the getter and loses reactivity.
+        const desc = args ? Object.getOwnPropertyDescriptor(args, 'value') : null;
+        const rawGetter = desc?.get || (() => args?.value);
+
+        const htmlGetter = () => {
+          // Call the getter each time to get the current reactive value
+          const raw = rawGetter();
+          const actual = typeof raw === 'function' ? raw() : raw;
+          if (actual == null) return '';
+          return actual?.toHTML?.() ?? String(actual);
+        };
+        (htmlGetter as any).__htmlRaw = true;
+        return htmlGetter;
+      }
 
       // Handle string-based component lookup
       if (typeof komp === 'string') {
