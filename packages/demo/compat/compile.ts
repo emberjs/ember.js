@@ -161,10 +161,21 @@ setInterval(() => {
   },
   // fn: Partially applies a function with arguments
   fn: (func: any, ...args: any[]) => {
-    const resolvedFn = typeof func === 'function' ? func : () => func;
     return (...callArgs: any[]) => {
+      // Resolve the function — it may be a GXT getter wrapping the actual function
+      let resolvedFn = func;
+      // Unwrap nested getters until we get the actual function or value
+      while (typeof resolvedFn === 'function' && resolvedFn.length === 0) {
+        const inner = resolvedFn();
+        if (inner === resolvedFn) break; // prevent infinite loop
+        if (typeof inner !== 'function') { resolvedFn = inner; break; }
+        resolvedFn = inner;
+      }
       const resolvedArgs = args.map(a => typeof a === 'function' ? a() : a);
-      return resolvedFn(...resolvedArgs, ...callArgs);
+      if (typeof resolvedFn === 'function') {
+        return resolvedFn(...resolvedArgs, ...callArgs);
+      }
+      return undefined;
     };
   },
 };
