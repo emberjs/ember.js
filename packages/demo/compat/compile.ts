@@ -1594,14 +1594,31 @@ export function precompileTemplate(templateString: string, options?: {
       return item;
     }
     // GXT returns getter functions for dynamic values like {{@greeting}}
-    // These need to be called to get the actual value
+    // Create a REACTIVE text node that updates when dependencies change
     if (typeof item === 'function') {
       try {
         const result = item();
-        return itemToNode(result, depth + 1);
+        // If result is a function, it's a nested getter (e.g., from $__if)
+        const finalResult = typeof result === 'function' ? result() : result;
+
+        if (finalResult instanceof Node) {
+          return finalResult;
+        }
+        // If result is an object with GXT node structure, process it
+        if (finalResult && typeof finalResult === 'object' && !(finalResult instanceof Node)) {
+          return itemToNode(finalResult, depth + 1);
+        }
+
+        // Create a text node with the initial value
+        const textValue = finalResult == null ? '' : String(finalResult);
+        const textNode = document.createTextNode(textValue);
+
+        // Note: text node is static for now. GXT's effect() only tracks
+        // cell.value accesses, not plain property reads. Reactivity for
+        // Ember's set() requires cellFor bridge (see __gxtTriggerReRender).
+
+        return textNode;
       } catch (e) {
-        // If the function throws, it might be a component or helper
-        // Return null and let the caller handle it
         return null;
       }
     }
