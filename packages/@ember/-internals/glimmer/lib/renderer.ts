@@ -9,6 +9,7 @@ import { getViewElement, getViewId, setViewElement } from '@ember/-internals/vie
 (globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
 
 import { pushParentView, popParentView } from '@glimmer/manager';
+// @ts-ignore
 import {
   destroyElementSync as _destroyElementSync,
   renderComponent as gxtRenderComponent,
@@ -18,6 +19,7 @@ import {
   provideContext as gxtProvideContext,
   RENDERING_CONTEXT as GXT_RENDERING_CONTEXT,
   HTMLBrowserDOMApi as GxtHTMLBrowserDOMApi,
+// @ts-ignore
 } from '@lifeart/gxt';
 
 // Cached GXT DOM API for destroyElementSync

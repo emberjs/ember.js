@@ -878,7 +878,14 @@ const $_MANAGERS = {
         const owner = (globalThis as any).owner;
         if (owner) {
           const resolved = resolveComponent(komp, owner);
-          return resolved !== null;
+          if (resolved !== null) return true;
+          // Also check for helpers — inline curlies like {{my-helper "foo"}} get
+          // transformed to <MyHelper @__pos0__="foo" /> which GXT compiles as $_c.
+          try {
+            if (owner.factoryFor(`helper:${komp}`) || owner.lookup(`helper:${komp}`)) {
+              return true;
+            }
+          } catch { /* ignore destroyed owner errors */ }
         }
         return false;
       }
@@ -901,7 +908,47 @@ const $_MANAGERS = {
 
       // Handle string-based component lookup
       if (typeof komp === 'string') {
-        return handleStringComponent(komp, args, fw, ctx, owner);
+        const result = handleStringComponent(komp, args, fw, ctx, owner);
+        if (result !== null) return result;
+
+        // Helper fallback — inline curlies like {{my-helper "foo"}} get transformed
+        // to <MyHelper @__pos0__="foo" /> and compiled as $_c("my-helper", ...).
+        // Resolve as helper if component wasn't found.
+        if (owner) {
+          try {
+            const helperFactory = owner.factoryFor(`helper:${komp}`);
+            const helperLookup = !helperFactory ? owner.lookup(`helper:${komp}`) : null;
+            if (helperFactory || helperLookup) {
+              // Reconstruct positional args from @__pos*__ named args
+              const positional: any[] = [];
+              const named: Record<string, any> = {};
+              const posCount = typeof args?.__posCount__ === 'function' ? args.__posCount__() : args?.__posCount__;
+              if (posCount > 0) {
+                for (let i = 0; i < posCount; i++) {
+                  const val = args[`__pos${i}__`];
+                  positional.push(typeof val === 'function' ? val() : val);
+                }
+              }
+              // Collect regular named args (skip internal @__pos*__ and $-prefixed)
+              if (args) {
+                for (const key of Object.keys(args)) {
+                  if (!key.startsWith('__') && !key.startsWith('$')) {
+                    const val = args[key];
+                    named[key] = typeof val === 'function' ? val() : val;
+                  }
+                }
+              }
+
+              // Use $_maybeHelper to invoke the helper through Ember's protocol
+              const maybeHelper = (globalThis as any).$_maybeHelper;
+              if (typeof maybeHelper === 'function') {
+                return maybeHelper(komp, positional, named, ctx);
+              }
+            }
+          } catch { /* ignore errors */ }
+        }
+
+        return null;
       }
 
       // Handle component with internal/custom manager

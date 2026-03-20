@@ -294,84 +294,12 @@ export interface EmberPrecompileOptions {
 }
 
 /**
- * Compile a template string to a gxt-compatible template factory
+ * Compile a template string to a gxt-compatible template factory.
+ * Delegates to compile.ts which uses the GXT runtime compiler for proper
+ * component invocation (e.g., <XBlah /> → $_c('x-blah', ...)).
  */
-export function compile(
-  templateString: string,
-  options: Partial<EmberPrecompileOptions> = {}
-): any {
-  const moduleName = options.moduleName || 'gxt-runtime-template';
-  const templateId = `gxt-${Math.random().toString(36).slice(2)}`;
-
-  // Create the template factory
-  const templateFactory = (owner?: any) => {
-    // Parse the template once
-    const parsedNodes = parseElements(templateString);
-
-    const template = {
-      id: templateId,
-      moduleName,
-      [GXT_TEMPLATE_SYMBOL]: true,
-      __gxtCompiled: true,
-      result: 'ok' as const,
-      meta: { owner },
-
-      // The $nodes getter that creates DOM nodes when rendered
-      get $nodes() {
-        // $nodes should be populated during render
-        return [];
-      },
-
-      // Render function for gxt
-      render(context: any, parentElement: Element) {
-        const nodes: Node[] = [];
-        for (const node of parsedNodes) {
-          const domNode = nodeToGxt(node, context);
-          if (domNode) {
-            if (Array.isArray(domNode)) {
-              nodes.push(...domNode);
-              domNode.forEach((n: Node) => parentElement.appendChild(n));
-            } else {
-              nodes.push(domNode);
-              parentElement.appendChild(domNode);
-            }
-          }
-        }
-        return { [GXT_NODES_KEY]: nodes, ctx: context };
-      },
-
-      // Ember expects these methods
-      asLayout() {
-        return {
-          moduleName,
-          symbolTable: {
-            hasEval: false,
-            symbols: [],
-            upvars: [],
-          },
-          meta: {
-            moduleName,
-            owner: owner ?? null,
-            size: 0,
-          },
-          compile() {
-            // Return a special handle for gxt templates
-            return 999999;
-          },
-        };
-      },
-
-      asWrappedLayout() {
-        return this.asLayout();
-      },
-    };
-
-    return template;
-  };
-
-  // Make it callable like a factory
-  return templateFactory;
-}
+import { compileTemplate } from './compile';
+export const compile = compileTemplate;
 
 /**
  * Precompile a template string (returns serialized form)

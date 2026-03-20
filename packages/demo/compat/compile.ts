@@ -506,6 +506,47 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
         .toLowerCase();
 
+      // Check for HELPER first — inline curlies like {{to-js "foo"}} get transformed
+      // to <ToJs @__pos0__="foo" /> by transformCurlyBlockComponents. These should be
+      // handled as helpers, not components.
+      const owner = g.owner;
+      if (owner) {
+        const helperFactory = owner.factoryFor?.(`helper:${kebabName}`);
+        const helperLookup = !helperFactory ? owner.lookup?.(`helper:${kebabName}`) : null;
+        if (helperFactory || helperLookup) {
+          // Reconstruct positional args from @__pos*__ named args
+          const positional: any[] = [];
+          const named: Record<string, any> = {};
+          let posCount = 0;
+
+          if (tagProps && tagProps !== g.$_edp) {
+            const attrs = tagProps[1];
+            if (Array.isArray(attrs)) {
+              for (const [key, value] of attrs) {
+                if (key === '@__posCount__') {
+                  posCount = typeof value === 'function' ? value() : value;
+                }
+              }
+              for (const [key, value] of attrs) {
+                const resolved = typeof value === 'function' ? value() : value;
+                if (key.startsWith('@__pos') && key.endsWith('__') && key !== '@__posCount__') {
+                  const idx = parseInt(key.slice(6, -2));
+                  positional[idx] = resolved;
+                } else if (key.startsWith('@') && !key.startsWith('@__')) {
+                  named[key.slice(1)] = resolved;
+                }
+              }
+            }
+          }
+
+          // Invoke helper via $_maybeHelper which handles all helper protocols
+          const maybeHelper = g.$_maybeHelper;
+          if (typeof maybeHelper === 'function') {
+            return maybeHelper(kebabName, positional, named, ctx);
+          }
+        }
+      }
+
       // Check if the component manager can handle this
       if (managers.component.canHandle(kebabName)) {
         // Build args from tagProps - convert Props format to args object
@@ -829,6 +870,7 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
 
         return renderComponent;
       }
+
     }
 
     // Fall back to original $_tag for regular HTML elements
