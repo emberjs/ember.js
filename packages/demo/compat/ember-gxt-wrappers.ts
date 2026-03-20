@@ -505,6 +505,27 @@ function createEmberTag(original: Function) {
       }
     }
 
+    // Before falling back to HTML element, check if this is a helper
+    // (e.g., {{hello-world}} → <HelloWorld /> but registered as helper:hello-world)
+    if (resolvedTag && typeof resolvedTag === 'string') {
+      const kebab = resolvedTag
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+        .toLowerCase();
+      if (kebab.includes('-')) {
+        const owner = g.owner;
+        if (owner) {
+          const helperFactory = owner.factoryFor(`helper:${kebab}`);
+          if (helperFactory) {
+            const maybeHelper = g.$_maybeHelper;
+            if (maybeHelper) {
+              return maybeHelper(kebab, children || [], {}, ctx);
+            }
+          }
+        }
+      }
+    }
+
     // Fall back to original $_tag for regular HTML elements (GXT order: tag, tagProps, ctx, children)
     return original(tag, tagProps, ctx, children);
   };
