@@ -124,18 +124,20 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   [COMPUTE](): Revision {
     let { lastChecked } = this;
 
-    if (lastChecked === $REVISION) {
-      // Fast path: already checked this revision, return cached value.
-      // This is the most common case during a single validation pass.
-      return this.lastValue;
-    }
-
+    // isUpdating check MUST come before lastChecked early return:
+    // during cycle detection, lastChecked is already $REVISION but
+    // isUpdating is true — we need to detect the cycle, not return cached.
     if (this.isUpdating) {
       if (DEBUG && !allowsCycles(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
 
       this.lastChecked = ++$REVISION;
+      return this.lastValue;
+    }
+
+    if (lastChecked === $REVISION) {
+      // Fast path: already checked this revision, return cached value.
       return this.lastValue;
     }
 

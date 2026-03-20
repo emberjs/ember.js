@@ -227,6 +227,7 @@ class ArrayIterator implements OpaqueIterator {
 
     if (!this.started) {
       this.started = true;
+      if (this.iterator.length === 0) return null;
       value = this.iterator[0];
     } else if (this.pos >= this.iterator.length - 1) {
       return null;
