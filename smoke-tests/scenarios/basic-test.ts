@@ -223,6 +223,41 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
               });
             `,
+            'debug-render-tree-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+              import { captureRenderTree } from '@ember/debug';
+              import Component from '@glimmer/component';
+
+              function flattenTree(nodes) {
+                let result = [];
+                for (let node of nodes) {
+                  result.push(node);
+                  if (node.children) {
+                    result.push(...flattenTree(node.children));
+                  }
+                }
+                return result;
+              }
+
+              class HelloWorld extends Component {
+                <template>{{@arg}}</template>
+              }
+
+              module('Integration | captureRenderTree', function (hooks) {
+                setupRenderingTest(hooks);
+
+                test('scope-based components have correct names in debugRenderTree', async function (assert) {
+                  await render(<template><HelloWorld @arg="first" /></template>);
+
+                  let tree = captureRenderTree(this.owner);
+                  let allNodes = flattenTree(tree);
+                  let names = allNodes.filter(n => n.type === 'component').map(n => n.name);
+                  assert.true(names.includes('HelloWorld'), 'HelloWorld component name is preserved in the render tree (found: ' + names.join(', ') + ')');
+                });
+              });
+            `,
           },
         },
       });

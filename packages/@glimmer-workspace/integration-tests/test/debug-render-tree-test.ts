@@ -11,6 +11,7 @@ import type {
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
 import type { EmberishCurlyComponent } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
+import { DEBUG } from '@glimmer/env';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import { assign } from '@glimmer/util';
@@ -108,6 +109,88 @@ class DebugRenderTreeTest extends RenderTest {
         ],
       },
     ]);
+  }
+
+  @test 'strict-mode components without debug symbols preserve names from scope'() {
+    const HelloWorld = defComponent('{{@arg}}');
+    const Root = defComponent(`<HelloWorld @arg="first"/>`, {
+      scope: { HelloWorld },
+      emit: { moduleName: 'root.hbs', debugSymbols: false },
+    });
+
+    this.renderComponent(Root);
+
+    this.assertRenderTree([
+      {
+        type: 'component',
+        name: '{ROOT}',
+        args: { positional: [], named: {} },
+        instance: null,
+        template: 'root.hbs',
+        bounds: this.elementBounds(this.delegate.getInitialElement()),
+        children: [
+          {
+            type: 'component',
+            name: 'HelloWorld',
+            args: { positional: [], named: { arg: 'first' } },
+            instance: null,
+            template: '(unknown template module)',
+            bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
+            children: [],
+          },
+        ],
+      },
+    ]);
+  }
+
+  @test({ skip: !DEBUG }) 'dynamic component via <this.dynamicComponent>'() {
+    const HelloWorld = defComponent('{{@arg}}');
+
+    class Root extends GlimmerishComponent {
+      HelloWorld = HelloWorld;
+    }
+
+    const RootDef = defComponent(`<this.HelloWorld @arg="first"/>`, {
+      component: Root,
+      emit: { moduleName: 'root.hbs' },
+    });
+
+    this.renderComponent(RootDef);
+
+    const rootChildren = this.delegate.getCapturedRenderTree()[0]?.children ?? [];
+    const componentNode = rootChildren.find(
+      (n: CapturedRenderNode) => n.type === 'component' && n.name !== '{ROOT}'
+    );
+
+    this.assert.ok(componentNode, 'found a component child node');
+
+    this.assert.strictEqual(
+      componentNode?.name,
+      'this.HelloWorld',
+      `dynamic <this.X> component name (got "${componentNode?.name}")`
+    );
+  }
+
+  @test({ skip: !DEBUG }) 'dynamic component via <@argComponent>'() {
+    const HelloWorld = defComponent('{{@arg}}');
+    const Root = defComponent(`<@Greeting @arg="first"/>`, {
+      emit: { moduleName: 'root.hbs' },
+    });
+
+    this.renderComponent(Root, { Greeting: HelloWorld });
+
+    const rootChildren = this.delegate.getCapturedRenderTree()[0]?.children ?? [];
+    const componentNode = rootChildren.find(
+      (n: CapturedRenderNode) => n.type === 'component' && n.name !== '{ROOT}'
+    );
+
+    this.assert.ok(componentNode, 'found a component child node');
+
+    this.assert.strictEqual(
+      componentNode?.name,
+      '@Greeting',
+      `dynamic <@X> component name (got "${componentNode?.name}")`
+    );
   }
 
   @test 'strict-mode modifiers'() {
