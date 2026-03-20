@@ -1560,6 +1560,7 @@ export function precompileTemplate(templateString: string, options?: {
     console.warn('[gxt-compile] Template:', transformedTemplate.slice(0, 200));
   }
 
+
   // Replace async $_each with synchronous $_eachSync.
   // GXT's $_each is async which breaks Ember's synchronous test expectations.
   // Only recreate the template function if we actually need to replace $_each.
