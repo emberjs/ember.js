@@ -59,6 +59,17 @@ installEmberWrappers();
   } catch {
     // cellFor may not apply to all objects
   }
+  // For nested paths like 'colors.apple', also dirty the root property cell.
+  // Templates read `this.colors` which creates a cell for 'colors'. When
+  // set(obj, 'colors.apple', val) fires, we need to dirty 'colors' too
+  // so the template re-evaluates the full path.
+  if (keyName.includes('.')) {
+    const rootKey = keyName.split('.')[0]!;
+    try {
+      const rootCell = cellFor(obj, rootKey, /* skipDefine */ true);
+      if (rootCell) rootCell.update((obj as any)[rootKey]);
+    } catch { /* ignore */ }
+  }
   (globalThis as any).__gxtPendingSync = true;
 };
 
@@ -133,11 +144,19 @@ setInterval(() => {
   },
   // hash: Creates an object from named arguments (handled specially)
   hash: (obj: any) => obj,
-  // get: Dynamic property lookup
+  // get: Dynamic property lookup — supports dot-path keys like 'foo.bar'
   get: (obj: any, key: any) => {
     const resolvedObj = typeof obj === 'function' ? obj() : obj;
     const resolvedKey = typeof key === 'function' ? key() : key;
     if (resolvedObj == null) return undefined;
+    if (typeof resolvedKey === 'string' && resolvedKey.includes('.')) {
+      let current = resolvedObj;
+      for (const part of resolvedKey.split('.')) {
+        if (current == null) return undefined;
+        current = current[part];
+      }
+      return current;
+    }
     return resolvedObj[resolvedKey];
   },
   // fn: Partially applies a function with arguments
