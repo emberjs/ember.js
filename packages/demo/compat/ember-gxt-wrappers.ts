@@ -201,12 +201,17 @@ function createEmberMaybeHelper(original: Function) {
 function createEmberTag(original: Function) {
   const $ARGS_SYMBOL = Symbol.for('gxt-args');
 
+  // GXT's $_tag signature is: $_tag(tag, tagProps, ctx, children)
+  // We receive (tag, tagProps, ctx, children) from GXT's compiled output
   return function $_tag_ember(
     tag: string | (() => string),
     tagProps: any,
-    children: any[],
-    ctx: any
+    gxtCtx: any,
+    gxtChildren: any[]
   ): any {
+    // GXT passes (tag, tagProps, ctx, children) — use GXT's order
+    const children = gxtChildren;
+    const ctx = gxtCtx;
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
 
     if (resolvedTag && typeof resolvedTag === 'string') {
@@ -449,8 +454,8 @@ function createEmberTag(original: Function) {
       }
     }
 
-    // Fall back to original $_tag for regular HTML elements
-    return original(tag, tagProps, children, ctx);
+    // Fall back to original $_tag for regular HTML elements (GXT order: tag, tagProps, ctx, children)
+    return original(tag, tagProps, ctx, children);
   };
 }
 

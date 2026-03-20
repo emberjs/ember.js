@@ -264,11 +264,12 @@ const g = globalThis as any;
 if (g.$_tag && !g.$_tag.__emberWrapped) {
   const originalTag = g.$_tag;
 
+  // GXT's $_tag signature: $_tag(tag, tagProps, ctx, children)
   g.$_tag = function $_tag_ember(
     tag: string | (() => string),
     tagProps: any,
-    children: any[],
-    ctx: any
+    ctx: any,
+    children: any[]
   ): any {
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
 
@@ -732,7 +733,8 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
     // 2. Passing $fw as tagProps[3] for reference
     // We should NOT apply modifiers again here - GXT already handles them.
     // We only need to apply forwarded DOM attributes (fw[0]) that GXT doesn't handle.
-    const result = originalTag(tag, tagProps, children, ctx);
+    // GXT order: tag, tagProps, ctx, children
+    const result = originalTag(tag, tagProps, ctx, children);
 
     // Apply forwarded DOM attributes from $fw if present
     // $fw is passed as tagProps[3] and contains [domAttrs, slots, events/modifiers]
