@@ -622,13 +622,43 @@ function createRenderContext(
     }
   }
 
-  // Wrap renderContext in a Proxy so that GXT template property reads
-  // (e.g. `this.cond1`) go through the same GXT cell that
-  // __gxtTriggerReRender uses, making Ember `set()` changes reactive.
+  // Pre-install cell-backed getter/setters on the instance BEFORE creating
+  // the Proxy. This is critical for GXT effect tracking: when a GXT effect
+  // reads `this.foo`, Reflect.get triggers the getter on the instance, which
+  // reads cell.value, and the effect tracks the cell as a dependency.
+  // __gxtTriggerReRender also uses cellFor on the instance, so both reads
+  // and writes use the same cell.
+  const _cellFor = (globalThis as any).__gxtCellFor;
   const SKIP_CELL_PROPS = new Set([
-    'constructor', 'args', 'attrs', '$slots', '$fw',
+    'constructor', 'args', 'attrs', '$slots', '$fw', 'init', 'destroy',
     '$_hasBlock', '$_hasBlockParams', $ARGS_KEY,
+    'concatenatedProperties', 'mergedProperties', 'classNames',
+    'classNameBindings', 'attributeBindings', 'positionalParams',
+    '_states', 'renderer', 'element', 'elementId', 'tagName',
+    'isView', 'isComponent', '__dispatcher', 'parentView',
+    '_state', '_currentState', 'target', 'action', 'actionContext',
+    'actionContextObject', 'layoutName', 'layout', '_debugContainerKey',
   ]);
+
+  if (_cellFor && instance) {
+    // Install cells for all enumerable properties on the instance and its prototype
+    const seen = new Set<string>();
+    let obj = instance;
+    for (let depth = 0; depth < 3 && obj; depth++) {
+      for (const key of Object.keys(obj)) {
+        if (seen.has(key) || SKIP_CELL_PROPS.has(key) || key.startsWith('_')) continue;
+        seen.add(key);
+        const desc = Object.getOwnPropertyDescriptor(obj, key);
+        // Only install cells for data properties (not existing getters/setters)
+        if (desc && !desc.get && !desc.set && typeof desc.value !== 'function') {
+          try {
+            _cellFor(instance, key, /* skipDefine */ false);
+          } catch { /* ignore */ }
+        }
+      }
+      obj = Object.getPrototypeOf(obj);
+    }
+  }
 
   const proxy = new Proxy(renderContext, {
     get(target, prop, receiver) {
@@ -637,36 +667,9 @@ function createRenderContext(
         return Reflect.get(target, prop, receiver);
       }
 
-      const value = Reflect.get(target, prop, receiver);
-
-      // Don't wrap functions through cells (they're actions/methods, not data)
-      if (typeof value === 'function') {
-        return value;
-      }
-
-      // Create reactive cell on the component INSTANCE.
-      // renderContext = Object.create(instance), and __gxtTriggerReRender creates
-      // cells on the instance, so we MUST use the same object for cell creation.
-      // Using skipDefine=true because defining getter/setter on a Proxy target
-      // doesn't help — the Proxy intercepts reads anyway. The key is that the
-      // cell is on the SAME object that __gxtTriggerReRender uses.
-      const _cellFor = (globalThis as any).__gxtCellFor;
-      if (_cellFor) {
-        try {
-          // Always use the instance (prototype of renderContext)
-          const instance = Object.getPrototypeOf(target);
-          if (instance) {
-            const cell = _cellFor(instance, prop, /* skipDefine */ true);
-            if (cell) {
-              return cell.value;
-            }
-          }
-        } catch {
-          // cellFor may not apply to all objects
-        }
-      }
-
-      return value;
+      // Reflect.get triggers the cell getter on the instance (installed above),
+      // which reads cell.value and gets tracked by GXT effects
+      return Reflect.get(target, prop, receiver);
     },
 
     set(target, prop, value, receiver) {
@@ -674,22 +677,8 @@ function createRenderContext(
         return Reflect.set(target, prop, value, receiver);
       }
 
-      // Update cell on the INSTANCE (same object as __gxtTriggerReRender uses)
-      const _cellFor = (globalThis as any).__gxtCellFor;
-      if (_cellFor) {
-        try {
-          const instance = Object.getPrototypeOf(target);
-          if (instance) {
-            const cell = _cellFor(instance, prop, /* skipDefine */ true);
-            if (cell) {
-              cell.update(value);
-            }
-          }
-        } catch {
-          // cellFor may not apply
-        }
-      }
-
+      // Reflect.set triggers the cell setter on the instance (installed above),
+      // which calls cell.update(value) and dirties the cell
       return Reflect.set(target, prop, value, receiver);
     },
   });
