@@ -7,6 +7,11 @@
   </head>
   <body>
     <script type="module">
+      // Ensure decorator-transforms runtime is available globally
+      import * as _dt from 'decorator-transforms/runtime';
+      globalThis.dt7948 = _dt;
+    </script>
+    <script type="module">
       import 'qunit/qunit/qunit.js';
       import 'qunit/qunit/qunit.css';
 

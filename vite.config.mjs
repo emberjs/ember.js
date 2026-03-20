@@ -135,6 +135,15 @@ export default defineConfig(({ mode }) => {
               ),
             },
             {
+              find: 'decorator-transforms/runtime',
+              replacement: fileURLToPath(
+                new URL(
+                  `./node_modules/decorator-transforms/dist/runtime.js`,
+                  owerrideRoot
+                )
+              ),
+            },
+            {
               find: '@lifeart/gxt/glimmer-compatibility',
               replacement: fileURLToPath(
                 new URL(
