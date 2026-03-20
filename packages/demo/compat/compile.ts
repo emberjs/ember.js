@@ -1538,6 +1538,15 @@ export function precompileTemplate(templateString: string, options?: {
 
   // Transform the template
   let transformedTemplate = templateString;
+
+  // Fix empty true-branch in {{#if}}: GXT compiler can't handle
+  // {{#if cond}}{{else}}content{{/if}} (empty true branch).
+  // Insert a zero-width space so the true branch isn't empty.
+  transformedTemplate = transformedTemplate.replace(
+    /\{\{#(if|unless)\s+([^}]+)\}\}\s*\{\{else\}\}/g,
+    '{{#$1 $2}} {{else}}'
+  );
+
   transformedTemplate = transformCapitalizedComponents(transformedTemplate);
   if (/\{\{\s*outlet\s*\}\}/.test(transformedTemplate)) {
     transformedTemplate = transformOutletHelper(transformedTemplate);
