@@ -503,7 +503,12 @@ function createRenderContext(
   fw: any,
   owner: any
 ): any {
-  const renderContext = instance ? Object.create(instance) : {};
+  // Use the instance directly — don't use Object.create(instance).
+  // Object.create creates a new object with instance as prototype, which breaks
+  // getters: @tracked, computed properties, etc. run with `this = renderContext`
+  // but their storage is keyed on `instance`. Using the instance directly ensures
+  // `this` is consistent across getter calls and storage lookups.
+  const renderContext = instance || {};
 
   // Get slots from args.$slots (passed from compile.ts)
   // GXT templates use $slots.default() for {{yield}}
@@ -661,25 +666,16 @@ function createRenderContext(
   }
 
   const proxy = new Proxy(renderContext, {
-    get(target, prop, receiver) {
-      // Only intercept string property reads
-      if (typeof prop !== 'string' || SKIP_CELL_PROPS.has(prop)) {
-        return Reflect.get(target, prop, receiver);
-      }
-
-      // Reflect.get triggers the cell getter on the instance (installed above),
-      // which reads cell.value and gets tracked by GXT effects
-      return Reflect.get(target, prop, receiver);
+    get(target, prop, _receiver) {
+      // Pass target (the instance) as receiver so getters run with
+      // this = instance, not this = proxy. This is critical for @tracked,
+      // computed properties, and trackedData which key storage on `this`.
+      return Reflect.get(target, prop, target);
     },
 
-    set(target, prop, value, receiver) {
-      if (typeof prop !== 'string' || SKIP_CELL_PROPS.has(prop)) {
-        return Reflect.set(target, prop, value, receiver);
-      }
-
-      // Reflect.set triggers the cell setter on the instance (installed above),
-      // which calls cell.update(value) and dirties the cell
-      return Reflect.set(target, prop, value, receiver);
+    set(target, prop, value, _receiver) {
+      // Pass target as receiver for same reason as get
+      return Reflect.set(target, prop, value, target);
     },
   });
 
