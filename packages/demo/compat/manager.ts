@@ -35,7 +35,8 @@ interface PoolEntry {
 
 const $PROPS_SYMBOL = Symbol.for('gxt-props');
 const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
-const $ARGS_SYMBOL = Symbol.for('gxt-args');
+// GXT uses the plain string 'args' as the key ($args = 'args' in shared.ts)
+const $ARGS_KEY = 'args';
 
 // Auto-incrementing ID for wrapper elements
 let emberViewIdCounter = 0;
@@ -550,11 +551,20 @@ function createRenderContext(
       });
     }
   }
+  // GXT's $_GET_SLOTS reads ctx['args'][$SLOTS_SYMBOL] as a fallback,
+  // so the attrsProxy (which becomes renderContext.args) must carry slots.
+  attrsProxy[$SLOTS_SYMBOL] = slots;
+
+  // GXT's $_GET_FW reads ctx['args'][$PROPS_SYMBOL] as a fallback
+  // when the template is called via .call(renderContext) with no args.
+  // This enables ...attributes forwarding for both classic and tagless components.
+  attrsProxy[$PROPS_SYMBOL] = fw || [[], [], []];
+
   renderContext.attrs = attrsProxy;
   // GXT accesses @foo as this.args.foo, so also set args
   renderContext.args = attrsProxy;
   // GXT runtime compiler uses Symbol.for('gxt-args') for this[$args].foo
-  renderContext[$ARGS_SYMBOL] = attrsProxy;
+  renderContext[$ARGS_KEY] = attrsProxy;
 
   if (instance && !instance.attrs) {
     instance.attrs = attrsProxy;
@@ -562,8 +572,8 @@ function createRenderContext(
   if (instance && !instance.args) {
     instance.args = attrsProxy;
   }
-  if (instance && !instance[$ARGS_SYMBOL]) {
-    instance[$ARGS_SYMBOL] = attrsProxy;
+  if (instance && !instance[$ARGS_KEY]) {
+    instance[$ARGS_KEY] = attrsProxy;
   }
 
   // Set up reactive getters for args on render context

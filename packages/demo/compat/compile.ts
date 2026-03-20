@@ -20,6 +20,7 @@ import {
   RENDERED_NODES_PROPERTY,
   COMPONENT_ID_PROPERTY,
   syncDom as gxtSyncDom,
+  cellFor,
 } from '@lifeart/gxt';
 
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
@@ -47,7 +48,13 @@ installEmberWrappers();
 // GXT re-render trigger hook - called by Ember's notifyPropertyChange.
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
-(globalThis as any).__gxtTriggerReRender = function(_obj: object, _keyName: string) {
+(globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
+  try {
+    const c = cellFor(obj, keyName);
+    if (c) c.update((obj as any)[keyName]);
+  } catch {
+    // cellFor may not apply to all objects
+  }
   (globalThis as any).__gxtPendingSync = true;
 };
 
@@ -272,8 +279,8 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
       if (resolvedTag.startsWith('@')) {
         const argName = resolvedTag.slice(1); // Remove '@'
         // Get the component from the context's args
-        const $ARGS_SYMBOL = Symbol.for('gxt-args');
-        const args = ctx?.[$ARGS_SYMBOL] || ctx?.args || {};
+        // GXT uses plain string 'args' ($args = 'args')
+        const args = ctx?.['args'] || ctx?.args || {};
         const componentValue = args[argName];
         if (componentValue) {
           // Render the dynamic component
@@ -1551,36 +1558,28 @@ export function precompileTemplate(templateString: string, options?: {
     console.warn('[gxt-compile] Template:', transformedTemplate.slice(0, 200));
   }
 
-  // CRITICAL: Always recreate the template function with proper symbol aliases.
-  // GXT's internal symbols are anonymous Symbol() which don't match our
-  // Symbol.for('gxt-args') / Symbol.for('gxt-slots'). By recreating the
-  // template function, we inject $a (args alias) and $s (slots alias) that
-  // use Symbol.for() to match what createRenderContext sets up.
-  // Also replace async $_each with synchronous $_eachSync.
-  if (compilationResult.code) {
-    let modifiedCode = compilationResult.code;
-
-    // Replace async $_each with $_eachSync
-    if (modifiedCode.includes('$_each(')) {
-      modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
-    }
-
+  // Replace async $_each with synchronous $_eachSync.
+  // GXT's $_each is async which breaks Ember's synchronous test expectations.
+  // Only recreate the template function if we actually need to replace $_each.
+  // Otherwise, keep GXT's runtime compiler's original templateFn which has
+  // the correct $a alias (this['args']) and access to closure variables.
+  if (compilationResult.code && compilationResult.code.includes('$_each(')) {
+    const modifiedCode = compilationResult.code.replace(/\$_each\(/g, '$_eachSync(');
     compilationResult.code = modifiedCode;
     try {
+      // GXT's runtime compiler uses $args = 'args' (a string, not Symbol)
+      // and puts all GXT functions on globalThis via setupGlobalScope()
       const needsArgsAlias = modifiedCode.includes('$a.');
-      const needsSlotsAlias = modifiedCode.includes('$s.') || modifiedCode.includes('$s[');
       const templateFnCode = `
         "use strict";
         return function() {
-          ${needsArgsAlias ? 'const $a = this[Symbol.for("gxt-args")];' : ''}
-          ${needsSlotsAlias ? 'const $s = this[Symbol.for("gxt-slots")];' : ''}
+          ${needsArgsAlias ? "const $a = this['args'];" : ''}
           return ${modifiedCode};
         };
       `;
       compilationResult.templateFn = Function(templateFnCode)();
     } catch (e) {
-      console.error('[gxt-compile] Failed to recreate template function:', e);
-      console.error('[gxt-compile] Code:', modifiedCode.slice(0, 200));
+      console.error('[gxt-compile] Failed to recreate template function with $_eachSync:', e);
     }
   }
 
@@ -1769,13 +1768,11 @@ export function precompileTemplate(templateString: string, options?: {
             renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 0) + 1;
           }
 
-          // Ensure $args symbol is ALWAYS accessible on the render context
-          // The compiled template uses this[$args].argName, where $args is Symbol.for('gxt-args')
-          // If it's not set, lookups like `this[$args].model` will throw "Cannot read properties of undefined"
-          const $ARGS_SYMBOL = Symbol.for('gxt-args');
-          if (!renderContext[$ARGS_SYMBOL]) {
-            // Copy from context if present, otherwise create empty object
-            renderContext[$ARGS_SYMBOL] = context[$ARGS_SYMBOL] || context.args || {};
+          // Ensure 'args' key is ALWAYS accessible on the render context
+          // GXT's runtime compiler uses $args = 'args' (a string), so templates
+          // access args via this['args'].foo (aliased as $a.foo)
+          if (!renderContext['args']) {
+            renderContext['args'] = context['args'] || context.args || {};
           }
 
           // Add has-block helpers to the render context
