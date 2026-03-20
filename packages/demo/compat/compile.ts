@@ -57,6 +57,16 @@ installEmberWrappers();
   }
 };
 
+// Synchronous flush for test integration — call after runTask() completes
+// to ensure DOM is updated before assertions
+(globalThis as any).__gxtSyncDomNow = function() {
+  try {
+    gxtSyncDom();
+  } catch {
+    // Ignore sync errors
+  }
+};
+
 // Cleanup function to reset GXT state between tests
 (globalThis as any).__gxtCleanupActiveComponents = function() {
   // Reset block params stack
