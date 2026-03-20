@@ -7,12 +7,15 @@
  */
 
 // Import the GXT runtime compiler
+// @ts-ignore - direct path to avoid GXT Babel plugin
 import {
   compileTemplate as gxtCompileTemplate,
   setupGlobalScope,
   isGlobalScopeReady,
-} from '@lifeart/gxt/runtime-compiler';
+} from '../node_modules/@lifeart/gxt/dist/gxt.runtime-compiler.es.js';
 
+// Use direct path to avoid GXT Babel plugin processing (which injects duplicate declarations)
+// @ts-ignore - direct path import
 import {
   createRoot as gxtCreateRoot,
   setParentContext as gxtSetParentContext,
@@ -22,12 +25,12 @@ import {
   syncDom as gxtSyncDom,
   cellFor,
   effect as gxtEffect,
-} from '@lifeart/gxt';
+} from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
 import { installEmberWrappers } from './ember-gxt-wrappers';
 
-const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
+const _SLOTS_SYM = Symbol.for('gxt-slots');
 
 // Ensure global scope is set up
 if (!isGlobalScopeReady()) {
@@ -1884,7 +1887,7 @@ export function precompileTemplate(templateString: string, options?: {
           const gxtRoot = gxtCreateRoot(document);
           gxtSetParentContext(gxtRoot);
 
-          g.$slots = context[$SLOTS_SYMBOL] || context.$slots || {};
+          g.$slots = context[_SLOTS_SYM] || context.$slots || {};
           g.$fw = context.$fw || [[], [], []];
 
 

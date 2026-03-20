@@ -552,5 +552,8 @@ export function installEmberWrappers() {
 }
 
 // Create module-level wrapped exports for ES module consumers
-export const $_maybeHelper = createEmberMaybeHelper(gxtModule.$_maybeHelper);
-export const $_tag = createEmberTag(gxtModule.$_tag);
+const _wrappedMH = createEmberMaybeHelper(gxtModule.$_maybeHelper);
+const _wrappedTag = createEmberTag(gxtModule.$_tag);
+
+// Re-export with original names (using alias to avoid GXT Babel plugin duplicate)
+export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag };
