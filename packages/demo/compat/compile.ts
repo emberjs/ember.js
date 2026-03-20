@@ -27,7 +27,7 @@ import {
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
 import { installEmberWrappers } from './ember-gxt-wrappers';
 
-const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
+const _SLOTS_SYM = Symbol.for('gxt-slots');
 
 // Ensure global scope is set up
 if (!isGlobalScopeReady()) {
@@ -1884,7 +1884,7 @@ export function precompileTemplate(templateString: string, options?: {
           const gxtRoot = gxtCreateRoot(document);
           gxtSetParentContext(gxtRoot);
 
-          g.$slots = context[$SLOTS_SYMBOL] || context.$slots || {};
+          g.$slots = context[_SLOTS_SYM] || context.$slots || {};
           g.$fw = context.$fw || [[], [], []];
 
 
