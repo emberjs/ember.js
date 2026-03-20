@@ -364,11 +364,14 @@ class ClassicRootState {
             renderContext.owner = owner;
 
             // Copy enumerable properties (including inherited) as GETTERS
-            // so changes to the component are reflected in the renderContext.
-            // This is critical for reactivity: when set(component, 'foo', newVal) is called,
-            // renderContext.foo should return the new value.
+            // that read/write through GXT cells on the component instance.
+            // This is critical for reactivity: when Ember's set() calls
+            // notifyPropertyChange -> __gxtTriggerReRender -> cellFor(component, key).update(),
+            // the SAME cell is read here, so GXT's effect() system picks up the change
+            // and updates the DOM.
             // NOTE: We use for...in to include prototype properties (from Component.extend(attrs))
             // since test context values like { customId: 'bizz' } are on the prototype.
+            const _cellFor = (globalThis as any).__gxtCellFor;
             const definedProps: string[] = [];
             for (const key in component) {
               if (key === 'args' || key === 'constructor') continue;
@@ -381,14 +384,33 @@ class ClassicRootState {
               const propKey = key;
               const comp = component;
               try {
-                Object.defineProperty(renderContext, propKey, {
-                  get() {
-                    return comp[propKey];
-                  },
-                  set(v) { comp[propKey] = v; },
-                  enumerable: true,
-                  configurable: true,
-                });
+                if (_cellFor) {
+                  // Use cellFor with skipDefine=true so we don't redefine the property
+                  // on the component object itself (Ember manages it via set/get).
+                  // Instead, we only create the cell for tracking and read/write through it.
+                  const cell = _cellFor(comp, propKey, /* skipDefine */ true);
+                  Object.defineProperty(renderContext, propKey, {
+                    get() {
+                      return cell.value;
+                    },
+                    set(v: any) {
+                      cell.update(v);
+                      comp[propKey] = v;
+                    },
+                    enumerable: true,
+                    configurable: true,
+                  });
+                } else {
+                  // Fallback: plain getter/setter (no GXT reactivity)
+                  Object.defineProperty(renderContext, propKey, {
+                    get() {
+                      return comp[propKey];
+                    },
+                    set(v) { comp[propKey] = v; },
+                    enumerable: true,
+                    configurable: true,
+                  });
+                }
                 definedProps.push(propKey);
               } catch (err) {
                 // Property might already exist or be non-configurable
@@ -547,11 +569,30 @@ class ClassicRootState {
             freshContext.$fw = [[], [], []];
             freshContext.owner = gxtOwner;
 
-            // Copy own enumerable properties that aren't functions
-            for (const key of Object.keys(component)) {
-              if (key === 'args') continue;
+            // Copy enumerable properties as cell-backed getters (same as initial render)
+            // so GXT effects track dependencies correctly during re-render
+            const _reRenderCellFor = (globalThis as any).__gxtCellFor;
+            for (const key in component) {
+              if (key === 'args' || key === 'constructor') continue;
               const value = component[key];
-              if (typeof value !== 'function' || key === 'element') {
+              if (typeof value === 'function' && key !== 'element') continue;
+              if (Object.prototype.hasOwnProperty.call(freshContext, key)) continue;
+
+              const propKey = key;
+              const comp = component;
+              try {
+                if (_reRenderCellFor) {
+                  const cell = _reRenderCellFor(comp, propKey, /* skipDefine */ true);
+                  Object.defineProperty(freshContext, propKey, {
+                    get() { return cell.value; },
+                    set(v: any) { cell.update(v); comp[propKey] = v; },
+                    enumerable: true,
+                    configurable: true,
+                  });
+                } else {
+                  freshContext[propKey] = value;
+                }
+              } catch {
                 freshContext[key] = value;
               }
             }

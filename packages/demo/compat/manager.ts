@@ -654,7 +654,8 @@ function createRenderContext(
           owner = Object.getPrototypeOf(owner);
         }
         if (owner) {
-          const cell = _cellFor(owner, prop);
+          // Use skipDefine=true to avoid redefining properties on Ember objects
+          const cell = _cellFor(owner, prop, /* skipDefine */ true);
           if (cell) {
             return cell.value;
           }
@@ -679,7 +680,8 @@ function createRenderContext(
             owner = Object.getPrototypeOf(owner);
           }
           if (owner) {
-            const cell = _cellFor(owner, prop);
+            // Use skipDefine=true to avoid redefining properties on Ember objects
+            const cell = _cellFor(owner, prop, /* skipDefine */ true);
             if (cell) {
               cell.update(value);
             }

@@ -51,7 +51,10 @@ installEmberWrappers();
 // this hook only needs to mark that a sync is pending.
 (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
   try {
-    const c = cellFor(obj, keyName);
+    // Use skipDefine=true to avoid redefining properties on Ember component
+    // instances. The cell is created/retrieved for tracking only; Ember manages
+    // the actual property via its own set()/get() system.
+    const c = cellFor(obj, keyName, /* skipDefine */ true);
     if (c) c.update((obj as any)[keyName]);
   } catch {
     // cellFor may not apply to all objects
