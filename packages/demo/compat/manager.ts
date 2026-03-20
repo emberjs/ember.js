@@ -639,31 +639,31 @@ function createRenderContext(
 
       const value = Reflect.get(target, prop, receiver);
 
-      // Don't wrap functions or undefined through cells
-      if (typeof value === 'function' || value === undefined) {
+      // Don't wrap functions through cells (they're actions/methods, not data)
+      if (typeof value === 'function') {
         return value;
       }
 
-      // Find the actual owner object in the prototype chain
+      // Create reactive cell on the component INSTANCE.
+      // renderContext = Object.create(instance), and __gxtTriggerReRender creates
+      // cells on the instance, so we MUST use the same object for cell creation.
+      // Using skipDefine=true because defining getter/setter on a Proxy target
+      // doesn't help — the Proxy intercepts reads anyway. The key is that the
+      // cell is on the SAME object that __gxtTriggerReRender uses.
       const _cellFor = (globalThis as any).__gxtCellFor;
-      if (!_cellFor) {
-        return value;
-      }
-
-      try {
-        let owner = target;
-        while (owner && !Object.prototype.hasOwnProperty.call(owner, prop)) {
-          owner = Object.getPrototypeOf(owner);
-        }
-        if (owner) {
-          // Use skipDefine=true to avoid redefining properties on Ember objects
-          const cell = _cellFor(owner, prop, /* skipDefine */ true);
-          if (cell) {
-            return cell.value;
+      if (_cellFor) {
+        try {
+          // Always use the instance (prototype of renderContext)
+          const instance = Object.getPrototypeOf(target);
+          if (instance) {
+            const cell = _cellFor(instance, prop, /* skipDefine */ true);
+            if (cell) {
+              return cell.value;
+            }
           }
+        } catch {
+          // cellFor may not apply to all objects
         }
-      } catch {
-        // cellFor may not apply to all objects
       }
 
       return value;
@@ -674,16 +674,13 @@ function createRenderContext(
         return Reflect.set(target, prop, value, receiver);
       }
 
+      // Update cell on the INSTANCE (same object as __gxtTriggerReRender uses)
       const _cellFor = (globalThis as any).__gxtCellFor;
       if (_cellFor) {
         try {
-          let owner = target;
-          while (owner && !Object.prototype.hasOwnProperty.call(owner, prop)) {
-            owner = Object.getPrototypeOf(owner);
-          }
-          if (owner) {
-            // Use skipDefine=true to avoid redefining properties on Ember objects
-            const cell = _cellFor(owner, prop, /* skipDefine */ true);
+          const instance = Object.getPrototypeOf(target);
+          if (instance) {
+            const cell = _cellFor(instance, prop, /* skipDefine */ true);
             if (cell) {
               cell.update(value);
             }
