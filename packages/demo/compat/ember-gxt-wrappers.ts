@@ -29,9 +29,14 @@ const g = globalThis as any;
  * Unwrap GXT args: GXT may pass getters (functions) for reactive values.
  * Helpers expect resolved values in positional/named args.
  */
+function isGxtGetter(v: any): boolean {
+  return typeof v === 'function' && !v.prototype;
+}
 function unwrapArgs(args: any[]): any[] {
   if (!Array.isArray(args)) return [];
-  return args.map(a => typeof a === 'function' ? a() : a);
+  // Only unwrap GXT getters (arrow fns with no prototype).
+  // Regular functions (like closures from (fn ...)) should be passed as-is.
+  return args.map(a => isGxtGetter(a) ? a() : a);
 }
 
 // GXT internal hash keys that should not be passed to Ember helpers

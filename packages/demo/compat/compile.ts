@@ -136,11 +136,11 @@ setInterval(() => {
   },
   // concat: Concatenates arguments into a string
   concat: (...args: any[]) => {
-    return args.map(a => typeof a === 'function' ? a() : a).join('');
+    return args.map(a => (typeof a === 'function' && !a.prototype) ? a() : a).join('');
   },
   // array: Creates an array from arguments
   array: (...args: any[]) => {
-    return args.map(a => typeof a === 'function' ? a() : a);
+    return args.map(a => (typeof a === 'function' && !a.prototype) ? a() : a);
   },
   // hash: Creates an object from named arguments (handled specially)
   hash: (obj: any) => obj,
