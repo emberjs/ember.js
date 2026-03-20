@@ -654,8 +654,8 @@ function createRenderContext(
         if (seen.has(key) || SKIP_CELL_PROPS.has(key) || key.startsWith('_')) continue;
         seen.add(key);
         const desc = Object.getOwnPropertyDescriptor(obj, key);
-        // Only install cells for data properties (not existing getters/setters)
-        if (desc && !desc.get && !desc.set && typeof desc.value !== 'function') {
+        // Only install cells for configurable data properties (not getters or frozen props)
+        if (desc && !desc.get && !desc.set && desc.configurable !== false && typeof desc.value !== 'function') {
           try {
             _cellFor(instance, key, /* skipDefine */ false);
           } catch { /* ignore */ }
