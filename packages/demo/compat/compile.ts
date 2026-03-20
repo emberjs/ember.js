@@ -37,6 +37,46 @@ if (!isGlobalScopeReady()) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// Override GXT's $__if with Ember-aware truthiness rules.
+// Ember considers empty arrays, proxy objects with isTruthy=false, and
+// empty HTMLSafe strings as falsy, unlike JavaScript's standard truthiness.
+{
+  const g = globalThis as any;
+  const _isArray = Array.isArray;
+  const _isProxy = (v: any) => v && typeof v === 'object' && (v._content !== undefined || v.content !== undefined);
+
+  function emberToBool(predicate: unknown): boolean {
+    if (predicate && typeof predicate === 'object') {
+      // Proxy: check isTruthy
+      if (_isProxy(predicate)) {
+        return Boolean((predicate as any).isTruthy ?? (predicate as any).content);
+      }
+      // Array: empty is falsy
+      if (_isArray(predicate)) {
+        return (predicate as any[]).length !== 0;
+      }
+      // HTMLSafe: check toString()
+      if (typeof (predicate as any).toHTML === 'function') {
+        return Boolean((predicate as any).toString());
+      }
+    }
+    return Boolean(predicate);
+  }
+
+  // Replace $__if on globalThis with Ember-aware version
+  if (g.$__if) {
+    g.$__if = function $__if_ember(condition: unknown, ifTrue: unknown, ifFalse: unknown = '') {
+      // Unwrap GXT getter
+      const rawCond = typeof condition === 'function' && !condition.prototype ? condition() : condition;
+      // Apply Ember truthiness
+      const cond = emberToBool(rawCond);
+      const result = cond ? ifTrue : ifFalse;
+      // Unwrap result getter
+      return typeof result === 'function' && !result.prototype ? result() : result;
+    };
+  }
+}
+
 // GXT external schedule hook: GXT's cell.update() calls scheduleRevalidate()
 // which now checks globalThis.__gxtExternalSchedule before using queueMicrotask.
 // We set it to a no-op so GXT doesn't auto-schedule DOM sync — instead we
