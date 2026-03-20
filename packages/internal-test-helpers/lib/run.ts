@@ -14,7 +14,14 @@ export function runDestroy(toDestroy: any): void {
 }
 
 export function runTask<F extends () => any>(callback: F): ReturnType<F> {
-  return run(callback);
+  const result = run(callback);
+  // In GXT mode, flush pending DOM updates synchronously after the task
+  // so test assertions see the updated DOM immediately
+  const syncNow = (globalThis as any).__gxtSyncDomNow;
+  if (typeof syncNow === 'function') {
+    syncNow();
+  }
+  return result;
 }
 
 export function runTaskNext(): Promise<void> {

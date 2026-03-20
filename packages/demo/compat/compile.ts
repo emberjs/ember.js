@@ -35,37 +35,42 @@ if (!isGlobalScopeReady()) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
-// GXT re-render trigger hook - called by Ember's notifyPropertyChange
-// GXT re-render trigger hook - called by Ember's notifyPropertyChange
-// Uses setTimeout to schedule gxtSyncDom OUTSIDE the backburner run loop.
-// CRITICAL: We do NOT call dirtyTagFor here. GXT has its own reactivity
-// system and doesn't need Ember's tag invalidation. Calling dirtyTagFor
-// increments CURRENT_TAG which prevents backburner's run loop from settling,
-// causing infinite loops.
+// GXT external schedule hook: GXT's cell.update() calls scheduleRevalidate()
+// which now checks globalThis.__gxtExternalSchedule before using queueMicrotask.
+// We set it to a no-op so GXT doesn't auto-schedule DOM sync — instead we
+// control when gxtSyncDom() is called (after runTask, or via setTimeout fallback).
+(globalThis as any).__gxtPendingSync = false;
+(globalThis as any).__gxtExternalSchedule = function() {
+  (globalThis as any).__gxtPendingSync = true;
+};
+
+// GXT re-render trigger hook - called by Ember's notifyPropertyChange.
+// Since GXT's own cell updates are captured by __gxtExternalSchedule,
+// this hook only needs to mark that a sync is pending.
 (globalThis as any).__gxtTriggerReRender = function(_obj: object, _keyName: string) {
-  if (!(globalThis as any).__gxtSyncScheduled) {
-    (globalThis as any).__gxtSyncScheduled = true;
-    setTimeout(() => {
-      try {
-        gxtSyncDom();
-      } catch {
-        // Ignore sync errors
-      } finally {
-        (globalThis as any).__gxtSyncScheduled = false;
-      }
-    }, 0);
+  (globalThis as any).__gxtPendingSync = true;
+};
+
+// Flush pending GXT DOM updates synchronously.
+// Called after runTask() completes so test assertions see updated DOM.
+(globalThis as any).__gxtSyncDomNow = function() {
+  if ((globalThis as any).__gxtPendingSync) {
+    (globalThis as any).__gxtPendingSync = false;
+    try {
+      gxtSyncDom();
+    } catch {
+      // Ignore sync errors
+    }
   }
 };
 
-// Synchronous flush for test integration — call after runTask() completes
-// to ensure DOM is updated before assertions
-(globalThis as any).__gxtSyncDomNow = function() {
-  try {
-    gxtSyncDom();
-  } catch {
-    // Ignore sync errors
+// Also schedule a fallback setTimeout flush for non-test scenarios
+// where __gxtSyncDomNow isn't called explicitly
+setInterval(() => {
+  if ((globalThis as any).__gxtPendingSync) {
+    (globalThis as any).__gxtSyncDomNow();
   }
-};
+}, 16); // ~60fps
 
 // Cleanup function to reset GXT state between tests
 (globalThis as any).__gxtCleanupActiveComponents = function() {
