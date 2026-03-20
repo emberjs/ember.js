@@ -81,6 +81,14 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   afterEach() {
     try {
+      // Clean up GXT active components first (if using GXT)
+      const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
+      if (typeof gxtCleanup === 'function') {
+        gxtCleanup();
+      }
+      // Ensure no pending GXT syncs leak between tests
+      (globalThis as any).__gxtSyncScheduled = false;
+
       if (this.component) {
         runDestroy(this.component);
       }
@@ -115,6 +123,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
     this.component = owner.lookup('component:-top-level');
 
+    // Increment render pass ID before starting a new render transaction
+    // This ensures all components in this render share the same pass ID
+    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+
     runAppend(this.component);
   }
 
@@ -127,6 +139,8 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   rerender() {
     this.#assertNotAwaiting('rerender');
+    // Increment render pass ID for re-renders too
+    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
     this.component!.rerender();
   }
 

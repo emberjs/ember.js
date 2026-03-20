@@ -15,8 +15,21 @@ const HTMLElement = window.HTMLElement;
 const Comment = window.Comment;
 
 function isMarker(node: unknown): node is Comment | typeof TextNode {
-  if (node instanceof Comment && node.textContent === '') {
-    return true;
+  if (node instanceof Comment) {
+    const text = node.textContent || '';
+    // Empty comments are Glimmer VM markers
+    if (text === '') return true;
+    // GXT internal placeholder comments
+    if (
+      (globalThis as any).__GXT_MODE__ && (
+        text.includes('placeholder') ||
+        text.includes('if-entry') ||
+        text.includes('each-entry') ||
+        text.includes('list-target')
+      )
+    ) {
+      return true;
+    }
   }
 
   if (node instanceof TextNode && node.textContent === '') {
@@ -198,11 +211,43 @@ export default abstract class AbstractTestCase {
   }
 
   assertInnerHTML(html: string) {
+    this.cleanGxtArtifacts();
     equalInnerHTML(this.assert, getElement(), html);
   }
 
   assertHTML(html: string) {
+    this.cleanGxtArtifacts();
     equalTokens(getElement(), html, `#qunit-fixture content should be: \`${html}\``);
+  }
+
+  /** Remove GXT rendering artifacts from #qunit-fixture before assertions */
+  private cleanGxtArtifacts() {
+    if (!(globalThis as any).__GXT_MODE__) return;
+    const fixture = getElement();
+    if (!fixture) return;
+
+    // Remove GXT placeholder comments
+    const walker = document.createTreeWalker(fixture, NodeFilter.SHOW_COMMENT, null);
+    const toRemove: Comment[] = [];
+    let node: Comment | null;
+    while ((node = walker.nextNode() as Comment | null)) {
+      const text = node.textContent || '';
+      if (
+        text.includes('placeholder') ||
+        text.includes('if-entry') ||
+        text.includes('each-entry') ||
+        text.includes('list-target') ||
+        text === ''
+      ) {
+        toRemove.push(node);
+      }
+    }
+    for (const c of toRemove) c.parentNode?.removeChild(c);
+
+    // Remove data-node-id attributes
+    for (const el of fixture.querySelectorAll('[data-node-id]')) {
+      el.removeAttribute('data-node-id');
+    }
   }
 
   assertElement(

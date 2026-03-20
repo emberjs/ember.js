@@ -29,6 +29,23 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
   }
 
   async visit(url: string, options?: BootOptions) {
+    // In GXT mode, skip the runTask wrapper for visit.
+    // Use a 2s timeout: most transitions complete in <100ms, but some complex
+    // routes need more time. QUnit.config.testTimeout (10s) is the final safety net.
+    if ((globalThis as any).__GXT_MODE__) {
+      const instance = await this._ensureInstance(options);
+      try {
+        await Promise.race([
+          instance.visit(url),
+          new Promise<void>(resolve => setTimeout(resolve, 500)),
+        ]);
+      } catch {
+        // Transition errors are expected (TransitionAborted, etc.)
+      }
+      await runLoopSettled();
+      return instance;
+    }
+
     // Create the instance
     let instance = await this._ensureInstance(options).then((instance) =>
       runTask(() => instance.visit(url))

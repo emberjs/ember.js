@@ -45,12 +45,20 @@ function onBegin(current: DeferredActionQueues) {
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  flushAsyncObservers(schedule);
+  // In GXT mode, skip async observer flushing during run loop end.
+  // GXT's rendering triggers notifyPropertyChange → dirtyTagFor which bumps
+  // CURRENT_TAG. This causes flushAsyncObservers to find dirty observers,
+  // which schedule more actions, which trigger more flushes — infinite loop.
+  if (!(globalThis as any).__GXT_MODE__) {
+    flushAsyncObservers(schedule);
+  }
 }
 
 function flush(queueName: string, next: () => void) {
-  if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    flushAsyncObservers(schedule);
+  if (!(globalThis as any).__GXT_MODE__) {
+    if (queueName === 'render' || queueName === _rsvpErrorQueue) {
+      flushAsyncObservers(schedule);
+    }
   }
 
   next();

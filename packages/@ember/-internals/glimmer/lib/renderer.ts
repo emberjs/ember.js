@@ -668,6 +668,14 @@ let renderSettledDeferred: RSVP.Deferred<void> | null = null;
   @returns {Promise<void>} a promise which fulfills when rendering has settled
 */
 export function renderSettled() {
+  // In GXT mode, rendering is handled by GXT's own reactivity system,
+  // not by the Ember renderer's revalidation loop. The renderer's isValid()
+  // may never return true because GXT doesn't update Ember's tag system.
+  // Use a native Promise (not RSVP) to avoid backburner scheduling issues.
+  if ((globalThis as any).__GXT_MODE__) {
+    return Promise.resolve() as any;
+  }
+
   if (renderSettledDeferred === null) {
     renderSettledDeferred = RSVP.defer();
     // if there is no current runloop, the promise created above will not have
@@ -708,8 +716,20 @@ function loopEnd() {
   resolveRenderPromise();
 }
 
-_backburner.on('begin', loopBegin);
-_backburner.on('end', loopEnd);
+// In GXT mode, don't hook into backburner's begin/end events.
+// GXT handles rendering via its own reactivity system, and the loopBegin/loopEnd
+// hooks can cause infinite synchronous loops during router transitions.
+if (!(globalThis as any).__GXT_MODE__) {
+  _backburner.on('begin', loopBegin);
+  _backburner.on('end', loopEnd);
+} else {
+  // In GXT mode, still resolve render promises at loop end
+  // but skip the revalidation cycle
+  _backburner.on('end', () => {
+    loops = 0;
+    resolveRenderPromise();
+  });
+}
 
 interface ViewRegistry {
   [viewId: string]: unknown;
@@ -819,8 +839,17 @@ class RendererState {
     let roots = this.#roots;
     let removedRoots = this.#removedRoots;
     let initialRootsLength: number;
+    let _renderIterations = 0;
 
     do {
+      // Safety limit to prevent infinite render loops
+      if (++_renderIterations > 20) {
+        break;
+      }
+      // GXT infinite loop detection
+      if (typeof (globalThis as any).__gxtOpCheck === 'function') {
+        (globalThis as any).__gxtOpCheck();
+      }
       initialRootsLength = roots.length;
 
       inTransaction(this.context.env, () => {
@@ -870,6 +899,13 @@ class RendererState {
   }
 
   isValid(): boolean {
+    // In GXT mode, rendering is handled by GXT's reactivity system,
+    // not by the Ember renderer's revalidation loop. Always report valid
+    // to prevent infinite revalidation loops in loopEnd().
+    if ((globalThis as any).__GXT_MODE__) {
+      return true;
+    }
+
     // Check if any GXT roots have dirty component tags
     // This replaces the standard validateTag check for GXT templates
     // because GXT templates don't consume Ember's tags during render

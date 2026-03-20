@@ -1,5 +1,18 @@
 import { tokenize } from 'simple-html-tokenizer';
 
+/** Strip GXT rendering artifacts from HTML string */
+function stripGxtArtifacts(html: string): string {
+  if (!(globalThis as any).__GXT_MODE__) return html;
+  return html
+    // Remove GXT placeholder comments
+    .replace(/<!--(?:placeholder|if-entry|each-entry|list-target)[^>]*-->/g, '')
+    // Remove data-node-id attributes
+    .replace(/\s*data-node-id="[^"]*"/g, '')
+    // Collapse multiple spaces/newlines caused by removals
+    .replace(/>\s+</g, '><')
+    .trim();
+}
+
 function generateTokens(containerOrHTML: string | Element) {
   if (typeof containerOrHTML === 'string') {
     return {
@@ -7,9 +20,11 @@ function generateTokens(containerOrHTML: string | Element) {
       html: containerOrHTML,
     };
   } else {
+    let html = containerOrHTML.innerHTML;
+    html = stripGxtArtifacts(html);
     return {
-      tokens: tokenize(containerOrHTML.innerHTML),
-      html: containerOrHTML.innerHTML,
+      tokens: tokenize(html),
+      html,
     };
   }
 }
@@ -17,15 +32,18 @@ function generateTokens(containerOrHTML: string | Element) {
 function normalizeTokens(tokens: ReturnType<typeof tokenize>) {
   tokens.forEach((token) => {
     if (token.type === 'StartTag') {
-      token.attributes = token.attributes.sort((a, b) => {
-        if (a[0] > b[0]) {
-          return 1;
-        }
-        if (a[0] < b[0]) {
-          return -1;
-        }
-        return 0;
-      });
+      // Remove data-node-id from token attributes
+      token.attributes = token.attributes
+        .filter((attr: any) => !(globalThis as any).__GXT_MODE__ || attr[0] !== 'data-node-id')
+        .sort((a: any, b: any) => {
+          if (a[0] > b[0]) {
+            return 1;
+          }
+          if (a[0] < b[0]) {
+            return -1;
+          }
+          return 0;
+        });
     }
   });
 }

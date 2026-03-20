@@ -22,8 +22,21 @@ export function getElement(): HTMLElement {
 }
 
 export function isMarker(node: unknown): node is Comment | typeof TextNode {
-  if (node instanceof Comment && node.textContent === '') {
-    return true;
+  if (node instanceof Comment) {
+    const text = node.textContent || '';
+    // Empty comments are Glimmer VM markers
+    if (text === '') return true;
+    // GXT internal placeholder comments
+    if (
+      (globalThis as any).__GXT_MODE__ && (
+        text.includes('placeholder') ||
+        text.includes('if-entry') ||
+        text.includes('each-entry') ||
+        text.includes('list-target')
+      )
+    ) {
+      return true;
+    }
   }
 
   if (node instanceof TextNode && node.textContent === '') {

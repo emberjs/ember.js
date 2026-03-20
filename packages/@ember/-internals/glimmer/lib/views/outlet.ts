@@ -46,7 +46,6 @@ export default class OutletView {
     application: InternalOwner;
     template: TemplateFactory;
   }): OutletView {
-    console.log('outlet-view create', options);
     let { environment: _environment, application: namespace, template: templateFactory } = options;
     let owner = getOwner(options);
     assert('OutletView is unexpectedly missing an owner', owner);
@@ -109,10 +108,22 @@ export default class OutletView {
   }
 
   setOutletState(state: OutletState): void {
-    // debugger;
-    //  @todo - fix re-renders
+    // Update the outlet state
     this.ref.outlets['main'] = state;
-    // updateRef(this.ref, state);
+
+    // Update the global outlet state so <ember-outlet> elements can access it
+    (globalThis as any).__currentOutletState = this.ref;
+
+    // Notify active outlet elements about the state change
+    // This is the GXT-compatible way to trigger outlet re-rendering
+    const activeOutlets = (globalThis as any).__activeOutletElements;
+    if (activeOutlets) {
+      for (const outlet of activeOutlets) {
+        if (typeof outlet.updateOutletState === 'function') {
+          outlet.updateOutletState(this.ref);
+        }
+      }
+    }
   }
 
   destroy(): void {

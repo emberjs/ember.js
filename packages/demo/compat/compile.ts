@@ -19,10 +19,12 @@ import {
   $_MANAGERS,
   RENDERED_NODES_PROPERTY,
   COMPONENT_ID_PROPERTY,
+  syncDom as gxtSyncDom,
 } from '@lifeart/gxt';
 
-// Use Symbol.for to match the runtime compiler's symbol setup
-// The runtime compiler uses Symbol.for('gxt-slots'), not the exported $SLOTS_SYMBOL from gxt
+// Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
+import { installEmberWrappers } from './ember-gxt-wrappers';
+
 const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
 
 // Ensure global scope is set up
@@ -30,36 +32,45 @@ if (!isGlobalScopeReady()) {
   setupGlobalScope();
 }
 
-// CRITICAL: Wrap $_maybeHelper AFTER GXT's setupGlobalScope runs
-// GXT's setupGlobalScope sets globalThis.$_maybeHelper to its internal function
-// We need to wrap it to handle function arguments (like $_blockParam)
-{
-  const gx = globalThis as any;
-  if (gx.$_maybeHelper && !gx.$_maybeHelper.__emberWrapped) {
-    const originalMaybeHelper = gx.$_maybeHelper;
-    gx.$_maybeHelper = function(nameOrFn: string | Function, args: any[], options?: any): any {
-      // If first argument is a function (like $_blockParam), call it directly with the args
-      if (typeof nameOrFn === 'function') {
-        try {
-          // For $_blockParam, args is [index], so we call with just the first arg
-          const result = nameOrFn(args[0]);
-          if (gx.__DEBUG_GXT_RENDER) {
-            console.log(`[maybeHelper] Function call result:`, result);
-          }
-          return result;
-        } catch (e) {
-          if (gx.__DEBUG_GXT_RENDER) {
-            console.log(`[maybeHelper] Function call error:`, e);
-          }
-          return undefined;
-        }
+// Install Ember-aware wrappers for $_maybeHelper on globalThis
+installEmberWrappers();
+
+// GXT re-render trigger hook - called by Ember's notifyPropertyChange
+// GXT re-render trigger hook - called by Ember's notifyPropertyChange
+// Uses setTimeout to schedule gxtSyncDom OUTSIDE the backburner run loop.
+// CRITICAL: We do NOT call dirtyTagFor here. GXT has its own reactivity
+// system and doesn't need Ember's tag invalidation. Calling dirtyTagFor
+// increments CURRENT_TAG which prevents backburner's run loop from settling,
+// causing infinite loops.
+(globalThis as any).__gxtTriggerReRender = function(_obj: object, _keyName: string) {
+  if (!(globalThis as any).__gxtSyncScheduled) {
+    (globalThis as any).__gxtSyncScheduled = true;
+    setTimeout(() => {
+      try {
+        gxtSyncDom();
+      } catch {
+        // Ignore sync errors
+      } finally {
+        (globalThis as any).__gxtSyncScheduled = false;
       }
-      // Otherwise, use the original GXT maybeHelper
-      return originalMaybeHelper(nameOrFn, args, options);
-    };
-    gx.$_maybeHelper.__emberWrapped = true;
+    }, 0);
   }
-}
+};
+
+// Cleanup function to reset GXT state between tests
+(globalThis as any).__gxtCleanupActiveComponents = function() {
+  // Reset block params stack
+  blockParamsStack.length = 0;
+  // Reset current slot params
+  currentSlotParams = null;
+  (globalThis as any).__currentSlotParams = null;
+  // Reset sync scheduled flag
+  (globalThis as any).__gxtSyncScheduled = false;
+  // Reset slots context stack
+  slotsContextStack.length = 0;
+  // Clear template cache to avoid stale templates across tests
+  templateCache.clear();
+};
 
 // Set GXT mode flag
 (globalThis as any).__GXT_MODE__ = true;
@@ -68,30 +79,107 @@ if (!isGlobalScopeReady()) {
 // (manager.ts will configure it later, but we need the same reference)
 (globalThis as any).$_MANAGERS = $_MANAGERS;
 
+// Register built-in keyword helpers for GXT integration
+// These are simplified implementations for GXT since it doesn't have Glimmer VM's reference system
+(globalThis as any).__EMBER_BUILTIN_HELPERS__ = {
+  // readonly: Returns the value as-is (GXT doesn't have two-way binding to protect against)
+  readonly: (value: any) => {
+    // Unwrap if it's a function/getter
+    return typeof value === 'function' ? value() : value;
+  },
+  // mut: Returns the value as-is (GXT doesn't need the mutable wrapper)
+  mut: (value: any) => {
+    return typeof value === 'function' ? value() : value;
+  },
+  // unbound: Returns the value without tracking (GXT handles this differently)
+  unbound: (value: any) => {
+    return typeof value === 'function' ? value() : value;
+  },
+};
+
 // Global block params stack for yielded values
 // When a slot is rendered with block params, they're pushed here
 // The $_blockParam helper reads from the top of the stack
 const blockParamsStack: any[][] = [];
 (globalThis as any).__blockParamsStack = blockParamsStack;
 
+// Per-context block params storage for persistence across re-renders
+// WeakMap allows garbage collection when context is no longer referenced
+const contextBlockParams = new WeakMap<object, any[]>();
+(globalThis as any).__contextBlockParams = contextBlockParams;
+
+// Current slot params - persists until next slot is called
+// This is used for re-renders where the stack has been popped
+// Key insight: for simple non-nested slot cases, keeping the "last" params
+// allows re-renders to access them even after the slot function returns
+let currentSlotParams: any[] | null = null;
+(globalThis as any).__currentSlotParams = null;
+
 // Helper function to get a block param by index
 // This is called by compiled templates that use {{($_blockParam N)}}
 (globalThis as any).$_blockParam = function(index: number) {
   const currentParams = blockParamsStack[blockParamsStack.length - 1];
-  return currentParams ? currentParams[index] : undefined;
+  const rawValue = currentParams ? currentParams[index] : undefined;
+  // Unwrap reactive value to get current value
+  return unwrapReactiveValue(rawValue);
 };
 
-// Set up global $_bp0, $_bp1, etc. as getters that read from the block params stack
-// This allows arrow functions in templates to access block params via this.$_bp0
-// We define them on Object.prototype so they're accessible on any object used as `this`
+// Helper to unwrap a potentially reactive value
+// This is called each time a block param is accessed to ensure fresh values
+function unwrapReactiveValue(value: any): any {
+  if (value === undefined || value === null) return value;
+
+  // Check if it's a GXT reactive cell (has 'fn' property and 'isConst')
+  if (typeof value === 'object' && 'fn' in value && 'isConst' in value) {
+    try {
+      return value.fn();
+    } catch {
+      return value;
+    }
+  }
+
+  // Check if it's a function that should be evaluated (reactive getter)
+  if (typeof value === 'function') {
+    try {
+      return value();
+    } catch {
+      return value;
+    }
+  }
+
+  return value;
+}
+
 const bpDescriptors: Record<string, PropertyDescriptor> = {};
 for (let i = 0; i < 10; i++) {
   const bpName = `$_bp${i}`;
   bpDescriptors[bpName] = {
     get() {
-      const stack = (globalThis as any).__blockParamsStack;
-      const currentParams = stack && stack[stack.length - 1];
-      return currentParams ? currentParams[i] : undefined;
+      let rawValue: any;
+
+      // First check if this context has persistent block params
+      // This handles re-renders after the slot function has returned
+      const persistentParams = contextBlockParams.get(this);
+      if (persistentParams && persistentParams[i] !== undefined) {
+        rawValue = persistentParams[i];
+      } else {
+        // Check the global stack (during initial slot execution)
+        const stack = (globalThis as any).__blockParamsStack;
+        const stackParams = stack && stack[stack.length - 1];
+        if (stackParams && stackParams[i] !== undefined) {
+          rawValue = stackParams[i];
+        } else {
+          // Fall back to current slot params (for re-renders after slot returned)
+          const current = (globalThis as any).__currentSlotParams;
+          if (current && current[i] !== undefined) {
+            rawValue = current[i];
+          }
+        }
+      }
+
+      // CRITICAL: Unwrap reactive values each time to support reactivity
+      // When the component's property changes, this getter will return the new value
+      return unwrapReactiveValue(rawValue);
     },
     configurable: true,
     enumerable: false,
@@ -112,6 +200,41 @@ if (typeof (globalThis as any).EmberFunctionalHelpers === 'undefined') {
 }
 (globalThis as any).EmberFunctionalHelpers.add((globalThis as any).$_blockParam);
 
+// Stack to track the current slots context during rendering
+// Components push their $slots here when rendering, so has-block can check it
+const slotsContextStack: any[] = [];
+(globalThis as any).__slotsContextStack = slotsContextStack;
+
+// has-block helper - returns true if a block was provided
+// Usage: {{has-block}} or {{has-block "inverse"}}
+(globalThis as any).$_hasBlock = function(blockName?: string) {
+  const name = blockName || 'default';
+  const slots = slotsContextStack[slotsContextStack.length - 1];
+  const hasIt = slots && typeof slots[name] === 'function';
+  return hasIt;
+};
+
+// has-block-params helper - returns true if the block accepts params
+// This is tricky to implement properly, but we can approximate:
+// - If there's no block, return false
+// - If there's a block and we have blockParamsInfo, check it
+// - Otherwise, return false as a conservative default
+(globalThis as any).$_hasBlockParams = function(blockName?: string) {
+  const name = blockName || 'default';
+  const slots = slotsContextStack[slotsContextStack.length - 1];
+  if (!slots || typeof slots[name] !== 'function') {
+    return false;
+  }
+  // Check if the slot has block params info attached
+  const slotFn = slots[name];
+  if (slotFn.__hasBlockParams !== undefined) {
+    return slotFn.__hasBlockParams;
+  }
+  // Conservative default - if we don't know, assume false
+  // In real Ember, this would inspect the template's block params
+  return false;
+};
+
 // Override $_tag to check for Ember components before creating HTML elements
 // GXT compiles PascalCase tags like <FooBar /> to $_tag('FooBar', ...) but
 // these should be handled by the component manager for Ember integration
@@ -127,20 +250,118 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
   ): any {
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
 
+    // Handle dynamic component patterns: <@foo /> and <this.foo />
+    // These are invalid HTML tag names that need special handling
+    if (resolvedTag && typeof resolvedTag === 'string') {
+      // Handle <@foo /> - component passed as argument
+      if (resolvedTag.startsWith('@')) {
+        const argName = resolvedTag.slice(1); // Remove '@'
+        // Get the component from the context's args
+        const $ARGS_SYMBOL = Symbol.for('gxt-args');
+        const args = ctx?.[$ARGS_SYMBOL] || ctx?.args || {};
+        const componentValue = args[argName];
+        if (componentValue) {
+          // Render the dynamic component
+          const managers = (globalThis as any).$_MANAGERS;
+          if (managers?.component?.canHandle?.(componentValue)) {
+            return managers.component.handle(componentValue, {}, children, ctx);
+          }
+        }
+        // If no component found, return empty comment
+        return document.createComment(`dynamic component @${argName} not found`);
+      }
+
+      // Handle <this.foo /> - component from context property
+      if (resolvedTag.startsWith('this.')) {
+        const propPath = resolvedTag.slice(5); // Remove 'this.'
+        // Get the component from the context
+        let componentValue = ctx;
+        for (const part of propPath.split('.')) {
+          componentValue = componentValue?.[part];
+        }
+        if (componentValue) {
+          // Render the dynamic component
+          const managers = (globalThis as any).$_MANAGERS;
+          if (managers?.component?.canHandle?.(componentValue)) {
+            return managers.component.handle(componentValue, {}, children, ctx);
+          }
+        }
+        // If no component found, return empty comment
+        return document.createComment(`dynamic component this.${propPath} not found`);
+      }
+    }
+
     // Handle named blocks like <:header> and <:default>
     // These are not real elements - they're markers for named slots
     // Return a special object that can be detected when building slots
     if (resolvedTag && typeof resolvedTag === 'string' && resolvedTag.startsWith(':')) {
       const slotName = resolvedTag.slice(1); // Remove the leading ':'
+
+      // Check for block params - they're in the forwarded props (fw) or tagProps
+      // When there's "as |param|", GXT passes block params info in tagProps
+      let hasBlockParams = false;
+      if (tagProps && tagProps !== g.$_edp) {
+        // Check if attrs (index 1) contains block params marker
+        const attrs = tagProps[1];
+        if (Array.isArray(attrs)) {
+          for (const [key, value] of attrs) {
+            if (key === '@__hasBlockParams__') {
+              hasBlockParams = true;
+              break;
+            }
+          }
+        }
+        // Also check fw (forwarded) for block params info
+        const fw = tagProps[3];
+        if (fw && fw.__hasBlockParams) {
+          hasBlockParams = true;
+        }
+      }
+
       const namedBlock = {
         __isNamedBlock: true,
         __slotName: slotName,
         __children: children,
+        __hasBlockParams: hasBlockParams,
       };
-      if ((globalThis as any).__DEBUG_YIELD) {
-        console.log(`[named-block] Created named block: ${slotName}, children:`, children.length);
-      }
       return namedBlock;
+    }
+
+    // Special handling for EmberHtmlRaw component (triple mustaches)
+    // This component outputs raw HTML without escaping
+    if (resolvedTag === 'EmberHtmlRaw') {
+      // Extract the value from tagProps
+      let value: any;
+      if (tagProps && tagProps !== g.$_edp) {
+        const attrs = tagProps[1];
+        if (Array.isArray(attrs)) {
+          for (const [key, val] of attrs) {
+            if (key === '@value') {
+              value = typeof val === 'function' ? val() : val;
+              break;
+            }
+          }
+        }
+      }
+
+      // Return a thunk that creates a span with innerHTML
+      return function __htmlRawThunk() {
+        const actualValue = typeof value === 'function' ? value() : value;
+        if (actualValue == null) {
+          return document.createTextNode('');
+        }
+        // Check if it's an htmlSafe string (has toHTML method)
+        const htmlContent = actualValue?.toHTML?.() ?? String(actualValue);
+        // Create a document fragment with the HTML content
+        const template = document.createElement('template');
+        template.innerHTML = htmlContent;
+        // Return the fragment's children
+        const fragment = document.createDocumentFragment();
+        while (template.content.firstChild) {
+          fragment.appendChild(template.content.firstChild);
+        }
+        return fragment;
+      };
     }
 
     // Check if this looks like a component name (PascalCase or contains hyphen)
@@ -150,7 +371,6 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
 
     // Access managers dynamically - they may be set up after this module loads
     const managers = g.$_MANAGERS;
-
 
     if (mightBeComponent && managers?.component?.canHandle) {
       // Convert PascalCase to kebab-case for Ember component lookup
@@ -223,20 +443,27 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
         let events: [string, any][] = [];
         if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
           events = tagProps[2];
-          if ((globalThis as any).__DEBUG_MODIFIERS && events.length > 0) {
-            console.log(`[compile] Collected ${events.length} events/modifiers for ${kebabName}:`);
-            for (let i = 0; i < events.length; i++) {
-              const entry = events[i];
-              console.log(`[compile]   [${i}]:`, Array.isArray(entry) ?
-                `[${entry.map((e, j) => `${j}:(${typeof e})${typeof e === 'function' ? e.name || 'fn' : String(e).slice(0, 50)}`).join(', ')}]` :
-                String(entry));
+        }
+        // Helper to detect if children use block params
+        // Block params are accessed via $_bp0, $_bp1 getters on Object.prototype
+        const detectBlockParams = (slotChildren: any[]): boolean => {
+          // Check if any child function references block params
+          for (const child of slotChildren) {
+            if (typeof child === 'function') {
+              const fnStr = child.toString();
+              // Look for $_bp references which indicate block params are used
+              if (/\$_bp\d/.test(fnStr)) {
+                return true;
+              }
             }
           }
-        }
+          return false;
+        };
+
         if (children && children.length > 0) {
           // Separate named blocks from default slot children
           // Named blocks are marked with __isNamedBlock from :name element handling
-          const namedBlocks: Map<string, any[]> = new Map();
+          const namedBlocks: Map<string, { children: any[]; hasBlockParams: boolean }> = new Map();
           const defaultChildren: any[] = [];
 
           for (const child of children) {
@@ -244,11 +471,16 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
             if (child && typeof child === 'object' && child.__isNamedBlock) {
               const slotName = child.__slotName;
               if (!namedBlocks.has(slotName)) {
-                namedBlocks.set(slotName, []);
+                namedBlocks.set(slotName, { children: [], hasBlockParams: false });
               }
+              const slot = namedBlocks.get(slotName)!;
               // Add the named block's children to its slot
               if (child.__children) {
-                namedBlocks.get(slotName)!.push(...child.__children);
+                slot.children.push(...child.__children);
+              }
+              // Copy the hasBlockParams flag from the named block marker
+              if (child.__hasBlockParams) {
+                slot.hasBlockParams = true;
               }
             } else {
               // Regular child goes to default slot
@@ -257,95 +489,120 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
           }
 
           // Helper to create a slot function
-          const createSlotFn = (slotChildren: any[]) => (slotCtx: any, ...params: any[]) => {
-            const unwrappedParams = params.map(param => {
-              if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
-                try { return param.fn(); } catch { return param; }
-              }
-              if (typeof param === 'function') {
-                try { return param(); } catch { return param; }
-              }
-              return param;
-            });
+          // explicitHasBlockParams: if true/false is explicitly provided, use it
+          // otherwise detect from children
+          const createSlotFn = (slotChildren: any[], explicitHasBlockParams?: boolean) => {
+            // Use explicit flag if provided, otherwise detect from children
+            const hasBlockParams = explicitHasBlockParams !== undefined
+              ? explicitHasBlockParams
+              : detectBlockParams(slotChildren);
 
-            const stack = (globalThis as any).__blockParamsStack;
-            stack.push(unwrappedParams);
+            const slotFn = (slotCtx: any, ...params: any[]) => {
+              const unwrappedParams = params.map(param => {
+                if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
+                  try { return param.fn(); } catch { return param; }
+                }
+                if (typeof param === 'function') {
+                  try { return param(); } catch { return param; }
+                }
+                return param;
+              });
 
-            try {
-              const results: any[] = [];
-              for (const child of slotChildren) {
-                if (typeof child === 'function') {
-                  try {
-                    // Call child function - block params accessible via this.$_bp0 etc.
-                    // (defined on Object.prototype to read from __blockParamsStack)
-                    const childResult = child();
-                    results.push(childResult);
-                  } catch (e) {
+              // Store on slotCtx for context-based lookup
+              const contextParams = (globalThis as any).__contextBlockParams as WeakMap<object, any[]>;
+              if (contextParams && slotCtx && typeof slotCtx === 'object') {
+                contextParams.set(slotCtx, [...unwrappedParams]);
+              }
+
+              // Also store as current slot params for re-renders
+              // This persists until the next slot call, allowing reactivity
+              // to access block params even after the slot function returns
+              (globalThis as any).__currentSlotParams = unwrappedParams;
+
+              const stack = (globalThis as any).__blockParamsStack;
+              stack.push(unwrappedParams);
+
+              try {
+                const results: any[] = [];
+                for (let i = 0; i < slotChildren.length; i++) {
+                  const child = slotChildren[i];
+                  if (typeof child === 'function') {
+                    try {
+                      const childResult = child();
+                      results.push(childResult);
+                    } catch (e) {
+                      results.push(child);
+                    }
+                  } else {
                     results.push(child);
                   }
-                } else if (typeof child === 'string' || typeof child === 'number') {
-                  results.push(child);
-                } else {
-                  results.push(child);
                 }
+                return results;
+              } finally {
+                stack.pop();
+                // NOTE: We do NOT clear __currentSlotParams here
+                // This allows re-renders (via GXT reactivity) to access
+                // the params even after the slot function has returned
               }
-              return results;
-            } finally {
-              stack.pop();
-            }
+            };
+
+            // Mark slot with block params info for has-block-params helper
+            (slotFn as any).__hasBlockParams = hasBlockParams;
+
+            return slotFn;
           };
 
           // Create slot functions for named blocks
-          for (const [slotName, slotChildren] of namedBlocks) {
-            slots[slotName] = createSlotFn(slotChildren);
-            if ((globalThis as any).__DEBUG_YIELD) {
-              console.log(`[slots] Created named slot: ${slotName} with ${slotChildren.length} children`);
-            }
+          for (const [slotName, slotData] of namedBlocks) {
+            // Pass both children and the explicit hasBlockParams flag
+            slots[slotName] = createSlotFn(slotData.children, slotData.hasBlockParams);
           }
 
           // Create default slot if there are default children
+          // Check args.__hasBlockParams__ marker for explicit block params declaration
           if (defaultChildren.length > 0) {
-            slots.default = createSlotFn(defaultChildren);
+            // Get the explicit hasBlockParams flag from args if present
+            const explicitHasBlockParams = args.__hasBlockParams__ !== undefined
+              ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
+              : undefined;
+            slots.default = createSlotFn(defaultChildren, explicitHasBlockParams);
           }
         }
 
         // Legacy: If no slots were created but children exist, create default slot
         // (This handles the case where there are no named blocks)
         if (children && children.length > 0 && !slots.default && Object.keys(slots).length === 0) {
-          slots.default = (slotCtx: any, ...params: any[]) => {
-            // GXT passes yield params as reactive cells
-            // We need to unwrap them to get the actual values for Ember's block params
-            const unwrappedParams = params.map(param => {
-              // Check if it's a GXT reactive cell (has 'fn' property and 'isConst')
-              if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
-                try {
-                  return param.fn();
-                } catch {
-                  return param;
-                }
-              }
-              // Check if it's a function that should be evaluated
-              if (typeof param === 'function') {
-                try {
-                  return param();
-                } catch {
-                  return param;
-                }
-              }
-              return param;
-            });
+          // Check for explicit hasBlockParams marker from args
+          const explicitHasBlockParams = args.__hasBlockParams__ !== undefined
+            ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
+            : undefined;
+          // Detect from children if not explicitly set
+          const hasBlockParams = explicitHasBlockParams !== undefined
+            ? explicitHasBlockParams
+            : detectBlockParams(children);
+
+          const slotFn = (slotCtx: any, ...params: any[]) => {
+            // CRITICAL: Do NOT unwrap params here - keep them as raw values (potentially reactive)
+            // The $_bp0, $_bp1, etc. getters will unwrap them when accessed
+            // This allows reactivity to work: when the component's property changes,
+            // the next access to $_bp0 will return the new value
+            const rawParams = [...params];
+
+            // Store on slotCtx for context-based lookup
+            const contextParams = (globalThis as any).__contextBlockParams as WeakMap<object, any[]>;
+            if (contextParams && slotCtx && typeof slotCtx === 'object') {
+              contextParams.set(slotCtx, rawParams);
+            }
+
+            // Also store as current slot params for re-renders
+            // This persists until the next slot call, allowing reactivity
+            // to access block params even after the slot function returns
+            (globalThis as any).__currentSlotParams = rawParams;
 
             // Push block params onto the global stack
             // The $_blockParam helper reads from this stack
             const stack = (globalThis as any).__blockParamsStack;
-            stack.push(unwrappedParams);
-
-            if ((globalThis as any).__DEBUG_YIELD) {
-              console.log('[slot.default] called with params:', JSON.stringify(params));
-              console.log('[slot.default] unwrapped params:', JSON.stringify(unwrappedParams));
-              console.log('[slot.default] children count:', children.length);
-              console.log('[slot.default] stack length after push:', stack.length);
-            }
+            stack.push(rawParams);
 
             try {
               // Return children results as GXT template items - NOT as DOM nodes
@@ -358,15 +615,9 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
                     // Call the child function to get its result
                     // This might return a DOM node, string, or other GXT item
                     const childResult = child();
-                    if ((globalThis as any).__DEBUG_YIELD) {
-                      console.log('[slot.default] child result:', typeof childResult, childResult);
-                    }
                     // Pass through the result - let GXT handle it
                     results.push(childResult);
                   } catch (e) {
-                    if ((globalThis as any).__DEBUG_YIELD) {
-                      console.log('[slot.default] child error:', e);
-                    }
                     // Fallback for static content
                     results.push(child);
                   }
@@ -375,18 +626,49 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
                   results.push(child);
                 }
               }
-              if ((globalThis as any).__DEBUG_YIELD) {
-                console.log('[slot.default] returning results:', results.length, 'items');
-              }
               return results;
             } finally {
               // Pop block params from stack
+              // NOTE: We do NOT clear __currentSlotParams here
+              // This allows re-renders (via GXT reactivity) to access
+              // the params even after the slot function has returned
               stack.pop();
             }
           };
+
+          // Mark slot with block params info
+          (slotFn as any).__hasBlockParams = hasBlockParams;
+          slots.default = slotFn;
         }
 
-        const fw = [domAttrs, slots, events];
+        // Check for __hasBlock__ marker - indicates curly block invocation
+        // Even if children are empty, we need to create a default slot
+        // so that (has-block) returns true
+        if (args.__hasBlock__ && !slots.default) {
+          const blockName = typeof args.__hasBlock__ === 'function' ? args.__hasBlock__() : args.__hasBlock__;
+          // Check if block params were declared
+          const hasBlockParams = args.__hasBlockParams__ !== undefined
+            ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
+            : false;
+          // Create an empty slot function for the specified block
+          const slotFn = (slotCtx: any, ...params: any[]) => {
+            return []; // Empty slot - just return empty array
+          };
+          // Set the hasBlockParams flag on the slot
+          (slotFn as any).__hasBlockParams = hasBlockParams;
+          slots[blockName || 'default'] = slotFn;
+          // Remove the markers from args so they're not passed to the component
+          delete args.__hasBlock__;
+          delete args.__hasBlockParams__;
+        }
+
+        // GXT FwType is [TagProp[], TagAttr[], TagEvent[]] - all arrays
+        // We pass domAttrs as attrs (position 1), events as events (position 2)
+        // Slots are passed separately via args.$slots
+        const fw = [[], domAttrs, events];  // [props, attrs, events]
+
+        // Pass slots via args so manager.ts can access them
+        args.$slots = slots;
 
         // Return a THUNK that renders the component when called
         // This is crucial for block params: when <Outer><Inner @msg={{param}} /></Outer>
@@ -434,13 +716,6 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
     // $fw is passed as tagProps[3] and contains [domAttrs, slots, events/modifiers]
     // NOTE: We don't apply modifiers (fw[2]) here - GXT handles those internally
     const fw = tagProps?.[3];
-
-    if ((globalThis as any).__DEBUG_MODIFIERS && resolvedTag) {
-      console.log(`[compile] $_tag for element '${resolvedTag}':`,
-        'tagProps[3] (fw):', fw ? 'present' : 'undefined',
-        'tagProps length:', tagProps?.length,
-        'fw[2]:', fw?.[2]?.length || 0, 'modifiers (handled by GXT)');
-    }
 
     if (fw && Array.isArray(fw)) {
       const fwAttrs = fw[0];
@@ -522,6 +797,168 @@ function transformOutletHelper(code: string): string {
 }
 
 /**
+ * Transform triple mustaches {{{expr}}} to raw HTML output
+ * Triple mustaches in Handlebars output HTML without escaping
+ * We transform them to a special component that handles raw HTML
+ */
+function transformTripleMustaches(code: string): string {
+  // Match {{{...}}} but not {{{{...}}}}
+  // The expression inside can contain dots, this., @, etc.
+  return code.replace(/\{\{\{([^}]+)\}\}\}/g, (match, expr) => {
+    // Transform to a call to the htmlSafe helper wrapped in a span
+    // Use PascalCase so GXT treats it as a component
+    return `<EmberHtmlRaw @value={{${expr.trim()}}} />`;
+  });
+}
+
+/**
+ * Transform angle-bracket components with positional parameters
+ * <SampleComponent "Foo" 4 "Bar" @namedArg=val /> -> <SampleComponent @__pos0__="Foo" @__pos1__={{4}} @__pos2__="Bar" @__posCount__={{3}} @namedArg=val />
+ */
+function transformAngleBracketPositionalParams(code: string): string {
+  // Match angle-bracket component with potential positional params
+  // Pattern: <PascalCaseName followed by content that includes unattributed values
+  const componentPattern = /<([A-Z][a-zA-Z0-9]*)(\s+[^>]*?)?(\s*\/>|>)/g;
+
+  return code.replace(componentPattern, (match, tagName, attrsSection, closing) => {
+    if (!attrsSection || !attrsSection.trim()) {
+      return match; // No attrs, nothing to transform
+    }
+
+    let remaining = attrsSection.trim();
+    const positionalParams: string[] = [];
+    const namedParams: string[] = [];
+
+    // Parse the attrs string token by token
+    while (remaining.length > 0) {
+      remaining = remaining.trim();
+      if (remaining.length === 0) break;
+
+      // Check for named parameter: @name=value or name=value
+      const namedMatch = remaining.match(/^(@?[a-zA-Z_][a-zA-Z0-9_-]*)=/);
+      if (namedMatch) {
+        const fullName = namedMatch[1];
+        let valueStr = remaining.slice(namedMatch[0].length);
+        let value: string;
+
+        // Determine the value type and extract it
+        if (valueStr.startsWith('{{')) {
+          // Mustache: find matching }}
+          let depth = 0;
+          let i = 0;
+          for (; i < valueStr.length; i++) {
+            if (valueStr[i] === '{' && valueStr[i + 1] === '{') depth++;
+            else if (valueStr[i] === '}' && valueStr[i + 1] === '}') {
+              depth--;
+              if (depth === 0) {
+                i += 2;
+                break;
+              }
+            }
+          }
+          value = valueStr.slice(0, i);
+        } else if (valueStr.startsWith('"')) {
+          const match = valueStr.match(/^"(?:[^"\\]|\\.)*"/);
+          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
+        } else if (valueStr.startsWith("'")) {
+          const match = valueStr.match(/^'(?:[^'\\]|\\.)*'/);
+          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
+        } else {
+          value = valueStr.split(/[\s>]/)[0] || '';
+        }
+
+        namedParams.push(`${fullName}=${value}`);
+        remaining = remaining.slice(namedMatch[0].length + value.length);
+        continue;
+      }
+
+      // Check for as |...| block params marker
+      if (remaining.startsWith('as ')) {
+        // Keep the rest as-is
+        namedParams.push(remaining);
+        break;
+      }
+
+      // Check for positional parameter: "string", 'string', {{expr}}, number, or boolean
+      // Quoted string
+      const quotedMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
+      if (quotedMatch) {
+        positionalParams.push(quotedMatch[1]);
+        remaining = remaining.slice(quotedMatch[1].length);
+        continue;
+      }
+
+      // Mustache expression
+      if (remaining.startsWith('{{')) {
+        let depth = 0;
+        let i = 0;
+        for (; i < remaining.length; i++) {
+          if (remaining[i] === '{' && remaining[i + 1] === '{') depth++;
+          else if (remaining[i] === '}' && remaining[i + 1] === '}') {
+            depth--;
+            if (depth === 0) {
+              i += 2;
+              break;
+            }
+          }
+        }
+        positionalParams.push(remaining.slice(0, i));
+        remaining = remaining.slice(i);
+        continue;
+      }
+
+      // Number or boolean
+      const numberMatch = remaining.match(/^(-?\d+(?:\.\d+)?|true|false)\b/);
+      if (numberMatch) {
+        positionalParams.push(numberMatch[1]);
+        remaining = remaining.slice(numberMatch[1].length);
+        continue;
+      }
+
+      // Path like this.name (as positional param)
+      const pathMatch = remaining.match(/^(this\.[a-zA-Z0-9_.]+)/);
+      if (pathMatch) {
+        positionalParams.push(`{{${pathMatch[1]}}}`);
+        remaining = remaining.slice(pathMatch[1].length);
+        continue;
+      }
+
+      // Skip unknown character
+      remaining = remaining.slice(1);
+    }
+
+    // If no positional params, return unchanged
+    if (positionalParams.length === 0) {
+      return match;
+    }
+
+    // Build the new attrs string
+    let newAttrs = '';
+
+    // First add positional params as @__posN__ args
+    for (let i = 0; i < positionalParams.length; i++) {
+      const p = positionalParams[i];
+      if (p.startsWith('"') || p.startsWith("'")) {
+        newAttrs += ` @__pos${i}__=${p}`;
+      } else if (p.startsWith('{{') && p.endsWith('}}')) {
+        newAttrs += ` @__pos${i}__=${p}`;
+      } else {
+        // Numbers and booleans
+        newAttrs += ` @__pos${i}__={{${p}}}`;
+      }
+    }
+    newAttrs += ` @__posCount__={{${positionalParams.length}}}`;
+
+    // Then add named params
+    for (const param of namedParams) {
+      newAttrs += ` ${param}`;
+    }
+
+    return `<${tagName}${newAttrs}${closing}`;
+  });
+}
+
+/**
  * Transform {{component}} helper to angle-bracket syntax
  * - {{#component "foo-bar"}}content{{/component}} → <FooBar>content</FooBar>
  * - {{#component "foo-bar" arg=val}}content{{/component}} → <FooBar @arg={{val}}>content</FooBar>
@@ -600,7 +1037,8 @@ function transformBlockParams(templateString: string): { transformed: string; bl
 
   // Find all components with `as |...|` block params
   // Pattern: <ComponentName (attrs) as |param1 param2 ...|>
-  const blockParamPattern = /<([A-Z][a-zA-Z0-9-]*)((?:\s+(?:[@a-zA-Z][a-zA-Z0-9-]*(?:=(?:"[^"]*"|'[^']*'|\{\{[^}]*\}\}|[^\s>]*))?))*)(\s+as\s*\|([^|]+)\|)(\s*)>/g;
+  // Note: Attribute names can include underscores (e.g., @__hasBlock__)
+  const blockParamPattern = /<([A-Z][a-zA-Z0-9-]*)((?:\s+(?:[@a-zA-Z_][a-zA-Z0-9_-]*(?:=(?:"[^"]*"|'[^']*'|\{\{[^}]*\}\}|[^\s>]*))?))*)(\s+as\s*\|([^|]+)\|)(\s*)>/g;
 
   interface BlockParamScope {
     componentName: string;
@@ -702,8 +1140,11 @@ function transformBlockParams(templateString: string): { transformed: string; bl
     }
 
     // Reconstruct the element without the `as |...|` part
+    // Add a marker to indicate that block params were declared
     const originalOpenTag = result.slice(startIndex, openTagEnd);
-    const newOpenTag = originalOpenTag.replace(/\s+as\s*\|[^|]+\|/, '');
+    const tagWithoutBlockParams = originalOpenTag.replace(/\s+as\s*\|[^|]+\|/, '');
+    // Insert the __hasBlockParams__ marker before the closing >
+    const newOpenTag = tagWithoutBlockParams.replace(/>$/, ' @__hasBlockParams__="default">');
 
     const closingTag = `</${componentName}>`;
     const newElement = newOpenTag + transformedContent + closingTag;
@@ -729,21 +1170,143 @@ function transformCurlyBlockComponents(code: string): string {
   };
 
   // Helper to convert attrs like arg=val to @arg={{val}}
+  // Also handles positional parameters
   const transformAttrs = (attrs: string) => {
     if (!attrs.trim()) return '';
 
-    let transformed = attrs.trim();
+    let remaining = attrs.trim();
+    const positionalParams: string[] = [];
+    const namedParams: string[] = [];
 
-    // Transform each attribute
-    // Match: name={{value}} or name=value or name="value"
-    transformed = transformed.replace(/([a-zA-Z][a-zA-Z0-9-]*)=(\{\{[^}]+\}\}|"[^"]*"|'[^']*'|[^\s}]+)/g,
-      (match, name, value) => {
-        // Add @ prefix if not already present
+    // Helper to match balanced parentheses
+    const matchBalancedParens = (str: string): string | null => {
+      if (!str.startsWith('(')) return null;
+      let depth = 0;
+      let i = 0;
+      for (; i < str.length; i++) {
+        if (str[i] === '(') depth++;
+        else if (str[i] === ')') {
+          depth--;
+          if (depth === 0) return str.slice(0, i + 1);
+        }
+      }
+      return null;
+    };
+
+    // Parse the attrs string token by token
+    while (remaining.length > 0) {
+      remaining = remaining.trim();
+      if (remaining.length === 0) break;
+
+      // Check for named parameter: name=value
+      // Value can be: {{...}}, "...", '...', (...), or bare word/path
+      const nameMatch = remaining.match(/^([a-zA-Z][a-zA-Z0-9-]*)=/);
+      if (nameMatch) {
+        const name = nameMatch[1];
+        let valueStr = remaining.slice(nameMatch[0].length);
+        let value: string;
+
+        // Determine the value type and extract it
+        if (valueStr.startsWith('{{')) {
+          // Mustache: match until }}
+          const endIdx = valueStr.indexOf('}}');
+          if (endIdx !== -1) {
+            value = valueStr.slice(0, endIdx + 2);
+          } else {
+            value = valueStr.split(/\s/)[0] || '';
+          }
+        } else if (valueStr.startsWith('"')) {
+          // Double quoted string
+          const match = valueStr.match(/^"(?:[^"\\]|\\.)*"/);
+          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
+        } else if (valueStr.startsWith("'")) {
+          // Single quoted string
+          const match = valueStr.match(/^'(?:[^'\\]|\\.)*'/);
+          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
+        } else if (valueStr.startsWith('(')) {
+          // Subexpression: match balanced parens
+          const parenMatch = matchBalancedParens(valueStr);
+          value = parenMatch || valueStr.split(/\s/)[0] || '';
+        } else {
+          // Bare word/path
+          value = valueStr.split(/[\s}]/)[0] || '';
+        }
+
         const attrName = name.startsWith('@') ? name : `@${name}`;
-        return `${attrName}=${value}`;
-      });
+        let attrValue = value;
+        // Wrap subexpressions and bare words in {{}}
+        if (!value.startsWith('{{') && !value.startsWith('"') && !value.startsWith("'")) {
+          attrValue = `{{${value}}}`;
+        }
+        namedParams.push(`${attrName}=${attrValue}`);
+        remaining = remaining.slice(nameMatch[0].length + value.length);
+        continue;
+      }
 
-    return ' ' + transformed;
+      // Check for positional parameter: "string" or 'string' or {{expr}} or number or this.path
+      // Quoted string
+      const quotedMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
+      if (quotedMatch) {
+        positionalParams.push(quotedMatch[1]);
+        remaining = remaining.slice(quotedMatch[1].length);
+        continue;
+      }
+
+      // Mustache expression
+      const mustacheMatch = remaining.match(/^(\{\{[^}]+\}\})/);
+      if (mustacheMatch) {
+        positionalParams.push(mustacheMatch[1]);
+        remaining = remaining.slice(mustacheMatch[1].length);
+        continue;
+      }
+
+      // Number or boolean
+      const numberMatch = remaining.match(/^(-?\d+(?:\.\d+)?|true|false)\b/);
+      if (numberMatch) {
+        positionalParams.push(numberMatch[1]);
+        remaining = remaining.slice(numberMatch[1].length);
+        continue;
+      }
+
+      // Path like this.name or @foo
+      const pathMatch = remaining.match(/^(this\.[a-zA-Z0-9_.]+|@[a-zA-Z][a-zA-Z0-9-]*)/);
+      if (pathMatch) {
+        positionalParams.push(`{{${pathMatch[1]}}}`);
+        remaining = remaining.slice(pathMatch[1].length);
+        continue;
+      }
+
+      // Skip unknown character
+      remaining = remaining.slice(1);
+    }
+
+    // Build the result
+    let result = '';
+    if (namedParams.length > 0) {
+      result += ' ' + namedParams.join(' ');
+    }
+    if (positionalParams.length > 0) {
+      // Pass positional params as individual @__pos0__, @__pos1__, etc. arguments
+      // The component manager will map these to named params based on positionalParams
+      for (let i = 0; i < positionalParams.length; i++) {
+        const p = positionalParams[i];
+        // If it's a quoted string, use it directly
+        if (p.startsWith('"') || p.startsWith("'")) {
+          result += ` @__pos${i}__=${p}`;
+        }
+        // If it's a mustache, pass it through
+        else if (p.startsWith('{{') && p.endsWith('}}')) {
+          result += ` @__pos${i}__=${p}`;
+        }
+        // Numbers and booleans need to be wrapped
+        else {
+          result += ` @__pos${i}__={{${p}}}`;
+        }
+      }
+      // Also pass the count
+      result += ` @__posCount__={{${positionalParams.length}}}`;
+    }
+    return result;
   };
 
   // Known block helpers that should NOT be transformed (they're control flow, not components)
@@ -810,7 +1373,20 @@ function transformCurlyBlockComponents(code: string): string {
       }
 
       // Extract content between opening and closing tags
-      const content = output.slice(startIndex + fullMatch.length, endIndex - closingTag.length);
+      let content = output.slice(startIndex + fullMatch.length, endIndex - closingTag.length);
+
+      // Check for {{else}} block - split into default and inverse content
+      // Note: Only split on top-level {{else}}, not nested ones
+      let defaultContent = content;
+      let inverseContent = '';
+      const elseMatch = content.match(/\{\{else\}\}/);
+      if (elseMatch) {
+        // Simple split - assumes no nested {{else}} at the same level
+        // TODO: Handle nested else properly with depth tracking
+        const elseIndex = content.indexOf('{{else}}');
+        defaultContent = content.slice(0, elseIndex);
+        inverseContent = content.slice(elseIndex + 8); // 8 = length of '{{else}}'
+      }
 
       // Transform to angle-bracket syntax
       const pascalName = toPascalCase(name);
@@ -825,7 +1401,21 @@ function transformCurlyBlockComponents(code: string): string {
       }
 
       const transformedAttrs = transformAttrs(attrsWithoutBlockParams);
-      const replacement = `<${pascalName}${transformedAttrs}${blockParamClause}>${content}</${pascalName}>`;
+
+      let replacement: string;
+      // Check if there was an {{else}} block (even if empty)
+      // elseMatch is set if we found {{else}}, regardless of content length
+
+      if (elseMatch) {
+        // Has else block - use named blocks syntax
+        // <Component><:default>content</:default><:inverse>else content</:inverse></Component>
+        replacement = `<${pascalName}${transformedAttrs}${blockParamClause}><:default>${defaultContent}</:default><:inverse>${inverseContent}</:inverse></${pascalName}>`;
+      } else {
+        // No else block - regular content
+        // Add __hasBlock__ marker if block is empty (for has-block helper)
+        const hasBlockMarker = defaultContent.trim() === '' ? ' @__hasBlock__="default"' : '';
+        replacement = `<${pascalName}${transformedAttrs}${hasBlockMarker}${blockParamClause}>${defaultContent}</${pascalName}>`;
+      }
 
       output = output.slice(0, startIndex) + replacement + output.slice(endIndex);
     }
@@ -878,6 +1468,10 @@ export function precompileTemplate(templateString: string, options?: {
   if (/\{\{\s*outlet\s*\}\}/.test(transformedTemplate)) {
     transformedTemplate = transformOutletHelper(transformedTemplate);
   }
+  // Transform triple mustaches {{{expr}}} to raw HTML component
+  if (/\{\{\{/.test(transformedTemplate)) {
+    transformedTemplate = transformTripleMustaches(transformedTemplate);
+  }
   // Transform {{component}} helper to angle-bracket
   if (/\{\{#?component\s+["']/.test(transformedTemplate)) {
     transformedTemplate = transformComponentHelper(transformedTemplate);
@@ -885,9 +1479,14 @@ export function precompileTemplate(templateString: string, options?: {
 
   // Transform curly block component syntax to angle-bracket
   // {{#foo-bar}}...{{/foo-bar}} → <FooBar>...</FooBar>
-  if (/\{\{#[a-z][a-zA-Z0-9-]*[\s}]/.test(transformedTemplate)) {
+  // Also transforms inline {{foo-bar ...}} calls
+  if (/\{\{#?[a-z][a-zA-Z0-9]*-[a-zA-Z0-9-]*[\s}]/.test(transformedTemplate)) {
     transformedTemplate = transformCurlyBlockComponents(transformedTemplate);
   }
+
+  // Transform angle-bracket components with positional parameters
+  // <SampleComponent "Foo" 4 "Bar" @namedArg=val /> -> <SampleComponent @__pos0__="Foo" @__pos1__={{4}} ... @__posCount__={{3}} @namedArg=val />
+  transformedTemplate = transformAngleBracketPositionalParams(transformedTemplate);
 
   // Transform reserved word variable names to this.varName to avoid invalid JS
   // e.g., class=class -> class=this.class (because `class` is a reserved word)
@@ -907,6 +1506,18 @@ export function precompileTemplate(templateString: string, options?: {
     blockParamMappings = result.blockParamMappings;
   }
 
+  // Transform has-block and has-block-params helpers to global function calls
+  // (has-block) -> (this.$_hasBlock)
+  // (has-block "inverse") -> (this.$_hasBlock "inverse")
+  if (/\(has-block/.test(transformedTemplate)) {
+    transformedTemplate = transformedTemplate.replace(/\(has-block-params(?:\s+"([^"]+)")?\)/g, (match, blockName) => {
+      return blockName ? `(this.$_hasBlockParams "${blockName}")` : '(this.$_hasBlockParams)';
+    });
+    transformedTemplate = transformedTemplate.replace(/\(has-block(?:\s+"([^"]+)")?\)/g, (match, blockName) => {
+      return blockName ? `(this.$_hasBlock "${blockName}")` : '(this.$_hasBlock)';
+    });
+  }
+
   // Compile using GXT runtime compiler
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
@@ -921,8 +1532,44 @@ export function precompileTemplate(templateString: string, options?: {
   });
 
   if (compilationResult.errors && compilationResult.errors.length > 0) {
-    console.warn('[gxt-compile] Compilation warnings:', compilationResult.errors);
+    console.warn('[gxt-compile] Compilation errors:', compilationResult.errors);
+    console.warn('[gxt-compile] Template:', transformedTemplate.slice(0, 200));
   }
+
+  // CRITICAL: Always recreate the template function with proper symbol aliases.
+  // GXT's internal symbols are anonymous Symbol() which don't match our
+  // Symbol.for('gxt-args') / Symbol.for('gxt-slots'). By recreating the
+  // template function, we inject $a (args alias) and $s (slots alias) that
+  // use Symbol.for() to match what createRenderContext sets up.
+  // Also replace async $_each with synchronous $_eachSync.
+  if (compilationResult.code) {
+    let modifiedCode = compilationResult.code;
+
+    // Replace async $_each with $_eachSync
+    if (modifiedCode.includes('$_each(')) {
+      modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
+    }
+
+    compilationResult.code = modifiedCode;
+    try {
+      const needsArgsAlias = modifiedCode.includes('$a.');
+      const needsSlotsAlias = modifiedCode.includes('$s.') || modifiedCode.includes('$s[');
+      const templateFnCode = `
+        "use strict";
+        return function() {
+          ${needsArgsAlias ? 'const $a = this[Symbol.for("gxt-args")];' : ''}
+          ${needsSlotsAlias ? 'const $s = this[Symbol.for("gxt-slots")];' : ''}
+          return ${modifiedCode};
+        };
+      `;
+      compilationResult.templateFn = Function(templateFnCode)();
+    } catch (e) {
+      console.error('[gxt-compile] Failed to recreate template function:', e);
+      console.error('[gxt-compile] Code:', modifiedCode.slice(0, 200));
+    }
+  }
+
+
 
   // Helper function to convert template results to nodes
   const itemToNode = (item: any, depth = 0): Node | null => {
@@ -947,7 +1594,41 @@ export function precompileTemplate(templateString: string, options?: {
     if (typeof item === 'number' || typeof item === 'boolean') {
       return document.createTextNode(String(item));
     }
+    // Check for htmlSafe strings (SafeString objects with toHTML method)
+    if (item && typeof item === 'object' && typeof item.toHTML === 'function') {
+      const htmlContent = item.toHTML();
+      // Create a document fragment with the HTML content
+      const template = document.createElement('template');
+      template.innerHTML = htmlContent;
+      const fragment = document.createDocumentFragment();
+      while (template.content.firstChild) {
+        fragment.appendChild(template.content.firstChild);
+      }
+      return fragment;
+    }
     if (item && typeof item === 'object') {
+      // Check for GXT list context (from $_each/$_eachSync results)
+      // These have topMarker and bottomMarker properties, and the content is between them
+      if (item.topMarker && item.bottomMarker) {
+        const topMarker = item.topMarker;
+        const bottomMarker = item.bottomMarker;
+        const parent = topMarker.parentNode;
+        if (parent) {
+          // Create a fragment containing all nodes between markers (inclusive of markers for GXT tracking)
+          const fragment = document.createDocumentFragment();
+          // GXT needs the markers for list tracking, so include them
+          let node = topMarker;
+          while (node) {
+            const next = node.nextSibling;
+            fragment.appendChild(node);
+            if (node === bottomMarker) break;
+            node = next;
+          }
+          return fragment;
+        }
+        return null;
+      }
+
       // Check for GXT reactive cell with 'fn' property (from $_slot results)
       // GXT's slots return reactive cells that have a 'fn' getter function
       if (typeof item.fn === 'function' && 'isConst' in item) {
@@ -1073,15 +1754,48 @@ export function precompileTemplate(templateString: string, options?: {
             renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 0) + 1;
           }
 
-          // Ensure $args symbol is accessible on the render context
+          // Ensure $args symbol is ALWAYS accessible on the render context
           // The compiled template uses this[$args].argName, where $args is Symbol.for('gxt-args')
+          // If it's not set, lookups like `this[$args].model` will throw "Cannot read properties of undefined"
           const $ARGS_SYMBOL = Symbol.for('gxt-args');
-          if (context[$ARGS_SYMBOL] && !renderContext[$ARGS_SYMBOL]) {
-            renderContext[$ARGS_SYMBOL] = context[$ARGS_SYMBOL];
+          if (!renderContext[$ARGS_SYMBOL]) {
+            // Copy from context if present, otherwise create empty object
+            renderContext[$ARGS_SYMBOL] = context[$ARGS_SYMBOL] || context.args || {};
           }
 
+          // Add has-block helpers to the render context
+          // These check the slots context stack to see if blocks were provided
+          const currentSlots = g.$slots;
+          renderContext.$_hasBlock = function(blockName?: string) {
+            const name = blockName || 'default';
+            return currentSlots && typeof currentSlots[name] === 'function';
+          };
+          renderContext.$_hasBlockParams = function(blockName?: string) {
+            const name = blockName || 'default';
+            if (!currentSlots || typeof currentSlots[name] !== 'function') {
+              return false;
+            }
+            // Check if the slot has block params info attached
+            const slotFn = currentSlots[name];
+            if (slotFn.__hasBlockParams !== undefined) {
+              return slotFn.__hasBlockParams;
+            }
+            // Conservative default
+            return false;
+          };
+
+          // Push slots onto the global stack for nested has-block checks
+          const slotsStack = (globalThis as any).__slotsContextStack;
+          slotsStack.push(currentSlots);
+
           // Call the compiled template function with the render context
-          const result = compilationResult.templateFn.call(renderContext);
+          let result;
+          try {
+            result = compilationResult.templateFn.call(renderContext);
+          } finally {
+            // Pop slots from stack
+            slotsStack.pop();
+          }
 
           // Handle the result
           const nodes: Node[] = [];

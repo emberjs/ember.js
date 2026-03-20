@@ -47,17 +47,43 @@ let deferred = 0;
   @since 3.1.0
   @public
 */
+// Re-entrancy depth counter for notifyPropertyChange
+let _notifyDepth = 0;
+const MAX_NOTIFY_DEPTH = 10;
+
 function notifyPropertyChange(
   obj: object,
   keyName: string,
   _meta?: Meta | null,
   value?: unknown
 ): void {
+  // GXT integration: Trigger synchronous re-render BEFORE any early returns
+  // This ensures GXT components are updated even when Ember skips notification
+  // (e.g., for prototype meta objects)
+  const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
+  if (typeof gxtTrigger === 'function') {
+    gxtTrigger(obj, keyName);
+  }
+
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
     return;
   }
+
+  // Guard against infinite re-entrant notifyPropertyChange calls
+  // This can happen when GXT rendering triggers property changes that
+  // trigger more rendering in a cycle
+  if (_notifyDepth >= MAX_NOTIFY_DEPTH) {
+    return;
+  }
+  _notifyDepth++;
+
+  // GXT infinite loop detection
+  if (typeof (globalThis as any).__gxtOpCheck === 'function') {
+    (globalThis as any).__gxtOpCheck();
+  }
+  try {
 
   markObjectAsDirty(obj, keyName);
 
@@ -77,6 +103,10 @@ function notifyPropertyChange(
     } else {
       obj[PROPERTY_DID_CHANGE](keyName);
     }
+  }
+
+  } finally {
+    _notifyDepth--;
   }
 }
 
