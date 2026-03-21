@@ -133,12 +133,23 @@ installEmberWrappers();
       if (rootCell) rootCell.update((obj as any)[rootKey]);
     } catch { /* ignore */ }
   }
+  // Sync wrapper element if the object has attribute/class bindings
+  try {
+    const syncWrapper = (globalThis as any).__gxtSyncWrapper;
+    if (syncWrapper) syncWrapper(obj, keyName);
+  } catch { /* ignore */ }
+
   (globalThis as any).__gxtPendingSync = true;
   // Immediate sync to process dirtied cells while relatedTags are intact
   if (!(globalThis as any).__gxtSyncing) {
     (globalThis as any).__gxtSyncing = true;
     try { gxtSyncDom(); } catch { /* ignore */ }
     finally { (globalThis as any).__gxtSyncing = false; }
+    // After DOM sync, re-sync all tracked wrapper elements
+    try {
+      const syncAll = (globalThis as any).__gxtSyncAllWrappers;
+      if (syncAll) syncAll();
+    } catch { /* ignore */ }
   }
 };
 

@@ -191,7 +191,16 @@ function getCachedOrCreateInstance(
   if (poolEntry) {
     // Claim this instance and update with new args
     poolEntry.claimed = true;
-    updateInstanceWithNewArgs(poolEntry.instance, args);
+    const hasChanges = updateInstanceWithNewArgs(poolEntry.instance, args);
+
+    // Sync wrapper element attributes/classes when args change
+    if (hasChanges) {
+      const wrapper = poolEntry.instance.element || poolEntry.instance._element;
+      if (wrapper instanceof HTMLElement) {
+        syncWrapperElement(poolEntry.instance, wrapper, componentClass, args);
+      }
+    }
+
     return poolEntry.instance;
   }
 
@@ -223,12 +232,12 @@ function createComponentInstance(
   const keys = extractArgKeys(args);
 
   for (const key of keys) {
-    const { raw, resolved } = getArgValue(args, key);
+    const { raw, resolved, getter } = getArgValue(args, key);
 
     // Skip classNames - handled separately in wrapper building
     if (key === 'classNames') {
-      if (typeof raw === 'function') {
-        argGetters[key] = raw;
+      if (getter) {
+        argGetters[key] = getter;
       }
       lastArgValues[key] = resolved;
       continue;
@@ -237,12 +246,11 @@ function createComponentInstance(
     props[key] = resolved;
     lastArgValues[key] = resolved;
 
-    if (typeof raw === 'function') {
-      argGetters[key] = raw;
+    if (getter) {
+      argGetters[key] = getter;
     }
 
     // Build attrs with .value pattern (MutableCell)
-    const getter = typeof raw === 'function' ? raw : null;
     attrs[key] = {
       get value() {
         return getter ? getter() : resolved;
@@ -270,6 +278,32 @@ function createComponentInstance(
   // Ensure arg tracking is on the instance
   if (!instance.__argGetters) instance.__argGetters = argGetters;
   if (!instance.__lastArgValues) instance.__lastArgValues = lastArgValues;
+
+  // Install reactive getters for args that have closures.
+  // This ensures instance.foo always returns the current arg value,
+  // even when GXT doesn't re-invoke the component function on re-render.
+  for (const key of Object.keys(argGetters)) {
+    if (key === 'classNames' || key === 'class' || key === 'id' || key === 'elementId') continue;
+    const getter = argGetters[key]!;
+    try {
+      let localValue = instance[key]; // current value (from factory.create)
+      let useLocal = false; // track if value was set locally (e.g. by component code)
+      Object.defineProperty(instance, key, {
+        get() {
+          if (useLocal) return localValue;
+          try { return getter(); } catch { return localValue; }
+        },
+        set(v: any) {
+          localValue = v;
+          useLocal = true;
+          // Reset useLocal on next microtask so arg updates take precedence again
+          queueMicrotask(() => { useLocal = false; });
+        },
+        configurable: true,
+        enumerable: true,
+      });
+    } catch { /* some properties may not be configurable */ }
+  }
 
   // Register with parent's childViews
   if (parentView) {
@@ -355,10 +389,17 @@ function extractArgKeys(args: any): string[] {
 /**
  * Get both raw and resolved value for an arg.
  */
-function getArgValue(args: any, key: string): { raw: any; resolved: any } {
+function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?: () => any } {
+  // Check if the arg is defined as a getter (GXT compiles args as getters)
+  const descriptor = Object.getOwnPropertyDescriptor(args, key);
+  if (descriptor?.get) {
+    // Arg is a getter - capture the getter function for reactive updates
+    const resolved = descriptor.get();
+    return { raw: descriptor.get, resolved, getter: descriptor.get };
+  }
   const raw = args[key];
   const resolved = typeof raw === 'function' ? raw() : raw;
-  return { raw, resolved };
+  return { raw, resolved, getter: typeof raw === 'function' ? raw : undefined };
 }
 
 // =============================================================================
@@ -393,6 +434,232 @@ function triggerLifecycleHook(instance: any, hookName: string): void {
 // =============================================================================
 // Wrapper Element Building
 // =============================================================================
+
+/**
+ * Parse an attribute binding string: 'propName:attrName' or just 'propName'.
+ * Handles namespaced attributes like 'xlinkHref:xlink:href'.
+ */
+function parseAttributeBinding(binding: string): { propName: string; attrName: string } {
+  const idx = binding.indexOf(':');
+  if (idx === -1) return { propName: binding, attrName: binding };
+  return { propName: binding.slice(0, idx), attrName: binding.slice(idx + 1) };
+}
+
+/**
+ * Dasherize a camelCase string: 'fooBar' -> 'foo-bar', 'isEnabled' -> 'is-enabled'
+ */
+function dasherize(str: string): string {
+  return str.replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+/**
+ * Resolve a value from an instance by a potentially nested path like 'foo.bar.baz'.
+ */
+function getNestedValue(instance: any, path: string): any {
+  const parts = path.split('.');
+  let current = instance;
+  let inAttrs = false;
+  for (let i = 0; i < parts.length; i++) {
+    if (current == null) return undefined;
+    const part = parts[i]!;
+    if (part === 'attrs') {
+      inAttrs = true;
+      current = current[part];
+      continue;
+    }
+    current = current[part];
+    // attrs.X returns a MutableCell with .value — unwrap it
+    if (inAttrs && current != null && typeof current === 'object' && 'value' in current) {
+      current = current.value;
+      inAttrs = false;
+    }
+  }
+  return current;
+}
+
+/**
+ * Resolve a single classNameBinding string to a class name (or null).
+ *
+ * Supported formats:
+ *   ':static-class'            → always 'static-class'
+ *   'prop'                     → truthy string value, or dasherize(prop) for true, or null
+ *   'prop:trueClass'           → trueClass when truthy, else null
+ *   'prop:trueClass:falseClass'→ trueClass when truthy, else falseClass
+ *   'prop::falseClass'         → null when truthy, else falseClass
+ */
+function resolveClassNameBinding(instance: any, binding: string): string | null {
+  // Static class: ':static-class'
+  if (binding.startsWith(':')) {
+    return binding.slice(1);
+  }
+
+  const parts = binding.split(':');
+  const propPath = parts[0]!;
+  const trueClass = parts.length > 1 ? parts[1] : undefined;
+  const falseClass = parts.length > 2 ? parts[2] : undefined;
+
+  const value = getNestedValue(instance, propPath);
+
+  if (trueClass !== undefined) {
+    // 'prop:trueClass' or 'prop:trueClass:falseClass' or 'prop::falseClass'
+    if (value) {
+      return trueClass || null; // trueClass could be empty string for 'prop::falseClass'
+    } else {
+      return falseClass || null;
+    }
+  }
+
+  // Simple 'prop' binding
+  if (value === true) {
+    return dasherize(propPath);
+  }
+  if (value && typeof value === 'string') {
+    return value;
+  }
+  return null;
+}
+
+/**
+ * Sync wrapper element attributes and classes after property changes.
+ * Called when a pooled instance is reused and args have changed.
+ */
+function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: any, args: any): void {
+  if (!wrapper || !(wrapper instanceof HTMLElement)) return;
+
+  // --- Rebuild class list ---
+  const classList: string[] = [];
+
+  // Classes from invocation args
+  const argsClass = typeof args?.class === 'function' ? args.class() : args?.class;
+  const argsClassNames = typeof args?.classNames === 'function' ? args.classNames() : args?.classNames;
+
+  if (argsClass && typeof argsClass === 'string') {
+    classList.push(...argsClass.split(/\s+/).filter(Boolean));
+  }
+  if (argsClassNames && typeof argsClassNames === 'string') {
+    classList.push(...argsClassNames.split(/\s+/).filter(Boolean));
+  }
+
+  // Static classNames from component definition
+  const protoClassNames = componentDef?.prototype?.classNames;
+  if (protoClassNames && Array.isArray(protoClassNames) && protoClassNames.length > 0) {
+    classList.push(...protoClassNames);
+  } else if (instance?.classNames && Array.isArray(instance.classNames)) {
+    classList.push(...instance.classNames);
+  }
+
+  // Dynamic classNameBindings
+  const classNameBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
+  if (classNameBindings && Array.isArray(classNameBindings)) {
+    for (const binding of classNameBindings) {
+      const className = resolveClassNameBinding(instance, binding);
+      if (className) classList.push(className);
+    }
+  }
+
+  classList.push('ember-view');
+  wrapper.className = classList.join(' ');
+
+  // --- Sync attributeBindings ---
+  const attributeBindings = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
+  if (attributeBindings && Array.isArray(attributeBindings)) {
+    for (const binding of attributeBindings) {
+      const { propName, attrName } = parseAttributeBinding(binding);
+
+      // Never update id — it's frozen after first render
+      if (attrName === 'id') continue;
+
+      const value = propName.includes('.') ? getNestedValue(instance, propName) : instance?.[propName];
+      if (value === undefined || value === null || value === false) {
+        wrapper.removeAttribute(attrName);
+      } else if (value === true) {
+        wrapper.setAttribute(attrName, '');
+      } else {
+        wrapper.setAttribute(attrName, String(value));
+      }
+    }
+  }
+
+  // --- Sync ariaRole ---
+  const ariaRole = instance?.ariaRole;
+  if (ariaRole) {
+    wrapper.setAttribute('role', ariaRole);
+  } else {
+    // Only remove if it was previously set via ariaRole binding
+    const ariaRoleInProto = componentDef?.prototype?.hasOwnProperty('ariaRole');
+    const ariaRoleInClass = componentDef?.hasOwnProperty?.('ariaRole');
+    if (ariaRoleInProto || ariaRoleInClass) {
+      wrapper.removeAttribute('role');
+    }
+  }
+}
+
+/**
+ * Register a component instance for tracked wrapper element updates.
+ * After each gxtSyncDom(), all tracked instances have their wrapper
+ * element's attributes and classes re-synced.
+ */
+function installBindingInterceptors(instance: any, wrapper: HTMLElement, componentDef: any) {
+  const attrBindings = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
+  const classBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
+
+  if ((attrBindings && attrBindings.length > 0) || (classBindings && classBindings.length > 0)) {
+    trackedWrapperInstances.add({ instance, wrapper, componentDef });
+  }
+}
+
+// Register global hook for syncing wrapper elements when properties change.
+// Called from __gxtTriggerReRender in compile.ts.
+// Track instances with attribute/class bindings for post-sync updates
+const trackedWrapperInstances = new Set<any>();
+
+// After gxtSyncDom(), re-sync all tracked wrapper elements.
+// First refresh instance properties from arg getters, then sync wrapper.
+(globalThis as any).__gxtSyncAllWrappers = function() {
+  for (const entry of trackedWrapperInstances) {
+    const { instance, wrapper, componentDef } = entry;
+    if (!wrapper?.isConnected) {
+      trackedWrapperInstances.delete(entry);
+      continue;
+    }
+    // Always sync - instance property getters delegate to arg getters
+    // which return current values
+    syncWrapperElement(instance, wrapper, componentDef, undefined);
+  }
+};
+
+(globalThis as any).__gxtSyncWrapper = function(obj: any, keyName: string) {
+  const wrapper = obj?.element;
+  if (!(wrapper instanceof HTMLElement)) return;
+  const attrBindings = obj?.attributeBindings;
+  const classBindings = obj?.classNameBindings;
+  if (!attrBindings && !classBindings) return;
+
+  // Check if keyName is relevant to any binding
+  let relevant = false;
+  if (attrBindings && Array.isArray(attrBindings)) {
+    for (const b of attrBindings) {
+      const propName = b.split(':')[0];
+      if (propName === keyName || keyName.startsWith(propName + '.')) {
+        relevant = true;
+        break;
+      }
+    }
+  }
+  if (!relevant && classBindings && Array.isArray(classBindings)) {
+    for (const b of classBindings) {
+      if (b.startsWith(':')) continue; // static class, never changes
+      const propName = b.split(':')[0];
+      if (propName === keyName || keyName.startsWith(propName + '.')) {
+        relevant = true;
+        break;
+      }
+    }
+  }
+  if (relevant) {
+    syncWrapperElement(obj, wrapper, obj?.constructor, undefined);
+  }
+};
 
 /**
  * Build a wrapper element for a classic curly component.
@@ -438,6 +705,15 @@ function buildWrapperElement(
     classList.push(...instance.classNames);
   }
 
+  // Process classNameBindings
+  const classNameBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
+  if (classNameBindings && Array.isArray(classNameBindings)) {
+    for (const binding of classNameBindings) {
+      const className = resolveClassNameBinding(instance, binding);
+      if (className) classList.push(className);
+    }
+  }
+
   // 'ember-view' always comes last
   classList.push('ember-view');
   wrapper.className = classList.join(' ');
@@ -472,11 +748,8 @@ function buildWrapperElement(
   const attributeBindings = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
   if (attributeBindings && Array.isArray(attributeBindings)) {
     for (const binding of attributeBindings) {
-      // Binding format can be 'propName' or 'propName:attrName'
-      const parts = binding.split(':');
-      const propName = parts[0];
-      const attrName = parts[1] || propName;
-      const value = instance?.[propName];
+      const { propName, attrName } = parseAttributeBinding(binding);
+      const value = propName.includes('.') ? getNestedValue(instance, propName) : instance?.[propName];
       if (value !== undefined && value !== null && value !== false) {
         wrapper.setAttribute(attrName, value === true ? '' : String(value));
       }
@@ -1409,6 +1682,12 @@ function renderClassicComponent(
         instance._element = wrapper;
       }
     }
+  }
+
+  // Install reactive attribute/class binding interceptors on the instance
+  // so that when properties change, the wrapper element is updated in place.
+  if (instance && wrapper instanceof HTMLElement) {
+    installBindingInterceptors(instance, wrapper, componentDef);
   }
 
   // Lifecycle: willRender (in preRender state), then transition to hasElement, then willInsertElement
