@@ -378,17 +378,21 @@ class ClassicRootState {
                 'classNameBindings', 'attributeBindings', 'positionalParams',
                 '_states', 'renderer', '__dispatcher', 'parentView',
                 '_state', '_currentState', 'target', '_debugContainerKey']);
+              let cellCount = 0;
               for (const key in component) {
                 if (typeof key !== 'string' || key.startsWith('_') || skipProps.has(key)) continue;
                 try {
                   const desc = Object.getOwnPropertyDescriptor(component, key);
-                  // Only install cells for configurable data properties (no getters, no frozen)
-                  if (desc && desc.get) continue; // Already has getter (@tracked, etc.)
+                  if (desc && desc.get) continue;
                   if (desc && desc.configurable === false) continue;
                   const value = component[key];
                   if (typeof value === 'function') continue;
                   _cellFor(component, key, /* skipDefine */ false);
+                  cellCount++;
                 } catch { /* ignore */ }
+              }
+              if (cellCount > 0 && (globalThis as any).__DEBUG_GXT_RENDER) {
+                console.log('[RENDERER-CELL] Installed', cellCount, 'cells');
               }
             }
 
