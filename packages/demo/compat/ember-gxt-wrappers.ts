@@ -318,33 +318,36 @@ function createEmberTag(original: Function) {
       }
 
       // EmberHtmlRaw (triple mustaches)
+      // Returns a getter function marked __htmlRaw for reactive innerHTML updates.
+      // The getter must call the @value getter lazily (not eagerly) so that
+      // reads inside gxtEffect are tracked and re-evaluated when the backing
+      // property changes via set().
       if (resolvedTag === 'EmberHtmlRaw') {
-        let value: any;
+        let valueGetter: any;
         if (tagProps && tagProps !== gxtModule.$_edp) {
           const attrs = tagProps[1];
           if (Array.isArray(attrs)) {
             for (const [key, val] of attrs) {
               if (key === '@value') {
-                value = typeof val === 'function' ? val() : val;
+                // Keep the getter function — do NOT evaluate it eagerly.
+                // Evaluating here would capture the current value and lose
+                // the reactive link to the backing cell.
+                valueGetter = val;
                 break;
               }
             }
           }
         }
-        return function __htmlRawThunk() {
-          const actualValue = typeof value === 'function' ? value() : value;
-          if (actualValue == null) {
-            return document.createTextNode('');
-          }
-          const htmlContent = actualValue?.toHTML?.() ?? String(actualValue);
-          const template = document.createElement('template');
-          template.innerHTML = htmlContent;
-          const fragment = document.createDocumentFragment();
-          while (template.content.firstChild) {
-            fragment.appendChild(template.content.firstChild);
-          }
-          return fragment;
+        const htmlGetter = () => {
+          // Call the getter each time so that cell reads are tracked
+          // by any enclosing gxtEffect.
+          const raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
+          const actual = typeof raw === 'function' ? raw() : raw;
+          if (actual == null) return '';
+          return actual?.toHTML?.() ?? String(actual);
         };
+        (htmlGetter as any).__htmlRaw = true;
+        return htmlGetter;
       }
     }
 
