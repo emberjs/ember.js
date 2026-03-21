@@ -697,10 +697,12 @@ interface TrackedArgEntry {
 const trackedArgCells = new Set<TrackedArgEntry>();
 
 // After gxtSyncDom(), refresh arg cells and re-sync wrapper elements.
+// Returns instances that had changes (for post-render lifecycle hooks).
+const _updatedInstances: any[] = [];
 (globalThis as any).__gxtSyncAllWrappers = function() {
-  // Phase 1: Update arg cells from their getters and trigger lifecycle hooks.
-  // This propagates parent context changes into GXT's cell system,
-  // causing dependent formulas (text nodes, if conditions, etc.) to re-evaluate.
+  _updatedInstances.length = 0;
+
+  // Phase 1: Update arg cells and trigger pre-render lifecycle hooks.
   for (const entry of trackedArgCells) {
     let hasChanges = false;
     for (const key of Object.keys(entry.cells)) {
@@ -709,7 +711,6 @@ const trackedArgCells = new Set<TrackedArgEntry>();
         const newValue = getter();
         if (cell.__value !== newValue) {
           cell.update(newValue);
-          // Also update the instance property directly
           if (entry.instance && key !== 'class' && key !== 'classNames') {
             try { entry.instance[key] = newValue; } catch { /* ignore */ }
           }
@@ -717,14 +718,13 @@ const trackedArgCells = new Set<TrackedArgEntry>();
         }
       } catch { /* getter may throw */ }
     }
-    // Trigger lifecycle hooks when args changed
+    // Pre-render lifecycle hooks (before DOM sync)
     if (hasChanges && entry.instance) {
       triggerLifecycleHook(entry.instance, 'willUpdate');
-      triggerLifecycleHook(entry.instance, 'willRender');
       triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
       triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
-      triggerLifecycleHook(entry.instance, 'didUpdate');
-      triggerLifecycleHook(entry.instance, 'didRender');
+      triggerLifecycleHook(entry.instance, 'willRender');
+      _updatedInstances.push(entry.instance);
     }
   }
 
@@ -737,6 +737,15 @@ const trackedArgCells = new Set<TrackedArgEntry>();
     }
     syncWrapperElement(instance, wrapper, componentDef, undefined);
   }
+};
+
+// Post-render lifecycle hooks — called after the second gxtSyncDom() completes.
+(globalThis as any).__gxtPostRenderHooks = function() {
+  for (const instance of _updatedInstances) {
+    triggerLifecycleHook(instance, 'didUpdate');
+    triggerLifecycleHook(instance, 'didRender');
+  }
+  _updatedInstances.length = 0;
 };
 
 (globalThis as any).__gxtSyncWrapper = function(obj: any, keyName: string) {
