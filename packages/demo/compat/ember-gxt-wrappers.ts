@@ -87,6 +87,36 @@ function createEmberMaybeHelper(original: Function) {
       (hashOrCtx.hasOwnProperty?.('$_eval') || hashOrCtx[$PROPS] !== undefined || hashOrCtx.hasOwnProperty?.($PROPS));
     const hash = maybeCtx ? hashOrCtx : (isCtx ? {} : (hashOrCtx ?? {}));
 
+    // Handle CurriedComponent — when a curried component is used as {{curried ...}} or {{object.comp ...}}
+    if (nameOrFn && nameOrFn.__isCurriedComponent) {
+      // Merge the invocation args into the curried component
+      const namedArgs: Record<string, any> = {};
+      if (hash && typeof hash === 'object') {
+        for (const key of Object.keys(hash)) {
+          if (!key.startsWith('$_') && key !== 'hash') {
+            namedArgs[key] = hash[key];
+          }
+        }
+      }
+      const positionals = Array.isArray(args) ? args : [];
+
+      // Create a new curried component with merged args
+      const createCurried = g.__createCurriedComponent;
+      if (!createCurried) return nameOrFn;
+      const merged = createCurried(nameOrFn, namedArgs, positionals);
+
+      // Render it through the component manager
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(merged)) {
+        const handleResult = managers.component.handle(merged, {}, null, null);
+        if (typeof handleResult === 'function') {
+          return handleResult();
+        }
+        return handleResult;
+      }
+      return merged;
+    }
+
     // Function arguments (e.g., $_blockParam) - delegate to original GXT handler
     if (typeof nameOrFn === 'function') {
       // Let original GXT $_maybeHelper handle function-type helpers

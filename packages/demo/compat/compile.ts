@@ -40,6 +40,57 @@ if (!isGlobalScopeReady()) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// Override $_componentHelper with Ember-aware version that creates CurriedComponent.
+// Uses lazy lookup of CurriedComponent class because manager.ts may load after compile.ts.
+{
+  const g = globalThis as any;
+
+  if (g.$_componentHelper) {
+    const unwrapArg = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
+
+    g.$_componentHelper = function $_componentHelper_ember(params: any[], hash: Record<string, any>) {
+      const createCurried = g.__createCurriedComponent;
+      if (!createCurried) {
+        // Fallback: no createCurriedComponent available yet, return the original behavior
+        return params[0];
+      }
+
+      // Resolve the first arg (component name/ref)
+      const first = unwrapArg(params[0]);
+
+      // Collect named args from hash (keep getters for reactivity).
+      // Also eagerly evaluate each getter to establish GXT cell tracking
+      // in the calling formula's context — this ensures the parent template
+      // re-evaluates when curried arg dependencies change.
+      const namedArgs: Record<string, any> = {};
+      if (hash) {
+        for (const key of Object.keys(hash)) {
+          const val = hash[key];
+          namedArgs[key] = val;
+          // Touch the value to track the cell dependency
+          if (typeof val === 'function' && !val.prototype) {
+            try { val(); } catch { /* ignore */ }
+          }
+        }
+      }
+
+      // Collect remaining positional params (after the first which is the component ref)
+      const positionals: any[] = [];
+      for (let i = 1; i < params.length; i++) {
+        const p = params[i];
+        positionals.push(p);
+        // Touch positional values to track cell dependencies
+        if (typeof p === 'function' && !p.prototype) {
+          try { p(); } catch { /* ignore */ }
+        }
+      }
+
+      // Create a curried component
+      return createCurried(first, namedArgs, positionals);
+    };
+  }
+}
+
 // Override GXT's $__if with Ember-aware truthiness rules.
 // Ember considers empty arrays, proxy objects with isTruthy=false, and
 // empty HTMLSafe strings as falsy, unlike JavaScript's standard truthiness.
@@ -398,10 +449,83 @@ const slotsContextStack: any[] = [];
   return false;
 };
 
+// Override $_c to handle CurriedComponent — when a GXT binding (e.g., from {{#let}})
+// resolves to a CurriedComponent, we need to render it through the Ember component manager
+// instead of GXT's normal component constructor path.
+const g = globalThis as any;
+if (g.$_c && !g.$_c.__emberWrapped) {
+  const originalC = g.$_c;
+
+  g.$_c = function $_c_ember(comp: any, args: any, ctx: any) {
+    if (comp && comp.__isCurriedComponent) {
+      // Build args from the GXT args object
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(comp)) {
+        const $PROPS = Symbol.for('gxt-props');
+        const fw = args?.[$PROPS] || null;
+
+        // Extract named args from the GXT args object
+        const namedArgs: any = {};
+        if (args) {
+          for (const key of Object.keys(args)) {
+            if (key === 'args' || key.startsWith('$')) continue;
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            if (desc) {
+              Object.defineProperty(namedArgs, key, desc);
+            }
+          }
+          // Also check args.args (GXT puts named args in args['args'])
+          const argsObj = args['args'];
+          if (argsObj && typeof argsObj === 'object') {
+            for (const key of Object.keys(argsObj)) {
+              if (!key.startsWith('$')) {
+                const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+                if (desc) {
+                  Object.defineProperty(namedArgs, key, desc);
+                }
+              }
+            }
+          }
+        }
+
+        const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
+        if (typeof handleResult === 'function') {
+          return handleResult();
+        }
+        return handleResult;
+      }
+    }
+
+    // Also handle functions with __stringComponentName (from old $_componentHelper)
+    if (typeof comp === 'function' && comp.__stringComponentName) {
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(comp)) {
+        const namedArgs: any = {};
+        if (args) {
+          for (const key of Object.keys(args)) {
+            if (key === 'args' || key.startsWith('$')) continue;
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            if (desc) {
+              Object.defineProperty(namedArgs, key, desc);
+            }
+          }
+        }
+        const handleResult = managers.component.handle(comp, namedArgs, null, ctx);
+        if (typeof handleResult === 'function') {
+          return handleResult();
+        }
+        return handleResult;
+      }
+    }
+
+    return originalC(comp, args, ctx);
+  };
+  g.$_c.__emberWrapped = true;
+}
+
 // Override $_tag to check for Ember components before creating HTML elements
 // GXT compiles PascalCase tags like <FooBar /> to $_tag('FooBar', ...) but
 // these should be handled by the component manager for Ember integration
-const g = globalThis as any;
 if (g.$_tag && !g.$_tag.__emberWrapped) {
   const originalTag = g.$_tag;
 
@@ -422,13 +546,30 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
         const argName = resolvedTag.slice(1); // Remove '@'
         // Get the component from the context's args
         // GXT uses plain string 'args' ($args = 'args')
-        const args = ctx?.['args'] || ctx?.args || {};
-        const componentValue = args[argName];
+        const ctxArgs = ctx?.['args'] || ctx?.args || {};
+        const componentValue = ctxArgs[argName];
         if (componentValue) {
+          // Extract args from tagProps for dynamic component rendering
+          const dynArgs: any = {};
+          if (tagProps && tagProps !== g.$_edp) {
+            const attrs = tagProps[1];
+            if (Array.isArray(attrs)) {
+              for (const [key, value] of attrs) {
+                if (key.startsWith('@')) {
+                  const dynArgName = key.slice(1);
+                  Object.defineProperty(dynArgs, dynArgName, {
+                    get: () => typeof value === 'function' ? value() : value,
+                    enumerable: true,
+                    configurable: true,
+                  });
+                }
+              }
+            }
+          }
           // Render the dynamic component
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            return managers.component.handle(componentValue, {}, children, ctx);
+            return managers.component.handle(componentValue, dynArgs, children, ctx);
           }
         }
         // If no component found, return empty comment
@@ -444,10 +585,27 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
           componentValue = componentValue?.[part];
         }
         if (componentValue) {
+          // Extract args from tagProps for dynamic component rendering
+          const dynArgs: any = {};
+          if (tagProps && tagProps !== g.$_edp) {
+            const attrs = tagProps[1];
+            if (Array.isArray(attrs)) {
+              for (const [key, value] of attrs) {
+                if (key.startsWith('@')) {
+                  const argName = key.slice(1);
+                  Object.defineProperty(dynArgs, argName, {
+                    get: () => typeof value === 'function' ? value() : value,
+                    enumerable: true,
+                    configurable: true,
+                  });
+                }
+              }
+            }
+          }
           // Render the dynamic component
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            return managers.component.handle(componentValue, {}, children, ctx);
+            return managers.component.handle(componentValue, dynArgs, children, ctx);
           }
         }
         // If no component found, return empty comment
@@ -1198,14 +1356,28 @@ function transformComponentHelper(code: string): string {
   // Need to handle nested components properly
   const blockPattern = /\{\{#component\s+["']([^"']+)["']([^}]*)\}\}([\s\S]*?)\{\{\/component\}\}/g;
   result = result.replace(blockPattern, (match, name, attrs, content) => {
+    if (attrs && /(?<!=)\s*\(/.test(attrs)) {
+      return match; // Leave as-is for GXT to handle via $_componentHelper
+    }
     const pascalName = toPascalCase(name);
     const transformedAttrs = transformAttrs(attrs);
     return `<${pascalName}${transformedAttrs}>${content}</${pascalName}>`;
   });
 
   // Inline form: {{component "name" arg=val}}
+  // Skip transformation if attrs contain positional subexpressions (e.g., (component ...))
+  // that are NOT part of a named arg value. Named arg values with subexpressions
+  // like greeting=(hash ...) are OK to transform, but bare (component ...) positional
+  // args cannot be converted to angle-bracket syntax.
   const inlinePattern = /\{\{component\s+["']([^"']+)["']([^}]*)\}\}/g;
   result = result.replace(inlinePattern, (match, name, attrs) => {
+    if (attrs) {
+      // Check for bare positional subexpressions: (word ...) NOT preceded by =
+      // This detects positional args like (component "-foo") but not named args like greeting=(hash ...)
+      if (/(?<!=)\s*\(/.test(attrs)) {
+        return match; // Leave as-is for GXT to handle via $_componentHelper
+      }
+    }
     const pascalName = toPascalCase(name);
     const transformedAttrs = transformAttrs(attrs);
     return `<${pascalName}${transformedAttrs} />`;
@@ -1335,6 +1507,35 @@ function transformBlockParams(templateString: string): { transformed: string; bl
       // Replace in attribute values: @attr={{param}}
       const attrPattern = new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}\\}\\}`, 'g');
       transformedContent = transformedContent.replace(attrPattern, `$1{{this.${bpVar}}}`);
+
+      // Replace param used as component tag name: <Param ...> -> <this.$_bp0 ...>
+      // This handles the case where a block param is a component reference
+      // (e.g., {{#let (component 'foo') as |Comp|}}<Comp />{{/let}})
+      if (param[0] === param[0].toUpperCase()) {
+        // Self-closing tag: <Param ... /> -> <this.$_bp0 ... />
+        const selfClosePattern = new RegExp(`<${param}((?:\\s+[^>]*)?)\\s*/>`, 'g');
+        transformedContent = transformedContent.replace(selfClosePattern, `<this.${bpVar}$1 />`);
+
+        // Open tag: <Param ...> -> <this.$_bp0 ...>
+        const openTagPattern = new RegExp(`<${param}((?:\\s+[^>]*)?)>`, 'g');
+        transformedContent = transformedContent.replace(openTagPattern, `<this.${bpVar}$1>`);
+
+        // Close tag: </Param> -> </this.$_bp0>
+        const closeTagPattern = new RegExp(`</${param}>`, 'g');
+        transformedContent = transformedContent.replace(closeTagPattern, `</this.${bpVar}>`);
+      }
+
+      // Replace param.property used as component tag: <param.baz ...> -> <this.$_bp0.baz ...>
+      {
+        const dotSelfClosePattern = new RegExp(`<${param}\\.(\\S+?)((?:\\s+[^>]*)?)\\s*/>`, 'g');
+        transformedContent = transformedContent.replace(dotSelfClosePattern, `<this.${bpVar}.$1$2 />`);
+
+        const dotOpenPattern = new RegExp(`<${param}\\.(\\S+?)((?:\\s+[^>]*)?)>`, 'g');
+        transformedContent = transformedContent.replace(dotOpenPattern, `<this.${bpVar}.$1$2>`);
+
+        const dotClosePattern = new RegExp(`</${param}\\.(\\S+?)>`, 'g');
+        transformedContent = transformedContent.replace(dotClosePattern, `</this.${bpVar}.$1>`);
+      }
     }
 
     // Reconstruct the element without the `as |...|` part
@@ -1833,6 +2034,75 @@ export function precompileTemplate(templateString: string, options?: {
           return finalResult;
         }
 
+        // Check if the result is a CurriedComponent — render it as a component
+        // Use reactive rendering so curried args that depend on tracked state update properly
+        if (finalResult && finalResult.__isCurriedComponent) {
+          const managers = (globalThis as any).$_MANAGERS;
+          if (managers?.component?.canHandle?.(finalResult)) {
+            const renderCurriedComponent = (curried: any): Node | null => {
+              const handleResult = managers.component.handle(curried, {}, null, null);
+              if (typeof handleResult === 'function') {
+                const rendered = handleResult();
+                if (rendered instanceof Node) return rendered;
+                return itemToNode(rendered, depth + 1);
+              }
+              if (handleResult instanceof Node) return handleResult;
+              return itemToNode(handleResult, depth + 1);
+            };
+
+            // Set up reactive rendering with markers
+            const startMarker = document.createComment('curried-start');
+            const endMarker = document.createComment('curried-end');
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(startMarker);
+
+            // Initial render
+            const initialNode = renderCurriedComponent(finalResult);
+            if (initialNode) fragment.appendChild(initialNode);
+
+            fragment.appendChild(endMarker);
+
+            // Set up reactive effect for re-rendering on dependency changes
+            try {
+              gxtEffect(() => {
+                // Re-evaluate the getter to get the current CurriedComponent
+                const v = item();
+                const fv = typeof v === 'function' ? v() : v;
+                if (!fv || !fv.__isCurriedComponent) return;
+
+                // Call all curried arg getters to track dependencies
+                const cArgs = fv.__curriedArgs || {};
+                for (const val of Object.values(cArgs)) {
+                  if (typeof val === 'function') val();
+                }
+                const cPos = fv.__curriedPositionals || [];
+                for (const val of cPos) {
+                  if (typeof val === 'function') val();
+                }
+
+                const parent = startMarker.parentNode;
+                if (!parent) return;
+
+                // Remove old content between markers
+                let node = startMarker.nextSibling;
+                while (node && node !== endMarker) {
+                  const next = node.nextSibling;
+                  parent.removeChild(node);
+                  node = next;
+                }
+
+                // Render new content
+                const newNode = renderCurriedComponent(fv);
+                if (newNode) {
+                  parent.insertBefore(newNode, endMarker);
+                }
+              });
+            } catch { /* effect setup may fail */ }
+
+            return fragment;
+          }
+        }
+
         // Check if the result is a raw HTML value (from triple-stache {{{expr}}})
         // These have __htmlRaw or toHTML marker and need innerHTML rendering
         if (finalResult && typeof finalResult === 'object' && (finalResult.__htmlRaw || typeof finalResult.toHTML === 'function')) {
@@ -1928,6 +2198,21 @@ export function precompileTemplate(templateString: string, options?: {
       return fragment;
     }
     if (item && typeof item === 'object') {
+      // Check for CurriedComponent — render it as a component
+      if (item && item.__isCurriedComponent) {
+        const managers = (globalThis as any).$_MANAGERS;
+        if (managers?.component?.canHandle?.(item)) {
+          const handleResult = managers.component.handle(item, {}, null, null);
+          if (typeof handleResult === 'function') {
+            const rendered = handleResult();
+            if (rendered instanceof Node) return rendered;
+            return itemToNode(rendered, depth + 1);
+          }
+          if (handleResult instanceof Node) return handleResult;
+          return itemToNode(handleResult, depth + 1);
+        }
+      }
+
       // Check for GXT list context (from $_each/$_eachSync results)
       // These have topMarker and bottomMarker properties, and the content is between them
       if (item.topMarker && item.bottomMarker) {

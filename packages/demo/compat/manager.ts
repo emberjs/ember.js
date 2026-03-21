@@ -44,6 +44,76 @@ const $ARGS_KEY = 'args';
 let emberViewIdCounter = 0;
 
 // =============================================================================
+// CurriedComponent — represents a component + pre-bound (curried) arguments
+// =============================================================================
+
+/**
+ * Create a curried component — a callable function that wraps a component
+ * with pre-bound arguments. Curried components can be nested (re-curried)
+ * and rendered in template positions.
+ */
+export function createCurriedComponent(
+  nameOrComponent: string | Function | any,
+  args: Record<string, any>,
+  positionals: any[] = []
+): any {
+  let name: string | Function;
+  let curriedArgs: Record<string, any>;
+  let curriedPositionals: any[];
+
+  if (nameOrComponent && nameOrComponent.__isCurriedComponent) {
+    // Nested currying — merge args and positionals.
+    name = nameOrComponent.__name;
+    curriedArgs = { ...nameOrComponent.__curriedArgs, ...args };
+    curriedPositionals = [...nameOrComponent.__curriedPositionals, ...positionals];
+  } else {
+    name = nameOrComponent;
+    curriedArgs = { ...args };
+    curriedPositionals = [...positionals];
+  }
+
+  // Create a callable function so GXT can invoke it like a component/helper
+  const curried = function curriedComponentFn(...runtimeArgs: any[]) {
+    // When called by GXT (e.g., from let block resolution), render the component
+    const managers = (globalThis as any).$_MANAGERS;
+    if (managers?.component?.canHandle?.(curried)) {
+      const handleResult = managers.component.handle(curried, {}, null, null);
+      if (typeof handleResult === 'function') {
+        return handleResult();
+      }
+      return handleResult;
+    }
+    return undefined;
+  };
+
+  // Mark as curried component
+  curried.__isCurriedComponent = true;
+  curried.__name = name;
+  curried.__curriedArgs = curriedArgs;
+  curried.__curriedPositionals = curriedPositionals;
+
+  return curried;
+}
+
+// Legacy class-based check — still support instanceof for existing code
+export class CurriedComponent {
+  // Marker class for instanceof checks
+  static isCurriedComponent(value: any): boolean {
+    return value && value.__isCurriedComponent === true;
+  }
+}
+
+// Make the check function globally accessible
+(globalThis as any).__EmberCurriedComponent = {
+  // Use a duck-type check instead of instanceof
+  __isCurriedComponentClass: true,
+};
+(globalThis as any).__isEmberCurriedComponent = function(value: any) {
+  return value && value.__isCurriedComponent === true;
+};
+(globalThis as any).__createCurriedComponent = createCurriedComponent;
+
+// =============================================================================
 // Global Registries
 // =============================================================================
 
@@ -398,6 +468,10 @@ function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?
     return { raw: descriptor.get, resolved, getter: descriptor.get };
   }
   const raw = args[key];
+  // Don't unwrap CurriedComponent functions — they should be stored as-is
+  if (raw && raw.__isCurriedComponent) {
+    return { raw, resolved: raw };
+  }
   const resolved = typeof raw === 'function' ? raw() : raw;
   return { raw, resolved, getter: typeof raw === 'function' ? raw : undefined };
 }
@@ -1169,6 +1243,11 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
 const $_MANAGERS = {
   component: {
     canHandle(komp: any): boolean {
+      // Handle CurriedComponent (duck-type check)
+      if (komp && komp.__isCurriedComponent) {
+        return true;
+      }
+
       // Handle string component names
       if (typeof komp === 'string') {
         // EmberHtmlRaw is always handled (triple-stache)
@@ -1188,6 +1267,11 @@ const $_MANAGERS = {
         return false;
       }
 
+      // Handle wrapped component functions from $_componentHelper
+      if (typeof komp === 'function' && komp.__stringComponentName) {
+        return true;
+      }
+
       // Handle component classes/factories
       if (globalThis.INTERNAL_MANAGERS.has(komp)) {
         return true;
@@ -1203,6 +1287,84 @@ const $_MANAGERS = {
 
     handle(komp: any, args: any, fw: any, ctx: any): any {
       const owner = (globalThis as any).owner;
+
+      // Handle CurriedComponent — merge curried args with invocation args
+      if (komp && komp.__isCurriedComponent) {
+        // Build merged args: curried args are defaults, invocation args override
+        const mergedArgs: any = {};
+
+        // Copy curried named args as lazy getters
+        const cArgs = komp.__curriedArgs || {};
+        for (const [key, value] of Object.entries(cArgs)) {
+          Object.defineProperty(mergedArgs, key, {
+            get: () => typeof value === 'function' ? value() : value,
+            enumerable: true,
+            configurable: true,
+          });
+        }
+
+        // Copy invocation args (these override curried args)
+        if (args) {
+          for (const key of Object.keys(args)) {
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            if (desc) {
+              Object.defineProperty(mergedArgs, key, desc);
+            }
+          }
+        }
+
+        // Handle curried positional params
+        const cPositionals = komp.__curriedPositionals || [];
+        if (cPositionals.length > 0) {
+          // Set up positional params from curried values
+          // Only set them if invocation doesn't already provide __posCount__
+          const invocationPosCount = typeof mergedArgs.__posCount__ === 'function'
+            ? mergedArgs.__posCount__()
+            : mergedArgs.__posCount__;
+
+          if (invocationPosCount === undefined || invocationPosCount === 0) {
+            // No invocation positionals — use curried positionals
+            for (let i = 0; i < cPositionals.length; i++) {
+              const val = cPositionals[i];
+              Object.defineProperty(mergedArgs, `__pos${i}__`, {
+                get: () => typeof val === 'function' ? val() : val,
+                enumerable: true,
+                configurable: true,
+              });
+            }
+            mergedArgs.__posCount__ = cPositionals.length;
+          }
+          // If invocation provides positionals, they override (already in mergedArgs)
+        }
+
+        // Resolve the underlying component
+        const resolvedKomp = komp.__name;
+        return this.handle(resolvedKomp, mergedArgs, fw, ctx);
+      }
+
+      // Handle wrapped component functions from $_componentHelper
+      if (typeof komp === 'function' && komp.__stringComponentName) {
+        // Create a CurriedComponent from the wrapped function
+        const wrappedArgs: Record<string, any> = {};
+        // The wrapped function merges its hash into passed args when called
+        // We need to extract the hash. Call it with an empty object to get the curried args.
+        const tempArgs: any = {};
+        komp(tempArgs);
+        // Now tempArgs has the curried named args
+        for (const [key, value] of Object.entries(tempArgs)) {
+          wrappedArgs[key] = value;
+        }
+        // Merge with invocation args
+        if (args) {
+          for (const key of Object.keys(args)) {
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            if (desc) {
+              Object.defineProperty(wrappedArgs, key, desc);
+            }
+          }
+        }
+        return this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
+      }
 
       // EmberHtmlRaw — triple-stache {{{expr}}} compiled as <EmberHtmlRaw @value={{expr}} />
       // Returns a getter function marked __htmlRaw for reactive innerHTML updates
