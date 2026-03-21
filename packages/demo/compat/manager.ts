@@ -603,9 +603,10 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
   // --- Rebuild class list ---
   const classList: string[] = [];
 
-  // Classes from invocation args
-  const argsClass = typeof args?.class === 'function' ? args.class() : args?.class;
-  const argsClassNames = typeof args?.classNames === 'function' ? args.classNames() : args?.classNames;
+  // Classes from invocation args (try arg getters first, then args object)
+  const argGetters = instance?.__argGetters;
+  let argsClass = argGetters?.class ? argGetters.class() : (typeof args?.class === 'function' ? args.class() : args?.class);
+  let argsClassNames = argGetters?.classNames ? argGetters.classNames() : (typeof args?.classNames === 'function' ? args.classNames() : args?.classNames);
 
   if (argsClass && typeof argsClass === 'string') {
     classList.push(...argsClass.split(/\s+/).filter(Boolean));

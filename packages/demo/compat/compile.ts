@@ -769,6 +769,14 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
               const attrKey = key === '' ? 'class' : key;
               // Collect for forwarding via ...attributes
               domAttrs.push([attrKey, value]);
+              // Also add class/classNames to args so wrapper building and sync can access them
+              if (attrKey === 'class' || attrKey === 'classNames') {
+                Object.defineProperty(args, attrKey, {
+                  get: () => typeof value === 'function' ? value() : value,
+                  enumerable: true,
+                  configurable: true,
+                });
+              }
             }
           }
 
