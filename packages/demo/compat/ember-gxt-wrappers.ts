@@ -212,8 +212,8 @@ function createEmberMaybeHelper(original: Function) {
         }
       }
 
-      // For kebab-case names, try component lookup
-      if (name.includes('-')) {
+      // Try component lookup (both kebab-case and single-word names)
+      {
         const compFactory = owner.factoryFor(`component:${name}`);
         if (compFactory) {
           const $_MANAGERS = g.$_MANAGERS;
