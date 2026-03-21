@@ -1966,28 +1966,32 @@ export function precompileTemplate(templateString: string, options?: {
   }
 
 
-  // Replace async $_each with synchronous $_eachSync.
-  // GXT's $_each is async which breaks Ember's synchronous test expectations.
-  // Only recreate the template function if we actually need to replace $_each.
-  // Otherwise, keep GXT's runtime compiler's original templateFn which has
-  // the correct $a alias (this['args']) and access to closure variables.
-  if (compilationResult.code && compilationResult.code.includes('$_each(')) {
-    const modifiedCode = compilationResult.code.replace(/\$_each\(/g, '$_eachSync(');
+  // Always recreate the template function to:
+  // 1. Replace async $_each with synchronous $_eachSync
+  // 2. Inject $slots reference (globalThis.$slots) for {{yield}} support
+  // 3. Inject $a alias for @named args
+  if (compilationResult.code) {
+    let modifiedCode = compilationResult.code;
+    // Replace async $_each with synchronous $_eachSync
+    if (modifiedCode.includes('$_each(')) {
+      modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
+    }
     compilationResult.code = modifiedCode;
     try {
-      // GXT's runtime compiler uses $args = 'args' (a string, not Symbol)
-      // and puts all GXT functions on globalThis via setupGlobalScope()
       const needsArgsAlias = modifiedCode.includes('$a.');
+      const needsSlots = modifiedCode.includes('$slots');
+      const g = globalThis as any;
       const templateFnCode = `
         "use strict";
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
+          ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}
           return ${modifiedCode};
         };
       `;
       compilationResult.templateFn = Function(templateFnCode)();
     } catch (e) {
-      console.error('[gxt-compile] Failed to recreate template function with $_eachSync:', e);
+      console.error('[gxt-compile] Failed to recreate template function:', e);
     }
   }
 
