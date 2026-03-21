@@ -196,15 +196,17 @@ installEmberWrappers();
     (globalThis as any).__gxtSyncing = true;
     try {
       gxtSyncDom();
-      // After DOM sync, update arg cells and wrapper elements.
-      // Arg cell updates may dirty more cells, so run gxtSyncDom again.
+    } catch { /* ignore first sync errors */ }
+    // After DOM sync, update arg cells and wrapper elements.
+    // Arg cell updates may dirty more cells, so run gxtSyncDom again.
+    try {
       const syncAll = (globalThis as any).__gxtSyncAllWrappers;
-      if (syncAll) {
+      if (typeof syncAll === 'function') {
         syncAll();
         // Second sync to process any newly-dirtied arg cells
-        gxtSyncDom();
+        try { gxtSyncDom(); } catch { /* ignore */ }
       }
-    } catch { /* ignore */ }
+    } catch { /* ignore sync wrapper errors */ }
     finally { (globalThis as any).__gxtSyncing = false; }
   }
 };
@@ -217,11 +219,15 @@ installEmberWrappers();
 (globalThis as any).__gxtSyncDomNow = function() {
   if ((globalThis as any).__gxtPendingSync) {
     (globalThis as any).__gxtPendingSync = false;
+    try { gxtSyncDom(); } catch { /* ignore */ }
+    // Update arg cells and wrapper elements, then run second sync
     try {
-      gxtSyncDom();
-    } catch {
-      // Ignore sync errors
-    }
+      const syncAll = (globalThis as any).__gxtSyncAllWrappers;
+      if (typeof syncAll === 'function') {
+        syncAll();
+        try { gxtSyncDom(); } catch { /* ignore */ }
+      }
+    } catch { /* ignore */ }
   }
 };
 
