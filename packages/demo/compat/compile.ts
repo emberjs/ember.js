@@ -2085,7 +2085,6 @@ export function precompileTemplate(templateString: string, options?: {
           const slotsStack = (globalThis as any).__slotsContextStack;
           slotsStack.push(currentSlots);
 
-          // Call the compiled template function with the render context
           let result;
           try {
             result = compilationResult.templateFn.call(renderContext);
