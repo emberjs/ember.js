@@ -2021,12 +2021,13 @@ export function precompileTemplate(templateString: string, options?: {
           // GXT requires these for proper parent/child tracking
           // Use the actual symbols exported from GXT
 
-          // Create a render context that inherits from the component but has GXT symbols
-          const renderContext = Object.create(context);
+          // Use the context directly — don't wrap with Object.create()!
+          // The context IS the Proxy from createRenderContext. Wrapping it would
+          // bypass the Proxy's get handler, breaking cell-based reactive tracking.
+          const renderContext = context;
 
-          // Store both context and renderContext for debugging
+          // Store context for debugging
           (globalThis as any).__lastRenderContext = context;
-          (globalThis as any).__lastRenderContextCreated = renderContext;
 
 
           // Set up the GXT context symbols using the proper exported symbols

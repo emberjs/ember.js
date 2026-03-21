@@ -693,7 +693,10 @@ function createRenderContext(
       // This handles properties set via Ember's extend() which puts them
       // on the prototype as data properties (not caught by pre-installation)
       const value = Reflect.get(target, prop, target);
-      if (typeof value === 'function') {
+      // Skip methods (prototype functions) but NOT data properties holding functions.
+      // Data properties may change from function→non-function (e.g., set(cond, false))
+      // and need cell tracking. Methods never change and don't need tracking.
+      if (typeof value === 'function' && !Object.prototype.hasOwnProperty.call(target, prop)) {
         return value;
       }
 
