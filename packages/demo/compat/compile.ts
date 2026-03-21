@@ -110,10 +110,13 @@ installEmberWrappers();
     if (ctxsMap) {
       const ctxs = ctxsMap.get(obj);
       if (ctxs) {
+        const newValue = (obj as any)[keyName];
         for (const ctx of ctxs) {
           try {
             const rc = cellFor(ctx, keyName, /* skipDefine */ true);
-            if (rc) rc.update((obj as any)[keyName]);
+            if (rc) {
+              rc.update(newValue);
+            }
           } catch { /* ignore */ }
         }
       }
@@ -131,6 +134,12 @@ installEmberWrappers();
     } catch { /* ignore */ }
   }
   (globalThis as any).__gxtPendingSync = true;
+  // Immediate sync to process dirtied cells while relatedTags are intact
+  if (!(globalThis as any).__gxtSyncing) {
+    (globalThis as any).__gxtSyncing = true;
+    try { gxtSyncDom(); } catch { /* ignore */ }
+    finally { (globalThis as any).__gxtSyncing = false; }
+  }
 };
 
 // Expose cellFor on globalThis so manager.ts can use it without circular imports.
