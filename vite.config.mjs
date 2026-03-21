@@ -119,6 +119,14 @@ export default defineConfig(({ mode }) => {
               replacement: fileURLToPath(new URL(`./packages/demo/compat/manager`, owerrideRoot)),
             },
             {
+              find: '@glimmer/tracking/primitives/cache',
+              replacement: fileURLToPath(new URL(`./packages/demo/compat/glimmer-tracking`, owerrideRoot)),
+            },
+            {
+              find: '@glimmer/tracking',
+              replacement: fileURLToPath(new URL(`./packages/demo/compat/glimmer-tracking`, owerrideRoot)),
+            },
+            {
               find: '@glimmer/validator',
               replacement: fileURLToPath(new URL(`./packages/demo/compat/validator`, owerrideRoot)),
             },
