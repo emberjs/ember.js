@@ -2071,6 +2071,16 @@ export function precompileTemplate(templateString: string, options?: {
             return false;
           };
 
+          // Set up $_scope for GXT's $_maybeHelper name resolution.
+          // When templates use bare names like {{cond1}} (without this.),
+          // GXT compiles to $_maybeHelper("cond1", [], ctx). The scope is
+          // checked to resolve the name. We set $_scope to the render context
+          // so bare names resolve to component properties through cell getters.
+          const argsObj = renderContext['args'] || renderContext[$ARGS_KEY] || {};
+          if (!argsObj.$_scope) {
+            argsObj.$_scope = renderContext;
+          }
+
           // Push slots onto the global stack for nested has-block checks
           const slotsStack = (globalThis as any).__slotsContextStack;
           slotsStack.push(currentSlots);
