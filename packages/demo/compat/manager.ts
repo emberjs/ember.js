@@ -687,17 +687,34 @@ function installBindingInterceptors(instance: any, wrapper: HTMLElement, compone
 // Track instances with attribute/class bindings for post-sync updates
 const trackedWrapperInstances = new Set<any>();
 
-// After gxtSyncDom(), re-sync all tracked wrapper elements.
-// First refresh instance properties from arg getters, then sync wrapper.
+// Track arg cells for reactive cross-component updates.
+// When parent context changes, these cells are updated so GXT formulas re-evaluate.
+const trackedArgCells = new Set<Record<string, { cell: any; getter: () => any }>>();
+
+// After gxtSyncDom(), refresh arg cells and re-sync wrapper elements.
 (globalThis as any).__gxtSyncAllWrappers = function() {
+  // Phase 1: Update arg cells from their getters.
+  // This propagates parent context changes into GXT's cell system,
+  // causing dependent formulas (text nodes, if conditions, etc.) to re-evaluate.
+  for (const argCells of trackedArgCells) {
+    for (const key of Object.keys(argCells)) {
+      const { cell, getter } = argCells[key]!;
+      try {
+        const newValue = getter();
+        if (cell.__value !== newValue) {
+          cell.update(newValue);
+        }
+      } catch { /* getter may throw */ }
+    }
+  }
+
+  // Phase 2: Sync wrapper element attributes/classes
   for (const entry of trackedWrapperInstances) {
     const { instance, wrapper, componentDef } = entry;
     if (!wrapper?.isConnected) {
       trackedWrapperInstances.delete(entry);
       continue;
     }
-    // Always sync - instance property getters delegate to arg getters
-    // which return current values
     syncWrapperElement(instance, wrapper, componentDef, undefined);
   }
 };
@@ -891,19 +908,39 @@ function createRenderContext(
 
   // Set up attrs proxy for this.attrs.argName.value access
   const attrsProxy: Record<string, any> = {};
+  const cellForFn = (globalThis as any).__gxtCellFor;
+  // Store arg cells for reactive updates
+  const argCells: Record<string, any> = {};
   if (args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
       if (key === 'class' || key === 'classNames' || key.startsWith('Symbol')) continue;
 
-      Object.defineProperty(attrsProxy, key, {
-        get() {
-          const val = args[key];
-          return typeof val === 'function' ? val() : val;
-        },
-        enumerable: true,
-        configurable: true,
-      });
+      // Resolve the initial value
+      const descriptor = Object.getOwnPropertyDescriptor(args, key);
+      const getter = descriptor?.get;
+      const initialVal = getter ? getter() : (typeof args[key] === 'function' ? args[key]() : args[key]);
+
+      if (cellForFn && getter) {
+        // Create a cell for this arg so GXT's formula tracking picks up the dependency.
+        // When the parent context changes, we update this cell which triggers re-evaluation.
+        const cell = cellForFn(attrsProxy, key, /* skipDefine */ false);
+        cell.update(initialVal);
+        argCells[key] = { cell, getter };
+      } else {
+        Object.defineProperty(attrsProxy, key, {
+          get() {
+            const val = args[key];
+            return typeof val === 'function' ? val() : val;
+          },
+          enumerable: true,
+          configurable: true,
+        });
+      }
     }
+  }
+  // Register arg cells for reactive updates in __gxtSyncAllWrappers
+  if (Object.keys(argCells).length > 0) {
+    trackedArgCells.add(argCells);
   }
   // GXT's $_GET_SLOTS reads ctx['args'][$SLOTS_SYMBOL] as a fallback,
   // so the attrsProxy (which becomes renderContext.args) must carry slots.
@@ -930,48 +967,69 @@ function createRenderContext(
     instance[$ARGS_KEY] = attrsProxy;
   }
 
-  // Set up reactive getters for args on render context
-  // First, try instance.__argGetters (for components with arg processing)
+  // Set up cell-backed getters for args on render context.
+  // Using cells ensures GXT's formula tracking picks up the dependency,
+  // so text nodes, if-conditions, etc. re-evaluate when args change.
+  const cellForFn2 = (globalThis as any).__gxtCellFor;
+  const renderCtxArgCells: Record<string, any> = {};
   const argGetters = instance?.__argGetters || {};
-  for (const key of Object.keys(argGetters)) {
-    try {
-      Object.defineProperty(renderContext, key, {
-        get() {
-          return argGetters[key]();
-        },
-        enumerable: true,
-        configurable: true,
-      });
-    } catch {
-      // Property might already exist
+
+  // Collect all arg keys and their getters
+  const allArgKeys = new Set<string>(Object.keys(argGetters));
+  if (args && typeof args === 'object') {
+    for (const key of Object.keys(args)) {
+      if (key === 'class' || key === 'classNames' || key.startsWith('__') || key.startsWith('Symbol')) continue;
+      allArgKeys.add(key);
     }
   }
 
-  // Also set up getters directly from args for @arg access (template-only components)
-  // This handles cases where instance.__argGetters is empty but args exist
-  if (args && typeof args === 'object') {
-    for (const key of Object.keys(args)) {
-      // Skip internal/special keys and keys already defined
-      if (key === 'class' || key === 'classNames' || key.startsWith('__') || key.startsWith('Symbol')) {
-        continue;
-      }
-      // Skip if already defined via argGetters
-      if (key in renderContext) {
-        continue;
-      }
-      try {
+  for (const key of allArgKeys) {
+    // Get the getter function for this arg
+    let getter: (() => any) | undefined = argGetters[key];
+    if (!getter && args) {
+      const descriptor = Object.getOwnPropertyDescriptor(args, key);
+      if (descriptor?.get) {
+        getter = descriptor.get;
+      } else {
         const argRef = args[key];
+        getter = typeof argRef === 'function' ? argRef : undefined;
+      }
+    }
+
+    if (cellForFn2 && getter) {
+      // Install a cell on the render context for this arg.
+      // GXT formulas reading renderContext.key will track this cell.
+      try {
+        const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
+        const initialVal = getter();
+        cell.update(initialVal);
+        renderCtxArgCells[key] = { cell, getter };
+      } catch {
+        // Fallback to plain getter
+        try {
+          const g = getter;
+          Object.defineProperty(renderContext, key, {
+            get() { return g(); },
+            enumerable: true,
+            configurable: true,
+          });
+        } catch { /* ignore */ }
+      }
+    } else if (getter) {
+      try {
+        const g = getter;
         Object.defineProperty(renderContext, key, {
-          get() {
-            return typeof argRef === 'function' ? argRef() : argRef;
-          },
+          get() { return g(); },
           enumerable: true,
           configurable: true,
         });
-      } catch {
-        // Property might already exist on prototype
-      }
+      } catch { /* ignore */ }
     }
+  }
+
+  // Register render context arg cells for updates in __gxtSyncAllWrappers
+  if (Object.keys(renderCtxArgCells).length > 0) {
+    trackedArgCells.add(renderCtxArgCells);
   }
 
   // Pre-install cell-backed getter/setters on the instance BEFORE creating

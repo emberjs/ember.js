@@ -194,13 +194,18 @@ installEmberWrappers();
   // Immediate sync to process dirtied cells while relatedTags are intact
   if (!(globalThis as any).__gxtSyncing) {
     (globalThis as any).__gxtSyncing = true;
-    try { gxtSyncDom(); } catch { /* ignore */ }
-    finally { (globalThis as any).__gxtSyncing = false; }
-    // After DOM sync, re-sync all tracked wrapper elements
     try {
+      gxtSyncDom();
+      // After DOM sync, update arg cells and wrapper elements.
+      // Arg cell updates may dirty more cells, so run gxtSyncDom again.
       const syncAll = (globalThis as any).__gxtSyncAllWrappers;
-      if (syncAll) syncAll();
+      if (syncAll) {
+        syncAll();
+        // Second sync to process any newly-dirtied arg cells
+        gxtSyncDom();
+      }
     } catch { /* ignore */ }
+    finally { (globalThis as any).__gxtSyncing = false; }
   }
 };
 
