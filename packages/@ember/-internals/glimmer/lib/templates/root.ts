@@ -346,12 +346,15 @@ export default function createRootTemplate(_owner: any) {
         renderContext.owner = owner;
         renderContext.args = component.args || {};
 
-        // Store mapping from component → renderContext so __gxtTriggerReRender
-        // can dirty cells on the renderContext (where the formula tracks them)
-        if (!(globalThis as any).__gxtRenderContextMap) {
-          (globalThis as any).__gxtRenderContextMap = new WeakMap();
+        // Store ALL render contexts derived from this component
+        if (!(globalThis as any).__gxtComponentContexts) {
+          (globalThis as any).__gxtComponentContexts = new WeakMap();
         }
-        (globalThis as any).__gxtRenderContextMap.set(component, renderContext);
+        const ctxsMap = (globalThis as any).__gxtComponentContexts;
+        if (!ctxsMap.has(component)) {
+          ctxsMap.set(component, new Set());
+        }
+        ctxsMap.get(component).add(renderContext);
 
         renderTemplateWithContext(componentTemplate, parentElement, renderContext, owner);
       }

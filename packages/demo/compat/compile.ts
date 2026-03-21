@@ -103,15 +103,19 @@ installEmberWrappers();
   } catch {
     // cellFor may not apply to all objects
   }
-  // Also dirty cell on the renderContext (Object.create wrapper).
-  // $_if formula tracks cells on renderContext, not on component.
+  // Also dirty cells on ALL render contexts derived from this component.
+  // GXT's $_if formula tracks cells on Object.create(component) wrappers.
   try {
-    const ctxMap = (globalThis as any).__gxtRenderContextMap;
-    if (ctxMap) {
-      const renderCtx = ctxMap.get(obj);
-      if (renderCtx) {
-        const rc = cellFor(renderCtx, keyName, /* skipDefine */ true);
-        if (rc) rc.update((obj as any)[keyName]);
+    const ctxsMap = (globalThis as any).__gxtComponentContexts;
+    if (ctxsMap) {
+      const ctxs = ctxsMap.get(obj);
+      if (ctxs) {
+        for (const ctx of ctxs) {
+          try {
+            const rc = cellFor(ctx, keyName, /* skipDefine */ true);
+            if (rc) rc.update((obj as any)[keyName]);
+          } catch { /* ignore */ }
+        }
       }
     }
   } catch { /* ignore */ }
@@ -2039,8 +2043,21 @@ export function precompileTemplate(templateString: string, options?: {
           // bypass the Proxy's get handler, breaking cell-based reactive tracking.
           const renderContext = context;
 
-          // Store context for debugging
+          // Register render context for cross-cell dirtying
           (globalThis as any).__lastRenderContext = context;
+          if (context && typeof context === 'object') {
+            const proto = Object.getPrototypeOf(context);
+            if (proto && proto !== Object.prototype) {
+              if (!(globalThis as any).__gxtComponentContexts) {
+                (globalThis as any).__gxtComponentContexts = new WeakMap();
+              }
+              const ctxsMap = (globalThis as any).__gxtComponentContexts;
+              if (!ctxsMap.has(proto)) {
+                ctxsMap.set(proto, new Set());
+              }
+              ctxsMap.get(proto).add(context);
+            }
+          }
 
 
           // Set up the GXT context symbols using the proper exported symbols
