@@ -490,6 +490,7 @@ class ClassicRootState {
           }
 
           // Push root component onto parentView stack before rendering
+          // This allows nested components to access their parentView
           if (root && 'layoutName' in root) {
             pushParentView(root);
           }

@@ -74,7 +74,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
   }
 
   let currentValue: any;
-  if (DEBUG && !(globalThis as any).__GXT_MODE__) {
+  if (DEBUG) {
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
     currentValue = (obj as any)[keyName];
@@ -89,7 +89,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
     /* unknown property */
     (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
-    if (DEBUG && !(globalThis as any).__GXT_MODE__) {
+    if (DEBUG) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
       (obj as any)[keyName] = value;
