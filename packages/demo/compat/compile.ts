@@ -164,7 +164,9 @@ installEmberWrappers();
         const newValue = (obj as any)[keyName];
         for (const ctx of ctxs) {
           try {
-            const rc = cellFor(ctx, keyName, /* skipDefine */ true);
+            // Use skipDefine=false to create cell if needed.
+            // This ensures formulas that read ctx.prop will track the cell.
+            const rc = cellFor(ctx, keyName, /* skipDefine */ false);
             if (rc) {
               rc.update(newValue);
             }
