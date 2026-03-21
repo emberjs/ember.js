@@ -1034,8 +1034,10 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
         // Slots are passed separately via args.$slots
         const fw = [[], domAttrs, events];  // [props, attrs, events]
 
-        // Pass slots via args so manager.ts can access them
+        // Pass slots via args so manager.ts can access them.
+        // Set on both string key and Symbol key to survive GXT's slot processing.
         args.$slots = slots;
+        args[Symbol.for('gxt-slots')] = slots;
 
         // Return a THUNK that renders the component when called
         // This is crucial for block params: when <Outer><Inner @msg={{param}} /></Outer>
@@ -2346,7 +2348,7 @@ export function precompileTemplate(templateString: string, options?: {
           const gxtRoot = gxtCreateRoot(document);
           gxtSetParentContext(gxtRoot);
 
-          g.$slots = context[_SLOTS_SYM] || context.$slots || {};
+          g.$slots = context.$slots || context[_SLOTS_SYM] || {};
           g.$fw = context.$fw || [[], [], []];
 
 
