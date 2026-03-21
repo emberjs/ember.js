@@ -66,6 +66,10 @@ installEmberWrappers();
     return Boolean(predicate);
   }
 
+  // Register Ember truthiness for GXT's $_if (block control flow)
+  // GXT's IfCondition.setupCondition checks __gxtToBool before its own !!v
+  g.__gxtToBool = emberToBool;
+
   // Replace $__if on globalThis with Ember-aware version
   if (g.$__if) {
     g.$__if = function $__if_ember(condition: unknown, ifTrue: unknown, ifFalse: unknown = '') {
