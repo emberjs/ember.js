@@ -98,14 +98,23 @@ installEmberWrappers();
 // this hook only needs to mark that a sync is pending.
 (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
   try {
-    // Use skipDefine=true to avoid redefining properties on Ember component
-    // instances. The cell is created/retrieved for tracking only; Ember manages
-    // the actual property via its own set()/get() system.
     const c = cellFor(obj, keyName, /* skipDefine */ true);
     if (c) c.update((obj as any)[keyName]);
   } catch {
     // cellFor may not apply to all objects
   }
+  // Also dirty cell on the renderContext (Object.create wrapper).
+  // $_if formula tracks cells on renderContext, not on component.
+  try {
+    const ctxMap = (globalThis as any).__gxtRenderContextMap;
+    if (ctxMap) {
+      const renderCtx = ctxMap.get(obj);
+      if (renderCtx) {
+        const rc = cellFor(renderCtx, keyName, /* skipDefine */ true);
+        if (rc) rc.update((obj as any)[keyName]);
+      }
+    }
+  } catch { /* ignore */ }
   // For nested paths like 'colors.apple', also dirty the root property cell.
   // Templates read `this.colors` which creates a cell for 'colors'. When
   // set(obj, 'colors.apple', val) fires, we need to dirty 'colors' too
