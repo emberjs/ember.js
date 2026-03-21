@@ -685,9 +685,10 @@ function createRenderContext(
       }
 
       if (hasGetter) {
-        // Property has a getter (cell or @tracked) — use it directly
+        if (prop === 'cond1') console.log('[PROXY-GET] cond1 hasGetter=true');
         return Reflect.get(target, prop, target);
       }
+      if (prop === 'cond1') console.log('[PROXY-GET] cond1 hasGetter=false, reaching lazy');
 
       // Property has no getter — create a cell lazily for GXT tracking
       // This handles properties set via Ember's extend() which puts them
@@ -702,6 +703,7 @@ function createRenderContext(
 
       if (_cellFor) {
         try {
+          if (prop === 'cond1') console.log('[LAZY-CELL] creating for cond1 on', target?.constructor?.name);
           const cell = _cellFor(target, prop, /* skipDefine */ false);
           if (cell) {
             return cell.value;

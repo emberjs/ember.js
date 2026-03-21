@@ -353,8 +353,10 @@ class ClassicRootState {
             // via this.methodName() in templates
             const component = root as any;
 
-            // Create context that inherits from component (preserves prototype methods)
-            renderContext = Object.create(component);
+            // Use the component directly as render context (not Object.create).
+            // Install cell getter/setters directly on the component so GXT's
+            // native tracking ($_if, $_each, etc.) works properly.
+            renderContext = component;
 
             // Add GXT-required symbols for template rendering
             const $ARGS_SYMBOL = Symbol.for('gxt-args');
@@ -362,66 +364,34 @@ class ClassicRootState {
 
             renderContext[$ARGS_SYMBOL] = component.args || {};
             renderContext[$SLOTS_SYMBOL] = {};
-            renderContext.$fw = [[], [], []]; // [domAttrs, slots, events]
+            renderContext.$fw = [[], [], []];
             renderContext.owner = owner;
 
-            // Copy enumerable properties (including inherited) as GETTERS
-            // that read/write through GXT cells on the component instance.
-            // This is critical for reactivity: when Ember's set() calls
-            // notifyPropertyChange -> __gxtTriggerReRender -> cellFor(component, key).update(),
-            // the SAME cell is read here, so GXT's effect() system picks up the change
-            // and updates the DOM.
-            // NOTE: We use for...in to include prototype properties (from Component.extend(attrs))
-            // since test context values like { customId: 'bizz' } are on the prototype.
+            // Install cell-backed getter/setters on the component for ALL
+            // data properties. Use skipDefine=false so GXT's native formula
+            // tracking (in $_if, $_each, etc.) picks up cell.value reads.
             const _cellFor = (globalThis as any).__gxtCellFor;
-            const definedProps: string[] = [];
-            for (const key in component) {
-              if (key === 'args' || key === 'constructor') continue;
-              // Skip methods and internal Ember properties
-              const value = component[key];
-              if (typeof value === 'function' && key !== 'element') continue;
-              // Skip if already defined (e.g., from $ARGS_SYMBOL setup above)
-              if (Object.prototype.hasOwnProperty.call(renderContext, key)) continue;
-
-              const propKey = key;
-              const comp = component;
-              try {
-                if (_cellFor) {
-                  // Use cellFor with skipDefine=true so we don't redefine the property
-                  // on the component object itself (Ember manages it via set/get).
-                  // Instead, we only create the cell for tracking and read/write through it.
-                  const cell = _cellFor(comp, propKey, /* skipDefine */ true);
-                  Object.defineProperty(renderContext, propKey, {
-                    get() {
-                      return cell.value;
-                    },
-                    set(v: any) {
-                      cell.update(v);
-                      comp[propKey] = v;
-                    },
-                    enumerable: true,
-                    configurable: true,
-                  });
-                } else {
-                  // Fallback: plain getter/setter (no GXT reactivity)
-                  Object.defineProperty(renderContext, propKey, {
-                    get() {
-                      return comp[propKey];
-                    },
-                    set(v) { comp[propKey] = v; },
-                    enumerable: true,
-                    configurable: true,
-                  });
-                }
-                definedProps.push(propKey);
-              } catch (err) {
-                // Property might already exist or be non-configurable
+            if (_cellFor) {
+              const skipProps = new Set(['args', 'constructor', 'element', 'tagName',
+                'layoutName', 'layout', 'elementId', 'isView', 'isComponent',
+                'concatenatedProperties', 'mergedProperties', 'classNames',
+                'classNameBindings', 'attributeBindings', 'positionalParams',
+                '_states', 'renderer', '__dispatcher', 'parentView',
+                '_state', '_currentState', 'target', '_debugContainerKey']);
+              for (const key in component) {
+                if (typeof key !== 'string' || key.startsWith('_') || skipProps.has(key)) continue;
+                try {
+                  const desc = Object.getOwnPropertyDescriptor(component, key);
+                  // Only install cells for configurable data properties (no getters, no frozen)
+                  if (desc && desc.get) continue; // Already has getter (@tracked, etc.)
+                  if (desc && desc.configurable === false) continue;
+                  const value = component[key];
+                  if (typeof value === 'function') continue;
+                  _cellFor(component, key, /* skipDefine */ false);
+                } catch { /* ignore */ }
               }
             }
-            if ((globalThis as any).__DEBUG_LIFECYCLE) {
-              console.log(`[ClassicRootState] Defined getters for:`, definedProps.slice(0, 20).join(', '));
-              console.log(`[ClassicRootState] customId in definedProps:`, definedProps.includes('customId'));
-            }
+
           } else {
             // Fallback to the component context
             renderContext = componentContext;
