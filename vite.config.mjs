@@ -55,7 +55,14 @@ export default defineConfig(({ mode }) => {
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
       resolvePackages(
-        { ...exposedDependencies(), ...hiddenDependencies() },
+        {
+          ...exposedDependencies(),
+          ...hiddenDependencies(),
+          // GXT subpath exports need explicit entries for resolvePackages
+          '@lifeart/gxt/glimmer-compatibility': '@lifeart/gxt',
+          '@lifeart/gxt/runtime-compiler': '@lifeart/gxt',
+          'decorator-transforms/runtime': 'decorator-transforms',
+        },
         { enableLocalDebug: true }
       ),
       viteResolverBug(),

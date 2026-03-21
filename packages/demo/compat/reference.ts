@@ -1,4 +1,4 @@
-import { cell, formula } from '@lifeart/gxt';
+import { cell, formula } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 import { reference } from '@lifeart/gxt/glimmer-compatibility';
 
 export const {
