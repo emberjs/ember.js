@@ -117,6 +117,15 @@ export function defineValue(
   enumerable = true
 ) {
   if (wasDescriptor === true || enumerable === false) {
+    // In GXT mode, check if property has a cell getter — don't overwrite it
+    if ((globalThis as any).__GXT_MODE__) {
+      const existing = Object.getOwnPropertyDescriptor(obj, keyName);
+      if (existing && existing.get) {
+        // Cell getter exists — use setter to update value
+        (obj as any)[keyName] = value;
+        return value;
+      }
+    }
     Object.defineProperty(obj, keyName, {
       configurable: true,
       enumerable,
@@ -124,7 +133,7 @@ export function defineValue(
       value,
     });
   } else {
-    if (DEBUG) {
+    if (DEBUG && !(globalThis as any).__GXT_MODE__) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
       (obj as any)[keyName] = value;
