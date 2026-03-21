@@ -689,22 +689,41 @@ const trackedWrapperInstances = new Set<any>();
 
 // Track arg cells for reactive cross-component updates.
 // When parent context changes, these cells are updated so GXT formulas re-evaluate.
-const trackedArgCells = new Set<Record<string, { cell: any; getter: () => any }>>();
+interface TrackedArgEntry {
+  cells: Record<string, { cell: any; getter: () => any }>;
+  instance?: any; // component instance for lifecycle hooks
+}
+const trackedArgCells = new Set<TrackedArgEntry>();
 
 // After gxtSyncDom(), refresh arg cells and re-sync wrapper elements.
 (globalThis as any).__gxtSyncAllWrappers = function() {
-  // Phase 1: Update arg cells from their getters.
+  // Phase 1: Update arg cells from their getters and trigger lifecycle hooks.
   // This propagates parent context changes into GXT's cell system,
   // causing dependent formulas (text nodes, if conditions, etc.) to re-evaluate.
-  for (const argCells of trackedArgCells) {
-    for (const key of Object.keys(argCells)) {
-      const { cell, getter } = argCells[key]!;
+  for (const entry of trackedArgCells) {
+    let hasChanges = false;
+    for (const key of Object.keys(entry.cells)) {
+      const { cell, getter } = entry.cells[key]!;
       try {
         const newValue = getter();
         if (cell.__value !== newValue) {
           cell.update(newValue);
+          // Also update the instance property directly
+          if (entry.instance && key !== 'class' && key !== 'classNames') {
+            try { entry.instance[key] = newValue; } catch { /* ignore */ }
+          }
+          hasChanges = true;
         }
       } catch { /* getter may throw */ }
+    }
+    // Trigger lifecycle hooks when args changed
+    if (hasChanges && entry.instance) {
+      triggerLifecycleHook(entry.instance, 'willUpdate');
+      triggerLifecycleHook(entry.instance, 'willRender');
+      triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
+      triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
+      triggerLifecycleHook(entry.instance, 'didUpdate');
+      triggerLifecycleHook(entry.instance, 'didRender');
     }
   }
 
@@ -940,7 +959,7 @@ function createRenderContext(
   }
   // Register arg cells for reactive updates in __gxtSyncAllWrappers
   if (Object.keys(argCells).length > 0) {
-    trackedArgCells.add(argCells);
+    trackedArgCells.add({ cells: argCells, instance });
   }
   // GXT's $_GET_SLOTS reads ctx['args'][$SLOTS_SYMBOL] as a fallback,
   // so the attrsProxy (which becomes renderContext.args) must carry slots.
@@ -1029,7 +1048,7 @@ function createRenderContext(
 
   // Register render context arg cells for updates in __gxtSyncAllWrappers
   if (Object.keys(renderCtxArgCells).length > 0) {
-    trackedArgCells.add(renderCtxArgCells);
+    trackedArgCells.add({ cells: renderCtxArgCells, instance });
   }
 
   // Pre-install cell-backed getter/setters on the instance BEFORE creating
