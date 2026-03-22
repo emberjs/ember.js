@@ -678,8 +678,9 @@ function installBindingInterceptors(instance: any, wrapper: HTMLElement, compone
   const attrBindings = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
   const classBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
   const hasClassArg = instance?.__argGetters?.class || instance?.__argGetters?.classNames;
+  const hasAriaRole = instance?.__argGetters?.ariaRole;
 
-  if ((attrBindings && attrBindings.length > 0) || (classBindings && classBindings.length > 0) || hasClassArg) {
+  if ((attrBindings && attrBindings.length > 0) || (classBindings && classBindings.length > 0) || hasClassArg || hasAriaRole) {
     trackedWrapperInstances.add({ instance, wrapper, componentDef });
   }
 }
