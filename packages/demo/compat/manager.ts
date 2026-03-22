@@ -925,6 +925,16 @@ function createRenderContext(
   // fw[2] = events (event handlers/modifiers)
   renderContext.$fw = fw || [[], [], []];
 
+  // Add __gxtSelfString__ getter for {{this}} support
+  // Ember's {{this}} calls toString() on the component instance
+  if (!renderContext.hasOwnProperty('__gxtSelfString__')) {
+    Object.defineProperty(renderContext, '__gxtSelfString__', {
+      get() { return this.toString(); },
+      enumerable: false,
+      configurable: true,
+    });
+  }
+
   // Add has-block helpers to the render context
   // These check the current slots to see if blocks were provided
   renderContext.$_hasBlock = function(blockName?: string) {
@@ -1036,23 +1046,53 @@ function createRenderContext(
     }
 
     if (cellForFn2 && getter) {
-      // Install a cell on the render context for this arg.
-      // GXT formulas reading renderContext.key will track this cell.
-      try {
-        const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
-        const initialVal = getter();
-        cell.update(initialVal);
-        renderCtxArgCells[key] = { cell, getter };
-      } catch {
-        // Fallback to plain getter
+      // Check if the instance overrode this property in init()
+      // If so, we should use the init-set value, not the arg value
+      const argVal = getter();
+      let instanceVal: any;
+      try { instanceVal = instance?.[key]; } catch { instanceVal = argVal; }
+      const overriddenInInit = instance && instanceVal !== argVal && instanceVal !== undefined;
+
+      if (overriddenInInit) {
+        // Instance overrode this property in init() — use a getter that
+        // returns the instance value but can be updated by arg changes
         try {
-          const g = getter;
+          let localVal = instanceVal;
+          let useLocal = true;
+          const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
+          cell.update(localVal);
+          renderCtxArgCells[key] = { cell, getter };
+          // Override the cell-backed getter with one that respects init
           Object.defineProperty(renderContext, key, {
-            get() { return g(); },
+            get() { return useLocal ? localVal : getter(); },
+            set(v: any) {
+              localVal = v;
+              useLocal = true;
+              cell.update(v);
+            },
             enumerable: true,
             configurable: true,
           });
         } catch { /* ignore */ }
+      } else {
+        // Install a cell on the render context for this arg.
+        // GXT formulas reading renderContext.key will track this cell.
+        try {
+          const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
+          const initialVal = argVal;
+          cell.update(initialVal);
+          renderCtxArgCells[key] = { cell, getter };
+        } catch {
+          // Fallback to plain getter
+          try {
+            const g = getter;
+            Object.defineProperty(renderContext, key, {
+              get() { return g(); },
+              enumerable: true,
+              configurable: true,
+            });
+          } catch { /* ignore */ }
+        }
       }
     } else if (getter) {
       try {

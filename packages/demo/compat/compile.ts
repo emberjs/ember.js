@@ -556,7 +556,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
 // Override $_tag to check for Ember components before creating HTML elements
 // GXT compiles PascalCase tags like <FooBar /> to $_tag('FooBar', ...) but
 // these should be handled by the component manager for Ember integration
-if (g.$_tag && !g.$_tag.__emberWrapped) {
+if (g.$_tag && !g.$_tag.__compileWrapped) {
   const originalTag = g.$_tag;
 
   // GXT's $_tag signature: $_tag(tag, tagProps, ctx, children)
@@ -1141,7 +1141,7 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
   };
 
   // Mark as wrapped to prevent re-wrapping
-  g.$_tag.__emberWrapped = true;
+  g.$_tag.__compileWrapped = true;
 }
 
 /**
@@ -1892,6 +1892,13 @@ export function precompileTemplate(templateString: string, options?: {
     /\{\{#(if|unless)\s+([^}]+)\}\}\s*\{\{else\}\}/g,
     '{{#$1 $2}} {{else}}'
   );
+
+  // Transform bare {{this}} to {{this.__gxtSelfString__}} so GXT renders toString() value
+  // Ember's {{this}} in curly component templates calls toString() on the component instance.
+  // We use a getter property (__gxtSelfString__) that calls toString() on the component.
+  if (/\{\{this\}\}/.test(transformedTemplate)) {
+    transformedTemplate = transformedTemplate.replace(/\{\{this\}\}/g, '{{this.__gxtSelfString__}}');
+  }
 
   // Transform {{#each-in obj as |key value|}}...{{/each-in}} to
   // {{#each (object-entries obj) as |entry|}}...{{/each-in}}
