@@ -292,6 +292,16 @@ setInterval(() => {
   },
   // hash: Creates an object from named arguments (handled specially)
   hash: (obj: any) => obj,
+  // gxt-entries-of: Converts an object to [[key, value], ...] for {{#each-in}}
+  'gxt-entries-of': (obj: any) => {
+    const resolved = typeof obj === 'function' ? obj() : obj;
+    if (!resolved || typeof resolved !== 'object') return [];
+    // Support Map-like objects
+    if (typeof resolved.entries === 'function' && typeof resolved.forEach === 'function') {
+      return Array.from(resolved.entries());
+    }
+    return Object.keys(resolved).map(key => [key, (resolved as any)[key]]);
+  },
   // get: Dynamic property lookup — supports dot-path keys like 'foo.bar'
   get: (obj: any, key: any) => {
     const resolvedObj = typeof obj === 'function' ? obj() : obj;
@@ -1898,6 +1908,27 @@ export function precompileTemplate(templateString: string, options?: {
     /\{\{#(if|unless)\s+([^}]+)\}\}\s*\{\{else\}\}/g,
     '{{#$1 $2}} {{else}}'
   );
+
+  // Transform {{#each-in obj as |key value|}}...{{/each-in}} to
+  // {{#each (object-entries obj) as |entry|}}...{{/each-in}}
+  // where entry[0] = key, entry[1] = value
+  // This is handled by a runtime helper registered below
+  if (/\{\{#each-in\b/.test(transformedTemplate)) {
+    transformedTemplate = transformedTemplate.replace(
+      /\{\{#each-in\s+([^\s}]+)\s+as\s*\|([^|]+)\|\s*\}\}/g,
+      (match, obj, params) => {
+        const parts = params.trim().split(/\s+/);
+        const keyParam = parts[0] || 'key';
+        const valueParam = parts[1] || 'value';
+        // Transform to {{#each}} over entries with destructuring via let
+        return `{{#each (gxt-entries-of ${obj}) as |__eachInEntry__|}}{{#let __eachInEntry__.0 __eachInEntry__.1 as |${keyParam} ${valueParam}|}}`;
+      }
+    );
+    transformedTemplate = transformedTemplate.replace(
+      /\{\{\/each-in\}\}/g,
+      '{{/let}}{{/each}}'
+    );
+  }
 
   transformedTemplate = transformCapitalizedComponents(transformedTemplate);
   if (/\{\{\s*outlet\s*\}\}/.test(transformedTemplate)) {
