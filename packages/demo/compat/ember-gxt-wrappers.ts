@@ -48,7 +48,8 @@ function unwrapHash(hash: Record<string, any>): Record<string, any> {
   for (const key of Object.keys(hash)) {
     if (GXT_INTERNAL_KEYS.has(key) || key.startsWith('$_')) continue;
     const val = hash[key];
-    result[key] = typeof val === 'function' ? val() : val;
+    // Don't call CurriedComponent functions - they should be preserved as-is
+    result[key] = (typeof val === 'function' && !val.__isCurriedComponent) ? val() : val;
   }
   return result;
 }
@@ -125,10 +126,15 @@ function createEmberMaybeHelper(original: Function) {
 
     const name = nameOrFn;
 
-    // Ember's built-in keyword helpers (readonly, mut, unbound)
+    // Ember's built-in keyword helpers (readonly, mut, unbound, hash, etc.)
     const BUILTIN_HELPERS = g.__EMBER_BUILTIN_HELPERS__;
     if (BUILTIN_HELPERS && BUILTIN_HELPERS[name]) {
       const helper = BUILTIN_HELPERS[name];
+      // For 'hash' helper, pass the named args (hash) as the first argument
+      if (name === 'hash') {
+        const namedObj = unwrapHash(hash);
+        return helper(namedObj);
+      }
       if (Array.isArray(args) && args.length > 0) {
         const unwrappedArgs = unwrapArgs(args);
         return helper(...unwrappedArgs);

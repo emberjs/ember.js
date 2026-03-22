@@ -72,12 +72,18 @@ export function createCurriedComponent(
     curriedPositionals = [...positionals];
   }
 
-  // Create a callable function so GXT can invoke it like a component/helper
+  // Create a callable function so GXT can invoke it like a component/helper.
+  // When called by GXT (e.g., from let block resolution or {{object.comp args}}),
+  // render the component. If called with an args object, merge it with curried args.
   const curried = function curriedComponentFn(...runtimeArgs: any[]) {
-    // When called by GXT (e.g., from let block resolution), render the component
     const managers = (globalThis as any).$_MANAGERS;
     if (managers?.component?.canHandle?.(curried)) {
-      const handleResult = managers.component.handle(curried, {}, null, null);
+      // Check if runtime args include named args (from GXT calling curried({key: value}))
+      let invocationArgs: any = {};
+      if (runtimeArgs.length > 0 && runtimeArgs[0] && typeof runtimeArgs[0] === 'object' && !Array.isArray(runtimeArgs[0])) {
+        invocationArgs = runtimeArgs[0];
+      }
+      const handleResult = managers.component.handle(curried, invocationArgs, null, null);
       if (typeof handleResult === 'function') {
         return handleResult();
       }
@@ -1123,10 +1129,8 @@ function createRenderContext(
       }
 
       if (hasGetter) {
-        if (prop === 'cond1') console.log('[PROXY-GET] cond1 hasGetter=true');
         return Reflect.get(target, prop, target);
       }
-      if (prop === 'cond1') console.log('[PROXY-GET] cond1 hasGetter=false, reaching lazy');
 
       // Property has no getter — create a cell lazily for GXT tracking
       // This handles properties set via Ember's extend() which puts them
@@ -1141,7 +1145,6 @@ function createRenderContext(
 
       if (_cellFor) {
         try {
-          if (prop === 'cond1') console.log('[LAZY-CELL] creating for cond1 on', target?.constructor?.name);
           const cell = _cellFor(target, prop, /* skipDefine */ false);
           if (cell) {
             return cell.value;
@@ -1388,7 +1391,7 @@ const $_MANAGERS = {
         const cArgs = komp.__curriedArgs || {};
         for (const [key, value] of Object.entries(cArgs)) {
           Object.defineProperty(mergedArgs, key, {
-            get: () => typeof value === 'function' ? value() : value,
+            get: () => (typeof value === 'function' && !value.__isCurriedComponent) ? value() : value,
             enumerable: true,
             configurable: true,
           });
@@ -1418,7 +1421,7 @@ const $_MANAGERS = {
             for (let i = 0; i < cPositionals.length; i++) {
               const val = cPositionals[i];
               Object.defineProperty(mergedArgs, `__pos${i}__`, {
-                get: () => typeof val === 'function' ? val() : val,
+                get: () => (typeof val === 'function' && !val.__isCurriedComponent) ? val() : val,
                 enumerable: true,
                 configurable: true,
               });
@@ -1659,7 +1662,10 @@ function handleStringComponent(
       for (let i = 0; i < positionalParams.length && i < count; i++) {
         const paramName = positionalParams[i];
         const posKey = `__pos${i}__`;
-        const rawValue = args[posKey];
+        // Capture the getter if available (for reactivity), otherwise use the value directly
+        const posDesc = Object.getOwnPropertyDescriptor(args, posKey);
+        const posGetter = posDesc?.get;
+        const rawValue = posGetter ? posGetter() : args[posKey];
 
         // Check for conflict between positional param and hash argument
         if (paramName in args && rawValue !== undefined) {
@@ -1671,10 +1677,12 @@ function handleStringComponent(
 
         // Only set if not already defined as a named arg
         if (!(paramName in args) && rawValue !== undefined) {
-          const getValue = () => {
-            const v = typeof rawValue === 'function' ? rawValue() : rawValue;
-            return v;
-          };
+          const getValue = posGetter
+            ? posGetter  // Use the original getter for reactivity
+            : () => {
+                const v = (typeof rawValue === 'function' && !rawValue.__isCurriedComponent) ? rawValue() : rawValue;
+                return v;
+              };
           Object.defineProperty(args, paramName, {
             get: getValue,
             enumerable: true,
@@ -1706,7 +1714,12 @@ function handleStringComponent(
           const posKey = `__pos${i}__`;
           const rawValue = args[posKey];
           if (rawValue !== undefined) {
-            posGetters.push(typeof rawValue === 'function' ? rawValue : () => rawValue);
+            const desc = Object.getOwnPropertyDescriptor(args, posKey);
+            if (desc?.get) {
+              posGetters.push(desc.get);
+            } else {
+              posGetters.push(typeof rawValue === 'function' ? rawValue : () => rawValue);
+            }
           }
         }
 

@@ -2074,7 +2074,10 @@ export function precompileTemplate(templateString: string, options?: {
 
         const result = item();
         // If result is a function, it's a nested getter (e.g., from $__if)
-        const finalResult = typeof result === 'function' ? result() : result;
+        // BUT: do NOT call CurriedComponent functions — they need the reactive rendering path below
+        const finalResult = (typeof result === 'function' && !result.__isCurriedComponent)
+          ? result()
+          : result;
 
         if (finalResult instanceof Node) {
           return finalResult;
@@ -2113,7 +2116,8 @@ export function precompileTemplate(templateString: string, options?: {
               gxtEffect(() => {
                 // Re-evaluate the getter to get the current CurriedComponent
                 const v = item();
-                const fv = typeof v === 'function' ? v() : v;
+                // Do NOT call CurriedComponent functions — they render the component
+                const fv = (typeof v === 'function' && !v.__isCurriedComponent) ? v() : v;
                 if (!fv || !fv.__isCurriedComponent) return;
 
                 // Call all curried arg getters to track dependencies
@@ -2222,6 +2226,14 @@ export function precompileTemplate(templateString: string, options?: {
 
         return textNode;
       } catch (e) {
+        // Re-throw assertion errors (e.g., "Could not find component named ...")
+        // so they propagate to the test harness
+        if (e instanceof Error && (
+          e.message.includes('Could not find component') ||
+          e.message.includes('Assertion Failed')
+        )) {
+          throw e;
+        }
         return null;
       }
     }
@@ -2526,6 +2538,16 @@ export function precompileTemplate(templateString: string, options?: {
           // Restore globals even on error
           g.$slots = prevSlots;
           g.$fw = prevFw;
+
+          // Re-throw assertion errors so they propagate to test harness
+          if (err instanceof Error && (
+            err.message.includes('Could not find component') ||
+            err.message.includes('Assertion Failed') ||
+            err.message.includes('You cannot specify both') ||
+            err.message.includes('You cannot specify positional')
+          )) {
+            throw err;
+          }
 
           let errMsg = err instanceof Error ? err.message : String(err);
           if (errMsg === '[object Object]' && err) {
