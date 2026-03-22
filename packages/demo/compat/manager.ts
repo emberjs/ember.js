@@ -356,8 +356,10 @@ function createComponentInstance(
     if (key === 'id' || key === 'elementId') continue;
     const getter = argGetters[key]!;
     try {
-      let localValue = instance[key]; // current value (from factory.create)
-      let useLocal = false; // track if value was set locally (e.g. by component code)
+      let localValue = instance[key]; // current value (from factory.create or init)
+      const argValue = getter();
+      // If instance value differs from arg value, the component overrode it in init()
+      let useLocal = localValue !== argValue;
       Object.defineProperty(instance, key, {
         get() {
           if (useLocal) return localValue;
