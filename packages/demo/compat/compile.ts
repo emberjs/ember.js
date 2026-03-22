@@ -22,6 +22,8 @@ import {
   $_MANAGERS,
   RENDERED_NODES_PROPERTY,
   COMPONENT_ID_PROPERTY,
+  RENDERING_CONTEXT_PROPERTY,
+  initDOM as gxtInitDOM,
   syncDom as gxtSyncDom,
   cellFor,
   effect as gxtEffect,
@@ -2396,6 +2398,15 @@ export function precompileTemplate(templateString: string, options?: {
           // Set up GXT context for proper rendering
           const gxtRoot = gxtCreateRoot(document);
           gxtSetParentContext(gxtRoot);
+
+          // Copy GXT rendering context from root to our render context
+          // so initDOM() can find the DOM API without walking the parent tree
+          try {
+            const rootRenderingCtx = gxtRoot[RENDERING_CONTEXT_PROPERTY as any] || gxtInitDOM(gxtRoot);
+            if (rootRenderingCtx && RENDERING_CONTEXT_PROPERTY) {
+              renderContext[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
+            }
+          } catch { /* ignore */ }
 
           g.$slots = context.$slots || context[_SLOTS_SYM] || {};
           g.$fw = context.$fw || [[], [], []];
