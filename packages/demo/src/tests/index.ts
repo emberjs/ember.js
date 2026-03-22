@@ -9,6 +9,14 @@
 // Set per-test timeout to prevent individual tests from hanging the suite
 if (typeof QUnit !== 'undefined') {
   QUnit.config.testTimeout = 15000; // 15 seconds per test
+} else {
+  // QUnit not loaded yet — set timeout when it becomes available
+  const _checkQUnit = setInterval(() => {
+    if (typeof QUnit !== 'undefined') {
+      QUnit.config.testTimeout = 15000;
+      clearInterval(_checkQUnit);
+    }
+  }, 10);
 }
 
 // Import Ember integration tests
