@@ -491,15 +491,11 @@ function createEmberTag(original: Function) {
               const stack = g.__blockParamsStack;
               stack.push(unwrappedParams);
               try {
-                const results: any[] = [];
-                for (const child of slotChildren) {
-                  if (typeof child === 'function') {
-                    try { results.push(child()); } catch { results.push(child); }
-                  } else {
-                    results.push(child);
-                  }
-                }
-                return results;
+                // Return raw children as-is. GXT's rendering pipeline
+              // (renderElement → resolveRenderable) handles functions
+              // by wrapping them in formulas that track cell dependencies.
+              // Previously we called child() eagerly which destroyed reactivity.
+              return [...slotChildren];
               } finally {
                 stack.pop();
               }

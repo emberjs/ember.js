@@ -925,34 +925,13 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
               stack.push(unwrappedParams);
 
               try {
-                const results: any[] = [];
-                for (let i = 0; i < slotChildren.length; i++) {
-                  const child = slotChildren[i];
-                  if (typeof child === 'function') {
-                    // Create a reactive text node using gxtEffect.
-                    try {
-                      const initialValue = child();
-                      if (initialValue instanceof Node) {
-                        results.push(initialValue);
-                      } else {
-                        const textNode = document.createTextNode(String(initialValue ?? ''));
-                        gxtEffect(() => {
-                          const val = child();
-                          const newText = String(val ?? '');
-                          if (textNode.textContent !== newText) {
-                            textNode.textContent = newText;
-                          }
-                        });
-                        results.push(textNode);
-                      }
-                    } catch (e) {
-                      results.push(child);
-                    }
-                  } else {
-                    results.push(child);
-                  }
-                }
-                return results;
+                // Return raw children as-is. GXT's rendering pipeline
+                // (renderElement → resolveRenderable) will handle functions
+                // by wrapping them in formulas that track cell dependencies.
+                // This provides native GXT reactivity: when a tracked cell
+                // changes (e.g., this.message), the formula re-evaluates
+                // and the text node updates automatically.
+                return [...slotChildren];
               } finally {
                 stack.pop();
                 // NOTE: We do NOT clear __currentSlotParams here
@@ -1020,28 +999,9 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
             stack.push(rawParams);
 
             try {
-              // Return children results as GXT template items - NOT as DOM nodes
-              // GXT's $_tag expects to receive template items (functions, strings, elements)
-              // and handles the DOM conversion itself
-              const results: any[] = [];
-              for (const child of children) {
-                if (typeof child === 'function') {
-                  try {
-                    // Call the child function to get its result
-                    // This might return a DOM node, string, or other GXT item
-                    const childResult = child();
-                    // Pass through the result - let GXT handle it
-                    results.push(childResult);
-                  } catch (e) {
-                    // Fallback for static content
-                    results.push(child);
-                  }
-                } else {
-                  // Pass through non-function children directly
-                  results.push(child);
-                }
-              }
-              return results;
+              // Return raw children as-is. GXT's rendering pipeline
+              // handles functions via resolveRenderable → formula tracking.
+              return [...children];
             } finally {
               // Pop block params from stack
               // NOTE: We do NOT clear __currentSlotParams here
@@ -2352,6 +2312,7 @@ export function precompileTemplate(templateString: string, options?: {
             v instanceof Node ||
             typeof v === 'string' ||
             typeof v === 'number' ||
+            typeof v === 'function' ||
             (v && typeof v === 'object'));
 
           if (hasNodes) {
