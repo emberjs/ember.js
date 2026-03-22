@@ -1593,6 +1593,12 @@ const $_MANAGERS = {
           } catch { /* ignore errors */ }
         }
 
+        // Throw when a component name cannot be resolved (matches Ember's behavior).
+        throw new Error(
+          `Attempted to resolve \`${komp}\`, which was expected to be a component, but nothing was found. ` +
+          `Could not find component named "${komp}" (no component or template with that name was found)`
+        );
+
         return null;
       }
 

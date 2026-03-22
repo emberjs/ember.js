@@ -25,7 +25,9 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
         text.includes('placeholder') ||
         text.includes('if-entry') ||
         text.includes('each-entry') ||
-        text.includes('list-target')
+        text.includes('list-target') ||
+        text.includes('curried-start') ||
+        text.includes('curried-end')
       )
     ) {
       return true;

@@ -88,6 +88,23 @@ installEmberWrappers();
         }
       }
 
+      // Validate that a string component name can be resolved.
+      // This throws eagerly during template evaluation (matching Ember's behavior
+      // of asserting during render for non-existent components).
+      if (typeof first === 'string' && first.length > 0) {
+        const owner = g.owner;
+        if (owner) {
+          const factory = owner.factoryFor?.(`component:${first}`);
+          const template = owner.lookup?.(`template:components/${first}`);
+          if (!factory && !template) {
+            throw new Error(
+              `Attempted to resolve \`${first}\`, which was expected to be a component, but nothing was found. ` +
+              `Could not find component named "${first}" (no component or template with that name was found)`
+            );
+          }
+        }
+      }
+
       // Create a curried component
       return createCurried(first, namedArgs, positionals);
     };
@@ -243,6 +260,37 @@ installEmberWrappers();
         if (typeof postRender === 'function') postRender();
       }
     } catch { /* ignore sync wrapper errors */ }
+    // Re-render CurriedComponent marker regions.
+    // gxtEffect may not track cells properly for curried component getters,
+    // so we manually re-evaluate and swap DOM as a fallback.
+    try {
+      const infos = (globalThis as any).__curriedRenderInfos;
+      if (infos) {
+        for (const info of infos) {
+          const { item: getter, startMarker: sm, endMarker: em, renderCurriedComponent: render, managers: mgrs } = info;
+          const parent = sm.parentNode;
+          if (!parent) continue;
+          try {
+            const newResult = getter();
+            const newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
+              ? newResult() : newResult;
+
+            // Remove existing content between markers
+            let node = sm.nextSibling;
+            while (node && node !== em) {
+              const next = node.nextSibling;
+              parent.removeChild(node);
+              node = next;
+            }
+
+            if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
+              const newNode = render(newFinal);
+              if (newNode) parent.insertBefore(newNode, em);
+            }
+          } catch { /* ignore render errors */ }
+        }
+      }
+    } catch { /* ignore */ }
     finally { (globalThis as any).__gxtSyncing = false; }
   }
 };
@@ -264,6 +312,34 @@ installEmberWrappers();
         try { gxtSyncDom(); } catch { /* ignore */ }
         const postRender = (globalThis as any).__gxtPostRenderHooks;
         if (typeof postRender === 'function') postRender();
+      }
+    } catch { /* ignore */ }
+    // Re-render CurriedComponent marker regions
+    try {
+      const infos = (globalThis as any).__curriedRenderInfos;
+      if (infos) {
+        for (const info of infos) {
+          const { item: getter, startMarker: sm, endMarker: em, renderCurriedComponent: render, managers: mgrs } = info;
+          const parent = sm.parentNode;
+          if (!parent) continue;
+          try {
+            const newResult = getter();
+            const newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
+              ? newResult() : newResult;
+
+            let node = sm.nextSibling;
+            while (node && node !== em) {
+              const next = node.nextSibling;
+              parent.removeChild(node);
+              node = next;
+            }
+
+            if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
+              const newNode = render(newFinal);
+              if (newNode) parent.insertBefore(newNode, em);
+            }
+          } catch { /* ignore render errors */ }
+        }
       }
     } catch { /* ignore */ }
   }
@@ -290,6 +366,10 @@ setInterval(() => {
   slotsContextStack.length = 0;
   // Clear template cache to avoid stale templates across tests
   templateCache.clear();
+  // Clear curried render infos
+  if ((globalThis as any).__curriedRenderInfos) {
+    (globalThis as any).__curriedRenderInfos.length = 0;
+  }
 };
 
 // Set GXT mode flag
@@ -2144,10 +2224,13 @@ export function precompileTemplate(templateString: string, options?: {
         }
 
         // Check if the result is a CurriedComponent — render it as a component
+        // Use marker-based reactive rendering so that when curried args change
+        // (e.g., set('model.greeting', 'Hola')), the DOM is replaced.
         if (finalResult && finalResult.__isCurriedComponent) {
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(finalResult)) {
             const renderCurriedComponent = (curried: any): Node | null => {
+              if (!curried) return null;
               const handleResult = managers.component.handle(curried, {}, null, null);
               if (typeof handleResult === 'function') {
                 const rendered = handleResult();
@@ -2158,9 +2241,78 @@ export function precompileTemplate(templateString: string, options?: {
               return itemToNode(handleResult, depth + 1);
             };
 
-            // Render directly — preserves firstChild access for tests
+            const startMarker = document.createComment('curried-start');
+            const endMarker = document.createComment('curried-end');
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(startMarker);
+
+            // Initial render
             const initialNode = renderCurriedComponent(finalResult);
-            if (initialNode) return initialNode;
+            if (initialNode) {
+              fragment.appendChild(initialNode);
+            }
+            fragment.appendChild(endMarker);
+
+            // Reactive update — when the getter re-evaluates to a new/different
+            // CurriedComponent, replace the content between markers.
+            // The effect tracks cell reads inside item() so it fires when
+            // any dependency (e.g., this.model.greeting) changes.
+            try {
+              // Store the getter so we can manually trigger re-renders
+              const curriedRenderInfo = {
+                item,
+                startMarker,
+                endMarker,
+                renderCurriedComponent,
+                managers,
+              };
+              // Register for manual re-rendering on property changes
+              if (!(globalThis as any).__curriedRenderInfos) {
+                (globalThis as any).__curriedRenderInfos = [];
+              }
+              (globalThis as any).__curriedRenderInfos.push(curriedRenderInfo);
+
+              gxtEffect(() => {
+                const newResult = item();
+                const newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
+                  ? newResult()
+                  : newResult;
+
+                const parent = startMarker.parentNode;
+                if (!parent) return;
+
+                // Remove existing content between markers
+                let node = startMarker.nextSibling;
+                while (node && node !== endMarker) {
+                  const next = node.nextSibling;
+                  parent.removeChild(node);
+                  node = next;
+                }
+
+                // Insert new content if we have a valid curried component
+                if (newFinal && newFinal.__isCurriedComponent && managers.component.canHandle(newFinal)) {
+                  const newNode = renderCurriedComponent(newFinal);
+                  if (newNode) {
+                    parent.insertBefore(newNode, endMarker);
+                  }
+                } else if (newFinal && typeof newFinal === 'string') {
+                  // Component name resolved to string — try rendering directly
+                  if (managers.component.canHandle(newFinal)) {
+                    const handleResult = managers.component.handle(newFinal, {}, null, null);
+                    if (typeof handleResult === 'function') {
+                      const rendered = handleResult();
+                      if (rendered instanceof Node) {
+                        parent.insertBefore(rendered, endMarker);
+                      }
+                    } else if (handleResult instanceof Node) {
+                      parent.insertBefore(handleResult, endMarker);
+                    }
+                  }
+                }
+              });
+            } catch { /* effect setup may fail */ }
+
+            return fragment;
           }
         }
 
@@ -2241,6 +2393,7 @@ export function precompileTemplate(templateString: string, options?: {
         // so they propagate to the test harness
         if (e instanceof Error && (
           e.message.includes('Could not find component') ||
+          e.message.includes('Attempted to resolve') ||
           e.message.includes('Assertion Failed')
         )) {
           throw e;
@@ -2590,6 +2743,7 @@ export function precompileTemplate(templateString: string, options?: {
           // Re-throw assertion errors so they propagate to test harness
           if (err instanceof Error && (
             err.message.includes('Could not find component') ||
+            err.message.includes('Attempted to resolve') ||
             err.message.includes('Assertion Failed') ||
             err.message.includes('You cannot specify both') ||
             err.message.includes('You cannot specify positional')

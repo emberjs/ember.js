@@ -112,7 +112,16 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   let newRoot = getPath(root, parts, true);
 
   if (newRoot !== null && newRoot !== undefined) {
-    return set(newRoot, keyName, value);
+    const result = set(newRoot, keyName, value);
+    // GXT integration: also notify the root object about the full path change.
+    // When set(component, 'model.lookupComponent', val) is called, _setPath resolves
+    // to set(model, 'lookupComponent', val) which only notifies on the leaf object.
+    // But GXT templates track `this.model` (cell on the component), so we need to
+    // dirty the root property cell too.
+    if (newRoot !== root) {
+      notifyPropertyChange(root, path);
+    }
+    return result;
   } else if (!tolerant) {
     throw new Error(`Property set failed: object in path "${parts.join('.')}" could not be found.`);
   }
