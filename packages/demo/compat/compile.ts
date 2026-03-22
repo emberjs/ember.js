@@ -2084,7 +2084,6 @@ export function precompileTemplate(templateString: string, options?: {
         }
 
         // Check if the result is a CurriedComponent — render it as a component
-        // Use reactive rendering so curried args that depend on tracked state update properly
         if (finalResult && finalResult.__isCurriedComponent) {
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(finalResult)) {
@@ -2099,57 +2098,9 @@ export function precompileTemplate(templateString: string, options?: {
               return itemToNode(handleResult, depth + 1);
             };
 
-            // Set up reactive rendering with markers
-            const startMarker = document.createComment('curried-start');
-            const endMarker = document.createComment('curried-end');
-            const fragment = document.createDocumentFragment();
-            fragment.appendChild(startMarker);
-
-            // Initial render
+            // Render directly — preserves firstChild access for tests
             const initialNode = renderCurriedComponent(finalResult);
-            if (initialNode) fragment.appendChild(initialNode);
-
-            fragment.appendChild(endMarker);
-
-            // Set up reactive effect for re-rendering on dependency changes
-            try {
-              gxtEffect(() => {
-                // Re-evaluate the getter to get the current CurriedComponent
-                const v = item();
-                // Do NOT call CurriedComponent functions — they render the component
-                const fv = (typeof v === 'function' && !v.__isCurriedComponent) ? v() : v;
-                if (!fv || !fv.__isCurriedComponent) return;
-
-                // Call all curried arg getters to track dependencies
-                const cArgs = fv.__curriedArgs || {};
-                for (const val of Object.values(cArgs)) {
-                  if (typeof val === 'function') val();
-                }
-                const cPos = fv.__curriedPositionals || [];
-                for (const val of cPos) {
-                  if (typeof val === 'function') val();
-                }
-
-                const parent = startMarker.parentNode;
-                if (!parent) return;
-
-                // Remove old content between markers
-                let node = startMarker.nextSibling;
-                while (node && node !== endMarker) {
-                  const next = node.nextSibling;
-                  parent.removeChild(node);
-                  node = next;
-                }
-
-                // Render new content
-                const newNode = renderCurriedComponent(fv);
-                if (newNode) {
-                  parent.insertBefore(newNode, endMarker);
-                }
-              });
-            } catch { /* effect setup may fail */ }
-
-            return fragment;
+            if (initialNode) return initialNode;
           }
         }
 
