@@ -151,29 +151,58 @@ installEmberWrappers();
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
 (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
+  const newValue = (obj as any)[keyName];
   try {
     const c = cellFor(obj, keyName, /* skipDefine */ true);
-    if (c) c.update((obj as any)[keyName]);
+    if (c) c.update(newValue);
   } catch {
     // cellFor may not apply to all objects
   }
+  // Also update cells on the prototype chain.
+  // cellFor creates cells keyed by object identity. If a cell-backed getter
+  // was installed on a prototype (e.g., via Component.extend({foo: true})),
+  // the cell is keyed to that prototype, not the instance. We need to update
+  // that prototype cell so GXT formulas tracking it will re-evaluate.
+  try {
+    let proto = Object.getPrototypeOf(obj);
+    for (let depth = 0; depth < 5 && proto && proto !== Object.prototype; depth++) {
+      const desc = Object.getOwnPropertyDescriptor(proto, keyName);
+      if (desc && desc.get) {
+        // This prototype has a getter for this key — likely a cell-backed getter
+        const protoCell = cellFor(proto, keyName, /* skipDefine */ true);
+        if (protoCell) protoCell.update(newValue);
+        break; // Only need to update the first matching prototype
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+  } catch { /* ignore */ }
   // Also dirty cells on ALL render contexts derived from this component.
   // GXT's $_if formula tracks cells on Object.create(component) wrappers.
+  // The contexts map is keyed by prototype, so we check both obj and its prototype.
   try {
     const ctxsMap = (globalThis as any).__gxtComponentContexts;
     if (ctxsMap) {
-      const ctxs = ctxsMap.get(obj);
-      if (ctxs) {
-        const newValue = (obj as any)[keyName];
-        for (const ctx of ctxs) {
-          try {
-            // Use skipDefine=false to create cell if needed.
-            // This ensures formulas that read ctx.prop will track the cell.
-            const rc = cellFor(ctx, keyName, /* skipDefine */ false);
-            if (rc) {
-              rc.update(newValue);
-            }
-          } catch { /* ignore */ }
+      // Check both the object itself and its prototype as keys
+      const candidates = [obj];
+      try {
+        const proto = Object.getPrototypeOf(obj);
+        if (proto && proto !== Object.prototype) candidates.push(proto);
+      } catch { /* ignore */ }
+
+      for (const candidate of candidates) {
+        const ctxs = ctxsMap.get(candidate);
+        if (ctxs) {
+          const newValue = (obj as any)[keyName];
+          for (const ctx of ctxs) {
+            try {
+              // Use skipDefine=false to create cell if needed.
+              // This ensures formulas that read ctx.prop will track the cell.
+              const rc = cellFor(ctx, keyName, /* skipDefine */ false);
+              if (rc) {
+                rc.update(newValue);
+              }
+            } catch { /* ignore */ }
+          }
         }
       }
     }
@@ -804,6 +833,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   configurable: true,
                 });
               }
+              // HTML id prop (not @id named arg) - use special key to distinguish
+              // from @id which maps to elementId (frozen after first render)
+              if (attrKey === 'id') {
+                Object.defineProperty(args, '__htmlId', {
+                  get: () => typeof value === 'function' ? value() : value,
+                  enumerable: true,
+                  configurable: true,
+                });
+              }
             }
           }
 
@@ -1016,7 +1054,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           slots.default = slotFn;
         }
 
-        // Check for __hasBlock__ marker - indicates curly block invocation
+        // Check for __hasBlock__ marker - indicates curly block invocation or
+        // empty angle-bracket invocation <Component></Component>
         // Even if children are empty, we need to create a default slot
         // so that (has-block) returns true
         if (args.__hasBlock__ && !slots.default) {
@@ -1941,6 +1980,20 @@ export function precompileTemplate(templateString: string, options?: {
     transformedTemplate = transformCurlyBlockComponents(transformedTemplate);
   }
 
+  // Transform empty angle-bracket component invocations: <Component></Component>
+  // These need a @__hasBlock__ marker so has-block returns true.
+  // Self-closing <Component /> does NOT get the marker (has-block = false).
+  // Only matches components (PascalCase or kebab-case starting with uppercase).
+  transformedTemplate = transformedTemplate.replace(
+    /<([A-Z][a-zA-Z0-9]*)(\s[^>]*)?>(\s*)<\/\1>/g,
+    (match, tagName, attrs, whitespace) => {
+      // Already has __hasBlock__? Skip.
+      if (attrs && attrs.includes('__hasBlock__')) return match;
+      const attrStr = attrs || '';
+      return `<${tagName}${attrStr} @__hasBlock__="default">${whitespace}</${tagName}>`;
+    }
+  );
+
   // Transform angle-bracket components with positional parameters
   // <SampleComponent "Foo" 4 "Bar" @namedArg=val /> -> <SampleComponent @__pos0__="Foo" @__pos1__={{4}} ... @__posCount__={{3}} @namedArg=val />
   transformedTemplate = transformAngleBracketPositionalParams(transformedTemplate);
@@ -2440,6 +2493,43 @@ export function precompileTemplate(templateString: string, options?: {
           // Push slots onto the global stack for nested has-block checks
           const slotsStack = (globalThis as any).__slotsContextStack;
           slotsStack.push(currentSlots);
+
+          // Install cells on the render context for user-defined properties BEFORE
+          // the template evaluates. This ensures GXT formulas reading this.prop
+          // will track the cell, enabling reactive updates when set() is called later.
+          // We walk the prototype chain (up to the base Ember component) to find
+          // properties set via Component.extend({ fooBar: true }).
+          try {
+            const internalKeys = new Set([
+              'args', 'attrs', 'element', 'parentView', 'tagName', 'layoutName',
+              'layout', 'classNames', 'classNameBindings', 'attributeBindings',
+              'concatenatedProperties', 'mergedProperties', 'isDestroying', 'isDestroyed',
+              'renderer', 'init', 'constructor', 'willDestroy', 'toString',
+            ]);
+            let proto = renderContext;
+            // Walk prototype chain, stopping at Object.prototype
+            const visited = new Set<string>();
+            for (let depth = 0; depth < 5 && proto; depth++) {
+              const keys = Object.getOwnPropertyNames(proto);
+              for (const key of keys) {
+                if (visited.has(key)) continue;
+                visited.add(key);
+                if (key.startsWith('_') || key.startsWith('$') || internalKeys.has(key)) continue;
+                const desc = Object.getOwnPropertyDescriptor(proto, key);
+                if (desc && !desc.get && !desc.set && desc.configurable &&
+                    typeof desc.value !== 'function') {
+                  try {
+                    // Install cell on the actual renderContext (not the prototype)
+                    // This makes `this.prop` reactive in GXT formulas
+                    cellFor(renderContext, key as any, /* skipDefine */ false);
+                  } catch { /* ignore non-configurable properties */ }
+                }
+              }
+              const nextProto = Object.getPrototypeOf(proto);
+              if (!nextProto || nextProto === Object.prototype) break;
+              proto = nextProto;
+            }
+          } catch { /* ignore */ }
 
           // Call the compiled template function with the render context.
           // Enable isRendering so GXT formulas track cell dependencies.

@@ -334,6 +334,25 @@ function createComponentInstance(
     };
   }
 
+  // Capture 'class' getter separately — it was excluded from extractArgKeys
+  // to avoid overwriting the instance's 'class' property, but we need the getter
+  // for reactive wrapper class updates (syncWrapperElement).
+  if (args && 'class' in args) {
+    const { getter } = getArgValue(args, 'class');
+    if (getter) {
+      argGetters['class'] = getter;
+    }
+  }
+
+  // Capture '__htmlId' getter for reactive HTML id binding.
+  // This is set when id=... (HTML prop) is used, distinct from @id (named arg).
+  if (args && '__htmlId' in args) {
+    const { getter } = getArgValue(args, '__htmlId');
+    if (getter) {
+      argGetters['__htmlId'] = getter;
+    }
+  }
+
   props.attrs = attrs;
   props.parentView = parentView;
   props.__argGetters = argGetters;
@@ -643,6 +662,18 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
   classList.push('ember-view');
   wrapper.className = classList.join(' ');
 
+  // --- Sync id from HTML id prop (not @id named arg) ---
+  // When 'id' is passed as an HTML prop (e.g., <FooBar id={{this.customId}} />),
+  // the wrapper element's id should track the prop value.
+  // @id maps to elementId which is frozen after first render - that's NOT synced here.
+  const htmlIdGetter = instance?.__argGetters?.__htmlId;
+  if (htmlIdGetter) {
+    const newId = htmlIdGetter();
+    if (newId !== undefined && newId !== null) {
+      wrapper.id = String(newId);
+    }
+  }
+
   // --- Sync attributeBindings ---
   const attributeBindings = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
   if (attributeBindings && Array.isArray(attributeBindings)) {
@@ -687,8 +718,9 @@ function installBindingInterceptors(instance: any, wrapper: HTMLElement, compone
   const classBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
   const hasClassArg = instance?.__argGetters?.class || instance?.__argGetters?.classNames;
   const hasAriaRole = instance?.__argGetters?.ariaRole;
+  const hasHtmlIdArg = instance?.__argGetters?.__htmlId;
 
-  if ((attrBindings && attrBindings.length > 0) || (classBindings && classBindings.length > 0) || hasClassArg || hasAriaRole) {
+  if ((attrBindings && attrBindings.length > 0) || (classBindings && classBindings.length > 0) || hasClassArg || hasAriaRole || hasHtmlIdArg) {
     trackedWrapperInstances.add({ instance, wrapper, componentDef });
   }
 }
