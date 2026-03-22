@@ -567,6 +567,14 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
   ): any {
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
 
+    // Ensure ctx has a TRUTHY GXT component ID for addToTree parent tracking.
+    // GXT's tree.ts checks `if (!PARENT_ID)` which treats 0 as falsy.
+    if (ctx && typeof ctx === 'object' && COMPONENT_ID_PROPERTY) {
+      if (!ctx[COMPONENT_ID_PROPERTY as any]) {
+        ctx[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
+      }
+    }
+
     // Handle dynamic component patterns: <@foo /> and <this.foo />
     // These are invalid HTML tag names that need special handling
     if (resolvedTag && typeof resolvedTag === 'string') {
@@ -2400,7 +2408,6 @@ export function precompileTemplate(templateString: string, options?: {
           gxtSetParentContext(gxtRoot);
 
           // Copy GXT rendering context from root to our render context
-          // so initDOM() can find the DOM API without walking the parent tree
           try {
             const rootRenderingCtx = gxtRoot[RENDERING_CONTEXT_PROPERTY as any] || gxtInitDOM(gxtRoot);
             if (rootRenderingCtx && RENDERING_CONTEXT_PROPERTY) {
@@ -2444,7 +2451,7 @@ export function precompileTemplate(templateString: string, options?: {
           }
           if (COMPONENT_ID_PROPERTY && !renderContext[COMPONENT_ID_PROPERTY as any]) {
             // Generate a unique context ID
-            renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 0) + 1;
+            renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
           }
 
           // Ensure 'args' key is ALWAYS accessible on the render context
