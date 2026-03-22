@@ -24,6 +24,7 @@ import {
   COMPONENT_ID_PROPERTY,
   RENDERING_CONTEXT_PROPERTY,
   initDOM as gxtInitDOM,
+  setIsRendering as gxtSetIsRendering,
   syncDom as gxtSyncDom,
   cellFor,
   effect as gxtEffect,
@@ -2496,11 +2497,14 @@ export function precompileTemplate(templateString: string, options?: {
           const slotsStack = (globalThis as any).__slotsContextStack;
           slotsStack.push(currentSlots);
 
-          // Call the compiled template function with the render context
+          // Call the compiled template function with the render context.
+          // Enable isRendering so GXT formulas track cell dependencies.
           let result;
+          gxtSetIsRendering(true);
           try {
             result = compilationResult.templateFn.call(renderContext);
           } finally {
+            gxtSetIsRendering(false);
             // Pop slots from stack
             slotsStack.pop();
           }
