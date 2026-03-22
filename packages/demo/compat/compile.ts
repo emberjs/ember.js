@@ -929,9 +929,22 @@ if (g.$_tag && !g.$_tag.__emberWrapped) {
                 for (let i = 0; i < slotChildren.length; i++) {
                   const child = slotChildren[i];
                   if (typeof child === 'function') {
+                    // Create a reactive text node using gxtEffect.
                     try {
-                      const childResult = child();
-                      results.push(childResult);
+                      const initialValue = child();
+                      if (initialValue instanceof Node) {
+                        results.push(initialValue);
+                      } else {
+                        const textNode = document.createTextNode(String(initialValue ?? ''));
+                        gxtEffect(() => {
+                          const val = child();
+                          const newText = String(val ?? '');
+                          if (textNode.textContent !== newText) {
+                            textNode.textContent = newText;
+                          }
+                        });
+                        results.push(textNode);
+                      }
                     } catch (e) {
                       results.push(child);
                     }
