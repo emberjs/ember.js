@@ -353,7 +353,7 @@ function createComponentInstance(
   // This ensures instance.foo always returns the current arg value,
   // even when GXT doesn't re-invoke the component function on re-render.
   for (const key of Object.keys(argGetters)) {
-    if (key === 'classNames' || key === 'class' || key === 'id' || key === 'elementId') continue;
+    if (key === 'id' || key === 'elementId') continue;
     const getter = argGetters[key]!;
     try {
       let localValue = instance[key]; // current value (from factory.create)
@@ -677,8 +677,9 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
 function installBindingInterceptors(instance: any, wrapper: HTMLElement, componentDef: any) {
   const attrBindings = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
   const classBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
+  const hasClassArg = instance?.__argGetters?.class || instance?.__argGetters?.classNames;
 
-  if ((attrBindings && attrBindings.length > 0) || (classBindings && classBindings.length > 0)) {
+  if ((attrBindings && attrBindings.length > 0) || (classBindings && classBindings.length > 0) || hasClassArg) {
     trackedWrapperInstances.add({ instance, wrapper, componentDef });
   }
 }
@@ -942,7 +943,7 @@ function createRenderContext(
   const argCells: Record<string, any> = {};
   if (args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
-      if (key === 'class' || key === 'classNames' || key.startsWith('Symbol')) continue;
+      if (key.startsWith('Symbol')) continue;
 
       // Resolve the initial value
       const descriptor = Object.getOwnPropertyDescriptor(args, key);
