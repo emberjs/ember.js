@@ -9,8 +9,6 @@ import type { TransitionError } from '../lib/transition-state';
 import type { UnrecognizedURLError } from '../lib/unrecognized-url-error';
 import { isTransitionAborted } from '../lib/transition-aborted-error';
 
-QUnit.config.testTimeout = 1000;
-
 // A useful function to allow you to ignore transition errors in a testing context
 export async function ignoreTransitionError(transition: Transition) {
   try {
