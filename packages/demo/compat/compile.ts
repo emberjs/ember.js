@@ -329,14 +329,17 @@ installEmberWrappers();
 // Expose cellFor on globalThis so manager.ts can use it without circular imports.
 (globalThis as any).__gxtCellFor = cellFor;
 
-// Get or create a cell for a property, handling Proxy-wrapped objects.
-// Used by $_if condition transformation to give IfCondition a trackable cell.
+// Get a getter function for a property that reads through the cell.
+// Used by $_if condition transformation so IfCondition wraps it in a formula
+// that tracks the cell via relatedTags (more robust than direct opcodeFor).
 (globalThis as any).__gxtGetCellOrFormula = function(obj: any, key: string) {
   const raw = obj?.__gxtRawTarget || obj;
   try {
-    const cell = cellFor(raw, key, /* skipDefine */ true);
-    if (cell) return cell;
+    // Ensure a cell exists for this property so reads are tracked
+    cellFor(raw, key, /* skipDefine */ true);
   } catch { /* ignore */ }
+  // Return a getter function — IfCondition.setupCondition will wrap it
+  // in a formula() that tracks which cells are read during evaluation.
   return function() { return obj[key]; };
 };
 

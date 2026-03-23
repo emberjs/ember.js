@@ -20,7 +20,8 @@
     "./string": "./string/index.ts",
     "./utility-types": "./utility-types/index.ts",
     "./utils": "./utils/index.ts",
-    "./views": "./views/index.ts"
+    "./views": "./views/index.ts",
+    "./views/lib/system/utils": "./views/lib/system/utils.ts"
   },
   "dependencies": {
     "@ember/application": "workspace:*",
