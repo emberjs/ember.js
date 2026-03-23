@@ -2429,6 +2429,20 @@ export function precompileTemplate(templateString: string, options?: {
     transformedTemplate = transformComponentHelper(transformedTemplate);
   }
 
+  // Transform built-in curly components ({{input ...}} and {{textarea ...}}) to angle-bracket syntax
+  // These don't have hyphens so transformCurlyBlockComponents won't handle them
+  transformedTemplate = transformedTemplate.replace(
+    /\{\{(input|textarea)(\s[^}]*)?\}\}/g,
+    (match, name, attrs) => {
+      const pascalName = name === 'input' ? 'Input' : 'Textarea';
+      if (attrs && attrs.trim()) {
+        const transformedAttrs = transformCurlyArgsToAngleBracket(attrs.trim());
+        return `<${pascalName}${transformedAttrs} />`;
+      }
+      return `<${pascalName} />`;
+    }
+  );
+
   // Transform curly block component syntax to angle-bracket
   // {{#foo-bar}}...{{/foo-bar}} → <FooBar>...</FooBar>
   // Also transforms inline {{foo-bar ...}} calls

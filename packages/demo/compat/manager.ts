@@ -1003,7 +1003,12 @@ const _updatedInstances: any[] = [];
   // Phase 2: transition to destroying, clear element, unregister from view registry,
   // then fire didDestroyElement
   const gOwner = (globalThis as any).owner;
-  const viewRegistry = gOwner?.lookup?.('-view-registry:main');
+  let viewRegistry: any;
+  try {
+    viewRegistry = gOwner?.lookup?.('-view-registry:main');
+  } catch {
+    // Owner may already be destroyed
+  }
   for (const instance of instances) {
     try {
       if (instance._transitionTo) instance._transitionTo('destroying');
@@ -2725,11 +2730,30 @@ export function getInternalComponentManager(handle: any) {
   return globalThis.INTERNAL_MANAGERS.get(handle);
 }
 
-export function getComponentTemplate(comp: any) {
-  return globalThis.COMPONENT_TEMPLATES.get(comp);
+export function getComponentTemplate(comp: any): any {
+  // Direct lookup first
+  const direct = globalThis.COMPONENT_TEMPLATES.get(comp);
+  if (direct !== undefined) return direct;
+  // Walk prototype chain for inheritance support
+  if (comp && typeof comp === 'function') {
+    let proto = Object.getPrototypeOf(comp);
+    while (proto && proto !== Function.prototype && proto !== Object.prototype) {
+      const tpl = globalThis.COMPONENT_TEMPLATES.get(proto);
+      if (tpl !== undefined) return tpl;
+      proto = Object.getPrototypeOf(proto);
+    }
+  }
+  return undefined;
 }
 
 export function setComponentTemplate(tpl: any, comp: any) {
+  if (comp === null || comp === undefined || (typeof comp !== 'object' && typeof comp !== 'function')) {
+    throw new Error(`Cannot call \`setComponentTemplate\` on \`${String(comp)}\``);
+  }
+  if (globalThis.COMPONENT_TEMPLATES.has(comp)) {
+    const name = comp.name || comp.toString?.() || String(comp);
+    throw new Error(`Cannot call \`setComponentTemplate\` multiple times on the same class (\`${name}\`)`);
+  }
   globalThis.COMPONENT_TEMPLATES.set(comp, tpl);
   return comp;
 }
