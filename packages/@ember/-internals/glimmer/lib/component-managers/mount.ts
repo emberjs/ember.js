@@ -123,8 +123,7 @@ class MountManager
   getDebugCustomRenderTree(
     definition: EngineDefinitionState,
     state: EngineState,
-    args: CapturedArguments,
-    templateModuleName?: string
+    args: CapturedArguments
   ): CustomRenderNode[] {
     return [
       {
@@ -140,7 +139,6 @@ class MountManager
         type: 'route-template',
         name: 'application',
         args,
-        template: templateModuleName,
       },
     ];
   }

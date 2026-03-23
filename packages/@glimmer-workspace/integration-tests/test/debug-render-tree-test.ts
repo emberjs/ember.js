@@ -46,7 +46,6 @@ interface ExpectedRenderNode {
   name: CapturedRenderNode['name'];
   args: Expected<CapturedRenderNode['args']>;
   instance: Expected<CapturedRenderNode['instance']>;
-  template: Expected<CapturedRenderNode['template']>;
   bounds: Expected<CapturedRenderNode['bounds']>;
   children: Expected<CapturedRenderNode['children']> | ExpectedRenderNode[];
 }
@@ -94,7 +93,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: '{ROOT}',
         args: { positional: [], named: {} },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.elementBounds(this.delegate.getInitialElement()),
         children: [
           {
@@ -102,7 +100,6 @@ class DebugRenderTreeTest extends RenderTest {
             name: 'HelloWorld',
             args: { positional: [], named: { arg: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
             children: [],
           },
@@ -125,7 +122,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: '{ROOT}',
         args: { positional: [], named: {} },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.elementBounds(this.delegate.getInitialElement()),
         children: [
           {
@@ -133,7 +129,6 @@ class DebugRenderTreeTest extends RenderTest {
             name: 'HelloWorld',
             args: { positional: [], named: { arg: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
             children: [],
           },
@@ -210,7 +205,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: '{ROOT}',
         args: { positional: [], named: {} },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.elementBounds(element),
         children: [
           {
@@ -218,7 +212,6 @@ class DebugRenderTreeTest extends RenderTest {
             name: 'HelloWorld',
             args: { positional: [], named: { arg: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(element.firstChild),
             children: [
               {
@@ -226,7 +219,6 @@ class DebugRenderTreeTest extends RenderTest {
                 name: 'noop',
                 args: { positional: [], named: {} },
                 instance: (modifier: unknown) => modifier && Reflect.get(modifier, 'fn') === noopFn,
-                template: null,
                 bounds: this.nodeBounds(element.firstChild),
                 children: [],
               },
@@ -253,7 +245,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -267,7 +258,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -276,7 +266,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().lastChild),
         children: [],
       },
@@ -290,7 +279,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -336,7 +324,6 @@ class DebugRenderTreeTest extends RenderTest {
           return true;
         },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -352,7 +339,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -361,7 +347,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'second',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
       },
@@ -375,7 +360,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -398,7 +382,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -412,7 +395,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -421,7 +403,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
         instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'second',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
       },
@@ -435,7 +416,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -463,7 +443,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild!.nextSibling),
         children: [
           {
@@ -471,7 +450,6 @@ class DebugRenderTreeTest extends RenderTest {
             name: 'in-element',
             args: { positional: [this.element.firstChild], named: {} },
             instance: (instance: GlimmerishComponent | null) => instance === null,
-            template: null,
             bounds: this.elementBounds(this.element.firstChild! as unknown as SimpleElement),
             children: [
               {
@@ -479,7 +457,6 @@ class DebugRenderTreeTest extends RenderTest {
                 name: 'HiWorld',
                 args: { positional: [], named: {} },
                 instance: (instance: GlimmerishComponent) => instance,
-                template: '(unknown template module)',
                 bounds: this.nodeBounds(this.element.firstChild!.firstChild),
                 children: [],
               },
@@ -544,7 +521,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'on',
         args: { positional: ['click', didInsert], named: {} },
         instance: null,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -553,7 +529,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'DidInsertModifier',
         args: { positional: [foo], named: { bar } },
         instance: (instance: unknown) => instance instanceof DidInsertModifier,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -562,7 +537,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'MyCustomModifier',
         args: { positional: [bar], named: { foo } },
         instance: (instance: unknown) => instance instanceof MyCustomModifier,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -571,7 +545,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: {} },
         instance: (instance: any) => instance !== undefined,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild!.firstChild),
         children: [],
       },
@@ -587,7 +560,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'on',
         args: { positional: ['click', didInsert], named: {} },
         instance: null,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -596,7 +568,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'DidInsertModifier',
         args: { positional: [foo], named: { bar } },
         instance: (instance: unknown) => instance instanceof DidInsertModifier,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -605,7 +576,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'MyCustomModifier',
         args: { positional: [bar], named: { foo } },
         instance: (instance: unknown) => instance instanceof MyCustomModifier,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -614,7 +584,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: {} },
         instance: (instance: any) => instance !== undefined,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild!.firstChild),
         children: [],
       },
@@ -623,7 +592,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'on',
         args: { positional: ['click', didInsert], named: { passive: true } },
         instance: null,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild!.lastChild),
         children: [],
       },
@@ -639,7 +607,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'on',
         args: { positional: ['click', didInsert], named: {} },
         instance: null,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -648,7 +615,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'DidInsertModifier',
         args: { positional: [foo], named: { bar } },
         instance: (instance: unknown) => instance instanceof DidInsertModifier,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -657,7 +623,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'MyCustomModifier',
         args: { positional: [bar], named: { foo } },
         instance: (instance: unknown) => instance instanceof MyCustomModifier,
-        template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -666,7 +631,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld',
         args: { positional: [], named: {} },
         instance: (instance: any) => instance !== undefined,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild!.firstChild),
         children: [],
       },
@@ -696,7 +660,6 @@ class DebugRenderTreeTest extends RenderTest {
               name: 'foo',
               instance: instance1,
               args,
-              template: undefined,
             },
             {
               bucket: bucket2,
@@ -704,7 +667,6 @@ class DebugRenderTreeTest extends RenderTest {
               name: 'bar',
               instance: instance2,
               args: EMPTY_ARGS,
-              template: undefined,
             },
           ];
         }
@@ -726,7 +688,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -740,7 +701,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -749,7 +709,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'foo',
         args: { positional: [], named: { arg: 'second' } },
         instance: instance1,
-        template: null,
         bounds: this.nodeBounds(this.element.lastChild),
         children: [
           {
@@ -757,7 +716,6 @@ class DebugRenderTreeTest extends RenderTest {
             name: 'bar',
             args: { positional: [], named: {} },
             instance: instance2,
-            template: null,
             bounds: this.nodeBounds(this.element.lastChild),
             children: [],
           },
@@ -773,7 +731,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -806,7 +763,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -820,7 +776,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -834,7 +789,6 @@ class DebugRenderTreeTest extends RenderTest {
         name: 'HelloWorld2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
-        template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -931,7 +885,6 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertProperty(actual.name, expected.name, false, `${path} (name)`);
     this.assertProperty(actual.args, expected.args, true, `${path} (args)`);
     this.assertProperty(actual.instance, expected.instance, false, `${path} (instance)`);
-    this.assertProperty(actual.template, expected.template, false, `${path} (template)`);
     this.assertProperty(actual.bounds, expected.bounds, true, `${path} (bounds)`);
 
     if (Array.isArray(expected.children)) {

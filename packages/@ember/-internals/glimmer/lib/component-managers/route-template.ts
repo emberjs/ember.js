@@ -28,7 +28,6 @@ interface RouteTemplateInstanceState {
 
 export interface RouteTemplateDefinitionState {
   name: string;
-  templateName: string;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -79,7 +78,7 @@ class RouteTemplateManager
   }
 
   getDebugCustomRenderTree(
-    { name, templateName }: RouteTemplateDefinitionState,
+    { name }: RouteTemplateDefinitionState,
     state: RouteTemplateInstanceState,
     args: CapturedArguments
   ): CustomRenderNode[] {
@@ -90,7 +89,6 @@ class RouteTemplateManager
         name,
         args,
         instance: state.controller,
-        template: templateName,
       },
     ];
   }
@@ -137,7 +135,7 @@ export class RouteTemplate implements ComponentDefinition<
     // outlet's name. Also, setting this overrides `getDebugName()` in that
     // message. Is that desirable?
     this.resolvedName = name;
-    this.state = { name, templateName: unwrapped.moduleName };
+    this.state = { name };
     this.compilable = unwrapped.asLayout();
   }
 }

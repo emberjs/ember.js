@@ -110,11 +110,7 @@ export function defComponent(
   }
 ) {
   let definition = options?.component ?? templateOnlyComponent();
-  let templateFactory = createTemplate(
-    templateSource,
-    { strictMode: true },
-    options?.scope ?? {}
-  );
+  let templateFactory = createTemplate(templateSource, { strictMode: true }, options?.scope ?? {});
   setComponentTemplate(templateFactory, definition);
   return definition;
 }
@@ -134,11 +130,7 @@ export function defineComponent(
   let keywords = options.keywords ?? [];
 
   let definition = options.definition ?? templateOnlyComponent();
-  let templateFactory = createTemplate(
-    templateSource,
-    { strictMode, keywords },
-    scopeValues ?? {}
-  );
+  let templateFactory = createTemplate(templateSource, { strictMode, keywords }, scopeValues ?? {});
   setComponentTemplate(templateFactory, definition);
   return definition;
 }

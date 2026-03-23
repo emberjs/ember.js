@@ -168,8 +168,7 @@ export interface WithCustomDebugRenderTree<
   getDebugCustomRenderTree(
     definition: ComponentDefinitionState,
     state: ComponentInstanceState,
-    args: CapturedArguments,
-    template?: string
+    args: CapturedArguments
   ): CustomRenderNode[];
 }
 
