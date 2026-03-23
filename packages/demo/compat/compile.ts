@@ -654,6 +654,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
         const $PROPS = Symbol.for('gxt-props');
+        const $SLOTS = Symbol.for('gxt-slots');
         const fw = args?.[$PROPS] || null;
 
         // Extract named args from the GXT args object
@@ -677,6 +678,12 @@ if (g.$_c && !g.$_c.__emberWrapped) {
                 }
               }
             }
+          }
+
+          // Extract slots from GXT args for {{yield}} support
+          const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+          if (gxtSlots && typeof gxtSlots === 'object') {
+            namedArgs.$slots = gxtSlots;
           }
         }
 
@@ -766,10 +773,42 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               }
             }
           }
+
+          // Build slots from children (block content)
+          // This enables {{yield}} in the component to render the block content
+          if (children && children.length > 0) {
+            const defaultSlotFn = (slotCtx: any) => {
+              return children.map((child: any) => {
+                if (typeof child === 'function') {
+                  return child();
+                }
+                return child;
+              });
+            };
+            dynArgs.$slots = { default: defaultSlotFn };
+          }
+
+          // Build fw (forwarding) structure
+          const domAttrs: [string, any][] = [];
+          let events: [string, any][] = [];
+          if (tagProps && tagProps !== g.$_edp) {
+            if (Array.isArray(tagProps[1])) {
+              for (const [key, value] of tagProps[1]) {
+                if (!key.startsWith('@')) {
+                  domAttrs.push([key, value]);
+                }
+              }
+            }
+            if (Array.isArray(tagProps[2])) {
+              events = tagProps[2];
+            }
+          }
+          const fw = [[], domAttrs, events];
+
           // Render the dynamic component
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            return managers.component.handle(componentValue, dynArgs, children, ctx);
+            return managers.component.handle(componentValue, dynArgs, fw, ctx);
           }
         }
         // If no component found, return empty comment
@@ -802,10 +841,41 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               }
             }
           }
+
+          // Build slots from children (block content)
+          if (children && children.length > 0) {
+            const defaultSlotFn = (slotCtx: any) => {
+              return children.map((child: any) => {
+                if (typeof child === 'function') {
+                  return child();
+                }
+                return child;
+              });
+            };
+            dynArgs.$slots = { default: defaultSlotFn };
+          }
+
+          // Build fw (forwarding) structure
+          const domAttrs: [string, any][] = [];
+          let events: [string, any][] = [];
+          if (tagProps && tagProps !== g.$_edp) {
+            if (Array.isArray(tagProps[1])) {
+              for (const [key, value] of tagProps[1]) {
+                if (!key.startsWith('@')) {
+                  domAttrs.push([key, value]);
+                }
+              }
+            }
+            if (Array.isArray(tagProps[2])) {
+              events = tagProps[2];
+            }
+          }
+          const fw = [[], domAttrs, events];
+
           // Render the dynamic component
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            return managers.component.handle(componentValue, dynArgs, children, ctx);
+            return managers.component.handle(componentValue, dynArgs, fw, ctx);
           }
         }
         // If no component found, return empty comment
@@ -1316,6 +1386,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
   g.$_tag.__compileWrapped = true;
 }
 
+// Note: $_dc override not needed currently. Dynamic component block forms
+// ({{#component this.xxx}}) are left untransformed for GXT to handle via
+// its component keyword support.
+
 /**
  * Transform capitalized component names to kebab-case for runtime resolution.
  */
@@ -1533,9 +1607,10 @@ function transformComponentHelper(code: string): string {
       (match, name, value) => {
         // Add @ prefix if not already present
         const attrName = name.startsWith('@') ? name : `@${name}`;
-        // Wrap value in {{}} if it's a path like this.name and not already wrapped
+        // Wrap value in {{}} if it's a bare path and not already wrapped
         let attrValue = value;
-        if (value.startsWith('this.') && !value.startsWith('{{')) {
+        if (!value.startsWith('{{') && !value.startsWith('"') && !value.startsWith("'")) {
+          // Bare values: this.xxx, item.name, true, false, numbers, etc.
           attrValue = `{{${value}}}`;
         }
         return `${attrName}=${attrValue}`;
@@ -1546,16 +1621,70 @@ function transformComponentHelper(code: string): string {
   };
 
   // Block form: {{#component "name"}}...{{/component}}
-  // Need to handle nested components properly
-  const blockPattern = /\{\{#component\s+["']([^"']+)["']([^}]*)\}\}([\s\S]*?)\{\{\/component\}\}/g;
-  result = result.replace(blockPattern, (match, name, attrs, content) => {
-    if (attrs && /(?<!=)\s*\(/.test(attrs)) {
-      return match; // Leave as-is for GXT to handle via $_componentHelper
+  // Need to handle nested components properly using depth-based matching
+  // to support nested {{#component}} blocks
+  {
+    let iterations = 0;
+    const maxIter = 50;
+    while (/\{\{#component\s/.test(result) && iterations < maxIter) {
+      iterations++;
+      // Find the first {{#component ...}} block
+      const openMatch = result.match(/\{\{#component\s+(["']([^"']+)["']|this\.[a-zA-Z0-9_.]+)([^}]*)\}\}/);
+      if (!openMatch) break;
+
+      const fullOpen = openMatch[0];
+      const startIdx = result.indexOf(fullOpen);
+      const isStringName = openMatch[2] !== undefined;
+      const name = isStringName ? openMatch[2] : openMatch[1]; // string name or this.xxx
+      const attrs = openMatch[3] || '';
+
+      // Find the matching {{/component}} with depth tracking
+      let depth = 1;
+      let searchPos = startIdx + fullOpen.length;
+      let endIdx = -1;
+
+      while (depth > 0 && searchPos < result.length) {
+        const nextOpen = result.indexOf('{{#component ', searchPos);
+        const nextClose = result.indexOf('{{/component}}', searchPos);
+
+        if (nextClose === -1) break;
+
+        if (nextOpen !== -1 && nextOpen < nextClose) {
+          depth++;
+          searchPos = nextOpen + 13; // past '{{#component '
+        } else {
+          depth--;
+          if (depth === 0) {
+            endIdx = nextClose + '{{/component}}'.length;
+          } else {
+            searchPos = nextClose + '{{/component}}'.length;
+          }
+        }
+      }
+
+      if (endIdx === -1) break;
+
+      const content = result.slice(startIdx + fullOpen.length, endIdx - '{{/component}}'.length);
+
+      let replacement: string;
+      if (isStringName) {
+        if (attrs && /(?<!=)\s*\(/.test(attrs)) {
+          // Has subexpressions, skip
+          break;
+        }
+        const pascalName = toPascalCase(name);
+        const transformedAttrs = transformAttrs(attrs);
+        replacement = `<${pascalName}${transformedAttrs}>${content}</${pascalName}>`;
+      } else {
+        // Dynamic name: this.componentName
+        // Don't transform - leave as {{#component this.xxx}} for GXT to handle
+        // GXT's $_dc doesn't support string component names directly
+        break;
+      }
+
+      result = result.slice(0, startIdx) + replacement + result.slice(endIdx);
     }
-    const pascalName = toPascalCase(name);
-    const transformedAttrs = transformAttrs(attrs);
-    return `<${pascalName}${transformedAttrs}>${content}</${pascalName}>`;
-  });
+  }
 
   // Inline form: {{component "name" arg=val}}
   // Skip transformation if attrs contain positional subexpressions (e.g., (component ...))
@@ -1576,6 +1705,149 @@ function transformComponentHelper(code: string): string {
     return `<${pascalName}${transformedAttrs} />`;
   });
 
+  return result;
+}
+
+/**
+ * Transform curly-style arguments to angle-bracket @-prefixed arguments.
+ * E.g., 'label="Foo" count=this.count' -> ' @label="Foo" @count={{this.count}}'
+ * Also handles positional parameters:
+ * E.g., '"Foo" 42 key=val' -> ' @__pos0__="Foo" @__pos1__={{42}} @__posCount__={{2}} @key={{val}}'
+ */
+function transformCurlyArgsToAngleBracket(args: string): string {
+  if (!args) return '';
+
+  let remaining = args.trim();
+  const positionalParams: string[] = [];
+  const namedParams: string[] = [];
+
+  // Parse args token by token (similar to transformAttrs in transformCurlyBlockComponents)
+  while (remaining.length > 0) {
+    remaining = remaining.trim();
+    if (remaining.length === 0) break;
+
+    // Skip 'as |...|' block params clause
+    const asMatch = remaining.match(/^as\s*\|([^|]+)\|/);
+    if (asMatch) {
+      // Preserve block params clause - it will be handled elsewhere
+      remaining = remaining.slice(asMatch[0].length);
+      continue;
+    }
+
+    // Named parameter: key=value
+    const nameMatch = remaining.match(/^([a-zA-Z][a-zA-Z0-9-]*)=/);
+    if (nameMatch) {
+      const name = nameMatch[1];
+      let valueStr = remaining.slice(nameMatch[0].length);
+      let value: string;
+
+      if (valueStr.startsWith('{{')) {
+        const endIdx = valueStr.indexOf('}}');
+        value = endIdx !== -1 ? valueStr.slice(0, endIdx + 2) : valueStr.split(/\s/)[0] || '';
+      } else if (valueStr.startsWith('"')) {
+        const match = valueStr.match(/^"(?:[^"\\]|\\.)*"/);
+        value = match ? match[0] : valueStr.split(/\s/)[0] || '';
+      } else if (valueStr.startsWith("'")) {
+        const match = valueStr.match(/^'(?:[^'\\]|\\.)*'/);
+        value = match ? match[0] : valueStr.split(/\s/)[0] || '';
+      } else if (valueStr.startsWith('(')) {
+        // Match balanced parens for subexpressions
+        let depth = 0, i = 0;
+        for (; i < valueStr.length; i++) {
+          if (valueStr[i] === '(') depth++;
+          else if (valueStr[i] === ')') { depth--; if (depth === 0) { i++; break; } }
+        }
+        value = valueStr.slice(0, i);
+      } else {
+        value = valueStr.split(/[\s}]/)[0] || '';
+      }
+
+      const attrName = `@${name}`;
+      let attrValue = value;
+      // Wrap non-quoted, non-mustache values in {{}}
+      if (!value.startsWith('{{') && !value.startsWith('"') && !value.startsWith("'")) {
+        attrValue = `{{${value}}}`;
+      }
+      namedParams.push(`${attrName}=${attrValue}`);
+      remaining = remaining.slice(nameMatch[0].length + value.length);
+      continue;
+    }
+
+    // Positional: quoted string
+    const quotedMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
+    if (quotedMatch) {
+      positionalParams.push(quotedMatch[1]);
+      remaining = remaining.slice(quotedMatch[1].length);
+      continue;
+    }
+
+    // Positional: mustache expression
+    const mustacheMatch = remaining.match(/^(\{\{[^}]+\}\})/);
+    if (mustacheMatch) {
+      positionalParams.push(mustacheMatch[1]);
+      remaining = remaining.slice(mustacheMatch[1].length);
+      continue;
+    }
+
+    // Positional: number or boolean
+    const numberMatch = remaining.match(/^(-?\d+(?:\.\d+)?|true|false)\b/);
+    if (numberMatch) {
+      positionalParams.push(numberMatch[1]);
+      remaining = remaining.slice(numberMatch[1].length);
+      continue;
+    }
+
+    // Positional: subexpression
+    if (remaining.startsWith('(')) {
+      let depth = 0, i = 0;
+      for (; i < remaining.length; i++) {
+        if (remaining[i] === '(') depth++;
+        else if (remaining[i] === ')') { depth--; if (depth === 0) { i++; break; } }
+      }
+      const expr = remaining.slice(0, i);
+      positionalParams.push(expr);
+      remaining = remaining.slice(i);
+      continue;
+    }
+
+    // Positional: path like this.name or @foo or bare identifier
+    const pathMatch = remaining.match(/^(this\.[a-zA-Z0-9_.]+|@[a-zA-Z][a-zA-Z0-9-]*|[a-zA-Z_][a-zA-Z0-9_.]*)/);
+    if (pathMatch) {
+      // Check if followed by '=' - then it's a named param starting, don't consume as positional
+      if (remaining.charAt(pathMatch[0].length) === '=') {
+        // This is actually a named param without our regex matching - advance
+        remaining = remaining.slice(1);
+        continue;
+      }
+      positionalParams.push(`{{${pathMatch[1]}}}`);
+      remaining = remaining.slice(pathMatch[1].length);
+      continue;
+    }
+
+    // Skip unknown character
+    remaining = remaining.slice(1);
+  }
+
+  // Build the result
+  let result = '';
+  if (namedParams.length > 0) {
+    result += ' ' + namedParams.join(' ');
+  }
+  if (positionalParams.length > 0) {
+    for (let i = 0; i < positionalParams.length; i++) {
+      const p = positionalParams[i];
+      if (p.startsWith('"') || p.startsWith("'")) {
+        result += ` @__pos${i}__=${p}`;
+      } else if (p.startsWith('{{') && p.endsWith('}}')) {
+        result += ` @__pos${i}__=${p}`;
+      } else if (p.startsWith('(')) {
+        result += ` @__pos${i}__={{${p}}}`;
+      } else {
+        result += ` @__pos${i}__={{${p}}}`;
+      }
+    }
+    result += ` @__posCount__={{${positionalParams.length}}}`;
+  }
   return result;
 }
 
@@ -1704,7 +1976,9 @@ function transformBlockParams(templateString: string): { transformed: string; bl
       // Replace param used as component tag name: <Param ...> -> <this.$_bp0 ...>
       // This handles the case where a block param is a component reference
       // (e.g., {{#let (component 'foo') as |Comp|}}<Comp />{{/let}})
-      if (param[0] === param[0].toUpperCase()) {
+      // Also handles lowercase block params used as angle bracket tags
+      // (e.g., {{#yielding-component as |comp|}}<comp />{{/yielding-component}})
+      {
         // Self-closing tag: <Param ... /> -> <this.$_bp0 ... />
         const selfClosePattern = new RegExp(`<${param}((?:\\s+[^>]*)?)\\s*/>`, 'g');
         transformedContent = transformedContent.replace(selfClosePattern, `<this.${bpVar}$1 />`);
@@ -1728,6 +2002,52 @@ function transformBlockParams(templateString: string): { transformed: string; bl
 
         const dotClosePattern = new RegExp(`</${param}\\.(\\S+?)>`, 'g');
         transformedContent = transformedContent.replace(dotClosePattern, `</this.${bpVar}.$1>`);
+      }
+
+      // Handle curly invocations of block params with arguments:
+      // {{param.prop argName=argVal}} -> <this.$_bp0.prop @argName={{argVal}} />
+      // {{param.prop positional1 argName=argVal}} -> <this.$_bp0.prop @__pos0__={{positional1}} @__posCount__={{1}} @argName={{argVal}} />
+      // {{param positional1 positional2}} -> <this.$_bp0 @__pos0__={{positional1}} @__pos1__={{positional2}} @__posCount__={{2}} />
+      // {{#param.prop argName=argVal}}content{{/param.prop}} -> <this.$_bp0.prop @argName={{argVal}}>content</this.$_bp0.prop>
+      // {{#param argName=argVal}}content{{/param}} -> <this.$_bp0 @argName={{argVal}}>content</this.$_bp0>
+      {
+        // Block form: {{#param.prop args}}content{{/param.prop}}
+        const blockDotPattern = new RegExp(
+          `\\{\\{#${param}(\\.[a-zA-Z0-9_.]+)(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${param}\\1\\}\\}`, 'g'
+        );
+        transformedContent = transformedContent.replace(blockDotPattern, (match: string, dotPath: string, args: string, content: string) => {
+          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
+          return `<this.${bpVar}${dotPath}${transformedArgs}>${content}</this.${bpVar}${dotPath}>`;
+        });
+
+        // Block form: {{#param args}}content{{/param}}
+        const blockSimplePattern = new RegExp(
+          `\\{\\{#${param}(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${param}\\}\\}`, 'g'
+        );
+        transformedContent = transformedContent.replace(blockSimplePattern, (match: string, args: string, content: string) => {
+          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
+          return `<this.${bpVar}${transformedArgs}>${content}</this.${bpVar}>`;
+        });
+
+        // Inline form with args: {{param.prop arg1 key=val}} (must have at least one arg after the path)
+        // Make sure not to match simple {{param.prop}} (no extra args)
+        const inlineDotWithArgsPattern = new RegExp(
+          `\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.]+)(\\s+[^}]+)\\}\\}`, 'g'
+        );
+        transformedContent = transformedContent.replace(inlineDotWithArgsPattern, (match: string, dotPath: string, args: string) => {
+          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
+          return `<this.${bpVar}${dotPath}${transformedArgs} />`;
+        });
+
+        // Inline form with args: {{param arg1 key=val}} (must have at least one arg)
+        // Be careful not to match {{param}} or {{param.prop}} without args
+        const inlineSimpleWithArgsPattern = new RegExp(
+          `\\{\\{\\s*${param}(\\s+(?!\\.|\\})[^}]+)\\}\\}`, 'g'
+        );
+        transformedContent = transformedContent.replace(inlineSimpleWithArgsPattern, (match: string, args: string) => {
+          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
+          return `<this.${bpVar}${transformedArgs} />`;
+        });
       }
     }
 
@@ -2102,7 +2422,7 @@ export function precompileTemplate(templateString: string, options?: {
     transformedTemplate = transformTripleMustaches(transformedTemplate);
   }
   // Transform {{component}} helper to angle-bracket
-  if (/\{\{#?component\s+["']/.test(transformedTemplate)) {
+  if (/\{\{#?component\s+/.test(transformedTemplate)) {
     transformedTemplate = transformComponentHelper(transformedTemplate);
   }
 
@@ -2111,6 +2431,18 @@ export function precompileTemplate(templateString: string, options?: {
   // Also transforms inline {{foo-bar ...}} calls
   if (/\{\{#?[a-z][a-zA-Z0-9]*-[a-zA-Z0-9-]*[\s}]/.test(transformedTemplate)) {
     transformedTemplate = transformCurlyBlockComponents(transformedTemplate);
+  }
+
+  // Transform {{#@argName args}}content{{/@argName}} block invocations to angle bracket
+  // These are block invocations of components passed as named args
+  if (/\{\{#@/.test(transformedTemplate)) {
+    transformedTemplate = transformedTemplate.replace(
+      /\{\{#@([a-zA-Z][a-zA-Z0-9]*)([^}]*)\}\}([\s\S]*?)\{\{\/@\1\}\}/g,
+      (match, argName, attrs, content) => {
+        const transformedAttrs = attrs.trim() ? transformCurlyArgsToAngleBracket(attrs.trim()) : '';
+        return `<@${argName}${transformedAttrs}>${content}</@${argName}>`;
+      }
+    );
   }
 
   // Transform empty angle-bracket component invocations: <Component></Component>
@@ -2148,6 +2480,19 @@ export function precompileTemplate(templateString: string, options?: {
     transformedTemplate = result.transformed;
     blockParamMappings = result.blockParamMappings;
   }
+
+  // Second pass: Add __hasBlock__ marker for empty block param component invocations
+  // After block params transform, <componentWithHasBlock></componentWithHasBlock> becomes
+  // <this.$_bp0></this.$_bp0>. These need the marker for has-block to work correctly.
+  // Match <this.$_bpN ...></this.$_bpN> (empty content = has-block true)
+  transformedTemplate = transformedTemplate.replace(
+    /<(this\.\$_bp\d+(?:\.[a-zA-Z0-9_.]+)?)(\s[^>]*)?>(\s*)<\/\1>/g,
+    (match, tagName, attrs, whitespace) => {
+      if (attrs && attrs.includes('__hasBlock__')) return match;
+      const attrStr = attrs || '';
+      return `<${tagName}${attrStr} @__hasBlock__="default">${whitespace}</${tagName}>`;
+    }
+  );
 
   // Transform has-block and has-block-params helpers to global function calls
   // (has-block) -> (this.$_hasBlock)
