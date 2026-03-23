@@ -497,4 +497,5 @@ export {
   setComponentManager,
 } from './lib/utils/managers';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
+export { default as element } from './lib/helpers/element';
 export { uniqueId } from './lib/helpers/unique-id';
