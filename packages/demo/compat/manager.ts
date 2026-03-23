@@ -823,10 +823,11 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
   if (ariaRole) {
     wrapper.setAttribute('role', ariaRole);
   } else {
-    // Only remove if it was previously set via ariaRole binding
+    // Remove if it was previously set via ariaRole binding (proto, class, or arg)
     const ariaRoleInProto = componentDef?.prototype?.hasOwnProperty('ariaRole');
     const ariaRoleInClass = componentDef?.hasOwnProperty?.('ariaRole');
-    if (ariaRoleInProto || ariaRoleInClass) {
+    const ariaRoleInArgs = instance?.__argGetters?.ariaRole;
+    if (ariaRoleInProto || ariaRoleInClass || ariaRoleInArgs) {
       wrapper.removeAttribute('role');
     }
   }
@@ -908,7 +909,7 @@ const _updatedInstances: any[] = [];
   for (const entry of trackedArgCells) {
     let hasChanges = false;
     for (const key of Object.keys(entry.cells)) {
-      const { cell, getter } = entry.cells[key]!;
+      const { cell, getter, extraCell } = entry.cells[key]!;
       try {
         const newValue = getter();
         if (cell.__value !== newValue) {
@@ -916,6 +917,11 @@ const _updatedInstances: any[] = [];
           if (entry.instance && key !== 'class' && key !== 'classNames') {
             try { entry.instance[key] = newValue; } catch { /* ignore */ }
           }
+          hasChanges = true;
+        }
+        // Also update the attrsProxy cell (used by GXT effects tracking @arg)
+        if (extraCell && extraCell.__value !== newValue) {
+          extraCell.update(newValue);
           hasChanges = true;
         }
       } catch { /* getter may throw */ }
@@ -1316,16 +1322,11 @@ function createRenderContext(
       }
     }
   }
-  // Register arg cells for reactive updates in __gxtSyncAllWrappers
-  // Remove stale entries for this instance first to prevent double hook firing
-  if (Object.keys(argCells).length > 0) {
-    for (const entry of trackedArgCells) {
-      if (entry.instance === instance) {
-        trackedArgCells.delete(entry);
-      }
-    }
-    trackedArgCells.add({ cells: argCells, instance });
-  }
+  // Don't register attrsProxy arg cells separately here — they will be merged
+  // into the renderCtxArgCells entry below so both cells get updated together.
+  // This prevents the renderCtxArgCells registration from deleting the attrsProxy
+  // entry, which would leave the attrsProxy cells (tracked by GXT effects for @arg)
+  // stale and never updated.
   // GXT's $_GET_SLOTS reads ctx['args'][$SLOTS_SYMBOL] as a fallback,
   // so the attrsProxy (which becomes renderContext.args) must carry slots.
   attrsProxy[$SLOTS_SYMBOL] = slots;
@@ -1441,15 +1442,34 @@ function createRenderContext(
     }
   }
 
-  // Register render context arg cells for updates in __gxtSyncAllWrappers
-  // Remove stale entries for this instance first to prevent double hook firing
-  if (Object.keys(renderCtxArgCells).length > 0) {
+  // Register render context arg cells for updates in __gxtSyncAllWrappers.
+  // Also include attrsProxy cells so GXT effects tracking @arg (via this[$args].key)
+  // get dirtied when args change. Both cells share the same getter.
+  const mergedArgCells: Record<string, any> = {};
+  for (const key of Object.keys(renderCtxArgCells)) {
+    mergedArgCells[key] = renderCtxArgCells[key];
+  }
+  // Merge attrsProxy cells as secondary cells that also need updating
+  for (const key of Object.keys(argCells)) {
+    if (mergedArgCells[key]) {
+      // Store the attrsProxy cell alongside the renderCtx cell
+      mergedArgCells[key] = {
+        cell: mergedArgCells[key].cell,
+        getter: mergedArgCells[key].getter,
+        extraCell: argCells[key].cell, // attrsProxy cell for @arg tracking
+      };
+    } else {
+      mergedArgCells[key] = argCells[key];
+    }
+  }
+
+  if (Object.keys(mergedArgCells).length > 0) {
     for (const entry of trackedArgCells) {
       if (entry.instance === instance) {
         trackedArgCells.delete(entry);
       }
     }
-    trackedArgCells.add({ cells: renderCtxArgCells, instance });
+    trackedArgCells.add({ cells: mergedArgCells, instance });
   }
 
   // Pre-install cell-backed getter/setters on the instance BEFORE creating

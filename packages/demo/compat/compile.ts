@@ -65,6 +65,12 @@ if (!isGlobalScopeReady()) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// NOTE: $_if reactivity is limited by GXT's async branch rendering.
+// When the condition changes, GXT's IfCondition.renderBranch calls
+// destroyBranch() (async) before rendering the new branch. This means
+// synchronous test assertions won't see the updated DOM immediately.
+// This affects tests like "yield to inverse", "isStream", etc.
+
 // Override $_componentHelper with Ember-aware version that creates CurriedComponent.
 // Uses lazy lookup of CurriedComponent class because manager.ts may load after compile.ts.
 {
