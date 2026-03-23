@@ -12,8 +12,14 @@ import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './de
 import { SELF_TAG } from './tags';
 
 const {
-  consumeTag, dirtyTagFor, tagFor, trackedData
+  consumeTag, dirtyTagFor: _dirtyTagFor, tagFor, trackedData
 } = validator;
+
+// Wrap dirtyTagFor to handle Symbol keys which GXT's raw dirtyTagFor can't handle
+function dirtyTagFor(obj: any, key: any) {
+  const safeKey = typeof key === 'symbol' ? (key.description || key.toString()) : key;
+  return _dirtyTagFor(obj, safeKey);
+}
 
 
 /**

@@ -1691,7 +1691,27 @@ const formula = <T>(fn: () => T, name?: string) => {
 function argsForInternalManager(args: any, fw: any) {
   const named: Record<string, any> = {};
   Object.keys(args).forEach((arg) => {
-    named[arg] = formula(() => args[arg], 'argsForInternalManager');
+    // Create a reactive ref that reads from the GXT args getter each time
+    // and supports two-way binding via update()
+    const desc = Object.getOwnPropertyDescriptor(args, arg);
+    const getter = desc?.get || (() => args[arg]);
+    named[arg] = {
+      get value() {
+        return getter();
+      },
+      set value(v: any) {
+        // Allow setting via .value = for internal use
+        if (desc?.set) {
+          desc.set(v);
+        }
+      },
+      update(v: any) {
+        // Support updateRef() protocol for two-way binding
+        if (desc?.set) {
+          desc.set(v);
+        }
+      },
+    };
   });
 
   return {
@@ -2071,7 +2091,14 @@ function handleStringComponent(
     return null;
   }
 
-  const { factory, template } = resolved;
+  const { factory, template, manager } = resolved;
+
+  // If this component has an internal manager (e.g., Input, Textarea),
+  // delegate to handleManagedComponent which properly creates the instance
+  // via the manager's create() method with CapturedArguments.
+  if (manager && factory?.class) {
+    return handleManagedComponent(factory.class, args, fw, ctx, manager, owner);
+  }
 
   // Handle positional params mapping
   // If the component has static positionalParams, map __pos0__, __pos1__, etc. to named args
@@ -2237,7 +2264,10 @@ function handleStringComponent(
 }
 
 /**
- * Handle a component with a custom manager.
+ * Handle a component with a custom manager (Input, Textarea).
+ * Instead of going through the full template render pipeline, we directly
+ * create the DOM element and wire up reactive bindings via GXT effects.
+ * This avoids the issues with createRenderContext overwriting instance.args.
  */
 function handleManagedComponent(
   komp: any,
@@ -2256,13 +2286,173 @@ function handleManagedComponent(
     formula(() => ctx, 'internalManager:caller')
   );
 
-  const tpl = getComponentTemplate(instance) ||
-              getComponentTemplate(instance?.prototype) ||
-              getComponentTemplate(komp);
-
   return () => {
-    args[$PROPS_SYMBOL] = fw || [[], [], []];
-    return tpl?.bind(instance)?.(args);
+    // Create the <input> or <textarea> element directly
+    const tagName = instance.constructor?.toString?.() === 'Textarea' ? 'textarea' : 'input';
+    const el = document.createElement(tagName);
+
+    // Set initial attributes and set up reactive bindings
+    const gxtEffect = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+
+    // id attribute
+    gxtEffect(() => {
+      const id = instance.id;
+      if (id) el.id = id;
+    });
+
+    // class attribute
+    gxtEffect(() => {
+      const cls = instance.class;
+      if (cls) el.className = cls;
+    });
+
+    // type attribute (for input elements)
+    if (tagName === 'input') {
+      gxtEffect(() => {
+        const type = instance.type;
+        if (type) el.setAttribute('type', type);
+      });
+    }
+
+    // checked attribute (for checkboxes)
+    gxtEffect(() => {
+      const checked = instance.checked;
+      if (checked !== undefined) {
+        (el as HTMLInputElement).checked = !!checked;
+      }
+    });
+
+    // value property - use direct DOM property setting for proper behavior
+    gxtEffect(() => {
+      const value = instance.value;
+      if (value !== undefined && value !== null) {
+        // Preserve cursor position when updating value
+        const activeEl = document.activeElement;
+        if (activeEl === el) {
+          const start = (el as HTMLInputElement).selectionStart;
+          const end = (el as HTMLInputElement).selectionEnd;
+          (el as HTMLInputElement).value = String(value);
+          try {
+            (el as HTMLInputElement).setSelectionRange(start, end);
+          } catch {
+            // setSelectionRange may fail for some input types
+          }
+        } else {
+          (el as HTMLInputElement).value = String(value);
+        }
+      } else if (value === undefined || value === null) {
+        (el as HTMLInputElement).value = '';
+      }
+    });
+
+    // Wire up event handlers
+    if (typeof instance.change === 'function') {
+      el.addEventListener('change', (e: Event) => instance.change(e));
+    }
+    if (typeof instance.input === 'function') {
+      el.addEventListener('input', (e: Event) => instance.input(e));
+    }
+    if (typeof instance.keyUp === 'function') {
+      el.addEventListener('keyup', (e: Event) => instance.keyUp(e));
+    }
+    if (typeof instance.valueDidChange === 'function') {
+      el.addEventListener('paste', (e: Event) => instance.valueDidChange(e));
+      el.addEventListener('cut', (e: Event) => instance.valueDidChange(e));
+    }
+
+    // Apply forwarded attributes (...attributes) from fw with reactive bindings
+    if (fw && Array.isArray(fw)) {
+      const fwAttrs = fw[0]; // DOM properties [key, value][]
+      if (Array.isArray(fwAttrs)) {
+        for (const [key, value] of fwAttrs) {
+          const attrKey = key === '' ? 'class' : key;
+          if (attrKey === 'class') {
+            // Class is special - append to existing
+            gxtEffect(() => {
+              const resolved = typeof value === 'function' ? value() : value;
+              const baseClass = instance.class || '';
+              el.className = resolved ? baseClass + ' ' + resolved : baseClass;
+            });
+          } else {
+            gxtEffect(() => {
+              const resolved = typeof value === 'function' ? value() : value;
+              if (resolved !== undefined && resolved !== null && resolved !== false) {
+                el.setAttribute(attrKey, String(resolved));
+              } else {
+                el.removeAttribute(attrKey);
+              }
+            });
+          }
+        }
+      }
+      // Apply forwarded DOM attrs from fw[1] (attrs with key=value) reactively
+      const fwDomAttrs = fw[1];
+      if (Array.isArray(fwDomAttrs)) {
+        for (const [key, value] of fwDomAttrs) {
+          if (key.startsWith('@')) continue; // Skip named args
+          gxtEffect(() => {
+            const resolved = typeof value === 'function' ? value() : value;
+            if (key === 'disabled') {
+              // disabled is a boolean attribute
+              if (resolved || resolved === '') {
+                el.setAttribute(key, '');
+                (el as HTMLInputElement).disabled = true;
+              } else {
+                el.removeAttribute(key);
+                (el as HTMLInputElement).disabled = false;
+              }
+            } else if (resolved !== undefined && resolved !== null && resolved !== false) {
+              el.setAttribute(key, String(resolved));
+            } else {
+              el.removeAttribute(key);
+            }
+          });
+        }
+      }
+      // Apply forwarded events from fw[2]
+      const fwEvents = fw[2];
+      if (Array.isArray(fwEvents)) {
+        for (const [eventName, handler] of fwEvents) {
+          if (typeof handler === 'function') {
+            el.addEventListener(eventName, handler);
+          }
+        }
+      }
+    }
+
+    // Apply DOM attributes from args that are HTML attributes (not @args)
+    // These come from the splattributes pattern
+    const htmlAttrs = ['disabled', 'readonly', 'placeholder', 'name', 'maxlength', 'minlength',
+                       'size', 'tabindex', 'role', 'aria-label', 'aria-describedby', 'pattern',
+                       'autocomplete', 'autofocus', 'form', 'multiple', 'step', 'min', 'max',
+                       'accept', 'required', 'title', 'lang', 'dir', 'spellcheck', 'wrap',
+                       'rows', 'cols'];
+    for (const attr of htmlAttrs) {
+      if (attr in args) {
+        const desc = Object.getOwnPropertyDescriptor(args, attr);
+        const getter = desc?.get || (() => args[attr]);
+        gxtEffect(() => {
+          const val = getter();
+          if (attr === 'disabled') {
+            if (val || val === '') {
+              el.setAttribute(attr, '');
+              (el as HTMLInputElement).disabled = true;
+            } else {
+              el.removeAttribute(attr);
+              (el as HTMLInputElement).disabled = false;
+            }
+          } else if (val === true) {
+            el.setAttribute(attr, '');
+          } else if (val === false || val === undefined || val === null) {
+            el.removeAttribute(attr);
+          } else {
+            el.setAttribute(attr, String(val));
+          }
+        });
+      }
+    }
+
+    return el;
   };
 }
 

@@ -38,6 +38,9 @@ import {
   Component as _GXT_Component,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
+// Expose gxtEffect on globalThis for manager.ts to use for reactive bindings
+(globalThis as any).__gxtEffect = gxtEffect;
+
 // Expose GXT symbols on globalThis so renderer.ts and root.ts can access them
 // without importing from @lifeart/gxt (whose pre-bundled version drops these exports)
 (globalThis as any).__gxtSymbols = {
@@ -1397,7 +1400,7 @@ function transformCapitalizedComponents(code: string): string {
   let result = code;
 
   // List of known Ember built-in components that need transformation
-  const knownComponents = ['LinkTo', 'Input', 'Textarea', 'Outlet'];
+  const knownComponents = ['LinkTo', 'Outlet'];
 
   for (const component of knownComponents) {
     const kebab = component.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
