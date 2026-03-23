@@ -10,6 +10,15 @@ import {
   concat as glimmerConcat,
   get as glimmerGet,
   fn as glimmerFn,
+  and as glimmerAnd,
+  or as glimmerOr,
+  not as glimmerNot,
+  eq as glimmerEq,
+  neq as glimmerNeq,
+  lt as glimmerLt,
+  lte as glimmerLte,
+  gt as glimmerGt,
+  gte as glimmerGte,
 } from '@glimmer/runtime';
 import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
 import { type Opaque } from '@ember/-internals/utility-types';
@@ -492,3 +501,120 @@ export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
 
 /* eslint-enable @typescript-eslint/no-empty-object-type */
+
+/**
+ * `{{and}}` returns the first falsy value or the last value if all are truthy.
+ *
+ * ```js
+ * import { and } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (and this.isActive this.isVerified) "Ready" "Not ready"}}
+ * </template>
+ * ```
+ */
+export const and = glimmerAnd;
+
+/**
+ * `{{or}}` returns the first truthy value or the last value if all are falsy.
+ *
+ * ```js
+ * import { or } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (or this.isAdmin this.isModerator) "Has access" "No access"}}
+ * </template>
+ * ```
+ */
+export const or = glimmerOr;
+
+/**
+ * `{{not}}` returns the boolean negation of its argument.
+ *
+ * ```js
+ * import { not } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (not this.isActive) "Inactive" "Active"}}
+ * </template>
+ * ```
+ */
+export const not = glimmerNot;
+
+/**
+ * `{{eq}}` checks strict equality (`===`) between two values.
+ *
+ * ```js
+ * import { eq } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (eq this.status "active") "Active" "Inactive"}}
+ * </template>
+ * ```
+ */
+export const eq = glimmerEq;
+
+/**
+ * `{{neq}}` checks strict inequality (`!==`) between two values.
+ *
+ * ```js
+ * import { neq } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (neq this.status "active") "Not active" "Active"}}
+ * </template>
+ * ```
+ */
+export const neq = glimmerNeq;
+
+/**
+ * `{{lt}}` checks if the first value is less than the second.
+ *
+ * ```js
+ * import { lt } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (lt this.count 10) "Under 10" "10 or more"}}
+ * </template>
+ * ```
+ */
+export const lt = glimmerLt;
+
+/**
+ * `{{lte}}` checks if the first value is less than or equal to the second.
+ *
+ * ```js
+ * import { lte } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (lte this.count 10) "10 or under" "Over 10"}}
+ * </template>
+ * ```
+ */
+export const lte = glimmerLte;
+
+/**
+ * `{{gt}}` checks if the first value is greater than the second.
+ *
+ * ```js
+ * import { gt } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (gt this.count 10) "Over 10" "10 or under"}}
+ * </template>
+ * ```
+ */
+export const gt = glimmerGt;
+
+/**
+ * `{{gte}}` checks if the first value is greater than or equal to the second.
+ *
+ * ```js
+ * import { gte } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (gte this.count 10) "10 or more" "Under 10"}}
+ * </template>
+ * ```
+ */
+export const gte = glimmerGte;

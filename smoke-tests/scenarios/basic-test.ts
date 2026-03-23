@@ -286,6 +286,100 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'helper-keywords-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              import Component from '@glimmer/component';
+              import { tracked } from '@glimmer/tracking';
+
+              class FnDemo extends Component {
+                greet = (name) => 'Hello, ' + name + '!';
+
+                <template>
+                  {{#let (fn this.greet "World") as |sayHello|}}
+                    <span id="fn-result">{{sayHello}}</span>
+                  {{/let}}
+                </template>
+              }
+
+              class HashDemo extends Component {
+                <template>
+                  {{#let (hash name="Ember" version="6") as |obj|}}
+                    <span id="hash-result">{{obj.name}} {{obj.version}}</span>
+                  {{/let}}
+                </template>
+              }
+
+              class ArrayDemo extends Component {
+                <template>
+                  {{#each (array "a" "b" "c") as |item|}}
+                    <span class="array-item">{{item}}</span>
+                  {{/each}}
+                </template>
+              }
+
+              class EqDemo extends Component {
+                @tracked status = 'active';
+
+                <template>
+                  <span id="eq-result">{{if (eq this.status "active") "yes" "no"}}</span>
+                </template>
+              }
+
+              class LogicalDemo extends Component {
+                <template>
+                  <span id="and-result">{{if (and true true) "yes" "no"}}</span>
+                  <span id="or-result">{{if (or false true) "yes" "no"}}</span>
+                  <span id="not-result">{{if (not false) "yes" "no"}}</span>
+                </template>
+              }
+
+              class ComparisonDemo extends Component {
+                <template>
+                  <span id="lt-result">{{if (lt 1 2) "yes" "no"}}</span>
+                  <span id="gt-result">{{if (gt 2 1) "yes" "no"}}</span>
+                </template>
+              }
+
+              module('helper keywords', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('fn works as keyword', async function(assert) {
+                  await render(FnDemo);
+                  assert.dom('#fn-result').hasText('Hello, World!');
+                });
+
+                test('hash works as keyword', async function(assert) {
+                  await render(HashDemo);
+                  assert.dom('#hash-result').hasText('Ember 6');
+                });
+
+                test('array works as keyword', async function(assert) {
+                  await render(ArrayDemo);
+                  assert.dom('.array-item').exists({ count: 3 });
+                });
+
+                test('eq works as keyword', async function(assert) {
+                  await render(EqDemo);
+                  assert.dom('#eq-result').hasText('yes');
+                });
+
+                test('logical operators work as keywords', async function(assert) {
+                  await render(LogicalDemo);
+                  assert.dom('#and-result').hasText('yes');
+                  assert.dom('#or-result').hasText('yes');
+                  assert.dom('#not-result').hasText('yes');
+                });
+
+                test('comparison operators work as keywords', async function(assert) {
+                  await render(ComparisonDemo);
+                  assert.dom('#lt-result').hasText('yes');
+                  assert.dom('#gt-result').hasText('yes');
+                });
+              });
+            `,
             'on-as-keyword-but-its-shadowed-test.gjs': `
               import QUnit, { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';

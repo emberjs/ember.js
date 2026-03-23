@@ -1,4 +1,5 @@
 import { on } from '@ember/modifier';
+import { fn, hash, array, and, or, not, eq, neq, lt, lte, gt, gte } from '@ember/helper';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,
@@ -18,6 +19,18 @@ function malformedComponentLookup(string: string) {
 const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 export const keywords = {
   on,
+  fn,
+  hash,
+  array,
+  and,
+  or,
+  not,
+  eq,
+  neq,
+  lt,
+  lte,
+  gt,
+  gte,
 };
 
 // Not worth adding a type

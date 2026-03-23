@@ -1413,6 +1413,9 @@ importers:
 
   packages/@glimmer-workspace/integration-tests/test:
     dependencies:
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../../../@ember/helper
       '@ember/modifier':
         specifier: workspace:*
         version: link:../../../@ember/modifier
