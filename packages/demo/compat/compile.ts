@@ -329,6 +329,17 @@ installEmberWrappers();
 // Expose cellFor on globalThis so manager.ts can use it without circular imports.
 (globalThis as any).__gxtCellFor = cellFor;
 
+// Get or create a cell for a property, handling Proxy-wrapped objects.
+// Used by $_if condition transformation to give IfCondition a trackable cell.
+(globalThis as any).__gxtGetCellOrFormula = function(obj: any, key: string) {
+  const raw = obj?.__gxtRawTarget || obj;
+  try {
+    const cell = cellFor(raw, key, /* skipDefine */ true);
+    if (cell) return cell;
+  } catch { /* ignore */ }
+  return function() { return obj[key]; };
+};
+
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
 (globalThis as any).__gxtSyncDomNow = function() {
@@ -2175,6 +2186,19 @@ export function precompileTemplate(templateString: string, options?: {
     // Replace async $_each with synchronous $_eachSync
     if (modifiedCode.includes('$_each(')) {
       modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
+    }
+    // Transform $_if(() => this.PROP, ...) to use __gxtGetCellOrFormula for direct cell tracking.
+    // GXT's IfCondition formula wraps function conditions but doesn't track cells
+    // read through our Proxy. Using a direct cell gives IfCondition something it can track.
+    if (modifiedCode.includes('$_if(')) {
+      // Transform $_if conditions: replace getter with direct cell for tracking.
+      // GXT compiles as $_if((() => this.prop), trueBranch, falseBranch, ctx)
+      modifiedCode = modifiedCode.replace(
+        /\$_if\(\(?(\(\)\s*=>\s*this\.([a-zA-Z_$][a-zA-Z0-9_$]*))\)?\s*,/g,
+        (match, getter, propName) => {
+          return `$_if(globalThis.__gxtGetCellOrFormula(this, '${propName}'),`;
+        }
+      );
     }
     compilationResult.code = modifiedCode;
     try {

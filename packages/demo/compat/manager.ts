@@ -1512,6 +1512,8 @@ function createRenderContext(
 
   const proxy = new Proxy(renderContext, {
     get(target, prop, _receiver) {
+      // Allow raw target access for cellFor
+      if (prop === '__gxtRawTarget') return target;
       if (typeof prop !== 'string' || SKIP_CELL_PROPS.has(prop)) {
         return Reflect.get(target, prop, target);
       }
