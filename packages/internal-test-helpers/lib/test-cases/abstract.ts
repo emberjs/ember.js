@@ -26,6 +26,8 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
         text.includes('if-entry') ||
         text.includes('each-entry') ||
         text.includes('list-target') ||
+        text.includes('list item') ||
+        text.includes('list bottom marker') ||
         text.includes('curried-start') ||
         text.includes('curried-end')
       )
@@ -239,6 +241,10 @@ export default abstract class AbstractTestCase {
         text.includes('if-entry') ||
         text.includes('each-entry') ||
         text.includes('list-target') ||
+        text.includes('list item') ||
+        text.includes('list bottom marker') ||
+        text.includes('curried-start') ||
+        text.includes('curried-end') ||
         text === ''
       ) {
         toRemove.push(node);
@@ -249,6 +255,18 @@ export default abstract class AbstractTestCase {
     // Remove data-node-id attributes
     for (const el of fixture.querySelectorAll('[data-node-id]')) {
       el.removeAttribute('data-node-id');
+    }
+
+    // Unwrap <ember-outlet> elements - move their children up to parent
+    let outletEl: Element | null;
+    while ((outletEl = fixture.querySelector('ember-outlet'))) {
+      const parent = outletEl.parentNode;
+      if (parent) {
+        while (outletEl.firstChild) {
+          parent.insertBefore(outletEl.firstChild, outletEl);
+        }
+        parent.removeChild(outletEl);
+      }
     }
   }
 

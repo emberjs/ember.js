@@ -370,60 +370,103 @@ export default function createRootTemplate(_owner: any) {
     if (DEBUG_TEMPLATE_LOOKUP) {
       console.log('[root.ts] CASE 2: OutletView rendering');
       console.log('[root.ts] outletRef:', instance.outletRef ? 'exists' : 'null');
-      console.log('[root.ts] outletRef keys:', instance.outletRef ? Object.keys(instance.outletRef).slice(0, 8).join(',') : 'null');
       console.log('[root.ts] mainOutlet:', instance.mainOutlet ? 'exists' : 'null');
-      console.log('[root.ts] mainOutlet keys:', instance.mainOutlet ? Object.keys(instance.mainOutlet).slice(0, 8).join(',') : 'null');
       console.log('[root.ts] routeTemplate:', instance.routeTemplate ? 'exists' : 'null');
-      console.log('[root.ts] routeTemplate type:', typeof instance.routeTemplate);
-      console.log('[root.ts] routeTemplate moduleName:', instance.routeTemplate?.moduleName);
-      console.log('[root.ts] mainOutlet.outlets:', instance.mainOutlet?.outlets ? 'exists' : 'null');
-      console.log('[root.ts] mainOutlet.outlets.main:', instance.mainOutlet?.outlets?.main ? 'exists' : 'null');
-      if (instance.mainOutlet?.outlets?.main) {
-        console.log('[root.ts] nested template:', instance.mainOutlet.outlets.main?.render?.template ? 'exists' : 'null');
-        console.log('[root.ts] nested template type:', typeof instance.mainOutlet.outlets.main?.render?.template);
-      }
     }
 
-    // Directly render the route template if available (skip the intermediate gxt component)
-    if (instance.routeTemplate) {
-      let routeTemplate = instance.routeTemplate;
-      let controller = instance.routeController;
-      let model = instance.routeModel;
-      let outletState = instance.outletState;
+    // Render the outlet state into the parent element.
+    // This function is also called by setOutletState to re-render on route changes.
+    function renderOutletState(outletRef: any) {
+      const mainOutlet = outletRef?.outlets?.main;
+      if (!mainOutlet?.render?.template) return;
 
-      // If the route template is the outlet template itself, skip it and render the nested template directly
-      // This handles the common case where the application route has no template and just renders {{outlet}}
-      if (routeTemplate?.moduleName === 'template:-outlet' && instance.mainOutlet?.outlets?.main?.render?.template) {
+      let routeTemplate = mainOutlet.render.template;
+      let controller = mainOutlet.render.controller;
+      let model = mainOutlet.render.model;
+      let outletState = mainOutlet;
+
+      // If the route template is the outlet template itself, skip it and render nested directly
+      if (routeTemplate?.moduleName === 'template:-outlet' && mainOutlet?.outlets?.main?.render?.template) {
         if (DEBUG_TEMPLATE_LOOKUP) {
           console.log('[root.ts] Route template is outlet, rendering nested template directly');
         }
-        const nestedOutlet = instance.mainOutlet.outlets.main;
+        const nestedOutlet = mainOutlet.outlets.main;
         routeTemplate = nestedOutlet.render.template;
         controller = nestedOutlet.render.controller;
         model = nestedOutlet.render.model;
         outletState = nestedOutlet;
       }
 
-      // Build render context with outlet state for nested {{outlet}} support
-      // Spread controller properties for {{this.xxx}} access
-      const renderContext = {
-        ...(controller || {}), // Spread controller properties for {{this.xxx}} access
+      // Check if routeTemplate is a component (e.g., from template('First'))
+      // rather than a regular template factory. Components have templates
+      // set via setComponentTemplate which we can retrieve.
+      if (routeTemplate && typeof routeTemplate?.render !== 'function') {
+        const componentTpl = getComponentTemplate(routeTemplate) ||
+          getComponentTemplate(routeTemplate?.constructor) ||
+          (typeof routeTemplate === 'function' && getComponentTemplate(routeTemplate.prototype));
+        if (componentTpl) {
+          // Instantiate the template factory with the owner
+          const resolvedTemplate = typeof componentTpl === 'function' ? componentTpl(instance.owner) : componentTpl;
+          if (resolvedTemplate) {
+            routeTemplate = resolvedTemplate;
+          }
+        }
+      }
+
+      // Build render context with GXT args symbols so @model works
+      const $ARGS_KEY = Symbol.for('gxt-args');
+      const $SLOTS_KEY = Symbol.for('gxt-slots');
+      const argsObj: any = {
         model: model,
-        owner: instance.owner,
-        outletState: outletState, // Pass outlet state for nested {{outlet}}
-        args: {
-          model: model,
-          controller: controller,
-          outletState: outletState,
-        },
+        controller: controller,
+        outletState: outletState,
       };
 
-      // Set global outlet state for custom element access
-      // The <ember-outlet> custom element reads from this
+      // Build render context from controller (this = controller in route templates).
+      // Use controller.model for this.model (the route sets it via controller.set('model', ...)),
+      // and use the route model for @model (through args).
+      const renderContext: any = {
+        ...(controller || {}),
+        owner: instance.owner,
+        outletState: outletState,
+        args: argsObj,
+        [$ARGS_KEY]: argsObj,
+        [$SLOTS_KEY]: {},
+        $fw: [[], [], []],
+      };
+
+      // Install model as a getter delegating to the controller so tracked/set changes
+      // on controller.model are reflected in this.model (route template context).
+      if (controller) {
+        const ctrl = controller;
+        Object.defineProperty(renderContext, 'model', {
+          get() { return ctrl.model; },
+          set(v: any) { ctrl.model = v; },
+          enumerable: true,
+          configurable: true,
+        });
+      } else {
+        renderContext.model = model;
+      }
+
+      // Set global outlet state for nested <ember-outlet> elements
       (globalThis as any).__currentOutletState = outletState;
 
       renderTemplateWithContext(routeTemplate, parentElement, renderContext, instance.owner);
     }
+
+    // Store the top-level outlet ref for re-rendering on property changes
+    (globalThis as any).__gxtTopOutletRef = instance.outletRef;
+
+    // Register a re-render function that setOutletState can call
+    (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
+      // Clear current content
+      parentElement.innerHTML = '';
+      renderOutletState(outletRef);
+    };
+
+    // Perform initial render
+    renderOutletState(instance.outletRef);
 
     return { nodes: [], ctx: context };
   };

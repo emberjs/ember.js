@@ -2727,7 +2727,19 @@ export function getHelperManager(helper: any) {
 }
 
 export function getInternalComponentManager(handle: any) {
-  return globalThis.INTERNAL_MANAGERS.get(handle);
+  if (handle === null || handle === undefined) return undefined;
+  // Walk the prototype chain
+  let pointer = handle;
+  while (pointer !== null && pointer !== undefined) {
+    const manager = globalThis.INTERNAL_MANAGERS.get(pointer);
+    if (manager !== undefined) return manager;
+    try {
+      pointer = Object.getPrototypeOf(pointer);
+    } catch {
+      break;
+    }
+  }
+  return undefined;
 }
 
 export function getComponentTemplate(comp: any): any {
@@ -2823,7 +2835,21 @@ export function managerHasCapability(manager: { capabilities: number }, capabili
 }
 
 export function hasInternalComponentManager(component: any): boolean {
-  return globalThis.INTERNAL_MANAGERS.has(component);
+  if (component === null || component === undefined) return false;
+  // Walk the prototype chain to find managers set on prototypes or class hierarchy
+  let pointer = component;
+  for (let depth = 0; depth < 20; depth++) {
+    if (pointer === null || pointer === undefined) break;
+    if (globalThis.INTERNAL_MANAGERS.has(pointer)) return true;
+    try {
+      const next = Object.getPrototypeOf(pointer);
+      if (next === pointer || next === null) break;
+      pointer = next;
+    } catch {
+      break;
+    }
+  }
+  return false;
 }
 
 export function hasValue(manager: any): boolean {

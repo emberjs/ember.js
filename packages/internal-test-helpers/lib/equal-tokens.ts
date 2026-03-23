@@ -5,9 +5,11 @@ function stripGxtArtifacts(html: string): string {
   if (!(globalThis as any).__GXT_MODE__) return html;
   return html
     // Remove GXT placeholder comments
-    .replace(/<!--(?:placeholder|if-entry|each-entry|list-target|htmlRaw|\/htmlRaw|curried-start|curried-end)[^>]*-->/g, '')
+    .replace(/<!--(?:placeholder|if-entry|each-entry|list-target|list item|list bottom marker|htmlRaw|\/htmlRaw|curried-start|curried-end)[^>]*-->/g, '')
     // Remove data-node-id attributes
     .replace(/\s*data-node-id="[^"]*"/g, '')
+    // Unwrap <ember-outlet> wrappers
+    .replace(/<\/?ember-outlet[^>]*>/g, '')
     // Collapse multiple spaces/newlines caused by removals
     .replace(/>\s+</g, '><')
     .trim();

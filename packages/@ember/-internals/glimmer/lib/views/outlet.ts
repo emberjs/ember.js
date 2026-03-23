@@ -125,6 +125,15 @@ export default class OutletView {
         }
       }
     }
+
+    // In GXT mode, trigger re-render of the root outlet content
+    // The root render function is stored on globalThis by root.ts
+    if ((globalThis as any).__GXT_MODE__) {
+      const rootRenderFn = (globalThis as any).__gxtRootOutletRerender;
+      if (typeof rootRenderFn === 'function') {
+        rootRenderFn(this.ref);
+      }
+    }
   }
 
   destroy(): void {

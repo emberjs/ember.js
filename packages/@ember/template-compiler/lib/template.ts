@@ -237,6 +237,23 @@ export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
+  // In GXT mode, use the GXT runtime compiler instead of Glimmer compiler
+  if ((globalThis as any).__GXT_MODE__) {
+    const gxtCompile = (globalThis as any).__gxtCompileTemplate;
+    if (gxtCompile) {
+      const gxtOptions = { strictMode: true, ...providedOptions };
+      const gxtNormalizedOptions = compileOptions(gxtOptions);
+      const gxtComponent = gxtNormalizedOptions.component ?? templateOnly();
+
+      const gxtTemplate = gxtCompile(templateString, {
+        moduleName: gxtOptions.moduleName,
+      });
+
+      setComponentTemplate(gxtTemplate, gxtComponent);
+      return gxtComponent;
+    }
+  }
+
   const options = { strictMode: true, ...providedOptions };
 
   const evaluate = buildEvaluator(options);

@@ -2,8 +2,9 @@ function normalizeInnerHTML(actualHTML: string) {
   // Strip GXT rendering artifacts
   if ((globalThis as any).__GXT_MODE__) {
     actualHTML = actualHTML
-      .replace(/<!--(?:placeholder|if-entry|each-entry|list-target)[^>]*-->/g, '')
-      .replace(/\s*data-node-id="[^"]*"/g, '');
+      .replace(/<!--(?:placeholder|if-entry|each-entry|list-target|list item|list bottom marker|curried-start|curried-end)[^>]*-->/g, '')
+      .replace(/\s*data-node-id="[^"]*"/g, '')
+      .replace(/<\/?ember-outlet[^>]*>/g, '');
   }
 
   return actualHTML;

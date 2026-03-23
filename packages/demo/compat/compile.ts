@@ -201,10 +201,16 @@ installEmberWrappers();
 (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
   const newValue = (obj as any)[keyName];
   try {
-    const c = cellFor(obj, keyName, /* skipDefine */ true);
+    // Use skipDefine=false to install getter/setter on the object.
+    // This ensures GXT formulas tracking this property will detect changes.
+    const c = cellFor(obj, keyName, /* skipDefine */ false);
     if (c) c.update(newValue);
   } catch {
-    // cellFor may not apply to all objects
+    // cellFor may not apply to all objects - try with skipDefine=true as fallback
+    try {
+      const c = cellFor(obj, keyName, /* skipDefine */ true);
+      if (c) c.update(newValue);
+    } catch { /* ignore */ }
   }
   // Also update cells on the prototype chain.
   // cellFor creates cells keyed by object identity. If a cell-backed getter
@@ -325,6 +331,17 @@ installEmberWrappers();
         }
       }
     } catch { /* ignore */ }
+    // After GXT sync, check if we need to re-render outlet templates.
+    // GXT formulas may not track set() changes on plain objects nested
+    // in route contexts (e.g., @model.color where model is a POJO).
+    // Fall back to full outlet re-render in that case.
+    try {
+      const outletRerender = (globalThis as any).__gxtRootOutletRerender;
+      const topRef = (globalThis as any).__gxtTopOutletRef;
+      if (outletRerender && topRef) {
+        outletRerender(topRef);
+      }
+    } catch { /* ignore outlet re-render errors */ }
     finally { (globalThis as any).__gxtSyncing = false; }
   }
 };
@@ -3248,3 +3265,6 @@ export default function templateCompilation() {
     __emberTemplateCompiler,
   };
 }
+
+// Register the GXT compiler globally for @ember/template-compiler to use
+(globalThis as any).__gxtCompileTemplate = compileTemplate;
