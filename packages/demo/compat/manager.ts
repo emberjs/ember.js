@@ -1167,6 +1167,62 @@ function buildWrapperElement(
 // =============================================================================
 
 /**
+ * Wrap an Ember/plain object in a tracking proxy so that property reads
+ * during GXT formula evaluation create and consume cells.  This allows
+ * paths like `{{this.name.last}}` to be fully reactive — when
+ * `service.set('last', v)` fires `__gxtTriggerReRender(service, 'last')`,
+ * the cell that the formula already consumed will be dirtied and the
+ * formula will re-evaluate.
+ *
+ * The cache ensures each source object gets at most one wrapper so
+ * identity comparisons stay stable.
+ */
+const _nestedTrackingProxies = new WeakMap<object, any>();
+
+function wrapNestedObjectForTracking(obj: any): any {
+  if (obj == null || typeof obj !== 'object') return obj;
+  // Don't wrap DOM nodes, arrays, Dates, RegExps, Errors, promises, proxies we already created, etc.
+  if (obj instanceof Node || obj instanceof Date || obj instanceof RegExp ||
+      obj instanceof Error || obj instanceof Promise || Array.isArray(obj)) {
+    return obj;
+  }
+  // Don't wrap GXT internals or plain Objects without Ember identity
+  // We only want to wrap Ember objects (services, models, controllers, etc.)
+  // which typically have a constructor name other than "Object" or have _super / isDestroyed
+  const ctor = obj.constructor;
+  if (ctor === Object || ctor === undefined) return obj;
+  // Don't wrap if already a Proxy created by us
+  if (_nestedTrackingProxies.has(obj)) return _nestedTrackingProxies.get(obj);
+
+  const _cellFor = (globalThis as any).__gxtCellFor;
+  if (!_cellFor) return obj;
+
+  const proxy = new Proxy(obj, {
+    get(target, prop, _receiver) {
+      if (typeof prop !== 'string') return Reflect.get(target, prop, target);
+      // Skip internal/framework properties
+      if (prop.startsWith('_') || prop.startsWith('$') || prop === 'constructor' ||
+          prop === 'isDestroyed' || prop === 'isDestroying' || prop === 'toString' ||
+          prop === 'toJSON' || prop === 'valueOf' || prop === 'init' || prop === 'destroy') {
+        return Reflect.get(target, prop, target);
+      }
+      const value = Reflect.get(target, prop, target);
+      // Don't create cells for methods
+      if (typeof value === 'function') return value;
+      // Create/read cell so GXT formula tracks this dependency
+      try {
+        const cell = _cellFor(target, prop, /* skipDefine */ false);
+        if (cell) return cell.value;
+      } catch { /* ignore */ }
+      return value;
+    },
+  });
+
+  _nestedTrackingProxies.set(obj, proxy);
+  return proxy;
+}
+
+/**
  * Create a render context that properly inherits from the component instance.
  *
  * Uses Object.create(instance) so that:
@@ -1454,7 +1510,12 @@ function createRenderContext(
       }
 
       if (hasGetter) {
-        return Reflect.get(target, prop, target);
+        const val = Reflect.get(target, prop, target);
+        // Wrap nested Ember objects so sub-property reads are tracked
+        if (val !== null && typeof val === 'object' && !(val instanceof Node)) {
+          return wrapNestedObjectForTracking(val);
+        }
+        return val;
       }
 
       // Property has no getter — create a cell lazily for GXT tracking
@@ -1472,11 +1533,20 @@ function createRenderContext(
         try {
           const cell = _cellFor(target, prop, /* skipDefine */ false);
           if (cell) {
-            return cell.value;
+            const cellVal = cell.value;
+            // Wrap nested Ember objects so sub-property reads are tracked
+            if (cellVal !== null && typeof cellVal === 'object' && !(cellVal instanceof Node)) {
+              return wrapNestedObjectForTracking(cellVal);
+            }
+            return cellVal;
           }
         } catch { /* ignore */ }
       }
 
+      // Wrap nested Ember objects for tracking even without cells
+      if (value !== null && typeof value === 'object' && !(value instanceof Node)) {
+        return wrapNestedObjectForTracking(value);
+      }
       return value;
     },
 

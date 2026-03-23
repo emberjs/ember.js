@@ -28,7 +28,29 @@ import {
   syncDom as gxtSyncDom,
   cellFor,
   effect as gxtEffect,
+  // Symbols needed by renderer.ts / root.ts exposed via globalThis
+  RENDERING_CONTEXT as _GXT_RENDERING_CONTEXT,
+  HTMLBrowserDOMApi as _GXT_HTMLBrowserDOMApi,
+  provideContext as _gxtProvideContext,
+  getParentContext as _gxtGetParentContext,
+  destroyElementSync as _gxtDestroyElementSync,
+  renderComponent as _gxtRenderComponent,
+  Component as _GXT_Component,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+
+// Expose GXT symbols on globalThis so renderer.ts and root.ts can access them
+// without importing from @lifeart/gxt (whose pre-bundled version drops these exports)
+(globalThis as any).__gxtSymbols = {
+  RENDERING_CONTEXT: _GXT_RENDERING_CONTEXT,
+  HTMLBrowserDOMApi: _GXT_HTMLBrowserDOMApi,
+  provideContext: _gxtProvideContext,
+  getParentContext: _gxtGetParentContext,
+  destroyElementSync: _gxtDestroyElementSync,
+  renderComponent: _gxtRenderComponent,
+  Component: _GXT_Component,
+  createRoot: gxtCreateRoot,
+  setParentContext: gxtSetParentContext,
+};
 
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
 import { installEmberWrappers } from './ember-gxt-wrappers';
