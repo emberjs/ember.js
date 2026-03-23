@@ -9,43 +9,53 @@ class KeywordFn extends RenderTest {
   static suiteName = 'keyword helper: fn';
 
   @test
-  'it works with explicit scope'() {
-    let greeting = (name: string) => `Hello, ${name}!`;
+  'it works with explicit scope'(assert: Assert) {
+    let handleClick = (msg: string) => {
+      assert.step(msg);
+    };
 
-    const compiled = template('{{fn greeting "World"}}', {
+    const compiled = template('<button {{on "click" (fn handleClick "hello")}}>Click</button>', {
       strictMode: true,
       scope: () => ({
-        greeting,
+        handleClick,
         fn,
       }),
     });
 
     this.renderComponent(compiled);
-    this.assertHTML('Hello, World!');
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    assert.verifySteps(['hello']);
   }
 
   @test
-  'it works as a keyword (no import needed)'() {
-    let greeting = (name: string) => `Hello, ${name}!`;
+  'it works as a keyword (no import needed)'(assert: Assert) {
+    let handleClick = (msg: string) => {
+      assert.step(msg);
+    };
 
-    const compiled = template('{{fn greeting "World"}}', {
+    const compiled = template('<button {{on "click" (fn handleClick "hello")}}>Click</button>', {
       strictMode: true,
       scope: () => ({
-        greeting,
+        handleClick,
       }),
     });
 
     this.renderComponent(compiled);
-    this.assertHTML('Hello, World!');
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    assert.verifySteps(['hello']);
   }
 
   @test
-  'it works with the runtime compiler'() {
-    let greeting = (name: string) => `Hello, ${name}!`;
+  'it works with the runtime compiler'(assert: Assert) {
+    let handleClick = (msg: string) => {
+      assert.step(msg);
+    };
 
-    hide(greeting);
+    hide(handleClick);
 
-    const compiled = template('{{fn greeting "World"}}', {
+    const compiled = template('<button {{on "click" (fn handleClick "hello")}}>Click</button>', {
       strictMode: true,
       eval() {
         return eval(arguments[0]);
@@ -53,7 +63,9 @@ class KeywordFn extends RenderTest {
     });
 
     this.renderComponent(compiled);
-    this.assertHTML('Hello, World!');
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    assert.verifySteps(['hello']);
   }
 
   @test
