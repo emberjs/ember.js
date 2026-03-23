@@ -688,16 +688,6 @@ export interface PrecompileOptions extends PreprocessOptions {
 
 export interface PrecompileOptionsWithLexicalScope extends PrecompileOptions {
   lexicalScope: (variable: string) => boolean;
-
-  /**
-   * If `emit.debugSymbols` is set to `true`, the name of lexical local variables
-   * will be included in the wire format.
-   */
-  emit?:
-    | {
-        debugSymbols?: boolean;
-      }
-    | undefined;
 }
 
 export interface PreprocessOptions {

@@ -83,7 +83,7 @@ class DebugRenderTreeTest extends RenderTest {
     const HelloWorld = defComponent('{{@arg}}');
     const Root = defComponent(
       `<HelloWorld @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state }, emit: { moduleName: 'root.hbs' } }
+      { scope: { HelloWorld, state } }
     );
 
     this.renderComponent(Root);
@@ -94,7 +94,7 @@ class DebugRenderTreeTest extends RenderTest {
         name: '{ROOT}',
         args: { positional: [], named: {} },
         instance: null,
-        template: 'root.hbs',
+        template: '(unknown template module)',
         bounds: this.elementBounds(this.delegate.getInitialElement()),
         children: [
           {
@@ -111,11 +111,10 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
-  @test 'strict-mode components without debug symbols preserve names from scope'() {
+  @test 'strict-mode components preserve names from scope'() {
     const HelloWorld = defComponent('{{@arg}}');
     const Root = defComponent(`<HelloWorld @arg="first"/>`, {
       scope: { HelloWorld },
-      emit: { moduleName: 'root.hbs', debugSymbols: false },
     });
 
     this.renderComponent(Root);
@@ -126,7 +125,7 @@ class DebugRenderTreeTest extends RenderTest {
         name: '{ROOT}',
         args: { positional: [], named: {} },
         instance: null,
-        template: 'root.hbs',
+        template: '(unknown template module)',
         bounds: this.elementBounds(this.delegate.getInitialElement()),
         children: [
           {
@@ -152,7 +151,6 @@ class DebugRenderTreeTest extends RenderTest {
 
     const RootDef = defComponent(`<this.HelloWorld @arg="first"/>`, {
       component: Root,
-      emit: { moduleName: 'root.hbs' },
     });
 
     this.renderComponent(RootDef);
@@ -173,9 +171,7 @@ class DebugRenderTreeTest extends RenderTest {
 
   @test({ skip: !DEBUG }) 'dynamic component via <@argComponent>'() {
     const HelloWorld = defComponent('{{@arg}}');
-    const Root = defComponent(`<@Greeting @arg="first"/>`, {
-      emit: { moduleName: 'root.hbs' },
-    });
+    const Root = defComponent(`<@Greeting @arg="first"/>`);
 
     this.renderComponent(Root, { Greeting: HelloWorld });
 
@@ -201,7 +197,7 @@ class DebugRenderTreeTest extends RenderTest {
     const noop = defineSimpleModifier(noopFn);
     const Root = defComponent(
       `<HelloWorld {{noop}} @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
-      { scope: { HelloWorld, state, noop }, emit: { moduleName: 'root.hbs' } }
+      { scope: { HelloWorld, state, noop } }
     );
 
     this.renderComponent(Root);
@@ -214,7 +210,7 @@ class DebugRenderTreeTest extends RenderTest {
         name: '{ROOT}',
         args: { positional: [], named: {} },
         instance: null,
-        template: 'root.hbs',
+        template: '(unknown template module)',
         bounds: this.elementBounds(element),
         children: [
           {

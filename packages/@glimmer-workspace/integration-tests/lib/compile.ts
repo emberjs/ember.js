@@ -29,10 +29,6 @@ export function createTemplate(
     reifiedScope[key] = scopeValues[key];
   }
 
-  if ('emit' in options && options.emit?.debugSymbols) {
-    block.push(usedLocals);
-  }
-
   let templateBlock: SerializedTemplateWithLazyBlock = {
     id: String(templateId++),
     block: JSON.stringify(block),

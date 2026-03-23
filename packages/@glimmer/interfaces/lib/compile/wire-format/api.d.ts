@@ -373,7 +373,6 @@ export type SerializedTemplateBlock = [
   statements: Statements.Statement[],
   locals: string[],
   upvars: string[],
-  lexicalSymbols?: string[],
 ];
 
 /**
