@@ -8,7 +8,7 @@ import { getViewElement, getViewId, setViewElement } from '@ember/-internals/vie
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
 (globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
 
-import { pushParentView, popParentView } from '@glimmer/manager';
+import { pushParentView, popParentView, flushAfterInsertQueue } from '@glimmer/manager';
 // @ts-ignore
 import {
   destroyElementSync as _destroyElementSync,
@@ -508,6 +508,10 @@ class ClassicRootState {
           console.warn('GXT template detected but cannot render:', template);
         }
 
+        // Flush queued didInsertElement / didRender hooks now that all DOM
+        // has been inserted into the live document by GXT.
+        flushAfterInsertQueue();
+
         // Store references for re-rendering
         const gxtTemplate = template;
         const gxtRoot = root;
@@ -939,6 +943,13 @@ class RendererState {
   }
 
   revalidate(renderer: BaseRenderer): void {
+    // In GXT mode, isValid() returns true to prevent infinite revalidation.
+    // But explicit .rerender() calls set __gxtForceRerender on the component
+    // and need a sync pass to flush the hooks.
+    if ((globalThis as any).__GXT_MODE__) {
+      (globalThis as any).__gxtPendingSync = true;
+      return;
+    }
     if (this.isValid()) {
       return;
     }

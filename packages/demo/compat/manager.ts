@@ -13,7 +13,7 @@
 import { assert } from '@ember/debug';
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
-import { setViewElement, setElementView } from '@ember/-internals/views/lib/system/utils';
+import { setViewElement, setElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 export { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 
@@ -163,12 +163,12 @@ function getCurrentParentView(): any | null {
 function addChildView(parent: any, child: any): void {
   if (!parent || !child) return;
 
-  if (!parent.childViews) {
-    parent.childViews = [];
-  }
-
-  if (!parent.childViews.includes(child)) {
-    parent.childViews.push(child);
+  // Use Ember's official addChildView which tracks via CHILD_VIEW_IDS WeakMap.
+  // This ensures component.childViews getter returns the correct children.
+  try {
+    _addChildView(parent, child);
+  } catch {
+    // Fallback: if official addChildView fails, at least set parentView
   }
 
   child.parentView = parent;
@@ -410,6 +410,24 @@ function createComponentInstance(
     addChildView(parentView, instance);
   }
 
+  // Register in the view registry so collectChildViews() can find this component.
+  // This is normally done by the renderer's register() method.
+  // Only do this in interactive mode (non-interactive mode expects no registered views).
+  if (isInteractiveModeChecked()) {
+    try {
+      const gOwner = (globalThis as any).owner;
+      if (gOwner) {
+        const viewRegistry = gOwner.lookup?.('-view-registry:main');
+        if (viewRegistry) {
+          const viewId = getViewId(instance);
+          if (viewId && !viewRegistry[viewId]) {
+            viewRegistry[viewId] = instance;
+          }
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
   // Trigger initial didReceiveAttrs
   triggerLifecycleHook(instance, 'didReceiveAttrs');
 
@@ -544,6 +562,35 @@ function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?
  */
 // Set of lifecycle hooks that should ONLY fire in interactive mode.
 // In non-interactive (SSR) mode, these are suppressed per Ember's curly component manager.
+// =============================================================================
+// After-Insert Hook Queue
+// =============================================================================
+// In GXT, component wrappers are created inside renderClassicComponent and
+// returned to GXT which then appends them to the parent.  This means the
+// element is NOT in the live DOM when renderClassicComponent finishes.
+// didInsertElement / didRender (and the inDOM transition) must therefore be
+// deferred until the outermost render has completed and GXT has inserted
+// everything into the document.
+//
+// We collect callbacks in _afterInsertQueue during rendering and expose
+// flushAfterInsertQueue() so the renderer (ClassicRootState.render) can
+// drain the queue after template.render() has returned.
+// The queue is ordered children-first (natural call-stack order) which
+// matches Ember's expected bottom-up firing of these hooks.
+const _afterInsertQueue: Array<() => void> = [];
+
+/**
+ * Flush all queued didInsertElement / didRender callbacks.
+ * Called from the renderer after the GXT template.render() call has
+ * synchronously appended all DOM into the live document.
+ */
+export function flushAfterInsertQueue(): void {
+  while (_afterInsertQueue.length > 0) {
+    const cb = _afterInsertQueue.shift()!;
+    try { cb(); } catch (e) { /* lifecycle hooks must not break rendering */ }
+  }
+}
+
 const INTERACTIVE_ONLY_HOOKS = new Set([
   'willRender',
   'willInsertElement',
@@ -815,11 +862,47 @@ interface TrackedArgEntry {
 }
 const trackedArgCells = new Set<TrackedArgEntry>();
 
+// Set of component instances that had .rerender() explicitly called.
+// When non-empty, __gxtSyncAllWrappers will fire update hooks for the
+// rerendered component(s) and all their ancestors (matching Ember's
+// tree-revalidation behavior where parent views also get update hooks).
+const _forcedRerenderInstances = new Set<any>();
+
+/**
+ * Mark a component as having been explicitly rerendered via .rerender().
+ * This triggers update lifecycle hooks for the instance and its ancestor
+ * chain on the next sync pass.
+ */
+(globalThis as any).__gxtForceRerender = function(instance: any) {
+  _forcedRerenderInstances.add(instance);
+};
+
+/**
+ * Check if an instance should receive forced-rerender hooks.
+ * An instance qualifies if it IS one of the forced instances, or is an
+ * ancestor (via parentView) of one.
+ */
+function _shouldForceRerender(instance: any): boolean {
+  if (_forcedRerenderInstances.size === 0) return false;
+  // Check if any forced instance has this instance in its ancestor chain
+  for (const forced of _forcedRerenderInstances) {
+    if (forced === null) return true; // null means force all (from renderer revalidate)
+    let current = forced;
+    while (current) {
+      if (current === instance) return true;
+      current = current.parentView;
+    }
+  }
+  return false;
+}
+
 // After gxtSyncDom(), refresh arg cells and re-sync wrapper elements.
 // Returns instances that had changes (for post-render lifecycle hooks).
 const _updatedInstances: any[] = [];
 (globalThis as any).__gxtSyncAllWrappers = function() {
   _updatedInstances.length = 0;
+
+  const hasForced = _forcedRerenderInstances.size > 0;
 
   // Phase 1: Update arg cells and trigger pre-render lifecycle hooks.
   for (const entry of trackedArgCells) {
@@ -837,19 +920,25 @@ const _updatedInstances: any[] = [];
         }
       } catch { /* getter may throw */ }
     }
+    // Check if this instance is in the forced-rerender ancestor chain
+    const forceThis = hasForced && entry.instance && _shouldForceRerender(entry.instance);
     // Pre-render lifecycle hooks (before DOM sync)
     // Order matches Ember's curly component manager: didUpdateAttrs, didReceiveAttrs, then willUpdate, willRender
     // Skip if this instance already had update hooks fired this pass (from updateInstanceWithNewArgs
     // or from a previous trackedArgCells entry for the same instance)
-    if (hasChanges && entry.instance && !wasInstanceUpdatedThisPass(entry.instance)) {
-      triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
-      triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
+    if ((hasChanges || forceThis) && entry.instance && !wasInstanceUpdatedThisPass(entry.instance)) {
+      if (hasChanges) {
+        triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
+        triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
+      }
       triggerLifecycleHook(entry.instance, 'willUpdate');
       triggerLifecycleHook(entry.instance, 'willRender');
       markInstanceUpdated(entry.instance);
       _updatedInstances.push(entry.instance);
     }
   }
+  // Clear forced set after processing
+  _forcedRerenderInstances.clear();
 
   // Phase 2: Sync wrapper element attributes/classes
   for (const entry of trackedWrapperInstances) {
@@ -863,41 +952,83 @@ const _updatedInstances: any[] = [];
 };
 
 // Post-render lifecycle hooks — called after the second gxtSyncDom() completes.
+// Fire in REVERSE order (bottom-up) to match Ember's "async hooks" ordering:
+// deepest children first, then their parents.
 (globalThis as any).__gxtPostRenderHooks = function() {
-  for (const instance of _updatedInstances) {
+  for (let i = _updatedInstances.length - 1; i >= 0; i--) {
+    const instance = _updatedInstances[i];
     triggerLifecycleHook(instance, 'didUpdate');
     triggerLifecycleHook(instance, 'didRender');
   }
   _updatedInstances.length = 0;
 };
 
-// Cleanup function: destroy all tracked component instances.
-// Called during test teardown to ensure willDestroy hooks fire.
+// Cleanup function: destroy all tracked component instances with proper lifecycle.
+// Called during test teardown (beforeEach -> afterEach) to fire the full
+// interactive destroy sequence:
+//   Phase 1: willDestroyElement + willClearRender (top-down, element present)
+//   Phase 2: didDestroyElement (top-down, element cleared, state=destroying)
+//   Phase 3: willDestroy (via instance.destroy())
 (globalThis as any).__gxtDestroyTrackedInstances = function() {
-  const destroyed = new Set<any>();
-  // Collect all instances from arg cells and wrapper tracking
+  const seen = new Set<any>();
+  const instances: any[] = [];
+  // Collect unique instances from all tracking sets
   for (const entry of trackedArgCells) {
-    if (entry.instance && !destroyed.has(entry.instance)) {
-      destroyed.add(entry.instance);
+    if (entry.instance && !seen.has(entry.instance)) {
+      seen.add(entry.instance);
+      instances.push(entry.instance);
     }
   }
   for (const entry of trackedWrapperInstances) {
-    if (entry.instance && !destroyed.has(entry.instance)) {
-      destroyed.add(entry.instance);
+    if (entry.instance && !seen.has(entry.instance)) {
+      seen.add(entry.instance);
+      instances.push(entry.instance);
     }
   }
-  // Destroy each instance
-  for (const instance of destroyed) {
+
+  // Phase 1: willDestroyElement + willClearRender (top-down, element still present)
+  for (const instance of instances) {
+    try {
+      triggerLifecycleHook(instance, 'willDestroyElement');
+      triggerLifecycleHook(instance, 'willClearRender');
+    } catch { /* ignore */ }
+  }
+
+  // Phase 2: transition to destroying, clear element, unregister from view registry,
+  // then fire didDestroyElement
+  const gOwner = (globalThis as any).owner;
+  const viewRegistry = gOwner?.lookup?.('-view-registry:main');
+  for (const instance of instances) {
+    try {
+      if (instance._transitionTo) instance._transitionTo('destroying');
+    } catch { /* ignore */ }
+    try { setViewElement(instance, null); } catch { /* ignore */ }
+    // Unregister from view registry
+    try {
+      if (viewRegistry) {
+        const viewId = getViewId(instance);
+        if (viewId) delete viewRegistry[viewId];
+      }
+    } catch { /* ignore */ }
+    try {
+      triggerLifecycleHook(instance, 'didDestroyElement');
+    } catch { /* ignore */ }
+  }
+
+  // Phase 3: destroy (fires willDestroy)
+  for (const instance of instances) {
     try {
       if (typeof instance.destroy === 'function' && !instance.isDestroyed && !instance.isDestroying) {
         instance.destroy();
       }
     } catch { /* ignore errors during cleanup */ }
   }
+
   // Clear the tracking sets
   trackedArgCells.clear();
   trackedWrapperInstances.clear();
   _updatedInstances.length = 0;
+  _afterInsertQueue.length = 0;
 };
 
 (globalThis as any).__gxtSyncWrapper = function(obj: any, keyName: string) {
@@ -2157,13 +2288,19 @@ function renderClassicComponent(
   // Render template into wrapper
   renderTemplateWithParentView(template, renderContext, wrapper, instance);
 
-  // Lifecycle: didInsertElement, didRender (sync to ensure test assertions work)
-  // Only transition to inDOM in interactive mode
-  if (instance?._transitionTo && isInteractiveModeChecked()) {
-    try { instance._transitionTo('inDOM'); } catch {}
+  // Queue didInsertElement / didRender to fire after the element is in the DOM.
+  // The queue is flushed by flushAfterInsertQueue() which is called from the
+  // renderer after GXT has appended all nodes to the live document.
+  if (instance) {
+    const inst = instance;
+    _afterInsertQueue.push(() => {
+      if (inst._transitionTo && isInteractiveModeChecked()) {
+        try { inst._transitionTo('inDOM'); } catch {}
+      }
+      triggerLifecycleHook(inst, 'didInsertElement');
+      triggerLifecycleHook(inst, 'didRender');
+    });
   }
-  triggerLifecycleHook(instance, 'didInsertElement');
-  triggerLifecycleHook(instance, 'didRender');
 
   // Return GXT-compatible result
   return createGxtResult(wrapper);

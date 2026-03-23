@@ -1030,6 +1030,12 @@ class Component<S = unknown>
   // Changed to `rerender` on init
   _rerender() {
     dirtyTag(this[DIRTY_TAG]);
+    // In GXT mode, mark this specific instance for forced rerender so
+    // the update lifecycle hooks fire for it and its ancestors.
+    const forceRerender = (globalThis as any).__gxtForceRerender;
+    if (typeof forceRerender === 'function') {
+      forceRerender(this);
+    }
     this._superRerender();
   }
 
