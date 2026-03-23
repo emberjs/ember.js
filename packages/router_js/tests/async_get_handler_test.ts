@@ -20,12 +20,7 @@ let routes: Dict<Route>;
 let router: TestRouter;
 QUnit.module('Async Get Handler', {
   beforeEach: function () {
-    QUnit.config.testTimeout = 60000;
     routes = {};
-  },
-
-  afterEach: function () {
-    QUnit.config.testTimeout = 1000;
   },
 });
 
