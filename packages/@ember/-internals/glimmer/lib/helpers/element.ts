@@ -224,10 +224,7 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
   return createComputeRef(
     () => {
       if (DEBUG) {
-        assert(
-          'The `element` helper takes a single positional argument',
-          positional.length === 1
-        );
+        assert('The `element` helper takes a single positional argument', positional.length === 1);
         assert(
           'The `element` helper does not take any named arguments',
           Object.keys(named).length === 0

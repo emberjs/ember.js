@@ -1,11 +1,6 @@
 import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import {
-  RenderingTestCase,
-  defineComponent,
-  moduleFor,
-  runTask,
-} from 'internal-test-helpers';
+import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 import { element as elementHelper } from '@ember/helper';
 
 moduleFor(
@@ -25,16 +20,12 @@ moduleFor(
     }
 
     '@test it does not render any tags when passed an empty string'() {
-      this.render(
-        `{{#let (element "") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`
-      );
+      this.render(`{{#let (element "") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`);
       this.assertText('hello world!');
     }
 
     '@test it does not render anything when passed null'() {
-      this.render(
-        `{{#let (element null) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`
-      );
+      this.render(`{{#let (element null) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`);
       this.assertHTML('<!---->');
     }
 
@@ -51,9 +42,7 @@ moduleFor(
         { didClick: () => {} }
       );
 
-      this.assertHTML(
-        '<button type="button" id="action">hello world!</button>'
-      );
+      this.assertHTML('<button type="button" id="action">hello world!</button>');
     }
 
     '@test it can be rendered multiple times'() {
@@ -68,10 +57,9 @@ moduleFor(
     '@test it renders when the tag name changes'() {
       // Note: use htmlTag instead of tagName, because RenderingTestCase
       // overrides tagName on the root component context
-      this.render(
-        `{{#let (element this.htmlTag) as |Tag|}}<Tag id="content">hello</Tag>{{/let}}`,
-        { htmlTag: 'h1' }
-      );
+      this.render(`{{#let (element this.htmlTag) as |Tag|}}<Tag id="content">hello</Tag>{{/let}}`, {
+        htmlTag: 'h1',
+      });
       this.assertHTML('<h1 id="content">hello</h1>');
 
       runTask(() => set(this.context, 'htmlTag', 'h2'));
@@ -95,10 +83,9 @@ moduleFor(
 
       this.registerComponent('inner', { ComponentClass: Inner });
 
-      this.render(
-        `<Inner @tag={{element this.htmlTag}} class="extra">Test</Inner>`,
-        { htmlTag: 'p' }
-      );
+      this.render(`<Inner @tag={{element this.htmlTag}} class="extra">Test</Inner>`, {
+        htmlTag: 'p',
+      });
       this.assertHTML('<p id="content" class="extra">Test</p>');
 
       runTask(() => set(this.context, 'htmlTag', 'div'));
@@ -117,14 +104,11 @@ moduleFor(
         return;
       }
 
-      this.assert.throws(
-        () => {
-          this.render(
-            `<div>{{#let (element) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-          );
-        },
-        /The `element` helper takes a single positional argument/
-      );
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The `element` helper takes a single positional argument/);
     }
 
     ['@test it requires no more than one argument']() {
@@ -133,14 +117,11 @@ moduleFor(
         return;
       }
 
-      this.assert.throws(
-        () => {
-          this.render(
-            `<div>{{#let (element "h1" "h2") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-          );
-        },
-        /The `element` helper takes a single positional argument/
-      );
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element "h1" "h2") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The `element` helper takes a single positional argument/);
     }
 
     ['@test it does not take any named arguments']() {
@@ -149,14 +130,11 @@ moduleFor(
         return;
       }
 
-      this.assert.throws(
-        () => {
-          this.render(
-            `<div>{{#let (element "h1" id="content") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-          );
-        },
-        /The `element` helper does not take any named arguments/
-      );
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element "h1" id="content") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The `element` helper does not take any named arguments/);
     }
 
     ['@test it throws when passed a number']() {
@@ -165,14 +143,11 @@ moduleFor(
         return;
       }
 
-      this.assert.throws(
-        () => {
-          this.render(
-            `<div>{{#let (element 123) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-          );
-        },
-        /The argument passed to the `element` helper must be a string \(you passed `123`\)/
-      );
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element 123) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The argument passed to the `element` helper must be a string \(you passed `123`\)/);
     }
 
     ['@test it throws when passed a boolean']() {
@@ -181,14 +156,11 @@ moduleFor(
         return;
       }
 
-      this.assert.throws(
-        () => {
-          this.render(
-            `<div>{{#let (element false) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-          );
-        },
-        /The argument passed to the `element` helper must be a string \(you passed `false`\)/
-      );
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element false) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The argument passed to the `element` helper must be a string \(you passed `false`\)/);
     }
 
     ['@test it throws when passed an object']() {
@@ -197,14 +169,11 @@ moduleFor(
         return;
       }
 
-      this.assert.throws(
-        () => {
-          this.render(
-            `<div>{{#let (element (hash)) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-          );
-        },
-        /The argument passed to the `element` helper must be a string/
-      );
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element (hash)) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The argument passed to the `element` helper must be a string/);
     }
   }
 );
