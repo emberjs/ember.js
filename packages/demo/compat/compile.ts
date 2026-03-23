@@ -245,6 +245,9 @@ installEmberWrappers();
   // Immediate sync to process dirtied cells while relatedTags are intact
   if (!(globalThis as any).__gxtSyncing) {
     (globalThis as any).__gxtSyncing = true;
+    // Start a new render pass to prevent double-firing of lifecycle hooks
+    const newPass = (globalThis as any).__gxtNewRenderPass;
+    if (typeof newPass === 'function') newPass();
     try {
       gxtSyncDom();
     } catch { /* ignore first sync errors */ }
@@ -303,6 +306,9 @@ installEmberWrappers();
 (globalThis as any).__gxtSyncDomNow = function() {
   if ((globalThis as any).__gxtPendingSync) {
     (globalThis as any).__gxtPendingSync = false;
+    // Start a new render pass to prevent double-firing of lifecycle hooks
+    const newPass = (globalThis as any).__gxtNewRenderPass;
+    if (typeof newPass === 'function') newPass();
     try { gxtSyncDom(); } catch { /* ignore */ }
     // Update arg cells and wrapper elements, then run second sync
     try {
@@ -355,6 +361,11 @@ setInterval(() => {
 
 // Cleanup function to reset GXT state between tests
 (globalThis as any).__gxtCleanupActiveComponents = function() {
+  // Destroy all tracked component instances first (fires willDestroy hooks)
+  const destroyTracked = (globalThis as any).__gxtDestroyTrackedInstances;
+  if (typeof destroyTracked === 'function') {
+    destroyTracked();
+  }
   // Reset block params stack
   blockParamsStack.length = 0;
   // Reset current slot params

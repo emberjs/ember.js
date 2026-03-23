@@ -11,6 +11,9 @@
  */
 
 import { assert } from '@ember/debug';
+// Import directly from utils to avoid pulling in the full @ember/-internals/views
+// barrel export (which triggers circular dependency issues with CoreView/Mixin)
+import { setViewElement, setElementView } from '@ember/-internals/views/lib/system/utils';
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 export { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 
@@ -416,6 +419,24 @@ function createComponentInstance(
 /**
  * Update a cached instance when arg values have changed.
  */
+// Track which instances have already had update hooks fired this render pass
+// to prevent double-firing from both updateInstanceWithNewArgs and __gxtSyncAllWrappers
+let _updateHookPassId = 0;
+const _instanceUpdatePassMap = new WeakMap<any, number>();
+
+function markInstanceUpdated(instance: any): void {
+  _instanceUpdatePassMap.set(instance, _updateHookPassId);
+}
+
+function wasInstanceUpdatedThisPass(instance: any): boolean {
+  return _instanceUpdatePassMap.get(instance) === _updateHookPassId;
+}
+
+// Increment the pass ID at the start of each render cycle
+(globalThis as any).__gxtNewRenderPass = function() {
+  _updateHookPassId++;
+};
+
 function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   if (!instance || !args) return false;
 
@@ -439,10 +460,7 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   }
 
   if (hasChanges) {
-    // willUpdate is called before the component updates
-    triggerLifecycleHook(instance, 'willUpdate');
-
-    // Second pass: apply the changes
+    // Second pass: apply the changes (set properties first, then fire hooks)
     for (const key of keys) {
       const { resolved: newValue } = getArgValue(args, key);
       const oldValue = lastArgValues[key];
@@ -456,10 +474,16 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
       }
     }
 
-    // didUpdateAttrs is called when attrs change (update only, not initial render)
-    triggerLifecycleHook(instance, 'didUpdateAttrs');
-    // didReceiveAttrs is called both on initial render and updates
-    triggerLifecycleHook(instance, 'didReceiveAttrs');
+    // Hook order matches Ember's curly component manager:
+    // didUpdateAttrs, didReceiveAttrs (always), then willUpdate, willRender (interactive only)
+    // Only fire once per render pass to prevent double-firing when the same instance
+    // is visited multiple times (e.g., parent visited once per child invocation)
+    if (!wasInstanceUpdatedThisPass(instance)) {
+      triggerLifecycleHook(instance, 'didUpdateAttrs');
+      triggerLifecycleHook(instance, 'didReceiveAttrs');
+      // Mark this instance as having had update hooks fired this pass
+      markInstanceUpdated(instance);
+    }
   }
 
   return hasChanges;
@@ -518,8 +542,61 @@ function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?
  * We use trigger() which follows Ember's pattern - the methods are called
  * via event listeners set up by Ember's component infrastructure.
  */
+// Set of lifecycle hooks that should ONLY fire in interactive mode.
+// In non-interactive (SSR) mode, these are suppressed per Ember's curly component manager.
+const INTERACTIVE_ONLY_HOOKS = new Set([
+  'willRender',
+  'willInsertElement',
+  'didInsertElement',
+  'didRender',
+  'willUpdate',
+  'didUpdate',
+  'willDestroyElement',
+  'willClearRender',
+  'didDestroyElement',
+]);
+
+/**
+ * Check whether we are in interactive mode.
+ * Reads the `-environment:main` boot option from the owner.
+ * Result is cached after the first lookup.
+ */
+let _isInteractiveCached: boolean | undefined;
+function isInteractiveMode(): boolean {
+  if (_isInteractiveCached !== undefined) return _isInteractiveCached;
+  try {
+    const owner = (globalThis as any).owner;
+    if (owner) {
+      const env = owner.lookup?.('-environment:main');
+      if (env && typeof env.isInteractive === 'boolean') {
+        _isInteractiveCached = env.isInteractive;
+        return _isInteractiveCached;
+      }
+    }
+  } catch { /* ignore */ }
+  // Default to true (interactive) if we can't determine
+  return true;
+}
+
+// Reset the cache when the owner changes (e.g. between tests).
+// The global owner is reassigned per-test, so we reset at each lookup if the owner changed.
+let _lastOwnerForInteractive: any = undefined;
+function isInteractiveModeChecked(): boolean {
+  const owner = (globalThis as any).owner;
+  if (owner !== _lastOwnerForInteractive) {
+    _lastOwnerForInteractive = owner;
+    _isInteractiveCached = undefined;
+  }
+  return isInteractiveMode();
+}
+
 function triggerLifecycleHook(instance: any, hookName: string): void {
   if (!instance) return;
+
+  // In non-interactive mode, suppress interactive-only hooks
+  if (INTERACTIVE_ONLY_HOOKS.has(hookName) && !isInteractiveModeChecked()) {
+    return;
+  }
 
   try {
     // Use Ember's event trigger - this is the canonical way to invoke
@@ -761,11 +838,15 @@ const _updatedInstances: any[] = [];
       } catch { /* getter may throw */ }
     }
     // Pre-render lifecycle hooks (before DOM sync)
-    if (hasChanges && entry.instance) {
-      triggerLifecycleHook(entry.instance, 'willUpdate');
+    // Order matches Ember's curly component manager: didUpdateAttrs, didReceiveAttrs, then willUpdate, willRender
+    // Skip if this instance already had update hooks fired this pass (from updateInstanceWithNewArgs
+    // or from a previous trackedArgCells entry for the same instance)
+    if (hasChanges && entry.instance && !wasInstanceUpdatedThisPass(entry.instance)) {
       triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
       triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
+      triggerLifecycleHook(entry.instance, 'willUpdate');
       triggerLifecycleHook(entry.instance, 'willRender');
+      markInstanceUpdated(entry.instance);
       _updatedInstances.push(entry.instance);
     }
   }
@@ -787,6 +868,35 @@ const _updatedInstances: any[] = [];
     triggerLifecycleHook(instance, 'didUpdate');
     triggerLifecycleHook(instance, 'didRender');
   }
+  _updatedInstances.length = 0;
+};
+
+// Cleanup function: destroy all tracked component instances.
+// Called during test teardown to ensure willDestroy hooks fire.
+(globalThis as any).__gxtDestroyTrackedInstances = function() {
+  const destroyed = new Set<any>();
+  // Collect all instances from arg cells and wrapper tracking
+  for (const entry of trackedArgCells) {
+    if (entry.instance && !destroyed.has(entry.instance)) {
+      destroyed.add(entry.instance);
+    }
+  }
+  for (const entry of trackedWrapperInstances) {
+    if (entry.instance && !destroyed.has(entry.instance)) {
+      destroyed.add(entry.instance);
+    }
+  }
+  // Destroy each instance
+  for (const instance of destroyed) {
+    try {
+      if (typeof instance.destroy === 'function' && !instance.isDestroyed && !instance.isDestroying) {
+        instance.destroy();
+      }
+    } catch { /* ignore errors during cleanup */ }
+  }
+  // Clear the tracking sets
+  trackedArgCells.clear();
+  trackedWrapperInstances.clear();
   _updatedInstances.length = 0;
 };
 
@@ -1020,7 +1130,13 @@ function createRenderContext(
     }
   }
   // Register arg cells for reactive updates in __gxtSyncAllWrappers
+  // Remove stale entries for this instance first to prevent double hook firing
   if (Object.keys(argCells).length > 0) {
+    for (const entry of trackedArgCells) {
+      if (entry.instance === instance) {
+        trackedArgCells.delete(entry);
+      }
+    }
     trackedArgCells.add({ cells: argCells, instance });
   }
   // GXT's $_GET_SLOTS reads ctx['args'][$SLOTS_SYMBOL] as a fallback,
@@ -1139,7 +1255,13 @@ function createRenderContext(
   }
 
   // Register render context arg cells for updates in __gxtSyncAllWrappers
+  // Remove stale entries for this instance first to prevent double hook firing
   if (Object.keys(renderCtxArgCells).length > 0) {
+    for (const entry of trackedArgCells) {
+      if (entry.instance === instance) {
+        trackedArgCells.delete(entry);
+      }
+    }
     trackedArgCells.add({ cells: renderCtxArgCells, instance });
   }
 
@@ -2008,26 +2130,6 @@ function renderClassicComponent(
     }
   }
 
-  // Set view element on instance using Ember's setViewElement if available
-  if (instance && wrapper instanceof HTMLElement) {
-    // Ember components have a setViewElement method or we can use Object.defineProperty
-    if (typeof instance.setViewElement === 'function') {
-      instance.setViewElement(wrapper);
-    } else {
-      // Try to set via property descriptor
-      try {
-        Object.defineProperty(instance, 'element', {
-          value: wrapper,
-          writable: true,
-          configurable: true,
-        });
-      } catch {
-        // If that fails, try setting via __element or similar
-        instance._element = wrapper;
-      }
-    }
-  }
-
   // Install reactive attribute/class binding interceptors on the instance
   // so that when properties change, the wrapper element is updated in place.
   if (instance && wrapper instanceof HTMLElement) {
@@ -2035,22 +2137,29 @@ function renderClassicComponent(
   }
 
   // Lifecycle: willRender (in preRender state), then transition to hasElement, then willInsertElement
-  // IMPORTANT: willRender is called while still in preRender state
+  // IMPORTANT: willRender is called while still in preRender state, with NO element
   triggerLifecycleHook(instance, 'willRender');
 
-  // Now transition to hasElement state
+  // Now transition to hasElement state and register the view element
+  // setViewElement must be called AFTER willRender (which expects no element)
+  // but BEFORE willInsertElement (which expects the element to exist)
+  if (instance && wrapper instanceof HTMLElement) {
+    setViewElement(instance, wrapper);
+    setElementView(wrapper, instance);
+  }
   if (instance?._transitionTo) {
     try { instance._transitionTo('hasElement'); } catch {}
   }
 
-  // willInsertElement is called in hasElement state
+  // willInsertElement is called in hasElement state (element now available)
   triggerLifecycleHook(instance, 'willInsertElement');
 
   // Render template into wrapper
   renderTemplateWithParentView(template, renderContext, wrapper, instance);
 
   // Lifecycle: didInsertElement, didRender (sync to ensure test assertions work)
-  if (instance?._transitionTo) {
+  // Only transition to inDOM in interactive mode
+  if (instance?._transitionTo && isInteractiveModeChecked()) {
     try { instance._transitionTo('inDOM'); } catch {}
   }
   triggerLifecycleHook(instance, 'didInsertElement');
