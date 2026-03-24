@@ -19,7 +19,7 @@ jobs:
           week=$(date +%V)
           if [ $((10#$week % 10)) -ne 0 ]; then
             echo "Skipping: ISO week $week is not a 10-week interval."
-            exit 0
+            exit 1
           fi
 
   update-app-template:
