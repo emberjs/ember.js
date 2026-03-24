@@ -352,7 +352,49 @@ function createEmberTag(original: Function) {
         if (componentValue) {
           const managers = g.$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            return managers.component.handle(componentValue, {}, children, ctx);
+            // Extract named args and block content from tagProps
+            const invokeArgs: any = {};
+            const slots: Record<string, any> = {};
+
+            if (tagProps && tagProps !== gxtModule.$_edp) {
+              // Extract named args from attrs (position 1)
+              const attrs = tagProps[1];
+              if (Array.isArray(attrs)) {
+                for (const [key, value] of attrs) {
+                  if (key.startsWith('@')) {
+                    const argKey = key.slice(1);
+                    Object.defineProperty(invokeArgs, argKey, {
+                      get: () => typeof value === 'function' ? value() : value,
+                      enumerable: true,
+                      configurable: true,
+                    });
+                  }
+                }
+              }
+
+              // Extract text children from events position (position 2)
+              // GXT puts text children as [["1", textContent]] in the events array
+              const textChildren = tagProps[2];
+              if (Array.isArray(textChildren) && textChildren.length > 0) {
+                const blockContent: any[] = [];
+                for (const entry of textChildren) {
+                  if (Array.isArray(entry) && entry.length === 2) {
+                    blockContent.push(entry[1]);
+                  }
+                }
+                if (blockContent.length > 0) {
+                  slots.default = (slotCtx: any) => [...blockContent];
+                }
+              }
+            }
+
+            // Also check 4th arg (children) for block content
+            if (children && children.length > 0 && !slots.default) {
+              slots.default = (slotCtx: any) => [...children];
+            }
+
+            invokeArgs.$slots = slots;
+            return managers.component.handle(componentValue, invokeArgs, null, ctx);
           }
         }
         return document.createComment(`dynamic component @${argName} not found`);
@@ -620,6 +662,162 @@ function createEmberTag(original: Function) {
 }
 
 // =============================================================================
+// $_dc wrapper (dynamic component)
+// =============================================================================
+
+/**
+ * Wraps GXT's $_dc to support Ember's CurriedComponent.
+ * $_dc is called when GXT encounters a dynamic component invocation like
+ * {{#thing.ctxCmp}}content{{/thing.ctxCmp}} or <this.$_bp0 />.
+ * GXT compiles these as $_dc(componentGetter, args, ctx).
+ *
+ * When the componentGetter returns a CurriedComponent, we render it through
+ * Ember's component manager instead of GXT's native component system.
+ */
+function createEmberDc(original: Function) {
+  const $SLOTS_SYM = Symbol.for('gxt-slots');
+
+  function extractArgsAndSlots(gxtArgs: any): { mergedArgs: any; } {
+    const mergedArgs: any = {};
+    if (gxtArgs && typeof gxtArgs === 'object') {
+      const keys = Object.keys(gxtArgs);
+      for (const key of keys) {
+        if (key.startsWith('$')) continue;
+        // Allow __hasBlock__ and __hasBlockParams__ through
+        if (key.startsWith('_') && key !== '__hasBlock__' && key !== '__hasBlockParams__') continue;
+        const desc = Object.getOwnPropertyDescriptor(gxtArgs, key);
+        if (desc) {
+          Object.defineProperty(mergedArgs, key, desc);
+        }
+      }
+    }
+
+    // Extract slots from GXT args
+    const gxtSlots = gxtArgs?.[$SLOTS_SYM];
+    const slots: Record<string, any> = {};
+    if (gxtSlots) {
+      for (const slotName of Object.keys(gxtSlots)) {
+        if (slotName.endsWith('_')) continue;
+        const slotFn = gxtSlots[slotName];
+        if (typeof slotFn === 'function') {
+          const wrappedSlot = (slotCtx: any, ...params: any[]) => {
+            try {
+              const result = slotFn(slotCtx, ...params);
+              return Array.isArray(result) ? result : [result];
+            } catch {
+              return [];
+            }
+          };
+          const hasBlockKey = slotName + '_';
+          (wrappedSlot as any).__hasBlockParams = gxtSlots[hasBlockKey] === true;
+          slots[slotName] = wrappedSlot;
+        }
+      }
+    }
+
+    // Check for __hasBlock__ marker in args
+    const hasBlockValue = gxtArgs?.__hasBlock__ ?? mergedArgs.__hasBlock__;
+    if (hasBlockValue) {
+      if (!slots.default) {
+        slots.default = () => [];
+      }
+    }
+
+    mergedArgs.$slots = slots;
+    return { mergedArgs };
+  }
+
+  function renderComponent(componentValue: any, gxtArgs: any, ctx: any): any {
+    const managers = g.$_MANAGERS;
+    if (!managers?.component?.canHandle?.(componentValue)) return null;
+
+    const { mergedArgs } = extractArgsAndSlots(gxtArgs);
+    const handleResult = managers.component.handle(componentValue, mergedArgs, null, ctx);
+    if (typeof handleResult === 'function') {
+      return handleResult();
+    }
+    return handleResult;
+  }
+
+  return function $_dc_ember(
+    componentGetter: () => any,
+    gxtArgs: any,
+    ctx: any
+  ): any {
+    // Try to evaluate the component getter to check if it's a curried component.
+    // If it fails (e.g., block params not set yet), delegate to original $_dc.
+    let componentValue: any;
+    try {
+      componentValue = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+    } catch {
+      // Getter failed — likely block params not set yet.
+      // Return a lazy thunk that evaluates when GXT processes the children.
+      // This happens after the parent component's slot function sets up block params.
+      const lazyThunk = () => {
+        try {
+          const val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+          if (val && val.__isCurriedComponent) {
+            return renderComponent(val, gxtArgs, ctx);
+          }
+          if (typeof val === 'string') {
+            const mgrs = g.$_MANAGERS;
+            if (mgrs?.component?.canHandle?.(val)) {
+              return renderComponent(val, gxtArgs, ctx);
+            }
+          }
+          return val;
+        } catch {
+          return undefined;
+        }
+      };
+      (lazyThunk as any).__isComponentThunk = true;
+      return lazyThunk;
+    }
+
+    // If getter returned undefined/null, the block param may not be set yet.
+    // Return a lazy thunk.
+    if (componentValue == null) {
+      const lazyThunk = () => {
+        try {
+          const val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+          if (val && val.__isCurriedComponent) {
+            return renderComponent(val, gxtArgs, ctx);
+          }
+          if (typeof val === 'string') {
+            const mgrs = g.$_MANAGERS;
+            if (mgrs?.component?.canHandle?.(val)) {
+              return renderComponent(val, gxtArgs, ctx);
+            }
+          }
+          return val;
+        } catch {
+          return undefined;
+        }
+      };
+      (lazyThunk as any).__isComponentThunk = true;
+      return lazyThunk;
+    }
+
+    // Handle CurriedComponent
+    if (componentValue && componentValue.__isCurriedComponent) {
+      const result = renderComponent(componentValue, gxtArgs, ctx);
+      return result;
+    }
+
+    // Handle string component name
+    if (typeof componentValue === 'string') {
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(componentValue)) {
+        return renderComponent(componentValue, gxtArgs, ctx);
+      }
+    }
+
+    // Fall back to original GXT $_dc for native GXT components
+    return original(componentGetter, gxtArgs, ctx);
+  };
+}
+
+// =============================================================================
 // Installation & exports
 // =============================================================================
 
@@ -632,11 +830,16 @@ export function installEmberWrappers() {
     g.$_tag = createEmberTag(g.$_tag);
     g.$_tag.__emberWrapped = true;
   }
+  if (g.$_dc && !g.$_dc.__emberWrapped) {
+    g.$_dc = createEmberDc(g.$_dc);
+    g.$_dc.__emberWrapped = true;
+  }
 }
 
 // Create module-level wrapped exports for ES module consumers
 const _wrappedMH = createEmberMaybeHelper(gxtModule.$_maybeHelper);
 const _wrappedTag = createEmberTag(gxtModule.$_tag);
+const _wrappedDc = createEmberDc(gxtModule.$_dc);
 
 // Re-export with original names (using alias to avoid GXT Babel plugin duplicate)
-export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag };
+export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag, _wrappedDc as $_dc };

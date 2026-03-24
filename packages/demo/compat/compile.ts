@@ -886,9 +886,22 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
           // Build slots from children (block content)
           // This enables {{yield}} in the component to render the block content
-          if (children && children.length > 0) {
+          // GXT puts text children in tagProps[2] (events position) when it doesn't
+          // recognize the tag as a component (e.g., @inner). Extract from there too.
+          const blockChildren: any[] = children && children.length > 0 ? [...children] : [];
+          if (blockChildren.length === 0 && tagProps && tagProps !== g.$_edp) {
+            const textEntries = tagProps[2];
+            if (Array.isArray(textEntries)) {
+              for (const entry of textEntries) {
+                if (Array.isArray(entry) && entry.length === 2) {
+                  blockChildren.push(entry[1]);
+                }
+              }
+            }
+          }
+          if (blockChildren.length > 0) {
             const defaultSlotFn = (slotCtx: any) => {
-              return children.map((child: any) => {
+              return blockChildren.map((child: any) => {
                 if (typeof child === 'function') {
                   return child();
                 }
@@ -909,7 +922,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 }
               }
             }
-            if (Array.isArray(tagProps[2])) {
+            // Only use tagProps[2] as events if we didn't already use them as block children
+            if (Array.isArray(tagProps[2]) && blockChildren.length === 0) {
               events = tagProps[2];
             }
           }
@@ -953,9 +967,21 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           }
 
           // Build slots from children (block content)
-          if (children && children.length > 0) {
+          // GXT puts text children in tagProps[2] for unrecognized tags
+          const thisDynChildren: any[] = children && children.length > 0 ? [...children] : [];
+          if (thisDynChildren.length === 0 && tagProps && tagProps !== g.$_edp) {
+            const textEntries = tagProps[2];
+            if (Array.isArray(textEntries)) {
+              for (const entry of textEntries) {
+                if (Array.isArray(entry) && entry.length === 2) {
+                  thisDynChildren.push(entry[1]);
+                }
+              }
+            }
+          }
+          if (thisDynChildren.length > 0) {
             const defaultSlotFn = (slotCtx: any) => {
-              return children.map((child: any) => {
+              return thisDynChildren.map((child: any) => {
                 if (typeof child === 'function') {
                   return child();
                 }
@@ -976,7 +1002,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 }
               }
             }
-            if (Array.isArray(tagProps[2])) {
+            if (Array.isArray(tagProps[2]) && thisDynChildren.length === 0) {
               events = tagProps[2];
             }
           }

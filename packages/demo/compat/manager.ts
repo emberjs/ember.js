@@ -85,6 +85,14 @@ export function createCurriedComponent(
       let invocationArgs: any = {};
       if (runtimeArgs.length > 0 && runtimeArgs[0] && typeof runtimeArgs[0] === 'object' && !Array.isArray(runtimeArgs[0])) {
         invocationArgs = runtimeArgs[0];
+      } else if (runtimeArgs.length > 0) {
+        // Positional args (e.g., curried(1, 2, 3) from {{foo 1 2 3}})
+        // Map them to __pos0__, __pos1__, etc. for the component manager
+        for (let i = 0; i < runtimeArgs.length; i++) {
+          const val = runtimeArgs[i];
+          invocationArgs[`__pos${i}__`] = val;
+        }
+        invocationArgs.__posCount__ = runtimeArgs.length;
       }
 
       const handleResult = managers.component.handle(curried, invocationArgs, null, null);
