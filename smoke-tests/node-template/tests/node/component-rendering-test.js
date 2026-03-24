@@ -1,4 +1,4 @@
-const setupComponentTest = require('./helpers/setup-component');
+import setupComponentTest from './helpers/setup-component.js';
 
 QUnit.module('Components can be rendered without a DOM dependency', function (hooks) {
   setupComponentTest(hooks);
@@ -22,7 +22,7 @@ QUnit.module('Components can be rendered without a DOM dependency', function (ho
     function (assert) {
       this.owner.register(
         'component:fake-link',
-        class extends this.Ember.Component {
+        class extends this.Component {
           tagName = 'link';
           attributeBindings = ['href', 'rel'];
           rel = 'canonical';
