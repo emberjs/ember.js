@@ -6,9 +6,6 @@
   test suite.
 */
 
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 export default {
   plugins: [
     [
@@ -24,14 +21,6 @@ export default {
         runtime: { import: 'decorator-transforms/runtime' },
       },
     ],
-    [
-      'babel-plugin-ember-template-compilation',
-      {
-        compilerPath: resolve(
-          dirname(fileURLToPath(import.meta.url)),
-          './broccoli/glimmer-template-compiler.mjs'
-        ),
-      },
-    ],
+    ['babel-plugin-ember-template-compilation'],
   ],
 };

@@ -60,13 +60,6 @@ function esmInputs() {
   return {
     ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
     ...renameEntrypoints(packages(), (name) => join('packages', name)),
-    // the actual authored "./packages/ember-template-compiler/index.ts" is
-    // part of what powers the historical dist/ember-template-compiler.js AMD
-    // bundle. It has historical cruft that has never been present in our ESM
-    // builds.
-    //
-    // On the ESM build, the main entrypoint of ember-template-compiler is the
-    // "minimal.ts" version, which has a lot less in it.
     'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
   };
 }
