@@ -183,7 +183,9 @@ moduleFor(
     ['@test handled within the same micro-task (via Ember.RVP.Promise)'](assert) {
       run(function () {
         let rejection = RSVP.Promise.reject(reason);
-        RSVP.Promise.resolve(1).then(() => rejection.catch(function () {}));
+        RSVP.Promise.resolve(1).then(() => rejection.catch((error) => {
+          assert.ok(false, `Unexpected error: ${error}`);
+        }));
       }); // handled, we shouldn't need to assert.
       assert.ok(true, 'reached end of test');
     }
@@ -191,7 +193,9 @@ moduleFor(
     ['@test handled within the same micro-task (via direct run-loop)'](assert) {
       run(function () {
         let rejection = RSVP.Promise.reject(reason);
-        schedule('afterRender', () => rejection.catch(function () {}));
+        schedule('afterRender', () => rejection.catch((error) => {
+          assert.ok(false, `Unexpected error: ${error}`);
+        }));
       }); // handled, we shouldn't need to assert.
       assert.ok(true, 'reached end of test');
     }
@@ -205,7 +209,9 @@ moduleFor(
           let rejection = RSVP.Promise.reject(reason);
 
           next(() => {
-            rejection.catch(function () {});
+            rejection.catch((error) => {
+              assert.ok(false, `Unexpected error: ${error}`);
+            });
             assert.ok(true, 'reached end of test');
             done();
           });
@@ -226,7 +232,9 @@ moduleFor(
       };
       run(function () {
         let rejection = RSVP.Promise.reject(reason);
-        store.find('user', 1).then(() => rejection.catch(function () {}));
+        store.find('user', 1).then(() => rejection.catch((error) => {
+          assert.ok(false, `Unexpected error: ${error}`);
+        }));
       });
 
       assert.ok(true, 'reached end of test');
@@ -245,7 +253,9 @@ moduleFor(
         run(function () {
           let rejection = RSVP.Promise.reject(reason);
           store.find('user', 1).then(() => {
-            rejection.catch(function () {});
+            rejection.catch((error) => {
+              assert.ok(false, `Unexpected error: ${error}`);
+            });
             assert.ok(true, 'reached end of test');
             done();
           });
@@ -260,7 +270,9 @@ moduleFor(
         run(function () {
           let rejection = RSVP.Promise.reject(reason);
           ajax().then(() => {
-            rejection.catch(function () {});
+            rejection.catch((error) => {
+              assert.ok(false, `Unexpected error: ${error}`);
+            });
             assert.ok(true, 'reached end of test');
             done();
           });
