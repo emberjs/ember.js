@@ -86,6 +86,7 @@ export function createCurriedComponent(
       if (runtimeArgs.length > 0 && runtimeArgs[0] && typeof runtimeArgs[0] === 'object' && !Array.isArray(runtimeArgs[0])) {
         invocationArgs = runtimeArgs[0];
       }
+
       const handleResult = managers.component.handle(curried, invocationArgs, null, null);
       if (typeof handleResult === 'function') {
         return handleResult();

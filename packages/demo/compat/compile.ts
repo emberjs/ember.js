@@ -74,6 +74,50 @@ installEmberWrappers();
 // synchronous test assertions won't see the updated DOM immediately.
 // This affects tests like "yield to inverse", "isStream", etc.
 
+// Helper: resolve all curried arg values (evaluating getters) into a snapshot.
+function _resolveCurriedArgs(curried: any): { name: any; args: Record<string, any>; positionals: any[] } {
+  const cArgs = curried.__curriedArgs || {};
+  const resolved: Record<string, any> = {};
+  for (const [key, value] of Object.entries(cArgs)) {
+    resolved[key] = (typeof value === 'function' && !(value as any).__isCurriedComponent && !(value as any).prototype)
+      ? (value as any)() : value;
+  }
+  const cPos = curried.__curriedPositionals || [];
+  const resolvedPos: any[] = [];
+  for (const val of cPos) {
+    resolvedPos.push((typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
+      ? val() : val);
+  }
+  return { name: curried.__name, args: resolved, positionals: resolvedPos };
+}
+
+// Helper: snapshot curried args on a render info for later comparison.
+function _snapshotCurriedArgs(info: any, curried: any) {
+  const snap = _resolveCurriedArgs(curried);
+  info.__lastSnapshot = snap;
+}
+
+// Helper: check if curried component has changed compared to last snapshot.
+function _curriedComponentChanged(info: any, curried: any): boolean {
+  const last = info.__lastSnapshot;
+  if (!last) return true; // No previous snapshot — treat as changed
+  const current = _resolveCurriedArgs(curried);
+  if (last.name !== current.name) return true;
+  // Compare named args
+  const lastKeys = Object.keys(last.args);
+  const currentKeys = Object.keys(current.args);
+  if (lastKeys.length !== currentKeys.length) return true;
+  for (const key of currentKeys) {
+    if (last.args[key] !== current.args[key]) return true;
+  }
+  // Compare positionals
+  if (last.positionals.length !== current.positionals.length) return true;
+  for (let i = 0; i < current.positionals.length; i++) {
+    if (last.positionals[i] !== current.positionals[i]) return true;
+  }
+  return false;
+}
+
 // Override $_componentHelper with Ember-aware version that creates CurriedComponent.
 // Uses lazy lookup of CurriedComponent class because manager.ts may load after compile.ts.
 {
@@ -303,6 +347,8 @@ installEmberWrappers();
     // Re-render CurriedComponent marker regions.
     // gxtEffect may not track cells properly for curried component getters,
     // so we manually re-evaluate and swap DOM as a fallback.
+    // NOTE: No snapshot-based skip here — this path runs on explicit set() calls
+    // where data actually changed (including array mutations where ref stays same).
     try {
       const infos = (globalThis as any).__curriedRenderInfos;
       if (infos) {
@@ -391,9 +437,31 @@ installEmberWrappers();
           const parent = sm.parentNode;
           if (!parent) continue;
           try {
+            // Curried-node path: re-invoke item() to get a fresh Node
+            if (info.__isCurriedNodePath) {
+              const newNode = render();
+              if (newNode) {
+                let node = sm.nextSibling;
+                while (node && node !== em) {
+                  const next = node.nextSibling;
+                  parent.removeChild(node);
+                  node = next;
+                }
+                parent.insertBefore(newNode, em);
+              }
+              continue;
+            }
+
             const newResult = getter();
             const newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
               ? newResult() : newResult;
+
+            // Skip teardown if same component with unchanged args (preserves DOM stability)
+            if (newFinal && newFinal.__isCurriedComponent &&
+                sm.nextSibling !== em &&
+                !_curriedComponentChanged(info, newFinal)) {
+              continue;
+            }
 
             let node = sm.nextSibling;
             while (node && node !== em) {
@@ -405,6 +473,7 @@ installEmberWrappers();
             if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
               const newNode = render(newFinal);
               if (newNode) parent.insertBefore(newNode, em);
+              _snapshotCurriedArgs(info, newFinal);
             }
           } catch { /* ignore render errors */ }
         }
@@ -2704,13 +2773,16 @@ export function precompileTemplate(templateString: string, options?: {
             // any dependency (e.g., this.model.greeting) changes.
             try {
               // Store the getter so we can manually trigger re-renders
-              const curriedRenderInfo = {
+              const curriedRenderInfo: any = {
                 item,
                 startMarker,
                 endMarker,
                 renderCurriedComponent,
                 managers,
+                lastRenderedName: finalResult.__name,
               };
+              // Snapshot initial curried args for change detection
+              _snapshotCurriedArgs(curriedRenderInfo, finalResult);
               // Register for manual re-rendering on property changes
               if (!(globalThis as any).__curriedRenderInfos) {
                 (globalThis as any).__curriedRenderInfos = [];
@@ -2723,8 +2795,26 @@ export function precompileTemplate(templateString: string, options?: {
                   ? newResult()
                   : newResult;
 
+                // Also evaluate curried arg getters to establish tracking —
+                // when a curried arg changes (e.g., this.model.expectedText),
+                // this effect must re-fire so we can update the component.
+                if (newFinal && newFinal.__isCurriedComponent && newFinal.__curriedArgs) {
+                  for (const val of Object.values(newFinal.__curriedArgs)) {
+                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
+                      try { val(); } catch { /* ignore */ }
+                    }
+                  }
+                }
+
                 const parent = startMarker.parentNode;
                 if (!parent) return;
+
+                // Skip teardown if same component with unchanged args (preserves DOM stability)
+                if (newFinal && newFinal.__isCurriedComponent &&
+                    startMarker.nextSibling !== endMarker &&
+                    !_curriedComponentChanged(curriedRenderInfo, newFinal)) {
+                  return;
+                }
 
                 // Remove existing content between markers
                 let node = startMarker.nextSibling;
@@ -2740,6 +2830,8 @@ export function precompileTemplate(templateString: string, options?: {
                   if (newNode) {
                     parent.insertBefore(newNode, endMarker);
                   }
+                  curriedRenderInfo.lastRenderedName = newFinal.__name;
+                  _snapshotCurriedArgs(curriedRenderInfo, newFinal);
                 } else if (newFinal && typeof newFinal === 'string') {
                   // Component name resolved to string — try rendering directly
                   if (managers.component.canHandle(newFinal)) {
@@ -2753,6 +2845,7 @@ export function precompileTemplate(templateString: string, options?: {
                       parent.insertBefore(handleResult, endMarker);
                     }
                   }
+                  curriedRenderInfo.lastRenderedName = newFinal;
                 }
               });
             } catch { /* effect setup may fail */ }
