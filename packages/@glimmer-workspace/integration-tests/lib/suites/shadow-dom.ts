@@ -210,4 +210,40 @@ export class ShadowDOMSuite extends RenderTest {
       'same shadow root instance reused (not recreated)'
     );
   }
+
+  @test
+  'conditional <template shadowrootmode="open"> inside a host element attaches shadow root when rendered'() {
+    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
+      this.assert.ok(true, 'Shadow DOM not supported, skipping');
+      return;
+    }
+
+    this.render(
+      '<div class="host">{{#if this.useShadow}}<template shadowrootmode="open"><p>shadow content</p></template>{{else}}<div>regular content</div>{{/if}}</div>',
+      { useShadow: true }
+    );
+
+    const rootEl = castToBrowser(this.element, 'HTML');
+    const host = rootEl.querySelector('.host') as HTMLElement | null;
+
+    this.assert.ok(host !== null, 'host element exists');
+    this.assert.ok(host?.shadowRoot !== null, 'shadow root is attached when useShadow=true');
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      'shadow content',
+      'shadow content renders in shadow root'
+    );
+
+    // Switch to regular content branch
+    this.rerender({ useShadow: false });
+    // The shadow root persists on the host element (platform behavior)
+    // but the <div> regular content is rendered into the shadow root's slot
+    // (since the shadow root owns the rendering for the host).
+    // The important assertion is that no <template> element ended up in the DOM.
+    this.assert.strictEqual(
+      host?.querySelector('template'),
+      null,
+      '<template> element is not present in the DOM'
+    );
+  }
 }

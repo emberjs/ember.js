@@ -296,18 +296,27 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   closeElement(): Nullable<ModifierInstance[]> {
-    // Check if we are closing a shadow DOM section. Shadow roots (and document
-    // fragments) have nodeType 11 (DOCUMENT_FRAGMENT_NODE), whereas regular
-    // elements have nodeType 1 (ELEMENT_NODE).
-    //
-    // When we detect a shadow root as the current element, we need to pop the
-    // block we pushed in flushElement (instead of using willCloseElement which
-    // decrements the parent block's nesting counter).
-    //
-    // Note: this.element is typed as SimpleElement (nodeType 1), but at runtime
-    // it may be a ShadowRoot (nodeType 11) that was stored during flushElement's
-    // shadow DOM handling. We use an explicit nodeType check to detect this case.
     if (isShadowRootOrDocumentFragment(this.element)) {
+      // A ShadowRoot (or DocumentFragment) is used as the rendering target for
+      // declarative shadow DOM (`<template shadowrootmode="...">`) and
+      // `{{#in-element}}` calls.
+      //
+      // Unlike a regular element, a shadow root:
+      //  1. Has nodeType 11 (DOCUMENT_FRAGMENT_NODE) instead of 1 (ELEMENT_NODE)
+      //  2. Must always be attached to a host element — it cannot exist as a
+      //     free-standing node — so its content must not be tracked in the
+      //     parent block's bounds (the host element is the visible boundary).
+      //
+      // Because of (2), `flushElement` pushed an extra *remote* block (isRemote=true)
+      // for the shadow root content so that its nodes are excluded from the
+      // enclosing block's first/last node tracking. We must pop that extra
+      // block here rather than calling `willCloseElement()`, which would
+      // incorrectly decrement the parent block's element-nesting counter.
+      //
+      // Note: `this.element` is typed as SimpleElement (nodeType 1), but at
+      // runtime it may hold a ShadowRoot (nodeType 11) placed there during
+      // `flushElement`'s shadow DOM handling. The explicit nodeType check in
+      // `isShadowRootOrDocumentFragment` detects this case.
       this.popBlock();
       this.popElement();
       return this.popModifiers();
