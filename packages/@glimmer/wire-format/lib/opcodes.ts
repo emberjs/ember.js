@@ -34,6 +34,7 @@ import type {
   NotOpcode,
   OpenElementOpcode,
   OpenElementWithSplatOpcode,
+  ShadowRootOpcode,
   StaticArgOpcode,
   StaticAttrOpcode,
   StaticComponentAttrOpcode,
@@ -94,4 +95,5 @@ export const opcodes = {
   IfInline: 52 satisfies IfInlineOpcode,
   GetDynamicVar: 53 satisfies GetDynamicVarOpcode,
   Log: 54 satisfies LogOpcode,
+  ShadowRoot: 55 satisfies ShadowRootOpcode,
 } as const;

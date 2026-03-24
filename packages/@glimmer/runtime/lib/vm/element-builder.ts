@@ -74,20 +74,6 @@ export class Fragment implements Bounds {
   }
 }
 
-/**
- * Returns true if the given element is actually a ShadowRoot or DocumentFragment
- * (both have nodeType 11 / DOCUMENT_FRAGMENT_NODE), rather than a regular Element
- * (nodeType 1 / ELEMENT_NODE).
- *
- * This is used to detect shadow DOM cursors that were stored as `SimpleElement`
- * during declarative shadow DOM rendering (`<template shadowrootmode="...">`).
- */
-function isShadowRootOrDocumentFragment(element: SimpleElement): boolean {
-  // SimpleElement is typed as nodeType 1 (ELEMENT_NODE), but at runtime a
-  // shadow root (nodeType 11) may be stored here when using declarative shadow DOM.
-  return (element as unknown as { nodeType: number }).nodeType === /* DOCUMENT_FRAGMENT_NODE */ 11;
-}
-
 export class NewTreeBuilder implements TreeBuilder {
   declare debug?: () => {
     blocks: AppendingBlock[];
@@ -220,21 +206,6 @@ export class NewTreeBuilder implements TreeBuilder {
       `flushElement should only be called when constructing an element`
     );
 
-    // Check for declarative shadow DOM: <template shadowrootmode="open|closed">
-    const shadowRoot = this.__tryAttachShadowRoot(parent, element);
-    if (shadowRoot !== null) {
-      // Don't insert the <template> element into the parent DOM.
-      // Instead, render children directly into the shadow root.
-      this.constructing = null;
-      this.operations = null;
-      this.pushModifiers(modifiers);
-      this.pushElement(shadowRoot, null);
-      // Push a block for the shadow root content. Use isRemote=true so
-      // the shadow root is not tracked as a child in the parent block's bounds.
-      this.pushBlock(new AppendingBlockImpl(shadowRoot), true);
-      return;
-    }
-
     this.__flushElement(parent, element);
 
     this.constructing = null;
@@ -245,83 +216,11 @@ export class NewTreeBuilder implements TreeBuilder {
     this.didOpenElement(element);
   }
 
-  /**
-   * Attempts to attach a shadow root to the parent element for declarative shadow DOM.
-   * Returns the shadow root (as SimpleElement) if successful, null otherwise.
-   *
-   * This handles the `<template shadowrootmode="open|closed">` pattern, enabling
-   * Glimmer to render directly into a shadow root without an extra render pass.
-   *
-   * When `<template shadowrootmode="open|closed">` is used as a component's root element
-   * (without a wrapping element), the same parent element receives the shadow root on
-   * every render pass. On re-render, `attachShadow` would throw because the shadow root
-   * already exists. In that case we reuse the existing open shadow root after clearing
-   * its children, so the component can re-render into it correctly.
-   */
-  protected __tryAttachShadowRoot(
-    parent: SimpleElement,
-    element: SimpleElement
-  ): SimpleElement | null {
-    // SimpleElement.tagName is uppercase in HTML (e.g. 'TEMPLATE', 'DIV').
-    // The <template> element is an HTML-only element, so checking 'TEMPLATE' is correct.
-    if (element.tagName.toUpperCase() !== 'TEMPLATE') return null;
-
-    const mode = element.getAttribute('shadowrootmode');
-    if (mode !== 'open' && mode !== 'closed') return null;
-
-    // Only works in environments that support shadow DOM (not SSR/simple-dom)
-    const rawParent = parent as unknown as Element;
-    if (typeof rawParent.attachShadow !== 'function') return null;
-
-    // If parent already has an open shadow root (e.g. on re-render when the component's
-    // root is <template shadowrootmode="open"> without a wrapping element), reuse it after
-    // clearing its children rather than calling attachShadow again (which would throw).
-    const existingShadowRoot = rawParent.shadowRoot;
-    if (existingShadowRoot) {
-      existingShadowRoot.replaceChildren();
-      return existingShadowRoot as unknown as SimpleElement;
-    }
-
-    try {
-      return rawParent.attachShadow({ mode: mode as ShadowRootMode }) as unknown as SimpleElement;
-    } catch {
-      // attachShadow can fail if the element already has a closed shadow root
-      // or doesn't support shadow DOM. Fall back to normal rendering.
-      return null;
-    }
-  }
-
   __flushElement(parent: SimpleElement, constructing: SimpleElement) {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
   }
 
   closeElement(): Nullable<ModifierInstance[]> {
-    if (isShadowRootOrDocumentFragment(this.element)) {
-      // A ShadowRoot (or DocumentFragment) is used as the rendering target for
-      // declarative shadow DOM (`<template shadowrootmode="...">`) and
-      // `{{#in-element}}` calls.
-      //
-      // Unlike a regular element, a shadow root:
-      //  1. Has nodeType 11 (DOCUMENT_FRAGMENT_NODE) instead of 1 (ELEMENT_NODE)
-      //  2. Must always be attached to a host element — it cannot exist as a
-      //     free-standing node — so its content must not be tracked in the
-      //     parent block's bounds (the host element is the visible boundary).
-      //
-      // Because of (2), `flushElement` pushed an extra *remote* block (isRemote=true)
-      // for the shadow root content so that its nodes are excluded from the
-      // enclosing block's first/last node tracking. We must pop that extra
-      // block here rather than calling `willCloseElement()`, which would
-      // incorrectly decrement the parent block's element-nesting counter.
-      //
-      // Note: `this.element` is typed as SimpleElement (nodeType 1), but at
-      // runtime it may hold a ShadowRoot (nodeType 11) placed there during
-      // `flushElement`'s shadow DOM handling. The explicit nodeType check in
-      // `isShadowRootOrDocumentFragment` detects this case.
-      this.popBlock();
-      this.popElement();
-      return this.popModifiers();
-    }
-
     this.willCloseElement();
     this.popElement();
     return this.popModifiers();

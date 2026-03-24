@@ -120,6 +120,12 @@ export class SimpleElement extends node('SimpleElement').fields<{
   dynamicFeatures: boolean;
 }>() {}
 
+export class DeclarativeShadowRoot extends node('DeclarativeShadowRoot').fields<{
+  guid: string;
+  mode: string;
+  body: Statement[];
+}>() {}
+
 export class ElementParameters extends node('ElementParameters').fields<{
   body: AnyOptionalList<ElementParameter>;
 }>() {}
@@ -214,6 +220,7 @@ export type Statement =
   | AppendTextNode
   | Component
   | SimpleElement
+  | DeclarativeShadowRoot
   | InvokeBlock
   | AppendComment
   | If

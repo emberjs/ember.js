@@ -15,6 +15,7 @@ import type { Reference } from '@glimmer/reference';
 import type { Revision, Tag } from '@glimmer/validator';
 import {
   CURRIED_MODIFIER,
+  VM_ATTACH_SHADOW_ROOT_OP,
   VM_CLOSE_ELEMENT_OP,
   VM_COMMENT_OP,
   VM_DYNAMIC_ATTR_OP,
@@ -41,7 +42,7 @@ import {
 import { debugToString, expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager';
-import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
+import { createComputeRef, createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { isIndexable } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { $t0 } from '@glimmer/vm';
@@ -124,6 +125,57 @@ APPEND_OPCODES.add(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
     // The RemoteBlock is also its bounds
     vm.env.debugRenderTree.didRender(bounds, bounds);
   }
+});
+
+/**
+ * VM_ATTACH_SHADOW_ROOT_OP — declarative shadow DOM support.
+ *
+ * Pops the shadow root mode ('open' | 'closed') from the stack, then attaches
+ * a shadow root to the current parent element and pushes a const reference to
+ * it. The caller (via VM_PUSH_REMOTE_ELEMENT_OP) then uses that reference as
+ * the remote rendering target for the shadow root's children.
+ *
+ * Stack in (top → bottom):  mode, insertBefore, guid
+ * Stack out (top → bottom): shadowRoot ref, insertBefore, guid
+ *
+ * If the environment does not support shadow DOM (e.g. SSR with simple-dom),
+ * a null reference is pushed so that the surrounding ReplayableIf falls
+ * through without rendering any children.
+ */
+APPEND_OPCODES.add(VM_ATTACH_SHADOW_ROOT_OP, (vm) => {
+  const modeRef = check(vm.stack.pop(), CheckReference);
+  const mode = check(valueForRef(modeRef), CheckString) as ShadowRootMode;
+
+  // Get the current parent element from the element builder.
+  const rawParent = vm.tree().element as unknown as Element;
+
+  // Gracefully degrade in SSR/simple-dom environments that lack shadow DOM.
+  if (typeof rawParent.attachShadow !== 'function') {
+    vm.stack.push(createConstRef(null, false));
+    return;
+  }
+
+  // If an open shadow root already exists on this element (which happens when
+  // a component whose root is <template shadowrootmode="open"> re-renders into
+  // the same host element), reuse it after clearing its children.
+  let shadowRoot: ShadowRoot;
+  const existingShadowRoot = rawParent.shadowRoot;
+
+  if (existingShadowRoot) {
+    existingShadowRoot.replaceChildren();
+    shadowRoot = existingShadowRoot;
+  } else {
+    try {
+      shadowRoot = rawParent.attachShadow({ mode });
+    } catch {
+      // attachShadow can throw if the element already has a closed shadow root
+      // or is not a valid shadow host. Fall back gracefully.
+      vm.stack.push(createConstRef(null, false));
+      return;
+    }
+  }
+
+  vm.stack.push(createConstRef(shadowRoot as unknown as SimpleElement, false));
 });
 
 APPEND_OPCODES.add(VM_FLUSH_ELEMENT_OP, (vm) => {

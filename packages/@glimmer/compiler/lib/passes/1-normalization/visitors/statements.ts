@@ -86,6 +86,32 @@ class NormalizationStatements {
   }
 
   SimpleElement(element: ASTv2.SimpleElement, state: NormalizationState): Result<mir.Statement> {
+    // Detect declarative shadow DOM: <template shadowrootmode="open|closed">
+    // When Glimmer builds the DOM via createElement rather than parsing HTML, the browser's native
+    // declarative shadow DOM processing never fires. We handle it explicitly with a dedicated opcode.
+    if (element.tag.chars === 'template') {
+      const shadowrootmodeAttr = element.attrs.find(
+        (attr): attr is ASTv2.HtmlAttr =>
+          attr.type === 'HtmlAttr' && attr.name.chars === 'shadowrootmode'
+      );
+
+      if (shadowrootmodeAttr && ASTv2.isLiteral(shadowrootmodeAttr.value, 'string')) {
+        const mode = shadowrootmodeAttr.value.value as string;
+
+        if (mode === 'open' || mode === 'closed') {
+          return this.visitList(element.body, state).mapOk(
+            (body) =>
+              new mir.DeclarativeShadowRoot({
+                loc: element.loc,
+                guid: state.generateUniqueCursor(),
+                mode,
+                body: body.toArray(),
+              })
+          );
+        }
+      }
+    }
+
     return new ClassifiedElement(
       element,
       new ClassifiedSimpleElement(element.tag, element, hasDynamicFeatures(element)),
