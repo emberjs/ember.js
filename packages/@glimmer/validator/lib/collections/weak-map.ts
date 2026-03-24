@@ -1,96 +1,104 @@
-import type { ReactiveOptions } from './types';
+// Using a Proxy-based approach so that any new methods added to the WeakMap
+// interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
+// supported without needing to manually re-implement each one.
 
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
-class TrackedWeakMap<K extends WeakKey = object, V = unknown> implements WeakMap<K, V> {
-  #options: ReactiveOptions<V>;
-  #storages = new WeakMap<K, ReturnType<typeof createUpdatableTag>>();
-  #vals: WeakMap<K, V>;
+type Tag = ReturnType<typeof createUpdatableTag>;
 
-  #storageFor(key: K): ReturnType<typeof createUpdatableTag> {
-    let storage = this.#storages.get(key);
+export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
+  data?: WeakMap<Key, Value> | [Key, Value][] | Iterable<readonly [Key, Value]> | null,
+  options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
+): WeakMap<Key, Value> {
+  const equals = options?.equals ?? Object.is;
+  const existing = data ?? [];
+  /**
+   * SAFETY: note that when passing in an existing weak map, we can't
+   *         clone it as it is not iterable and not a supported type of structuredClone
+   */
+  const target: WeakMap<Key, Value> =
+    existing instanceof WeakMap ? existing : new WeakMap<Key, Value>(existing);
+  const storages = new WeakMap<Key, Tag>();
+
+  function storageFor(key: Key): Tag {
+    let storage = storages.get(key);
 
     if (storage === undefined) {
       storage = createUpdatableTag();
-      this.#storages.set(key, storage);
+      storages.set(key, storage);
     }
 
     return storage;
   }
-  #dirtyStorageFor(key: K): void {
-    const storage = this.#storages.get(key);
+
+  function dirtyStorageFor(key: Key): void {
+    const storage = storages.get(key);
 
     if (storage) {
       DIRTY_TAG(storage);
     }
   }
 
-  constructor(
-    existing: [K, V][] | Iterable<readonly [K, V]> | WeakMap<K, V>,
-    options: ReactiveOptions<V>
-  ) {
-    /**
-     * SAFETY: note that wehn passing in an existing weak map, we can't
-     *         clone it as it is not iterable and not a supported type of structuredClone
-     */
-    this.#vals = existing instanceof WeakMap ? existing : new WeakMap<K, V>(existing);
-    this.#options = options;
-  }
+  const proxy: WeakMap<Key, Value> = new Proxy(target, {
+    get(target, prop, receiver) {
+      if (prop === 'set') {
+        return function (key: Key, value: Value): WeakMap<Key, Value> {
+          const hasExisting = target.has(key);
 
-  get(key: K): V | undefined {
-    consumeTag(this.#storageFor(key));
+          if (hasExisting) {
+            const isUnchanged = equals(target.get(key) as Value, value);
 
-    return this.#vals.get(key);
-  }
+            if (isUnchanged) return proxy;
+          }
 
-  has(key: K): boolean {
-    consumeTag(this.#storageFor(key));
+          dirtyStorageFor(key);
 
-    return this.#vals.has(key);
-  }
+          target.set(key, value);
 
-  set(key: K, value: V): this {
-    let hasExisting = this.#vals.has(key);
-
-    if (hasExisting) {
-      let isUnchanged = this.#options.equals(this.#vals.get(key) as V, value);
-
-      if (isUnchanged) {
-        return this;
+          return proxy;
+        };
       }
-    }
 
-    this.#dirtyStorageFor(key);
+      if (prop === 'delete') {
+        return function (key: Key): boolean {
+          if (!target.has(key)) return false;
 
-    this.#vals.set(key, value);
+          dirtyStorageFor(key);
 
-    return this;
-  }
+          storages.delete(key);
+          return target.delete(key);
+        };
+      }
 
-  delete(key: K): boolean {
-    if (!this.#vals.has(key)) return false;
+      if (prop === 'get') {
+        return function (key: Key): Value | undefined {
+          consumeTag(storageFor(key));
 
-    this.#dirtyStorageFor(key);
+          return target.get(key);
+        };
+      }
 
-    this.#storages.delete(key);
-    return this.#vals.delete(key);
-  }
+      if (prop === 'has') {
+        return function (key: Key): boolean {
+          consumeTag(storageFor(key));
 
-  get [Symbol.toStringTag](): string {
-    return this.#vals[Symbol.toStringTag];
-  }
-}
+          return target.has(key);
+        };
+      }
 
-// So instanceof works
-Object.setPrototypeOf(TrackedWeakMap.prototype, WeakMap.prototype);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const value = Reflect.get(target, prop, receiver);
 
-export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
-  data?: WeakMap<Key, Value> | [Key, Value][] | Iterable<readonly [Key, Value]> | null,
-  options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
-): WeakMap<Key, Value> {
-  return new TrackedWeakMap<Key, Value>(data ?? [], {
-    equals: options?.equals ?? Object.is,
-    description: options?.description,
+      if (typeof value === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        return value.bind(target);
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return value;
+    },
   });
+
+  return proxy;
 }
