@@ -19,6 +19,24 @@ export function runDestroy(toDestroy: any): void {
       }
       throw e;
     }
+    // In GXT mode, also destroy tracked helper instances when a component is destroyed.
+    // Class-based helpers need proper destroy lifecycle (willDestroy, destroy).
+    const helperInstances = (globalThis as any).__gxtHelperInstances;
+    if (Array.isArray(helperInstances) && helperInstances.length > 0) {
+      for (const inst of helperInstances) {
+        try {
+          if (typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
+            inst.destroy();
+          }
+        } catch { /* ignore */ }
+      }
+      helperInstances.length = 0;
+    }
+    // Also clear the helper instance cache
+    const clearCache = (globalThis as any).__gxtClearHelperCache;
+    if (typeof clearCache === 'function') {
+      clearCache();
+    }
   }
 }
 

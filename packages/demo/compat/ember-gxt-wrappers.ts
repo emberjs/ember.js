@@ -72,6 +72,12 @@ function findHelperManager(obj: any): any {
   return null;
 }
 
+// Cache for class-based helper instances created via $_maybeHelper.
+// Keyed by helper name for simple per-invocation caching.
+// Cleared during test teardown via __gxtClearHelperCache.
+const classHelperInstanceCache = new Map<string, any>();
+(g as any).__gxtClearHelperCache = () => classHelperInstanceCache.clear();
+
 function createEmberMaybeHelper(original: Function) {
   const wrapped = function $_maybeHelper_ember(
     nameOrFn: string | Function,
@@ -152,14 +158,58 @@ function createEmberMaybeHelper(original: Function) {
         const positional = unwrapArgs(args || []);
         const named = unwrapHash(hash);
 
-        // Check for helper manager on the factory class (walks prototype chain)
         const factoryClass = factory.class;
+
+        // Check if this is a class-based helper (with compute on prototype)
+        const isClassBased = factoryClass && factoryClass.prototype &&
+          typeof factoryClass.prototype.compute === 'function';
+
+        if (isClassBased) {
+          // Use a cached persistent instance for class-based helpers.
+          // This enables recompute() to trigger re-evaluation of the same instance.
+          let instance = classHelperInstanceCache.get(name);
+          if (!instance) {
+            try {
+              instance = factory.create();
+              classHelperInstanceCache.set(name, instance);
+              // Also register for destruction
+              const helperInstances = g.__gxtHelperInstances;
+              if (Array.isArray(helperInstances)) {
+                helperInstances.push(instance);
+              }
+            } catch (e) {
+              console.error(`[ember-gxt] Error creating class helper "${name}":`, e);
+              return undefined;
+            }
+          }
+
+          if (instance && typeof instance.compute === 'function') {
+            const result = instance.compute(positional, named);
+
+            // Consume the RECOMPUTE_TAG so GXT formulas re-evaluate on recompute().
+            // The tag is a custom object with a cell-backed `value` getter.
+            const symKeys = Object.getOwnPropertySymbols(instance);
+            for (const sym of symKeys) {
+              if (sym.toString().includes('RECOMPUTE_TAG')) {
+                const tag = instance[sym];
+                if (tag && typeof tag === 'object' && 'value' in tag) {
+                  // Read the cell to establish tracking in the enclosing formula
+                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                  tag.value;
+                }
+                break;
+              }
+            }
+
+            return result;
+          }
+        }
+
+        // Simple (function-based) helper: use the manager protocol
         const manager = findHelperManager(factoryClass) || findHelperManager(factoryClass?.prototype);
 
         if (manager) {
-          // Use the helper manager protocol
           if (typeof manager.getHelper === 'function') {
-            // CustomHelperManager.getHelper returns (capturedArgs, owner) => value
             const helperFn = manager.getHelper(factoryClass);
             if (typeof helperFn === 'function') {
               const capturedArgs = { positional, named };
@@ -168,7 +218,6 @@ function createEmberMaybeHelper(original: Function) {
             }
           }
           if (typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
-            // Direct manager protocol (SimpleClassicHelperManager, ClassicHelperManager)
             const state = manager.createHelper(factoryClass, { positional, named });
             const result = manager.getValue(state);
             return result;
@@ -186,8 +235,7 @@ function createEmberMaybeHelper(original: Function) {
           console.error(`[ember-gxt] Error invoking helper "${name}":`, e);
         }
 
-        // Helper was found in registry but couldn't be invoked - return undefined
-        // rather than falling through to GXT's native handler
+        // Helper was found in registry but couldn't be invoked
         return undefined;
       }
 

@@ -522,10 +522,21 @@ setInterval(() => {
   if ((globalThis as any).__curriedRenderInfos) {
     (globalThis as any).__curriedRenderInfos.length = 0;
   }
+  // Clear helper instances (already destroyed by __gxtDestroyTrackedInstances)
+  if ((globalThis as any).__gxtHelperInstances) {
+    (globalThis as any).__gxtHelperInstances.length = 0;
+  }
+  // Clear the helper instance cache used by $_maybeHelper
+  if (typeof (globalThis as any).__gxtClearHelperCache === 'function') {
+    (globalThis as any).__gxtClearHelperCache();
+  }
 };
 
 // Set GXT mode flag
 (globalThis as any).__GXT_MODE__ = true;
+
+// Track class-based helper instances for destruction during test teardown
+(globalThis as any).__gxtHelperInstances = (globalThis as any).__gxtHelperInstances || [];
 
 // Expose $_MANAGERS on globalThis so the $_tag wrapper can access it
 // (manager.ts will configure it later, but we need the same reference)
@@ -1071,36 +1082,89 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         const helperFactory = owner.factoryFor?.(`helper:${kebabName}`);
         const helperLookup = !helperFactory ? owner.lookup?.(`helper:${kebabName}`) : null;
         if (helperFactory || helperLookup) {
-          // Reconstruct positional args from @__pos*__ named args
-          const positional: any[] = [];
-          const named: Record<string, any> = {};
-          let posCount = 0;
-
+          // Collect raw attr getters (keep them lazy for reactivity)
+          const rawAttrs: Array<[string, any]> = [];
           if (tagProps && tagProps !== g.$_edp) {
             const attrs = tagProps[1];
             if (Array.isArray(attrs)) {
-              for (const [key, value] of attrs) {
-                if (key === '@__posCount__') {
-                  posCount = typeof value === 'function' ? value() : value;
+              rawAttrs.push(...attrs);
+            }
+          }
+
+          // Create a persistent class-based helper instance if applicable.
+          let helperInstance: any = null;
+          let recomputeTag: any = null;
+
+          if (helperFactory) {
+            const factoryClass = helperFactory.class;
+            const isClassBased = factoryClass && factoryClass.prototype &&
+              typeof factoryClass.prototype.compute === 'function';
+            if (isClassBased) {
+              try {
+                helperInstance = helperFactory.create();
+                // Find RECOMPUTE_TAG symbol on the instance
+                const symKeys = Object.getOwnPropertySymbols(helperInstance);
+                for (const sym of symKeys) {
+                  if (sym.toString().includes('RECOMPUTE_TAG')) {
+                    recomputeTag = helperInstance[sym];
+                    break;
+                  }
                 }
-              }
-              for (const [key, value] of attrs) {
-                const resolved = typeof value === 'function' ? value() : value;
-                if (key.startsWith('@__pos') && key.endsWith('__') && key !== '@__posCount__') {
-                  const idx = parseInt(key.slice(6, -2));
-                  positional[idx] = resolved;
-                } else if (key.startsWith('@') && !key.startsWith('@__')) {
-                  named[key.slice(1)] = resolved;
+                // Register for destruction
+                const destroyableInstances = g.__gxtHelperInstances;
+                if (Array.isArray(destroyableInstances)) {
+                  destroyableInstances.push(helperInstance);
                 }
+              } catch {
+                helperInstance = null;
               }
             }
           }
 
-          // Invoke helper via $_maybeHelper which handles all helper protocols
-          const maybeHelper = g.$_maybeHelper;
-          if (typeof maybeHelper === 'function') {
-            return maybeHelper(kebabName, positional, named, ctx);
-          }
+          // Build a getter that resolves args lazily and invokes the helper.
+          const helperGetter = () => {
+            const positional: any[] = [];
+            const named: Record<string, any> = {};
+            for (const [key, value] of rawAttrs) {
+              const resolved = typeof value === 'function' ? value() : value;
+              if (key.startsWith('@__pos') && key.endsWith('__') && key !== '@__posCount__') {
+                const idx = parseInt(key.slice(6, -2));
+                positional[idx] = resolved;
+              } else if (key.startsWith('@') && !key.startsWith('@__')) {
+                named[key.slice(1)] = resolved;
+              }
+            }
+
+            if (helperInstance && typeof helperInstance.compute === 'function') {
+              const result = helperInstance.compute(positional, named);
+              // Consume RECOMPUTE_TAG cell for reactivity
+              if (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                recomputeTag.value;
+              }
+              return result;
+            }
+
+            // Simple helper: delegate to $_maybeHelper
+            const maybeHelper = g.$_maybeHelper;
+            if (typeof maybeHelper === 'function') {
+              return maybeHelper(kebabName, positional, named, ctx);
+            }
+            return undefined;
+          };
+
+          // Create a reactive text node. The gxtEffect tracks cell reads
+          // inside helperGetter and updates the text node when deps change.
+          // We must avoid double-calling compute: the effect fires immediately
+          // on creation (first evaluation), so we let it set the initial value.
+          const textNode = document.createTextNode('');
+          try {
+            gxtEffect(() => {
+              const v = helperGetter();
+              textNode.textContent = v == null ? '' : String(v);
+            });
+          } catch { /* effect setup may fail */ }
+          return textNode;
         }
       }
 
@@ -2254,7 +2318,16 @@ function transformCurlyBlockComponents(code: string): string {
         continue;
       }
 
-      // Check for positional parameter: "string" or 'string' or {{expr}} or number or this.path
+      // Check for positional parameter: "string" or 'string' or {{expr}} or (subexpr) or number or this.path
+      // Subexpression: balanced parentheses like (helper-name arg1 arg2)
+      const subexprMatch = matchBalancedParens(remaining);
+      if (subexprMatch) {
+        // Wrap subexpression in {{}} so GXT compiles it as a helper call
+        positionalParams.push(`{{${subexprMatch}}}`);
+        remaining = remaining.slice(subexprMatch.length);
+        continue;
+      }
+
       // Quoted string
       const quotedMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
       if (quotedMatch) {

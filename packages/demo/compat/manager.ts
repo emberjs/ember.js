@@ -1075,6 +1075,21 @@ const _updatedInstances: any[] = [];
     }
   }
 
+  // Phase 4: destroy tracked helper instances (class-based helpers created in $_tag)
+  const helperInstances = (globalThis as any).__gxtHelperInstances;
+  if (Array.isArray(helperInstances)) {
+    for (const helperInst of helperInstances) {
+      try {
+        if (typeof helperInst.destroy === 'function' && !helperInst.isDestroyed && !helperInst.isDestroying) {
+          helperInst.destroy();
+        }
+      } catch (e) {
+        captureRenderError(e);
+      }
+    }
+    helperInstances.length = 0;
+  }
+
   // Clear the tracking sets
   trackedArgCells.clear();
   trackedWrapperInstances.clear();
@@ -1852,10 +1867,15 @@ const $_MANAGERS = {
         if (owner) {
           const resolved = resolveComponent(komp, owner);
           if (resolved !== null) return true;
+          // Convert PascalCase to kebab-case for helper lookup
+          const kebab = komp
+            .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+            .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+            .toLowerCase();
           // Also check for helpers — inline curlies like {{my-helper "foo"}} get
           // transformed to <MyHelper @__pos0__="foo" /> which GXT compiles as $_c.
           try {
-            if (owner.factoryFor(`helper:${komp}`) || owner.lookup(`helper:${komp}`)) {
+            if (owner.factoryFor(`helper:${kebab}`) || owner.lookup(`helper:${kebab}`)) {
               return true;
             }
           } catch { /* ignore destroyed owner errors */ }
@@ -1991,8 +2011,13 @@ const $_MANAGERS = {
         // Resolve as helper if component wasn't found.
         if (owner) {
           try {
-            const helperFactory = owner.factoryFor(`helper:${komp}`);
-            const helperLookup = !helperFactory ? owner.lookup(`helper:${komp}`) : null;
+            // Convert PascalCase to kebab-case for helper lookup
+            const helperName = komp
+              .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+              .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+              .toLowerCase();
+            const helperFactory = owner.factoryFor(`helper:${helperName}`);
+            const helperLookup = !helperFactory ? owner.lookup(`helper:${helperName}`) : null;
             if (helperFactory || helperLookup) {
               // Reconstruct positional args from @__pos*__ named args
               const positional: any[] = [];
@@ -2017,7 +2042,7 @@ const $_MANAGERS = {
               // Use $_maybeHelper to invoke the helper through Ember's protocol
               const maybeHelper = (globalThis as any).$_maybeHelper;
               if (typeof maybeHelper === 'function') {
-                return maybeHelper(komp, positional, named, ctx);
+                return maybeHelper(helperName, positional, named, ctx);
               }
             }
           } catch { /* ignore errors */ }

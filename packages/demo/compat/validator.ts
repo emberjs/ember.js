@@ -130,6 +130,15 @@ export function consumeTag(tag: any) {
     // Empty tags can be safely ignored
     return;
   }
+  // Our custom updatable tags (from createUpdatableTag) are objects with a
+  // cell-backed `value` getter. Reading `.value` establishes GXT tracking so
+  // that formulas depending on this tag re-evaluate when `dirty()` is called.
+  if (typeof tag === 'object' && 'value' in tag && 'dirty' in tag) {
+    // Read the cell value to track it in any enclosing GXT formula
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    tag.value;
+    return;
+  }
   return validator.consumeTag(tag);
 }
 
@@ -292,6 +301,7 @@ export function valueForTag(tag: any): number {
 }
 
 // Create an updatable tag
+let _updatableTagRevision = 0;
 export function createUpdatableTag() {
   const value = cell(0, 'updatableTag');
   return {
@@ -299,7 +309,7 @@ export function createUpdatableTag() {
       return value.value;
     },
     dirty() {
-      value.value = Date.now();
+      value.value = ++_updatableTagRevision;
     },
   };
 }
@@ -365,10 +375,17 @@ export function createTag() {
   return createUpdatableTag();
 }
 
-// Mark a tag as dirty
+// Mark a tag as dirty and flush DOM updates synchronously.
+// This is needed because helper.recompute() calls dirtyTag() via join(),
+// and tests expect the DOM to be updated synchronously after recompute().
 export function dirtyTag(tag: any) {
   if (tag && typeof tag.dirty === 'function') {
     tag.dirty();
+    // Flush GXT DOM sync so the updated value is visible immediately
+    const syncNow = (globalThis as any).__gxtSyncDomNow;
+    if (typeof syncNow === 'function') {
+      syncNow();
+    }
   }
 }
 
