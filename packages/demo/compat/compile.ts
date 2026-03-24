@@ -68,6 +68,45 @@ if (!isGlobalScopeReady()) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// Override GXT's $__fn to support mut cells.
+// GXT's $__fn unwraps function args by calling them with no args, which breaks
+// mut cells (calling mutCell() returns the current value instead of the setter).
+{
+  const g = globalThis as any;
+  const originalFn = g.$__fn;
+  if (originalFn) {
+    g.$__fn = function $__fn_ember(fn: any, ...partialArgs: any[]) {
+      // If the first arg is a mut cell, don't unwrap it
+      if (fn && fn.__isMutCell) {
+        return (...callArgs: any[]) => {
+          const resolvedArgs = partialArgs.map((a: any) =>
+            typeof a === 'function' && !a.__isMutCell ? a() : a
+          );
+          return fn(...resolvedArgs, ...callArgs);
+        };
+      }
+      // Also check if the first arg is a function that, when called, returns a mut cell
+      // GXT wraps helper results in getters
+      if (typeof fn === 'function' && !fn.__isMutCell) {
+        try {
+          const result = fn();
+          if (result && result.__isMutCell) {
+            return (...callArgs: any[]) => {
+              const resolvedArgs = partialArgs.map((a: any) =>
+                typeof a === 'function' && !a.__isMutCell ? a() : a
+              );
+              // Re-evaluate the getter to get the current mut cell
+              const currentMut = fn();
+              return currentMut(...resolvedArgs, ...callArgs);
+            };
+          }
+        } catch { /* ignore */ }
+      }
+      return originalFn(fn, ...partialArgs);
+    };
+  }
+}
+
 // NOTE: $_if reactivity is limited by GXT's async branch rendering.
 // When the condition changes, GXT's IfCondition.renderBranch calls
 // destroyBranch() (async) before rendering the new branch. This means
@@ -153,9 +192,16 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       }
 
       // Collect remaining positional params (after the first which is the component ref)
+      // For each positional getter, also store a setter if derivable (for mut support).
+      // Capture the parent render context for two-way binding via mut.
+      const parentRenderCtx = (g as any).__lastRenderContext;
       const positionals: any[] = [];
       for (let i = 1; i < params.length; i++) {
         const p = params[i];
+        // Annotate getter functions with the parent context for mut support
+        if (typeof p === 'function' && !p.prototype && parentRenderCtx) {
+          (p as any).__mutParentCtx = parentRenderCtx;
+        }
         positionals.push(p);
         // Touch positional values to track cell dependencies
         if (typeof p === 'function' && !p.prototype) {
@@ -549,9 +595,95 @@ setInterval(() => {
   readonly: (value: any) => {
     return typeof value === 'function' ? value() : value;
   },
-  // mut: Returns the value as-is (GXT doesn't need the mutable wrapper)
-  mut: (value: any) => {
-    return typeof value === 'function' ? value() : value;
+  // mut: Returns a setter function for two-way binding.
+  // When used with (fn (mut this.val) newValue), the returned function
+  // updates the property on the component via Ember.set().
+  // The template transform adds a path string as the second arg.
+  // The context is captured at creation time via __gxtMutContext.
+  mut: (value: any, path?: string) => {
+    // Capture context at creation time (set by $_maybeHelper wrapper)
+    const capturedCtx = (globalThis as any).__gxtMutContext;
+    // If no path provided, return the resolved value (fallback)
+    if (!path || typeof path !== 'string') {
+      return typeof value === 'function' ? value() : value;
+    }
+    // Determine the property name from the path
+    const propName = path.startsWith('this.') ? path.slice(5) : (path.startsWith('@') ? path.slice(1) : path);
+    // Look up the source getter for two-way binding (from curried component positional args)
+    const sourceGetter = capturedCtx?.__mutArgSources?.[propName];
+    // Create a "mut cell" function: calling it with a value sets the property
+    const mutCell = function mutCell(newValue?: any) {
+      if (arguments.length === 0) {
+        // Read mode: return current value
+        return typeof value === 'function' ? value() : value;
+      }
+      // Write mode: set the property through the binding chain
+      if (sourceGetter) {
+        // We have a source getter from the parent template.
+        // Parse its toString() to extract the property path, then set through it.
+        const parentCtx = sourceGetter.__mutParentCtx;
+        if (parentCtx) {
+          const getterStr = sourceGetter.toString();
+          // Match patterns like: () => this.model?.val2, () => this.model.val2
+          const pathMatch = getterStr.match(/this\.([a-zA-Z_$][a-zA-Z0-9_$?.]*)/);
+          if (pathMatch) {
+            // Clean the path: remove optional chaining operators
+            const fullPath = pathMatch[1].replace(/\?/g, '');
+            // Split into parts and set the nested property
+            const parts = fullPath.split('.');
+            if (parts.length === 1) {
+              // Simple property: this.val
+              if (typeof parentCtx.set === 'function') {
+                parentCtx.set(parts[0]!, newValue);
+              } else {
+                parentCtx[parts[0]!] = newValue;
+              }
+            } else {
+              // Nested property: this.model.val2
+              // Navigate to the parent object, then set the final property
+              let obj = parentCtx;
+              for (let i = 0; i < parts.length - 1; i++) {
+                obj = obj[parts[i]!];
+                if (obj == null) break;
+              }
+              if (obj != null) {
+                const lastProp = parts[parts.length - 1]!;
+                obj[lastProp] = newValue;
+              }
+              // Trigger re-render by dirtying the root property cell on the parent context
+              const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+              if (triggerReRender) {
+                triggerReRender(parentCtx, parts[0]!);
+              }
+            }
+            // Also set the local property on the component
+            if (capturedCtx && capturedCtx !== parentCtx) {
+              if (typeof capturedCtx.set === 'function') {
+                capturedCtx.set(propName, newValue);
+              } else {
+                capturedCtx[propName] = newValue;
+              }
+            }
+            return newValue;
+          }
+        }
+      }
+      // Fallback: set on the component's own context
+      if (capturedCtx) {
+        if (typeof capturedCtx.set === 'function') {
+          capturedCtx.set(propName, newValue);
+        } else {
+          capturedCtx[propName] = newValue;
+        }
+      }
+      return newValue;
+    };
+    // Mark as a mut cell so fn helper doesn't try to unwrap it
+    (mutCell as any).__isMutCell = true;
+    // valueOf returns current value for template rendering
+    mutCell.toString = () => String(typeof value === 'function' ? value() : value);
+    mutCell.valueOf = () => typeof value === 'function' ? value() : value;
+    return mutCell;
   },
   // unbound: Returns the value without tracking
   unbound: (value: any) => {
@@ -598,13 +730,16 @@ setInterval(() => {
       // Resolve the function — it may be a GXT getter wrapping the actual function
       let resolvedFn = func;
       // Unwrap nested getters until we get the actual function or value
-      while (typeof resolvedFn === 'function' && resolvedFn.length === 0) {
+      // But don't unwrap mut cells — they are callable setter functions
+      while (typeof resolvedFn === 'function' && resolvedFn.length === 0 && !resolvedFn.__isMutCell) {
         const inner = resolvedFn();
         if (inner === resolvedFn) break; // prevent infinite loop
+        // If inner is a mut cell, use it directly
+        if (typeof inner === 'function' && inner.__isMutCell) { resolvedFn = inner; break; }
         if (typeof inner !== 'function') { resolvedFn = inner; break; }
         resolvedFn = inner;
       }
-      const resolvedArgs = args.map(a => typeof a === 'function' ? a() : a);
+      const resolvedArgs = args.map(a => typeof a === 'function' && !a.__isMutCell ? a() : a);
       if (typeof resolvedFn === 'function') {
         return resolvedFn(...resolvedArgs, ...callArgs);
       }
@@ -2663,6 +2798,15 @@ export function precompileTemplate(templateString: string, options?: {
       '{{/let}}{{/each}}'
     );
   }
+
+  // Transform (mut this.prop) / (mut @arg) to pass the property path as a second arg
+  // so the mut helper can create a proper setter function.
+  // (mut this.foo) → (mut this.foo "this.foo")
+  // (mut @bar)     → (mut @bar "@bar")
+  transformedTemplate = transformedTemplate.replace(
+    /\(mut\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\)/g,
+    (_match, path) => `(mut ${path} "${path}")`
+  );
 
   transformedTemplate = transformCapitalizedComponents(transformedTemplate);
   if (/\{\{\s*outlet\s*\}\}/.test(transformedTemplate)) {

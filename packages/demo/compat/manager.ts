@@ -387,6 +387,10 @@ function createComponentInstance(
   // Ensure arg tracking is on the instance
   if (!instance.__argGetters) instance.__argGetters = argGetters;
   if (!instance.__lastArgValues) instance.__lastArgValues = lastArgValues;
+  // Store mut arg sources for two-way binding via (mut this.prop) support
+  if (args?.__mutArgSources) {
+    instance.__mutArgSources = args.__mutArgSources;
+  }
 
   // Install reactive getters for args that have closures.
   // This ensures instance.foo always returns the current arg value,
@@ -1948,6 +1952,8 @@ const $_MANAGERS = {
 
           if (invocationPosCount === undefined || invocationPosCount === 0) {
             // No invocation positionals — use curried positionals
+            // Also store raw getters for mut support
+            const posSourceGetters: any[] = [];
             for (let i = 0; i < cPositionals.length; i++) {
               const val = cPositionals[i];
               Object.defineProperty(mergedArgs, `__pos${i}__`, {
@@ -1955,12 +1961,19 @@ const $_MANAGERS = {
                 enumerable: true,
                 configurable: true,
               });
+              // Store the raw getter for mut to use as a setter source
+              if (typeof val === 'function' && !val.__isCurriedComponent) {
+                posSourceGetters[i] = val;
+              }
             }
             mergedArgs.__posCount__ = cPositionals.length;
+            // Store positional source getters for mut support
+            if (posSourceGetters.length > 0) {
+              mergedArgs.__posSourceGetters = posSourceGetters;
+            }
           }
           // If invocation provides positionals, they override (already in mergedArgs)
         }
-
         // Resolve the underlying component
         const resolvedKomp = komp.__name;
         return this.handle(resolvedKomp, mergedArgs, fw, ctx);
@@ -2207,6 +2220,9 @@ function handleStringComponent(
 
     if (positionalParams && Array.isArray(positionalParams)) {
       // positionalParams is an array like ['name', 'age'] - map each positional arg to its name
+      // Also build mut source mapping for two-way binding support
+      const posSourceGetters = args.__posSourceGetters || [];
+      const mutArgSources: Record<string, Function> = {};
       for (let i = 0; i < positionalParams.length && i < count; i++) {
         const paramName = positionalParams[i];
         const posKey = `__pos${i}__`;
@@ -2214,6 +2230,11 @@ function handleStringComponent(
         const posDesc = Object.getOwnPropertyDescriptor(args, posKey);
         const posGetter = posDesc?.get;
         const rawValue = posGetter ? posGetter() : args[posKey];
+
+        // Store the original source getter for mut support
+        if (posSourceGetters[i]) {
+          mutArgSources[paramName] = posSourceGetters[i];
+        }
 
         // Check for conflict between positional param and hash argument
         if (paramName in args && rawValue !== undefined) {
@@ -2240,6 +2261,10 @@ function handleStringComponent(
 
         // Remove the __posN__ marker
         delete args[posKey];
+      }
+      // Store mut arg sources on args for the component to pick up
+      if (Object.keys(mutArgSources).length > 0) {
+        args.__mutArgSources = mutArgSources;
       }
     } else if (typeof positionalParams === 'string') {
       // positionalParams is a string like 'names' - collect all positional args into an array
@@ -2297,6 +2322,7 @@ function handleStringComponent(
       getCachedOrCreateInstance(factory, args, factory.class, owner) :
       null;
 
+
     // Resolve template
     let resolvedTemplate = template;
     if (!resolvedTemplate && instance) {
@@ -2322,6 +2348,7 @@ function handleStringComponent(
       resolvedTemplate = resolvedTemplate(owner);
     }
 
+    // DEBUG: log when template is missing for a component that should have one
     if (!resolvedTemplate?.render) {
       // Component without a template - create a default template that yields block content
       resolvedTemplate = {

@@ -141,6 +141,26 @@ function createEmberMaybeHelper(original: Function) {
         const namedObj = unwrapHash(hash);
         return helper(namedObj);
       }
+      // For 'mut' helper, pass the raw getter + path, and set context
+      if (name === 'mut' && Array.isArray(args) && args.length > 0) {
+        // args[0] = getter for the value, args[1] = path string (added by template transform)
+        const rawGetter = args[0];
+        const pathArg = args.length > 1 ? (typeof args[1] === 'function' ? args[1]() : args[1]) : undefined;
+        // Set the mut context so the setter can find the component instance.
+        // The context is either maybeCtx (4th arg) or hashOrCtx (3rd arg).
+        // For mut, the 3rd arg is always the component's render context (this)
+        // since GXT compiles (mut this.val) as $_maybeHelper("mut", [...], this).
+        const ctx = maybeCtx || hashOrCtx;
+        const prevCtx = g.__gxtMutContext;
+        g.__gxtMutContext = ctx;
+        try {
+          // Pass the unwrapped value + path to the mut helper
+          const unwrappedValue = isGxtGetter(rawGetter) ? rawGetter() : rawGetter;
+          return helper(unwrappedValue, pathArg);
+        } finally {
+          g.__gxtMutContext = prevCtx;
+        }
+      }
       if (Array.isArray(args) && args.length > 0) {
         const unwrappedArgs = unwrapArgs(args);
         return helper(...unwrappedArgs);
