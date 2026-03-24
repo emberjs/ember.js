@@ -351,6 +351,11 @@ export const invokeHelper = glimmerInvokeHelper;
  * **NOTE:** this example uses the experimental `<template>` feature, which is
  * the only place you need to import `hash` to use it (it is a built-in when
  * writing standalone `.hbs` files).
+ *
+ * @method hash
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const hash = glimmerHash as HashHelper;
 export interface HashHelper extends Opaque<'helper:hash'> {}
@@ -374,6 +379,11 @@ export interface HashHelper extends Opaque<'helper:hash'> {}
  * the only place you need to import `array` to use it (it is a built-in when
  * writing standalone `.hbs` files).
  * ```
+ *
+ * @method array
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const array = glimmerArray as ArrayHelper;
 export interface ArrayHelper extends Opaque<'helper:array'> {}
@@ -399,6 +409,11 @@ export interface ArrayHelper extends Opaque<'helper:array'> {}
  * **NOTE:** this example uses the experimental `<template>` feature, which is
  * the only place you need to import `concat` to use it (it is a built-in when
  * writing standalone `.hbs` files).
+ *
+ * @method concat
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const concat = glimmerConcat as ConcatHelper;
 export interface ConcatHelper extends Opaque<'helper:concat'> {}
@@ -444,6 +459,11 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  * **NOTE:** this example uses the experimental `<template>` feature, which is
  * the only place you need to import `concat` to use it (it is a built-in when
  * writing standalone `.hbs` files).
+ *
+ * @method get
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const get = glimmerGet as GetHelper;
 export interface GetHelper extends Opaque<'helper:get'> {}
@@ -466,6 +486,11 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  *   </button>
  * </template>
  * ```
+ *
+ * @method fn
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const fn = glimmerFn as FnHelper;
 export interface FnHelper extends Opaque<'helper:fn'> {}
@@ -487,6 +512,11 @@ export interface FnHelper extends Opaque<'helper:fn'> {}
  *   {{/let}}
  * </template>
  * ```
+ *
+ * @method uniqueId
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
