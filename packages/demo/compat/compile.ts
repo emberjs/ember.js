@@ -2257,6 +2257,53 @@ function transformBlockParams(templateString: string): { transformed: string; bl
 }
 
 /**
+ * Check if a position in a template string is inside an HTML attribute value.
+ * Scans backwards from the offset to determine if we're between quotes in an
+ * attribute context like `<div attr="...HERE...">`.
+ *
+ * This prevents transforming helpers like `{{foo-bar}}` into components when
+ * they appear inside attribute values (e.g. `<div data-x="{{foo-bar}}">`).
+ */
+function isInsideHtmlAttributeValue(str: string, offset: number): boolean {
+  // Scan backwards from the offset to find if we're inside an attribute value.
+  // We look for the pattern: attrName= followed by a quote that is still open.
+  // Track quote state by scanning from the last '<' before the offset.
+  let angleBracketPos = -1;
+  for (let i = offset - 1; i >= 0; i--) {
+    if (str[i] === '>') {
+      // We hit a closing angle bracket before an opening one,
+      // so we're not inside an HTML tag at all
+      return false;
+    }
+    if (str[i] === '<') {
+      angleBracketPos = i;
+      break;
+    }
+  }
+
+  if (angleBracketPos === -1) {
+    // No opening '<' found before this position - not inside a tag
+    return false;
+  }
+
+  // Now scan from the '<' to the offset, tracking quote state
+  let inQuote: string | null = null;
+  for (let i = angleBracketPos; i < offset; i++) {
+    const ch = str[i];
+    if (inQuote === null) {
+      if (ch === '"' || ch === "'") {
+        inQuote = ch;
+      }
+    } else if (ch === inQuote) {
+      inQuote = null;
+    }
+  }
+
+  // If we're still inside an open quote, the mustache is in an attribute value
+  return inQuote !== null;
+}
+
+/**
  * Transform curly block component syntax to angle-bracket syntax
  * - {{#foo-bar}}content{{/foo-bar}} → <FooBar>content</FooBar>
  * - {{#foo-bar arg=val}}content{{/foo-bar}} → <FooBar @arg={{val}}>content</FooBar>
@@ -2543,8 +2590,14 @@ function transformCurlyBlockComponents(code: string): string {
   // Inline form: {{component-name arg=val}} (not followed by block content)
   // Only transform if it looks like a component (has hyphen = kebab-case)
   // Be careful not to transform helpers like {{if}} or {{log}}
+  // Also skip mustaches inside HTML attribute values (e.g. <div data-x="{{foo-bar}}">)
   const inlinePattern = /\{\{([a-z][a-zA-Z0-9]*-[a-zA-Z0-9-]*)([^}]*)\}\}/g;
-  result = result.replace(inlinePattern, (match, name, attrs) => {
+  result = result.replace(inlinePattern, (match, name, attrs, offset) => {
+    // Check if this mustache is inside an HTML attribute value by scanning
+    // backwards from the match position for an unmatched opening quote
+    if (isInsideHtmlAttributeValue(result, offset)) {
+      return match; // Leave it as-is; it's a helper call in attribute context
+    }
     const pascalName = toPascalCase(name);
     const transformedAttrs = transformAttrs(attrs);
     return `<${pascalName}${transformedAttrs} />`;
