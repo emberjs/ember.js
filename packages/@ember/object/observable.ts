@@ -526,7 +526,7 @@ const Observable = Mixin.create({
       'Must pass a numeric value to decrementProperty',
       (typeof decrement === 'number' || !isNaN(parseFloat(decrement))) && isFinite(decrement)
     );
-    return set(this, keyName, (get(this, keyName) || 0) - decrement);
+    return set(this, keyName, (parseFloat(get(this, keyName)) || 0) - decrement);
   },
 
   toggleProperty(keyName: string) {
