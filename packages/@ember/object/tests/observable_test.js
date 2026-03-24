@@ -710,6 +710,29 @@ moduleFor(
       );
     }
 
+    ['@test incrementProperty and decrementProperty should handle non-numeric values consistently'](assert) {
+      // Test with non-numeric string value
+      object.set('stringProp', 'hello');
+
+      let incrementResult = object.incrementProperty('stringProp', 1);
+      object.set('stringProp', 'hello'); // reset
+      let decrementResult = object.decrementProperty('stringProp', 1);
+
+      assert.equal(incrementResult, 1, 'incrementProperty should fallback to 0 and return 1');
+      assert.equal(decrementResult, -1, 'decrementProperty should fallback to 0 and return -1');
+      assert.ok(!isNaN(decrementResult), 'decrementProperty should not return NaN');
+
+      // Test with numeric string
+      object.set('numericString', '5.5');
+
+      let incNumeric = object.incrementProperty('numericString', 1);
+      object.set('numericString', '5.5'); // reset
+      let decNumeric = object.decrementProperty('numericString', 1);
+
+      assert.equal(incNumeric, 6.5, 'incrementProperty should parse "5.5" and return 6.5');
+      assert.equal(decNumeric, 4.5, 'decrementProperty should parse "5.5" and return 4.5');
+    }
+
     ['@test toggle function, should be boolean'](assert) {
       assert.equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
       assert.equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
