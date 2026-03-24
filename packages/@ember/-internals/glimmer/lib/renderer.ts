@@ -8,7 +8,7 @@ import { getViewElement, getViewId, setViewElement } from '@ember/-internals/vie
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
 (globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
 
-import { pushParentView, popParentView, flushAfterInsertQueue } from '@glimmer/manager';
+import { pushParentView, popParentView, flushAfterInsertQueue, flushRenderErrors } from '@glimmer/manager';
 // @ts-ignore
 import {
   destroyElementSync as _destroyElementSync,
@@ -511,6 +511,10 @@ class ClassicRootState {
         // Flush queued didInsertElement / didRender hooks now that all DOM
         // has been inserted into the live document by GXT.
         flushAfterInsertQueue();
+
+        // Re-throw any errors captured during rendering (init, didInsertElement, etc.)
+        // so they propagate through assert.throws in tests and Ember's error recovery.
+        flushRenderErrors();
 
         // Store references for re-rendering
         const gxtTemplate = template;

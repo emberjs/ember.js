@@ -400,12 +400,22 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 // that tracks the cell via relatedTags (more robust than direct opcodeFor).
 (globalThis as any).__gxtGetCellOrFormula = function(obj: any, key: string) {
   const raw = obj?.__gxtRawTarget || obj;
+  // Ensure a cell exists with getter/setter installed on the object.
   try {
-    // Ensure a cell exists for this property so reads are tracked
-    cellFor(raw, key, /* skipDefine */ true);
+    cellFor(raw, key, /* skipDefine */ false);
   } catch { /* ignore */ }
-  // Return a getter function — IfCondition.setupCondition will wrap it
-  // in a formula() that tracks which cells are read during evaluation.
+  // Return the Cell directly instead of a getter function.
+  // When IfCondition.setupCondition receives a non-function non-primitive,
+  // it uses it directly as `this.condition` (bypassing the formula wrapper).
+  // This avoids the formula short-circuit issue where nested formulas
+  // don't track cells because an outer formula's tracker is active.
+  try {
+    const c = cellFor(raw, key, /* skipDefine */ true);
+    if (c && typeof c === 'object' && 'value' in c && 'update' in c) {
+      return c;
+    }
+  } catch { /* ignore */ }
+  // Fallback: return getter
   return function() { return obj[key]; };
 };
 
@@ -2553,7 +2563,7 @@ export function precompileTemplate(templateString: string, options?: {
   // Self-closing <Component /> does NOT get the marker (has-block = false).
   // Only matches components (PascalCase or kebab-case starting with uppercase).
   transformedTemplate = transformedTemplate.replace(
-    /<([A-Z][a-zA-Z0-9]*)(\s[^>]*)?>(\s*)<\/\1>/g,
+    /<([A-Z][a-zA-Z0-9]*)(\s[^>]*)?(?<!\/)>(\s*)<\/\1>/g,
     (match, tagName, attrs, whitespace) => {
       // Already has __hasBlock__? Skip.
       if (attrs && attrs.includes('__hasBlock__')) return match;
@@ -3190,6 +3200,7 @@ export function precompileTemplate(templateString: string, options?: {
           // will track the cell, enabling reactive updates when set() is called later.
           // We walk the prototype chain (up to the base Ember component) to find
           // properties set via Component.extend({ fooBar: true }).
+          let _cellInstallCount = 0;
           try {
             const internalKeys = new Set([
               'args', 'attrs', 'element', 'parentView', 'tagName', 'layoutName',
@@ -3197,7 +3208,10 @@ export function precompileTemplate(templateString: string, options?: {
               'concatenatedProperties', 'mergedProperties', 'isDestroying', 'isDestroyed',
               'renderer', 'init', 'constructor', 'willDestroy', 'toString',
             ]);
-            let proto = renderContext;
+            // Use the raw target if render context is a Proxy (so cells are keyed
+            // to the same object that __gxtTriggerReRender uses).
+            const cellTarget = (renderContext as any).__gxtRawTarget || renderContext;
+            let proto = cellTarget;
             // Walk prototype chain, stopping at Object.prototype
             const visited = new Set<string>();
             for (let depth = 0; depth < 5 && proto; depth++) {
@@ -3210,9 +3224,10 @@ export function precompileTemplate(templateString: string, options?: {
                 if (desc && !desc.get && !desc.set && desc.configurable &&
                     typeof desc.value !== 'function') {
                   try {
-                    // Install cell on the actual renderContext (not the prototype)
-                    // This makes `this.prop` reactive in GXT formulas
-                    cellFor(renderContext, key as any, /* skipDefine */ false);
+                    // Install cell on the raw target (not the proxy)
+                    // This ensures the same cell is used for reads and writes
+                    cellFor(cellTarget, key as any, /* skipDefine */ false);
+                    _cellInstallCount++;
                   } catch { /* ignore non-configurable properties */ }
                 }
               }
@@ -3221,6 +3236,7 @@ export function precompileTemplate(templateString: string, options?: {
               proto = nextProto;
             }
           } catch { /* ignore */ }
+          // _cellInstallCount tracked for debugging
 
           // Call the compiled template function with the render context.
           // Enable isRendering so GXT formulas track cell dependencies.
@@ -3278,28 +3294,12 @@ export function precompileTemplate(templateString: string, options?: {
           g.$slots = prevSlots;
           g.$fw = prevFw;
 
-          // Re-throw assertion errors so they propagate to test harness
-          if (err instanceof Error && (
-            err.message.includes('Could not find component') ||
-            err.message.includes('Attempted to resolve') ||
-            err.message.includes('Assertion Failed') ||
-            err.message.includes('You cannot specify both') ||
-            err.message.includes('You cannot specify positional')
-          )) {
+          // Rethrow assertion errors so they propagate to test harnesses
+          if (err && (err.message?.includes('Assertion Failed') || err.message?.includes('Could not find'))) {
             throw err;
           }
-
-          let errMsg = err instanceof Error ? err.message : String(err);
-          if (errMsg === '[object Object]' && err) {
-            // Try to get more info
-            errMsg = JSON.stringify(err, null, 2).substring(0, 200);
-          }
-          console.error('[gxt-compile] Render error:', errMsg);
-          console.error('[gxt-compile] Template:', templateString.slice(0, 200));
-          if (err?.stack) {
-            console.error('[gxt-compile] Stack:', err.stack.substring(0, 300));
-          }
-          return { nodes: [], ctx: context };
+          // Swallow other render errors gracefully
+          console.error('Render error:', err);
         }
       },
     };

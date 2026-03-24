@@ -365,13 +365,15 @@ function createComponentInstance(
   // Map 'id' arg to 'elementId' for Ember component initialization
   if ('id' in props && props.id !== undefined) {
     props.elementId = props.id;
+    props.__elementIdFromId = true; // Flag: elementId was mapped from id, not explicit
   }
   // Also handle direct elementId arg
   if ('elementId' in props && props.elementId !== undefined && !('id' in props)) {
     // elementId is already set, just ensure it's preserved
   }
 
-  // Create the instance
+  // Create the instance — let init errors propagate naturally so they
+  // reach assert.throws in tests (GXT dist has no try-catch wrapper).
   const instance = factory.create(props);
 
   // Ensure arg tracking is on the instance
@@ -581,6 +583,34 @@ function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?
 const _afterInsertQueue: Array<() => void> = [];
 
 /**
+ * Queue of errors captured during rendering that should be re-thrown
+ * after the render completes. This allows GXT's error-swallowing
+ * component() wrapper to not lose user-thrown errors from init(),
+ * didInsertElement(), destroy(), etc.
+ */
+const _renderErrors: Error[] = [];
+
+export function captureRenderError(err: unknown): void {
+  if (err instanceof Error) {
+    _renderErrors.push(err);
+  } else {
+    _renderErrors.push(new Error(String(err)));
+  }
+}
+
+/**
+ * Flush any render errors captured during the render cycle.
+ * Throws the first one (so assert.throws in tests can catch it).
+ */
+export function flushRenderErrors(): void {
+  if (_renderErrors.length > 0) {
+    const err = _renderErrors.shift()!;
+    _renderErrors.length = 0;
+    throw err;
+  }
+}
+
+/**
  * Flush all queued didInsertElement / didRender callbacks.
  * Called from the renderer after the GXT template.render() call has
  * synchronously appended all DOM into the live document.
@@ -588,7 +618,10 @@ const _afterInsertQueue: Array<() => void> = [];
 export function flushAfterInsertQueue(): void {
   while (_afterInsertQueue.length > 0) {
     const cb = _afterInsertQueue.shift()!;
-    try { cb(); } catch (e) { /* lifecycle hooks must not break rendering */ }
+    try { cb(); } catch (e) {
+      // Capture lifecycle errors so they propagate to assert.throws
+      captureRenderError(e);
+    }
   }
 }
 
@@ -653,7 +686,8 @@ function triggerLifecycleHook(instance: any, hookName: string): void {
       instance.trigger(hookName);
     }
   } catch (e) {
-    // Lifecycle hooks shouldn't break rendering
+    // Capture lifecycle errors so they propagate to assert.throws
+    captureRenderError(e);
   }
 }
 
@@ -1033,7 +1067,10 @@ const _updatedInstances: any[] = [];
       if (typeof instance.destroy === 'function' && !instance.isDestroyed && !instance.isDestroying) {
         instance.destroy();
       }
-    } catch { /* ignore errors during cleanup */ }
+    } catch (e) {
+      // Capture destroy errors so they propagate to assert.throws
+      captureRenderError(e);
+    }
   }
 
   // Clear the tracking sets
@@ -1092,6 +1129,26 @@ function buildWrapperElement(
   const tagName = instanceTagName === '' ? null : (instanceTagName || 'div');
 
   if (!tagName) {
+    // Validate tagless component constraints
+    const cnBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
+    assert(
+      'You cannot use `classNameBindings` on a tag-less component',
+      !cnBindings || !Array.isArray(cnBindings) || cnBindings.length === 0
+    );
+    const atBindings = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
+    assert(
+      'You cannot use `attributeBindings` on a tag-less component',
+      !atBindings || !Array.isArray(atBindings) || atBindings.length === 0
+    );
+    // Only error on explicit `elementId` usage — `id` is allowed on tagless components.
+    // Check: (a) elementId arg passed directly, or (b) elementId on instance that
+    //   wasn't mapped from `id` arg.
+    const argElementId = args && 'elementId' in args && args.elementId !== undefined;
+    const instanceElementId = instance?.elementId && !instance.__elementIdFromId;
+    assert(
+      'You cannot use `elementId` on a tag-less component',
+      !argElementId && !instanceElementId
+    );
     // Tagless component - return a fragment marker
     return document.createDocumentFragment() as any;
   }
@@ -2616,16 +2673,11 @@ function renderGlimmerComponent(
  * Create a GXT-compatible result object.
  */
 function createGxtResult(content: Element | DocumentFragment): any {
-  // Return the nodes directly - GXT should be able to handle DOM nodes
   if (content instanceof DocumentFragment) {
-    // For fragments, return array of child nodes
-    const nodes = Array.from(content.childNodes);
-    if (nodes.length === 1) {
-      return nodes[0]; // Single node - return directly
-    }
-    return nodes; // Multiple nodes - return array
+    // Return fragment directly for tagless/fragment components.
+    return content;
   }
-  // Single element - return directly
+  // Single element (wrapped component) - return directly
   return content;
 }
 

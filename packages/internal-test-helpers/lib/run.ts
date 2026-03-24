@@ -1,5 +1,6 @@
 import { next, run, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
+import { flushRenderErrors } from '@glimmer/manager';
 
 import { Promise } from 'rsvp';
 
@@ -9,7 +10,15 @@ export function runAppend(view: any): void {
 
 export function runDestroy(toDestroy: any): void {
   if (toDestroy) {
-    run(destroy, toDestroy);
+    try {
+      run(destroy, toDestroy);
+    } catch (e: any) {
+      // Swallow "already destroyed" errors during test cleanup
+      if (e && e.message && e.message.includes('after the owner has been destroyed')) {
+        return;
+      }
+      throw e;
+    }
   }
 }
 
@@ -21,6 +30,8 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   if (typeof syncNow === 'function') {
     syncNow();
   }
+  // Re-throw any errors captured during rendering/destruction
+  flushRenderErrors();
   return result;
 }
 

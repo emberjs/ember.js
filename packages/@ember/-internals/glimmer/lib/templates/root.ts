@@ -119,6 +119,8 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
       tpl.render(ctx, target);
     } catch (err: any) {
       if (DEBUG_TEMPLATE_LOOKUP) console.error('[root.ts] render error:', err?.message || err, 'for template:', tpl?.moduleName || tpl?.name);
+      // Only rethrow assertion errors
+      if (err?.message?.includes('Assertion Failed')) throw err;
     }
     if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] After render, target innerHTML length:', target.innerHTML?.length);
   }
