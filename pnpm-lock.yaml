@@ -2787,8 +2787,8 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1
       ember-auto-import:
-        specifier: ^2.12.0
-        version: 2.12.1(webpack@5.105.4)
+        specifier: ^2.13.0
+        version: 2.13.0(webpack@5.105.4)
       ember-cli:
         specifier: ~6.11.0
         version: 6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.8)(underscore@1.13.8)
@@ -7586,8 +7586,8 @@ packages:
     resolution: {integrity: sha512-B+ZM+RXvRqQaAmkMlO/oSe5nMUOaUnyfGYCEHoR8wrXsZR2mA0XVibsxV1bvTwxdRWah1PkQqso2EzhILGHtEQ==}
     engines: {node: '>=0.10.0'}
 
-  ember-auto-import@2.12.1:
-    resolution: {integrity: sha512-wyvl+aJJKOKbRSLqq6CyMsNrvurmX4SIWHHqZdC5giZ7P8ECGmcn9W9HFoVLpwXkFJoXhNV4L7mqqcU6881t0w==}
+  ember-auto-import@2.13.0:
+    resolution: {integrity: sha512-P6COSWDDC6qpgNdc33PyAubhTHUkKc1gUfP2oR4BZoHhUVoEMHiSOECHISd5a2J8DaNrcpFcZmjgb1vJ2ydkjw==}
     engines: {node: 12.* || 14.* || >= 16}
 
   ember-cli-app-version@7.0.0:
@@ -18721,7 +18721,7 @@ snapshots:
 
   elegant-spinner@1.0.1: {}
 
-  ember-auto-import@2.12.1(webpack@5.105.4):
+  ember-auto-import@2.13.0(webpack@5.105.4):
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.29.0)
