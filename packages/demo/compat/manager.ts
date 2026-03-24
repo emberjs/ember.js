@@ -1490,9 +1490,10 @@ function createRenderContext(
           const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
           cell.update(localVal);
           renderCtxArgCells[key] = { cell, getter };
-          // Override the cell-backed getter with one that respects init
+          // Override the cell-backed getter with one that respects init.
+          // Read cell.value to trigger GXT formula tracking (if same module instance).
           Object.defineProperty(renderContext, key, {
-            get() { return useLocal ? localVal : getter(); },
+            get() { cell.value; return useLocal ? localVal : getter(); },
             set(v: any) {
               localVal = v;
               useLocal = true;
