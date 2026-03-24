@@ -70,7 +70,7 @@
     "broccoli-funnel": "^3.0.8",
     "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
-    "ember-cli-babel": "^8.2.0",
+    "ember-cli-babel": "8.3.1",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
