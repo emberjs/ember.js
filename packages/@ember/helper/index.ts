@@ -354,6 +354,11 @@ export const invokeHelper = glimmerInvokeHelper;
  *   {{/each-in}}
  * </template>
  * ```
+ *
+ * @method hash
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const hash = glimmerHash as HashHelper;
 export interface HashHelper extends Opaque<'helper:hash'> {}
@@ -372,6 +377,11 @@ export interface HashHelper extends Opaque<'helper:hash'> {}
  *   </ul>
  * </template>
  * ```
+ *
+ * @method array
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const array = glimmerArray as ArrayHelper;
 export interface ArrayHelper extends Opaque<'helper:array'> {}
@@ -393,6 +403,11 @@ export interface ArrayHelper extends Opaque<'helper:array'> {}
  *
  * This will display the result of `@foo.item1` when `index` is `1`, and
  * `this.foo.item2` when `index` is `2`, etc.
+ *
+ * @method concat
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const concat = glimmerConcat as ConcatHelper;
 export interface ConcatHelper extends Opaque<'helper:concat'> {}
@@ -434,6 +449,11 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  *
  * This will display the result of `@foo.item1` when `index` is `1`, and
  * `this.foo.item2` when `index` is `2`, etc.
+ *
+ * @method get
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const get = glimmerGet as GetHelper;
 export interface GetHelper extends Opaque<'helper:get'> {}
@@ -456,6 +476,11 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  *   </button>
  * </template>
  * ```
+ *
+ * @method fn
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const fn = glimmerFn as FnHelper;
 export interface FnHelper extends Opaque<'helper:fn'> {}
@@ -592,6 +617,11 @@ export interface ElementHelper extends Opaque<'helper:element'> {}
  *   {{/let}}
  * </template>
  * ```
+ *
+ * @method uniqueId
+ * @for @ember/helper
+ * @public
+ * @static
  */
 export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
