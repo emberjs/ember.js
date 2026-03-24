@@ -96,7 +96,7 @@ class NormalizationStatements {
       );
 
       if (shadowrootmodeAttr && ASTv2.isLiteral(shadowrootmodeAttr.value, 'string')) {
-        const mode = shadowrootmodeAttr.value.value as string;
+        const mode = shadowrootmodeAttr.value.value;
 
         if (mode === 'open' || mode === 'closed') {
           return this.visitList(element.body, state).mapOk(
