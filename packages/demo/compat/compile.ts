@@ -25,9 +25,9 @@ import {
   RENDERING_CONTEXT_PROPERTY,
   initDOM as gxtInitDOM,
   setIsRendering as gxtSetIsRendering,
-  syncDom as gxtSyncDom,
-  cellFor,
-  effect as gxtEffect,
+  syncDom as _syncDomFromDirectImport,
+  cellFor as _cellForFromDirectImport,
+  effect as _effectFromDirectImport,
   // Symbols needed by renderer.ts / root.ts exposed via globalThis
   RENDERING_CONTEXT as _GXT_RENDERING_CONTEXT,
   HTMLBrowserDOMApi as _GXT_HTMLBrowserDOMApi,
@@ -38,8 +38,13 @@ import {
   Component as _GXT_Component,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
-// Expose gxtEffect on globalThis for manager.ts to use for reactive bindings
-(globalThis as any).__gxtEffect = gxtEffect;
+// After setupGlobalScope(), __gxtCellFor and __gxtEffect are set from GXT's
+// runtime module instance (sharing currentTracker with formulas).
+// Use those for cell creation/tracking. Fall back to direct imports if not available.
+// These are module-level vars reassigned after setupGlobalScope.
+var cellFor = _cellForFromDirectImport;
+var gxtEffect = _effectFromDirectImport;
+var gxtSyncDom = _syncDomFromDirectImport;
 
 // Expose GXT symbols on globalThis so renderer.ts and root.ts can access them
 // without importing from @lifeart/gxt (whose pre-bundled version drops these exports)
@@ -64,6 +69,17 @@ const _SLOTS_SYM = Symbol.for('gxt-slots');
 if (!isGlobalScopeReady()) {
   setupGlobalScope();
 }
+
+// Use cellFor/effect/syncDom from GXT's runtime (same module instance as formulas).
+// setupGlobalScope() exposes these from the SAME module instance that holds
+// tagsToRevalidate, relatedTags, and currentTracker. Using these ensures
+// cell tracking and sync work across the Ember compat layer.
+if ((globalThis as any).__gxtCellFor) cellFor = (globalThis as any).__gxtCellFor;
+if ((globalThis as any).__gxtEffect) gxtEffect = (globalThis as any).__gxtEffect;
+if ((globalThis as any).__gxtSyncDom) gxtSyncDom = (globalThis as any).__gxtSyncDom;
+// Re-expose for manager.ts
+(globalThis as any).__gxtCellFor = cellFor;
+(globalThis as any).__gxtEffect = gxtEffect;
 
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
@@ -384,7 +400,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       const syncAll = (globalThis as any).__gxtSyncAllWrappers;
       if (typeof syncAll === 'function') {
         syncAll(); // Pre-render hooks + arg cell updates
-        try { gxtSyncDom(); } catch { /* ignore */ } // Second sync for dirty arg cells
+        try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ } // Second sync for dirty arg cells
         // Post-render hooks (didUpdate, didRender)
         const postRender = (globalThis as any).__gxtPostRenderHooks;
         if (typeof postRender === 'function') postRender();
@@ -473,13 +489,13 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     // Start a new render pass to prevent double-firing of lifecycle hooks
     const newPass = (globalThis as any).__gxtNewRenderPass;
     if (typeof newPass === 'function') newPass();
-    try { gxtSyncDom(); } catch { /* ignore */ }
+    try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
     // Update arg cells and wrapper elements, then run second sync
     try {
       const syncAll = (globalThis as any).__gxtSyncAllWrappers;
       if (typeof syncAll === 'function') {
         syncAll(); // Pre-render hooks + arg cell updates
-        try { gxtSyncDom(); } catch { /* ignore */ }
+        try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
         const postRender = (globalThis as any).__gxtPostRenderHooks;
         if (typeof postRender === 'function') postRender();
       }
