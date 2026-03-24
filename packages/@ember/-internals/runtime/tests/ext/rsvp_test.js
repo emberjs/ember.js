@@ -173,8 +173,8 @@ moduleFor(
 
     ['@test sync handled'](assert) {
       run(function () {
-        RSVP.Promise.reject(reason).catch(() => {
-          // Intentionally ignored; error is expected in this test
+        RSVP.Promise.reject(reason).catch((error) => {
+          assert.ok(false, `Unexpected error: ${error}`);
         });
       }); // handled, we shouldn't need to assert.
       assert.ok(true, 'reached end of test');
