@@ -9,7 +9,6 @@ import type { OpaqueIntent } from './transition-intent';
 import type { TransitionError } from './transition-state';
 import type TransitionState from './transition-state';
 import { log, promiseLabel } from './utils';
-// @ts-expect-error Missing module types for @glimmer/env in router_js
 import { DEBUG } from '@glimmer/env';
 
 export type OnFulfilled<T, TResult1> =
