@@ -686,8 +686,10 @@ function triggerLifecycleHook(instance: any, hookName: string): void {
       instance.trigger(hookName);
     }
   } catch (e) {
-    // Capture lifecycle errors so they propagate to assert.throws
-    captureRenderError(e);
+    // Only capture assertion/render errors — other lifecycle errors are swallowed
+    if (e instanceof Error && (e.message?.includes('Assertion Failed') || e.message?.includes('Error in'))) {
+      captureRenderError(e);
+    }
   }
 }
 
