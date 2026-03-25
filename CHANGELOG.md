@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v6.12.0-beta.3 (March 25, 2026)
+
+- [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
+- [#21244](https://github.com/emberjs/ember.js/pull/21244) [BUGFIX] Fix implicit-modules naming to fix use of `use-ember-modules` with a classic build
+
 ## v6.12.0-beta.2 (March 9, 2026)
 
 - [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
