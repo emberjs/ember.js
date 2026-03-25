@@ -355,9 +355,10 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
           const newValue = (obj as any)[keyName];
           for (const ctx of ctxs) {
             try {
-              // Use skipDefine=false to create cell if needed.
-              // This ensures formulas that read ctx.prop will track the cell.
-              const rc = cellFor(ctx, keyName, /* skipDefine */ false);
+              // Use the raw target if ctx is a Proxy — cells are installed on the
+              // raw target during initial render, so we must update the SAME cell.
+              const cellTarget = (ctx as any).__gxtRawTarget || ctx;
+              const rc = cellFor(cellTarget, keyName, /* skipDefine */ false);
               if (rc) {
                 rc.update(newValue);
               }
@@ -599,6 +600,10 @@ setInterval(() => {
   if (typeof (globalThis as any).__gxtClearHelperCache === 'function') {
     (globalThis as any).__gxtClearHelperCache();
   }
+  // Clear the helper instance cache used by $_tag
+  if (typeof (globalThis as any).__gxtClearTagHelperCache === 'function') {
+    (globalThis as any).__gxtClearTagHelperCache();
+  }
 };
 
 // Set GXT mode flag
@@ -606,6 +611,12 @@ setInterval(() => {
 
 // Track class-based helper instances for destruction during test teardown
 (globalThis as any).__gxtHelperInstances = (globalThis as any).__gxtHelperInstances || [];
+
+// Cache for helper instances created in $_tag to prevent re-creation during
+// force re-render (which does innerHTML='' + full rebuild). Keyed by helper name.
+// Cleared during test teardown via __gxtClearTagHelperCache.
+const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: any }>();
+(globalThis as any).__gxtClearTagHelperCache = () => _tagHelperInstanceCache.clear();
 
 // Expose $_MANAGERS on globalThis so the $_tag wrapper can access it
 // (manager.ts will configure it later, but we need the same reference)
@@ -1275,7 +1286,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
           }
 
-          // Create a persistent class-based helper instance if applicable.
+          // Create or reuse a persistent class-based helper instance.
+          // The cache prevents re-creation when __gxtForceEmberRerender does
+          // a full innerHTML='' + rebuild, which would otherwise create a new
+          // instance and inflate createCount / computeCount.
           let helperInstance: any = null;
           let recomputeTag: any = null;
 
@@ -1284,23 +1298,30 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             const isClassBased = factoryClass && factoryClass.prototype &&
               typeof factoryClass.prototype.compute === 'function';
             if (isClassBased) {
-              try {
-                helperInstance = helperFactory.create();
-                // Find RECOMPUTE_TAG symbol on the instance
-                const symKeys = Object.getOwnPropertySymbols(helperInstance);
-                for (const sym of symKeys) {
-                  if (sym.toString().includes('RECOMPUTE_TAG')) {
-                    recomputeTag = helperInstance[sym];
-                    break;
+              const cached = _tagHelperInstanceCache.get(kebabName);
+              if (cached && cached.instance && !cached.instance.isDestroyed && !cached.instance.isDestroying) {
+                helperInstance = cached.instance;
+                recomputeTag = cached.recomputeTag;
+              } else {
+                try {
+                  helperInstance = helperFactory.create();
+                  // Find RECOMPUTE_TAG symbol on the instance
+                  const symKeys = Object.getOwnPropertySymbols(helperInstance);
+                  for (const sym of symKeys) {
+                    if (sym.toString().includes('RECOMPUTE_TAG')) {
+                      recomputeTag = helperInstance[sym];
+                      break;
+                    }
                   }
+                  _tagHelperInstanceCache.set(kebabName, { instance: helperInstance, recomputeTag });
+                  // Register for destruction
+                  const destroyableInstances = g.__gxtHelperInstances;
+                  if (Array.isArray(destroyableInstances)) {
+                    destroyableInstances.push(helperInstance);
+                  }
+                } catch {
+                  helperInstance = null;
                 }
-                // Register for destruction
-                const destroyableInstances = g.__gxtHelperInstances;
-                if (Array.isArray(destroyableInstances)) {
-                  destroyableInstances.push(helperInstance);
-                }
-              } catch {
-                helperInstance = null;
               }
             }
           }
@@ -1320,7 +1341,23 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
 
             if (helperInstance && typeof helperInstance.compute === 'function') {
+              // Deduplicate: if args haven't changed, return cached result.
+              // The force-rerender (innerHTML='' + rebuild) creates a NEW gxtEffect closure
+              // that fires immediately with the same args, causing double-computation.
+              // We store the cache on the helperInstance itself (which is shared via
+              // _tagHelperInstanceCache) so it survives across closure re-creation.
+              let argsSerialized: string | null = null;
+              // Include recompute tag value in dedup key so recompute() invalidates cache
+              const recomputeVal = (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag)
+                ? recomputeTag.value : 0;
+              try { argsSerialized = JSON.stringify({ p: positional, n: named, r: recomputeVal }); } catch { /* skip dedup */ }
+              if (argsSerialized !== null && argsSerialized === helperInstance.__gxtLastArgsSerialized) {
+                // recomputeTag.value already consumed above for the dedup key
+                return helperInstance.__gxtLastResult;
+              }
               const result = helperInstance.compute(positional, named);
+              helperInstance.__gxtLastArgsSerialized = argsSerialized;
+              helperInstance.__gxtLastResult = result;
               // Consume RECOMPUTE_TAG cell for reactivity
               if (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag) {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions

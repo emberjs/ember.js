@@ -76,7 +76,10 @@ function findHelperManager(obj: any): any {
 // Keyed by helper name for simple per-invocation caching.
 // Cleared during test teardown via __gxtClearHelperCache.
 const classHelperInstanceCache = new Map<string, any>();
-(g as any).__gxtClearHelperCache = () => classHelperInstanceCache.clear();
+// Cache for simple (function-based) helper results to deduplicate calls within
+// the same sync cycle. Keyed by helper name, stores last args serialization + result.
+const simpleHelperResultCache = new Map<string, { argsSer: string; result: any }>();
+(g as any).__gxtClearHelperCache = () => { classHelperInstanceCache.clear(); simpleHelperResultCache.clear(); };
 
 function createEmberMaybeHelper(original: Function) {
   const wrapped = function $_maybeHelper_ember(
@@ -229,17 +232,35 @@ function createEmberMaybeHelper(original: Function) {
         const manager = findHelperManager(factoryClass) || findHelperManager(factoryClass?.prototype);
 
         if (manager) {
+          // Deduplicate: check if same args were already computed in this sync cycle.
+          // The force-rerender (innerHTML='' + rebuild) creates a new gxtEffect that
+          // fires immediately with the same args, causing double-computation.
+          let argsSer: string | null = null;
+          try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip dedup */ }
+          if (argsSer !== null) {
+            const cached = simpleHelperResultCache.get(name);
+            if (cached && cached.argsSer === argsSer) {
+              return cached.result;
+            }
+          }
+
           if (typeof manager.getHelper === 'function') {
             const helperFn = manager.getHelper(factoryClass);
             if (typeof helperFn === 'function') {
               const capturedArgs = { positional, named };
               const result = helperFn(capturedArgs, owner);
+              if (argsSer !== null) {
+                simpleHelperResultCache.set(name, { argsSer, result });
+              }
               return result;
             }
           }
           if (typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
             const state = manager.createHelper(factoryClass, { positional, named });
             const result = manager.getValue(state);
+            if (argsSer !== null) {
+              simpleHelperResultCache.set(name, { argsSer, result });
+            }
             return result;
           }
         }
