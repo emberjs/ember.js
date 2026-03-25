@@ -740,20 +740,44 @@ function loopEnd() {
   resolveRenderPromise();
 }
 
-// In GXT mode, don't hook into backburner's begin/end events.
-// GXT handles rendering via its own reactivity system, and the loopBegin/loopEnd
-// hooks can cause infinite synchronous loops during router transitions.
+// In GXT mode, don't hook into backburner's begin/end events for render
+// revalidation. GXT handles rendering via its own reactivity system.
+// Instead, use __gxtSyncDomNow (called by runTask) for synchronous updates.
 if (!(globalThis as any).__GXT_MODE__) {
   _backburner.on('begin', loopBegin);
   _backburner.on('end', loopEnd);
 } else {
-  // In GXT mode, still resolve render promises at loop end
-  // but skip the revalidation cycle
   _backburner.on('end', () => {
     loops = 0;
     resolveRenderPromise();
   });
 }
+
+// Expose a function to force re-render all GXT roots.
+// Called from __gxtSyncDomNow when GXT's cell tracking misses changes
+// made through Ember's set() / notifyPropertyChange.
+(globalThis as any).__gxtForceEmberRerender = function() {
+  for (const renderer of renderers) {
+    const state = (renderer as any).state as RendererState;
+    if (!state) continue;
+    const roots = (state as any).__roots || (state as any)['#roots'];
+    // Access private #roots via the debug getter
+    const debugRoots = state.debug?.roots;
+    if (!debugRoots) continue;
+    for (const root of debugRoots) {
+      const classicRoot = root as any;
+      if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
+        const currentTagValue = valueForTag(classicRoot.gxtComponentTag);
+        if (currentTagValue !== classicRoot.gxtLastTagValue) {
+          // Tag is dirty — force re-render
+          try {
+            classicRoot.render();
+          } catch { /* ignore render errors */ }
+        }
+      }
+    }
+  }
+};
 
 interface ViewRegistry {
   [viewId: string]: unknown;
@@ -931,8 +955,6 @@ class RendererState {
     }
 
     // Check if any GXT roots have dirty component tags
-    // This replaces the standard validateTag check for GXT templates
-    // because GXT templates don't consume Ember's tags during render
     for (const root of this.#roots) {
       const classicRoot = root as ClassicRootState;
       if (classicRoot.isGxt && classicRoot.gxtComponentTag) {

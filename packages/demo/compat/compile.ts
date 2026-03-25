@@ -490,6 +490,13 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     const newPass = (globalThis as any).__gxtNewRenderPass;
     if (typeof newPass === 'function') newPass();
     try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
+    // Force Ember renderer re-render for GXT roots.
+    // GXT's cell tracking may not pick up changes from Ember's set(),
+    // so we trigger a full re-render via the renderer's root.render().
+    try {
+      const forceRerender = (globalThis as any).__gxtForceEmberRerender;
+      if (typeof forceRerender === 'function') forceRerender();
+    } catch { /* ignore */ }
     // Update arg cells and wrapper elements, then run second sync
     try {
       const syncAll = (globalThis as any).__gxtSyncAllWrappers;
@@ -3549,6 +3556,8 @@ export function precompileTemplate(templateString: string, options?: {
             }
           } catch { /* ignore */ }
           // _cellInstallCount tracked for debugging
+
+          // Cell promotion handled by __gxtForceEmberRerender (full re-render)
 
           // Call the compiled template function with the render context.
           // Enable isRendering so GXT formulas track cell dependencies.
