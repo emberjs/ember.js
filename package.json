@@ -26,8 +26,10 @@
     "build-metadata.json",
     "blueprints",
     "dist/packages",
+    "dist/ember-template-compiler.js",
     "dist/dependencies",
     "dist-prod/packages",
+    "dist-prod/ember-template-compiler.js",
     "docs/data.json",
     "lib",
     "types/stable"
