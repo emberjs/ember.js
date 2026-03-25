@@ -15,6 +15,9 @@ import { assert } from '@ember/debug';
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
 import { setViewElement, setElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+
+// PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
+import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 export { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 
 const DEFAULT_HELPER_MANAGER = new CustomHelperManager(() => new FunctionHelperManager());
@@ -419,15 +422,56 @@ function createComponentInstance(
           try { return getter(); } catch { return localValue; }
         },
         set(v: any) {
-          localValue = v;
-          useLocal = true;
-          // Reset useLocal on next microtask so arg updates take precedence again
-          queueMicrotask(() => { useLocal = false; });
+          // When __gxtDispatchingArgs is set, this is an arg update from parent.
+          // Switch to arg-driven mode so the getter returns the arg value.
+          if ((instance as any).__gxtDispatchingArgs) {
+            localValue = v;
+            useLocal = false;
+          } else {
+            localValue = v;
+            useLocal = true;
+          }
         },
         configurable: true,
         enumerable: true,
       });
     } catch { /* some properties may not be configurable */ }
+  }
+
+  // Set up two-way binding via PROPERTY_DID_CHANGE override.
+  // When component.set(key, value) is called for an arg that came from the
+  // parent, propagate the value upstream to the parent context.
+  // Detect which parent property each arg getter reads from by temporarily
+  // enabling tracking on the render context Proxy.
+  const twoWayBindings: Record<string, { sourceCtx: any; sourceKey: string }> = {};
+  for (const key of Object.keys(argGetters)) {
+    if (key === 'id' || key === 'elementId') continue;
+    const argGetter = argGetters[key]!;
+
+    if (parentView) {
+      try {
+        (globalThis as any).__gxtTrackArgSource = true;
+        (globalThis as any).__gxtLastArgSourceKey = null;
+        (globalThis as any).__gxtLastArgSourceCtx = null;
+        argGetter();
+        const detectedKey = (globalThis as any).__gxtLastArgSourceKey;
+        const detectedCtx = (globalThis as any).__gxtLastArgSourceCtx;
+        (globalThis as any).__gxtTrackArgSource = false;
+        if (detectedKey && detectedCtx) {
+          twoWayBindings[key] = { sourceCtx: detectedCtx, sourceKey: detectedKey };
+        }
+      } catch {
+        (globalThis as any).__gxtTrackArgSource = false;
+      }
+    }
+  }
+
+  // Install PROPERTY_DID_CHANGE handler for two-way binding.
+  // This is called by notifyPropertyChange() when a property is set on the instance.
+  // Store two-way bindings on the instance for potential future use.
+  // Two-way binding propagation is handled separately (via PROPERTY_DID_CHANGE).
+  if (Object.keys(twoWayBindings).length > 0 && instance) {
+    instance.__gxtTwoWayBindings = twoWayBindings;
   }
 
   // Register with parent's childViews
@@ -920,7 +964,7 @@ const trackedWrapperInstances = new Set<any>();
 // Track arg cells for reactive cross-component updates.
 // When parent context changes, these cells are updated so GXT formulas re-evaluate.
 interface TrackedArgEntry {
-  cells: Record<string, { cell: any; getter: () => any }>;
+  cells: Record<string, { cell: any; getter: () => any; initOverridden?: boolean; lastArgValue?: any }>;
   instance?: any; // component instance for lifecycle hooks
 }
 const trackedArgCells = new Set<TrackedArgEntry>();
@@ -971,20 +1015,54 @@ const _updatedInstances: any[] = [];
   for (const entry of trackedArgCells) {
     let hasChanges = false;
     for (const key of Object.keys(entry.cells)) {
-      const { cell, getter, extraCell } = entry.cells[key]!;
+      const cellEntry = entry.cells[key]!;
+      const { cell, getter, extraCell, initOverridden } = cellEntry;
       try {
         const newValue = getter();
-        if (cell.__value !== newValue) {
-          cell.update(newValue);
-          if (entry.instance && key !== 'class' && key !== 'classNames') {
-            try { entry.instance[key] = newValue; } catch { /* ignore */ }
+
+        if (initOverridden) {
+          // For init-overridden properties, only update when the ARG value
+          // actually changed from the parent's perspective (not just
+          // when it differs from the cell value, which was set to the
+          // init-overridden local value).
+          const lastArg = 'lastArgValue' in cellEntry ? cellEntry.lastArgValue : undefined;
+          const argChanged = lastArg !== undefined && lastArg !== newValue;
+          cellEntry.lastArgValue = newValue;
+
+          if (argChanged) {
+            cell.update(newValue);
+            if (entry.instance && key !== 'class' && key !== 'classNames') {
+              try {
+                entry.instance.__gxtDispatchingArgs = true;
+                entry.instance[key] = newValue;
+              } catch { /* ignore */ }
+              finally { entry.instance.__gxtDispatchingArgs = false; }
+            }
+            hasChanges = true;
           }
-          hasChanges = true;
-        }
-        // Also update the attrsProxy cell (used by GXT effects tracking @arg)
-        if (extraCell && extraCell.__value !== newValue) {
-          extraCell.update(newValue);
-          hasChanges = true;
+          // Also update extra cell if arg changed
+          if (argChanged && extraCell && extraCell.__value !== newValue) {
+            extraCell.update(newValue);
+          }
+        } else {
+          if (cell.__value !== newValue) {
+            cell.update(newValue);
+            if (entry.instance && key !== 'class' && key !== 'classNames') {
+              // Set dispatching flag so the setter knows this is an arg update
+              // (not an explicit set from component code) and should clear useLocal
+              try {
+                entry.instance.__gxtDispatchingArgs = true;
+                entry.instance[key] = newValue;
+              } catch { /* ignore */ }
+              finally { entry.instance.__gxtDispatchingArgs = false; }
+            }
+            hasChanges = true;
+          }
+          // Also update the attrsProxy cell (used by GXT effects tracking @arg)
+          if (extraCell && extraCell.__value !== newValue) {
+            extraCell.update(newValue);
+            hasChanges = true;
+          }
         }
       } catch { /* getter may throw */ }
     }
@@ -1209,6 +1287,15 @@ let _preRerenderSnapshot: Set<any> = new Set();
     if (entry.instance && !seen.has(entry.instance)) {
       seen.add(entry.instance);
       instances.push(entry.instance);
+    }
+  }
+  // Also include instances from _allLiveInstances that aren't in the above sets.
+  // This ensures components without args or bindings (e.g., {{foo-bar}}) are also
+  // destroyed with proper lifecycle hooks during teardown.
+  for (const instance of _allLiveInstances) {
+    if (instance && !seen.has(instance)) {
+      seen.add(instance);
+      instances.push(instance);
     }
   }
 
@@ -1648,29 +1735,57 @@ function createRenderContext(
 
     if (cellForFn2 && getter) {
       // Check if the instance overrode this property in init()
-      // If so, we should use the init-set value, not the arg value
+      // If so, we should use the init-set value, not the arg value.
+      // Also check __gxtInitOverrides which persists across re-renders.
       const argVal = getter();
       let instanceVal: any;
       try { instanceVal = instance?.[key]; } catch { instanceVal = argVal; }
-      const overriddenInInit = instance && instanceVal !== argVal && instanceVal !== undefined;
+      const freshOverride = instance && instanceVal !== argVal && instanceVal !== undefined;
+      // Check if this was flagged as init-overridden on a previous render pass
+      const savedOverride = instance?.__gxtInitOverrides?.[key];
+      const overriddenInInit = freshOverride || !!savedOverride;
+
+
+      // Save the init override flag on the instance for future re-renders
+      if (freshOverride && instance) {
+        if (!instance.__gxtInitOverrides) instance.__gxtInitOverrides = {};
+        instance.__gxtInitOverrides[key] = true;
+      }
 
       if (overriddenInInit) {
         // Instance overrode this property in init() — use a getter that
-        // returns the instance value but can be updated by arg changes
+        // returns the instance value but can be updated by arg changes.
+        // Create a cell FIRST, then install our custom getter that reads
+        // cell.value for GXT tracking but returns the correct local/arg value.
         try {
           let localVal = instanceVal;
           let useLocal = true;
-          const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
-          cell.update(localVal);
-          renderCtxArgCells[key] = { cell, getter };
-          // Override the cell-backed getter with one that respects init.
-          // Read cell.value to trigger GXT formula tracking (if same module instance).
+          // Create a cell with skipDefine=true to avoid cellFor installing
+          // its own getter/setter (we'll install our own below).
+          const cell = cellForFn2(renderContext, key, /* skipDefine */ true);
+          if (cell) cell.update(localVal);
+          // For init-overridden properties, track the cell but mark it as init-overridden.
+          // __gxtSyncAllWrappers will skip the cell update and instead check the getter
+          // to see if the arg value actually changed from the parent's perspective.
+          renderCtxArgCells[key] = { cell, getter, initOverridden: true };
           Object.defineProperty(renderContext, key, {
-            get() { cell.value; return useLocal ? localVal : getter(); },
+            get() {
+              // Read cell.value to register GXT formula tracking dependency
+              if (cell) try { cell.value; } catch { /* ignore */ }
+              return useLocal ? localVal : getter();
+            },
             set(v: any) {
-              localVal = v;
-              useLocal = true;
-              cell.update(v);
+              // When __gxtDispatchingArgs is true, this is an arg update from parent,
+              // not an explicit set from component code. Switch to arg-driven mode.
+              if ((instance as any).__gxtDispatchingArgs) {
+                localVal = v;
+                useLocal = false;
+                if (cell) cell.update(v);
+              } else {
+                localVal = v;
+                useLocal = true;
+                if (cell) cell.update(v);
+              }
             },
             enumerable: true,
             configurable: true,
@@ -1713,16 +1828,25 @@ function createRenderContext(
   // get dirtied when args change. Both cells share the same getter.
   const mergedArgCells: Record<string, any> = {};
   for (const key of Object.keys(renderCtxArgCells)) {
-    mergedArgCells[key] = renderCtxArgCells[key];
+    const entry = renderCtxArgCells[key];
+    // Initialize lastArgValue for init-overridden entries
+    if (entry.initOverridden) {
+      entry.lastArgValue = entry.getter();
+    }
+    mergedArgCells[key] = entry;
   }
   // Merge attrsProxy cells as secondary cells that also need updating
   for (const key of Object.keys(argCells)) {
     if (mergedArgCells[key]) {
-      // Store the attrsProxy cell alongside the renderCtx cell
+      // Store the attrsProxy cell alongside the renderCtx cell.
+      // Preserve initOverridden and lastArgValue flags for init-overridden properties.
+      const existing = mergedArgCells[key];
       mergedArgCells[key] = {
-        cell: mergedArgCells[key].cell,
-        getter: mergedArgCells[key].getter,
+        cell: existing.cell,
+        getter: existing.getter,
         extraCell: argCells[key].cell, // attrsProxy cell for @arg tracking
+        initOverridden: existing.initOverridden,
+        lastArgValue: existing.initOverridden ? existing.getter() : undefined,
       };
     } else {
       mergedArgCells[key] = argCells[key];
@@ -1767,6 +1891,7 @@ function createRenderContext(
         const desc = Object.getOwnPropertyDescriptor(obj, key);
         // Only install cells for configurable data properties (not getters or frozen props)
         if (desc && !desc.get && !desc.set && desc.configurable !== false && typeof desc.value !== 'function') {
+
           try {
             _cellFor(instance, key, /* skipDefine */ false);
           } catch { /* ignore */ }
@@ -1780,6 +1905,17 @@ function createRenderContext(
     get(target, prop, _receiver) {
       // Allow raw target access for cellFor
       if (prop === '__gxtRawTarget') return target;
+
+      // Track arg source for two-way binding detection.
+      // When __gxtTrackArgSource is true, record this property as the source.
+      if (typeof prop === 'string' && (globalThis as any).__gxtTrackArgSource) {
+        if (!SKIP_CELL_PROPS.has(prop) && !prop.startsWith('_') && !prop.startsWith('$') &&
+            prop !== 'constructor' && prop !== 'toString' && prop !== 'valueOf') {
+          (globalThis as any).__gxtLastArgSourceKey = prop;
+          (globalThis as any).__gxtLastArgSourceCtx = target;
+        }
+      }
+
       if (typeof prop !== 'string' || SKIP_CELL_PROPS.has(prop)) {
         return Reflect.get(target, prop, target);
       }
@@ -1799,6 +1935,7 @@ function createRenderContext(
 
       if (hasGetter) {
         const val = Reflect.get(target, prop, target);
+
         // Wrap nested Ember objects so sub-property reads are tracked
         if (val !== null && typeof val === 'object' && !(val instanceof Node)) {
           return wrapNestedObjectForTracking(val);

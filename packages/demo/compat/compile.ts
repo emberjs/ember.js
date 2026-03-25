@@ -3122,8 +3122,8 @@ export function precompileTemplate(templateString: string, options?: {
       try {
         // Triple-stache (raw HTML): use marker comments with innerHTML updates
         if ((item as any).__htmlRaw) {
-          const startMarker = document.createComment('');
-          const endMarker = document.createComment('');
+          const startMarker = document.createComment('htmlRaw');
+          const endMarker = document.createComment('/htmlRaw');
           const fragment = document.createDocumentFragment();
           fragment.appendChild(startMarker);
 
@@ -3303,8 +3303,8 @@ export function precompileTemplate(templateString: string, options?: {
             if (fv.toHTML) return fv.toHTML();
             return String(fv);
           };
-          const startMarker = document.createComment('');
-          const endMarker = document.createComment('');
+          const startMarker = document.createComment('htmlRaw');
+          const endMarker = document.createComment('/htmlRaw');
           const fragment = document.createDocumentFragment();
           fragment.appendChild(startMarker);
           const initialHtml = getHtml();
