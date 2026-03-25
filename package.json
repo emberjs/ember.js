@@ -159,8 +159,7 @@
       "esbuild"
     ],
     "patchedDependencies": {
-      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
-      "@embroider/compat": "patches/@embroider__compat.patch"
+      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch"
     }
   },
   "peerDependencies": {
