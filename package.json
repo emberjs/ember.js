@@ -26,10 +26,8 @@
     "build-metadata.json",
     "blueprints",
     "dist/packages",
-    "dist/ember-template-compiler.js",
     "dist/dependencies",
     "dist-prod/packages",
-    "dist-prod/ember-template-compiler.js",
     "docs/data.json",
     "lib",
     "types/stable"
@@ -161,7 +159,8 @@
       "esbuild"
     ],
     "patchedDependencies": {
-      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch"
+      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
+      "@embroider/compat": "patches/@embroider__compat.patch"
     }
   },
   "peerDependencies": {

@@ -12,6 +12,9 @@ overrides:
   ember-cli-babel: 8.3.1
 
 patchedDependencies:
+  '@embroider/compat':
+    hash: 43fc461e5eabdf6f0cd0ec78cc825fd795ccf69d74997f66165517ae7ce60403
+    path: patches/@embroider__compat.patch
   '@tracerbench/core@8.0.1':
     hash: ee5cfa4adb0f65df07ef51d9be56c31150b4330d7ac7e1fbbb0a87329938af0a
     path: patches/@tracerbench__core@8.0.1.patch
@@ -2950,7 +2953,7 @@ importers:
     devDependencies:
       '@embroider/compat':
         specifier: ^4.1.16
-        version: 4.1.16(@embroider/core@4.4.7)
+        version: 4.1.16(patch_hash=43fc461e5eabdf6f0cd0ec78cc825fd795ccf69d74997f66165517ae7ce60403)(@embroider/core@4.4.7)
       '@embroider/core':
         specifier: ^4.4.7
         version: 4.4.7
@@ -3010,7 +3013,7 @@ importers:
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/compat':
         specifier: ^4.1.16
-        version: 4.1.16(@embroider/core@4.4.7)
+        version: 4.1.16(patch_hash=43fc461e5eabdf6f0cd0ec78cc825fd795ccf69d74997f66165517ae7ce60403)(@embroider/core@4.4.7)
       '@embroider/config-meta-loader':
         specifier: ^1.0.0
         version: 1.0.0
@@ -13879,7 +13882,7 @@ snapshots:
       - supports-color
       - webpack
 
-  '@embroider/compat@4.1.16(@embroider/core@4.4.7)':
+  '@embroider/compat@4.1.16(patch_hash=43fc461e5eabdf6f0cd0ec78cc825fd795ccf69d74997f66165517ae7ce60403)(@embroider/core@4.4.7)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0

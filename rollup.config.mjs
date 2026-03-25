@@ -61,9 +61,6 @@ function esmInputs() {
     ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
     ...renameEntrypoints(packages(), (name) => join('packages', name)),
     'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
-
-    // @embroider/compat reads this path directly via readFileSync
-    'ember-template-compiler': 'ember-template-compiler/minimal.ts',
   };
 }
 

@@ -82,5 +82,10 @@
   },
   "ember": {
     "edition": "octane"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@embroider/compat": "patches/@embroider__compat.patch"
+    }
   }
 }

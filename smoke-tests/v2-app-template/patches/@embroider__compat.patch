@@ -1,0 +1,18 @@
+diff --git a/dist/src/compat-app.js b/dist/src/compat-app.js
+index e22220b687d2434136227e16c15bf1826a483c98..cd7eed7dc02164175d7795318a79836af978b742 100644
+--- a/dist/src/compat-app.js
++++ b/dist/src/compat-app.js
+@@ -239,12 +239,9 @@ class CompatApp {
+             // empty because we're just trying to keep the build from blowing up, the
+             // actual ember modules get loaded as modules instead.
+             //
+-            // The template compiler is still here so that apps using a V2 ember can
+-            // still app.import the traditional runtime template compiler.
+             trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember.js', () => ''));
+             trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-testing.js', () => ''));
+-            const templateCompilerSrc = (0, fs_1.readFileSync)((0, path_1.join)(emberSource.root, 'dist/ember-template-compiler.js'), 'utf8');
+-            trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-template-compiler.js', () => templateCompilerSrc));
++            trees.push((0, broccoli_file_creator_1.default)('vendor/ember/ember-template-compiler.js', () => ''));
+         }
+         if (this.vendorTree) {
+             trees.push((0, broccoli_funnel_1.default)(this.vendorTree, {
