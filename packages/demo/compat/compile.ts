@@ -2136,9 +2136,9 @@ function transformComponentHelper(code: string): string {
         replacement = `<${pascalName}${transformedAttrs}>${content}</${pascalName}>`;
       } else {
         // Dynamic name: this.componentName
-        // Don't transform - leave as {{#component this.xxx}} for GXT to handle
-        // GXT's $_dc doesn't support string component names directly
-        break;
+        // Transform to <this.xxx @attrs>content</this.xxx> which GXT compiles to $_dc()
+        const transformedAttrs = transformAttrs(attrs);
+        replacement = `<${name}${transformedAttrs}>${content}</${name}>`;
       }
 
       result = result.slice(0, startIdx) + replacement + result.slice(endIdx);

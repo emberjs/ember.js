@@ -2027,12 +2027,107 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
   }
 
   if (factory || template) {
-    const manager = factory ?
-      (globalThis.INTERNAL_MANAGERS.get(factory.class) ||
-       globalThis.COMPONENT_MANAGERS.get(factory.class)) :
-      null;
+    let manager = null;
+    if (factory?.class) {
+      // Check internal managers ONLY on the exact class (Input, Textarea)
+      manager = globalThis.INTERNAL_MANAGERS.get(factory.class);
+
+      // If not found, walk prototype chain for COMPONENT_MANAGERS only
+      // (handles subclasses of setComponentManager targets like GlimmerishComponent)
+      if (!manager) {
+        let pointer: any = factory.class;
+        while (pointer) {
+          manager = globalThis.COMPONENT_MANAGERS.get(pointer);
+          if (manager) break;
+          try { pointer = Object.getPrototypeOf(pointer); } catch { break; }
+          if (pointer === Object.prototype || pointer === Function.prototype) break;
+        }
+      }
+    }
 
     return { factory, template, manager };
+  }
+
+  return null;
+}
+
+// =============================================================================
+// Helper resolution for (helper) keyword
+// =============================================================================
+
+/**
+ * Resolve an Ember helper by name to a callable function.
+ * Returns (positional, named) => value, or null if not found.
+ */
+function _resolveEmberHelper(name: string, owner: any): ((positional: any[], named: any) => any) | null {
+  if (!owner) return null;
+
+  // First check built-in keyword helpers
+  const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
+  if (BUILTIN_HELPERS && BUILTIN_HELPERS[name]) {
+    const builtinHelper = BUILTIN_HELPERS[name];
+    if (typeof builtinHelper === 'function') {
+      return (positional: any[]) => builtinHelper(...positional);
+    }
+  }
+
+  // Try container lookup
+  const factory = owner.factoryFor?.(`helper:${name}`);
+  if (factory) {
+    const definition = factory.class || factory;
+    const internalManager = getInternalHelperManager(definition);
+    if (internalManager) {
+      if (typeof internalManager.getDelegateFor === 'function') {
+        const delegate = internalManager.getDelegateFor(owner);
+        if (delegate && typeof delegate.createHelper === 'function') {
+          if (delegate.capabilities?.hasValue) {
+            return (positional: any[], named: any) => {
+              const args = { positional, named: named || {} };
+              const bucket = delegate.createHelper(definition, args);
+              return delegate.getValue(bucket);
+            };
+          }
+        }
+      }
+      if (typeof internalManager.getHelper === 'function') {
+        return (positional: any[], named: any) => {
+          return internalManager.getHelper(definition)({ positional, named: named || {} }, owner);
+        };
+      }
+    }
+
+    // Direct function call
+    if (typeof definition === 'function') {
+      return (positional: any[], named: any) => {
+        try {
+          return definition(positional, named || {});
+        } catch {
+          return undefined;
+        }
+      };
+    }
+
+    // Factory create (classic Helper.extend)
+    return (positional: any[], named: any) => {
+      try {
+        const instance = factory.create();
+        if (instance && typeof instance.compute === 'function') {
+          return instance.compute(positional, named || {});
+        }
+      } catch { /* ignore */ }
+      return undefined;
+    };
+  }
+
+  // Fallback: direct lookup
+  const maybeHelper = owner.lookup?.(`helper:${name}`);
+  if (maybeHelper != null) {
+    if (typeof maybeHelper.compute === 'function') {
+      return (positional: any[], named: any) => maybeHelper.compute(positional, named || {});
+    }
+    if (typeof maybeHelper === 'function') {
+      return (positional: any[], named: any) => maybeHelper(positional, named || {});
+    }
   }
 
   return null;
@@ -2338,76 +2433,151 @@ const $_MANAGERS = {
           if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) return true;
         }
       }
+      // Also handle our curried ember helper functions
+      if (typeof helper === 'function' && helper.__isEmberCurriedHelper) {
+        return true;
+      }
+      // Handle function-based helpers with a registered helper manager
+      if (typeof helper === 'function' && (globalThis as any).INTERNAL_HELPER_MANAGERS?.has(helper)) {
+        return true;
+      }
+      // Walk prototype chain for helper manager (class-based helpers)
+      if (helper != null && typeof helper === 'object') {
+        let pointer = helper;
+        for (let i = 0; i < 5; i++) {
+          if ((globalThis as any).INTERNAL_HELPER_MANAGERS?.has(pointer)) return true;
+          pointer = Object.getPrototypeOf(pointer);
+          if (!pointer) break;
+        }
+      }
       return false;
     },
 
     handle(helper: any, params: any, hash: any): any {
+      // Handle curried ember helper functions (from a previous (helper "name") call)
+      if (typeof helper === 'function' && helper.__isEmberCurriedHelper) {
+        const unwrapVal = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
+        const isGxtInternal = (k: string) => k.startsWith('$_') || k === 'hash';
+        const additionalPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
+        const additionalNamed = hash && typeof hash === 'object'
+          ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+          : {};
+
+        // Create a new curried function with merged args
+        const resolvedFn = helper.__resolvedFn;
+        const prevPositionals = helper.__curriedPositionals || [];
+        const prevNamed = helper.__curriedNamed || {};
+        const mergedPositionals = [...prevPositionals, ...additionalPositionals];
+        const mergedNamed = { ...prevNamed, ...additionalNamed };
+
+        const newCurried = function __emberCurriedHelper(extraPos?: any[], extraHash?: any) {
+          const finalPos = [...mergedPositionals, ...(Array.isArray(extraPos) ? extraPos.map(unwrapVal) : [])];
+          const finalNamed = { ...mergedNamed, ...(extraHash || {}) };
+          return resolvedFn(finalPos, finalNamed);
+        };
+        (newCurried as any).__isEmberCurriedHelper = true;
+        (newCurried as any).__resolvedFn = resolvedFn;
+        (newCurried as any).__curriedPositionals = mergedPositionals;
+        (newCurried as any).__curriedNamed = mergedNamed;
+        return newCurried;
+      }
+
+      // Handle function/object helpers with registered helper managers (e.g., defineSimpleHelper)
+      if (helper != null && typeof helper !== 'string') {
+        const internalManager = getInternalHelperManager(helper);
+        if (internalManager) {
+          const owner = (globalThis as any).owner;
+          const unwrapVal = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
+          const isGxtInternal = (k: string) => k.startsWith('$_') || k === 'hash';
+
+          // Create a resolved function from the helper manager
+          let resolvedFn: ((positional: any[], named: any) => any) | null = null;
+
+          if (typeof internalManager.getDelegateFor === 'function') {
+            const delegate = internalManager.getDelegateFor(owner);
+            if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+              resolvedFn = (positional: any[], named: any) => {
+                const args = { positional, named: named || {} };
+                const bucket = delegate.createHelper(helper, args);
+                return delegate.getValue(bucket);
+              };
+            }
+          }
+
+          if (!resolvedFn && typeof internalManager.getHelper === 'function') {
+            resolvedFn = (positional: any[], named: any) => {
+              return internalManager.getHelper(helper)({ positional, named: named || {} }, owner);
+            };
+          }
+
+          if (resolvedFn) {
+            const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
+            const curriedNamed = hash && typeof hash === 'object'
+              ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+              : {};
+
+            const curried = function __emberCurriedHelper(additionalParams?: any[], additionalHash?: any) {
+              const mergedPositional = [
+                ...curriedPositionals,
+                ...(Array.isArray(additionalParams) ? additionalParams.map(unwrapVal) : [])
+              ];
+              const mergedNamed = {
+                ...curriedNamed,
+                ...(additionalHash && typeof additionalHash === 'object'
+                  ? Object.fromEntries(Object.entries(additionalHash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+                  : {}),
+              };
+              return resolvedFn!(mergedPositional, mergedNamed);
+            };
+            (curried as any).__isEmberCurriedHelper = true;
+            (curried as any).__resolvedFn = resolvedFn;
+            (curried as any).__curriedPositionals = curriedPositionals;
+            (curried as any).__curriedNamed = curriedNamed;
+            return curried;
+          }
+        }
+      }
+
       if (typeof helper === 'string') {
         const owner = (globalThis as any).owner;
 
         // Unwrap GXT getter args for the helper, filtering out GXT internal keys
-        const unwrapVal = (v: any) => typeof v === 'function' ? v() : v;
+        // IMPORTANT: don't unwrap function-based helpers (they have prototype)
+        const unwrapVal = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
         const isGxtInternal = (k: string) => k.startsWith('$_') || k === 'hash';
-        const unwrappedArgs = {
-          positional: Array.isArray(params) ? params.map(unwrapVal) : [],
-          named: hash && typeof hash === 'object'
+
+        // Resolve the helper to a callable function.
+        const resolvedFn = _resolveEmberHelper(helper, owner);
+        if (resolvedFn) {
+          // Unwrap curried positional args from params
+          const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
+
+          // Unwrap curried named args from hash
+          const curriedNamed = hash && typeof hash === 'object'
             ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
-            : {},
-        };
+            : {};
 
-        // First check built-in keyword helpers
-        const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
-        if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) {
-          const builtinHelper = BUILTIN_HELPERS[helper];
-          if (typeof builtinHelper === 'function') {
-            return builtinHelper(...unwrappedArgs.positional);
-          }
-        }
-
-        // Try container lookup using factoryFor (like the real Ember resolver)
-        const factory = owner?.factoryFor?.(`helper:${helper}`);
-        if (factory) {
-          const definition = factory.class || factory;
-          // Walk prototype chain to find helper manager
-          const internalManager = getInternalHelperManager(definition);
-          if (internalManager) {
-            if (typeof internalManager.getDelegateFor === 'function') {
-              const delegate = internalManager.getDelegateFor(owner);
-              if (delegate && typeof delegate.createHelper === 'function') {
-                const bucket = delegate.createHelper(definition, unwrappedArgs);
-                if (delegate.capabilities?.hasValue) {
-                  return delegate.getValue(bucket);
-                }
-              }
-            }
-            if (typeof internalManager.getHelper === 'function') {
-              return internalManager.getHelper(definition)(unwrappedArgs, owner);
-            }
-          }
-
-          // No helper manager found via prototype chain - try direct factory create
-          // This handles classic Helper.extend() helpers and other factory-based helpers
-          try {
-            const instance = factory.create();
-            if (instance && typeof instance.compute === 'function') {
-              return instance.compute(unwrappedArgs.positional, unwrappedArgs.named);
-            }
-          } catch {
-            // Fall through
-          }
-        }
-
-        // Fallback: direct lookup (for helpers registered as instances)
-        if (!factory) {
-          const maybeHelper = owner?.lookup(`helper:${helper}`);
-          if (maybeHelper != null) {
-            if (typeof maybeHelper.compute === 'function') {
-              return maybeHelper.compute(unwrappedArgs.positional, unwrappedArgs.named);
-            }
-            if (typeof maybeHelper === 'function') {
-              return maybeHelper(unwrappedArgs.positional, unwrappedArgs.named);
-            }
-          }
+          // Return a curried function. When GXT renders it in content position,
+          // it calls the function to get the value. When passed to another helper,
+          // canHandle() recognizes it and handle() merges additional args.
+          const curried = function __emberCurriedHelper(additionalParams?: any[], additionalHash?: any) {
+            const mergedPositional = [
+              ...curriedPositionals,
+              ...(Array.isArray(additionalParams) ? additionalParams.map(unwrapVal) : [])
+            ];
+            const mergedNamed = {
+              ...curriedNamed,
+              ...(additionalHash && typeof additionalHash === 'object'
+                ? Object.fromEntries(Object.entries(additionalHash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+                : {}),
+            };
+            return resolvedFn(mergedPositional, mergedNamed);
+          };
+          (curried as any).__isEmberCurriedHelper = true;
+          (curried as any).__resolvedFn = resolvedFn;
+          (curried as any).__curriedPositionals = curriedPositionals;
+          (curried as any).__curriedNamed = curriedNamed;
+          return curried;
         }
       }
       return null;
@@ -2440,6 +2610,12 @@ function handleStringComponent(
   // delegate to handleManagedComponent which properly creates the instance
   // via the manager's create() method with CapturedArguments.
   if (manager && factory?.class) {
+    // Check if this is a custom component manager (from setComponentManager)
+    // These are factory functions, not internal manager objects
+    if (typeof manager === 'function') {
+      return handleCustomManagedComponent(factory.class, args, fw, ctx, manager, owner, template);
+    }
+    // Internal manager (Input, Textarea)
     return handleManagedComponent(factory.class, args, fw, ctx, manager, owner);
   }
 
@@ -2617,6 +2793,71 @@ function handleStringComponent(
     } else {
       return renderGlimmerComponent(instance, resolvedTemplate, args, fw, owner);
     }
+  };
+}
+
+/**
+ * Handle a component with a custom component manager (from setComponentManager).
+ * The manager factory function is called with (owner) to get the actual manager,
+ * which implements createComponent(Factory, args) and getContext(instance).
+ */
+function handleCustomManagedComponent(
+  ComponentClass: any,
+  args: any,
+  fw: any,
+  ctx: any,
+  managerFactory: Function,
+  owner: any,
+  template: any
+): () => any {
+  return () => {
+    // Invoke the factory to get the actual manager instance
+    const actualManager = managerFactory(owner);
+    if (!actualManager || typeof actualManager.createComponent !== 'function') {
+      return null;
+    }
+
+    // Build named args from the GXT args object
+    const namedArgs: Record<string, any> = {};
+    if (args && typeof args === 'object') {
+      const keys = Object.keys(args);
+      for (const key of keys) {
+        if (key.startsWith('__') || key.startsWith('$') || key === 'class') continue;
+        const desc = Object.getOwnPropertyDescriptor(args, key);
+        const value = desc?.get ? desc.get() : args[key];
+        if (typeof value === 'function' && !value.prototype && !value.__isCurriedComponent && !value.__isMutCell) {
+          namedArgs[key] = value();
+        } else {
+          namedArgs[key] = value;
+        }
+      }
+    }
+
+    // Create the component instance using the manager
+    const capturedArgs = { named: namedArgs };
+    const instance = actualManager.createComponent(ComponentClass, capturedArgs);
+    if (!instance) return null;
+
+    // Get the rendering context
+    const context = typeof actualManager.getContext === 'function'
+      ? actualManager.getContext(instance)
+      : instance;
+
+    // Resolve the template
+    let resolvedTemplate = template;
+    if (!resolvedTemplate) {
+      resolvedTemplate = getComponentTemplate(ComponentClass);
+    }
+    if (typeof resolvedTemplate === 'function' && !resolvedTemplate.render) {
+      resolvedTemplate = resolvedTemplate(owner);
+    }
+
+    if (!resolvedTemplate?.render) {
+      return null;
+    }
+
+    // Render using the Glimmer component path
+    return renderGlimmerComponent(context, resolvedTemplate, args, fw, owner);
   };
 }
 
@@ -3334,7 +3575,19 @@ export class CustomModifierManager {
 // Export $_MANAGERS for GXT Integration
 // =============================================================================
 
-// Make $_MANAGERS available globally for the GXT runtime
-(globalThis as any).$_MANAGERS = $_MANAGERS;
+// Install our handlers onto GXT's original $_MANAGERS object (referenced by GXT's
+// internal `ie` variable). Creating a new object and replacing globalThis.$_MANAGERS
+// would NOT update GXT's internal closure references (e.g., in $_helperHelper).
+{
+  const gxtManagers = (globalThis as any).$_MANAGERS;
+  if (gxtManagers) {
+    // Copy our component and helper handlers onto GXT's original managers object
+    gxtManagers.component = $_MANAGERS.component;
+    gxtManagers.helper = $_MANAGERS.helper;
+  } else {
+    // Fallback: set as new if no original exists
+    (globalThis as any).$_MANAGERS = $_MANAGERS;
+  }
+}
 
 export { $_MANAGERS };
