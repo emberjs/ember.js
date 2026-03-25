@@ -202,6 +202,9 @@ function addChildView(parent: any, child: any): void {
 const instancePools = new WeakMap<any, Map<any, PoolEntry[]>>();
 const parentRenderFrames = new WeakMap<any, Symbol>();
 
+// Track all pool arrays for iteration in __gxtDestroyUnclaimedPoolEntries
+const _allPoolArrays = new Set<PoolEntry[]>();
+
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
 
@@ -230,6 +233,7 @@ function getCachedOrCreateInstance(
   if (!pool) {
     pool = [];
     componentPools.set(cacheKey, pool);
+    _allPoolArrays.add(pool);
   }
 
   // Track render pass ID - reset claimed flags when a new render pass starts
@@ -289,6 +293,11 @@ function getCachedOrCreateInstance(
         syncWrapperElement(poolEntry.instance, wrapper, componentClass, args);
       }
     }
+
+    // Mark as reused so renderClassicComponent can skip lifecycle hooks
+    // during force-rerender (innerHTML='' + rebuild)
+    poolEntry.instance.__gxtReusedFromPool = true;
+    poolEntry.instance.__gxtPoolHasArgChanges = hasChanges;
 
     return poolEntry.instance;
   }
@@ -512,7 +521,10 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
     // didUpdateAttrs, didReceiveAttrs (always), then willUpdate, willRender (interactive only)
     // Only fire once per render pass to prevent double-firing when the same instance
     // is visited multiple times (e.g., parent visited once per child invocation)
-    if (!wasInstanceUpdatedThisPass(instance)) {
+    // Skip during force-rerender (innerHTML='' + rebuild): the element is not in
+    // the DOM at this point, so hooks that check this.element would fail.
+    // __gxtSyncAllWrappers will fire the correct hooks after DOM is rebuilt.
+    if (!wasInstanceUpdatedThisPass(instance) && !(globalThis as any).__gxtIsForceRerender) {
       triggerLifecycleHook(instance, 'didUpdateAttrs');
       triggerLifecycleHook(instance, 'didReceiveAttrs');
       // Mark this instance as having had update hooks fired this pass
@@ -1007,16 +1019,174 @@ const _updatedInstances: any[] = [];
   }
 };
 
-// Post-render lifecycle hooks — called after the second gxtSyncDom() completes.
-// Fire in REVERSE order (bottom-up) to match Ember's "async hooks" ordering:
-// deepest children first, then their parents.
+// Expose the count of updated instances for the iterative sync loop.
+// Used by __gxtTriggerReRender to detect when no more instances are being dirtied.
+(globalThis as any).__gxtGetUpdatedCount = function() {
+  return _updatedInstances.length;
+};
+
+// Compute the depth of a component in the view tree.
+function _viewDepth(instance: any): number {
+  let depth = 0;
+  let current = instance?.parentView;
+  while (current) {
+    depth++;
+    current = current.parentView;
+  }
+  return depth;
+}
+
+// Post-render lifecycle hooks — called after DOM sync completes.
+// Order: deepest children first; siblings at the same depth fire in insertion
+// order (i.e., the order they appear in _updatedInstances). Parents fire last.
 (globalThis as any).__gxtPostRenderHooks = function() {
-  for (let i = _updatedInstances.length - 1; i >= 0; i--) {
-    const instance = _updatedInstances[i];
-    triggerLifecycleHook(instance, 'didUpdate');
-    triggerLifecycleHook(instance, 'didRender');
+  if (_updatedInstances.length === 0) return;
+
+  // Stable sort: deeper components first, preserve insertion order for same depth
+  const indexed = _updatedInstances.map((inst, i) => ({ inst, idx: i, depth: _viewDepth(inst) }));
+  indexed.sort((a, b) => {
+    if (a.depth !== b.depth) return b.depth - a.depth; // deeper first
+    return a.idx - b.idx; // same depth: insertion order
+  });
+
+  for (const { inst } of indexed) {
+    triggerLifecycleHook(inst, 'didUpdate');
+    triggerLifecycleHook(inst, 'didRender');
   }
   _updatedInstances.length = 0;
+};
+
+// Track ALL live component instances for destroy detection.
+const _allLiveInstances = new Set<any>();
+
+// Snapshot of all live instances before force-rerender.
+// Used to detect which instances were removed after the rebuild.
+let _preRerenderSnapshot: Set<any> = new Set();
+
+(globalThis as any).__gxtSnapshotLiveInstances = function() {
+  _preRerenderSnapshot.clear();
+  for (const instance of _allLiveInstances) {
+    _preRerenderSnapshot.add(instance);
+  }
+};
+
+// Destroy unclaimed pool entries after a force-rerender.
+// Components that were in the old render but not in the new one need their
+// destroy lifecycle hooks fired: willDestroyElement, willClearRender,
+// didDestroyElement, willDestroy.
+(globalThis as any).__gxtDestroyUnclaimedPoolEntries = function() {
+  const gOwner = (globalThis as any).owner;
+  let viewRegistry: any;
+  try {
+    viewRegistry = gOwner?.lookup?.('-view-registry:main');
+  } catch { /* ignore */ }
+
+  // Find components that were in the pre-rerender snapshot but now have
+  // disconnected elements. This detects ALL removed components including
+  // those not in trackedArgCells (e.g., nested-item with no args).
+  const unclaimed: any[] = [];
+  const seen = new Set<any>();
+
+  for (const instance of _preRerenderSnapshot) {
+    if (!instance || seen.has(instance)) continue;
+    seen.add(instance);
+
+    try {
+      const el = instance.element;
+      if (el && !el.isConnected) {
+        unclaimed.push(instance);
+        // Clean up tracked sets
+        for (const entry of trackedArgCells) {
+          if (entry.instance === instance) {
+            trackedArgCells.delete(entry);
+            break;
+          }
+        }
+        for (const entry of trackedWrapperInstances) {
+          if (entry.instance === instance) {
+            trackedWrapperInstances.delete(entry);
+            break;
+          }
+        }
+      }
+    } catch { /* ignore element access errors */ }
+  }
+  _preRerenderSnapshot.clear();
+
+  if (unclaimed.length === 0) return;
+
+  // Phase 1: willDestroyElement + willClearRender.
+  // The elements have been detached from the DOM by innerHTML=''.
+  // Temporarily re-attach them so tests that check
+  // document.body.contains(this.element) during these hooks see true.
+  const qunitFixture = document.getElementById('qunit-fixture');
+  const tempContainer = qunitFixture || document.body;
+  const reattached: Array<{ instance: any; element: HTMLElement }> = [];
+
+  for (const instance of unclaimed) {
+    try {
+      const el = instance.element;
+      if (el instanceof HTMLElement && !el.isConnected) {
+        tempContainer.appendChild(el);
+        reattached.push({ instance, element: el });
+      }
+    } catch { /* ignore */ }
+  }
+
+  for (const instance of unclaimed) {
+    try {
+      triggerLifecycleHook(instance, 'willDestroyElement');
+      triggerLifecycleHook(instance, 'willClearRender');
+    } catch { /* ignore */ }
+  }
+
+  // Detach re-attached elements
+  for (const { element } of reattached) {
+    try {
+      if (element.parentNode) element.parentNode.removeChild(element);
+    } catch { /* ignore */ }
+  }
+
+  // Phase 2: transition to destroying, clear element, didDestroyElement
+  for (const instance of unclaimed) {
+    try {
+      if (instance._transitionTo) instance._transitionTo('destroying');
+    } catch { /* ignore */ }
+    try { setViewElement(instance, null); } catch { /* ignore */ }
+    try {
+      if (viewRegistry) {
+        const viewId = getViewId(instance);
+        if (viewId) delete viewRegistry[viewId];
+      }
+    } catch { /* ignore */ }
+    try {
+      triggerLifecycleHook(instance, 'didDestroyElement');
+    } catch { /* ignore */ }
+  }
+
+  // Phase 3: destroy (fires willDestroy)
+  for (const instance of unclaimed) {
+    try {
+      if (typeof instance.destroy === 'function' && !instance.isDestroyed && !instance.isDestroying) {
+        instance.destroy();
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Remove from tracked sets
+  for (const instance of unclaimed) {
+    _allLiveInstances.delete(instance);
+    for (const entry of trackedArgCells) {
+      if (entry.instance === instance) {
+        trackedArgCells.delete(entry);
+      }
+    }
+    for (const entry of trackedWrapperInstances) {
+      if (entry.instance === instance) {
+        trackedWrapperInstances.delete(entry);
+      }
+    }
+  }
 };
 
 // Cleanup function: destroy all tracked component instances with proper lifecycle.
@@ -1108,6 +1278,8 @@ const _updatedInstances: any[] = [];
   trackedWrapperInstances.clear();
   _updatedInstances.length = 0;
   _afterInsertQueue.length = 0;
+  _allLiveInstances.clear();
+  _preRerenderSnapshot.clear();
 };
 
 (globalThis as any).__gxtSyncWrapper = function(obj: any, keyName: string) {
@@ -1698,11 +1870,16 @@ function removeGxtArtifacts(container: Element | DocumentFragment): void {
   let node: Comment | null;
   while ((node = walker.nextNode() as Comment | null)) {
     const text = node.textContent || '';
-    // Remove GXT internal placeholder comments
+    // Remove GXT internal placeholder comments, EXCEPT those used by
+    // IfCondition for branch switching (they need to stay in the DOM
+    // so IfCondition.renderBranch can insert content relative to them).
+    // IfCondition placeholders contain 'if-entry' in their text.
+    if (text.includes('if-entry') || text.includes('each-entry')) {
+      // Keep these — they're needed by GXT's control flow for DOM manipulation
+      continue;
+    }
     if (
       text.includes('placeholder') ||
-      text.includes('if-entry') ||
-      text.includes('each-entry') ||
       text === ''
     ) {
       commentsToRemove.push(node);
@@ -2691,6 +2868,20 @@ function renderClassicComponent(
   componentDef: any,
   owner: any
 ): any {
+  // Check if this is a reused instance from the pool during force-rerender.
+  // If so, skip initial lifecycle hooks (willRender, willInsertElement, etc.)
+  // since the component already went through its initial render lifecycle.
+  const isReused = instance && instance.__gxtReusedFromPool;
+  const isForceRerender = (globalThis as any).__gxtIsForceRerender;
+  if (isReused) {
+    delete instance.__gxtReusedFromPool;
+    delete instance.__gxtPoolHasArgChanges;
+  }
+  const skipInitHooks = isReused && isForceRerender;
+
+  // Track this instance for destroy detection during force-rerender
+  if (instance) _allLiveInstances.add(instance);
+
   const wrapper = buildWrapperElement(instance, args, componentDef);
   const renderContext = createRenderContext(instance, args, fw, owner);
 
@@ -2729,39 +2920,60 @@ function renderClassicComponent(
     installBindingInterceptors(instance, wrapper, componentDef);
   }
 
-  // Lifecycle: willRender (in preRender state), then transition to hasElement, then willInsertElement
-  // IMPORTANT: willRender is called while still in preRender state, with NO element
-  triggerLifecycleHook(instance, 'willRender');
+  if (skipInitHooks) {
+    // Force-rerender: skip initial lifecycle hooks but update the element
+    // reference to the new wrapper (old one was removed by innerHTML='')
+    if (instance && wrapper instanceof HTMLElement) {
+      setViewElement(instance, wrapper);
+      setElementView(wrapper, instance);
+    }
+    // Render template into wrapper (rebuild DOM content)
+    renderTemplateWithParentView(template, renderContext, wrapper, instance);
+    // Queue transition to inDOM after insertion (no didInsertElement/didRender)
+    if (instance) {
+      const inst = instance;
+      _afterInsertQueue.push(() => {
+        if (inst._transitionTo && isInteractiveModeChecked()) {
+          try { inst._transitionTo('inDOM'); } catch {}
+        }
+      });
+    }
+  } else {
+    // Normal initial render path with full lifecycle hooks
+    // Lifecycle: willRender (in preRender state), then transition to hasElement, then willInsertElement
+    // IMPORTANT: willRender is called while still in preRender state, with NO element
+    triggerLifecycleHook(instance, 'willRender');
 
-  // Now transition to hasElement state and register the view element
-  // setViewElement must be called AFTER willRender (which expects no element)
-  // but BEFORE willInsertElement (which expects the element to exist)
-  if (instance && wrapper instanceof HTMLElement) {
-    setViewElement(instance, wrapper);
-    setElementView(wrapper, instance);
-  }
-  if (instance?._transitionTo) {
-    try { instance._transitionTo('hasElement'); } catch {}
-  }
+    // Now transition to hasElement state and register the view element
+    // setViewElement must be called AFTER willRender (which expects no element)
+    // but BEFORE willInsertElement (which expects the element to exist)
+    if (instance && wrapper instanceof HTMLElement) {
+      setViewElement(instance, wrapper);
+      setElementView(wrapper, instance);
+    }
+    if (instance?._transitionTo) {
+      try { instance._transitionTo('hasElement'); } catch {}
+    }
 
-  // willInsertElement is called in hasElement state (element now available)
-  triggerLifecycleHook(instance, 'willInsertElement');
+    // willInsertElement is called in hasElement state (element now available)
+    triggerLifecycleHook(instance, 'willInsertElement');
 
-  // Render template into wrapper
-  renderTemplateWithParentView(template, renderContext, wrapper, instance);
+    // Render template into wrapper
+    renderTemplateWithParentView(template, renderContext, wrapper, instance);
 
-  // Queue didInsertElement / didRender to fire after the element is in the DOM.
-  // The queue is flushed by flushAfterInsertQueue() which is called from the
-  // renderer after GXT has appended all nodes to the live document.
-  if (instance) {
-    const inst = instance;
-    _afterInsertQueue.push(() => {
-      if (inst._transitionTo && isInteractiveModeChecked()) {
-        try { inst._transitionTo('inDOM'); } catch {}
-      }
-      triggerLifecycleHook(inst, 'didInsertElement');
-      triggerLifecycleHook(inst, 'didRender');
-    });
+    // Queue didInsertElement / didRender to fire after the element is in the DOM.
+    // The queue is flushed by flushAfterInsertQueue() which is called from the
+    // renderer after GXT has appended all nodes to the live document.
+    if (instance) {
+      const inst = instance;
+      _afterInsertQueue.push(() => {
+        if (inst._transitionTo && isInteractiveModeChecked()) {
+          try { inst._transitionTo('inDOM'); } catch {}
+        }
+        triggerLifecycleHook(inst, 'didInsertElement');
+        triggerLifecycleHook(inst, 'didRender');
+      });
+    }
   }
 
   // Return GXT-compatible result

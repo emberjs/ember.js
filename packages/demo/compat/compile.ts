@@ -393,100 +393,149 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   } catch { /* ignore */ }
 
   (globalThis as any).__gxtPendingSync = true;
-  // Immediate sync to process dirtied cells while relatedTags are intact
+  // Only do a quick cell sync here — don't fire lifecycle hooks or
+  // run __gxtSyncAllWrappers. Property changes may be batched (e.g.,
+  // setProperties), so lifecycle hooks should fire once after ALL
+  // property changes are applied, not after each individual change.
+  // The full lifecycle hook cycle runs in __gxtSyncDomNow (called
+  // after runTask completes).
   if (!(globalThis as any).__gxtSyncing) {
     (globalThis as any).__gxtSyncing = true;
-    // Start a new render pass to prevent double-firing of lifecycle hooks
-    const newPass = (globalThis as any).__gxtNewRenderPass;
-    if (typeof newPass === 'function') newPass();
     try {
       gxtSyncDom();
-    } catch { /* ignore first sync errors */ }
-    // After DOM sync, update arg cells and wrapper elements.
-    // Arg cell updates may dirty more cells, so run gxtSyncDom again.
-    try {
-      const syncAll = (globalThis as any).__gxtSyncAllWrappers;
-      if (typeof syncAll === 'function') {
-        syncAll(); // Pre-render hooks + arg cell updates
-        try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ } // Second sync for dirty arg cells
-        // Post-render hooks (didUpdate, didRender)
-        const postRender = (globalThis as any).__gxtPostRenderHooks;
-        if (typeof postRender === 'function') postRender();
-      }
-    } catch { /* ignore sync wrapper errors */ }
-    // Re-render CurriedComponent marker regions.
-    // gxtEffect may not track cells properly for curried component getters,
-    // so we manually re-evaluate and swap DOM as a fallback.
-    // NOTE: No snapshot-based skip here — this path runs on explicit set() calls
-    // where data actually changed (including array mutations where ref stays same).
-    try {
-      const infos = (globalThis as any).__curriedRenderInfos;
-      if (infos) {
-        for (const info of infos) {
-          const { item: getter, startMarker: sm, endMarker: em, renderCurriedComponent: render, managers: mgrs } = info;
-          const parent = sm.parentNode;
-          if (!parent) continue;
-          try {
-            const newResult = getter();
-            const newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
-              ? newResult() : newResult;
-
-            // Remove existing content between markers
-            let node = sm.nextSibling;
-            while (node && node !== em) {
-              const next = node.nextSibling;
-              parent.removeChild(node);
-              node = next;
-            }
-
-            if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
-              const newNode = render(newFinal);
-              if (newNode) parent.insertBefore(newNode, em);
-            }
-          } catch { /* ignore render errors */ }
-        }
-      }
     } catch { /* ignore */ }
-    // After GXT sync, check if we need to re-render outlet templates.
-    // GXT formulas may not track set() changes on plain objects nested
-    // in route contexts (e.g., @model.color where model is a POJO).
-    // Fall back to full outlet re-render in that case.
-    try {
-      const outletRerender = (globalThis as any).__gxtRootOutletRerender;
-      const topRef = (globalThis as any).__gxtTopOutletRef;
-      if (outletRerender && topRef) {
-        outletRerender(topRef);
-      }
-    } catch { /* ignore outlet re-render errors */ }
     finally { (globalThis as any).__gxtSyncing = false; }
   }
+  // Manually notify any $_if conditions watching this property.
+  // This bypasses GXT's broken cross-module-instance cell tracking.
+  // Must happen AFTER __gxtSyncing is cleared so IfCondition.renderBranch
+  // can properly insert new DOM nodes without re-entrancy issues.
+  try {
+    notifyIfWatchers(obj, keyName);
+  } catch { /* ignore */ }
 };
 
 // Expose cellFor on globalThis so manager.ts can use it without circular imports.
 (globalThis as any).__gxtCellFor = cellFor;
 
-// Get a getter function for a property that reads through the cell.
-// Used by $_if condition transformation so IfCondition wraps it in a formula
-// that tracks the cell via relatedTags (more robust than direct opcodeFor).
+// ---- Cross-module-instance $_if fix ----
+//
+// Problem: Vite serves GXT's internal chunks (vm-*.js, dom-*.js) with inconsistent
+// ?v= query strings, creating TWO module instances of the reactive core. Cells/opcodes
+// from one instance don't trigger re-evaluation in the other. This breaks $_if
+// condition tracking when properties change via Ember's set().
+//
+// Additional: IfCondition's internal placeholder gets disconnected when Ember's
+// compat layer moves rendered nodes into wrapper divs. Fix: include placeholder
+// and target in the extracted RENDERED_NODES so itemToNode preserves them.
+//
+// Solution: Patch $_if to capture IfCondition instances. Register manual callbacks
+// keyed by (object, property). When __gxtTriggerReRender fires, call syncState
+// on the IfCondition directly.
+
+const ifWatchers = new WeakMap<object, Map<string, Set<() => void>>>();
+
+function registerIfWatcher(rawTarget: object, key: string, callback: () => void) {
+  let keyMap = ifWatchers.get(rawTarget);
+  if (!keyMap) { keyMap = new Map(); ifWatchers.set(rawTarget, keyMap); }
+  let watchers = keyMap.get(key);
+  if (!watchers) { watchers = new Set(); keyMap.set(key, watchers); }
+  watchers.add(callback);
+}
+
+function notifyIfWatchers(obj: object, key: string) {
+  const candidates = [obj];
+  try {
+    const proto = Object.getPrototypeOf(obj);
+    if (proto && proto !== Object.prototype) candidates.push(proto);
+  } catch { /* ignore */ }
+  const ctxsMap = (globalThis as any).__gxtComponentContexts;
+  if (ctxsMap) {
+    for (const candidate of [...candidates]) {
+      const ctxs = ctxsMap.get(candidate);
+      if (ctxs) {
+        for (const ctx of ctxs) {
+          const raw = ctx?.__gxtRawTarget || ctx;
+          if (!candidates.includes(raw)) candidates.push(raw);
+        }
+      }
+    }
+  }
+  for (const target of candidates) {
+    const keyMap = ifWatchers.get(target);
+    if (!keyMap) continue;
+    const watchers = keyMap.get(key);
+    if (!watchers) continue;
+    for (const cb of watchers) {
+      try { cb(); } catch { /* ignore */ }
+    }
+  }
+}
+
+// Patch $_if to capture IfCondition instances and fix placeholder connectivity.
+function patchGlobalIf() {
+  const g = globalThis as any;
+  if (!g.$_if || g.$_if.__emberPatched) return false;
+  const origIf = g.$_if;
+  g.$_if = function patchedIf(
+    conditionOrCell: any,
+    trueBranch: any,
+    falseBranch: any,
+    ctx: any
+  ) {
+    const watchTarget = conditionOrCell?.__gxtWatchTarget;
+    const watchKey = conditionOrCell?.__gxtWatchKey;
+
+    const ifCondition = origIf(conditionOrCell, trueBranch, falseBranch, ctx);
+
+    if (watchTarget && watchKey && ifCondition) {
+      // Mark as Ember-managed so itemToNode handles it correctly
+      ifCondition.__emberIfCondition = true;
+
+      // Fix placeholder connectivity: ensure the IfCondition's target
+      // (DocumentFragment containing placeholder + rendered content)
+      // is returned as a single unit. Replace RENDERED_NODES with the
+      // target's childNodes so itemToNode returns the whole fragment.
+      if (ifCondition.target && ifCondition.placeholder) {
+        const renderedProp = RENDERED_NODES_PROPERTY;
+        if (renderedProp) {
+          // Replace the RENDERED_NODES with the target itself
+          // This ensures itemToNode returns all nodes including placeholder
+          const target = ifCondition.target;
+          if (target.childNodes) {
+            ifCondition[renderedProp] = Array.from(target.childNodes);
+          }
+        }
+      }
+
+      // Register manual watcher for property change notification
+      if (typeof ifCondition.syncState === 'function') {
+        const emberToBool = g.__gxtToBool || Boolean;
+        registerIfWatcher(watchTarget, watchKey, () => {
+          try {
+            const currentValue = conditionOrCell();
+            ifCondition.syncState(emberToBool(currentValue));
+          } catch { /* ignore */ }
+        });
+      }
+    }
+
+    return ifCondition;
+  };
+  g.$_if.__emberPatched = true;
+  return true;
+}
+patchGlobalIf();
+queueMicrotask(patchGlobalIf);
+
+// Get a getter function for a property on the render context.
 (globalThis as any).__gxtGetCellOrFormula = function(obj: any, key: string) {
   const raw = obj?.__gxtRawTarget || obj;
-  // Ensure a cell exists with getter/setter installed on the object.
-  try {
-    cellFor(raw, key, /* skipDefine */ false);
-  } catch { /* ignore */ }
-  // Return the Cell directly instead of a getter function.
-  // When IfCondition.setupCondition receives a non-function non-primitive,
-  // it uses it directly as `this.condition` (bypassing the formula wrapper).
-  // This avoids the formula short-circuit issue where nested formulas
-  // don't track cells because an outer formula's tracker is active.
-  try {
-    const c = cellFor(raw, key, /* skipDefine */ true);
-    if (c && typeof c === 'object' && 'value' in c && 'update' in c) {
-      return c;
-    }
-  } catch { /* ignore */ }
-  // Fallback: return getter
-  return function() { return obj[key]; };
+  try { cellFor(raw, key, /* skipDefine */ false); } catch { /* ignore */ }
+  const getter: any = function() { return obj[key]; };
+  getter.__gxtWatchTarget = raw;
+  getter.__gxtWatchKey = key;
+  return getter;
 };
 
 // Flush pending GXT DOM updates synchronously.
@@ -498,22 +547,41 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     const newPass = (globalThis as any).__gxtNewRenderPass;
     if (typeof newPass === 'function') newPass();
     try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
-    // Force Ember renderer re-render for GXT roots.
-    // GXT's cell tracking may not pick up changes from Ember's set(),
-    // so we trigger a full re-render via the renderer's root.render().
-    try {
-      const forceRerender = (globalThis as any).__gxtForceEmberRerender;
-      if (typeof forceRerender === 'function') forceRerender();
-    } catch { /* ignore */ }
-    // Update arg cells and wrapper elements, then run second sync
+    // PHASE 1: Update arg cells and fire pre-render lifecycle hooks BEFORE
+    // the force-rerender. The force-rerender (innerHTML='' + rebuild) resets
+    // arg cells to current values, so changes must be detected first.
     try {
       const syncAll = (globalThis as any).__gxtSyncAllWrappers;
       if (typeof syncAll === 'function') {
         syncAll(); // Pre-render hooks + arg cell updates
         try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
-        const postRender = (globalThis as any).__gxtPostRenderHooks;
-        if (typeof postRender === 'function') postRender();
       }
+    } catch { /* ignore */ }
+    // PHASE 2a: Snapshot live instances before force-rerender
+    try {
+      const snapshot = (globalThis as any).__gxtSnapshotLiveInstances;
+      if (typeof snapshot === 'function') snapshot();
+    } catch { /* ignore */ }
+    // PHASE 2b: Force Ember renderer re-render for GXT roots.
+    // GXT's cell tracking may not pick up changes from Ember's set(),
+    // so we trigger a full re-render via the renderer's root.render().
+    // The __gxtIsForceRerender flag tells the component manager to reuse
+    // existing instances and skip init/render lifecycle hooks.
+    try {
+      const forceRerender = (globalThis as any).__gxtForceEmberRerender;
+      if (typeof forceRerender === 'function') forceRerender();
+    } catch { /* ignore */ }
+    // PHASE 2c: Destroy unclaimed instances — components that were in
+    // the old render but not in the new one (e.g., {{each}} items removed).
+    try {
+      const destroyUnclaimed = (globalThis as any).__gxtDestroyUnclaimedPoolEntries;
+      if (typeof destroyUnclaimed === 'function') destroyUnclaimed();
+    } catch { /* ignore */ }
+    // PHASE 3: Post-render hooks (didUpdate, didRender) — fire after DOM
+    // is fully updated by the force-rerender.
+    try {
+      const postRender = (globalThis as any).__gxtPostRenderHooks;
+      if (typeof postRender === 'function') postRender();
     } catch { /* ignore */ }
     // Re-render CurriedComponent marker regions
     try {
@@ -3011,12 +3079,10 @@ export function precompileTemplate(templateString: string, options?: {
     if (modifiedCode.includes('$_each(')) {
       modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
     }
-    // Transform $_if(() => this.PROP, ...) to use __gxtGetCellOrFormula for direct cell tracking.
-    // GXT's IfCondition formula wraps function conditions but doesn't track cells
-    // read through our Proxy. Using a direct cell gives IfCondition something it can track.
+    // Transform $_if(() => this.PROP, ...) to use __gxtGetCellOrFormula.
+    // This tags the condition getter so our patched $_if can register
+    // manual watchers for cross-module-instance notification.
     if (modifiedCode.includes('$_if(')) {
-      // Transform $_if conditions: replace getter with direct cell for tracking.
-      // GXT compiles as $_if((() => this.prop), trueBranch, falseBranch, ctx)
       modifiedCode = modifiedCode.replace(
         /\$_if\(\(?(\(\)\s*=>\s*this\.([a-zA-Z_$][a-zA-Z0-9_$]*))\)?\s*,/g,
         (match, getter, propName) => {

@@ -769,11 +769,40 @@ if (!(globalThis as any).__GXT_MODE__) {
       if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
         const currentTagValue = valueForTag(classicRoot.gxtComponentTag);
         if (currentTagValue !== classicRoot.gxtLastTagValue) {
-          // Tag is dirty — force re-render
+          // Tag is dirty — force re-render. Increment the render pass ID
+          // so the instance pool resets claimed flags and REUSES existing
+          // instances instead of creating new ones (which would fire
+          // spurious init/render lifecycle hooks).
+          (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+          (globalThis as any).__gxtIsForceRerender = true;
+          // Track which root components were re-rendered so
+          // __gxtDestroyUnclaimedPoolEntries can find their children.
+          const rerenderedRoots = (globalThis as any).__gxtRerenderedRoots || ((globalThis as any).__gxtRerenderedRoots = []);
+          if (classicRoot.root) rerenderedRoots.push(classicRoot.root);
           try {
             classicRoot.render();
           } catch { /* ignore render errors */ }
+          finally { (globalThis as any).__gxtIsForceRerender = false; }
         }
+      }
+    }
+  }
+};
+
+// Update gxtLastTagValue on all GXT roots to mark them clean.
+// Called from __gxtTriggerReRender after cell-based sync succeeds,
+// so __gxtForceEmberRerender sees them as up-to-date and skips
+// the destructive innerHTML='' + full rebuild.
+(globalThis as any).__gxtUpdateRootTagValues = function() {
+  for (const renderer of renderers) {
+    const state = (renderer as any).state as RendererState;
+    if (!state) continue;
+    const debugRoots = state.debug?.roots;
+    if (!debugRoots) continue;
+    for (const root of debugRoots) {
+      const classicRoot = root as any;
+      if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
+        classicRoot.gxtLastTagValue = valueForTag(classicRoot.gxtComponentTag);
       }
     }
   }
