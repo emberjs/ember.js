@@ -427,6 +427,8 @@ export default [
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/naming-convention': 'off',
+      // TypeError: Cannot read properties of undefined (reading 'range')
+      '@typescript-eslint/no-unnecessary-type-arguments': 'off',
     },
   },
   {
