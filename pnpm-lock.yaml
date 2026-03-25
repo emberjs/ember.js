@@ -2990,6 +2990,9 @@ importers:
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.33
+      ember-cli-babel:
+        specifier: ^8.3.1
+        version: 8.3.1(@babel/core@7.29.0)
       ember-cli-htmlbars-6:
         specifier: npm:ember-cli-htmlbars@^6.0.0
         version: ember-cli-htmlbars@6.3.0
@@ -11464,7 +11467,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qified@0.6.0:
@@ -17364,7 +17366,7 @@ snapshots:
 
   '@types/fs-extra@9.0.13':
     dependencies:
-      '@types/node': 20.19.33
+      '@types/node': 22.19.11
 
   '@types/glob@7.2.0':
     dependencies:
@@ -17433,7 +17435,7 @@ snapshots:
   '@types/rimraf@3.0.2':
     dependencies:
       '@types/glob': 9.0.0
-      '@types/node': 20.19.33
+      '@types/node': 22.19.11
 
   '@types/rsvp@4.0.9': {}
 
@@ -17454,7 +17456,7 @@ snapshots:
 
   '@types/ssri@7.1.5':
     dependencies:
-      '@types/node': 20.19.33
+      '@types/node': 22.19.11
 
   '@types/supports-color@8.1.3': {}
 

@@ -86,6 +86,20 @@ function basicTest(scenarios: Scenarios, appName: string) {
           },
         },
         tests: {
+          unit: {
+            'v1-addon-without-eai-test.js': `
+              import { module, test } from 'qunit';
+              import { accessGlimmerValidator } from 'v1-addon-without-eai';
+              module('Acceptance | v1-addon-without-eai', function (hooks) {
+                // a v1 addon without ember-auto-import needs to maintain access
+                // to all the backward-compatible ember-provided packages, regardless
+                // of our build environment and optional-features.
+                test('can access things from ember', function(assert) {
+                  assert.strictEqual(accessGlimmerValidator(), 'it works');
+                })
+              });
+            `,
+          },
           acceptance: {
             'example-gjs-route-test.js': `
               import { module, test } from 'qunit';
@@ -225,6 +239,23 @@ function basicTest(scenarios: Scenarios, appName: string) {
             `,
           },
         },
+      });
+
+      let v1AddonWithoutEAI = project.addDependency('v1-addon-without-eai');
+      v1AddonWithoutEAI.pkg.keywords = ['ember-addon'];
+      v1AddonWithoutEAI.linkDependency('ember-cli-babel', { baseDir: __dirname } );
+      v1AddonWithoutEAI.mergeFiles({
+        'index.js': 'module.exports = { name: "v1-addon-without-eai" }',
+        addon: {
+          'index.js': `
+            import { consumeTag } from '@glimmer/validator';
+            export function accessGlimmerValidator() {
+              if (typeof consumeTag === 'function') {
+                return "it works"
+              }
+            }
+          `
+        }
       });
     })
     .forEachScenario((scenario) => {
