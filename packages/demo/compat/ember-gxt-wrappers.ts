@@ -839,10 +839,18 @@ function createEmberDc(original: Function) {
       return lazyThunk;
     }
 
-    // Handle CurriedComponent
+    // Handle CurriedComponent — pass componentGetter as a "live source"
+    // so the component's arg cells can re-read from the LATEST curried
+    // component's args when $_componentHelper re-evaluates with new values.
     if (componentValue && componentValue.__isCurriedComponent) {
-      const result = renderComponent(componentValue, gxtArgs, ctx);
-      return result;
+      const prev = g.__dcComponentGetter;
+      g.__dcComponentGetter = componentGetter;
+      try {
+        const result = renderComponent(componentValue, gxtArgs, ctx);
+        return result;
+      } finally {
+        g.__dcComponentGetter = prev;
+      }
     }
 
     // Handle string component name

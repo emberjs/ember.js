@@ -234,10 +234,17 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
           const factory = owner.factoryFor?.(`component:${first}`);
           const template = owner.lookup?.(`template:components/${first}`);
           if (!factory && !template) {
-            throw new Error(
+            const err = new Error(
               `Attempted to resolve \`${first}\`, which was expected to be a component, but nothing was found. ` +
               `Could not find component named "${first}" (no component or template with that name was found)`
             );
+            // Capture the error so flushRenderErrors() can re-throw it
+            // (GXT may catch the thrown error during formula evaluation)
+            const captureErr = g.__captureRenderError;
+            if (typeof captureErr === 'function') {
+              captureErr(err);
+            }
+            throw err;
           }
         }
       }

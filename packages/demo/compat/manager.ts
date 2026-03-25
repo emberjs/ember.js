@@ -130,6 +130,7 @@ export class CurriedComponent {
   return value && value.__isCurriedComponent === true;
 };
 (globalThis as any).__createCurriedComponent = createCurriedComponent;
+(globalThis as any).__captureRenderError = captureRenderError;
 
 // =============================================================================
 // Global Registries
@@ -1922,14 +1923,42 @@ const $_MANAGERS = {
         // Build merged args: curried args are defaults, invocation args override
         const mergedArgs: any = {};
 
-        // Copy curried named args as lazy getters
+        // If we have a live componentGetter (from $_dc_ember), use it to create
+        // getters that read from the LATEST curried component's args.
+        const dcGetter = (globalThis as any).__dcComponentGetter;
+
+        // Copy curried named args as lazy getters.
+        // Read from cArgs[key] to see in-place updates.
+        // Also use dcGetter when available for $_dc-rendered components.
         const cArgs = komp.__curriedArgs || {};
-        for (const [key, value] of Object.entries(cArgs)) {
-          Object.defineProperty(mergedArgs, key, {
-            get: () => (typeof value === 'function' && !value.__isCurriedComponent) ? value() : value,
-            enumerable: true,
-            configurable: true,
-          });
+        for (const key of Object.keys(cArgs)) {
+          if (dcGetter) {
+            // Dynamic getter: reads from the LATEST curried component via $_dc getter
+            Object.defineProperty(mergedArgs, key, {
+              get: () => {
+                let latest: any;
+                try { latest = dcGetter(); } catch { latest = null; }
+                if (latest && latest.__isCurriedComponent) {
+                  const latestVal = latest.__curriedArgs?.[key];
+                  return (typeof latestVal === 'function' && !latestVal.__isCurriedComponent) ? latestVal() : latestVal;
+                }
+                // Fallback: read from cArgs[key] for in-place updates
+                const value = cArgs[key];
+                return (typeof value === 'function' && !(value as any).__isCurriedComponent) ? (value as any)() : value;
+              },
+              enumerable: true,
+              configurable: true,
+            });
+          } else {
+            Object.defineProperty(mergedArgs, key, {
+              get: () => {
+                const value = cArgs[key];
+                return (typeof value === 'function' && !(value as any).__isCurriedComponent) ? (value as any)() : value;
+              },
+              enumerable: true,
+              configurable: true,
+            });
+          }
         }
 
         // Copy invocation args (these override curried args)
@@ -1957,11 +1986,35 @@ const $_MANAGERS = {
             const posSourceGetters: any[] = [];
             for (let i = 0; i < cPositionals.length; i++) {
               const val = cPositionals[i];
-              Object.defineProperty(mergedArgs, `__pos${i}__`, {
-                get: () => (typeof val === 'function' && !val.__isCurriedComponent) ? val() : val,
-                enumerable: true,
-                configurable: true,
-              });
+              const posIdx = i;
+              if (dcGetter) {
+                Object.defineProperty(mergedArgs, `__pos${i}__`, {
+                  get: () => {
+                    let latest: any;
+                    try { latest = dcGetter(); } catch { latest = null; }
+                    if (latest && latest.__isCurriedComponent) {
+                      const latestPos = latest.__curriedPositionals;
+                      if (latestPos && posIdx < latestPos.length) {
+                        const lv = latestPos[posIdx];
+                        return (typeof lv === 'function' && !lv.__isCurriedComponent) ? lv() : lv;
+                      }
+                    }
+                    const pv = cPositionals[posIdx];
+                    return (typeof pv === 'function' && !pv.__isCurriedComponent) ? pv() : pv;
+                  },
+                  enumerable: true,
+                  configurable: true,
+                });
+              } else {
+                Object.defineProperty(mergedArgs, `__pos${i}__`, {
+                  get: () => {
+                    const pv = cPositionals[posIdx];
+                    return (typeof pv === 'function' && !pv.__isCurriedComponent) ? pv() : pv;
+                  },
+                  enumerable: true,
+                  configurable: true,
+                });
+              }
               // Store the raw getter for mut to use as a setter source
               if (typeof val === 'function' && !val.__isCurriedComponent) {
                 posSourceGetters[i] = val;
@@ -2071,12 +2124,13 @@ const $_MANAGERS = {
         }
 
         // Throw when a component name cannot be resolved (matches Ember's behavior).
-        throw new Error(
+        const notFoundErr = new Error(
           `Attempted to resolve \`${komp}\`, which was expected to be a component, but nothing was found. ` +
           `Could not find component named "${komp}" (no component or template with that name was found)`
         );
-
-        return null;
+        // Capture for flushRenderErrors so assert.throws() can see it
+        captureRenderError(notFoundErr);
+        throw notFoundErr;
       }
 
       // Handle component with internal/custom manager

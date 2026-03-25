@@ -6,6 +6,14 @@ import { Promise } from 'rsvp';
 
 export function runAppend(view: any): void {
   run(view, 'appendTo', document.getElementById('qunit-fixture'));
+  // In GXT mode, flush pending DOM updates synchronously after append
+  // so test assertions see the rendered DOM immediately
+  const syncNow = (globalThis as any).__gxtSyncDomNow;
+  if (typeof syncNow === 'function') {
+    syncNow();
+  }
+  // Re-throw any errors captured during rendering (e.g., component-not-found)
+  flushRenderErrors();
 }
 
 export function runDestroy(toDestroy: any): void {
