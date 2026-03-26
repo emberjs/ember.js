@@ -5,7 +5,6 @@
     "inlineSources": true,
     "inlineSourceMap": true,
     "outDir": "dist",
-    "baseUrl": "lib",
     "rootDir": "lib",
     "esModuleInterop": true,
     "moduleResolution": "bundler",
