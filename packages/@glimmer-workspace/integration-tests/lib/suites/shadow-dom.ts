@@ -10,11 +10,6 @@ export class ShadowDOMSuite extends RenderTest {
 
   @test
   'Renders content into shadow root via declarative shadow DOM (<template shadowrootmode="open">)'() {
-    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     // Render a template that uses declarative shadow DOM syntax.
     // The <template shadowrootmode="open"> should cause Glimmer to attach a
     // shadow root to the parent element and render children into it.
@@ -36,11 +31,6 @@ export class ShadowDOMSuite extends RenderTest {
 
   @test
   'Shadow DOM content renders alongside regular DOM content'() {
-    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     this.render(
       '<div><p>regular content</p><div><template shadowrootmode="open"><em>shadow content</em></template></div></div>'
     );
@@ -66,11 +56,6 @@ export class ShadowDOMSuite extends RenderTest {
 
   @test
   '<template shadowrootmode="open"> as component root renders into the parent element shadow root'() {
-    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     this.registerComponent(
       'TemplateOnly',
       'ShadowComp',
@@ -108,11 +93,6 @@ export class ShadowDOMSuite extends RenderTest {
 
   @test
   '<template shadowrootmode="open"> as component root re-renders correctly after full component recreation'() {
-    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     this.registerComponent(
       'TemplateOnly',
       'ShadowComp',
@@ -152,11 +132,6 @@ export class ShadowDOMSuite extends RenderTest {
 
   @test
   '<template shadowrootmode="open"> as component root with tracked state re-renders into same shadow root'() {
-    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     class Counter extends GlimmerishComponent {
       @tracked count = 0;
     }
@@ -199,11 +174,6 @@ export class ShadowDOMSuite extends RenderTest {
 
   @test
   'conditional <template shadowrootmode="open"> inside a host element attaches shadow root when rendered'() {
-    if (typeof document === 'undefined' || !('attachShadow' in document.createElement('div'))) {
-      this.assert.ok(true, 'Shadow DOM not supported, skipping');
-      return;
-    }
-
     this.render(
       '<div class="host">{{#if this.useShadow}}<template shadowrootmode="open"><p>shadow content</p></template>{{else}}<div>regular content</div>{{/if}}</div>',
       { useShadow: true }
