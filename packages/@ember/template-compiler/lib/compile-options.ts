@@ -19,9 +19,9 @@ function malformedComponentLookup(string: string) {
  * The variable name used to inject the keywords object into the
  * template's evaluation scope. auto-import-builtins rewrites bare
  * keyword references (e.g. `on`) to property accesses on this
- * variable (e.g. `__keywords__.on`).
+ * variable (e.g. `__ember_keywords__.on`).
  */
-export const KEYWORDS_VAR = '__keywords__';
+export const KEYWORDS_VAR = '__ember_keywords__';
 
 export const keywords: Record<string, unknown> = {
   on,
