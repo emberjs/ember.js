@@ -3,7 +3,6 @@ import { castToBrowser } from '@glimmer/debug-util';
 import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { tracked } from '../test-helpers/tracked';
 
 export class ShadowDOMSuite extends RenderTest {
   static suiteName = 'Shadow DOM';
@@ -132,9 +131,7 @@ export class ShadowDOMSuite extends RenderTest {
 
   @test
   '<template shadowrootmode="open"> as component root with tracked state re-renders into same shadow root'() {
-    class Counter extends GlimmerishComponent {
-      @tracked count = 0;
-    }
+    class Counter extends GlimmerishComponent {}
 
     this.registerComponent(
       'Glimmer',
@@ -199,6 +196,48 @@ export class ShadowDOMSuite extends RenderTest {
       host?.querySelector('div')?.textContent,
       'regular content',
       'regular content renders in host after switching from shadow branch'
+    );
+  }
+
+  @test
+  'conditional <template shadowrootmode="open"> re-enables shadow root on toggle back (exercises existingShadowRoot path)'() {
+    // When a declarative shadow root block is torn down and re-created on the same
+    // host element, VM_ATTACH_SHADOW_ROOT_OP encounters rawParent.shadowRoot !== null
+    // (shadow roots cannot be removed from a host). The existingShadowRoot branch in
+    // the opcode clears and reuses the existing shadow root so that attachShadow() is
+    // not called again (which would throw DOMException).
+    this.render(
+      '<div class="host">{{#if this.useShadow}}<template shadowrootmode="open"><p>{{this.msg}}</p></template>{{else}}<span>off</span>{{/if}}</div>',
+      { useShadow: true, msg: 'first' }
+    );
+
+    const rootEl = castToBrowser(this.element, 'HTML');
+    const host = rootEl.querySelector('.host') as HTMLElement | null;
+    const initialShadowRoot = host?.shadowRoot;
+
+    this.assert.ok(initialShadowRoot !== null, 'shadow root attached on first render');
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      'first',
+      'initial shadow content correct'
+    );
+
+    // Tear down the shadow DOM block — shadow root stays on the host (platform behavior)
+    this.rerender({ useShadow: false, msg: 'first' });
+    this.assert.ok(host?.querySelector('span') !== null, 'else branch rendered');
+
+    // Re-enable shadow DOM — VM_ATTACH_SHADOW_ROOT_OP hits the existingShadowRoot path
+    this.rerender({ useShadow: true, msg: 'second' });
+    this.assert.ok(host?.shadowRoot !== null, 'shadow root still attached after re-enable');
+    this.assert.strictEqual(
+      host?.shadowRoot,
+      initialShadowRoot,
+      'same shadow root instance reused (not recreated)'
+    );
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      'second',
+      'shadow content updated correctly after re-enable'
     );
   }
 }
