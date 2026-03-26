@@ -3,7 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import compileOptions, { keywords, KEYWORDS_VAR } from './compile-options';
+import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
@@ -272,7 +272,7 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
     // caller's scope, so local variables (like `handleClick`) are captured
     // via closure, while `__keywords__` comes from the function parameter.
     return (source: string) => {
-      let wrapperFn = userEval(`(function(${KEYWORDS_VAR}){ return (${source}); })`) as (
+      let wrapperFn = userEval(`(function(${RUNTIME_KEYWORDS_NAME}){ return (${source}); })`) as (
         ...args: unknown[]
       ) => unknown;
 
@@ -284,13 +284,13 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
     if (!scope) {
       if (Object.keys(keywords).length > 0) {
         return (source: string) => {
-          return new Function(KEYWORDS_VAR, `return (${source})`)(keywords);
+          return new Function(RUNTIME_KEYWORDS_NAME, `return (${source})`)(keywords);
         };
       }
       return evaluator;
     }
 
-    scope = Object.assign({ [KEYWORDS_VAR]: keywords }, scope);
+    scope = Object.assign({ [RUNTIME_KEYWORDS_NAME]: keywords }, scope);
 
     return (source: string) => {
       let hasThis = Object.prototype.hasOwnProperty.call(scope, 'this');

@@ -21,7 +21,7 @@ function malformedComponentLookup(string: string) {
  * keyword references (e.g. `on`) to property accesses on this
  * variable (e.g. `__ember_keywords__.on`).
  */
-export const KEYWORDS_VAR = '__ember_keywords__';
+export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 
 export const keywords: Record<string, unknown> = {
   on,
@@ -55,7 +55,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
         name in keywords
       );
 
-      return `${KEYWORDS_VAR}.${name}`;
+      return `${RUNTIME_KEYWORDS_NAME}.${name}`;
     },
   };
 
@@ -66,7 +66,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     options.lexicalScope = (variable: string) => {
       // The keywords container variable is always "in scope" —
       // we inject it via the evaluator in template.ts.
-      if (variable === KEYWORDS_VAR) {
+      if (variable === RUNTIME_KEYWORDS_NAME) {
         return true;
       }
 
@@ -87,7 +87,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope || variable === KEYWORDS_VAR;
+    options.lexicalScope = (variable: string) => variable in scope || variable === RUNTIME_KEYWORDS_NAME;
 
     delete options.scope;
   }
@@ -95,7 +95,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   // When neither eval nor scope is provided, the keywords container
   // still needs to be visible to the compiler.
   if (!options.lexicalScope && Object.keys(keywords).length > 0) {
-    options.lexicalScope = (variable: string) => variable === KEYWORDS_VAR;
+    options.lexicalScope = (variable: string) => variable === RUNTIME_KEYWORDS_NAME;
   }
 
   if ('locals' in options && !options.locals) {
