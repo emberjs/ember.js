@@ -17,7 +17,6 @@ Options:
 	 --force                  delete cached directories before running
      --reuse                  reuse existing apps and tarballs, if available (by default only the control app/tarball is reused)
      --no-headless            run Chrome without headless mode (opens visible browser windows)
-                              On macOS, benchmarks will run sequentially (one browser at a time)
 
 Notes:
 	- This script runs \`pnpm install\` and \`node ./bin/build-for-publishing.js\` in both repos.
