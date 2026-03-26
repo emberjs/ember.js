@@ -38,13 +38,6 @@ export interface EmberPrecompileOptions extends Omit<PrecompileOptions, 'meta'> 
      * Not available at runtime
      */
     jsutils?: { bindImport: (...args: unknown[]) => string };
-
-    /**
-     * Utils unique to the runtime compiler
-     */
-    emberRuntime?: {
-      lookupKeyword(name: string): string;
-    };
   };
 
   /**
