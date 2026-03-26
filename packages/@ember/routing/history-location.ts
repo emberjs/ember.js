@@ -1,7 +1,7 @@
 import EmberObject from '@ember/object';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
-import { getHash } from './lib/location-utils';
+import { getHash, escapeRegExp } from './lib/location-utils';
 
 /**
 @module @ember/routing/history-location
@@ -134,8 +134,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
     // remove baseURL and rootURL from start of path
     let url = path
-      .replace(new RegExp(`^${baseURL}(?=/|$)`), '')
-      .replace(new RegExp(`^${rootURL}(?=/|$)`), '')
+      .replace(new RegExp(`^${escapeRegExp(baseURL)}(?=/|$)`), '')
+      .replace(new RegExp(`^${escapeRegExp(rootURL)}(?=/|$)`), '')
       .replace(/\/\//g, '/'); // remove extra slashes
 
     let search = location.search || '';

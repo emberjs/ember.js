@@ -1,6 +1,7 @@
 import EmberObject from '@ember/object';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import { escapeRegExp } from './lib/location-utils';
 
 /**
 @module @ember/routing/none-location
@@ -64,7 +65,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     rootURL = rootURL.replace(/\/$/, '');
 
     // remove rootURL from url
-    return path.replace(new RegExp(`^${rootURL}(?=/|$)`), '');
+    return path.replace(new RegExp(`^${escapeRegExp(rootURL)}(?=/|$)`), '');
   }
 
   /**

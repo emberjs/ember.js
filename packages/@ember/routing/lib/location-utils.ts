@@ -47,3 +47,13 @@ export function getFullPath(location: Location): string {
 export function replacePath(location: Location, path: string): void {
   location.replace(location.origin + path);
 }
+
+/**
+  Escapes a string for use in a `RegExp` constructor, ensuring that
+  any special regex characters are treated as literal characters.
+
+  @private
+*/
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
