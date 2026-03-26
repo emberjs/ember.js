@@ -87,7 +87,8 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope || variable === RUNTIME_KEYWORDS_NAME;
+    options.lexicalScope = (variable: string) =>
+      variable in scope || variable === RUNTIME_KEYWORDS_NAME;
 
     delete options.scope;
   }
