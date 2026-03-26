@@ -32,7 +32,6 @@ export class ShadowDOMSuite extends RenderTest {
       'shadow content',
       'shadow root contains the rendered content'
     );
-
   }
 
   @test
