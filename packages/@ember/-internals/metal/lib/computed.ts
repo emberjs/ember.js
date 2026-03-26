@@ -592,7 +592,7 @@ class AutoComputedProperty extends ComputedProperty {
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
     if (Array.isArray(ret)) {
-      consumeTag(tagFor(ret, '[]', tagMeta));
+      consumeTag(tagFor(ret, '[]'));
     }
 
     return ret;
