@@ -15,28 +15,17 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
+/**
+ * The variable name used to inject the keywords object into the
+ * template's evaluation scope. auto-import-builtins rewrites bare
+ * keyword references (e.g. `on`) to property accesses on this
+ * variable (e.g. `__keywords__.on`).
+ */
+export const KEYWORDS_VAR = '__keywords__';
+
 export const keywords: Record<string, unknown> = {
   on,
 };
-
-export interface EvalInfo {
-  localScopeEvaluator: (value: string) => unknown;
-  keywordsNotInScope: string[];
-}
-
-export interface CompileState {
-  evalInfo?: EvalInfo;
-  resolvedScope?: Record<string, unknown>;
-}
-
-/**
- * Side channel for passing internal state from compileOptions to buildEvaluator
- * in template.ts. Keyed by the options object so entries are GC'd automatically
- * and cannot leak between unrelated template() calls. We avoid putting these on
- * `options.meta` because the Glimmer compiler may JSON.stringify meta, and scope
- * values (e.g. `globalThis`) can contain circular references.
- */
-export const compileStates = new WeakMap<object, CompileState>();
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
@@ -59,20 +48,26 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   };
 
   options.meta ||= {};
+  options.meta.emberRuntime ||= {
+    lookupKeyword(name: string): string {
+      assert(
+        `${name} is not a known keyword. Available keywords: ${Object.keys(keywords).join(', ')}`,
+        name in keywords
+      );
+
+      return `${KEYWORDS_VAR}.${name}`;
+    },
+  };
 
   if ('eval' in options && options.eval) {
     const localScopeEvaluator = options.eval;
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
-    const keywordsNotInScope: string[] = [];
 
     options.lexicalScope = (variable: string) => {
-      if (variable in keywords) {
-        // Check if the user is shadowing this keyword with a local variable
-        if (inScope(variable, localScopeEvaluator) && !inScope(variable, globalScopeEvaluator)) {
-          return true; // user's local shadows the keyword
-        }
-        keywordsNotInScope.push(variable);
-        return true; // we'll inject the keyword value via the evaluator
+      // The keywords container variable is always "in scope" —
+      // we inject it via the evaluator in template.ts.
+      if (variable === KEYWORDS_VAR) {
+        return true;
       }
 
       if (ALLOWED_GLOBALS.has(variable)) {
@@ -86,24 +81,21 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
       return false;
     };
 
-    compileStates.set(options, { evalInfo: { localScopeEvaluator, keywordsNotInScope } });
-
     delete options.eval;
   }
 
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope || variable in keywords;
-
-    compileStates.set(options, { resolvedScope: scope });
+    options.lexicalScope = (variable: string) => variable in scope || variable === KEYWORDS_VAR;
 
     delete options.scope;
   }
 
-  // When neither eval nor scope is provided, keywords still need to be in scope
+  // When neither eval nor scope is provided, the keywords container
+  // still needs to be visible to the compiler.
   if (!options.lexicalScope && Object.keys(keywords).length > 0) {
-    options.lexicalScope = (variable: string) => variable in keywords;
+    options.lexicalScope = (variable: string) => variable === KEYWORDS_VAR;
   }
 
   if ('locals' in options && !options.locals) {

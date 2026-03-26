@@ -27,9 +27,9 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
             node.path.original = env.meta.jsutils.bindImport('@ember/modifier', 'on', node, {
               name: 'on',
             });
+          } else if (env.meta?.emberRuntime) {
+            node.path.original = env.meta.emberRuntime.lookupKeyword('on');
           }
-          // At runtime, keywords are handled by lexicalScope + the evaluator
-          // in template.ts, so no AST rewriting is needed here.
         }
       },
     },

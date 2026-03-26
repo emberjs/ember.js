@@ -3,7 +3,8 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import compileOptions, { keywords, compileStates } from './compile-options';
+import compileOptions, { keywords, KEYWORDS_VAR } from './compile-options';
+import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
 
@@ -238,11 +239,11 @@ export function template(
 ): object {
   const options = { strictMode: true, ...providedOptions };
 
+  const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
-  const evaluate = buildEvaluator(normalizedOptions);
   const wire = evaluate(`(${source})`) as SerializedTemplateWithLazyBlock;
 
   const template = templateFactory(wire);
@@ -257,82 +258,59 @@ const evaluator = (source: string) => {
 };
 
 /**
- * Builds an evaluator that provides the given scope variables to the compiled
- * template source via `new Function` parameters.
- */
-function makeScopeEvaluator(scope: Record<string, unknown>) {
-  let hasThis = Object.prototype.hasOwnProperty.call(scope, 'this');
-  let thisValue = hasThis ? (scope as { this?: unknown }).this : undefined;
-
-  let argNames: string[] = [];
-  let argValues: unknown[] = [];
-
-  for (let [name, value] of Object.entries(scope)) {
-    if (name === 'this') {
-      continue;
-    }
-
-    argNames.push(name);
-    argValues.push(value);
-  }
-
-  return (source: string) => {
-    let fn = new Function(...argNames, `return (${source})`);
-
-    return hasThis ? fn.call(thisValue, ...argValues) : fn(...argValues);
-  };
-}
-
-/**
- * Builds the evaluator for the compiled template source.
+ * Builds the source wireformat JSON block
  *
- * This is called AFTER compilation, so information gathered during
- * compilation (like which keywords need to be injected) is available
- * via the compileStates WeakMap.
+ * @param options
+ * @returns
  */
-function buildEvaluator(options: object) {
-  let state = compileStates.get(options) ?? {};
+function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
+  if (options.eval) {
+    const userEval = options.eval;
 
-  if (state.evalInfo) {
-    // Eval form: wrap the source to inject keywords that aren't in the
-    // caller's scope, while preserving access to the caller's lexical scope
-    // via the user's direct eval.
-    let { localScopeEvaluator, keywordsNotInScope } = state.evalInfo;
-
-    // Deduplicate (lexicalScope may be called more than once for the same variable)
-    let uniqueKeywords = [...new Set(keywordsNotInScope)];
-
-    if (uniqueKeywords.length === 0) {
-      // All keywords are shadowed by the caller's locals — use eval directly
-      return localScopeEvaluator;
-    }
-
+    // Wrap the compiled source in a function that receives the keywords
+    // container as a parameter. The user's eval evaluates this in the
+    // caller's scope, so local variables (like `handleClick`) are captured
+    // via closure, while `__keywords__` comes from the function parameter.
     return (source: string) => {
-      // Wrap the source in a function that receives keyword values as
-      // parameters. The user's eval evaluates this in the caller's scope,
-      // so local variables (like `handleClick`) are captured via closure,
-      // while keywords (like `on`) come from the function parameters.
-      let paramList = uniqueKeywords.join(',');
-      let wrapperFn = localScopeEvaluator(`(function(${paramList}){ return (${source}); })`) as (
+      let wrapperFn = userEval(`(function(${KEYWORDS_VAR}){ return (${source}); })`) as (
         ...args: unknown[]
       ) => unknown;
 
-      let paramValues = uniqueKeywords.map((name) => keywords[name]);
+      return wrapperFn(keywords);
+    };
+  } else {
+    let scope = options.scope?.();
 
-      return wrapperFn(...paramValues);
+    if (!scope) {
+      if (Object.keys(keywords).length > 0) {
+        return (source: string) => {
+          return new Function(KEYWORDS_VAR, `return (${source})`)(keywords);
+        };
+      }
+      return evaluator;
+    }
+
+    scope = Object.assign({ [KEYWORDS_VAR]: keywords }, scope);
+
+    return (source: string) => {
+      let hasThis = Object.prototype.hasOwnProperty.call(scope, 'this');
+      let thisValue = hasThis ? (scope as { this?: unknown }).this : undefined;
+
+      let argNames: string[] = [];
+      let argValues: unknown[] = [];
+
+      for (let [name, value] of Object.entries(scope)) {
+        if (name === 'this') {
+          continue;
+        }
+
+        argNames.push(name);
+        argValues.push(value);
+      }
+
+      let fn = new Function(...argNames, `return (${source})`);
+
+      return hasThis ? fn.call(thisValue, ...argValues) : fn(...argValues);
     };
   }
-
-  if (state.resolvedScope) {
-    // Explicit scope form: merge keywords with user-provided scope
-    let scope = Object.assign({}, keywords, state.resolvedScope);
-    return makeScopeEvaluator(scope);
-  }
-
-  // No eval, no scope: provide keywords if any exist
-  if (Object.keys(keywords).length > 0) {
-    return makeScopeEvaluator({ ...keywords });
-  }
-
-  return evaluator;
 }
