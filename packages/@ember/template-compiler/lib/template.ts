@@ -3,8 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import compileOptions, { keywords, _compileState } from './compile-options';
-import type { EmberPrecompileOptions } from './types';
+import compileOptions, { keywords, compileStates } from './compile-options';
 
 type ComponentClass = abstract new (...args: any[]) => object;
 
@@ -243,7 +242,7 @@ export function template(
   const component = normalizedOptions.component ?? templateOnly();
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
-  const evaluate = buildEvaluator();
+  const evaluate = buildEvaluator(normalizedOptions);
   const wire = evaluate(`(${source})`) as SerializedTemplateWithLazyBlock;
 
   const template = templateFactory(wire);
@@ -289,10 +288,10 @@ function makeScopeEvaluator(scope: Record<string, unknown>) {
  *
  * This is called AFTER compilation, so information gathered during
  * compilation (like which keywords need to be injected) is available
- * via the _compileState side channel.
+ * via the compileStates WeakMap.
  */
-function buildEvaluator() {
-  let state = _compileState;
+function buildEvaluator(options: object) {
+  let state = compileStates.get(options) ?? {};
 
   if (state.evalInfo) {
     // Eval form: wrap the source to inject keywords that aren't in the
@@ -314,9 +313,9 @@ function buildEvaluator() {
       // so local variables (like `handleClick`) are captured via closure,
       // while keywords (like `on`) come from the function parameters.
       let paramList = uniqueKeywords.join(',');
-      let wrapperFn = localScopeEvaluator(
-        `(function(${paramList}){ return (${source}); })`
-      ) as (...args: unknown[]) => unknown;
+      let wrapperFn = localScopeEvaluator(`(function(${paramList}){ return (${source}); })`) as (
+        ...args: unknown[]
+      ) => unknown;
 
       let paramValues = uniqueKeywords.map((name) => keywords[name]);
 

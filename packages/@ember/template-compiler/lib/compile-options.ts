@@ -19,19 +19,24 @@ export const keywords: Record<string, unknown> = {
   on,
 };
 
+export interface EvalInfo {
+  localScopeEvaluator: (value: string) => unknown;
+  keywordsNotInScope: string[];
+}
+
+export interface CompileState {
+  evalInfo?: EvalInfo;
+  resolvedScope?: Record<string, unknown>;
+}
+
 /**
  * Side channel for passing internal state from compileOptions to buildEvaluator
- * in template.ts. We avoid putting these on `options.meta` because the Glimmer
- * compiler may JSON.stringify meta, and scope values (e.g. `globalThis`) can
- * contain circular references.
+ * in template.ts. Keyed by the options object so entries are GC'd automatically
+ * and cannot leak between unrelated template() calls. We avoid putting these on
+ * `options.meta` because the Glimmer compiler may JSON.stringify meta, and scope
+ * values (e.g. `globalThis`) can contain circular references.
  */
-export let _compileState: {
-  evalInfo?: {
-    localScopeEvaluator: (value: string) => unknown;
-    keywordsNotInScope: string[];
-  };
-  resolvedScope?: Record<string, unknown>;
-} = {};
+export const compileStates = new WeakMap<object, CompileState>();
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
@@ -63,10 +68,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     options.lexicalScope = (variable: string) => {
       if (variable in keywords) {
         // Check if the user is shadowing this keyword with a local variable
-        if (
-          inScope(variable, localScopeEvaluator) &&
-          !inScope(variable, globalScopeEvaluator)
-        ) {
+        if (inScope(variable, localScopeEvaluator) && !inScope(variable, globalScopeEvaluator)) {
           return true; // user's local shadows the keyword
         }
         keywordsNotInScope.push(variable);
@@ -84,9 +86,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
       return false;
     };
 
-    // Store for use by buildEvaluator after compilation (via side channel,
-    // not on meta, because the compiler may JSON.stringify meta)
-    _compileState = { evalInfo: { localScopeEvaluator, keywordsNotInScope } };
+    compileStates.set(options, { evalInfo: { localScopeEvaluator, keywordsNotInScope } });
 
     delete options.eval;
   }
@@ -96,9 +96,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
 
     options.lexicalScope = (variable: string) => variable in scope || variable in keywords;
 
-    // Store for use by buildEvaluator after compilation (via side channel,
-    // not on meta, because the compiler may JSON.stringify meta)
-    _compileState = { resolvedScope: scope };
+    compileStates.set(options, { resolvedScope: scope });
 
     delete options.scope;
   }
