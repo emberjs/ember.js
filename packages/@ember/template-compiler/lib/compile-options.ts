@@ -15,13 +15,17 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
-const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
-export const keywords = {
+/**
+ * The variable name used to inject the keywords object into the
+ * template's evaluation scope. auto-import-builtins rewrites bare
+ * keyword references (e.g. `on`) to property accesses on this
+ * variable (e.g. `__ember_keywords__.on`).
+ */
+export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
+
+export const keywords: Record<string, unknown> = {
   on,
 };
-
-// Not worth adding a type
-(globalThis as any)[RUNTIME_KEYWORDS_NAME] = keywords;
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
@@ -45,18 +49,13 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
 
   options.meta ||= {};
   options.meta.emberRuntime ||= {
-    /**
-     * NOTE: when stepping through lexicalScope, or other callbacks here,
-     *       we first detect the keywords as "not in scope",
-     *       and that is what we want, so that we can import them.
-     */
     lookupKeyword(name: string): string {
       assert(
         `${name} is not a known keyword. Available keywords: ${Object.keys(keywords).join(', ')}`,
         name in keywords
       );
 
-      return `globalThis.${RUNTIME_KEYWORDS_NAME}.${name}`;
+      return `${RUNTIME_KEYWORDS_NAME}.${name}`;
     },
   };
 
@@ -65,6 +64,12 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
+      // The keywords container variable is always "in scope" —
+      // we inject it via the evaluator in template.ts.
+      if (variable === RUNTIME_KEYWORDS_NAME) {
+        return true;
+      }
+
       if (ALLOWED_GLOBALS.has(variable)) {
         return variable in globalThis;
       }
@@ -82,9 +87,16 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope || variable in keywords;
+    options.lexicalScope = (variable: string) =>
+      variable in scope || variable === RUNTIME_KEYWORDS_NAME;
 
     delete options.scope;
+  }
+
+  // When neither eval nor scope is provided, the keywords container
+  // still needs to be visible to the compiler.
+  if (!options.lexicalScope && Object.keys(keywords).length > 0) {
+    options.lexicalScope = (variable: string) => variable === RUNTIME_KEYWORDS_NAME;
   }
 
   if ('locals' in options && !options.locals) {
