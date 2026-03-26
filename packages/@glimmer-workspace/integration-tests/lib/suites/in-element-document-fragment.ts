@@ -146,7 +146,8 @@ export class InElementDocumentFragmentSuite extends RenderTest {
       }
     );
 
-    // Use childNodes to query into the fragment since querySelector doesn't work on detached fragment nodes in all browsers
+    // Use childNodes to traverse the fragment's direct children since glimmer also
+    // inserts comment marker nodes alongside the rendered elements.
     const nodes = Array.from(fragment.childNodes);
     const pA = nodes.find((n) => (n as Element).id === 'a') as HTMLElement | undefined;
     const pB = nodes.find((n) => (n as Element).id === 'b') as HTMLElement | undefined;
