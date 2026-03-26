@@ -1,8 +1,11 @@
+import type { Dict, Owner } from '@glimmer/interfaces';
+
 import { castToBrowser } from '@glimmer/debug-util';
 
 import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
+import { tracked } from '../test-helpers/tracked';
 
 export class ShadowDOMSuite extends RenderTest {
   static suiteName = 'Shadow DOM';
@@ -166,6 +169,56 @@ export class ShadowDOMSuite extends RenderTest {
       host?.shadowRoot,
       shadowRootRef,
       'same shadow root instance reused (not recreated)'
+    );
+  }
+
+  @test
+  '<template shadowrootmode="open"> as component root re-renders via internal @tracked property (no rerender args)'() {
+    let instance = this.capture<Counter>();
+
+    class Counter extends GlimmerishComponent {
+      @tracked count = 0;
+
+      constructor(owner: Owner, args: Dict) {
+        super(owner, args);
+        instance.capture(this);
+      }
+    }
+
+    this.registerComponent(
+      'Glimmer',
+      'Counter',
+      '<template shadowrootmode="open"><p>{{this.count}}</p></template>',
+      Counter as any
+    );
+
+    // No data is passed to render — the count is owned entirely by the component
+    this.render('<div class="host"><Counter /></div>');
+
+    const rootEl = castToBrowser(this.element, 'HTML');
+    const host = rootEl.querySelector('.host') as HTMLElement | null;
+    const shadowRootRef = host?.shadowRoot;
+
+    this.assert.ok(shadowRootRef !== null, 'shadow root attached on first render');
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      '0',
+      'initial count renders in shadow root'
+    );
+
+    // Mutate the tracked property directly — no data passed to rerender
+    instance.captured.count = 1;
+    this.rerender();
+
+    this.assert.strictEqual(
+      host?.shadowRoot?.querySelector('p')?.textContent,
+      '1',
+      'count updated in shadow root after tracked mutation'
+    );
+    this.assert.strictEqual(
+      host?.shadowRoot,
+      shadowRootRef,
+      'same shadow root instance reused (not recreated) after tracked mutation'
     );
   }
 
