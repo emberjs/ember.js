@@ -175,7 +175,7 @@ APPEND_OPCODES.add(VM_ATTACH_SHADOW_ROOT_OP, (vm) => {
     }
   }
 
-  vm.stack.push(createConstRef(shadowRoot as unknown as SimpleElement, false));
+  vm.stack.push(createConstRef(shadowRoot, false));
 });
 
 APPEND_OPCODES.add(VM_FLUSH_ELEMENT_OP, (vm) => {
