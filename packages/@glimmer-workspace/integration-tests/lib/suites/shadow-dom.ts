@@ -223,6 +223,119 @@ export class ShadowDOMSuite extends RenderTest {
   }
 
   @test
+  'two sibling shadow root components: only the updated component re-renders'() {
+    // Use closures so each component can call assert.step without needing access to the test
+    const assert = this.assert;
+
+    class ComponentA extends GlimmerishComponent {
+      @tracked value = 'a-initial';
+
+      constructor(owner: Owner, args: Dict) {
+        super(owner, args);
+        aInstance.capture(this);
+      }
+
+      get renderedValue() {
+        assert.step('component-a rendered');
+        return this.value;
+      }
+    }
+
+    class ComponentB extends GlimmerishComponent {
+      @tracked value = 'b-initial';
+
+      constructor(owner: Owner, args: Dict) {
+        super(owner, args);
+        bInstance.capture(this);
+      }
+
+      get renderedValue() {
+        assert.step('component-b rendered');
+        return this.value;
+      }
+    }
+
+    // Capture holders declared after the class definitions but before render,
+    // so TypeScript can resolve the type parameters.
+    const aInstance = this.capture<ComponentA>();
+    const bInstance = this.capture<ComponentB>();
+
+    this.registerComponent(
+      'Glimmer',
+      'ComponentA',
+      '<template shadowrootmode="open"><span class="a">{{this.renderedValue}}</span></template>',
+      ComponentA as any
+    );
+    this.registerComponent(
+      'Glimmer',
+      'ComponentB',
+      '<template shadowrootmode="open"><span class="b">{{this.renderedValue}}</span></template>',
+      ComponentB as any
+    );
+
+    this.render('<div class="host-a"><ComponentA /></div><div class="host-b"><ComponentB /></div>');
+
+    // Both rendered on initial render — consume those steps
+    this.assert.verifySteps(
+      ['component-a rendered', 'component-b rendered'],
+      'both components render initially'
+    );
+
+    const rootEl = castToBrowser(this.element, 'HTML');
+    const hostA = rootEl.querySelector('.host-a') as HTMLElement | null;
+    const hostB = rootEl.querySelector('.host-b') as HTMLElement | null;
+
+    this.assert.strictEqual(
+      hostA?.shadowRoot?.querySelector('.a')?.textContent,
+      'a-initial',
+      'ComponentA initial value'
+    );
+    this.assert.strictEqual(
+      hostB?.shadowRoot?.querySelector('.b')?.textContent,
+      'b-initial',
+      'ComponentB initial value'
+    );
+
+    // Mutate only ComponentA — ComponentB must NOT re-render
+    aInstance.captured.value = 'a-updated';
+    this.rerender();
+
+    this.assert.strictEqual(
+      hostA?.shadowRoot?.querySelector('.a')?.textContent,
+      'a-updated',
+      'ComponentA updated after tracked mutation'
+    );
+    this.assert.strictEqual(
+      hostB?.shadowRoot?.querySelector('.b')?.textContent,
+      'b-initial',
+      'ComponentB unchanged'
+    );
+    this.assert.verifySteps(
+      ['component-a rendered'],
+      'only ComponentA re-renders when its tracked value changes'
+    );
+
+    // Mutate only ComponentB — ComponentA must NOT re-render
+    bInstance.captured.value = 'b-updated';
+    this.rerender();
+
+    this.assert.strictEqual(
+      hostA?.shadowRoot?.querySelector('.a')?.textContent,
+      'a-updated',
+      'ComponentA still unchanged'
+    );
+    this.assert.strictEqual(
+      hostB?.shadowRoot?.querySelector('.b')?.textContent,
+      'b-updated',
+      'ComponentB updated after tracked mutation'
+    );
+    this.assert.verifySteps(
+      ['component-b rendered'],
+      'only ComponentB re-renders when its tracked value changes'
+    );
+  }
+
+  @test
   'conditional <template shadowrootmode="open"> inside a host element attaches shadow root when rendered'() {
     this.render(
       '<div class="host">{{#if this.useShadow}}<template shadowrootmode="open"><p>shadow content</p></template>{{else}}<div>regular content</div>{{/if}}</div>',
