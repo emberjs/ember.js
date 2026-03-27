@@ -350,7 +350,6 @@
       "ember-testing/lib/helpers/wait.js": "ember-source/ember-testing/lib/helpers/wait.js",
       "ember-testing/lib/initializers.js": "ember-source/ember-testing/lib/initializers.js",
       "ember-testing/lib/public-api.js": "ember-source/ember-testing/lib/public-api.js",
-      "ember-testing/lib/setup_for_testing.js": "ember-source/ember-testing/lib/setup_for_testing.js",
       "ember-testing/lib/test.js": "ember-source/ember-testing/lib/test.js",
       "ember-testing/lib/test/adapter.js": "ember-source/ember-testing/lib/test/adapter.js",
       "ember-testing/lib/test/helpers.js": "ember-source/ember-testing/lib/test/helpers.js",

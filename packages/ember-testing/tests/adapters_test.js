@@ -85,7 +85,6 @@ moduleFor(
           Resolver: ModuleBasedTestResolver,
         });
         Test.adapter = CustomAdapter.create();
-        App.setupForTesting();
       });
 
       Test.adapter.asyncStart();
@@ -100,7 +99,6 @@ moduleFor(
         App = EmberApplication.create({
           Resolver: ModuleBasedTestResolver,
         });
-        App.setupForTesting();
       });
 
       assert.ok(Test.adapter instanceof QUnitAdapter);
@@ -117,7 +115,6 @@ moduleFor(
         App = EmberApplication.create({
           Resolver: ModuleBasedTestResolver,
         });
-        App.setupForTesting();
       });
 
       assert.ok(Test.adapter instanceof Adapter);

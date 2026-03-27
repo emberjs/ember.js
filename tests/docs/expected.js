@@ -471,7 +471,6 @@ module.exports = {
     'setProperties',
     'setup',
     'setupController',
-    'setupForTesting',
     'setupHandler',
     'setupHandlerForBrowserEvent',
     'setupHandlerForEmberEvent',

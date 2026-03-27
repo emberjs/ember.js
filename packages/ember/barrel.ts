@@ -578,9 +578,6 @@ namespace Ember {
         QUnitAdapter: NonNullable<typeof EmberTestingImpl>['QUnitAdapter'];
       })
     | undefined;
-  export declare let setupForTesting:
-    | NonNullable<typeof EmberTestingImpl>['setupForTesting']
-    | undefined;
 }
 
 // This syntax is not reliably implemented by TypeScript transpilers, but
@@ -706,13 +703,13 @@ defineEmberTemplateCompilerLazyLoad('Handlebars');
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
-function defineEmberTestingLazyLoad(key: 'Test' | 'setupForTesting') {
+function defineEmberTestingLazyLoad(key: 'Test') {
   Object.defineProperty(Ember, key, {
     configurable: true,
     enumerable: true,
     get() {
       if (EmberTestingImpl) {
-        let { Test, Adapter, QUnitAdapter, setupForTesting } = EmberTestingImpl;
+        let { Test, Adapter, QUnitAdapter } = EmberTestingImpl;
 
         // @ts-expect-error We should not do this
         Test.Adapter = Adapter;
@@ -725,14 +722,8 @@ function defineEmberTestingLazyLoad(key: 'Test' | 'setupForTesting') {
           enumerable: true,
           value: Test,
         });
-        Object.defineProperty(Ember, 'setupForTesting', {
-          configurable: true,
-          writable: true,
-          enumerable: true,
-          value: setupForTesting,
-        });
 
-        return key === 'Test' ? Test : setupForTesting;
+        return key === 'Test' ? Test : null;
       }
 
       return undefined;
@@ -741,7 +732,6 @@ function defineEmberTestingLazyLoad(key: 'Test' | 'setupForTesting') {
 }
 
 defineEmberTestingLazyLoad('Test');
-defineEmberTestingLazyLoad('setupForTesting');
 
 // @ts-expect-error Per types, runLoadHooks requires a second parameter. Should we loosen types?
 applicationRunLoadHooks('Ember');

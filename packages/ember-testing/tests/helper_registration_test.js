@@ -27,7 +27,6 @@ function setupApp() {
     App = EmberApplication.create({
       Resolver: ModuleBasedTestResolver,
     });
-    App.setupForTesting();
     App.injectTestHelpers(helperContainer);
   });
 }

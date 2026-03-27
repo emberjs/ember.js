@@ -51,9 +51,6 @@ d('ember-testing/lib/initializers', emberTestingLibInitializers);
 import * as emberTestingLibPublicApi from 'ember-testing/lib/public-api';
 d('ember-testing/lib/public-api', emberTestingLibPublicApi);
 
-import * as emberTestingLibSetupForTesting from 'ember-testing/lib/setup_for_testing';
-d('ember-testing/lib/setup_for_testing', emberTestingLibSetupForTesting);
-
 import * as emberTestingLibTest from 'ember-testing/lib/test';
 d('ember-testing/lib/test', emberTestingLibTest);
 
