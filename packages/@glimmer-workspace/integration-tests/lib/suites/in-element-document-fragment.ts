@@ -133,7 +133,7 @@ export class InElementDocumentFragmentSuite extends RenderTest {
   }
 
   @test
-  'Rerenders in a detached DocumentFragment, then content is visible after attaching to DOM'(
+  'Rerenders work after DocumentFragment is appended to the DOM'(
     assert: typeof QUnit.assert
   ) {
     const fragment = document.createDocumentFragment();
@@ -160,27 +160,33 @@ export class InElementDocumentFragmentSuite extends RenderTest {
 
     assert.verifySteps(['initial'], 'initial render fires step from inside fragment');
 
-    // Rerender while still detached: text update
-    this.rerender({ message: 'updated' });
-    assert.verifySteps(['updated'], 'text update fires step while fragment is still detached');
+    // Move the fragment's children into the container. After this the fragment is
+    // empty, but the rendered nodes (including Glimmer's bounds markers) are live
+    // children of `container`.
+    container.appendChild(fragment);
+    assert.strictEqual(fragment.childNodes.length, 0, 'fragment is empty after append');
+    assert.ok(container.querySelector('#msg'), 'paragraph is present in container after append');
 
-    // Rerender while still detached: conditional element appears
+    // Rerenders should continue to work after the fragment is attached — Glimmer
+    // resolves the live parent from the bounds markers' actual parentNode.
+    this.rerender({ message: 'updated' });
+    assert.verifySteps(['updated'], 'text update fires step after fragment was attached to DOM');
+    assert.strictEqual(
+      container.querySelector('#msg')?.textContent,
+      'updated',
+      'paragraph text is updated in container'
+    );
+
+    // New conditional element should appear in the container.
     this.rerender({ show: true });
     assert.verifySteps(
       ['extra rendered'],
-      'conditional element step fires while fragment is still detached'
+      'conditional element step fires in container after fragment was attached to DOM'
     );
-
-    // Move the fragment's children into the container; after this the fragment is empty
-    // but the rendered nodes (including the reactive text and the conditional span) are
-    // now live children of `container`.
-    container.appendChild(fragment);
-    assert.strictEqual(fragment.childNodes.length, 0, 'fragment is empty after append');
-
-    const p = container.querySelector('#msg');
-    const span = container.querySelector('#extra');
-    assert.ok(p, 'paragraph is present in container');
-    assert.ok(span, 'conditional span is present in container');
+    assert.ok(
+      container.querySelector('#extra'),
+      'conditional span appears in container after fragment was attached to DOM'
+    );
   }
 
   @test

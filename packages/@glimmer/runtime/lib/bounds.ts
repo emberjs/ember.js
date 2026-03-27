@@ -53,9 +53,14 @@ export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<
 }
 
 export function clear(bounds: Bounds): Nullable<SimpleNode> {
-  let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
+
+  // Use the node's actual current parent rather than the stored parentElement.
+  // When bounds were rendered into a DocumentFragment that was subsequently
+  // appended to a real DOM container, the nodes' parentNode is the container
+  // while parentElement() still returns the (now-empty) fragment.
+  let parent = (first.parentNode as Nullable<SimpleElement>) ?? bounds.parentElement();
 
   let current: SimpleNode = first;
 

@@ -96,7 +96,12 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   static resume(env: Environment, block: ResettableBlock): NewTreeBuilder {
-    let parentNode = block.parentElement();
+    // Capture the live parent before resetting, because the bounds may have been
+    // rendered into a DocumentFragment that was subsequently appended to a real
+    // DOM container. In that case firstNode().parentNode is the container while
+    // parentElement() still returns the original (now-empty) fragment.
+    let parentNode =
+      (block.firstNode().parentNode as SimpleElement | null) ?? block.parentElement();
     let nextSibling = block.reset(env);
 
     let stack = new this(env, parentNode, nextSibling).initialize();
@@ -500,7 +505,12 @@ export class RemoteBlock extends AppendingBlockImpl {
       // and avoid clearing the node if it was. In most cases this shouldn't happen,
       // so this might hide bugs where the code clears nested nodes unnecessarily,
       // so we should eventually try to do the correct fix.
-      if (this.parentElement() === this.firstNode().parentNode) {
+      //
+      // Note: we check firstNode().parentNode !== null (node still has a parent)
+      // rather than === parentElement() (node is in the original parent), so that
+      // {{#in-element}} into a DocumentFragment still clears correctly after the
+      // fragment's children are moved to a real DOM container via appendChild().
+      if (this.firstNode().parentNode !== null) {
         clear(this);
       }
     });
