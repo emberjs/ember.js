@@ -6,7 +6,7 @@ import fs from 'fs-extra';
 
 import { getOrBuildControlTarball } from './control.mjs';
 import { buildExperimentTarball } from './experiment.mjs';
-import { run, prepareApp, sleep, startVitePreview, lsof } from './utils.mjs';
+import { run, prepareApp, startVitePreview, waitForServer } from './utils.mjs';
 
 const { ensureDir, remove } = fs;
 
@@ -112,10 +112,17 @@ export async function runBenchmark({ force = false, reuse = false, headless = tr
   ]);
 
   // These will error if the parts are occupied (--strict-port)
-  startVitePreview({ appDir: CONTROL_DIRS.app, port: DEFAULT_CONTROL_PORT });
-  startVitePreview({
+  const controlServer = startVitePreview({ appDir: CONTROL_DIRS.app, port: DEFAULT_CONTROL_PORT });
+  const experimentServer = startVitePreview({
     appDir: EXPERIMENT_DIRS.app,
     port: DEFAULT_EXPERIMENT_PORT,
+  });
+
+  controlServer.catch((err) => {
+    console.error('Control server exited unexpectedly:', err.message);
+  });
+  experimentServer.catch((err) => {
+    console.error('Experiment server exited unexpectedly:', err.message);
   });
 
   try {
@@ -132,20 +139,12 @@ async function bootAndRun({ headless = true } = {}) {
   const experimentUrl = `http://127.0.0.1:${DEFAULT_EXPERIMENT_PORT}`;
   const markersString = buildMarkersString(DEFAULT_MARKERS);
 
-  // give servers a moment to start
-  await sleep(5000);
-
-  /**
-   * We need to make sure both servers are running before starting the benchmark.
-   */
-  let controlLsof = await lsof(DEFAULT_CONTROL_PORT);
-  let experimentLsof = await lsof(DEFAULT_EXPERIMENT_PORT);
-
-  if (!controlLsof || !experimentLsof) {
-    throw new Error(
-      `One of the servers failed to start. Control server lsof:\n${controlLsof}\n\nExperiment server lsof:\n${experimentLsof}`
-    );
-  }
+  console.log('\n\tWaiting for servers to be ready...');
+  await Promise.all([
+    waitForServer(controlUrl, { timeout: 30_000 }),
+    waitForServer(experimentUrl, { timeout: 30_000 }),
+  ]);
+  console.log('\tBoth servers are ready.\n');
 
   const tracerbenchBin = join(REPO_ROOT, 'node_modules/tracerbench/bin/run');
 

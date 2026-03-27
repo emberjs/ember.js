@@ -23,8 +23,37 @@ export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function lsof(port) {
-  return execSync(`lsof -i :${port} -P -n`).toString;
+export function lsof(port) {
+  try {
+    return execSync(`lsof -i :${port} -P -n`).toString();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Wait for a server to respond to HTTP requests.
+ * Polls with fetch until the server returns a response (any status),
+ * retrying on connection errors.
+ *
+ * @param {string} url - The URL to poll
+ * @param {object} [options]
+ * @param {number} [options.timeout=30000] - Max time to wait in ms
+ * @param {number} [options.interval=500] - Time between retries in ms
+ */
+export async function waitForServer(url, { timeout = 30_000, interval = 500 } = {}) {
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() < deadline) {
+    try {
+      await fetch(url);
+      return;
+    } catch {
+      await sleep(interval);
+    }
+  }
+
+  throw new Error(`Server at ${url} did not respond within ${timeout}ms`);
 }
 
 export async function buildEmberSource(cwd) {
