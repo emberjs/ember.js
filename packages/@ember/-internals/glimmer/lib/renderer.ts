@@ -48,6 +48,9 @@ function ensureGxtContext() {
     // This sets fastRenderingContext which is checked first by initDOM
     const domApi = getGxtDomApi();
     gxtProvideContext(gxtRootContext, GXT_RENDERING_CONTEXT, domApi);
+    // Expose on globalThis so compile.ts can reuse the same root context
+    // instead of creating new roots that pollute the shared context chain
+    (globalThis as any).__gxtRootContext = gxtRootContext;
   }
   // Always ensure context is set before rendering
   const currentContext = gxtGetParentContext();

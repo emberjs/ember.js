@@ -622,12 +622,11 @@ queueMicrotask(patchGlobalIf);
       const snapshot = (globalThis as any).__gxtSnapshotLiveInstances;
       if (typeof snapshot === 'function') snapshot();
     } catch { /* ignore */ }
-    // PHASE 2b: Force Ember renderer re-render for GXT roots.
-    // GXT's cell tracking doesn't pick up changes from Ember's set()
-    // due to module instance isolation. We trigger a full re-render
-    // via the renderer's root.render() to update attributes and text.
-    // The __gxtIsForceRerender flag tells the component manager to reuse
-    // existing instances and skip init/render lifecycle hooks.
+    // PHASE 2b: With gxtModuleDedup, GXT's native cell tracking handles
+    // most DOM updates via gxtSyncDom() in Phase 1. The force-rerender
+    // (morph) is kept as fallback for cases where cell tracking doesn't
+    // cover the change (computed properties, prototype chain changes).
+    // The morph preserves DOM node stability.
     try {
       const forceRerender = (globalThis as any).__gxtForceEmberRerender;
       if (typeof forceRerender === 'function') forceRerender();
@@ -3631,8 +3630,13 @@ export function precompileTemplate(templateString: string, options?: {
         const prevFw = g.$fw;
 
         try {
-          // Set up GXT context for proper rendering
-          const gxtRoot = gxtCreateRoot(document);
+          // Use shared GXT root context to avoid multiple roots fighting
+          // over the parent context when modules are deduplicated
+          let gxtRoot = (globalThis as any).__gxtRootContext;
+          if (!gxtRoot) {
+            gxtRoot = gxtCreateRoot(document);
+            (globalThis as any).__gxtRootContext = gxtRoot;
+          }
           gxtSetParentContext(gxtRoot);
 
           // Copy GXT rendering context from root to our render context

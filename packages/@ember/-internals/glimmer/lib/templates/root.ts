@@ -12,16 +12,19 @@ import {
 } from '@lifeart/gxt';
 
 // Ensure GXT context is initialized for the document
-let gxtRootContext: any = null;
+// Uses a shared root context on globalThis to avoid multiple roots
+// fighting over the parent context when modules are deduplicated.
 let gxtDomApi: any = null;
 
 function ensureGxtContext() {
+  let gxtRootContext = (globalThis as any).__gxtRootContext;
   if (!gxtRootContext) {
     gxtRootContext = gxtCreateRoot(document);
     // Create proper DOM API and provide it to the context
     // This sets fastRenderingContext which is checked first by initDOM
     gxtDomApi = new GxtHTMLBrowserDOMApi(document);
     gxtProvideContext(gxtRootContext, GXT_RENDERING_CONTEXT, gxtDomApi);
+    (globalThis as any).__gxtRootContext = gxtRootContext;
   }
   // Always set the context before rendering
   const currentContext = gxtGetParentContext();
