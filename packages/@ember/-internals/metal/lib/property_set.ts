@@ -89,7 +89,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
     /* unknown property */
     (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
-    if (DEBUG) {
+    if (DEBUG && !(globalThis as any).__GXT_MODE__) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
       (obj as any)[keyName] = value;

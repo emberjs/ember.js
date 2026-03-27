@@ -160,6 +160,84 @@ export class DynamicScope implements GlimmerDynamicScope {
 
 const NO_OP = () => {};
 
+/**
+ * Morph existing DOM children to match new children from a DocumentFragment.
+ * Preserves DOM node references (identity) where possible:
+ * - Element nodes: if same tag, update attributes and recurse into children
+ * - Text nodes: update textContent if changed
+ * - Comment nodes: update data if changed
+ * - Mismatched nodes: replace the old with new
+ */
+function morphChildren(target: Element | SimpleElement, source: DocumentFragment): void {
+  const oldNodes = Array.from(target.childNodes);
+  const newNodes = Array.from(source.childNodes);
+
+  let i = 0;
+  for (; i < newNodes.length; i++) {
+    const newNode = newNodes[i]!;
+    const oldNode = oldNodes[i];
+
+    if (!oldNode) {
+      // More new nodes than old — append
+      target.appendChild(newNode);
+      continue;
+    }
+
+    if (oldNode.nodeType === newNode.nodeType) {
+      if (oldNode.nodeType === 1 /* ELEMENT_NODE */) {
+        const oldEl = oldNode as Element;
+        const newEl = newNode as Element;
+        if (oldEl.tagName === newEl.tagName) {
+          // Same element type — update attributes in-place
+          morphAttributes(oldEl, newEl);
+          // Recursively morph children
+          const frag = document.createDocumentFragment();
+          while (newEl.firstChild) frag.appendChild(newEl.firstChild);
+          morphChildren(oldEl as any, frag);
+          continue;
+        }
+      } else if (oldNode.nodeType === 3 /* TEXT_NODE */) {
+        if (oldNode.textContent !== newNode.textContent) {
+          oldNode.textContent = newNode.textContent;
+        }
+        continue;
+      } else if (oldNode.nodeType === 8 /* COMMENT_NODE */) {
+        if ((oldNode as Comment).data !== (newNode as Comment).data) {
+          (oldNode as Comment).data = (newNode as Comment).data;
+        }
+        continue;
+      }
+    }
+
+    // Type mismatch or different tag — replace
+    target.replaceChild(newNode, oldNode);
+  }
+
+  // Remove extra old nodes
+  for (let j = oldNodes.length - 1; j >= i; j--) {
+    target.removeChild(oldNodes[j]!);
+  }
+}
+
+function morphAttributes(oldEl: Element, newEl: Element): void {
+  // Remove attributes not in new
+  const oldAttrs = oldEl.attributes;
+  for (let i = oldAttrs.length - 1; i >= 0; i--) {
+    const attr = oldAttrs[i]!;
+    if (!newEl.hasAttribute(attr.name)) {
+      oldEl.removeAttribute(attr.name);
+    }
+  }
+  // Set/update attributes from new
+  const newAttrs = newEl.attributes;
+  for (let i = 0; i < newAttrs.length; i++) {
+    const attr = newAttrs[i]!;
+    if (oldEl.getAttribute(attr.name) !== attr.value) {
+      oldEl.setAttribute(attr.name, attr.value);
+    }
+  }
+}
+
 // This wrapper logic prevents us from rerendering in case of a hard failure
 // during render. This prevents infinite revalidation type loops from occuring,
 // and ensures that errors are not swallowed by subsequent follow on failures.
@@ -371,6 +449,7 @@ class ClassicRootState {
             // data properties. Use skipDefine=false so GXT's native formula
             // tracking (in $_if, $_each, etc.) picks up cell.value reads.
             const _cellFor = (globalThis as any).__gxtCellFor;
+            const _registerArrayOwner = (globalThis as any).__gxtRegisterArrayOwner;
             if (_cellFor) {
               const skipProps = new Set(['args', 'constructor', 'element', 'tagName',
                 'layoutName', 'layout', 'elementId', 'isView', 'isComponent',
@@ -388,6 +467,10 @@ class ClassicRootState {
                   const value = component[key];
                   if (typeof value === 'function') continue;
                   _cellFor(component, key, /* skipDefine */ false);
+                  // Register array owner for KVO array mutation tracking
+                  if (_registerArrayOwner && Array.isArray(value)) {
+                    _registerArrayOwner(value, component, key);
+                  }
                   cellCount++;
                 } catch { /* ignore */ }
               }
@@ -580,15 +663,18 @@ class ClassicRootState {
               }
             }
 
-            // Clear and re-render into the wrapper element (or parent if no wrapper)
-            gxtRenderTarget.innerHTML = '';
-            // Push component onto parentView stack before re-rendering
+            // Render into a temporary container, then morph the existing DOM
+            // to match. This preserves DOM node references (identity) for
+            // elements and text nodes, only updating changed attributes/content.
+            const tempContainer = document.createDocumentFragment();
             pushParentView(component);
             try {
-              (gxtTemplate as any).render(freshContext, gxtRenderTarget);
+              (gxtTemplate as any).render(freshContext, tempContainer);
             } finally {
               popParentView();
             }
+            // Morph: update existing DOM nodes in-place where possible
+            morphChildren(gxtRenderTarget, tempContainer);
 
             // Update the tag value after successful render
             // This ensures we only re-render once per property change

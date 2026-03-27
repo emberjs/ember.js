@@ -95,6 +95,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       if (this.owner) {
         runDestroy(this.owner);
       }
+      // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
+      if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
+        (globalThis as any).owner = null;
+      }
     } finally {
       _resetRenderers();
     }

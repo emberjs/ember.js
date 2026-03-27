@@ -211,6 +211,15 @@ const _allPoolArrays = new Set<PoolEntry[]>();
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
 
+// Expose a function to clear all instance pools between tests.
+// This prevents stale component instances from leaking across tests.
+(globalThis as any).__gxtClearInstancePools = function() {
+  for (const pool of _allPoolArrays) {
+    pool.length = 0;
+  }
+  _allPoolArrays.clear();
+};
+
 /**
  * Get or create a component instance from the pool.
  * Implements stable instance identity across re-renders.
@@ -438,17 +447,23 @@ function createComponentInstance(
     } catch { /* some properties may not be configurable */ }
   }
 
-  // Set up two-way binding via PROPERTY_DID_CHANGE override.
-  // When component.set(key, value) is called for an arg that came from the
-  // parent, propagate the value upstream to the parent context.
-  // Detect which parent property each arg getter reads from by temporarily
-  // enabling tracking on the render context Proxy.
-  const twoWayBindings: Record<string, { sourceCtx: any; sourceKey: string }> = {};
-  for (const key of Object.keys(argGetters)) {
-    if (key === 'id' || key === 'elementId') continue;
-    const argGetter = argGetters[key]!;
-
-    if (parentView) {
+  // Install two-way binding via PROPERTY_DID_CHANGE override.
+  // In classic Ember, when component.set(key, value) is called for an arg
+  // that was passed from the parent (e.g., {{foo-bar bar=this.localBar}}),
+  // the change should propagate upstream to the parent.
+  //
+  // Strategy: For any key that has an argGetter (i.e., was passed as an arg),
+  // when set() is called, find the parent and set the same property there.
+  // The argGetter itself captures the parent scope, so we can detect the parent
+  // by tracking which object the getter reads from.
+  const argKeySet = new Set(Object.keys(argGetters));
+  if (argKeySet.size > 0 && instance) {
+    // Detect two-way binding sources by calling each arg getter with tracking enabled
+    const twoWayBindings: Record<string, { sourceCtx: any; sourceKey: string }> = {};
+    for (const key of argKeySet) {
+      if (key === 'id' || key === 'elementId') continue;
+      const argGetter = argGetters[key]!;
+      // Try proxy-based tracking first (works when parent has a proxy render context)
       try {
         (globalThis as any).__gxtTrackArgSource = true;
         (globalThis as any).__gxtLastArgSourceKey = null;
@@ -463,15 +478,85 @@ function createComponentInstance(
       } catch {
         (globalThis as any).__gxtTrackArgSource = false;
       }
+      // If proxy-based tracking didn't find a source, try cell-interception.
+      // The arg getter reads from the parent's cell-backed property. We temporarily
+      // wrap the parent's getters to detect which property is accessed.
+      if (!twoWayBindings[key] && parentView) {
+        try {
+          const descriptors: Record<string, { obj: any; desc: PropertyDescriptor }> = {};
+          let detectedProp: string | null = null;
+          // Install temporary traps on parent's getter properties
+          let obj = parentView;
+          for (let depth = 0; depth < 3 && obj && obj !== Object.prototype; depth++) {
+            for (const propName of Object.getOwnPropertyNames(obj)) {
+              if (propName.startsWith('_') || propName.startsWith('$') || propName === 'constructor') continue;
+              const desc = Object.getOwnPropertyDescriptor(obj, propName);
+              if (desc?.get && desc.configurable) {
+                descriptors[propName] = { obj, desc };
+                const origGet = desc.get;
+                Object.defineProperty(obj, propName, {
+                  get() { detectedProp = propName; return origGet.call(this); },
+                  set: desc.set,
+                  configurable: true,
+                  enumerable: desc.enumerable,
+                });
+              }
+            }
+            obj = Object.getPrototypeOf(obj);
+          }
+          // Call the arg getter - it should trigger one of our traps
+          try { argGetter(); } catch { /* ignore */ }
+          // Restore original descriptors
+          for (const [propName, { obj: origObj, desc }] of Object.entries(descriptors)) {
+            try { Object.defineProperty(origObj, propName, desc); } catch { /* ignore */ }
+          }
+          if (detectedProp) {
+            twoWayBindings[key] = { sourceCtx: parentView, sourceKey: detectedProp };
+          }
+        } catch { /* ignore detection failure */ }
+      }
     }
-  }
-
-  // Install PROPERTY_DID_CHANGE handler for two-way binding.
-  // This is called by notifyPropertyChange() when a property is set on the instance.
-  // Store two-way bindings on the instance for potential future use.
-  // Two-way binding propagation is handled separately (via PROPERTY_DID_CHANGE).
-  if (Object.keys(twoWayBindings).length > 0 && instance) {
     instance.__gxtTwoWayBindings = twoWayBindings;
+
+    // Override PROPERTY_DID_CHANGE on the instance.
+    const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+    const origPDC = instance[PROPERTY_DID_CHANGE]?.bind(instance);
+    instance[PROPERTY_DID_CHANGE] = function(key: string, value?: unknown) {
+      // Skip propagation during attrs dispatch (prevents infinite loops)
+      if ((instance as any).__gxtDispatchingArgs) return;
+
+      // Only propagate for keys that were passed as args
+      if (!argKeySet.has(key)) {
+        if (origPDC) try { origPDC(key, value); } catch { /* ignore */ }
+        return;
+      }
+
+      const resolvedValue = arguments.length >= 2 ? value : instance[key];
+
+      // Try detected binding first
+      const binding = twoWayBindings[key];
+      if (binding) {
+        const { sourceCtx, sourceKey } = binding;
+        if (sourceCtx && sourceKey) {
+          sourceCtx[sourceKey] = resolvedValue;
+          if (triggerReRender) triggerReRender(sourceCtx, sourceKey);
+          return;
+        }
+      }
+
+      // Fallback: propagate to parentView if it exists and has the same property
+      const pv = instance.parentView;
+      if (pv && key in pv) {
+        try {
+          if (typeof pv.set === 'function') {
+            pv.set(key, resolvedValue);
+          } else {
+            pv[key] = resolvedValue;
+            if (triggerReRender) triggerReRender(pv, key);
+          }
+        } catch { /* ignore */ }
+      }
+    };
   }
 
   // Register with parent's childViews
@@ -1880,6 +1965,7 @@ function createRenderContext(
     'actionContextObject', 'layoutName', 'layout', '_debugContainerKey',
   ]);
 
+  const _registerArrayOwner = (globalThis as any).__gxtRegisterArrayOwner;
   if (_cellFor && instance) {
     // Install cells for all enumerable properties on the instance and its prototype
     const seen = new Set<string>();
@@ -1894,6 +1980,10 @@ function createRenderContext(
 
           try {
             _cellFor(instance, key, /* skipDefine */ false);
+            // Register array owner for KVO array mutation tracking
+            if (_registerArrayOwner && Array.isArray(desc.value)) {
+              _registerArrayOwner(desc.value, instance, key);
+            }
           } catch { /* ignore */ }
         }
       }
@@ -2140,7 +2230,7 @@ function argsForInternalManager(args: any, fw: any) {
  * Resolve a component by name from the Ember registry.
  */
 function resolveComponent(name: string, owner: any): { factory: any; template: any; manager: any } | null {
-  if (!owner) return null;
+  if (!owner || owner.isDestroyed || owner.isDestroying) return null;
 
   // Handle namespaced components: foo::bar::baz-bing -> foo/bar/baz-bing
   const normalizedName = name.replace(/::/g, '/');
@@ -2197,7 +2287,7 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
  * Returns (positional, named) => value, or null if not found.
  */
 function _resolveEmberHelper(name: string, owner: any): ((positional: any[], named: any) => any) | null {
-  if (!owner) return null;
+  if (!owner || owner.isDestroyed || owner.isDestroying) return null;
 
   // First check built-in keyword helpers
   const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
@@ -2561,7 +2651,7 @@ const $_MANAGERS = {
     canHandle(helper: any): boolean {
       if (typeof helper === 'string') {
         const owner = (globalThis as any).owner;
-        if (owner) {
+        if (owner && !owner.isDestroyed && !owner.isDestroying) {
           // Only claim we can handle if the helper actually exists
           const factory = owner.factoryFor?.(`helper:${helper}`);
           if (factory) return true;
@@ -2862,8 +2952,18 @@ function handleStringComponent(
   }
 
   return () => {
+    // Check if this is a template-only component (no backing class).
+    // Template-only components have an internal manager set on them and
+    // don't need an instance. Just render the template directly.
+    const isTemplateOnly = factory?.class &&
+      (factory.class.constructor?.name === 'TemplateOnlyComponentDefinition' ||
+       factory.class.__templateOnly === true ||
+       factory.class.moduleName === '@glimmer/component/template-only' ||
+       (globalThis.INTERNAL_MANAGERS?.has?.(factory.class) &&
+        !factory.class.prototype?.init));
+
     // Get or create cached instance
-    const instance = factory ?
+    const instance = (factory && !isTemplateOnly) ?
       getCachedOrCreateInstance(factory, args, factory.class, owner) :
       null;
 

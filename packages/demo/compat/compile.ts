@@ -81,6 +81,14 @@ if ((globalThis as any).__gxtSyncDom) gxtSyncDom = (globalThis as any).__gxtSync
 (globalThis as any).__gxtCellFor = cellFor;
 (globalThis as any).__gxtEffect = gxtEffect;
 
+// Use setIsRendering from GXT's runtime module (setupGlobalScope sets __gxtSetIsRendering).
+// The direct import (gxtSetIsRendering) may be from a different module copy,
+// which would set isRendering on a different variable than what formulas check.
+// Fall back to direct import if runtime version isn't available yet.
+if (!(globalThis as any).__gxtSetIsRendering) {
+  (globalThis as any).__gxtSetIsRendering = gxtSetIsRendering;
+}
+
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
@@ -230,7 +238,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // of asserting during render for non-existent components).
       if (typeof first === 'string' && first.length > 0) {
         const owner = g.owner;
-        if (owner) {
+        if (owner && !owner.isDestroyed && !owner.isDestroying) {
           const factory = owner.factoryFor?.(`component:${first}`);
           const template = owner.lookup?.(`template:components/${first}`);
           if (!factory && !template) {
@@ -308,10 +316,42 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   (globalThis as any).__gxtPendingSync = true;
 };
 
+// Reverse mapping: array/object -> Set<{ obj, key }> for dirty propagation.
+// When cellFor installs a cell and the value is an array, register a mapping.
+// Used to dirty component cells when KVO arrays mutate in-place.
+const _arrayOwnerMap = new WeakMap<object, Set<{ obj: object; key: string }>>();
+
+function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
+  if (!array || typeof array !== 'object') return;
+  let owners = _arrayOwnerMap.get(array);
+  if (!owners) {
+    owners = new Set();
+    _arrayOwnerMap.set(array, owners);
+  }
+  owners.add({ obj: ownerObj, key: ownerKey });
+}
+(globalThis as any).__gxtRegisterArrayOwner = registerArrayOwner;
+
 // GXT re-render trigger hook - called by Ember's notifyPropertyChange.
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
 (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
+  // Handle KVO array mutations: when '[]' or 'length' is notified on an array,
+  // dirty the cells of all component properties that reference this array.
+  // Note: KVO array mutation tracking (pushObject/shiftObject) is handled
+  // by dirtying cells on objects that reference the array. This is a best-effort
+  // approach since GXT's $_eachSync may not re-render for same-reference arrays.
+  if ((keyName === '[]' || keyName === 'length') && Array.isArray(obj)) {
+    const owners = _arrayOwnerMap.get(obj);
+    if (owners) {
+      for (const { obj: ownerObj, key: ownerKey } of owners) {
+        try {
+          const c = cellFor(ownerObj, ownerKey, /* skipDefine */ false);
+          if (c) c.update(obj);
+        } catch { /* ignore */ }
+      }
+    }
+  }
   const newValue = (obj as any)[keyName];
   try {
     // Use skipDefine=false to install getter/setter on the object.
@@ -563,8 +603,9 @@ queueMicrotask(patchGlobalIf);
       if (typeof snapshot === 'function') snapshot();
     } catch { /* ignore */ }
     // PHASE 2b: Force Ember renderer re-render for GXT roots.
-    // GXT's cell tracking may not pick up changes from Ember's set(),
-    // so we trigger a full re-render via the renderer's root.render().
+    // GXT's cell tracking doesn't pick up changes from Ember's set()
+    // due to module instance isolation. We trigger a full re-render
+    // via the renderer's root.render() to update attributes and text.
     // The __gxtIsForceRerender flag tells the component manager to reuse
     // existing instances and skip init/render lifecycle hooks.
     try {
@@ -678,6 +719,10 @@ setInterval(() => {
   // Clear the helper instance cache used by $_tag
   if (typeof (globalThis as any).__gxtClearTagHelperCache === 'function') {
     (globalThis as any).__gxtClearTagHelperCache();
+  }
+  // Clear component instance pools to prevent stale reuse across tests
+  if (typeof (globalThis as any).__gxtClearInstancePools === 'function') {
+    (globalThis as any).__gxtClearInstancePools();
   }
 };
 
@@ -832,6 +877,10 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       return current;
     }
     return resolvedObj[resolvedKey];
+  },
+  // unique-id: Returns a unique identifier string
+  'unique-id': () => {
+    return crypto.randomUUID ? crypto.randomUUID() : `ember-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
   },
   // fn: Partially applies a function with arguments
   fn: (func: any, ...args: any[]) => {
@@ -3095,11 +3144,31 @@ export function precompileTemplate(templateString: string, options?: {
       const needsArgsAlias = modifiedCode.includes('$a.');
       const needsSlots = modifiedCode.includes('$slots');
       const g = globalThis as any;
+      // Inject Ember keyword helpers as local variables so GXT-compiled code
+      // that references them as bare identifiers (e.g. inside {{#let}}) works.
+      // GXT treats unknown helpers as scope variables in subexpression position.
+      const helperInjections: string[] = [];
+      const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
+      if (BUILTINS) {
+        // Check which helpers are referenced as bare identifiers in the compiled code
+        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id'];
+        for (const name of helperNames) {
+          // Convert helper name to valid JS identifier (unique-id -> unique_id)
+          const jsName = name.replace(/-/g, '_');
+          // Check if the compiled code references this as a bare identifier
+          // Match word boundary to avoid false positives (e.g. "getElement")
+          const regex = new RegExp(`\\b${jsName}\\b`);
+          if (regex.test(modifiedCode)) {
+            helperInjections.push(`const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`);
+          }
+        }
+      }
       const templateFnCode = `
         "use strict";
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
           ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}
+          ${helperInjections.join('\n          ')}
           return ${modifiedCode};
         };
       `;
@@ -3671,12 +3740,16 @@ export function precompileTemplate(templateString: string, options?: {
 
           // Call the compiled template function with the render context.
           // Enable isRendering so GXT formulas track cell dependencies.
+          // Use globalThis.__gxtSetIsRendering which is from the SAME module
+          // instance as GXT's $_tag/formula system. The direct import
+          // (gxtSetIsRendering) may be from a different module copy.
           let result;
-          gxtSetIsRendering(true);
+          const _setRendering = (globalThis as any).__gxtSetIsRendering || gxtSetIsRendering;
+          _setRendering(true);
           try {
             result = compilationResult.templateFn.call(renderContext);
           } finally {
-            gxtSetIsRendering(false);
+            _setRendering(false);
             // Pop slots from stack
             slotsStack.pop();
           }
