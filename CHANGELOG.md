@@ -25,6 +25,11 @@
 - [#21046](https://github.com/emberjs/ember.js/pull/21046) Add benchmark infrastructure
 - [#21090](https://github.com/emberjs/ember.js/pull/21090) Swap nightly ts test of ts-nightly with ts-latest for better signal-to-noise
 
+## v6.8.4 (March 27, 2026)
+
+- [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
+- [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
+
 ## v6.11.1 (March 27, 2026)
 
 - [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
