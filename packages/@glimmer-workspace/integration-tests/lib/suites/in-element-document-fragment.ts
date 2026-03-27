@@ -133,6 +133,70 @@ export class InElementDocumentFragmentSuite extends RenderTest {
   }
 
   @test
+  'After fragment is attached to DOM, text updates and new conditional elements appear in the container'() {
+    const fragment = document.createDocumentFragment();
+    const container = document.createElement('div');
+
+    this.render(
+      '{{#in-element this.fragment}}' +
+        '<p id="msg">{{this.message}}</p>' +
+        '{{#if this.show}}<span id="extra">extra</span>{{/if}}' +
+        '{{/in-element}}',
+      {
+        fragment,
+        message: 'initial',
+        show: false,
+      }
+    );
+
+    this.assert.step('initial render into fragment');
+    const p = fragment.querySelector('#msg') as HTMLElement;
+    this.assert.strictEqual(p?.textContent, 'initial', 'p rendered in fragment');
+    this.assert.notOk(fragment.querySelector('#extra'), 'no extra span in fragment yet');
+
+    // Move fragment's children (including Glimmer's comment bounds) into the container
+    container.appendChild(fragment);
+    this.assert.step('fragment attached to DOM');
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'fragment is empty after append');
+    this.assert.strictEqual(
+      container.querySelector('#msg')?.textContent,
+      'initial',
+      'p is in the container'
+    );
+
+    // Text-node update: Glimmer holds a direct reference to the text node, so the
+    // update is visible in the container even though the fragment is now empty.
+    this.rerender({ message: 'updated' });
+    this.assert.step('text updated');
+    this.assert.strictEqual(
+      container.querySelector('#msg')?.textContent,
+      'updated',
+      'text update is reflected in the container'
+    );
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'fragment remains empty after text update');
+
+    // New-element update: Glimmer inserts the span relative to the comment bounds,
+    // which also moved to the container, so the new element appears in the container.
+    this.rerender({ show: true });
+    this.assert.step('conditional element shown');
+    this.assert.ok(
+      container.querySelector('#extra'),
+      'new conditional element appears in the container (comment bounds moved with the fragment)'
+    );
+    this.assert.notOk(
+      fragment.querySelector('#extra'),
+      'new conditional element is not in the (now-empty) fragment'
+    );
+
+    this.assert.verifySteps([
+      'initial render into fragment',
+      'fragment attached to DOM',
+      'text updated',
+      'conditional element shown',
+    ]);
+  }
+
+  @test
   'Multiple in-element calls to the same DocumentFragment with insertBefore=null'() {
     const fragment = document.createDocumentFragment();
 
