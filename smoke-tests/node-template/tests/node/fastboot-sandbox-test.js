@@ -61,7 +61,11 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
     app = class extends Application {}.create({
       autoboot: false,
       Resolver: {
-        create: () => registry,
+        create: () => ({
+          resolve(specifier) {
+            return registry[specifier];
+          },
+        }),
       },
     });
 
