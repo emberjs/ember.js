@@ -894,6 +894,12 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     }
     return resolvedObj[resolvedKey];
   },
+  // mount: Engine mounting stub — GXT doesn't support Ember engines
+  // Returns empty to prevent infinite loops during engine resolution
+  mount: () => {
+    console.warn('[gxt] {{mount}} is not supported in GXT mode');
+    return '';
+  },
   // unique-id: Returns a unique identifier string
   'unique-id': () => {
     return crypto.randomUUID ? crypto.randomUUID() : `ember-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
@@ -2962,6 +2968,10 @@ export function precompileTemplate(templateString: string, options?: {
 
   // Transform the template
   let transformedTemplate = templateString;
+
+  // Strip {{mount ...}} — GXT doesn't support Ember engines.
+  // Without this, the mount keyword triggers infinite resolution loops.
+  transformedTemplate = transformedTemplate.replace(/\{\{mount\s+[^}]*\}\}/g, '<!-- mount not supported -->');
 
   // Fix empty true-branch in {{#if}}: GXT compiler can't handle
   // {{#if cond}}{{else}}content{{/if}} (empty true branch).

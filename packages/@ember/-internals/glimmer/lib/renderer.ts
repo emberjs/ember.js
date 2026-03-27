@@ -357,6 +357,14 @@ class ClassicRootState {
     this.env = context.env;
 
     this.render = errorLoopTransaction(() => {
+      // Guard against infinite render depth (e.g., engine mounting loops)
+      const depth = (globalThis as any).__gxtRenderDepth || 0;
+      if (depth > 20) {
+        console.warn('[gxt] Max render depth exceeded, skipping render');
+        return;
+      }
+      (globalThis as any).__gxtRenderDepth = depth + 1;
+      try {
       // Set globalThis.owner for GXT manager system to access
       (globalThis as any).owner = owner;
 
@@ -706,6 +714,7 @@ class ClassicRootState {
           });
         });
       }
+      } finally { (globalThis as any).__gxtRenderDepth = depth; }
     });
   }
 
