@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v6.8.4 (March 27, 2026)
+
+- [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
+- [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
+
 ## v6.8.3 (February 4, 2026)
  
 - [#21024](https://github.com/emberjs/ember.js/pull/21024) [BUGFIX] Add @ember/reactive into the AMD bundles
