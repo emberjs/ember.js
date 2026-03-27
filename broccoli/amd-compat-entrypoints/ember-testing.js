@@ -63,9 +63,6 @@ d('ember-testing/lib/test/adapter', emberTestingLibTestAdapter);
 import * as emberTestingLibTestHelpers from 'ember-testing/lib/test/helpers';
 d('ember-testing/lib/test/helpers', emberTestingLibTestHelpers);
 
-import * as emberTestingLibTestOnInjectHelpers from 'ember-testing/lib/test/on_inject_helpers';
-d('ember-testing/lib/test/on_inject_helpers', emberTestingLibTestOnInjectHelpers);
-
 import * as emberTestingLibTestPendingRequests from 'ember-testing/lib/test/pending_requests';
 d('ember-testing/lib/test/pending_requests', emberTestingLibTestPendingRequests);
 

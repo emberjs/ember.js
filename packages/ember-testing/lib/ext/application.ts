@@ -3,7 +3,6 @@ import setupForTesting from '../setup_for_testing';
 import { helpers } from '../test/helpers';
 import TestPromise, { resolve, getLastPromise } from '../test/promise';
 import run from '../test/run';
-import { invokeInjectHelpersCallbacks } from '../test/on_inject_helpers';
 import { asyncStart, asyncEnd } from '../test/adapter';
 import type Application from '@ember/application';
 import type { AnyFn } from '@ember/-internals/utility-types';
@@ -107,9 +106,6 @@ EmberApplication.reopen({
     (so that it can be reset if the helper is removed with `unregisterHelper` or
     `removeTestHelpers`).
 
-    Any callbacks registered with `onInjectHelpers` will be called once the
-    helpers have been injected.
-
     Example:
     ```
     App.injectTestHelpers();
@@ -141,8 +137,6 @@ EmberApplication.reopen({
       // SAFETY: We checked that it exists
       protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name]!.meta.wait);
     }
-
-    invokeInjectHelpersCallbacks(this);
   },
 
   /**

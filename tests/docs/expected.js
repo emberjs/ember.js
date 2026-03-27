@@ -357,7 +357,6 @@ module.exports = {
     'once',
     'one',
     'oneWay',
-    'onInjectHelpers',
     'onLoad',
     'onUpdateURL',
     'options',

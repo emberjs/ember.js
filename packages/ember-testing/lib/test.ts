@@ -2,7 +2,6 @@
   @module ember
 */
 import { helpers, registerHelper, registerAsyncHelper, unregisterHelper } from './test/helpers';
-import { onInjectHelpers } from './test/on_inject_helpers';
 import TestPromise, { promise, resolve } from './test/promise';
 import { checkWaiters, registerWaiter, unregisterWaiter } from './test/waiters';
 
@@ -33,7 +32,6 @@ const Test = {
   registerHelper,
   registerAsyncHelper,
   unregisterHelper,
-  onInjectHelpers,
   Promise: TestPromise,
   promise,
   resolve,
