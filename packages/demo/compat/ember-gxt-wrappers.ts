@@ -79,7 +79,23 @@ const classHelperInstanceCache = new Map<string, any>();
 // Cache for simple (function-based) helper results to deduplicate calls within
 // the same sync cycle. Keyed by helper name, stores last args serialization + result.
 const simpleHelperResultCache = new Map<string, { argsSer: string; result: any }>();
-(g as any).__gxtClearHelperCache = () => { classHelperInstanceCache.clear(); simpleHelperResultCache.clear(); };
+// Cache for managed helper buckets (class-based helpers with setHelperManager).
+// Keyed by the helper class/function. Stores { bucket, delegate, reactiveArgs }.
+let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; reactiveArgs: { positional: any[]; named: Record<string, any> } }>();
+(g as any).__gxtClearHelperCache = () => { classHelperInstanceCache.clear(); simpleHelperResultCache.clear(); managedHelperBucketCache = new WeakMap(); };
+
+// When a property changes on a component, invalidate managed helper caches
+// so the next render pass picks up the changes. We DON'T re-compute values
+// here to avoid double-counting (GXT's native reactivity may also trigger).
+(g as any).__gxtNotifyHelperPropertyChange = function(_obj: any, _key: string) {
+  for (const [, cached] of classHelperInstanceCache as Map<string, any>) {
+    if (cached && cached.__managerBucket) {
+      // Invalidate the args serialization so the next $_maybeHelper call
+      // doesn't short-circuit with the cached result
+      cached.lastArgsSer = null;
+    }
+  }
+};
 
 function createEmberMaybeHelper(original: Function) {
   const wrapped = function $_maybeHelper_ember(
@@ -93,8 +109,14 @@ function createEmberMaybeHelper(original: Function) {
     // If maybeCtx is provided, hashOrCtx is the hash and maybeCtx is context.
     // If only hashOrCtx and it looks like a context (has $_eval or GXT symbols), it's context.
     const $PROPS = Symbol.for('gxt-props');
+    const $ARGS = Symbol.for('gxt-args');
     const isCtx = !maybeCtx && hashOrCtx && typeof hashOrCtx === 'object' &&
-      (hashOrCtx.hasOwnProperty?.('$_eval') || hashOrCtx[$PROPS] !== undefined || hashOrCtx.hasOwnProperty?.($PROPS));
+      (hashOrCtx.hasOwnProperty?.('$_eval')
+        || hashOrCtx[$PROPS] !== undefined
+        || hashOrCtx.hasOwnProperty?.($PROPS)
+        || hashOrCtx[$ARGS] !== undefined
+        // Detect Ember component instances used as context (not as hash)
+        || (hashOrCtx.isView === true && hashOrCtx.isComponent === true));
     const hash = maybeCtx ? hashOrCtx : (isCtx ? {} : (hashOrCtx ?? {}));
 
     // Handle CurriedComponent — when a curried component is used as {{curried ...}} or {{object.comp ...}}
@@ -127,9 +149,67 @@ function createEmberMaybeHelper(original: Function) {
       return merged;
     }
 
-    // Function arguments (e.g., $_blockParam) - delegate to original GXT handler
+    // Function/class arguments — check for a registered helper manager first.
+    // Classes like TestHelper subclasses are typeof 'function' but have a
+    // helper manager set on a parent prototype via setHelperManager().
     if (typeof nameOrFn === 'function') {
-      // Let original GXT $_maybeHelper handle function-type helpers
+      const helperMgr = findHelperManager(nameOrFn);
+      if (helperMgr) {
+        // This is a class/function with a registered helper manager.
+        // Use the delegate protocol to create the helper instance once
+        // and call getValue on each re-render.
+        const positional = unwrapArgs(args || []);
+        const named = unwrapHash(hash);
+
+        if (typeof helperMgr.getDelegateFor === 'function') {
+          const delegate = helperMgr.getDelegateFor(g.owner);
+          if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+            // Check cache — reuse the same bucket across re-evaluations
+            let cached = managedHelperBucketCache.get(nameOrFn);
+            if (!cached) {
+              // Build a reactive args object so the helper can read updated values
+              const reactiveArgs: { positional: any[]; named: Record<string, any> } = {
+                positional: [...positional],
+                named: { ...named },
+              };
+
+              // Create the helper bucket once
+              const bucket = delegate.createHelper(nameOrFn, reactiveArgs);
+
+              // If the delegate supports destroyable, wire it up
+              if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
+                const destroyable = delegate.getDestroyable(bucket);
+                if (destroyable) {
+                  const helperInstances = g.__gxtHelperInstances;
+                  if (Array.isArray(helperInstances)) {
+                    helperInstances.push(destroyable);
+                  }
+                }
+              }
+
+              cached = { bucket, delegate, reactiveArgs };
+              managedHelperBucketCache.set(nameOrFn, cached);
+            } else {
+              // Update the reactive args in place
+              cached.reactiveArgs.positional = positional;
+              cached.reactiveArgs.named = named;
+            }
+
+            return cached.delegate.getValue(cached.bucket);
+          }
+        }
+
+        // Fallback: use getHelper
+        if (typeof helperMgr.getHelper === 'function') {
+          const helperFn = helperMgr.getHelper(nameOrFn);
+          if (typeof helperFn === 'function') {
+            const capturedArgs = { positional, named };
+            return helperFn(capturedArgs, g.owner);
+          }
+        }
+      }
+
+      // No helper manager — let original GXT $_maybeHelper handle it
       return original(nameOrFn, args, hashOrCtx, maybeCtx);
     }
 
@@ -183,9 +263,104 @@ function createEmberMaybeHelper(original: Function) {
 
         const factoryClass = factory.class;
 
-        // Check if this is a class-based helper (with compute on prototype)
+        // FIRST: Check for a registered helper manager (setHelperManager).
+        // This must come before isClassBased check because some helper manager
+        // classes (e.g., TestHelper) also define compute() but should be handled
+        // via the manager protocol, not via factory.create().
+        const manager = findHelperManager(factoryClass) || findHelperManager(factoryClass?.prototype);
+
+        if (manager) {
+          // Use the delegate protocol for proper helper lifecycle
+          if (typeof manager.getDelegateFor === 'function') {
+            const delegate = manager.getDelegateFor(owner);
+            if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+              // Cache the helper bucket per name so re-renders don't create new instances.
+              // We create a GXT cell to hold the result so GXT's formula system tracks
+              // it and re-renders automatically when the cell is updated.
+              let cached = classHelperInstanceCache.get(name) as any;
+              const _cellFor = g.__gxtCellFor;
+              if (!cached || cached.__managerBucket !== true) {
+                const reactiveArgs = { positional: [...positional], named: { ...named } };
+                const bucket = delegate.createHelper(factoryClass, reactiveArgs);
+
+                // Wire up destroyable if supported
+                if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
+                  const destroyable = delegate.getDestroyable(bucket);
+                  if (destroyable) {
+                    const helperInstances = g.__gxtHelperInstances;
+                    if (Array.isArray(helperInstances)) {
+                      helperInstances.push(destroyable);
+                    }
+                  }
+                }
+
+                const result = delegate.getValue(bucket);
+
+                // Create a GXT cell to hold the result. Reading cell.value inside
+                // a formula establishes tracking, preventing const-optimization.
+                let helperCell: any = null;
+                if (_cellFor) {
+                  const cellHolder = { __v: result };
+                  helperCell = _cellFor(cellHolder, '__v', false);
+                }
+
+                let argsSer: string | null = null;
+                try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+
+                cached = { __managerBucket: true, bucket, delegate, reactiveArgs, lastArgsSer: argsSer, lastResult: result, helperCell };
+                classHelperInstanceCache.set(name, cached);
+
+                // Read from cell to establish tracking in enclosing formula
+                if (helperCell) return helperCell.value;
+                return result;
+              } else {
+                // Check if args actually changed — if not, return cached result
+                let argsSer: string | null = null;
+                try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+                if (argsSer !== null && argsSer === cached.lastArgsSer) {
+                  // Read cell to maintain tracking
+                  if (cached.helperCell) return cached.helperCell.value;
+                  return cached.lastResult;
+                }
+
+                // Update args in place for the existing bucket
+                cached.reactiveArgs.positional = positional;
+                cached.reactiveArgs.named = named;
+                const result = cached.delegate.getValue(cached.bucket);
+                cached.lastArgsSer = argsSer;
+                cached.lastResult = result;
+
+                // Update the GXT cell to trigger formula re-evaluation
+                if (cached.helperCell && cached.helperCell.update) {
+                  cached.helperCell.update(result);
+                }
+
+                if (cached.helperCell) return cached.helperCell.value;
+                return result;
+              }
+            }
+          }
+
+          // Fallback: use getHelper
+          if (typeof manager.getHelper === 'function') {
+            const helperFn = manager.getHelper(factoryClass);
+            if (typeof helperFn === 'function') {
+              const capturedArgs = { positional, named };
+              return helperFn(capturedArgs, owner);
+            }
+          }
+
+          // Fallback: use createHelper/getValue directly on the manager
+          if (typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
+            const state = manager.createHelper(factoryClass, { positional, named });
+            return manager.getValue(state);
+          }
+        }
+
+        // Check if this is a class-based helper (with compute on prototype and a create() method)
         const isClassBased = factoryClass && factoryClass.prototype &&
-          typeof factoryClass.prototype.compute === 'function';
+          typeof factoryClass.prototype.compute === 'function' &&
+          typeof factoryClass.create === 'function';
 
         if (isClassBased) {
           // Use a cached persistent instance for class-based helpers.
@@ -228,49 +403,14 @@ function createEmberMaybeHelper(original: Function) {
           }
         }
 
-        // Simple (function-based) helper: use the manager protocol
-        const manager = findHelperManager(factoryClass) || findHelperManager(factoryClass?.prototype);
-
-        if (manager) {
-          // Deduplicate: check if same args were already computed in this sync cycle.
-          // The force-rerender (innerHTML='' + rebuild) creates a new gxtEffect that
-          // fires immediately with the same args, causing double-computation.
-          let argsSer: string | null = null;
-          try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip dedup */ }
-          if (argsSer !== null) {
-            const cached = simpleHelperResultCache.get(name);
-            if (cached && cached.argsSer === argsSer) {
-              return cached.result;
-            }
-          }
-
-          if (typeof manager.getHelper === 'function') {
-            const helperFn = manager.getHelper(factoryClass);
-            if (typeof helperFn === 'function') {
-              const capturedArgs = { positional, named };
-              const result = helperFn(capturedArgs, owner);
-              if (argsSer !== null) {
-                simpleHelperResultCache.set(name, { argsSer, result });
-              }
-              return result;
-            }
-          }
-          if (typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
-            const state = manager.createHelper(factoryClass, { positional, named });
-            const result = manager.getValue(state);
-            if (argsSer !== null) {
-              simpleHelperResultCache.set(name, { argsSer, result });
-            }
-            return result;
-          }
-        }
-
         // No manager found - create instance and call compute directly
         try {
-          const instance = factory.create();
-          if (instance && typeof instance.compute === 'function') {
-            const result = instance.compute(positional, named);
-            return result;
+          if (typeof factoryClass?.create === 'function') {
+            const instance = factory.create();
+            if (instance && typeof instance.compute === 'function') {
+              const result = instance.compute(positional, named);
+              return result;
+            }
           }
         } catch (e) {
           console.error(`[ember-gxt] Error invoking helper "${name}":`, e);

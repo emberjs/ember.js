@@ -147,6 +147,33 @@ globalThis.INTERNAL_HELPER_MANAGERS = globalThis.INTERNAL_HELPER_MANAGERS || new
 globalThis.INTERNAL_MODIFIER_MANAGERS = globalThis.INTERNAL_MODIFIER_MANAGERS || new WeakMap();
 
 // =============================================================================
+// Custom Managed Component Instance Tracking (for destructor support)
+// =============================================================================
+
+interface CustomManagedEntry {
+  node: Node;       // A DOM node belonging to the component (for disconnect detection)
+  destroyFn: () => void;
+  destroyed: boolean;
+}
+
+const _customManagedInstances: CustomManagedEntry[] = [];
+
+/**
+ * Destroy any custom-managed component instances whose DOM nodes are no longer connected.
+ * Called during the destroy phase (e.g., after a conditional block removes content).
+ */
+(globalThis as any).__gxtDestroyCustomManagedInstances = function() {
+  for (let i = _customManagedInstances.length - 1; i >= 0; i--) {
+    const entry = _customManagedInstances[i]!;
+    if (!entry.destroyed && !entry.node.isConnected) {
+      entry.destroyed = true;
+      try { entry.destroyFn(); } catch { /* ignore destroy errors */ }
+      _customManagedInstances.splice(i, 1);
+    }
+  }
+};
+
+// =============================================================================
 // Parent View Stack
 // =============================================================================
 
@@ -525,7 +552,7 @@ function createComponentInstance(
       // Skip propagation during attrs dispatch (prevents infinite loops)
       if ((instance as any).__gxtDispatchingArgs) return;
 
-      // Only propagate for keys that were passed as args
+      // Only propagate binding logic for keys that were passed as args
       if (!argKeySet.has(key)) {
         if (origPDC) try { origPDC(key, value); } catch { /* ignore */ }
         return;
@@ -1276,6 +1303,13 @@ let _preRerenderSnapshot: Set<any> = new Set();
   }
   _preRerenderSnapshot.clear();
 
+  // Also destroy custom-managed component instances whose DOM is disconnected
+  // (must run before the early return since there may be no classic unclaimed instances)
+  const destroyCustom = (globalThis as any).__gxtDestroyCustomManagedInstances;
+  if (typeof destroyCustom === 'function') {
+    destroyCustom();
+  }
+
   if (unclaimed.length === 0) return;
 
   // Phase 1: willDestroyElement + willClearRender.
@@ -1350,6 +1384,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
       }
     }
   }
+
 };
 
 // Cleanup function: destroy all tracked component instances with proper lifecycle.
@@ -2664,17 +2699,17 @@ const $_MANAGERS = {
       if (typeof helper === 'function' && helper.__isEmberCurriedHelper) {
         return true;
       }
-      // Handle function-based helpers with a registered helper manager
-      if (typeof helper === 'function' && (globalThis as any).INTERNAL_HELPER_MANAGERS?.has(helper)) {
-        return true;
-      }
-      // Walk prototype chain for helper manager (class-based helpers)
-      if (helper != null && typeof helper === 'object') {
+      // Handle function/class-based helpers with a registered helper manager
+      // Walk the prototype chain for both functions (classes) and objects
+      if (helper != null && (typeof helper === 'function' || typeof helper === 'object')) {
         let pointer = helper;
-        for (let i = 0; i < 5; i++) {
+        while (pointer != null && pointer !== Object.prototype && pointer !== Function.prototype) {
           if ((globalThis as any).INTERNAL_HELPER_MANAGERS?.has(pointer)) return true;
-          pointer = Object.getPrototypeOf(pointer);
-          if (!pointer) break;
+          try {
+            pointer = Object.getPrototypeOf(pointer);
+          } catch {
+            break;
+          }
         }
       }
       return false;
@@ -2717,27 +2752,64 @@ const $_MANAGERS = {
           const unwrapVal = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
           const isGxtInternal = (k: string) => k.startsWith('$_') || k === 'hash';
 
-          // Create a resolved function from the helper manager
-          let resolvedFn: ((positional: any[], named: any) => any) | null = null;
-
           if (typeof internalManager.getDelegateFor === 'function') {
             const delegate = internalManager.getDelegateFor(owner);
             if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
-              resolvedFn = (positional: any[], named: any) => {
-                const args = { positional, named: named || {} };
-                const bucket = delegate.createHelper(helper, args);
+              const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
+              const curriedNamed = hash && typeof hash === 'object'
+                ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+                : {};
+
+              // Create a reactive args object that the helper instance holds a reference to.
+              // On re-render we update its positional/named in place so getValue sees fresh data.
+              const reactiveArgs: { positional: any[]; named: Record<string, any> } = {
+                positional: [...curriedPositionals],
+                named: { ...(curriedNamed as Record<string, any>) },
+              };
+
+              // Create the helper bucket once
+              const bucket = delegate.createHelper(helper, reactiveArgs);
+
+              // If the delegate has a destroyable, register it for cleanup
+              if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
+                const destroyable = delegate.getDestroyable(bucket);
+                if (destroyable) {
+                  // Store for potential cleanup
+                  (bucket as any).__destroyable = destroyable;
+                }
+              }
+
+              const curried = function __emberCurriedHelper(additionalParams?: any[], additionalHash?: any) {
+                // Update the reactive args object in place
+                const newPositional = [
+                  ...curriedPositionals,
+                  ...(Array.isArray(additionalParams) ? additionalParams.map(unwrapVal) : [])
+                ];
+                const newNamed = {
+                  ...(curriedNamed as Record<string, any>),
+                  ...(additionalHash && typeof additionalHash === 'object'
+                    ? Object.fromEntries(Object.entries(additionalHash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+                    : {}),
+                };
+                // Update in place so the bucket's reference to args sees changes
+                reactiveArgs.positional = newPositional;
+                reactiveArgs.named = newNamed;
                 return delegate.getValue(bucket);
               };
+              (curried as any).__isEmberCurriedHelper = true;
+              (curried as any).__helperBucket = bucket;
+              (curried as any).__helperDelegate = delegate;
+              (curried as any).__reactiveArgs = reactiveArgs;
+              return curried;
             }
           }
 
-          if (!resolvedFn && typeof internalManager.getHelper === 'function') {
-            resolvedFn = (positional: any[], named: any) => {
+          // Fallback: use getHelper if available
+          if (typeof internalManager.getHelper === 'function') {
+            const resolvedFn = (positional: any[], named: any) => {
               return internalManager.getHelper(helper)({ positional, named: named || {} }, owner);
             };
-          }
 
-          if (resolvedFn) {
             const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
             const curriedNamed = hash && typeof hash === 'object'
               ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
@@ -2754,7 +2826,7 @@ const $_MANAGERS = {
                   ? Object.fromEntries(Object.entries(additionalHash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
                   : {}),
               };
-              return resolvedFn!(mergedPositional, mergedNamed);
+              return resolvedFn(mergedPositional, mergedNamed);
             };
             (curried as any).__isEmberCurriedHelper = true;
             (curried as any).__resolvedFn = resolvedFn;
@@ -2840,7 +2912,23 @@ function handleStringComponent(
     // Check if this is a custom component manager (from setComponentManager)
     // These are factory functions, not internal manager objects
     if (typeof manager === 'function') {
-      return handleCustomManagedComponent(factory.class, args, fw, ctx, manager, owner, template);
+      // Eagerly validate capabilities so the error propagates to assert.throws()
+      // via the captureRenderError / flushRenderErrors mechanism.
+      const eagerManager = manager(owner);
+      if (eagerManager) {
+        const caps = eagerManager.capabilities;
+        if (caps && !FROM_CAPABILITIES.has(caps)) {
+          const err = new Error(
+            "Custom component managers must have a `capabilities` property " +
+            "that is the result of calling the `capabilities('3.13')` " +
+            "(imported via `import { capabilities } from '@ember/component';`). " +
+            "Received: `" + JSON.stringify(caps) + "`"
+          );
+          captureRenderError(err);
+          return () => null;
+        }
+      }
+      return handleCustomManagedComponent(factory.class, args, fw, ctx, manager, owner, template, eagerManager);
     }
     // Internal manager (Input, Textarea)
     return handleManagedComponent(factory.class, args, fw, ctx, manager, owner);
@@ -3033,6 +3121,17 @@ function handleStringComponent(
   };
 }
 
+// Cache for custom-managed component instances, keyed by ComponentClass -> array of pool entries
+const _customManagedPool = new Map<any, { instance: any; context: any; manager: any; claimed: boolean; lastPassId: number }[]>();
+
+// Clear custom managed pool between tests
+const _origClearPools = (globalThis as any).__gxtClearInstancePools;
+(globalThis as any).__gxtClearInstancePools = function() {
+  if (typeof _origClearPools === 'function') _origClearPools();
+  _customManagedPool.clear();
+  _customManagedInstances.length = 0;
+};
+
 /**
  * Handle a component with a custom component manager (from setComponentManager).
  * The manager factory function is called with (owner) to get the actual manager,
@@ -3045,40 +3144,80 @@ function handleCustomManagedComponent(
   ctx: any,
   managerFactory: Function,
   owner: any,
-  template: any
+  template: any,
+  preCreatedManager?: any
 ): () => any {
   return () => {
-    // Invoke the factory to get the actual manager instance
-    const actualManager = managerFactory(owner);
+    // Use pre-created manager if available (from eager validation in handleStringComponent),
+    // otherwise invoke the factory.
+    const actualManager = preCreatedManager || managerFactory(owner);
     if (!actualManager || typeof actualManager.createComponent !== 'function') {
       return null;
     }
 
-    // Build named args from the GXT args object
-    const namedArgs: Record<string, any> = {};
-    if (args && typeof args === 'object') {
-      const keys = Object.keys(args);
-      for (const key of keys) {
-        if (key.startsWith('__') || key.startsWith('$') || key === 'class') continue;
-        const desc = Object.getOwnPropertyDescriptor(args, key);
-        const value = desc?.get ? desc.get() : args[key];
-        if (typeof value === 'function' && !value.prototype && !value.__isCurriedComponent && !value.__isMutCell) {
-          namedArgs[key] = value();
-        } else {
-          namedArgs[key] = value;
-        }
-      }
+    // Build named/positional args from the GXT args object
+    const { namedArgs, positionalArgs, liveNamed, livePositional } = buildCustomManagedArgs(args);
+
+    // Check for a cached instance from a previous render pass (for instance reuse on re-render)
+    const currentPassId = (globalThis as any).__emberRenderPassId || 0;
+    let pool = _customManagedPool.get(ComponentClass);
+    if (!pool) {
+      pool = [];
+      _customManagedPool.set(ComponentClass, pool);
+    }
+    // Reset claimed flags on new pass
+    if (pool.length > 0 && (pool as any).__lastPassId !== currentPassId) {
+      (pool as any).__lastPassId = currentPassId;
+      for (const entry of pool) entry.claimed = false;
     }
 
-    // Create the component instance using the manager
-    const capturedArgs = { named: namedArgs };
-    const instance = actualManager.createComponent(ComponentClass, capturedArgs);
-    if (!instance) return null;
+    let cachedEntry = pool.find(e => !e.claimed);
+    let instance: any;
+    let context: any;
+    let isRerender = false;
+    const asyncCaps = actualManager.capabilities;
 
-    // Get the rendering context
-    const context = typeof actualManager.getContext === 'function'
-      ? actualManager.getContext(instance)
-      : instance;
+    if (cachedEntry) {
+      // Reuse existing instance — call updateComponent
+      cachedEntry.claimed = true;
+      instance = cachedEntry.instance;
+      context = cachedEntry.context;
+      isRerender = true;
+
+      // Notify the manager of updated args
+      const newCapturedArgs = { named: namedArgs, positional: positionalArgs };
+      if (typeof actualManager.updateComponent === 'function') {
+        actualManager.updateComponent(instance, newCapturedArgs);
+      }
+
+      // Update live named/positional on instance.args
+      if (instance?.args) {
+        instance.args.named = liveNamed;
+        instance.args.positional = livePositional;
+      }
+
+      // Call didUpdateComponent if supported
+      if (asyncCaps?.asyncLifecycleCallbacks && typeof actualManager.didUpdateComponent === 'function') {
+        actualManager.didUpdateComponent(instance);
+      }
+    } else {
+      // Create new instance
+      const capturedArgs = { named: liveNamed, positional: livePositional };
+      instance = actualManager.createComponent(ComponentClass, capturedArgs);
+
+      // Get the rendering context (may be null for template-only custom components)
+      context = typeof actualManager.getContext === 'function'
+        ? actualManager.getContext(instance)
+        : instance;
+
+      // Cache for future re-renders
+      pool.push({ instance, context, manager: actualManager, claimed: true, lastPassId: currentPassId });
+
+      // Call didCreateComponent if supported
+      if (asyncCaps?.asyncLifecycleCallbacks && typeof actualManager.didCreateComponent === 'function') {
+        actualManager.didCreateComponent(instance);
+      }
+    }
 
     // Resolve the template
     let resolvedTemplate = template;
@@ -3088,14 +3227,103 @@ function handleCustomManagedComponent(
     if (typeof resolvedTemplate === 'function' && !resolvedTemplate.render) {
       resolvedTemplate = resolvedTemplate(owner);
     }
-
     if (!resolvedTemplate?.render) {
       return null;
     }
 
-    // Render using the Glimmer component path
-    return renderGlimmerComponent(context, resolvedTemplate, args, fw, owner);
+    // Render the template with the context
+    const container = document.createDocumentFragment();
+    const renderContext = createRenderContext(context, args, fw, owner);
+
+    // Augment renderContext.args with named/positional sub-objects
+    if (renderContext.args) {
+      renderContext.args.named = liveNamed;
+      renderContext.args.positional = livePositional;
+    }
+    if (instance && instance !== context && instance.args) {
+      instance.args.named = liveNamed;
+      instance.args.positional = livePositional;
+    }
+
+    renderTemplateWithParentView(resolvedTemplate, renderContext, container, context);
+
+    // Set up destructor on initial render only
+    if (!isRerender && asyncCaps?.destructor && typeof actualManager.destroyComponent === 'function') {
+      const destroyFn = () => {
+        actualManager.destroyComponent(instance);
+        // Remove from pool
+        const idx = pool!.findIndex(e => e.instance === instance);
+        if (idx >= 0) pool!.splice(idx, 1);
+      };
+      const firstChild = container.firstChild;
+      if (firstChild) {
+        _customManagedInstances.push({ node: firstChild, destroyFn, destroyed: false });
+      }
+    }
+
+    return createGxtResult(container);
   };
+}
+
+/**
+ * Build named/positional args from GXT args object for custom-managed components.
+ */
+function buildCustomManagedArgs(args: any) {
+  const namedArgs: Record<string, any> = {};
+  const positionalArgs: any[] = [];
+  const argGetters: Record<string, () => any> = {};
+  const posGetters: (() => any)[] = [];
+
+  if (args && typeof args === 'object') {
+    const keys = Object.keys(args);
+    const posCount = args.__posCount__;
+    const resolvedPosCount = typeof posCount === 'function' ? posCount() : (posCount || 0);
+    for (let i = 0; i < resolvedPosCount; i++) {
+      const posKey = `__pos${i}__`;
+      const desc = Object.getOwnPropertyDescriptor(args, posKey);
+      const getter = desc?.get;
+      const value = getter ? getter() : args[posKey];
+      positionalArgs.push(typeof value === 'function' && !value.prototype ? value() : value);
+      if (getter) {
+        posGetters.push(() => { const v = getter(); return typeof v === 'function' && !v.prototype ? v() : v; });
+      } else {
+        const argRef = args[posKey];
+        posGetters.push(typeof argRef === 'function' && !argRef.prototype ? () => argRef() : () => argRef);
+      }
+    }
+
+    for (const key of keys) {
+      if (key.startsWith('__') || key.startsWith('$') || key === 'class') continue;
+      const desc = Object.getOwnPropertyDescriptor(args, key);
+      const getter = desc?.get;
+      const value = getter ? getter() : args[key];
+      if (typeof value === 'function' && !value.prototype && !value.__isCurriedComponent && !value.__isMutCell) {
+        namedArgs[key] = value();
+        argGetters[key] = value;
+      } else {
+        namedArgs[key] = value;
+        if (getter) {
+          argGetters[key] = () => { const v = getter(); return typeof v === 'function' && !v.prototype ? v() : v; };
+        }
+      }
+    }
+  }
+
+  const liveNamed: Record<string, any> = {};
+  for (const key of Object.keys(namedArgs)) {
+    if (argGetters[key]) {
+      Object.defineProperty(liveNamed, key, { get: argGetters[key], enumerable: true, configurable: true });
+    } else {
+      liveNamed[key] = namedArgs[key];
+    }
+  }
+  const livePositional: any[] = [];
+  for (let i = 0; i < positionalArgs.length; i++) {
+    Object.defineProperty(livePositional, i, { get: posGetters[i], enumerable: true, configurable: true });
+  }
+  Object.defineProperty(livePositional, 'length', { value: positionalArgs.length, writable: true });
+
+  return { namedArgs, positionalArgs, liveNamed, livePositional, argGetters, posGetters };
 }
 
 /**
@@ -3575,7 +3803,9 @@ export function modifierCapabilities(_version: string, capabilities?: Record<str
 }
 
 export function componentCapabilities(_version: string, capabilities?: Record<string, boolean>) {
-  return capabilities || {};
+  const caps = capabilities || {};
+  FROM_CAPABILITIES.add(caps);
+  return caps;
 }
 
 export function setHelperManager(factory: any, helper: any) {
@@ -3636,7 +3866,8 @@ export function setInternalModifierManager(manager: any, modifier: any) {
 }
 
 export function setComponentManager(manager: any, component: any) {
-  return globalThis.COMPONENT_MANAGERS.set(component, manager);
+  globalThis.COMPONENT_MANAGERS.set(component, manager);
+  return component;
 }
 
 export function getComponentManager(component: any) {

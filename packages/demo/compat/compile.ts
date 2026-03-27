@@ -3281,8 +3281,14 @@ export function precompileTemplate(templateString: string, options?: {
         if (finalResult && finalResult.__isCurriedComponent) {
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(finalResult)) {
+            // Capture owner at template evaluation time for reactive updates
+            const capturedOwner = (globalThis as any).owner;
             const renderCurriedComponent = (curried: any): Node | null => {
               if (!curried) return null;
+              // Restore owner for component resolution during reactive re-evaluation
+              if (capturedOwner && !(globalThis as any).owner) {
+                (globalThis as any).owner = capturedOwner;
+              }
               const handleResult = managers.component.handle(curried, {}, null, null);
               if (typeof handleResult === 'function') {
                 const rendered = handleResult();

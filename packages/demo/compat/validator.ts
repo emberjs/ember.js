@@ -121,6 +121,14 @@ export function dirtyTagFor(obj: any, key: any) {
     markTagDirty(tag);
   }
 
+  // Mark GXT sync as pending so __gxtSyncDomNow processes the force-rerender.
+  // Without this, set() on components dirtied Glimmer tags but __gxtPendingSync
+  // stayed false, causing __gxtSyncDomNow to be a no-op.
+  const schedule = (globalThis as any).__gxtExternalSchedule;
+  if (typeof schedule === 'function') {
+    schedule();
+  }
+
   // Then call the original dirtyTagFor with the safe key
   return gxtDirtyTagFor(obj, safeKey);
 }
