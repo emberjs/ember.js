@@ -1,7 +1,6 @@
 import { next, run } from '@ember/runloop';
 import { setOnerror } from '@ember/-internals/error-handling';
 import Adapter from '../lib/adapters/adapter';
-import QUnitAdapter from '../lib/adapters/qunit';
 import { getAdapter, setAdapter } from '../lib/test/adapter';
 import EmberApplication from '@ember/application';
 import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
@@ -90,49 +89,16 @@ moduleFor(
       getAdapter().asyncStart();
     }
 
-    ['@test QUnitAdapter is used by default (if QUnit is available)'](assert) {
-      assert.expect(1);
-
-      setAdapter(null);
-
-      run(function () {
-        App = EmberApplication.create({
-          Resolver: ModuleBasedTestResolver,
-        });
-      });
-
-      assert.ok(getAdapter() instanceof QUnitAdapter);
-    }
-
-    ['@test Adapter is used by default (if QUnit is not available)'](assert) {
-      assert.expect(2);
-
-      delete window.QUnit;
-
-      setAdapter(null);
-
-      run(function () {
-        App = EmberApplication.create({
-          Resolver: ModuleBasedTestResolver,
-        });
-      });
-
-      let adapter = getAdapter();
-      assert.ok(adapter instanceof Adapter);
-      assert.ok(!(adapter instanceof QUnitAdapter));
-    }
-
     ['@test With adapter set, errors in synchronous Ember.run are bubbled out'](assert) {
       let thrown = new Error('Boom!');
 
       let caughtInAdapter, caughtInCatch;
-      setAdapter(
-        QUnitAdapter.create({
-          exception(error) {
-            caughtInAdapter = error;
-          },
-        })
-      );
+      let CustomAdapter = class extends Adapter {
+        exception(error) {
+          caughtInAdapter = error;
+        }
+      };
+      setAdapter(new CustomAdapter());
 
       try {
         run(() => {
@@ -266,11 +232,10 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(1);
 
       let thrown = new Error('the error');
-      setAdapter(
-        QUnitAdapter.create({
-          exception: undefined,
-        })
-      );
+      let CustomAdapter = class extends Adapter {
+        exception = undefined;
+      };
+      setAdapter(new CustomAdapter());
 
       // prevent QUnit handler from failing test
       QUnit.onUncaughtException = () => {};
@@ -301,11 +266,12 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(1);
 
       let thrown = new Error('the error');
-      setAdapter(
-        QUnitAdapter.create({
-          exception: undefined,
-        })
-      );
+
+      let CustomAdapter = class extends Adapter {
+        exception = undefined;
+      };
+
+      setAdapter(new CustomAdapter());
 
       setOnerror(function (error) {
         assert.pushResult({
@@ -329,17 +295,16 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       console.error = () => {}; // eslint-disable-line no-console
       let thrown = new Error('the error');
-      setAdapter(
-        QUnitAdapter.create({
-          exception(error) {
-            assert.strictEqual(
-              error,
-              thrown,
-              'Adapter.exception is called for errors thrown in RSVP promises'
-            );
-          },
-        })
-      );
+      let CustomAdapter = class extends Adapter {
+        exception(error) {
+          assert.strictEqual(
+            error,
+            thrown,
+            'Adapter.exception is called for errors thrown in RSVP promises'
+          );
+        }
+      };
+      setAdapter(new CustomAdapter());
 
       generatePromise(thrown);
 
@@ -352,17 +317,17 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(1);
 
       let thrown = new Error('the error');
-      setAdapter(
-        QUnitAdapter.create({
-          exception(error) {
-            assert.strictEqual(
-              error,
-              thrown,
-              'Adapter.exception is called for errors thrown in RSVP promises'
-            );
-          },
-        })
-      );
+      let CustomAdapter = class extends Adapter {
+        exception(error) {
+          assert.strictEqual(
+            error,
+            thrown,
+            'Adapter.exception is called for errors thrown in RSVP promises'
+          );
+        }
+      };
+
+      setAdapter(new CustomAdapter());
 
       setOnerror(function () {
         assert.notOk(true, 'Ember.onerror is not called if adapter does not rethrow');
@@ -379,18 +344,17 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(2);
 
       let thrown = new Error('the error');
-      setAdapter(
-        QUnitAdapter.create({
-          exception(error) {
-            assert.strictEqual(
-              error,
-              thrown,
-              'Adapter.exception is called for errors thrown in RSVP promises'
-            );
-            throw error;
-          },
-        })
-      );
+      let CustomAdapter = class extends Adapter {
+        exception(error) {
+          assert.strictEqual(
+            error,
+            thrown,
+            'Adapter.exception is called for errors thrown in RSVP promises'
+          );
+          throw error;
+        }
+      };
+      setAdapter(new CustomAdapter());
 
       setOnerror(function (error) {
         assert.strictEqual(

@@ -575,7 +575,6 @@ namespace Ember {
   export declare let Test:
     | (NonNullable<typeof EmberTestingImpl>['Test'] & {
         Adapter: NonNullable<typeof EmberTestingImpl>['Adapter'];
-        QUnitAdapter: NonNullable<typeof EmberTestingImpl>['QUnitAdapter'];
       })
     | undefined;
 }
@@ -709,10 +708,7 @@ function defineEmberTestingLazyLoad(key: 'Test') {
     enumerable: true,
     get() {
       if (EmberTestingImpl) {
-        let { Test, QUnitAdapter } = EmberTestingImpl;
-
-        // @ts-expect-error We should not do this
-        Test.QUnitAdapter = QUnitAdapter;
+        let { Test } = EmberTestingImpl;
 
         Object.defineProperty(Ember, 'Test', {
           configurable: true,

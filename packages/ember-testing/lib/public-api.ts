@@ -1,6 +1,5 @@
 export { default as Test } from './test';
 export { default as Adapter } from './adapters/adapter';
-export { default as QUnitAdapter } from './adapters/qunit';
 
 import './ext/application';
 import './ext/rsvp'; // setup RSVP + run loop integration

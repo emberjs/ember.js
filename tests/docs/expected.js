@@ -565,7 +565,6 @@ module.exports = {
     'Ember.Templates.components',
     'Ember.Templates.helpers',
     'Ember.Test',
-    'Ember.Test.QUnitAdapter',
     'EmberArray',
     'EmberENV',
     'EmberObject',
