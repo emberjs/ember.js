@@ -41,7 +41,7 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
   }
 
   if (key in proxy) {
-    if (DEBUG && addMandatorySetter) {
+    if (DEBUG && addMandatorySetter && !(globalThis as any).__GXT_MODE__) {
       assert('[BUG] setupMandatorySetter should be set when debugging', setupMandatorySetter);
       setupMandatorySetter(tag, proxy, key);
     }

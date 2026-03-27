@@ -269,12 +269,28 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 {
   const g = globalThis as any;
   const _isArray = Array.isArray;
-  const _isProxy = (v: any) => v && typeof v === 'object' && (v._content !== undefined || v.content !== undefined);
+  // Use Ember's isProxy (WeakSet-based) for reliable proxy detection.
+  // The heuristic (_content/content check) fails for proxies with undefined content.
+  const _isProxyImport = (() => {
+    try {
+      // Access Ember's proxy WeakSet — isProxy uses PROXIES.has(value)
+      // The isProxy function is also available via @ember/-internals/utils
+      return (v: any): boolean => {
+        if (!v || typeof v !== 'object') return false;
+        // Check Ember's proxy marker (setProxy adds to WeakSet)
+        // Also fall back to duck-typing: ObjectProxy has unknownProperty
+        if (typeof v.unknownProperty === 'function' && typeof v.setUnknownProperty === 'function') return true;
+        // Check _content property existence (ObjectProxy stores content internally)
+        if ('_content' in v || 'content' in v) return true;
+        return false;
+      };
+    } catch { return (v: any) => false; }
+  })();
 
   function emberToBool(predicate: unknown): boolean {
     if (predicate && typeof predicate === 'object') {
       // Proxy: check isTruthy
-      if (_isProxy(predicate)) {
+      if (_isProxyImport(predicate)) {
         return Boolean((predicate as any).isTruthy ?? (predicate as any).content);
       }
       // Array: empty is falsy
