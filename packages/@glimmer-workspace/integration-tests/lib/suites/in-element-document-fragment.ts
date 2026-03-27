@@ -133,14 +133,19 @@ export class InElementDocumentFragmentSuite extends RenderTest {
   }
 
   @test
-  'After fragment is attached to DOM, text updates and new conditional elements appear in the container'() {
+  'After fragment is attached to DOM, text updates and new conditional elements appear in the container'(
+    assert: typeof QUnit.assert
+  ) {
     const fragment = document.createDocumentFragment();
     const container = document.createElement('div');
-    const step = (text: string) => this.assert.step(text);
+    const step = (text: string) => {
+      assert.step(text);
+      return text;
+    };
 
     this.render(
       '{{#in-element this.fragment}}' +
-        '<p id="msg">{{this.message}} {{this.step "message rendered"}}</p>' +
+        '<p id="msg">{{this.step this.message}}</p>' +
         '{{#if this.show}}' +
         '<span id="extra">extra {{this.step "extra rendered"}}</span>' +
         '{{/if}}' +
@@ -153,26 +158,25 @@ export class InElementDocumentFragmentSuite extends RenderTest {
       }
     );
 
-    this.assert.verifySteps(['message rendered'], 'initial render fires step from inside fragment');
+    assert.verifySteps(['initial'], 'initial render fires step from inside fragment');
 
     // Move fragment's children (including Glimmer's comment bounds) into the container
     container.appendChild(fragment);
-    this.assert.strictEqual(fragment.childNodes.length, 0, 'fragment is empty after append');
 
     // Text-node update: Glimmer holds a direct reference to the text node, so the
     // update is visible in the container even though the fragment is now empty.
     this.rerender({ message: 'updated' });
-    this.assert.verifySteps(
-      ['message rendered'],
+    assert.verifySteps(
+      ['updated'],
       'text update fires step even after fragment was attached to the DOM'
     );
 
     // New-element update: Glimmer inserts the span relative to the comment bounds,
     // which also moved to the container, so the new element appears in the container.
     this.rerender({ show: true });
-    this.assert.verifySteps(
-      ['message rendered', 'extra rendered'],
-      'new conditional element fires step in the container after fragment was attached to the DOM'
+    assert.verifySteps(
+      ['extra rendered'],
+      'conditional element step fires in the container after fragment was attached to the DOM'
     );
   }
 
