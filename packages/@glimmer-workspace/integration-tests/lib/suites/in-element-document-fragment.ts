@@ -133,7 +133,7 @@ export class InElementDocumentFragmentSuite extends RenderTest {
   }
 
   @test
-  'After fragment is attached to DOM, text updates and new conditional elements appear in the container'(
+  'Rerenders in a detached DocumentFragment, then content is visible after attaching to DOM'(
     assert: typeof QUnit.assert
   ) {
     const fragment = document.createDocumentFragment();
@@ -160,24 +160,27 @@ export class InElementDocumentFragmentSuite extends RenderTest {
 
     assert.verifySteps(['initial'], 'initial render fires step from inside fragment');
 
-    // Move fragment's children (including Glimmer's comment bounds) into the container
-    container.appendChild(fragment);
-
-    // Text-node update: Glimmer holds a direct reference to the text node, so the
-    // update is visible in the container even though the fragment is now empty.
+    // Rerender while still detached: text update
     this.rerender({ message: 'updated' });
-    assert.verifySteps(
-      ['updated'],
-      'text update fires step even after fragment was attached to the DOM'
-    );
+    assert.verifySteps(['updated'], 'text update fires step while fragment is still detached');
 
-    // New-element update: Glimmer inserts the span relative to the comment bounds,
-    // which also moved to the container, so the new element appears in the container.
+    // Rerender while still detached: conditional element appears
     this.rerender({ show: true });
     assert.verifySteps(
       ['extra rendered'],
-      'conditional element step fires in the container after fragment was attached to the DOM'
+      'conditional element step fires while fragment is still detached'
     );
+
+    // Move the fragment's children into the container; after this the fragment is empty
+    // but the rendered nodes (including the reactive text and the conditional span) are
+    // now live children of `container`.
+    container.appendChild(fragment);
+    assert.strictEqual(fragment.childNodes.length, 0, 'fragment is empty after append');
+
+    const p = container.querySelector('#msg');
+    const span = container.querySelector('#extra');
+    assert.ok(p, 'paragraph is present in container');
+    assert.ok(span, 'conditional span is present in container');
   }
 
   @test
