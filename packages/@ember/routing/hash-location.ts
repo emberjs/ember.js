@@ -77,7 +77,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
       outPath = '/';
 
       // Only add the # if the path isn't empty.
-      // We do NOT want `/#` since the ampersand
+      // We do NOT want `/#` since the hash
       // is only included (conventionally) when
       // the location.hash has a value
       if (originalPath) {
