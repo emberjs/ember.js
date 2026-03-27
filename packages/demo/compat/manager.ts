@@ -725,6 +725,10 @@ function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?
   if (raw && raw.__isCurriedComponent) {
     return { raw, resolved: raw };
   }
+  // Don't unwrap fn helper results — they are callable functions, not GXT getters
+  if (raw && raw.__isFnHelper) {
+    return { raw, resolved: raw };
+  }
   const resolved = typeof raw === 'function' ? raw() : raw;
   return { raw, resolved, getter: typeof raw === 'function' ? raw : undefined };
 }
@@ -1919,6 +1923,11 @@ function createRenderContext(
           const initialVal = argVal;
           cell.update(initialVal);
           renderCtxArgCells[key] = { cell, getter };
+          // Register array owner for KVO array mutation tracking (pushObject, shiftObject, etc.)
+          const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
+          if (_regArrOwner && Array.isArray(initialVal)) {
+            _regArrOwner(initialVal, renderContext, key);
+          }
         } catch {
           // Fallback to plain getter
           try {
@@ -2882,6 +2891,191 @@ const $_MANAGERS = {
       return null;
     },
   },
+
+  modifier: {
+    // Cache modifier instances by element+modifier-name to support update lifecycle.
+    // GXT's reactive system re-calls $_maybeModifier on each arg change inside a formula.
+    // The formula pattern is: call destructor() → call fn(element) again.
+    // We intercept this to provide install/update/destroy lifecycle.
+    _cache: new WeakMap<HTMLElement, Map<string, { instance: any; manager: any; ModifierClass: any; pendingDestroy: boolean }>>(),
+
+    canHandle(modifier: any): boolean {
+      if (typeof modifier === 'string') {
+        const owner = (globalThis as any).owner;
+        if (owner && !owner.isDestroyed && !owner.isDestroying) {
+          const factory = owner.factoryFor?.(`modifier:${modifier}`);
+          if (factory) return true;
+        }
+        return false;
+      }
+      // Check if modifier has a registered modifier manager (via setModifierManager)
+      if (modifier !== null && modifier !== undefined) {
+        let pointer = modifier;
+        const visited = new Set();
+        while (pointer && !visited.has(pointer)) {
+          visited.add(pointer);
+          if (globalThis.INTERNAL_MODIFIER_MANAGERS.has(pointer)) return true;
+          try {
+            pointer = Object.getPrototypeOf(pointer);
+          } catch {
+            break;
+          }
+        }
+      }
+      return false;
+    },
+
+    handle(modifier: any, element: HTMLElement, props: any[], hashArgs: any): any {
+      const owner = (globalThis as any).owner;
+      if (!owner) return undefined;
+
+      const self = this as any;
+
+      // Helper to unwrap GXT getter args
+      const unwrapGxtArg = (v: any) => (typeof v === 'function' && !v.prototype) ? v() : v;
+
+      // Build args object
+      const buildArgs = () => {
+        const positional = (props || []).map(unwrapGxtArg);
+        const rawHash = hashArgs ? (typeof hashArgs === 'function' ? hashArgs() : hashArgs) : {};
+        const named: Record<string, any> = {};
+        for (const key of Object.keys(rawHash)) {
+          if (key.startsWith('$_') || key === 'hash') continue;
+          const val = rawHash[key];
+          named[key] = (typeof val === 'function' && !(val as any).__isCurriedComponent) ? (val as any)() : val;
+        }
+        return { positional, named };
+      };
+
+      // Check for cached modifier instance (update path)
+      const modKey = typeof modifier === 'string' ? modifier : (modifier?.name || String(modifier));
+      const elCache = self._cache.get(element);
+      if (elCache) {
+        const cached = elCache.get(modKey);
+        if (cached && cached.pendingDestroy) {
+          // The destructor was called (GXT formula re-eval), but we haven't
+          // actually destroyed yet — this is an update, not a reinstall.
+          cached.pendingDestroy = false;
+          const args = buildArgs();
+          if (cached.manager.updateModifier) {
+            cached.manager.updateModifier(cached.instance, args);
+          }
+          // Return a destructor that marks pending destroy
+          return () => {
+            cached.pendingDestroy = true;
+            // Schedule actual destroy for next microtask — if handle() is called
+            // again before then, we'll intercept it as an update.
+            Promise.resolve().then(() => {
+              if (cached.pendingDestroy) {
+                // Not re-entered — actually destroy
+                if (cached.manager.destroyModifier) {
+                  cached.manager.destroyModifier(cached.instance);
+                }
+                elCache.delete(modKey);
+                if (elCache.size === 0) self._cache.delete(element);
+              }
+            });
+          };
+        }
+      }
+
+      // First time: resolve modifier class and create instance
+
+      // Resolve modifier class from the owner registry if it's a string
+      let ModifierClass: any;
+      if (typeof modifier === 'string') {
+        const factory = owner.factoryFor?.(`modifier:${modifier}`);
+        if (!factory) return undefined;
+        ModifierClass = factory.class;
+      } else {
+        ModifierClass = modifier;
+      }
+
+      // Walk the prototype chain to find the manager factory
+      let managerFactory: any = null;
+      let pointer = ModifierClass;
+      const visited = new Set();
+      while (pointer && !visited.has(pointer)) {
+        visited.add(pointer);
+        const mgr = globalThis.INTERNAL_MODIFIER_MANAGERS.get(pointer);
+        if (mgr) {
+          managerFactory = mgr;
+          break;
+        }
+        try {
+          pointer = Object.getPrototypeOf(pointer);
+        } catch {
+          break;
+        }
+      }
+
+      if (!managerFactory) return undefined;
+
+      // managerFactory can be either a factory function (from setModifierManager)
+      // or a manager instance (from setInternalModifierManager)
+      let manager: any;
+      if (typeof managerFactory === 'function') {
+        manager = managerFactory(owner);
+      } else {
+        manager = managerFactory;
+      }
+
+      if (!manager) return undefined;
+
+      // Validate capabilities - must be from modifierCapabilities()
+      const caps = manager.capabilities;
+      if (caps && !FROM_CAPABILITIES.has(caps)) {
+        const err = new Error(
+          "Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities('3.22')` (imported via `import { capabilities } from '@ember/modifier';`). Received: " +
+          JSON.stringify(caps)
+        );
+        captureRenderError(err);
+        throw err;
+      }
+
+      if (!caps) {
+        const err = new Error(
+          "Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities('3.22')` (imported via `import { capabilities } from '@ember/modifier';`). "
+        );
+        captureRenderError(err);
+        throw err;
+      }
+
+      // Install the modifier immediately.
+      const args = buildArgs();
+      const instance = manager.createModifier(ModifierClass, args);
+      manager.installModifier(instance, element, args);
+
+      // Cache the instance for subsequent update calls
+      let cache = self._cache.get(element);
+      if (!cache) {
+        cache = new Map();
+        self._cache.set(element, cache);
+      }
+      const cached = { instance, manager, ModifierClass, pendingDestroy: false };
+      cache.set(modKey, cached);
+
+      // Return a destructor. GXT calls this before re-evaluating the formula
+      // (for updates) and also during final teardown.
+      return () => {
+        cached.pendingDestroy = true;
+        // Schedule actual destroy — if handle() is called again before the
+        // microtask runs, we'll intercept it as an update.
+        Promise.resolve().then(() => {
+          if (cached.pendingDestroy) {
+            if (manager.destroyModifier) {
+              manager.destroyModifier(instance);
+            }
+            const c = self._cache.get(element);
+            if (c) {
+              c.delete(modKey);
+              if (c.size === 0) self._cache.delete(element);
+            }
+          }
+        });
+      };
+    },
+  },
 };
 
 // =============================================================================
@@ -3591,20 +3785,33 @@ function renderClassicComponent(
   const wrapper = buildWrapperElement(instance, args, componentDef);
   const renderContext = createRenderContext(instance, args, fw, owner);
 
-  // Apply forwarded DOM attributes (splattributes) to the wrapper element
-  // fw[1] contains [attrName, value][] pairs from the invocation site
-  if (wrapper instanceof HTMLElement && fw && Array.isArray(fw[1])) {
-    for (const [key, value] of fw[1]) {
-      const attrValue = typeof value === 'function' ? value() : value;
-      if (attrValue != null && attrValue !== false) {
-        if (key === 'class') {
-          // Append to existing class
-          if (wrapper.className) {
-            wrapper.className = wrapper.className + ' ' + attrValue;
+  // Apply forwarded props and attrs (splattributes) to the wrapper element
+  // fw[0] contains props (class as ["", value], id, etc.)
+  // fw[1] contains attrs (data-*, title, etc.)
+  if (wrapper instanceof HTMLElement && fw) {
+    // Apply props (fw[0]) — class, id, etc.
+    if (Array.isArray(fw[0])) {
+      for (const [key, value] of fw[0]) {
+        const attrValue = typeof value === 'function' ? value() : value;
+        if (attrValue != null && attrValue !== false && attrValue !== undefined) {
+          const attrKey = key === '' ? 'class' : key;
+          if (attrKey === 'class') {
+            if (wrapper.className) {
+              wrapper.className = wrapper.className + ' ' + attrValue;
+            } else {
+              wrapper.className = String(attrValue);
+            }
           } else {
-            wrapper.className = String(attrValue);
+            wrapper.setAttribute(attrKey, attrValue === true ? '' : String(attrValue));
           }
-        } else {
+        }
+      }
+    }
+    // Apply attrs (fw[1]) — data-*, title, etc.
+    if (Array.isArray(fw[1])) {
+      for (const [key, value] of fw[1]) {
+        const attrValue = typeof value === 'function' ? value() : value;
+        if (attrValue != null && attrValue !== false && attrValue !== undefined) {
           wrapper.setAttribute(key, attrValue === true ? '' : String(attrValue));
         }
       }
@@ -3799,7 +4006,9 @@ export function helperCapabilities(v: string, value: any = {}) {
 }
 
 export function modifierCapabilities(_version: string, capabilities?: Record<string, boolean>) {
-  return capabilities || {};
+  const caps = capabilities || {};
+  FROM_CAPABILITIES.add(caps);
+  return caps;
 }
 
 export function componentCapabilities(_version: string, capabilities?: Record<string, boolean>) {
@@ -4049,9 +4258,10 @@ export class CustomModifierManager {
 {
   const gxtManagers = (globalThis as any).$_MANAGERS;
   if (gxtManagers) {
-    // Copy our component and helper handlers onto GXT's original managers object
+    // Copy our component, helper, and modifier handlers onto GXT's original managers object
     gxtManagers.component = $_MANAGERS.component;
     gxtManagers.helper = $_MANAGERS.helper;
+    gxtManagers.modifier = $_MANAGERS.modifier;
   } else {
     // Fallback: set as new if no original exists
     (globalThis as any).$_MANAGERS = $_MANAGERS;

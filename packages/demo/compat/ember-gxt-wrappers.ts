@@ -30,7 +30,7 @@ const g = globalThis as any;
  * Helpers expect resolved values in positional/named args.
  */
 function isGxtGetter(v: any): boolean {
-  return typeof v === 'function' && !v.prototype;
+  return typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell;
 }
 function unwrapArgs(args: any[]): any[] {
   if (!Array.isArray(args)) return [];
@@ -315,8 +315,13 @@ function createEmberMaybeHelper(original: Function) {
                 return result;
               } else {
                 // Check if args actually changed — if not, return cached result
+                // Skip cache check if any positional arg is a function (e.g., fn helper result)
+                // because functions serialize as null, making stale results appear unchanged.
+                const hasFnArg = positional.some((a: any) => typeof a === 'function');
                 let argsSer: string | null = null;
-                try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+                if (!hasFnArg) {
+                  try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+                }
                 if (argsSer !== null && argsSer === cached.lastArgsSer) {
                   // Read cell to maintain tracking
                   if (cached.helperCell) return cached.helperCell.value;

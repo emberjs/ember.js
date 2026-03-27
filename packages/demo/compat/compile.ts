@@ -6,6 +6,10 @@
  * for template compilation instead of Glimmer VM.
  */
 
+// Import Ember debug utilities for attrs assertion/deprecation
+import { assert as emberAssert } from '@ember/debug';
+import { deprecate as emberDeprecate } from '@ember/debug';
+
 // Import the GXT runtime compiler
 // @ts-ignore - direct path to avoid GXT Babel plugin
 import {
@@ -92,30 +96,51 @@ if (!(globalThis as any).__gxtSetIsRendering) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// Patch GXT's HTMLBrowserDOMApi.attr() to handle undefined values.
+// GXT's native implementation: attr(t,e,n){t.setAttribute(e,null===n?"":n)}
+// This only handles null -> "" but not undefined. In Ember, when a bound attribute
+// value becomes undefined, the attribute should be REMOVED from the element.
+// Without this patch, undefined becomes the string "undefined" on the DOM.
+if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
+  const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
+  _GXT_HTMLBrowserDOMApi.prototype.attr = function(element: any, name: string, value: any) {
+    if (value === undefined || value === false) {
+      element.removeAttribute(name);
+    } else {
+      origAttr.call(this, element, name, value);
+    }
+  };
+}
+
 // Override GXT's $__fn to support mut cells.
 // GXT's $__fn unwraps function args by calling them with no args, which breaks
 // mut cells (calling mutCell() returns the current value instead of the setter).
+// Also marks the returned function with __isFnHelper so the compat layer can
+// distinguish fn-helper results from GXT reactive getters (both are arrow fns).
 {
   const g = globalThis as any;
   const originalFn = g.$__fn;
   if (originalFn) {
     g.$__fn = function $__fn_ember(fn: any, ...partialArgs: any[]) {
+      let result: any;
       // If the first arg is a mut cell, don't unwrap it
       if (fn && fn.__isMutCell) {
-        return (...callArgs: any[]) => {
+        result = (...callArgs: any[]) => {
           const resolvedArgs = partialArgs.map((a: any) =>
             typeof a === 'function' && !a.__isMutCell ? a() : a
           );
           return fn(...resolvedArgs, ...callArgs);
         };
+        result.__isFnHelper = true;
+        return result;
       }
       // Also check if the first arg is a function that, when called, returns a mut cell
       // GXT wraps helper results in getters
       if (typeof fn === 'function' && !fn.__isMutCell) {
         try {
-          const result = fn();
-          if (result && result.__isMutCell) {
-            return (...callArgs: any[]) => {
+          const fnResult = fn();
+          if (fnResult && fnResult.__isMutCell) {
+            result = (...callArgs: any[]) => {
               const resolvedArgs = partialArgs.map((a: any) =>
                 typeof a === 'function' && !a.__isMutCell ? a() : a
               );
@@ -123,10 +148,28 @@ installEmberWrappers();
               const currentMut = fn();
               return currentMut(...resolvedArgs, ...callArgs);
             };
+            result.__isFnHelper = true;
+            return result;
           }
         } catch { /* ignore */ }
       }
-      return originalFn(fn, ...partialArgs);
+      // Create a partially-applied function that resolves all getters at call time.
+      // The fn arg may be a getter (arrow fn wrapping this.X) — we wrapped it
+      // in compile.ts to support reactive function swaps.
+      // Partial args are also getters from GXT for reactive arg updates.
+      const isArgGetter = (v: any) => typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell;
+      result = function $__fn_partial(...callArgs: any[]) {
+        // Resolve fn: if it's a getter (arrow fn), call to get the actual function
+        const resolvedFn = isArgGetter(fn) ? fn() : fn;
+        // Resolve partial args: if they're getters (arrow fns), call them
+        const resolvedPartials = partialArgs.map((a: any) => isArgGetter(a) ? a() : a);
+        if (typeof resolvedFn !== 'function') {
+          return resolvedFn;
+        }
+        return resolvedFn(...resolvedPartials, ...callArgs);
+      };
+      result.__isFnHelper = true;
+      return result;
     };
   }
 }
@@ -1166,6 +1209,72 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
   ): any {
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
 
+    // Handle non-string tags that resolve to CurriedComponent or other Ember components
+    // This happens with <fb.baz> where fb is a block param yielding a component hash
+    if (resolvedTag && typeof resolvedTag !== 'string') {
+      const managers = g.$_MANAGERS;
+      if (resolvedTag.__isCurriedComponent || resolvedTag.__stringComponentName) {
+        if (managers?.component?.canHandle?.(resolvedTag)) {
+          const $PROPS = Symbol.for('gxt-props');
+          const $SLOTS = Symbol.for('gxt-slots');
+          // Build fw from tagProps (GXT format [props, attrs, events, parentFw?])
+          const fwProps: [string, any][] = [];
+          const fwAttrs: [string, any][] = [];
+          let events: [string, any][] = [];
+          const namedArgs: any = {};
+
+          if (tagProps && tagProps !== g.$_edp) {
+            if (Array.isArray(tagProps[0])) {
+              for (const entry of tagProps[0]) {
+                const key = entry[0] === '' ? 'class' : entry[0];
+                if (key === 'class') {
+                  const val = entry[1];
+                  fwProps.push([entry[0], typeof val === 'function' ? () => { const v = val(); return (v == null || v === false) ? '' : v; } : val]);
+                } else {
+                  fwProps.push(entry);
+                }
+              }
+            }
+            if (Array.isArray(tagProps[1])) {
+              for (const [key, value] of tagProps[1]) {
+                if (key.startsWith('@')) {
+                  const argName = key.slice(1);
+                  Object.defineProperty(namedArgs, argName, {
+                    get: () => typeof value === 'function' ? value() : value,
+                    enumerable: true, configurable: true,
+                  });
+                } else {
+                  fwAttrs.push([key, value]);
+                }
+              }
+            }
+            if (Array.isArray(tagProps[2])) events = tagProps[2];
+            // Merge parent fw
+            const parentFw = tagProps[3];
+            if (parentFw && Array.isArray(parentFw)) {
+              if (Array.isArray(parentFw[0])) for (const e of parentFw[0]) fwProps.push(e);
+              if (Array.isArray(parentFw[1])) for (const e of parentFw[1]) fwAttrs.push(e);
+              if (Array.isArray(parentFw[2])) for (const e of parentFw[2]) events.push(e);
+            }
+          }
+
+          const fw = [fwProps, fwAttrs, events];
+
+          // Extract slots from children
+          if (children && children.length > 0) {
+            const defaultSlotFn = (slotCtx: any, ...params: any[]) => {
+              return children.map((child: any) => typeof child === 'function' ? child() : child);
+            };
+            namedArgs.$slots = { default: defaultSlotFn };
+          }
+
+          const handleResult = managers.component.handle(resolvedTag, namedArgs, fw, ctx);
+          if (typeof handleResult === 'function') return handleResult();
+          return handleResult;
+        }
+      }
+    }
+
     // Ensure ctx has a TRUTHY GXT component ID for addToTree parent tracking.
     // GXT's tree.ts checks `if (!PARENT_ID)` which treats 0 as falsy.
     if (ctx && typeof ctx === 'object' && COMPONENT_ID_PROPERTY) {
@@ -1230,14 +1339,22 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             dynArgs.$slots = { default: defaultSlotFn };
           }
 
-          // Build fw (forwarding) structure
-          const domAttrs: [string, any][] = [];
+          // Build fw (forwarding) structure — separate props (fw[0]) from attrs (fw[1])
+          const dynFwProps: [string, any][] = [];
+          const dynFwAttrs: [string, any][] = [];
           let events: [string, any][] = [];
           if (tagProps && tagProps !== g.$_edp) {
+            // Props (position 0) — class, id, etc.
+            if (Array.isArray(tagProps[0])) {
+              for (const entry of tagProps[0]) {
+                dynFwProps.push(entry);
+              }
+            }
+            // Attrs (position 1) — data-*, title, etc.
             if (Array.isArray(tagProps[1])) {
               for (const [key, value] of tagProps[1]) {
                 if (!key.startsWith('@')) {
-                  domAttrs.push([key, value]);
+                  dynFwAttrs.push([key, value]);
                 }
               }
             }
@@ -1245,8 +1362,21 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             if (Array.isArray(tagProps[2]) && blockChildren.length === 0) {
               events = tagProps[2];
             }
+            // Merge parent fw if present
+            const parentFw = tagProps[3];
+            if (parentFw && Array.isArray(parentFw)) {
+              if (Array.isArray(parentFw[0])) {
+                for (const entry of parentFw[0]) dynFwProps.push(entry);
+              }
+              if (Array.isArray(parentFw[1])) {
+                for (const entry of parentFw[1]) dynFwAttrs.push(entry);
+              }
+              if (Array.isArray(parentFw[2])) {
+                for (const entry of parentFw[2]) events.push(entry);
+              }
+            }
           }
-          const fw = [[], domAttrs, events];
+          const fw = [dynFwProps, dynFwAttrs, events];
 
           // Render the dynamic component
           const managers = (globalThis as any).$_MANAGERS;
@@ -1310,22 +1440,38 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             dynArgs.$slots = { default: defaultSlotFn };
           }
 
-          // Build fw (forwarding) structure
-          const domAttrs: [string, any][] = [];
+          // Build fw (forwarding) structure — separate props (fw[0]) from attrs (fw[1])
+          const thisFwProps: [string, any][] = [];
+          const thisFwAttrs: [string, any][] = [];
           let events: [string, any][] = [];
           if (tagProps && tagProps !== g.$_edp) {
+            if (Array.isArray(tagProps[0])) {
+              for (const entry of tagProps[0]) thisFwProps.push(entry);
+            }
             if (Array.isArray(tagProps[1])) {
               for (const [key, value] of tagProps[1]) {
                 if (!key.startsWith('@')) {
-                  domAttrs.push([key, value]);
+                  thisFwAttrs.push([key, value]);
                 }
               }
             }
             if (Array.isArray(tagProps[2]) && thisDynChildren.length === 0) {
               events = tagProps[2];
             }
+            const parentFw = tagProps[3];
+            if (parentFw && Array.isArray(parentFw)) {
+              if (Array.isArray(parentFw[0])) {
+                for (const entry of parentFw[0]) thisFwProps.push(entry);
+              }
+              if (Array.isArray(parentFw[1])) {
+                for (const entry of parentFw[1]) thisFwAttrs.push(entry);
+              }
+              if (Array.isArray(parentFw[2])) {
+                for (const entry of parentFw[2]) events.push(entry);
+              }
+            }
           }
-          const fw = [[], domAttrs, events];
+          const fw = [thisFwProps, thisFwAttrs, events];
 
           // Render the dynamic component
           const managers = (globalThis as any).$_MANAGERS;
@@ -1545,7 +1691,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // IMPORTANT: Keep args LAZY - don't evaluate functions yet!
         // Block params from parent slots won't be available until slot.default runs
         let args: any = {};
-        const domAttrs: [string, any][] = []; // Attributes to forward via ...attributes
+        // GXT FwType is [TagProp[], TagAttr[], TagEvent[]]
+        // fwProps = position 0: HTML properties (class as ["", value], id, etc.)
+        // fwAttrs = position 1: DOM attributes (data-*, title, etc.)
+        const fwProps: [string, any][] = []; // Props to forward via ...attributes (fw[0])
+        const fwAttrs: [string, any][] = []; // Attrs to forward via ...attributes (fw[1])
 
         if (tagProps && tagProps !== g.$_edp) {
           // tagProps is [props[], attrs[], events[], fw?]
@@ -1560,8 +1710,18 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             for (const [key, value] of props) {
               // Empty key means class attribute in GXT's format
               const attrKey = key === '' ? 'class' : key;
-              // Collect for forwarding via ...attributes
-              domAttrs.push([attrKey, value]);
+              // Collect for forwarding via ...attributes — keep in GXT's prop format
+              // Class uses empty key "" in GXT's prop format
+              // For class values, wrap to return "" instead of undefined/null/false
+              // because GXT joins class values with " " and undefined becomes "undefined"
+              if (key === '' || attrKey === 'class') {
+                const wrappedValue = typeof value === 'function'
+                  ? () => { const v = value(); return (v == null || v === false) ? '' : v; }
+                  : (value == null || value === false) ? '' : value;
+                fwProps.push([key, wrappedValue]);
+              } else {
+                fwProps.push([key, value]);
+              }
               // Also add class/classNames to args so wrapper building and sync can access them
               if (attrKey === 'class' || attrKey === 'classNames') {
                 Object.defineProperty(args, attrKey, {
@@ -1597,8 +1757,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   configurable: true,
                 });
               } else {
-                // HTML attribute (like data-test) - collect for forwarding
-                domAttrs.push([key, value]);
+                // HTML attribute (like data-test, title) - collect for forwarding as attrs (fw[1])
+                fwAttrs.push([key, value]);
                 // Also keep in args for direct access as lazy getter
                 Object.defineProperty(args, key, {
                   get: () => typeof value === 'function' ? value() : value,
@@ -1608,18 +1768,51 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               }
             }
           }
+
+          // Merge parent fw (tagProps[3]) if present — this handles ...attributes forwarding
+          // through component chains (e.g., <XOuter data-foo> where XOuter template has
+          // <XInner ...attributes> — the data-foo must reach XInner's ...attributes)
+          const parentFw = tagProps[3];
+          if (parentFw && Array.isArray(parentFw)) {
+            // Merge parent props into fwProps
+            if (Array.isArray(parentFw[0])) {
+              for (const entry of parentFw[0]) {
+                fwProps.push(entry);
+              }
+            }
+            // Merge parent attrs into fwAttrs
+            if (Array.isArray(parentFw[1])) {
+              for (const entry of parentFw[1]) {
+                fwAttrs.push(entry);
+              }
+            }
+            // Events from parent are merged below
+          }
         }
 
         // Build fw (forwarding) structure for the component manager
-        // fw[0] = domAttrs (for ...attributes)
-        // fw[1] = slots (for {{yield}})
+        // fw[0] = props (class, id — for GXT's prop application on ...attributes elements)
+        // fw[1] = attrs (data-*, title — for GXT's attr application on ...attributes elements)
         // fw[2] = events/modifiers (to forward to elements with ...attributes)
         const slots: Record<string, any> = {};
 
         // Collect events/modifiers from tagProps[2] for forwarding
         let events: [string, any][] = [];
         if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
-          events = tagProps[2];
+          events = [...tagProps[2]];
+          // Also merge parent events if present
+          const parentFw = tagProps[3];
+          if (parentFw && Array.isArray(parentFw) && Array.isArray(parentFw[2])) {
+            for (const entry of parentFw[2]) {
+              events.push(entry);
+            }
+          }
+        } else {
+          // Even without own events, merge parent events if present
+          const parentFw = tagProps?.[3];
+          if (parentFw && Array.isArray(parentFw) && Array.isArray(parentFw[2])) {
+            events = [...parentFw[2]];
+          }
         }
         // Helper to detect if children use block params
         // Block params are accessed via $_bp0, $_bp1 getters on Object.prototype
@@ -1814,9 +2007,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
 
         // GXT FwType is [TagProp[], TagAttr[], TagEvent[]] - all arrays
-        // We pass domAttrs as attrs (position 1), events as events (position 2)
-        // Slots are passed separately via args.$slots
-        const fw = [[], domAttrs, events];  // [props, attrs, events]
+        // Props in position 0 (class, id), attrs in position 1 (data-*, title),
+        // events in position 2. Slots are passed separately via args.$slots.
+        const fw = [fwProps, fwAttrs, events];  // [props, attrs, events]
 
         // Pass slots via args so manager.ts can access them.
         // Set on both string key and Symbol key to survive GXT's slot processing.
@@ -1862,67 +2055,52 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // GXT handles ...attributes internally by:
     // 1. Applying modifiers from $fw to elements with ...attributes
     // 2. Passing $fw as tagProps[3] for reference
-    // We should NOT apply modifiers again here - GXT already handles them.
-    // We only need to apply forwarded DOM attributes (fw[0]) that GXT doesn't handle.
+    // GXT handles ...attributes internally via tagProps[3] ($fw):
+    // - fw[0] = props (class, id, etc.)
+    // - fw[1] = attrs (data-*, title, etc.)
+    // - fw[2] = events (event handlers/modifiers)
+    // The HTMLBrowserDOMApi.attr() patch handles undefined/false values
+    // by removing the attribute instead of setting it to "undefined".
+    // Do NOT re-apply fw attributes here — GXT already applies them.
     // GXT order: tag, tagProps, ctx, children
-    const result = originalTag(tag, tagProps, ctx, children);
-
-    // Apply forwarded DOM attributes from $fw if present
-    // $fw is passed as tagProps[3] and contains [domAttrs, slots, events/modifiers]
-    // NOTE: We don't apply modifiers (fw[2]) here - GXT handles those internally
-    const fw = tagProps?.[3];
-
-    if (fw && Array.isArray(fw)) {
-      const fwAttrs = fw[0];
-
-      // Only apply DOM attributes (fw[0]) - GXT handles modifiers (fw[2]) internally
-      if (result && typeof result === 'object' && Array.isArray(fwAttrs) && fwAttrs.length > 0) {
-        const applyAttrsToElement = (el: Element) => {
-          for (const [key, value] of fwAttrs) {
-            const attrValue = typeof value === 'function' ? value() : value;
-            if (key === 'class') {
-              // Append to existing class rather than replacing
-              if (el.className) {
-                el.className = el.className + ' ' + attrValue;
-              } else {
-                el.className = attrValue;
-              }
-            } else {
-              el.setAttribute(key, String(attrValue));
-            }
-          }
-        };
-
-        // Check if result is a DOM element directly
-        if (result instanceof Element) {
-          applyAttrsToElement(result);
-        } else {
-          // Check for GXT context object with symbol-keyed nodes
-          const symbols = Object.getOwnPropertySymbols(result);
-          for (const sym of symbols) {
-            const nodes = result[sym];
-            if (Array.isArray(nodes)) {
-              for (const node of nodes) {
-                if (node instanceof Element) {
-                  applyAttrsToElement(node);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return result;
+    return originalTag(tag, tagProps, ctx, children);
   };
 
   // Mark as wrapped to prevent re-wrapping
   g.$_tag.__compileWrapped = true;
 }
 
-// Note: $_dc override not needed currently. Dynamic component block forms
-// ({{#component this.xxx}}) are left untransformed for GXT to handle via
-// its component keyword support.
+// Override $_dc to handle CurriedComponent and other Ember components via
+// dynamic component invocations (e.g., <this.$_bp0.baz class="custom-class">).
+// GXT's native $_dc doesn't call $_c for non-function components, so
+// CurriedComponents (which are objects) bypass the Ember component manager.
+{
+  const g = globalThis as any;
+  if (g.$_dc && !g.$_dc.__emberWrapped) {
+    const originalDc = g.$_dc;
+
+    g.$_dc = function $_dc_ember(componentGetter: any, args: any, ctx: any) {
+      // GXT's $_dc passes raw tagProps as args to the original $_c (R).
+      // R reads args[$PROPS] to get the fw, but raw tagProps don't have $PROPS.
+      // Fix: inject $PROPS directly on the args object so R can find it.
+      const $PROPS = Symbol.for('gxt-props');
+
+      if (args && typeof args === 'object' && !($PROPS in args)) {
+        try {
+          Object.defineProperty(args, $PROPS, {
+            value: args,
+            enumerable: false,
+            configurable: true,
+            writable: true,
+          });
+        } catch { /* frozen object */ }
+      }
+
+      return originalDc(componentGetter, args, ctx);
+    };
+    g.$_dc.__emberWrapped = true;
+  }
+}
 
 /**
  * Transform capitalized component names to kebab-case for runtime resolution.
@@ -2649,6 +2827,59 @@ function isInsideHtmlAttributeValue(str: string, offset: number): boolean {
 }
 
 /**
+ * Check if a position in a template string is inside an HTML element's opening tag,
+ * but NOT inside an attribute value. This detects element modifiers like
+ * `<h1 {{foo-bar}}>` where the mustache is a modifier, not a component invocation.
+ */
+function isElementModifier(str: string, offset: number): boolean {
+  // Scan backwards from the offset to find the nearest '<' or '>'
+  let angleBracketPos = -1;
+  for (let i = offset - 1; i >= 0; i--) {
+    if (str[i] === '>') {
+      // We hit a closing '>' before an opening '<',
+      // so we're NOT inside an element's opening tag
+      return false;
+    }
+    if (str[i] === '<') {
+      angleBracketPos = i;
+      break;
+    }
+  }
+
+  if (angleBracketPos === -1) {
+    return false;
+  }
+
+  // Check that what follows '<' is a tag name (not another '<' or '/')
+  // This ensures we're in an element like <h1 ...> and not in text content
+  const afterAngle = str.substring(angleBracketPos + 1, offset).trim();
+  // If the content starts with '/' it's a closing tag, not relevant
+  if (afterAngle.startsWith('/')) return false;
+  // Must start with a valid tag name character
+  if (!/^[a-zA-Z]/.test(afterAngle)) return false;
+
+  // Scan from '<' to offset, tracking quote state to ensure we're not in a quoted attribute
+  let inQuote: string | null = null;
+  for (let i = angleBracketPos; i < offset; i++) {
+    const ch = str[i];
+    if (inQuote === null) {
+      if (ch === '"' || ch === "'") {
+        inQuote = ch;
+      }
+    } else if (ch === inQuote) {
+      inQuote = null;
+    }
+  }
+
+  // If we're inside a quote, it's an attribute value, not a modifier
+  if (inQuote !== null) return false;
+
+  // We're inside an element's opening tag and not in an attribute value:
+  // this mustache is an element modifier
+  return true;
+}
+
+/**
  * Transform curly block component syntax to angle-bracket syntax
  * - {{#foo-bar}}content{{/foo-bar}} → <FooBar>content</FooBar>
  * - {{#foo-bar arg=val}}content{{/foo-bar}} → <FooBar @arg={{val}}>content</FooBar>
@@ -2943,6 +3174,11 @@ function transformCurlyBlockComponents(code: string): string {
     if (isInsideHtmlAttributeValue(result, offset)) {
       return match; // Leave it as-is; it's a helper call in attribute context
     }
+    // Check if this mustache is an element modifier (e.g. <h1 {{foo-bar}}>)
+    // Element modifiers should be left as-is for GXT's $_maybeModifier to handle
+    if (isElementModifier(result, offset)) {
+      return match; // Leave it as-is; it's an element modifier
+    }
     const pascalName = toPascalCase(name);
     const transformedAttrs = transformAttrs(attrs);
     return `<${pascalName}${transformedAttrs} />`;
@@ -2970,8 +3206,88 @@ export function precompileTemplate(templateString: string, options?: {
     return cached;
   }
 
+  // Check for <foo.bar /> — dotted paths used as tag names require
+  // the head (foo) to be in scope. In classic templates (non-strict), only
+  // `this` is implicitly in scope, so <foo.bar> is invalid unless foo is
+  // a block param. Check if the template provides any block params that
+  // could bring the head into scope.
+  {
+    // Collect all block param names from `as |name1 name2|` patterns
+    const blockParamNames = new Set<string>();
+    const blockParamPattern = /as\s+\|([^|]+)\|/g;
+    let bpMatch;
+    while ((bpMatch = blockParamPattern.exec(templateString)) !== null) {
+      const params = bpMatch[1].trim().split(/\s+/);
+      for (const p of params) {
+        if (p) blockParamNames.add(p);
+      }
+    }
+
+    // Match <lowercase.Something> or <lowercase.something> patterns
+    // but NOT <this.something> (which is valid)
+    const dottedTagPattern = /<([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9]*)\s/g;
+    let dottedMatch;
+    while ((dottedMatch = dottedTagPattern.exec(templateString)) !== null) {
+      const head = dottedMatch[1];
+      if (head !== 'this' && !blockParamNames.has(head)) {
+        throw new Error(
+          `Error: You used ${head}.${dottedMatch[2]} as a tag name, but ${head} is not in scope`
+        );
+      }
+    }
+  }
+
+  // Check for {{attrs.X}} (assert) and {{this.attrs.X}} (deprecation)
+  // This mirrors the Glimmer AST plugin assert-against-attrs.ts
+  {
+    // Check for {{attrs.X}} - this should trigger an assert (throw)
+    const attrsPattern = /\{\{attrs\.([a-zA-Z0-9_]+)/g;
+    let attrsMatch;
+    while ((attrsMatch = attrsPattern.exec(templateString)) !== null) {
+      const propName = attrsMatch[1];
+      // Calculate location: column points to 'attrs' (after '{{'), so add 2
+      const beforeMatch = templateString.slice(0, attrsMatch.index);
+      const lines = beforeMatch.split('\n');
+      const line = lines.length;
+      const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
+      const locationDisplay = `(L${line}:C${col}) `;
+      const message = `Using {{attrs}} to reference named arguments is not supported. {{attrs.${propName}}} should be updated to {{@${propName}}}. ${locationDisplay}`;
+      emberAssert(message, false);
+    }
+
+    // Check for {{this.attrs.X}} - this should trigger a deprecation
+    const thisAttrsPattern = /\{\{this\.attrs\.([a-zA-Z0-9_]+)/g;
+    let thisAttrsMatch;
+    while ((thisAttrsMatch = thisAttrsPattern.exec(templateString)) !== null) {
+      const propName = thisAttrsMatch[1];
+      // Calculate location: column points to 'this' (after '{{'), so add 2
+      const beforeMatch = templateString.slice(0, thisAttrsMatch.index);
+      const lines = beforeMatch.split('\n');
+      const line = lines.length;
+      const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
+      const locationDisplay = `(L${line}:C${col}) `;
+      const message = `Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.${propName}}} should be updated to {{@${propName}}}. ${locationDisplay}`;
+      emberDeprecate(message, false, {
+        id: 'attrs-arg-access',
+        url: 'https://deprecations.emberjs.com/v3.x/#toc_attrs-arg-access',
+        until: '6.0.0',
+        for: 'ember-source',
+        since: {
+          available: '3.26.0',
+          enabled: '3.26.0',
+        },
+      });
+    }
+  }
+
   // Transform the template
   let transformedTemplate = templateString;
+
+  // Transform {{this.attrs.X}} to {{@X}} (after deprecation was fired above)
+  // This mirrors the Glimmer AST plugin behavior
+  if (/\{\{this\.attrs\./.test(transformedTemplate)) {
+    transformedTemplate = transformedTemplate.replace(/this\.attrs\.([a-zA-Z0-9_]+)/g, '@$1');
+  }
 
   // Strip {{mount ...}} — GXT doesn't support Ember engines.
   // Without this, the mount keyword triggers infinite resolution loops.
@@ -3120,13 +3436,28 @@ export function precompileTemplate(templateString: string, options?: {
   // Transform has-block and has-block-params helpers to global function calls
   // (has-block) -> (this.$_hasBlock)
   // (has-block "inverse") -> (this.$_hasBlock "inverse")
+  // In attribute contexts (e.g., name={{(has-block)}}), use (if ...) to produce strings
+  // because GXT drops attributes with boolean false values.
   if (/\(has-block/.test(transformedTemplate)) {
+    // First transform has-block-params
     transformedTemplate = transformedTemplate.replace(/\(has-block-params(?:\s+"([^"]+)")?\)/g, (match, blockName) => {
       return blockName ? `(this.$_hasBlockParams "${blockName}")` : '(this.$_hasBlockParams)';
     });
+    // Then transform has-block
     transformedTemplate = transformedTemplate.replace(/\(has-block(?:\s+"([^"]+)")?\)/g, (match, blockName) => {
       return blockName ? `(this.$_hasBlock "${blockName}")` : '(this.$_hasBlock)';
     });
+
+    // When (has-block) or (has-block-params) is used in attribute position like
+    // name={{(has-block)}} -> name={{if (this.$_hasBlock) "true" "false"}}
+    // This ensures GXT produces string attribute values instead of booleans
+    // which GXT would strip (false -> no attribute).
+    transformedTemplate = transformedTemplate.replace(
+      /=\{\{(\(this\.\$_hasBlock(?:Params)?(?:\s+"[^"]*")?\))\}\}/g,
+      (match, subexpr) => {
+        return `={{if ${subexpr} "true" "false"}}`;
+      }
+    );
   }
 
   // Compile using GXT runtime compiler
@@ -3167,6 +3498,17 @@ export function precompileTemplate(templateString: string, options?: {
         (match, getter, propName) => {
           return `$_if(globalThis.__gxtGetCellOrFormula(this, '${propName}'),`;
         }
+      );
+    }
+    // Wrap the first argument of $__fn in a getter for reactivity.
+    // GXT compiles (fn this.X ...) as $__fn(this.X, ...) — passing the resolved
+    // function directly. This prevents detecting when the function changes.
+    // We transform to $__fn(() => this.X, ...) so our $__fn_ember can resolve
+    // it lazily at call time, supporting function swaps via set().
+    if (modifiedCode.includes('$__fn(')) {
+      modifiedCode = modifiedCode.replace(
+        /\$__fn\((this\.[a-zA-Z_$][a-zA-Z0-9_$.?]*)\s*,/g,
+        (_match, expr) => `$__fn(() => ${expr},`
       );
     }
     compilationResult.code = modifiedCode;
@@ -3656,7 +3998,6 @@ export function precompileTemplate(templateString: string, options?: {
           g.$slots = context.$slots || context[_SLOTS_SYM] || {};
           g.$fw = context.$fw || [[], [], []];
 
-
           // Initialize GXT context symbols on the render context if not present
           // GXT requires these for proper parent/child tracking
           // Use the actual symbols exported from GXT
@@ -3840,7 +4181,7 @@ export function precompileTemplate(templateString: string, options?: {
           g.$fw = prevFw;
 
           // Rethrow assertion errors so they propagate to test harnesses
-          if (err && (err.message?.includes('Assertion Failed') || err.message?.includes('Could not find'))) {
+          if (err && (err.message?.includes('Assertion Failed') || err.message?.includes('Could not find') || err.message?.includes('Custom modifier managers must have'))) {
             throw err;
           }
           // Swallow other render errors gracefully
