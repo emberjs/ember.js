@@ -4,7 +4,7 @@ import { getAdapter, setAdapter } from '../lib/test/adapter';
 import EmberApplication from '@ember/application';
 import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
 
-let App, appBooted, helperContainer;
+let App, appBooted;
 
 function registerHelper() {
   Test.registerHelper('boot', function (app) {
@@ -22,13 +22,11 @@ const originalAdapter = getAdapter();
 
 function setupApp() {
   appBooted = false;
-  helperContainer = {};
 
   run(function () {
     App = EmberApplication.create({
       Resolver: ModuleBasedTestResolver,
     });
-    App.injectTestHelpers(helperContainer);
   });
 }
 
@@ -36,7 +34,6 @@ function destroyApp() {
   if (App) {
     run(App, 'destroy');
     App = null;
-    helperContainer = null;
   }
 }
 
@@ -55,7 +52,6 @@ moduleFor(
       setupApp();
 
       assert.ok(App.testHelpers.boot);
-      assert.ok(helperContainer.boot);
     }
 
     ['@test Helper is ran when called'](assert) {
@@ -80,7 +76,6 @@ moduleFor(
       setupApp();
 
       assert.ok(App.testHelpers.boot);
-      assert.ok(helperContainer.boot);
 
       unregisterHelper();
 
@@ -90,10 +85,6 @@ moduleFor(
       assert.ok(
         !App.testHelpers.boot,
         'once unregistered the helper is not added to App.testHelpers'
-      );
-      assert.ok(
-        !helperContainer.boot,
-        'once unregistered the helper is not added to the helperContainer'
       );
     }
   }

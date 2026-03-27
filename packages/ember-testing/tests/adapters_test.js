@@ -50,7 +50,6 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
     setDebugFunction('debug', originalDebug);
     if (App) {
       run(App, App.destroy);
-      App.removeTestHelpers();
       App = null;
     }
 
