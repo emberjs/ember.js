@@ -1,8 +1,8 @@
 import { next, run } from '@ember/runloop';
 import { setOnerror } from '@ember/-internals/error-handling';
-import Test from '../lib/test';
 import Adapter from '../lib/adapters/adapter';
 import QUnitAdapter from '../lib/adapters/qunit';
+import { getAdapter, setAdapter } from '../lib/test/adapter';
 import EmberApplication from '@ember/application';
 import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
@@ -38,7 +38,7 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
   constructor() {
     setDebugFunction('debug', noop);
     super();
-    originalAdapter = Test.adapter;
+    originalAdapter = getAdapter();
     originalQUnit = QUnit;
     originalWindowOnerror = window.onerror;
     originalWindowUnhandledRejection = window.onunhandledrejection;
@@ -55,7 +55,7 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
       App = null;
     }
 
-    Test.adapter = originalAdapter;
+    setAdapter(originalAdapter);
     window.QUnit = originalQUnit;
     window.onerror = originalWindowOnerror;
     setOnerror(undefined);
@@ -84,16 +84,16 @@ moduleFor(
         App = EmberApplication.create({
           Resolver: ModuleBasedTestResolver,
         });
-        Test.adapter = CustomAdapter.create();
+        setAdapter(CustomAdapter.create());
       });
 
-      Test.adapter.asyncStart();
+      getAdapter().asyncStart();
     }
 
     ['@test QUnitAdapter is used by default (if QUnit is available)'](assert) {
       assert.expect(1);
 
-      Test.adapter = null;
+      setAdapter(null);
 
       run(function () {
         App = EmberApplication.create({
@@ -101,7 +101,7 @@ moduleFor(
         });
       });
 
-      assert.ok(Test.adapter instanceof QUnitAdapter);
+      assert.ok(getAdapter() instanceof QUnitAdapter);
     }
 
     ['@test Adapter is used by default (if QUnit is not available)'](assert) {
@@ -109,7 +109,7 @@ moduleFor(
 
       delete window.QUnit;
 
-      Test.adapter = null;
+      setAdapter(null);
 
       run(function () {
         App = EmberApplication.create({
@@ -117,19 +117,22 @@ moduleFor(
         });
       });
 
-      assert.ok(Test.adapter instanceof Adapter);
-      assert.ok(!(Test.adapter instanceof QUnitAdapter));
+      let adapter = getAdapter();
+      assert.ok(adapter instanceof Adapter);
+      assert.ok(!(adapter instanceof QUnitAdapter));
     }
 
-    ['@test With Ember.Test.adapter set, errors in synchronous Ember.run are bubbled out'](assert) {
+    ['@test With adapter set, errors in synchronous Ember.run are bubbled out'](assert) {
       let thrown = new Error('Boom!');
 
       let caughtInAdapter, caughtInCatch;
-      Test.adapter = QUnitAdapter.create({
-        exception(error) {
-          caughtInAdapter = error;
-        },
-      });
+      setAdapter(
+        QUnitAdapter.create({
+          exception(error) {
+            caughtInAdapter = error;
+          },
+        })
+      );
 
       try {
         run(() => {
@@ -152,11 +155,11 @@ moduleFor(
     ) {
       assert.expect(2);
 
-      Test.adapter = {
+      setAdapter({
         exception() {
           assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
         },
-      };
+      });
 
       setOnerror(function (error) {
         assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
@@ -171,11 +174,11 @@ moduleFor(
     ) {
       assert.expect(2);
 
-      Test.adapter = {
+      setAdapter({
         exception() {
           assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
         },
-      };
+      });
 
       setOnerror(function () {
         assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
@@ -190,11 +193,11 @@ moduleFor(
       let done = assert.async();
 
       let caughtInAdapter, caughtInCatch, caughtByWindowOnerror;
-      Test.adapter = {
+      setAdapter({
         exception(error) {
           caughtInAdapter = error;
         },
-      };
+      });
 
       window.onerror = function (message) {
         caughtByWindowOnerror = message;
@@ -236,11 +239,11 @@ moduleFor(
       assert.expect(1);
       let done = assert.async();
 
-      Test.adapter = {
+      setAdapter({
         exception() {
           assert.notOk(true, 'Adapter.exception is not called for errors thrown in next');
         },
-      };
+      });
 
       setOnerror(function () {
         assert.ok(true, 'onerror is invoked for errors thrown in next/later');
@@ -263,9 +266,11 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(1);
 
       let thrown = new Error('the error');
-      Test.adapter = QUnitAdapter.create({
-        exception: undefined,
-      });
+      setAdapter(
+        QUnitAdapter.create({
+          exception: undefined,
+        })
+      );
 
       // prevent QUnit handler from failing test
       QUnit.onUncaughtException = () => {};
@@ -296,9 +301,11 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(1);
 
       let thrown = new Error('the error');
-      Test.adapter = QUnitAdapter.create({
-        exception: undefined,
-      });
+      setAdapter(
+        QUnitAdapter.create({
+          exception: undefined,
+        })
+      );
 
       setOnerror(function (error) {
         assert.pushResult({
@@ -322,15 +329,17 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       console.error = () => {}; // eslint-disable-line no-console
       let thrown = new Error('the error');
-      Test.adapter = QUnitAdapter.create({
-        exception(error) {
-          assert.strictEqual(
-            error,
-            thrown,
-            'Adapter.exception is called for errors thrown in RSVP promises'
-          );
-        },
-      });
+      setAdapter(
+        QUnitAdapter.create({
+          exception(error) {
+            assert.strictEqual(
+              error,
+              thrown,
+              'Adapter.exception is called for errors thrown in RSVP promises'
+            );
+          },
+        })
+      );
 
       generatePromise(thrown);
 
@@ -343,18 +352,20 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(1);
 
       let thrown = new Error('the error');
-      Test.adapter = QUnitAdapter.create({
-        exception(error) {
-          assert.strictEqual(
-            error,
-            thrown,
-            'Adapter.exception is called for errors thrown in RSVP promises'
-          );
-        },
-      });
+      setAdapter(
+        QUnitAdapter.create({
+          exception(error) {
+            assert.strictEqual(
+              error,
+              thrown,
+              'Adapter.exception is called for errors thrown in RSVP promises'
+            );
+          },
+        })
+      );
 
       setOnerror(function () {
-        assert.notOk(true, 'Ember.onerror is not called if Test.adapter does not rethrow');
+        assert.notOk(true, 'Ember.onerror is not called if adapter does not rethrow');
       });
 
       generatePromise(thrown);
@@ -368,22 +379,24 @@ function testAdapter(message, generatePromise, timeout = 10) {
       assert.expect(2);
 
       let thrown = new Error('the error');
-      Test.adapter = QUnitAdapter.create({
-        exception(error) {
-          assert.strictEqual(
-            error,
-            thrown,
-            'Adapter.exception is called for errors thrown in RSVP promises'
-          );
-          throw error;
-        },
-      });
+      setAdapter(
+        QUnitAdapter.create({
+          exception(error) {
+            assert.strictEqual(
+              error,
+              thrown,
+              'Adapter.exception is called for errors thrown in RSVP promises'
+            );
+            throw error;
+          },
+        })
+      );
 
       setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
-          'Ember.onerror is called for errors thrown in RSVP promises if Test.adapter rethrows'
+          'Ember.onerror is called for errors thrown in RSVP promises if adapter rethrows'
         );
       });
 

@@ -709,10 +709,8 @@ function defineEmberTestingLazyLoad(key: 'Test') {
     enumerable: true,
     get() {
       if (EmberTestingImpl) {
-        let { Test, Adapter, QUnitAdapter } = EmberTestingImpl;
+        let { Test, QUnitAdapter } = EmberTestingImpl;
 
-        // @ts-expect-error We should not do this
-        Test.Adapter = Adapter;
         // @ts-expect-error We should not do this
         Test.QUnitAdapter = QUnitAdapter;
 

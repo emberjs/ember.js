@@ -54,7 +54,6 @@ module.exports = {
     'action',
     'actions',
     'activate',
-    'adapter',
     'addListener',
     'addObject',
     'addObjects',

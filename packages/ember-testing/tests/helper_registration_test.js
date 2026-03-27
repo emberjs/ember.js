@@ -1,5 +1,6 @@
 import { run } from '@ember/runloop';
 import Test from '../lib/test';
+import { getAdapter, setAdapter } from '../lib/test/adapter';
 import EmberApplication from '@ember/application';
 import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
 
@@ -17,7 +18,7 @@ function unregisterHelper() {
   Test.unregisterHelper('boot');
 }
 
-const originalAdapter = Test.adapter;
+const originalAdapter = getAdapter();
 
 function setupApp() {
   appBooted = false;
@@ -43,7 +44,7 @@ moduleFor(
   'Test - registerHelper/unregisterHelper',
   class extends AbstractTestCase {
     teardown() {
-      Test.adapter = originalAdapter;
+      setAdapter(originalAdapter);
       destroyApp();
     }
 
