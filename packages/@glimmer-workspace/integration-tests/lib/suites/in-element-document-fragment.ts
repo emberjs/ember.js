@@ -133,9 +133,7 @@ export class InElementDocumentFragmentSuite extends RenderTest {
   }
 
   @test
-  'Rerenders work after DocumentFragment is appended to the DOM'(
-    assert: typeof QUnit.assert
-  ) {
+  'Rerenders work after DocumentFragment is appended to the DOM'(assert: typeof QUnit.assert) {
     const fragment = document.createDocumentFragment();
     const container = document.createElement('div');
     const step = (text: string) => {
