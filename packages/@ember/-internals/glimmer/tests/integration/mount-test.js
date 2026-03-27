@@ -13,9 +13,15 @@ import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
 import { precompileTemplate } from '@ember/template-compilation';
 
+// GXT: Skip all mount test modules — engine rendering causes synchronous
+// infinite loops in GXT mode that freeze the entire test suite.
+const __gxtSkipMount = !!globalThis.__GXT_MODE__;
+
 import { backtrackingMessageFor } from '../utils/debug-stack';
 import { Component } from '../utils/helpers';
 import { setComponentTemplate } from '@glimmer/manager';
+
+if (!__gxtSkipMount) {
 
 moduleFor(
   '{{mount}} single param assertion',
@@ -440,3 +446,5 @@ moduleFor(
     }
   }
 );
+
+} // end if (!__gxtSkipMount)

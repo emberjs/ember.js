@@ -674,15 +674,22 @@ class ClassicRootState {
             // Render into a temporary container, then morph the existing DOM
             // to match. This preserves DOM node references (identity) for
             // elements and text nodes, only updating changed attributes/content.
-            const tempContainer = document.createDocumentFragment();
-            pushParentView(component);
-            try {
-              (gxtTemplate as any).render(freshContext, tempContainer);
-            } finally {
-              popParentView();
+            // Guard against excessive re-renders with a per-root counter.
+            const rerenderCount = (gxtRootState as any).__gxtRerenderCount || 0;
+            if (rerenderCount > 100) {
+              console.warn('[gxt] Max re-render count exceeded for root, skipping');
+            } else {
+              (gxtRootState as any).__gxtRerenderCount = rerenderCount + 1;
+              const tempContainer = document.createDocumentFragment();
+              pushParentView(component);
+              try {
+                (gxtTemplate as any).render(freshContext, tempContainer);
+              } finally {
+                popParentView();
+              }
+              // Morph: update existing DOM nodes in-place where possible
+              morphChildren(gxtRenderTarget, tempContainer);
             }
-            // Morph: update existing DOM nodes in-place where possible
-            morphChildren(gxtRenderTarget, tempContainer);
 
             // Update the tag value after successful render
             // This ensures we only re-render once per property change
@@ -852,6 +859,11 @@ if (!(globalThis as any).__GXT_MODE__) {
 // Called from __gxtSyncDomNow when GXT's cell tracking misses changes
 // made through Ember's set() / notifyPropertyChange.
 (globalThis as any).__gxtForceEmberRerender = function() {
+  // Re-entrancy guard: prevent infinite loops when morphing triggers
+  // cell updates that schedule additional force-rerenders
+  if ((globalThis as any).__gxtForceRerenderInProgress) return;
+  (globalThis as any).__gxtForceRerenderInProgress = true;
+  try {
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
     if (!state) continue;
@@ -882,6 +894,7 @@ if (!(globalThis as any).__GXT_MODE__) {
       }
     }
   }
+  } finally { (globalThis as any).__gxtForceRerenderInProgress = false; }
 };
 
 // Update gxtLastTagValue on all GXT roots to mark them clean.

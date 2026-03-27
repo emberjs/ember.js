@@ -597,8 +597,12 @@ queueMicrotask(patchGlobalIf);
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
 (globalThis as any).__gxtSyncDomNow = function() {
+  // Re-entrancy guard: prevent infinite sync loops when force-rerender
+  // triggers cell updates that schedule additional syncs
+  if ((globalThis as any).__gxtSyncing) return;
   if ((globalThis as any).__gxtPendingSync) {
     (globalThis as any).__gxtPendingSync = false;
+    (globalThis as any).__gxtSyncing = true;
     // Start a new render pass to prevent double-firing of lifecycle hooks
     const newPass = (globalThis as any).__gxtNewRenderPass;
     if (typeof newPass === 'function') newPass();
@@ -691,6 +695,7 @@ queueMicrotask(patchGlobalIf);
         }
       }
     } catch { /* ignore */ }
+    (globalThis as any).__gxtSyncing = false;
   }
 };
 
