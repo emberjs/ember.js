@@ -18,9 +18,6 @@ d('ember-testing/lib/ext/application', emberTestingLibExtApplication);
 import * as emberTestingLibExtRsvp from 'ember-testing/lib/ext/rsvp';
 d('ember-testing/lib/ext/rsvp', emberTestingLibExtRsvp);
 
-import * as emberTestingLibInitializers from 'ember-testing/lib/initializers';
-d('ember-testing/lib/initializers', emberTestingLibInitializers);
-
 import * as emberTestingLibPublicApi from 'ember-testing/lib/public-api';
 d('ember-testing/lib/public-api', emberTestingLibPublicApi);
 
