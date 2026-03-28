@@ -2074,10 +2074,23 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 // dynamic component invocations (e.g., <this.$_bp0.baz class="custom-class">).
 // GXT's native $_dc doesn't call $_c for non-function components, so
 // CurriedComponents (which are objects) bypass the Ember component manager.
+//
+// Also handles string component names from Ember's {{component this.componentName}}
+// pattern. GXT's $_dc expects function references for component swapping, but
+// Ember dynamic components resolve to string names like 'foo-bar'. We wrap the
+// getter to convert strings into unique marker functions per name, enabling
+// $_dc's swap logic to detect component changes and re-render.
 {
   const g = globalThis as any;
   if (g.$_dc && !g.$_dc.__emberWrapped) {
     const originalDc = g.$_dc;
+
+    // Per-name marker functions so $_dc detects reference changes and swaps.
+    const stringComponentMarkers = new Map<string, Function>();
+
+    // Stable empty component marker for falsy/undefined dynamic component names
+    function _dcEmptyComponent() {}
+    (_dcEmptyComponent as any).__emptyComponent = true;
 
     g.$_dc = function $_dc_ember(componentGetter: any, args: any, ctx: any) {
       // GXT's $_dc passes raw tagProps as args to the original $_c (R).
@@ -2096,7 +2109,59 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         } catch { /* frozen object */ }
       }
 
-      return originalDc(componentGetter, args, ctx);
+      // Wrap the getter to translate non-function values (strings, CurriedComponents,
+      // falsy) into unique marker functions. GXT's $_dc only swaps when it detects a
+      // different function reference, so each unique component name must map to a
+      // distinct function. The cell tracking still works because componentGetter()
+      // is called inside this wrapper, which accesses the same tracked cells.
+      const wrappedGetter = () => {
+        const raw = componentGetter();
+
+        // Falsy (undefined, null, '') — render nothing
+        if (!raw && raw !== 0) {
+          return _dcEmptyComponent;
+        }
+
+        // String component name — return a stable marker function per name
+        if (typeof raw === 'string') {
+          let marker = stringComponentMarkers.get(raw);
+          if (!marker) {
+            marker = function _dcStringMarker() {};
+            (marker as any).__stringComponentName = raw;
+            stringComponentMarkers.set(raw, marker);
+          }
+          return marker;
+        }
+
+        // CurriedComponent object — wrap in a unique marker function
+        if (raw && raw.__isCurriedComponent) {
+          // Use the underlying component name for identity so swapping
+          // between different curried components triggers re-render.
+          const key = '__curried:' + (raw.__name || '') + ':' + JSON.stringify(Object.keys(raw.__curriedArgs || {}));
+          let marker = stringComponentMarkers.get(key);
+          if (!marker) {
+            marker = function _dcCurriedMarker() {};
+            (marker as any).__isCurriedComponent = true;
+            (marker as any).__name = raw.__name;
+            (marker as any).__curriedArgs = raw.__curriedArgs;
+            (marker as any).__curriedPositionals = raw.__curriedPositionals;
+            stringComponentMarkers.set(key, marker);
+          } else {
+            // Update args on existing marker since they may have changed
+            (marker as any).__curriedArgs = raw.__curriedArgs;
+            (marker as any).__curriedPositionals = raw.__curriedPositionals;
+          }
+          return marker;
+        }
+
+        // Function (native GXT component) — pass through unchanged
+        return raw;
+      };
+
+      // Expose getter so the component manager can read the latest curried component
+      (g as any).__dcComponentGetter = componentGetter;
+
+      return originalDc(wrappedGetter, args, ctx);
     };
     g.$_dc.__emberWrapped = true;
   }
@@ -2415,6 +2480,19 @@ function transformComponentHelper(code: string): string {
     const pascalName = toPascalCase(name);
     const transformedAttrs = transformAttrs(attrs);
     return `<${pascalName}${transformedAttrs} />`;
+  });
+
+  // Inline form with dynamic name: {{component this.xxx arg=val}} or
+  // {{component this.xxx positional1 positional2}}
+  // Transform to <this.xxx @arg={{val}} /> which GXT compiles to $_dc()
+  // The $_dc_ember override handles resolving string names to components at runtime.
+  const inlineDynamicPattern = /\{\{component\s+(this\.[a-zA-Z0-9_.]+)([^}]*)\}\}/g;
+  result = result.replace(inlineDynamicPattern, (match, name, attrs) => {
+    if (attrs && attrs.trim()) {
+      const transformedAttrs = transformCurlyArgsToAngleBracket(attrs.trim());
+      return `<${name}${transformedAttrs} />`;
+    }
+    return `<${name} />`;
   });
 
   return result;

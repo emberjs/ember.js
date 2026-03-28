@@ -2440,8 +2440,13 @@ const $_MANAGERS = {
         return false;
       }
 
-      // Handle wrapped component functions from $_componentHelper
+      // Handle wrapped component functions from $_componentHelper or $_dc_ember
       if (typeof komp === 'function' && komp.__stringComponentName) {
+        return true;
+      }
+
+      // Handle empty component marker (from $_dc_ember for falsy dynamic component names)
+      if (typeof komp === 'function' && (komp as any).__emptyComponent) {
         return true;
       }
 
@@ -2574,6 +2579,12 @@ const $_MANAGERS = {
         // Resolve the underlying component
         const resolvedKomp = komp.__name;
         return this.handle(resolvedKomp, mergedArgs, fw, ctx);
+      }
+
+      // Handle empty component marker (from $_dc_ember for falsy dynamic component names)
+      // Renders nothing — used when {{component this.foo}} and this.foo is undefined/null
+      if (typeof komp === 'function' && (komp as any).__emptyComponent) {
+        return () => document.createComment('empty dynamic component');
       }
 
       // Handle wrapped component functions from $_componentHelper
