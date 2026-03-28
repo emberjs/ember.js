@@ -12,9 +12,6 @@ d('ember-testing/index', emberTestingIndex);
 import * as emberTestingLibAdaptersAdapter from 'ember-testing/lib/adapters/adapter';
 d('ember-testing/lib/adapters/adapter', emberTestingLibAdaptersAdapter);
 
-import * as emberTestingLibAdaptersQunit from 'ember-testing/lib/adapters/qunit';
-d('ember-testing/lib/adapters/qunit', emberTestingLibAdaptersQunit);
-
 import * as emberTestingLibExtApplication from 'ember-testing/lib/ext/application';
 d('ember-testing/lib/ext/application', emberTestingLibExtApplication);
 
@@ -32,9 +29,6 @@ d('ember-testing/lib/test', emberTestingLibTest);
 
 import * as emberTestingLibTestAdapter from 'ember-testing/lib/test/adapter';
 d('ember-testing/lib/test/adapter', emberTestingLibTestAdapter);
-
-import * as emberTestingLibTestHelpers from 'ember-testing/lib/test/helpers';
-d('ember-testing/lib/test/helpers', emberTestingLibTestHelpers);
 
 import * as emberTestingLibTestPendingRequests from 'ember-testing/lib/test/pending_requests';
 d('ember-testing/lib/test/pending_requests', emberTestingLibTestPendingRequests);
