@@ -1,7 +1,6 @@
 /**
   @module ember
 */
-import TestPromise, { promise, resolve } from './test/promise';
 import { checkWaiters, registerWaiter, unregisterWaiter } from './test/waiters';
 
 /**
@@ -17,9 +16,6 @@ import { checkWaiters, registerWaiter, unregisterWaiter } from './test/waiters';
   @public
 */
 const Test = {
-  Promise: TestPromise,
-  promise,
-  resolve,
   registerWaiter,
   unregisterWaiter,
   checkWaiters,

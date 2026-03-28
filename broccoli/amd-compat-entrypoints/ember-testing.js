@@ -27,9 +27,6 @@ d('ember-testing/lib/test/adapter', emberTestingLibTestAdapter);
 import * as emberTestingLibTestPendingRequests from 'ember-testing/lib/test/pending_requests';
 d('ember-testing/lib/test/pending_requests', emberTestingLibTestPendingRequests);
 
-import * as emberTestingLibTestPromise from 'ember-testing/lib/test/promise';
-d('ember-testing/lib/test/promise', emberTestingLibTestPromise);
-
 import * as emberTestingLibTestRun from 'ember-testing/lib/test/run';
 d('ember-testing/lib/test/run', emberTestingLibTestRun);
 
