@@ -10,10 +10,23 @@
  * - String-based component resolution from the Ember registry
  */
 
-import { assert } from '@ember/debug';
+import { assert, getDebugFunction } from '@ember/debug';
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
 import { setViewElement, setElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
+
+// Inline the style warning message to avoid potential import issues
+function constructStyleDeprecationMessage(affectedStyle: string): string {
+  return (
+    'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
+    'please ensure that values being bound are properly escaped. For more information, ' +
+    'including how to disable this warning, see ' +
+    'https://deprecations.emberjs.com/v1.x/#toc_binding-style-attributes. ' +
+    'Style affected: "' +
+    affectedStyle +
+    '"'
+  );
+}
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
@@ -1030,6 +1043,22 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
       if (attrName === 'id') continue;
 
       const value = propName.includes('.') ? getNestedValue(instance, propName) : instance?.[propName];
+      // Warn for style attribute bindings with non-safe strings
+      if (attrName === 'style' && value !== null && value !== undefined && value !== false) {
+        const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
+        if (!isHTMLSafe) {
+          const warnFn = getDebugFunction('warn');
+          if (warnFn) warnFn(constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
+        }
+      }
+      // Sanitize dangerous href/src/cite/action attribute values
+      if ((attrName === 'href' || attrName === 'src' || attrName === 'cite' || attrName === 'action') && typeof value === 'string') {
+        const protocol = value.split(':')[0]?.toLowerCase();
+        if (protocol === 'javascript' || protocol === 'vbscript') {
+          wrapper.setAttribute(attrName, `unsafe:${value}`);
+          continue;
+        }
+      }
       if (value === undefined || value === null || value === false) {
         wrapper.removeAttribute(attrName);
       } else if (value === true) {
@@ -1603,8 +1632,25 @@ function buildWrapperElement(
   classList.push('ember-view');
   wrapper.className = classList.join(' ');
 
-  // Set ID - use frozen elementId or auto-generate
-  wrapper.id = instance?.elementId || `ember${++emberViewIdCounter}`;
+  // Set ID - check attributeBindings for id mapping first, then use frozen elementId or auto-generate.
+  // Once elementId is frozen after first render, always use the frozen value.
+  let customIdFromBinding: string | undefined;
+  if (!instance?._elementIdFrozen) {
+    const attrBindingsForId = instance?.attributeBindings || componentDef?.prototype?.attributeBindings;
+    if (attrBindingsForId && Array.isArray(attrBindingsForId)) {
+      for (const binding of attrBindingsForId) {
+        const { propName, attrName } = parseAttributeBinding(binding);
+        if (attrName === 'id') {
+          const val = propName.includes('.') ? getNestedValue(instance, propName) : instance?.[propName];
+          if (val !== undefined && val !== null && val !== false) {
+            customIdFromBinding = String(val);
+          }
+          break;
+        }
+      }
+    }
+  }
+  wrapper.id = customIdFromBinding || instance?.elementId || `ember${++emberViewIdCounter}`;
 
   // Freeze elementId on first render
   if (instance && !instance._elementIdFrozen) {
@@ -1634,7 +1680,41 @@ function buildWrapperElement(
   if (attributeBindings && Array.isArray(attributeBindings)) {
     for (const binding of attributeBindings) {
       const { propName, attrName } = parseAttributeBinding(binding);
+
+      // Skip id binding after first render — id is frozen
+      if (attrName === 'id' && instance?._elementIdFrozen) continue;
+
+      // Validate: 'class' cannot be used as an attributeBinding
+      assert(
+        'You cannot use class as an attributeBinding, use classNameBindings instead.',
+        attrName !== 'class'
+      );
+
+      // Validate: non-microsyntax bindings (no colon) cannot have nested paths
+      if (!binding.includes(':') && propName.includes('.')) {
+        assert(
+          `Illegal attributeBinding: '${propName}' is not a valid attribute name.`,
+          false
+        );
+      }
+
       const value = propName.includes('.') ? getNestedValue(instance, propName) : instance?.[propName];
+      // Warn for style attribute bindings with non-safe strings
+      if (attrName === 'style' && value !== null && value !== undefined && value !== false) {
+        const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
+        if (!isHTMLSafe) {
+          const warnFn = getDebugFunction('warn');
+          if (warnFn) warnFn(constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
+        }
+      }
+      // Sanitize dangerous href/src/cite/action attribute values
+      if ((attrName === 'href' || attrName === 'src' || attrName === 'cite' || attrName === 'action') && typeof value === 'string') {
+        const protocol = value.split(':')[0]?.toLowerCase();
+        if (protocol === 'javascript' || protocol === 'vbscript') {
+          wrapper.setAttribute(attrName, `unsafe:${value}`);
+          continue;
+        }
+      }
       if (value !== undefined && value !== null && value !== false) {
         wrapper.setAttribute(attrName, value === true ? '' : String(value));
       }

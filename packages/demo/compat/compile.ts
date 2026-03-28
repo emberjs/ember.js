@@ -9,6 +9,21 @@
 // Import Ember debug utilities for attrs assertion/deprecation
 import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
+import { getDebugFunction } from '@ember/debug';
+
+// Inline the style warning message to avoid importing @ember/-internals/views
+// (which can cause circular dependency issues during module initialization)
+function _constructStyleDeprecationMessage(affectedStyle: string): string {
+  return (
+    'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
+    'please ensure that values being bound are properly escaped. For more information, ' +
+    'including how to disable this warning, see ' +
+    'https://deprecations.emberjs.com/v1.x/#toc_binding-style-attributes. ' +
+    'Style affected: "' +
+    affectedStyle +
+    '"'
+  );
+}
 
 // Import the GXT runtime compiler
 // @ts-ignore - direct path to avoid GXT Babel plugin
@@ -96,6 +111,28 @@ if (!(globalThis as any).__gxtSetIsRendering) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// Patch SafeString.toString() to track when a SafeString is being converted to
+// a string during GXT's quoted attribute concatenation. This lets the style prop
+// patch distinguish between a plain string (warn) and a SafeString-derived string
+// (no warn). We track the last SafeString result so the prop patch can compare.
+// Deferred to avoid circular deps — patches after modules are loaded.
+setTimeout(() => {
+  try {
+    // Use dynamic import to avoid circular dependency during static init
+    import('@ember/-internals/glimmer/lib/utils/string').then(mod => {
+      const SafeString = mod.SafeString;
+      if (SafeString?.prototype?.toString) {
+        const origToString = SafeString.prototype.toString;
+        SafeString.prototype.toString = function() {
+          const result = origToString.call(this);
+          (globalThis as any).__gxtLastSafeStringResult = result;
+          return result;
+        };
+      }
+    }).catch(() => {});
+  } catch {}
+}, 0);
+
 // Patch GXT's HTMLBrowserDOMApi.attr() to handle undefined values.
 // GXT's native implementation: attr(t,e,n){t.setAttribute(e,null===n?"":n)}
 // This only handles null -> "" but not undefined. In Ember, when a bound attribute
@@ -104,11 +141,49 @@ installEmberWrappers();
 if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
   const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
   _GXT_HTMLBrowserDOMApi.prototype.attr = function(element: any, name: string, value: any) {
+    // When setting style attribute with a dynamic non-safe value, warn
+    if (name === 'style' && value !== null && value !== undefined) {
+      const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
+      if (!isHTMLSafe) {
+        const warnFn = getDebugFunction('warn');
+        if (warnFn) warnFn(_constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
+      }
+    }
     if (value === undefined || value === false) {
       element.removeAttribute(name);
     } else {
       origAttr.call(this, element, name, value);
     }
+  };
+
+  // Patch prop() to warn when setting style with a non-safe dynamic value.
+  // GXT uses prop(element, 'style', value) which sets element.style.cssText.
+  // For quoted attrs like style="{{expr}}", GXT concatenates the expression result
+  // into a string before calling prop(). A SafeString.toString() is called during
+  // this concatenation, so we track it with a counter to avoid false warnings.
+  const origProp = _GXT_HTMLBrowserDOMApi.prototype.prop;
+  _GXT_HTMLBrowserDOMApi.prototype.prop = function(element: any, name: string, value: any) {
+    if (name === 'style' && value !== null && value !== undefined && value !== '') {
+      const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
+      // Check if the value is a string that came from a SafeString conversion.
+      // When style="{{expr}}" with SafeString, GXT calls toString() then sets the result.
+      // If the prop value exactly matches the last SafeString.toString() result,
+      // treat it as safe (no warning). If static text was mixed in (e.g., style="text {{expr}}"),
+      // the final value will differ from the SafeString output, so we still warn.
+      let isSafeFromConcat = false;
+      if (typeof value === 'string') {
+        const lastSafe = (globalThis as any).__gxtLastSafeStringResult;
+        if (lastSafe !== undefined && value === lastSafe) {
+          isSafeFromConcat = true;
+        }
+      }
+      (globalThis as any).__gxtLastSafeStringResult = undefined;
+      if (!isHTMLSafe && !isSafeFromConcat) {
+        const warnFn = getDebugFunction('warn');
+        if (warnFn) warnFn(_constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
+      }
+    }
+    return origProp.call(this, element, name, value);
   };
 }
 
@@ -2302,7 +2377,23 @@ function transformAngleBracketPositionalParams(code: string): string {
             }
           }
         }
-        positionalParams.push(remaining.slice(0, i));
+        const mustacheExpr = remaining.slice(0, i);
+        // Check if this is a modifier invocation: {{name args...}} where name is a
+        // simple identifier (not this.x or @arg) and has arguments after the name.
+        // Modifiers on components should be kept as-is for GXT to handle.
+        const innerExpr = mustacheExpr.slice(2, -2).trim();
+        const firstSpace = innerExpr.indexOf(' ');
+        const isModifier = firstSpace > 0 &&
+          !innerExpr.startsWith('this.') &&
+          !innerExpr.startsWith('@') &&
+          !innerExpr.startsWith('(') &&
+          /^[a-zA-Z][a-zA-Z0-9-]*/.test(innerExpr);
+        if (isModifier) {
+          // Keep modifier as-is in the named params — it will be part of the element
+          namedParams.push(mustacheExpr);
+        } else {
+          positionalParams.push(mustacheExpr);
+        }
         remaining = remaining.slice(i);
         continue;
       }
