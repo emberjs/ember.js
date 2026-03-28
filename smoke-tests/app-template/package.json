@@ -32,7 +32,7 @@
     "@babel/plugin-proposal-decorators": "^7.29.0",
     "@ember/optional-features": "^2.3.0",
     "@ember/test-helpers": "^5.4.1",
-    "@embroider/macros": "^1.19.7",
+    "@embroider/macros": "^1.20.2",
     "@eslint/js": "^9.39.2",
     "@glimmer/component": "workspace:^",
     "@glimmer/tracking": "^1.1.2",
