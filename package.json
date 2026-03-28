@@ -343,7 +343,6 @@
       "ember-testing/lib/test/adapter.js": "ember-source/ember-testing/lib/test/adapter.js",
       "ember-testing/lib/test/helpers.js": "ember-source/ember-testing/lib/test/helpers.js",
       "ember-testing/lib/test/pending_requests.js": "ember-source/ember-testing/lib/test/pending_requests.js",
-      "ember-testing/lib/test/run.js": "ember-source/ember-testing/lib/test/run.js",
       "ember-testing/lib/test/waiters.js": "ember-source/ember-testing/lib/test/waiters.js",
       "ember/barrel.js": "ember-source/ember/barrel.js",
       "ember/index.js": "ember-source/ember/index.js",
