@@ -337,7 +337,6 @@
       "dag-map/index.js": "ember-source/dag-map/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
       "ember-testing/lib/adapters/adapter.js": "ember-source/ember-testing/lib/adapters/adapter.js",
-      "ember-testing/lib/ext/rsvp.js": "ember-source/ember-testing/lib/ext/rsvp.js",
       "ember-testing/lib/public-api.js": "ember-source/ember-testing/lib/public-api.js",
       "ember-testing/lib/test.js": "ember-source/ember-testing/lib/test.js",
       "ember-testing/lib/test/adapter.js": "ember-source/ember-testing/lib/test/adapter.js",

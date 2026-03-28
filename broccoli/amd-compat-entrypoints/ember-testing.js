@@ -12,9 +12,6 @@ d('ember-testing/index', emberTestingIndex);
 import * as emberTestingLibAdaptersAdapter from 'ember-testing/lib/adapters/adapter';
 d('ember-testing/lib/adapters/adapter', emberTestingLibAdaptersAdapter);
 
-import * as emberTestingLibExtRsvp from 'ember-testing/lib/ext/rsvp';
-d('ember-testing/lib/ext/rsvp', emberTestingLibExtRsvp);
-
 import * as emberTestingLibPublicApi from 'ember-testing/lib/public-api';
 d('ember-testing/lib/public-api', emberTestingLibPublicApi);
 
