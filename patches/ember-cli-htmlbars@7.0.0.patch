@@ -1,8 +1,8 @@
 diff --git a/lib/ember-addon-main.js b/lib/ember-addon-main.js
-index 71c809a11baa57fcc78f10e08176e5d34eaeb62b..8203d14805bd245b07e5dd4f7636d3f1b59c43ce 100644
+index 71c809a11baa57fcc78f10e08176e5d34eaeb62b..158fd9c7707cfe0809eb1cd2bf5ae2cece2b2fde 100644
 --- a/lib/ember-addon-main.js
 +++ b/lib/ember-addon-main.js
-@@ -105,7 +105,12 @@ module.exports = {
+@@ -105,7 +105,13 @@ module.exports = {
        );
      }
  
@@ -11,8 +11,9 @@ index 71c809a11baa57fcc78f10e08176e5d34eaeb62b..8203d14805bd245b07e5dd4f7636d3f1
 +      return ember.absolutePaths.templateCompiler;
 +    }
 +
-+    // v7+ ember-source no longer provides absolutePaths
-+    return path.join(ember.root, 'dist', 'packages', 'ember-template-compiler', 'index.js');
++    // v7+ ember-source no longer provides absolutePaths; the ESM template
++    // compiler lives under dist/dev/packages/
++    return path.join(ember.root, 'dist', 'dev', 'packages', 'ember-template-compiler', 'index.js');
    },
  
    astPlugins() {
