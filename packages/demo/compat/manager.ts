@@ -3174,6 +3174,16 @@ const $_MANAGERS = {
           } catch { /* ignore errors */ }
         }
 
+        // Custom element fallback: names containing a dash that are not registered
+        // as components or helpers should render as plain HTML custom elements.
+        const kebabKomp = komp
+          .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+          .toLowerCase();
+        if (kebabKomp.includes('-')) {
+          return renderCustomElement(kebabKomp, args, fw, ctx);
+        }
+
         // Throw when a component name cannot be resolved (matches Ember's behavior).
         const notFoundErr = new Error(
           `Attempted to resolve \`${komp}\`, which was expected to be a component, but nothing was found. ` +
@@ -4144,6 +4154,90 @@ function buildCustomManagedArgs(args: any) {
 }
 
 /**
+ * Render an unknown dash-cased tag name as a plain HTML custom element.
+ * Applies named args as attributes and renders block children as innerHTML.
+ */
+function renderCustomElement(
+  tagName: string,
+  args: any,
+  fw: any,
+  ctx: any
+): () => any {
+  return () => {
+    const el = document.createElement(tagName);
+    const gxtEffect = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+
+    if (args) {
+      for (const key of Object.keys(args)) {
+        if (key.startsWith('__') || key.startsWith('$')) continue;
+        const desc = Object.getOwnPropertyDescriptor(args, key);
+        const getter = desc?.get || (() => args[key]);
+        gxtEffect(() => {
+          const val = getter();
+          if (val !== undefined && val !== null && val !== false) {
+            el.setAttribute(key, String(val));
+          } else if (val === false) {
+            el.removeAttribute(key);
+          }
+        });
+      }
+    }
+
+    if (fw && Array.isArray(fw)) {
+      const fwProps = fw[0];
+      if (Array.isArray(fwProps)) {
+        for (const [key, value] of fwProps) {
+          const attrKey = key === '' ? 'class' : key;
+          gxtEffect(() => {
+            const resolved = typeof value === 'function' ? value() : value;
+            if (resolved !== undefined && resolved !== null && resolved !== false) {
+              el.setAttribute(attrKey, String(resolved));
+            }
+          });
+        }
+      }
+      const fwAttrs = fw[1];
+      if (Array.isArray(fwAttrs)) {
+        for (const [key, value] of fwAttrs) {
+          if (key.startsWith('@')) continue;
+          gxtEffect(() => {
+            const resolved = typeof value === 'function' ? value() : value;
+            if (resolved !== undefined && resolved !== null && resolved !== false) {
+              el.setAttribute(key, String(resolved));
+            }
+          });
+        }
+      }
+      const fwEvents = fw[2];
+      if (Array.isArray(fwEvents)) {
+        for (const [eventName, handler] of fwEvents) {
+          if (typeof handler === 'function') {
+            el.addEventListener(eventName, handler);
+          }
+        }
+      }
+    }
+
+    const defaultBlock = args?.__defaultBlock__ || args?.__hasBlock__;
+    if (typeof defaultBlock === 'function') {
+      const blockResult = defaultBlock();
+      if (blockResult instanceof Node) {
+        el.appendChild(blockResult);
+      } else if (typeof blockResult === 'string') {
+        el.textContent = blockResult;
+      } else if (Array.isArray(blockResult)) {
+        for (const item of blockResult) {
+          if (item instanceof Node) el.appendChild(item);
+          else if (typeof item === 'string') el.appendChild(document.createTextNode(item));
+        }
+      }
+    }
+
+    return el;
+  };
+}
+
+/**
  * Handle a component with a custom manager (Input, Textarea).
  * Instead of going through the full template render pipeline, we directly
  * create the DOM element and wire up reactive bindings via GXT effects.
@@ -4201,6 +4295,60 @@ function handleManagedComponent(
         (el as HTMLInputElement).checked = !!checked;
       }
     });
+
+    // For range inputs, min/max/step must be set BEFORE value so the browser
+    // does not clamp value against the default [0,100] range.
+    const _rangeConstraintAttrs = ['min', 'max', 'step'];
+    const _appliedRangeAttrs = new Set<string>();
+    for (const rAttr of _rangeConstraintAttrs) {
+      if (rAttr in args) {
+        _appliedRangeAttrs.add(rAttr);
+        const rDesc = Object.getOwnPropertyDescriptor(args, rAttr);
+        const rGetter = rDesc?.get || (() => args[rAttr]);
+        gxtEffect(() => {
+          const rVal = rGetter();
+          if (rVal !== undefined && rVal !== null && rVal !== false) {
+            el.setAttribute(rAttr, String(rVal));
+          } else {
+            el.removeAttribute(rAttr);
+          }
+        });
+      }
+    }
+    if (fw && Array.isArray(fw)) {
+      const fwDomAttrs1 = fw[1];
+      if (Array.isArray(fwDomAttrs1)) {
+        for (const [key, value] of fwDomAttrs1) {
+          if (_rangeConstraintAttrs.includes(key) && !_appliedRangeAttrs.has(key)) {
+            _appliedRangeAttrs.add(key);
+            gxtEffect(() => {
+              const rVal = typeof value === 'function' ? value() : value;
+              if (rVal !== undefined && rVal !== null && rVal !== false) {
+                el.setAttribute(key, String(rVal));
+              } else {
+                el.removeAttribute(key);
+              }
+            });
+          }
+        }
+      }
+      const fwProps1 = fw[0];
+      if (Array.isArray(fwProps1)) {
+        for (const [key, value] of fwProps1) {
+          if (_rangeConstraintAttrs.includes(key) && !_appliedRangeAttrs.has(key)) {
+            _appliedRangeAttrs.add(key);
+            gxtEffect(() => {
+              const rVal = typeof value === 'function' ? value() : value;
+              if (rVal !== undefined && rVal !== null && rVal !== false) {
+                el.setAttribute(key, String(rVal));
+              } else {
+                el.removeAttribute(key);
+              }
+            });
+          }
+        }
+      }
+    }
 
     // value property - use direct DOM property setting for proper behavior
     gxtEffect(() => {
@@ -4308,6 +4456,7 @@ function handleManagedComponent(
                        'accept', 'required', 'title', 'lang', 'dir', 'spellcheck', 'wrap',
                        'rows', 'cols'];
     for (const attr of htmlAttrs) {
+      if (_appliedRangeAttrs.has(attr)) continue;
       if (attr in args) {
         const desc = Object.getOwnPropertyDescriptor(args, attr);
         const getter = desc?.get || (() => args[attr]);

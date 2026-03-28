@@ -477,13 +477,45 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 
   function emberToBool(predicate: unknown): boolean {
     if (predicate && typeof predicate === 'object') {
-      // Proxy: check isTruthy
-      if (_isProxyImport(predicate)) {
-        return Boolean((predicate as any).isTruthy ?? (predicate as any).content);
-      }
-      // Array: empty is falsy
+      // Native Array: empty is falsy
       if (_isArray(predicate)) {
         return (predicate as any[]).length !== 0;
+      }
+      // Proxy-like (ObjectProxy/ArrayProxy)
+      if (_isProxyImport(predicate)) {
+        // Distinguish ArrayProxy from ObjectProxy:
+        // ArrayProxy has `objectAt` on its OWN prototype chain (from EmberArray).
+        // ObjectProxy DELEGATES property access through unknownProperty, so
+        // `predicate.objectAt` would return the content's objectAt, not its own.
+        // Check if `objectAt` is an OWN or INHERITED property (not delegated).
+        let hasOwnObjectAt = false;
+        let proto = Object.getPrototypeOf(predicate);
+        while (proto && proto !== Object.prototype) {
+          if (typeof Object.getOwnPropertyDescriptor(proto, 'objectAt')?.value === 'function') {
+            hasOwnObjectAt = true;
+            break;
+          }
+          proto = Object.getPrototypeOf(proto);
+        }
+        // ArrayProxy: use length-based truthiness (empty content = falsy)
+        if (hasOwnObjectAt) {
+          return ((predicate as any).length ?? 0) !== 0;
+        }
+        // ObjectProxy: `isTruthy` is a computed based on content.
+        // If `isTruthy` is defined (not undefined), use it directly.
+        const truthVal = (predicate as any).isTruthy;
+        if (truthVal !== undefined) return Boolean(truthVal);
+        // Fall back to content — but if content is array-like, check length
+        const content = (predicate as any).content;
+        if (content && typeof content === 'object') {
+          if (_isArray(content)) return content.length !== 0;
+          if (typeof content.objectAt === 'function') return (content.length ?? 0) !== 0;
+        }
+        return Boolean(content);
+      }
+      // Ember array (e.g., objects with objectAt from EmberArray mixin)
+      if (typeof (predicate as any).objectAt === 'function') {
+        return ((predicate as any).length ?? 0) !== 0;
       }
       // HTMLSafe: check toString()
       if (typeof (predicate as any).toHTML === 'function') {
@@ -497,18 +529,31 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   // GXT's IfCondition.setupCondition checks __gxtToBool before its own !!v
   g.__gxtToBool = emberToBool;
 
-  // Replace $__if on globalThis with Ember-aware version
-  if (g.$__if) {
-    g.$__if = function $__if_ember(condition: unknown, ifTrue: unknown, ifFalse: unknown = '') {
-      // Unwrap GXT getter
-      const rawCond = typeof condition === 'function' && !condition.prototype ? condition() : condition;
-      // Apply Ember truthiness
-      const cond = emberToBool(rawCond);
-      const result = cond ? ifTrue : ifFalse;
-      // Unwrap result getter
-      return typeof result === 'function' && !result.prototype ? result() : result;
-    };
-  }
+  // Replace $__if on globalThis with Ember-aware version.
+  // Use a persistent property trap so GXT's setupGlobalScope cannot overwrite.
+  const _ember$__if = function $__if_ember(condition: unknown, ifTrue: unknown, ifFalse: unknown = '') {
+    const rawCond = typeof condition === 'function' && !(condition as any).prototype ? (condition as any)() : condition;
+    const cond = emberToBool(rawCond);
+    const result = cond ? ifTrue : ifFalse;
+    return typeof result === 'function' && !(result as any).prototype ? (result as any)() : result;
+  };
+  g.$__if = _ember$__if;
+
+  // Protect the override: GXT's setupGlobalScope iterates its symbol table
+  // and assigns every helper to globalThis, which would replace our $__if.
+  // Intercept writes so we can re-apply the Ember version.
+  try {
+    let _currentIf = _ember$__if;
+    Object.defineProperty(g, '$__if', {
+      get() { return _currentIf; },
+      set(v: any) {
+        // Allow GXT to "set" it, but immediately restore Ember version
+        _currentIf = _ember$__if;
+      },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch { /* ignore if defineProperty fails */ }
 }
 
 // GXT external schedule hook: GXT's cell.update() calls scheduleRevalidate()
@@ -1102,8 +1147,15 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   mut: (value: any, path?: string) => {
     // Capture context at creation time (set by $_maybeHelper wrapper)
     const capturedCtx = (globalThis as any).__gxtMutContext;
-    // If no path provided, return the resolved value (fallback)
+    // Assert that mut only receives a path, not a literal or helper result.
+    // Use getDebugFunction('assert') to ensure we call the currently-registered
+    // assert (which may be stubbed by expectAssertion in tests).
     if (!path || typeof path !== 'string') {
+      // If value is not a getter function, it's a literal or helper result — not allowed
+      if (typeof value !== 'function' || value.prototype) {
+        const _assert = getDebugFunction('assert');
+        if (_assert) _assert('You can only pass a path to mut', false);
+      }
       return typeof value === 'function' ? value() : value;
     }
     // Determine the property name from the path
@@ -1200,8 +1252,15 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     mutCell.valueOf = () => typeof value === 'function' ? value() : value;
     return mutCell;
   },
-  // unbound: Returns the value without tracking
-  unbound: (value: any) => {
+  // unbound: Returns the value without tracking.
+  // Use getDebugFunction('assert') so expectAssertion's stub is called.
+  unbound: (...args: any[]) => {
+    const _assert = getDebugFunction('assert');
+    if (_assert) _assert(
+      'unbound helper cannot be called with multiple params or hash params',
+      args.length <= 1
+    );
+    const value = args[0];
     return typeof value === 'function' ? value() : value;
   },
   // concat: Concatenates arguments into a string
@@ -1968,10 +2027,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
     if (mightBeComponent && managers?.component?.canHandle) {
       // Convert PascalCase to kebab-case for Ember component lookup
+      // Also convert -- (namespace separator from ::) to /
       const kebabName = resolvedTag
         .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-        .toLowerCase();
+        .toLowerCase()
+        .replace(/--/g, '/');
 
       // Check for HELPER first — inline curlies like {{to-js "foo"}} get transformed
       // to <ToJs @__pos0__="foo" /> by transformCurlyBlockComponents. These should be
@@ -2595,6 +2656,65 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
     }
 
+    // Custom element fallback: dash-containing tags that were not resolved as
+    // components or helpers — render as plain HTML custom elements with attrs.
+    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string' && resolvedTag.includes('-')) {
+      const ceEl = document.createElement(resolvedTag);
+      const _gxtEff = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+
+      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[0])) {
+        for (const [key, value] of tagProps[0]) {
+          const attrKey = key === '' ? 'class' : key;
+          _gxtEff(() => {
+            const resolved = typeof value === 'function' ? value() : value;
+            if (resolved !== undefined && resolved !== null && resolved !== false) {
+              ceEl.setAttribute(attrKey, String(resolved));
+            }
+          });
+        }
+      }
+      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+        for (const [key, value] of tagProps[1]) {
+          if (key.startsWith('@')) continue;
+          _gxtEff(() => {
+            const resolved = typeof value === 'function' ? value() : value;
+            if (resolved !== undefined && resolved !== null && resolved !== false) {
+              ceEl.setAttribute(key, String(resolved));
+            } else if (resolved === false) {
+              ceEl.removeAttribute(key);
+            }
+          });
+        }
+      }
+      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
+        for (const entry of tagProps[2]) {
+          if (Array.isArray(entry)) {
+            const [evKey, evVal] = entry;
+            if (evKey === '1' || evKey === 1) {
+              const textVal = typeof evVal === 'function' ? evVal() : evVal;
+              if (textVal != null) ceEl.appendChild(document.createTextNode(String(textVal)));
+            } else if (typeof evVal === 'function') {
+              ceEl.addEventListener(evKey, evVal);
+            }
+          }
+        }
+      }
+      if (children && children.length > 0) {
+        for (const child of children) {
+          const resolved = typeof child === 'function' ? child() : child;
+          if (resolved instanceof Node) ceEl.appendChild(resolved);
+          else if (typeof resolved === 'string') ceEl.appendChild(document.createTextNode(resolved));
+          else if (Array.isArray(resolved)) {
+            for (const item of resolved) {
+              if (item instanceof Node) ceEl.appendChild(item);
+              else if (typeof item === 'string') ceEl.appendChild(document.createTextNode(item));
+            }
+          }
+        }
+      }
+      return ceEl;
+    }
+
     // Fall back to original $_tag for regular HTML elements
     // GXT handles ...attributes internally via tagProps[3] ($fw):
     // - fw[0] = props (class, id, etc.)
@@ -2717,7 +2837,72 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
       }
     }
-    return originalTag(tag, tagProps, ctx, children);
+    // Fix: GXT uses element.style = value (prop assignment) which sets
+    // style.cssText. When value is "" or null, this leaves style="" on the element.
+    // Ember expects the style attribute to be removed entirely for empty values.
+    // Intercept by wrapping the style prop getter to never return empty string.
+    let hasReactiveStyle = false;
+    let styleEntryRef: any[] | null = null;
+    if (tagProps && tagProps !== g.$_edp) {
+      for (const arrIdx of [0, 1]) {
+        if (hasReactiveStyle) break;
+        const arr = tagProps[arrIdx];
+        if (Array.isArray(arr)) {
+          for (let i = 0; i < arr.length; i++) {
+            const entry = arr[i];
+            if (Array.isArray(entry) && entry[0] === 'style' && typeof entry[1] === 'function') {
+              hasReactiveStyle = true;
+              styleEntryRef = entry;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Wrap the style getter: convert SafeString to HTML string, and when
+    // the value is null/undefined/false, use a sentinel that the post-render
+    // step can detect and clean up.
+    if (hasReactiveStyle && styleEntryRef) {
+      const origGetter = styleEntryRef[1];
+      styleEntryRef[1] = function _styleEmptyGuard() {
+        const val = origGetter();
+        // Convert SafeString to plain string
+        if (val && typeof val === 'object' && typeof val.toHTML === 'function') {
+          const html = val.toHTML();
+          return html || null;
+        }
+        if (val == null || val === false || val === '') return null;
+        return val;
+      };
+    }
+
+    const result = originalTag(tag, tagProps, ctx, children);
+
+    // After GXT renders, the element may have style="" from null→"" conversion.
+    // GXT's prop handler does: el.style = (null === s ? "" : s)
+    // When our getter returns null, GXT converts to "" and sets el.style = "".
+    // Clean up: remove style attr if it's empty, and watch for future changes.
+    if (hasReactiveStyle && result instanceof HTMLElement) {
+      const el = result;
+      // Initial cleanup
+      if (el.getAttribute('style') === '') {
+        el.removeAttribute('style');
+      }
+      // Watch for future empty style via MutationObserver
+      const observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.attributeName === 'style' && el.getAttribute('style') === '') {
+            el.removeAttribute('style');
+          }
+        }
+      });
+      observer.observe(el, { attributes: true, attributeFilter: ['style'] });
+      // Store observer reference for cleanup
+      (el as any).__gxtStyleObserver = observer;
+    }
+
+    return result;
   };
 
   // Mark as wrapped to prevent re-wrapping
@@ -4072,6 +4257,16 @@ export function precompileTemplate(templateString: string, options?: {
     }
   }
 
+  // Check for <TextArea /> typo — should be <Textarea />.
+  // Use getDebugFunction('assert') so expectAssertion's stub is called.
+  if (/<TextArea[\s/>]/.test(templateString)) {
+    const _assert = getDebugFunction('assert');
+    if (_assert) _assert(
+      'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
+      false
+    );
+  }
+
   // Transform the template
   let transformedTemplate = templateString;
 
@@ -4186,6 +4381,39 @@ export function precompileTemplate(templateString: string, options?: {
         false
       );
     }
+  }
+
+  // Transform namespaced angle-bracket components: <Foo::Bar::BazBing /> to <foo--bar--baz-bing />
+  // The :: separator maps to / in the Ember component name. GXT cannot parse ::
+  // in tag names, so we convert each PascalCase segment to kebab-case and join
+  // with -- (double hyphen). The runtime handler converts -- back to /.
+  if (transformedTemplate.includes('::')) {
+    transformedTemplate = transformedTemplate.replace(
+      /<([A-Z][a-zA-Z0-9]*(?:::[A-Z][a-zA-Z0-9]*)*)(\s|\/|>)/g,
+      (match, name: string, suffix: string) => {
+        if (!name.includes('::')) return match;
+        const segments = name.split('::');
+        const kebabSegments = segments.map((seg: string) =>
+          seg.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+             .toLowerCase()
+        );
+        return `<${kebabSegments.join('--')}${suffix}`;
+      }
+    );
+    transformedTemplate = transformedTemplate.replace(
+      /<\/([A-Z][a-zA-Z0-9]*(?:::[A-Z][a-zA-Z0-9]*)*)>/g,
+      (match, name: string) => {
+        if (!name.includes('::')) return match;
+        const segments = name.split('::');
+        const kebabSegments = segments.map((seg: string) =>
+          seg.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+             .toLowerCase()
+        );
+        return `</${kebabSegments.join('--')}>`;
+      }
+    );
   }
 
   transformedTemplate = transformCapitalizedComponents(transformedTemplate);
@@ -4464,18 +4692,80 @@ export function precompileTemplate(templateString: string, options?: {
         modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsName},`);
       }
       // 2. Replace GXT built-in symbol calls with scope references.
-      //    E.g., $__array(1, 2, 3) → array(1, 2, 3) when `array` is in scope.
-      //    The scope injection will define `array` as the scope value.
+      //    GXT passes lazy getter objects: { key: () => value }.
+      //    The built-in $__hash/$__array resolve these internally.
+      //    When replacing with a user-provided function, we must resolve getters first.
       const BUILTIN_SYMBOL_MAP: Record<string, string> = {
         '$__array': 'array', '$__hash': 'hash', '$__fn': 'fn',
       };
       for (const [sym, scopeName] of Object.entries(BUILTIN_SYMBOL_MAP)) {
         if (scopeBindings.has(scopeName) && modifiedCode.includes(sym + '(')) {
           const jsName = scopeName.replace(/-/g, '_');
-          modifiedCode = modifiedCode.replace(
-            new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
-            `${jsName}(`
-          );
+          if (sym === '$__hash') {
+            // Hash receives { key: getter } — resolve getters before calling user fn
+            modifiedCode = modifiedCode.replace(
+              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
+              `((function(__h){var __r={};for(var __k in __h)__r[__k]=typeof __h[__k]==='function'?__h[__k]():__h[__k];return ${jsName}(__r);}))(`
+            );
+          } else if (sym === '$__array') {
+            // Array receives (...args) where args may be getters
+            modifiedCode = modifiedCode.replace(
+              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
+              `(function(){return ${jsName}(...Array.from(arguments).map(function(a){return typeof a==='function'?a():a;}))})(`
+            );
+          } else {
+            modifiedCode = modifiedCode.replace(
+              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
+              `${jsName}(`
+            );
+          }
+        }
+      }
+
+      // 3. Fix let-block shadowing: GXT's {{#let shadowX as |x|}} creates
+      //    Let_x_scopeN = () => shadowX inside an IIFE. After our replacement
+      //    above, calls to x() inside that IIFE still use the outer scope var.
+      //    Replace those with Let_x_scopeN()() to use the block-param value.
+      const letScopePattern = /let (Let_([a-zA-Z_]+)_scope(\d+))\s*=\s*\(\)\s*=>/g;
+      let letMatch;
+      while ((letMatch = letScopePattern.exec(modifiedCode)) !== null) {
+        const varName = letMatch[1]; // e.g., Let_hash_scope0
+        const helperName = letMatch[2]; // e.g., hash
+        const scopeIdx = letMatch[3]; // e.g., 0
+
+        // Find the enclosing IIFE: ...(() => { ... })()
+        // The let declaration is inside the IIFE. Find the matching close.
+        const declPos = letMatch.index;
+        // Walk backwards to find the IIFE start: (() => {
+        let iifeStart = modifiedCode.lastIndexOf('(() => {', declPos);
+        if (iifeStart === -1) iifeStart = modifiedCode.lastIndexOf('(()=>{', declPos);
+        if (iifeStart === -1) continue;
+
+        // Walk forward from declPos to find the return [...] or end of IIFE
+        // The IIFE ends with })(). Find it by bracket matching.
+        let depth = 1;
+        let iifeEnd = iifeStart + 1;
+        // Skip to the { after =>
+        const arrowBrace = modifiedCode.indexOf('{', iifeStart + 3);
+        if (arrowBrace === -1) continue;
+        iifeEnd = arrowBrace + 1;
+        for (; iifeEnd < modifiedCode.length && depth > 0; iifeEnd++) {
+          if (modifiedCode[iifeEnd] === '{') depth++;
+          else if (modifiedCode[iifeEnd] === '}') depth--;
+        }
+
+        // Extract the IIFE body after the let declaration
+        const bodyStart = modifiedCode.indexOf(';', declPos) + 1;
+        const bodyEnd = iifeEnd - 1; // Before the closing }
+        if (bodyStart <= declPos || bodyEnd <= bodyStart) continue;
+
+        let body = modifiedCode.slice(bodyStart, bodyEnd);
+
+        // Replace calls to helperName( with varName()( inside this body
+        const callPattern = new RegExp(`\\b${helperName}\\(`, 'g');
+        if (callPattern.test(body)) {
+          body = body.replace(callPattern, `${varName}()(`);
+          modifiedCode = modifiedCode.slice(0, bodyStart) + body + modifiedCode.slice(bodyEnd);
         }
       }
     }
