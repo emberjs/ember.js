@@ -99,7 +99,6 @@ import * as test40 from '@ember/template';
 import * as test41 from '@ember/template-compilation';
 import * as test42 from '@ember/template-factory';
 import * as test43 from '@ember/test';
-import * as test44 from '@ember/test/adapter';
 import * as test45 from '@ember/utils';
 import * as test46 from '@ember/version';
 import * as test47 from '@glimmer/tracking';
@@ -239,12 +238,8 @@ let allExports = [
   ['HTMLBars.compile', '@ember/template-compilation', 'compileTemplate', test41],
   ['Handlebars.template', '@ember/template-factory', 'createTemplateFactory', test42],
   ['HTMLBars.template', '@ember/template-factory', 'createTemplateFactory', test42],
-  ['Test.registerAsyncHelper', '@ember/test', 'registerAsyncHelper', test43],
-  ['Test.registerHelper', '@ember/test', 'registerHelper', test43],
   ['Test.registerWaiter', '@ember/test', 'registerWaiter', test43],
-  ['Test.unregisterHelper', '@ember/test', 'unregisterHelper', test43],
   ['Test.unregisterWaiter', '@ember/test', 'unregisterWaiter', test43],
-  ['Test.Adapter', '@ember/test/adapter', 'default', test44],
   ['compare', '@ember/utils', 'compare', test45],
   ['isBlank', '@ember/utils', 'isBlank', test45],
   ['isEmpty', '@ember/utils', 'isEmpty', test45],

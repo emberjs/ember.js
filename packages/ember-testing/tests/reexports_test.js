@@ -9,9 +9,6 @@ class ReexportsTestCase extends AbstractTestCase {}
 [
   // ember-testing
   ['Test', 'ember-testing'],
-  ['Test.Adapter', 'ember-testing', 'Adapter'],
-  ['Test.QUnitAdapter', 'ember-testing', 'QUnitAdapter'],
-  ['setupForTesting', 'ember-testing'],
 ].forEach((reexport) => {
   let [path, moduleId, exportName] = reexport;
 

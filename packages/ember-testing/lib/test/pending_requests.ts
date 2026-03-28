@@ -1,24 +1,8 @@
-let requests: unknown[] = [];
-
+/* TODO: Remove this file
+ *  This is long unused but was being checked by @ember/test-helpers
+ *  so we are maintaining the file and method for now so as to
+ *  maintain compatibility with many versions of @ember/test-helpers
+ * */
 export function pendingRequests() {
-  return requests.length;
-}
-
-export function clearPendingRequests() {
-  requests.length = 0;
-}
-
-export function incrementPendingRequests(_: unknown, xhr: unknown) {
-  requests.push(xhr);
-}
-
-export function decrementPendingRequests(_: unknown, xhr: unknown) {
-  setTimeout(function () {
-    for (let i = 0; i < requests.length; i++) {
-      if (xhr === requests[i]) {
-        requests.splice(i, 1);
-        break;
-      }
-    }
-  }, 0);
+  return 0; // hardcoded as this was unused but the method and file must stay for @ember/test-helpers compatibility
 }
