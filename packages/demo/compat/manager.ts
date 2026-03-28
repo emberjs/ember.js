@@ -15,6 +15,15 @@ import { assert, getDebugFunction } from '@ember/debug';
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
 import { setViewElement, setElementView, getViewElement, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
 
+// Helper to detect assertion-related throws that must escape catch blocks.
+function _isAssertionLike(e: unknown): boolean {
+  if (e instanceof Error) {
+    return e.message?.includes('Assertion Failed') === true;
+  }
+  if (e !== null && e !== undefined && typeof e === 'object') return true;
+  return false;
+}
+
 // Inline the style warning message to avoid potential import issues
 function constructStyleDeprecationMessage(affectedStyle: string): string {
   return (
@@ -251,6 +260,7 @@ const parentRenderFrames = new WeakMap<any, Symbol>();
 
 // Track all pool arrays for iteration in __gxtDestroyUnclaimedPoolEntries
 const _allPoolArrays = new Set<PoolEntry[]>();
+(globalThis as any).__gxtAllPoolArrays = _allPoolArrays;
 
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
@@ -2037,6 +2047,37 @@ function createRenderContext(
   // `this` is consistent across getter calls and storage lookups.
   const renderContext = instance || {};
 
+  // During force-rerender, cellFor may have installed own getters on the
+  // instance that shadow PURE prototype getters (e.g., get full() { ... }).
+  // These cellFor getters read from cells keyed to the OLD proxy (from the
+  // initial render), which hold stale values. Remove them so the new proxy
+  // reads from the prototype getter (which computes fresh values).
+  // Only remove getters that shadow PURE getters (no setter) — tracked
+  // property getters (with both get/set) should be preserved.
+  if ((globalThis as any).__gxtIsForceRerender && instance) {
+    try {
+      const ownKeys = Object.getOwnPropertyNames(instance);
+      for (const key of ownKeys) {
+        const ownDesc = Object.getOwnPropertyDescriptor(instance, key);
+        if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
+        // Walk prototype chain to find a matching getter
+        let p = Object.getPrototypeOf(instance);
+        while (p && p !== Object.prototype) {
+          const protoDesc = Object.getOwnPropertyDescriptor(p, key);
+          if (protoDesc) {
+            // Only remove if prototype has a PURE getter (no setter).
+            // Tracked properties have both get and set — keep their cellFor getters.
+            if (protoDesc.get && !protoDesc.set) {
+              delete instance[key];
+            }
+            break;
+          }
+          p = Object.getPrototypeOf(p);
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
   // Get slots from args.$slots (passed from compile.ts)
   // GXT templates use $slots.default() for {{yield}}
   const slots = args?.$slots || {};
@@ -2524,6 +2565,17 @@ function renderTemplateWithParentView(
   }
 
   try {
+    // Debug: capture template render context state
+    if ((globalThis as any).__gxtIsForceRerender && instance && typeof instance.first !== 'undefined') {
+      const slotsObj = renderContext.$slots || renderContext[Symbol.for('gxt-slots')] || {};
+      (globalThis as any).__gxtDebugRender = {
+        instanceFirst: instance.first,
+        ctxFull: renderContext.full,
+        hasSlots: !!slotsObj.default,
+        slotsKeys: Object.keys(slotsObj),
+        type: instance.constructor?.name,
+      };
+    }
     const result = template.render(renderContext, container);
     // Clean up GXT placeholder comments for cleaner DOM
     removeGxtArtifacts(container);
@@ -2716,7 +2768,8 @@ function _resolveEmberHelper(name: string, owner: any): ((positional: any[], nam
       return (positional: any[], named: any) => {
         try {
           return definition(positional, named || {});
-        } catch {
+        } catch (e) {
+          if (_isAssertionLike(e)) throw e;
           return undefined;
         }
       };
@@ -2729,7 +2782,7 @@ function _resolveEmberHelper(name: string, owner: any): ((positional: any[], nam
         if (instance && typeof instance.compute === 'function') {
           return instance.compute(positional, named || {});
         }
-      } catch { /* ignore */ }
+      } catch (e) { if (_isAssertionLike(e)) throw e; /* ignore */ }
       return undefined;
     };
   }
@@ -2818,6 +2871,20 @@ const $_MANAGERS = {
         return true;
       }
       if (globalThis.COMPONENT_MANAGERS.has(komp)) {
+        return true;
+      }
+      // Walk prototype chain for INTERNAL_MANAGERS (e.g., TemplateOnlyComponentDefinition
+      // instances where the manager is set on the prototype via setInternalComponentManager)
+      if (komp !== null && komp !== undefined && typeof komp === 'object') {
+        let proto = Object.getPrototypeOf(komp);
+        while (proto && proto !== Object.prototype) {
+          if (globalThis.INTERNAL_MANAGERS.has(proto)) return true;
+          if (globalThis.COMPONENT_MANAGERS.has(proto)) return true;
+          proto = Object.getPrototypeOf(proto);
+        }
+      }
+      // Also check for component templates set directly on the object
+      if (globalThis.COMPONENT_TEMPLATES?.has(komp)) {
         return true;
       }
       if (komp?.create && typeof komp.create === 'function') {
@@ -3117,8 +3184,16 @@ const $_MANAGERS = {
         throw notFoundErr;
       }
 
-      // Handle component with internal/custom manager
-      const manager = globalThis.INTERNAL_MANAGERS.get(komp) || globalThis.COMPONENT_MANAGERS.get(komp);
+      // Handle component with internal/custom manager (walk prototype chain)
+      let manager = globalThis.INTERNAL_MANAGERS.get(komp) || globalThis.COMPONENT_MANAGERS.get(komp);
+      if (!manager && komp !== null && komp !== undefined && typeof komp === 'object') {
+        let proto = Object.getPrototypeOf(komp);
+        while (proto && proto !== Object.prototype) {
+          manager = globalThis.INTERNAL_MANAGERS.get(proto) || globalThis.COMPONENT_MANAGERS.get(proto);
+          if (manager) break;
+          proto = Object.getPrototypeOf(proto);
+        }
+      }
       if (manager) {
         return handleManagedComponent(komp, args, fw, ctx, manager, owner);
       }
@@ -3446,6 +3521,20 @@ const $_MANAGERS = {
       }
 
       // First time: resolve modifier class and create instance
+
+      // Handle curried modifiers (from the (modifier) keyword) — they are
+      // self-contained functions that already know how to install themselves.
+      if (typeof modifier === 'function' && (modifier as any).__isCurriedModifier) {
+        const positional = (props || []).map(unwrapGxtArg);
+        const rawHash = hashArgs ? (typeof hashArgs === 'function' ? hashArgs() : hashArgs) : {};
+        const namedArgs: Record<string, any> = {};
+        for (const key of Object.keys(rawHash)) {
+          if (key.startsWith('$_') || key === 'hash') continue;
+          const val = rawHash[key];
+          namedArgs[key] = (typeof val === 'function' && !(val as any).__isCurriedComponent) ? (val as any)() : val;
+        }
+        return modifier(element, positional, namedArgs);
+      }
 
       // Resolve modifier class from the owner registry if it's a string
       let ModifierClass: any;

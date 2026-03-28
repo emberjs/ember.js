@@ -1062,6 +1062,160 @@ function createEmberDc(original: Function) {
 }
 
 // =============================================================================
+// $_modifierHelper wrapper
+// =============================================================================
+
+/**
+ * Wrap GXT's $_modifierHelper to handle Ember's (modifier "name" ...) keyword.
+ *
+ * GXT's native $_modifierHelper expects the first param to already be a modifier
+ * function. Ember's (modifier) keyword can receive:
+ * 1. A string name — resolve from the owner's registry
+ * 2. A modifier reference (from defineSimpleModifier/setModifierManager)
+ * 3. A dynamic value (this.xxx) — should throw an assertion error
+ *
+ * The result is a "curried modifier" function that can be used in modifier position.
+ */
+function createEmberModifierHelper(original: Function) {
+  return function $_modifierHelper_ember(params: any[], hash: Record<string, unknown>) {
+    const rawFirst = params[0];
+    // Unwrap GXT getter
+    const resolved = (typeof rawFirst === 'function' && !rawFirst.prototype &&
+      !rawFirst.__isCurriedModifier && !g.INTERNAL_MODIFIER_MANAGERS?.has(rawFirst))
+      ? rawFirst() : rawFirst;
+    const boundParams = params.slice(1);
+
+    // Dynamic string detection: if the resolved value is a dynamic binding
+    // (came from a this.xxx getter), throw an assertion.
+    // We detect this by checking if the raw first param was a getter function
+    // that resolved to a string — static strings are passed as literals.
+    if (typeof resolved === 'string' && typeof rawFirst === 'function') {
+      const assertFn = g.Ember?.assert || g.__emberAssert;
+      const msg = 'Passing a dynamic string to the `(modifier)` keyword is disallowed.';
+      if (assertFn) {
+        assertFn(msg, false);
+      } else {
+        const capture = g.__captureRenderError;
+        const err = new Error(`Assertion Failed: ${msg}`);
+        if (typeof capture === 'function') {
+          capture(err);
+        }
+        throw err;
+      }
+    }
+
+    // String — resolve modifier by name from the owner registry
+    if (typeof resolved === 'string') {
+      const owner = g.owner;
+
+      // Create a curried modifier function that, when invoked in modifier position
+      // (by $_maybeModifier), merges the curried args with invocation args and
+      // delegates to the Ember modifier manager.
+      function curriedModifier(node: HTMLElement, _params: any[], _hash: Record<string, unknown>) {
+        // Merge curried params with invocation params
+        const allParams = [...boundParams, ..._params].map(
+          (a: any) => typeof a === 'function' && !a.prototype ? a() : a
+        );
+        const mergedHash = { ...hash, ..._hash };
+
+        // Look up the modifier from the registry
+        const modOwner = g.owner || owner;
+        if (!modOwner) return undefined;
+        const factory = modOwner.factoryFor?.(`modifier:${resolved}`);
+        if (!factory) return undefined;
+        const ModifierClass = factory.class;
+
+        // Find the modifier manager
+        let managerFactory: any = null;
+        let pointer = ModifierClass;
+        const visited = new Set();
+        while (pointer && !visited.has(pointer)) {
+          visited.add(pointer);
+          const mgr = g.INTERNAL_MODIFIER_MANAGERS?.get(pointer);
+          if (mgr) { managerFactory = mgr; break; }
+          try { pointer = Object.getPrototypeOf(pointer); } catch { break; }
+        }
+        if (!managerFactory) return undefined;
+
+        const manager = typeof managerFactory === 'function' ? managerFactory(modOwner) : managerFactory;
+        if (!manager) return undefined;
+
+        const args = { positional: allParams, named: mergedHash };
+        const instance = manager.createModifier(ModifierClass, args);
+        manager.installModifier(instance, node, args);
+
+        // Return destructor
+        return () => {
+          if (manager.destroyModifier) manager.destroyModifier(instance);
+        };
+      }
+
+      // Mark as curried modifier so $_maybeModifier and canHandle recognize it
+      (curriedModifier as any).__isCurriedModifier = true;
+      (curriedModifier as any).__modifierName = resolved;
+
+      // Register with INTERNAL_MODIFIER_MANAGERS so canHandle() finds it
+      if (g.INTERNAL_MODIFIER_MANAGERS) {
+        // Use a simple pass-through manager for curried modifiers
+        g.INTERNAL_MODIFIER_MANAGERS.set(curriedModifier, {
+          createModifier: () => ({}),
+          installModifier: () => {},
+          updateModifier: () => {},
+          destroyModifier: () => {},
+        });
+      }
+
+      return curriedModifier;
+    }
+
+    // Modifier reference (from defineSimpleModifier/setModifierManager)
+    if (resolved != null && typeof resolved !== 'string') {
+      // Check if it has a modifier manager
+      let hasModifierManager = false;
+      if (g.INTERNAL_MODIFIER_MANAGERS) {
+        let ptr = resolved;
+        const visited = new Set();
+        while (ptr && !visited.has(ptr)) {
+          visited.add(ptr);
+          if (g.INTERNAL_MODIFIER_MANAGERS.has(ptr)) { hasModifierManager = true; break; }
+          try { ptr = Object.getPrototypeOf(ptr); } catch { break; }
+        }
+      }
+
+      if (hasModifierManager) {
+        // Create a curried modifier that wraps the modifier reference with bound args
+        function curriedManagedModifier(node: HTMLElement, _params: any[], _hash: Record<string, unknown>) {
+          const allParams = [...boundParams, ..._params];
+          const mergedHash = { ...hash, ..._hash };
+
+          // Delegate to $_maybeModifier which knows how to handle modifier references
+          return g.$_maybeModifier(resolved, node, allParams, () => mergedHash);
+        }
+
+        // Mark and register so canHandle() works
+        (curriedManagedModifier as any).__isCurriedModifier = true;
+        if (g.INTERNAL_MODIFIER_MANAGERS) {
+          g.INTERNAL_MODIFIER_MANAGERS.set(curriedManagedModifier, {
+            createModifier: () => ({}),
+            installModifier: () => {},
+            updateModifier: () => {},
+            destroyModifier: () => {},
+          });
+        }
+
+        return curriedManagedModifier;
+      }
+
+      // If it's a plain function (e.g., from EmberFunctionalModifiers), fall through to original
+      return original(params, hash);
+    }
+
+    // Fall through to original GXT implementation
+    return original(params, hash);
+  };
+}
+
+// =============================================================================
 // Installation & exports
 // =============================================================================
 
@@ -1077,6 +1231,10 @@ export function installEmberWrappers() {
   if (g.$_dc && !g.$_dc.__emberWrapped) {
     g.$_dc = createEmberDc(g.$_dc);
     g.$_dc.__emberWrapped = true;
+  }
+  if (g.$_modifierHelper && !g.$_modifierHelper.__emberWrapped) {
+    g.$_modifierHelper = createEmberModifierHelper(g.$_modifierHelper);
+    g.$_modifierHelper.__emberWrapped = true;
   }
 }
 

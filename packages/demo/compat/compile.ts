@@ -11,6 +11,18 @@ import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
 
+// Helper to detect assertion-related throws that must escape catch blocks.
+// The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
+// when a stubbed assert fires. Also re-throws actual Assertion Failed errors.
+function _isAssertionLike(e: unknown): boolean {
+  if (e instanceof Error) {
+    return e.message?.includes('Assertion Failed') === true;
+  }
+  // Non-Error, non-null/undefined objects may be the BREAK sentinel from expectAssertion.
+  if (e !== null && e !== undefined && typeof e === 'object') return true;
+  return false;
+}
+
 // Track style warnings per element to prevent duplicates when GXT sets style
 // via both prop() and attr() paths, or when manager.ts also sets it.
 // Also suppress all style warnings during force-rerender (morph).
@@ -584,6 +596,41 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
       if (c) c.update(newValue);
     } catch { /* ignore */ }
   }
+  // Re-evaluate cells for OTHER properties on the same object that have
+  // cellFor-installed getters. Native getters (e.g., get countAlias() { return this.count; })
+  // don't declare dependencies. When 'count' changes, the cell for 'countAlias'
+  // is stale. Re-read the property's current value (which goes through the
+  // original prototype getter or tracked getter) and update the cell.
+  // Only scan own properties that have getters (installed by cellFor).
+  try {
+    const ownKeys = Object.getOwnPropertyNames(obj);
+    for (const ownKey of ownKeys) {
+      if (ownKey === keyName) continue; // Already updated
+      try {
+        const desc = Object.getOwnPropertyDescriptor(obj, ownKey);
+        if (desc && desc.get && desc.configurable) {
+          // This looks like a cellFor-installed getter. Get the cell and update it
+          // by reading the ORIGINAL prototype getter's value.
+          let protoGetter: (() => any) | null = null;
+          let proto = Object.getPrototypeOf(obj);
+          while (proto && proto !== Object.prototype) {
+            const protoDesc = Object.getOwnPropertyDescriptor(proto, ownKey);
+            if (protoDesc && protoDesc.get) {
+              protoGetter = protoDesc.get;
+              break;
+            }
+            proto = Object.getPrototypeOf(proto);
+          }
+          if (protoGetter) {
+            // Call the original prototype getter to get fresh value
+            const freshVal = protoGetter.call(obj);
+            const oc = cellFor(obj, ownKey, /* skipDefine */ true);
+            if (oc) oc.update(freshVal);
+          }
+        }
+      } catch { /* skip */ }
+    }
+  } catch { /* ignore */ }
   // Dirty cells that hold `obj` as their VALUE (reverse lookup).
   // This handles the case where a template reads {{this.m.formattedMessage}} —
   // the formula tracks cell(renderContext, 'm'), and when m.message changes,
@@ -2013,7 +2060,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   if (Array.isArray(destroyableInstances)) {
                     destroyableInstances.push(helperInstance);
                   }
-                } catch {
+                } catch (e) {
+                  if (_isAssertionLike(e)) throw e;
                   helperInstance = null;
                 }
               }
@@ -2082,7 +2130,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               const v = helperGetter();
               textNode.textContent = v == null ? '' : String(v);
             });
-          } catch { /* effect setup may fail */ }
+          } catch (e) { if (_isAssertionLike(e)) throw e; /* effect setup may fail */ }
           return textNode;
         }
       }
@@ -3936,6 +3984,12 @@ export function precompileTemplate(templateString: string, options?: {
 }) {
   // Check cache first — skip cache when scopeValues are provided (they contain unique references)
   const hasScopeValues = options?.scopeValues && Object.keys(options.scopeValues).length > 0;
+  // Debug: track all calls with scopeValues
+  if (hasScopeValues) {
+    const _g3 = globalThis as any;
+    if (!_g3.__gxtDebugPrecompileCalls) _g3.__gxtDebugPrecompileCalls = [];
+    _g3.__gxtDebugPrecompileCalls.push({ template: templateString.slice(0, 100), keys: Object.keys(options!.scopeValues!) });
+  }
   const cacheKey = templateString + (options?.moduleName || '');
   if (!hasScopeValues) {
     const cached = templateCache.get(cacheKey);
@@ -4120,6 +4174,20 @@ export function precompileTemplate(templateString: string, options?: {
     }
   }
 
+  // Check for dynamic (modifier ...) usage — disallowed in Ember.
+  // (modifier this.xxx) passes a dynamic string which is not allowed.
+  // Only (modifier "static-name") or (modifier this.modifierRef) (where ref is a
+  // modifier function, not a string) are valid.
+  {
+    const dynamicModifierPattern = /\(modifier\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\)/;
+    if (dynamicModifierPattern.test(transformedTemplate)) {
+      emberAssert(
+        'Passing a dynamic string to the `(modifier)` keyword is disallowed.',
+        false
+      );
+    }
+  }
+
   transformedTemplate = transformCapitalizedComponents(transformedTemplate);
   if (/\{\{\s*outlet\s*\}\}/.test(transformedTemplate)) {
     transformedTemplate = transformOutletHelper(transformedTemplate);
@@ -4279,9 +4347,20 @@ export function precompileTemplate(templateString: string, options?: {
     );
   }
 
+  // Build bindings set from scopeValues so the GXT compiler knows which names
+  // are in scope and should NOT be transformed to built-in symbols (e.g. the
+  // local `array` function should shadow the built-in $__array helper).
+  const scopeBindings = new Set<string>();
+  if (options?.scopeValues) {
+    for (const key of Object.keys(options.scopeValues)) {
+      scopeBindings.add(key);
+    }
+  }
+
   // Compile using GXT runtime compiler
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
+    bindings: scopeBindings.size > 0 ? scopeBindings : undefined,
     flags: {
       IS_GLIMMER_COMPAT_MODE: true,
       WITH_EMBER_INTEGRATION: true,
@@ -4298,6 +4377,17 @@ export function precompileTemplate(templateString: string, options?: {
   }
 
 
+  // Debug: check compilation result for scope-valued templates
+  if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
+    const _g4 = globalThis as any;
+    if (!_g4.__gxtDebugCompResult) _g4.__gxtDebugCompResult = [];
+    _g4.__gxtDebugCompResult.push({
+      hasCode: !!compilationResult.code,
+      codeLen: compilationResult.code?.length || 0,
+      errors: compilationResult.errors?.length || 0,
+      code: (compilationResult.code || '').slice(0, 300),
+    });
+  }
   // Always recreate the template function to:
   // 1. Replace async $_each with synchronous $_eachSync
   // 2. Inject $slots reference (globalThis.$slots) for {{yield}} support
@@ -4352,7 +4442,56 @@ export function precompileTemplate(templateString: string, options?: {
       );
     }
 
+    // When scopeValues are provided (strict-mode defineComponent), the scope
+    // values should shadow built-in helpers and unknown-binding resolution.
+    // The GXT compiler may still produce:
+    //   1. $_maybeHelper("name", [...args], this) — unknown binding, string name
+    //   2. $__array(...) / $__fn(...) / $__hash(...) — built-in helper symbols
+    // Replace these with direct calls through the scope variable so the scope
+    // value takes precedence over built-ins.
+    if (scopeBindings.size > 0) {
+      // Debug: verify scopeBindings are available
+      const _g5 = globalThis as any;
+      if (!_g5.__gxtDebugPostProc) _g5.__gxtDebugPostProc = [];
+      _g5.__gxtDebugPostProc.push({ size: scopeBindings.size, names: Array.from(scopeBindings), codeBefore: modifiedCode.slice(0, 200) });
+      // 1. Replace $_maybeHelper("name", ...) with $_maybeHelper(name, ...)
+      //    for names in scope. This converts unknown-binding (string) resolution
+      //    to known-binding (reference) resolution.
+      for (const name of scopeBindings) {
+        const jsName = name.replace(/-/g, '_');
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = new RegExp(`\\$_maybeHelper\\("${escapedName}"\\s*,`, 'g');
+        modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsName},`);
+      }
+      // 2. Replace GXT built-in symbol calls with scope references.
+      //    E.g., $__array(1, 2, 3) → array(1, 2, 3) when `array` is in scope.
+      //    The scope injection will define `array` as the scope value.
+      const BUILTIN_SYMBOL_MAP: Record<string, string> = {
+        '$__array': 'array', '$__hash': 'hash', '$__fn': 'fn',
+      };
+      for (const [sym, scopeName] of Object.entries(BUILTIN_SYMBOL_MAP)) {
+        if (scopeBindings.has(scopeName) && modifiedCode.includes(sym + '(')) {
+          const jsName = scopeName.replace(/-/g, '_');
+          modifiedCode = modifiedCode.replace(
+            new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
+            `${jsName}(`
+          );
+        }
+      }
+    }
+
     compilationResult.code = modifiedCode;
+    // Temporary debug: capture compiled code for scope-valued templates
+    if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
+      const _g2 = globalThis as any;
+      if (!_g2.__gxtDebugCompiledCodes) _g2.__gxtDebugCompiledCodes = [];
+      _g2.__gxtDebugCompiledCodes.push({
+        template: templateString.slice(0, 200),
+        code: modifiedCode.slice(0, 500),
+        scopeKeys: Object.keys(options.scopeValues),
+        bindings: Array.from(scopeBindings),
+      });
+    }
     try {
       const needsArgsAlias = modifiedCode.includes('$a.');
       const needsSlots = modifiedCode.includes('$slots');
@@ -5175,8 +5314,9 @@ export function precompileTemplate(templateString: string, options?: {
           g.$slots = prevSlots;
           g.$fw = prevFw;
 
-          // Rethrow assertion errors so they propagate to test harnesses
-          if (err && (err.message?.includes('Assertion Failed') || err.message?.includes('Could not find') || err.message?.includes('Custom modifier managers must have'))) {
+          // Rethrow non-Error values (expectAssertion's BREAK sentinel) and
+          // assertion errors so they propagate to test harnesses
+          if (_isAssertionLike(err) || (err && ((err as any).message?.includes('Could not find') || (err as any).message?.includes('Custom modifier managers must have')))) {
             throw err;
           }
           // Swallow other render errors gracefully

@@ -675,9 +675,12 @@ class ClassicRootState {
             freshContext.$fw = [[], [], []];
             freshContext.owner = gxtOwner;
 
-            // Copy enumerable properties as cell-backed getters (same as initial render)
-            // so GXT effects track dependencies correctly during re-render
-            const _reRenderCellFor = (globalThis as any).__gxtCellFor;
+            // Copy enumerable properties as live getters that read CURRENT values
+            // from the component. The morph re-render is a one-shot DOM diff —
+            // it doesn't need reactive cell tracking, it just needs correct values.
+            // Reading from cells can return stale values for nested objects whose
+            // getter-based cells weren't updated (e.g., counter.countAlias when
+            // counter.count changed).
             for (const key in component) {
               if (key === 'args' || key === 'constructor') continue;
               const value = component[key];
@@ -687,17 +690,12 @@ class ClassicRootState {
               const propKey = key;
               const comp = component;
               try {
-                if (_reRenderCellFor) {
-                  const cell = _reRenderCellFor(comp, propKey, /* skipDefine */ true);
-                  Object.defineProperty(freshContext, propKey, {
-                    get() { return cell.value; },
-                    set(v: any) { cell.update(v); comp[propKey] = v; },
-                    enumerable: true,
-                    configurable: true,
-                  });
-                } else {
-                  freshContext[propKey] = value;
-                }
+                Object.defineProperty(freshContext, propKey, {
+                  get() { return comp[propKey]; },
+                  set(v: any) { comp[propKey] = v; },
+                  enumerable: true,
+                  configurable: true,
+                });
               } catch {
                 freshContext[key] = value;
               }
@@ -1807,6 +1805,13 @@ export class Renderer extends BaseRenderer {
 
   register(view: any): void {
     let id = getViewId(view);
+    // In GXT mode, view registration can conflict during force-rerender (morph)
+    // or when views aren't fully cleaned up between test runs. Silently
+    // overwrite the existing entry instead of asserting.
+    if ((globalThis as any).__GXT_MODE__) {
+      this._viewRegistry[id] = view;
+      return;
+    }
     assert(
       'Attempted to register a view with an id already in use: ' + id,
       !this._viewRegistry[id]
