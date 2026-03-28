@@ -479,7 +479,6 @@ module.exports = {
     'teardownViews',
     'templateName',
     'templateOnly',
-    'testing',
     'textarea',
     'then',
     'this[RENDER]',
