@@ -1,0 +1,18 @@
+diff --git a/lib/ember-addon-main.js b/lib/ember-addon-main.js
+index 71c809a11baa57fcc78f10e08176e5d34eaeb62b..8203d14805bd245b07e5dd4f7636d3f1b59c43ce 100644
+--- a/lib/ember-addon-main.js
++++ b/lib/ember-addon-main.js
+@@ -105,7 +105,12 @@ module.exports = {
+       );
+     }
+ 
+-    return ember.absolutePaths.templateCompiler;
++    if (ember.absolutePaths) {
++      return ember.absolutePaths.templateCompiler;
++    }
++
++    // v7+ ember-source no longer provides absolutePaths
++    return path.join(ember.root, 'dist', 'packages', 'ember-template-compiler', 'index.js');
+   },
+ 
+   astPlugins() {
