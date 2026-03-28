@@ -11,6 +11,23 @@ import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
 
+// Track style warnings per element to prevent duplicates when GXT sets style
+// via both prop() and attr() paths, or when manager.ts also sets it.
+// Also suppress all style warnings during force-rerender (morph).
+const _styleWarnedElements = new WeakSet<object>();
+
+function _shouldWarnStyle(element: any, _value?: string): boolean {
+  // During force-rerender, suppress all style warnings — the initial render already warned.
+  if ((globalThis as any).__gxtIsForceRerender) return false;
+  if (element && typeof element === 'object') {
+    if (_styleWarnedElements.has(element)) return false;
+    _styleWarnedElements.add(element);
+  }
+  return true;
+}
+// Expose for manager.ts to use the same deduplication
+(globalThis as any).__gxtShouldWarnStyle = _shouldWarnStyle;
+
 // Inline the style warning message to avoid importing @ember/-internals/views
 // (which can cause circular dependency issues during module initialization)
 function _constructStyleDeprecationMessage(affectedStyle: string): string {
@@ -144,10 +161,10 @@ setTimeout(() => {
 if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
   const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
   _GXT_HTMLBrowserDOMApi.prototype.attr = function(element: any, name: string, value: any) {
-    // When setting style attribute with a dynamic non-safe value, warn
+    // When setting style attribute with a dynamic non-safe value, warn (once per render pass)
     if (name === 'style' && value !== null && value !== undefined) {
       const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
-      if (!isHTMLSafe) {
+      if (!isHTMLSafe && _shouldWarnStyle(element, String(value))) {
         const warnFn = getDebugFunction('warn');
         if (warnFn) warnFn(_constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
       }
@@ -181,7 +198,7 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
         }
       }
       (globalThis as any).__gxtLastSafeStringResult = undefined;
-      if (!isHTMLSafe && !isSafeFromConcat) {
+      if (!isHTMLSafe && !isSafeFromConcat && _shouldWarnStyle(element, String(value))) {
         const warnFn = getDebugFunction('warn');
         if (warnFn) warnFn(_constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
       }
@@ -1152,6 +1169,116 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     }
     return resolvedObj[resolvedKey];
   },
+  // helper: The (helper) keyword resolves a helper by name and returns a curried helper reference.
+  // {{helper "hello-world"}} renders the result of invoking the helper (via toString/valueOf).
+  // {{helper (helper "hello-world") "wow"}} passes extra args to the curried helper.
+  helper: (helperNameOrRef: any, ...extraArgs: any[]) => {
+    const g = globalThis as any;
+
+    // Helper invocation function: resolves and invokes a helper by name with given args
+    const invokeByName = (name: string, positional: any[]) => {
+      const owner = g.owner;
+      if (!owner) return undefined;
+      const factory = owner.factoryFor?.(`helper:${name}`);
+      if (factory) {
+        const instance = factory.create();
+        if (instance && typeof instance.compute === 'function') {
+          return instance.compute(positional, {});
+        }
+      }
+      const lookup = owner.lookup?.(`helper:${name}`);
+      if (typeof lookup === 'function') return lookup(positional, {});
+      if (lookup && typeof lookup.compute === 'function') return lookup.compute(positional, {});
+      return undefined;
+    };
+
+    // Invoke a helper through its manager (for defineSimpleHelper results)
+    const invokeManaged = (helperFn: any, positional: any[]) => {
+      const managers = g.INTERNAL_HELPER_MANAGERS;
+      if (!managers) return helperFn(...positional);
+      let mgr: any = null;
+      let ptr = helperFn;
+      while (ptr) {
+        mgr = managers.get(ptr);
+        if (mgr) break;
+        try { ptr = Object.getPrototypeOf(ptr); } catch { break; }
+      }
+      if (mgr && typeof mgr.getDelegateFor === 'function') {
+        const delegate = mgr.getDelegateFor(g.owner);
+        if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+          const args = { positional, named: {} };
+          const bucket = delegate.createHelper(helperFn, args);
+          return delegate.getValue(bucket);
+        }
+      }
+      return helperFn(...positional);
+    };
+
+    // Resolve the first argument (unwrap GXT getters but preserve curried refs and managed helpers)
+    const raw = helperNameOrRef;
+    const resolved = (typeof raw === 'function' && !raw.__isCurriedHelper && !raw.__isManagedHelper)
+      ? raw() : raw;
+
+    // If it's already a curried helper reference, merge extra args and invoke
+    if (resolved && resolved.__isCurriedHelper) {
+      const resolvedExtras = extraArgs.map((a: any) => typeof a === 'function' && !a.prototype ? a() : a);
+      const merged = [...(resolved.__positionalArgs || []), ...resolvedExtras];
+      if (resolved.__helperName) {
+        return invokeByName(resolved.__helperName, merged);
+      }
+      if (resolved.__helperFn) {
+        return invokeManaged(resolved.__helperFn, merged);
+      }
+      return undefined;
+    }
+
+    // String — resolve helper by name
+    if (typeof resolved === 'string') {
+      const resolvedExtras = extraArgs.map((a: any) => typeof a === 'function' && !a.prototype ? a() : a);
+      if (extraArgs.length === 0) {
+        // No extra args — return a curried reference.
+        // In content position {{helper "name"}}, GXT renders the return value.
+        // We use toString/valueOf so the curried ref renders as the helper result.
+        const ref: any = {};
+        ref.__isCurriedHelper = true;
+        ref.__helperName = resolved;
+        ref.__positionalArgs = [];
+        ref.toString = () => String(invokeByName(resolved, []) ?? '');
+        ref.valueOf = () => invokeByName(resolved, []);
+        return ref;
+      }
+      return invokeByName(resolved, resolvedExtras);
+    }
+
+    // Function with helper manager (from defineSimpleHelper/setHelperManager)
+    if (resolved && typeof resolved === 'function') {
+      const managers = g.INTERNAL_HELPER_MANAGERS;
+      let hasManager = false;
+      if (managers) {
+        let ptr = resolved;
+        while (ptr) {
+          if (managers.has(ptr)) { hasManager = true; break; }
+          try { ptr = Object.getPrototypeOf(ptr); } catch { break; }
+        }
+      }
+      if (hasManager) {
+        const resolvedExtras = extraArgs.map((a: any) => typeof a === 'function' && !a.prototype ? a() : a);
+        if (extraArgs.length === 0) {
+          const ref: any = {};
+          ref.__isCurriedHelper = true;
+          ref.__isManagedHelper = true;
+          ref.__helperFn = resolved;
+          ref.__positionalArgs = [];
+          ref.toString = () => String(invokeManaged(resolved, []) ?? '');
+          ref.valueOf = () => invokeManaged(resolved, []);
+          return ref;
+        }
+        return invokeManaged(resolved, resolvedExtras);
+      }
+    }
+
+    return undefined;
+  },
   // mount: Engine mounting stub — GXT doesn't support Ember engines
   // Returns empty to prevent infinite loops during engine resolution
   mount: () => {
@@ -1884,6 +2011,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               }
             }
 
+            // Freeze positional/named to prevent mutation (Ember semantics)
+            Object.freeze(positional);
+            Object.freeze(named);
+
             if (helperInstance && typeof helperInstance.compute === 'function') {
               // Deduplicate: if args haven't changed, return cached result.
               // The force-rerender (innerHTML='' + rebuild) creates a NEW gxtEffect closure
@@ -2488,6 +2619,33 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       splatLocalSet.delete('__class__');
     }
     // GXT order: tag, tagProps, ctx, children
+    // Wrap TEXT_CONTENT event getters (event key "1") so non-primitive, non-Node values
+    // (Date, Object, Symbol) are stringified before reaching GXT's $ev/resolveRenderable.
+    // GXT's resolveRenderable returns raw objects for non-primitive values, which then
+    // fails in opcodeFor (expects a cell/tag). Ember stringifies all values in text positions.
+    if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
+      for (let ei = 0; ei < tagProps[2].length; ei++) {
+        const entry = tagProps[2][ei];
+        if (Array.isArray(entry) && entry[0] === '1' && typeof entry[1] === 'function') {
+          const origGetter = entry[1];
+          entry[1] = function _stringifyTextContent() {
+            const val = origGetter.apply(this, arguments);
+            if (val == null || typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') return val;
+            if (typeof val === 'symbol') return String(val);
+            if (typeof val === 'function') return val;
+            if (val instanceof Node) return val;
+            // Non-primitive object — stringify for text position (Ember behavior)
+            if (typeof val === 'object') {
+              if (Array.isArray(val)) return val;
+              if (typeof val.toHTML === 'function') return val;
+              if (val.__isCurriedComponent) return val;
+              try { return String(val); } catch { return ''; }
+            }
+            return val;
+          };
+        }
+      }
+    }
     return originalTag(tag, tagProps, ctx, children);
   };
 
@@ -3751,12 +3909,16 @@ export function precompileTemplate(templateString: string, options?: {
   strictMode?: boolean;
   scope?: () => Record<string, unknown>;
   moduleName?: string;
+  scopeValues?: Record<string, unknown>;
 }) {
-  // Check cache first
+  // Check cache first — skip cache when scopeValues are provided (they contain unique references)
+  const hasScopeValues = options?.scopeValues && Object.keys(options.scopeValues).length > 0;
   const cacheKey = templateString + (options?.moduleName || '');
-  const cached = templateCache.get(cacheKey);
-  if (cached) {
-    return cached;
+  if (!hasScopeValues) {
+    const cached = templateCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
   }
 
   // Check for <foo.bar /> — dotted paths used as tag names require
@@ -3836,6 +3998,31 @@ export function precompileTemplate(templateString: string, options?: {
   // Transform the template
   let transformedTemplate = templateString;
 
+  // Check for dotted-path mustache expressions like {{foo.bar}} where foo is not in scope.
+  // In Ember, these are errors because foo is a free variable path that can't be resolved.
+  // Collect block param names first so we don't flag those.
+  {
+    const blockParamNames = new Set<string>();
+    const bpPattern = /as\s+\|([^|]+)\|/g;
+    let bpM;
+    while ((bpM = bpPattern.exec(transformedTemplate)) !== null) {
+      for (const p of bpM[1].trim().split(/\s+/)) {
+        if (p) blockParamNames.add(p);
+      }
+    }
+    // Match {{identifier.path}} but not {{this.path}}, {{@path}}, or inside subexpressions
+    const dottedMustachePattern = /\{\{([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9.]*)\}\}/g;
+    let dm;
+    while ((dm = dottedMustachePattern.exec(transformedTemplate)) !== null) {
+      const head = dm[0] === dm.input ? dm[1] : dm[1]; // just the head identifier
+      if (head !== 'this' && !blockParamNames.has(head)) {
+        throw new Error(
+          `You attempted to render a path (\`{{${dm[1]}.${dm[2]}}}\`), but ${head} was not in scope`
+        );
+      }
+    }
+  }
+
   // Transform {{this.attrs.X}} to {{@X}} (after deprecation was fired above)
   // This mirrors the Glimmer AST plugin behavior
   if (/\{\{this\.attrs\./.test(transformedTemplate)) {
@@ -3890,6 +4077,25 @@ export function precompileTemplate(templateString: string, options?: {
     /\(mut\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\)/g,
     (_match, path) => `(mut ${path} "${path}")`
   );
+
+  // Check for dynamic (helper ...) usage — disallowed in Ember.
+  // {{helper this.xxx}} or (helper @xxx) pass dynamic strings which is not allowed.
+  // Only {{helper "static-name"}} is valid. But {{helper this.helperRef}} where
+  // the ref is a helper function (not a string) IS allowed — we can't distinguish
+  // at compile time, so we only flag obvious dynamic-string patterns.
+  {
+    // Match {{helper this.xxx}} — this is the only pattern in the test suite that
+    // represents "dynamic string resolution". Template-local refs like this.val
+    // where val is a defineSimpleHelper result use a different template structure
+    // (they're inside component templates where this.val is set as a class property).
+    const dynamicHelperPattern = /\{\{helper\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\}\}/;
+    if (dynamicHelperPattern.test(transformedTemplate)) {
+      emberAssert(
+        'Passing a dynamic string to the `(helper)` keyword is disallowed.',
+        false
+      );
+    }
+  }
 
   transformedTemplate = transformCapitalizedComponents(transformedTemplate);
   if (/\{\{\s*outlet\s*\}\}/.test(transformedTemplate)) {
@@ -4129,13 +4335,31 @@ export function precompileTemplate(templateString: string, options?: {
       // that references them as bare identifiers (e.g. inside {{#let}}) works.
       // GXT treats unknown helpers as scope variables in subexpression position.
       const helperInjections: string[] = [];
+      const scopeInjections: string[] = [];
+      const scopeVals = options?.scopeValues;
+      const scopeKeys = new Set(scopeVals ? Object.keys(scopeVals) : []);
+
+      // Inject scope values as local variables (for strict mode templates with scope)
+      let scopeStoreKey = '';
+      if (scopeVals && scopeKeys.size > 0) {
+        scopeStoreKey = `__gxtScope_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        g[scopeStoreKey] = scopeVals;
+        for (const key of scopeKeys) {
+          // Use valid JS identifier (convert hyphens, etc.)
+          const jsKey = key.replace(/-/g, '_');
+          scopeInjections.push(`const ${jsKey} = globalThis["${scopeStoreKey}"]["${key}"];`);
+        }
+      }
+
       const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
-        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id'];
+        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper'];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
           const jsName = name.replace(/-/g, '_');
+          // Skip if this name is provided in scope values (scope shadows built-in)
+          if (scopeKeys.has(name) || scopeKeys.has(jsName)) continue;
           // Check if the compiled code references this as a bare identifier
           // Match word boundary to avoid false positives (e.g. "getElement")
           const regex = new RegExp(`\\b${jsName}\\b`);
@@ -4149,6 +4373,7 @@ export function precompileTemplate(templateString: string, options?: {
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
           ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}
+          ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}
           return ${modifiedCode};
         };

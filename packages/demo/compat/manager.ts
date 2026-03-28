@@ -13,7 +13,7 @@
 import { assert, getDebugFunction } from '@ember/debug';
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
-import { setViewElement, setElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
+import { setViewElement, setElementView, getViewElement, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
 
 // Inline the style warning message to avoid potential import issues
 function constructStyleDeprecationMessage(affectedStyle: string): string {
@@ -346,7 +346,7 @@ function getCachedOrCreateInstance(
 
     // Sync wrapper element attributes/classes when args change
     if (hasChanges) {
-      const wrapper = poolEntry.instance.element || poolEntry.instance._element;
+      const wrapper = getViewElement(poolEntry.instance) || poolEntry.instance._element;
       if (wrapper instanceof HTMLElement) {
         syncWrapperElement(poolEntry.instance, wrapper, componentClass, args);
       }
@@ -844,6 +844,9 @@ export function captureRenderError(err: unknown): void {
   } else {
     _renderErrors.push(new Error(String(err)));
   }
+  // Track error count so the renderer can distinguish render-phase errors
+  // (init failures) from lifecycle-phase errors (didInsertElement failures).
+  (globalThis as any).__gxtRenderErrorCount = _renderErrors.length;
 }
 
 /**
@@ -851,6 +854,7 @@ export function captureRenderError(err: unknown): void {
  * Throws the first one (so assert.throws in tests can catch it).
  */
 export function flushRenderErrors(): void {
+  (globalThis as any).__gxtRenderErrorCount = 0;
   if (_renderErrors.length > 0) {
     const err = _renderErrors.shift()!;
     _renderErrors.length = 0;
@@ -1110,10 +1114,11 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
       if (attrName === 'id') continue;
 
       const value = propName.includes('.') ? getNestedValue(instance, propName) : instance?.[propName];
-      // Warn for style attribute bindings with non-safe strings
+      // Warn for style attribute bindings with non-safe strings (once per render pass per value)
       if (attrName === 'style' && value !== null && value !== undefined && value !== false) {
         const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
-        if (!isHTMLSafe) {
+        const shouldWarn = (globalThis as any).__gxtShouldWarnStyle;
+        if (!isHTMLSafe && (!shouldWarn || shouldWarn(wrapper, String(value)))) {
           const warnFn = getDebugFunction('warn');
           if (warnFn) warnFn(constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
         }
@@ -1399,7 +1404,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
       // the OLD element was preserved by the morph and IS connected.
       // Use getElementById as the authoritative check: if there's a live
       // element with this instance's elementId, the component is alive.
-      const el = instance.element;
+      const el = getViewElement(instance);
       let isAlive = false;
 
       // Primary check: is the instance's element still in the DOM?
@@ -1468,7 +1473,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
 
   for (const instance of unclaimed) {
     try {
-      const el = instance.element;
+      const el = getViewElement(instance);
       if (el instanceof HTMLElement && !el.isConnected) {
         tempContainer.appendChild(el);
         reattached.push({ instance, element: el });
@@ -1642,7 +1647,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
 };
 
 (globalThis as any).__gxtSyncWrapper = function(obj: any, keyName: string) {
-  const wrapper = obj?.element;
+  const wrapper = getViewElement(obj);
   if (!(wrapper instanceof HTMLElement)) return;
   const attrBindings = obj?.attributeBindings;
   const classBindings = obj?.classNameBindings;
@@ -1826,10 +1831,11 @@ function buildWrapperElement(
       }
 
       const value = propName.includes('.') ? getNestedValue(instance, propName) : instance?.[propName];
-      // Warn for style attribute bindings with non-safe strings
+      // Warn for style attribute bindings with non-safe strings (once per render pass per value)
       if (attrName === 'style' && value !== null && value !== undefined && value !== false) {
         const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
-        if (!isHTMLSafe) {
+        const shouldWarn = (globalThis as any).__gxtShouldWarnStyle;
+        if (!isHTMLSafe && (!shouldWarn || shouldWarn(wrapper, String(value)))) {
           const warnFn = getDebugFunction('warn');
           if (warnFn) warnFn(constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
         }
@@ -2038,13 +2044,19 @@ function createRenderContext(
   // Set up cell-backed getters for args on render context.
   // Using cells ensures GXT's formula tracking picks up the dependency,
   // so text nodes, if-conditions, etc. re-evaluate when args change.
+  //
+  // IMPORTANT: Skip this for template-only components (instance === null).
+  // Template-only components should only expose args via @argName (this.args.foo),
+  // NOT as properties on `this` (this.foo). Installing getters on the bare
+  // renderContext {} would make {{this.foo}} resolve to the arg value, which
+  // violates Ember's template-only component contract.
   const cellForFn2 = (globalThis as any).__gxtCellFor;
   const renderCtxArgCells: Record<string, any> = {};
   const argGetters = instance?.__argGetters || {};
 
   // Collect all arg keys and their getters
   const allArgKeys = new Set<string>(Object.keys(argGetters));
-  if (args && typeof args === 'object') {
+  if (instance && args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
       if (key === 'class' || key === 'classNames' || key.startsWith('__') || key.startsWith('Symbol')) continue;
       allArgKeys.add(key);
@@ -2493,7 +2505,18 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
   const normalizedName = name.replace(/::/g, '/');
 
   // Try component lookup
-  const factory = owner.factoryFor(`component:${normalizedName}`);
+  let factory = owner.factoryFor(`component:${normalizedName}`);
+
+  // If not found and name is PascalCase, try kebab-case.
+  // GXT's runtime compiler transforms {{foo-bar}} to <FooBar /> which becomes
+  // $_c("FooBar", ...). The Ember registry uses kebab-case names.
+  if (!factory && /[A-Z]/.test(normalizedName)) {
+    const kebabName = normalizedName
+      .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+      .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+      .toLowerCase();
+    factory = owner.factoryFor(`component:${kebabName}`);
+  }
 
   // Template can be:
   // 1. Set on the ComponentClass via setComponentTemplate
@@ -2508,6 +2531,14 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
   if (!template) {
     // Fallback to registry lookup
     template = owner.lookup(`template:components/${normalizedName}`);
+    // Also try kebab-case for PascalCase names
+    if (!template && /[A-Z]/.test(normalizedName)) {
+      const kebabName = normalizedName
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+        .toLowerCase();
+      template = owner.lookup(`template:components/${kebabName}`);
+    }
   }
 
   if (factory || template) {
@@ -3180,10 +3211,28 @@ const $_MANAGERS = {
             ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
             : {};
 
-          // When called from GXT's $_maybeHelper (content position like {{x-borf}}),
-          // invoke the helper immediately and return the value.
-          // GXT expects a value, not a curried function.
-          return resolvedFn(curriedPositionals, curriedNamed);
+          // Return a curried helper reference. GXT's $_helperHelper expects this
+          // pattern so that {{helper (helper "name") extraArgs}} works correctly.
+          // When rendered in content position ({{helper "name"}}), GXT will call
+          // the curried function with no additional args, producing the value.
+          const curried = function __emberCurriedHelper(additionalParams?: any[], additionalHash?: any) {
+            const mergedPositional = [
+              ...curriedPositionals,
+              ...(Array.isArray(additionalParams) ? additionalParams.map(unwrapVal) : [])
+            ];
+            const mergedNamed = {
+              ...curriedNamed,
+              ...(additionalHash && typeof additionalHash === 'object'
+                ? Object.fromEntries(Object.entries(additionalHash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+                : {}),
+            };
+            return resolvedFn(mergedPositional, mergedNamed);
+          };
+          (curried as any).__isEmberCurriedHelper = true;
+          (curried as any).__resolvedFn = resolvedFn;
+          (curried as any).__curriedPositionals = curriedPositionals;
+          (curried as any).__curriedNamed = curriedNamed;
+          return curried;
         }
       }
       return null;
@@ -3601,6 +3650,7 @@ function handleStringComponent(
       return _cachedResult;
     }
 
+    try {
     // Check if this is a template-only component (no backing class).
     // Template-only components have an internal manager set on them and
     // don't need an instance. Just render the template directly.
@@ -3685,6 +3735,17 @@ function handleStringComponent(
     _cachedResult = result;
     _cachedRenderPassId = currentRenderPassId;
     return result;
+    } catch (e) {
+      // Capture Error instances (init throws, assertion failures, etc.) so they
+      // propagate through flushRenderErrors even if GXT catches the exception
+      // internally. Non-Error values (like expectAssertion's BREAK sentinel)
+      // must NOT be captured — they are control flow signals that need to
+      // propagate directly to their catch handler.
+      if (e instanceof Error) {
+        captureRenderError(e);
+      }
+      throw e;
+    }
   };
 }
 
@@ -4106,6 +4167,7 @@ function handleClassicComponent(
     if (_cachedResult !== undefined && _cachedRenderPassId === currentRenderPassId) {
       return _cachedResult;
     }
+    try {
     const instance = getCachedOrCreateInstance(factory, args, factory.class, owner, capturedParentView);
 
     // Resolve template with layoutName/layout support
@@ -4135,6 +4197,12 @@ function handleClassicComponent(
     _cachedResult = result;
     _cachedRenderPassId = currentRenderPassId;
     return result;
+    } catch (e) {
+      if (e instanceof Error) {
+        captureRenderError(e);
+      }
+      throw e;
+    }
   };
 }
 
@@ -4236,7 +4304,7 @@ function renderClassicComponent(
     // preserve the OLD element in the live DOM while the NEW wrapper is
     // in a temp container. After the morph, the instance should still
     // point to the old (live) element, not the new (discarded) one.
-    const oldElement = instance?.element;
+    const oldElement = getViewElement(instance);
 
     if (instance && wrapper instanceof HTMLElement) {
       setViewElement(instance, wrapper);
@@ -4299,6 +4367,27 @@ function renderClassicComponent(
         triggerLifecycleHook(inst, 'didRender');
       });
     }
+  }
+
+  // For tagless classic components (wrapper is a DocumentFragment),
+  // capture first/last nodes for getViewBounds support before the
+  // fragment is consumed by GXT's DOM insertion.
+  if (instance && !(wrapper instanceof HTMLElement) && wrapper.childNodes.length > 0) {
+    const firstNode = wrapper.firstChild;
+    const lastNode = wrapper.lastChild;
+    // Use a deferred getter for parentElement since the nodes aren't
+    // in the live DOM yet at this point.
+    Object.defineProperty(instance, '__gxtBounds', {
+      get() {
+        return {
+          parentElement: firstNode?.parentNode,
+          firstNode,
+          lastNode,
+        };
+      },
+      configurable: true,
+      enumerable: false,
+    });
   }
 
   // Return GXT-compatible result

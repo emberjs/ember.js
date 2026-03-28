@@ -583,6 +583,10 @@ class ClassicRootState {
             }
           }
 
+          // Reset render error count before rendering so we can distinguish
+          // render-phase errors from lifecycle-phase errors.
+          (globalThis as any).__gxtRenderErrorCount = 0;
+
           // Push root component onto parentView stack before rendering
           if (root && 'layoutName' in root) {
             pushParentView(root);
@@ -602,13 +606,27 @@ class ClassicRootState {
           console.warn('GXT template detected but cannot render:', template);
         }
 
+        // Check if any errors were captured during the template render phase
+        // (e.g., init() errors). If so, clear the DOM before re-throwing because
+        // the render did not complete successfully (matching Glimmer VM behavior).
+        const hadRenderPhaseErrors = (globalThis as any).__gxtRenderErrorCount > 0;
+
         // Flush queued didInsertElement / didRender hooks now that all DOM
         // has been inserted into the live document by GXT.
         flushAfterInsertQueue();
 
         // Re-throw any errors captured during rendering (init, didInsertElement, etc.)
         // so they propagate through assert.throws in tests and Ember's error recovery.
-        flushRenderErrors();
+        try {
+          flushRenderErrors();
+        } catch (renderError) {
+          // Only clear DOM for render-phase errors (init failures).
+          // Lifecycle errors (didInsertElement) should leave DOM intact.
+          if (hadRenderPhaseErrors) {
+            (parentElement as unknown as Element).innerHTML = '';
+          }
+          throw renderError;
+        }
 
         // Store references for re-rendering
         const gxtTemplate = template;
@@ -1764,6 +1782,29 @@ export class Renderer extends BaseRenderer {
     lastNode: SimpleNode;
   } {
     let bounds: Bounds | null = component[BOUNDS];
+
+    // In GXT mode, BOUNDS may not be set on the component. Fall back to
+    // synthesizing bounds from the component's element (wrapper or tagless).
+    if (!bounds && (globalThis as any).__GXT_MODE__) {
+      const element = getViewElement(component);
+      if (element) {
+        // Regular component with a wrapper element
+        return {
+          parentElement: element.parentNode as unknown as SimpleElement,
+          firstNode: element as unknown as SimpleNode,
+          lastNode: element as unknown as SimpleNode,
+        };
+      }
+      // Tagless component — look for the __gxtBounds marker
+      const gxtBounds = (component as any).__gxtBounds;
+      if (gxtBounds) {
+        return {
+          parentElement: gxtBounds.parentElement as unknown as SimpleElement,
+          firstNode: gxtBounds.firstNode as unknown as SimpleNode,
+          lastNode: gxtBounds.lastNode as unknown as SimpleNode,
+        };
+      }
+    }
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
 

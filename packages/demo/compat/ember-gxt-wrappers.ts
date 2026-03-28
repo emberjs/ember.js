@@ -33,17 +33,19 @@ function isGxtGetter(v: any): boolean {
   return typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell;
 }
 function unwrapArgs(args: any[]): any[] {
-  if (!Array.isArray(args)) return [];
+  if (!Array.isArray(args)) return Object.freeze([]) as any[];
   // Only unwrap GXT getters (arrow fns with no prototype).
   // Regular functions (like closures from (fn ...)) should be passed as-is.
-  return args.map(a => isGxtGetter(a) ? a() : a);
+  const result = args.map(a => isGxtGetter(a) ? a() : a);
+  Object.freeze(result);
+  return result;
 }
 
 // GXT internal hash keys that should not be passed to Ember helpers
 const GXT_INTERNAL_KEYS = new Set(['$_hasBlock', '$_hasBlockParams', '$_scope', '$_eval', 'hash']);
 
 function unwrapHash(hash: Record<string, any>): Record<string, any> {
-  if (!hash || typeof hash !== 'object') return {};
+  if (!hash || typeof hash !== 'object') return Object.freeze({}) as Record<string, any>;
   const result: Record<string, any> = {};
   for (const key of Object.keys(hash)) {
     if (GXT_INTERNAL_KEYS.has(key) || key.startsWith('$_')) continue;
@@ -51,6 +53,7 @@ function unwrapHash(hash: Record<string, any>): Record<string, any> {
     // Don't call CurriedComponent functions - they should be preserved as-is
     result[key] = (typeof val === 'function' && !val.__isCurriedComponent) ? val() : val;
   }
+  Object.freeze(result);
   return result;
 }
 
@@ -173,8 +176,8 @@ function createEmberMaybeHelper(original: Function) {
             if (!cached) {
               // Build a reactive args object so the helper can read updated values
               const reactiveArgs: { positional: any[]; named: Record<string, any> } = {
-                positional: [...positional],
-                named: { ...named },
+                positional: Object.freeze([...positional]) as any[],
+                named: Object.freeze({ ...named }) as Record<string, any>,
               };
 
               // Create the helper bucket once
@@ -291,7 +294,7 @@ function createEmberMaybeHelper(original: Function) {
               let cached = classHelperInstanceCache.get(name) as any;
               const _cellFor = g.__gxtCellFor;
               if (!cached || cached.__managerBucket !== true) {
-                const reactiveArgs = { positional: [...positional], named: { ...named } };
+                const reactiveArgs = { positional: Object.freeze([...positional]), named: Object.freeze({ ...named }) };
                 const bucket = delegate.createHelper(factoryClass, reactiveArgs);
 
                 // Wire up destroyable if supported
