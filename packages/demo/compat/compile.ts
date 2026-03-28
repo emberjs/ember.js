@@ -306,6 +306,9 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 
   if (g.$_componentHelper) {
     const unwrapArg = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
+    // Cache the last known owner so re-evaluations during reactive updates
+    // (when globalThis.owner may be null) can still resolve components.
+    let _cachedOwner: any = null;
 
     g.$_componentHelper = function $_componentHelper_ember(params: any[], hash: Record<string, any>) {
       const createCurried = g.__createCurriedComponent;
@@ -316,6 +319,16 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 
       // Resolve the first arg (component name/ref)
       const first = unwrapArg(params[0]);
+
+      // Track the owner — prefer globalThis.owner, fall back to cached
+      const currentOwner = g.owner;
+      if (currentOwner && !currentOwner.isDestroyed && !currentOwner.isDestroying) {
+        _cachedOwner = currentOwner;
+      }
+      if (_cachedOwner && (_cachedOwner.isDestroyed || _cachedOwner.isDestroying)) {
+        _cachedOwner = null;
+      }
+      const owner = currentOwner || _cachedOwner;
 
       // Collect named args from hash (keep getters for reactivity).
       // Also eagerly evaluate each getter to establish GXT cell tracking
@@ -354,11 +367,13 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // Validate that a string component name can be resolved.
       // This throws eagerly during template evaluation (matching Ember's behavior
       // of asserting during render for non-existent components).
+      // IMPORTANT: Only validate with globalThis.owner (not the cached fallback)
+      // to avoid false negatives when the cached owner is from a previous test.
       if (typeof first === 'string' && first.length > 0) {
-        const owner = g.owner;
-        if (owner && !owner.isDestroyed && !owner.isDestroying) {
-          const factory = owner.factoryFor?.(`component:${first}`);
-          const template = owner.lookup?.(`template:components/${first}`);
+        const validationOwner = g.owner;
+        if (validationOwner && !validationOwner.isDestroyed && !validationOwner.isDestroying) {
+          const factory = validationOwner.factoryFor?.(`component:${first}`);
+          const template = validationOwner.lookup?.(`template:components/${first}`);
           if (!factory && !template) {
             const err = new Error(
               `Attempted to resolve \`${first}\`, which was expected to be a component, but nothing was found. ` +
@@ -375,8 +390,19 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         }
       }
 
-      // Create a curried component
-      return createCurried(first, namedArgs, positionals);
+      // Temporarily set globalThis.owner for createCurriedComponent to capture
+      const prevOwner = g.owner;
+      if (!prevOwner && owner) {
+        g.owner = owner;
+      }
+      try {
+        // Create a curried component
+        return createCurried(first, namedArgs, positionals);
+      } finally {
+        if (!prevOwner && owner) {
+          g.owner = prevOwner;
+        }
+      }
     };
   }
 }

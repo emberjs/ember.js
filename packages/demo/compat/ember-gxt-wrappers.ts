@@ -98,6 +98,10 @@ let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; re
 };
 
 function createEmberMaybeHelper(original: Function) {
+  // Cache the last known owner so that re-evaluations during reactive updates
+  // (when globalThis.owner may be null) can still resolve helpers.
+  let _cachedHelperOwner: any = null;
+
   const wrapped = function $_maybeHelper_ember(
     nameOrFn: string | Function,
     args: any[],
@@ -251,9 +255,16 @@ function createEmberMaybeHelper(original: Function) {
       return helper();
     }
 
-    // Try Ember container lookup
-    const owner = g.owner;
-    if (owner) {
+    // Try Ember container lookup — prefer globalThis.owner, fall back to cached
+    const currentOwner = g.owner;
+    if (currentOwner && !currentOwner.isDestroyed && !currentOwner.isDestroying) {
+      _cachedHelperOwner = currentOwner;
+    }
+    if (_cachedHelperOwner && (_cachedHelperOwner.isDestroyed || _cachedHelperOwner.isDestroying)) {
+      _cachedHelperOwner = null;
+    }
+    const owner = currentOwner || _cachedHelperOwner;
+    if (owner && !owner.isDestroyed && !owner.isDestroying) {
       // First try factoryFor to get the registered class/factory
       const factory = owner.factoryFor(`helper:${name}`);
 

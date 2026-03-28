@@ -125,6 +125,10 @@ export function createCurriedComponent(
   curried.__name = name;
   curried.__curriedArgs = curriedArgs;
   curried.__curriedPositionals = curriedPositionals;
+  // Capture the current owner so it can be used as fallback during re-evaluation
+  // when globalThis.owner may be null (e.g., dash-prefixed contextual components).
+  curried.__owner = (nameOrComponent && nameOrComponent.__isCurriedComponent && nameOrComponent.__owner)
+    || (globalThis as any).owner;
 
   return curried;
 }
@@ -268,10 +272,11 @@ function getCachedOrCreateInstance(
   factory: ComponentFactory,
   args: any,
   componentClass: any,
-  owner: any
+  owner: any,
+  explicitParentView?: any
 ): any {
   const cacheKey = componentClass || factory;
-  const currentParentView = getCurrentParentView();
+  const currentParentView = explicitParentView !== undefined ? explicitParentView : getCurrentParentView();
   const parentKey = currentParentView || ROOT_PARENT_SENTINEL;
 
   // Get or create pool for this parent
@@ -354,8 +359,28 @@ function getCachedOrCreateInstance(
     return poolEntry.instance;
   }
 
+  // Before creating a new instance, check if there's already an instance
+  // for this template position (identified by __thunkId) in another pool.
+  // This handles GXT re-evaluating formulas during the same render pass
+  // with a different parentView context (e.g., after the parentView stack has been popped).
+  const thunkId = args?.__thunkId;
+  if (thunkId) {
+    for (const poolArr of _allPoolArrays) {
+      const existing = poolArr.find((e) => e.claimed && e.instance?.__gxtThunkId === thunkId);
+      if (existing) {
+        // Already created in this render pass — return the same instance
+        return existing.instance;
+      }
+    }
+  }
+
   // No matching instance - create a new one
   const instance = createComponentInstance(factory, args, currentParentView, owner);
+
+  // Store thunkId on instance for dedup during re-evaluations
+  if (thunkId) {
+    instance.__gxtThunkId = thunkId;
+  }
 
   // Add to pool and mark as claimed
   // updatedThisPass is false since this is initial creation, not an update
@@ -924,6 +949,21 @@ function getNestedValue(instance: any, path: string): any {
     const part = parts[i]!;
     if (part === 'attrs') {
       inAttrs = true;
+      // For attrs.X paths, prefer reading from __argGetters which provides
+      // fresh reactive values from the parent context, instead of going
+      // through MutableCells which may be stale after model replacement.
+      const argGetters = instance?.__argGetters;
+      const firstArgKey = parts[i + 1];
+      if (argGetters && firstArgKey && argGetters[firstArgKey]) {
+        let argValue = argGetters[firstArgKey]();
+        // If there are more segments after attrs.X (e.g., attrs.batman.robin),
+        // traverse the remaining path on the resolved arg value
+        for (let j = i + 2; j < parts.length; j++) {
+          if (argValue == null) return undefined;
+          argValue = argValue[parts[j]!];
+        }
+        return argValue;
+      }
       current = current[part];
       continue;
     }
@@ -971,7 +1011,9 @@ function resolveClassNameBinding(instance: any, binding: string): string | null 
 
   // Simple 'prop' binding
   if (value === true) {
-    return dasherize(propPath);
+    // For nested paths like 'nested.fooBarBaz', dasherize only the last segment
+    const lastSegment = propPath.includes('.') ? propPath.split('.').pop()! : propPath;
+    return dasherize(lastSegment);
   }
   if (value && typeof value === 'string') {
     return value;
@@ -1365,6 +1407,12 @@ let _preRerenderSnapshot: Set<any> = new Set();
 
   for (const instance of unclaimed) {
     try {
+      // Ensure instance is in inDOM state before destroy hooks.
+      // Components that were rendered but never transitioned (e.g., created by
+      // GXT formula re-evaluation) may still be in hasElement or preRender state.
+      if (instance._transitionTo && instance._state !== 'inDOM') {
+        try { instance._transitionTo('inDOM'); } catch {}
+      }
       triggerLifecycleHook(instance, 'willDestroyElement');
       triggerLifecycleHook(instance, 'willClearRender');
     } catch { /* ignore */ }
@@ -1623,6 +1671,14 @@ function buildWrapperElement(
   const classNameBindings = instance?.classNameBindings || componentDef?.prototype?.classNameBindings;
   if (classNameBindings && Array.isArray(classNameBindings)) {
     for (const binding of classNameBindings) {
+      assert(
+        'classNameBindings must be non-empty strings',
+        typeof binding === 'string' && binding.length > 0
+      );
+      assert(
+        'classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. `classNameBindings: [\'foo\', \':bar\']`',
+        typeof binding === 'string' && !binding.includes(' ')
+      );
       const className = resolveClassNameBinding(instance, binding);
       if (className) classList.push(className);
     }
@@ -2488,6 +2544,21 @@ function _resolveEmberHelper(name: string, owner: any): ((positional: any[], nam
 // $_MANAGERS Implementation
 // =============================================================================
 
+// Cache the last known owner so reactive re-evaluations (when globalThis.owner
+// may be null) can still resolve components and helpers.
+let _cachedManagerOwner: any = null;
+function getOwnerWithFallback(): any {
+  const current = (globalThis as any).owner;
+  if (current && !current.isDestroyed && !current.isDestroying) {
+    _cachedManagerOwner = current;
+    return current;
+  }
+  if (_cachedManagerOwner && (_cachedManagerOwner.isDestroyed || _cachedManagerOwner.isDestroying)) {
+    _cachedManagerOwner = null;
+  }
+  return current || _cachedManagerOwner;
+}
+
 const $_MANAGERS = {
   component: {
     canHandle(komp: any): boolean {
@@ -2500,8 +2571,8 @@ const $_MANAGERS = {
       if (typeof komp === 'string') {
         // EmberHtmlRaw is always handled (triple-stache)
         if (komp === 'ember-html-raw') return true;
-        const owner = (globalThis as any).owner;
-        if (owner) {
+        const owner = getOwnerWithFallback();
+        if (owner && !owner.isDestroyed && !owner.isDestroying) {
           const resolved = resolveComponent(komp, owner);
           if (resolved !== null) return true;
           // Convert PascalCase to kebab-case for helper lookup
@@ -2544,7 +2615,9 @@ const $_MANAGERS = {
     },
 
     handle(komp: any, args: any, fw: any, ctx: any): any {
-      const owner = (globalThis as any).owner;
+      const owner = getOwnerWithFallback()
+        || (komp && komp.__isCurriedComponent && komp.__owner)
+        || (ctx && ctx.owner);
 
       // Handle CurriedComponent — merge curried args with invocation args
       if (komp && komp.__isCurriedComponent) {
@@ -2658,7 +2731,19 @@ const $_MANAGERS = {
         }
         // Resolve the underlying component
         const resolvedKomp = komp.__name;
-        return this.handle(resolvedKomp, mergedArgs, fw, ctx);
+        // Temporarily ensure globalThis.owner is set for the recursive call,
+        // so dash-prefixed components (e.g., "-inner-component") can be resolved.
+        const prevOwner = (globalThis as any).owner;
+        if (!prevOwner && owner) {
+          (globalThis as any).owner = owner;
+        }
+        try {
+          return this.handle(resolvedKomp, mergedArgs, fw, ctx);
+        } finally {
+          if (!prevOwner && owner) {
+            (globalThis as any).owner = prevOwner;
+          }
+        }
       }
 
       // Handle empty component marker (from $_dc_ember for falsy dynamic component names)
@@ -2688,7 +2773,18 @@ const $_MANAGERS = {
             }
           }
         }
-        return this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
+        // Temporarily ensure globalThis.owner is set for the recursive call
+        const prevOwner2 = (globalThis as any).owner;
+        if (!prevOwner2 && owner) {
+          (globalThis as any).owner = owner;
+        }
+        try {
+          return this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
+        } finally {
+          if (!prevOwner2 && owner) {
+            (globalThis as any).owner = prevOwner2;
+          }
+        }
       }
 
       // EmberHtmlRaw — triple-stache {{{expr}}} compiled as <EmberHtmlRaw @value={{expr}} />
@@ -2748,10 +2844,31 @@ const $_MANAGERS = {
                 }
               }
 
-              // Use $_maybeHelper to invoke the helper through Ember's protocol
+              // Use $_maybeHelper to invoke the helper through Ember's protocol.
+              // Wrap the result in a getter function so GXT can render it as a text node.
+              // The component manager's handle() must return a function (not a raw value),
+              // because GXT expects component results to be renderable.
               const maybeHelper = (globalThis as any).$_maybeHelper;
               if (typeof maybeHelper === 'function') {
-                return maybeHelper(helperName, positional, named, ctx);
+                // Temporarily ensure globalThis.owner is set so $_maybeHelper can resolve
+                const prevOwnerH = (globalThis as any).owner;
+                if (!prevOwnerH && owner) {
+                  (globalThis as any).owner = owner;
+                }
+                let helperResult: any;
+                try {
+                  helperResult = maybeHelper(helperName, positional, named, ctx);
+                } finally {
+                  if (!prevOwnerH && owner) {
+                    (globalThis as any).owner = prevOwnerH;
+                  }
+                }
+                // Return a getter so GXT renders the value as text
+                return () => {
+                  const val = helperResult;
+                  if (val == null) return '';
+                  return String(val);
+                };
               }
             }
           } catch { /* ignore errors */ }
@@ -2785,11 +2902,16 @@ const $_MANAGERS = {
   helper: {
     canHandle(helper: any): boolean {
       if (typeof helper === 'string') {
-        const owner = (globalThis as any).owner;
+        const owner = getOwnerWithFallback();
         if (owner && !owner.isDestroyed && !owner.isDestroying) {
           // Only claim we can handle if the helper actually exists
           const factory = owner.factoryFor?.(`helper:${helper}`);
           if (factory) return true;
+          // Also try direct lookup (for helpers registered via application.register)
+          try {
+            const lookup = owner.lookup?.(`helper:${helper}`);
+            if (lookup != null) return true;
+          } catch { /* ignore destroyed owner errors */ }
           // Also check built-in helpers
           const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
           if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) return true;
@@ -2848,7 +2970,7 @@ const $_MANAGERS = {
       if (helper != null && typeof helper !== 'string') {
         const internalManager = getInternalHelperManager(helper);
         if (internalManager) {
-          const owner = (globalThis as any).owner;
+          const owner = getOwnerWithFallback();
           const unwrapVal = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
           const isGxtInternal = (k: string) => k.startsWith('$_') || k === 'hash';
 
@@ -2938,7 +3060,7 @@ const $_MANAGERS = {
       }
 
       if (typeof helper === 'string') {
-        const owner = (globalThis as any).owner;
+        const owner = getOwnerWithFallback();
 
         // Unwrap GXT getter args for the helper, filtering out GXT internal keys
         // IMPORTANT: don't unwrap function-based helpers (they have prototype)
@@ -2956,27 +3078,10 @@ const $_MANAGERS = {
             ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
             : {};
 
-          // Return a curried function. When GXT renders it in content position,
-          // it calls the function to get the value. When passed to another helper,
-          // canHandle() recognizes it and handle() merges additional args.
-          const curried = function __emberCurriedHelper(additionalParams?: any[], additionalHash?: any) {
-            const mergedPositional = [
-              ...curriedPositionals,
-              ...(Array.isArray(additionalParams) ? additionalParams.map(unwrapVal) : [])
-            ];
-            const mergedNamed = {
-              ...curriedNamed,
-              ...(additionalHash && typeof additionalHash === 'object'
-                ? Object.fromEntries(Object.entries(additionalHash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
-                : {}),
-            };
-            return resolvedFn(mergedPositional, mergedNamed);
-          };
-          (curried as any).__isEmberCurriedHelper = true;
-          (curried as any).__resolvedFn = resolvedFn;
-          (curried as any).__curriedPositionals = curriedPositionals;
-          (curried as any).__curriedNamed = curriedNamed;
-          return curried;
+          // When called from GXT's $_maybeHelper (content position like {{x-borf}}),
+          // invoke the helper immediately and return the value.
+          // GXT expects a value, not a curried function.
+          return resolvedFn(curriedPositionals, curriedNamed);
         }
       }
       return null;
@@ -3324,7 +3429,26 @@ function handleStringComponent(
     delete args.__posCount__;
   }
 
+  // Capture parentView at closure creation time, not at invocation time.
+  // GXT may re-evaluate this closure (e.g., for formula tracking) after the
+  // parentView stack has been popped, so we cannot rely on getCurrentParentView()
+  // inside the closure.
+  const capturedParentView = getCurrentParentView();
+
+  // Cache the rendered result. GXT may re-evaluate this closure during
+  // formula tracking. When that happens, return the cached DOM result
+  // instead of creating duplicate component instances.
+  let _cachedResult: any = undefined;
+  let _cachedRenderPassId: number = -1;
+
   return () => {
+    // If this closure was already evaluated in this render pass, return cached result.
+    // This prevents duplicate component instances when GXT re-evaluates formulas.
+    const currentRenderPassId = (globalThis as any).__emberRenderPassId || 0;
+    if (_cachedResult !== undefined && _cachedRenderPassId === currentRenderPassId) {
+      return _cachedResult;
+    }
+
     // Check if this is a template-only component (no backing class).
     // Template-only components have an internal manager set on them and
     // don't need an instance. Just render the template directly.
@@ -3337,7 +3461,7 @@ function handleStringComponent(
 
     // Get or create cached instance
     const instance = (factory && !isTemplateOnly) ?
-      getCachedOrCreateInstance(factory, args, factory.class, owner) :
+      getCachedOrCreateInstance(factory, args, factory.class, owner, capturedParentView) :
       null;
 
 
@@ -3398,11 +3522,17 @@ function handleStringComponent(
       typeof instance._transitionTo === 'function'
     );
 
+    let result;
     if (isClassic) {
-      return renderClassicComponent(instance, resolvedTemplate, args, fw, factory?.class, owner);
+      result = renderClassicComponent(instance, resolvedTemplate, args, fw, factory?.class, owner);
     } else {
-      return renderGlimmerComponent(instance, resolvedTemplate, args, fw, owner);
+      result = renderGlimmerComponent(instance, resolvedTemplate, args, fw, owner);
     }
+
+    // Cache the result for this render pass to prevent duplicate renders
+    _cachedResult = result;
+    _cachedRenderPassId = currentRenderPassId;
+    return result;
   };
 }
 
@@ -3814,8 +3944,17 @@ function handleClassicComponent(
   ctx: any,
   owner: any
 ): () => any {
+  // Capture parentView at closure creation time for the same reason as handleStringComponent
+  const capturedParentView = getCurrentParentView();
+  // Cache the rendered result to prevent duplicate renders on GXT formula re-evaluation
+  let _cachedResult: any = undefined;
+  let _cachedRenderPassId: number = -1;
   return () => {
-    const instance = getCachedOrCreateInstance(factory, args, factory.class, owner);
+    const currentRenderPassId = (globalThis as any).__emberRenderPassId || 0;
+    if (_cachedResult !== undefined && _cachedRenderPassId === currentRenderPassId) {
+      return _cachedResult;
+    }
+    const instance = getCachedOrCreateInstance(factory, args, factory.class, owner, capturedParentView);
 
     // Resolve template with layoutName/layout support
     let template;
@@ -3840,7 +3979,10 @@ function handleClassicComponent(
       return null;
     }
 
-    return renderClassicComponent(instance, template, args, fw, factory.class, owner);
+    const result = renderClassicComponent(instance, template, args, fw, factory.class, owner);
+    _cachedResult = result;
+    _cachedRenderPassId = currentRenderPassId;
+    return result;
   };
 }
 

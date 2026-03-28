@@ -5,6 +5,7 @@ import {
   getParentContext as gxtGetParentContext,
   provideContext as gxtProvideContext,
   RENDERING_CONTEXT as GXT_RENDERING_CONTEXT,
+  RENDERED_NODES_PROPERTY as GXT_RENDERED_NODES,
   HTMLBrowserDOMApi as GxtHTMLBrowserDOMApi,
   renderComponent as gxtRenderComponent,
   Component as GxtComponent,
@@ -176,8 +177,10 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
         return;
       }
     } else {
-      // Regular function - call it
-      template = tpl(owner);
+      // Regular function - call it.
+      // Bind the context as `this` because GXT-compiled templates use
+      // $_GET_ARGS(this, arguments) which requires a valid `this` context.
+      template = tpl.call(ctx || {}, owner);
     }
 
     if (DEBUG_TEMPLATE_LOOKUP) {
@@ -185,11 +188,14 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     }
 
     // Check if the result has $nodes array (GXT template result)
-    const hasNodes = template && Array.isArray(template.nodes || template.$nodes);
+    // GXT's $_fin stores nodes under a symbol key (RENDERED_NODES_PROPERTY),
+    // also check .nodes and .$nodes for compatibility.
+    const gxtNodes = template && GXT_RENDERED_NODES ? template[GXT_RENDERED_NODES as any] : null;
+    const nodesArray = gxtNodes || template?.nodes || template?.$nodes;
+    const hasNodes = nodesArray && Array.isArray(nodesArray);
     if (hasNodes) {
       if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Template has $nodes, appending to target');
-      const nodes = template.nodes || template.$nodes;
-      for (const node of nodes) {
+      for (const node of nodesArray) {
         if (node instanceof Node) {
           target.appendChild(node);
         }
