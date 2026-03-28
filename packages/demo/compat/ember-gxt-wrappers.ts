@@ -216,8 +216,44 @@ function createEmberMaybeHelper(original: Function) {
         }
       }
 
-      // No helper manager — let original GXT $_maybeHelper handle it
-      return original(nameOrFn, args, hashOrCtx, maybeCtx);
+      // No helper manager — treat as a default function helper (Ember convention).
+      // Plain functions used as helpers: positional args are spread, named args
+      // (if any) are passed as the last argument.
+      // This handles {{(this.hello this.foo)}} and {{(this.hello "foo" foo="bar")}}.
+      //
+      // Use the managed helper bucket cache (keyed by function) so that:
+      // 1. GXT formula re-evaluations within the same render don't double-call
+      // 2. When args change, the function IS re-called with fresh values
+      const positional = unwrapArgs(args || []);
+      const named = unwrapHash(hash);
+      const hasNamed = named && Object.keys(named).length > 0;
+
+      let cached = managedHelperBucketCache.get(nameOrFn);
+      let argsSer: string | null = null;
+      try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+
+      if (cached && cached.__plainFnHelper) {
+        // Check if args actually changed
+        if (argsSer !== null && argsSer === cached.lastArgsSer) {
+          // Same args — return cached result (dedup within same render)
+          return cached.lastResult;
+        }
+        // Args changed — re-invoke the function
+        const result = hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional);
+        cached.lastArgsSer = argsSer;
+        cached.lastResult = result;
+        return result;
+      }
+
+      // First invocation — call and cache
+      const result = hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional);
+      managedHelperBucketCache.set(nameOrFn, {
+        __plainFnHelper: true,
+        lastArgsSer: argsSer,
+        lastResult: result,
+        bucket: null, delegate: null, reactiveArgs: null as any,
+      });
+      return result;
     }
 
     const name = nameOrFn;

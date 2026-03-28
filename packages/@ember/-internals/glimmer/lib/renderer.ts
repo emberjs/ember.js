@@ -617,6 +617,10 @@ class ClassicRootState {
 
         // Re-throw any errors captured during rendering (init, didInsertElement, etc.)
         // so they propagate through assert.throws in tests and Ember's error recovery.
+        // IMPORTANT: For lifecycle errors (didInsertElement), we must NOT let the error
+        // propagate through errorLoopTransaction, as that would permanently disable
+        // re-rendering. Instead, we defer the throw until after the render function
+        // has been set up for future re-renders.
         try {
           flushRenderErrors();
         } catch (renderError) {
@@ -624,8 +628,11 @@ class ClassicRootState {
           // Lifecycle errors (didInsertElement) should leave DOM intact.
           if (hadRenderPhaseErrors) {
             (parentElement as unknown as Element).innerHTML = '';
+            throw renderError;
           }
-          throw renderError;
+          // Lifecycle error — defer it to the root state so it can be
+          // re-thrown OUTSIDE errorLoopTransaction (preserving re-renderability)
+          (this as any).__gxtDeferredError = renderError;
         }
 
         // Store references for re-rendering
@@ -646,6 +653,10 @@ class ClassicRootState {
           this.gxtLastTagValue = valueForTag(componentTag);
         }
 
+        // Wrap the re-render in a deferred-error mechanism so that lifecycle
+        // errors (destroy, didInsertElement during re-render) don't permanently
+        // disable re-rendering via errorLoopTransaction. The error is stored on
+        // the root state and re-thrown by renderRoots after the render completes.
         this.render = errorLoopTransaction(() => {
           // Re-render GXT template with fresh context from the component
           // This is needed because GXT doesn't automatically track Ember's set() changes
@@ -709,7 +720,25 @@ class ClassicRootState {
                 popParentView();
               }
               // Morph: update existing DOM nodes in-place where possible
-              morphChildren(gxtRenderTarget, tempContainer);
+              try {
+                morphChildren(gxtRenderTarget, tempContainer);
+              } catch (morphErr) {
+                // Lifecycle errors during morphing (e.g., destroy throws)
+                // should not disable future re-renders. Defer the error.
+                (gxtRootState as any).__gxtDeferredError = morphErr;
+              }
+            }
+
+            // Flush any lifecycle hooks queued during re-render
+            try {
+              flushAfterInsertQueue();
+            } catch (lifecycleErr) {
+              (gxtRootState as any).__gxtDeferredError = (gxtRootState as any).__gxtDeferredError || lifecycleErr;
+            }
+            try {
+              flushRenderErrors();
+            } catch (renderErr) {
+              (gxtRootState as any).__gxtDeferredError = (gxtRootState as any).__gxtDeferredError || renderErr;
             }
 
             // Update the tag value after successful render
@@ -719,6 +748,9 @@ class ClassicRootState {
             }
           }
         });
+
+        // Deferred lifecycle errors are stored on __gxtDeferredError and
+        // re-thrown by renderRoots (outside errorLoopTransaction).
       } else {
         // Use standard glimmer rendering
         let iterator = renderMain(
@@ -914,8 +946,19 @@ if (!(globalThis as any).__GXT_MODE__) {
           if (classicRoot.root) rerenderedRoots.push(classicRoot.root);
           try {
             classicRoot.render();
-          } catch { /* ignore render errors */ }
+          } catch (renderErr) {
+            // Store render error so it can propagate to assert.throws
+            if (!classicRoot.__gxtDeferredError) {
+              classicRoot.__gxtDeferredError = renderErr;
+            }
+          }
           finally { (globalThis as any).__gxtIsForceRerender = false; }
+          // Re-throw deferred errors (from lifecycle hooks like destroy)
+          if (classicRoot.__gxtDeferredError) {
+            const err = classicRoot.__gxtDeferredError;
+            classicRoot.__gxtDeferredError = null;
+            throw err;
+          }
         }
       }
     }
@@ -1089,6 +1132,15 @@ class RendererState {
           }
 
           root.render();
+
+          // In GXT mode, lifecycle errors during re-render (destroy, didInsertElement)
+          // are deferred to avoid disabling errorLoopTransaction. Re-throw them here
+          // so they propagate to assert.throws() in tests.
+          if ((root as any).__gxtDeferredError) {
+            const err = (root as any).__gxtDeferredError;
+            (root as any).__gxtDeferredError = null;
+            throw err;
+          }
         }
 
         this.#lastRevision = valueForTag(CURRENT_TAG);

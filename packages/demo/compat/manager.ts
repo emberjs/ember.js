@@ -1646,6 +1646,87 @@ let _preRerenderSnapshot: Set<any> = new Set();
   _preRerenderSnapshot.clear();
 };
 
+/**
+ * Destroy component instances whose wrapper element is in the given DOM nodes.
+ */
+(globalThis as any).__gxtDestroyInstancesInNodes = function(removedNodeList: Node[]) {
+  if (!removedNodeList || removedNodeList.length === 0) return;
+
+  const removedEls = new Set<Element>();
+  for (let i = 0; i < removedNodeList.length; i++) {
+    const rn = removedNodeList[i]!;
+    if (rn.nodeType === 1) {
+      removedEls.add(rn as Element);
+      const desc = (rn as Element).querySelectorAll('*');
+      for (let j = 0; j < desc.length; j++) {
+        removedEls.add(desc[j]!);
+      }
+    }
+  }
+  if (removedEls.size === 0) return;
+
+  const instToDestroy: any[] = [];
+  for (const liveInst of _allLiveInstances) {
+    if (!liveInst || liveInst.isDestroyed || liveInst.isDestroying) continue;
+    const wrapperEl = getViewElement(liveInst);
+    if (wrapperEl && removedEls.has(wrapperEl as Element)) {
+      instToDestroy.push(liveInst);
+    }
+  }
+  if (instToDestroy.length === 0) return;
+
+  let gOwner: any = null;
+  let viewReg: any = null;
+  try { gOwner = (globalThis as any).owner; } catch { /* */ }
+  try { viewReg = gOwner?.lookup?.('-view-registry:main'); } catch { /* */ }
+
+  // Re-attach elements temporarily so willDestroyElement sees them connected
+  const tempCont = document.getElementById('qunit-fixture') || document.body;
+  const reattachedList: Array<{ i: any; e: HTMLElement }> = [];
+  for (const inst of instToDestroy) {
+    try {
+      const e = getViewElement(inst);
+      if (e instanceof HTMLElement && !e.isConnected) {
+        tempCont.appendChild(e);
+        reattachedList.push({ i: inst, e });
+      }
+    } catch { /* */ }
+  }
+
+  for (const inst of instToDestroy) {
+    try {
+      if (inst._transitionTo && inst._state !== 'inDOM') {
+        try { inst._transitionTo('inDOM'); } catch { /* */ }
+      }
+      triggerLifecycleHook(inst, 'willDestroyElement');
+      triggerLifecycleHook(inst, 'willClearRender');
+    } catch { /* */ }
+  }
+
+  for (const r of reattachedList) {
+    try { if (r.e.parentNode) r.e.parentNode.removeChild(r.e); } catch { /* */ }
+  }
+
+  for (const inst of instToDestroy) {
+    try { if (inst._transitionTo) inst._transitionTo('destroying'); } catch { /* */ }
+    try { setViewElement(inst, null); } catch { /* */ }
+    try { if (viewReg) { const vid = getViewId(inst); if (vid) delete viewReg[vid]; } } catch { /* */ }
+    try { triggerLifecycleHook(inst, 'didDestroyElement'); } catch { /* */ }
+  }
+
+  for (const inst of instToDestroy) {
+    try {
+      if (typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) inst.destroy();
+    } catch { /* */ }
+  }
+
+  for (const inst of instToDestroy) {
+    _allLiveInstances.delete(inst);
+    for (const entry of trackedArgCells) { if (entry.instance === inst) { trackedArgCells.delete(entry); break; } }
+    for (const entry of trackedWrapperInstances) { if (entry.instance === inst) { trackedWrapperInstances.delete(entry); break; } }
+  }
+};
+
 (globalThis as any).__gxtSyncWrapper = function(obj: any, keyName: string) {
   const wrapper = getViewElement(obj);
   if (!(wrapper instanceof HTMLElement)) return;
@@ -1786,8 +1867,27 @@ function buildWrapperElement(
 
   // Freeze elementId on first render
   if (instance && !instance._elementIdFrozen) {
-    instance.elementId = wrapper.id;
+    const frozenElementId = wrapper.id;
+    instance.elementId = frozenElementId;
     instance._elementIdFrozen = true;
+
+    // Install a protective setter that throws when elementId is changed after creation.
+    // This mirrors the behavior in @ember/-internals/views/lib/views/states.ts IN_DOM.enter()
+    // which may not execute in GXT mode due to renderer.register() failures.
+    try {
+      Object.defineProperty(instance, 'elementId', {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return frozenElementId;
+        },
+        set(value: any) {
+          if (value !== frozenElementId) {
+            throw new Error("Changing a view's elementId after creation is not allowed");
+          }
+        },
+      });
+    } catch { /* ignore if defineProperty fails */ }
   }
 
   // Set ariaRole -> role attribute

@@ -885,13 +885,19 @@ queueMicrotask(patchGlobalIf);
     try {
       const forceRerender = (globalThis as any).__gxtForceEmberRerender;
       if (typeof forceRerender === 'function') forceRerender();
-    } catch { /* ignore */ }
+    } catch (rerenderErr) {
+      // Store the error so it can be re-thrown after sync completes
+      (globalThis as any).__gxtDeferredSyncError = (globalThis as any).__gxtDeferredSyncError || rerenderErr;
+    }
     // PHASE 2c: Destroy unclaimed instances — components that were in
     // the old render but not in the new one (e.g., {{each}} items removed).
     try {
       const destroyUnclaimed = (globalThis as any).__gxtDestroyUnclaimedPoolEntries;
       if (typeof destroyUnclaimed === 'function') destroyUnclaimed();
-    } catch { /* ignore */ }
+    } catch (destroyErr) {
+      // Store destroy errors for propagation to assert.throws
+      (globalThis as any).__gxtDeferredSyncError = (globalThis as any).__gxtDeferredSyncError || destroyErr;
+    }
     // PHASE 3: Post-render hooks (didUpdate, didRender) — fire after DOM
     // is fully updated by the force-rerender.
     try {
@@ -933,11 +939,21 @@ queueMicrotask(patchGlobalIf);
               continue;
             }
 
+            const _swapped2 = !newFinal || !newFinal.__isCurriedComponent ||
+              (newFinal.__name !== info.lastRenderedName);
+            const _rem2: Node[] = [];
             let node = sm.nextSibling;
             while (node && node !== em) {
               const next = node.nextSibling;
+              _rem2.push(node);
               parent.removeChild(node);
               node = next;
+            }
+            if (_swapped2) {
+              const _dFn2 = (globalThis as any).__gxtDestroyInstancesInNodes;
+              if (typeof _dFn2 === 'function' && _rem2.length > 0) {
+                _dFn2(_rem2);
+              }
             }
 
             if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
@@ -950,6 +966,13 @@ queueMicrotask(patchGlobalIf);
       }
     } catch { /* ignore */ }
     (globalThis as any).__gxtSyncing = false;
+    // Re-throw any deferred errors from the force-rerender or lifecycle phases
+    // so they propagate to assert.throws() in tests
+    const deferredSyncErr = (globalThis as any).__gxtDeferredSyncError;
+    if (deferredSyncErr) {
+      (globalThis as any).__gxtDeferredSyncError = null;
+      throw deferredSyncErr;
+    }
   }
 };
 
@@ -4246,7 +4269,10 @@ export function precompileTemplate(templateString: string, options?: {
           const markerParts = [...afterAttrNames];
           if (hasClassAfterSplat) markerParts.push('__class__');
           const marker = ` __splatLocal__="${markerParts.join(',')}"`;
-          return `<${tagName}${beforeSplat}${splat}${afterSplat}${marker} />`;
+          // Check if the original matched tag was self-closing (/>) or open (>).
+          // Converting a non-self-closing tag to self-closing would eat its content.
+          const isSelfClose = match.trimEnd().endsWith('/>');
+          return `<${tagName}${beforeSplat}${splat}${afterSplat}${marker}${isSelfClose ? ' />' : '>'}`;
         }
         return match;
       }
@@ -4574,12 +4600,24 @@ export function precompileTemplate(templateString: string, options?: {
                   return;
                 }
 
-                // Remove existing content between markers
+                // Check if the component type changed (not just args)
+                const _componentSwapped = !newFinal || !newFinal.__isCurriedComponent ||
+                  (newFinal.__name !== curriedRenderInfo.lastRenderedName);
+                // Collect and remove existing content between markers
+                const _removedNodes: Node[] = [];
                 let node = startMarker.nextSibling;
                 while (node && node !== endMarker) {
                   const next = node.nextSibling;
+                  _removedNodes.push(node);
                   parent.removeChild(node);
                   node = next;
+                }
+                // Destroy old component instances when the component TYPE changed
+                if (_componentSwapped) {
+                  const _destroyFn = (globalThis as any).__gxtDestroyInstancesInNodes;
+                  if (typeof _destroyFn === 'function' && _removedNodes.length > 0) {
+                    _destroyFn(_removedNodes);
+                  }
                 }
 
                 // Insert new content if we have a valid curried component
