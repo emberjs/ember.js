@@ -18,6 +18,9 @@ patchedDependencies:
   '@tracerbench/core@8.0.1':
     hash: 5e48bdb11a088927d3415cc5430bb6c37d5ce66ed2dab1327914b55e4fd5cd13
     path: patches/@tracerbench__core@8.0.1.patch
+  ember-auto-import@2.13.0:
+    hash: 1303fba1a35f4858b054774f61b0b3b4c8651f1a90825be1bd2b56224925b368
+    path: patches/ember-auto-import@2.13.0.patch
   ember-cli-htmlbars@7.0.0:
     hash: 03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a
     path: patches/ember-cli-htmlbars@7.0.0.patch
@@ -2797,7 +2800,7 @@ importers:
         version: 9.2.1
       ember-auto-import:
         specifier: ^2.13.0
-        version: 2.13.0(webpack@5.105.4)
+        version: 2.13.0(patch_hash=1303fba1a35f4858b054774f61b0b3b4c8651f1a90825be1bd2b56224925b368)(webpack@5.105.4)
       ember-cli:
         specifier: ~6.11.0
         version: 6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
@@ -17538,7 +17541,7 @@ snapshots:
 
   elegant-spinner@1.0.1: {}
 
-  ember-auto-import@2.13.0(webpack@5.105.4):
+  ember-auto-import@2.13.0(patch_hash=1303fba1a35f4858b054774f61b0b3b4c8651f1a90825be1bd2b56224925b368)(webpack@5.105.4):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.29.0)
