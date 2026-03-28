@@ -12,9 +12,15 @@ overrides:
   ember-cli-babel: ^8.3.1
 
 patchedDependencies:
+  '@embroider/compat@4.1.16':
+    hash: 7abfb78c7600805f2951947c7fccb186fe063686cc3074501a91cd8f025bdf6f
+    path: patches/@embroider__compat@4.1.16.patch
   '@tracerbench/core@8.0.1':
     hash: 5e48bdb11a088927d3415cc5430bb6c37d5ce66ed2dab1327914b55e4fd5cd13
     path: patches/@tracerbench__core@8.0.1.patch
+  ember-cli@6.11.0:
+    hash: b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82
+    path: patches/ember-cli@6.11.0.patch
 
 importers:
 
@@ -149,7 +155,7 @@ importers:
         version: 2.0.0(@babel/core@7.29.0)
       ember-cli:
         specifier: ^6.3.0
-        version: 6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+        version: 6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       ember-cli-blueprint-test-helpers:
         specifier: ^0.19.2
         version: 0.19.2
@@ -158,7 +164,7 @@ importers:
         version: 2.1.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
+        version: 3.3.3(ember-cli@6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -2791,7 +2797,7 @@ importers:
         version: 2.13.0(webpack@5.105.4)
       ember-cli:
         specifier: ~6.11.0
-        version: 6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+        version: 6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       ember-cli-app-version:
         specifier: ^7.0.0
         version: 7.0.0(@babel/core@7.29.0)(ember-source@)
@@ -2803,7 +2809,7 @@ importers:
         version: 3.0.0
       ember-cli-dependency-checker:
         specifier: ^3.3.3
-        version: 3.3.3(ember-cli@6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
+        version: 3.3.3(ember-cli@6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
       ember-cli-deprecation-workflow:
         specifier: ^3.4.0
         version: 3.4.0(ember-source@)
@@ -2950,7 +2956,7 @@ importers:
     devDependencies:
       '@embroider/compat':
         specifier: ^4.1.16
-        version: 4.1.16(@embroider/core@4.4.7)
+        version: 4.1.16(patch_hash=7abfb78c7600805f2951947c7fccb186fe063686cc3074501a91cd8f025bdf6f)(@embroider/core@4.4.7)
       '@embroider/core':
         specifier: ^4.4.7
         version: 4.4.7
@@ -3016,7 +3022,7 @@ importers:
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/compat':
         specifier: ^4.1.16
-        version: 4.1.16(@embroider/core@4.4.7)
+        version: 4.1.16(patch_hash=7abfb78c7600805f2951947c7fccb186fe063686cc3074501a91cd8f025bdf6f)(@embroider/core@4.4.7)
       '@embroider/config-meta-loader':
         specifier: ^1.0.0
         version: 1.0.0
@@ -3055,7 +3061,7 @@ importers:
         version: 2.3.1(@babel/core@7.29.0)
       ember-cli:
         specifier: ~6.11.0
-        version: 6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+        version: 6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       ember-cli-babel:
         specifier: ^8.3.1
         version: 8.3.1(@babel/core@7.29.0)
@@ -13485,7 +13491,7 @@ snapshots:
       - supports-color
       - webpack
 
-  '@embroider/compat@4.1.16(@embroider/core@4.4.7)':
+  '@embroider/compat@4.1.16(patch_hash=7abfb78c7600805f2951947c7fccb186fe063686cc3074501a91cd8f025bdf6f)(@embroider/core@4.4.7)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0(supports-color@8.1.1)
@@ -17648,10 +17654,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+      ember-cli: 6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       find-yarn-workspace-root: 2.0.0
       is-git-url: 1.0.0
       resolve: 1.22.11
@@ -17794,7 +17800,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli@6.11.0(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8):
+  ember-cli@6.11.0(patch_hash=b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8):
     dependencies:
       '@ember-tooling/blueprint-blueprint': 0.2.1
       '@ember-tooling/blueprint-model': 0.5.0

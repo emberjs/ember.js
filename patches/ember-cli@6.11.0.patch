@@ -1,0 +1,27 @@
+diff --git a/lib/broccoli/ember-app.js b/lib/broccoli/ember-app.js
+index 267a9ac10b610960322caac363300525daa2d190..0de6c2e0d96f86e4e0bf2a0c63a28ad5badec8ed 100644
+--- a/lib/broccoli/ember-app.js
++++ b/lib/broccoli/ember-app.js
+@@ -342,13 +342,15 @@ class EmberApp {
+ 
+     this.vendorFiles = omitBy(
+       merge(
+-        {
+-          'ember.js': {
+-            development: emberSource.paths.debug,
+-            production: emberSource.paths.prod,
+-          },
+-          'ember-testing.js': [emberSource.paths.testing, { type: 'test' }],
+-        },
++        emberSource.paths
++          ? {
++              'ember.js': {
++                development: emberSource.paths.debug,
++                production: emberSource.paths.prod,
++              },
++              'ember-testing.js': [emberSource.paths.testing, { type: 'test' }],
++            }
++          : {},
+         this.options.vendorFiles
+       ),
+       isNull
