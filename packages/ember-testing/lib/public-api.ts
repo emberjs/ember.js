@@ -1,5 +1,4 @@
 export { default as Test } from './test';
 export { default as Adapter } from './adapters/adapter';
 
-import './ext/application';
 import './ext/rsvp'; // setup RSVP + run loop integration
