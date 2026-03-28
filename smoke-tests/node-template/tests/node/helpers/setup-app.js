@@ -1,17 +1,32 @@
 /* eslint-disable no-console */
 
-const SimpleDOM = require('simple-dom');
-const { loadEmber, clearEmber } = require('./load-ember');
+import SimpleDOM from 'simple-dom';
+import Application from 'ember-source/@ember/application/index.js';
+import EmberRouter from 'ember-source/@ember/routing/router.js';
+import Component from 'ember-source/@ember/component/index.js';
+import { setComponentTemplate } from 'ember-source/@ember/component/index.js';
+import templateOnly from 'ember-source/@ember/component/template-only.js';
+import Controller from 'ember-source/@ember/controller/index.js';
+import Route from 'ember-source/@ember/routing/route.js';
+import EmberObject from 'ember-source/@ember/object/index.js';
+import { service } from 'ember-source/@ember/service/index.js';
+import { run } from 'ember-source/@ember/runloop/index.js';
+import RSVP from 'ember-source/@ember/-internals/runtime/lib/ext/rsvp.js';
+import { precompile } from 'ember-source/ember-template-compiler/index.js';
+import { createTemplateFactory } from 'ember-source/@ember/template-factory/index.js';
+
+function compile(templateString, options) {
+  let templateSpec = precompile(templateString, options);
+  return createTemplateFactory(JSON.parse(templateSpec));
+}
 
 /*
  * This helper sets up a QUnit test module with all of the environment and
  * helper methods necessary to test an Ember.js application running in the
  * server-side environment.
  *
- * On each test, it loads a fresh version of the compiled Ember.js library
- * from `dist`, just like how FastBoot works. It uses the new `visit()` API
- * to simulate a FastBoot environment (enabling that feature flag if it is
- * not already turned on).
+ * It uses direct ESM imports from ember-source. It uses the `visit()` API
+ * to simulate a FastBoot environment.
  *
  * To test an app, register the objects that make up the app. For example,
  * to register a component:
@@ -50,24 +65,19 @@ const { loadEmber, clearEmber } = require('./load-ember');
  * `renderToHTML` returns a promise that resolves to the rendered HTML of the
  * application.
  *
- *     return this.renderToHTML('/'photos).then(function(html) {
+ *     return this.renderToHTML('/photos').then(function(html) {
  *       assert.ok(html.matches('<h1>Hello world</h1>'));
  *     });
  */
 
-module.exports = function (hooks) {
+export default function (hooks) {
   hooks.beforeEach(function () {
-    let { Ember, compile } = loadEmber();
-
-    this.Ember = Ember;
     this.compile = compile;
-    this.setComponentTemplate = Ember._setComponentTemplate;
-    this.templateOnlyComponent = Ember._templateOnlyComponent;
+    this.setComponentTemplate = setComponentTemplate;
+    this.templateOnlyComponent = templateOnly;
 
-    Ember.testing = true;
-
-    this.run = Ember.run;
-    this.all = Ember.RSVP.all;
+    this.run = run;
+    this.all = RSVP.all.bind(RSVP);
 
     this.visit = visit;
     this.createApplication = createApplication;
@@ -84,15 +94,13 @@ module.exports = function (hooks) {
 
   hooks.afterEach(function () {
     this.run(this.app, 'destroy');
-
-    clearEmber();
   });
-};
+}
 
 function createApplication() {
   if (this.app) return this.app;
 
-  let app = class extends this.Ember.Application {}.create({
+  let app = class extends Application {}.create({
     autoboot: false,
     Resolver: {
       create: (specifier) => {
@@ -101,7 +109,7 @@ function createApplication() {
     },
   });
 
-  let Router = class extends this.Ember.Router {
+  let Router = class extends EmberRouter {
     location = 'none';
   };
 
@@ -171,27 +179,27 @@ function registerTemplate(name, template) {
 function registerComponent(name, componentProps, templateContents) {
   let component = this.setComponentTemplate(
     this.compile(templateContents),
-    componentProps ? this.Ember.Component.extend(componentProps) : this.templateOnlyComponent()
+    componentProps ? Component.extend(componentProps) : this.templateOnlyComponent()
   );
   this.register('component:' + name, component);
 }
 
 function registerController(name, controllerProps) {
-  let controller = this.Ember.Controller.extend(controllerProps);
+  let controller = Controller.extend(controllerProps);
   this.register('controller:' + name, controller);
 }
 
 function registerRoute(name, routeProps) {
-  let route = this.Ember.Route.extend({
-    router: this.Ember.inject.service('router'),
+  let route = Route.extend({
+    router: service('router'),
     ...routeProps,
   });
   this.register('route:' + name, route);
 }
 
 function registerService(name, serviceProps) {
-  let service = this.Ember.Object.extend(serviceProps);
-  this.register('service:' + name, service);
+  let svc = EmberObject.extend(serviceProps);
+  this.register('service:' + name, svc);
 }
 
 function registerRoutes(cb) {
