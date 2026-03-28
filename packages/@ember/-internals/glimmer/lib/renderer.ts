@@ -878,7 +878,12 @@ if (!(globalThis as any).__GXT_MODE__) {
       const classicRoot = root as any;
       if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
         const currentTagValue = valueForTag(classicRoot.gxtComponentTag);
-        if (currentTagValue !== classicRoot.gxtLastTagValue) {
+        // Also trigger for pending syncs from property changes — nested object
+        // property changes (e.g., set(m, 'message', ...)) dirty m's tag but
+        // not the component's SELF_TAG. The force-rerender is needed to
+        // re-evaluate computed properties like {{this.m.formattedMessage}}.
+        const hadPendingSync = !!(globalThis as any).__gxtHadPendingSync;
+        if (currentTagValue !== classicRoot.gxtLastTagValue || hadPendingSync) {
           // Tag is dirty — force re-render. Increment the render pass ID
           // so the instance pool resets claimed flags and REUSES existing
           // instances instead of creating new ones (which would fire
@@ -897,7 +902,10 @@ if (!(globalThis as any).__GXT_MODE__) {
       }
     }
   }
-  } finally { (globalThis as any).__gxtForceRerenderInProgress = false; }
+  } finally {
+    (globalThis as any).__gxtForceRerenderInProgress = false;
+    (globalThis as any).__gxtHadPendingSync = false;
+  }
 };
 
 // Update gxtLastTagValue on all GXT roots to mark them clean.

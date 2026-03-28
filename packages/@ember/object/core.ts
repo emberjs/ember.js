@@ -288,6 +288,12 @@ class CoreObject {
 
           let value = target.unknownProperty.call(receiver, property);
 
+          // In GXT mode, templates access proxy properties directly (not via .get()),
+          // so we must return the resolved value instead of asserting.
+          if ((globalThis as any).__gxtTriggerReRender) {
+            return value;
+          }
+
           if (typeof value !== 'function') {
             assert(messageFor(receiver, property), value === undefined || value === null);
           }

@@ -279,6 +279,7 @@ function getCachedOrCreateInstance(
   const currentParentView = explicitParentView !== undefined ? explicitParentView : getCurrentParentView();
   const parentKey = currentParentView || ROOT_PARENT_SENTINEL;
 
+
   // Get or create pool for this parent
   let componentPools = instancePools.get(parentKey);
   if (!componentPools) {
@@ -1324,6 +1325,12 @@ function _viewDepth(instance: any): number {
 // Track ALL live component instances for destroy detection.
 const _allLiveInstances = new Set<any>();
 
+// Track instances rendered in the current render pass (reset each pass).
+// Used by __gxtDestroyUnclaimedPoolEntries to distinguish between
+// "reused in current render" vs "stale from previous render".
+const _currentPassRenderedInstances = new Set<any>();
+let _currentPassRenderedPassId = -1;
+
 // Snapshot of all live instances before force-rerender.
 // Used to detect which instances were removed after the rebuild.
 let _preRerenderSnapshot: Set<any> = new Set();
@@ -1346,9 +1353,13 @@ let _preRerenderSnapshot: Set<any> = new Set();
     viewRegistry = gOwner?.lookup?.('-view-registry:main');
   } catch { /* ignore */ }
 
-  // Find components that were in the pre-rerender snapshot but now have
-  // disconnected elements. This detects ALL removed components including
-  // those not in trackedArgCells (e.g., nested-item with no args).
+  // Find components that were in the pre-rerender snapshot but are no longer
+  // present in the re-rendered output. An instance is considered unclaimed if:
+  // 1. Its element is disconnected from the DOM, AND
+  // 2. It is NOT claimed in any pool (i.e., not reused in the current render)
+  // The pool check is essential because morph-based re-rendering creates new
+  // wrapper elements in a temp container, so the instance's element (pointing
+  // to the new element) won't be connected even though the instance is alive.
   const unclaimed: any[] = [];
   const seen = new Set<any>();
 
@@ -1357,8 +1368,32 @@ let _preRerenderSnapshot: Set<any> = new Set();
     seen.add(instance);
 
     try {
+      // After a morph-based force-rerender, the instance's element may point
+      // to the NEW wrapper (in a temp container, not connected), even though
+      // the OLD element was preserved by the morph and IS connected.
+      // Use getElementById as the authoritative check: if there's a live
+      // element with this instance's elementId, the component is alive.
       const el = instance.element;
-      if (el && !el.isConnected) {
+      let isAlive = false;
+
+      // Primary check: is the instance's element still in the DOM?
+      if (el && el.isConnected) {
+        isAlive = true;
+      }
+
+      // Secondary check: is there a live DOM element with this elementId?
+      // (morph may have preserved the old element while instance points to new one)
+      if (!isAlive && instance.elementId) {
+        const liveEl = document.getElementById(String(instance.elementId));
+        if (liveEl && liveEl.isConnected) {
+          // Re-point the instance to the live element
+          try { setViewElement(instance, liveEl); } catch { /* ignore */ }
+          try { setElementView(liveEl, instance); } catch { /* ignore */ }
+          isAlive = true;
+        }
+      }
+
+      if (!isAlive) {
         unclaimed.push(instance);
         // Clean up tracked sets
         for (const entry of trackedArgCells) {
@@ -2163,6 +2198,12 @@ function createRenderContext(
             // Register array owner for KVO array mutation tracking
             if (_registerArrayOwner && Array.isArray(desc.value)) {
               _registerArrayOwner(desc.value, instance, key);
+            }
+            // Register reverse mapping: when a property on this object value changes,
+            // dirty this cell so formulas reading nested paths (e.g., this.m.formattedMessage) re-evaluate.
+            const _regObjOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
+            if (_regObjOwner && desc.value && typeof desc.value === 'object') {
+              _regObjOwner(desc.value, instance, key);
             }
           } catch { /* ignore */ }
         }
@@ -3101,6 +3142,25 @@ const $_MANAGERS = {
         if (owner && !owner.isDestroyed && !owner.isDestroying) {
           const factory = owner.factoryFor?.(`modifier:${modifier}`);
           if (factory) return true;
+
+          // If the modifier name is a registered helper, throw an error.
+          // Helpers cannot be used as modifiers (element position).
+          try {
+            const helperFactory = owner.factoryFor?.(`helper:${modifier}`);
+            const helperLookup = !helperFactory ? owner.lookup?.(`helper:${modifier}`) : null;
+            if (helperFactory || helperLookup) {
+              const err = new Error(
+                `Attempted to resolve \`${modifier}\`, which was expected to be a modifier, but nothing was found.`
+              );
+              captureRenderError(err);
+              return true; // Claim we can handle it to prevent GXT default behavior
+            }
+          } catch (e: any) {
+            if (e?.message?.includes('expected to be a modifier')) {
+              captureRenderError(e);
+              return true;
+            }
+          }
         }
         return false;
       }
@@ -4013,7 +4073,19 @@ function renderClassicComponent(
   const skipInitHooks = isReused && isForceRerender;
 
   // Track this instance for destroy detection during force-rerender
-  if (instance) _allLiveInstances.add(instance);
+  if (instance) {
+    _allLiveInstances.add(instance);
+    // Track this instance as rendered in the current pass.
+    // Use a flag directly on the instance to survive any timing issues
+    // with set/passId tracking.
+    const passId = (globalThis as any).__emberRenderPassId || 0;
+    if (_currentPassRenderedPassId !== passId) {
+      _currentPassRenderedInstances.clear();
+      _currentPassRenderedPassId = passId;
+    }
+    _currentPassRenderedInstances.add(instance);
+    instance.__gxtRenderedInPass = passId;
+  }
 
   const wrapper = buildWrapperElement(instance, args, componentDef);
   const renderContext = createRenderContext(instance, args, fw, owner);
@@ -4067,14 +4139,29 @@ function renderClassicComponent(
   }
 
   if (skipInitHooks) {
-    // Force-rerender: skip initial lifecycle hooks but update the element
-    // reference to the new wrapper (old one was removed by innerHTML='')
+    // Force-rerender: skip initial lifecycle hooks.
+    // Save the old element reference — the morph-based re-render will
+    // preserve the OLD element in the live DOM while the NEW wrapper is
+    // in a temp container. After the morph, the instance should still
+    // point to the old (live) element, not the new (discarded) one.
+    const oldElement = instance?.element;
+
     if (instance && wrapper instanceof HTMLElement) {
       setViewElement(instance, wrapper);
       setElementView(wrapper, instance);
     }
     // Render template into wrapper (rebuild DOM content)
     renderTemplateWithParentView(template, renderContext, wrapper, instance);
+
+    // Restore the old element reference if the new wrapper isn't connected
+    // (which happens during morph-based force-rerender where the morph
+    // preserves the old DOM nodes). This ensures instance.element points
+    // to the live DOM element, not the discarded temp container element.
+    if (oldElement && oldElement.isConnected && instance) {
+      setViewElement(instance, oldElement);
+      setElementView(oldElement, instance);
+    }
+
     // Queue transition to inDOM after insertion (no didInsertElement/didRender)
     if (instance) {
       const inst = instance;

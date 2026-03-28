@@ -39,11 +39,19 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
   try {
     // Convert symbol keys to their description or a string representation
     const safeKey = typeof key === 'symbol' ? (key.description || String(key)) : key;
+    // Ensure obj has a constructor property to prevent "Cannot read properties
+    // of undefined (reading 'name')" in GXT's cellFor debug label generation.
+    if (obj && typeof obj === 'object' && !obj.constructor) {
+      Object.defineProperty(obj, 'constructor', {
+        value: Object,
+        writable: true,
+        configurable: true,
+        enumerable: false,
+      });
+    }
     return gxtTagFor(obj, safeKey, meta);
   } catch (err: any) {
-    if (err?.message?.includes('Symbol')) {
-      console.warn('[validator.tagFor] Symbol conversion error:', err);
-      console.warn('[validator.tagFor] key type:', typeof key, 'value:', key);
+    if (err?.message?.includes('Symbol') || err?.message?.includes('name') || err?.message?.includes('undefined')) {
       // Return a minimal tag to avoid breaking the system
       return { value: 0 };
     }
@@ -130,7 +138,17 @@ export function dirtyTagFor(obj: any, key: any) {
   }
 
   // Then call the original dirtyTagFor with the safe key
-  return gxtDirtyTagFor(obj, safeKey);
+  try {
+    // Ensure obj has a constructor for GXT's debug label
+    if (obj && typeof obj === 'object' && !obj.constructor) {
+      Object.defineProperty(obj, 'constructor', {
+        value: Object, writable: true, configurable: true, enumerable: false,
+      });
+    }
+    return gxtDirtyTagFor(obj, safeKey);
+  } catch {
+    // GXT's dirtyTagFor may fail for objects without constructor
+  }
 }
 
 export function consumeTag(tag: any) {

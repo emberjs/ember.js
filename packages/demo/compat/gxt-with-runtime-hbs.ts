@@ -128,6 +128,7 @@ export { $_MANAGERS } from './manager';
 // Override $_maybeHelper, $_tag, and $_dc with Ember-aware wrappers
 export { $_maybeHelper, $_tag, $_dc } from './ember-gxt-wrappers';
 
+
 // Default export with overrides
 // @ts-ignore - direct path import
 import * as gxtModule from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';

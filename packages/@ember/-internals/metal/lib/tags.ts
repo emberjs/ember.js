@@ -59,3 +59,8 @@ export function markObjectAsDirty(obj: object, propertyKey: string): void {
   dirtyTagFor(obj, propertyKey);
   dirtyTagFor(obj, SELF_TAG);
 }
+
+// Expose markObjectAsDirty on globalThis for GXT integration.
+// This allows compile.ts to dirty a component's Ember SELF_TAG when
+// a property changes on an object that is a VALUE of a component property.
+(globalThis as any).__gxtMarkObjectAsDirty = markObjectAsDirty;

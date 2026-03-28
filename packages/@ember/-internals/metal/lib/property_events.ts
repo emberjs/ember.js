@@ -156,4 +156,43 @@ function changeProperties(callback: () => void): void {
   }
 }
 
+// GXT integration: expose a function that recomputes computed properties
+// whose dependentKeys include the changed key. Returns an array of
+// { key, value } pairs for each recomputed property.
+// This is called from compile.ts __gxtTriggerReRender after the primary
+// cell is updated, so that derived computed properties are also refreshed.
+if (typeof (globalThis as any).__gxtTriggerReRender === 'function' || true) {
+  (globalThis as any).__gxtRecomputeDependents = function(obj: object, changedKey: string): Array<{ key: string; value: unknown }> {
+    const results: Array<{ key: string; value: unknown }> = [];
+    try {
+      const meta = peekMeta(obj);
+      if (!meta) return results;
+      meta.forEachDescriptors((propKey: string, descriptor: any) => {
+        if (!descriptor || !descriptor._dependentKeys) return;
+        const deps: string[] = descriptor._dependentKeys;
+        // Check if changedKey matches any dependent key (including path prefixes)
+        let matches = false;
+        for (const dep of deps) {
+          if (dep === changedKey || dep.startsWith(changedKey + '.')) {
+            matches = true;
+            break;
+          }
+        }
+        if (!matches) return;
+        // Recompute using the descriptor's getter
+        try {
+          let newValue: unknown;
+          if (typeof descriptor._getter === 'function') {
+            newValue = descriptor._getter.call(obj, propKey);
+          } else if (typeof descriptor.get === 'function') {
+            newValue = descriptor.get(obj, propKey);
+          }
+          results.push({ key: propKey, value: newValue });
+        } catch { /* skip if getter throws */ }
+      });
+    } catch { /* skip if meta access fails */ }
+    return results;
+  };
+}
+
 export { notifyPropertyChange, beginPropertyChanges, endPropertyChanges, changeProperties };

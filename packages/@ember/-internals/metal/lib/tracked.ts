@@ -18,7 +18,17 @@ const {
 // Wrap dirtyTagFor to handle Symbol keys which GXT's raw dirtyTagFor can't handle
 function dirtyTagFor(obj: any, key: any) {
   const safeKey = typeof key === 'symbol' ? (key.description || key.toString()) : key;
-  return _dirtyTagFor(obj, safeKey);
+  try {
+    // Ensure obj has a constructor for GXT's debug label (t.constructor.name)
+    if (obj && typeof obj === 'object' && !obj.constructor) {
+      Object.defineProperty(obj, 'constructor', {
+        value: Object, writable: true, configurable: true, enumerable: false,
+      });
+    }
+    return _dirtyTagFor(obj, safeKey);
+  } catch {
+    // GXT's dirtyTagFor may fail for objects without constructor
+  }
 }
 
 
@@ -165,7 +175,11 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
-  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
+  // Always pass a function initializer to trackedData so GXT's cellFor creates
+  // a cell with a safe getter (instead of reading back through the property
+  // descriptor, which causes infinite recursion).
+  const initializer = desc?.initializer ?? (() => undefined);
+  let { getter, setter } = trackedData<any, any>(key, initializer);
 
   function get(this: object): unknown {
     let value = getter(this);
@@ -182,6 +196,22 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   function set(this: object, newValue: unknown): void {
     setter(this, newValue);
     dirtyTagFor(this, SELF_TAG);
+    // Notify GXT for cross-object reactivity — when a tracked property changes
+    // on a non-component object (e.g., a Counter or Person class), dirty all
+    // component cells that hold a reference to this object. This ensures that
+    // GXT formulas like {{this.counter.countAlias}} re-evaluate.
+    // Skip during rendering to avoid breaking the initial render.
+    if (!(globalThis as any).__gxtCurrentlyRendering) {
+      const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+      if (typeof triggerReRender === 'function') {
+        triggerReRender(this, key);
+      }
+      // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
+      const schedule = (globalThis as any).__gxtExternalSchedule;
+      if (typeof schedule === 'function') {
+        schedule();
+      }
+    }
   }
 
   let newDesc = {

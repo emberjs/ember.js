@@ -44,6 +44,7 @@ import {
   RENDERING_CONTEXT_PROPERTY,
   initDOM as gxtInitDOM,
   setIsRendering as gxtSetIsRendering,
+  isRendering as gxtIsRendering,
   syncDom as _syncDomFromDirectImport,
   cellFor as _cellForFromDirectImport,
   effect as _effectFromDirectImport,
@@ -99,6 +100,8 @@ if ((globalThis as any).__gxtSyncDom) gxtSyncDom = (globalThis as any).__gxtSync
 // Re-expose for manager.ts
 (globalThis as any).__gxtCellFor = cellFor;
 (globalThis as any).__gxtEffect = gxtEffect;
+// Expose isRendering check for tracked setter to avoid dirtying during render
+(globalThis as any).__gxtIsRendering = gxtIsRendering;
 
 // Use setIsRendering from GXT's runtime module (setupGlobalScope sets __gxtSetIsRendering).
 // The direct import (gxtSetIsRendering) may be from a different module copy,
@@ -472,14 +475,41 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 // We set it to a no-op so GXT doesn't auto-schedule DOM sync — instead we
 // control when gxtSyncDom() is called (after runTask, or via setTimeout fallback).
 (globalThis as any).__gxtPendingSync = false;
+(globalThis as any).__gxtPendingSyncFromPropertyChange = false;
 (globalThis as any).__gxtExternalSchedule = function() {
   (globalThis as any).__gxtPendingSync = true;
+  // Note: this is from cell/effect scheduling, NOT from a property change.
+  // __gxtPendingSyncFromPropertyChange is set separately by _notifyPropertiesChanged.
 };
 
 // Reverse mapping: array/object -> Set<{ obj, key }> for dirty propagation.
 // When cellFor installs a cell and the value is an array, register a mapping.
 // Used to dirty component cells when KVO arrays mutate in-place.
 const _arrayOwnerMap = new WeakMap<object, Set<{ obj: object; key: string }>>();
+
+// Reverse mapping: object VALUE -> Set<{ obj, key }> for computed property propagation.
+// When a cell holds an object as its value (e.g., renderContext['m'] = emberObj),
+// and a property changes on that object (e.g., set(emberObj, 'message', ...)),
+// we need to dirty the cell that holds the object so formulas re-evaluate.
+// This handles the case where {{this.m.formattedMessage}} needs to update
+// when m.message changes — the formula only tracks cell(renderContext, 'm'),
+// not cell(m, 'formattedMessage').
+const _objectValueCellMap = new WeakMap<object, Set<{ obj: object; key: string }>>();
+
+function registerObjectValueOwner(value: any, ownerObj: object, ownerKey: string) {
+  if (!value || typeof value !== 'object') return;
+  let owners = _objectValueCellMap.get(value);
+  if (!owners) {
+    owners = new Set();
+    _objectValueCellMap.set(value, owners);
+  }
+  // Avoid duplicates
+  for (const entry of owners) {
+    if (entry.obj === ownerObj && entry.key === ownerKey) return;
+  }
+  owners.add({ obj: ownerObj, key: ownerKey });
+}
+(globalThis as any).__gxtRegisterObjectValueOwner = registerObjectValueOwner;
 
 function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
   if (!array || typeof array !== 'object') return;
@@ -525,6 +555,44 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
       if (c) c.update(newValue);
     } catch { /* ignore */ }
   }
+  // Dirty cells that hold `obj` as their VALUE (reverse lookup).
+  // This handles the case where a template reads {{this.m.formattedMessage}} —
+  // the formula tracks cell(renderContext, 'm'), and when m.message changes,
+  // we need to dirty that cell so the formula re-evaluates with the new
+  // computed property result.
+  // Collect owners that need their Ember tag dirtied for force-rerender.
+  // The actual dirtying is deferred to AFTER gxtSyncDom + updateRootTagValues.
+  let _deferredTagDirties: Array<{ obj: object; key: string }> | null = null;
+  try {
+    const owners = _objectValueCellMap.get(obj);
+    if (owners) {
+      for (const { obj: ownerObj, key: ownerKey } of owners) {
+        try {
+          const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+          if (oc) oc.update(obj);
+        } catch { /* ignore */ }
+        // Defer markObjectAsDirty to after gxtSyncDom + updateRootTagValues
+        if (!_deferredTagDirties) _deferredTagDirties = [];
+        _deferredTagDirties.push({ obj: ownerObj, key: ownerKey });
+      }
+    }
+  } catch { /* ignore */ }
+  // Recompute computed properties that depend on the changed key.
+  // Ember computed properties (e.g., @computed('message') get formattedMessage())
+  // are replaced by cell-backed getters when cellFor is called. When the underlying
+  // dependency changes, we need to re-evaluate the computed getter and update its cell.
+  try {
+    const recompute = (globalThis as any).__gxtRecomputeDependents;
+    if (typeof recompute === 'function') {
+      const dependents: Array<{ key: string; value: unknown }> = recompute(obj, keyName);
+      for (const { key, value } of dependents) {
+        try {
+          const dc = cellFor(obj, key, /* skipDefine */ true);
+          if (dc) dc.update(value);
+        } catch { /* ignore */ }
+      }
+    }
+  } catch { /* ignore */ }
   // Also update cells on the prototype chain.
   // cellFor creates cells keyed by object identity. If a cell-backed getter
   // was installed on a prototype (e.g., via Component.extend({foo: true})),
@@ -593,6 +661,7 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
   } catch { /* ignore */ }
 
   (globalThis as any).__gxtPendingSync = true;
+  (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
   // Only do a quick cell sync here — don't fire lifecycle hooks or
   // run __gxtSyncAllWrappers. Property changes may be batched (e.g.,
   // setProperties), so lifecycle hooks should fire once after ALL
@@ -605,6 +674,14 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
       gxtSyncDom();
     } catch { /* ignore */ }
     finally { (globalThis as any).__gxtSyncing = false; }
+  }
+  // Signal to __gxtForceEmberRerender that nested object changes occurred.
+  // When a property changes on a nested object (e.g., set(m, 'message', ...)),
+  // the component's SELF_TAG is NOT dirtied by Ember (only m's tag is).
+  // Setting __gxtHadNestedObjectChange allows the force-rerender to fire
+  // and re-evaluate computed properties like {{this.m.formattedMessage}}.
+  if (_deferredTagDirties && _deferredTagDirties.length > 0) {
+    (globalThis as any).__gxtHadNestedObjectChange = true;
   }
   // Manually notify any $_if conditions watching this property.
   // This bypasses GXT's broken cross-module-instance cell tracking.
@@ -746,6 +823,11 @@ queueMicrotask(patchGlobalIf);
   if ((globalThis as any).__gxtSyncing) return;
   if ((globalThis as any).__gxtPendingSync) {
     (globalThis as any).__gxtPendingSync = false;
+    // Only signal "had pending sync" to the force-rerender if an actual property
+    // change triggered the sync. Cell creation during initial render also sets
+    // __gxtPendingSync, but that should NOT force a full re-render.
+    (globalThis as any).__gxtHadPendingSync = !!(globalThis as any).__gxtPendingSyncFromPropertyChange;
+    (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
     (globalThis as any).__gxtSyncing = true;
     // Start a new render pass to prevent double-firing of lifecycle hooks
     const newPass = (globalThis as any).__gxtNewRenderPass;
@@ -1673,6 +1755,43 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       if (owner) {
         const helperFactory = owner.factoryFor?.(`helper:${kebabName}`);
         const helperLookup = !helperFactory ? owner.lookup?.(`helper:${kebabName}`) : null;
+
+        // Check if the user is trying to override a built-in helper.
+        // Built-in helpers (array, hash, concat, fn, etc.) cannot be overridden.
+        if (helperFactory || helperLookup) {
+          const BUILTIN_HELPERS = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound'];
+          if (BUILTIN_HELPERS.includes(kebabName)) {
+            emberAssert(
+              `You attempted to overwrite the built-in helper "${kebabName}" which is not allowed. Please rename the helper.`,
+              false
+            );
+          }
+        }
+
+        // If the helper was invoked as a block (has children or __hasBlock__ marker),
+        // it's not a valid usage. Helpers cannot be used with blocks — only components can.
+        // {{#some-helper}}{{/some-helper}} → <SomeHelper @__hasBlock__="default"></SomeHelper>
+        if (helperFactory || helperLookup) {
+          const hasChildren = children && children.length > 0;
+          // Check for __hasBlock__ marker in attrs (from empty curly block invocation)
+          let hasBlockMarker = false;
+          if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+            for (const [key] of tagProps[1]) {
+              if (key === '@__hasBlock__') { hasBlockMarker = true; break; }
+            }
+          }
+          if (hasChildren || hasBlockMarker) {
+            const err = new Error(
+              `Attempted to resolve \`${kebabName}\`, which was expected to be a component, but nothing was found.`
+            );
+            const capture = (globalThis as any).__captureRenderError;
+            if (typeof capture === 'function') {
+              capture(err);
+              return document.createComment('helper-as-block-error');
+            }
+            throw err;
+          }
+        }
         if (helperFactory || helperLookup) {
           // Collect raw attr getters (keep them lazy for reactivity)
           const rawAttrs: Array<[string, any]> = [];
@@ -1994,13 +2113,16 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               stack.push(unwrappedParams);
 
               try {
-                // Return raw children as-is. GXT's rendering pipeline
+                // Evaluate lazy children (wrapped in () => ... for deferred block param access)
+                // and return raw children. GXT's rendering pipeline
                 // (renderElement → resolveRenderable) will handle functions
                 // by wrapping them in formulas that track cell dependencies.
-                // This provides native GXT reactivity: when a tracked cell
-                // changes (e.g., this.message), the formula re-evaluates
-                // and the text node updates automatically.
-                return [...slotChildren];
+                return slotChildren.map((child: any) => {
+                  if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
+                    try { return child(); } catch { return child; }
+                  }
+                  return child;
+                });
               } finally {
                 stack.pop();
                 // NOTE: We do NOT clear __currentSlotParams here
@@ -2068,9 +2190,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             stack.push(rawParams);
 
             try {
-              // Return raw children as-is. GXT's rendering pipeline
-              // handles functions via resolveRenderable → formula tracking.
-              return [...children];
+              // Evaluate lazy children (wrapped in () => ... for deferred block param access)
+              // and return raw children. GXT's rendering pipeline handles functions via
+              // resolveRenderable → formula tracking.
+              return children.map((child: any) => {
+                if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
+                  try { return child(); } catch { return child; }
+                }
+                return child;
+              });
             } finally {
               // Pop block params from stack
               // NOTE: We do NOT clear __currentSlotParams here
@@ -2147,7 +2275,17 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         (renderComponent as any).__isComponentThunk = true;
         (renderComponent as any).__componentName = kebabName;
 
-        return renderComponent;
+        // Check if we're inside a slot context (block params active).
+        // If block params are on the stack, we must return the thunk deferred
+        // so that GXT's rendering pipeline calls it within the slot scope.
+        // Otherwise, execute immediately so GXT receives a DOM node directly.
+        const bpStack = (globalThis as any).__blockParamsStack;
+        const hasBP = bpStack && bpStack.length > 0 && bpStack[bpStack.length - 1]?.length > 0;
+        if (hasBP) {
+          return renderComponent;
+        }
+        // Execute immediately — GXT's $_tag expects a DOM node return
+        return renderComponent();
       }
 
     }
@@ -3382,6 +3520,40 @@ function transformCurlyBlockComponents(code: string): string {
   return result;
 }
 
+/**
+ * Wrap top-level children expressions in arrow functions for deferred evaluation.
+ * Used when children of a component reference block params ($_bp), which are only
+ * available after the slot function is invoked.
+ */
+function wrapTopLevelChildren(childrenStr: string): string {
+  // Parse top-level items (respecting nested parens/brackets)
+  const items: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (let i = 0; i < childrenStr.length; i++) {
+    const ch = childrenStr[i];
+    if (ch === '(' || ch === '[') depth++;
+    else if (ch === ')' || ch === ']') depth--;
+    if (ch === ',' && depth === 0) {
+      items.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim()) items.push(current.trim());
+
+  // Wrap each item that references $_bp in () => ...
+  return items.map(item => {
+    if (item.includes('$_bp')) {
+      // Already a function? Don't double-wrap
+      if (item.startsWith('() =>') || item.startsWith('function')) return item;
+      return `() => ${item}`;
+    }
+    return item;
+  }).join(', ');
+}
+
 // Template cache for performance
 const templateCache = new Map<string, any>();
 
@@ -3706,6 +3878,28 @@ export function precompileTemplate(templateString: string, options?: {
         (_match, expr) => `$__fn(() => ${expr},`
       );
     }
+    // Wrap children of component $_tag calls in lazy functions when they
+    // reference block params ($._bp). Block params are only available when
+    // the slot function is invoked, but GXT eagerly evaluates children.
+    // Wrapping in () => ... defers evaluation until the slot context is set up.
+    if (modifiedCode.includes('$_bp') && modifiedCode.includes('$_tag(')) {
+      // Match: $_tag('PascalOrKebab', tagProps, this, [children])
+      // We need to wrap each child in the children array with () =>
+      // Strategy: find the children array (4th arg) of $_tag calls for components
+      // and wrap each top-level element in () =>
+      modifiedCode = modifiedCode.replace(
+        /(\$_tag\('[A-Z][^']*',\s*\[[^\]]*\],\s*this,\s*)\[([^\]]+)\]/g,
+        (match, prefix, childrenContent) => {
+          // Only wrap if children reference block params
+          if (!childrenContent.includes('$_bp')) return match;
+          // Wrap each top-level $_tag or expression in the array with () =>
+          // Split by top-level commas (respect nested brackets)
+          const wrappedChildren = wrapTopLevelChildren(childrenContent);
+          return `${prefix}[${wrappedChildren}]`;
+        }
+      );
+    }
+
     compilationResult.code = modifiedCode;
     try {
       const needsArgsAlias = modifiedCode.includes('$a.');
@@ -3982,9 +4176,42 @@ export function precompileTemplate(templateString: string, options?: {
           return fragment;
         }
 
-        // If result is an object with GXT node structure, process it
+        // If result is an object with GXT node structure, process it.
+        // But plain objects (Date, {foo:'bar'}, etc.) should be stringified for text rendering.
         if (finalResult && typeof finalResult === 'object' && !(finalResult instanceof Node)) {
-          return itemToNode(finalResult, depth + 1);
+          // Check if it looks like a GXT component (has RENDERED_NODES_PROPERTY)
+          const _RNPROP = RENDERED_NODES_PROPERTY;
+          if ((_RNPROP && _RNPROP in finalResult) || Array.isArray(finalResult) ||
+              typeof finalResult.toHTML === 'function') {
+            return itemToNode(finalResult, depth + 1);
+          }
+          // Plain object (Date, {foo:'bar'}, etc.) — stringify for text rendering.
+          // Ember's Glimmer VM stringifies all values in text positions.
+          // Handle Object.create(null) which has no toString — render as empty.
+          let textVal: string;
+          try { textVal = String(finalResult); } catch { textVal = ''; }
+          const objTextNode = document.createTextNode(textVal);
+          try {
+            gxtEffect(() => {
+              const v = item();
+              const fv = typeof v === 'function' ? v() : v;
+              objTextNode.textContent = fv == null ? '' : String(fv);
+            });
+          } catch { /* effect setup may fail */ }
+          return objTextNode;
+        }
+
+        // Handle symbol values — stringify for text rendering
+        if (typeof finalResult === 'symbol') {
+          const symTextNode = document.createTextNode(String(finalResult));
+          try {
+            gxtEffect(() => {
+              const v = item();
+              const fv = typeof v === 'function' ? v() : v;
+              symTextNode.textContent = fv == null ? '' : String(fv);
+            });
+          } catch { /* effect setup may fail */ }
+          return symTextNode;
         }
 
         // Create a text node with the initial value
@@ -4197,6 +4424,25 @@ export function precompileTemplate(templateString: string, options?: {
           // GXT requires these for proper parent/child tracking
           // Use the actual symbols exported from GXT
 
+          // Check for built-in helper overrides. If the owner has registered a
+          // helper with a built-in name, assert before rendering.
+          {
+            const _owner = (globalThis as any).owner;
+            if (_owner && !_owner.isDestroyed) {
+              const BUILTIN_HELPER_NAMES = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound'];
+              for (const builtinName of BUILTIN_HELPER_NAMES) {
+                let hasOverride = false;
+                try { hasOverride = !!_owner.factoryFor?.(`helper:${builtinName}`); } catch { /* ignore */ }
+                if (hasOverride) {
+                  emberAssert(
+                    `You attempted to overwrite the built-in helper "${builtinName}" which is not allowed. Please rename the helper.`,
+                    false
+                  );
+                }
+              }
+            }
+          }
+
           // Use the context directly — don't wrap with Object.create()!
           // The context IS the Proxy from createRenderContext. Wrapping it would
           // bypass the Proxy's get handler, breaking cell-based reactive tracking.
@@ -4303,6 +4549,13 @@ export function precompileTemplate(templateString: string, options?: {
                     // This ensures the same cell is used for reads and writes
                     cellFor(cellTarget, key as any, /* skipDefine */ false);
                     _cellInstallCount++;
+                    // Register reverse mapping: if this property holds an object,
+                    // we need to dirty this cell when a property changes on that object.
+                    // This enables {{this.m.formattedMessage}} to update when m.message changes.
+                    const cellValue = desc.value;
+                    if (cellValue && typeof cellValue === 'object') {
+                      registerObjectValueOwner(cellValue, cellTarget, key);
+                    }
                   } catch { /* ignore non-configurable properties */ }
                 }
               }
@@ -4323,9 +4576,11 @@ export function precompileTemplate(templateString: string, options?: {
           let result;
           const _setRendering = (globalThis as any).__gxtSetIsRendering || gxtSetIsRendering;
           _setRendering(true);
+          (globalThis as any).__gxtCurrentlyRendering = true;
           try {
             result = compilationResult.templateFn.call(renderContext);
           } finally {
+            (globalThis as any).__gxtCurrentlyRendering = false;
             _setRendering(false);
             // Pop slots from stack
             slotsStack.pop();
