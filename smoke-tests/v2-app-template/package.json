@@ -38,13 +38,13 @@
     "@ember/string": "^4.0.1",
     "@ember/test-helpers": "^5.4.1",
     "@ember/test-waiters": "^4.1.1",
-    "@embroider/compat": "^4.1.13",
+    "@embroider/compat": "^4.1.16",
     "@embroider/config-meta-loader": "^1.0.0",
-    "@embroider/core": "^4.4.3",
+    "@embroider/core": "^4.4.7",
     "@embroider/legacy-inspector-support": "^0.1.3",
-    "@embroider/macros": "^1.19.7",
+    "@embroider/macros": "^1.20.2",
     "@embroider/router": "^3.0.6",
-    "@embroider/vite": "^1.5.2",
+    "@embroider/vite": "^1.7.1",
     "@eslint/js": "^9.39.2",
     "@glimmer/component": "workspace:^",
     "@rollup/plugin-babel": "^6.1.0",
@@ -74,8 +74,8 @@
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^38.0.0",
     "testem": "^3.17.0",
-    "vite": "^7.3.1",
-    "tracked-built-ins": "^4.1.0"
+    "tracked-built-ins": "^4.1.0",
+    "vite": "^7.3.1"
   },
   "engines": {
     "node": ">= 20"
