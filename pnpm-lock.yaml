@@ -19,7 +19,7 @@ patchedDependencies:
     hash: 5e48bdb11a088927d3415cc5430bb6c37d5ce66ed2dab1327914b55e4fd5cd13
     path: patches/@tracerbench__core@8.0.1.patch
   ember-cli-htmlbars@7.0.0:
-    hash: 6cf4f0202ad3b50964a3adf94dc862259f4067e3fb2c0778e3d2f0dfa5b72077
+    hash: 03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a
     path: patches/ember-cli-htmlbars@7.0.0.patch
   ember-cli@6.11.0:
     hash: b402dc130db441084ccb96ecb60ed99ef58806dbbc3149327037c1e4450ccd82
@@ -2818,7 +2818,7 @@ importers:
         version: 3.4.0(ember-source@)
       ember-cli-htmlbars:
         specifier: ^7.0.0
-        version: 7.0.0(patch_hash=6cf4f0202ad3b50964a3adf94dc862259f4067e3fb2c0778e3d2f0dfa5b72077)(@babel/core@7.29.0)(ember-source@)
+        version: 7.0.0(patch_hash=03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a)(@babel/core@7.29.0)(ember-source@)
       ember-cli-inject-live-reload:
         specifier: ^2.1.0
         version: 2.1.0
@@ -17703,7 +17703,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-htmlbars@7.0.0(patch_hash=6cf4f0202ad3b50964a3adf94dc862259f4067e3fb2c0778e3d2f0dfa5b72077)(@babel/core@7.29.0)(ember-source@):
+  ember-cli-htmlbars@7.0.0(patch_hash=03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a)(@babel/core@7.29.0)(ember-source@):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@ember/edition-utils': 1.2.0
@@ -18085,7 +18085,7 @@ snapshots:
   ember-tracked-storage-polyfill@1.0.0(@babel/core@7.29.0)(ember-source@):
     dependencies:
       ember-cli-babel: 8.3.1(@babel/core@7.29.0)
-      ember-cli-htmlbars: 7.0.0(patch_hash=6cf4f0202ad3b50964a3adf94dc862259f4067e3fb2c0778e3d2f0dfa5b72077)(@babel/core@7.29.0)(ember-source@)
+      ember-cli-htmlbars: 7.0.0(patch_hash=03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a)(@babel/core@7.29.0)(ember-source@)
     transitivePeerDependencies:
       - '@babel/core'
       - ember-source
