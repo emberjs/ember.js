@@ -323,7 +323,9 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // Resolve the first arg (component name/ref)
       const first = unwrapArg(params[0]);
 
-      // Track the owner — prefer globalThis.owner, fall back to cached
+      // Track the owner — prefer globalThis.owner, fall back to cached.
+      // Also use the shared getOwnerWithFallback from manager.ts which has
+      // a more robust cache that survives across reactive re-evaluations.
       const currentOwner = g.owner;
       if (currentOwner && !currentOwner.isDestroyed && !currentOwner.isDestroying) {
         _cachedOwner = currentOwner;
@@ -331,7 +333,11 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       if (_cachedOwner && (_cachedOwner.isDestroyed || _cachedOwner.isDestroying)) {
         _cachedOwner = null;
       }
-      const owner = currentOwner || _cachedOwner;
+      const sharedOwner = typeof g.__getOwnerWithFallback === 'function' ? g.__getOwnerWithFallback() : null;
+      const owner = currentOwner || _cachedOwner || sharedOwner;
+
+      // Capture the parent render context for two-way binding via mut.
+      const parentRenderCtx = (g as any).__lastRenderContext;
 
       // Collect named args from hash (keep getters for reactivity).
       // Also eagerly evaluate each getter to establish GXT cell tracking
@@ -342,6 +348,10 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         for (const key of Object.keys(hash)) {
           const val = hash[key];
           namedArgs[key] = val;
+          // Annotate hash getter functions with parent context for mut support
+          if (typeof val === 'function' && !val.prototype && parentRenderCtx) {
+            (val as any).__mutParentCtx = parentRenderCtx;
+          }
           // Touch the value to track the cell dependency
           if (typeof val === 'function' && !val.prototype) {
             try { val(); } catch { /* ignore */ }
@@ -351,8 +361,6 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 
       // Collect remaining positional params (after the first which is the component ref)
       // For each positional getter, also store a setter if derivable (for mut support).
-      // Capture the parent render context for two-way binding via mut.
-      const parentRenderCtx = (g as any).__lastRenderContext;
       const positionals: any[] = [];
       for (let i = 1; i < params.length; i++) {
         const p = params[i];
@@ -370,14 +378,18 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // Validate that a string component name can be resolved.
       // This throws eagerly during template evaluation (matching Ember's behavior
       // of asserting during render for non-existent components).
-      // IMPORTANT: Only validate with globalThis.owner (not the cached fallback)
-      // to avoid false negatives when the cached owner is from a previous test.
+      // IMPORTANT: Only validate with the CURRENT globalThis.owner (not cached fallback)
+      // because cached owners may be from a different test and won't have the
+      // component registered. Skipping validation during reactive re-evaluations
+      // (when g.owner is null) is safe — the manager will handle resolution.
       if (typeof first === 'string' && first.length > 0) {
         const validationOwner = g.owner;
         if (validationOwner && !validationOwner.isDestroyed && !validationOwner.isDestroying) {
           const factory = validationOwner.factoryFor?.(`component:${first}`);
           const template = validationOwner.lookup?.(`template:components/${first}`);
-          if (!factory && !template) {
+          // Also check via lookup (resolver-based registrations may not show via factoryFor)
+          const looked = !factory ? validationOwner.lookup?.(`component:${first}`) : factory;
+          if (!factory && !template && !looked) {
             const err = new Error(
               `Attempted to resolve \`${first}\`, which was expected to be a component, but nothing was found. ` +
               `Could not find component named "${first}" (no component or template with that name was found)`
@@ -1048,12 +1060,28 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
               }
               if (obj != null) {
                 const lastProp = parts[parts.length - 1]!;
-                obj[lastProp] = newValue;
+                if (typeof obj.set === 'function') {
+                  obj.set(lastProp, newValue);
+                } else {
+                  obj[lastProp] = newValue;
+                }
               }
-              // Trigger re-render by dirtying the root property cell on the parent context
+              // Trigger re-render via multiple mechanisms:
               const triggerReRender = (globalThis as any).__gxtTriggerReRender;
               if (triggerReRender) {
+                // Dirty cells along the property path for GXT formula tracking
+                if (obj != null && parts.length > 1) {
+                  triggerReRender(obj, parts[parts.length - 1]!);
+                }
                 triggerReRender(parentCtx, parts[0]!);
+              }
+              // Force a full re-render of the parent component.
+              // This is needed when the property path isn't cell-tracked
+              // (e.g., model is a plain prototype property from Component.extend).
+              if (typeof parentCtx.rerender === 'function') {
+                try { parentCtx.rerender(); } catch { /* ignore */ }
+              } else if (typeof parentCtx.notifyPropertyChange === 'function') {
+                parentCtx.notifyPropertyChange(parts[0]!);
               }
             }
             // Also set the local property on the component
@@ -1992,21 +2020,96 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Merge parent fw (tagProps[3]) if present — this handles ...attributes forwarding
           // through component chains (e.g., <XOuter data-foo> where XOuter template has
           // <XInner ...attributes> — the data-foo must reach XInner's ...attributes)
+          //
+          // Check for __splatLocal__ marker — attrs that come AFTER ...attributes
+          // in source should override fw (local-first). Without marker, fw wins (parent first).
+          const splatLocalNames = new Set<string>();
+          // Check both fwProps and fwAttrs for __splatLocal__ marker
+          for (const arr of [fwProps, fwAttrs]) {
+            for (let i = arr.length - 1; i >= 0; i--) {
+              if (arr[i][0] === '__splatLocal__') {
+                const names = typeof arr[i][1] === 'string' ? arr[i][1] : (typeof arr[i][1] === 'function' ? arr[i][1]() : '');
+                for (const n of names.split(',')) if (n) splatLocalNames.add(n);
+                arr.splice(i, 1);
+              }
+            }
+          }
+
           const parentFw = tagProps[3];
           if (parentFw && Array.isArray(parentFw)) {
-            // Merge parent props into fwProps
-            if (Array.isArray(parentFw[0])) {
-              for (const entry of parentFw[0]) {
-                fwProps.push(entry);
+            if (splatLocalNames.size > 0) {
+              // ...attributes came BEFORE local attrs: local overrides fw
+              // Put local first (already in fwProps/fwAttrs), then parent fw
+              // But filter out parent entries that conflict with splatLocal names
+              const classAfterSplat = splatLocalNames.has('__class__');
+              splatLocalNames.delete('__class__');
+
+              if (classAfterSplat) {
+                // Class was AFTER ...attributes: fw classes first, local class second
+                // Reorder: move local class entries to end, put parent class entries before them
+                const localClassEntries = fwProps.filter(e => e[0] === '' || e[0] === 'class');
+                const localNonClassEntries = fwProps.filter(e => e[0] !== '' && e[0] !== 'class');
+                fwProps.length = 0;
+                for (const entry of localNonClassEntries) fwProps.push(entry);
+                // Parent props: non-class are filtered by splatLocalNames, class goes before local class
+                if (Array.isArray(parentFw[0])) {
+                  for (const entry of parentFw[0]) {
+                    const k = entry[0] === '' ? 'class' : entry[0];
+                    if (k === 'class') fwProps.push(entry); // parent class first
+                    else if (!splatLocalNames.has(k)) fwProps.push(entry);
+                  }
+                }
+                for (const entry of localClassEntries) fwProps.push(entry); // local class after
+              } else {
+                // No class after splat: local entries already in fwProps, add parent non-conflicting
+                if (Array.isArray(parentFw[0])) {
+                  for (const entry of parentFw[0]) {
+                    const k = entry[0] === '' ? 'class' : entry[0];
+                    if (!splatLocalNames.has(k)) fwProps.push(entry);
+                  }
+                }
               }
-            }
-            // Merge parent attrs into fwAttrs
-            if (Array.isArray(parentFw[1])) {
-              for (const entry of parentFw[1]) {
-                fwAttrs.push(entry);
+              if (Array.isArray(parentFw[1])) {
+                for (const entry of parentFw[1]) {
+                  if (!splatLocalNames.has(entry[0])) fwAttrs.push(entry);
+                }
               }
+            } else {
+              // ...attributes came AFTER local attrs (or no positional info):
+              // Parent fw should override local — put parent entries FIRST
+              // EXCEPT for class (key === ''), where order is: local first, then parent
+              // (class is additive and Ember preserves definition→invocation order)
+              const localProps = [...fwProps];
+              const localAttrs = [...fwAttrs];
+              fwProps.length = 0;
+              fwAttrs.length = 0;
+              // Separate class entries from non-class entries
+              const localClassProps = localProps.filter(e => e[0] === '' || e[0] === 'class');
+              const localNonClassProps = localProps.filter(e => e[0] !== '' && e[0] !== 'class');
+              const parentClassProps: any[] = [];
+              const parentNonClassProps: any[] = [];
+              if (Array.isArray(parentFw[0])) {
+                for (const entry of parentFw[0]) {
+                  if (entry[0] === '' || entry[0] === 'class') parentClassProps.push(entry);
+                  else parentNonClassProps.push(entry);
+                }
+              }
+              // Non-class: parent first (parent wins in GXT Set dedup)
+              for (const entry of parentNonClassProps) fwProps.push(entry);
+              for (const entry of localNonClassProps) fwProps.push(entry);
+              // Class: local first, then parent (definition→invocation order)
+              for (const entry of localClassProps) fwProps.push(entry);
+              for (const entry of parentClassProps) fwProps.push(entry);
+              // Attrs: parent first for non-class attrs
+              if (Array.isArray(parentFw[1])) {
+                for (const entry of parentFw[1]) fwAttrs.push(entry);
+              }
+              for (const entry of localAttrs) fwAttrs.push(entry);
             }
-            // Events from parent are merged below
+            // Events from parent are always merged
+            if (Array.isArray(parentFw[2])) {
+              // Events will be merged below in the events section
+            }
           }
         }
 
@@ -2291,16 +2394,99 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     }
 
     // Fall back to original $_tag for regular HTML elements
-    // GXT handles ...attributes internally by:
-    // 1. Applying modifiers from $fw to elements with ...attributes
-    // 2. Passing $fw as tagProps[3] for reference
     // GXT handles ...attributes internally via tagProps[3] ($fw):
     // - fw[0] = props (class, id, etc.)
     // - fw[1] = attrs (data-*, title, etc.)
     // - fw[2] = events (event handlers/modifiers)
-    // The HTMLBrowserDOMApi.attr() patch handles undefined/false values
-    // by removing the attribute instead of setting it to "undefined".
-    // Do NOT re-apply fw attributes here — GXT already applies them.
+    //
+    // GXT applies fw BEFORE local attrs, so local attrs win. But Ember's
+    // ...attributes semantics require invocation-side (fw) to override
+    // definition-side (local) for the same attribute. Fix: remove local
+    // props/attrs that are also present in fw so fw values take effect.
+    if (tagProps && tagProps !== g.$_edp && tagProps[3] && typeof tagProps[3] === 'object') {
+      const fw = tagProps[3];
+      // Check for __splatLocal__ marker — these are local attrs that come AFTER
+      // ...attributes in the source and should override fw (not be overridden by it).
+      // GXT may place __splatLocal__ in tagProps[0] (props) or tagProps[1] (attrs).
+      const splatLocalSet = new Set<string>();
+      for (const pos of [0, 1]) {
+        if (Array.isArray(tagProps[pos])) {
+          for (const entry of tagProps[pos]) {
+            if (entry[0] === '__splatLocal__') {
+              const names = typeof entry[1] === 'string' ? entry[1] : (typeof entry[1] === 'function' ? entry[1]() : '');
+              for (const n of names.split(',')) if (n) splatLocalSet.add(n);
+            }
+          }
+        }
+      }
+
+      // Build sets of keys present in fw props and fw attrs
+      const fwPropKeys = new Set<string>();
+      const fwAttrKeys = new Set<string>();
+      if (Array.isArray(fw[0])) {
+        for (const entry of fw[0]) {
+          const key = entry[0] === '' ? 'class' : entry[0];
+          if (key !== 'class' && !splatLocalSet.has(key)) fwPropKeys.add(entry[0]);
+        }
+      }
+      if (Array.isArray(fw[1])) {
+        for (const entry of fw[1]) {
+          if (!splatLocalSet.has(entry[0])) fwAttrKeys.add(entry[0]);
+        }
+      }
+
+      tagProps = [tagProps[0], tagProps[1], tagProps[2], tagProps[3]];
+
+      // Remove __splatLocal__ marker from props and attrs
+      if (splatLocalSet.size > 0) {
+        if (Array.isArray(tagProps[0])) {
+          tagProps[0] = tagProps[0].filter((entry: any) => entry[0] !== '__splatLocal__');
+        }
+        if (Array.isArray(tagProps[1])) {
+          tagProps[1] = tagProps[1].filter((entry: any) => entry[0] !== '__splatLocal__');
+        }
+      }
+
+      // For attrs NOT in splatLocal: fw should override local (remove from local)
+      if (fwPropKeys.size > 0 && Array.isArray(tagProps[0])) {
+        tagProps[0] = tagProps[0].filter((entry: any) => !fwPropKeys.has(entry[0]));
+      }
+      if (fwAttrKeys.size > 0 && Array.isArray(tagProps[1])) {
+        tagProps[1] = tagProps[1].filter((entry: any) => !fwAttrKeys.has(entry[0]));
+      }
+
+      // For attrs IN splatLocal: local should override fw (remove from fw)
+      if (splatLocalSet.size > 0) {
+        const newFw = [
+          Array.isArray(fw[0]) ? fw[0].filter((e: any) => {
+            const k = e[0] === '' ? 'class' : e[0];
+            return !splatLocalSet.has(k);
+          }) : fw[0],
+          Array.isArray(fw[1]) ? fw[1].filter((e: any) => !splatLocalSet.has(e[0])) : fw[1],
+          fw[2]
+        ];
+        tagProps[3] = newFw;
+      }
+
+      // Reorder class entries for ...attributes precedence.
+      // GXT applies fw classes first (from tagProps[3][0]) then local (from tagProps[0]).
+      // Ember wants:
+      //   <div class="qux" ...attributes /> → local first, fw second (need to swap)
+      //   <div ...attributes class="qux" /> → fw first, local second (GXT default, no swap)
+      // If __class__ is NOT in splatLocalSet, ...attributes was AFTER class → swap.
+      // If __class__ IS in splatLocalSet, ...attributes was BEFORE class → no swap.
+      const classAfterSplat = splatLocalSet.has('__class__');
+      if (!classAfterSplat && Array.isArray(tagProps[0]) && Array.isArray(tagProps[3]?.[0])) {
+        const localClassEntries = tagProps[0].filter((e: any) => e[0] === '');
+        if (localClassEntries.length > 0) {
+          tagProps[0] = tagProps[0].filter((e: any) => e[0] !== '');
+          // Prepend local class entries to fw[0] so they come first in GXT's class concat
+          tagProps[3] = [[...localClassEntries, ...tagProps[3][0]], tagProps[3][1], tagProps[3][2]];
+        }
+      }
+      // Clean __class__ from splatLocalSet (it's a meta-marker, not an actual attr)
+      splatLocalSet.delete('__class__');
+    }
     // GXT order: tag, tagProps, ctx, children
     return originalTag(tag, tagProps, ctx, children);
   };
@@ -3827,6 +4013,40 @@ export function precompileTemplate(templateString: string, options?: {
     );
   }
 
+  // Encode ...attributes position for splattributes precedence.
+  // In Ember, attrs AFTER ...attributes override fw; attrs BEFORE are overridden by fw.
+  // GXT always gives fw priority, so we need to mark attrs that come AFTER ...attributes
+  // as "local overrides" so the runtime can handle precedence correctly.
+  // We add a hidden __splatLocal__ attr listing the attr names that should override fw.
+  if (/\.\.\.attributes/.test(transformedTemplate)) {
+    transformedTemplate = transformedTemplate.replace(
+      /<([a-zA-Z][a-zA-Z0-9.-]*)(\s[^>]*?)(\.\.\.attributes)([^>]*?)\s*\/?>/g,
+      (match, tagName, beforeSplat, splat, afterSplat) => {
+        // Extract attr names from afterSplat (attrs after ...attributes)
+        const afterAttrNames: string[] = [];
+        let hasClassAfterSplat = false;
+        const attrPattern = /\b([a-zA-Z_][a-zA-Z0-9_-]*)=/g;
+        let m;
+        while ((m = attrPattern.exec(afterSplat)) !== null) {
+          const name = m[1];
+          if (name === 'class') {
+            hasClassAfterSplat = true;
+          } else if (!name.startsWith('@')) {
+            afterAttrNames.push(name);
+          }
+        }
+        if (afterAttrNames.length > 0 || hasClassAfterSplat) {
+          // Build marker value: non-class attrs + optional __class__ marker
+          const markerParts = [...afterAttrNames];
+          if (hasClassAfterSplat) markerParts.push('__class__');
+          const marker = ` __splatLocal__="${markerParts.join(',')}"`;
+          return `<${tagName}${beforeSplat}${splat}${afterSplat}${marker} />`;
+        }
+        return match;
+      }
+    );
+  }
+
   // Compile using GXT runtime compiler
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
@@ -3950,44 +4170,82 @@ export function precompileTemplate(templateString: string, options?: {
     // Create a REACTIVE text node that updates when dependencies change
     if (typeof item === 'function') {
       try {
-        // Triple-stache (raw HTML): use marker comments with innerHTML updates
+        // Triple-stache (raw HTML): use a single empty comment placeholder
+        // when content is empty (matches Glimmer VM's <!----> behavior),
+        // and replace with actual HTML nodes when non-empty.
         if ((item as any).__htmlRaw) {
-          const startMarker = document.createComment('htmlRaw');
-          const endMarker = document.createComment('/htmlRaw');
+          const placeholder = document.createComment('');
           const fragment = document.createDocumentFragment();
-          fragment.appendChild(startMarker);
+          // Track current content nodes so we can remove them on update.
+          // Also track an "end marker" comment that is always in the DOM
+          // so we have a stable insertion anchor.
+          const endAnchor = document.createComment('/htmlRaw');
+          let contentNodes: Node[] = [];
+          let isEmpty = true;
 
           // Initial render
           const initialHtml = item();
           if (initialHtml) {
+            isEmpty = false;
             const tpl = document.createElement('template');
             tpl.innerHTML = initialHtml;
             while (tpl.content.firstChild) {
-              fragment.appendChild(tpl.content.firstChild);
+              const child = tpl.content.firstChild;
+              contentNodes.push(child);
+              fragment.appendChild(child);
             }
+          } else {
+            // Empty content — show placeholder (renders as <!----> in innerHTML)
+            isEmpty = true;
+            fragment.appendChild(placeholder);
           }
-          fragment.appendChild(endMarker);
+          fragment.appendChild(endAnchor);
 
-          // Reactive update — replaces content between markers
+          // Track last rendered HTML for DOM stability (skip update if unchanged)
+          let lastHtml = initialHtml;
+
+          // Reactive update
           try {
             gxtEffect(() => {
               const html = item();
-              const parent = startMarker.parentNode;
+              const parent = endAnchor.parentNode;
               if (!parent) return;
-              // Remove existing content between markers
-              let node = startMarker.nextSibling;
-              while (node && node !== endMarker) {
-                const next = node.nextSibling;
-                parent.removeChild(node);
-                node = next;
-              }
-              // Insert new HTML content
+              // Skip update if HTML hasn't changed (preserves DOM node stability)
+              if (html === lastHtml) return;
+              lastHtml = html;
+
               if (html) {
+                // Remove placeholder if present
+                if (isEmpty && placeholder.parentNode === parent) {
+                  parent.removeChild(placeholder);
+                }
+                // Remove old content nodes
+                for (const n of contentNodes) {
+                  if (n.parentNode === parent) parent.removeChild(n);
+                }
+                // Parse and insert new HTML before the end anchor
                 const tpl = document.createElement('template');
                 tpl.innerHTML = html;
+                const newNodes: Node[] = [];
                 while (tpl.content.firstChild) {
-                  parent.insertBefore(tpl.content.firstChild, endMarker);
+                  const child = tpl.content.firstChild;
+                  newNodes.push(child);
+                  parent.insertBefore(child, endAnchor);
                 }
+                contentNodes = newNodes;
+                isEmpty = false;
+              } else {
+                // Content is now empty
+                // Remove old content nodes
+                for (const n of contentNodes) {
+                  if (n.parentNode === parent) parent.removeChild(n);
+                }
+                contentNodes = [];
+                // Insert placeholder before the end anchor if not already there
+                if (!isEmpty || !placeholder.parentNode) {
+                  parent.insertBefore(placeholder, endAnchor);
+                }
+                isEmpty = true;
               }
             });
           } catch { /* effect setup may fail */ }
@@ -4139,37 +4397,61 @@ export function precompileTemplate(templateString: string, options?: {
             if (fv.toHTML) return fv.toHTML();
             return String(fv);
           };
-          const startMarker = document.createComment('htmlRaw');
-          const endMarker = document.createComment('/htmlRaw');
+          const placeholder = document.createComment('');
+          const endAnchor = document.createComment('/htmlRaw');
           const fragment = document.createDocumentFragment();
-          fragment.appendChild(startMarker);
+          let contentNodes: Node[] = [];
+          let htmlIsEmpty = true;
           const initialHtml = getHtml();
           if (initialHtml) {
+            htmlIsEmpty = false;
             const tpl = document.createElement('template');
             tpl.innerHTML = initialHtml;
             while (tpl.content.firstChild) {
-              fragment.appendChild(tpl.content.firstChild);
+              const child = tpl.content.firstChild;
+              contentNodes.push(child);
+              fragment.appendChild(child);
             }
+          } else {
+            htmlIsEmpty = true;
+            fragment.appendChild(placeholder);
           }
-          fragment.appendChild(endMarker);
+          fragment.appendChild(endAnchor);
+          let lastHtml2 = initialHtml;
           // Reactive update
           try {
             gxtEffect(() => {
               const html = getHtml();
-              const parent = startMarker.parentNode;
+              const parent = endAnchor.parentNode;
               if (!parent) return;
-              let node = startMarker.nextSibling;
-              while (node && node !== endMarker) {
-                const next = node.nextSibling;
-                parent.removeChild(node);
-                node = next;
-              }
+              if (html === lastHtml2) return;
+              lastHtml2 = html;
               if (html) {
+                if (htmlIsEmpty && placeholder.parentNode === parent) {
+                  parent.removeChild(placeholder);
+                }
+                for (const n of contentNodes) {
+                  if (n.parentNode === parent) parent.removeChild(n);
+                }
                 const tpl = document.createElement('template');
                 tpl.innerHTML = html;
+                const newNodes: Node[] = [];
                 while (tpl.content.firstChild) {
-                  parent.insertBefore(tpl.content.firstChild, endMarker);
+                  const child = tpl.content.firstChild;
+                  newNodes.push(child);
+                  parent.insertBefore(child, endAnchor);
                 }
+                contentNodes = newNodes;
+                htmlIsEmpty = false;
+              } else {
+                for (const n of contentNodes) {
+                  if (n.parentNode === parent) parent.removeChild(n);
+                }
+                contentNodes = [];
+                if (!htmlIsEmpty || !placeholder.parentNode) {
+                  parent.insertBefore(placeholder, endAnchor);
+                }
+                htmlIsEmpty = true;
               }
             });
           } catch { /* effect setup may fail */ }

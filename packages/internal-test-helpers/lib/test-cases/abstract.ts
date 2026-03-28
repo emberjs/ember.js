@@ -29,7 +29,8 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
         text.includes('list item') ||
         text.includes('list bottom marker') ||
         text.includes('curried-start') ||
-        text.includes('curried-end')
+        text.includes('curried-end') ||
+        text === '/htmlRaw'
       )
     ) {
       return true;
@@ -248,10 +249,18 @@ export default abstract class AbstractTestCase {
         text.includes('list item') ||
         text.includes('list bottom marker') ||
         text.includes('curried-start') ||
-        text.includes('curried-end') ||
-        text === ''
+        text.includes('curried-end')
       ) {
         toRemove.push(node);
+      } else if (text === '') {
+        // Empty comments are GXT markers UNLESS they are htmlRaw placeholders.
+        // An htmlRaw placeholder is an empty comment immediately followed by
+        // a /htmlRaw anchor comment (used for triple-stache reactive updates).
+        const next = node.nextSibling;
+        const isHtmlRawPlaceholder = next instanceof Comment && (next.textContent || '') === '/htmlRaw';
+        if (!isHtmlRawPlaceholder) {
+          toRemove.push(node);
+        }
       }
     }
     for (const c of toRemove) c.parentNode?.removeChild(c);

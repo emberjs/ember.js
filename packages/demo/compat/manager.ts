@@ -472,6 +472,28 @@ function createComponentInstance(
   // reach assert.throws in tests (GXT dist has no try-catch wrapper).
   const instance = factory.create(props);
 
+  // Validate tagless component constraints early (before view registry registration)
+  // so that the expected assert fires before any other errors.
+  const instanceTagName = instance?.tagName;
+  if (instanceTagName === '') {
+    const cnBindings = instance?.classNameBindings || factory?.class?.prototype?.classNameBindings;
+    assert(
+      'You cannot use `classNameBindings` on a tag-less component',
+      !cnBindings || !Array.isArray(cnBindings) || cnBindings.length === 0
+    );
+    const atBindings = instance?.attributeBindings || factory?.class?.prototype?.attributeBindings;
+    assert(
+      'You cannot use `attributeBindings` on a tag-less component',
+      !atBindings || !Array.isArray(atBindings) || atBindings.length === 0
+    );
+    const argElementId = args && 'elementId' in args && args.elementId !== undefined;
+    const instanceElementId = instance?.elementId && !instance.__elementIdFromId;
+    assert(
+      'You cannot use `elementId` on a tag-less component',
+      !argElementId && !instanceElementId
+    );
+  }
+
   // Ensure arg tracking is on the instance
   if (!instance.__argGetters) instance.__argGetters = argGetters;
   if (!instance.__lastArgValues) instance.__lastArgValues = lastArgValues;
@@ -588,6 +610,8 @@ function createComponentInstance(
     const triggerReRender = (globalThis as any).__gxtTriggerReRender;
     const origPDC = instance[PROPERTY_DID_CHANGE]?.bind(instance);
     instance[PROPERTY_DID_CHANGE] = function(key: string, value?: unknown) {
+      // Skip if instance is destroyed or destroying (prevents "set on destroyed object")
+      if (instance.isDestroyed || instance.isDestroying) return;
       // Skip propagation during attrs dispatch (prevents infinite loops)
       if ((instance as any).__gxtDispatchingArgs) return;
 
@@ -1201,6 +1225,8 @@ const _updatedInstances: any[] = [];
 
   // Phase 1: Update arg cells and trigger pre-render lifecycle hooks.
   for (const entry of trackedArgCells) {
+    // Skip destroyed/destroying instances to avoid "set on destroyed object" errors
+    if (entry.instance && (entry.instance.isDestroyed || entry.instance.isDestroying)) continue;
     let hasChanges = false;
     for (const key of Object.keys(entry.cells)) {
       const cellEntry = entry.cells[key]!;
@@ -1379,6 +1405,16 @@ let _preRerenderSnapshot: Set<any> = new Set();
       // Primary check: is the instance's element still in the DOM?
       if (el && el.isConnected) {
         isAlive = true;
+      }
+
+      // Tagless components (tagName === '') use DocumentFragments which are
+      // never "connected" after insertion. Consider them alive if they were
+      // rendered in the current pass or if they are claimed in a pool.
+      if (!isAlive && instance.tagName === '' && !instance.isDestroyed && !instance.isDestroying) {
+        const passId = (globalThis as any).__emberRenderPassId || 0;
+        if (instance.__gxtRenderedInPass === passId || _currentPassRenderedInstances.has(instance)) {
+          isAlive = true;
+        }
       }
 
       // Secondary check: is there a live DOM element with this elementId?
@@ -2600,6 +2636,10 @@ function getOwnerWithFallback(): any {
   return current || _cachedManagerOwner;
 }
 
+// Expose getOwnerWithFallback on globalThis so compile.ts can use the shared
+// owner cache during reactive re-evaluations when globalThis.owner is null.
+(globalThis as any).__getOwnerWithFallback = getOwnerWithFallback;
+
 const $_MANAGERS = {
   component: {
     canHandle(komp: any): boolean {
@@ -2656,8 +2696,12 @@ const $_MANAGERS = {
     },
 
     handle(komp: any, args: any, fw: any, ctx: any): any {
-      const owner = getOwnerWithFallback()
-        || (komp && komp.__isCurriedComponent && komp.__owner)
+      // Prefer the curried component's captured owner (set at creation time)
+      // over the cached fallback, which may be stale from a different test.
+      const curriedOwner = komp && komp.__isCurriedComponent && komp.__owner;
+      const validCurriedOwner = curriedOwner && !curriedOwner.isDestroyed && !curriedOwner.isDestroying
+        ? curriedOwner : null;
+      const owner = validCurriedOwner || getOwnerWithFallback()
         || (ctx && ctx.owner);
 
       // Handle CurriedComponent — merge curried args with invocation args
@@ -2701,6 +2745,19 @@ const $_MANAGERS = {
               configurable: true,
             });
           }
+        }
+
+        // Store curried named arg getters for mut source lookup.
+        // The original getter (cArgs[key]) may have __mutParentCtx.
+        const curriedMutSources: Record<string, Function> = {};
+        for (const key of Object.keys(cArgs)) {
+          const val = cArgs[key];
+          if (typeof val === 'function' && !val.__isCurriedComponent && (val as any).__mutParentCtx) {
+            curriedMutSources[key] = val;
+          }
+        }
+        if (Object.keys(curriedMutSources).length > 0) {
+          mergedArgs.__mutArgSources = { ...(mergedArgs.__mutArgSources || {}), ...curriedMutSources };
         }
 
         // Copy invocation args (these override curried args)
@@ -2774,14 +2831,18 @@ const $_MANAGERS = {
         const resolvedKomp = komp.__name;
         // Temporarily ensure globalThis.owner is set for the recursive call,
         // so dash-prefixed components (e.g., "-inner-component") can be resolved.
+        // Use the curried component's captured owner if the current globalThis.owner
+        // is null or destroyed — this handles reactive re-evaluations correctly.
         const prevOwner = (globalThis as any).owner;
-        if (!prevOwner && owner) {
-          (globalThis as any).owner = owner;
+        const resolveOwner = (prevOwner && !prevOwner.isDestroyed && !prevOwner.isDestroying)
+          ? prevOwner : owner;
+        if (resolveOwner && resolveOwner !== prevOwner) {
+          (globalThis as any).owner = resolveOwner;
         }
         try {
           return this.handle(resolvedKomp, mergedArgs, fw, ctx);
         } finally {
-          if (!prevOwner && owner) {
+          if (resolveOwner !== prevOwner) {
             (globalThis as any).owner = prevOwner;
           }
         }
@@ -3487,6 +3548,37 @@ function handleStringComponent(
     }
     // Remove the __posCount__ marker
     delete args.__posCount__;
+  }
+
+  // Build mut arg sources from named args that have __mutParentCtx.
+  // This handles (component "foo" val=this.model.val2) where val is a hash arg
+  // with a getter that has __mutParentCtx for two-way binding support.
+  if (!args.__mutArgSources) {
+    const namedMutSources: Record<string, Function> = {};
+    for (const key of Object.keys(args)) {
+      if (key.startsWith('__') || key === '$slots') continue;
+      const desc = Object.getOwnPropertyDescriptor(args, key);
+      if (desc?.get && (desc.get as any).__mutParentCtx) {
+        namedMutSources[key] = desc.get;
+      } else if (typeof args[key] === 'function' && (args[key] as any).__mutParentCtx) {
+        namedMutSources[key] = args[key];
+      }
+    }
+    if (Object.keys(namedMutSources).length > 0) {
+      args.__mutArgSources = namedMutSources;
+    }
+  } else {
+    // Merge named args mut sources into existing ones (from positional params)
+    for (const key of Object.keys(args)) {
+      if (key.startsWith('__') || key === '$slots') continue;
+      if (args.__mutArgSources[key]) continue; // positional already set
+      const desc = Object.getOwnPropertyDescriptor(args, key);
+      if (desc?.get && (desc.get as any).__mutParentCtx) {
+        args.__mutArgSources[key] = desc.get;
+      } else if (typeof args[key] === 'function' && (args[key] as any).__mutParentCtx) {
+        args.__mutArgSources[key] = args[key];
+      }
+    }
   }
 
   // Capture parentView at closure creation time, not at invocation time.
