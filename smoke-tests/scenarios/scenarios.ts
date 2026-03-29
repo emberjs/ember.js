@@ -1,7 +1,7 @@
 import { Project, Scenarios } from 'scenario-tester';
 import { dirname } from 'node:path';
 
-function classicUseModulesFeature(project: Project) {
+function classic(project: Project) {
   project.mergeFiles({
     config: {
       'optional-features.json': JSON.stringify({
@@ -24,7 +24,7 @@ function embroiderVite(project: Project) {}
 export const v1AppScenarios = Scenarios.fromProject(() =>
   Project.fromDir(dirname(require.resolve('../app-template/package.json')), { linkDevDeps: true })
 ).expand({
-  classicUseModulesFeature,
+  classic,
   embroiderWebpack,
 });
 
