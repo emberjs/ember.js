@@ -65,8 +65,6 @@
     "@simple-dom/interface": "^1.4.0",
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
-    "broccoli-funnel": "^3.0.8",
-    "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
     "ember-cli-babel": "^8.3.1",
     "ember-cli-get-component-path-option": "^1.0.0",
