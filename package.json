@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "6.12.0-alpha.1",
+  "version": "7.0.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -14,7 +14,6 @@
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
-    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./package.json": "./package.json"
   },
   "homepage": "https://emberjs.com/",
@@ -66,10 +65,8 @@
     "@simple-dom/interface": "^1.4.0",
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
-    "broccoli-funnel": "^3.0.8",
-    "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
-    "ember-cli-babel": "^8.2.0",
+    "ember-cli-babel": "^8.3.1",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
@@ -148,7 +145,9 @@
   "pnpm": {
     "overrides": {
       "rollup": "^4.2.0",
-      "ember-cli-htmlbars": "^7.0.0"
+      "ember-cli-htmlbars": "^7.0.0",
+      "babel-plugin-ember-template-compilation": "^4.0.0",
+      "ember-cli-babel": "^8.3.1"
     },
     "onlyBuiltDependencies": [
       "@swc/core",
