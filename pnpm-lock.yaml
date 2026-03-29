@@ -98,8 +98,8 @@ importers:
         specifier: ^3.0.2
         version: 3.0.2
       '@embroider/vite':
-        specifier: ^1.7.1
-        version: 1.7.1(@embroider/core@4.4.7)(vite@5.4.21(@types/node@22.19.15)(terser@5.46.0))
+        specifier: ^1.7.2
+        version: 1.7.2(@embroider/core@4.4.7)(vite@5.4.21(@types/node@22.19.15)(terser@5.46.0))
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.39.3
@@ -2787,8 +2787,8 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1
       ember-auto-import:
-        specifier: ^2.13.0
-        version: 2.13.0(webpack@5.105.4)
+        specifier: ^2.13.1
+        version: 2.13.1(webpack@5.105.4)
       ember-cli:
         specifier: ~6.11.1
         version: 6.11.1(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
@@ -2809,7 +2809,7 @@ importers:
         version: 3.4.0(ember-source@)
       ember-cli-htmlbars:
         specifier: ^7.0.0
-        version: 7.0.0(@babel/core@7.29.0)(ember-source@)
+        version: 7.0.1(@babel/core@7.29.0)(ember-source@)
       ember-cli-inject-live-reload:
         specifier: ^2.1.0
         version: 2.1.0
@@ -2910,8 +2910,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@babel/core@7.29.0)(@embroider/core@4.4.7)
       '@embroider/vite':
-        specifier: ^1.7.1
-        version: 1.7.1(@embroider/core@4.4.7)(vite@7.3.1(@types/node@22.19.15)(terser@5.46.1))
+        specifier: ^1.7.2
+        version: 1.7.2(@embroider/core@4.4.7)(vite@7.3.1(@types/node@22.19.15)(terser@5.46.1))
       '@glimmer/component':
         specifier: workspace:*
         version: link:../../packages/@glimmer/component
@@ -2949,8 +2949,8 @@ importers:
   smoke-tests/scenarios:
     devDependencies:
       '@embroider/compat':
-        specifier: ^4.1.16
-        version: 4.1.16(@embroider/core@4.4.7)
+        specifier: ^4.1.17
+        version: 4.1.17(@embroider/core@4.4.7)
       '@embroider/core':
         specifier: ^4.4.7
         version: 4.4.7
@@ -3015,8 +3015,8 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(@babel/core@7.29.0)
       '@embroider/compat':
-        specifier: ^4.1.16
-        version: 4.1.16(@embroider/core@4.4.7)
+        specifier: ^4.1.17
+        version: 4.1.17(@embroider/core@4.4.7)
       '@embroider/config-meta-loader':
         specifier: ^1.0.0
         version: 1.0.0
@@ -3033,8 +3033,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@babel/core@7.29.0)(@embroider/core@4.4.7)
       '@embroider/vite':
-        specifier: ^1.7.1
-        version: 1.7.1(@embroider/core@4.4.7)(vite@7.3.1(@types/node@22.19.15)(terser@5.46.1))
+        specifier: ^1.7.2
+        version: 1.7.2(@embroider/core@4.4.7)(vite@7.3.1(@types/node@22.19.15)(terser@5.46.1))
       '@eslint/js':
         specifier: ^9.39.2
         version: 9.39.3
@@ -3994,8 +3994,8 @@ packages:
     peerDependencies:
       '@embroider/core': ^3.5.9
 
-  '@embroider/compat@4.1.16':
-    resolution: {integrity: sha512-zVOMF/MeB2/nGP2Lp/JPibyG3+9S6hp8EAbP5z9raqbQ2yyk/c7bCjWPhzmWl78xQQuLeemWFTaohchGETHnmw==}
+  '@embroider/compat@4.1.17':
+    resolution: {integrity: sha512-MjjtChtKXMNit2xmjPpxtK+f0kNHW2ao5lDhbkSdKjCcYghMvWYdbe5hdX+3QknyaZxDy4LW2dEHCWm3fhVtlg==}
     engines: {node: '>= 20.19.*'}
     hasBin: true
     peerDependencies:
@@ -4048,8 +4048,8 @@ packages:
     resolution: {integrity: sha512-/SusdG+zgosc3t+9sPFVKSFOYyiSgLfXOT6lYNWoG1YtnhWDxlK4S8leZ0jhcVjemdaHln5rTyxCnq8oFLxqpQ==}
     engines: {node: 12.* || 14.* || >= 16}
 
-  '@embroider/vite@1.7.1':
-    resolution: {integrity: sha512-WeGdY/zrI4kM/sxBAVomVHs9gJFxVjKKAwWtONHV4XvH89ejCGMpriXZSo23xwodLYnaEfnf5UnmtCrfoGqvzA==}
+  '@embroider/vite@1.7.2':
+    resolution: {integrity: sha512-sRzIZzqYP8NYKnD3ycrfhPFxRJ8z2dcaeA2gcK9IM7x4GPjNDhAAqB5KFTnxgPFCuEKsC3O1CqkW91d+CuiAhg==}
     peerDependencies:
       '@embroider/core': ^4.4.7
       vite: '>= 5.2.0'
@@ -7642,8 +7642,8 @@ packages:
     resolution: {integrity: sha512-B+ZM+RXvRqQaAmkMlO/oSe5nMUOaUnyfGYCEHoR8wrXsZR2mA0XVibsxV1bvTwxdRWah1PkQqso2EzhILGHtEQ==}
     engines: {node: '>=0.10.0'}
 
-  ember-auto-import@2.13.0:
-    resolution: {integrity: sha512-P6COSWDDC6qpgNdc33PyAubhTHUkKc1gUfP2oR4BZoHhUVoEMHiSOECHISd5a2J8DaNrcpFcZmjgb1vJ2ydkjw==}
+  ember-auto-import@2.13.1:
+    resolution: {integrity: sha512-MjxJK2nfCJmmQI/rju2TrycmAa1AxmTarfvygbcrrgW0s4WeZHtbGXCO2z1lW9wfrShqeTo/o+3Mgk+9xcDTWg==}
     engines: {node: 12.* || 14.* || >= 16}
 
   ember-cli-app-version@7.0.0:
@@ -7701,8 +7701,8 @@ packages:
     resolution: {integrity: sha512-N9Y80oZfcfWLsqickMfRd9YByVcTGyhYRnYQ2XVPVrp6jyUyOeRWmEAPh7ERSXpp8Ws4hr/JB9QVQrn/yZa+Ag==}
     engines: {node: 12.* || 14.* || >= 16}
 
-  ember-cli-htmlbars@7.0.0:
-    resolution: {integrity: sha512-6BFxD19eZY+K62JLBDIKb8fXV29+QBrcT5QH4iHi8xseERX9SEWnYej9FpqL2QuoGjaTGml6QOvu9QlSTDYdVw==}
+  ember-cli-htmlbars@7.0.1:
+    resolution: {integrity: sha512-bNVAwTvBOmk7KjGCN0Vq81w8FAWQ1zXwCS1CUUHTeWdcFypRsv0qUEkTtwxho4H3BYaoqMCXPS45Js9WWtEXYw==}
     engines: {node: '>= 20'}
     peerDependencies:
       '@babel/core': '>= 7'
@@ -13760,7 +13760,7 @@ snapshots:
       - supports-color
       - webpack
 
-  '@embroider/compat@4.1.16(@embroider/core@4.4.7)':
+  '@embroider/compat@4.1.17(@embroider/core@4.4.7)':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@babel/core': 7.29.0(supports-color@8.1.1)
@@ -13927,7 +13927,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@embroider/vite@1.7.1(@embroider/core@4.4.7)(vite@5.4.21(@types/node@22.19.15)(terser@5.46.0))':
+  '@embroider/vite@1.7.2(@embroider/core@4.4.7)(vite@5.4.21(@types/node@22.19.15)(terser@5.46.0))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.7
@@ -13953,7 +13953,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@embroider/vite@1.7.1(@embroider/core@4.4.7)(vite@7.3.1(@types/node@22.19.15)(terser@5.46.1))':
+  '@embroider/vite@1.7.2(@embroider/core@4.4.7)(vite@7.3.1(@types/node@22.19.15)(terser@5.46.1))':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@embroider/core': 4.4.7
@@ -17857,7 +17857,7 @@ snapshots:
 
   elegant-spinner@1.0.1: {}
 
-  ember-auto-import@2.13.0(webpack@5.105.4):
+  ember-auto-import@2.13.1(webpack@5.105.4):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.29.0)
@@ -18056,7 +18056,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-htmlbars@7.0.0(@babel/core@7.29.0)(ember-source@):
+  ember-cli-htmlbars@7.0.1(@babel/core@7.29.0)(ember-source@):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@ember/edition-utils': 1.2.0
@@ -18441,7 +18441,7 @@ snapshots:
   ember-tracked-storage-polyfill@1.0.0(@babel/core@7.29.0)(ember-source@):
     dependencies:
       ember-cli-babel: 7.26.11
-      ember-cli-htmlbars: 7.0.0(@babel/core@7.29.0)(ember-source@)
+      ember-cli-htmlbars: 7.0.1(@babel/core@7.29.0)(ember-source@)
     transitivePeerDependencies:
       - '@babel/core'
       - ember-source
