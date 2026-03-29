@@ -2808,7 +2808,7 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0(ember-source@)
       ember-cli-htmlbars:
-        specifier: ^7.0.1
+        specifier: ^7.0.0
         version: 7.0.1(@babel/core@7.29.0)(ember-source@)
       ember-cli-inject-live-reload:
         specifier: ^2.1.0
