@@ -1,5 +1,5 @@
 diff --git a/js/package.js b/js/package.js
-index 91c757199e649b581e3064130f35f45d2af771a4..67f1aaebf0f58e51ebb04b992ae89d44f021374d 100644
+index 91c757199e649b581e3064130f35f45d2af771a4..26d3e8bde91cd085e7a035a8520c8485e660be24 100644
 --- a/js/package.js
 +++ b/js/package.js
 @@ -413,7 +413,8 @@ class Package {
@@ -8,7 +8,7 @@ index 91c757199e649b581e3064130f35f45d2af771a4..67f1aaebf0f58e51ebb04b992ae89d44
          let templateCompilerPath = emberSource.absolutePaths
 -            .templateCompiler;
 +            ? emberSource.absolutePaths.templateCompiler
-+            : require('path').join(emberSource.root, 'dist', 'dev', 'packages', 'ember-template-compiler', 'index.js');
++            : require.resolve('ember-source/ember-template-compiler/index.js');
          const babelPluginPrecompile = ensureModuleApiPolyfill
              ? [
                  require.resolve('babel-plugin-htmlbars-inline-precompile'),
