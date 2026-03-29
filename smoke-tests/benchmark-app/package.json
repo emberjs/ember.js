@@ -25,7 +25,7 @@
     "@embroider/core": "^4.4.7",
     "@embroider/macros": "^1.20.2",
     "@embroider/router": "^3.0.6",
-    "@embroider/vite": "^1.7.1",
+    "@embroider/vite": "^1.7.2",
     "@glimmer/component": "workspace:*",
     "@rollup/plugin-babel": "^6.1.0",
     "babel-plugin-ember-template-compilation": "^4.0.0",

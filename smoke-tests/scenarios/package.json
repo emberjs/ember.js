@@ -2,7 +2,7 @@
   "name": "ember-source-scenarios",
   "private": true,
   "devDependencies": {
-    "@embroider/compat": "^4.1.16",
+    "@embroider/compat": "^4.1.17",
     "@embroider/core": "^4.4.7",
     "@embroider/webpack": "^4.1.2",
     "@swc-node/register": "^1.6.8",
