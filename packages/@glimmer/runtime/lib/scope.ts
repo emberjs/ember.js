@@ -108,7 +108,7 @@ export class ScopeImpl implements Scope {
   }
 
   bindSelf(self: Reference) {
-    this.set<Reference>(0, self);
+    this.set(0, self);
   }
 
   bindSymbol(symbol: number, value: Reference) {
@@ -116,7 +116,7 @@ export class ScopeImpl implements Scope {
   }
 
   bindBlock(symbol: number, value: Nullable<ScopeBlock>) {
-    this.set<Nullable<ScopeBlock>>(symbol, value);
+    this.set(symbol, value);
   }
 
   bindCallerScope(scope: Nullable<Scope>): void {
