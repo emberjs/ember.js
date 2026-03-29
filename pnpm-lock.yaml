@@ -19,10 +19,10 @@ patchedDependencies:
     hash: 5e48bdb11a088927d3415cc5430bb6c37d5ce66ed2dab1327914b55e4fd5cd13
     path: patches/@tracerbench__core@8.0.1.patch
   ember-auto-import@2.13.0:
-    hash: 1303fba1a35f4858b054774f61b0b3b4c8651f1a90825be1bd2b56224925b368
+    hash: ec8437cb1a9213741af03bade3fc56541ab5120a3f2e979f8d1abfd490f54604
     path: patches/ember-auto-import@2.13.0.patch
   ember-cli-htmlbars@7.0.0:
-    hash: 03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a
+    hash: c09818a05c987d71c1bb858496ab119ab7b2be6f82468ffda0f60d668561baac
     path: patches/ember-cli-htmlbars@7.0.0.patch
 
 importers:
@@ -2797,7 +2797,7 @@ importers:
         version: 9.2.1
       ember-auto-import:
         specifier: ^2.13.0
-        version: 2.13.0(patch_hash=1303fba1a35f4858b054774f61b0b3b4c8651f1a90825be1bd2b56224925b368)(webpack@5.105.4)
+        version: 2.13.0(patch_hash=ec8437cb1a9213741af03bade3fc56541ab5120a3f2e979f8d1abfd490f54604)(webpack@5.105.4)
       ember-cli:
         specifier: ~6.11.1
         version: 6.11.1(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
@@ -2818,7 +2818,7 @@ importers:
         version: 3.4.0(ember-source@)
       ember-cli-htmlbars:
         specifier: ^7.0.0
-        version: 7.0.0(patch_hash=03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a)(@babel/core@7.29.0)(ember-source@)
+        version: 7.0.0(patch_hash=c09818a05c987d71c1bb858496ab119ab7b2be6f82468ffda0f60d668561baac)(@babel/core@7.29.0)(ember-source@)
       ember-cli-inject-live-reload:
         specifier: ^2.1.0
         version: 2.1.0
@@ -17706,7 +17706,7 @@ snapshots:
 
   elegant-spinner@1.0.1: {}
 
-  ember-auto-import@2.13.0(patch_hash=1303fba1a35f4858b054774f61b0b3b4c8651f1a90825be1bd2b56224925b368)(webpack@5.105.4):
+  ember-auto-import@2.13.0(patch_hash=ec8437cb1a9213741af03bade3fc56541ab5120a3f2e979f8d1abfd490f54604)(webpack@5.105.4):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.29.0)
@@ -17871,7 +17871,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-htmlbars@7.0.0(patch_hash=03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a)(@babel/core@7.29.0)(ember-source@):
+  ember-cli-htmlbars@7.0.0(patch_hash=c09818a05c987d71c1bb858496ab119ab7b2be6f82468ffda0f60d668561baac)(@babel/core@7.29.0)(ember-source@):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       '@ember/edition-utils': 1.2.0
@@ -18248,7 +18248,7 @@ snapshots:
   ember-tracked-storage-polyfill@1.0.0(@babel/core@7.29.0)(ember-source@):
     dependencies:
       ember-cli-babel: 8.3.1(@babel/core@7.29.0)
-      ember-cli-htmlbars: 7.0.0(patch_hash=03c5666262a96427db47f2156d601e45f729568d29ec3f2e4f2210989488148a)(@babel/core@7.29.0)(ember-source@)
+      ember-cli-htmlbars: 7.0.0(patch_hash=c09818a05c987d71c1bb858496ab119ab7b2be6f82468ffda0f60d668561baac)(@babel/core@7.29.0)(ember-source@)
     transitivePeerDependencies:
       - '@babel/core'
       - ember-source
