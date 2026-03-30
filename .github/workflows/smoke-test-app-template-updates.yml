@@ -12,14 +12,20 @@ jobs:
   gate:
     name: Gate to every 10 weeks
     runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - name: Check schedule
+        id: check
         run: |
           set -euo pipefail
           week=$(date +%V)
           if [ $((10#$week % 10)) -ne 0 ]; then
             echo "Skipping: ISO week $week is not a 10-week interval."
-            exit 1
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Running: ISO week $week is a 10-week interval."
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
           fi
 
   update-app-template:
@@ -29,6 +35,7 @@ jobs:
       contents: write
       pull-requests: write
     needs: gate
+    if: needs.gate.outputs.should_run == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -68,6 +75,7 @@ jobs:
     name: Regenerate smoke-tests v2 app template
     runs-on: ubuntu-latest
     needs: gate
+    if: needs.gate.outputs.should_run == 'true'
     permissions:
       contents: write
       pull-requests: write
