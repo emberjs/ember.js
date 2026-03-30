@@ -196,6 +196,17 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   function set(this: object, newValue: unknown): void {
     setter(this, newValue);
     dirtyTagFor(this, SELF_TAG);
+    // Also dirty the property-specific tag so observers watching 'key' or
+    // 'key.[]' detect the change via getChainTagsForKey.
+    dirtyTagFor(this, key);
+    // In GXT mode, notify the Ember property system so that sync observers
+    // and tag dirtying work correctly for QP tracking.
+    if ((globalThis as any).__GXT_MODE__) {
+      const _notifyPropChange = (globalThis as any).__emberNotifyPropertyChange;
+      if (typeof _notifyPropChange === 'function') {
+        _notifyPropChange(this, key);
+      }
+    }
     // Notify GXT for cross-object reactivity — when a tracked property changes
     // on a non-component object (e.g., a Counter or Person class), dirty all
     // component cells that hold a reference to this object. This ensures that

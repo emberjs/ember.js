@@ -195,4 +195,9 @@ if (typeof (globalThis as any).__gxtTriggerReRender === 'function' || true) {
   };
 }
 
+// Expose notifyPropertyChange on globalThis so @tracked setters can call it
+// without circular imports. Always set (not gated on __GXT_MODE__) because
+// the GXT flag is set in compile.ts which loads after core modules.
+(globalThis as any).__emberNotifyPropertyChange = notifyPropertyChange;
+
 export { notifyPropertyChange, beginPropertyChanges, endPropertyChanges, changeProperties };

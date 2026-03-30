@@ -13,7 +13,7 @@ function config(environment: 'production' | 'development') {
       EXTEND_PROTOTYPES: false,
       _JQUERY_INTEGRATION: false,
       _APPLICATION_TEMPLATE_WRAPPER: false,
-      _DEFAULT_ASYNC_OBSERVERS: true,
+      _DEFAULT_ASYNC_OBSERVERS: false,
       _TEMPLATE_ONLY_GLIMMER_COMPONENTS: true,
     },
     APP: {

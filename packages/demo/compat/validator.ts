@@ -22,9 +22,9 @@ const formula = <T>(fn: () => T, name?: string) => {
 // Re-export most validator functions directly
 export const {
   tagFor: gxtTagFor,
-  isTracking,
+  isTracking: gxtIsTracking,
   tagMetaFor,
-  track,
+  track: gxtTrack,
   // trackedData - we provide our own implementation below to avoid infinite loops
   untrack: gxtUntrack,
   beginTrackFrame: gxtBeginTrackFrame,
@@ -32,6 +32,45 @@ export const {
   beginUntrackFrame: gxtBeginUntrackFrame,
   endUntrackFrame: gxtEndUntrackFrame,
 } = validator;
+
+// ---- Custom track() implementation ----
+// GXT's native track() only sets a rendering flag and doesn't return a tag
+// representing consumed dependencies. Ember's autoComputed relies on track()
+// returning a combined tag so that updateTag/validateTag can detect when
+// dependencies change. We intercept consumeTag calls during track() to
+// collect all consumed tags and return a combined tag.
+let _trackingTagStack: Set<any>[] | null = null;
+
+export function track(cb: () => void): any {
+  // Push a new set to collect consumed tags
+  if (!_trackingTagStack) _trackingTagStack = [];
+  const consumed = new Set<any>();
+  _trackingTagStack.push(consumed);
+
+  // Also run GXT's native track for rendering state
+  gxtBeginTrackFrame();
+  try {
+    cb();
+  } finally {
+    gxtEndTrackFrame();
+    _trackingTagStack.pop();
+    if (_trackingTagStack.length === 0) _trackingTagStack = null;
+  }
+
+  // Return a combined tag representing all consumed dependencies
+  if (consumed.size === 0) {
+    return CONSTANT_TAG;
+  }
+  const tags = Array.from(consumed);
+  const combined = combine(tags);
+  return combined;
+}
+
+// Custom isTracking that also returns true when inside our custom track()
+export function isTracking(): boolean {
+  if (_trackingTagStack && _trackingTagStack.length > 0) return true;
+  return gxtIsTracking();
+}
 
 // Wrap tagFor to handle Symbol keys properly
 // GXT's tagFor might try to convert the key to a string for debugging
@@ -156,6 +195,12 @@ export function consumeTag(tag: any) {
     // Empty tags can be safely ignored
     return;
   }
+
+  // Collect this tag in the current track() frame if active
+  if (_trackingTagStack && _trackingTagStack.length > 0) {
+    _trackingTagStack[_trackingTagStack.length - 1]!.add(tag);
+  }
+
   // Our custom updatable tags (from createUpdatableTag) are objects with a
   // cell-backed `value` getter. Reading `.value` establishes GXT tracking so
   // that formulas depending on this tag re-evaluate when `dirty()` is called.
@@ -362,6 +407,8 @@ export function updateTag(outer: any, inner: any) {
     if (constituents) {
       deps.push(...constituents);
     }
+  } else if (typeof inner === 'number') {
+    // inner is a number constant (e.g., CONSTANT_TAG = 11), no deps to track
   }
 
   if (deps.length > 0) {

@@ -18,9 +18,14 @@ export default defineConfig(({ mode }) => ({
   rollupOptions: {
     input: {
       main: 'index.html',
+      tests: 'tests.html',
     },
   },
+  optimizeDeps: {
+    exclude: ['@glimmer/syntax', '@glimmer/compiler', '@lifeart/gxt', '@lifeart/gxt/glimmer-compatibility'],
+  },
   resolve: {
+    preserveSymlinks: true,
     alias: [
       { find: /^@\/(.+)/, replacement: '/src/$1' },
       {
@@ -54,6 +59,14 @@ export default defineConfig(({ mode }) => ({
       {
         find: '@glimmer/reference',
         replacement: fileURLToPath(new URL(`./compat/reference`, projectRoot)),
+      },
+      {
+        find: '@glimmer/env',
+        replacement: fileURLToPath(new URL(`./compat/glimmer-env`, projectRoot)),
+      },
+      {
+        find: '@glimmer/syntax',
+        replacement: fileURLToPath(new URL(`./compat/glimmer-syntax`, projectRoot)),
       },
     ],
   },

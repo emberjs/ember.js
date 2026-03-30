@@ -42,21 +42,38 @@ function onBegin(current: DeferredActionQueues) {
   currentRunLoop = current;
 }
 
+// In GXT mode, async observer flushing can cause infinite loops because
+// GXT rendering triggers notifyPropertyChange -> dirtyTagFor which bumps
+// CURRENT_TAG. Use a per-runloop budget to limit total flush calls while
+// still allowing QP observers to fire.
+let _gxtFlushBudget = 0;
+const GXT_MAX_FLUSH_BUDGET = 20;
+
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  // In GXT mode, skip async observer flushing during run loop end.
-  // GXT's rendering triggers notifyPropertyChange → dirtyTagFor which bumps
-  // CURRENT_TAG. This causes flushAsyncObservers to find dirty observers,
-  // which schedule more actions, which trigger more flushes — infinite loop.
-  if (!(globalThis as any).__GXT_MODE__) {
+  if ((globalThis as any).__GXT_MODE__) {
+    if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
+      _gxtFlushBudget++;
+      flushAsyncObservers(schedule);
+    }
+    // Reset budget when all runloops complete
+    if (!next) {
+      _gxtFlushBudget = 0;
+    }
+  } else {
     flushAsyncObservers(schedule);
   }
 }
 
 function flush(queueName: string, next: () => void) {
-  if (!(globalThis as any).__GXT_MODE__) {
-    if (queueName === 'render' || queueName === _rsvpErrorQueue) {
+  if (queueName === 'render' || queueName === _rsvpErrorQueue) {
+    if ((globalThis as any).__GXT_MODE__) {
+      if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
+        _gxtFlushBudget++;
+        flushAsyncObservers(schedule);
+      }
+    } else {
       flushAsyncObservers(schedule);
     }
   }
@@ -105,6 +122,7 @@ export const _backburner = new Backburner(_queues, {
   onErrorMethod: 'onerror',
   flush,
 });
+
 
 /**
  @module @ember/runloop

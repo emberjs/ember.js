@@ -17,8 +17,9 @@
 
       window.EmberENV = {};
 
-      // Test under octane defaults
-      EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
+      // In GXT mode, use synchronous observers to match standard Ember behavior.
+      // Tests expect observers to fire synchronously during notifyPropertyChange.
+      EmberENV._DEFAULT_ASYNC_OBSERVERS = false;
 
       // Handle testing feature flags
       if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {

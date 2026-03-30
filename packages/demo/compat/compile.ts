@@ -865,7 +865,7 @@ function notifyIfWatchers(obj: object, key: string) {
     const watchers = keyMap.get(key);
     if (!watchers) continue;
     for (const cb of watchers) {
-      try { cb(); } catch { /* ignore */ }
+      try { cb(); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
     }
   }
 }
@@ -913,7 +913,7 @@ function patchGlobalIf() {
           try {
             const currentValue = conditionOrCell();
             ifCondition.syncState(emberToBool(currentValue));
-          } catch { /* ignore */ }
+          } catch (e) { console.warn('[GXT] syncState error:', e); }
         });
       }
     }
@@ -921,10 +921,88 @@ function patchGlobalIf() {
     return ifCondition;
   };
   g.$_if.__emberPatched = true;
+
+  // Protect $_if from being overwritten by setupGlobalScope()
+  const _patchedIf = g.$_if;
+  try {
+    Object.defineProperty(g, '$_if', {
+      get() { return _patchedIf; },
+      set(_v: any) { /* keep patched version */ },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch { /* ignore */ }
+
   return true;
 }
 patchGlobalIf();
 queueMicrotask(patchGlobalIf);
+
+// ---- $_eachSync: normalize Ember collections for GXT ----
+// Converts null/undefined/false/ArrayProxy/Set/ForEachable to native arrays.
+// GXT's SyncListComponent already handles empty arrays + inverseFn correctly
+// (after the GXT fix for first-render inverse). We just need to ensure
+// the value reaching GXT is always a proper array.
+function normalizeEachCollection(raw: any): any[] {
+  if (raw == null || raw === false || raw === '' || raw === 0) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'object') {
+    if (typeof raw.toArray === 'function') return raw.toArray();
+    if (typeof raw[Symbol.iterator] === 'function') return Array.from(raw);
+    // ForEachable objects
+    if (typeof raw.forEach === 'function' && typeof raw.length === 'number') {
+      const arr: any[] = [];
+      raw.forEach((item: any) => arr.push(item));
+      return arr;
+    }
+  }
+  // Non-iterable truthy values (true, 'hello', 1, {}, functions) → empty for #each
+  return [];
+}
+
+function patchGlobalEachSync() {
+  const g = globalThis as any;
+  if (!g.$_eachSync || g.$_eachSync.__emberPatched) return false;
+  const origEachSync = g.$_eachSync;
+
+  g.$_eachSync = function patchedEachSync(
+    items: any, fn: any, key: any, ctx: any, inverseFn?: any
+  ) {
+    // Wrap items cell/getter to normalize collection values
+    if (typeof items === 'function' && !items.prototype) {
+      const origGetter = items;
+      const wrappedGetter: any = function() { return normalizeEachCollection(origGetter()); };
+      if (origGetter.__gxtWatchTarget) wrappedGetter.__gxtWatchTarget = origGetter.__gxtWatchTarget;
+      if (origGetter.__gxtWatchKey) wrappedGetter.__gxtWatchKey = origGetter.__gxtWatchKey;
+      return origEachSync(wrappedGetter, fn, key, ctx, inverseFn);
+    } else if (items && typeof items === 'object' && 'value' in items) {
+      const origCell = items;
+      const wrappedCell = Object.create(origCell);
+      Object.defineProperty(wrappedCell, 'value', {
+        get() { return normalizeEachCollection(origCell.value); },
+        enumerable: true, configurable: true,
+      });
+      if (origCell.id !== undefined) wrappedCell.id = origCell.id;
+      return origEachSync(wrappedCell, fn, key, ctx, inverseFn);
+    }
+    return origEachSync(normalizeEachCollection(items), fn, key, ctx, inverseFn);
+  };
+  g.$_eachSync.__emberPatched = true;
+
+  // Protect from setupGlobalScope overwrite
+  const _patchedEach = g.$_eachSync;
+  try {
+    Object.defineProperty(g, '$_eachSync', {
+      get() { return _patchedEach; },
+      set(_v: any) { /* keep patched version */ },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch { /* ignore */ }
+  return true;
+}
+patchGlobalEachSync();
+queueMicrotask(patchGlobalEachSync);
 
 // Get a getter function for a property on the render context.
 (globalThis as any).__gxtGetCellOrFormula = function(obj: any, key: string) {
@@ -1247,6 +1325,15 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     };
     // Mark as a mut cell so fn helper doesn't try to unwrap it
     (mutCell as any).__isMutCell = true;
+    // Ember's mut cell API: .value returns current value, .update(newValue) sets it.
+    // These are used by tests via component.attrs.propName.value and .update().
+    Object.defineProperty(mutCell, 'value', {
+      get() { return typeof value === 'function' ? value() : value; },
+      enumerable: true,
+    });
+    (mutCell as any).update = function(newValue: any) {
+      return mutCell(newValue);
+    };
     // valueOf returns current value for template rendering
     mutCell.toString = () => String(typeof value === 'function' ? value() : value);
     mutCell.valueOf = () => typeof value === 'function' ? value() : value;
@@ -1441,6 +1528,33 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     };
   },
 };
+
+// Caching wrapper for {{unbound}} helper.
+// Each call site in a template gets a unique ID. The first evaluation
+// stores the result; subsequent evaluations return the cached value.
+// The cache is stored on the component context (`ctx`) to isolate
+// different component instances.
+// IMPORTANT: Takes a lazy thunk `() => value` to avoid eagerly evaluating
+// the expression (which would track GXT cell dependencies).
+// Caching wrapper for {{unbound}} helper.
+// Uses a WeakMap keyed by context object. Each context gets its own cache
+// (a plain object keyed by call-site ID). This handles both:
+// - Single component renders (same ctx across re-evaluations)
+// - #each iterations (each iteration has its own ctx)
+{
+  const unboundCacheMap = new WeakMap();
+  (globalThis as any).__gxtUnboundCached = function(id: string, ctx: any, value: any) {
+    if (!ctx || typeof ctx !== 'object') return value;
+    let cache = unboundCacheMap.get(ctx);
+    if (!cache) {
+      cache = Object.create(null);
+      unboundCacheMap.set(ctx, cache);
+    }
+    if (id in cache) return cache[id];
+    cache[id] = value;
+    return value;
+  };
+}
 
 // Global block params stack for yielded values
 // When a slot is rendered with block params, they're pushed here
@@ -1649,6 +1763,89 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           }
         }
         const handleResult = managers.component.handle(comp, namedArgs, null, ctx);
+        if (typeof handleResult === 'function') {
+          return handleResult();
+        }
+        return handleResult;
+      }
+    }
+
+    // Handle direct component definitions (template-only, GlimmerishComponent)
+    // that have GXT templates in COMPONENT_TEMPLATES. These come from strict mode
+    // scope values (e.g., defComponent('<Foo/>', { scope: { Foo } })) where Foo
+    // is a template-only component object or a class with setComponentTemplate.
+    if (comp && typeof comp === 'object' && g.COMPONENT_TEMPLATES?.has(comp)) {
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(comp)) {
+        const $PROPS = Symbol.for('gxt-props');
+        const $SLOTS = Symbol.for('gxt-slots');
+        const fw = args?.[$PROPS] || null;
+        const namedArgs: any = {};
+        if (args) {
+          for (const key of Object.keys(args)) {
+            if (key === 'args' || key.startsWith('$')) continue;
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            if (desc) {
+              Object.defineProperty(namedArgs, key, desc);
+            }
+          }
+          const argsObj = args['args'];
+          if (argsObj && typeof argsObj === 'object') {
+            for (const key of Object.keys(argsObj)) {
+              if (!key.startsWith('$')) {
+                const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+                if (desc) {
+                  Object.defineProperty(namedArgs, key, desc);
+                }
+              }
+            }
+          }
+          const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+          if (gxtSlots && typeof gxtSlots === 'object') {
+            namedArgs.$slots = gxtSlots;
+          }
+        }
+        const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
+        if (typeof handleResult === 'function') {
+          return handleResult();
+        }
+        return handleResult;
+      }
+    }
+
+    // Handle class-based component definitions with templates (e.g., GlimmerishComponent subclasses)
+    if (comp && typeof comp === 'function' && g.COMPONENT_TEMPLATES?.has(comp)) {
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(comp)) {
+        const $PROPS = Symbol.for('gxt-props');
+        const $SLOTS = Symbol.for('gxt-slots');
+        const fw = args?.[$PROPS] || null;
+        const namedArgs: any = {};
+        if (args) {
+          for (const key of Object.keys(args)) {
+            if (key === 'args' || key.startsWith('$')) continue;
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            if (desc) {
+              Object.defineProperty(namedArgs, key, desc);
+            }
+          }
+          const argsObj = args['args'];
+          if (argsObj && typeof argsObj === 'object') {
+            for (const key of Object.keys(argsObj)) {
+              if (!key.startsWith('$')) {
+                const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+                if (desc) {
+                  Object.defineProperty(namedArgs, key, desc);
+                }
+              }
+            }
+          }
+          const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+          if (gxtSlots && typeof gxtSlots === 'object') {
+            namedArgs.$slots = gxtSlots;
+          }
+        }
+        const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
         if (typeof handleResult === 'function') {
           return handleResult();
         }
@@ -4604,6 +4801,13 @@ export function precompileTemplate(templateString: string, options?: {
     console.warn('[gxt-compile] Template:', transformedTemplate.slice(0, 200));
   }
 
+  // Debug compiled code when globalThis.__gxtDebugCompile is set.
+  // Enable in browser console: globalThis.__gxtDebugCompile = true
+  if ((globalThis as any).__gxtDebugCompile && compilationResult.code) {
+    console.log('[gxt-debug] Template:', transformedTemplate.slice(0, 300));
+    console.log('[gxt-debug] Compiled:', compilationResult.code.slice(0, 500));
+  }
+
 
   // Debug: check compilation result for scope-valued templates
   if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
@@ -4625,6 +4829,68 @@ export function precompileTemplate(templateString: string, options?: {
     // Replace async $_each with synchronous $_eachSync
     if (modifiedCode.includes('$_each(')) {
       modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
+    }
+    // Transform {{unbound}} calls to cache their value on first evaluation.
+    // GXT wraps template expressions in reactive getters that re-evaluate when
+    // tracked cells change. The unbound helper should snapshot the value once
+    // and never update. We wrap each call with globalThis.__gxtUnboundCached
+    // which uses a WeakMap keyed by the context (last arg of $_maybeHelper).
+    let hasUnbound = false;
+    if (modifiedCode.includes('"unbound"')) {
+      let unboundIdx = 0;
+      const needle = '$_maybeHelper("unbound",';
+      let result = '';
+      let i = 0;
+      while (i < modifiedCode.length) {
+        const nextIdx = modifiedCode.indexOf(needle, i);
+        if (nextIdx === -1) {
+          result += modifiedCode.slice(i);
+          break;
+        }
+        result += modifiedCode.slice(i, nextIdx);
+        // Find the matching close paren for $_maybeHelper(
+        const openParen = nextIdx + '$_maybeHelper('.length - 1;
+        let depth = 1;
+        let j = openParen + 1;
+        for (; j < modifiedCode.length && depth > 0; j++) {
+          if (modifiedCode[j] === '(') depth++;
+          else if (modifiedCode[j] === ')') depth--;
+        }
+        if (depth !== 0) {
+          result += modifiedCode.slice(nextIdx, j);
+          i = j;
+          continue;
+        }
+        const fullCall = modifiedCode.slice(nextIdx, j);
+        // Extract the last argument (context) from the $_maybeHelper call.
+        const innerContent = modifiedCode.slice(openParen + 1, j - 1);
+        let lastCommaPos = -1;
+        let d = 0;
+        for (let k = innerContent.length - 1; k >= 0; k--) {
+          if (innerContent[k] === ')' || innerContent[k] === ']' || innerContent[k] === '}') d++;
+          else if (innerContent[k] === '(' || innerContent[k] === '[' || innerContent[k] === '{') d--;
+          else if (innerContent[k] === ',' && d === 0) {
+            lastCommaPos = k;
+            break;
+          }
+        }
+        const ctxArg = lastCommaPos >= 0 ? innerContent.slice(lastCommaPos + 1).trim() : 'this';
+        const id = `__ub${unboundIdx++}`;
+        hasUnbound = true;
+        result += `globalThis.__gxtUnboundCached("${id}",${ctxArg},${fullCall})`;
+        i = j;
+      }
+      modifiedCode = result;
+    }
+    // Fix GXT compiler bug: nested {{#let}} blocks produce double-call
+    // patterns like Let_ring_scope5()() where the first () returns the value
+    // and the second () tries to call that value as a function.
+    // Replace Let_XXX_scopeN()() with Let_XXX_scopeN().
+    if (modifiedCode.includes('Let_')) {
+      modifiedCode = modifiedCode.replace(
+        /\b(Let_[a-zA-Z_]+_scope\d+)\(\)\(\)/g,
+        '$1()'
+      );
     }
     // Transform $_if(() => this.PROP, ...) to use __gxtGetCellOrFormula.
     // This tags the condition getter so our patched $_if can register
@@ -4682,11 +4948,21 @@ export function precompileTemplate(templateString: string, options?: {
       const _g5 = globalThis as any;
       if (!_g5.__gxtDebugPostProc) _g5.__gxtDebugPostProc = [];
       _g5.__gxtDebugPostProc.push({ size: scopeBindings.size, names: Array.from(scopeBindings), codeBefore: modifiedCode.slice(0, 200) });
+      // JS reserved words set for renaming scope bindings in compiled code
+      const _RESERVED = new Set([
+        'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete',
+        'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
+        'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
+        'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends',
+        'import', 'super', 'implements', 'interface', 'let', 'package', 'private',
+        'protected', 'public', 'static', 'yield', 'await',
+      ]);
       // 1. Replace $_maybeHelper("name", ...) with $_maybeHelper(name, ...)
       //    for names in scope. This converts unknown-binding (string) resolution
       //    to known-binding (reference) resolution.
       for (const name of scopeBindings) {
-        const jsName = name.replace(/-/g, '_');
+        let jsName = name.replace(/-/g, '_');
+        if (_RESERVED.has(jsName)) jsName = `__scope_${jsName}`;
         const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const pattern = new RegExp(`\\$_maybeHelper\\("${escapedName}"\\s*,`, 'g');
         modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsName},`);
@@ -4795,13 +5071,28 @@ export function precompileTemplate(templateString: string, options?: {
       const scopeKeys = new Set(scopeVals ? Object.keys(scopeVals) : []);
 
       // Inject scope values as local variables (for strict mode templates with scope)
+      // JS reserved words cannot be used as variable names, so we prefix them
+      const JS_RESERVED_WORDS = new Set([
+        'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete',
+        'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
+        'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
+        'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends',
+        'import', 'super', 'implements', 'interface', 'let', 'package', 'private',
+        'protected', 'public', 'static', 'yield', 'await',
+      ]);
       let scopeStoreKey = '';
+      const scopeAliases = new Map<string, string>(); // original key -> JS alias
       if (scopeVals && scopeKeys.size > 0) {
         scopeStoreKey = `__gxtScope_${Date.now()}_${Math.random().toString(36).slice(2)}`;
         g[scopeStoreKey] = scopeVals;
         for (const key of scopeKeys) {
           // Use valid JS identifier (convert hyphens, etc.)
-          const jsKey = key.replace(/-/g, '_');
+          let jsKey = key.replace(/-/g, '_');
+          // Prefix reserved words so they can be used as variable names
+          if (JS_RESERVED_WORDS.has(jsKey)) {
+            jsKey = `__scope_${jsKey}`;
+          }
+          scopeAliases.set(key, jsKey);
           scopeInjections.push(`const ${jsKey} = globalThis["${scopeStoreKey}"]["${key}"];`);
         }
       }
@@ -4828,6 +5119,7 @@ export function precompileTemplate(templateString: string, options?: {
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
           ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}
+
           ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}
           return ${modifiedCode};

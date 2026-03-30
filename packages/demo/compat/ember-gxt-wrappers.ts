@@ -544,7 +544,15 @@ function createEmberMaybeHelper(original: Function) {
       }
     }
 
-    // Fall back to GXT's native maybeHelper
+    // In Ember, bare {{name}} (without this. prefix) in a template is treated
+    // as a helper/component invocation, NOT a property lookup. Since we've
+    // already checked all helper/component registrations above, if we reach
+    // here with no args, the name is unresolvable. Return empty string.
+    // Note: names WITH args are passed to GXT's native handler for resolution.
+    if (Array.isArray(args) && args.length === 0 && (!hash || Object.keys(hash).length === 0 || (Object.keys(hash).every(k => k.startsWith('$_') || k === 'hash')))) {
+      return '';
+    }
+    // Fall back to GXT's native maybeHelper for other cases
     return original(name, args, hashOrCtx, maybeCtx);
   };
   (wrapped as any).__emberWrapped = true;
@@ -1050,6 +1058,15 @@ function createEmberDc(original: Function) {
 
     // Handle string component name
     if (typeof componentValue === 'string') {
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(componentValue)) {
+        return renderComponent(componentValue, gxtArgs, ctx);
+      }
+    }
+
+    // Handle component definitions (template-only, GlimmerishComponent, etc.)
+    // that have a template in COMPONENT_TEMPLATES
+    if (componentValue && (typeof componentValue === 'object' || typeof componentValue === 'function')) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(componentValue)) {
         return renderComponent(componentValue, gxtArgs, ctx);
