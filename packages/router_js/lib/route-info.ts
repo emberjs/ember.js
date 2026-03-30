@@ -397,7 +397,7 @@ export default class InternalRouteInfo<R extends Route> {
       // Ignore the fulfilled value returned from afterModel.
       // Return the value stashed in resolvedModels, which
       // might have been swapped out in afterModel.
-      // SAFTEY: We expect this to be of type T, though typing it as such is challenging.
+      // SAFETY: We expect this to be of type T, though typing it as such is challenging.
       return transition.resolvedModels[name]! as unknown as ModelFor<R>;
     });
   }

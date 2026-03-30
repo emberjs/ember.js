@@ -1,4 +1,4 @@
-// The `& string` here is to enforce that the propreties are strings since this is expected
+// The `& string` here is to enforce that the properties are strings since this is expected
 // to be the case elsewhere.
 export default function getAllPropertyNames<T>(Klass: { prototype: T }): Set<keyof T & string> {
   let proto = Klass.prototype;
