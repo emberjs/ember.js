@@ -210,7 +210,7 @@ moduleFor(
 moduleFor(
   'Syntax test: Multiple {{#let as}} helpers',
   class extends RenderingTestCase {
-    ['@test re-using the same variable with different {{#let}} blocks does not override each other']() {
+    ['@test reusing the same variable with different {{#let}} blocks does not override each other']() {
       this.render(
         `Admin: {{#let this.admin as |person|}}{{person.name}}{{/let}} User: {{#let this.user as |person|}}{{person.name}}{{/let}}`,
         {

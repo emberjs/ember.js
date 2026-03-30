@@ -139,11 +139,11 @@ function identityForNthOccurence(value: unknown, count: number) {
  * ```
  *
  * In general, we want to treat these items as _unique within the list_. To do
- * this, we track the occurences of every item as we iterate the list, and when
+ * this, we track the occurrences of every item as we iterate the list, and when
  * an item occurs more than once, we generate a new unique key just for that
- * item, and that occurence within the list. The next time we iterate the list,
+ * item, and that occurrence within the list. The next time we iterate the list,
  * and encounter an item for the nth time, we can get the _same_ key, and let
- * Glimmer know that it should reuse the DOM for the previous nth occurence.
+ * Glimmer know that it should reuse the DOM for the previous nth occurrence.
  */
 function uniqueKeyFor(keyFor: KeyFor) {
   let seen = new WeakMapWithPrimitives<number>();

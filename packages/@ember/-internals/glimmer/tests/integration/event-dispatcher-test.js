@@ -91,7 +91,7 @@ moduleFor(
           click(event) {
             receivedEvent = event;
           }
-          doubleClick(event) {
+          double-click(event) {
             receivedEvent = event;
           }
           focusIn(event) {
@@ -383,7 +383,7 @@ moduleFor(
             assert.ok(false, 'null method was called');
           }
 
-          doubleClick() {
+          double-click() {
             assert.ok(true, 'a non-disabled event is still handled properly');
           }
         },

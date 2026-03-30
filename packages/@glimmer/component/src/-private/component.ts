@@ -20,7 +20,7 @@ interface ArgsSetMap extends WeakMap<Args<unknown>, boolean> {
   has<S>(key: Args<S>): boolean;
 }
 
-// SAFETY: this only holds because we *only* acces this when `DEBUG` is `true`.
+// SAFETY: this only holds because we *only* access this when `DEBUG` is `true`.
 // There is not a great way to connect that data in TS at present.
 export let ARGS_SET: ArgsSetMap;
 

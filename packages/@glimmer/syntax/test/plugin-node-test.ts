@@ -180,7 +180,7 @@ test('AST plugins can access meta from environment', (assert) => {
           assert.strictEqual(
             moduleName,
             'template/module/name',
-            'module was passed in the meta enviornment property'
+            'module was passed in the meta environment property'
           );
         },
       },

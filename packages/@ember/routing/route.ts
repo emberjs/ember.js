@@ -399,7 +399,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @since 1.6.0
     @public
   */
-  // Set in reopen so it can be overriden with extend
+  // Set in reopen so it can be overridden with extend
   declare queryParams: Record<
     string,
     {
@@ -439,7 +439,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @since 1.4.0
     @public
   */
-  // Set in reopen so it can be overriden with extend
+  // Set in reopen so it can be overridden with extend
   declare templateName: string | null;
 
   /**
@@ -462,7 +462,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @since 1.4.0
     @public
   */
-  // Set in reopen so it can be overriden with extend
+  // Set in reopen so it can be overridden with extend
   declare controllerName: string | null;
 
   /**
@@ -962,7 +962,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       this[RENDER]();
     }
 
-    // Setup can cause changes to QPs which need to be propogated immediately in
+    // Setup can cause changes to QPs which need to be propagated immediately in
     // some situations. Eventually, we should work on making these async somehow.
     flushAsyncObservers(false);
   }
@@ -1555,7 +1555,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
             `\`${routeName}\` for which Ember requires you provide a ` +
             `data-loading implementation. Commonly, that is done by ` +
             `adding a model hook implementation on the route ` +
-            `(\`model({${name}_id}) {\`) or by injecting an implemention of ` +
+            `(\`model({${name}_id}) {\`) or by injecting an implementation of ` +
             `a data store: \`@service store;\`.`,
           Boolean(modelClass)
         );
@@ -1571,7 +1571,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
             `\`${routeName}\` for which Ember requires you provide a ` +
             `data-loading implementation. Commonly, that is done by ` +
             `adding a model hook implementation on the route ` +
-            `(\`model({${name}_id}) {\`) or by injecting an implemention of ` +
+            `(\`model({${name}_id}) {\`) or by injecting an implementation of ` +
             `a data store: \`@service store;\`.\n\n` +
             `Rarely, applications may attempt to use a legacy behavior where ` +
             `the model class (in this case \`${name}\`) is resolved and the ` +
@@ -2206,7 +2206,7 @@ Route.reopen({
         }
       }
 
-      // Some QPs have been updated, and those changes need to be propogated
+      // Some QPs have been updated, and those changes need to be propagated
       // immediately. Eventually, we should work on making this async somehow.
       if (qpUpdated === true) {
         flushAsyncObservers(false);

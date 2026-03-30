@@ -710,10 +710,10 @@ class CoreObject {
     @param {Object} [arguments]* Object containing values to use within the new class
     @public
   */
-  static extend<Statics, Instance, M extends Array<unknown>>(
-    this: Statics & EmberClassConstructor<Instance>,
+  static extend<Statistics, Instance, M extends Array<unknown>>(
+    this: Statistics & EmberClassConstructor<Instance>,
     ...mixins: M
-  ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
+  ): Readonly<Statistics> & EmberClassConstructor<Instance> & MergeArray<M>;
   static extend(...mixins: any[]) {
     let Class = class extends this {};
     reopen.apply(Class.PrototypeMixin, mixins);

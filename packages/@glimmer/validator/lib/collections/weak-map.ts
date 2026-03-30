@@ -31,7 +31,7 @@ class TrackedWeakMap<K extends WeakKey = object, V = unknown> implements WeakMap
     options: ReactiveOptions<V>
   ) {
     /**
-     * SAFETY: note that wehn passing in an existing weak map, we can't
+     * SAFETY: note that when passing in an existing weak map, we can't
      *         clone it as it is not iterable and not a supported type of structuredClone
      */
     this.#vals = existing instanceof WeakMap ? existing : new WeakMap<K, V>(existing);

@@ -72,7 +72,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
 
   ## File System Nesting
 
-  Components can be nested inside sub-folders for logical groupping. For
+  Components can be nested inside sub-folders for logical grouping. For
   example, if we placed our template in
   `app/templates/components/person/short-profile.hbs`, we can invoke it as
   `<Person::ShortProfile />`:

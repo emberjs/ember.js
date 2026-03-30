@@ -17,7 +17,7 @@ export type SyscallRegisters = [
  * register numbers are different.
  */
 
-// $0 or $pc (program counter): pointer into `program` for the next insturction; -1 means exit
+// $0 or $pc (program counter): pointer into `program` for the next instruction; -1 means exit
 export type $pc = 0;
 declare const $pc: $pc;
 // $1 or $ra (return address): pointer into `program` for the return

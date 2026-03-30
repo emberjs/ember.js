@@ -179,7 +179,7 @@ test('Handlebars embedded in an attribute (unquoted)', () => {
   );
 });
 
-test('Handlebars embedded in an attribute of a self-closing tag (unqouted)', () => {
+test('Handlebars embedded in an attribute of a self-closing tag (unquoted)', () => {
   let t = '<input value={{foo}}/>';
 
   let el = element('input/', ['attrs', ['value', b.mustache(b.path('foo'))]]);

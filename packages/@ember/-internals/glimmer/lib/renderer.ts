@@ -105,7 +105,7 @@ export class DynamicScope implements GlimmerDynamicScope {
 const NO_OP = () => {};
 
 // This wrapper logic prevents us from rerendering in case of a hard failure
-// during render. This prevents infinite revalidation type loops from occuring,
+// during render. This prevents infinite revalidation type loops from occurring,
 // and ensures that errors are not swallowed by subsequent follow on failures.
 function errorLoopTransaction(fn: () => void) {
   if (DEBUG) {

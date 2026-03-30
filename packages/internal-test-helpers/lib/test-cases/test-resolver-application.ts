@@ -47,7 +47,7 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
       // But there are a lot of places where it was expected to have multiple templates associated
       // with the same component class (due to the older resolveable templates)
       //
-      // We'll want to clean thsi up over time, and probably phase out `addComponent` entirely,
+      // We'll want to clean this up over time, and probably phase out `addComponent` entirely,
       // and expclusively use `add` w/ `defineComponent`
       if (ComponentClass === Component) {
         ComponentClass = class extends Component {};

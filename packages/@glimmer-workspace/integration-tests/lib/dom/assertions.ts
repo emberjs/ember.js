@@ -233,7 +233,7 @@ export function isMatcher(input: unknown): input is Matcher {
 }
 
 /**
-  Accomodates the various signatures of `assertEmberishElement` and `assertElement`, which can be any of:
+  Accommodates the various signatures of `assertEmberishElement` and `assertElement`, which can be any of:
 
   - element, tagName, attrs, contents
   - element, tagName, contents

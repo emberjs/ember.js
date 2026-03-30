@@ -94,7 +94,7 @@ import { internalHelper } from './internal-helper';
   By doing so, Ember will use the value of the property specified (`person.name`
   in the example) to find a "match" from the previous render. That is, if Ember
   has previously seen an object from the `@developers` array with a matching
-  name, its DOM elements will be re-used.
+  name, its DOM elements will be reused.
 
   There are two special values for `key`:
 

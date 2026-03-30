@@ -3239,7 +3239,7 @@ moduleFor(
       this.assertText('|foo||bar||qux||baz|');
     }
 
-    ['@test unimplimented positionalParams do not cause an error GH#14416']() {
+    ['@test unimplemented positionalParams do not cause an error GH#14416']() {
       this.registerComponent('foo-bar', {
         template: 'hello',
       });

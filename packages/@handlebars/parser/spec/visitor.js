@@ -62,7 +62,7 @@ describe('Visitor', function () {
         visitor.accept(ast);
         equals(print(ast), '{{ p%foo HASH{foo=n%42} }}\n');
       });
-      it('should treat undefined resonse as identity', function () {
+      it('should treat undefined response as identity', function () {
         let visitor = new Visitor();
         visitor.mutating = true;
 
@@ -130,7 +130,7 @@ describe('Visitor', function () {
         visitor.accept(ast);
         equals(print(ast), '{{ p%foo [n%42] }}\n');
       });
-      it('should treat undefined resonse as identity', function () {
+      it('should treat undefined response as identity', function () {
         let visitor = new Visitor();
         visitor.mutating = true;
 

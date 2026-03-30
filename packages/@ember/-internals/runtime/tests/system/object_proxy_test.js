@@ -87,7 +87,7 @@ moduleFor(
       assert.equal(get(proxy, 'foo'), 'FOO');
     }
 
-    [`@test JSON.stringify doens't assert`](assert) {
+    [`@test JSON.stringify doesn't assert`](assert) {
       let proxy = ObjectProxy.create({
         content: {
           foo: 'FOO',

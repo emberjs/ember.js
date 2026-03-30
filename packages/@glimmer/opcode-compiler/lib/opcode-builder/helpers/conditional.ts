@@ -214,7 +214,7 @@ export function ReplayableIf(
     op(VM_JUMP_OP, labelOperand('FINALLY'));
     op(HighLevelBuilderOpcodes.Label, 'ELSE');
 
-    // If the conditional is false, and code associatied ith the
+    // If the conditional is false, and code associated ith the
     // false branch was provided, execute it. If there was no code
     // associated with the false branch, jumping to the else statement
     // has no other behavior.

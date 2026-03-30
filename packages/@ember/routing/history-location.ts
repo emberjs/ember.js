@@ -66,7 +66,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   _popstateHandler?: EventListener;
 
   /**
-    Will be pre-pended to path upon state change
+    Will be prepended to path upon state change
 
     @property rootURL
     @default '/'

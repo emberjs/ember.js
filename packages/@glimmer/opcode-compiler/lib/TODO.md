@@ -11,7 +11,7 @@
 - [x] do we really need the Locator generic?
 
 - [x] Remove stuff from Compiler
-- [x] Remove compiler from CompileTime
+- [x] Remove compiler from compile time
 - [x] Reorient CompilableTemplate around Context
 - [x] Remove OldTemplateCompilationContext
 - [ ] Figure out how to correctly cache CompilableTemplates

@@ -327,7 +327,7 @@ export function map(
   callback?: (value: unknown, index: number) => unknown
 ): PropertyDecorator {
   assert(
-    'You attempted to use @map as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
+    'You attempted to use @map as a decorator directly, but it requires at least `dependentKey` and `callback` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -434,7 +434,7 @@ export function mapBy(dependentKey: string, propertyKey: string) {
   The callback method you provide should have the following signature:
   - `item` is the current item in the iteration.
   - `index` is the integer index of the current item in the iteration.
-  - `array` is the dependant array itself.
+  - `array` is the dependent array itself.
 
   ```javascript
   function filterCallback(item, index, array);
@@ -553,7 +553,7 @@ export function filter(
   callback?: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
 ): PropertyDecorator {
   assert(
-    'You attempted to use @filter as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
+    'You attempted to use @filter as a decorator directly, but it requires at least `dependentKey` and `callback` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -635,7 +635,7 @@ export function filter(
 */
 export function filterBy(dependentKey: string, propertyKey: string, value?: unknown) {
   assert(
-    'You attempted to use @filterBy as a decorator directly, but it requires atleast `dependentKey` and `propertyKey` parameters',
+    'You attempted to use @filterBy as a decorator directly, but it requires at least `dependentKey` and `propertyKey` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -695,7 +695,7 @@ export function uniq(
   ...additionalDependentKeys: string[]
 ): PropertyDecorator {
   assert(
-    'You attempted to use @uniq/@union as a decorator directly, but it requires atleast one dependent key parameter',
+    'You attempted to use @uniq/@union as a decorator directly, but it requires at least one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -863,7 +863,7 @@ export let union = uniq;
 */
 export function intersect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
-    'You attempted to use @intersect as a decorator directly, but it requires atleast one dependent key parameter',
+    'You attempted to use @intersect as a decorator directly, but it requires at least one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -952,7 +952,7 @@ export function intersect(dependentKey: string, ...additionalDependentKeys: stri
 */
 export function setDiff(setAProperty: string, setBProperty: string) {
   assert(
-    'You attempted to use @setDiff as a decorator directly, but it requires atleast one dependent key parameter',
+    'You attempted to use @setDiff as a decorator directly, but it requires at least one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -1010,7 +1010,7 @@ export function setDiff(setAProperty: string, setBProperty: string) {
 */
 export function collect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
-    'You attempted to use @collect as a decorator directly, but it requires atleast one dependent key parameter',
+    'You attempted to use @collect as a decorator directly, but it requires at least one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
@@ -1187,7 +1187,7 @@ export function sort(
   sortDefinition?: SortDefinition
 ): PropertyDecorator {
   assert(
-    'You attempted to use @sort as a decorator directly, but it requires atleast an `itemsKey` parameter',
+    'You attempted to use @sort as a decorator directly, but it requires at least an `itemsKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 

@@ -353,7 +353,7 @@ moduleFor(
       }
     };
 
-    '@test modifers only track positional arguments they consume'(assert) {
+    '@test modifiers only track positional arguments they consume'(assert) {
       let insertCount = 0;
       let updateCount = 0;
 
@@ -409,7 +409,7 @@ moduleFor(
       assert.equal(updateCount, 1);
     }
 
-    '@test modifers only track named arguments they consume'(assert) {
+    '@test modifiers only track named arguments they consume'(assert) {
       let insertCount = 0;
       let updateCount = 0;
 

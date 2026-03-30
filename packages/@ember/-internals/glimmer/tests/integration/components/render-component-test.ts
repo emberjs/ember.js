@@ -89,7 +89,7 @@ moduleFor(
       }
     }
 
-    '@test destroy cleans up dom via destrying the test context'() {
+    '@test destroy cleans up dom via destroying the test context'() {
       let Foo = defComponent('Hello, world!');
       let Root = defComponent('<Foo/>', { scope: { Foo } });
 
@@ -100,7 +100,7 @@ moduleFor(
       assertHTML('');
     }
 
-    '@test destroy of the owner cleans up dom via destrying the test context'() {
+    '@test destroy of the owner cleans up dom via destroying the test context'() {
       let Foo = defComponent('Hello, world!');
       let Root = defComponent('<Foo/>', { scope: { Foo } });
 

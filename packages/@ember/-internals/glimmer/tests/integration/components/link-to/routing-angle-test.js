@@ -536,7 +536,7 @@ moduleFor(
                 `
                 <h2 id='engine-layout'>Routable Engine</h2>
                 {{outlet}}
-                <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
+                <LinkTo @route='application' id='engine-application-link'>Engine Application</LinkTo>
                 `,
                 {
                   moduleName: 'routable/templates/application.hbs',
@@ -586,7 +586,7 @@ moduleFor(
         `
         <h1 id='application-layout'>Application</h1>
         {{outlet}}
-        <LinkTo @route='application' id='application-link'>Appliction</LinkTo>
+        <LinkTo @route='application' id='application-link'>Application</LinkTo>
         <LinkTo @route='routable' id='engine-link'>Engine</LinkTo>
         `
       );

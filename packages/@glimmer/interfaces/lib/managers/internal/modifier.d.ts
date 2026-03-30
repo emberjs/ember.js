@@ -18,7 +18,7 @@ export interface InternalModifierManager<
     args: CapturedArguments
   ): TModifierInstanceState;
 
-  // Convert the opaque modifier into a `RevisionTag` that determins when
+  // Convert the opaque modifier into a `RevisionTag` that determines when
   // the modifier's update hooks need to be called (if at all).
   getTag(modifier: TModifierInstanceState): UpdatableTag | null;
 

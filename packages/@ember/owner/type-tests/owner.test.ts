@@ -44,7 +44,7 @@ aFactory.create({
 });
 
 // NOTE: it would be nice if these could be rejected by way of EPC, but alas: it
-// cannot, because the public contract for `create` allows implementors to
+// cannot, because the public contract for `create` allows implementers to
 // define their `create` config object basically however they like. :-/
 aFactory.create({ unrelatedNonsense: 'yep yep yep' });
 aFactory.create({ hasProps: true, unrelatedNonsense: 'yep yep yep' });
@@ -201,7 +201,7 @@ const Creatable = {
 
 const pojoFactory: Factory<typeof Creatable> = {
   // If you want *real* safety here, alas: you cannot have it. The public
-  // contract for `create` allows implementors to define their `create` config
+  // contract for `create` allows implementers to define their `create` config
   // object basically however they like. As a result, this is the safest version
   // possible: Making it be `Partial<Thing>` is *compatible* with `object`, and
   // requires full checking *inside* the function body. It does not, alas, give

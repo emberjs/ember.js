@@ -123,7 +123,7 @@ expectTypeOf(arr.findBy('bar')).toEqualTypeOf<Foo | undefined>();
 arr.findBy('bar', 1);
 // TODO: Ideally we'd mark the value as being invalid
 arr.findBy('bar', 'invalid');
-// Allows any value to be passed to an unkown property
+// Allows any value to be passed to an unknown property
 expectTypeOf(arr.findBy('missing', 'whatever')).toEqualTypeOf<Foo | undefined>();
 expectTypeOf(arr.findBy('bar')).toEqualTypeOf<Foo | undefined>();
 

@@ -566,7 +566,7 @@ moduleFor(
         `
         <h1 id="application-layout">Application</h1>
         {{outlet}}
-        <div id="application-link">{{#link-to route='application'}}Appliction{{/link-to}}</div>
+        <div id="application-link">{{#link-to route='application'}}Application{{/link-to}}</div>
         <div id="engine-link">{{#link-to route='routable'}}Engine{{/link-to}}</div>
         `
       );

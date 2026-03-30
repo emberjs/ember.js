@@ -150,7 +150,7 @@ moduleFor(
 
       this.assertSelectionRange(1, 3);
 
-      // Note: We should eventually get around to testing reseting, however
+      // Note: We should eventually get around to testing resetting, however
       // browsers handle `selectionStart` and `selectionEnd` differently
       // when are synthetically testing movement of the cursor.
     }

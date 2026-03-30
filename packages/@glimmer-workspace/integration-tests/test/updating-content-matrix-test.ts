@@ -83,13 +83,13 @@ function generateContentTestCase(
       after: '</div>',
     },
     {
-      name: 'HTML context, as a sibling to adjecent text nodes',
+      name: 'HTML context, as a sibling to adjacent text nodes',
       isHTML: true,
       before: '<div>before',
       after: 'after</div>',
     },
     {
-      name: 'HTML context, as a sibling to adjecent elements',
+      name: 'HTML context, as a sibling to adjacent elements',
       isHTML: true,
       before: '<div><b>before</b>',
       after: '<b>after</b></div>',
@@ -101,13 +101,13 @@ function generateContentTestCase(
       after: '</foreignObject></svg>',
     },
     {
-      name: 'SVG foreignObject context, as a sibling to adjecent text nodes',
+      name: 'SVG foreignObject context, as a sibling to adjacent text nodes',
       isHTML: true,
       before: '<svg><foreignObject>before',
       after: 'after</foreignObject></svg>',
     },
     {
-      name: 'SVG foreignObject context, as a sibling to adjecent elements',
+      name: 'SVG foreignObject context, as a sibling to adjacent elements',
       isHTML: true,
       before: '<svg><foreignObject><b>before</b>',
       after: '<b>after</b></foreignObject></svg>',
@@ -119,13 +119,13 @@ function generateContentTestCase(
       after: '</text></svg>',
     },
     {
-      name: 'SVG context, as a sibling to adjecent text nodes',
+      name: 'SVG context, as a sibling to adjacent text nodes',
       isHTML: false,
       before: '<svg><text>before',
       after: 'after</text></svg>',
     },
     {
-      name: 'SVG context, as a sibling to adjecent elements',
+      name: 'SVG context, as a sibling to adjacent elements',
       isHTML: false,
       before: '<svg><text><text>before</text>',
       after: '<text>after</text></text></svg>',

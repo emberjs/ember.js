@@ -444,7 +444,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
       transitionDidError(error: TransitionError, transition: Transition) {
         if (error.wasAborted || transition.isAborted) {
-          // If the error was a transition erorr or the transition aborted
+          // If the error was a transition error or the transition aborted
           // log the abort.
           return logAbort(transition);
         } else {
@@ -916,7 +916,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     @private
     @method _serializeQueryParams
-    @param {Arrray<RouteInfo>} routeInfos
+    @param {Array<RouteInfo>} routeInfos
     @param {Object} queryParams
     @return {Void}
   */
@@ -1813,7 +1813,7 @@ EmberRouter.reopen({
   rootURL: '/',
   location: 'hash',
 
-  // FIXME: Does this need to be overrideable via extend?
+  // FIXME: Does this need to be overridable via extend?
   url: computed(function (this: EmberRouter) {
     let location = get(this, 'location');
 

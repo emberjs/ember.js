@@ -236,7 +236,7 @@ moduleFor(
       this.assertText('Hello!');
     }
 
-    [`@test Application Controller backs the appplication template`]() {
+    [`@test Application Controller backs the application template`]() {
       runTask(() => {
         this.createApplication();
         this.addTemplate('application', '<h1>{{this.greeting}}</h1>');

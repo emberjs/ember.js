@@ -1968,7 +1968,7 @@ class CurlyTeardownTest extends CurlyTest {
       }
     }
 
-    this.registerComponent('Glimmer', 'DestroyMe1', '<div>Destry me!</div>', DestroyMe1Component);
+    this.registerComponent('Glimmer', 'DestroyMe1', '<div>Destroy me!</div>', DestroyMe1Component);
     this.registerComponent('Curly', 'destroy-me2', 'Destroy me too!', DestroyMe2Component);
 
     this.render(`<DestroyMe1 id="destroy-me1"/>{{destroy-me2 id="destroy-me2"}}`);

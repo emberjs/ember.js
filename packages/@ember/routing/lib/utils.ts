@@ -59,7 +59,7 @@ export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
     assert('routeName is a string', typeof routeName === 'string');
   }
 
-  // SAFTEY: We removed the name and options if they existed, only models left.
+  // SAFETY: We removed the name and options if they existed, only models left.
   let models = args;
 
   return { routeName, models, queryParams };
@@ -261,14 +261,14 @@ export function prefixRouteNameArg<T extends NamedRouteArgs | UnnamedRouteArgs>(
 }
 
 export function shallowEqual<A extends object, B extends object>(a: A, b: B): boolean {
-  let aCount = 0;
+  let account = 0;
   let bCount = 0;
   for (let kA in a) {
     if (Object.prototype.hasOwnProperty.call(a, kA)) {
       if (a[kA] !== (b as any)[kA]) {
         return false;
       }
-      aCount++;
+      account++;
     }
   }
 
@@ -278,7 +278,7 @@ export function shallowEqual<A extends object, B extends object>(a: A, b: B): bo
     }
   }
 
-  return aCount === bCount;
+  return account === bCount;
 }
 
 function isRouteOptions(value: unknown): value is RouteOptions {

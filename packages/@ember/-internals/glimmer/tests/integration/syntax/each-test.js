@@ -846,7 +846,7 @@ class EachTest extends AbstractEachTest {
 
   /* multi each */
 
-  ['@test re-using the same variable with different {{#each}} blocks does not override each other']() {
+  ['@test reusing the same variable with different {{#each}} blocks does not override each other']() {
     let admins = this.createList([{ name: 'Tom Dale' }]);
     let users = this.createList([{ name: 'Yehuda Katz' }]);
 
@@ -1089,7 +1089,7 @@ moduleFor(
       let proxy = class extends ArrayProxy {
         @computed('wrappedItems.[]')
         get arrangedContent() {
-          // Slice the items to ensure that updates must be propogated
+          // Slice the items to ensure that updates must be propagated
           return this.wrappedItems.slice();
         }
       }.create({
@@ -1149,7 +1149,7 @@ moduleFor(
 moduleFor(
   'Syntax test: {{#each}} with sparse arrays',
   class extends RenderingTestCase {
-    ['@test it should itterate over holes']() {
+    ['@test it should iterate over holes']() {
       let sparseArray = [];
       sparseArray[3] = 'foo';
       sparseArray[4] = 'bar';

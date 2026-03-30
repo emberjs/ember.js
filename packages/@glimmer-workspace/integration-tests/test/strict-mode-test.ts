@@ -1163,7 +1163,7 @@ class DynamicStrictModeTest extends RenderTest {
   }
 
   @test
-  'Can use a nested in scope value as dynamic value in ambigious append position'() {
+  'Can use a nested in scope value as dynamic value in ambiguous append position'() {
     const x = { value: 'Hello, world!' };
     const Bar = defineComponent({ x }, '{{x.value}}');
 

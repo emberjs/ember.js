@@ -11,7 +11,7 @@ let templates = [
   '<h1 class={{if foo "foo" "bar"}}>Test</h1>',
   '<h1 class={{color}}>Test</h1>',
   '<h1 class="{{if active "active" "inactive"}} foo">Test</h1>',
-  '<p {{action "activate"}} {{someting foo="bar"}}>Test</p>',
+  '<p {{action "activate"}} {{something foo="bar"}}>Test</p>',
   '<p>{{my-component submit=(action (mut model.name) (full-name model.firstName "Smith"))}}</p>',
   '<ul>{{#each foos as |foo index|}}\n  <li>{{foo}}: {{index}}</li>\n{{/each}}</ul>',
   '{{#if foo}}<p>{{foo}}</p>{{/if}}',

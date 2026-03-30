@@ -96,7 +96,7 @@ moduleFor(
       }
     }
 
-    ['@test rejections where the errorThrown is a string should wrap the sting in an error object'](
+    ['@test rejections where the errorThrown is a string should wrap the string in an error object'](
       assert
     ) {
       assert.expect(2);
@@ -163,7 +163,7 @@ function ajax() {
 moduleFor(
   'Ember.test: rejection assertions',
   class extends AbstractTestCase {
-    ['@test unambigiously unhandled rejection'](assert) {
+    ['@test unambiguously unhandled rejection'](assert) {
       assert.throws(function () {
         run(function () {
           RSVP.Promise.reject(reason);

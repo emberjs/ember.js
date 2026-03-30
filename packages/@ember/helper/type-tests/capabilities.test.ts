@@ -10,5 +10,5 @@ expectTypeOf(capabilities('3.23')).toMatchTypeOf<{
 capabilities('3.23', { hasValue: true });
 // @ts-expect-error invalid capabilities
 capabilities('3.23', { hasValue: 1 });
-// @ts-expect-error invalid verison
+// @ts-expect-error invalid version
 capabilities('3.22');

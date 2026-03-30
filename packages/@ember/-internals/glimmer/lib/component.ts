@@ -62,7 +62,7 @@ function matches(el: Element, selector: string): boolean {
 */
 
 interface ComponentMethods {
-  // Overrideable methods are defined here since you can't `declare` a method in a class
+  // Overridable methods are defined here since you can't `declare` a method in a class
 
   /**
    Called when the attributes passed into the component have been updated.
@@ -552,7 +552,7 @@ declare const SIGNATURE: unique symbol;
   ```
 
   Note that the `href` attribute is ultimately set to `http://bing.com`, despite
-  it having attribute binidng to the `url` property, which was set to
+  it having attribute binding to the `url` property, which was set to
   `http://google.com`.
 
   Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
@@ -765,7 +765,7 @@ declare const SIGNATURE: unique symbol;
   * `mouseUp`
   * `contextMenu`
   * `click`
-  * `doubleClick`
+  * `double-click`
   * `focusIn`
   * `focusOut`
 
@@ -826,7 +826,7 @@ class Component<S = unknown>
   // here to preserve the type param.
   declare private [SIGNATURE]: S;
 
-  // SAFTEY: This is set in `init`.
+  // SAFETY: This is set in `init`.
   declare _superRerender: this['rerender'];
 
   declare [IS_DISPATCHING_ATTRS]: boolean;

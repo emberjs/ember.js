@@ -100,7 +100,7 @@ moduleFor(
       assert.equal(this.firstChild.classList.contains('active'), true);
     }
 
-    async ['@test able to popolate innermost dynamic segment when immediate parent route is active']() {
+    async ['@test able to populate innermost dynamic segment when immediate parent route is active']() {
       this.addTemplate('application', '{{outlet}}');
 
       this.addTemplate('parents', '{{outlet}}');

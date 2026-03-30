@@ -39,10 +39,10 @@ export default class InternalComponent {
   /**
    * The default HTML id attribute. We don't really _need_ one, this is just
    * added for compatibility as it's hard to tell if people rely on it being
-   * present, and it doens't really hurt.
+   * present, and it doesn't really hurt.
    *
    * However, don't rely on this internally, like passing it to `getElementId`.
-   * This can be (and often is) overriden by passing an `id` attribute on the
+   * This can be (and often is) overridden by passing an `id` attribute on the
    * invocation, which shadows this default id via `...attributes`.
    */
   get id(): string {
@@ -52,7 +52,7 @@ export default class InternalComponent {
   /**
    * The default HTML class attribute. Similar to the above, we don't _need_
    * them, they are just added for compatibility as it's similarly hard to tell
-   * if people rely on it in their CSS etc, and it doens't really hurt.
+   * if people rely on it in their CSS etc, and it doesn't really hurt.
    */
   get class(): string {
     return 'ember-view';

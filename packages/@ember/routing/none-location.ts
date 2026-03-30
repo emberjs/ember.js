@@ -26,7 +26,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   declare path: string;
 
   /**
-    Will be pre-pended to path.
+    Will be prepended to path.
 
     @private
     @property rootURL
