@@ -73,6 +73,7 @@ jobs:
         run: pnpm vite build --mode=development
         env:
           NODE_ENV: development
+      - uses: wyvox/action-no-git-diff@v1
       - name: test
         run: pnpm test
 
@@ -169,7 +170,7 @@ jobs:
           ${MATRIX_COMMAND}
         env:
           MATRIX_COMMAND: ${{ matrix.command }}
-          
+
   smoke-test-with-deprecations-removed:
     name: Smoke tests with Deprecations Removed (Full Ember Apps)
     runs-on: ubuntu-latest
