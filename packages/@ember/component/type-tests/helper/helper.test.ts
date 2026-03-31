@@ -1,5 +1,6 @@
 import type { FunctionBasedHelper } from '@ember/-internals/glimmer';
 import { helper } from '@ember/component/helper';
+import { getOwner } from '@ember/owner';
 import { expectTypeOf } from 'expect-type';
 
 // NOTE: The types for `helper` are not actually safe. Glint helps with this.
@@ -12,6 +13,14 @@ expectTypeOf(myHelper).toEqualTypeOf<
     Args: { Positional: [number]; Named: { currency: string } };
     Return: string;
   }>
+>();
+
+let ownerHelper = helper(function () {
+  let owner = getOwner(); // should type check
+  return owner;
+});
+expectTypeOf(ownerHelper).toEqualTypeOf<
+  FunctionBasedHelper<{ Args: { Positional: []; Named: {} }; Return: any }>
 >();
 
 // @ts-expect-error invalid named params

@@ -75,7 +75,7 @@ import { type default as Owner, getOwner as internalGetOwner } from '@ember/-int
   @method getOwner
   @static
   @for @ember/owner
-  @param {Object} object An object with an owner.
+  @param {Object} [object] An object with an owner.
   @return {Object} An owner object.
   @since 2.3.0
   @public
@@ -84,7 +84,7 @@ import { type default as Owner, getOwner as internalGetOwner } from '@ember/-int
 // TS (not incorrectly! Nothing expressly relates them) does not see that the
 // `InternalOwner` and `Owner` do actually have identical constraints on their
 // relations to the `DIRegistry`.
-const getOwner = internalGetOwner as (object: object) => Owner | undefined;
+const getOwner = internalGetOwner as (object?: object) => Owner | undefined;
 export { getOwner };
 
 // Everything else which is part of the public API, we can directly re-export.

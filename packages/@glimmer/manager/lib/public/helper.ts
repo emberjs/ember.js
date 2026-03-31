@@ -12,6 +12,7 @@ import type {
 } from '@glimmer/interfaces';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { debugAssert } from '@glimmer/global-context';
+import { pushActiveOwner, popActiveOwner } from '@glimmer/owner';
 import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 import type { ManagerFactory } from './index';
@@ -122,7 +123,14 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
 
       if (hasValue(manager)) {
         let cache = createComputeRef(
-          () => manager.getValue(bucket),
+          () => {
+            pushActiveOwner(owner as object | undefined);
+            try {
+              return manager.getValue(bucket);
+            } finally {
+              popActiveOwner();
+            }
+          },
           null,
           DEBUG && manager.getDebugName && manager.getDebugName(definition)
         );
