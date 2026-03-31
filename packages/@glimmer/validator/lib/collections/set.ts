@@ -1,16 +1,23 @@
-import type { ReactiveOptions } from './types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Using a Proxy-based approach so that any new methods added to the Set
+// interface are automatically supported without needing to manually
+// re-implement each one.
 
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
-class TrackedSet<T = unknown> implements Set<T> {
-  #options: ReactiveOptions<T>;
-  #collection = createUpdatableTag();
-  #storages = new Map<T, ReturnType<typeof createUpdatableTag>>();
-  #vals: Set<T>;
+type Tag = ReturnType<typeof createUpdatableTag>;
 
-  #storageFor(key: T): ReturnType<typeof createUpdatableTag> {
-    const storages = this.#storages;
+export function trackedSet<Value = unknown>(
+  data?: Set<Value> | Value[] | Iterable<Value> | null,
+  options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
+): Set<Value> {
+  const equals = options?.equals ?? Object.is;
+  const target = new Set<Value>(data ?? []);
+  const collection = createUpdatableTag();
+  const storages = new Map<Value, Tag>();
+
+  function storageFor(key: Value): Tag {
     let storage = storages.get(key);
 
     if (storage === undefined) {
@@ -21,155 +28,87 @@ class TrackedSet<T = unknown> implements Set<T> {
     return storage;
   }
 
-  #dirtyStorageFor(key: T): void {
-    const storage = this.#storages.get(key);
+  function dirtyStorageFor(key: Value): void {
+    const storage = storages.get(key);
 
     if (storage) {
       DIRTY_TAG(storage);
     }
   }
 
-  constructor(existing: Iterable<T>, options: ReactiveOptions<T>) {
-    this.#vals = new Set(existing);
-    this.#options = options;
-  }
+  const proxy: Set<Value> = new Proxy(target, {
+    get(target, prop, receiver) {
+      if (prop === 'add') {
+        return function (value: Value): Set<Value> {
+          if (target.has(value)) {
+            const isUnchanged = equals(value, value);
+            if (isUnchanged) return proxy;
+          } else {
+            DIRTY_TAG(collection);
+          }
 
-  // **** KEY GETTERS ****
-  has(value: T): boolean {
-    consumeTag(this.#storageFor(value));
+          dirtyStorageFor(value);
 
-    return this.#vals.has(value);
-  }
+          target.add(value);
 
-  // **** ALL GETTERS ****
-  entries() {
-    consumeTag(this.#collection);
+          return proxy;
+        };
+      }
 
-    return this.#vals.entries();
-  }
+      if (prop === 'delete') {
+        return function (value: Value): boolean {
+          if (!target.has(value)) return false;
 
-  keys() {
-    consumeTag(this.#collection);
+          dirtyStorageFor(value);
+          DIRTY_TAG(collection);
 
-    return this.#vals.keys();
-  }
+          storages.delete(value);
+          return target.delete(value);
+        };
+      }
 
-  values() {
-    consumeTag(this.#collection);
+      if (prop === 'clear') {
+        return function (): void {
+          if (target.size === 0) return;
 
-    return this.#vals.values();
-  }
+          storages.forEach((s) => DIRTY_TAG(s));
+          DIRTY_TAG(collection);
 
-  union<U>(other: ReadonlySetLike<U>): Set<T | U> {
-    consumeTag(this.#collection);
+          storages.clear();
+          target.clear();
+        };
+      }
 
-    return this.#vals.union(other);
-  }
+      if (prop === 'has') {
+        return function (value: Value): boolean {
+          consumeTag(storageFor(value));
 
-  intersection<U>(other: ReadonlySetLike<U>): Set<T & U> {
-    consumeTag(this.#collection);
+          return target.has(value);
+        };
+      }
 
-    return this.#vals.intersection(other);
-  }
+      if (prop === 'size') {
+        consumeTag(collection);
 
-  difference<U>(other: ReadonlySetLike<U>): Set<T> {
-    consumeTag(this.#collection);
+        return target.size;
+      }
 
-    return this.#vals.difference(other);
-  }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const value = Reflect.get(target, prop, receiver);
 
-  symmetricDifference<U>(other: ReadonlySetLike<U>): Set<T | U> {
-    consumeTag(this.#collection);
+      if (typeof value === 'function') {
+        return function (this: any, ...args: any[]) {
+          consumeTag(collection);
 
-    return this.#vals.symmetricDifference(other);
-  }
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          return value.apply(target, args);
+        };
+      }
 
-  isSubsetOf(other: ReadonlySetLike<unknown>): boolean {
-    consumeTag(this.#collection);
-
-    return this.#vals.isSubsetOf(other);
-  }
-
-  isSupersetOf(other: ReadonlySetLike<unknown>): boolean {
-    consumeTag(this.#collection);
-
-    return this.#vals.isSupersetOf(other);
-  }
-
-  isDisjointFrom(other: ReadonlySetLike<unknown>): boolean {
-    consumeTag(this.#collection);
-
-    return this.#vals.isDisjointFrom(other);
-  }
-
-  forEach(fn: (value1: T, value2: T, set: Set<T>) => void): void {
-    consumeTag(this.#collection);
-
-    this.#vals.forEach(fn);
-  }
-
-  get size(): number {
-    consumeTag(this.#collection);
-
-    return this.#vals.size;
-  }
-
-  [Symbol.iterator]() {
-    consumeTag(this.#collection);
-
-    return this.#vals[Symbol.iterator]();
-  }
-
-  get [Symbol.toStringTag](): string {
-    return this.#vals[Symbol.toStringTag];
-  }
-
-  add(value: T): this {
-    if (this.#vals.has(value)) {
-      let isUnchanged = this.#options.equals(value, value);
-      if (isUnchanged) return this;
-    } else {
-      DIRTY_TAG(this.#collection);
-    }
-
-    this.#dirtyStorageFor(value);
-
-    this.#vals.add(value);
-
-    return this;
-  }
-
-  delete(value: T): boolean {
-    if (!this.#vals.has(value)) return false;
-
-    this.#dirtyStorageFor(value);
-    DIRTY_TAG(this.#collection);
-
-    this.#storages.delete(value);
-    return this.#vals.delete(value);
-  }
-
-  // **** ALL SETTERS ****
-  clear(): void {
-    if (this.#vals.size === 0) return;
-
-    this.#storages.forEach((s) => DIRTY_TAG(s));
-    DIRTY_TAG(this.#collection);
-
-    this.#storages.clear();
-    this.#vals.clear();
-  }
-}
-
-// So instanceof works
-Object.setPrototypeOf(TrackedSet.prototype, Set.prototype);
-
-export function trackedSet<Value = unknown>(
-  data?: Set<Value> | Value[] | Iterable<Value> | null,
-  options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
-): Set<Value> {
-  return new TrackedSet(data ?? [], {
-    equals: options?.equals ?? Object.is,
-    description: options?.description,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return value;
+    },
   });
+
+  return proxy;
 }
