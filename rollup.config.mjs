@@ -530,7 +530,7 @@ function packageMeta() {
         pkg['ember-addon'] = {};
       }
       pkg['ember-addon']['renamed-modules'] = renamedModules;
-      writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+      writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
     },
   };
 }
