@@ -1,17 +1,9 @@
 # Ember Changelog
 
-## v6.12.0-beta.3 (March 25, 2026)
+## v6.12.0 (March 31, 2026)
 
-- [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
-- [#21244](https://github.com/emberjs/ember.js/pull/21244) [BUGFIX] Fix implicit-modules naming to fix use of `use-ember-modules` with a classic build
-
-## v6.12.0-beta.2 (March 9, 2026)
-
-- [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
-
-## v6.12.0-beta.1 (February 17, 2026)
 - [#20908](https://github.com/emberjs/ember.js/pull/20908) / [#21020](https://github.com/emberjs/ember.js/pull/21020) Merge [glimmerjs/glimmer-vm](https://github.com/glimmerjs/glimmer-vm) into the `emberjs/ember.js` monorepo.
-  - All `@glimmer/*` packages that were formerly dependencies of `ember-source` are now included in the monorepo. This enables us to more easily iterate 
+  - All `@glimmer/*` packages that were formerly dependencies of `ember-source` are now included in the monorepo. This enables us to more easily iterate
     on the Glimmer VM and related packages, avoid an integration step with `ember.js` and to more easily share code between them and `ember-source`.
   - Only a few of the packages from the `glimmer-vm` repo will continue to be published as separate packages, for example, `@glimmer/syntax` will be published.
   - The `glimmer-vm` repo has been archived and relevant issues have been moved to the `emberjs/ember.js` repo. If you have an issue that was not moved, please reopen it on ember.js, after a search.
