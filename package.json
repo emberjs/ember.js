@@ -202,7 +202,6 @@
       "@ember/-internals/views/lib/views/states.js": "ember-source/@ember/-internals/views/lib/views/states.js",
       "@ember/application/index.js": "ember-source/@ember/application/index.js",
       "@ember/application/instance.js": "ember-source/@ember/application/instance.js",
-      "@ember/application/lib/lazy_load.js": "ember-source/@ember/application/lib/lazy_load.js",
       "@ember/application/namespace.js": "ember-source/@ember/application/namespace.js",
       "@ember/array/-internals.js": "ember-source/@ember/array/-internals.js",
       "@ember/array/index.js": "ember-source/@ember/array/index.js",
