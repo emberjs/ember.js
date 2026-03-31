@@ -7,9 +7,10 @@ docs/
 **/smoke-tests/
 **/types/
 **/type-tests/
+packages/@handlebars/**/*.l
+packages/@handlebars/**/*.yy
 CHANGELOG.md
 package.json
 pnpm-lock.yaml
-glimmer-vm/**/*.md
-glimmer-vm/**/*.yaml
+internal-docs/**/*.md
 tracerbench-testing/

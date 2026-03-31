@@ -34,6 +34,16 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     owner.register('-view-registry:main', Object.create(null), { instantiate: false });
     owner.register('event_dispatcher:main', EventDispatcher);
 
+    // This is a bit of a hack, but we need to register an application instance
+    // so that the router can look it up. In the future, we should probably
+    // make this a real application instance, or at least a real engine instance.
+    let appInstance = {
+      didCreateRootView: (view: any) => {
+        view.appendTo(this.element);
+      },
+    };
+    owner.register('-application-instance:main', appInstance, { instantiate: false });
+
     this.renderer = this.owner.lookup('renderer:-dom') as Renderer;
     this.element = document.querySelector('#qunit-fixture')!;
     this.component = null;

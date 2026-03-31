@@ -1,11 +1,44 @@
 # Ember Changelog
 
-## v6.11.0-beta.2 (February 2, 2026)
+## v6.12.0-beta.3 (March 25, 2026)
+
+- [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
+- [#21244](https://github.com/emberjs/ember.js/pull/21244) [BUGFIX] Fix implicit-modules naming to fix use of `use-ember-modules` with a classic build
+
+## v6.12.0-beta.2 (March 9, 2026)
+
+- [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
+
+## v6.12.0-beta.1 (February 17, 2026)
+- [#20908](https://github.com/emberjs/ember.js/pull/20908) / [#21020](https://github.com/emberjs/ember.js/pull/21020) Merge [glimmerjs/glimmer-vm](https://github.com/glimmerjs/glimmer-vm) into the `emberjs/ember.js` monorepo.
+  - All `@glimmer/*` packages that were formerly dependencies of `ember-source` are now included in the monorepo. This enables us to more easily iterate 
+    on the Glimmer VM and related packages, avoid an integration step with `ember.js` and to more easily share code between them and `ember-source`.
+  - Only a few of the packages from the `glimmer-vm` repo will continue to be published as separate packages, for example, `@glimmer/syntax` will be published.
+  - The `glimmer-vm` repo has been archived and relevant issues have been moved to the `emberjs/ember.js` repo. If you have an issue that was not moved, please reopen it on ember.js, after a search.
+- [#20995](https://github.com/emberjs/ember.js/pull/20995) [BUGFIX] `renderComponent` error: 'attempted to close a tracking frame, but one was not open'
+- [#20996](https://github.com/emberjs/ember.js/pull/20996) [BUGFIX] `renderComponent` error: 'Cannot read property of undefined: reading syscall'
+- [#21091](https://github.com/emberjs/ember.js/pull/21091) [BUGFIX] Fix 'on' modifier error message regression
+- [#21025](https://github.com/emberjs/ember.js/pull/21025) [CLEANUP] Remove applySVGInnerHTMLFix
+- [#21061](https://github.com/emberjs/ember.js/pull/21061) [CLEANUP] Remove 'text-node-merging-fix'
+- [#21059](https://github.com/emberjs/ember.js/pull/21059) [DOC] Remove doc references to `Ember.` and add import where necessary
+- [#21014](https://github.com/emberjs/ember.js/pull/21014) Rename default export `GlimmerComponent` to `Component`
+- [#21046](https://github.com/emberjs/ember.js/pull/21046) Add benchmark infrastructure
+- [#21090](https://github.com/emberjs/ember.js/pull/21090) Swap nightly ts test of ts-nightly with ts-latest for better signal-to-noise
+
+## v6.8.4 (March 27, 2026)
+
+- [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
+- [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
+
+## v6.11.1 (March 27, 2026)
+
+- [#20574](https://github.com/emberjs/ember.js/pull/20574) [BUGFIX] Update ApplicationInstance#visit to use `followRedirects()` to fix `visit()` throws `TransitionAborted` error
+- [#21144](https://github.com/emberjs/ember.js/pull/21144) [BUGFIX] Fix crash *during* destroy in fastboot
+- [#21244](https://github.com/emberjs/ember.js/pull/21244) [BUGFIX] Fix implicit-modules naming to fix use of `use-ember-modules` with a classic build
+
+## v6.11.0 (February 17, 2026)
 
 - [#21024](https://github.com/emberjs/ember.js/pull/21024) [Bugfix] Add @ember/reactive into the AMD bundles
-
-## v6.11.0-beta.1 (January 6, 2026)
-
 - [#21014](https://github.com/emberjs/ember.js/pull/21014) Rename default export `GlimmerComponent` to `Component` for autocomplete DX
 
 ## v6.10.1 (February 2, 2026)
@@ -20,6 +53,10 @@
 ## v6.9.0 (November 25, 2025)
 
 - All changes were internal, docs, and/or bugfixes that were backported.
+
+## v6.8.3 (February 4, 2026)
+ 
+- [#21024](https://github.com/emberjs/ember.js/pull/21024) [BUGFIX] Add @ember/reactive into the AMD bundles
 
 ## v6.8.2 (November 17, 2025)
 

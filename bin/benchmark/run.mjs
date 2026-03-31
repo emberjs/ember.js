@@ -6,7 +6,7 @@ import fs from 'fs-extra';
 
 import { getOrBuildControlTarball } from './control.mjs';
 import { buildExperimentTarball } from './experiment.mjs';
-import { run, prepareApp, sleep, startVitePreview, lsof } from './utils.mjs';
+import { run, prepareApp, startVitePreview, waitForServer } from './utils.mjs';
 
 const { ensureDir, remove } = fs;
 
@@ -66,7 +66,7 @@ const EXPERIMENT_DIRS = {
   repo: REPO_ROOT,
 };
 
-export async function runBenchmark({ force = false, reuse = false } = {}) {
+export async function runBenchmark({ force = false, reuse = false, headless = true } = {}) {
   await ensureDir(BENCH_ROOT);
 
   if (force) {
@@ -112,14 +112,21 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
   ]);
 
   // These will error if the parts are occupied (--strict-port)
-  startVitePreview({ appDir: CONTROL_DIRS.app, port: DEFAULT_CONTROL_PORT });
-  startVitePreview({
+  const controlServer = startVitePreview({ appDir: CONTROL_DIRS.app, port: DEFAULT_CONTROL_PORT });
+  const experimentServer = startVitePreview({
     appDir: EXPERIMENT_DIRS.app,
     port: DEFAULT_EXPERIMENT_PORT,
   });
 
+  controlServer.catch((err) => {
+    console.error('Control server exited unexpectedly:', err.message);
+  });
+  experimentServer.catch((err) => {
+    console.error('Experiment server exited unexpectedly:', err.message);
+  });
+
   try {
-    await bootAndRun();
+    await bootAndRun({ headless });
   } finally {
     console.log(`\n\tCleaning up servers with SIGKILL...`);
 
@@ -127,25 +134,17 @@ export async function runBenchmark({ force = false, reuse = false } = {}) {
   }
 }
 
-async function bootAndRun() {
+async function bootAndRun({ headless = true } = {}) {
   const controlUrl = `http://127.0.0.1:${DEFAULT_CONTROL_PORT}`;
   const experimentUrl = `http://127.0.0.1:${DEFAULT_EXPERIMENT_PORT}`;
   const markersString = buildMarkersString(DEFAULT_MARKERS);
 
-  // give servers a moment to start
-  await sleep(5000);
-
-  /**
-   * We need to make sure both servers are running before starting the benchmark.
-   */
-  let controlLsof = await lsof(DEFAULT_CONTROL_PORT);
-  let experimentLsof = await lsof(DEFAULT_EXPERIMENT_PORT);
-
-  if (!controlLsof || !experimentLsof) {
-    throw new Error(
-      `One of the servers failed to start. Control server lsof:\n${controlLsof}\n\nExperiment server lsof:\n${experimentLsof}`
-    );
-  }
+  console.log('\n\tWaiting for servers to be ready...');
+  await Promise.all([
+    waitForServer(controlUrl, { timeout: 30_000 }),
+    waitForServer(experimentUrl, { timeout: 30_000 }),
+  ]);
+  console.log('\tBoth servers are ready.\n');
 
   const tracerbenchBin = join(REPO_ROOT, 'node_modules/tracerbench/bin/run');
 
@@ -164,14 +163,21 @@ async function bootAndRun() {
     '--experimentURL',
     experimentUrl,
     '--report',
-    '--headless',
     '--cpuThrottleRate',
     DEFAULT_THROTTLE,
     '--markers',
     markersString,
     '--debug',
     '--browserArgs',
-    `"--incognito,--disable-gpu,--mute-audio,--log-level=3,--headless=new"`,
+    [
+      // Use the new headless mode to support multiple targets
+      ...(headless ? ['--headless=new'] : []),
+      // GPU: use software rendering via SwiftShader, but do NOT
+      // combine --disable-gpu with --use-gl or --disable-software-rasterizer
+      // as the contradictory flags cause use-after-free crashes on macOS
+      '--disable-gpu',
+      '--disable-gpu-compositing',
+    ].join(','),
   ];
 
   await run('node', args, { cwd: EXPERIMENT_DIRS.app });

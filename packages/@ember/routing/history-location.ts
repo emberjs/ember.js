@@ -7,8 +7,6 @@ import { getHash } from './lib/location-utils';
 @module @ember/routing/history-location
 */
 
-let popstateFired = false;
-
 function _uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     let r, v;
@@ -65,7 +63,6 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
   history?: Window['history'];
 
-  _previousURL?: string;
   _popstateHandler?: EventListener;
 
   /**
@@ -115,11 +112,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
     let { state } = history;
     let path = this.formatURL(this.getURL());
-    if (state && state.path === path) {
-      // preserve existing state
-      // used for webkit workaround, since there will be no initial popstate event
-      this._previousURL = this.getURL();
-    } else {
+    if (!state || state.path !== path) {
       this.replaceState(path);
     }
   }
@@ -198,9 +191,6 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
     assert('HistoryLocation.history is unexpectedly missing', this.history);
     this.history.pushState(state, '', path);
-
-    // used for webkit workaround
-    this._previousURL = this.getURL();
   }
 
   /**
@@ -215,9 +205,6 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
     assert('HistoryLocation.history is unexpectedly missing', this.history);
     this.history.replaceState(state, '', path);
-
-    // used for webkit workaround
-    this._previousURL = this.getURL();
   }
 
   /**
@@ -232,13 +219,6 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     this._removeEventListener();
 
     this._popstateHandler = () => {
-      // Ignore initial page load popstate event in Chrome
-      if (!popstateFired) {
-        popstateFired = true;
-        if (this.getURL() === this._previousURL) {
-          return;
-        }
-      }
       callback(this.getURL());
     };
 

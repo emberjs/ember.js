@@ -43,7 +43,7 @@ export function focus(el: Element | null | undefined) {
   }
   if (isFocusable(el)) {
     run(null, function () {
-      let browserIsNotFocused = document.hasFocus && !document.hasFocus();
+      let browserIsNotFocused = !document.hasFocus();
 
       // Firefox does not trigger the `focusin` event if the window
       // does not have focus. If the document doesn't have focus just
@@ -66,7 +66,7 @@ export function focus(el: Element | null | undefined) {
 export function blur(el: Element) {
   if (isFocusable(el)) {
     run(null, function () {
-      let browserIsNotFocused = document.hasFocus && !document.hasFocus();
+      let browserIsNotFocused = !document.hasFocus();
 
       fireEvent(el, 'focusout');
 
@@ -134,21 +134,9 @@ function buildBasicEvent(type: string, options: EventInit = {}) {
 }
 
 function buildMouseEvent(type: string, options: MouseEventInit = {}) {
-  let event;
-  try {
-    event = new MouseEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
-  } catch (_e) {
-    event = buildBasicEvent(type, options);
-  }
-  return event;
+  return new MouseEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
 }
 
 function buildKeyboardEvent(type: string, options: KeyboardEventInit = {}) {
-  let event;
-  try {
-    event = new KeyboardEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
-  } catch (_e) {
-    event = buildBasicEvent(type, options);
-  }
-  return event;
+  return new KeyboardEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
 }

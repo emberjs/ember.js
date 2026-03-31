@@ -86,6 +86,20 @@ function basicTest(scenarios: Scenarios, appName: string) {
           },
         },
         tests: {
+          unit: {
+            'v1-addon-without-eai-test.js': `
+              import { module, test } from 'qunit';
+              import { accessGlimmerValidator } from 'v1-addon-without-eai';
+              module('Acceptance | v1-addon-without-eai', function (hooks) {
+                // a v1 addon without ember-auto-import needs to maintain access
+                // to all the backward-compatible ember-provided packages, regardless
+                // of our build environment and optional-features.
+                test('can access things from ember', function(assert) {
+                  assert.strictEqual(accessGlimmerValidator(), 'it works');
+                })
+              });
+            `,
+          },
           acceptance: {
             'example-gjs-route-test.js': `
               import { module, test } from 'qunit';
@@ -223,8 +237,110 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
               });
             `,
+            'debug-render-tree-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+              import { captureRenderTree } from '@ember/debug';
+              import Component from '@glimmer/component';
+
+              function flattenTree(nodes) {
+                let result = [];
+                for (let node of nodes) {
+                  result.push(node);
+                  if (node.children) {
+                    result.push(...flattenTree(node.children));
+                  }
+                }
+                return result;
+              }
+
+              class HelloWorld extends Component {
+                <template>{{@arg}}</template>
+              }
+
+              module('Integration | captureRenderTree', function (hooks) {
+                setupRenderingTest(hooks);
+
+                test('scope-based components have correct names in debugRenderTree', async function (assert) {
+                  await render(<template><HelloWorld @arg="first" /></template>);
+
+                  let tree = captureRenderTree(this.owner);
+                  let allNodes = flattenTree(tree);
+                  let names = allNodes.filter(n => n.type === 'component').map(n => n.name);
+                  assert.true(names.includes('HelloWorld'), 'HelloWorld component name is preserved in the render tree (found: ' + names.join(', ') + ')');
+                  });
+              });
+            `,
+            'on-modifier-error-test.gjs': `
+              import { module, test } from 'qunit';
+              import { render, setupOnerror, resetOnerror } from '@ember/test-helpers';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { on } from '@ember/modifier';
+
+              module('on modifier | error handling', function (hooks) {
+                setupRenderingTest(hooks);
+
+                hooks.afterEach(function () {
+                  resetOnerror();
+                });
+
+                test('throws helpful error when callback is missing', async function (assert) {
+                  assert.expect(1);
+                  const noop = undefined;
+                  setupOnerror((error) => {
+                    assert.true(
+                      /You must pass a function as the second argument to the \`on\` modifier/.test(error.message),
+                      'Expected helpful error message, got: ' + error.message
+                    );
+                  });
+                  await render(<template><div {{on "click" noop}}>Click</div></template>);
+                });
+
+                test('throws helpful error when event name is missing', async function (assert) {
+                  assert.expect(1);
+                  const noop = () => {};
+                  setupOnerror((error) => {
+                    assert.true(
+                      /You must pass a valid DOM event name as the first argument to the \`on\` modifier/.test(error.message),
+                      'Expected helpful error message, got: ' + error.message
+                    );
+                  });
+                  await render(<template><div {{on}}>Click</div></template>);
+                });
+
+                test('error message includes element selector', async function (assert) {
+                  assert.expect(1);
+                  const noop = undefined;
+                  setupOnerror((error) => {
+                    assert.true(
+                      /button#my-id\\.class1\\.class2/.test(error.message),
+                      'Expected element selector in error, got: ' + error.message
+                    );
+                  });
+                  await render(<template><button id="my-id" class="class1 class2" {{on "click" noop}}>Click</button></template>);
+                });
+              });
+            `,
           },
         },
+      });
+
+      let v1AddonWithoutEAI = project.addDependency('v1-addon-without-eai');
+      v1AddonWithoutEAI.pkg.keywords = ['ember-addon'];
+      v1AddonWithoutEAI.linkDependency('ember-cli-babel', { baseDir: __dirname } );
+      v1AddonWithoutEAI.mergeFiles({
+        'index.js': 'module.exports = { name: "v1-addon-without-eai" }',
+        addon: {
+          'index.js': `
+            import { consumeTag } from '@glimmer/validator';
+            export function accessGlimmerValidator() {
+              if (typeof consumeTag === 'function') {
+                return "it works"
+              }
+            }
+          `
+        }
       });
     })
     .forEachScenario((scenario) => {
@@ -235,7 +351,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
         });
 
         test(`ember test`, async function (assert) {
-          let result = await app.execute(`pnpm test:ember`);
+          let result = await app.execute(`pnpm test`);
           assert.equal(result.exitCode, 0, result.output);
         });
       });

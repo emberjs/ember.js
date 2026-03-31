@@ -47,7 +47,7 @@ function tagForPositionalArg(positionalArgs: CapturedPositionalArguments, key: s
 
     const parsed = convertToInt(key);
 
-    if (parsed !== null && parsed < positionalArgs.length) {
+    if (parsed !== null && parsed >= 0 && parsed < positionalArgs.length) {
       // consume the tag of the referenced index
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       valueForRef(positionalArgs[parsed]!);
@@ -116,7 +116,7 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
 
     const parsed = convertToInt(prop);
 
-    if (parsed !== null && parsed < positional.length) {
+    if (parsed !== null && parsed >= 0 && parsed < positional.length) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return valueForRef(positional[parsed]!);
     }
@@ -132,7 +132,7 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
   has(_target: [], prop: string | number | symbol) {
     const parsed = convertToInt(prop);
 
-    return parsed !== null && parsed < this.positional.length;
+    return parsed !== null && parsed >= 0 && parsed < this.positional.length;
   }
 }
 

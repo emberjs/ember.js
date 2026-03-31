@@ -12,7 +12,6 @@ const require = createRequire(import.meta.url);
 const { PackageCache, packageName } = require('@embroider/shared-internals');
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
-const { buildInfo } = require('./broccoli/build-info');
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin');
 const canaryFeatures = require('./broccoli/canary-features');
 
@@ -27,21 +26,10 @@ const testDependencies = [
 
 let configs = [
   esmConfig(),
-  esmTemplateCompiler(),
-  legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js', {
-    isDeveloping: true,
-  }),
-  legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.prod.js', {
-    isDeveloping: false,
-  }),
-  legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember-testing.js', 'ember-testing.js', {
-    isDeveloping: true,
-    isExternal(source) {
-      return !source.startsWith('ember-testing');
-    },
-  }),
-  templateCompilerConfig(),
+  esmProdConfig(),
   glimmerComponent(),
+  glimmerSyntaxESM(),
+  glimmerSyntaxCJS(),
 ];
 
 if (process.env.DEBUG_SINGLE_CONFIG) {
@@ -55,34 +43,36 @@ export default configs;
 
 function esmConfig() {
   return sharedESMConfig({
-    input: {
-      ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
-      ...renameEntrypoints(packages(), (name) => join('packages', name)),
-    },
-    debugMacrosMode: '@embroider/macros',
-  });
-}
-
-function esmTemplateCompiler() {
-  return sharedESMConfig({
-    input: {
-      // the actual authored "./packages/ember-template-compiler/index.ts" is
-      // part of what powers the historical dist/ember-template-compiler.js AMD
-      // bundle. It has historical cruft that has never been present in our ESM
-      // builds.
-      //
-      // On the ESM build, the main entrypoint of ember-template-compiler is the
-      // "minimal.ts" version, which has a lot less in it.
-
-      'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
-    },
-    // the template compiler is always in debug mode (and doesn't use
-    // embroider/macros, so it's directly invokable on node)
+    input: esmInputs(),
     debugMacrosMode: true,
+    includePackageMeta: true,
   });
 }
 
-function sharedESMConfig({ input, debugMacrosMode }) {
+function esmProdConfig() {
+  return sharedESMConfig({
+    input: esmInputs(),
+    debugMacrosMode: false,
+  });
+}
+
+function esmInputs() {
+  return {
+    ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
+    ...renameEntrypoints(packages(), (name) => join('packages', name)),
+    // the actual authored "./packages/ember-template-compiler/index.ts" is
+    // part of what powers the historical dist/ember-template-compiler.js AMD
+    // bundle. It has historical cruft that has never been present in our ESM
+    // builds.
+    //
+    // On the ESM build, the main entrypoint of ember-template-compiler is the
+    // "minimal.ts" version, which has a lot less in it.
+    'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
+  };
+}
+
+function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false }) {
+  let outputDir = debugMacrosMode === false ? 'dist/prod' : 'dist/dev';
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
@@ -90,28 +80,76 @@ function sharedESMConfig({ input, debugMacrosMode }) {
     canaryFeatures(),
   ];
 
+  let plugins = [
+    babel({
+      babelHelpers: 'bundled',
+      extensions: ['.js', '.ts'],
+      configFile: false,
+      ...babelConfig,
+    }),
+    resolveTS(),
+    version(),
+    resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+    pruneEmptyBundles(),
+  ];
+
+  if (includePackageMeta) {
+    plugins.push(packageMeta());
+  }
+
   return {
     onLog: handleRollupWarnings,
     input,
     output: {
       format: 'es',
-      dir: 'dist',
+      dir: outputDir,
       hoistTransitiveImports: false,
       generatedCode: 'es2015',
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
+    },
+    plugins,
+  };
+}
+
+function glimmerSyntaxESM() {
+  return {
+    onLog: handleRollupWarnings,
+    input: './packages/@glimmer/syntax/index.ts',
+    output: {
+      format: 'es',
+      file: 'packages/@glimmer/syntax/dist/es/index.js',
+      hoistTransitiveImports: false,
     },
     plugins: [
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
         configFile: false,
-        ...babelConfig,
+        ...sharedBabelConfig,
       }),
       resolveTS(),
-      version(),
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
-      pruneEmptyBundles(),
-      packageMeta(),
+    ],
+  };
+}
+function glimmerSyntaxCJS() {
+  return {
+    onLog: handleRollupWarnings,
+    input: './packages/@glimmer/syntax/index.ts',
+    output: {
+      format: 'cjs',
+      file: 'packages/@glimmer/syntax/dist/cjs/index.cjs',
+      hoistTransitiveImports: false,
+    },
+    plugins: [
+      babel({
+        babelHelpers: 'bundled',
+        extensions: ['.js', '.ts'],
+        configFile: false,
+        ...sharedBabelConfig,
+      }),
+      resolveTS(),
+      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     ],
   };
 }
@@ -143,51 +181,6 @@ function glimmerComponent() {
 
 function renameEntrypoints(entrypoints, fn) {
   return Object.fromEntries(Object.entries(entrypoints).map(([k, v]) => [fn(k), v]));
-}
-
-function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
-  let babelConfig = { ...sharedBabelConfig };
-
-  babelConfig.plugins = [...babelConfig.plugins, buildDebugMacroPlugin(isDeveloping)];
-
-  return {
-    input,
-    output: {
-      format: 'iife',
-      file: `dist/${output}`,
-      generatedCode: 'es2015',
-      sourcemap: true,
-
-      // We are relying on unfrozen modules because we need to add the
-      // __esModule marker to them in our amd-compat-entrypoints. Rollup has an
-      // `esModule` option too, but it only puts the marker on entrypoints. We
-      // have a single entrypoint ("ember.debug.js") that imports a bunch of
-      // modules and hands them to our classic AMD loader. All of those modules
-      // need the __esModule marker too.
-      freeze: false,
-
-      globals: (id) => {
-        return `require('${id}')`;
-      },
-
-      interop: 'esModule',
-    },
-    onLog: handleRollupWarnings,
-    plugins: [
-      amdDefineSupport(),
-      ...(isDeveloping ? [concatenateAMDEntrypoints()] : []),
-      babel({
-        babelHelpers: 'bundled',
-        extensions: ['.js', '.ts'],
-        configFile: false,
-        ...babelConfig,
-      }),
-      resolveTS(),
-      version(),
-      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }, { isExternal }),
-      licenseAndLoader(),
-    ],
-  };
 }
 
 function packages() {
@@ -223,6 +216,9 @@ function packages() {
       // "exposedDependencies" since they used to actually be dependencies.
       '@glimmer-workspace/**',
       '@glimmer/**',
+
+      // @handlebars/parser is a hidden dependency, not an explicit entrypoint
+      '@handlebars/**',
     ],
     cwd: 'packages',
   });
@@ -246,6 +242,7 @@ function rolledUpPackages() {
     '@ember/-internals/metal',
     '@ember/-internals/utils',
     '@ember/-internals/container',
+    'router_js',
   ];
 }
 
@@ -257,7 +254,7 @@ export function exposedDependencies() {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
     rsvp: require.resolve('rsvp/lib/rsvp.js'),
     'dag-map': require.resolve('dag-map/dag-map.js'),
-    router_js: require.resolve('router_js/dist/modules/index.js'),
+    router_js: require.resolve('router_js'),
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
     ...walkGlimmerDeps([
       '@glimmer/node',
@@ -286,10 +283,7 @@ export function hiddenDependencies() {
       findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
       'module'
     ).path,
-    '@handlebars/parser': entrypoint(
-      findFromProject('@glimmer/syntax', '@handlebars/parser'),
-      'module'
-    ).path,
+    '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
     ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(
       findFromProject('decorator-transforms').root,
@@ -498,136 +492,6 @@ export function version() {
   };
 }
 
-function amdDefineSupport() {
-  return {
-    name: 'amd-define-support',
-
-    resolveId(source) {
-      if (source === 'amd-compat-entrypoint-definition') {
-        return '\0amd-compat-entrypoint-definition';
-      }
-    },
-
-    load(id) {
-      if (id === '\0amd-compat-entrypoint-definition') {
-        return {
-          code: `
-            export default function d(name, mod) {
-              Object.defineProperty(mod, '__esModule', { value: true });
-              define(name, [], () => mod);
-            };
-          `,
-        };
-      }
-    },
-  };
-}
-
-function concatenateAMDEntrypoints() {
-  const concatRules = {
-    // this says: when you load the ember.debug.js AMD compat entrypoint, also
-    // concatenate in the ember-testing.js AMD compat entrypoint.
-    'ember.debug.js': ['ember-testing.js'],
-  };
-
-  return {
-    name: 'concatenateAMDEntrypoints',
-    load(id) {
-      if (id[0] === '\0') {
-        return;
-      }
-      for (let [target, extras] of Object.entries(concatRules)) {
-        if (id.endsWith(`amd-compat-entrypoints/${target}`)) {
-          let contents = [readFileSync(id), ...extras.map((e) => `import "./${e}";`)];
-          return {
-            code: contents.join('\n'),
-          };
-        }
-      }
-    },
-  };
-}
-
-function license() {
-  return `/*!
- * @overview  Ember - JavaScript Application Framework
- * @copyright Copyright 2011 Tilde Inc. and contributors
- *            Portions Copyright 2006-2011 Strobe Inc.
- *            Portions Copyright 2008-2011 Apple Inc. All rights reserved.
- * @license   Licensed under MIT license
- *            See https://raw.github.com/emberjs/ember.js/master/LICENSE
- * @version   ${buildInfo().version}
- */
-`;
-}
-
-function loader() {
-  return readFileSync(
-    resolve(dirname(fileURLToPath(import.meta.url)), 'packages', 'loader', 'lib', 'index.js')
-  );
-}
-
-function licenseAndLoader() {
-  return {
-    name: 'license-and-loader',
-    generateBundle(options, bundles) {
-      for (let bundle of Object.values(bundles)) {
-        bundle.code = license() + loader() + bundle.code;
-      }
-    },
-  };
-}
-
-function templateCompilerConfig() {
-  // These are modules that, when used in the legacy template compiler bundle,
-  // need to be discovered from ember.debug.js instead when running in the
-  // browser, and stubbed to ember-template-compiler.js in node.
-  const externals = {
-    '@ember/template-compilation': `{
-      __esModule: true,
-      __registerTemplateCompiler(){},
-    }`,
-    ember: `{
-      __esModule: true,
-      default: {
-        get ENV() { return require('@ember/-internals/environment').ENV },
-        get FEATURES() { return require('@ember/canary-features').FEATURES },
-        get VERSION() { return require('ember/version').default },
-      },
-    }`,
-    '@ember/-internals/glimmer': `{
-      __esModule: true,
-    }`,
-    '@ember/application': `{
-      __esModule: true,
-    }`,
-  };
-  let config = legacyBundleConfig(
-    './broccoli/amd-compat-entrypoints/ember-template-compiler.js',
-    'ember-template-compiler.js',
-    { isDeveloping: true }
-  );
-  config.plugins.unshift({
-    enforce: 'pre',
-    name: 'template-compiler-externals',
-    async resolveId(source) {
-      if (externals[source]) {
-        return { id: source, external: true };
-      }
-    },
-  });
-  config.output.globals = (id) => {
-    return `(() => {
-      try {
-        return require('${id}');
-      } catch (err) {
-        return ${externals[id]}
-      }
-    })()`;
-  };
-  return config;
-}
-
 function pruneEmptyBundles() {
   return {
     name: 'prune-empty-bundles',
@@ -644,11 +508,15 @@ function pruneEmptyBundles() {
 function packageMeta() {
   return {
     name: 'package-meta',
-    generateBundle() {
+    generateBundle(_outputOptions, bundle) {
       let renamedModules = Object.fromEntries(
-        glob
-          .sync('packages/**/*.js', { cwd: 'dist', nodir: true })
-          .filter((name) => !name.startsWith('packages/shared-chunks/'))
+        Object.keys(bundle)
+          .filter(
+            (name) =>
+              name.startsWith('packages/') &&
+              !name.startsWith('packages/shared-chunks/') &&
+              name.endsWith('.js')
+          )
           .sort()
           .map((name) => {
             return [

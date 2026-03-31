@@ -154,12 +154,7 @@ async function main() {
   process.exit(status === 'success' ? 0 : 1);
 }
 
-const REMAPPED_LOCATION_MODULES = [
-  {
-    input: 'packages/loader/lib/index.d.ts',
-    output: 'require.d.ts',
-  },
-];
+const REMAPPED_LOCATION_MODULES = [];
 
 /**
   "Emit" hand-authored `.d.ts` modules for modules which need to live in a
@@ -199,7 +194,7 @@ async function copyHandwrittenDefinitions(inputDir) {
   let definitionModules = glob
     .sync('**/*.d.ts', {
       cwd: inputDir,
-      ignore: ['**/node_modules/**'],
+      ignore: ['**/node_modules/**', '**/@types/js-reporters/**'],
     })
     .filter((moduleName) => !REMAPPED_LOCATION_MODULES.some(({ input }) => input === moduleName));
 

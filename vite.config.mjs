@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
   const build = {
     rollupOptions: {
       preserveEntrySignatures: 'strict',
-      input: ['index.html', 'glimmer-vm/index.html'],
+      input: ['index.html'],
       output: {
         preserveModules: true,
       },

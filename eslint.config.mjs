@@ -21,18 +21,15 @@ export default [
       'docs/',
       '**/.*',
       '**/dist/',
+      '**/dist-prod/',
       '**/tmp/',
       '**/smoke-tests/',
       '**/types/',
       '**/type-tests/',
-      'glimmer-vm/repo-metadata/',
-      'glimmer-vm/**/rollup.config.mjs',
-      'glimmer-vm/packages/@glimmer/vm-babel-plugins/',
-      'glimmer-vm/bin/**',
-      'glimmer-vm/guides/**',
-      'glimmer-vm/benchmark/**',
-      'glimmer-vm/*.{js,ts}',
+      'internal-docs/guides/**',
       'packages/@glimmer-workspace/**',
+      'packages/@handlebars/parser/lib/parser.js',
+      'packages/@handlebars/parser/src/**',
       'tracerbench-testing/',
     ],
   },
@@ -140,17 +137,6 @@ export default [
     },
   },
   {
-    files: ['glimmer-vm/**/*.ts'],
-    languageOptions: {
-      ecmaVersion: 5,
-      sourceType: 'module',
-      parserOptions: {
-        project: './tsconfig-vm.json',
-        tsconfigRootDir: __dirname,
-      },
-    },
-  },
-  {
     // TODO: files: ['packages/**/*.[jt]s'],
     files: ['packages/**/*.js'],
 
@@ -169,6 +155,11 @@ export default [
         Symbol: true,
         WeakMap: true,
         Event: true,
+        MouseEvent: true,
+        KeyboardEvent: true,
+        DOMRect: true,
+        DOMRectList: true,
+        globalThis: true,
       },
 
       ecmaVersion: 2017,
@@ -178,6 +169,33 @@ export default [
     rules: {
       'ember-internal/require-yuidoc-access': 'error',
       'ember-internal/no-const-outside-module-scope': 'error',
+    },
+  },
+  {
+    files: ['packages/@handlebars/**/*.js'],
+
+    languageOptions: {
+      ecmaVersion: 2017,
+      sourceType: 'module',
+    },
+
+    rules: {
+      'ember-internal/require-yuidoc-access': 'off',
+      'ember-internal/no-const-outside-module-scope': 'off',
+      'disable-features/disable-async-await': 'off',
+      'disable-features/disable-generator-functions': 'off',
+      'no-implicit-coercion': 'off',
+      'no-unused-vars': 'off',
+      'import/namespace': 'off',
+    },
+  },
+  {
+    files: ['packages/@handlebars/parser/spec/**/*.js'],
+
+    languageOptions: {
+      globals: {
+        ...globals.mocha,
+      },
     },
   },
   {
@@ -215,6 +233,7 @@ export default [
       '**/babel.test.config.mjs',
       'node-tests/**/*.js',
       'tests/node/**/*.js',
+      'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
       'bin/**/*.js',
       'bin/**/*.mjs',
@@ -228,7 +247,6 @@ export default [
       'broccoli/**/*.js',
       '**/ember-cli-build.js',
       '**/*.cjs',
-      'glimmer-vm/server/**/*.js',
     ],
   },
   {
@@ -244,6 +262,7 @@ export default [
       '**/babel.test.config.mjs',
       'node-tests/**/*.js',
       'tests/node/**/*.js',
+      'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
       'bin/**/*.js',
       'bin/**/*.mjs',
@@ -408,6 +427,8 @@ export default [
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/naming-convention': 'off',
+      // TypeError: Cannot read properties of undefined (reading 'range')
+      '@typescript-eslint/no-unnecessary-type-arguments': 'off',
     },
   },
   {

@@ -28,11 +28,11 @@ import type { DirtyableTag } from '@glimmer/validator';
 import { createTag, dirtyTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 import {
-  ARGS,
   BOUNDS,
   CURLY_COMPONENT_MANAGER,
   DIRTY_TAG,
   IS_DISPATCHING_ATTRS,
+  getComponentCapturedArgs,
 } from './component-managers/curly';
 import { hasDOM } from '@ember/-internals/browser-environment';
 
@@ -1038,7 +1038,7 @@ class Component<S = unknown>
       return;
     }
 
-    let args = (this as any)[ARGS];
+    let args = getComponentCapturedArgs(this);
     let reference = args !== undefined ? args[key] : undefined;
 
     if (reference !== undefined && isUpdatableRef(reference)) {

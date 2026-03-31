@@ -1387,15 +1387,26 @@ const EmberArray = Mixin.create(Enumerable, {
   reduce<T, V>(
     this: EmberArray<T>,
     callback: (summation: V, current: T, index: number, arr: EmberArray<T>) => V,
-    initialValue: V
+    initialValue?: V
   ) {
     assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 
-    let ret = initialValue;
+    let hasInitialValue = arguments.length > 1;
+    let ret: any = initialValue;
+    let startIndex = 0;
 
-    this.forEach(function (item, i) {
+    if (!hasInitialValue) {
+      if (this.length === 0) {
+        throw new TypeError('Reduce of empty array with no initial value');
+      }
+      ret = this.objectAt(0);
+      startIndex = 1;
+    }
+
+    for (let i = startIndex; i < this.length; i++) {
+      let item = this.objectAt(i) as T;
       ret = callback(ret, item, i, this);
-    }, this);
+    }
 
     return ret;
   },

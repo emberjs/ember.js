@@ -2,6 +2,7 @@ import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
   moduleFor,
+  runLoopSettled,
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
@@ -13,11 +14,6 @@ import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
-
-// IE includes the host name
-function normalizeUrl(url) {
-  return url.replace(/https?:\/\/[^/]+/, '');
-}
 
 function shouldNotBeActive(assert, element) {
   checkActive(assert, element, false);
@@ -129,6 +125,32 @@ moduleFor(
         1,
         'The other link was rendered without active class'
       );
+    }
+
+    async ['@test [GH#19891] it navigates into the named route when inside an inline SVG'](assert) {
+      this.addTemplate(
+        'index',
+        `
+        <h3 class="home">Home</h3>
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <LinkTo @route='about' id='svg-about-link'>
+            <rect x="0" y="0" width="200" height="100"></rect>
+          </LinkTo>
+        </svg>
+        `
+      );
+
+      await this.visit('/');
+
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+
+      // SVGAElement does not have a .click() method like HTMLElement,
+      // so we dispatch a click event manually.
+      let svgLink = document.querySelector('#svg-about-link');
+      svgLink.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await runLoopSettled();
+
+      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
     }
 
     async [`@test it applies a 'disabled' class when disabled`](assert) {
@@ -841,7 +863,7 @@ moduleFor(
 
       await this.visit('/about/item');
 
-      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+      assert.equal(this.$('#item a').attr('href'), '/about');
     }
 
     async [`@test it supports custom, nested, current-when`](assert) {
@@ -893,6 +915,37 @@ moduleFor(
         this.$('#other-link.active').length,
         1,
         'The link is active when current-when is given for explicitly for a route'
+      );
+    }
+
+    async [`@test it supports custom, nested, current-when with route params`](assert) {
+      assert.expect(2);
+      this.router.map(function () {
+        this.route('index', { path: '/' });
+        this.route('foo', { path: '/foo/:fooId' }, function () {
+          this.route('bar', { path: '/bar/:barId' });
+        });
+      });
+
+      this.addTemplate('index', `{{outlet}}`);
+      this.addTemplate(
+        'foo',
+        `<LinkTo @route='foo.index' @model={{1}} @current-when='foo.index foo.bar'>Foo Index</LinkTo> {{outlet}}`
+      );
+      this.addTemplate(
+        'foo.bar',
+        `<LinkTo @route='foo.bar' @models={{array 1 2}}>Foo Bar</LinkTo>`
+      );
+
+      await this.visit('/foo/1/bar/2');
+
+      assert.ok(
+        this.$('a[href="/foo/1"]').is('.active'),
+        'The link to foo.index should be active when on foo.bar'
+      );
+      assert.ok(
+        this.$('a[href="/foo/1/bar/2"]').is('.active'),
+        'The link to foo.bar should be active when on foo.bar'
       );
     }
 
@@ -1166,11 +1219,7 @@ moduleFor(
       await this.visit('/about');
 
       assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-      assert.equal(
-        normalizeUrl(this.$('#home-link').attr('href')),
-        '/',
-        'The home link points back at /'
-      );
+      assert.equal(this.$('#home-link').attr('href'), '/', 'The home link points back at /');
 
       await this.click('#yehuda');
 
@@ -1181,9 +1230,9 @@ moduleFor(
 
       await this.click('#about-link');
 
-      assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
-      assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
-      assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+      assert.equal(this.$('li a#yehuda').attr('href'), '/item/yehuda');
+      assert.equal(this.$('li a#tom').attr('href'), '/item/tom');
+      assert.equal(this.$('li a#erik').attr('href'), '/item/erik');
 
       await this.click('#erik');
 
@@ -1271,6 +1320,10 @@ moduleFor(
     }
 
     async [`@test it does not call preventDefault if 'target' attribute is provided`](assert) {
+      if (QUnit.urlParams.skip_tests_with_target_blank) {
+        assert.ok('skipped');
+        return;
+      }
       this.addTemplate(
         'index',
         `
@@ -1299,6 +1352,11 @@ moduleFor(
     }
 
     async [`@test it should not transition if target is not equal to _self or empty`](assert) {
+      if (QUnit.urlParams.skip_tests_with_target_blank) {
+        assert.ok('skipped');
+        return;
+      }
+
       this.addTemplate(
         'index',
         `
@@ -1353,11 +1411,11 @@ moduleFor(
 
       await this.visit('/filters/popular');
 
-      assert.equal(normalizeUrl(this.$('#link').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#path-link').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#post-path-link').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#post-number-link').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#repo-object-link').attr('href')), '/repo/ember/ember.js');
+      assert.equal(this.$('#link').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#path-link').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#post-path-link').attr('href'), '/post/123');
+      assert.equal(this.$('#post-number-link').attr('href'), '/post/123');
+      assert.equal(this.$('#repo-object-link').attr('href'), '/repo/ember/ember.js');
     }
 
     async [`@test [GH#4201] Shorthand for route.index shouldn't throw errors about context arguments`](
@@ -1425,8 +1483,8 @@ moduleFor(
       );
 
       let assertEquality = (href) => {
-        assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
-        assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
+        assert.equal(this.$('#string-link').attr('href'), '/');
+        assert.equal(this.$('#path-link').attr('href'), href);
       };
 
       await this.visit('/');
@@ -1468,7 +1526,7 @@ moduleFor(
       runTask(() => controller.set('post', post));
 
       assert.equal(
-        normalizeUrl(this.$('#post').attr('href')),
+        this.$('#post').attr('href'),
         '/posts/1',
         'precond - Link has rendered href attr properly'
       );
@@ -1562,9 +1620,8 @@ moduleFor(
         let idx;
         for (idx = 0; idx < links.length; idx++) {
           let href = this.$(links[idx]).attr('href');
-          // Old IE includes the whole hostname as well
           assert.equal(
-            href.slice(-expected[idx].length),
+            href,
             expected[idx],
             `Expected link to be '${expected[idx]}', but was '${href}'`
           );
@@ -1872,10 +1929,10 @@ moduleFor(
 
       function assertLinkStatus(link, url) {
         if (url) {
-          assert.equal(normalizeUrl(link.attr('href')), url, 'loaded link-to has expected href');
+          assert.equal(link.attr('href'), url, 'loaded link-to has expected href');
           assert.ok(!link.hasClass('i-am-loading'), 'loaded linkComponent has no loadingClass');
         } else {
-          assert.equal(normalizeUrl(link.attr('href')), '#', "unloaded link-to has href='#'");
+          assert.equal(link.attr('href'), '#', "unloaded link-to has href='#'");
           assert.ok(link.hasClass('i-am-loading'), 'loading linkComponent has loadingClass');
         }
       }

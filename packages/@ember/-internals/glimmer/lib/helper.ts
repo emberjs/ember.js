@@ -14,7 +14,7 @@ import { getInternalHelperManager, helperCapabilities, setHelperManager } from '
 import type { DirtyableTag } from '@glimmer/validator';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
-export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
+const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 
 // Signature type utilities
 type GetOr<T, K, Else> = K extends keyof T ? T[K] : Else;
@@ -140,25 +140,32 @@ export default class Helper<S = unknown> extends FrameworkObject {
     On a class-based helper, it may be useful to force a recomputation of that
     helpers value. This is akin to `rerender` on a component.
 
-    For example, this component will rerender when the `currentUser` on a
-    session service changes:
+    In most cases, `recompute` is not needed because accessing tracked
+    properties in `compute` will automatically re-run the helper when
+    those properties change. Use `recompute` only when you need to
+    trigger a recomputation imperatively, for example in response to an
+    external event:
 
-    ```app/helpers/current-user-email.js
-    import Helper from '@ember/component/helper'
-    import { service } from '@ember/service'
-    import { observer } from '@ember/object'
+    ```app/helpers/current-time.js
+    import Helper from '@ember/component/helper';
 
-    export default Helper.extend({
-      session: service(),
-
-      onNewUser: observer('session.currentUser', function() {
-        this.recompute();
-      }),
+    export default class CurrentTimeHelper extends Helper {
+      interval = null;
 
       compute() {
-        return this.get('session.currentUser.email');
+        return new Date().toLocaleTimeString();
       }
-    });
+
+      constructor() {
+        super(...arguments);
+        this.interval = setInterval(() => this.recompute(), 1000);
+      }
+
+      willDestroy() {
+        super.willDestroy();
+        clearInterval(this.interval);
+      }
+    }
     ```
 
     @method recompute
@@ -286,7 +293,7 @@ class SimpleClassicHelperManager implements HelperManager<() => unknown> {
   }
 }
 
-export const SIMPLE_CLASSIC_HELPER_MANAGER = new SimpleClassicHelperManager();
+const SIMPLE_CLASSIC_HELPER_MANAGER = new SimpleClassicHelperManager();
 
 setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
 

@@ -782,6 +782,17 @@ moduleFor(
 
       this.assertText('hello');
     }
+
+    ['@test accessing negative index of positional args returns undefined']() {
+      this.registerHelper('my-helper', (positional) => {
+        return String(positional[-1]);
+      });
+
+      this.render('{{my-helper "hello"}}');
+
+      this.assertText('undefined');
+      this.assertStableRerender();
+    }
   }
 );
 

@@ -8,7 +8,7 @@ const DESTROYING_STATE = 1;
 const DESTROYED_STATE = 2;
 type DestroyableState = 0 | 1 | 2;
 
-type OneOrMany<T> = null | T | T[];
+type OneOrMany<T> = null | T | BrandedArray<T>;
 
 interface DestroyableMeta<T extends Destroyable> {
   source?: T;
@@ -27,19 +27,28 @@ let DESTROYABLE_META:
   | Map<Destroyable, DestroyableMeta<Destroyable>>
   | WeakMap<Destroyable, DestroyableMeta<Destroyable>> = new WeakMap();
 
+const branded = Symbol('BrandedArray');
+type BrandedArray<T> = T[] & { [branded]: true };
+
+function isBrandedArray<T>(collection: OneOrMany<T>): collection is BrandedArray<T> {
+  return Array.isArray(collection) && branded in collection;
+}
+
 function push<T extends object>(collection: OneOrMany<T>, newItem: T): OneOrMany<T> {
   if (collection === null) {
     return newItem;
-  } else if (Array.isArray(collection)) {
+  } else if (isBrandedArray(collection)) {
     collection.push(newItem);
     return collection;
   } else {
-    return [collection, newItem];
+    const b = [collection, newItem] as BrandedArray<T>;
+    b[branded] = true;
+    return b;
   }
 }
 
 function iterate<T extends object>(collection: OneOrMany<T>, fn: (item: T) => void) {
-  if (Array.isArray(collection)) {
+  if (isBrandedArray(collection)) {
     collection.forEach(fn);
   } else if (collection !== null) {
     fn(collection);
@@ -49,14 +58,14 @@ function iterate<T extends object>(collection: OneOrMany<T>, fn: (item: T) => vo
 function remove<T extends object>(collection: OneOrMany<T>, item: T, message: string | false) {
   if (DEBUG) {
     let collectionIsItem = collection === item;
-    let collectionContainsItem = Array.isArray(collection) && collection.indexOf(item) !== -1;
+    let collectionContainsItem = isBrandedArray(collection) && collection.indexOf(item) !== -1;
 
     if (!collectionIsItem && !collectionContainsItem) {
       throw new Error(String(message));
     }
   }
 
-  if (Array.isArray(collection) && collection.length > 1) {
+  if (isBrandedArray(collection) && collection.length > 1) {
     let index = collection.indexOf(item);
     collection.splice(index, 1);
     return collection;
@@ -180,7 +189,7 @@ export function destroy(destroyable: Destroyable) {
 function removeChildFromParent(child: Destroyable, parent: Destroyable) {
   let parentMeta = getDestroyableMeta(parent);
 
-  if (parentMeta.state === LIVE_STATE) {
+  if (parentMeta.state !== DESTROYED_STATE) {
     parentMeta.children = remove(
       parentMeta.children,
       child,

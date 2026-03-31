@@ -368,9 +368,13 @@ class _LinkTo extends InternalComponent {
     }
 
     let element = event.currentTarget;
-    assert('[BUG] must be an <a> element', element instanceof HTMLAnchorElement);
+    assert(
+      '[BUG] must be an <a> element',
+      element instanceof HTMLAnchorElement || element instanceof SVGAElement
+    );
 
-    let isSelf = element.target === '' || element.target === '_self';
+    let target = element instanceof SVGAElement ? element.target.baseVal : element.target;
+    let isSelf = target === '' || target === '_self';
 
     if (isSelf) {
       this.preventDefault(event);
@@ -550,12 +554,12 @@ class _LinkTo extends InternalComponent {
     if (typeof currentWhen === 'boolean') {
       return currentWhen;
     } else if (typeof currentWhen === 'string') {
-      let { models, routing } = this;
+      let { routing } = this;
 
       return currentWhen
         .split(' ')
         .some((route) =>
-          routing.isActiveForRoute(models, undefined, this.namespaceRoute(route), state)
+          routing.isActiveForRoute([], undefined, this.namespaceRoute(route), state)
         );
     } else {
       let { route, models, query, routing } = this;

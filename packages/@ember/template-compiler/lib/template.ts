@@ -270,10 +270,24 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
     }
 
     return (source: string) => {
-      const argNames = Object.keys(scope);
-      const argValues = Object.values(scope);
+      let hasThis = Object.prototype.hasOwnProperty.call(scope, 'this');
+      let thisValue = hasThis ? (scope as { this?: unknown }).this : undefined;
 
-      return new Function(...argNames, `return (${source})`)(...argValues);
+      let argNames: string[] = [];
+      let argValues: unknown[] = [];
+
+      for (let [name, value] of Object.entries(scope)) {
+        if (name === 'this') {
+          continue;
+        }
+
+        argNames.push(name);
+        argValues.push(value);
+      }
+
+      let fn = new Function(...argNames, `return (${source})`);
+
+      return hasThis ? fn.call(thisValue, ...argValues) : fn(...argValues);
     };
   }
 }

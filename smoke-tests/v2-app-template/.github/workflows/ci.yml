@@ -18,19 +18,16 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - uses: actions/checkout@v6
       - name: Install Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
-          cache: pnpm
+          node-version: 22
+          cache: npm
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       - name: Lint
-        run: pnpm lint
+        run: npm run lint
 
   test:
     name: "Test"
@@ -38,16 +35,13 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - uses: actions/checkout@v6
       - name: Install Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
-          cache: pnpm
+          node-version: 22
+          cache: npm
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       - name: Run Tests
-        run: pnpm test
+        run: npm test

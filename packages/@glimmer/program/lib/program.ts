@@ -43,7 +43,6 @@ export class ProgramHeapImpl implements ProgramHeap {
   private heap: Int32Array;
   private handleTable: number[];
   private handleState: TableSlotState[];
-  private handle = 0;
 
   constructor() {
     this.heap = new Int32Array(PAGE_SIZE);

@@ -1,4 +1,4 @@
-import { isObject, setupMandatorySetter, symbol, toString } from '@ember/-internals/utils';
+import { isObject, setupMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -15,7 +15,7 @@ type CustomTagFnWithMandatorySetter = (
 ) => Tag;
 
 // This is exported for `@tracked`, but should otherwise be avoided. Use `tagForObject`.
-export const SELF_TAG: string | symbol = symbol('SELF_TAG');
+export const SELF_TAG: string | symbol = Symbol('SELF_TAG');
 
 export function tagForProperty(
   obj: object,

@@ -13,7 +13,9 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: linting
         run: pnpm lint
@@ -27,12 +29,16 @@ jobs:
     name: Type Checking (current version)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build types
         run: pnpm build:types
       - name: Check internal types
         run: pnpm type-check:internals
+      - name: Check @handlebars/parser types
+        run: pnpm type-check:handlebars
       - name: Check published types
         run: pnpm type-check:types
 
@@ -44,7 +50,9 @@ jobs:
       matrix:
         ts-version: ["5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build stable type definitions
         run: pnpm build:types
@@ -57,7 +65,9 @@ jobs:
     name: Basic Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
@@ -91,7 +101,9 @@ jobs:
             ENABLE_OPTIONAL_FEATURES: "true"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
@@ -111,7 +123,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         env:
@@ -141,7 +155,9 @@ jobs:
       fail-fast: false
       matrix: ${{fromJson(needs.lint.outputs.matrix)}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
         with:
           use_lockfile: "false"
@@ -150,28 +166,58 @@ jobs:
       - name: test
         working-directory: smoke-tests/scenarios
         run: |
-          ${{ matrix.command }}
+          ${MATRIX_COMMAND}
+        env:
+          MATRIX_COMMAND: ${{ matrix.command }}
+          
+  smoke-test-with-deprecations-removed:
+    name: Smoke tests with Deprecations Removed (Full Ember Apps)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.lint.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          use_lockfile: "false"
+      - name: build
+        run: pnpm build
+      - name: test
+        env:
+          OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+          MATRIX_COMMAND: ${{ matrix.command }}
+        working-directory: smoke-tests/scenarios
+        run: |
+          ${MATRIX_COMMAND}
 
   node-test:
     name: Node.js Tests
     runs-on: ubuntu-latest
     needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         env:
           SHOULD_TRANSPILE_FOR_NODE: true
         run: pnpm build
       - name: test
-        run: pnpm test:node
+        run: pnpm test:node && pnpm --filter "@handlebars/parser" test
 
   blueprint-test:
     name: Blueprint Tests
     runs-on: ubuntu-latest
     needs: [lint]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: test
         run: pnpm test:blueprints
@@ -181,12 +227,14 @@ jobs:
     runs-on: ubuntu-22.04 # Firefox is not installing on Ubuntu 24 on GitHub Actions https://github.com/browser-actions/setup-firefox/issues/622
     needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
       - name: Setup firefox
-        uses: browser-actions/setup-firefox@latest
+        uses: browser-actions/setup-firefox@fcf821c621167805dd63a29662bd7cb5676c81a8 # v1.7.1
         with:
           firefox-version: 115.9.1esr
       - run: firefox --version
@@ -196,10 +244,13 @@ jobs:
   perf-check:
     name: Perf script still works
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }} # Don't run on tags
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Check that the perf script works, so we don't regress
         run: RUNS='2' pnpm bench

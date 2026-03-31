@@ -87,7 +87,7 @@ function lookupComponentPair(owner: InternalOwner, name: string): Nullable<Looku
   }
 }
 
-export const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
+const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   mut,
   readonly,
   unbound,
@@ -101,7 +101,7 @@ export const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   '-in-el-null': inElementNullCheckHelper,
 };
 
-export const BUILTIN_HELPERS: Record<string, object> = {
+const BUILTIN_HELPERS: Record<string, object> = {
   ...BUILTIN_KEYWORD_HELPERS,
   array,
   concat,

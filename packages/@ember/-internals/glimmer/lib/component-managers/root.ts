@@ -78,7 +78,7 @@ class RootComponentManager extends CurlyComponentManager {
 
 // ROOT is the top-level template it has nothing but one yield.
 // it is supposed to have a dummy element
-export const ROOT_CAPABILITIES: InternalComponentCapabilities = {
+const ROOT_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: false,

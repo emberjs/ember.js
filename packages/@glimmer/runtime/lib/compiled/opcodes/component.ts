@@ -154,10 +154,8 @@ APPEND_OPCODES.add(VM_PUSH_COMPONENT_DEFINITION_OP, (vm, { op1: handle }) => {
 
 APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => {
   let stack = vm.stack;
-  let component = check(
-    valueForRef(check(stack.pop(), CheckReference)),
-    CheckOr(CheckString, CheckCurriedComponentDefinition)
-  );
+  let ref = check(stack.pop(), CheckReference);
+  let component = check(valueForRef(ref), CheckOr(CheckString, CheckCurriedComponentDefinition));
   let constants = vm.constants;
   let owner = vm.getOwner();
   let isStrict = constants.getValue<boolean>(_isStrict);
@@ -180,6 +178,13 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
     definition = component;
   } else {
     definition = constants.component(component, owner);
+  }
+
+  if (DEBUG && !isCurriedValue(definition) && !definition.resolvedName && !definition.debugName) {
+    let debugLabel = ref.debugLabel;
+    if (debugLabel) {
+      definition.debugName = debugLabel;
+    }
   }
 
   stack.push(definition);
@@ -214,6 +219,19 @@ APPEND_OPCODES.add(VM_RESOLVE_CURRIED_COMPONENT_OP, (vm) => {
           ref.debugLabel
         }\`, which was: ${debugToString?.(value) ?? value}`
       );
+    }
+  }
+
+  if (
+    DEBUG &&
+    definition &&
+    !isCurriedValue(definition) &&
+    !definition.resolvedName &&
+    !definition.debugName
+  ) {
+    let debugLabel = ref.debugLabel;
+    if (debugLabel) {
+      definition.debugName = debugLabel;
     }
   }
 

@@ -73,8 +73,6 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv): void {
   });
 
   hooks.afterEach(function () {
-    // Edge will occasionally not run finally blocks, so we have to be extra
-    // sure we restore the original assert function
     env.setDebugFunction('assert', originalAssertFunc);
 
     let w = window as ExtendedWindow;

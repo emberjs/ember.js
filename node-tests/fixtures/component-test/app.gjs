@@ -1,9 +1,9 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'my-app/tests/helpers';
 import { render } from '@ember/test-helpers';
-import Foo from 'my-app/components/foo';
+import <%= componentInvocation =%> from 'my-app/components/<%= component =%>';
 
-module('Integration | Component | foo', function (hooks) {
+module('<%= testDescription =%>', function (hooks) {
   setupRenderingTest(hooks);
 
   test('it renders', async function (assert) {
@@ -12,15 +12,15 @@ module('Integration | Component | foo', function (hooks) {
     // and update using state.myProperty = 1; await rerender();
     // Handle any actions with function myAction(val) { ... };
 
-    await render(<template><Foo /></template>);
+    await render(<template><<%= componentInvocation =%> /></template>);
 
     assert.dom().hasText('');
 
     // Template block usage:
     await render(<template>
-      <Foo>
+      <<%= componentInvocation =%>>
         template block text
-      </Foo>
+      </<%= componentInvocation =%>>
     </template>);
 
     assert.dom().hasText('template block text');
