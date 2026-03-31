@@ -73,7 +73,6 @@ jobs:
         run: pnpm vite build --mode=development
         env:
           NODE_ENV: development
-      - uses: wyvox/action-no-git-diff@6d1f5759a221e2ea447974af795e395672e33328 # v1.0.1
       - name: test
         run: pnpm test
 
@@ -164,6 +163,7 @@ jobs:
           use_lockfile: "false"
       - name: build
         run: pnpm build
+      - uses: wyvox/action-no-git-diff@6d1f5759a221e2ea447974af795e395672e33328 # v1.0.1
       - name: test
         working-directory: smoke-tests/scenarios
         run: |
