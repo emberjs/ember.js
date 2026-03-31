@@ -144,10 +144,6 @@ export const ENV = {
    */
   _RERENDER_LOOP_LIMIT: 1000,
 
-  EMBER_LOAD_HOOKS: {} as {
-    [hook: string]: Function[];
-  },
-
   FEATURES: {} as {
     [feature: string]: boolean;
   },
@@ -179,18 +175,6 @@ if (typeof EmberENV === 'object' && EmberENV !== null) {
     }
   }
 
-  // TODO this does not seem to be used by anything,
-  //      can we remove it? do we need to deprecate it?
-  let { EMBER_LOAD_HOOKS } = EmberENV;
-  if (typeof EMBER_LOAD_HOOKS === 'object' && EMBER_LOAD_HOOKS !== null) {
-    for (let hookName in EMBER_LOAD_HOOKS) {
-      if (!Object.prototype.hasOwnProperty.call(EMBER_LOAD_HOOKS, hookName)) continue;
-      let hooks = EMBER_LOAD_HOOKS[hookName];
-      if (Array.isArray(hooks)) {
-        ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter((hook) => typeof hook === 'function');
-      }
-    }
-  }
   let { FEATURES } = EmberENV;
   if (typeof FEATURES === 'object' && FEATURES !== null) {
     for (let feature in FEATURES) {
