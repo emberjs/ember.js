@@ -14,19 +14,12 @@
  * bin/changelog.js
  */
 
-const RSVP = require('rsvp');
-const GitHubApi = require('github');
+const { Octokit } = require('@octokit/rest');
 const execSync = require('child_process').execSync;
 
-const github = new GitHubApi({ version: '3.0.0' });
-if (process.env.GITHUB_TOKEN) {
-  github.authenticate({
-    type: 'token',
-    token: process.env.GITHUB_TOKEN,
-  });
-}
-const compareCommits = RSVP.denodeify(github.repos.compareCommits);
-const getPullRequest = RSVP.denodeify(github.pullRequests.get);
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
 
 const currentVersion = process.env.PRIOR_VERSION;
 const head = process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' });
@@ -36,19 +29,13 @@ generateChangelog()
   .catch((err) => console.error(err));
 
 async function fetchAllChanges() {
-  let result = await compareCommits({
-    user: 'emberjs',
+  return octokit.paginate(octokit.repos.compareCommits, {
+    owner: 'emberjs',
     repo: 'ember.js',
     base: currentVersion,
     head,
-  });
-  let data = result.commits;
-  while (github.hasNextPage(result)) {
-    result = await github.getNextPage(result);
-    data.concat(result.commits);
-  }
-
-  return data;
+    per_page: 100,
+  }, (response) => response.data.commits);
 }
 
 async function generateChangelog() {
@@ -139,10 +126,10 @@ async function getCommitMessage(commitInfo) {
     let lines = message.split(/\n\n/);
 
     if (!lines[1]) {
-      let pullRequest = await getPullRequest({
-        user: 'emberjs',
+      let { data: pullRequest } = await octokit.pulls.get({
+        owner: 'emberjs',
         repo: 'ember.js',
-        number: prNumber,
+        pull_number: prNumber,
       });
       return `Merge pull request #${prNumber}\n\n${pullRequest.title}`;
     }
