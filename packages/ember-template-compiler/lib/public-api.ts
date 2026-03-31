@@ -1,5 +1,3 @@
-export { default as _Ember } from 'ember';
-
 import VERSION from 'ember/version';
 import * as _GlimmerSyntax from '@glimmer/syntax';
 

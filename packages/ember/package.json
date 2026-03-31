@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
     "./version": "./version.ts"
   },
   "dependencies": {
