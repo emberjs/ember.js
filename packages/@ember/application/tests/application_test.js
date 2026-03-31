@@ -7,7 +7,7 @@ import EmberRoute from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -300,7 +300,7 @@ moduleFor(
     [`@test can build a registry via Application.buildRegistry() --- simulates ember-test-helpers`](
       assert
     ) {
-      let namespace = EmberObject.create({
+      let namespace = CoreObject.create({
         Resolver: { create: function () {} },
       });
 
@@ -317,7 +317,7 @@ moduleFor(
     [`@test can build a registry via Application.buildRegistry() --- simulates ember-test-helpers`](
       assert
     ) {
-      let namespace = EmberObject.create({
+      let namespace = CoreObject.create({
         Resolver: { create() {} },
       });
 

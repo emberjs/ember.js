@@ -1,5 +1,6 @@
 import { addObserver } from '@ember/-internals/metal';
-import EmberObject, { get, set } from '@ember/object';
+import { get, set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -20,13 +21,13 @@ moduleFor(
     async ['@test chained observers on enumerable properties are triggered when the observed property of any item changes'](
       assert
     ) {
-      let family = EmberObject.create({ momma: null });
-      let momma = EmberObject.create({ children: [] });
+      let family = CoreObject.create({ momma: null });
+      let momma = CoreObject.create({ children: [] });
 
-      let child1 = EmberObject.create({ name: 'Bartholomew' });
-      let child2 = EmberObject.create({ name: 'Agnes' });
-      let child3 = EmberObject.create({ name: 'Dan' });
-      let child4 = EmberObject.create({ name: 'Nancy' });
+      let child1 = CoreObject.create({ name: 'Bartholomew' });
+      let child2 = CoreObject.create({ name: 'Agnes' });
+      let child3 = CoreObject.create({ name: 'Dan' });
+      let child4 = CoreObject.create({ name: 'Nancy' });
 
       set(family, 'momma', momma);
       set(momma, 'children', emberA([child1, child2, child3]));
@@ -39,7 +40,7 @@ moduleFor(
       observerFiredCount = 0;
 
       for (let i = 0; i < momma.children.length; i++) {
-        momma.children[i].set('name', 'Juan');
+        set(momma.children[i], 'name', 'Juan');
         await runLoopSettled();
       }
       assert.equal(observerFiredCount, 3, 'observer fired after changing child names');

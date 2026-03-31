@@ -5,7 +5,8 @@ import { compile } from 'ember-template-compiler';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
-import EmberObject, { set } from '@ember/object';
+import { set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -116,7 +117,7 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           menuItem = MenuItem.create({ id: id });
 
@@ -161,7 +162,7 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           return { id: id };
         }
@@ -243,7 +244,7 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           menuItem = MenuItem.create({ id: id });
           return new RSVP.Promise((res) => (resolve = res));
