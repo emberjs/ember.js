@@ -22,18 +22,17 @@ const octokit = new Octokit({
 });
 
 const currentVersion = process.env.PRIOR_VERSION;
-const head = process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' });
+const head = (process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' })).trim();
 
 generateChangelog()
   .then(console.log)
   .catch((err) => console.error(err));
 
 async function fetchAllChanges() {
-  return octokit.paginate(octokit.repos.compareCommits, {
+  return octokit.paginate(octokit.repos.compareCommitsWithBasehead, {
     owner: 'emberjs',
     repo: 'ember.js',
-    base: currentVersion,
-    head,
+    basehead: `${currentVersion}...${head}`,
     per_page: 100,
   }, (response) => response.data.commits);
 }
