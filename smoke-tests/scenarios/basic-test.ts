@@ -210,6 +210,29 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'element-helper-test.gjs': `
+              import { module, test } from 'qunit';
+              import { render } from '@ember/test-helpers';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { element } from '@ember/helper';
+
+              module('Integration | helper | element (strict mode)', function (hooks) {
+                setupRenderingTest(hooks);
+
+                test('it renders a dynamic tag in strict mode gjs', async function (assert) {
+                  await render(
+                    <template>
+                      {{#let (element "h1") as |Tag|}}
+                        <Tag data-test="element-helper">hello world!</Tag>
+                      {{/let}}
+                    </template>
+                  );
+
+                  assert.dom('[data-test="element-helper"]').hasText('hello world!');
+                  assert.dom('h1[data-test="element-helper"]').exists();
+                });
+              });
+            `,
             'interactive-example-test.js': `
               import { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
