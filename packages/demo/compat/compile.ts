@@ -895,7 +895,12 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
 // keyed by (object, property). When __gxtTriggerReRender fires, call syncState
 // on the IfCondition directly.
 
-const ifWatchers = new WeakMap<object, Map<string, Set<() => void>>>();
+let ifWatchers = new WeakMap<object, Map<string, Set<() => void>>>();
+
+// Allow clearing ifWatchers between tests to prevent stale callbacks
+(globalThis as any).__gxtClearIfWatchers = function() {
+  ifWatchers = new WeakMap();
+};
 
 function registerIfWatcher(rawTarget: object, key: string, callback: () => void) {
   let keyMap = ifWatchers.get(rawTarget);
@@ -1255,6 +1260,14 @@ setInterval(() => {
   // Clear component instance pools to prevent stale reuse across tests
   if (typeof (globalThis as any).__gxtClearInstancePools === 'function') {
     (globalThis as any).__gxtClearInstancePools();
+  }
+  // Clear stale ifWatchers to prevent callbacks from previous tests firing on detached DOM
+  if (typeof (globalThis as any).__gxtClearIfWatchers === 'function') {
+    (globalThis as any).__gxtClearIfWatchers();
+  }
+  // Clear component contexts to prevent stale render contexts accumulating
+  if ((globalThis as any).__gxtComponentContexts) {
+    (globalThis as any).__gxtComponentContexts = new WeakMap();
   }
   // Reset pending sync flags to prevent timer-based re-renders leaking into next test.
   // A setInterval(16ms) checks __gxtPendingSync and calls __gxtSyncDomNow() which can
