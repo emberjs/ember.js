@@ -22,7 +22,7 @@ module('@glimmer/validator: trackedWeakSet()', function () {
   test('does not work with built-ins', (assert) => {
     const set = trackedWeakSet();
     const pattern =
-      /(Invalid value used in weak set)|(WeakSet value must be an object)|(Attempted to add a non-object value to a WeakSet)/u;
+      /(Invalid value used in weak set)|(WeakSet value must be an object)|(Attempted to add a non-object value to a WeakSet)|(must be an object or an unregistered symbol)/u;
 
     // @ts-expect-error -- point is testing constructor error
     assert.throws(() => set.add('aoeu'), pattern);
