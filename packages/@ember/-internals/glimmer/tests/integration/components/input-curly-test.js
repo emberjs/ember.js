@@ -1,6 +1,9 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
+import Component from '@ember/component';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 class InputRenderingTest extends RenderingTestCase {
   $input() {
@@ -244,9 +247,13 @@ moduleFor(
     }
 
     ['@test GH16256 input macro does not modify params in place']() {
-      this.registerComponent('my-input', {
-        template: `{{input type=this.inputType}}`,
-      });
+      this.owner.register(
+        'component:my-input',
+        setComponentTemplate(
+          precompileTemplate(`{{input type=this.inputType}}`),
+          class extends Component {}
+        )
+      );
 
       this.render(`{{my-input inputType=this.firstType}}{{my-input inputType=this.secondType}}`, {
         firstType: 'password',

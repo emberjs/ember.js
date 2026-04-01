@@ -1,7 +1,6 @@
 import {
   moduleFor,
   ApplicationTestCase,
-  defineComponent,
   ModuleBasedTestResolver,
   RenderingTestCase,
   runTask,
@@ -12,9 +11,10 @@ import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
+import { precompileTemplate } from '@ember/template-compilation';
 
 import { backtrackingMessageFor } from '../utils/debug-stack';
-import { compile, Component } from '../utils/helpers';
+import { Component } from '../utils/helpers';
 import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
@@ -69,17 +69,14 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', '{{mount "chat"}}');
+      this.add('template:index', precompileTemplate('{{mount "chat"}}'));
     }
 
     ['@test it boots an engine, instantiates its application controller, and renders its application template'](
       assert
     ) {
-      this.engineRegistrations['template:application'] = compile(
-        '<h2>Chat here, {{this.username}}</h2>',
-        {
-          moduleName: 'my-app/templates/application.hbs',
-        }
+      this.engineRegistrations['template:application'] = precompileTemplate(
+        '<h2>Chat here, {{this.username}}</h2>'
       );
 
       let controller;
@@ -125,14 +122,11 @@ moduleFor(
         this.route('route-with-mount');
       });
 
-      this.addTemplate('index', '');
-      this.addTemplate('route-with-mount', '{{mount "chat"}}');
+      this.add('template:index', precompileTemplate(''));
+      this.add('template:route-with-mount', precompileTemplate('{{mount "chat"}}'));
 
-      this.engineRegistrations['template:application'] = compile(
-        'hi {{this.person.name}} [{{component-with-backtracking-set person=this.person}}]',
-        {
-          moduleName: 'my-app/templates/application.hbs',
-        }
+      this.engineRegistrations['template:application'] = precompileTemplate(
+        'hi {{this.person.name}} [{{component-with-backtracking-set person=this.person}}]'
       );
       this.engineRegistrations['controller:application'] = class extends Controller {
         person = {
@@ -151,9 +145,7 @@ moduleFor(
       };
 
       setComponentTemplate(
-        compile('[component {{this.person.name}}]', {
-          moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs',
-        }),
+        precompileTemplate('[component {{this.person.name}}]'),
         ComponentWithBacktrackingSet
       );
 
@@ -193,7 +185,7 @@ moduleFor(
           }
         }
       );
-      this.addTemplate('bound-engine-name', '{{mount this.engineName}}');
+      this.add('template:bound-engine-name', precompileTemplate('{{mount this.engineName}}'));
 
       this.add(
         'engine:foo',
@@ -203,12 +195,7 @@ moduleFor(
 
           init() {
             super.init(...arguments);
-            this.register(
-              'template:application',
-              compile('<h2>Foo Engine</h2>', {
-                moduleName: 'my-app/templates/application.hbs',
-              })
-            );
+            this.register('template:application', precompileTemplate('<h2>Foo Engine</h2>'));
           }
         }
       );
@@ -220,12 +207,7 @@ moduleFor(
 
           init() {
             super.init(...arguments);
-            this.register(
-              'template:application',
-              compile('<h2>Bar Engine</h2>', {
-                moduleName: 'my-app/templates/application.hbs',
-              })
-            );
+            this.register('template:application', precompileTemplate('<h2>Bar Engine</h2>'));
           }
         }
       );
@@ -276,7 +258,7 @@ moduleFor(
           }
         }
       );
-      this.addTemplate('engine-event-dispatcher-singleton', '{{mount "foo"}}');
+      this.add('template:engine-event-dispatcher-singleton', precompileTemplate('{{mount "foo"}}'));
 
       this.add(
         'engine:foo',
@@ -288,15 +270,12 @@ moduleFor(
             super.init(...arguments);
             this.register(
               'template:application',
-              compile('<h2>Foo Engine: {{tagless-component}}</h2>', {
-                moduleName: 'my-app/templates/application.hbs',
-              })
+              precompileTemplate('<h2>Foo Engine: {{tagless-component}}</h2>')
             );
             this.register(
               'component:tagless-component',
-              defineComponent(
-                {},
-                'Tagless Component',
+              setComponentTemplate(
+                precompileTemplate('Tagless Component'),
                 class extends Component {
                   tagName = '';
 
@@ -343,9 +322,7 @@ moduleFor(
             super.init(...arguments);
             this.register(
               'template:application',
-              compile('<h2>Param Engine: {{@model.foo}}</h2>', {
-                moduleName: 'my-app/templates/application.hbs',
-              })
+              precompileTemplate('<h2>Param Engine: {{@model.foo}}</h2>')
             );
           }
         }
@@ -356,7 +333,10 @@ moduleFor(
       this.router.map(function () {
         this.route('engine-params-static');
       });
-      this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
+      this.add(
+        'template:engine-params-static',
+        precompileTemplate('{{mount "paramEngine" model=(hash foo="bar")}}')
+      );
 
       return this.visit('/engine-params-static').then(() => {
         this.assertInnerHTML('<h2>Param Engine: bar</h2>');
@@ -378,9 +358,9 @@ moduleFor(
           }
         }
       );
-      this.addTemplate(
-        'engine-params-bound',
-        '{{mount "paramEngine" model=(hash foo=this.boundParamValue)}}'
+      this.add(
+        'template:engine-params-bound',
+        precompileTemplate('{{mount "paramEngine" model=(hash foo=this.boundParamValue)}}')
       );
 
       return this.visit('/engine-params-bound').then(() => {
@@ -417,15 +397,22 @@ moduleFor(
         this.route('engine-params-contextual-component');
       });
 
-      this.addComponent('foo-component', {
-        template: `foo-component rendered! - {{app-bar-component}}`,
-      });
-      this.addComponent('app-bar-component', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: 'rendered app-bar-component from the app',
-      });
+      this.add(
+        'component:foo-component',
+        setComponentTemplate(
+          precompileTemplate('foo-component rendered! - {{app-bar-component}}'),
+          class extends Component {}
+        )
+      );
+      this.add(
+        'component:app-bar-component',
+        setComponentTemplate(
+          precompileTemplate('rendered app-bar-component from the app'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
       this.add(
         'engine:componentParamEngine',
         class extends Engine {
@@ -434,18 +421,15 @@ moduleFor(
 
           init() {
             super.init(...arguments);
-            this.register(
-              'template:application',
-              compile('{{@model.foo}}', {
-                moduleName: 'my-app/templates/application.hbs',
-              })
-            );
+            this.register('template:application', precompileTemplate('{{@model.foo}}'));
           }
         }
       );
-      this.addTemplate(
-        'engine-params-contextual-component',
-        '{{mount "componentParamEngine" model=(hash foo=(component "foo-component"))}}'
+      this.add(
+        'template:engine-params-contextual-component',
+        precompileTemplate(
+          '{{mount "componentParamEngine" model=(hash foo=(component "foo-component"))}}'
+        )
       );
 
       return this.visit('/engine-params-contextual-component').then(() => {

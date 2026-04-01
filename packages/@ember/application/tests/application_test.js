@@ -18,6 +18,7 @@ import {
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import Application from '..';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Application, autobooting multiple apps',
@@ -175,8 +176,8 @@ moduleFor(
     [`@test initialized application goes to initial route`]() {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '{{outlet}}');
-        this.addTemplate('index', '<h1>Hi from index</h1>');
+        this.add('template:application', precompileTemplate('{{outlet}}'));
+        this.add('template:index', precompileTemplate('<h1>Hi from index</h1>'));
       });
 
       this.assertText('Hi from index');
@@ -226,7 +227,7 @@ moduleFor(
     ) {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '<h1>Hello!</h1>');
+        this.add('template:application', precompileTemplate('<h1>Hello!</h1>'));
       });
       // This is not a public way to access the container; we just
       // need to make some assertions about the created router
@@ -238,7 +239,7 @@ moduleFor(
     [`@test Application Controller backs the appplication template`]() {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '<h1>{{this.greeting}}</h1>');
+        this.add('template:application', precompileTemplate('<h1>{{this.greeting}}</h1>'));
         this.add(
           'controller:application',
           class extends Controller {

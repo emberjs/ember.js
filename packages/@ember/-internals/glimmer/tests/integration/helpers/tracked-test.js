@@ -7,7 +7,9 @@ import {
   notifyPropertyChange,
 } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -24,14 +26,15 @@ moduleFor(
         };
       }
 
-      this.registerComponent('person', {
-        ComponentClass: PersonComponent,
-        template: strip`
-            <button onclick={{this.updateName}}>
-              {{hello-world this.name}}
-            </button>
-          `,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button onclick={{this.updateName}}>{{hello-world this.name}}</button>'
+          ),
+          PersonComponent
+        )
+      );
 
       this.registerHelper('hello-world', ([value]) => {
         computeCount++;
@@ -107,14 +110,15 @@ moduleFor(
         };
       }
 
-      this.registerComponent('person', {
-        ComponentClass: PersonComponent,
-        template: strip`
-            <button onclick={{this.updatePerson}}>
-              {{hello-world this.full}}
-            </button>
-          `,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button onclick={{this.updatePerson}}>{{hello-world this.full}}</button>'
+          ),
+          PersonComponent
+        )
+      );
 
       this.registerHelper('hello-world', ([value]) => {
         computeCount++;
@@ -149,14 +153,15 @@ moduleFor(
         };
       }
 
-      this.registerComponent('num-list', {
-        ComponentClass: NumListComponent,
-        template: strip`
-            <button {{on "click" this.addNumber}}>
-              {{join this.numbers}}
-            </button>
-          `,
-      });
+      this.owner.register(
+        'component:num-list',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" this.addNumber}}>{{join this.numbers}}</button>'
+          ),
+          NumListComponent
+        )
+      );
 
       this.registerHelper('join', ([value]) => {
         return value.join(', ');
@@ -204,14 +209,15 @@ moduleFor(
         };
       }
 
-      this.registerComponent('num-list', {
-        ComponentClass: NumListComponent,
-        template: strip`
-            <button {{on "click" this.addNumber}}>
-              {{join this.numbers}}
-            </button>
-          `,
-      });
+      this.owner.register(
+        'component:num-list',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" this.addNumber}}>{{join this.numbers}}</button>'
+          ),
+          NumListComponent
+        )
+      );
 
       this.registerHelper('join', ([value]) => {
         return value.join(', ');
@@ -289,16 +295,16 @@ moduleFor(
         }
       );
 
-      this.registerComponent('person', {
-        ComponentClass: class extends Component {
-          @service('current-user')
-          currentUser;
-        },
-
-        template: strip`
-            {{hello-world this.currentUser}}
-          `,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(
+          precompileTemplate('{{hello-world this.currentUser}}'),
+          class extends Component {
+            @service('current-user')
+            currentUser;
+          }
+        )
+      );
 
       this.registerHelper('hello-world', ([service]) => {
         computeCount++;
@@ -334,10 +340,10 @@ moduleFor(
 
       let trackedInstance = TrackedClass.create();
 
-      this.registerComponent('person', {
-        ComponentClass: class extends Component {},
-        template: strip`{{hello-world}}`,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(precompileTemplate(`{{hello-world}}`), class extends Component {})
+      );
 
       this.registerHelper('hello-world', {
         compute() {
@@ -368,16 +374,15 @@ moduleFor(
     '@test each-in autotracks non-tracked values correctly'() {
       let obj = EmberObject.create({ value: 'bob' });
 
-      this.registerComponent('person', {
-        ComponentClass: class extends Component {
-          obj = obj;
-        },
-        template: strip`
-            {{#each-in this.obj as |key value|}}
-              {{value}}-{{key}}
-            {{/each-in}}
-          `,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(
+          precompileTemplate('{{#each-in this.obj as |key value|}}{{value}}-{{key}}{{/each-in}}'),
+          class extends Component {
+            obj = obj;
+          }
+        )
+      );
 
       this.render('<Person/>');
 
@@ -391,16 +396,17 @@ moduleFor(
     '@test each-in autotracks arrays acorrectly'() {
       let obj = EmberObject.create({ arr: A([1]) });
 
-      this.registerComponent('person', {
-        ComponentClass: class extends Component {
-          obj = obj;
-        },
-        template: strip`
-            {{#each-in this.obj as |key arr|}}
-              {{#each arr as |v|}}{{v}}{{/each}}
-            {{/each-in}}
-          `,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#each-in this.obj as |key arr|}}{{#each arr as |v|}}{{v}}{{/each}}{{/each-in}}'
+          ),
+          class extends Component {
+            obj = obj;
+          }
+        )
+      );
 
       this.render('<Person/>');
 

@@ -1,5 +1,8 @@
-import { defineComponent, moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 import { compile } from '../../index';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
+import templateOnly from '@ember/component/template-only';
 
 moduleFor(
   'ember-template-compiler: assert-input-helper-without-block',
@@ -15,13 +18,19 @@ moduleFor(
     }
 
     ['@test Block params are not asserted']() {
-      let shadowInput = defineComponent({}, `It's just {{yield}}`);
-
-      let Root = defineComponent(
-        { shadowInput },
-        `{{#let shadowInput as |input|}}{{#input}}an input{{/input}}{{/let}}`
+      let shadowInput = setComponentTemplate(
+        precompileTemplate(`It's just {{yield}}`),
+        templateOnly()
       );
-      this.registerComponent('root', { ComponentClass: Root });
+
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{#let shadowInput as |input|}}{{#input}}an input{{/input}}{{/let}}`, {
+          strictMode: true,
+          scope: () => ({ shadowInput }),
+        }),
+        templateOnly()
+      );
+      this.owner.register('component:root', Root);
 
       this.render('<Root />');
       this.assertHTML("It's just an input");
@@ -29,10 +38,16 @@ moduleFor(
     }
 
     ['@test Lexical scope values are not asserted']() {
-      let input = defineComponent({}, `It's just {{yield}}`);
+      let input = setComponentTemplate(precompileTemplate(`It's just {{yield}}`), templateOnly());
 
-      let Root = defineComponent({ input }, `{{#input}}an input{{/input}}`);
-      this.registerComponent('root', { ComponentClass: Root });
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{#input}}an input{{/input}}`, {
+          strictMode: true,
+          scope: () => ({ input }),
+        }),
+        templateOnly()
+      );
+      this.owner.register('component:root', Root);
 
       this.render('<Root />');
       this.assertHTML("It's just an input");

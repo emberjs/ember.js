@@ -1,6 +1,8 @@
 import { Component } from '@ember/-internals/glimmer';
 import EmberObject, { action } from '@ember/object';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   '@action decorator',
@@ -13,10 +15,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooComponent,
-        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate("<button {{on 'click' this.foo}}>Click Me!</button>"),
+          FooComponent
+        )
+      );
 
       this.render('{{foo-bar}}');
 
@@ -62,10 +67,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('bar-bar', {
-        ComponentClass: BarComponent,
-        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
-      });
+      this.owner.register(
+        'component:bar-bar',
+        setComponentTemplate(
+          precompileTemplate("<button {{on 'click' this.foo}}>Click Me!</button>"),
+          BarComponent
+        )
+      );
 
       this.render('{{bar-bar}}');
 
@@ -86,10 +94,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('bar-bar', {
-        ComponentClass: BarComponent,
-        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
-      });
+      this.owner.register(
+        'component:bar-bar',
+        setComponentTemplate(
+          precompileTemplate("<button {{on 'click' this.foo}}>Click Me!</button>"),
+          BarComponent
+        )
+      );
 
       this.render('{{bar-bar}}');
 
@@ -112,10 +123,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('bar-bar', {
-        ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
-      });
+      this.owner.register(
+        'component:bar-bar',
+        setComponentTemplate(
+          precompileTemplate("<button {{action 'foo'}}>Click Me!</button>"),
+          BarComponent
+        )
+      );
 
       this.render('{{bar-bar}}');
 
@@ -132,10 +146,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooComponent,
-        template: '<button onclick={{this.foo}}>Click Me!</button>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<button onclick={{this.foo}}>Click Me!</button>'),
+          FooComponent
+        )
+      );
 
       this.render('{{foo-bar}}');
 
@@ -160,10 +177,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('bar-bar', {
-        ComponentClass: BarComponent,
-        template: '<button onclick={{this.foo}}>Click Me!</button>',
-      });
+      this.owner.register(
+        'component:bar-bar',
+        setComponentTemplate(
+          precompileTemplate('<button onclick={{this.foo}}>Click Me!</button>'),
+          BarComponent
+        )
+      );
 
       this.render('{{bar-bar}}');
 
@@ -198,10 +218,13 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooComponent,
-        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate("<button {{on 'click' this.foo}}>Click Me!</button>"),
+          FooComponent
+        )
+      );
 
       this.render('{{foo-bar}}');
 
@@ -216,10 +239,13 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooComponent,
-        template: '<button onclick={{this.foo}}>Click Me!</button>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<button onclick={{this.foo}}>Click Me!</button>'),
+          FooComponent
+        )
+      );
 
       this.render('{{foo-bar}}');
 

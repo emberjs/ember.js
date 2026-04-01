@@ -4,8 +4,6 @@ import {
   assertHTML,
   buildOwner,
   clickElement,
-  defComponent,
-  defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
   moduleFor,
@@ -14,6 +12,11 @@ import {
 } from 'internal-test-helpers';
 
 import { Input, Textarea } from '@ember/component';
+import { precompileTemplate } from '@ember/template-compilation';
+import { compile } from 'internal-test-helpers';
+import { template } from '@ember/template-compiler/runtime';
+import { setComponentTemplate } from '@glimmer/manager';
+import templateOnly from '@ember/component/template-only';
 import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
@@ -90,8 +93,11 @@ moduleFor(
     }
 
     '@test destroy cleans up dom via destrying the test context'() {
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('<Foo/>', { scope: { Foo } });
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
 
@@ -101,8 +107,11 @@ moduleFor(
     }
 
     '@test destroy of the owner cleans up dom via destrying the test context'() {
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('<Foo/>', { scope: { Foo } });
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
 
@@ -121,7 +130,7 @@ moduleFor(
     }
 
     '@test manually calling destroy cleans up the DOM'() {
-      let Foo = defComponent('Hello, world!');
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
 
       let owner = buildOwner({});
       let manualDestroy: () => void;
@@ -152,7 +161,7 @@ moduleFor(
     }
 
     '@test destroying the owner cleans up the DOM'() {
-      let Foo = defComponent('Hello, world!');
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
 
       let owner = buildOwner({});
 
@@ -190,8 +199,11 @@ moduleFor(
     }
 
     '@test destroy cleans up dom via destroying the owner'() {
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('<Foo/>', { scope: { Foo } });
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
 
@@ -201,29 +213,41 @@ moduleFor(
     }
 
     '@test Can use a component in scope'() {
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('<Foo/>', { scope: { Foo } });
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<Foo/>', { strictMode: true, scope: () => ({ Foo }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use a custom helper in scope (in append position)'() {
       let foo = defineSimpleHelper(() => 'Hello, world!');
-      let Root = defComponent('{{foo}}', { scope: { foo } });
+      let Root = setComponentTemplate(
+        precompileTemplate('{{foo}}', { strictMode: true, scope: () => ({ foo }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use a custom modifier in scope'() {
       let foo = defineSimpleModifier((element) => (element.innerHTML = 'Hello, world!'));
-      let Root = defComponent('<div {{foo}}></div>', { scope: { foo } });
+      let Root = setComponentTemplate(
+        precompileTemplate('<div {{foo}}></div>', { strictMode: true, scope: () => ({ foo }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
     }
 
     '@test Can shadow keywords'() {
-      let ifComponent = defineComponent({}, 'Hello, world!');
-      let Bar = defComponent('{{#if}}{{/if}}', { scope: { if: ifComponent } });
+      let ifComponent = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Bar = setComponentTemplate(
+        compile('{{#if}}{{/if}}', { strictMode: true }, { if: ifComponent }),
+        templateOnly()
+      );
 
       this.renderComponent(Bar, { expect: 'Hello, world!' });
     }
@@ -231,13 +255,19 @@ moduleFor(
     '@test Can use constant values in ambiguous helper/component position'() {
       let value = 'Hello, world!';
 
-      let Root = defComponent('{{value}}', { scope: { value } });
+      let Root = setComponentTemplate(
+        precompileTemplate('{{value}}', { strictMode: true, scope: () => ({ value }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use inline if and unless in strict mode templates'() {
-      let Root = defComponent('{{if true "foo" "bar"}}{{unless true "foo" "bar"}}');
+      let Root = setComponentTemplate(
+        precompileTemplate('{{if true "foo" "bar"}}{{unless true "foo" "bar"}}'),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'foobar' });
     }
@@ -247,10 +277,14 @@ moduleFor(
         @tracked showSecond = true;
       }
       let state = new State();
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('<Foo />{{#if state.showSecond}}<Foo />{{/if}}', {
-        scope: { state, Foo },
-      });
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<Foo />{{#if state.showSecond}}<Foo />{{/if}}', {
+          strictMode: true,
+          scope: () => ({ state, Foo }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!Hello, world!' });
 
@@ -261,63 +295,72 @@ moduleFor(
     }
 
     '@test Can use a dynamic component definition'() {
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('<this.Foo/>', {
-        component: class extends GlimmerishComponent {
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<this.Foo/>'),
+        class extends GlimmerishComponent {
           Foo = Foo;
-        },
-      });
+        }
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use a dynamic component definition (curly)'() {
-      let Foo = defComponent('Hello, world!');
-      let Root = defComponent('{{this.Foo}}', {
-        component: class extends GlimmerishComponent {
+      let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('{{this.Foo}}'),
+        class extends GlimmerishComponent {
           Foo = Foo;
-        },
-      });
+        }
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use a dynamic helper definition'() {
       let foo = defineSimpleHelper(() => 'Hello, world!');
-      let Root = defComponent('{{this.foo}}', {
-        component: class extends GlimmerishComponent {
+      let Root = setComponentTemplate(
+        precompileTemplate('{{this.foo}}'),
+        class extends GlimmerishComponent {
           foo = foo;
-        },
-      });
+        }
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use a curried dynamic helper'() {
       let foo = defineSimpleHelper((value) => value);
-      let Foo = defComponent('{{@value}}');
-      let Root = defComponent('<Foo @value={{helper foo "Hello, world!"}}/>', {
-        scope: { Foo, foo },
-      });
+      let Foo = setComponentTemplate(precompileTemplate('{{@value}}'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<Foo @value={{helper foo "Hello, world!"}}/>', {
+          strictMode: true,
+          scope: () => ({ Foo, foo }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use a curried dynamic modifier'() {
       let foo = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
-      let Foo = defComponent('<div {{@value}}></div>');
-      let Root = defComponent('<Foo @value={{modifier foo "Hello, world!"}}/>', {
-        scope: { Foo, foo },
-      });
+      let Foo = setComponentTemplate(precompileTemplate('<div {{@value}}></div>'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<Foo @value={{modifier foo "Hello, world!"}}/>', {
+          strictMode: true,
+          scope: () => ({ Foo, foo }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
     }
 
     '@test when args are trackedObject, the rendered component response appropriately'() {
       let args = trackedObject({ foo: 2 });
-      let Root = defComponent('{{@foo}}', {
-        scope: {},
-      });
+      let Root = setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly());
 
       this.renderComponent(Root, { args, expect: '2' });
 
@@ -332,9 +375,7 @@ moduleFor(
         @tracked foo = 2;
       }
       let args = new Args();
-      let Root = defComponent('{{@foo}}', {
-        scope: {},
-      });
+      let Root = setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly());
 
       // @ts-expect-error SAFETY: custom class is not currently supported as args, but would be nice to support?
       this.renderComponent(Root, { args, expect: '2' });
@@ -352,14 +393,20 @@ moduleFor(
         return () => result.destroy();
       });
 
-      let Inner = defComponent('hi there');
-      let Root = defComponent(`<div {{render Inner}}></div>`, { scope: { render, Inner } });
+      let Inner = setComponentTemplate(precompileTemplate('hi there'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate(`<div {{render Inner}}></div>`, {
+          strictMode: true,
+          scope: () => ({ render, Inner }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: '<div>hi there</div>' });
     }
 
     '@test can render in to a detached element'() {
-      let Inner = defComponent('hello there');
+      let Inner = setComponentTemplate(precompileTemplate('hello there'), templateOnly());
       let element = document.createElement('div');
       let attach: () => void;
 
@@ -377,7 +424,7 @@ moduleFor(
         }
       }
 
-      let Root = defComponent(`{{this.attached}}`, { component: _Root });
+      let Root = setComponentTemplate(precompileTemplate(`{{this.attached}}`), _Root);
 
       this.renderComponent(Root, { expect: '' });
 
@@ -392,7 +439,7 @@ moduleFor(
      * we mess up the cache used by renderComponent.
      */
     '@skip can *not* render in to a TextNode'(assert: Assert) {
-      let Inner = defComponent('hello there');
+      let Inner = setComponentTemplate(precompileTemplate('hello there'), templateOnly());
       let element = document.createTextNode('');
 
       class _Root extends GlimmerishComponent {
@@ -413,14 +460,14 @@ moduleFor(
         }
       }
 
-      let Root = defComponent(``, { component: _Root });
+      let Root = setComponentTemplate(precompileTemplate(``), _Root);
 
       this.renderComponent(Root, { expect: '<!---->' });
       assert.verifySteps(['throw']);
     }
 
     '@test replaces existing contents within the target element'() {
-      let Inner = defComponent('hello there');
+      let Inner = setComponentTemplate(precompileTemplate('hello there'), templateOnly());
       let element = document.createElement('div');
       element.innerHTML = 'general kenobi';
 
@@ -438,7 +485,10 @@ moduleFor(
         }
       }
 
-      let Root = defComponent(`{{element}}`, { scope: { element }, component: _Root });
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{element}}`, { strictMode: true, scope: () => ({ element }) }),
+        _Root
+      );
 
       this.renderComponent(Root, { expect: '<div>general kenobi</div>' });
 
@@ -451,7 +501,10 @@ moduleFor(
     [`@test renderComponent is eager, so it tracks with its parent`](assert: Assert) {
       let step = (...x: unknown[]) => assert.step(x.join(':'));
 
-      let Inner = defComponent('{{@foo}} <button onclick={{@increment}}>++</button>');
+      let Inner = setComponentTemplate(
+        precompileTemplate('{{@foo}} <button onclick={{@increment}}>++</button>'),
+        templateOnly()
+      );
 
       let element = document.createElement('div');
       class _Root extends GlimmerishComponent {
@@ -478,10 +531,13 @@ moduleFor(
           return '';
         }
       }
-      let Root = defComponent(`{{element}}{{this.sillyExampleToTieInToReactivity}}`, {
-        scope: { element },
-        component: _Root,
-      });
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{element}}{{this.sillyExampleToTieInToReactivity}}`, {
+          strictMode: true,
+          scope: () => ({ element }),
+        }),
+        _Root
+      );
 
       this.renderComponent(Root, { expect: '<div>2 <button>++</button></div>' });
       assert.verifySteps(['render:root', 'foo:2']);
@@ -518,8 +574,8 @@ moduleFor(
     '@test multiple renderComponents share reactivity'() {
       let args = trackedObject({ foo: 2 });
 
-      let InnerOne = defComponent('{{@foo}}');
-      let InnerTwo = defComponent('{{@foo}}');
+      let InnerOne = setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly());
+      let InnerTwo = setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly());
 
       let element1 = document.createElement('div');
       let element2 = document.createElement('div');
@@ -541,10 +597,13 @@ moduleFor(
         }
       }
 
-      let Root = defComponent(`{{element1}}{{element2}}`, {
-        scope: { element1, element2 },
-        component: _Root,
-      });
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{element1}}{{element2}}`, {
+          strictMode: true,
+          scope: () => ({ element1, element2 }),
+        }),
+        _Root
+      );
 
       this.renderComponent(Root, { expect: '<div data-one="">2</div><div data-two="">2</div>' });
 
@@ -567,8 +626,8 @@ moduleFor(
       class _Two extends GlimmerishComponent {
         @service state!: State;
       }
-      let InnerOne = defComponent('{{this.state.foo}}', { component: _One });
-      let InnerTwo = defComponent('{{this.state.foo}}', { component: _Two });
+      let InnerOne = setComponentTemplate(precompileTemplate('{{this.state.foo}}'), _One);
+      let InnerTwo = setComponentTemplate(precompileTemplate('{{this.state.foo}}'), _Two);
 
       let element1 = document.createElement('div');
       let element2 = document.createElement('div');
@@ -590,10 +649,13 @@ moduleFor(
         }
       }
 
-      let Root = defComponent(`{{element1}}{{element2}}`, {
-        scope: { element1, element2 },
-        component: _Root,
-      });
+      let Root = setComponentTemplate(
+        precompileTemplate(`{{element1}}{{element2}}`, {
+          strictMode: true,
+          scope: () => ({ element1, element2 }),
+        }),
+        _Root
+      );
 
       this.renderComponent(Root, { expect: '<div data-one="">2</div><div data-two="">2</div>' });
 
@@ -607,7 +669,13 @@ moduleFor(
 
     '@test rendering multiple times to adjacent elements'() {
       let aHelper = (str: string) => str.toUpperCase();
-      let Child = defComponent(`Hi: {{aHelper "there"}}`, { scope: { aHelper } });
+      let Child = setComponentTemplate(
+        precompileTemplate(`Hi: {{aHelper "there"}}`, {
+          strictMode: true,
+          scope: () => ({ aHelper }),
+        }),
+        templateOnly()
+      );
       let get = (id: string) => this.element.querySelector(id);
       function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
@@ -615,16 +683,21 @@ moduleFor(
           owner,
         });
       }
-      let A = defComponent('a:<Child />', { scope: { Child } });
-      let B = defComponent('b:<Child />', { scope: { Child } });
-      let Root = defComponent(
-        [
-          `<div id="a"></div><br>`,
-          `<div id="b"></div>`,
-          `{{render A 'a' owner}}`,
-          `{{render B 'b' owner}}`,
-        ].join('\n'),
-        { scope: { render, A, B, owner: this.owner } }
+      let A = setComponentTemplate(
+        precompileTemplate('a:<Child />', { strictMode: true, scope: () => ({ Child }) }),
+        templateOnly()
+      );
+      let B = setComponentTemplate(
+        precompileTemplate('b:<Child />', { strictMode: true, scope: () => ({ Child }) }),
+        templateOnly()
+      );
+      let owner = this.owner;
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          `<div id="a"></div><br>\n<div id="b"></div>\n{{render A 'a' owner}}\n{{render B 'b' owner}}`,
+          { strictMode: true, scope: () => ({ render, A, B, owner }) }
+        ),
+        templateOnly()
       );
 
       this.renderComponent(Root, {
@@ -640,7 +713,13 @@ moduleFor(
 
     '@test multiple calls to render in to the same element appear as siblings'() {
       let aHelper = (str: string) => str.toUpperCase();
-      let Child = defComponent(`Hi: {{aHelper "there"}}`, { scope: { aHelper } });
+      let Child = setComponentTemplate(
+        precompileTemplate(`Hi: {{aHelper "there"}}`, {
+          strictMode: true,
+          scope: () => ({ aHelper }),
+        }),
+        templateOnly()
+      );
       let get = (id: string) => this.element.querySelector(id);
       function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
@@ -648,19 +727,21 @@ moduleFor(
           owner,
         });
       }
-      let A = defComponent('a:<Child />', { scope: { Child } });
-      let Root = defComponent(
-        [
-          `<div id="a"></div><br>`,
-          // both of these go in the div
-          `{{render A 'a' owner}}`,
-          `{{render A 'a'}}`,
-        ].join('\n'),
-        { scope: { render, A, owner: this.owner } }
+      let A = setComponentTemplate(
+        precompileTemplate('a:<Child />', { strictMode: true, scope: () => ({ Child }) }),
+        templateOnly()
+      );
+      let owner = this.owner;
+      let Root = setComponentTemplate(
+        precompileTemplate(`<div id="a"></div><br>\n{{render A 'a' owner}}\n{{render A 'a'}}`, {
+          strictMode: true,
+          scope: () => ({ render, A, owner }),
+        }),
+        templateOnly()
       );
 
       this.renderComponent(Root, {
-        expect: [`<div id="a">a:Hi: THEREa:Hi: THERE</div><br>`, '', ''].join('\n'),
+        expect: `<div id="a">a:Hi: THEREa:Hi: THERE</div><br>\n\n`,
       });
       run(() => destroy(this));
 
@@ -674,7 +755,13 @@ moduleFor(
       let aHelper = (str: string) => str.toUpperCase();
       let dataA = trackedObject({ count: 1 });
       let dataB = trackedObject({ count: -1 });
-      let Child = defComponent(`Hi: {{aHelper "there"}}`, { scope: { aHelper } });
+      let Child = setComponentTemplate(
+        precompileTemplate(`Hi: {{aHelper "there"}}`, {
+          strictMode: true,
+          scope: () => ({ aHelper }),
+        }),
+        templateOnly()
+      );
 
       let get = (id: string) => this.element.querySelector(id);
       function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
@@ -683,21 +770,28 @@ moduleFor(
           owner,
         });
       }
-      let A = defComponent('\n<output>a:<Child />:{{data.count}}</output>\n', {
-        scope: { Child, data: dataA },
-      });
-      let B = defComponent('\n<output>b:<Child />:{{data.count}}</output>', {
-        scope: { Child, data: dataB },
-      });
+      let A = setComponentTemplate(
+        precompileTemplate('\n<output>a:<Child />:{{data.count}}</output>\n', {
+          strictMode: true,
+          scope: () => ({ Child, data: dataA }),
+        }),
+        templateOnly()
+      );
+      let B = setComponentTemplate(
+        precompileTemplate('\n<output>b:<Child />:{{data.count}}</output>', {
+          strictMode: true,
+          scope: () => ({ Child, data: dataB }),
+        }),
+        templateOnly()
+      );
 
-      let Root = defComponent(
-        [
-          `<div id="a"></div><br>`,
-          // both of these go in the div
-          `{{render A 'a' owner}}`,
-          `{{render B 'a'}}`,
-        ].join('\n'),
-        { scope: { render, A, B, owner: this.owner } }
+      let owner = this.owner;
+      let Root = setComponentTemplate(
+        precompileTemplate(`<div id="a"></div><br>\n{{render A 'a' owner}}\n{{render B 'a'}}`, {
+          strictMode: true,
+          scope: () => ({ render, A, B, owner }),
+        }),
+        templateOnly()
       );
 
       this.renderComponent(Root, {
@@ -745,7 +839,7 @@ moduleFor(
     }
 
     async '@test async rendering multiple times to adjacent elements'() {
-      let Child = defComponent(`Hi`, { scope: {} });
+      let Child = setComponentTemplate(precompileTemplate(`Hi`), templateOnly());
       let get = (id: string) => this.element.querySelector(id);
       let promises: Promise<unknown>[] = [];
 
@@ -764,16 +858,21 @@ moduleFor(
 
         return;
       }
-      let A = defComponent('a:<Child />', { scope: { Child } });
-      let B = defComponent('b:<Child />', { scope: { Child } });
-      let Root = defComponent(
-        [
-          `<div id="a"></div><br>`,
-          `<div id="b"></div>`,
-          `{{render A 'a' owner}}`,
-          `{{render B 'b' owner}}`,
-        ].join('\n'),
-        { scope: { render, A, B, owner: this.owner } }
+      let A = setComponentTemplate(
+        precompileTemplate('a:<Child />', { strictMode: true, scope: () => ({ Child }) }),
+        templateOnly()
+      );
+      let B = setComponentTemplate(
+        precompileTemplate('b:<Child />', { strictMode: true, scope: () => ({ Child }) }),
+        templateOnly()
+      );
+      let owner = this.owner;
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          `<div id="a"></div><br>\n<div id="b"></div>\n{{render A 'a' owner}}\n{{render B 'b' owner}}`,
+          { strictMode: true, scope: () => ({ render, A, B, owner }) }
+        ),
+        templateOnly()
       );
 
       this.renderComponent(Root, {
@@ -796,8 +895,14 @@ moduleFor(
   class extends RenderComponentTestCase {
     '@test incidentally invoked loose-mode components can still resolve helpers'() {
       this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
-      let Loose = defineComponent(null, `Hi: {{a-helper "there"}}`);
-      let Root = defComponent('<Loose />', { scope: { Loose } });
+      let Loose = setComponentTemplate(
+        precompileTemplate(`Hi: {{a-helper "there"}}`),
+        templateOnly()
+      );
+      let Root = setComponentTemplate(
+        precompileTemplate('<Loose />', { strictMode: true, scope: () => ({ Loose }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hi: THERE' });
 
@@ -810,16 +915,19 @@ moduleFor(
       this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
       assert.throws(() => {
         /**
-         * We need to pass a scope so that `defComponent` returns a strict-mode component.
+         * We need to pass a scope so that we get a strict-mode component.
          */
-        let Root = defComponent('{{a-helper "hi"}}', { scope: {} });
+        let Root = template('{{a-helper "hi"}}');
         this.renderComponent(Root, { expect: '' });
       }, /but that value was not in scope: a-helper/);
     }
 
     '@test rendering multiple times to adjacent elements'() {
       this.owner.register('helper:a-helper', (str: string) => str.toUpperCase());
-      let Loose = defineComponent(null, `Hi: {{a-helper "there"}}`);
+      let Loose = setComponentTemplate(
+        precompileTemplate(`Hi: {{a-helper "there"}}`),
+        templateOnly()
+      );
       let get = (id: string) => this.element.querySelector(id);
       function render(Comp: GlimmerishComponent, id: string, owner: Owner) {
         renderComponent(Comp, {
@@ -827,16 +935,21 @@ moduleFor(
           owner,
         });
       }
-      let A = defComponent('a:<Loose />', { scope: { Loose } });
-      let B = defComponent('b:<Loose />', { scope: { Loose } });
-      let Root = defComponent(
-        [
-          `<div id="a"></div><br>`,
-          `<div id="b"></div>`,
-          `{{render A 'a' owner}}`,
-          `{{render B 'b' owner}}`,
-        ].join('\n'),
-        { scope: { render, A, B, owner: this.owner } }
+      let A = setComponentTemplate(
+        precompileTemplate('a:<Loose />', { strictMode: true, scope: () => ({ Loose }) }),
+        templateOnly()
+      );
+      let B = setComponentTemplate(
+        precompileTemplate('b:<Loose />', { strictMode: true, scope: () => ({ Loose }) }),
+        templateOnly()
+      );
+      let owner = this.owner;
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          `<div id="a"></div><br>\n<div id="b"></div>\n{{render A 'a' owner}}\n{{render B 'b' owner}}`,
+          { strictMode: true, scope: () => ({ render, A, B, owner }) }
+        ),
+        templateOnly()
       );
 
       this.renderComponent(Root, {
@@ -856,7 +969,10 @@ moduleFor(
   'Strict Mode - renderComponent - built ins',
   class extends RenderComponentTestCase {
     '@test Can use Input'() {
-      let Root = defComponent('<Input/>', { scope: { Input } });
+      let Root = setComponentTemplate(
+        precompileTemplate('<Input/>', { strictMode: true, scope: () => ({ Input }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, {
         classic: {
@@ -870,7 +986,10 @@ moduleFor(
     }
 
     '@test Can use Textarea'() {
-      let Root = defComponent('<Textarea/>', { scope: { Textarea } });
+      let Root = setComponentTemplate(
+        precompileTemplate('<Textarea/>', { strictMode: true, scope: () => ({ Textarea }) }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, {
         classic: {
@@ -883,32 +1002,48 @@ moduleFor(
     }
 
     '@test Can use hash'() {
-      let Root = defComponent(
-        '{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}',
-        { scope: { hash } }
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          '{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}',
+          { strictMode: true, scope: () => ({ hash }) }
+        ),
+        templateOnly()
       );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use array'() {
-      let Root = defComponent('{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}', {
-        scope: { array },
-      });
+      let Root = setComponentTemplate(
+        precompileTemplate('{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}', {
+          strictMode: true,
+          scope: () => ({ array }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use concat'() {
-      let Root = defComponent('{{(concat "Hello" ", " "world!")}}', { scope: { concat } });
+      let Root = setComponentTemplate(
+        precompileTemplate('{{(concat "Hello" ", " "world!")}}', {
+          strictMode: true,
+          scope: () => ({ concat }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
     }
 
     '@test Can use get'() {
-      let Root = defComponent(
-        '{{#let (hash value="Hello, world!") as |hash|}}{{(get hash "value")}}{{/let}}',
-        { scope: { hash, get } }
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          '{{#let (hash value="Hello, world!") as |hash|}}{{(get hash "value")}}{{/let}}',
+          { strictMode: true, scope: () => ({ hash, get }) }
+        ),
+        templateOnly()
       );
 
       this.renderComponent(Root, { expect: 'Hello, world!' });
@@ -920,9 +1055,13 @@ moduleFor(
         assert.equal(value, 123);
       };
 
-      let Root = defComponent('<button {{on "click" (fn handleClick 123)}}>Click</button>', {
-        scope: { on, fn, handleClick },
-      });
+      let Root = setComponentTemplate(
+        precompileTemplate('<button {{on "click" (fn handleClick 123)}}>Click</button>', {
+          strictMode: true,
+          scope: () => ({ on, fn, handleClick }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: '<button>Click</button>' });
 
@@ -949,9 +1088,13 @@ moduleFor(
         bar: 'BAR',
       };
 
-      let Root = defComponent('{{#each-in obj as |k v|}}[{{k}}:{{v}}]{{/each-in}}', {
-        scope: { obj },
-      });
+      let Root = setComponentTemplate(
+        precompileTemplate('{{#each-in obj as |k v|}}[{{k}}:{{v}}]{{/each-in}}', {
+          strictMode: true,
+          scope: () => ({ obj }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, { expect: '[foo:FOO][bar:BAR]' });
     }
@@ -959,11 +1102,20 @@ moduleFor(
     '@test Can use in-element'() {
       let getElement = (id: string) => document.getElementById(id);
 
-      let Foo = defComponent(
-        '{{#in-element (getElement "in-element-test")}}before{{/in-element}}after',
-        { scope: { getElement } }
+      let Foo = setComponentTemplate(
+        precompileTemplate(
+          '{{#in-element (getElement "in-element-test")}}before{{/in-element}}after',
+          { strictMode: true, scope: () => ({ getElement }) }
+        ),
+        templateOnly()
       );
-      let Root = defComponent('[<div id="in-element-test" />][<Foo/>]', { scope: { Foo } });
+      let Root = setComponentTemplate(
+        precompileTemplate('[<div id="in-element-test" />][<Foo/>]', {
+          strictMode: true,
+          scope: () => ({ Foo }),
+        }),
+        templateOnly()
+      );
 
       this.renderComponent(Root, {
         expect: '[<div id="in-element-test">before</div>][<!---->after]',

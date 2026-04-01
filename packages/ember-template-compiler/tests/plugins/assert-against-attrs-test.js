@@ -1,5 +1,9 @@
 import TransformTestCase from '../utils/transform-test-case';
-import { defineComponent, moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
+import templateOnly from '@ember/component/template-only';
+import Component from '@ember/component';
 
 moduleFor(
   'ember-template-compiler: assert against attrs',
@@ -57,33 +61,49 @@ moduleFor(
   'ember-template-compiler: not asserting against block params named "attrs"',
   class extends RenderingTestCase {
     ["@test it doesn't assert block params"]() {
-      this.registerComponent('foo', {
-        template: '{{#let "foo" as |attrs|}}{{attrs}}{{/let}}',
-      });
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(
+          precompileTemplate('{{#let "foo" as |attrs|}}{{attrs}}{{/let}}'),
+          class extends Component {}
+        )
+      );
       this.render('<Foo />');
       this.assertComponentElement(this.firstChild, { content: 'foo' });
     }
 
     ["@test it doesn't assert lexical scope values"]() {
-      let component = defineComponent({ attrs: 'just a string' }, `It's {{attrs}}`);
-      this.registerComponent('root', { ComponentClass: component });
+      let attrs = 'just a string';
+      let component = setComponentTemplate(
+        precompileTemplate(`It's {{attrs}}`, {
+          strictMode: true,
+          scope: () => ({ attrs }),
+        }),
+        templateOnly()
+      );
+      this.owner.register('component:root', component);
       this.render('<Root />');
       this.assertHTML("It's just a string");
       this.assertStableRerender();
     }
 
     ["@test it doesn't assert component block params"]() {
-      this.registerComponent('foo', {
-        template: '{{yield "foo"}}',
-      });
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(precompileTemplate('{{yield "foo"}}'), class extends Component {})
+      );
       this.render('<Foo as |attrs|>{{attrs}}</Foo>');
       this.assertComponentElement(this.firstChild, { content: 'foo' });
     }
 
     ["@test it doesn't assert block params with nested keys"]() {
-      this.registerComponent('foo', {
-        template: '{{yield (hash bar="baz")}}',
-      });
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(
+          precompileTemplate('{{yield (hash bar="baz")}}'),
+          class extends Component {}
+        )
+      );
       this.render('<Foo as |attrs|>{{attrs.bar}}</Foo>');
       this.assertComponentElement(this.firstChild, { content: 'baz' });
     }

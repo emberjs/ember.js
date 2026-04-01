@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
@@ -129,7 +130,7 @@ moduleFor(
         return;
       }
 
-      this.addTemplate('application', '{{outlet}}');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
 
       return this.visit('/')
         .then(() => this.visit('/posts'))

@@ -1,10 +1,11 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
-import { componentCapabilities } from '@glimmer/manager';
+import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object';
 import { set, setProperties, computed } from '@ember/object';
 import { setComponentManager } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
 
 class BasicComponentManager extends EmberObject {
   capabilities = componentCapabilities('3.13');
@@ -88,10 +89,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -106,10 +107,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -135,10 +136,13 @@ moduleFor(
         return new Manager();
       }, ComponentWithNoTemplate);
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{@greeting}} world</p>`,
-        ComponentClass: ComponentWithNoTemplate,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{@greeting}} world</p>`),
+          ComponentWithNoTemplate
+        )
+      );
 
       this.render('{{foo-bar greeting="hello"}}');
 
@@ -171,10 +175,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('foo-bar', {
-        template: `{{this.name}}`,
-        ComponentClass: Grandchild,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`{{this.name}}`), Grandchild)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -191,10 +195,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        template: `{{this.name}}`,
-        ComponentClass: Grandchild,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`{{this.name}}`), Grandchild)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -229,10 +233,13 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world {{this.count}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} world {{this.count}}</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('{{foo-bar}}');
 
@@ -254,10 +261,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar firstName="Yehuda" lastName="Katz"}}');
 
@@ -275,10 +282,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar firstName=this.firstName lastName=this.lastName}}', {
         firstName: 'Yehuda',
@@ -308,10 +315,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar "Yehuda" "Katz"}}');
 
@@ -329,10 +336,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
@@ -362,10 +369,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
@@ -394,10 +401,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
@@ -450,10 +457,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('{{#if this.show}}{{foo-bar}}{{/if}}', { show: true });
 
@@ -509,10 +516,13 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} {{@name}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} {{@name}}</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('{{foo-bar name=this.name}}', { name: 'world' });
 
@@ -573,10 +583,13 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} {{@name}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} {{@name}}</p>`),
+          ComponentClass
+        )
+      );
 
       assert.throws(() => {
         this.render('{{foo-bar name=this.name}}', { name: 'world' });
@@ -598,10 +611,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('<FooBar />');
 
@@ -619,10 +632,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('<FooBar @firstName="Yehuda" @lastName="Katz" />');
 
@@ -632,10 +645,13 @@ moduleFor(
     ['@test it can pass attributes']() {
       let ComponentClass = setComponentManager(createBasicManager, class extends EmberObject {});
 
-      this.registerComponent('foo-bar', {
-        template: `<p ...attributes>Hello world!</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p ...attributes>Hello world!</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('<FooBar data-test="foo" />');
 
@@ -653,10 +669,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('<FooBar @firstName={{this.firstName}} @lastName={{this.lastName}} />', {
         firstName: 'Yehuda',
@@ -723,10 +739,13 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p ...attributes>Hello world!</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p ...attributes>Hello world!</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
 
@@ -767,10 +786,10 @@ moduleFor(
 
       let ComponentClass = setComponentManager(() => new TestManager(), {});
 
-      this.registerComponent('foo-bar', {
-        template: '{{yield}}',
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{yield}}'), ComponentClass)
+      );
 
       this.render(
         strip`
@@ -826,10 +845,13 @@ moduleFor(
 
       let ComponentClass = setComponentManager(() => new TestManager(), {});
 
-      this.registerComponent('foo-bar', {
-        template: `<p ...attributes>Hello world!</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p ...attributes>Hello world!</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
 
@@ -889,10 +911,13 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} {{@name}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} {{@name}}</p>`),
+          ComponentClass
+        )
+      );
 
       assert.throws(() => {
         this.render('<FooBar @name={{this.name}} />', { name: 'world' });

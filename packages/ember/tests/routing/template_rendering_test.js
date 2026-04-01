@@ -7,6 +7,7 @@ import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
 import { service } from '@ember/service';
+import { precompileTemplate } from '@ember/template-compilation';
 
 let originalConsoleError;
 
@@ -15,9 +16,15 @@ moduleFor(
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
-      this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
+      this.add('template:home', precompileTemplate('<h3 class="hours">Hours</h3>'));
+      this.add(
+        'template:camelot',
+        precompileTemplate('<section id="camelot"><h3>Is a silly place</h3></section>')
+      );
+      this.add(
+        'template:homepage',
+        precompileTemplate('<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>')
+      );
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -46,7 +53,10 @@ moduleFor(
     }
 
     ['@test render uses templateName from route'](assert) {
-      this.addTemplate('the_real_home_template', '<p>THIS IS THE REAL HOME</p>');
+      this.add(
+        'template:the_real_home_template',
+        precompileTemplate('<p>THIS IS THE REAL HOME</p>')
+      );
       this.add(
         'route:home',
         class extends Route {
@@ -64,11 +74,14 @@ moduleFor(
     ['@test Generated names can be customized when providing routes with dot notation'](assert) {
       assert.expect(4);
 
-      this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
-      this.addTemplate('foo', "<div class='middle'>{{outlet}}</div>");
-      this.addTemplate('bar', "<div class='bottom'>{{outlet}}</div>");
-      this.addTemplate('bar.baz', '<p>{{this.name}}Bottom!</p>');
+      this.add('template:index', precompileTemplate('<div>Index</div>'));
+      this.add(
+        'template:application',
+        precompileTemplate("<h1>Home</h1><div class='main'>{{outlet}}</div>")
+      );
+      this.add('template:foo', precompileTemplate("<div class='middle'>{{outlet}}</div>"));
+      this.add('template:bar', precompileTemplate("<div class='bottom'>{{outlet}}</div>"));
+      this.add('template:bar.baz', precompileTemplate('<p>{{this.name}}Bottom!</p>'));
 
       this.router.map(function () {
         this.route('foo', { path: '/top' }, function () {
@@ -124,11 +137,14 @@ moduleFor(
     }
 
     ["@test Child routes render into their parent route's template by default"](assert) {
-      this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
-      this.addTemplate('top', "<div class='middle'>{{outlet}}</div>");
-      this.addTemplate('middle', "<div class='bottom'>{{outlet}}</div>");
-      this.addTemplate('middle.bottom', '<p>Bottom!</p>');
+      this.add('template:index', precompileTemplate('<div>Index</div>'));
+      this.add(
+        'template:application',
+        precompileTemplate("<h1>Home</h1><div class='main'>{{outlet}}</div>")
+      );
+      this.add('template:top', precompileTemplate("<div class='middle'>{{outlet}}</div>"));
+      this.add('template:middle', precompileTemplate("<div class='bottom'>{{outlet}}</div>"));
+      this.add('template:middle.bottom', precompileTemplate('<p>Bottom!</p>'));
 
       this.router.map(function () {
         this.route('top', function () {
@@ -150,7 +166,10 @@ moduleFor(
     }
 
     ['@test Application template does not duplicate when re-rendered'](assert) {
-      this.addTemplate('application', '<h3 class="render-once">I render once</h3>{{outlet}}');
+      this.add(
+        'template:application',
+        precompileTemplate('<h3 class="render-once">I render once</h3>{{outlet}}')
+      );
 
       this.router.map(function () {
         this.route('posts');
@@ -175,8 +194,8 @@ moduleFor(
     ['@test Child routes should render inside the application template if the application template causes a redirect'](
       assert
     ) {
-      this.addTemplate('application', '<h3>App</h3> {{outlet}}');
-      this.addTemplate('posts', 'posts');
+      this.add('template:application', precompileTemplate('<h3>App</h3> {{outlet}}'));
+      this.add('template:posts', precompileTemplate('posts'));
 
       this.router.map(function () {
         this.route('posts');
@@ -224,7 +243,7 @@ moduleFor(
         }
       );
 
-      this.addTemplate('page', '<p>{{@model.name}}{{foo-bar}}</p>');
+      this.add('template:page', precompileTemplate('<p>{{@model.name}}{{foo-bar}}</p>'));
 
       let rootElement = document.getElementById('qunit-fixture');
 
@@ -248,9 +267,12 @@ moduleFor(
     }
 
     ['@test {{outlet}} works when created after initial render'](assert) {
-      this.addTemplate('sample', 'Hi{{#if this.showTheThing}}{{outlet}}{{/if}}Bye');
-      this.addTemplate('sample.inner', 'Yay');
-      this.addTemplate('sample.inner2', 'Boo');
+      this.add(
+        'template:sample',
+        precompileTemplate('Hi{{#if this.showTheThing}}{{outlet}}{{/if}}Bye')
+      );
+      this.add('template:sample.inner', precompileTemplate('Yay'));
+      this.add('template:sample.inner2', precompileTemplate('Boo'));
       this.router.map(function () {
         this.route('sample', { path: '/' }, function () {
           this.route('inner', { path: '/' });
@@ -277,9 +299,11 @@ moduleFor(
     ['@test Components inside an outlet have their didInsertElement hook invoked when the route is displayed'](
       assert
     ) {
-      this.addTemplate(
-        'index',
-        '{{#if this.showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'
+      this.add(
+        'template:index',
+        precompileTemplate(
+          '{{#if this.showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'
+        )
       );
 
       let myComponentCounter = 0;

@@ -2,13 +2,14 @@ import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'inte
 
 import Controller from '@ember/controller';
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   '{{link-to}} component (rendering tests)',
   class extends ApplicationTestCase {
     async [`@test it throws a useful error if you invoke it wrong`](assert) {
-      this.addTemplate('application', `{{#link-to}}Index{{/link-to}}`);
+      this.add('template:application', precompileTemplate(`{{#link-to}}Index{{/link-to}}`));
 
       if (DEBUG) {
         await assert.rejects(
@@ -21,7 +22,10 @@ moduleFor(
     }
 
     async [`@test it throws a useful error if you pass the href argument`](assert) {
-      this.addTemplate('application', `{{#link-to href="nope" route="index"}}Index{{/link-to}}`);
+      this.add(
+        'template:application',
+        precompileTemplate(`{{#link-to href="nope" route="index"}}Index{{/link-to}}`)
+      );
 
       if (DEBUG) {
         await assert.rejects(
@@ -34,7 +38,10 @@ moduleFor(
     }
 
     async ['@test it should be able to be inserted in DOM when the router is not present']() {
-      this.addTemplate('application', `{{#link-to route='index'}}Go to Index{{/link-to}}`);
+      this.add(
+        'template:application',
+        precompileTemplate(`{{#link-to route='index'}}Go to Index{{/link-to}}`)
+      );
 
       await this.visit('/');
 
@@ -44,7 +51,10 @@ moduleFor(
     async ['@test it re-renders when title changes']() {
       let controller;
 
-      this.addTemplate('application', `{{#link-to route='index'}}{{this.title}}{{/link-to}}`);
+      this.add(
+        'template:application',
+        precompileTemplate(`{{#link-to route='index'}}{{this.title}}{{/link-to}}`)
+      );
 
       this.add(
         'controller:application',
@@ -70,7 +80,10 @@ moduleFor(
     async ['@test it re-computes active class when params change'](assert) {
       let controller;
 
-      this.addTemplate('application', '{{#link-to route=this.routeName}}foo{{/link-to}}');
+      this.add(
+        'template:application',
+        precompileTemplate('{{#link-to route=this.routeName}}foo{{/link-to}}')
+      );
 
       this.add(
         'controller:application',

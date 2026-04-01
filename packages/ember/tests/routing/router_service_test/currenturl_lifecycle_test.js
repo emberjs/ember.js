@@ -6,6 +6,8 @@ import Route from '@ember/routing/route';
 import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 let results = [];
 let ROUTE_NAMES = ['index', 'child', 'sister', 'brother', 'loading'];
@@ -118,10 +120,12 @@ moduleFor(
 
       results = [];
 
+      let currentUrlTemplate = precompileTemplate('{{current-url}}');
+
       ROUTE_NAMES.forEach((name) => {
         let routeName = `parent.${name}`;
         this.add(`route:${routeName}`, class extends InstrumentedRoute {});
-        this.addTemplate(routeName, '{{current-url}}');
+        this.add(`template:${routeName}`, currentUrlTemplate);
       });
 
       let CurrenURLComponent = class extends Component {
@@ -135,10 +139,15 @@ moduleFor(
         currentRoute;
       };
 
-      this.addComponent('current-url', {
-        ComponentClass: CurrenURLComponent,
-        template: '{{this.currentURL}}-{{this.currentRouteName}}-{{this.currentRoute.name}}',
-      });
+      this.add(
+        'component:current-url',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{this.currentURL}}-{{this.currentRouteName}}-{{this.currentRoute.name}}'
+          ),
+          CurrenURLComponent
+        )
+      );
     }
 
     ['@test RouterService#currentURL is correctly set for top level route'](assert) {

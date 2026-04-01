@@ -6,6 +6,7 @@ import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
 import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';
 import { action } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Controller model',
@@ -30,7 +31,10 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.derived}}</button>');
+      this.add(
+        'template:index',
+        precompileTemplate('<button {{on "click" this.update}}>{{this.derived}}</button>')
+      );
 
       await this.visit('/');
 
@@ -60,7 +64,10 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.model}}</button>');
+      this.add(
+        'template:index',
+        precompileTemplate('<button {{on "click" this.update}}>{{this.model}}</button>')
+      );
 
       await this.visit('/');
       runTask(() => this.$('button').click());
