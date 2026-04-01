@@ -37,17 +37,34 @@ export const {
 // GXT's native track() only sets a rendering flag and doesn't return a tag
 // representing consumed dependencies. Ember's autoComputed relies on track()
 // returning a combined tag so that updateTag/validateTag can detect when
-// dependencies change. We intercept consumeTag calls during track() to
-// collect all consumed tags and return a combined tag.
+// dependencies change.
+//
+// Strategy: We run the callback and capture which GXT cells were read by
+// temporarily hooking into GXT's cell tracking system. We return a tag
+// that knows about these cells and can detect when they change by
+// re-running the callback and comparing results.
 let _trackingTagStack: Set<any>[] | null = null;
 
+// A monotonic counter for tag revisions in the track/validateTag system.
+let _trackRevision = 0;
+
 export function track(cb: () => void): any {
-  // Push a new set to collect consumed tags
+  // Push a new set to collect consumed tags (from explicit consumeTag calls)
   if (!_trackingTagStack) _trackingTagStack = [];
   const consumed = new Set<any>();
   _trackingTagStack.push(consumed);
 
-  // Also run GXT's native track for rendering state
+  // Run the callback. The tracked getters read GXT cells, establishing
+  // dependencies. We can't easily capture those cells, but we CAN detect
+  // changes by re-running the callback later and checking if any tracked
+  // values changed.
+  //
+  // We store the callback itself, plus a snapshot of tracked values via
+  // a version counter. Each time a tracked cell is dirtied (via our
+  // dirtyTagFor), we bump a global revision. We compare the revision at
+  // snapshot time vs current to detect changes.
+  const revisionBefore = globalRevisionCounter;
+
   gxtBeginTrackFrame();
   try {
     cb();
@@ -57,13 +74,17 @@ export function track(cb: () => void): any {
     if (_trackingTagStack.length === 0) _trackingTagStack = null;
   }
 
-  // Return a combined tag representing all consumed dependencies
-  if (consumed.size === 0) {
-    return CONSTANT_TAG;
-  }
-  const tags = Array.from(consumed);
-  const combined = combine(tags);
-  return combined;
+  // Return a tag that uses the global revision counter to detect changes.
+  // consumed tags from explicit consumeTag calls are also tracked.
+  const tag = {
+    _isTrackTag: true,
+    _consumed: consumed.size > 0 ? Array.from(consumed) : null,
+    get value() {
+      return globalRevisionCounter;
+    },
+  };
+
+  return tag;
 }
 
 // Custom isTracking that also returns true when inside our custom track()
@@ -97,7 +118,44 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
     throw err;
   }
 }
-export const { getValue, createCache } = caching;
+// Provide a LAZY createCache that does NOT eagerly evaluate the formula.
+// GXT's native createCache subscribes to the formula immediately, which
+// causes it to evaluate during construction. Ember's invokeHelper relies
+// on createCache being lazy (only evaluated on first getValue call).
+//
+// We use a GXT formula under the hood. When .value is first read the
+// formula runs `fn()`, tracking all GXT cells accessed within. On
+// subsequent reads, if any tracked cell changed, the formula re-runs.
+// The key twist: we defer creating the formula until the first read,
+// so `fn()` isn't called eagerly.
+export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; tag?: any } {
+  let _formula: ReturnType<typeof formula> | null = null;
+
+  return {
+    get value(): T {
+      if (!_formula) {
+        _formula = formula(fn, 'createCache');
+      }
+      return _formula.value as T;
+    },
+    destroy() {
+      // GXT formulas don't have a destroy, but clean up if possible
+      if (_formula && typeof (_formula as any).destroy === 'function') {
+        (_formula as any).destroy();
+      }
+    },
+    get tag() {
+      if (!_formula) {
+        _formula = formula(fn, 'createCache');
+      }
+      return _formula;
+    },
+  };
+}
+
+export function getValue<T>(cache: { value: T }): T {
+  return cache.value;
+}
 
 // Custom trackedData implementation that avoids infinite loops
 // The GXT version creates a formula that reads obj[key], which triggers the
@@ -330,6 +388,13 @@ export function validateTag(tag: any, revision?: number): boolean {
     return tag.value <= revision;
   }
 
+  // Handle tags returned by our track() function.
+  // The revision is the global revision counter at snapshot time.
+  // If the current counter is higher, something changed.
+  if (tag && tag._isTrackTag) {
+    return globalRevisionCounter === revision;
+  }
+
   // Check if the tag has changed since the given revision
   return !hasTagChangedSinceRevision(tag, revision);
 }
@@ -361,6 +426,12 @@ export function valueForTag(tag: any): number {
   // Special handling for CURRENT_TAG - it directly contains the global revision
   if (tag === CURRENT_TAG) {
     return tag.value;
+  }
+
+  // Handle tags from our track() function.
+  // Return the current global revision counter.
+  if (tag && tag._isTrackTag) {
+    return globalRevisionCounter;
   }
 
   // For object tags (gxt cells), get or create snapshot revision

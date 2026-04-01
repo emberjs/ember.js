@@ -4,6 +4,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 // import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import { validator } from '@lifeart/gxt/glimmer-compatibility';
+import { dirtyTagFor } from '@glimmer/validator';
 
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
@@ -12,24 +13,8 @@ import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './de
 import { SELF_TAG } from './tags';
 
 const {
-  consumeTag, dirtyTagFor: _dirtyTagFor, tagFor, trackedData
+  consumeTag, tagFor, trackedData
 } = validator;
-
-// Wrap dirtyTagFor to handle Symbol keys which GXT's raw dirtyTagFor can't handle
-function dirtyTagFor(obj: any, key: any) {
-  const safeKey = typeof key === 'symbol' ? (key.description || key.toString()) : key;
-  try {
-    // Ensure obj has a constructor for GXT's debug label (t.constructor.name)
-    if (obj && typeof obj === 'object' && !obj.constructor) {
-      Object.defineProperty(obj, 'constructor', {
-        value: Object, writable: true, configurable: true, enumerable: false,
-      });
-    }
-    return _dirtyTagFor(obj, safeKey);
-  } catch {
-    // GXT's dirtyTagFor may fail for objects without constructor
-  }
-}
 
 
 /**

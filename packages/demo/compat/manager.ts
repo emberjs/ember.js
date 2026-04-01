@@ -37,6 +37,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
   );
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+import { runDestructors as _gxtRunDestructors } from '@lifeart/gxt';
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
@@ -3431,8 +3432,21 @@ const $_MANAGERS = {
     // We intercept this to provide install/update/destroy lifecycle.
     _cache: new WeakMap<HTMLElement, Map<string, { instance: any; manager: any; ModifierClass: any; pendingDestroy: boolean }>>(),
 
+    // Built-in keyword modifiers resolved lazily.
+    // The 'on' modifier from @glimmer/runtime is registered via
+    // setInternalModifierManager and stored here for string-based resolution.
+    _builtinModifiers: {} as Record<string, any>,
+    _builtinResolved: false,
+
     canHandle(modifier: any): boolean {
       if (typeof modifier === 'string') {
+        // Flush any pending builtin modifier registrations
+        if (_pendingBuiltinModifiers.length > 0) {
+          _flushPendingBuiltinModifiers();
+        }
+        // Check built-in keyword modifiers
+        if ((this as any)._builtinModifiers[modifier]) return true;
+
         const owner = (globalThis as any).owner;
         if (owner && !owner.isDestroyed && !owner.isDestroying) {
           const factory = owner.factoryFor?.(`modifier:${modifier}`);
@@ -3507,10 +3521,20 @@ const $_MANAGERS = {
           // The destructor was called (GXT formula re-eval), but we haven't
           // actually destroyed yet — this is an update, not a reinstall.
           cached.pendingDestroy = false;
-          const args = buildArgs();
-          if (cached.manager.updateModifier) {
-            cached.manager.updateModifier(cached.instance, args);
+
+          if (cached.isInternal) {
+            // Internal modifier manager update path
+            if (cached.manager.update) {
+              cached.manager.update(cached.instance);
+            }
+          } else {
+            // Custom modifier manager update path
+            const args = buildArgs();
+            if (cached.manager.updateModifier) {
+              cached.manager.updateModifier(cached.instance, args);
+            }
           }
+
           // Return a destructor that marks pending destroy
           return () => {
             cached.pendingDestroy = true;
@@ -3519,7 +3543,20 @@ const $_MANAGERS = {
             Promise.resolve().then(() => {
               if (cached.pendingDestroy) {
                 // Not re-entered — actually destroy
-                if (cached.manager.destroyModifier) {
+                if (cached.isInternal) {
+                  const destroyable = cached.manager.getDestroyable?.(cached.instance);
+                  if (destroyable) {
+                    // Use GXT's runDestructors for cleanup
+try {
+  if (typeof _gxtRunDestructors === 'function') {
+    _gxtRunDestructors(destroyable);
+  }
+} catch { /* ignore */ }
+                    if (typeof destroy === 'function') {
+                      destroy(destroyable);
+                    }
+                  }
+                } else if (cached.manager.destroyModifier) {
                   cached.manager.destroyModifier(cached.instance);
                 }
                 elCache.delete(modKey);
@@ -3531,6 +3568,11 @@ const $_MANAGERS = {
       }
 
       // First time: resolve modifier class and create instance
+
+      // Resolve built-in keyword modifiers (e.g., "on" → the on modifier object)
+      if (typeof modifier === 'string' && self._builtinModifiers[modifier]) {
+        modifier = self._builtinModifiers[modifier];
+      }
 
       // Handle curried modifiers (from the (modifier) keyword) — they are
       // self-contained functions that already know how to install themselves.
@@ -3587,6 +3629,77 @@ const $_MANAGERS = {
 
       if (!manager) return undefined;
 
+      // Detect if this is an internal modifier manager (like OnModifierManager).
+      // Internal managers use create/install/update/getDestroyable API.
+      // Custom managers use createModifier/installModifier/updateModifier/destroyModifier.
+      const isInternalManager = typeof manager.create === 'function'
+        && typeof manager.install === 'function'
+        && typeof manager.getDestroyable === 'function'
+        && !manager.createModifier;
+
+      if (isInternalManager) {
+        // Internal modifier manager path (e.g., {{on}} modifier)
+        // Build CapturedArguments-like object with refs
+        const buildCapturedArgs = () => {
+          const positional = (props || []).map((v: any) => {
+            const unwrapped = (typeof v === 'function' && !v.prototype) ? v() : v;
+            return { value: unwrapped, debugLabel: '' };
+          });
+          const rawHash = hashArgs ? (typeof hashArgs === 'function' ? hashArgs() : hashArgs) : {};
+          const named: Record<string, any> = {};
+          for (const k of Object.keys(rawHash)) {
+            if (k.startsWith('$_') || k === 'hash') continue;
+            const val = rawHash[k];
+            const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent) ? val() : val;
+            named[k] = { value: resolved, debugLabel: k };
+          }
+          return { positional, named };
+        };
+
+        const capturedArgs = buildCapturedArgs();
+        const state = manager.create(owner, element, ModifierClass, capturedArgs);
+        manager.install(state);
+
+        // Cache the state for subsequent update calls
+        let cache = self._cache.get(element);
+        if (!cache) {
+          cache = new Map();
+          self._cache.set(element, cache);
+        }
+        const cached = { instance: state, manager, ModifierClass, pendingDestroy: false, isInternal: true };
+        cache.set(modKey, cached);
+
+        // Handle destroyable
+        const destroyable = manager.getDestroyable(state);
+
+        // Return a destructor
+        return () => {
+          cached.pendingDestroy = true;
+          Promise.resolve().then(() => {
+            if (cached.pendingDestroy) {
+              // For internal managers, destroy via the destroyable system
+              if (destroyable) {
+                // Use GXT's runDestructors for cleanup
+try {
+  if (typeof _gxtRunDestructors === 'function') {
+    _gxtRunDestructors(destroyable);
+  }
+} catch { /* ignore */ }
+                if (typeof destroy === 'function') {
+                  destroy(destroyable);
+                }
+              }
+              const c = self._cache.get(element);
+              if (c) {
+                c.delete(modKey);
+                if (c.size === 0) self._cache.delete(element);
+              }
+            }
+          });
+        };
+      }
+
+      // Custom modifier manager path
       // Validate capabilities - must be from modifierCapabilities()
       const caps = manager.capabilities;
       if (caps && !FROM_CAPABILITIES.has(caps)) {
@@ -4908,9 +5021,36 @@ export function setComponentTemplate(tpl: any, comp: any) {
   return comp;
 }
 
+// Store pending builtin modifier registrations for when $_MANAGERS is ready
+const _pendingBuiltinModifiers: Array<{name: string, modifier: any}> = [];
+
 export function setInternalModifierManager(manager: any, modifier: any) {
   globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
+  // Register internal modifier managers as built-in keyword modifiers
+  // so that string-based resolution (e.g., {{on "click" ...}}) works.
+  if (manager && typeof manager.getDebugName === 'function') {
+    try {
+      const name = manager.getDebugName();
+      if (name) {
+        if ($_MANAGERS?.modifier?._builtinModifiers) {
+          $_MANAGERS.modifier._builtinModifiers[name] = modifier;
+        } else {
+          _pendingBuiltinModifiers.push({ name, modifier });
+        }
+      }
+    } catch { /* ignore */ }
+  }
   return modifier;
+}
+
+// Flush pending builtin modifier registrations
+export function _flushPendingBuiltinModifiers() {
+  if ($_MANAGERS?.modifier?._builtinModifiers && _pendingBuiltinModifiers.length > 0) {
+    for (const { name, modifier } of _pendingBuiltinModifiers) {
+      $_MANAGERS.modifier._builtinModifiers[name] = modifier;
+    }
+    _pendingBuiltinModifiers.length = 0;
+  }
 }
 
 export function setComponentManager(manager: any, component: any) {
