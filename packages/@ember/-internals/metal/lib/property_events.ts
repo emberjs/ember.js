@@ -57,15 +57,18 @@ function notifyPropertyChange(
   _meta?: Meta | null,
   value?: unknown
 ): void {
-  // GXT integration: Trigger synchronous re-render BEFORE any early returns
-  // This ensures GXT components are updated even when Ember skips notification
-  // (e.g., for prototype meta objects)
-  const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
-  if (typeof gxtTrigger === 'function') {
-    gxtTrigger(obj, keyName);
-  }
-
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
+
+  // GXT integration: Trigger synchronous re-render to keep GXT components updated.
+  // Skip during initialization — reading properties at this stage can trigger
+  // computed-property getters whose cache revision hasn't been set yet (e.g. PromiseProxy).
+  // Still fire for prototype meta objects so GXT stays in sync.
+  if (meta === null || !meta.isInitializing()) {
+    const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
+    if (typeof gxtTrigger === 'function') {
+      gxtTrigger(obj, keyName);
+    }
+  }
 
   if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
     return;

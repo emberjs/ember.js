@@ -147,6 +147,108 @@ if (!(globalThis as any).__gxtSetIsRendering) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// Override GXT's $_inElement with an Ember-compatible version.
+// GXT's native $_inElement uses GXT's component tree (addToTree/getParentContext)
+// which doesn't work for Ember rendering contexts. Our version:
+// 1. Returns a comment node placeholder for the main render location
+// 2. Renders block content into the external element
+// 3. Handles insertBefore=null (append) vs insertBefore=undefined (replace)
+{
+  const _origInElement = (globalThis as any).$_inElement;
+  (globalThis as any).$_inElement = function _emberInElement(
+    elementRef: any,
+    roots: (ctx: any) => any[],
+    ctx: any,
+    insertBeforeRef?: any
+  ) {
+    // Resolve the target element
+    let appendRef: HTMLElement | null = null;
+    if (typeof elementRef === 'function') {
+      let result = elementRef();
+      if (typeof result === 'function') result = result();
+      if (result && typeof result === 'object' && 'value' in result) {
+        appendRef = result.value;
+      } else {
+        appendRef = result;
+      }
+    } else if (elementRef && typeof elementRef === 'object' && 'value' in elementRef) {
+      appendRef = elementRef.value;
+    } else {
+      appendRef = elementRef;
+    }
+
+    // Resolve insertBefore
+    let insertBefore: any = undefined; // undefined = replace (default)
+    if (insertBeforeRef !== undefined) {
+      if (typeof insertBeforeRef === 'function') {
+        insertBefore = insertBeforeRef();
+      } else {
+        insertBefore = insertBeforeRef;
+      }
+    }
+
+    // Create a placeholder comment for the main render location
+    const placeholder = document.createComment('');
+
+    if (!appendRef) {
+      // No target element — just return the placeholder
+      return placeholder;
+    }
+
+    // Clear existing content if insertBefore is undefined (replace mode)
+    if (insertBefore === undefined) {
+      appendRef.innerHTML = '';
+    }
+
+    // Render block content into the external element
+    const nodes = roots(ctx);
+    const fragment = document.createDocumentFragment();
+    for (const node of nodes) {
+      if (node instanceof Node) {
+        fragment.appendChild(node);
+      } else if (typeof node === 'function') {
+        // Dynamic content — create a reactive text node
+        const textNode = document.createTextNode('');
+        const getValue = () => {
+          let v = node();
+          if (typeof v === 'function') v = v();
+          return v == null ? '' : String(v);
+        };
+        textNode.textContent = getValue();
+        // Set up reactive tracking
+        try {
+          gxtEffect(() => {
+            textNode.textContent = getValue();
+          });
+        } catch { /* effect setup may fail */ }
+        fragment.appendChild(textNode);
+      } else if (typeof node === 'string') {
+        fragment.appendChild(document.createTextNode(node));
+      } else if (typeof node === 'number' || typeof node === 'boolean') {
+        fragment.appendChild(document.createTextNode(String(node)));
+      }
+    }
+
+    if (insertBefore === null) {
+      // Append mode
+      appendRef.appendChild(fragment);
+    } else {
+      // Replace mode (already cleared) or insert before specific node
+      appendRef.appendChild(fragment);
+    }
+
+    return placeholder;
+  };
+  const _emberInElement = (globalThis as any).$_inElement;
+  // Protect from setupGlobalScope overwrite using a non-writable getter
+  Object.defineProperty(globalThis, '$_inElement', {
+    get() { return _emberInElement; },
+    set(_v: any) { /* ignore GXT overwrite */ },
+    configurable: false,
+    enumerable: true,
+  });
+}
+
 // Patch SafeString.toString() to track when a SafeString is being converted to
 // a string during GXT's quoted attribute concatenation. This lets the style prop
 // patch distinguish between a plain string (warn) and a SafeString-derived string
@@ -694,12 +796,15 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
   }
   const newValue = (obj as any)[keyName];
   try {
-    // Use skipDefine=false to install getter/setter on the object.
-    // This ensures GXT formulas tracking this property will detect changes.
-    const c = cellFor(obj, keyName, /* skipDefine */ false);
+    // Use skipDefine=true to avoid replacing tracked setters on the object.
+    // The tracked setter calls dirtyTagFor which bumps the global revision
+    // counter, which is essential for track()/validateTag() to work.
+    // Using skipDefine=true still creates the cell in GXT's internal storage,
+    // ensuring formula tracking works, without installing a getter/setter
+    // that would shadow the tracked descriptor.
+    const c = cellFor(obj, keyName, /* skipDefine */ true);
     if (c) c.update(newValue);
   } catch {
-    // cellFor may not apply to all objects - try with skipDefine=true as fallback
     try {
       const c = cellFor(obj, keyName, /* skipDefine */ true);
       if (c) c.update(newValue);
@@ -6011,6 +6116,26 @@ export function precompileTemplate(templateString: string, options?: {
             // Generate a unique context ID
             renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
           }
+
+          // Register the Ember rendering context in GXT's component tree.
+          // $_inElement (and other GXT internals) call getParentContext() which
+          // looks up the context via TREE.get(id). Without this registration,
+          // getParentContext() returns undefined and addToTree crashes.
+          // Access TREE directly (exposed via getRenderTree in dev mode, or
+          // via __gxtTreeMap set during init) and insert without side effects.
+          try {
+            const id = renderContext[COMPONENT_ID_PROPERTY as any];
+            if (id) {
+              let tree = (globalThis as any).__gxtTreeMap;
+              if (!tree && typeof (globalThis as any).getRenderTree === 'function') {
+                tree = (globalThis as any).getRenderTree()?.TREE;
+                if (tree) (globalThis as any).__gxtTreeMap = tree;
+              }
+              if (tree) {
+                tree.set(id, renderContext);
+              }
+            }
+          } catch { /* ignore */ }
 
           // Ensure 'args' key is ALWAYS accessible on the render context
           // GXT's runtime compiler uses $args = 'args' (a string), so templates

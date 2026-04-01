@@ -14,26 +14,15 @@ import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 
-import { validator } from '@lifeart/gxt/glimmer-compatibility';
-
-const {
+import {
   consumeTag,
   tagFor,
   tagMetaFor,
-  // updateTag,
+  updateTag,
   validateTag,
   valueForTag,
-} = validator;
-
-function updateTag(tag, args) {
-  console.log('updateTag', tag, args);
-  debugger;
-  // tag.update(tag.value);
-}
-
-function untrack(cb) {
-  cb();
-}
+  untrack,
+} from '@glimmer/validator';
 
 export type AliasDecorator = ExtendedMethodDecorator & PropertyDecorator & AliasDecoratorImpl;
 
@@ -88,27 +77,24 @@ class AliasedProperty extends ComputedDescriptor {
   get(obj: object, keyName: string): any {
     let ret: any;
 
-    // let meta = metaFor(obj);
+    let m = metaFor(obj);
     let tagMeta = tagMetaFor(obj);
     let propertyTag = tagFor(obj, keyName, tagMeta) as UpdatableTag;
 
     // We don't use the tag since CPs are not automatic, we just want to avoid
     // anything tracking while we get the altKey
-    // debugger;
     untrack(() => {
       ret = get(obj, this.altKey);
     });
 
-    propertyTag.update(ret);
+    let lastRevision = m.revisionFor(keyName);
 
-    // let lastRevision = meta.revisionFor(keyName);
+    if (lastRevision === undefined || !validateTag(propertyTag, lastRevision)) {
+      updateTag(propertyTag, getChainTagsForKey(obj, this.altKey, tagMeta, m));
+      m.setRevisionFor(keyName, valueForTag(propertyTag));
+      finishLazyChains(m, keyName, ret);
+    }
 
-    // if (lastRevision === undefined || !validateTag(propertyTag, lastRevision)) {
-    //   updateTag(propertyTag, getChainTagsForKey(obj, this.altKey, tagMeta, meta));
-    //   meta.setRevisionFor(keyName, valueForTag(propertyTag));
-    //   finishLazyChains(meta, keyName, ret);
-    // }
-    // finishLazyChains(meta, keyName, ret);
     consumeTag(propertyTag);
 
     return ret;
