@@ -85,6 +85,10 @@ import {
   destroyElementSync as _gxtDestroyElementSync,
   renderComponent as _gxtRenderComponent,
   Component as _GXT_Component,
+  // Namespace providers for SVG/MathML rendering
+  $_SVGProvider as _gxtSVGProvider,
+  $_HTMLProvider as _gxtHTMLProvider,
+  $_MathMLProvider as _gxtMathMLProvider,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
 // After setupGlobalScope(), __gxtCellFor and __gxtEffect are set from GXT's
@@ -329,6 +333,66 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     if (last.positionals[i] !== current.positionals[i]) return true;
   }
   return false;
+}
+
+// Override $__log with Ember-compatible version.
+// Resolves GXT getter args and calls console.log. The compile-time transform
+// (above) ensures $__log calls are eager (not inside reactive getters), so
+// this only fires once per render.
+{
+  const g = globalThis as any;
+  if (g.$__log) {
+    // Deduplicate using call-site IDs injected by the compile-time transform.
+    // The first arg is "__logSite:N" which uniquely identifies the {{log}} call
+    // in the template. We track which site IDs have fired in the current sync
+    // frame and skip duplicates (caused by root.ts + manager.ts double-rendering).
+    const _loggedSites = new Set<string>();
+    let _logClearTimer: any = null;
+
+    g.$__log = function $__log_ember(...args: any[]) {
+      // Check for call-site ID prefix
+      let siteId: string | null = null;
+      let actualArgs = args;
+      if (args.length > 0 && typeof args[0] === 'string' && args[0].startsWith('__logSite:')) {
+        siteId = args[0];
+        actualArgs = args.slice(1);
+      }
+
+      // Resolve GXT getters in args
+      const resolved = actualArgs.map((a: any) => {
+        if (typeof a === 'function' && !a.prototype) {
+          try { return a(); } catch { return a; }
+        }
+        return a;
+      });
+
+      // Deduplicate: skip if this site already logged in the current sync frame
+      if (siteId) {
+        if (_loggedSites.has(siteId)) {
+          return ''; // Skip duplicate
+        }
+        _loggedSites.add(siteId);
+        // Clear tracked sites after the current sync frame
+        if (!_logClearTimer) {
+          _logClearTimer = setTimeout(() => { _loggedSites.clear(); _logClearTimer = null; }, 0);
+        }
+      }
+
+      console.log(...resolved);
+      return '';
+    };
+
+    // Protect from setupGlobalScope overwrite
+    try {
+      let _currentLog = g.$__log;
+      Object.defineProperty(g, '$__log', {
+        get() { return _currentLog; },
+        set(v: any) { _currentLog = g.$__log; },
+        configurable: true,
+        enumerable: true,
+      });
+    } catch { /* ignore */ }
+  }
 }
 
 // Override $_componentHelper with Ember-aware version that creates CurriedComponent.
@@ -1192,6 +1256,18 @@ setInterval(() => {
   if (typeof (globalThis as any).__gxtClearInstancePools === 'function') {
     (globalThis as any).__gxtClearInstancePools();
   }
+  // Reset pending sync flags to prevent timer-based re-renders leaking into next test.
+  // A setInterval(16ms) checks __gxtPendingSync and calls __gxtSyncDomNow() which can
+  // trigger __gxtForceEmberRerender (innerHTML='' + rebuild) on the next test's DOM.
+  (globalThis as any).__gxtPendingSync = false;
+  (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+  (globalThis as any).__gxtHadPendingSync = false;
+  (globalThis as any).__gxtHadNestedObjectChange = false;
+  (globalThis as any).__gxtSyncing = false;
+  (globalThis as any).__gxtSyncScheduled = false;
+  // Reset global rendering state
+  (globalThis as any).$slots = undefined;
+  (globalThis as any).$fw = undefined;
 };
 
 // Set GXT mode flag
@@ -1702,6 +1778,30 @@ if (g.$_c && !g.$_c.__emberWrapped) {
   const originalC = g.$_c;
 
   g.$_c = function $_c_ember(comp: any, args: any, ctx: any) {
+    // Handle GXT namespace providers (SVGProvider, HTMLProvider, MathMLProvider).
+    // These are GXT-internal components that set up namespace-aware DOM APIs.
+    // Instead of routing them through GXT's full component system (which requires
+    // deep context setup), we handle them directly by executing their default slot
+    // with the appropriate namespace flag set for $_tag to use.
+    if (comp === _gxtSVGProvider || comp === _gxtHTMLProvider || comp === _gxtMathMLProvider) {
+      const ns = comp === _gxtSVGProvider ? 'svg' : comp === _gxtMathMLProvider ? 'mathml' : null;
+      const $SLOTS = Symbol.for('gxt-slots');
+      const slots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+      const defaultSlot = slots?.default;
+      if (typeof defaultSlot === 'function') {
+        const prevNs = g.__gxtNamespace;
+        if (ns) g.__gxtNamespace = ns;
+        try {
+          const result = defaultSlot(ctx);
+          return result;
+        } finally {
+          g.__gxtNamespace = prevNs;
+        }
+      }
+      // No default slot — return empty
+      return [];
+    }
+
     if (comp && comp.__isCurriedComponent) {
       // Build args from the GXT args object
       const managers = g.$_MANAGERS;
@@ -3072,6 +3172,124 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         if (val == null || val === false || val === '') return null;
         return val;
       };
+    }
+
+    // SVG/MathML namespace handling: when __gxtNamespace is set (by $_c_ember
+    // when it intercepts $_SVGProvider/$_MathMLProvider), create elements in the
+    // correct namespace using createElementNS instead of GXT's default createElement.
+    const currentNs = g.__gxtNamespace;
+    if (currentNs && resolvedTag && typeof resolvedTag === 'string') {
+      const SVG_NS = 'http://www.w3.org/2000/svg';
+      const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
+      const XLINK_NS = 'http://www.w3.org/1999/xlink';
+      const XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
+      const ns = currentNs === 'svg' ? SVG_NS : currentNs === 'mathml' ? MATHML_NS : null;
+      if (ns) {
+        const el = document.createElementNS(ns, resolvedTag);
+
+        // Apply attributes/props from tagProps
+        if (tagProps && tagProps !== g.$_edp) {
+          // Props (position 0): class, id, etc.
+          const props = tagProps[0];
+          if (Array.isArray(props)) {
+            for (const [key, value] of props) {
+              const propName = key === '' ? 'class' : key;
+              const val = typeof value === 'function' ? value() : value;
+              if (val != null && val !== false) {
+                if (propName === 'class' || propName === 'className') {
+                  el.setAttribute('class', String(val));
+                } else {
+                  el.setAttribute(propName, String(val));
+                }
+              }
+              // Set up reactive updates for dynamic props
+              if (typeof value === 'function') {
+                try {
+                  gxtEffect(() => {
+                    const v = value();
+                    if (v == null || v === false) {
+                      el.removeAttribute(propName === 'className' ? 'class' : propName);
+                    } else {
+                      el.setAttribute(propName === 'className' ? 'class' : propName, String(v));
+                    }
+                  });
+                } catch { /* ignore effect setup errors */ }
+              }
+            }
+          }
+
+          // Attrs (position 1): viewBox, data-*, etc.
+          const attrs = tagProps[1];
+          if (Array.isArray(attrs)) {
+            for (const [key, value] of attrs) {
+              if (key.startsWith('@')) continue; // skip component args
+              const val = typeof value === 'function' ? value() : value;
+              if (val != null && val !== false) {
+                if (key.includes(':')) {
+                  // Namespaced attribute (xlink:href, xmlns:*, etc.)
+                  if (key.startsWith('xlink')) {
+                    el.setAttributeNS(XLINK_NS, key, String(val));
+                  } else if (key.startsWith('xmlns')) {
+                    el.setAttributeNS(XMLNS_NS, key, String(val));
+                  } else {
+                    el.setAttributeNS(ns, key, String(val));
+                  }
+                } else {
+                  el.setAttribute(key, String(val));
+                }
+              }
+              // Reactive attrs
+              if (typeof value === 'function') {
+                try {
+                  gxtEffect(() => {
+                    const v = value();
+                    if (v == null || v === false) {
+                      el.removeAttribute(key);
+                    } else {
+                      el.setAttribute(key, String(v));
+                    }
+                  });
+                } catch { /* ignore */ }
+              }
+            }
+          }
+
+          // Events (position 2)
+          const events = tagProps[2];
+          if (Array.isArray(events)) {
+            for (const [eventName, handler] of events) {
+              if (typeof handler === 'function') {
+                el.addEventListener(eventName, handler as EventListener);
+              }
+            }
+          }
+        }
+
+        // Render children inside the SVG namespace
+        if (children && children.length > 0) {
+          for (const child of children) {
+            if (child instanceof Node) {
+              el.appendChild(child);
+            } else if (typeof child === 'function') {
+              const childResult = child();
+              if (childResult instanceof Node) {
+                el.appendChild(childResult);
+              } else if (Array.isArray(childResult)) {
+                for (const item of childResult) {
+                  if (item instanceof Node) el.appendChild(item);
+                  else if (item != null) el.appendChild(document.createTextNode(String(item)));
+                }
+              } else if (childResult != null) {
+                el.appendChild(document.createTextNode(String(childResult)));
+              }
+            } else if (child != null) {
+              el.appendChild(document.createTextNode(String(child)));
+            }
+          }
+        }
+
+        return el;
+      }
     }
 
     const result = originalTag(tag, tagProps, ctx, children);
@@ -4830,6 +5048,45 @@ export function precompileTemplate(templateString: string, options?: {
     if (modifiedCode.includes('$_each(')) {
       modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
     }
+    // Unwrap $__log calls from reactive getters AND assign unique call-site IDs.
+    // GXT compiles {{log x}} as () => $__log(x), a reactive getter that gets
+    // re-evaluated on each sync cycle. Ember's {{log}} should only fire once.
+    // Transform: () => $__log(...) → ($__log("__logId:N", ...), "")
+    // The ID lets $__log_ember deduplicate calls from multiple render paths
+    // (root.ts + manager.ts) that render the same template.
+    if (modifiedCode.includes('$__log(')) {
+      if (!(globalThis as any).__gxtLogSiteCounter) (globalThis as any).__gxtLogSiteCounter = 0;
+      const logNeedle = '() => $__log(';
+      let logResult = '';
+      let logI = 0;
+      while (logI < modifiedCode.length) {
+        const nextLog = modifiedCode.indexOf(logNeedle, logI);
+        if (nextLog === -1) {
+          logResult += modifiedCode.slice(logI);
+          break;
+        }
+        logResult += modifiedCode.slice(logI, nextLog);
+        // Find matching close paren for $__log(
+        const openParen = nextLog + '() => $__log'.length;
+        let depth = 1;
+        let j = openParen + 1;
+        for (; j < modifiedCode.length && depth > 0; j++) {
+          if (modifiedCode[j] === '(') depth++;
+          else if (modifiedCode[j] === ')') depth--;
+        }
+        if (depth !== 0) {
+          logResult += modifiedCode.slice(nextLog, j);
+          logI = j;
+          continue;
+        }
+        // Extract the args from $__log(args)
+        const argsContent = modifiedCode.slice(openParen + 1, j - 1);
+        const siteId = `__logSite:${(globalThis as any).__gxtLogSiteCounter++}`;
+        logResult += `($__log("${siteId}", ${argsContent}), "")`;
+        logI = j;
+      }
+      modifiedCode = logResult;
+    }
     // Transform {{unbound}} calls to cache their value on first evaluation.
     // GXT wraps template expressions in reactive getters that re-evaluate when
     // tracked cells change. The unbound helper should snapshot the value once
@@ -5675,6 +5932,13 @@ export function precompileTemplate(templateString: string, options?: {
           }
           gxtSetParentContext(gxtRoot);
 
+          // Use the context directly — don't wrap with Object.create()!
+          // The context IS the Proxy from createRenderContext. Wrapping it would
+          // bypass the Proxy's get handler, breaking cell-based reactive tracking.
+          // NOTE: Must be declared before first use (was previously in TDZ when
+          // referenced in the RENDERING_CONTEXT_PROPERTY block below).
+          const renderContext = context;
+
           // Copy GXT rendering context from root to our render context
           try {
             const rootRenderingCtx = gxtRoot[RENDERING_CONTEXT_PROPERTY as any] || gxtInitDOM(gxtRoot);
@@ -5708,11 +5972,6 @@ export function precompileTemplate(templateString: string, options?: {
               }
             }
           }
-
-          // Use the context directly — don't wrap with Object.create()!
-          // The context IS the Proxy from createRenderContext. Wrapping it would
-          // bypass the Proxy's get handler, breaking cell-based reactive tracking.
-          const renderContext = context;
 
           // Register render context for cross-cell dirtying
           (globalThis as any).__lastRenderContext = context;

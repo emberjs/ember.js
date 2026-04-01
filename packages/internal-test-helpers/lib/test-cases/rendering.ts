@@ -101,6 +101,11 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       }
     } finally {
       _resetRenderers();
+      // Reset pending sync AFTER destroy — destroy triggers notifyPropertyChange
+      // which sets __gxtPendingSync = true. Without this, a setInterval timer
+      // fires __gxtSyncDomNow() during the next test's initialization.
+      (globalThis as any).__gxtPendingSync = false;
+      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
     }
   }
 
