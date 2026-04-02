@@ -1,5 +1,4 @@
 import {
-  compile,
   moduleFor,
   ApplicationTestCase,
   RenderingTestCase,
@@ -10,6 +9,8 @@ import {
 import { Input, Textarea } from '@ember/component';
 import { LinkTo } from '@ember/routing';
 import { precompileTemplate } from '@ember/template-compilation';
+import { template } from '@ember/template-compiler/runtime';
+import { template as compileTimeTemplate } from '@ember/template-compiler';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
 import { hash, array, concat, get, on, fn } from '@glimmer/runtime';
@@ -60,12 +61,24 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@test Can shadow keywords'() {
-      let ifComponent = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
-      let Bar = setComponentTemplate(
-        compile('{{#if}}{{/if}}', { strictMode: true }, { if: ifComponent }),
-        templateOnly()
-      );
+    '@test Can shadow keywords (runtime)'() {
+      let each = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Bar = template('{{#each}}{{/each}}', {
+        scope: () => ({ each }),
+      });
+
+      this.owner.register('component:bar', Bar);
+
+      this.render('<Bar/>');
+      this.assertHTML('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    '@test Can shadow keywords (compile-time)'() {
+      let each = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Bar = compileTimeTemplate('{{#each}}{{/each}}', {
+        scope: () => ({ each }),
+      });
 
       this.owner.register('component:bar', Bar);
 

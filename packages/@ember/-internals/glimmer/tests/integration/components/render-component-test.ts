@@ -13,8 +13,8 @@ import {
 
 import { Input, Textarea } from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
-import { compile } from 'internal-test-helpers';
 import { template } from '@ember/template-compiler/runtime';
+import { template as compileTimeTemplate } from '@ember/template-compiler';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
 import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
@@ -242,12 +242,20 @@ moduleFor(
       this.renderComponent(Root, { expect: '<div>Hello, world!</div>' });
     }
 
-    '@test Can shadow keywords'() {
-      let ifComponent = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
-      let Bar = setComponentTemplate(
-        compile('{{#if}}{{/if}}', { strictMode: true }, { if: ifComponent }),
-        templateOnly()
-      );
+    '@test Can shadow keywords (runtime)'() {
+      let each = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Bar = template('{{#each}}{{/each}}', {
+        scope: () => ({ each }),
+      });
+
+      this.renderComponent(Bar, { expect: 'Hello, world!' });
+    }
+
+    '@test Can shadow keywords (compile-time)'() {
+      let each = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Bar = compileTimeTemplate('{{#each}}{{/each}}', {
+        scope: () => ({ each }),
+      });
 
       this.renderComponent(Bar, { expect: 'Hello, world!' });
     }
