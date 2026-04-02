@@ -4,7 +4,7 @@ import EmberObject from '@ember/object';
 
 import { set, setProperties } from '@ember/object';
 
-import { Component, compile } from '../../utils/helpers';
+import { Component } from '../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
 import templateOnly from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -679,7 +679,7 @@ moduleFor(
         // attempting to compile this template will throw
         this.owner.register(
           'component:test-harness',
-          setComponentTemplate(compile('<foo.bar />'), class extends Component {})
+          template('<foo.bar />', { component: class extends Component {}, strictMode: false })
         );
       }, /Error: You used foo.bar as a tag name, but foo is not in scope/);
     }

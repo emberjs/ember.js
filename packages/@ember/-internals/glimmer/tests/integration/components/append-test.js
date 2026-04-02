@@ -4,7 +4,7 @@ import { set } from '@ember/object';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import { precompileTemplate } from '@ember/template-compilation';
-import { Component, compile } from '../../utils/helpers';
+import { Component } from '../../utils/helpers';
 
 class AbstractAppendTest extends RenderingTestCase {
   constructor() {
@@ -44,7 +44,7 @@ class AbstractAppendTest extends RenderingTestCase {
 
     let componentsByName = {};
 
-    let createLogger = (name, template) => {
+    let createLogger = (name, compiledTemplate) => {
       function pushHook(hookName) {
         hooks.push([name, hookName]);
       }
@@ -112,7 +112,7 @@ class AbstractAppendTest extends RenderingTestCase {
 
       let local = class extends LoggerComponent {};
 
-      setComponentTemplate(compile(template), local);
+      setComponentTemplate(compiledTemplate, local);
 
       this.owner.register(`component:${name}`, local);
 
@@ -121,20 +121,20 @@ class AbstractAppendTest extends RenderingTestCase {
 
     createLogger(
       'x-parent',
-      `[parent: {{this.foo}}]
+      precompileTemplate(`[parent: {{this.foo}}]
        [parent: {{this.parentValue}}
 
         <XChild @bar={{this.foo}} @childValue={{this.childValue}}>
          [yielded: {{this.foo}}]
         </XChild>
-      `
+      `)
     );
     createLogger(
       'x-child',
-      `
+      precompileTemplate(`
       [child: {{this.bar}}]
       [child: {{this.childValue}}]
-      {{yield}}`
+      {{yield}}`)
     );
 
     this.render(
@@ -353,8 +353,8 @@ class AbstractAppendTest extends RenderingTestCase {
 
       this.owner.register(`component:${name}`, ExtendedClass);
 
-      if (typeof resolveableTemplate === 'string') {
-        this.owner.register(`template:components/${name}`, compile(resolveableTemplate));
+      if (resolveableTemplate) {
+        this.owner.register(`template:components/${name}`, resolveableTemplate);
       }
     };
 
@@ -363,8 +363,9 @@ class AbstractAppendTest extends RenderingTestCase {
         layoutName = 'components/x-parent';
       },
 
-      resolveableTemplate:
-        '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
+      resolveableTemplate: precompileTemplate(
+        '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}'
+      ),
     });
 
     registerLoggerComponent('x-child', {
@@ -372,7 +373,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName = '';
       },
 
-      resolveableTemplate: '[child: {{this.bar}}]{{yield}}',
+      resolveableTemplate: precompileTemplate('[child: {{this.bar}}]{{yield}}'),
     });
 
     let XParent;
