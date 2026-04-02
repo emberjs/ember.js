@@ -62,6 +62,10 @@ import {
   isGlobalScopeReady,
 } from '../node_modules/@lifeart/gxt/dist/gxt.runtime-compiler.es.js';
 
+// We need access to GXT's reactive tracker (setTracker/getTracker) for {{unbound}}.
+// These are not exported from GXT's public API, so we extract them at runtime
+// by exploiting the MergedCell evaluation behavior. See __gxtUnboundCached below.
+
 // Use direct path to avoid GXT Babel plugin processing (which injects duplicate declarations)
 // @ts-ignore - direct path import
 import {
@@ -89,6 +93,10 @@ import {
   $_SVGProvider as _gxtSVGProvider,
   $_HTMLProvider as _gxtHTMLProvider,
   $_MathMLProvider as _gxtMathMLProvider,
+  // @ts-ignore - patched export for {{unbound}} helper support
+  setTracker as _gxtSetTracker,
+  // @ts-ignore
+  getTracker as _gxtGetTracker,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
 // After setupGlobalScope(), __gxtCellFor and __gxtEffect are set from GXT's
@@ -148,6 +156,9 @@ if ((globalThis as any).__gxtSyncDom) gxtSyncDom = (globalThis as any).__gxtSync
 (globalThis as any).__gxtEffect = gxtEffect;
 // Expose isRendering check for tracked setter to avoid dirtying during render
 (globalThis as any).__gxtIsRendering = gxtIsRendering;
+// Expose setTracker/getTracker for {{unbound}} helper support
+(globalThis as any).__gxtSetTracker = _gxtSetTracker;
+(globalThis as any).__gxtGetTracker = _gxtGetTracker;
 
 // Use setIsRendering from GXT's runtime module (setupGlobalScope sets __gxtSetIsRendering).
 // The direct import (gxtSetIsRendering) may be from a different module copy,
@@ -1752,17 +1763,46 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 // - Single component renders (same ctx across re-evaluations)
 // - #each iterations (each iteration has its own ctx)
 {
-  const unboundCacheMap = new WeakMap();
-  (globalThis as any).__gxtUnboundCached = function(id: string, ctx: any, value: any) {
-    if (!ctx || typeof ctx !== 'object') return value;
-    let cache = unboundCacheMap.get(ctx);
-    if (!cache) {
-      cache = Object.create(null);
-      unboundCacheMap.set(ctx, cache);
+  // __gxtUnboundEval evaluates the unbound expression with GXT cell tracking
+  // suppressed (setTracker(null)). This prevents the formula from tracking
+  // the unbound expression's cells. Combined with caching via __ubCache,
+  // re-evaluations return the original cached value.
+  //
+  // The cache uses a global sequence number as part of the key to distinguish
+  // #each iterations (each has its own call with the same template-level id).
+  // A per-id counter tracks which "slot" the current call should use.
+  const _ubSlots = new Map<string, number>(); // id → next slot index
+  const _ubSlotMax = new Map<string, number>(); // id → max slots (set after first full pass)
+  (globalThis as any).__gxtUnboundEval = function(cacheObj: any, id: string, valueFn: any) {
+    // Determine slot for this call (handles #each where same id is called N times)
+    let slot = _ubSlots.get(id) || 0;
+    const key = `${id}:${slot}`;
+    _ubSlots.set(id, slot + 1);
+
+    if (key in cacheObj) return cacheObj[key];
+
+    // First evaluation: suppress GXT cell tracking
+    const _setTracker = (globalThis as any).__gxtSetTracker;
+    const _getTracker = (globalThis as any).__gxtGetTracker;
+    let result;
+    if (_setTracker && _getTracker) {
+      const savedTracker = _getTracker();
+      _setTracker(null);
+      try {
+        result = valueFn();
+      } finally {
+        _setTracker(savedTracker);
+      }
+    } else {
+      result = valueFn();
     }
-    if (id in cache) return cache[id];
-    cache[id] = value;
-    return value;
+    cacheObj[key] = result;
+    return result;
+  };
+  // Reset slot counters at the start of each render cycle
+  // Called from the template function before returning the template body.
+  (globalThis as any).__gxtUnboundResetSlots = function() {
+    _ubSlots.clear();
   };
 }
 
@@ -5273,7 +5313,7 @@ export function precompileTemplate(templateString: string, options?: {
     // GXT wraps template expressions in reactive getters that re-evaluate when
     // tracked cells change. The unbound helper should snapshot the value once
     // and never update. We wrap each call with globalThis.__gxtUnboundCached
-    // which uses a WeakMap keyed by the context (last arg of $_maybeHelper).
+    // using a closure-scoped cache object that persists across re-evaluations.
     let hasUnbound = false;
     if (modifiedCode.includes('"unbound"')) {
       let unboundIdx = 0;
@@ -5301,22 +5341,10 @@ export function precompileTemplate(templateString: string, options?: {
           continue;
         }
         const fullCall = modifiedCode.slice(nextIdx, j);
-        // Extract the last argument (context) from the $_maybeHelper call.
-        const innerContent = modifiedCode.slice(openParen + 1, j - 1);
-        let lastCommaPos = -1;
-        let d = 0;
-        for (let k = innerContent.length - 1; k >= 0; k--) {
-          if (innerContent[k] === ')' || innerContent[k] === ']' || innerContent[k] === '}') d++;
-          else if (innerContent[k] === '(' || innerContent[k] === '[' || innerContent[k] === '{') d--;
-          else if (innerContent[k] === ',' && d === 0) {
-            lastCommaPos = k;
-            break;
-          }
-        }
-        const ctxArg = lastCommaPos >= 0 ? innerContent.slice(lastCommaPos + 1).trim() : 'this';
         const id = `__ub${unboundIdx++}`;
         hasUnbound = true;
-        result += `globalThis.__gxtUnboundCached("${id}",${ctxArg},${fullCall})`;
+        // Wrap in __gxtUnboundEval: suppresses tracking + caches result
+        result += `globalThis.__gxtUnboundEval(__ubCache,"${id}",()=>(${fullCall}))`;
         i = j;
       }
       modifiedCode = result;
@@ -5577,9 +5605,11 @@ export function precompileTemplate(templateString: string, options?: {
       }
       const templateFnCode = `
         "use strict";
+        ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
           ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}
+          ${hasUnbound ? 'if (globalThis.__gxtUnboundResetSlots) globalThis.__gxtUnboundResetSlots();' : ''}
 
           ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}

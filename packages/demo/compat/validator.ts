@@ -74,10 +74,15 @@ export function track(cb: () => void): any {
     if (_trackingTagStack.length === 0) _trackingTagStack = null;
   }
 
+  // Snapshot the global revision counter AFTER running the callback.
+  // Any future bump means a dependency changed.
+  const snapshotRevision = globalRevisionCounter;
+
   // Return a tag that uses the global revision counter to detect changes.
   // consumed tags from explicit consumeTag calls are also tracked.
   const tag = {
     _isTrackTag: true,
+    _snapshotRevision: snapshotRevision,
     _consumed: consumed.size > 0 ? Array.from(consumed) : null,
     get value() {
       return globalRevisionCounter;
@@ -310,65 +315,77 @@ export function combine(tags: any[]) {
   return combinedTag;
 }
 
-// Track tag revisions for proper validation
-// Use a simple approach: track when tags were last snapshot and when they were dirtied
+// Track tag revisions for proper validation.
+// We use globalRevisionCounter as the single source of truth for all revisions.
+// This ensures track tags, dirty tags, and snapshot revisions are all comparable.
 const tagLastSnapshotRevision = new WeakMap<object, number>();
-let globalTagRevision = 0;
 
-// Track dirty revisions - when a tag was last dirtied
+// Track dirty revisions - when a tag was last dirtied (in globalRevisionCounter space)
 const tagDirtyRevision = new WeakMap<object, number>();
 
-// Get the revision for a tag (for storing as lastRevision)
+// Get the revision for a tag (for storing as lastRevision).
+// Uses globalRevisionCounter so all revisions are in the same space.
 function getTagSnapshotRevision(tag: any): number {
   if (!tagLastSnapshotRevision.has(tag)) {
-    tagLastSnapshotRevision.set(tag, ++globalTagRevision);
+    // Don't bump the counter here - just use the current value.
+    // Bumping would cause false invalidations for track tags.
+    tagLastSnapshotRevision.set(tag, globalRevisionCounter);
   }
   return tagLastSnapshotRevision.get(tag)!;
 }
 
-// Mark a tag as dirtied at the current revision
+// Mark a tag as dirtied at the current revision (uses globalRevisionCounter)
 function markTagDirty(tag: any): void {
-  const rev = ++globalTagRevision;
+  // globalRevisionCounter was already bumped by dirtyTagFor before calling us
+  const rev = globalRevisionCounter;
   tagDirtyRevision.set(tag, rev);
-  // Also update the snapshot to the dirty revision
   tagLastSnapshotRevision.set(tag, rev);
 }
 
-// Check if a tag has changed since the given revision
-function hasTagChangedSinceRevision(tag: any, sinceRevision: number, visited = new Set()): boolean {
-  // Prevent infinite loops in circular dependencies
-  if (visited.has(tag)) {
-    return false;
-  }
+// Compute the current "revision" for a tag by taking the max of its own
+// dirty revision and all its dependencies' revisions. This mirrors how
+// Glimmer VM's tag.value works: it returns the max revision across the
+// entire dependency tree, so any mutation anywhere increases the value.
+function currentTagRevision(tag: any, visited = new Set<any>()): number {
+  if (!tag || typeof tag !== 'object') return 0;
+  if (visited.has(tag)) return 0;
   visited.add(tag);
 
-  // Check if the tag itself was dirtied
-  const dirtyRev = tagDirtyRevision.get(tag);
-  if (dirtyRev !== undefined && dirtyRev > sinceRevision) {
-    return true;
+  // Track tags: their "revision" is the globalRevisionCounter at the time
+  // they were snapshot. After any mutation (which bumps globalRevisionCounter),
+  // the current revision becomes the new globalRevisionCounter.
+  if (tag._isTrackTag) {
+    return globalRevisionCounter;
   }
 
-  // Check if this is a combined tag and any constituent was dirtied
+  let max = tagDirtyRevision.get(tag) || 0;
+
+  // Check combined tag constituents
   const constituents = combinedTagConstituents.get(tag);
   if (constituents) {
-    for (const constituent of constituents) {
-      if (hasTagChangedSinceRevision(constituent, sinceRevision, visited)) {
-        return true;
-      }
+    for (const c of constituents) {
+      const r = currentTagRevision(c, visited);
+      if (r > max) max = r;
     }
   }
 
-  // Check if this tag has dependencies via updateTag (for computed properties)
-  const dependencies = updatableTagDependencies.get(tag);
-  if (dependencies) {
-    for (const dep of dependencies) {
-      if (hasTagChangedSinceRevision(dep, sinceRevision, visited)) {
-        return true;
-      }
+  // Check updateTag dependencies (e.g., autoComputed links propertyTag → trackTag)
+  const deps = updatableTagDependencies.get(tag);
+  if (deps) {
+    for (const d of deps) {
+      const r = currentTagRevision(d, visited);
+      if (r > max) max = r;
     }
   }
 
-  return false;
+  // For updatable tags (createUpdatableTag), reading .value gives the cell value
+  // which acts as a revision (bumped by .dirty())
+  if ('dirty' in tag && 'value' in tag) {
+    const v = tag.value;
+    if (typeof v === 'number' && v > max) max = v;
+  }
+
+  return max;
 }
 
 export function validateTag(tag: any, revision?: number): boolean {
@@ -382,28 +399,21 @@ export function validateTag(tag: any, revision?: number): boolean {
   }
 
   // Special handling for CURRENT_TAG - compare its value directly to revision
-  // CURRENT_TAG is a cell whose value is the global revision counter
   if (tag === CURRENT_TAG) {
-    // Valid if current tag value is less than or equal to the captured revision
     return tag.value <= revision;
   }
 
-  // Handle tags returned by our track() function.
-  // The revision is the global revision counter at snapshot time.
-  // If the current counter is higher, something changed.
-  if (tag && tag._isTrackTag) {
-    return globalRevisionCounter === revision;
-  }
-
-  // Check if the tag has changed since the given revision
-  return !hasTagChangedSinceRevision(tag, revision);
+  // The tag is valid if its current revision hasn't changed since the snapshot.
+  // currentTagRevision walks the dependency tree (including track tags and
+  // combined tags) and returns the max dirty revision.
+  return currentTagRevision(tag) <= revision;
 }
 
 // Update the revision snapshot for a tag (called after observer fires)
 export function updateTagRevision(tag: any): number {
-  const newRevision = ++globalTagRevision;
-  tagLastSnapshotRevision.set(tag, newRevision);
-  return newRevision;
+  // Use the current globalRevisionCounter - don't bump it since no actual mutation happened
+  tagLastSnapshotRevision.set(tag, globalRevisionCounter);
+  return globalRevisionCounter;
 }
 
 // Reset tracking state (used in testing)
@@ -418,25 +428,24 @@ export const COMPUTE = 13;
 export const INITIAL = 31;
 
 // Get the current revision value for a tag
-// This returns the revision number that can be used with validateTag later
+// This returns the revision number that can be used with validateTag later.
+// For consistency with validateTag, this walks the dependency tree to get
+// the max revision. The stored value can later be compared with a fresh
+// currentTagRevision() call to detect changes.
 export function valueForTag(tag: any): number {
   if (!tag) return 0;
   if (typeof tag === 'number') return tag;
 
-  // Special handling for CURRENT_TAG - it directly contains the global revision
+  // Special handling for CURRENT_TAG
   if (tag === CURRENT_TAG) {
     return tag.value;
   }
 
-  // Handle tags from our track() function.
-  // Return the current global revision counter.
-  if (tag && tag._isTrackTag) {
-    return globalRevisionCounter;
-  }
-
-  // For object tags (gxt cells), get or create snapshot revision
+  // Use currentTagRevision to get the max revision across all dependencies.
+  // This ensures the snapshot stored by meta.setRevisionFor() is in the same
+  // space as what validateTag checks.
   if (typeof tag === 'object') {
-    return getTagSnapshotRevision(tag);
+    return currentTagRevision(tag);
   }
 
   return 0;
@@ -525,6 +534,8 @@ export function createTag() {
 export function dirtyTag(tag: any) {
   if (tag && typeof tag.dirty === 'function') {
     tag.dirty();
+    // Bump global revision so track tags also detect this change
+    globalRevisionCounter++;
     // Flush GXT DOM sync so the updated value is visible immediately
     const syncNow = (globalThis as any).__gxtSyncDomNow;
     if (typeof syncNow === 'function') {
