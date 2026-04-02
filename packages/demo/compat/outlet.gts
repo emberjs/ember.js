@@ -105,6 +105,13 @@ class EmberOutletElement extends HTMLElement {
     const previousOutletState = (globalThis as any).__currentOutletState;
     (globalThis as any).__currentOutletState = nestedOutlet;
 
+    // Set globalThis.owner to the route's owner (may be an engine instance)
+    // so that $_tag_ember can resolve components from the correct registry
+    const previousOwner = (globalThis as any).owner;
+    if (owner) {
+      (globalThis as any).owner = owner;
+    }
+
     try {
       // Render the template
       if (typeof tpl?.render === 'function') {
@@ -124,8 +131,9 @@ class EmberOutletElement extends HTMLElement {
         console.warn('[ember-outlet] Template render failed:', e?.message);
       }
     } finally {
-      // Restore previous outlet state
+      // Restore previous outlet state and owner
       (globalThis as any).__currentOutletState = previousOutletState;
+      (globalThis as any).owner = previousOwner;
     }
   }
 }

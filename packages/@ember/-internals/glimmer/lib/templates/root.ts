@@ -395,6 +395,8 @@ export default function createRootTemplate(_owner: any) {
       let controller = mainOutlet.render.controller;
       let model = mainOutlet.render.model;
       let outletState = mainOutlet;
+      // Track the owner for this outlet level (may be an engine instance)
+      let outletOwner = mainOutlet.render.owner || instance.owner;
 
       // If the route template is the outlet template itself, skip it and render nested directly
       if (routeTemplate?.moduleName === 'template:-outlet' && mainOutlet?.outlets?.main?.render?.template) {
@@ -406,6 +408,8 @@ export default function createRootTemplate(_owner: any) {
         controller = nestedOutlet.render.controller;
         model = nestedOutlet.render.model;
         outletState = nestedOutlet;
+        // Use the nested outlet's owner (important for engines)
+        outletOwner = nestedOutlet.render.owner || outletOwner;
       }
 
       // Check if routeTemplate is a component (e.g., from template('First'))
@@ -417,7 +421,7 @@ export default function createRootTemplate(_owner: any) {
           (typeof routeTemplate === 'function' && getComponentTemplate(routeTemplate.prototype));
         if (componentTpl) {
           // Instantiate the template factory with the owner
-          const resolvedTemplate = typeof componentTpl === 'function' ? componentTpl(instance.owner) : componentTpl;
+          const resolvedTemplate = typeof componentTpl === 'function' ? componentTpl(outletOwner) : componentTpl;
           if (resolvedTemplate) {
             routeTemplate = resolvedTemplate;
           }
@@ -438,7 +442,7 @@ export default function createRootTemplate(_owner: any) {
       // and use the route model for @model (through args).
       const renderContext: any = {
         ...(controller || {}),
-        owner: instance.owner,
+        owner: outletOwner,
         outletState: outletState,
         args: argsObj,
         [$ARGS_KEY]: argsObj,
@@ -463,7 +467,7 @@ export default function createRootTemplate(_owner: any) {
       // Set global outlet state for nested <ember-outlet> elements
       (globalThis as any).__currentOutletState = outletState;
 
-      renderTemplateWithContext(routeTemplate, parentElement, renderContext, instance.owner);
+      renderTemplateWithContext(routeTemplate, parentElement, renderContext, outletOwner);
     }
 
     // Store the top-level outlet ref for re-rendering on property changes

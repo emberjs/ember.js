@@ -20,7 +20,7 @@ import type { ControllerQueryParamType } from '@ember/controller';
 import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { once } from '@ember/runloop';
+import { once, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { hasInternalComponentManager } from '@glimmer/manager';
 import type { RenderState } from '@ember/-internals/glimmer';
@@ -1469,7 +1469,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
    */
   [RENDER]() {
     this[RENDER_STATE] = buildRenderState(this);
-    once(this._router, '_setOutlets');
+    // In GXT mode, scheduling _setOutlets via once() (actions queue) from
+    // routerTransitions queue causes it to be skipped because backburner
+    // doesn't re-visit earlier queues. Use scheduleOnce('render', ...) to
+    // ensure it runs after routerTransitions in the same runloop iteration.
+    if ((globalThis as any).__GXT_MODE__) {
+      scheduleOnce('render', this._router, '_setOutlets');
+    } else {
+      once(this._router, '_setOutlets');
+    }
   }
 
   willDestroy() {
@@ -1484,7 +1492,11 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   teardownViews() {
     if (this[RENDER_STATE]) {
       this[RENDER_STATE] = undefined;
-      once(this._router, '_setOutlets');
+      if ((globalThis as any).__GXT_MODE__) {
+        scheduleOnce('render', this._router, '_setOutlets');
+      } else {
+        once(this._router, '_setOutlets');
+      }
     }
   }
 

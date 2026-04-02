@@ -29,28 +29,6 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
   }
 
   async visit(url: string, options?: BootOptions) {
-    // In GXT mode, skip the runTask wrapper for visit.
-    if ((globalThis as any).__GXT_MODE__) {
-      const instance = await this._ensureInstance(options);
-      // Let transition errors propagate so assert.rejects can catch them.
-      // Use Promise.race with a timeout to avoid hanging on stuck transitions,
-      // but re-throw any real errors.
-      let visitError: unknown;
-      try {
-        await Promise.race([
-          instance.visit(url).catch((e: unknown) => { visitError = e; }),
-          new Promise<void>(resolve => setTimeout(resolve, 2000)),
-        ]);
-      } catch {
-        // Promise.race machinery error - ignore
-      }
-      await runLoopSettled();
-      if (visitError) {
-        throw visitError;
-      }
-      return instance;
-    }
-
     // Create the instance
     let instance = await this._ensureInstance(options).then((instance) =>
       runTask(() => instance.visit(url))
