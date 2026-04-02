@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
       // Deduplicate GXT internal modules so they share one reactive core.
       // Vite's dev server already follows symlinks for /@fs/ serving, but
       // this plugin ensures consistency in environments where that doesn't work.
-      ...(useGxt ? [gxtModuleDedup()] : []),
+      ...(useGxt ? [gxtModuleDedup(), gxtPatchVmMemoryLeaks()] : []),
       // Use gxt compiler for glimmer-next or templateTag for standard Ember
       useGxt
         ? compiler(mode, {
@@ -209,6 +209,49 @@ function gxtModuleDedup() {
       if (!resolvedReal.startsWith(gxtRealDistDir)) return;
       try { statSync(resolvedReal); } catch { return; }
       return resolvedReal;
+    },
+  };
+}
+
+// Patch GXT VM to prevent unbounded growth of internal cell/formula tracking Sets
+// that cause "Array buffer allocation failed" OOM errors when running the full
+// test suite (8000+ tests in a single browser page).
+// In dev mode, the GXT VM adds every cell to a global Set (Lt) and every formula
+// to another Set (Ft). Cells are never removed. After thousands of tests the sets
+// grow to hundreds of thousands of entries and exhaust browser memory.
+// We surgically remove ONLY the Lt.add/Ft.add tracking calls while keeping all
+// other IS_DEV_MODE validation/error-handling logic intact.
+function gxtPatchVmMemoryLeaks() {
+  const gxtDistDir = resolve(projectRoot, 'packages/demo/node_modules/@lifeart/gxt/dist');
+  let gxtRealDistDir;
+  try { gxtRealDistDir = realpathSync(gxtDistDir); } catch { gxtRealDistDir = gxtDistDir; }
+  return {
+    name: 'gxt-patch-vm-memory-leaks',
+    enforce: 'pre',
+    transform(code, id) {
+      const cleanId = id.split('?')[0].split('#')[0];
+      // Only transform the VM chunk
+      if (!cleanId.startsWith(gxtDistDir) && !cleanId.startsWith(gxtRealDistDir)) return;
+      if (!cleanId.includes('vm-')) return;
+      if (!code.includes('IS_DEV_MODE')) return;
+
+      let patched = code;
+      // Remove cell tracking: IS_DEV_MODE&&(this._debugName=m(e),Lt.add(this))
+      // Pattern in the Ht (cell) constructor. We keep _debugName but remove the Set.add.
+      // The pattern looks like: IS_DEV_MODE&&(this._debugName=m(e),Lt.add(this))
+      // Lt is the all-cells Set that grows unbounded.
+      patched = patched.replace(
+        /IS_DEV_MODE&&\(this\._debugName=([^,]+),(\w+)\.add\(this\)\)/g,
+        'IS_DEV_MODE&&(this._debugName=$1)'
+      );
+      // Remove formula tracking: IS_DEV_MODE&&(this._debugName=m(e),Ft.add(this))
+      // Ft is the all-formulas Set (already cleaned on destroy, but grows between tests).
+      // The formula constructor has the same pattern with Ft.
+      // (This is already handled by the regex above since it matches both Lt and Ft patterns)
+
+      if (patched !== code) {
+        return { code: patched, map: null };
+      }
     },
   };
 }
