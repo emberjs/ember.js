@@ -1453,9 +1453,14 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 // Register built-in keyword helpers for GXT integration
 // These are simplified implementations for GXT since it doesn't have Glimmer VM's reference system
 (globalThis as any).__EMBER_BUILTIN_HELPERS__ = {
-  // readonly: Returns the value as-is (GXT doesn't have two-way binding to protect against)
+  // readonly: Returns a readonly cell marker object.
+  // The component manager detects __isReadonly and provides an immutable attr
+  // (no .update()) while still allowing the value to flow downward.
   readonly: (value: any) => {
-    return typeof value === 'function' ? value() : value;
+    const resolved = typeof value === 'function' ? value() : value;
+    // If value is already a mut cell, wrap its value (strips mutability)
+    const unwrapped = resolved && resolved.__isMutCell ? resolved.value : resolved;
+    return { __isReadonly: true, __readonlyValue: unwrapped, get value() { const v = typeof value === 'function' ? value() : value; return v && v.__isMutCell ? v.value : v; } };
   },
   // mut: Returns a setter function for two-way binding.
   // When used with (fn (mut this.val) newValue), the returned function

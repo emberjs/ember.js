@@ -431,12 +431,15 @@ function createComponentInstance(
   const attrs: Record<string, any> = {};
   const argGetters: Record<string, Function> = {};
   const lastArgValues: Record<string, any> = {};
+  const readonlyKeys = new Set<string>();
+  const mutCellKeys = new Set<string>();
+  const rawArgGetters: Record<string, Function> = {}; // unprocessed getters for mut cell lookup
 
   // Process args into Ember's expected format
   const keys = extractArgKeys(args);
 
   for (const key of keys) {
-    const { raw, resolved, getter } = getArgValue(args, key);
+    const { raw, resolved, getter, isMutCell, isReadonly, mutCell } = getArgValue(args, key);
 
     // Skip classNames - handled separately in wrapper building
     if (key === 'classNames') {
@@ -447,6 +450,22 @@ function createComponentInstance(
       continue;
     }
 
+    // Track readonly and mut cell keys
+    if (isReadonly) {
+      readonlyKeys.add(key);
+    }
+    if (isMutCell) {
+      mutCellKeys.add(key);
+    }
+
+    // Store the raw (unprocessed) arg getter for mut cell detection later
+    const descriptor = Object.getOwnPropertyDescriptor(args, key);
+    if (descriptor?.get) {
+      rawArgGetters[key] = descriptor.get;
+    } else if (typeof raw === 'function') {
+      rawArgGetters[key] = raw;
+    }
+
     props[key] = resolved;
     lastArgValues[key] = resolved;
 
@@ -454,12 +473,24 @@ function createComponentInstance(
       argGetters[key] = getter;
     }
 
-    // Build attrs with .value pattern (MutableCell)
-    attrs[key] = {
-      get value() {
-        return getter ? getter() : resolved;
-      }
-    };
+    // Build attrs based on the type of binding:
+    if (isMutCell && mutCell) {
+      // For mut cells: attrs[key] IS the mutCell directly (has .value and .update())
+      attrs[key] = mutCell;
+    } else if (isReadonly) {
+      // For readonly: attrs[key] IS the plain value (no .update())
+      attrs[key] = resolved;
+    } else {
+      // For regular args: automatic mutable binding with .value and .update()
+      attrs[key] = {
+        get value() {
+          return getter ? getter() : resolved;
+        },
+        update(newValue: any) {
+          // This will be replaced with a proper updater in createRenderContext
+        }
+      };
+    }
   }
 
   // Capture 'class' getter separately — it was excluded from extractArgKeys
@@ -525,6 +556,10 @@ function createComponentInstance(
   // Ensure arg tracking is on the instance
   if (!instance.__argGetters) instance.__argGetters = argGetters;
   if (!instance.__lastArgValues) instance.__lastArgValues = lastArgValues;
+  // Store mut/readonly tracking for two-way binding and attrs
+  instance.__gxtReadonlyKeys = readonlyKeys;
+  instance.__gxtMutCellKeys = mutCellKeys;
+  instance.__gxtRawArgGetters = rawArgGetters;
   // Store mut arg sources for two-way binding via (mut this.prop) support
   if (args?.__mutArgSources) {
     instance.__mutArgSources = args.__mutArgSources;
@@ -552,9 +587,14 @@ function createComponentInstance(
           if ((instance as any).__gxtDispatchingArgs) {
             localValue = v;
             useLocal = false;
+            // Clear local override when arg update comes from parent
+            if (instance.__gxtLocalOverrides) instance.__gxtLocalOverrides.delete(key);
           } else {
             localValue = v;
             useLocal = true;
+            // Track local override so __gxtSyncAllWrappers skips this key
+            if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
+            instance.__gxtLocalOverrides.add(key);
           }
         },
         configurable: true,
@@ -643,6 +683,12 @@ function createComponentInstance(
       // Skip propagation during attrs dispatch (prevents infinite loops)
       if ((instance as any).__gxtDispatchingArgs) return;
 
+      // Skip two-way propagation for readonly keys (readonly prevents upstream mutation)
+      if (readonlyKeys.has(key)) {
+        if (origPDC) try { origPDC(key, value); } catch { /* ignore */ }
+        return;
+      }
+
       // Only propagate binding logic for keys that were passed as args
       if (!argKeySet.has(key)) {
         if (origPDC) try { origPDC(key, value); } catch { /* ignore */ }
@@ -651,13 +697,34 @@ function createComponentInstance(
 
       const resolvedValue = arguments.length >= 2 ? value : instance[key];
 
+      // Check if the raw arg getter returns a mut cell — use .update() for direct propagation
+      const rawGetter = rawArgGetters[key];
+      if (rawGetter) {
+        try {
+          const rawVal = rawGetter();
+          if (rawVal && rawVal.__isMutCell) {
+            rawVal.update(resolvedValue);
+            if (triggerReRender && instance.parentView) {
+              triggerReRender(instance.parentView, key);
+            }
+            return;
+          }
+        } catch { /* ignore */ }
+      }
+
       // Try detected binding first
       const binding = twoWayBindings[key];
       if (binding) {
         const { sourceCtx, sourceKey } = binding;
         if (sourceCtx && sourceKey) {
-          sourceCtx[sourceKey] = resolvedValue;
-          if (triggerReRender) triggerReRender(sourceCtx, sourceKey);
+          // Use set() if available to trigger PROPERTY_DID_CHANGE chain on the source
+          const sourceInstance = sourceCtx.__gxtRawTarget || sourceCtx;
+          if (typeof sourceInstance.set === 'function') {
+            sourceInstance.set(sourceKey, resolvedValue);
+          } else {
+            sourceCtx[sourceKey] = resolvedValue;
+          }
+          if (triggerReRender) triggerReRender(sourceInstance, sourceKey);
           return;
         }
       }
@@ -758,7 +825,13 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
       if (newValue !== oldValue) {
         // Update the instance property (but not elementId - it's frozen)
         if (key !== 'elementId') {
-          instance[key] = newValue;
+          // Set dispatching flag so setters know this is an arg update from parent
+          try {
+            instance.__gxtDispatchingArgs = true;
+            instance[key] = newValue;
+          } finally {
+            instance.__gxtDispatchingArgs = false;
+          }
         }
         lastArgValues[key] = newValue;
       }
@@ -803,12 +876,34 @@ function extractArgKeys(args: any): string[] {
 /**
  * Get both raw and resolved value for an arg.
  */
-function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?: () => any } {
+function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?: () => any; isMutCell?: boolean; isReadonly?: boolean; mutCell?: any } {
   // Check if the arg is defined as a getter (GXT compiles args as getters)
   const descriptor = Object.getOwnPropertyDescriptor(args, key);
   if (descriptor?.get) {
     // Arg is a getter - capture the getter function for reactive updates
-    const resolved = descriptor.get();
+    let resolved = descriptor.get();
+    // Detect mut cell: the getter returns a mutCell function
+    if (resolved && resolved.__isMutCell) {
+      const mutCell = resolved;
+      // Build an unwrapping getter that returns the plain value (not the mutCell)
+      const mutUnwrapGetter = () => {
+        const v = descriptor.get!();
+        if (v && v.__isMutCell) return v.value;
+        return v;
+      };
+      return { raw: descriptor.get, resolved: mutCell.value, getter: mutUnwrapGetter, isMutCell: true, mutCell };
+    }
+    // Detect readonly cell: the getter returns { __isReadonly, __readonlyValue }
+    if (resolved && resolved.__isReadonly) {
+      const readonlyVal = resolved.__readonlyValue;
+      // Build a getter that unwraps readonly each time for reactivity
+      const readonlyGetter = () => {
+        const v = descriptor.get!();
+        if (v && v.__isReadonly) return v.__readonlyValue;
+        return typeof v === 'function' ? v() : v;
+      };
+      return { raw: descriptor.get, resolved: readonlyVal, getter: readonlyGetter, isReadonly: true };
+    }
     return { raw: descriptor.get, resolved, getter: descriptor.get };
   }
   const raw = args[key];
@@ -820,7 +915,27 @@ function getArgValue(args: any, key: string): { raw: any; resolved: any; getter?
   if (raw && raw.__isFnHelper) {
     return { raw, resolved: raw };
   }
-  const resolved = typeof raw === 'function' ? raw() : raw;
+  let resolved = typeof raw === 'function' ? raw() : raw;
+  // Detect mut cell from non-getter args
+  if (resolved && resolved.__isMutCell) {
+    const mutCell = resolved;
+    const mutUnwrapGetter = typeof raw === 'function' ? () => {
+      const v = raw();
+      if (v && v.__isMutCell) return v.value;
+      return v;
+    } : undefined;
+    return { raw, resolved: mutCell.value, getter: mutUnwrapGetter, isMutCell: true, mutCell };
+  }
+  // Detect readonly cell from non-getter args
+  if (resolved && resolved.__isReadonly) {
+    const readonlyVal = resolved.__readonlyValue;
+    const readonlyGetter = typeof raw === 'function' ? () => {
+      const v = raw();
+      if (v && v.__isReadonly) return v.__readonlyValue;
+      return typeof v === 'function' ? v() : v;
+    } : undefined;
+    return { raw, resolved: readonlyVal, getter: readonlyGetter, isReadonly: true };
+  }
   return { raw, resolved, getter: typeof raw === 'function' ? raw : undefined };
 }
 
@@ -1292,7 +1407,16 @@ const _updatedInstances: any[] = [];
             extraCell.update(newValue);
           }
         } else {
-          if (cell.__value !== newValue) {
+          // Track last known arg value for local override detection
+          const lastKnownArg = 'lastArgValue' in cellEntry ? cellEntry.lastArgValue : cell.__value;
+          const argActuallyChanged = lastKnownArg !== newValue;
+          cellEntry.lastArgValue = newValue;
+
+          // Skip cell update if the key is locally overridden and the arg hasn't actually changed from parent
+          const isLocallyOverridden = entry.instance?.__gxtLocalOverrides?.has(key);
+          if (isLocallyOverridden && !argActuallyChanged) {
+            // Local override is in effect and arg hasn't changed — skip
+          } else if (cell.__value !== newValue || (argActuallyChanged && isLocallyOverridden)) {
             cell.update(newValue);
             if (entry.instance && key !== 'class' && key !== 'classNames') {
               // Set dispatching flag so the setter knows this is an arg update
@@ -2143,35 +2267,134 @@ function createRenderContext(
     return false;
   };
 
-  // Set up attrs proxy for this.attrs.argName.value access
+  // Set up attrs proxy for this.attrs.argName.value / this.args.argName access
   const attrsProxy: Record<string, any> = {};
   const cellForFn = (globalThis as any).__gxtCellFor;
   // Store arg cells for reactive updates
   const argCells: Record<string, any> = {};
+  // Build Ember-style attrs object separately: mut→mutCell, readonly→plain, regular→{value,update()}
+  const emberAttrs: Record<string, any> = {};
+  const _readonlyKeys = instance?.__gxtReadonlyKeys || new Set<string>();
+  const _mutCellKeys = instance?.__gxtMutCellKeys || new Set<string>();
+  const _rawArgGetters = instance?.__gxtRawArgGetters || {};
+  const triggerReRenderForAttrs = (globalThis as any).__gxtTriggerReRender;
   if (args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
       if (key.startsWith('Symbol') || _isGxtInternalArgKey(key)) continue;
 
-      // Resolve the initial value
+      // Resolve the initial value, unwrapping mut/readonly cells for the args proxy
       const descriptor = Object.getOwnPropertyDescriptor(args, key);
       const getter = descriptor?.get;
-      const initialVal = getter ? getter() : (typeof args[key] === 'function' ? args[key]() : args[key]);
+      let rawVal = getter ? getter() : (typeof args[key] === 'function' ? args[key]() : args[key]);
+      // Unwrap mut cells for args proxy (template rendering needs plain values)
+      let initialVal = rawVal;
+      if (rawVal && rawVal.__isMutCell) {
+        initialVal = rawVal.value;
+      } else if (rawVal && rawVal.__isReadonly) {
+        initialVal = rawVal.__readonlyValue;
+      }
+
+      // Build an unwrapping getter for the args proxy
+      const unwrappingGetter = getter ? () => {
+        const v = getter();
+        if (v && v.__isMutCell) return v.value;
+        if (v && v.__isReadonly) return v.__readonlyValue;
+        return v;
+      } : undefined;
 
       if (cellForFn && getter) {
         // Create a cell for this arg so GXT's formula tracking picks up the dependency.
         // When the parent context changes, we update this cell which triggers re-evaluation.
         const cell = cellForFn(attrsProxy, key, /* skipDefine */ false);
         cell.update(initialVal);
-        argCells[key] = { cell, getter };
+        argCells[key] = { cell, getter: unwrappingGetter || getter };
       } else {
         Object.defineProperty(attrsProxy, key, {
           get() {
             const val = args[key];
-            return typeof val === 'function' ? val() : val;
+            let resolved = typeof val === 'function' ? val() : val;
+            if (resolved && resolved.__isMutCell) return resolved.value;
+            if (resolved && resolved.__isReadonly) return resolved.__readonlyValue;
+            return resolved;
           },
           enumerable: true,
           configurable: true,
         });
+      }
+
+      // Build Ember-style attrs entry
+      if (_mutCellKeys.has(key)) {
+        // For mut cells: attrs[key] IS the mutCell (has .value and .update())
+        // Use a getter so we always get the current mut cell
+        const rawGetter = _rawArgGetters[key];
+        if (rawGetter) {
+          Object.defineProperty(emberAttrs, key, {
+            get() {
+              const v = rawGetter();
+              if (v && v.__isMutCell) return v;
+              return v;
+            },
+            enumerable: true,
+            configurable: true,
+          });
+        } else if (rawVal && rawVal.__isMutCell) {
+          emberAttrs[key] = rawVal;
+        } else {
+          emberAttrs[key] = initialVal;
+        }
+      } else if (_readonlyKeys.has(key)) {
+        // For readonly: attrs[key] IS the plain value (no .update())
+        // Use a getter for reactivity
+        if (unwrappingGetter) {
+          Object.defineProperty(emberAttrs, key, {
+            get() { return unwrappingGetter(); },
+            enumerable: true,
+            configurable: true,
+          });
+        } else {
+          emberAttrs[key] = initialVal;
+        }
+      } else {
+        // For regular args: automatic mutable binding with .value and .update()
+        const _getter = unwrappingGetter || getter;
+        const _inst = instance;
+        const _key = key;
+        emberAttrs[key] = {
+          get value() {
+            if (_inst) {
+              try { return _inst[_key]; } catch { /* ignore */ }
+            }
+            if (_getter) {
+              try { return _getter(); } catch { /* ignore */ }
+            }
+            return initialVal;
+          },
+          update(newValue: any) {
+            // Use set() which triggers PROPERTY_DID_CHANGE for upstream propagation
+            if (_inst) {
+              if (typeof _inst.set === 'function') {
+                _inst.set(_key, newValue);
+              } else {
+                _inst[_key] = newValue;
+                // Also propagate upstream
+                if (_inst.__gxtTwoWayBindings?.[_key]) {
+                  const binding = _inst.__gxtTwoWayBindings[_key];
+                  if (binding.sourceCtx && binding.sourceKey) {
+                    const srcInst = binding.sourceCtx.__gxtRawTarget || binding.sourceCtx;
+                    if (typeof srcInst.set === 'function') {
+                      srcInst.set(binding.sourceKey, newValue);
+                    } else {
+                      binding.sourceCtx[binding.sourceKey] = newValue;
+                    }
+                    if (triggerReRenderForAttrs) triggerReRenderForAttrs(srcInst, binding.sourceKey);
+                  }
+                }
+              }
+              // Always trigger re-render on the instance itself
+              if (triggerReRenderForAttrs) triggerReRenderForAttrs(_inst, _key);
+            }
+          }
+        };
       }
     }
   }
@@ -2189,14 +2412,17 @@ function createRenderContext(
   // This enables ...attributes forwarding for both classic and tagless components.
   attrsProxy[$PROPS_SYMBOL] = fw || [[], [], []];
 
-  renderContext.attrs = attrsProxy;
+  // Use Ember-style attrs (with .value/.update() for mutable, plain for readonly)
+  // for instance.attrs, but attrsProxy (unwrapped values) for args/@arg access.
+  renderContext.attrs = Object.keys(emberAttrs).length > 0 ? emberAttrs : attrsProxy;
   // GXT accesses @foo as this.args.foo, so also set args
   renderContext.args = attrsProxy;
   // GXT runtime compiler uses Symbol.for('gxt-args') for this[$args].foo
   renderContext[$ARGS_KEY] = attrsProxy;
 
-  if (instance && !instance.attrs) {
-    instance.attrs = attrsProxy;
+  if (instance) {
+    // Always set attrs to the Ember-style object (with .value/.update() or plain values)
+    instance.attrs = Object.keys(emberAttrs).length > 0 ? emberAttrs : attrsProxy;
   }
   if (instance && !instance.args) {
     instance.args = attrsProxy;
@@ -2301,26 +2527,99 @@ function createRenderContext(
       } else {
         // Install a cell on the render context for this arg.
         // GXT formulas reading renderContext.key will track this cell.
-        try {
-          const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
-          const initialVal = argVal;
-          cell.update(initialVal);
-          renderCtxArgCells[key] = { cell, getter };
-          // Register array owner for KVO array mutation tracking (pushObject, shiftObject, etc.)
-          const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
-          if (_regArrOwner && Array.isArray(initialVal)) {
-            _regArrOwner(initialVal, renderContext, key);
+        //
+        // Check if the property has a computed/native getter on the prototype chain.
+        // If so, we must NOT overwrite it — use cellFor with skipDefine=false (preserves computed).
+        // For plain data properties, use skipDefine=true with custom getter/setter for local override tracking.
+        let hasComputedGetter = false;
+        if (instance) {
+          let proto = Object.getPrototypeOf(instance);
+          while (proto && proto !== Object.prototype) {
+            const desc = Object.getOwnPropertyDescriptor(proto, key);
+            if (desc?.get) {
+              hasComputedGetter = true;
+              break;
+            }
+            proto = Object.getPrototypeOf(proto);
           }
-        } catch {
-          // Fallback to plain getter
+        }
+
+        if (hasComputedGetter) {
+          // Property has a computed getter — use cellFor with skipDefine=false
+          // to preserve the existing computed property behavior
           try {
-            const g = getter;
+            const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
+            const initialVal = argVal;
+            cell.update(initialVal);
+            renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
+            const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
+            if (_regArrOwner && Array.isArray(initialVal)) {
+              _regArrOwner(initialVal, renderContext, key);
+            }
+          } catch {
+            try {
+              const g = getter;
+              Object.defineProperty(renderContext, key, {
+                get() { return g(); },
+                enumerable: true,
+                configurable: true,
+              });
+            } catch { /* ignore */ }
+          }
+        } else {
+          // Plain data property — use skipDefine=true with custom getter/setter for local override tracking.
+          try {
+            const cell = cellForFn2(renderContext, key, /* skipDefine */ true);
+            const initialVal = argVal;
+            cell.update(initialVal);
+            renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
+            // Install custom getter/setter that reads from cell (for GXT tracking)
+            // but also tracks local overrides
+            let _localVal = initialVal;
+            let _useLocal = false;
             Object.defineProperty(renderContext, key, {
-              get() { return g(); },
+              get() {
+                // Read cell.value to register GXT formula tracking dependency
+                try { cell.value; } catch { /* ignore */ }
+                return _useLocal ? _localVal : (getter ? getter() : _localVal);
+              },
+              set(v: any) {
+                if ((instance as any).__gxtDispatchingArgs) {
+                  _localVal = v;
+                  _useLocal = false;
+                  cell.update(v);
+                  // Clear local override when arg update comes from parent
+                  if (instance?.__gxtLocalOverrides) instance.__gxtLocalOverrides.delete(key);
+                } else {
+                  _localVal = v;
+                  _useLocal = true;
+                  cell.update(v);
+                  // Track local override
+                  if (instance) {
+                    if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
+                    instance.__gxtLocalOverrides.add(key);
+                  }
+                }
+              },
               enumerable: true,
               configurable: true,
             });
-          } catch { /* ignore */ }
+            // Register array owner for KVO array mutation tracking (pushObject, shiftObject, etc.)
+            const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
+            if (_regArrOwner && Array.isArray(initialVal)) {
+              _regArrOwner(initialVal, renderContext, key);
+            }
+          } catch {
+            // Fallback to plain getter
+            try {
+              const g = getter;
+              Object.defineProperty(renderContext, key, {
+                get() { return g(); },
+                enumerable: true,
+                configurable: true,
+              });
+            } catch { /* ignore */ }
+          }
         }
       }
     } else if (getter) {
@@ -2358,7 +2657,7 @@ function createRenderContext(
         getter: existing.getter,
         extraCell: argCells[key].cell, // attrsProxy cell for @arg tracking
         initOverridden: existing.initOverridden,
-        lastArgValue: existing.initOverridden ? existing.getter() : undefined,
+        lastArgValue: existing.lastArgValue !== undefined ? existing.lastArgValue : (existing.initOverridden ? existing.getter() : undefined),
       };
     } else {
       mergedArgCells[key] = argCells[key];
