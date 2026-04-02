@@ -69,6 +69,23 @@ const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
 // GXT uses the plain string 'args' as the key ($args = 'args' in shared.ts)
 const $ARGS_KEY = 'args';
 
+// GXT internal keys that should NOT appear in user-visible args/attrs objects.
+// These are set by compile.ts / manager.ts on the args object for internal plumbing.
+const GXT_INTERNAL_ARG_KEYS = new Set([
+  '$slots', '$fw', '$_scope', '$_eval', '$_hasBlock', '$_hasBlockParams',
+  '__thunkId', 'named', 'positional', 'hash',
+]);
+
+/** Returns true if `key` is a GXT internal arg key that should be hidden from user code. */
+function _isGxtInternalArgKey(key: string): boolean {
+  if (GXT_INTERNAL_ARG_KEYS.has(key)) return true;
+  if (key.startsWith('$_')) return true;
+  // Filter __xxx__ double-underscore internal keys EXCEPT __hasBlock__ and __hasBlockParams__
+  // which are needed for component block detection.
+  if (key.startsWith('__') && key !== '__hasBlock__' && key !== '__hasBlockParams__') return true;
+  return false;
+}
+
 // Auto-incrementing ID for wrapper elements
 let emberViewIdCounter = 0;
 
@@ -776,7 +793,7 @@ function extractArgKeys(args: any): string[] {
   if (!args || typeof args !== 'object') return [];
 
   return Object.keys(args).filter(key =>
-    !key.startsWith('__') &&
+    !_isGxtInternalArgKey(key) &&
     key !== 'class' &&
     key !== 'classNames' &&  // Don't overwrite component's classNames property
     !key.startsWith('Symbol')
@@ -2083,7 +2100,12 @@ function createRenderContext(
   // GXT templates use $slots.default() for {{yield}}
   const slots = args?.$slots || {};
   renderContext[$SLOTS_SYMBOL] = slots;
-  renderContext.$slots = slots;
+  Object.defineProperty(renderContext, '$slots', {
+    value: slots,
+    writable: true,
+    enumerable: false,
+    configurable: true,
+  });
 
   // GXT FwType is [TagProp[], TagAttr[], TagEvent[]] - all must be arrays
   // fw[0] = props (properties to set on element)
@@ -2128,7 +2150,7 @@ function createRenderContext(
   const argCells: Record<string, any> = {};
   if (args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
-      if (key.startsWith('Symbol')) continue;
+      if (key.startsWith('Symbol') || _isGxtInternalArgKey(key)) continue;
 
       // Resolve the initial value
       const descriptor = Object.getOwnPropertyDescriptor(args, key);
@@ -2965,6 +2987,14 @@ const $_MANAGERS = {
             const desc = Object.getOwnPropertyDescriptor(args, key);
             if (desc) {
               Object.defineProperty(mergedArgs, key, desc);
+            }
+          }
+          // Also copy non-enumerable GXT internal properties that are needed
+          // for rendering ($slots, __thunkId). Note: skip $_scope to avoid
+          // creating circular references (it will be set during rendering).
+          for (const internalKey of ['$slots', '__thunkId']) {
+            if (internalKey in args && !(internalKey in mergedArgs)) {
+              mergedArgs[internalKey] = args[internalKey];
             }
           }
         }
@@ -4130,10 +4160,10 @@ function handleCustomManagedComponent(
         actualManager.updateComponent(instance, newCapturedArgs);
       }
 
-      // Update live named/positional on instance.args
+      // Update live named/positional on instance.args (non-enumerable to hide from user code)
       if (instance?.args) {
-        instance.args.named = liveNamed;
-        instance.args.positional = livePositional;
+        Object.defineProperty(instance.args, 'named', { value: liveNamed, writable: true, enumerable: false, configurable: true });
+        Object.defineProperty(instance.args, 'positional', { value: livePositional, writable: true, enumerable: false, configurable: true });
       }
 
       // Call didUpdateComponent if supported
@@ -4175,14 +4205,14 @@ function handleCustomManagedComponent(
     const container = document.createDocumentFragment();
     const renderContext = createRenderContext(context, args, fw, owner);
 
-    // Augment renderContext.args with named/positional sub-objects
+    // Augment renderContext.args with named/positional sub-objects (non-enumerable)
     if (renderContext.args) {
-      renderContext.args.named = liveNamed;
-      renderContext.args.positional = livePositional;
+      Object.defineProperty(renderContext.args, 'named', { value: liveNamed, writable: true, enumerable: false, configurable: true });
+      Object.defineProperty(renderContext.args, 'positional', { value: livePositional, writable: true, enumerable: false, configurable: true });
     }
     if (instance && instance !== context && instance.args) {
-      instance.args.named = liveNamed;
-      instance.args.positional = livePositional;
+      Object.defineProperty(instance.args, 'named', { value: liveNamed, writable: true, enumerable: false, configurable: true });
+      Object.defineProperty(instance.args, 'positional', { value: livePositional, writable: true, enumerable: false, configurable: true });
     }
 
     renderTemplateWithParentView(resolvedTemplate, renderContext, container, context);

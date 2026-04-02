@@ -118,6 +118,19 @@ import { installEmberWrappers } from './ember-gxt-wrappers';
 
 const _SLOTS_SYM = Symbol.for('gxt-slots');
 
+/**
+ * Set a GXT-internal property on an object as non-enumerable so it doesn't
+ * leak into user-visible iteration (Object.keys, each-in, etc.).
+ */
+function _setInternalProp(obj: any, key: string, value: any): void {
+  Object.defineProperty(obj, key, {
+    value,
+    writable: true,
+    enumerable: false,
+    configurable: true,
+  });
+}
+
 // Ensure global scope is set up
 if (!isGlobalScopeReady()) {
   setupGlobalScope();
@@ -1554,15 +1567,18 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   },
   // hash: Creates an object from named arguments (handled specially)
   hash: (obj: any) => obj,
-  // gxt-entries-of: Converts an object to [[key, value], ...] for {{#each-in}}
-  'gxt-entries-of': (obj: any) => {
+  // gxtEntriesOf: Converts an object to [{k, v}, ...] for {{#each-in}}
+  // Returns objects with .k and .v properties (not arrays) since GXT
+  // doesn't support numeric property access like entry.0.
+  'gxtEntriesOf': (obj: any) => {
     const resolved = typeof obj === 'function' ? obj() : obj;
     if (!resolved || typeof resolved !== 'object') return [];
     // Support Map-like objects
     if (typeof resolved.entries === 'function' && typeof resolved.forEach === 'function') {
-      return Array.from(resolved.entries());
+      return Array.from(resolved.entries()).map(([k, v]: any) => ({ k, v }));
     }
-    return Object.keys(resolved).map(key => [key, (resolved as any)[key]]);
+    const keys = Object.keys(resolved);
+    return keys.map(key => ({ k: key, v: (resolved as any)[key] }));
   },
   // get: Dynamic property lookup — supports dot-path keys like 'foo.bar'
   get: (obj: any, key: any) => {
@@ -1954,7 +1970,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           // Extract slots from GXT args for {{yield}} support
           const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
           if (gxtSlots && typeof gxtSlots === 'object') {
-            namedArgs.$slots = gxtSlots;
+            _setInternalProp(namedArgs, '$slots', gxtSlots);
           }
         }
 
@@ -1970,17 +1986,53 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     if (typeof comp === 'function' && comp.__stringComponentName) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
+        const $PROPS = Symbol.for('gxt-props');
+        const $SLOTS = Symbol.for('gxt-slots');
         const namedArgs: any = {};
+        let fw = null;
         if (args) {
-          for (const key of Object.keys(args)) {
-            if (key === 'args' || key.startsWith('$')) continue;
-            const desc = Object.getOwnPropertyDescriptor(args, key);
-            if (desc) {
-              Object.defineProperty(namedArgs, key, desc);
+          // args may be GXT tagProps format: [props, attrs, events]
+          if (Array.isArray(args) && args.length >= 2 && Array.isArray(args[1])) {
+            fw = args;
+            // Extract named args from attrs array (index 1)
+            // Each entry is ["@key", value] or ["@key", () => value]
+            const attrs = args[1];
+            for (const entry of attrs) {
+              if (Array.isArray(entry) && entry.length >= 2) {
+                let key = entry[0];
+                const val = entry[1];
+                // Strip @ prefix for named args
+                if (typeof key === 'string' && key.startsWith('@')) {
+                  key = key.slice(1);
+                }
+                if (typeof val === 'function' && !val.prototype) {
+                  Object.defineProperty(namedArgs, key, {
+                    get: val,
+                    enumerable: true,
+                    configurable: true,
+                  });
+                } else {
+                  namedArgs[key] = val;
+                }
+              }
+            }
+            // Also extract slots from GXT args
+            const gxtSlots = args[$SLOTS as any];
+            if (gxtSlots) {
+              _setInternalProp(namedArgs, '$slots', gxtSlots);
+            }
+          } else {
+            // Plain object format
+            for (const key of Object.keys(args)) {
+              if (key === 'args' || key.startsWith('$')) continue;
+              const desc = Object.getOwnPropertyDescriptor(args, key);
+              if (desc) {
+                Object.defineProperty(namedArgs, key, desc);
+              }
             }
           }
         }
-        const handleResult = managers.component.handle(comp, namedArgs, null, ctx);
+        const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
         if (typeof handleResult === 'function') {
           return handleResult();
         }
@@ -2020,7 +2072,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           }
           const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
           if (gxtSlots && typeof gxtSlots === 'object') {
-            namedArgs.$slots = gxtSlots;
+            _setInternalProp(namedArgs, '$slots', gxtSlots);
           }
         }
         const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
@@ -2060,7 +2112,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           }
           const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
           if (gxtSlots && typeof gxtSlots === 'object') {
-            namedArgs.$slots = gxtSlots;
+            _setInternalProp(namedArgs, '$slots', gxtSlots);
           }
         }
         const handleResult = managers.component.handle(comp, namedArgs, fw, ctx);
@@ -2147,7 +2199,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             const defaultSlotFn = (slotCtx: any, ...params: any[]) => {
               return children.map((child: any) => typeof child === 'function' ? child() : child);
             };
-            namedArgs.$slots = { default: defaultSlotFn };
+            _setInternalProp(namedArgs, '$slots', { default: defaultSlotFn });
           }
 
           const handleResult = managers.component.handle(resolvedTag, namedArgs, fw, ctx);
@@ -2218,7 +2270,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 return child;
               });
             };
-            dynArgs.$slots = { default: defaultSlotFn };
+            _setInternalProp(dynArgs, '$slots', { default: defaultSlotFn });
           }
 
           // Build fw (forwarding) structure — separate props (fw[0]) from attrs (fw[1])
@@ -2319,7 +2371,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 return child;
               });
             };
-            dynArgs.$slots = { default: defaultSlotFn };
+            _setInternalProp(dynArgs, '$slots', { default: defaultSlotFn });
           }
 
           // Build fw (forwarding) structure — separate props (fw[0]) from attrs (fw[1])
@@ -3023,7 +3075,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
         // Pass slots via args so manager.ts can access them.
         // Set on both string key and Symbol key to survive GXT's slot processing.
-        args.$slots = slots;
+        _setInternalProp(args, '$slots', slots);
         args[Symbol.for('gxt-slots')] = slots;
 
         // Return a THUNK that renders the component when called
@@ -3045,7 +3097,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Now evaluate args and render the component
           // The args getters will access block params from the stack
           // Pass the stable thunkId to enable instance caching
-          (args as any).__thunkId = thunkId;
+          _setInternalProp(args as any, '__thunkId', thunkId);
           const handleResult = managers.component.handle(kebabName, args, fw, ctx);
           if (typeof handleResult === 'function') {
             return handleResult();
@@ -4853,24 +4905,36 @@ export function precompileTemplate(templateString: string, options?: {
     transformedTemplate = transformedTemplate.replace(/\{\{this\}\}/g, '{{this.__gxtSelfString__}}');
   }
 
-  // Transform {{#each-in obj as |key value|}}...{{/each-in}} to
-  // {{#each (object-entries obj) as |entry|}}...{{/each-in}}
-  // where entry[0] = key, entry[1] = value
-  // This is handled by a runtime helper registered below
+  // Transform {{#each-in obj as |key value|}}...{{/each-in}} into
+  // GXT-compatible code. We convert to {{#each}} over entries stored as a computed
+  // property on the render context. Entries are {k, v} objects.
+  // Block param references are rewritten from |key value| to use entry.k/entry.v.
+  let _eachInSources: Array<{ propName: string; sourceExpr: string }> = [];
   if (/\{\{#each-in\b/.test(transformedTemplate)) {
+    let eachInIdx = 0;
+    // Collect all each-in blocks with their key/value param names
+    const eachInBlocks: Array<{ keyParam: string; valueParam: string; entryVar: string }> = [];
     transformedTemplate = transformedTemplate.replace(
-      /\{\{#each-in\s+([^\s}]+)\s+as\s*\|([^|]+)\|\s*\}\}/g,
-      (match, obj, params) => {
+      /\{\{#each-in\s+([^\s}]+)\s+as\s*\|([^|]+)\|\s*\}\}([\s\S]*?)\{\{\/each-in\}\}/g,
+      (match, obj, params, body) => {
         const parts = params.trim().split(/\s+/);
         const keyParam = parts[0] || 'key';
         const valueParam = parts[1] || 'value';
-        // Transform to {{#each}} over entries with destructuring via let
-        return `{{#each (gxt-entries-of ${obj}) as |__eachInEntry__|}}{{#let __eachInEntry__.0 __eachInEntry__.1 as |${keyParam} ${valueParam}|}}`;
+        const propName = `__gxtEachIn${eachInIdx}__`;
+        const entryVar = `__ei${eachInIdx}__`;
+        eachInIdx++;
+        _eachInSources.push({ propName, sourceExpr: obj });
+        // Rewrite block param references in the body:
+        // {{key}} -> {{entryVar.k}}, {{value}} -> {{entryVar.v}}
+        let rewrittenBody = body;
+        // Replace {{keyParam}} and {{valueParam}} with entry property access
+        // Be careful not to replace inside component tags or other block params
+        const keyRegex = new RegExp(`\\{\\{${keyParam}\\}\\}`, 'g');
+        const valueRegex = new RegExp(`\\{\\{${valueParam}\\}\\}`, 'g');
+        rewrittenBody = rewrittenBody.replace(keyRegex, `{{${entryVar}.k}}`);
+        rewrittenBody = rewrittenBody.replace(valueRegex, `{{${entryVar}.v}}`);
+        return `{{#each this.${propName} as |${entryVar}|}}${rewrittenBody}{{/each}}`;
       }
-    );
-    transformedTemplate = transformedTemplate.replace(
-      /\{\{\/each-in\}\}/g,
-      '{{/let}}{{/each}}'
     );
   }
 
@@ -5475,7 +5539,7 @@ export function precompileTemplate(templateString: string, options?: {
       const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
-        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper'];
+        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'gxtEntriesOf'];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
           const jsName = name.replace(/-/g, '_');
@@ -5489,6 +5553,28 @@ export function precompileTemplate(templateString: string, options?: {
           }
         }
       }
+      // Generate each-in entries getter injections
+      const eachInInjections: string[] = [];
+      if (_eachInSources.length > 0) {
+        const entriesOfFn = `globalThis.__EMBER_BUILTIN_HELPERS__["gxtEntriesOf"]`;
+        for (const { propName, sourceExpr } of _eachInSources) {
+          // Generate getter that computes entries from the source expression.
+          // sourceExpr is like "this.args" or "@model" etc.
+          // Convert @argName to $a.argName for the compiled context.
+          let jsExpr = sourceExpr;
+          if (jsExpr.startsWith('@')) {
+            jsExpr = `(this['args'] || {}).${jsExpr.slice(1)}`;
+          }
+          eachInInjections.push(
+            `if (!Object.getOwnPropertyDescriptor(this, "${propName}")) {` +
+            `  Object.defineProperty(this, "${propName}", {` +
+            `    get() { return ${entriesOfFn}(${jsExpr}); },` +
+            `    configurable: true, enumerable: false` +
+            `  });` +
+            `}`
+          );
+        }
+      }
       const templateFnCode = `
         "use strict";
         return function() {
@@ -5497,6 +5583,7 @@ export function precompileTemplate(templateString: string, options?: {
 
           ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}
+          ${eachInInjections.join('\n          ')}
           return ${modifiedCode};
         };
       `;
@@ -6172,7 +6259,12 @@ export function precompileTemplate(templateString: string, options?: {
           // so bare names resolve to component properties through cell getters.
           const argsObj = renderContext['args'] || renderContext[$ARGS_KEY] || {};
           if (!argsObj.$_scope) {
-            argsObj.$_scope = renderContext;
+            Object.defineProperty(argsObj, '$_scope', {
+              value: renderContext,
+              writable: true,
+              enumerable: false,
+              configurable: true,
+            });
           }
 
           // Push slots onto the global stack for nested has-block checks
