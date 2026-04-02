@@ -26,249 +26,6 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
   reopenRoute(name, options) {
     this.application.resolveRegistration(`route:${name}`).reopen(options);
   }
-
-  async queryParamsStickyTest1(urlPrefix) {
-    let assert = this.assert;
-
-    assert.expect(14);
-
-    await this.boot();
-    this.$link1.click();
-    await runLoopSettled();
-
-    this.assertCurrentPath(`${urlPrefix}/a-1`);
-
-    await this.setAndFlush(this.controller, 'q', 'lol');
-
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
-
-    this.$link2.click();
-    await runLoopSettled();
-
-    assert.equal(this.controller.get('q'), 'wat');
-    assert.equal(this.controller.get('z'), 0);
-    assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
-  }
-
-  async queryParamsStickyTest2(urlPrefix) {
-    let assert = this.assert;
-
-    assert.expect(24);
-
-    await this.boot();
-    this.expectedModelHookParams = { id: 'a-1', q: 'lol', z: 0 };
-
-    await this.transitionTo(`${urlPrefix}/a-1?q=lol`);
-
-    assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
-
-    this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
-
-    await this.transitionTo(`${urlPrefix}/a-2?q=lol`);
-
-    assert.deepEqual(
-      this.controller.get('model'),
-      { id: 'a-2' },
-      "controller's model changed to a-2"
-    );
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
-
-    this.expectedModelHookParams = { id: 'a-3', q: 'lol', z: 123 };
-
-    await this.transitionTo(`${urlPrefix}/a-3?q=lol&z=123`);
-
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 123);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol&z=123`);
-  }
-
-  async queryParamsStickyTest3(urlPrefix, articleLookup, applicationTemplate) {
-    let assert = this.assert;
-
-    assert.expect(32);
-
-    this.add('template:application', applicationTemplate);
-
-    await this.boot();
-    this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
-    await this.transitionTo(articleLookup, 'a-1');
-
-    assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
-    assert.equal(this.controller.get('q'), 'wat');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
-
-    this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
-    await this.transitionTo(articleLookup, 'a-2', { queryParams: { q: 'lol' } });
-
-    assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
-
-    this.expectedModelHookParams = { id: 'a-3', q: 'hay', z: 0 };
-    await this.transitionTo(articleLookup, 'a-3', { queryParams: { q: 'hay' } });
-
-    assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
-    assert.equal(this.controller.get('q'), 'hay');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=hay`);
-
-    this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 1 };
-    await this.transitionTo(articleLookup, 'a-2', { queryParams: { z: 1 } });
-
-    assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 1);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol&z=1`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=hay`);
-  }
-
-  async queryParamsStickyTest4(urlPrefix, articleLookup) {
-    let assert = this.assert;
-
-    assert.expect(24);
-
-    this.setupApplication();
-
-    this.reopenController(articleLookup, {
-      queryParams: { q: { scope: 'controller' } },
-    });
-
-    await this.visitApplication();
-    this.$link1.click();
-    await runLoopSettled();
-
-    this.assertCurrentPath(`${urlPrefix}/a-1`);
-
-    await this.setAndFlush(this.controller, 'q', 'lol');
-
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol`);
-
-    this.$link2.click();
-    await runLoopSettled();
-
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
-    assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
-
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol`);
-
-    this.expectedModelHookParams = { id: 'a-3', q: 'haha', z: 123 };
-    await this.transitionTo(`${urlPrefix}/a-3?q=haha&z=123`);
-
-    assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
-    assert.equal(this.controller.get('q'), 'haha');
-    assert.equal(this.controller.get('z'), 123);
-
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=haha`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=haha`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=haha&z=123`);
-
-    await this.setAndFlush(this.controller, 'q', 'woot');
-
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=woot`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=woot`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=woot&z=123`);
-  }
-
-  async queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
-    let assert = this.assert;
-
-    assert.expect(12);
-
-    await this.boot();
-    await this.transitionTo(commentsLookupKey, 'a-1');
-
-    let commentsCtrl = this.getController(commentsLookupKey);
-    assert.equal(commentsCtrl.get('page'), 1);
-    this.assertCurrentPath(`${urlPrefix}/a-1/comments`);
-
-    await this.setAndFlush(commentsCtrl, 'page', 2);
-    this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=2`);
-
-    await this.setAndFlush(commentsCtrl, 'page', 3);
-    this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=3`);
-
-    await this.transitionTo(commentsLookupKey, 'a-2');
-    assert.equal(commentsCtrl.get('page'), 1);
-    this.assertCurrentPath(`${urlPrefix}/a-2/comments`);
-
-    await this.transitionTo(commentsLookupKey, 'a-1');
-    assert.equal(commentsCtrl.get('page'), 3);
-    this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=3`);
-  }
-
-  async queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup, aboutTemplate) {
-    let assert = this.assert;
-
-    assert.expect(13);
-
-    this.setupApplication();
-
-    this.reopenRoute(articleLookup, {
-      resetController(controller, isExiting) {
-        this.controllerFor(commentsLookup).set('page', 1);
-        if (isExiting) {
-          controller.set('q', 'imdone');
-        }
-      },
-    });
-
-    this.add('template:about', aboutTemplate);
-
-    await this.visitApplication();
-    await this.transitionTo(commentsLookup, 'a-1');
-
-    let commentsCtrl = this.getController(commentsLookup);
-    assert.equal(commentsCtrl.get('page'), 1);
-    this.assertCurrentPath(`${urlPrefix}/a-1/comments`);
-
-    await this.setAndFlush(commentsCtrl, 'page', 2);
-    this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=2`);
-
-    await this.transitionTo(commentsLookup, 'a-2');
-    assert.equal(commentsCtrl.get('page'), 1);
-    assert.equal(this.controller.get('q'), 'wat');
-
-    await this.transitionTo(commentsLookup, 'a-1');
-    this.assertCurrentPath(`${urlPrefix}/a-1/comments`);
-    assert.equal(commentsCtrl.get('page'), 1);
-
-    await this.transitionTo('about');
-    assert.equal(
-      document.getElementById('one').getAttribute('href'),
-      `${urlPrefix}/a-1/comments?q=imdone`
-    );
-    assert.equal(document.getElementById('two').getAttribute('href'), `${urlPrefix}/a-2/comments`);
-  }
 }
 
 moduleFor(
@@ -356,18 +113,84 @@ moduleFor(
       });
     }
 
-    ["@test query params have 'model' stickiness by default"]() {
-      return this.queryParamsStickyTest1('/a');
+    async ["@test query params have 'model' stickiness by default"]() {
+      let assert = this.assert;
+
+      assert.expect(14);
+
+      await this.boot();
+      this.$link1.click();
+      await runLoopSettled();
+
+      this.assertCurrentPath('/a/a-1');
+
+      await this.setAndFlush(this.controller, 'q', 'lol');
+
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3');
+
+      this.$link2.click();
+      await runLoopSettled();
+
+      assert.equal(this.controller.get('q'), 'wat');
+      assert.equal(this.controller.get('z'), 0);
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3');
     }
 
-    ["@test query params have 'model' stickiness by default (url changes)"]() {
-      return this.queryParamsStickyTest2('/a');
+    async ["@test query params have 'model' stickiness by default (url changes)"]() {
+      let assert = this.assert;
+
+      assert.expect(24);
+
+      await this.boot();
+      this.expectedModelHookParams = { id: 'a-1', q: 'lol', z: 0 };
+
+      await this.transitionTo('/a/a-1?q=lol');
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
+
+      await this.transitionTo('/a/a-2?q=lol');
+
+      assert.deepEqual(
+        this.controller.get('model'),
+        { id: 'a-2' },
+        "controller's model changed to a-2"
+      );
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-3', q: 'lol', z: 123 };
+
+      await this.transitionTo('/a/a-3?q=lol&z=123');
+
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 123);
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3?q=lol&z=123');
     }
 
-    ["@test query params have 'model' stickiness by default (params-based transitions)"]() {
-      return this.queryParamsStickyTest3(
-        '/a',
-        'article',
+    async ["@test query params have 'model' stickiness by default (params-based transitions)"]() {
+      let assert = this.assert;
+
+      assert.expect(32);
+
+      this.add(
+        'template:application',
         precompileTemplate(
           `
       {{#each articles as |a|}}
@@ -376,21 +199,146 @@ moduleFor(
       `
         )
       );
+
+      await this.boot();
+      this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
+      await this.transitionTo('article', 'a-1');
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
+      assert.equal(this.controller.get('q'), 'wat');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
+      await this.transitionTo('article', 'a-2', { queryParams: { q: 'lol' } });
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-3', q: 'hay', z: 0 };
+      await this.transitionTo('article', 'a-3', { queryParams: { q: 'hay' } });
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
+      assert.equal(this.controller.get('q'), 'hay');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3?q=hay');
+
+      this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 1 };
+      await this.transitionTo('article', 'a-2', { queryParams: { z: 1 } });
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 1);
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=lol&z=1');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3?q=hay');
     }
 
-    ["@test 'controller' stickiness shares QP state between models"]() {
-      return this.queryParamsStickyTest4('/a', 'article');
+    async ["@test 'controller' stickiness shares QP state between models"]() {
+      let assert = this.assert;
+
+      assert.expect(24);
+
+      this.setupApplication();
+
+      this.reopenController('article', {
+        queryParams: { q: { scope: 'controller' } },
+      });
+
+      await this.visitApplication();
+      this.$link1.click();
+      await runLoopSettled();
+
+      this.assertCurrentPath('/a/a-1');
+
+      await this.setAndFlush(this.controller, 'q', 'lol');
+
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3?q=lol');
+
+      this.$link2.click();
+      await runLoopSettled();
+
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3?q=lol');
+
+      this.expectedModelHookParams = { id: 'a-3', q: 'haha', z: 123 };
+      await this.transitionTo('/a/a-3?q=haha&z=123');
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
+      assert.equal(this.controller.get('q'), 'haha');
+      assert.equal(this.controller.get('z'), 123);
+
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=haha');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=haha');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3?q=haha&z=123');
+
+      await this.setAndFlush(this.controller, 'q', 'woot');
+
+      assert.equal(this.$link1.getAttribute('href'), '/a/a-1?q=woot');
+      assert.equal(this.$link2.getAttribute('href'), '/a/a-2?q=woot');
+      assert.equal(this.$link3.getAttribute('href'), '/a/a-3?q=woot&z=123');
     }
 
-    ["@test 'model' stickiness is scoped to current or first dynamic parent route"]() {
-      return this.queryParamsStickyTest5('/a', 'comments');
+    async ["@test 'model' stickiness is scoped to current or first dynamic parent route"]() {
+      let assert = this.assert;
+
+      assert.expect(12);
+
+      await this.boot();
+      await this.transitionTo('comments', 'a-1');
+
+      let commentsCtrl = this.getController('comments');
+      assert.equal(commentsCtrl.get('page'), 1);
+      this.assertCurrentPath('/a/a-1/comments');
+
+      await this.setAndFlush(commentsCtrl, 'page', 2);
+      this.assertCurrentPath('/a/a-1/comments?page=2');
+
+      await this.setAndFlush(commentsCtrl, 'page', 3);
+      this.assertCurrentPath('/a/a-1/comments?page=3');
+
+      await this.transitionTo('comments', 'a-2');
+      assert.equal(commentsCtrl.get('page'), 1);
+      this.assertCurrentPath('/a/a-2/comments');
+
+      await this.transitionTo('comments', 'a-1');
+      assert.equal(commentsCtrl.get('page'), 3);
+      this.assertCurrentPath('/a/a-1/comments?page=3');
     }
 
-    ['@test can reset query params using the resetController hook']() {
-      return this.queryParamsStickyTest6(
-        '/a',
-        'article',
-        'comments',
+    async ['@test can reset query params using the resetController hook']() {
+      let assert = this.assert;
+
+      assert.expect(13);
+
+      this.setupApplication();
+
+      this.reopenRoute('article', {
+        resetController(controller, isExiting) {
+          this.controllerFor('comments').set('page', 1);
+          if (isExiting) {
+            controller.set('q', 'imdone');
+          }
+        },
+      });
+
+      this.add(
+        'template:about',
         precompileTemplate(
           `
       <LinkTo @route='comments' @model='a-1' id='one'>A</LinkTo>
@@ -398,6 +346,28 @@ moduleFor(
       `
         )
       );
+
+      await this.visitApplication();
+      await this.transitionTo('comments', 'a-1');
+
+      let commentsCtrl = this.getController('comments');
+      assert.equal(commentsCtrl.get('page'), 1);
+      this.assertCurrentPath('/a/a-1/comments');
+
+      await this.setAndFlush(commentsCtrl, 'page', 2);
+      this.assertCurrentPath('/a/a-1/comments?page=2');
+
+      await this.transitionTo('comments', 'a-2');
+      assert.equal(commentsCtrl.get('page'), 1);
+      assert.equal(this.controller.get('q'), 'wat');
+
+      await this.transitionTo('comments', 'a-1');
+      this.assertCurrentPath('/a/a-1/comments');
+      assert.equal(commentsCtrl.get('page'), 1);
+
+      await this.transitionTo('about');
+      assert.equal(document.getElementById('one').getAttribute('href'), '/a/a-1/comments?q=imdone');
+      assert.equal(document.getElementById('two').getAttribute('href'), '/a/a-2/comments');
     }
   }
 );
@@ -489,18 +459,84 @@ moduleFor(
       });
     }
 
-    ["@test query params have 'model' stickiness by default"]() {
-      return this.queryParamsStickyTest1('/site/a');
+    async ["@test query params have 'model' stickiness by default"]() {
+      let assert = this.assert;
+
+      assert.expect(14);
+
+      await this.boot();
+      this.$link1.click();
+      await runLoopSettled();
+
+      this.assertCurrentPath('/site/a/a-1');
+
+      await this.setAndFlush(this.controller, 'q', 'lol');
+
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3');
+
+      this.$link2.click();
+      await runLoopSettled();
+
+      assert.equal(this.controller.get('q'), 'wat');
+      assert.equal(this.controller.get('z'), 0);
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3');
     }
 
-    ["@test query params have 'model' stickiness by default (url changes)"]() {
-      return this.queryParamsStickyTest2('/site/a');
+    async ["@test query params have 'model' stickiness by default (url changes)"]() {
+      let assert = this.assert;
+
+      assert.expect(24);
+
+      await this.boot();
+      this.expectedModelHookParams = { id: 'a-1', q: 'lol', z: 0 };
+
+      await this.transitionTo('/site/a/a-1?q=lol');
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
+
+      await this.transitionTo('/site/a/a-2?q=lol');
+
+      assert.deepEqual(
+        this.controller.get('model'),
+        { id: 'a-2' },
+        "controller's model changed to a-2"
+      );
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-3', q: 'lol', z: 123 };
+
+      await this.transitionTo('/site/a/a-3?q=lol&z=123');
+
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 123);
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3?q=lol&z=123');
     }
 
-    ["@test query params have 'model' stickiness by default (params-based transitions)"]() {
-      return this.queryParamsStickyTest3(
-        '/site/a',
-        'site.article',
+    async ["@test query params have 'model' stickiness by default (params-based transitions)"]() {
+      let assert = this.assert;
+
+      assert.expect(32);
+
+      this.add(
+        'template:application',
         precompileTemplate(
           `
       {{#each articles as |a|}}
@@ -509,21 +545,146 @@ moduleFor(
       `
         )
       );
+
+      await this.boot();
+      this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
+      await this.transitionTo('site.article', 'a-1');
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
+      assert.equal(this.controller.get('q'), 'wat');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
+      await this.transitionTo('site.article', 'a-2', { queryParams: { q: 'lol' } });
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3');
+
+      this.expectedModelHookParams = { id: 'a-3', q: 'hay', z: 0 };
+      await this.transitionTo('site.article', 'a-3', { queryParams: { q: 'hay' } });
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
+      assert.equal(this.controller.get('q'), 'hay');
+      assert.equal(this.controller.get('z'), 0);
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3?q=hay');
+
+      this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 1 };
+      await this.transitionTo('site.article', 'a-2', { queryParams: { z: 1 } });
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 1);
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=lol&z=1');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3?q=hay');
     }
 
-    ["@test 'controller' stickiness shares QP state between models"]() {
-      return this.queryParamsStickyTest4('/site/a', 'site.article');
+    async ["@test 'controller' stickiness shares QP state between models"]() {
+      let assert = this.assert;
+
+      assert.expect(24);
+
+      this.setupApplication();
+
+      this.reopenController('site.article', {
+        queryParams: { q: { scope: 'controller' } },
+      });
+
+      await this.visitApplication();
+      this.$link1.click();
+      await runLoopSettled();
+
+      this.assertCurrentPath('/site/a/a-1');
+
+      await this.setAndFlush(this.controller, 'q', 'lol');
+
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3?q=lol');
+
+      this.$link2.click();
+      await runLoopSettled();
+
+      assert.equal(this.controller.get('q'), 'lol');
+      assert.equal(this.controller.get('z'), 0);
+      assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
+
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=lol');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=lol');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3?q=lol');
+
+      this.expectedModelHookParams = { id: 'a-3', q: 'haha', z: 123 };
+      await this.transitionTo('/site/a/a-3?q=haha&z=123');
+
+      assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
+      assert.equal(this.controller.get('q'), 'haha');
+      assert.equal(this.controller.get('z'), 123);
+
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=haha');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=haha');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3?q=haha&z=123');
+
+      await this.setAndFlush(this.controller, 'q', 'woot');
+
+      assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1?q=woot');
+      assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2?q=woot');
+      assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3?q=woot&z=123');
     }
 
-    ["@test 'model' stickiness is scoped to current or first dynamic parent route"]() {
-      return this.queryParamsStickyTest5('/site/a', 'site.article.comments');
+    async ["@test 'model' stickiness is scoped to current or first dynamic parent route"]() {
+      let assert = this.assert;
+
+      assert.expect(12);
+
+      await this.boot();
+      await this.transitionTo('site.article.comments', 'a-1');
+
+      let commentsCtrl = this.getController('site.article.comments');
+      assert.equal(commentsCtrl.get('page'), 1);
+      this.assertCurrentPath('/site/a/a-1/comments');
+
+      await this.setAndFlush(commentsCtrl, 'page', 2);
+      this.assertCurrentPath('/site/a/a-1/comments?page=2');
+
+      await this.setAndFlush(commentsCtrl, 'page', 3);
+      this.assertCurrentPath('/site/a/a-1/comments?page=3');
+
+      await this.transitionTo('site.article.comments', 'a-2');
+      assert.equal(commentsCtrl.get('page'), 1);
+      this.assertCurrentPath('/site/a/a-2/comments');
+
+      await this.transitionTo('site.article.comments', 'a-1');
+      assert.equal(commentsCtrl.get('page'), 3);
+      this.assertCurrentPath('/site/a/a-1/comments?page=3');
     }
 
-    ['@test can reset query params using the resetController hook']() {
-      return this.queryParamsStickyTest6(
-        '/site/a',
-        'site.article',
-        'site.article.comments',
+    async ['@test can reset query params using the resetController hook']() {
+      let assert = this.assert;
+
+      assert.expect(13);
+
+      this.setupApplication();
+
+      this.reopenRoute('site.article', {
+        resetController(controller, isExiting) {
+          this.controllerFor('site.article.comments').set('page', 1);
+          if (isExiting) {
+            controller.set('q', 'imdone');
+          }
+        },
+      });
+
+      this.add(
+        'template:about',
         precompileTemplate(
           `
       <LinkTo @route='site.article.comments' @model='a-1' id='one'>A</LinkTo>
@@ -531,6 +692,31 @@ moduleFor(
       `
         )
       );
+
+      await this.visitApplication();
+      await this.transitionTo('site.article.comments', 'a-1');
+
+      let commentsCtrl = this.getController('site.article.comments');
+      assert.equal(commentsCtrl.get('page'), 1);
+      this.assertCurrentPath('/site/a/a-1/comments');
+
+      await this.setAndFlush(commentsCtrl, 'page', 2);
+      this.assertCurrentPath('/site/a/a-1/comments?page=2');
+
+      await this.transitionTo('site.article.comments', 'a-2');
+      assert.equal(commentsCtrl.get('page'), 1);
+      assert.equal(this.controller.get('q'), 'wat');
+
+      await this.transitionTo('site.article.comments', 'a-1');
+      this.assertCurrentPath('/site/a/a-1/comments');
+      assert.equal(commentsCtrl.get('page'), 1);
+
+      await this.transitionTo('about');
+      assert.equal(
+        document.getElementById('one').getAttribute('href'),
+        '/site/a/a-1/comments?q=imdone'
+      );
+      assert.equal(document.getElementById('two').getAttribute('href'), '/site/a/a-2/comments');
     }
   }
 );
