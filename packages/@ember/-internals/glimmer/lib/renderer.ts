@@ -1248,6 +1248,178 @@ function intoTarget(into: IntoTarget): Cursor {
 }
 
 /**
+ * GXT-specific renderComponent implementation.
+ * Bypasses Glimmer VM bytecode compilation entirely.
+ */
+function _renderComponentGxt(
+  component: object,
+  into: IntoTarget,
+  owner: object,
+  args?: Record<string, unknown>
+): RenderResult {
+  const globalTemplates = (globalThis as any).COMPONENT_TEMPLATES;
+
+  // Handle existing render cache (re-render into same target)
+  let existing = RENDER_CACHE.get(into);
+  existing?.destroy();
+
+  // Get the target element
+  const targetElement = into instanceof Element ? into : ('element' in into ? (into as any).element : into);
+
+  // Clear the target on first render
+  if (!existing && targetElement instanceof Element) {
+    targetElement.innerHTML = '';
+  }
+
+  // Set globalThis.owner so the manager system can resolve services
+  const prevOwner = (globalThis as any).owner;
+  (globalThis as any).owner = owner;
+
+  // Ensure GXT context is initialized
+  ensureGxtContext();
+
+  let destroyed = false;
+
+  const doDestroy = () => {
+    if (destroyed) return;
+    destroyed = true;
+    if (targetElement instanceof Element) {
+      targetElement.innerHTML = '';
+    }
+  };
+
+  try {
+    // Resolve template from COMPONENT_TEMPLATES
+    let template = globalTemplates?.get(component);
+
+    // Walk prototype chain if not found directly (for class-based components)
+    if (!template && component) {
+      let proto = typeof component === 'function'
+        ? Object.getPrototypeOf(component)
+        : Object.getPrototypeOf(component);
+      while (proto && proto !== Function.prototype && proto !== Object.prototype) {
+        template = globalTemplates?.get(proto);
+        if (template) break;
+        proto = Object.getPrototypeOf(proto);
+      }
+    }
+
+    // If template is a factory function, call it with owner to get actual template
+    if (typeof template === 'function' && !template.render) {
+      template = template(owner);
+    }
+
+    if (!template || !template.render) {
+      // No template found — try using the manager system directly
+      const managers = (globalThis as any).$_MANAGERS;
+      if (managers?.component?.canHandle?.(component)) {
+        // Let the manager system handle it (renders into a fragment, then append)
+        const handleResult = managers.component.handle(component, args || {}, null, { owner });
+        let nodes: Node | null = null;
+        if (typeof handleResult === 'function') {
+          nodes = handleResult();
+        } else {
+          nodes = handleResult;
+        }
+        if (nodes instanceof Node) {
+          targetElement.appendChild(nodes);
+        }
+      } else {
+        console.warn('[renderComponent GXT] No GXT template found for component:', component);
+      }
+
+      const result: RenderResult = { destroy: doDestroy };
+      RENDER_CACHE.set(into, result);
+      // Register destructor on owner so owner.destroy() cleans up DOM
+      try {
+        registerDestructor(owner, doDestroy);
+      } catch {
+        // owner may not be destroyable
+      }
+      return result;
+    }
+
+    // Determine if the component is a class (needs instantiation) or template-only
+    const isClass = typeof component === 'function' && component.prototype;
+    const isTemplateOnly = !isClass || (component as any).__templateOnly === true ||
+      (component as any).constructor?.name === 'TemplateOnlyComponentDefinition' ||
+      (globalThis as any).INTERNAL_MANAGERS?.has?.(component);
+
+    let instance: any = null;
+
+    if (!isTemplateOnly && isClass) {
+      // Instantiate the component class
+      const ComponentClass = component as any;
+      if (typeof ComponentClass.create === 'function') {
+        instance = ComponentClass.create(
+          Object.assign({}, args || {}, { owner })
+        );
+      } else {
+        try {
+          instance = new ComponentClass(owner, args || {});
+        } catch {
+          instance = new ComponentClass();
+        }
+      }
+
+      // Set args on Glimmer-style components
+      if (instance && args) {
+        if (!instance.args) {
+          instance.args = {};
+        }
+        for (const [key, value] of Object.entries(args)) {
+          instance.args[key] = value;
+        }
+      }
+    }
+
+    // Build render context
+    const renderContext: any = instance || {};
+    if (args) {
+      // For template-only components, args go directly on the context
+      if (!instance) {
+        for (const [key, value] of Object.entries(args)) {
+          renderContext[key] = value;
+        }
+      }
+      renderContext.args = args;
+    }
+    renderContext.owner = owner;
+
+    // Render the template into the target
+    template.render(renderContext, targetElement);
+
+    // Flush queued didInsertElement / didRender hooks
+    try {
+      flushAfterInsertQueue();
+    } catch {
+      // Ignore flush errors in renderComponent context
+    }
+    try {
+      flushRenderErrors();
+    } catch (e) {
+      // Re-throw render errors
+      throw e;
+    }
+
+  } finally {
+    (globalThis as any).owner = prevOwner;
+  }
+
+  const result: RenderResult = { destroy: doDestroy };
+  RENDER_CACHE.set(into, result);
+
+  // Register destructor on owner so that destroying the owner cleans up the DOM
+  try {
+    registerDestructor(owner, doDestroy);
+  } catch {
+    // owner may not be destroyable
+  }
+
+  return result;
+}
+
+/**
  * Render a component into a DOM element.
  *
  * @method renderComponent
@@ -1310,6 +1482,12 @@ export function renderComponent(
     args?: Record<string, unknown>;
   }
 ): RenderResult {
+  // GXT escape hatch: bypass Glimmer VM entirely for GXT mode.
+  // This avoids bytecode compilation which crashes with GXT templates.
+  if ((globalThis as any).__GXT_MODE__) {
+    return _renderComponentGxt(component, into, owner, args);
+  }
+
   /**
    * SAFETY: we should figure out what we need out of a `document` and narrow the API.
    *         this exercise should also end up beginning to define what we need for CLI rendering (or to other outputs)

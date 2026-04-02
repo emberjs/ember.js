@@ -3236,6 +3236,44 @@ const $_MANAGERS = {
         }
       }
       if (manager) {
+        // Template-only components have an internal manager without a create() method.
+        // If the component has a GXT template, render it directly instead of
+        // going through handleManagedComponent (which requires manager.create).
+        if (typeof manager.create !== 'function') {
+          const tpl = globalThis.COMPONENT_TEMPLATES?.get(komp);
+          if (tpl) {
+            let resolvedTpl = tpl;
+            if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
+              resolvedTpl = resolvedTpl(owner);
+            }
+            if (resolvedTpl?.render) {
+              const $SLOTS = Symbol.for('gxt-slots');
+              const renderCtx: any = {};
+              if (args) {
+                for (const key of Object.keys(args)) {
+                  if (key === 'args' || key.startsWith('$')) continue;
+                  const desc = Object.getOwnPropertyDescriptor(args, key);
+                  if (desc) {
+                    Object.defineProperty(renderCtx, key, desc);
+                  }
+                }
+              }
+              renderCtx.args = args || {};
+              renderCtx.owner = owner;
+              // Pass through slots for {{yield}} support
+              const slots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+              if (slots) {
+                renderCtx.$slots = slots;
+                renderCtx[Symbol.for('gxt-slots')] = slots;
+              }
+              const container = document.createDocumentFragment();
+              renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
+              return container;
+            }
+          }
+          // No template found and no create method — return empty
+          return () => document.createComment('template-only (no template)');
+        }
         return handleManagedComponent(komp, args, fw, ctx, manager, owner);
       }
 
