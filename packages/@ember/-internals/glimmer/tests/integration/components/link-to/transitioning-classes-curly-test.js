@@ -1,5 +1,6 @@
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
+import { precompileTemplate } from '@ember/template-compilation';
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 function assertHasClass(assert, selector, label) {
@@ -58,15 +59,17 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         {{outlet}}
         <div id='index-link'>{{#link-to route='index'}}Index{{/link-to}}</div>
         <div id='about-link'>{{#link-to route='about'}}About{{/link-to}}</div>
         <div id='other-link'>{{#link-to route='other'}}Other{{/link-to}}</div>
         <div id='news-link'>{{#link-to route='news' activeClass=false}}News{{/link-to}}</div>
         `
+        )
       );
     }
 

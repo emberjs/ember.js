@@ -1,5 +1,7 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { setComponentTemplate } from '@glimmer/manager';
 import { Component } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
 import { set } from '@ember/object';
 import { action } from '@ember/object';
 
@@ -102,7 +104,10 @@ moduleFor(
         return 'hello';
       }
 
-      this.registerComponent('foo-bar', { template: '{{(@hello)}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{(@hello)}}'), class extends Component {})
+      );
 
       this.render(`<FooBar @hello={{this.hello}} />`, {
         hello,
@@ -111,45 +116,54 @@ moduleFor(
     }
 
     '@test plain functions stored as class properties can be used as helpers'() {
-      this.registerComponent('foo-bar', {
-        template: '{{(this.hello)}}',
-        ComponentClass: class extends Component {
-          hello = () => {
-            return 'hello';
-          };
-        },
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{(this.hello)}}'),
+          class extends Component {
+            hello = () => {
+              return 'hello';
+            };
+          }
+        )
+      );
 
       this.render(`<FooBar />`);
       this.assertText('hello');
     }
 
     '@test class methods can be used as helpers'() {
-      this.registerComponent('foo-bar', {
-        template: '{{(this.hello)}}',
-        ComponentClass: class extends Component {
-          hello() {
-            return 'hello';
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{(this.hello)}}'),
+          class extends Component {
+            hello() {
+              return 'hello';
+            }
           }
-        },
-      });
+        )
+      );
 
       this.render(`<FooBar />`);
       this.assertText('hello');
     }
 
     '@test actions can be used as helpers'() {
-      this.registerComponent('foo-bar', {
-        template: '{{(this.hello)}}',
-        ComponentClass: class extends Component {
-          someProperty = 'hello';
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{(this.hello)}}'),
+          class extends Component {
+            someProperty = 'hello';
 
-          @action
-          hello() {
-            return this.someProperty;
+            @action
+            hello() {
+              return this.someProperty;
+            }
           }
-        },
-      });
+        )
+      );
 
       this.render(`<FooBar />`);
       this.assertText('hello');

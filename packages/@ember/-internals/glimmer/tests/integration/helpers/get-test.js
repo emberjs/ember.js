@@ -1,6 +1,9 @@
-import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { template } from '@ember/template-compiler/runtime';
 
 import { set, get } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -35,9 +38,9 @@ moduleFor(
     ['@test can be shadowed']() {
       let get = (obj, key) => `obj.${key}=${obj[key]}`;
       let obj = { apple: 'red', banana: 'yellow' };
-      let Root = defineComponent(
-        { get, outerGet: get, obj },
-        `[{{get obj 'apple'}}][{{#let outerGet as |get|}}{{get obj 'banana'}}{{/let}}]`
+      let Root = template(
+        `[{{get obj 'apple'}}][{{#let outerGet as |get|}}{{get obj 'banana'}}{{/let}}]`,
+        { scope: () => ({ get, outerGet: get, obj }) }
       );
 
       this.renderComponent(Root, { expect: '[obj.apple=red][obj.banana=yellow]' });
@@ -394,10 +397,13 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{yield (get this.colors this.mcintosh)}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (get this.colors this.mcintosh)}}`),
+          FooBarComponent
+        )
+      );
 
       this.render(`{{#foo-bar colors=this.colors as |value|}}{{value}}{{/foo-bar}}`, {
         colors: {
@@ -622,10 +628,13 @@ moduleFor(
         options = ['first', 'last', 'age'];
       }
 
-      this.registerComponent('person-wrapper', {
-        ComponentClass: PersonComponent,
-        template: '{{#each this.options as |option|}}{{get this.args option}}{{/each}}',
-      });
+      this.owner.register(
+        'component:person-wrapper',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.options as |option|}}{{get this.args option}}{{/each}}'),
+          PersonComponent
+        )
+      );
 
       this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} @age={{this.age}}/>', {
         first: 'miguel',

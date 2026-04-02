@@ -2,15 +2,17 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
-import { Component, compile } from '../../utils/helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Components test: setComponentTemplate',
   class extends RenderingTestCase {
     '@test it basically works'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: setComponentTemplate(compile('hello'), class extends Component {}),
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<FooBar />');
 
@@ -28,31 +30,31 @@ moduleFor(
       }
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), null);
+        setComponentTemplate(precompileTemplate('foo'), null);
       }, /Cannot call `setComponentTemplate` on `null`/);
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), undefined);
+        setComponentTemplate(precompileTemplate('foo'), undefined);
       }, /Cannot call `setComponentTemplate` on `undefined`/);
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), true);
+        setComponentTemplate(precompileTemplate('foo'), true);
       }, /Cannot call `setComponentTemplate` on `true`/);
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), false);
+        setComponentTemplate(precompileTemplate('foo'), false);
       }, /Cannot call `setComponentTemplate` on `false`/);
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), 123);
+        setComponentTemplate(precompileTemplate('foo'), 123);
       }, /Cannot call `setComponentTemplate` on `123`/);
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), 'foo');
+        setComponentTemplate(precompileTemplate('foo'), 'foo');
       }, /Cannot call `setComponentTemplate` on `foo`/);
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), Symbol('foo'));
+        setComponentTemplate(precompileTemplate('foo'), Symbol('foo'));
       }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
     }
 
@@ -63,7 +65,7 @@ moduleFor(
       }
 
       let Thing = setComponentTemplate(
-        compile('hello'),
+        precompileTemplate('hello'),
         Component.extend().reopenClass({
           toString() {
             return 'Thing';
@@ -72,16 +74,14 @@ moduleFor(
       );
 
       assert.throws(() => {
-        setComponentTemplate(compile('foo'), Thing);
+        setComponentTemplate(precompileTemplate('foo'), Thing);
       }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Class`\)/);
     }
 
     '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
-      let Parent = setComponentTemplate(compile('hello'), class extends Component {});
+      let Parent = setComponentTemplate(precompileTemplate('hello'), class extends Component {});
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Parent {},
-      });
+      this.owner.register('component:foo-bar', class extends Parent {});
 
       this.render('<FooBar />');
 
@@ -93,11 +93,9 @@ moduleFor(
     }
 
     '@test templates set with setComponentTemplate are inherited (native ES class extends)'() {
-      let Parent = setComponentTemplate(compile('hello'), class extends Component {});
+      let Parent = setComponentTemplate(precompileTemplate('hello'), class extends Component {});
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Parent {},
-      });
+      this.owner.register('component:foo-bar', class extends Parent {});
 
       this.render('<FooBar />');
 
@@ -109,11 +107,11 @@ moduleFor(
     }
 
     '@test it can re-assign templates from another class'() {
-      let Foo = setComponentTemplate(compile('shared'), class extends Component {});
+      let Foo = setComponentTemplate(precompileTemplate('shared'), class extends Component {});
       let Bar = setComponentTemplate(getComponentTemplate(Foo), class extends Component {});
 
-      this.registerComponent('foo', { ComponentClass: Foo });
-      this.registerComponent('bar', { ComponentClass: Bar });
+      this.owner.register('component:foo', Foo);
+      this.owner.register('component:bar', Bar);
 
       this.render('<Foo />|<Bar />');
 

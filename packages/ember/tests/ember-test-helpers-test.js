@@ -1,7 +1,7 @@
 import { Promise } from 'rsvp';
 import Application from '@ember/application';
 import { run, _hasScheduledTimers, _getCurrentRunLoop } from '@ember/runloop';
-import { compile } from 'ember-template-compiler';
+import { precompileTemplate } from '@ember/template-compilation';
 import { ModuleBasedTestResolver } from 'internal-test-helpers';
 
 const { module, test } = QUnit;
@@ -17,7 +17,7 @@ const { module, test } = QUnit;
 */
 module('@ember/test-helpers emulation test', function () {
   module('v1.6.1', function () {
-    let EMPTY_TEMPLATE = compile('');
+    let EMPTY_TEMPLATE = precompileTemplate('');
 
     function lookupTemplate(owner, templateFullName) {
       let template = owner.lookup(templateFullName);
@@ -128,7 +128,7 @@ module('@ember/test-helpers emulation test', function () {
       });
 
       test('it basically works', async function (assert) {
-        await render(compile('Hi!'), this);
+        await render(precompileTemplate('Hi!'), this);
 
         assert.equal(this.element.textContent, 'Hi!');
       });

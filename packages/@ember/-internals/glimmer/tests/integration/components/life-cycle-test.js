@@ -4,6 +4,8 @@ import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { getViewElement, getViewId } from '@ember/-internals/views';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -286,7 +288,10 @@ class LifeCycleHooksTest extends RenderingTestCase {
       }
     };
 
-    super.registerComponent(name, { ComponentClass, template });
+    if (typeof template === 'string') {
+      setComponentTemplate(this.compile(template), ComponentClass);
+    }
+    this.owner.register(`component:${name}`, ComponentClass);
   }
 
   assertHooks({ label, interactive, nonInteractive }) {
@@ -1355,8 +1360,10 @@ moduleFor(
         }
       };
 
-      let template = `{{this.width}}`;
-      this.registerComponent('foo-bar', { ComponentClass, template });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.width}}'), ComponentClass)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -1377,9 +1384,10 @@ moduleFor(
         }
       };
 
-      let template = `{{this.foo}}`;
-
-      this.registerComponent('foo-bar', { ComponentClass, template });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.foo}}'), ComponentClass)
+      );
 
       this.render('{{foo-bar parent=this foo=this.foo}}');
 
@@ -1400,9 +1408,10 @@ moduleFor(
         }
       };
 
-      let template = `Hello World`;
-
-      this.registerComponent('foo-bar', { ComponentClass, template });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('Hello World'), ComponentClass)
+      );
 
       this.render(`{{foo-bar id="foo"}}`);
 
@@ -1432,14 +1441,6 @@ moduleFor(
         }
       };
 
-      let PartentTemplate = strip`
-      {{yield}}
-      <ul>
-        {{#nested-component nestedId=(concat this.itemId '-A')}}A{{/nested-component}}
-        {{#nested-component nestedId=(concat this.itemId '-B')}}B{{/nested-component}}
-      </ul>
-    `;
-
       let NestedComponent = class extends Component {
         willDestroyElement() {
           ChildDestroyedElements.push({
@@ -1452,17 +1453,20 @@ moduleFor(
         }
       };
 
-      let NestedTemplate = `{{yield}}`;
+      this.owner.register(
+        'component:parent-component',
+        setComponentTemplate(
+          precompileTemplate(
+            "{{yield}}<ul>{{#nested-component nestedId=(concat this.itemId '-A')}}A{{/nested-component}}{{#nested-component nestedId=(concat this.itemId '-B')}}B{{/nested-component}}</ul>"
+          ),
+          ParentComponent
+        )
+      );
 
-      this.registerComponent('parent-component', {
-        ComponentClass: ParentComponent,
-        template: PartentTemplate,
-      });
-
-      this.registerComponent('nested-component', {
-        ComponentClass: NestedComponent,
-        template: NestedTemplate,
-      });
+      this.owner.register(
+        'component:nested-component',
+        setComponentTemplate(precompileTemplate('{{yield}}'), NestedComponent)
+      );
 
       let array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 

@@ -1,14 +1,15 @@
 import { subscribe, reset } from '@ember/instrumentation';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'View Instrumentation',
   class extends ApplicationTestCase {
     constructor() {
       super();
-      this.addTemplate('application', `{{outlet}}`);
-      this.addTemplate('index', `<h1>Index</h1>`);
-      this.addTemplate('posts', `<h1>Posts</h1>`);
+      this.add('template:application', precompileTemplate(`{{outlet}}`));
+      this.add('template:index', precompileTemplate(`<h1>Index</h1>`));
+      this.add('template:posts', precompileTemplate(`<h1>Posts</h1>`));
 
       this.router.map(function () {
         this.route('posts');

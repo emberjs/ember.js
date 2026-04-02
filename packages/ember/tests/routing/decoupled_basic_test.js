@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
-import { compile } from 'ember-template-compiler';
+import { precompileTemplate } from '@ember/template-compilation';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
@@ -38,9 +38,15 @@ moduleFor(
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
-      this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
+      this.add('template:home', precompileTemplate('<h3 class="hours">Hours</h3>'));
+      this.add(
+        'template:camelot',
+        precompileTemplate('<section id="camelot"><h3>Is a silly place</h3></section>')
+      );
+      this.add(
+        'template:homepage',
+        precompileTemplate('<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>')
+      );
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -136,8 +142,8 @@ moduleFor(
 
       this.add('route:special', SpecialRoute);
 
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       let promise;
       ignoreDeprecation(() => {
@@ -186,8 +192,8 @@ moduleFor(
         }
       );
 
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
@@ -775,8 +781,8 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', '<p>INDEX</p>');
-      this.addTemplate('loading', '<p>LOADING</p>');
+      this.add('template:index', precompileTemplate('<p>INDEX</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING</p>'));
 
       run(() => this.visit('/'));
       let rootElement = document.getElementById('qunit-fixture');
@@ -1288,7 +1294,7 @@ moduleFor(
     }
 
     ['@test Errors in transition show error template if available'](assert) {
-      this.addTemplate('error', "<div id='error'>Error!</div>");
+      this.add('template:error', precompileTemplate("<div id='error'>Error!</div>"));
 
       this.router.map(function () {
         this.route('yondo', { path: '/' });
@@ -1411,9 +1417,9 @@ moduleFor(
 
     async ['@test Doesnt swallow exception thrown from willTransition'](assert) {
       assert.expect(1);
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('index', 'index');
-      this.addTemplate('other', 'other');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
+      this.add('template:index', precompileTemplate('index'));
+      this.add('template:other', precompileTemplate('other'));
 
       this.router.map(function () {
         this.route('index', { path: '/' });
@@ -1544,7 +1550,7 @@ moduleFor(
         .then(() => {
           let engine = this.applicationInstance.lookup('engine:blog');
           engine.register('route:index', EngineIndexRoute);
-          engine.register('template:index', compile('Engine Post!'));
+          engine.register('template:index', precompileTemplate('Engine Post!'));
           return this.visit('/blog');
         })
         .then(() => {

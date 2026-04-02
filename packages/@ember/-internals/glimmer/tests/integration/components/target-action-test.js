@@ -15,8 +15,9 @@ moduleFor(
 
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           init() {
             super.init();
             component = this;
@@ -26,8 +27,8 @@ moduleFor(
           foo(message) {
             assert.equal('bar', message);
           }
-        },
-      });
+        }
+      );
 
       this.render('{{foo-bar}}');
 
@@ -47,15 +48,16 @@ moduleFor(
         },
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           init() {
             super.init(...arguments);
             component = this;
           }
           target = target;
-        },
-      });
+        }
+      );
 
       this.render('{{foo-bar}}');
 
@@ -67,8 +69,9 @@ moduleFor(
 
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({
           init() {
             this._super(...arguments);
             component = this;
@@ -86,8 +89,8 @@ moduleFor(
               },
             },
           }).create(),
-        }),
-      });
+        })
+      );
 
       this.render('{{foo-bar poke="poke"}}');
 
@@ -120,8 +123,9 @@ moduleFor(
         },
       });
 
-      this.registerComponent('x-index', {
-        ComponentClass: class extends SuperComponent.extend(BarViewMixin) {
+      this.owner.register(
+        'component:x-index',
+        class extends SuperComponent.extend(BarViewMixin) {
           init() {
             super.init(...arguments);
             component = this;
@@ -131,8 +135,8 @@ moduleFor(
           baz() {
             assert.ok(true, 'baz');
           }
-        },
-      });
+        }
+      );
 
       this.render('{{x-index}}');
 
@@ -144,7 +148,7 @@ moduleFor(
     }
 
     ['@test actions cannot be provided at create time'](assert) {
-      this.registerComponent('foo-bar', class extends Component {});
+      this.owner.register('component:foo-bar', class extends Component {});
       let ComponentFactory = this.owner.factoryFor('component:foo-bar');
 
       expectAssertion(() => {
@@ -165,8 +169,9 @@ moduleFor(
     ['@test asserts if called on a destroyed component']() {
       let component;
 
-      this.registerComponent('rip-alley', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:rip-alley',
+        class extends Component {
           init() {
             super.init(...arguments);
             component = this;
@@ -175,8 +180,8 @@ moduleFor(
           toString() {
             return 'component:rip-alley';
           }
-        },
-      });
+        }
+      );
 
       this.render('{{#if this.shouldRender}}{{rip-alley}}{{/if}}', {
         shouldRender: true,

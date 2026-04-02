@@ -8,6 +8,8 @@ import EmberObject from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 import { A as emberA, removeAt } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from './helpers';
 
@@ -854,15 +856,18 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ) {
     let childCreated = false;
 
-    this.registerComponent('foo-bar', {
-      template: 'foo-bar',
-      ComponentClass: class extends Component {
-        init() {
-          super.init(...arguments);
-          childCreated = true;
+    this.owner.register(
+      'component:foo-bar',
+      setComponentTemplate(
+        precompileTemplate('foo-bar'),
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            childCreated = true;
+          }
         }
-      },
-    });
+      )
+    );
 
     let innerTemplate = this.templateFor({
       cond: 'this.cond2',

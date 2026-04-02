@@ -3,9 +3,9 @@ import {
   ModuleBasedTestResolver,
   ApplicationTestCase,
   runTask,
-  defineComponent,
 } from 'internal-test-helpers';
 import { service } from '@ember/service';
+import { setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object';
 import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
@@ -15,7 +15,7 @@ import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import Route from '@ember/routing/route';
 import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
-import { compile } from 'ember-template-compiler';
+import { precompileTemplate } from '@ember/template-compilation';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -43,7 +43,7 @@ moduleFor(
 
     [`@test does not add serialize-mode markers by default`](assert) {
       let templateContent = '<div class="foo">Hi, Mom!</div>';
-      this.addTemplate('index', templateContent);
+      this.add('template:index', precompileTemplate('<div class="foo">Hi, Mom!</div>'));
       let rootElement = document.createElement('div');
 
       let bootOptions = {
@@ -64,7 +64,7 @@ moduleFor(
       assert.expect(2);
 
       let indexTemplate = '<div class="foo">Hi, Mom!</div>';
-      this.addTemplate('index', indexTemplate);
+      this.add('template:index', precompileTemplate('<div class="foo">Hi, Mom!</div>'));
       let rootElement = document.createElement('div');
 
       let bootOptions = {
@@ -408,7 +408,7 @@ moduleFor(
     }
 
     [`@test visit() returns a promise that resolves when the view has rendered`](assert) {
-      this.addTemplate('application', `<h1>Hello world</h1>`);
+      this.add('template:application', precompileTemplate(`<h1>Hello world</h1>`));
 
       this.assertEmptyFixture();
 
@@ -430,7 +430,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.addTemplate('application', '<h1>Hello world</h1>');
+      this.add('template:application', precompileTemplate('<h1>Hello world</h1>'));
 
       this.assertEmptyFixture();
 
@@ -447,7 +447,7 @@ moduleFor(
     [`@test visit() renders a template when shouldRender is set to true`](assert) {
       assert.expect(3);
 
-      this.addTemplate('application', '<h1>Hello world</h1>');
+      this.add('template:application', precompileTemplate('<h1>Hello world</h1>'));
 
       this.assertEmptyFixture();
 
@@ -473,7 +473,7 @@ moduleFor(
         this.mount('blog');
       });
 
-      this.addTemplate('application', '<h1>Hello world</h1>');
+      this.add('template:application', precompileTemplate('<h1>Hello world</h1>'));
 
       // Register engine
       let BlogEngine = class extends Engine {
@@ -506,7 +506,7 @@ moduleFor(
         this.mount('blog');
       });
 
-      this.addTemplate('application', '<h1>Hello world</h1>{{outlet}}');
+      this.add('template:application', precompileTemplate('<h1>Hello world</h1>{{outlet}}'));
       this.add('event_dispatcher:main', {
         create() {
           throw new Error('should not happen!');
@@ -519,10 +519,13 @@ moduleFor(
 
         init(...args) {
           super.init(...args);
-          this.register('template:application', compile('{{cache-money}}'));
+          this.register('template:application', precompileTemplate('{{cache-money}}'));
           this.register(
             'component:cache-money',
-            defineComponent({}, `<p>Dis cache money</p>`, class extends Component {})
+            setComponentTemplate(
+              precompileTemplate(`<p>Dis cache money</p>`),
+              class extends Component {}
+            )
           );
         }
       };
@@ -560,10 +563,13 @@ moduleFor(
 
         init(...args) {
           super.init(...args);
-          this.register('template:application', compile('{{cache-money}}'));
+          this.register('template:application', precompileTemplate('{{cache-money}}'));
           this.register(
             'component:cache-money',
-            defineComponent({}, `<p>Dis cache money</p>`, class extends Component {})
+            setComponentTemplate(
+              precompileTemplate(`<p>Dis cache money</p>`),
+              class extends Component {}
+            )
           );
         }
       };
@@ -597,7 +603,7 @@ moduleFor(
 
         init(...args) {
           super.init(...args);
-          this.register('template:application', compile('{{swag}}'));
+          this.register('template:application', precompileTemplate('{{swag}}'));
           this.register(
             'helper:swag',
             helper(function () {
@@ -660,15 +666,18 @@ moduleFor(
         instantiate: false,
       });
 
-      this.addTemplate('show', '{{component @model.componentName model=@model.componentData}}');
+      this.add(
+        'template:show',
+        precompileTemplate('{{component @model.componentName model=@model.componentData}}')
+      );
 
       this.add(
         'component:x-foo',
-        defineComponent(
-          {},
-          `<h1>X-Foo</h1>
-           <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>`,
-
+        setComponentTemplate(
+          precompileTemplate(
+            `<h1>X-Foo</h1>
+           <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>`
+          ),
           class extends Component {
             tagName = 'x-foo';
 
@@ -696,10 +705,11 @@ moduleFor(
 
       this.add(
         'component:x-bar',
-        defineComponent(
-          null,
-          `<h1>X-Bar</h1>
-          <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>`,
+        setComponentTemplate(
+          precompileTemplate(
+            `<h1>X-Bar</h1>
+          <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>`
+          ),
           class extends Component {
             @service('sharedCounter')
             counter;

@@ -12,7 +12,7 @@ import NoneLocation from '@ember/routing/none-location';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
-import { compile } from '../../../utils/helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 function shouldNotBeActive(assert, element) {
   checkActive(assert, element, false);
@@ -37,21 +37,25 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id="about-link">{{#link-to route='about'}}About{{/link-to}}</div>
         <div id="self-link">{{#link-to route='index'}}Self{{/link-to}}</div>
         `
+        )
       );
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(
+          `
         <h3 class="about">About</h3>
         <div id="home-link">{{#link-to route='index'}}Home{{/link-to}}</div>
         <div id="self-link">{{#link-to route='about'}}Self{{/link-to}}</div>
         `
+        )
       );
     }
 
@@ -88,13 +92,15 @@ moduleFor(
     async ['@test [GH#19546] it navigates into the named route when containing other elements'](
       assert
     ) {
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(
+          `
         <h3 class="about">About</h3>
         <div id="home-link">{{#link-to route='index'}}<span id='inside'>Home</span>{{/link-to}}</div>
         <div id="self-link">{{#link-to route='about'}}Self{{/link-to}}</div>
         `
+        )
       );
 
       await this.visit('/about');
@@ -127,12 +133,14 @@ moduleFor(
     }
 
     async [`@test it applies a 'disabled' class when disabled`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <div id="about-link-static">{{#link-to route="about" disabled="truthy"}}About{{/link-to}}</div>
         <div id="about-link-dynamic">{{#link-to route="about" disabled=this.dynamicDisabled}}About{{/link-to}}</div>
         `
+        )
       );
 
       let controller;
@@ -177,9 +185,9 @@ moduleFor(
     }
 
     async [`@test it doesn't apply a 'disabled' class when not disabled`](assert) {
-      this.addTemplate(
-        'index',
-        `<div id="about-link">{{#link-to route="about"}}About{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(`<div id="about-link">{{#link-to route="about"}}About{{/link-to}}</div>`)
       );
 
       await this.visit('/');
@@ -191,12 +199,14 @@ moduleFor(
     }
 
     async [`@test it supports a custom disabledClass`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <div id="about-link-static">{{#link-to route="about" disabledClass="do-not-want" disabled="truthy"}}About{{/link-to}}</div>
         <div id="about-link-dynamic">{{#link-to route="about" disabledClass="do-not-want" disabled=this.dynamicDisabled}}About{{/link-to}}</div>
         `
+        )
       );
 
       let controller;
@@ -261,9 +271,11 @@ moduleFor(
     }
 
     async [`@test it supports a custom disabledClass set via bound param`](assert) {
-      this.addTemplate(
-        'index',
-        `<div id="about-link">{{#link-to route="about" disabledClass=this.disabledClass disabled=true}}About{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<div id="about-link">{{#link-to route="about" disabledClass=this.disabledClass disabled=true}}About{{/link-to}}</div>`
+        )
       );
 
       let controller;
@@ -313,9 +325,11 @@ moduleFor(
     }
 
     async [`@test it does not respond to clicks when disabled`](assert) {
-      this.addTemplate(
-        'index',
-        `<div id="about-link">{{#link-to route="about" disabled=true}}About{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<div id="about-link">{{#link-to route="about" disabled=true}}About{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/');
@@ -326,9 +340,11 @@ moduleFor(
     }
 
     async [`@test it responds to clicks according to its disabled bound param`](assert) {
-      this.addTemplate(
-        'index',
-        `<div id="about-link">{{#link-to route="about" disabled=this.dynamicDisabled}}About{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<div id="about-link">{{#link-to route="about" disabled=this.dynamicDisabled}}About{{/link-to}}</div>`
+        )
       );
 
       let controller;
@@ -363,13 +379,15 @@ moduleFor(
     }
 
     async [`@test it supports a custom activeClass`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id="about-link">{{#link-to route='about' activeClass='zomg-active'}}About{{/link-to}}</div>
         <div id="self-link">{{#link-to route='index' activeClass='zomg-active'}}Self{{/link-to}}</div>
         `
+        )
       );
 
       await this.visit('/');
@@ -398,13 +416,15 @@ moduleFor(
     }
 
     async [`@test it supports a custom activeClass from a bound param`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id="about-link">{{#link-to route='about' activeClass=this.activeClass}}About{{/link-to}}</div>
         <div id="self-link">{{#link-to route='index' activeClass=this.activeClass}}Self{{/link-to}}</div>
         `
+        )
       );
 
       let controller;
@@ -484,15 +504,13 @@ moduleFor(
             super.init(...arguments);
             this.register(
               'template:application',
-              compile(`{{#link-to route='about'}}About{{/link-to}}`, {
-                moduleName: 'non-routable/templates/application.hbs',
-              })
+              precompileTemplate(`{{#link-to route='about'}}About{{/link-to}}`)
             );
           }
         }
       );
 
-      this.addTemplate('index', `{{mount "not-routable"}}`);
+      this.add('template:index', precompileTemplate(`{{mount "not-routable"}}`));
 
       await assert.rejectsAssertion(
         this.visit('/'),
@@ -512,41 +530,32 @@ moduleFor(
             super.init(...arguments);
             this.register(
               'template:application',
-              compile(
+              precompileTemplate(
                 `
                 <h2 id='engine-layout'>Routable Engine</h2>
                 {{outlet}}
                 <div id="engine-application-link">{{#link-to route='application'}}Engine Application{{/link-to}}</div>
-                `,
-                {
-                  moduleName: 'routable/templates/application.hbs',
-                }
+                `
               )
             );
             this.register(
               'template:index',
-              compile(
+              precompileTemplate(
                 `
                 <h3 class='engine-home'>Engine Home</h3>
                 <div id="engine-about-link">{{#link-to route='about'}}Engine About{{/link-to}}</div>
                 <div id="engine-self-link">{{#link-to route='index'}}Engine Self{{/link-to}}</div>
-                `,
-                {
-                  moduleName: 'routable/templates/index.hbs',
-                }
+                `
               )
             );
             this.register(
               'template:about',
-              compile(
+              precompileTemplate(
                 `
                 <h3 class='engine-about'>Engine About</h3>
                 <div id="engine-home-link">{{#link-to route='index'}}Engine Home{{/link-to}}</div>
                 <div id="engine-self-link">{{#link-to route='about'}}Engine Self{{/link-to}}</div>
-                `,
-                {
-                  moduleName: 'routable/templates/about.hbs',
-                }
+                `
               )
             );
           }
@@ -561,14 +570,16 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <h1 id="application-layout">Application</h1>
         {{outlet}}
         <div id="application-link">{{#link-to route='application'}}Appliction{{/link-to}}</div>
         <div id="engine-link">{{#link-to route='routable'}}Engine{{/link-to}}</div>
         `
+        )
       );
 
       await this.visit('/');
@@ -768,21 +779,25 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id="about-link">{{#link-to route='about'}}About{{/link-to}}</div>
         <div id="self-link">{{#link-to route='index'}}Self{{/link-to}}</div>
         `
+        )
       );
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(
+          `
         <h3 class="about">About</h3>
         <div id="home-link">{{#link-to route='index'}}Home{{/link-to}}</div>
         <div id="self-link">{{#link-to route='about'}}Self{{/link-to}}</div>
         `
+        )
       );
     }
 
@@ -794,12 +809,14 @@ moduleFor(
     }
 
     async ['@test it supports URL replacement'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id="about-link">{{#link-to route='about' replace=true}}About{{/link-to}}</div>
         `
+        )
       );
 
       await this.visit('/');
@@ -820,12 +837,14 @@ moduleFor(
     }
 
     async ['@test it supports URL replacement via replace=boundTruthyThing'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id="about-link">{{#link-to route='about' replace=this.boundTruthyThing}}About{{/link-to}}</div>
         `
+        )
       );
 
       this.add(
@@ -853,12 +872,14 @@ moduleFor(
     }
 
     async ['@test it supports setting replace=boundFalseyThing'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id="about-link">{{#link-to route='about' replace=this.boundFalseyThing}}About{{/link-to}}</div>
         `
+        )
       );
 
       this.add(
@@ -897,11 +918,11 @@ moduleFor(
         });
       });
 
-      this.addTemplate('about', `<h1>About</h1>{{outlet}}`);
-      this.addTemplate('about.index', `<div id='index'>Index</div>`);
-      this.addTemplate(
-        'about.item',
-        `<div id='item'>{{#link-to route='about'}}About{{/link-to}}</div>`
+      this.add('template:about', precompileTemplate(`<h1>About</h1>{{outlet}}`));
+      this.add('template:about.index', precompileTemplate(`<div id='index'>Index</div>`));
+      this.add(
+        'template:about.item',
+        precompileTemplate(`<div id='item'>{{#link-to route='about'}}About{{/link-to}}</div>`)
       );
 
       await this.visit('/about/item');
@@ -918,10 +939,12 @@ moduleFor(
         this.route('item');
       });
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<div id="other-link">{{#link-to route='item' current-when='index'}}ITEM{{/link-to}}</div>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<div id="other-link">{{#link-to route='item' current-when='index'}}ITEM{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/about');
@@ -946,10 +969,12 @@ moduleFor(
         });
       });
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<div id="other-link">{{#link-to route='items' current-when='index'}}ITEM{{/link-to}}</div>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<div id="other-link">{{#link-to route='items' current-when='index'}}ITEM{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/about');
@@ -970,14 +995,16 @@ moduleFor(
         });
       });
 
-      this.addTemplate('index', `{{outlet}}`);
-      this.addTemplate(
-        'foo',
-        `{{#link-to route='foo.index' model=1 current-when='foo.index foo.bar'}}Foo Index{{/link-to}} {{outlet}}`
+      this.add('template:index', precompileTemplate(`{{outlet}}`));
+      this.add(
+        'template:foo',
+        precompileTemplate(
+          `{{#link-to route='foo.index' model=1 current-when='foo.index foo.bar'}}Foo Index{{/link-to}} {{outlet}}`
+        )
       );
-      this.addTemplate(
-        'foo.bar',
-        `{{#link-to route='foo.bar' models=(array 1 2)}}Foo Bar{{/link-to}}`
+      this.add(
+        'template:foo.bar',
+        precompileTemplate(`{{#link-to route='foo.bar' models=(array 1 2)}}Foo Bar{{/link-to}}`)
       );
 
       await this.visit('/foo/1/bar/2');
@@ -1010,10 +1037,12 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<div id="other-link">{{#link-to route='items' current-when=this.currentWhen}}ITEM{{/link-to}}</div>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<div id="other-link">{{#link-to route='items' current-when=this.currentWhen}}ITEM{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/about');
@@ -1034,18 +1063,24 @@ moduleFor(
         this.route('foo');
       });
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<div id="link1">{{#link-to route='item' current-when='item index'}}ITEM{{/link-to}}</div>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<div id="link1">{{#link-to route='item' current-when='item index'}}ITEM{{/link-to}}</div>`
+        )
       );
-      this.addTemplate(
-        'item',
-        `<div id="link2">{{#link-to route='item' current-when='item index'}}ITEM{{/link-to}}</div>`
+      this.add(
+        'template:item',
+        precompileTemplate(
+          `<div id="link2">{{#link-to route='item' current-when='item index'}}ITEM{{/link-to}}</div>`
+        )
       );
-      this.addTemplate(
-        'foo',
-        `<div id="link3">{{#link-to route='item' current-when='item index'}}ITEM{{/link-to}}</div>`
+      this.add(
+        'template:foo',
+        precompileTemplate(
+          `<div id="link3">{{#link-to route='item' current-when='item index'}}ITEM{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/about');
@@ -1081,12 +1116,14 @@ moduleFor(
         this.route('item');
       });
 
-      this.addTemplate(
-        'index.about',
-        `
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `
         <div id="index-link">{{#link-to route='index' current-when=this.isCurrent}}index{{/link-to}}</div>
         <div id="about-link">{{#link-to route='item' current-when=true}}ITEM{{/link-to}}</div>
         `
+        )
       );
 
       let controller;
@@ -1123,17 +1160,19 @@ moduleFor(
     }
 
     async ['@test it defaults to bubbling'](assert) {
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(
+          `
         <div {{on "click" this.hide}}>
           <div id="about-contact">{{#link-to route='about.contact'}}About{{/link-to}}</div>
         </div>
         {{outlet}}
         `
+        )
       );
 
-      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
+      this.add('template:about.contact', precompileTemplate(`<h1 id='contact'>Contact</h1>`));
 
       this.router.map(function () {
         this.route('about', function () {
@@ -1167,9 +1206,10 @@ moduleFor(
         this.route('item', { path: '/item/:id' });
       });
 
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(
+          `
         <h3 class="list">List</h3>
         <ul>
           {{#each @model as |person|}}
@@ -1182,23 +1222,28 @@ moduleFor(
         </ul>
         <div id='home-link'>{{#link-to route='index'}}Home{{/link-to}}</div>
         `
+        )
       );
 
-      this.addTemplate(
-        'item',
-        `
+      this.add(
+        'template:item',
+        precompileTemplate(
+          `
         <h3 class="item">Item</h3>
         <p>{{@model.name}}</p>
         <div id='home-link'>{{#link-to route='index'}}Home{{/link-to}}</div>
         `
+        )
       );
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <h3 class="home">Home</h3>
         <div id='about-link'>{{#link-to route='about'}}About{{/link-to}}</div>
         `
+        )
       );
 
       this.add(
@@ -1243,9 +1288,9 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `<div id='about-link'>{{#link-to route='about'}}About{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(`<div id='about-link'>{{#link-to route='about'}}About{{/link-to}}</div>`)
       );
 
       await this.visit('/');
@@ -1269,9 +1314,10 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'filter',
-        `
+      this.add(
+        'template:filter',
+        precompileTemplate(
+          `
         <p>{{this.filter}}</p>
         <div id="link">{{#link-to route="filter" model="unpopular"}}Unpopular{{/link-to}}</div>
         <div id="path-link">{{#link-to route="filter" model=this.filter}}Unpopular{{/link-to}}</div>
@@ -1279,6 +1325,7 @@ moduleFor(
         <div id="post-number-link">{{#link-to route="post" model=123}}Post{{/link-to}}</div>
         <div id="repo-object-link">{{#link-to route="repo" model=this.repo}}Repo{{/link-to}}</div>
         `
+        )
       );
 
       await this.visit('/filters/popular');
@@ -1310,14 +1357,18 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'lobby.index',
-        `<div id='lobby-link'>{{#link-to route='lobby' model='foobar'}}Lobby{{/link-to}}</div>`
+      this.add(
+        'template:lobby.index',
+        precompileTemplate(
+          `<div id='lobby-link'>{{#link-to route='lobby' model='foobar'}}Lobby{{/link-to}}</div>`
+        )
       );
 
-      this.addTemplate(
-        'lobby.list',
-        `<div id='lobby-link'>{{#link-to route='lobby' model='foobar'}}Lobby{{/link-to}}</div>`
+      this.add(
+        'template:lobby.list',
+        precompileTemplate(
+          `<div id='lobby-link'>{{#link-to route='lobby' model='foobar'}}Lobby{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/lobby/list');
@@ -1332,12 +1383,14 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <div id='string-link'>{{#link-to route='index'}}string{{/link-to}}</div>
         <div id='path-link'>{{#link-to route=this.foo}}path{{/link-to}}</div>
         `
+        )
       );
 
       let controller;
@@ -1376,9 +1429,11 @@ moduleFor(
       let post = { id: '1' };
       let secondPost = { id: '2' };
 
-      this.addTemplate(
-        'index',
-        `<div id="post">{{#link-to route="post" model=this.post}}post{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<div id="post">{{#link-to route="post" model=this.post}}post{{/link-to}}</div>`
+        )
       );
 
       let controller;
@@ -1427,15 +1482,17 @@ moduleFor(
         });
       });
 
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(
+          `
         <div id='about'>
           <div id='about-link'>{{#link-to route='about'}}About{{/link-to}}</div>
           <div id='item-link'>{{#link-to route='about.item'}}Item{{/link-to}}</div>
           {{outlet}}
         </div>
         `
+        )
       );
 
       await this.visit('/about');
@@ -1472,9 +1529,10 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         {{#each this.routeNames as |routeName|}}
           {{#link-to route=routeName}}{{routeName}}{{/link-to}}
         {{/each}}
@@ -1484,6 +1542,7 @@ moduleFor(
         {{#link-to route=this.route1}}a{{/link-to}}
         {{#link-to route=this.route2}}b{{/link-to}}
         `
+        )
       );
 
       let linksEqual = (links, expected) => {
@@ -1523,7 +1582,10 @@ moduleFor(
         this.route('post', { path: 'post/:post_id' });
       });
 
-      this.addTemplate('application', `{{#link-to route='post'}}Post{{/link-to}}`);
+      this.add(
+        'template:application',
+        precompileTemplate(`{{#link-to route='post'}}Post{{/link-to}}`)
+      );
 
       return assert.rejectsAssertion(
         this.visit('/'),
@@ -1538,15 +1600,17 @@ moduleFor(
         this.route('post', { path: 'post/:post_id' });
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <div id='home-link'>{{#link-to route='index'}}Home{{/link-to}}</div>
         <div id='default-post-link'>{{#link-to route='post' model=this.defaultPost}}Default Post{{/link-to}}</div>
         {{#if this.currentPost}}
           <div id='current-post-link'>{{#link-to route='post' model=this.currentPost}}Current Post{{/link-to}}</div>
         {{/if}}
         `
+        )
       );
 
       this.add(
@@ -1590,12 +1654,14 @@ moduleFor(
         });
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <div id='omg-link'>{{#link-to route='things' model='omg'}}OMG{{/link-to}}</div>
         <div id='lol-link'>{{#link-to route='things' model='lol'}}LOL{{/link-to}}</div>
         `
+        )
       );
 
       await this.visit('/things/omg');
@@ -1620,9 +1686,9 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `<div id='the-link'>{{#link-to route='index'}}Index{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(`<div id='the-link'>{{#link-to route='index'}}Index{{/link-to}}</div>`)
       );
 
       await this.visit('/');
@@ -1641,9 +1707,11 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `<div id='the-link'>{{#link-to route='index' query=(hash)}}Index{{/link-to}}</div>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<div id='the-link'>{{#link-to route='index' query=(hash)}}Index{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/');
@@ -1665,9 +1733,11 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'application',
-        `<div id='the-link'>{{#link-to query=(hash foo='456' bar='NAW')}}Index{{/link-to}}</div>`
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `<div id='the-link'>{{#link-to query=(hash foo='456' bar='NAW')}}Index{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/');
@@ -1703,12 +1773,14 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `{{#link-to route='post' model=(hash id="someId" user=@model.user)}}Post{{/link-to}}`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `{{#link-to route='post' model=(hash id="someId" user=@model.user)}}Post{{/link-to}}`
+        )
       );
 
-      this.addTemplate('post', 'Post: {{@model.user.name}}');
+      this.add('template:post', precompileTemplate('Post: {{@model.user.name}}'));
 
       await this.visit('/');
 
@@ -1742,9 +1814,11 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'application',
-        `<div id='parent-link'>{{#link-to route='parent'}}Parent{{/link-to}}</div>`
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `<div id='parent-link'>{{#link-to route='parent'}}Parent{{/link-to}}</div>`
+        )
       );
 
       await this.visit('/');
@@ -1770,9 +1844,10 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <div id='context-link'>
           {{#link-to route=this.destinationRoute model=this.routeContext loadingClass='i-am-loading'}}
             string
@@ -1784,6 +1859,7 @@ moduleFor(
           {{/link-to}}
         </div>
         `
+        )
       );
 
       let controller;

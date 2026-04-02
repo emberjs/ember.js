@@ -7,6 +7,7 @@ import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers
 import { run } from '@ember/runloop';
 import { action, computed, set } from '@ember/object';
 import { service } from '@ember/service';
+import { precompileTemplate } from '@ember/template-compilation';
 
 let originalConsoleError;
 
@@ -15,9 +16,15 @@ moduleFor(
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
-      this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
+      this.add('template:home', precompileTemplate('<h3 class="hours">Hours</h3>'));
+      this.add(
+        'template:camelot',
+        precompileTemplate('<section id="camelot"><h3>Is a silly place</h3></section>')
+      );
+      this.add(
+        'template:homepage',
+        precompileTemplate('<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>')
+      );
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -58,7 +65,10 @@ moduleFor(
 
       this.add('route:track', HomeRoute);
       this.add('controller:track', HomeController);
-      this.addTemplate('track', '<h3 class="derivedProperty">{{this.derivedProperty}}</h3>');
+      this.add(
+        'template:track',
+        precompileTemplate('<h3 class="derivedProperty">{{this.derivedProperty}}</h3>')
+      );
 
       return this.visit('/track/2')
         .then(() => {
@@ -80,13 +90,15 @@ moduleFor(
     }
 
     ['@test The Homepage with a `setupController` hook'](assert) {
-      this.addTemplate(
-        'home',
-        `<ul>{{#each this.hours as |entry|}}
+      this.add(
+        'template:home',
+        precompileTemplate(
+          `<ul>{{#each this.hours as |entry|}}
         <li>{{entry}}</li>
       {{/each}}
       </ul>
     `
+        )
       );
 
       this.add(
@@ -138,7 +150,7 @@ moduleFor(
     }
 
     ['@test the route controller can be specified via controllerName'](assert) {
-      this.addTemplate('home', '<p>{{this.myValue}}</p>');
+      this.add('template:home', precompileTemplate('<p>{{this.myValue}}</p>'));
       this.add(
         'route:home',
         class extends Route {
@@ -177,7 +189,7 @@ moduleFor(
         this.route('home', { path: '/' });
       });
 
-      this.addTemplate('home', '<p>home: {{this.myValue}}</p>');
+      this.add('template:home', precompileTemplate('<p>home: {{this.myValue}}</p>'));
 
       this.add(
         'route:home',
@@ -237,9 +249,9 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
+      this.add(
+        'template:home',
+        precompileTemplate('<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>')
       );
 
       return this.visit('/').then(() => {
@@ -272,9 +284,11 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each this.model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
+      this.add(
+        'template:home',
+        precompileTemplate(
+          '<ul>{{#each this.model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
+        )
       );
 
       return this.visit('/').then(() => {
@@ -312,9 +326,9 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
+      this.add(
+        'template:home',
+        precompileTemplate('<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>')
       );
 
       return this.visit('/').then(() => {
@@ -345,7 +359,7 @@ moduleFor(
         }
       );
 
-      this.addTemplate('special', '<p>{{@model.menuItemId}}</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.menuItemId}}</p>'));
 
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
@@ -375,7 +389,7 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      this.addTemplate('special', '{{@model.id}}');
+      this.add('template:special', precompileTemplate('{{@model.id}}'));
 
       return this.visit('/specials/1').then(() => {
         this.assertText('1', 'The model was used to render the template');
@@ -404,8 +418,8 @@ moduleFor(
       };
       this.add('route:special', SpecialRoute);
 
-      this.addTemplate('home', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
+      this.add('template:home', precompileTemplate('<h3>Home</h3>'));
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
 
       return this.visit('/')
         .then(() => {
@@ -478,9 +492,9 @@ moduleFor(
         }
       );
 
-      this.addTemplate('root.index', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:root.index', precompileTemplate('<h3>Home</h3>'));
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       return this.visit('/').then(() => {
         rootElement = document.getElementById('qunit-fixture');
@@ -719,11 +733,11 @@ moduleFor(
       let editCount = 0;
       let editedPostIds = emberA();
 
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('posts', '{{outlet}}');
-      this.addTemplate('post', '{{outlet}}');
-      this.addTemplate('post/index', 'showing');
-      this.addTemplate('post/edit', 'editing');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
+      this.add('template:posts', precompileTemplate('{{outlet}}'));
+      this.add('template:post', precompileTemplate('{{outlet}}'));
+      this.add('template:post.index', precompileTemplate('showing'));
+      this.add('template:post.edit', precompileTemplate('editing'));
 
       this.router.map(function () {
         this.route('posts', function () {

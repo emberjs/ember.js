@@ -3,6 +3,8 @@ import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { templateCacheCounters } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 import { Component } from '../utils/helpers';
 
 moduleFor(
@@ -65,11 +67,14 @@ moduleFor(
 
     '@test a component definition is only generated once'() {
       // static layout
-      this.registerComponent('component-one', { template: 'One' });
-      this.registerComponent('component-two', {
-        ComponentClass: class extends Component {},
-        template: 'Two',
-      });
+      this.owner.register(
+        'component:component-one',
+        setComponentTemplate(precompileTemplate('One'), class extends Component {})
+      );
+      this.owner.register(
+        'component:component-two',
+        setComponentTemplate(precompileTemplate('Two'), class extends Component {})
+      );
 
       // snapshot counters
       this.getCacheCounters();

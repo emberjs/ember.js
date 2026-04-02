@@ -5,6 +5,8 @@ import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
 import { action, get } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 
@@ -99,23 +101,26 @@ moduleFor(
 
       let componentInstance;
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            init() {
+              super.init();
+              componentInstance = this;
+            }
+            @action
+            transitionToSister() {
+              get(this, 'routerService').transitionTo('parent.sister');
+            }
           }
-          @action
-          transitionToSister() {
-            get(this, 'routerService').transitionTo('parent.sister');
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       return this.visit('/').then(() => {
         run(function () {
@@ -131,23 +136,26 @@ moduleFor(
 
       let componentInstance;
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            init() {
+              super.init();
+              componentInstance = this;
+            }
+            @action
+            transitionToSister() {
+              get(this, 'routerService').transitionTo('/sister');
+            }
           }
-          @action
-          transitionToSister() {
-            get(this, 'routerService').transitionTo('/sister');
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       return this.visit('/').then(() => {
         run(function () {
@@ -164,24 +172,27 @@ moduleFor(
       let componentInstance;
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
-      this.addTemplate('dynamic', '{{@model.contents}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
+      this.add('template:dynamic', precompileTemplate('{{@model.contents}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            init() {
+              super.init();
+              componentInstance = this;
+            }
+            @action
+            transitionToDynamic() {
+              get(this, 'routerService').transitionTo('dynamic', dynamicModel);
+            }
           }
-          @action
-          transitionToDynamic() {
-            get(this, 'routerService').transitionTo('dynamic', dynamicModel);
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       await this.visit('/');
 
@@ -209,24 +220,27 @@ moduleFor(
         }
       );
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
-      this.addTemplate('dynamic', '{{@model.contents}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
+      this.add('template:dynamic', precompileTemplate('{{@model.contents}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            init() {
+              super.init();
+              componentInstance = this;
+            }
+            @action
+            transitionToDynamic() {
+              get(this, 'routerService').transitionTo('dynamic', 1);
+            }
           }
-          @action
-          transitionToDynamic() {
-            get(this, 'routerService').transitionTo('dynamic', 1);
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       await this.visit('/');
 

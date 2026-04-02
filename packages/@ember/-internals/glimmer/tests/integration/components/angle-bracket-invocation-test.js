@@ -1,10 +1,13 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
-import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
+import { setModifierManager, modifierCapabilities, setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object';
 
 import { set, setProperties } from '@ember/object';
 
-import { Component } from '../../utils/helpers';
+import { Component, compile } from '../../utils/helpers';
+import { template } from '@ember/template-compiler/runtime';
+import templateOnly from '@ember/component/template-only';
+import { precompileTemplate } from '@ember/template-compilation';
 
 class CustomModifierManager {
   constructor(owner) {
@@ -46,7 +49,10 @@ moduleFor(
   'AngleBracket Invocation',
   class extends RenderingTestCase {
     '@test it can resolve <XBlah /> to x-blah'() {
-      this.registerComponent('x-blah', { template: 'hello' });
+      this.owner.register(
+        'component:x-blah',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<XBlah />');
 
@@ -58,7 +64,10 @@ moduleFor(
     }
 
     '@test it can resolve <X-Blah /> to x-blah'() {
-      this.registerComponent('x-blah', { template: 'hello' });
+      this.owner.register(
+        'component:x-blah',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<X-Blah />');
 
@@ -70,7 +79,10 @@ moduleFor(
     }
 
     '@test it can render a basic template only component'() {
-      this.registerComponent('foo-bar', { template: 'hello' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<FooBar />');
 
@@ -82,12 +94,15 @@ moduleFor(
     }
 
     '@test it can render a basic component with template and javascript'() {
-      this.registerComponent('foo-bar', {
-        template: 'FIZZ BAR {{this.local}}',
-        ComponentClass: class extends Component {
-          local = 'hey';
-        },
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('FIZZ BAR {{this.local}}'),
+          class extends Component {
+            local = 'hey';
+          }
+        )
+      );
 
       this.render('<FooBar />');
 
@@ -95,7 +110,10 @@ moduleFor(
     }
 
     '@test it can render a single word component name'() {
-      this.registerComponent('foo', { template: 'hello' });
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<Foo />');
 
@@ -107,13 +125,14 @@ moduleFor(
     }
 
     '@test it can not render a component name without initial capital letter'(assert) {
-      this.registerComponent('div', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:div',
+        class extends Component {
           init() {
             assert.ok(false, 'should not have created component');
           }
-        },
-      });
+        }
+      );
 
       this.render('<div></div>');
 
@@ -121,7 +140,13 @@ moduleFor(
     }
 
     '@test it can have a custom id and it is not bound'() {
-      this.registerComponent('foo-bar', { template: '{{this.id}} {{this.elementId}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.id}} {{this.elementId}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('<FooBar @id={{this.customId}} />', {
         customId: 'bizz',
@@ -153,7 +178,10 @@ moduleFor(
     }
 
     '@test it can have a custom id attribute and it is bound'() {
-      this.registerComponent('foo-bar', { template: 'hello' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<FooBar id={{this.customId}} />', {
         customId: 'bizz',
@@ -185,12 +213,15 @@ moduleFor(
     }
 
     '@test it can have a custom tagName'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = 'foo-bar';
-        },
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('hello'),
+          class extends Component {
+            tagName = 'foo-bar';
+          }
+        )
+      );
 
       this.render('<FooBar></FooBar>');
 
@@ -208,7 +239,10 @@ moduleFor(
     }
 
     '@test it can have a custom tagName from the invocation'() {
-      this.registerComponent('foo-bar', { template: 'hello' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<FooBar @tagName="foo-bar" />');
 
@@ -226,12 +260,15 @@ moduleFor(
     }
 
     '@test it can have custom classNames'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          classNames = ['foo', 'bar'];
-        },
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('hello'),
+          class extends Component {
+            classNames = ['foo', 'bar'];
+          }
+        )
+      );
 
       this.render('<FooBar />');
 
@@ -251,7 +288,10 @@ moduleFor(
     }
 
     '@test class property on components can be dynamic'() {
-      this.registerComponent('foo-bar', { template: 'hello' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<FooBar @class={{if this.fooBar "foo-bar"}} />', {
         fooBar: true,
@@ -289,10 +329,10 @@ moduleFor(
         classNames = ['foo'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render(strip`
         <FooBar @class="bar baz" />
@@ -345,10 +385,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('<FooBar></FooBar>');
 
@@ -382,14 +422,14 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'foo-bar {{foo-bar-baz}}',
-      });
-      this.registerComponent('foo-bar-baz', {
-        ComponentClass: FooBarBazComponent,
-        template: 'foo-bar-baz',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
+      );
+      this.owner.register(
+        'component:foo-bar-baz',
+        setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
+      );
 
       this.render('<FooBar />');
       this.assertText('foo-bar foo-bar-baz');
@@ -411,9 +451,10 @@ moduleFor(
     }
 
     '@test it renders passed named arguments'() {
-      this.registerComponent('foo-bar', {
-        template: '{{@foo}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{@foo}}'), class extends Component {})
+      );
 
       this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
@@ -437,9 +478,10 @@ moduleFor(
     }
 
     '@test it reflects named arguments as properties'() {
-      this.registerComponent('foo-bar', {
-        template: '{{this.foo}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.foo}}'), class extends Component {})
+      );
 
       this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
@@ -463,9 +505,13 @@ moduleFor(
     }
 
     '@test it can render a basic component with a block'() {
-      this.registerComponent('foo-bar', {
-        template: '{{yield}} - In component',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{yield}} - In component'),
+          class extends Component {}
+        )
+      );
 
       this.render('<FooBar>hello</FooBar>');
 
@@ -491,10 +537,13 @@ moduleFor(
         greeting = 'hello';
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '{{yield this.greeting this.greetee.firstName}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{yield this.greeting this.greetee.firstName}}'),
+          FooBarComponent
+        )
+      );
 
       this.render(
         '<FooBar @greetee={{this.person}} as |greeting name|>{{name}} {{this.person.lastName}}, {{greeting}}</FooBar>',
@@ -551,10 +600,10 @@ moduleFor(
         static positionalParams = ['first', 'second'];
       };
 
-      this.registerComponent('sample-component', {
-        ComponentClass: TestComponent,
-        template: '{{this.first}}{{this.second}}',
-      });
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(precompileTemplate('{{this.first}}{{this.second}}'), TestComponent)
+      );
 
       // this is somewhat silly as the browser "corrects" for these as
       // attribute names, but regardless the thing we care about here is that
@@ -565,7 +614,10 @@ moduleFor(
     }
 
     '@test can invoke curried components with capitalized block param names'() {
-      this.registerComponent('foo-bar', { template: 'hello' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render(strip`
         {{#let (component 'foo-bar') as |Other|}}
@@ -583,8 +635,14 @@ moduleFor(
     }
 
     '@test can invoke curried components with named args'() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-      this.registerComponent('test-harness', { template: '<@foo />' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
+      this.owner.register(
+        'component:test-harness',
+        setComponentTemplate(precompileTemplate('<@foo />'), class extends Component {})
+      );
       this.render(strip`{{test-harness foo=(component 'foo-bar')}}`);
 
       this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
@@ -597,8 +655,14 @@ moduleFor(
     }
 
     '@test can invoke curried components with a path'() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-      this.registerComponent('test-harness', { template: '<this.foo />' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
+      this.owner.register(
+        'component:test-harness',
+        setComponentTemplate(precompileTemplate('<this.foo />'), class extends Component {})
+      );
       this.render(strip`{{test-harness foo=(component 'foo-bar')}}`);
 
       this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
@@ -613,21 +677,27 @@ moduleFor(
     '@test can not invoke curried components with an implicit `this` path'(assert) {
       assert.throws(() => {
         // attempting to compile this template will throw
-        this.registerComponent('test-harness', {
-          template: '<foo.bar />',
-        });
+        this.owner.register(
+          'component:test-harness',
+          setComponentTemplate(compile('<foo.bar />'), class extends Component {})
+        );
       }, /Error: You used foo.bar as a tag name, but foo is not in scope/);
     }
 
     '@test has-block'() {
-      this.registerComponent('check-block', {
-        template: strip`
-          {{#if (has-block)}}
-            Yes
-          {{else}}
-            No
-          {{/if}}`,
-      });
+      this.owner.register(
+        'component:check-block',
+        template(
+          strip`
+            {{#if (has-block)}}
+              Yes
+            {{else}}
+              No
+            {{/if}}
+          `,
+          { component: class extends Component {}, strictMode: false }
+        )
+      );
 
       this.render(strip`
         <CheckBlock />
@@ -640,10 +710,10 @@ moduleFor(
     }
 
     '@test includes invocation specified attributes in root element ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {},
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
         foo: 'foo',
@@ -688,12 +758,15 @@ moduleFor(
     }
 
     '@test attributes without values passed at invocation are included in `...attributes` ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div ...attributes>hello</div>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>hello</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<FooBar data-bar />');
 
@@ -707,12 +780,15 @@ moduleFor(
     }
 
     '@test attributes without values at definition are included in `...attributes` ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div data-bar ...attributes>hello</div>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div data-bar ...attributes>hello</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<FooBar />');
 
@@ -726,12 +802,15 @@ moduleFor(
     }
 
     '@test includes invocation specified attributes in `...attributes` slot in tagless component ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div ...attributes>hello</div>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>hello</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
         foo: 'foo',
@@ -777,17 +856,20 @@ moduleFor(
 
     '@test merges attributes with `...attributes` in tagless component ("splattributes")'() {
       let instance;
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-          init() {
-            instance = this;
-            super.init(...arguments);
-            this.localProp = 'qux';
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div data-derp={{this.localProp}} ...attributes>hello</div>'),
+          class extends Component {
+            tagName = '';
+            init() {
+              instance = this;
+              super.init(...arguments);
+              this.localProp = 'qux';
+            }
           }
-        },
-        template: '<div data-derp={{this.localProp}} ...attributes>hello</div>',
-      });
+        )
+      );
 
       this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
         foo: 'foo',
@@ -835,17 +917,20 @@ moduleFor(
 
     '@test merges class attribute with `...attributes` in tagless component ("splattributes")'() {
       let instance;
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-          init() {
-            instance = this;
-            super.init(...arguments);
-            this.localProp = 'qux';
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div class={{this.localProp}} ...attributes>hello</div>'),
+          class extends Component {
+            tagName = '';
+            init() {
+              instance = this;
+              super.init(...arguments);
+              this.localProp = 'qux';
+            }
           }
-        },
-        template: '<div class={{this.localProp}} ...attributes>hello</div>',
-      });
+        )
+      );
 
       this.render('<FooBar class={{this.bar}} />', { bar: 'bar' });
 
@@ -888,17 +973,20 @@ moduleFor(
 
     '@test merges trailing class attribute with `...attributes` in tagless component ("splattributes")'() {
       let instance;
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-          init() {
-            instance = this;
-            super.init(...arguments);
-            this.localProp = 'qux';
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes class={{this.localProp}}>hello</div>'),
+          class extends Component {
+            tagName = '';
+            init() {
+              instance = this;
+              super.init(...arguments);
+              this.localProp = 'qux';
+            }
           }
-        },
-        template: '<div ...attributes class={{this.localProp}}>hello</div>',
-      });
+        )
+      );
 
       this.render('<FooBar class={{this.bar}} />', { bar: 'bar' });
 
@@ -940,18 +1028,24 @@ moduleFor(
     }
 
     '@test merges class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
-      });
-      this.registerComponent('foo-bar/baz', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div class="default-class" ...attributes>hello</div>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{yield (hash baz=(component "foo-bar/baz"))}}'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
+      this.owner.register(
+        'component:foo-bar/baz',
+        setComponentTemplate(
+          precompileTemplate('<div class="default-class" ...attributes>hello</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<FooBar as |fb|><fb.baz class="custom-class" title="foo"></fb.baz></FooBar>');
 
@@ -963,18 +1057,24 @@ moduleFor(
     }
 
     '@test merges trailing class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
-      });
-      this.registerComponent('foo-bar/baz', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div ...attributes class="default-class" >hello</div>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{yield (hash baz=(component "foo-bar/baz"))}}'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
+      this.owner.register(
+        'component:foo-bar/baz',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes class="default-class" >hello</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<FooBar as |fb|><fb.baz class="custom-class" title="foo"></fb.baz></FooBar>');
 
@@ -986,18 +1086,24 @@ moduleFor(
     }
 
     '@test the attributes passed on invocation trump over the default ones on elements with `...attributes` in yielded contextual component ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
-      });
-      this.registerComponent('foo-bar/baz', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div title="bar" ...attributes>hello</div>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{yield (hash baz=(component "foo-bar/baz"))}}'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
+      this.owner.register(
+        'component:foo-bar/baz',
+        setComponentTemplate(
+          precompileTemplate('<div title="bar" ...attributes>hello</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<FooBar as |fb|><fb.baz title="foo"></fb.baz></FooBar>');
 
@@ -1009,19 +1115,25 @@ moduleFor(
     }
 
     '@test can forward ...attributes to dynamic component invocation ("splattributes")'() {
-      this.registerComponent('x-outer', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<XInner ...attributes>{{yield}}</XInner>',
-      });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate('<XInner ...attributes>{{yield}}</XInner>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
-      this.registerComponent('x-inner', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div ...attributes>{{yield}}</div>',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>{{yield}}</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render(strip`
         {{#let (component 'x-outer') as |Thing|}}
@@ -1037,19 +1149,27 @@ moduleFor(
     }
 
     '@test an inner angle invocation can forward ...attributes through dynamic component invocation ("splattributes")'() {
-      this.registerComponent('x-outer', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: `{{#let (component 'x-inner') as |Thing|}}<Thing ...attributes>{{yield}}</Thing>{{/let}}`,
-      });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate(
+            `{{#let (component 'x-inner') as |Thing|}}<Thing ...attributes>{{yield}}</Thing>{{/let}}`
+          ),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
-      this.registerComponent('x-inner', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div ...attributes>{{yield}}</div>',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>{{yield}}</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<XOuter data-foo>Hello!</XOuter>');
 
@@ -1061,19 +1181,25 @@ moduleFor(
     }
 
     '@test an inner angle invocation can forward ...attributes through static component invocation ("splattributes")'() {
-      this.registerComponent('x-outer', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: `<XInner ...attributes>{{yield}}</XInner>`,
-      });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate(`<XInner ...attributes>{{yield}}</XInner>`),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
-      this.registerComponent('x-inner', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div ...attributes>{{yield}}</div>',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>{{yield}}</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<XOuter data-foo>Hello!</XOuter>');
 
@@ -1085,12 +1211,15 @@ moduleFor(
     }
 
     '@test can include `...attributes` in multiple elements in tagless component ("splattributes")'() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div ...attributes>hello</div><p ...attributes>world</p>',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>hello</div><p ...attributes>world</p>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
       this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
         foo: 'foo',
@@ -1155,25 +1284,33 @@ moduleFor(
     }
 
     '@test can yield content to contextual components invoked with angle-bracket components that receives splattributes'() {
-      this.registerComponent('foo-bar/inner', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<h1 ...attributes>{{yield}}</h1>',
-      });
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        // If <Inner> doesn't receive splattributes this test passes
-        template: strip`
-          {{#let (component "foo-bar/inner") as |Inner|}}
-            <Inner ...attributes>{{yield}}</Inner>
-            <h2>Inside the let</h2>
-          {{/let}}
-          <h3>Outside the let</h3>
-        `,
-      });
+      this.owner.register(
+        'component:foo-bar/inner',
+        setComponentTemplate(
+          precompileTemplate('<h1 ...attributes>{{yield}}</h1>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
+      this.owner.register(
+        'component:foo-bar',
+        template(
+          strip`
+            {{#let (component "foo-bar/inner") as |Inner|}}
+              <Inner ...attributes>{{yield}}</Inner>
+              <h2>Inside the let</h2>
+            {{/let}}
+            <h3>Outside the let</h3>
+          `,
+          {
+            component: class extends Component {
+              tagName = '';
+            },
+            strictMode: false,
+          }
+        )
+      );
 
       this.render('<FooBar>Yielded content</FooBar>');
       this.assertElement(this.firstChild, {
@@ -1198,22 +1335,27 @@ moduleFor(
 moduleFor(
   'AngleBracket Invocation (splattributes)',
   class extends RenderingTestCase {
-    registerComponent(name, template) {
-      super.registerComponent(name, { template, ComponentClass: null });
-    }
-
     '@test angle bracket invocation can pass merge ...attributes'() {
-      this.registerComponent(
-        'qux',
-        '<div data-from-qux-before ...attributes data-from-qux-after></div>'
+      this.owner.register(
+        'component:qux',
+        setComponentTemplate(
+          precompileTemplate('<div data-from-qux-before ...attributes data-from-qux-after></div>'),
+          templateOnly()
+        )
       );
-      this.registerComponent(
-        'bar',
-        '<Qux data-from-bar-before ...attributes data-from-bar-after />'
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('<Qux data-from-bar-before ...attributes data-from-bar-after />'),
+          templateOnly()
+        )
       );
-      this.registerComponent(
-        'foo',
-        '<Bar data-from-foo-before ...attributes data-from-foo-after />'
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(
+          precompileTemplate('<Bar data-from-foo-before ...attributes data-from-foo-after />'),
+          templateOnly()
+        )
       );
 
       this.render('<Foo data-from-top />');
@@ -1229,36 +1371,90 @@ moduleFor(
     }
 
     '@test angle bracket invocation can allow invocation side to override attributes with ...attributes'() {
-      this.registerComponent('qux', '<div id="qux" ...attributes />');
-      this.registerComponent('bar', '<Qux id="bar" ...attributes />');
-      this.registerComponent('foo', '<Bar id="foo" ...attributes />');
+      this.owner.register(
+        'component:qux',
+        setComponentTemplate(precompileTemplate('<div id="qux" ...attributes />'), templateOnly())
+      );
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(precompileTemplate('<Qux id="bar" ...attributes />'), templateOnly())
+      );
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(precompileTemplate('<Bar id="foo" ...attributes />'), templateOnly())
+      );
 
       this.render('<Foo id="top" />');
       this.assertHTML('<div id="top"></div>');
     }
 
     '@test angle bracket invocation can override invocation side attributes with ...attributes'() {
-      this.registerComponent('qux', '<div ...attributes id="qux" />');
-      this.registerComponent('bar', '<Qux ...attributes id="bar" />');
-      this.registerComponent('foo', '<Bar ...attributes id="foo" />');
+      this.owner.register(
+        'component:qux',
+        setComponentTemplate(precompileTemplate('<div ...attributes id="qux" />'), templateOnly())
+      );
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(precompileTemplate('<Qux ...attributes id="bar" />'), templateOnly())
+      );
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(precompileTemplate('<Bar ...attributes id="foo" />'), templateOnly())
+      );
 
       this.render('<Foo id="top" />');
       this.assertHTML('<div id="qux"></div>');
     }
 
     '@test angle bracket invocation can forward classes before ...attributes to a nested component'() {
-      this.registerComponent('qux', '<div class="qux" ...attributes />');
-      this.registerComponent('bar', '<Qux class="bar" ...attributes />');
-      this.registerComponent('foo', '<Bar class="foo" ...attributes />');
+      this.owner.register(
+        'component:qux',
+        setComponentTemplate(
+          precompileTemplate('<div class="qux" ...attributes />'),
+          templateOnly()
+        )
+      );
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('<Qux class="bar" ...attributes />'),
+          templateOnly()
+        )
+      );
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(
+          precompileTemplate('<Bar class="foo" ...attributes />'),
+          templateOnly()
+        )
+      );
 
       this.render('<Foo class="top" />');
       this.assertHTML('<div class="qux bar foo top"></div>');
     }
 
     '@test angle bracket invocation can forward classes after ...attributes to a nested component'() {
-      this.registerComponent('qux', '<div ...attributes class="qux" />');
-      this.registerComponent('bar', '<Qux ...attributes class="bar" />');
-      this.registerComponent('foo', '<Bar ...attributes class="foo" />');
+      this.owner.register(
+        'component:qux',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes class="qux" />'),
+          templateOnly()
+        )
+      );
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('<Qux ...attributes class="bar" />'),
+          templateOnly()
+        )
+      );
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(
+          precompileTemplate('<Bar ...attributes class="foo" />'),
+          templateOnly()
+        )
+      );
 
       this.render('<Foo class="top" />');
       this.assertHTML('<div class="top foo bar qux"></div>');
@@ -1270,7 +1466,10 @@ moduleFor(
   'AngleBracket Invocation Nested Lookup',
   class extends RenderingTestCase {
     '@test it can resolve <Foo::Bar::BazBing /> to foo/bar/baz-bing'() {
-      this.registerComponent('foo/bar/baz-bing', { template: 'hello' });
+      this.owner.register(
+        'component:foo/bar/baz-bing',
+        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+      );
 
       this.render('<Foo::Bar::BazBing />');
 
@@ -1299,12 +1498,15 @@ moduleFor(
       let modifierParams = null;
       let modifierNamedArgs = null;
       let modifiedElement;
-      this.registerComponent('the-foo', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div id="inner-div" ...attributes>Foo</div>',
-      });
+      this.owner.register(
+        'component:the-foo',
+        setComponentTemplate(
+          precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
       this.registerModifier(
         'bar',
         class extends BaseModifier {
@@ -1327,13 +1529,17 @@ moduleFor(
 
     '@test modifiers are forwarded to all the elements receiving the splattributes'(assert) {
       let elementIds = [];
-      this.registerComponent('the-foo', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template:
-          '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>',
-      });
+      this.owner.register(
+        'component:the-foo',
+        setComponentTemplate(
+          precompileTemplate(
+            '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>'
+          ),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
       let test = this;
       this.registerModifier(
         'bar',
@@ -1359,12 +1565,15 @@ moduleFor(
       let modifierParams = null;
       let modifierNamedArgs = null;
       let modifiedElement;
-      this.registerComponent('the-foo', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div id="inner-div" ...attributes>Foo</div>',
-      });
+      this.owner.register(
+        'component:the-foo',
+        setComponentTemplate(
+          precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
       this.registerModifier(
         'bar',
         class extends BaseModifier {
@@ -1409,12 +1618,15 @@ moduleFor(
       let modifiedElement;
       let context = { id: 1 };
       let context2 = { id: 2 };
-      this.registerComponent('the-foo', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div id="inner-div" ...attributes>Foo</div>',
-      });
+      this.owner.register(
+        'component:the-foo',
+        setComponentTemplate(
+          precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
       this.registerModifier(
         'bar',
         class extends BaseModifier {
@@ -1454,12 +1666,15 @@ moduleFor(
       let modifierParams = null;
       let modifierNamedArgs = null;
       let modifiedElement;
-      this.registerComponent('the-foo', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div id="inner-div" ...attributes>Foo</div>',
-      });
+      this.owner.register(
+        'component:the-foo',
+        setComponentTemplate(
+          precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
       this.registerModifier(
         'bar',
         class extends BaseModifier {
@@ -1504,19 +1719,26 @@ moduleFor(
       let modifierNamedArgs = null;
       let elementIds = [];
 
-      this.registerComponent('the-inner', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template: '<div id="inner-div" ...attributes>{{yield}}</div>',
-      });
-      this.registerComponent('the-foo', {
-        ComponentClass: class extends Component {
-          tagName = '';
-        },
-        template:
-          '<div id="outer-div" ...attributes>Outer</div><TheInner ...attributes>Hello</TheInner>',
-      });
+      this.owner.register(
+        'component:the-inner',
+        setComponentTemplate(
+          precompileTemplate('<div id="inner-div" ...attributes>{{yield}}</div>'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
+      this.owner.register(
+        'component:the-foo',
+        setComponentTemplate(
+          precompileTemplate(
+            '<div id="outer-div" ...attributes>Outer</div><TheInner ...attributes>Hello</TheInner>'
+          ),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
       this.registerModifier(
         'bar',
         class extends BaseModifier {

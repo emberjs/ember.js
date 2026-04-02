@@ -2,6 +2,7 @@ import Controller from '@ember/controller';
 import { A as emberA } from '@ember/array';
 import Route from '@ember/routing/route';
 import { computed } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
 import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
 
 class ModelDependentQPTestCase extends QueryParamTestCase {
@@ -97,19 +98,12 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol&z=123`);
   }
 
-  async queryParamsStickyTest3(urlPrefix, articleLookup) {
+  async queryParamsStickyTest3(urlPrefix, articleLookup, applicationTemplate) {
     let assert = this.assert;
 
     assert.expect(32);
 
-    this.addTemplate(
-      'application',
-      `
-      {{#each articles as |a|}}
-        <LinkTo @route='${articleLookup}' @model={{a.id}} id={{a.id}}>Article</LinkTo>
-      {{/each}}
-      `
-    );
+    this.add('template:application', applicationTemplate);
 
     await this.boot();
     this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
@@ -232,7 +226,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=3`);
   }
 
-  async queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
+  async queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup, aboutTemplate) {
     let assert = this.assert;
 
     assert.expect(13);
@@ -248,13 +242,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
       },
     });
 
-    this.addTemplate(
-      'about',
-      `
-      <LinkTo @route='${commentsLookup}' @model='a-1' id='one'>A</LinkTo>
-      <LinkTo @route='${commentsLookup}' @model='a-2' id='two'>B</LinkTo>
-      `
-    );
+    this.add('template:about', aboutTemplate);
 
     await this.visitApplication();
     await this.transitionTo(commentsLookup, 'a-1');
@@ -339,14 +327,16 @@ moduleFor(
         })
       );
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         {{#each this.articles as |a|}}
           <LinkTo @route='article' @model={{a}} id={{a.id}}>Article</LinkTo>
         {{/each}}
         {{outlet}}
         `
+        )
       );
     }
 
@@ -375,7 +365,17 @@ moduleFor(
     }
 
     ["@test query params have 'model' stickiness by default (params-based transitions)"]() {
-      return this.queryParamsStickyTest3('/a', 'article');
+      return this.queryParamsStickyTest3(
+        '/a',
+        'article',
+        precompileTemplate(
+          `
+      {{#each articles as |a|}}
+        <LinkTo @route='article' @model={{a.id}} id={{a.id}}>Article</LinkTo>
+      {{/each}}
+      `
+        )
+      );
     }
 
     ["@test 'controller' stickiness shares QP state between models"]() {
@@ -387,7 +387,17 @@ moduleFor(
     }
 
     ['@test can reset query params using the resetController hook']() {
-      return this.queryParamsStickyTest6('/a', 'article', 'comments');
+      return this.queryParamsStickyTest6(
+        '/a',
+        'article',
+        'comments',
+        precompileTemplate(
+          `
+      <LinkTo @route='comments' @model='a-1' id='one'>A</LinkTo>
+      <LinkTo @route='comments' @model='a-2' id='two'>B</LinkTo>
+      `
+        )
+      );
     }
   }
 );
@@ -450,14 +460,16 @@ moduleFor(
         })
       );
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         {{#each this.articles as |a|}}
           <LinkTo @route='site.article' @model={{a}} id={{a.id}}>Article</LinkTo>
         {{/each}}
         {{outlet}}
         `
+        )
       );
     }
 
@@ -486,7 +498,17 @@ moduleFor(
     }
 
     ["@test query params have 'model' stickiness by default (params-based transitions)"]() {
-      return this.queryParamsStickyTest3('/site/a', 'site.article');
+      return this.queryParamsStickyTest3(
+        '/site/a',
+        'site.article',
+        precompileTemplate(
+          `
+      {{#each articles as |a|}}
+        <LinkTo @route='site.article' @model={{a.id}} id={{a.id}}>Article</LinkTo>
+      {{/each}}
+      `
+        )
+      );
     }
 
     ["@test 'controller' stickiness shares QP state between models"]() {
@@ -498,7 +520,17 @@ moduleFor(
     }
 
     ['@test can reset query params using the resetController hook']() {
-      return this.queryParamsStickyTest6('/site/a', 'site.article', 'site.article.comments');
+      return this.queryParamsStickyTest6(
+        '/site/a',
+        'site.article',
+        'site.article.comments',
+        precompileTemplate(
+          `
+      <LinkTo @route='site.article.comments' @model='a-1' id='one'>A</LinkTo>
+      <LinkTo @route='site.article.comments' @model='a-2' id='two'>B</LinkTo>
+      `
+        )
+      );
     }
   }
 );
@@ -605,9 +637,10 @@ moduleFor(
         })
       );
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         {{#each this.allSitesAllArticles as |a|}}
           <LinkTo @route='site.article' @models={{array a.site_id a.article_id}} id={{a.id}}>
             Article [{{a.site_id}}] [{{a.article_id}}]
@@ -615,6 +648,7 @@ moduleFor(
         {{/each}}
         {{outlet}}
         `
+        )
       );
     }
 

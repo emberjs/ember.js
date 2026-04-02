@@ -1,6 +1,7 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
-import { getInternalModifierManager } from '@glimmer/manager';
+import { getInternalModifierManager, setComponentTemplate } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
+import { precompileTemplate } from '@ember/template-compilation';
 
 import { DEBUG } from '@glimmer/env';
 
@@ -303,15 +304,18 @@ moduleFor(
     }
 
     [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
-      this.registerComponent('foo-bar2', {
-        ComponentClass: class extends Component {
-          tagName = '';
-          fire() {
-            assert.ok(false);
+      this.owner.register(
+        'component:foo-bar2',
+        setComponentTemplate(
+          precompileTemplate(`<button {{on 'click' this.fire}}>Fire!</button>`),
+          class extends Component {
+            tagName = '';
+            fire() {
+              assert.ok(false);
+            }
           }
-        },
-        template: `<button {{on 'click' this.fire}}>Fire!</button>`,
-      });
+        )
+      );
 
       this.render('{{#if this.showButton}}<FooBar2 />{{/if}}', {
         showButton: true,

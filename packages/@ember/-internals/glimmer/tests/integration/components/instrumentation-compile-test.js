@@ -4,6 +4,8 @@ import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
 } from '@ember/instrumentation';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -60,10 +62,13 @@ moduleFor(
         }
       };
 
-      this.registerComponent('x-bar', {
-        template: '[x-bar: {{this.bar}}]',
-        ComponentClass: class extends BaseClass {},
-      });
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate('[x-bar: {{this.bar}}]'),
+          class extends BaseClass {}
+        )
+      );
 
       this.render(`[-top-level: {{this.foo}}] {{x-bar bar=this.bar}}`, {
         foo: 'foo',

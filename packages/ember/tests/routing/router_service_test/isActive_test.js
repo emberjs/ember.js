@@ -2,6 +2,8 @@ import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Router Service - isActive',
@@ -180,26 +182,29 @@ moduleFor(
 
       let componentInstance;
 
-      this.addTemplate('parent.index', '{{foo-component}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-component}}'));
 
-      this.addComponent('foo-component', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
+      this.add(
+        'component:foo-component',
+        setComponentTemplate(
+          precompileTemplate(`{{this.isRouteActive}}`),
+          class extends Component {
+            @service('router')
+            routerService;
 
-          init() {
-            super.init();
-            componentInstance = this;
+            init() {
+              super.init();
+              componentInstance = this;
+            }
+
+            get isRouteActive() {
+              // This used to throw "Cannot read properties of undefined (reading 'isActiveIntent')"
+              // before setupRouter() was added to the isActive method
+              return this.routerService.isActive('parent.child');
+            }
           }
-
-          get isRouteActive() {
-            // This used to throw "Cannot read properties of undefined (reading 'isActiveIntent')"
-            // before setupRouter() was added to the isActive method
-            return this.routerService.isActive('parent.child');
-          }
-        },
-        template: `{{this.isRouteActive}}`,
-      });
+        )
+      );
 
       return this.visit('/').then(() => {
         // The test passes if no error is thrown during rendering

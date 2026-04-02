@@ -8,6 +8,8 @@ import EmberObject from '@ember/object';
 import { readOnly } from '@ember/object/computed';
 import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 
 const EMPTY = Object.freeze({});
@@ -1712,10 +1714,10 @@ if (DEBUG) {
           attributeBindings = ['style'];
         };
 
-        this.registerComponent('foo-bar', {
-          ComponentClass: FooBarComponent,
-          template: 'hello',
-        });
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
         let userValue = 'width: 42px';
         this.render('{{foo-bar style=this.userValue}}', {
           userValue,

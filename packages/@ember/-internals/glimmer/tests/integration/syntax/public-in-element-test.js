@@ -2,6 +2,8 @@ import { moduleFor, RenderingTestCase, strip, equalTokens, runTask } from 'inter
 
 import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   '{{in-element}}',
@@ -160,19 +162,21 @@ moduleFor(
 
       let someElement = document.createElement('div');
 
-      this.registerComponent('modal-display', {
-        ComponentClass: class extends Component {
-          didInsertElement() {
-            hooks.push('didInsertElement');
-          }
+      this.owner.register(
+        'component:modal-display',
+        setComponentTemplate(
+          precompileTemplate(`{{this.text}}`),
+          class extends Component {
+            didInsertElement() {
+              hooks.push('didInsertElement');
+            }
 
-          willDestroyElement() {
-            hooks.push('willDestroyElement');
+            willDestroyElement() {
+              hooks.push('willDestroyElement');
+            }
           }
-        },
-
-        template: `{{this.text}}`,
-      });
+        )
+      );
 
       this.render(
         strip`

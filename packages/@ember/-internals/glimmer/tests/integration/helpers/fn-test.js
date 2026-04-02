@@ -1,6 +1,7 @@
 import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { template } from '@ember/template-compiler/runtime';
 import { Component } from '../../utils/helpers';
 
 moduleFor(
@@ -12,20 +13,21 @@ moduleFor(
       });
 
       let testContext = this;
-      this.registerComponent('stash', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:stash',
+        class extends Component {
           init() {
             super.init(...arguments);
             testContext.stashedFn = this.stashedFn;
           }
-        },
-      });
+        }
+      );
     }
 
     '@test fn can be shadowed'() {
-      let First = defineComponent(
-        { fn: boundFn, boundFn, id, invoke },
-        `[{{invoke (fn id 1)}}]{{#let boundFn as |fn|}}[{{invoke (fn id 2)}}{{/let}}]`
+      let First = template(
+        `[{{invoke (fn id 1)}}]{{#let boundFn as |fn|}}[{{invoke (fn id 2)}}{{/let}}]`,
+        { scope: () => ({ fn: boundFn, boundFn, id, invoke }) }
       );
       this.renderComponent(First, { expect: `[bound:1][bound:2]` });
     }

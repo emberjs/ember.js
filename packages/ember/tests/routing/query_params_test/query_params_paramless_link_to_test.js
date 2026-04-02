@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Query Params - paramless link-to',
@@ -7,7 +8,10 @@ moduleFor(
     testParamlessLinks(assert, routeName) {
       assert.expect(1);
 
-      this.addTemplate(routeName, `<LinkTo @route="index" id="index-link">index</LinkTo>`);
+      this.add(
+        `template:${routeName}`,
+        precompileTemplate(`<LinkTo @route="index" id="index-link">index</LinkTo>`)
+      );
 
       this.add(
         `controller:${routeName}`,

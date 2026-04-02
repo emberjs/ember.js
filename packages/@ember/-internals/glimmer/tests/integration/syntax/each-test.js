@@ -5,6 +5,8 @@ import { get, set, computed } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import { RSVP } from '@ember/-internals/runtime';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 import {
@@ -520,10 +522,13 @@ class EachTest extends AbstractEachTest {
       }
     };
 
-    this.registerComponent('foo-bar', {
-      ComponentClass: FooBarComponent,
-      template: '{{#if this.isEven}}{{this.item.value}}{{/if}}',
-    });
+    this.owner.register(
+      'component:foo-bar',
+      setComponentTemplate(
+        precompileTemplate('{{#if this.isEven}}{{this.item.value}}{{/if}}'),
+        FooBarComponent
+      )
+    );
 
     this.render(strip`
       {{#each this.list as |item|}}
@@ -777,7 +782,10 @@ class EachTest extends AbstractEachTest {
     // tag. Currently the only way to observe this the "JUMP-IF-NOT-MODIFIED", i.e. by
     // wrapping it in an component.
 
-    this.registerComponent('x-wrapper', { template: '{{yield}}' });
+    this.owner.register(
+      'component:x-wrapper',
+      setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+    );
 
     this.makeList([]);
 

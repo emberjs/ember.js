@@ -1,14 +1,13 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
 import { EventDispatcher } from '@ember/-internals/views';
-import Component, { setComponentTemplate } from '@ember/component';
+import Component from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compile } from 'ember-template-compiler';
+import compile from '../compile';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 
 import type { InternalFactory } from '@ember/-internals/owner';
-import templateOnly from '@ember/component/template-only';
 import type EngineInstance from '@ember/engine/instance';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import buildOwner from '../build-owner';
@@ -80,60 +79,6 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     this.resolver.add(specifier, factory);
   }
 
-  addTemplate(
-    templateName:
-      | string
-      | { specifier: string; source: unknown; namespace: unknown; moduleName: string },
-    templateString: string
-  ) {
-    if (typeof templateName === 'string') {
-      this.resolver.add(
-        `template:${templateName}`,
-        this.compile(templateString, {
-          moduleName: templateName,
-        })
-      );
-    } else {
-      this.resolver.add(
-        templateName,
-        this.compile(templateString, {
-          moduleName: templateName.moduleName,
-        })
-      );
-    }
-  }
-
-  addComponent(
-    name: string,
-    { ComponentClass = null, template = null, resolveableTemplate = null }
-  ) {
-    if (ComponentClass) {
-      let localClass = ComponentClass as typeof Component;
-
-      this.resolver.add(`component:${name}`, localClass);
-
-      if (typeof template === 'string') {
-        setComponentTemplate(this.compile(template), ComponentClass ? localClass : templateOnly());
-      }
-
-      return;
-    }
-
-    if (typeof template === 'string') {
-      let toComponent = setComponentTemplate(this.compile(template), templateOnly());
-      this.resolver.add(`component:${name}`, toComponent);
-    }
-
-    if (typeof resolveableTemplate === 'string') {
-      this.resolver.add(
-        `template:components/${name}`,
-        this.compile(resolveableTemplate, {
-          moduleName: `components/${name}`,
-        })
-      );
-    }
-  }
-
   afterEach() {
     try {
       if (this.component) {
@@ -174,7 +119,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
   }
 
   renderComponent(component: object, options: { expect: string }) {
-    this.registerComponent('root', { ComponentClass: component });
+    this.owner.register('component:root', component);
     this.render('<Root />');
     this.assertHTML(options.expect);
     this.assertStableRerender();
@@ -236,48 +181,6 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     owner.register(`component:${name}`, component);
 
     return component;
-  }
-
-  registerComponent(
-    name: string,
-    {
-      ComponentClass = Component,
-      template = null,
-      resolveableTemplate = null,
-    }: {
-      ComponentClass?: object | null;
-      template?: string | null;
-      resolveableTemplate?: string | null;
-    }
-  ) {
-    let { owner } = this;
-
-    if (ComponentClass) {
-      // We cannot set templates multiple times on a class
-      if (ComponentClass === Component) {
-        ComponentClass = class extends Component {};
-      }
-
-      owner.register(`component:${name}`, ComponentClass);
-
-      if (typeof template === 'string') {
-        setComponentTemplate(this.compile(template), ComponentClass);
-      }
-    }
-
-    if (typeof template === 'string') {
-      let toComponent = setComponentTemplate(this.compile(template), templateOnly());
-      this.resolver.add(`component:${name}`, toComponent);
-    }
-
-    if (typeof resolveableTemplate === 'string') {
-      owner.register(
-        `template:components/${name}`,
-        this.compile(resolveableTemplate, {
-          moduleName: `my-app/templates/components/${name}.hbs`,
-        })
-      );
-    }
   }
 
   registerModifier(name: string, ModifierClass: InternalFactory<object>) {
