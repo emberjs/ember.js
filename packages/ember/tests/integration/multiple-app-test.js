@@ -66,11 +66,9 @@ moduleFor(
 
       resolver.add(
         'template:index',
-        this.compile(
-          `
+        precompileTemplate(`
         <h1>Node 1</h1>{{special-button}}
-      `
-        )
+      `)
       );
     }
 

@@ -235,9 +235,8 @@ moduleFor(
 
       let sharedLayout = precompileTemplate('{{ambiguous-curlies}}');
 
-      let sharedComponent = class extends Component {
-        layout = sharedLayout;
-      };
+      let sharedComponent = class extends Component {};
+      setComponentTemplate(sharedLayout, sharedComponent);
 
       this.add(
         'template:application',

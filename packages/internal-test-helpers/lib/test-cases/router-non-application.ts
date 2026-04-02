@@ -1,5 +1,5 @@
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
+import { template } from '@ember/template-compiler/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
 import Component from '@ember/component';
@@ -49,10 +49,6 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     this.component = null;
   }
 
-  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}) {
-    return compile(templateString, options);
-  }
-
   getOwnerOptions(): EngineInstanceOptions | undefined {
     return undefined;
   }
@@ -82,14 +78,14 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     if (typeof templateName === 'string') {
       this.resolver.add(
         `template:${templateName}`,
-        this.compile(templateString, {
+        compile(templateString, {
           moduleName: templateName,
         })
       );
     } else {
       this.resolver.add(
         templateName,
-        this.compile(templateString, {
+        compile(templateString, {
           moduleName: templateName.moduleName,
         })
       );
@@ -104,7 +100,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     if (typeof template === 'string') {
       this.resolver.add(
         `template:components/${name}`,
-        this.compile(template, {
+        compile(template, {
           moduleName: `components/${name}`,
         })
       );
@@ -127,19 +123,12 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
   render(templateStr: string, context = {}) {
     let { owner } = this;
 
-    owner.register(
-      'template:-top-level',
-      this.compile(templateStr, {
-        moduleName: '-top-level',
-      })
-    );
-
-    let attrs = Object.assign({}, context, {
-      tagName: '',
-      layoutName: '-top-level',
+    let TopLevel = template(templateStr, {
+      component: Component.extend(Object.assign({}, context, { tagName: '' })),
+      strictMode: false,
     });
 
-    owner.register('component:-top-level', Component.extend(attrs));
+    owner.register('component:-top-level', TopLevel);
 
     this.component = owner.lookup('component:-top-level');
 
