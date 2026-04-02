@@ -57,10 +57,22 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
   }
 
   afterEach() {
-    runDestroy(this.applicationInstance);
-    runDestroy(this.application);
+    try {
+      // Clean up GXT active components before application destroy
+      const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
+      if (typeof gxtCleanup === 'function') {
+        gxtCleanup();
+      }
 
-    super.teardown();
+      runDestroy(this.applicationInstance);
+      runDestroy(this.application);
+
+      super.teardown();
+    } finally {
+      (globalThis as any).__gxtPendingSync = false;
+      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      (globalThis as any).__gxtSyncScheduled = false;
+    }
   }
 
   get applicationOptions() {

@@ -64,6 +64,12 @@ export abstract class AbstractStrictTestCase {
 
   afterEach() {
     try {
+      // Clean up GXT active components before destroy
+      const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
+      if (typeof gxtCleanup === 'function') {
+        gxtCleanup();
+      }
+
       runDestroy(this);
       // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
       if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
@@ -71,6 +77,9 @@ export abstract class AbstractStrictTestCase {
       }
     } finally {
       _resetRenderers();
+      (globalThis as any).__gxtPendingSync = false;
+      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      (globalThis as any).__gxtSyncScheduled = false;
     }
   }
 

@@ -1410,6 +1410,28 @@ setInterval(() => {
   // Reset global rendering state
   (globalThis as any).$slots = undefined;
   (globalThis as any).$fw = undefined;
+
+  // Clear GXT VM internal maps to prevent unbounded memory growth.
+  // The VM exposes getVM() and getRenderTree() on window in dev mode,
+  // giving access to internal Maps that accumulate across tests.
+  try {
+    if (typeof (globalThis as any).getRenderTree === 'function') {
+      const tree = (globalThis as any).getRenderTree();
+      if (tree) {
+        if (tree.TREE && typeof tree.TREE.clear === 'function') tree.TREE.clear();
+        if (tree.CHILD && typeof tree.CHILD.clear === 'function') tree.CHILD.clear();
+        if (tree.PARENT && typeof tree.PARENT.clear === 'function') tree.PARENT.clear();
+      }
+    }
+    if (typeof (globalThis as any).getVM === 'function') {
+      const vm = (globalThis as any).getVM();
+      if (vm) {
+        if (vm.relatedTags && typeof vm.relatedTags.clear === 'function') vm.relatedTags.clear();
+        if (vm.tagsToRevalidate && typeof vm.tagsToRevalidate.clear === 'function') vm.tagsToRevalidate.clear();
+        if (vm.opsForTag && typeof vm.opsForTag.clear === 'function') vm.opsForTag.clear();
+      }
+    }
+  } catch { /* ignore - VM internals may not be available */ }
 };
 
 // Set GXT mode flag
@@ -4794,12 +4816,7 @@ export function precompileTemplate(templateString: string, options?: {
 }) {
   // Check cache first — skip cache when scopeValues are provided (they contain unique references)
   const hasScopeValues = options?.scopeValues && Object.keys(options.scopeValues).length > 0;
-  // Debug: track all calls with scopeValues
-  if (hasScopeValues) {
-    const _g3 = globalThis as any;
-    if (!_g3.__gxtDebugPrecompileCalls) _g3.__gxtDebugPrecompileCalls = [];
-    _g3.__gxtDebugPrecompileCalls.push({ template: templateString.slice(0, 100), keys: Object.keys(options!.scopeValues!) });
-  }
+  // Debug tracking removed to avoid unbounded memory growth in long test suites
   const cacheKey = templateString + (options?.moduleName || '');
   if (!hasScopeValues) {
     const cached = templateCache.get(cacheKey);
