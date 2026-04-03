@@ -1,8 +1,10 @@
 import { getFactoryFor } from '@ember/-internals/container';
+import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {
+  CompilableProgram,
   ComponentDefinition,
   Environment,
   InternalComponentCapabilities,
@@ -10,7 +12,11 @@ import type {
   VMArguments,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { capabilityFlagsFrom } from '@glimmer/manager';
+import { capabilityFlagsFrom, getComponentTemplate } from '@glimmer/manager';
+import { precompileTemplate } from '@ember/template-compilation';
+import { unwrapTemplate } from './unwrap-template';
+
+const DEFAULT_TEMPLATE = precompileTemplate('', { strictMode: true });
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
@@ -79,7 +85,7 @@ class RootComponentManager extends CurlyComponentManager {
 // ROOT is the top-level template it has nothing but one yield.
 // it is supposed to have a dummy element
 const ROOT_CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: true,
+  dynamicLayout: false,
   dynamicTag: true,
   prepareArgs: false,
   createArgs: false,
@@ -102,12 +108,20 @@ export class RootComponentDefinition implements ComponentDefinition {
   state: object;
   manager: RootComponentManager;
   capabilities = capabilityFlagsFrom(ROOT_CAPABILITIES);
-  compilable = null;
+  compilable: CompilableProgram;
 
   constructor(component: Component) {
     this.manager = new RootComponentManager(component);
     let factory = getFactoryFor(component);
     assert('missing factory for component', factory !== undefined);
     this.state = factory;
+
+    let owner = getOwner(component);
+    assert('missing owner for root component', owner);
+    let templateFactory = getComponentTemplate(component.constructor as object) ?? DEFAULT_TEMPLATE;
+    // TODO: eliminate unwrapTemplate — the VM's ComponentDefinition interface
+    // requires CompilableProgram, but we should be able to pass template
+    // factories through and let the VM handle compilation.
+    this.compilable = unwrapTemplate(templateFactory(owner)).asWrappedLayout();
   }
 }

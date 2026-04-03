@@ -2,14 +2,13 @@ import compile from '../compile';
 import { template } from '@ember/template-compiler/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
-import Component from '@ember/component';
-import { _resetRenderers } from '@ember/-internals/glimmer';
+import { _resetRenderers, renderComponent } from '@ember/-internals/glimmer';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
-import { runAppend, runDestroy } from '../run';
+import { runDestroy } from '../run';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import type { InternalFactory } from '@ember/-internals/owner';
@@ -120,18 +119,9 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     }
   }
 
-  render(templateStr: string, context = {}) {
-    let { owner } = this;
+  render(templateStr: string) {
+    let TopLevel = template(templateStr, { strictMode: false });
 
-    let TopLevel = template(templateStr, {
-      component: Component.extend(Object.assign({}, context, { tagName: '' })),
-      strictMode: false,
-    });
-
-    owner.register('component:-top-level', TopLevel);
-
-    this.component = owner.lookup('component:-top-level');
-
-    runAppend(this.component);
+    renderComponent(TopLevel, { into: this.element, owner: this.owner });
   }
 }

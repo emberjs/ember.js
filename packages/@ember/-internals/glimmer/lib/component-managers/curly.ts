@@ -1,9 +1,4 @@
-import {
-  type default as Owner,
-  type InternalFactory,
-  getOwner,
-  setOwner,
-} from '@ember/-internals/owner';
+import { type default as Owner, type InternalFactory, setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import type { Nullable } from '@ember/-internals/utility-types';
@@ -13,7 +8,6 @@ import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
   CapturedArguments,
-  CompilableProgram,
   Destroyable,
   ElementOperations,
   Environment,
@@ -21,14 +15,12 @@ import type {
   PreparedArguments,
   VMArguments,
   WithCreateInstance,
-  WithDynamicLayout,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import { EMPTY_ARRAY } from '@glimmer/util';
-import { unwrapTemplate } from './unwrap-template';
 import {
   beginTrackFrame,
   beginUntrackFrame,
@@ -40,8 +32,6 @@ import {
 } from '@glimmer/validator';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
-import type RuntimeResolver from '../resolver';
-import { getComponentTemplate } from '@glimmer/manager';
 import {
   createClassNameBindingRef,
   createSimpleClassNameBindingRef,
@@ -125,28 +115,8 @@ type ComponentFactory = InternalFactory<
 };
 
 export default class CurlyComponentManager
-  implements
-    WithCreateInstance<ComponentStateBucket>,
-    WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
-    WithDynamicTagName<ComponentStateBucket>
+  implements WithCreateInstance<ComponentStateBucket>, WithDynamicTagName<ComponentStateBucket>
 {
-  protected templateFor(component: Component): CompilableProgram | null {
-    let owner = getOwner(component);
-    assert('Component is unexpectedly missing an owner', owner);
-
-    let factory = getComponentTemplate(component.constructor as object);
-
-    if (factory === undefined) {
-      return null;
-    }
-
-    return unwrapTemplate(factory(owner)).asWrappedLayout();
-  }
-
-  getDynamicLayout(bucket: ComponentStateBucket): CompilableProgram | null {
-    return this.templateFor(bucket.component);
-  }
-
   getTagName(state: ComponentStateBucket): Nullable<string> {
     let { component, hasWrappedElement } = state;
 
@@ -523,7 +493,7 @@ function rerenderInstrumentDetails(component: any): any {
 }
 
 const CURLY_CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: true,
+  dynamicLayout: false,
   dynamicTag: true,
   prepareArgs: true,
   createArgs: true,
