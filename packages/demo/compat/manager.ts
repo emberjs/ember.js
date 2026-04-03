@@ -37,7 +37,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
   );
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
-import { runDestructors as _gxtRunDestructors } from '@lifeart/gxt';
+import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect } from '@lifeart/gxt';
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
@@ -3610,9 +3610,15 @@ const $_MANAGERS = {
       if (typeof helper === 'function' && helper.__isEmberCurriedHelper) {
         return true;
       }
+      // Plain functions can be used as helpers via the default helper manager
+      // This handles scope-provided functions like (helper foo "arg") where
+      // foo is a plain arrow function from strict-mode scope values
+      if (typeof helper === 'function') {
+        return true;
+      }
       // Handle function/class-based helpers with a registered helper manager
       // Walk the prototype chain for both functions (classes) and objects
-      if (helper != null && (typeof helper === 'function' || typeof helper === 'object')) {
+      if (helper != null && typeof helper === 'object') {
         let pointer = helper;
         while (pointer != null && pointer !== Object.prototype && pointer !== Function.prototype) {
           if ((globalThis as any).INTERNAL_HELPER_MANAGERS?.has(pointer)) return true;
@@ -3896,6 +3902,29 @@ const $_MANAGERS = {
       const elCache = self._cache.get(element);
       if (elCache) {
         const cached = elCache.get(modKey);
+        // If the modifier is already active and not pending destroy, return a no-op
+        // destructor. This prevents double-creation when GXT evaluates the formula
+        // multiple times during initial setup.
+        if (cached && !cached.pendingDestroy) {
+          return () => {
+            cached.pendingDestroy = true;
+            Promise.resolve().then(() => {
+              if (cached.pendingDestroy) {
+                if (cached.isInternal) {
+                  const destroyable = cached.manager.getDestroyable?.(cached.instance);
+                  if (destroyable) {
+                    try { if (typeof _gxtRunDestructors === 'function') _gxtRunDestructors(destroyable); } catch { /* ignore */ }
+                    if (typeof destroy === 'function') destroy(destroyable);
+                  }
+                } else if (cached.manager.destroyModifier) {
+                  cached.manager.destroyModifier(cached.instance);
+                }
+                elCache.delete(modKey);
+                if (elCache.size === 0) self._cache.delete(element);
+              }
+            });
+          };
+        }
         if (cached && cached.pendingDestroy) {
           // The destructor was called (GXT formula re-eval), but we haven't
           // actually destroyed yet — this is an update, not a reinstall.
@@ -3903,6 +3932,22 @@ const $_MANAGERS = {
 
           if (cached.isInternal) {
             // Internal modifier manager update path
+            // Rebuild captured args so the state's refs reflect current values
+            const freshArgs = cached._buildCapturedArgs ? cached._buildCapturedArgs() : null;
+            if (freshArgs && cached.instance.args) {
+              // Update positional refs in-place
+              for (let i = 0; i < freshArgs.positional.length; i++) {
+                if (cached.instance.args.positional[i]) {
+                  cached.instance.args.positional[i].value = freshArgs.positional[i].value;
+                }
+              }
+              // Update named refs in-place
+              for (const k of Object.keys(freshArgs.named)) {
+                if (cached.instance.args.named[k]) {
+                  cached.instance.args.named[k].value = freshArgs.named[k].value;
+                }
+              }
+            }
             if (cached.manager.update) {
               cached.manager.update(cached.instance);
             }
@@ -4045,7 +4090,7 @@ try {
           cache = new Map();
           self._cache.set(element, cache);
         }
-        const cached = { instance: state, manager, ModifierClass, pendingDestroy: false, isInternal: true };
+        const cached = { instance: state, manager, ModifierClass, pendingDestroy: false, isInternal: true, _buildCapturedArgs: buildCapturedArgs };
         cache.set(modKey, cached);
 
         // Handle destroyable
@@ -4704,7 +4749,12 @@ function renderCustomElement(
       if (Array.isArray(fwEvents)) {
         for (const [eventName, handler] of fwEvents) {
           if (typeof handler === 'function') {
-            el.addEventListener(eventName, handler);
+            if (eventName === '0') {
+              // ON_CREATED: modifier forwarding
+              _gxtEffect(() => (handler as any)(el));
+            } else {
+              el.addEventListener(eventName, handler);
+            }
           }
         }
       }
@@ -4836,7 +4886,14 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
     if (Array.isArray(fw[2])) {
       for (const [eventName, handler] of fw[2]) {
         if (typeof handler === 'function') {
-          el.addEventListener(eventName, handler);
+          if (eventName === '0') {
+            // ON_CREATED event type: this is a modifier, not a regular event listener.
+            // Use GXT's effect() to wrap the modifier invocation so dependencies are
+            // tracked and the modifier re-runs reactively (matching GXT's $ev behavior).
+            _gxtEffect(() => (handler as any)(el));
+          } else {
+            el.addEventListener(eventName, handler);
+          }
         }
       }
     }
@@ -5095,7 +5152,12 @@ function handleManagedComponent(
       if (Array.isArray(fwEvents)) {
         for (const [eventName, handler] of fwEvents) {
           if (typeof handler === 'function') {
-            el.addEventListener(eventName, handler);
+            if (eventName === '0') {
+              // ON_CREATED: modifier forwarding
+              _gxtEffect(() => (handler as any)(el));
+            } else {
+              el.addEventListener(eventName, handler);
+            }
           }
         }
       }
@@ -5278,7 +5340,12 @@ function renderClassicComponent(
   if (wrapper instanceof HTMLElement && fw && Array.isArray(fw[2])) {
     for (const [eventName, handler] of fw[2]) {
       if (typeof handler === 'function') {
-        wrapper.addEventListener(eventName, handler);
+        if (eventName === '0') {
+          // ON_CREATED: modifier forwarding
+          _gxtEffect(() => (handler as any)(wrapper));
+        } else {
+          wrapper.addEventListener(eventName, handler);
+        }
       }
     }
   }

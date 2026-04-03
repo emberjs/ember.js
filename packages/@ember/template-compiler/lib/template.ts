@@ -224,6 +224,96 @@ export type ImplicitTemplateOnlyOptions = BaseTemplateOptions & ImplicitEvalOpti
 export type ImplicitClassOptions<C extends ComponentClass> = BaseClassTemplateOptions<C> &
   ImplicitEvalOption;
 
+/**
+ * Extract scope values from a template string using an eval function.
+ * Used in GXT mode to resolve the implicit form's local variables.
+ */
+function _extractScopeFromEval(
+  templateString: string,
+  evalFn: (v: string) => unknown
+): Record<string, unknown> {
+  const scope: Record<string, unknown> = {};
+
+  // Extract potential free variable names from the template:
+  // 1. Component invocations: <Foo />, <Foo>, </Foo>
+  // 2. Mustache expressions: {{foo}}, {{foo bar}}, (foo ...)
+  // 3. Helper/modifier invocations: {{on "click" ...}}, (fn ...)
+  // 4. Dotted paths: <state.component /> (head part only)
+  const identifiers = new Set<string>();
+
+  // Match PascalCase component names: <Foo, <FooBar
+  const componentPattern = /<([A-Z][a-zA-Z0-9]*)\b/g;
+  let m;
+  while ((m = componentPattern.exec(templateString)) !== null) {
+    identifiers.add(m[1]!);
+  }
+
+  // Match lowercase identifiers in mustache/subexpression position
+  // {{foo}}, {{foo bar}}, (foo ...), {{#foo}}, {{/foo}}
+  // Note: do NOT skip keywords — they can be shadowed in strict mode
+  const mustachePattern = /\{\{#?\/?([a-z][a-zA-Z0-9_]*)\b/g;
+  while ((m = mustachePattern.exec(templateString)) !== null) {
+    identifiers.add(m[1]!);
+  }
+
+  // Match subexpression helpers: (foo ...) but not (this.foo)
+  const subexprPattern = /\(([a-z][a-zA-Z0-9_]*)\b/g;
+  while ((m = subexprPattern.exec(templateString)) !== null) {
+    identifiers.add(m[1]!);
+  }
+
+  // Match dotted path heads: <state.component /> → state
+  const dottedPattern = /<([a-z][a-zA-Z0-9]*)\.([a-zA-Z])/g;
+  while ((m = dottedPattern.exec(templateString)) !== null) {
+    const head = m[1]!;
+    if (head !== 'this') {
+      identifiers.add(head);
+    }
+  }
+
+  // Match modifier names: <div {{foo}}>
+  const modifierPattern = /\{\{([a-z][a-zA-Z0-9_]*)\b/g;
+  while ((m = modifierPattern.exec(templateString)) !== null) {
+    identifiers.add(m[1]!);
+  }
+
+  // Catch-all: match any bare identifier that appears in expression context
+  // This catches variables used as arguments in subexpressions like (modifier foo ...)
+  // and {{helper foo ...}} etc.
+  const bareIdentPattern = /\b([a-z][a-zA-Z0-9_]*)\b/g;
+  while ((m = bareIdentPattern.exec(templateString)) !== null) {
+    const name = m[1]!;
+    // Skip HTML tag names and common HBS keywords that aren't variables
+    if (!_HBS_SYNTAX_WORDS.has(name)) {
+      identifiers.add(name);
+    }
+  }
+
+  // Try to resolve each identifier via eval
+  for (const name of identifiers) {
+    try {
+      const value = evalFn(name);
+      if (value !== undefined) {
+        scope[name] = value;
+      }
+    } catch {
+      // Variable not in scope — skip
+    }
+  }
+
+  return Object.keys(scope).length > 0 ? scope : undefined as any;
+}
+
+// HBS syntax words that should not be treated as variable references
+const _HBS_SYNTAX_WORDS = new Set([
+  'as', 'div', 'span', 'button', 'input', 'textarea', 'form', 'a', 'p', 'ul', 'li',
+  'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr', 'td', 'th', 'thead',
+  'tbody', 'img', 'br', 'hr', 'nav', 'section', 'article', 'header', 'footer',
+  'main', 'aside', 'label', 'select', 'option', 'pre', 'code', 'em', 'strong',
+  'class', 'id', 'type', 'name', 'value', 'checked', 'disabled', 'href', 'src',
+  'click', 'true', 'false', 'null', 'undefined', 'this',
+]);
+
 export function template(
   templateString: string,
   options?: ExplicitTemplateOnlyOptions | ImplicitTemplateOnlyOptions
@@ -242,11 +332,27 @@ export function template(
     const gxtCompile = (globalThis as any).__gxtCompileTemplate;
     if (gxtCompile) {
       const gxtOptions = { strictMode: true, ...providedOptions };
-      const gxtNormalizedOptions = compileOptions(gxtOptions);
-      const gxtComponent = gxtNormalizedOptions.component ?? templateOnly();
+      const gxtComponent = (gxtOptions as any).component ?? templateOnly();
+
+      // Extract scope values from explicit scope() or implicit eval()
+      let scopeValues: Record<string, unknown> | undefined;
+
+      if ('scope' in gxtOptions && typeof (gxtOptions as any).scope === 'function') {
+        // Explicit form: scope: () => ({ Foo, bar })
+        scopeValues = ((gxtOptions as any).scope as () => Record<string, unknown>)();
+      } else if ('eval' in gxtOptions && typeof (gxtOptions as any).eval === 'function') {
+        // Implicit form: eval() { return eval(arguments[0]) }
+        // Extract free variable names from the template and resolve them via eval
+        scopeValues = _extractScopeFromEval(
+          templateString,
+          (gxtOptions as any).eval as (v: string) => unknown
+        );
+      }
 
       const gxtTemplate = gxtCompile(templateString, {
         moduleName: gxtOptions.moduleName,
+        strictMode: true,
+        scopeValues,
       });
 
       setComponentTemplate(gxtTemplate, gxtComponent);

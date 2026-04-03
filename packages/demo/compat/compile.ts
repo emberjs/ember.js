@@ -3063,8 +3063,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           for (const entry of tagProps[2]) {
             if (Array.isArray(entry) && entry.length === 2) {
               const key = entry[0];
-              // Numeric keys (or stringified numbers) are text children
-              if (typeof key === 'string' && /^\d+$/.test(key)) {
+              // Numeric keys are text children EXCEPT key "0" which is
+              // ON_CREATED (modifier events). Key "1" = TEXT_CONTENT.
+              // Modifier functions (key "0") take an element parameter and should
+              // be forwarded as events, not treated as text content.
+              if (typeof key === 'string' && /^\d+$/.test(key) && key !== '0') {
                 textChildren.push(entry[1]);
               } else {
                 realEvents.push(entry);
@@ -4997,7 +5000,8 @@ export function precompileTemplate(templateString: string, options?: {
     let dottedMatch;
     while ((dottedMatch = dottedTagPattern.exec(templateString)) !== null) {
       const head = dottedMatch[1];
-      if (head !== 'this' && !blockParamNames.has(head)) {
+      const scopeKeys = options?.scopeValues ? new Set(Object.keys(options.scopeValues)) : new Set<string>();
+      if (head !== 'this' && !blockParamNames.has(head) && !scopeKeys.has(head)) {
         throw new Error(
           `Error: You used ${head}.${dottedMatch[2]} as a tag name, but ${head} is not in scope`
         );
@@ -5724,8 +5728,30 @@ export function precompileTemplate(templateString: string, options?: {
           else if (modifiedCode[iifeEnd] === '}') depth--;
         }
 
-        // Extract the IIFE body after the let declaration
-        const bodyStart = modifiedCode.indexOf(';', declPos) + 1;
+        // Extract the IIFE body after the let declaration.
+        // We need to find the `;` that ENDS the `let X = () => EXPR;` statement.
+        // The EXPR may contain nested `;` (e.g., wrapper functions), so we must
+        // bracket-match past them to find the statement-ending semicolon.
+        const arrowPos = modifiedCode.indexOf('=>', declPos + varName.length);
+        if (arrowPos === -1) continue;
+        let scanPos = arrowPos + 2;
+        // Skip whitespace
+        while (scanPos < modifiedCode.length && /\s/.test(modifiedCode[scanPos]!)) scanPos++;
+        // Track bracket depth to skip past nested expressions
+        let bracketDepth = 0;
+        let bodyStartFound = false;
+        let bodyStart = -1;
+        for (; scanPos < iifeEnd; scanPos++) {
+          const ch = modifiedCode[scanPos];
+          if (ch === '(' || ch === '{' || ch === '[') bracketDepth++;
+          else if (ch === ')' || ch === '}' || ch === ']') bracketDepth--;
+          else if (ch === ';' && bracketDepth === 0) {
+            bodyStart = scanPos + 1;
+            bodyStartFound = true;
+            break;
+          }
+        }
+        if (!bodyStartFound) continue;
         const bodyEnd = iifeEnd - 1; // Before the closing }
         if (bodyStart <= declPos || bodyEnd <= bodyStart) continue;
 
@@ -5777,6 +5803,36 @@ export function precompileTemplate(templateString: string, options?: {
       let scopeStoreKey = '';
       const scopeAliases = new Map<string, string>(); // original key -> JS alias
       if (scopeVals && scopeKeys.size > 0) {
+        // Normalize scope values: replace Glimmer VM internal helpers with
+        // GXT-compatible equivalents. Glimmer VM helpers (from @glimmer/runtime)
+        // are plain objects registered via setInternalHelperManager — they cannot
+        // be called as functions. Replace them with the GXT-compatible versions.
+        const BUILTINS_MAP: Record<string, string> = {
+          'hash': 'hash', 'array': 'array', 'concat': 'concat',
+          'get': 'get', 'fn': 'fn',
+        };
+        const gxtBuiltins = g.__EMBER_BUILTIN_HELPERS__;
+        const internalHelperManagers = g.INTERNAL_HELPER_MANAGERS as WeakMap<object, any> | undefined;
+        for (const key of Object.keys(scopeVals)) {
+          const val = scopeVals[key];
+          if (val !== null && val !== undefined && typeof val === 'object' && !Array.isArray(val)) {
+            // Check if this is a Glimmer VM internal helper
+            if (internalHelperManagers?.has?.(val as object)) {
+              const builtinName = BUILTINS_MAP[key];
+              if (builtinName && gxtBuiltins?.[builtinName]) {
+                scopeVals[key] = gxtBuiltins[builtinName];
+              }
+            }
+          }
+        }
+        // Also replace the Glimmer VM `on` modifier with a GXT-compatible version.
+        // GXT handles {{on "event" handler}} natively, so we provide a no-op modifier
+        // that the GXT compiler already transforms into event bindings.
+        if (scopeVals['on'] !== undefined && typeof scopeVals['on'] !== 'function') {
+          // The `on` modifier from @glimmer/runtime is an object, not a function.
+          // GXT handles {{on}} natively, so we just need a passthrough.
+          scopeVals['on'] = g.__EMBER_BUILTIN_HELPERS__?.['on'] || scopeVals['on'];
+        }
         scopeStoreKey = `__gxtScope_${Date.now()}_${Math.random().toString(36).slice(2)}`;
         g[scopeStoreKey] = scopeVals;
         for (const key of scopeKeys) {
