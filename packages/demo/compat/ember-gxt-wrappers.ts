@@ -921,17 +921,24 @@ function createEmberTag(original: Function) {
 function createEmberDc(original: Function) {
   const $SLOTS_SYM = Symbol.for('gxt-slots');
 
-  function extractArgsAndSlots(gxtArgs: any): { mergedArgs: any; } {
+  function extractArgsAndSlots(gxtArgs: any, allowPositionalParams = false): { mergedArgs: any; } {
     const mergedArgs: any = {};
     if (gxtArgs && typeof gxtArgs === 'object') {
       const keys = Object.keys(gxtArgs);
       for (const key of keys) {
         if (key.startsWith('$')) continue;
-        // Allow __hasBlock__ and __hasBlockParams__ through
-        if (key.startsWith('_') && key !== '__hasBlock__' && key !== '__hasBlockParams__') continue;
+        // Allow __hasBlock__ and __hasBlockParams__ through always
+        if (key === '__hasBlock__' || key === '__hasBlockParams__') { /* allowed */ }
+        // Allow positional param keys through only when requested (for string components
+        // where the manager needs to map positional params to named args)
+        else if (allowPositionalParams && (/^__pos\d+__$/.test(key) || key === '__posCount__')) { /* allowed */ }
+        // Skip all other keys starting with _
+        else if (key.startsWith('_')) continue;
         const desc = Object.getOwnPropertyDescriptor(gxtArgs, key);
         if (desc) {
-          Object.defineProperty(mergedArgs, key, desc);
+          // Ensure properties are configurable so the manager can delete/redefine
+          // them (e.g., positional params mapping deletes __posN__ keys).
+          Object.defineProperty(mergedArgs, key, { ...desc, configurable: true });
         }
       }
     }
@@ -971,11 +978,11 @@ function createEmberDc(original: Function) {
     return { mergedArgs };
   }
 
-  function renderComponent(componentValue: any, gxtArgs: any, ctx: any): any {
+  function renderComponent(componentValue: any, gxtArgs: any, ctx: any, allowPositionalParams = false): any {
     const managers = g.$_MANAGERS;
     if (!managers?.component?.canHandle?.(componentValue)) return null;
 
-    const { mergedArgs } = extractArgsAndSlots(gxtArgs);
+    const { mergedArgs } = extractArgsAndSlots(gxtArgs, allowPositionalParams);
     const handleResult = managers.component.handle(componentValue, mergedArgs, null, ctx);
     if (typeof handleResult === 'function') {
       return handleResult();
@@ -1056,11 +1063,14 @@ function createEmberDc(original: Function) {
       }
     }
 
-    // Handle string component name
+    // Handle string component name — pass positional params through since the
+    // component manager needs them for positionalParams mapping (e.g.,
+    // {{component this.componentName this.name this.age}} where the component
+    // class has static positionalParams = ['name', 'age'])
     if (typeof componentValue === 'string') {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(componentValue)) {
-        return renderComponent(componentValue, gxtArgs, ctx);
+        return renderComponent(componentValue, gxtArgs, ctx, /* allowPositionalParams */ true);
       }
     }
 
