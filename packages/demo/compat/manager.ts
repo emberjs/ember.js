@@ -189,6 +189,8 @@ globalThis.COMPONENT_MANAGERS = globalThis.COMPONENT_MANAGERS || new WeakMap();
 globalThis.INTERNAL_MANAGERS = globalThis.INTERNAL_MANAGERS || new WeakMap();
 globalThis.INTERNAL_HELPER_MANAGERS = globalThis.INTERNAL_HELPER_MANAGERS || new WeakMap();
 globalThis.INTERNAL_MODIFIER_MANAGERS = globalThis.INTERNAL_MODIFIER_MANAGERS || new WeakMap();
+// Expose FROM_CAPABILITIES on globalThis so ember-gxt-wrappers.ts can validate capabilities
+(globalThis as any).FROM_CAPABILITIES = FROM_CAPABILITIES;
 
 // =============================================================================
 // Custom Managed Component Instance Tracking (for destructor support)
@@ -3663,6 +3665,15 @@ const $_MANAGERS = {
 
           if (typeof internalManager.getDelegateFor === 'function') {
             const delegate = internalManager.getDelegateFor(owner);
+            // Validate that capabilities were created via helperCapabilities()
+            if (delegate && delegate.capabilities && !FROM_CAPABILITIES.has(delegate.capabilities)) {
+              throw new Error(
+                `Custom helper managers must have a \`capabilities\` property ` +
+                `that is the result of calling the \`capabilities('3.23')\` ` +
+                `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
+                `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
+              );
+            }
             if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
               const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
               const curriedNamed = hash && typeof hash === 'object'
@@ -4724,6 +4735,159 @@ function renderCustomElement(
  * create the DOM element and wire up reactive bindings via GXT effects.
  * This avoids the issues with createRenderContext overwriting instance.args.
  */
+
+/**
+ * Render a LinkTo internal component as an <a> element.
+ * The instance has reactive getters for href, class, id, click, etc.
+ * Renders slot content into the <a> and sets up reactive bindings
+ * for attributes and block content.
+ */
+function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorElement {
+  const el = document.createElement('a');
+  const gxtEffect = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+
+  // id attribute
+  gxtEffect(() => {
+    const id = instance.id;
+    if (id) el.id = id;
+  });
+
+  // class attribute (includes 'ember-view', 'active', 'disabled', etc.)
+  gxtEffect(() => {
+    const cls = instance.class;
+    if (cls) el.className = cls;
+  });
+
+  // href attribute
+  gxtEffect(() => {
+    try {
+      const href = instance.href;
+      if (href !== undefined && href !== null) {
+        el.setAttribute('href', String(href));
+      }
+    } catch {
+      // href computation may throw if routing service is unavailable
+      el.setAttribute('href', '#');
+    }
+  });
+
+  // Optional attributes from the LinkTo template
+  const optionalAttrs = ['role', 'title', 'rel', 'tabindex', 'target'];
+  for (const attr of optionalAttrs) {
+    gxtEffect(() => {
+      try {
+        const val = instance[attr];
+        if (val !== undefined && val !== null) {
+          el.setAttribute(attr, String(val));
+        } else {
+          el.removeAttribute(attr);
+        }
+      } catch { /* ignore */ }
+    });
+  }
+
+  // Click handler
+  if (typeof instance.click === 'function') {
+    el.addEventListener('click', (e: Event) => {
+      try {
+        instance.click(e);
+      } catch {
+        // click handler may throw if routing service is unavailable
+      }
+    });
+  }
+
+  // Apply forwarded attributes (...attributes) from fw
+  if (fw && Array.isArray(fw)) {
+    if (Array.isArray(fw[0])) {
+      for (const [key, value] of fw[0]) {
+        const attrKey = key === '' ? 'class' : key;
+        if (attrKey === 'class') {
+          gxtEffect(() => {
+            const resolved = typeof value === 'function' ? value() : value;
+            const baseClass = instance.class || '';
+            el.className = resolved ? baseClass + ' ' + resolved : baseClass;
+          });
+        } else {
+          gxtEffect(() => {
+            const resolved = typeof value === 'function' ? value() : value;
+            if (resolved !== undefined && resolved !== null && resolved !== false) {
+              el.setAttribute(attrKey, String(resolved));
+            } else {
+              el.removeAttribute(attrKey);
+            }
+          });
+        }
+      }
+    }
+    if (Array.isArray(fw[1])) {
+      for (const [key, value] of fw[1]) {
+        if (key.startsWith('@')) continue;
+        gxtEffect(() => {
+          const resolved = typeof value === 'function' ? value() : value;
+          if (resolved !== undefined && resolved !== null && resolved !== false) {
+            el.setAttribute(key, String(resolved));
+          } else {
+            el.removeAttribute(key);
+          }
+        });
+      }
+    }
+    if (Array.isArray(fw[2])) {
+      for (const [eventName, handler] of fw[2]) {
+        if (typeof handler === 'function') {
+          el.addEventListener(eventName, handler);
+        }
+      }
+    }
+  }
+
+  // Render slot content ({{yield}} / block content) into the <a> element.
+  // Use raw children (unevaluated getter functions) for reactive text updates.
+  // Each getter is wrapped in a gxtEffect so GXT cell reads inside the getter
+  // are tracked and the text node updates when the cell changes.
+  //
+  // For static text (strings), render directly without effect wrapping.
+  const rawChildren = args?.__rawSlotChildren;
+  if (rawChildren && rawChildren.length > 0) {
+    for (const child of rawChildren) {
+      if (typeof child === 'function') {
+        // Reactive getter - use gxtEffect + cellFor for tracking.
+        // The getter reads this.title (a controller/context property).
+        // We need cellFor tracking so set(controller, 'title', ...) triggers re-render.
+        const textNode = document.createTextNode('');
+        const cellFor = (globalThis as any).__gxtCellFor;
+        gxtEffect(() => {
+          const val = child();
+          textNode.textContent = val == null ? '' : String(val);
+        });
+        el.appendChild(textNode);
+      } else if (child instanceof Node) {
+        el.appendChild(child);
+      } else if (child != null) {
+        el.appendChild(document.createTextNode(String(child)));
+      }
+    }
+  } else {
+    // Fallback: use slot function (for block content from ember-gxt-wrappers path)
+    const $SLOTS = Symbol.for('gxt-slots');
+    const slots = args?.[$SLOTS] || args?.$slots || {};
+    if (typeof slots.default === 'function') {
+      const result = slots.default(null);
+      const items = Array.isArray(result) ? result : [result];
+      for (const item of items) {
+        if (item instanceof Node) {
+          el.appendChild(item);
+        } else if (item != null) {
+          el.appendChild(document.createTextNode(String(item)));
+        }
+      }
+    }
+  }
+
+  return el;
+}
+
 function handleManagedComponent(
   komp: any,
   args: any,
@@ -4742,8 +4906,16 @@ function handleManagedComponent(
   );
 
   return () => {
+    // Determine component type from the static toString() method
+    const componentType = komp?.toString?.();
+
+    // LinkTo: render as <a> element with reactive bindings
+    if (componentType === 'LinkTo') {
+      return renderLinkToElement(instance, args, fw);
+    }
+
     // Create the <input> or <textarea> element directly
-    const tagName = instance.constructor?.toString?.() === 'Textarea' ? 'textarea' : 'input';
+    const tagName = componentType === 'Textarea' ? 'textarea' : 'input';
     const el = document.createElement(tagName);
 
     // Set initial attributes and set up reactive bindings

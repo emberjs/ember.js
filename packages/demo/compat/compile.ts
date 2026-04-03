@@ -1818,9 +1818,13 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     console.warn('[gxt] {{mount}} is not supported in GXT mode');
     return '';
   },
-  // unique-id: Returns a unique identifier string
+  // unique-id: Returns a unique identifier string that always starts with a letter
+  // (valid CSS selector / HTML ID). Uses the same algorithm as Ember's uniqueId().
   'unique-id': () => {
-    return crypto.randomUUID ? crypto.randomUUID() : `ember-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+    // @ts-expect-error - abuses weird JS semantics for UUID generation
+    return ([3e7] + -1e3 + -4e3 + -2e3 + -1e11).replace(/[0-3]/g, (a: any) =>
+      ((a * 4) ^ ((Math.random() * 16) >> (a & 2))).toString(16)
+    );
   },
   // fn: Partially applies a function with arguments
   fn: (func: any, ...args: any[]) => {
@@ -2763,7 +2767,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               const recomputeVal = (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag)
                 ? recomputeTag.value : 0;
               try { argsSerialized = JSON.stringify({ p: positional, n: named, r: recomputeVal }); } catch { /* skip dedup */ }
-              if ((globalThis as any).__gxtIsForceRerender && argsSerialized !== null && argsSerialized === helperInstance.__gxtLastArgsSerialized) {
+              if (argsSerialized !== null && argsSerialized === helperInstance.__gxtLastArgsSerialized) {
                 // recomputeTag.value already consumed above for the dedup key
                 return helperInstance.__gxtLastResult;
               }
@@ -3021,13 +3025,41 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           return false;
         };
 
-        if (children && children.length > 0) {
+        // GXT puts text children in tagProps[2] (events position) for lowercase
+        // elements. Extract text entries (numeric keys like "0", "1") as children
+        // and keep only real event entries (named keys like "click").
+        let effectiveChildren = children;
+        if ((!children || children.length === 0) && tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
+          const textChildren: any[] = [];
+          const realEvents: [string, any][] = [];
+          for (const entry of tagProps[2]) {
+            if (Array.isArray(entry) && entry.length === 2) {
+              const key = entry[0];
+              // Numeric keys (or stringified numbers) are text children
+              if (typeof key === 'string' && /^\d+$/.test(key)) {
+                textChildren.push(entry[1]);
+              } else {
+                realEvents.push(entry);
+              }
+            } else {
+              // Non-array entries in position 2 could be children (functions)
+              textChildren.push(entry);
+            }
+          }
+          if (textChildren.length > 0) {
+            effectiveChildren = textChildren;
+            // Replace events with only real events (not text children)
+            events = realEvents;
+          }
+        }
+
+        if (effectiveChildren && effectiveChildren.length > 0) {
           // Separate named blocks from default slot children
           // Named blocks are marked with __isNamedBlock from :name element handling
           const namedBlocks: Map<string, { children: any[]; hasBlockParams: boolean }> = new Map();
           const defaultChildren: any[] = [];
 
-          for (const child of children) {
+          for (const child of effectiveChildren) {
             // Check if it's a named block marker
             if (child && typeof child === 'object' && child.__isNamedBlock) {
               const slotName = child.__slotName;
@@ -3127,7 +3159,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
         // Legacy: If no slots were created but children exist, create default slot
         // (This handles the case where there are no named blocks)
-        if (children && children.length > 0 && !slots.default && Object.keys(slots).length === 0) {
+        if (effectiveChildren && effectiveChildren.length > 0 && !slots.default && Object.keys(slots).length === 0) {
           // Check for explicit hasBlockParams marker from args
           const explicitHasBlockParams = args.__hasBlockParams__ !== undefined
             ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
@@ -3135,7 +3167,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Detect from children if not explicitly set
           const hasBlockParams = explicitHasBlockParams !== undefined
             ? explicitHasBlockParams
-            : detectBlockParams(children);
+            : detectBlockParams(effectiveChildren);
 
           const slotFn = (slotCtx: any, ...params: any[]) => {
             // CRITICAL: Do NOT unwrap params here - keep them as raw values (potentially reactive)
@@ -3164,7 +3196,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               // Evaluate lazy children (wrapped in () => ... for deferred block param access)
               // and return raw children. GXT's rendering pipeline handles functions via
               // resolveRenderable → formula tracking.
-              return children.map((child: any) => {
+              return effectiveChildren.map((child: any) => {
                 if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
                   try { return child(); } catch { return child; }
                 }
@@ -3215,6 +3247,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // Set on both string key and Symbol key to survive GXT's slot processing.
         _setInternalProp(args, '$slots', slots);
         args[Symbol.for('gxt-slots')] = slots;
+
+        // Store raw (unevaluated) children for components that need reactive
+        // slot rendering (e.g., LinkTo). The slot function eagerly resolves
+        // children, losing reactivity. Raw children preserve the getter functions.
+        if (effectiveChildren && effectiveChildren.length > 0) {
+          _setInternalProp(args, '__rawSlotChildren', effectiveChildren);
+        }
 
         // Return a THUNK that renders the component when called
         // This is crucial for block params: when <Outer><Inner @msg={{param}} /></Outer>
@@ -4823,8 +4862,14 @@ function transformCurlyBlockComponents(code: string): string {
   // Only transform if it looks like a component (has hyphen = kebab-case)
   // Be careful not to transform helpers like {{if}} or {{log}}
   // Also skip mustaches inside HTML attribute values (e.g. <div data-x="{{foo-bar}}">)
+  // Built-in helpers with hyphens that should NOT be transformed to components
+  const builtinHyphenatedHelpers = new Set(['unique-id', 'each-in']);
   const inlinePattern = /\{\{([a-z][a-zA-Z0-9]*-[a-zA-Z0-9-]*)([^}]*)\}\}/g;
   result = result.replace(inlinePattern, (match, name, attrs, offset) => {
+    // Skip built-in helpers — they should be resolved by $_maybeHelper, not as components
+    if (builtinHyphenatedHelpers.has(name)) {
+      return match;
+    }
     // Check if this mustache is inside an HTML attribute value by scanning
     // backwards from the match position for an unmatched opening quote
     if (isInsideHtmlAttributeValue(result, offset)) {
@@ -5207,6 +5252,32 @@ export function precompileTemplate(templateString: string, options?: {
       return `<${pascalName} />`;
     }
   );
+
+  // Replace hyphenated built-in helper names with valid JS identifiers BEFORE
+  // GXT compilation. GXT treats `unique-id` as `unique - id` (subtraction).
+  // This replacement makes them valid identifiers that the helper injection
+  // system (below) will bind to the actual built-in helper functions.
+  // Only replace in mustache/subexpression contexts, not in HTML tag names.
+  {
+    const hyphenatedBuiltins: Record<string, string> = { 'unique-id': 'unique_id' };
+    for (const [hyphenated, jsName] of Object.entries(hyphenatedBuiltins)) {
+      // Replace in subexpression position: (unique-id) → (unique_id)
+      transformedTemplate = transformedTemplate.replace(
+        new RegExp(`\\(${hyphenated}(?=[\\s)])`, 'g'),
+        `(${jsName}`
+      );
+      // Replace in mustache content position: {{unique-id}} → {{unique_id}}
+      transformedTemplate = transformedTemplate.replace(
+        new RegExp(`\\{\\{${hyphenated}\\}\\}`, 'g'),
+        `{{${jsName}}}`
+      );
+      // Replace in mustache with args: {{unique-id arg}} → {{unique_id arg}}
+      transformedTemplate = transformedTemplate.replace(
+        new RegExp(`\\{\\{${hyphenated}(\\s)`, 'g'),
+        `{{${jsName}$1`
+      );
+    }
+  }
 
   // Transform curly block component syntax to angle-bracket
   // {{#foo-bar}}...{{/foo-bar}} → <FooBar>...</FooBar>
@@ -5747,6 +5818,7 @@ export function precompileTemplate(templateString: string, options?: {
         };
       `;
       compilationResult.templateFn = Function(templateFnCode)();
+      // DEBUG
     } catch (e) {
       console.error('[gxt-compile] Failed to recreate template function:', e);
     }
