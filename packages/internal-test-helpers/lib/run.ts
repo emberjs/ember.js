@@ -12,6 +12,9 @@ export function runAppend(view: any): void {
   if (typeof syncNow === 'function') {
     syncNow();
   }
+  // Reset interval sync budget after an explicit sync
+  const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
+  if (typeof resetBudget === 'function') resetBudget();
   // Re-throw any errors captured during rendering (e.g., component-not-found)
   flushRenderErrors();
 }
@@ -56,6 +59,9 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   if (typeof syncNow === 'function') {
     syncNow();
   }
+  // Reset interval sync budget after an explicit runTask sync
+  const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
+  if (typeof resetBudget === 'function') resetBudget();
   // Re-throw any errors captured during rendering/destruction
   flushRenderErrors();
   return result;

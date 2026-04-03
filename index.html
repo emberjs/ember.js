@@ -53,6 +53,53 @@
       // This is especially important in GXT mode where some rendering operations
       // can cause infinite backburner loops
       QUnit.config.testTimeout = 10000; // 10 seconds per test
+
+      // --- GXT global test hooks ---
+      // These run for EVERY test, regardless of which test-case base class is used.
+      // They ensure GXT state is clean at the start of each test and cleaned up
+      // after each test, preventing phantom failures from leaked state.
+
+      QUnit.testStart(function() {
+        // Signal that we're no longer in a test transition
+        globalThis.__gxtTestTransition = false;
+        // Reset the operation counter so each test gets a fresh budget
+        if (globalThis.__gxtOpCount !== undefined) {
+          globalThis.__gxtOpCount = 0;
+        }
+        // Force-reset __gxtSyncing in case a previous test left it stuck true
+        // (e.g., an error thrown inside __gxtSyncDomNow that escaped the finally block)
+        globalThis.__gxtSyncing = false;
+        // Clean up GXT state BEFORE the test starts. If a prior test's afterEach
+        // failed or didn't fully clean up, this ensures a clean slate.
+        var cleanup = globalThis.__gxtCleanupActiveComponents;
+        if (typeof cleanup === 'function') {
+          try { cleanup(); } catch(e) { /* ignore cleanup errors */ }
+        }
+        // Reset sync flags that the cleanup might not cover
+        globalThis.__gxtPendingSync = false;
+        globalThis.__gxtPendingSyncFromPropertyChange = false;
+        globalThis.__gxtDeferredSyncError = null;
+        globalThis.__gxtForceRerenderInProgress = false;
+        // Reset the interval sync budget so the fallback timer works for this test
+        if (typeof globalThis.__gxtResetIntervalBudget === 'function') {
+          globalThis.__gxtResetIntervalBudget();
+        }
+      });
+
+      QUnit.testDone(function() {
+        // Signal that we're between tests — interval timer should not fire
+        globalThis.__gxtTestTransition = true;
+        // Safety net: reset syncing flag after each test in case it got stuck
+        globalThis.__gxtSyncing = false;
+        globalThis.__gxtPendingSync = false;
+        globalThis.__gxtPendingSyncFromPropertyChange = false;
+        globalThis.__gxtDeferredSyncError = null;
+        globalThis.__gxtForceRerenderInProgress = false;
+        // Reset op counter
+        if (globalThis.__gxtOpCount !== undefined) {
+          globalThis.__gxtOpCount = 0;
+        }
+      });
     </script>
 
     <script>

@@ -98,7 +98,34 @@
         console.log('[QUnit] Done:', details.passed + '/' + details.total);
       });
 
+      // --- GXT global test hooks ---
+      QUnit.testStart(function() {
+        globalThis.__gxtTestTransition = false;
+        if (globalThis.__gxtOpCount !== undefined) globalThis.__gxtOpCount = 0;
+        globalThis.__gxtSyncing = false;
+        var cleanup = globalThis.__gxtCleanupActiveComponents;
+        if (typeof cleanup === 'function') {
+          try { cleanup(); } catch(e) { /* ignore */ }
+        }
+        globalThis.__gxtPendingSync = false;
+        globalThis.__gxtPendingSyncFromPropertyChange = false;
+        globalThis.__gxtDeferredSyncError = null;
+        globalThis.__gxtForceRerenderInProgress = false;
+        if (typeof globalThis.__gxtResetIntervalBudget === 'function') {
+          globalThis.__gxtResetIntervalBudget();
+        }
+      });
+
       QUnit.testDone(function(details) {
+        // Reset GXT state between tests
+        globalThis.__gxtTestTransition = true;
+        globalThis.__gxtSyncing = false;
+        globalThis.__gxtPendingSync = false;
+        globalThis.__gxtPendingSyncFromPropertyChange = false;
+        globalThis.__gxtDeferredSyncError = null;
+        globalThis.__gxtForceRerenderInProgress = false;
+        if (globalThis.__gxtOpCount !== undefined) globalThis.__gxtOpCount = 0;
+
         if (details.failed > 0) {
           window.__qunitResults.failures.push({
             module: details.module,

@@ -1295,6 +1295,9 @@ queueMicrotask(patchGlobalEachSync);
     (globalThis as any).__gxtHadPendingSync = !!(globalThis as any).__gxtPendingSyncFromPropertyChange;
     (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
     (globalThis as any).__gxtSyncing = true;
+    // Wrap ALL phases in try/finally so __gxtSyncing is ALWAYS reset,
+    // even if an unexpected error escapes a catch block.
+    try {
     // Start a new render pass to prevent double-firing of lifecycle hooks
     const newPass = (globalThis as any).__gxtNewRenderPass;
     if (typeof newPass === 'function') newPass();
@@ -1402,7 +1405,12 @@ queueMicrotask(patchGlobalEachSync);
         }
       }
     } catch { /* ignore */ }
-    (globalThis as any).__gxtSyncing = false;
+    } finally {
+      // CRITICAL: Always reset __gxtSyncing even if an error escapes.
+      // Without this, the flag stays true forever and __gxtSyncDomNow
+      // becomes a permanent no-op, causing all subsequent tests to fail.
+      (globalThis as any).__gxtSyncing = false;
+    }
     // Re-throw any deferred errors from the force-rerender or lifecycle phases
     // so they propagate to assert.throws() in tests
     const deferredSyncErr = (globalThis as any).__gxtDeferredSyncError;
@@ -1414,10 +1422,30 @@ queueMicrotask(patchGlobalEachSync);
 };
 
 // Also schedule a fallback setTimeout flush for non-test scenarios
-// where __gxtSyncDomNow isn't called explicitly
+// where __gxtSyncDomNow isn't called explicitly.
+// Guards:
+// 1. Skip if __gxtSyncing is stuck true (prevents piling up on a hung sync)
+// 2. Skip during QUnit test transitions (__gxtTestTransition flag)
+// 3. Budget: max 3 consecutive interval-triggered syncs without an explicit
+//    runTask-triggered sync in between. Prevents the interval from driving
+//    an infinite re-render loop when tests produce continuous dirty state.
+let _intervalSyncBudget = 3;
+(globalThis as any).__gxtResetIntervalBudget = function() { _intervalSyncBudget = 3; };
 setInterval(() => {
   if ((globalThis as any).__gxtPendingSync) {
-    (globalThis as any).__gxtSyncDomNow();
+    // Don't fire during test transitions
+    if ((globalThis as any).__gxtTestTransition) return;
+    // Don't fire if a sync is already in progress (stuck flag)
+    if ((globalThis as any).__gxtSyncing) return;
+    // Enforce budget to prevent interval-driven infinite loops
+    if (_intervalSyncBudget <= 0) return;
+    _intervalSyncBudget--;
+    try {
+      (globalThis as any).__gxtSyncDomNow();
+    } catch { /* ignore - errors will be caught by QUnit */ }
+  } else {
+    // No pending sync — reset budget for next burst
+    _intervalSyncBudget = 3;
   }
 }, 16); // ~60fps
 
