@@ -97,6 +97,8 @@ import {
   setTracker as _gxtSetTracker,
   // @ts-ignore
   getTracker as _gxtGetTracker,
+  resolveRenderable as _gxtResolveRenderable,
+  $_TO_VALUE as _gxtOrigToValue,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
 // After setupGlobalScope(), __gxtCellFor and __gxtEffect are set from GXT's
@@ -170,6 +172,222 @@ if (!(globalThis as any).__gxtSetIsRendering) {
 
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
+
+// NOTE: Curried component reactive rendering is handled by itemToNode's
+// __isCurriedComponent check (see below in the compile function), not by $_TO_VALUE.
+if (false as boolean) {
+  const g = globalThis as any;
+  const origToValue = g.$_TO_VALUE || _gxtOrigToValue;
+
+  g.$_TO_VALUE = function $_TO_VALUE_ember(reference: unknown) {
+    if (typeof reference !== 'function') {
+      return reference;
+    }
+
+    // Peek at the getter value to check if it resolves to a CurriedComponent.
+    // We call the getter inside a tracking context so cell reads are captured.
+    let peeked: any;
+    try {
+      peeked = (reference as Function)();
+      // Unwrap nested getters but NOT curried components
+      while (typeof peeked === 'function' && !peeked.__isCurriedComponent && !peeked.prototype) {
+        peeked = peeked();
+      }
+    } catch {
+      // If peek fails, fall through to original
+      return origToValue(reference);
+    }
+
+    if (!peeked || !peeked.__isCurriedComponent) {
+      // Not a curried component — use original GXT resolution
+      return origToValue(reference);
+    }
+
+    // CurriedComponent detected — set up reactive marker-based rendering.
+    // This replaces GXT's resolveRenderable which would call the curried function
+    // directly, losing reactive tracking for arg changes.
+    const managers = g.$_MANAGERS;
+    if (!managers?.component?.canHandle?.(peeked)) {
+      return origToValue(reference);
+    }
+
+    // Capture owner for re-renders
+    const capturedOwner = g.owner;
+
+    const renderCurried = (curried: any): Node | null => {
+      if (!curried) return null;
+      // Restore owner for component resolution
+      const prevOwner = g.owner;
+      if (capturedOwner && !g.owner) {
+        g.owner = capturedOwner;
+      }
+      try {
+        const handleResult = managers.component.handle(curried, {}, null, null);
+        if (typeof handleResult === 'function') {
+          const rendered = handleResult();
+          if (rendered instanceof Node) return rendered;
+          return rendered != null ? document.createTextNode(String(rendered)) : null;
+        }
+        if (handleResult instanceof Node) return handleResult;
+        if (handleResult != null) return document.createTextNode(String(handleResult));
+        return null;
+      } finally {
+        if (capturedOwner && prevOwner !== g.owner) {
+          g.owner = prevOwner;
+        }
+      }
+    };
+
+    // Create marker-based fragment for reactive updates
+    const startMarker = document.createComment('curried-start');
+    const endMarker = document.createComment('curried-end');
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(startMarker);
+
+    // Initial render
+    const initialNode = renderCurried(peeked);
+    if (initialNode) {
+      fragment.appendChild(initialNode);
+    }
+    fragment.appendChild(endMarker);
+
+    // Snapshot curried args for change detection
+    const renderInfo: any = {
+      lastRenderedName: peeked.__name,
+      __lastSnapshot: null,
+    };
+    // Snapshot current curried arg values
+    const snapArgs = (curried: any) => {
+      const cArgs = curried?.__curriedArgs || {};
+      const resolved: Record<string, any> = {};
+      for (const [key, value] of Object.entries(cArgs)) {
+        resolved[key] = (typeof value === 'function' && !(value as any).__isCurriedComponent && !(value as any).prototype)
+          ? (value as any)() : value;
+      }
+      const cPos = curried?.__curriedPositionals || [];
+      const resolvedPos: any[] = [];
+      for (const val of cPos) {
+        resolvedPos.push((typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
+          ? val() : val);
+      }
+      renderInfo.__lastSnapshot = { name: curried?.__name, args: resolved, positionals: resolvedPos };
+    };
+    const argsChanged = (curried: any): boolean => {
+      const last = renderInfo.__lastSnapshot;
+      if (!last) return true;
+      const cArgs = curried?.__curriedArgs || {};
+      const cPos = curried?.__curriedPositionals || [];
+      if (last.name !== curried?.__name) return true;
+      const currentKeys = Object.keys(cArgs);
+      if (Object.keys(last.args).length !== currentKeys.length) return true;
+      for (const key of currentKeys) {
+        const val = cArgs[key];
+        const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
+          ? val() : val;
+        if (last.args[key] !== resolved) return true;
+      }
+      if (last.positionals.length !== cPos.length) return true;
+      for (let i = 0; i < cPos.length; i++) {
+        const val = cPos[i];
+        const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
+          ? val() : val;
+        if (last.positionals[i] !== resolved) return true;
+      }
+      return false;
+    };
+    snapArgs(peeked);
+
+    // Set up reactive effect to track curried arg changes
+    try {
+      const _eff = g.__gxtEffect || gxtEffect;
+      _eff(() => {
+        // Re-evaluate the getter to get the latest curried component
+        let newResult: any;
+        try {
+          newResult = (reference as Function)();
+          while (typeof newResult === 'function' && !newResult.__isCurriedComponent && !newResult.prototype) {
+            newResult = newResult();
+          }
+        } catch { return; }
+
+        // Touch curried arg getters to establish tracking
+        if (newResult && newResult.__isCurriedComponent && newResult.__curriedArgs) {
+          for (const val of Object.values(newResult.__curriedArgs)) {
+            if (typeof val === 'function' && !(val as any).prototype && !(val as any).__isCurriedComponent) {
+              try { (val as any)(); } catch { /* ignore */ }
+            }
+          }
+        }
+        if (newResult && newResult.__isCurriedComponent && newResult.__curriedPositionals) {
+          for (const val of newResult.__curriedPositionals) {
+            if (typeof val === 'function' && !(val as any).prototype && !(val as any).__isCurriedComponent) {
+              try { val(); } catch { /* ignore */ }
+            }
+          }
+        }
+
+        const parent = startMarker.parentNode;
+        if (!parent) return;
+
+        // Skip if nothing changed (preserves DOM stability)
+        if (newResult && newResult.__isCurriedComponent &&
+            startMarker.nextSibling !== endMarker &&
+            !argsChanged(newResult)) {
+          return;
+        }
+
+        // Determine if component type changed
+        const componentSwapped = !newResult || !newResult.__isCurriedComponent ||
+          (newResult.__name !== renderInfo.lastRenderedName);
+
+        // Remove existing content between markers
+        const removedNodes: Node[] = [];
+        let node = startMarker.nextSibling;
+        while (node && node !== endMarker) {
+          const next = node.nextSibling;
+          removedNodes.push(node);
+          parent.removeChild(node);
+          node = next;
+        }
+
+        // Destroy old instances when component TYPE changed
+        if (componentSwapped) {
+          const destroyFn = g.__gxtDestroyInstancesInNodes;
+          if (typeof destroyFn === 'function' && removedNodes.length > 0) {
+            destroyFn(removedNodes);
+          }
+        }
+
+        // Insert new content
+        if (newResult && newResult.__isCurriedComponent && managers.component.canHandle(newResult)) {
+          const newNode = renderCurried(newResult);
+          if (newNode) {
+            parent.insertBefore(newNode, endMarker);
+          }
+          renderInfo.lastRenderedName = newResult.__name;
+          snapArgs(newResult);
+        } else if (!newResult || (!newResult.__isCurriedComponent && !newResult)) {
+          // Falsy — render nothing (empty between markers)
+          renderInfo.lastRenderedName = null;
+          renderInfo.__lastSnapshot = null;
+        }
+      });
+    } catch { /* effect setup may fail */ }
+
+    return fragment;
+  };
+
+  // Protect override from setupGlobalScope overwriting
+  try {
+    const _ember_TO_VALUE = g.$_TO_VALUE;
+    Object.defineProperty(g, '$_TO_VALUE', {
+      get() { return _ember_TO_VALUE; },
+      set(v: any) { /* ignore GXT's attempt to overwrite */ },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch { /* ignore */ }
+}
 
 // Override GXT's $_inElement with an Ember-compatible version.
 // GXT's native $_inElement uses GXT's component tree (addToTree/getParentContext)
@@ -3746,47 +3964,60 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // different function reference, so each unique component name must map to a
       // distinct function. The cell tracking still works because componentGetter()
       // is called inside this wrapper, which accesses the same tracked cells.
+      //
+      // Per-instance tracking: each $_dc call tracks its own last identity key.
+      // When the identity changes (e.g., component name changes back to a
+      // previously-seen name), a NEW marker is created to force GXT's $_dc to
+      // detect the swap and re-render.
+      let _lastIdentityKey: string | null = null;
+      let _currentMarker: Function | null = null;
+
       const wrappedGetter = () => {
         const raw = componentGetter();
 
         // Falsy (undefined, null, '') — render nothing
         if (!raw && raw !== 0) {
-          return _dcEmptyComponent;
+          const key = '__empty__';
+          if (_lastIdentityKey !== key) {
+            _lastIdentityKey = key;
+            _currentMarker = function _dcEmptyMarker() {};
+            (_currentMarker as any).__emptyComponent = true;
+          }
+          return _currentMarker;
         }
 
-        // String component name — return a stable marker function per name
+        // String component name — create a new marker when name changes
         if (typeof raw === 'string') {
-          let marker = stringComponentMarkers.get(raw);
-          if (!marker) {
-            marker = function _dcStringMarker() {};
-            (marker as any).__stringComponentName = raw;
-            stringComponentMarkers.set(raw, marker);
+          const key = '__str:' + raw;
+          if (_lastIdentityKey !== key) {
+            _lastIdentityKey = key;
+            _currentMarker = function _dcStringMarker() {};
+            (_currentMarker as any).__stringComponentName = raw;
           }
-          return marker;
+          return _currentMarker;
         }
 
-        // CurriedComponent object — wrap in a unique marker function
+        // CurriedComponent object — create a new marker when identity changes
         if (raw && raw.__isCurriedComponent) {
-          // Use the underlying component name for identity so swapping
-          // between different curried components triggers re-render.
           const key = '__curried:' + (raw.__name || '') + ':' + JSON.stringify(Object.keys(raw.__curriedArgs || {}));
-          let marker = stringComponentMarkers.get(key);
-          if (!marker) {
-            marker = function _dcCurriedMarker() {};
-            (marker as any).__isCurriedComponent = true;
-            (marker as any).__name = raw.__name;
-            (marker as any).__curriedArgs = raw.__curriedArgs;
-            (marker as any).__curriedPositionals = raw.__curriedPositionals;
-            stringComponentMarkers.set(key, marker);
-          } else {
-            // Update args on existing marker since they may have changed
-            (marker as any).__curriedArgs = raw.__curriedArgs;
-            (marker as any).__curriedPositionals = raw.__curriedPositionals;
+          if (_lastIdentityKey !== key) {
+            _lastIdentityKey = key;
+            _currentMarker = function _dcCurriedMarker() {};
+            (_currentMarker as any).__isCurriedComponent = true;
+            (_currentMarker as any).__name = raw.__name;
           }
-          return marker;
+          // Always update args on the marker since they may have changed
+          if (_currentMarker) {
+            (_currentMarker as any).__curriedArgs = raw.__curriedArgs;
+            (_currentMarker as any).__curriedPositionals = raw.__curriedPositionals;
+            (_currentMarker as any).__owner = raw.__owner;
+          }
+          return _currentMarker;
         }
 
         // Function (native GXT component) — pass through unchanged
+        _lastIdentityKey = null;
+        _currentMarker = null;
         return raw;
       };
 
@@ -5766,6 +5997,107 @@ export function precompileTemplate(templateString: string, options?: {
       }
     }
 
+    // Wrap $_componentHelper hash values in getter functions for reactivity.
+    // GXT's compiler generates eager values: $_componentHelper(["name"], { key: expr })
+    // We transform to: $_componentHelper(["name"], { key: () => expr })
+    // This preserves reactivity so curried component args update when dependencies change.
+    modifiedCode = modifiedCode.replace(
+      /\$_componentHelper\s*\(\s*(\[[^\]]*\])\s*,\s*\{/g,
+      (match, paramsArr) => {
+        // Find the matching closing brace for the hash object
+        const hashStart = match.length;
+        return match; // We'll handle this differently — see below
+      }
+    );
+    // More robust approach: wrap the entire hash argument.
+    // Transform: $_componentHelper([params], { k1: v1, k2: v2 })
+    // To:        $_componentHelper([params], (function(__h){var r={};for(var k in __h){var v=__h[k];r[k]=typeof v==='function'?v:v;}return r;})({ k1: v1, k2: v2 }))
+    // Actually, that won't make values reactive. We need to wrap EACH value in () =>.
+    // Let's use a different strategy: make params array elements lazy too.
+    // Transform: $_componentHelper(["name", expr1], { key: expr2 })
+    // To:        $_componentHelper([() => "name", () => expr1], { key: () => (expr2) })
+    {
+      // Use a function to transform each $_componentHelper call
+      const chPattern = '$_componentHelper(';
+      let chIdx = modifiedCode.indexOf(chPattern);
+      while (chIdx !== -1) {
+        // Find the matching closing paren
+        let depth = 0;
+        let i = chIdx + chPattern.length - 1; // position of opening (
+        for (; i < modifiedCode.length; i++) {
+          if (modifiedCode[i] === '(') depth++;
+          else if (modifiedCode[i] === ')') { depth--; if (depth === 0) break; }
+        }
+        if (depth !== 0) { chIdx = modifiedCode.indexOf(chPattern, chIdx + 1); continue; }
+
+        const callEnd = i + 1; // position after closing )
+        const argsStr = modifiedCode.slice(chIdx + chPattern.length, i);
+
+        // Parse: first arg is [...], second arg is {...}
+        // Find the comma separating the two args
+        let commaPos = -1;
+        let d = 0;
+        for (let j = 0; j < argsStr.length; j++) {
+          const c = argsStr[j];
+          if (c === '[' || c === '(' || c === '{') d++;
+          else if (c === ']' || c === ')' || c === '}') d--;
+          else if (c === ',' && d === 0) { commaPos = j; break; }
+        }
+
+        if (commaPos !== -1) {
+          const paramsStr = argsStr.slice(0, commaPos).trim();
+          const hashStr = argsStr.slice(commaPos + 1).trim();
+
+          // Transform the hash: { key: expr } -> { key: () => (expr) }
+          if (hashStr.startsWith('{') && hashStr.endsWith('}')) {
+            const inner = hashStr.slice(1, -1).trim();
+            if (inner.length > 0) {
+              // Parse key:value pairs, handling nested brackets
+              const pairs: string[] = [];
+              let pairStart = 0;
+              let pd = 0;
+              for (let j = 0; j <= inner.length; j++) {
+                if (j === inner.length || (inner[j] === ',' && pd === 0)) {
+                  const pair = inner.slice(pairStart, j).trim();
+                  if (pair) pairs.push(pair);
+                  pairStart = j + 1;
+                } else {
+                  const c = inner[j];
+                  if (c === '(' || c === '[' || c === '{') pd++;
+                  else if (c === ')' || c === ']' || c === '}') pd--;
+                }
+              }
+
+              // Transform each pair: "key: expr" -> "key: () => (expr)"
+              const transformedPairs = pairs.map(pair => {
+                const colonIdx = pair.indexOf(':');
+                if (colonIdx === -1) return pair;
+                const key = pair.slice(0, colonIdx).trim();
+                const val = pair.slice(colonIdx + 1).trim();
+                // Don't wrap if already a function
+                if (val.startsWith('()') || val.startsWith('function')) return pair;
+                return `${key}: () => (${val})`;
+              });
+
+              const newHash = '{ ' + transformedPairs.join(', ') + ' }';
+              const newCall = `$_componentHelper(${paramsStr}, ${newHash})`;
+              modifiedCode = modifiedCode.slice(0, chIdx) + newCall + modifiedCode.slice(callEnd);
+              // Adjust search position
+              chIdx = chIdx + newCall.length;
+            } else {
+              chIdx = callEnd;
+            }
+          } else {
+            chIdx = callEnd;
+          }
+        } else {
+          chIdx = callEnd;
+        }
+
+        chIdx = modifiedCode.indexOf(chPattern, chIdx);
+      }
+    }
+
     compilationResult.code = modifiedCode;
     // Temporary debug: capture compiled code for scope-valued templates
     if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
@@ -6002,6 +6334,81 @@ export function precompileTemplate(templateString: string, options?: {
           return fragment;
         }
 
+        // Check if item IS a CurriedComponent BEFORE calling it.
+        // Curried components are functions with __isCurriedComponent marker.
+        // If we call them, they render immediately via curriedComponentFn() and
+        // we lose the reactive tracking for arg changes. Instead, set up
+        // marker-based reactive rendering that re-renders when curried args change.
+        if (item.__isCurriedComponent) {
+          const _curriedItem = item;
+          const _curriedManagers = (globalThis as any).$_MANAGERS;
+          if (_curriedManagers?.component?.canHandle?.(_curriedItem)) {
+            // Capture owner at template evaluation time for reactive updates
+            const _curriedOwner = (globalThis as any).owner;
+            const _renderCurried = (curried: any): Node | null => {
+              if (!curried) return null;
+              if (_curriedOwner && !(globalThis as any).owner) {
+                (globalThis as any).owner = _curriedOwner;
+              }
+              const handleResult = _curriedManagers.component.handle(curried, {}, null, null);
+              if (typeof handleResult === 'function') {
+                const rendered = handleResult();
+                if (rendered instanceof Node) return rendered;
+                return itemToNode(rendered, depth + 1);
+              }
+              if (handleResult instanceof Node) return handleResult;
+              return itemToNode(handleResult, depth + 1);
+            };
+
+            const _csm = document.createComment('curried-start');
+            const _cem = document.createComment('curried-end');
+            const _cfrag = document.createDocumentFragment();
+            _cfrag.appendChild(_csm);
+            const _cinitial = _renderCurried(_curriedItem);
+            if (_cinitial) _cfrag.appendChild(_cinitial);
+            _cfrag.appendChild(_cem);
+
+            // Set up reactive effect to track curried arg changes
+            const _cinfo: any = { lastRenderedName: _curriedItem.__name, __lastSnapshot: null };
+            _snapshotCurriedArgs(_cinfo, _curriedItem);
+            try {
+              gxtEffect(() => {
+                // For eagerly-evaluated curried components, track arg getters
+                const cc = _curriedItem;
+                if (cc.__curriedArgs) {
+                  for (const val of Object.values(cc.__curriedArgs)) {
+                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
+                      try { val(); } catch { /* ignore */ }
+                    }
+                  }
+                }
+                if (cc.__curriedPositionals) {
+                  for (const val of cc.__curriedPositionals) {
+                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
+                      try { val(); } catch { /* ignore */ }
+                    }
+                  }
+                }
+                const parent = _csm.parentNode;
+                if (!parent) return;
+                // Skip if args haven't changed
+                if (_csm.nextSibling !== _cem && !_curriedComponentChanged(_cinfo, cc)) return;
+                // Re-render: remove old, insert new
+                let _n = _csm.nextSibling;
+                const _removed: Node[] = [];
+                while (_n && _n !== _cem) { const nx = _n.nextSibling; _removed.push(_n); parent.removeChild(_n); _n = nx; }
+                const _destroyFn = (globalThis as any).__gxtDestroyInstancesInNodes;
+                if (typeof _destroyFn === 'function' && _removed.length > 0) _destroyFn(_removed);
+                const newNode = _renderCurried(cc);
+                if (newNode) parent.insertBefore(newNode, _cem);
+                _cinfo.lastRenderedName = cc.__name;
+                _snapshotCurriedArgs(_cinfo, cc);
+              });
+            } catch { /* effect setup may fail */ }
+            return _cfrag;
+          }
+        }
+
         const result = item();
         // If result is a function, it's a nested getter (e.g., from $__if)
         // BUT: do NOT call CurriedComponent functions — they need the reactive rendering path below
@@ -6072,16 +6479,33 @@ export function precompileTemplate(templateString: string, options?: {
               (globalThis as any).__curriedRenderInfos.push(curriedRenderInfo);
 
               gxtEffect(() => {
-                const newResult = item();
-                const newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
-                  ? newResult()
-                  : newResult;
+                // Determine the current curried component.
+                // If item IS a curried component (not a getter), use it directly.
+                // If item is a getter function, call it to get the curried component.
+                let newFinal: any;
+                if (item.__isCurriedComponent) {
+                  // item is the curried component itself — use it directly
+                  // (it was eagerly evaluated from the template, not a getter)
+                  newFinal = item;
+                } else {
+                  const newResult = item();
+                  newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
+                    ? newResult()
+                    : newResult;
+                }
 
-                // Also evaluate curried arg getters to establish tracking —
+                // Evaluate curried arg getters to establish tracking —
                 // when a curried arg changes (e.g., this.model.expectedText),
                 // this effect must re-fire so we can update the component.
                 if (newFinal && newFinal.__isCurriedComponent && newFinal.__curriedArgs) {
                   for (const val of Object.values(newFinal.__curriedArgs)) {
+                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
+                      try { val(); } catch { /* ignore */ }
+                    }
+                  }
+                }
+                if (newFinal && newFinal.__isCurriedComponent && newFinal.__curriedPositionals) {
+                  for (const val of newFinal.__curriedPositionals) {
                     if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
                       try { val(); } catch { /* ignore */ }
                     }
