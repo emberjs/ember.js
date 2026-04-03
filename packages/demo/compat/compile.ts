@@ -178,6 +178,11 @@ installEmberWrappers();
 // 2. Renders block content into the external element
 // 3. Handles insertBefore=null (append) vs insertBefore=undefined (replace)
 {
+  // Track in-element rendered nodes for cleanup. WeakMap<Element, Node[]>
+  const _inElementRenderedNodes = new Map<Element, Node[]>();
+  // Track which elements are in append mode (insertBefore=null)
+  const _inElementAppendModeElements = new WeakSet<Element>();
+
   const _origInElement = (globalThis as any).$_inElement;
   (globalThis as any).$_inElement = function _emberInElement(
     elementRef: any,
@@ -202,10 +207,44 @@ installEmberWrappers();
     }
 
     // Resolve insertBefore
+    // insertBefore=null means "append" (don't clear existing content)
+    // insertBefore=undefined means "replace" (clear existing content first)
+    //
+    // GXT's $_inElement doesn't support insertBefore natively, so we read
+    // the flag from globalThis that was set by the template injection.
     let insertBefore: any = undefined; // undefined = replace (default)
+
+    // Check for non-null insertBefore value (Ember only allows null)
+    if ((globalThis as any).__gxtInElementInsertBeforeValue !== undefined) {
+      const ibv = (globalThis as any).__gxtInElementInsertBeforeValue;
+      delete (globalThis as any).__gxtInElementInsertBeforeValue;
+      emberAssert(
+        `Can only pass null to insertBefore in in-element, received: ${ibv}`,
+        false
+      );
+    }
+
+    if ((globalThis as any).__gxtInElementAppendMode) {
+      insertBefore = null;
+      (globalThis as any).__gxtInElementAppendMode = false; // consume the flag
+    }
+
+    // Also check if this element was previously used in append mode
+    if (appendRef && appendRef instanceof Element && _inElementAppendModeElements.has(appendRef)) {
+      insertBefore = null;
+    }
+
     if (insertBeforeRef !== undefined) {
       if (typeof insertBeforeRef === 'function') {
-        insertBefore = insertBeforeRef();
+        let ibVal = insertBeforeRef();
+        if (typeof ibVal === 'function') ibVal = ibVal();
+        if (ibVal && typeof ibVal === 'object' && 'value' in ibVal) {
+          insertBefore = ibVal.value;
+        } else {
+          insertBefore = ibVal;
+        }
+      } else if (insertBeforeRef && typeof insertBeforeRef === 'object' && 'value' in insertBeforeRef) {
+        insertBefore = insertBeforeRef.value;
       } else {
         insertBefore = insertBeforeRef;
       }
@@ -214,9 +253,33 @@ installEmberWrappers();
     // Create a placeholder comment for the main render location
     const placeholder = document.createComment('');
 
-    if (!appendRef) {
-      // No target element — just return the placeholder
+    // Validate: destination must be an Element
+    // Ember asserts that the destination is a DOM element (not null/undefined)
+    emberAssert(
+      'You cannot pass a null or undefined destination element to in-element',
+      appendRef !== null && appendRef !== undefined
+    );
+
+    if (!appendRef || !(appendRef instanceof Element)) {
+      // No target element or invalid — just return the placeholder
       return placeholder;
+    }
+
+    // Remove previously rendered in-element nodes for this target
+    const prevNodes = _inElementRenderedNodes.get(appendRef);
+    if (prevNodes) {
+      for (const node of prevNodes) {
+        try { if (node.parentNode) node.parentNode.removeChild(node); } catch { /* ignore */ }
+      }
+      _inElementRenderedNodes.delete(appendRef);
+    }
+
+    // Track rendered nodes so they can be cleaned up when the in-element is destroyed
+    const renderedNodes: Node[] = [];
+
+    // Mark element for append mode tracking
+    if (insertBefore === null) {
+      _inElementAppendModeElements.add(appendRef);
     }
 
     // Clear existing content if insertBefore is undefined (replace mode)
@@ -229,6 +292,7 @@ installEmberWrappers();
     const fragment = document.createDocumentFragment();
     for (const node of nodes) {
       if (node instanceof Node) {
+        renderedNodes.push(node);
         fragment.appendChild(node);
       } else if (typeof node === 'function') {
         // Dynamic content — create a reactive text node
@@ -245,21 +309,26 @@ installEmberWrappers();
             textNode.textContent = getValue();
           });
         } catch { /* effect setup may fail */ }
+        renderedNodes.push(textNode);
         fragment.appendChild(textNode);
       } else if (typeof node === 'string') {
-        fragment.appendChild(document.createTextNode(node));
+        const tn = document.createTextNode(node);
+        renderedNodes.push(tn);
+        fragment.appendChild(tn);
       } else if (typeof node === 'number' || typeof node === 'boolean') {
-        fragment.appendChild(document.createTextNode(String(node)));
+        const tn = document.createTextNode(String(node));
+        renderedNodes.push(tn);
+        fragment.appendChild(tn);
       }
     }
 
-    if (insertBefore === null) {
-      // Append mode
-      appendRef.appendChild(fragment);
-    } else {
-      // Replace mode (already cleared) or insert before specific node
-      appendRef.appendChild(fragment);
-    }
+    // Always append (for both append mode and replace mode — already cleared)
+    appendRef.appendChild(fragment);
+
+    // Store rendered nodes for cleanup
+    _inElementRenderedNodes.set(appendRef, renderedNodes);
+    (placeholder as any).__gxtInElementNodes = renderedNodes;
+    (placeholder as any).__gxtInElementTarget = appendRef;
 
     return placeholder;
   };
@@ -2687,12 +2756,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               // that fires immediately with the same args, causing double-computation.
               // We store the cache on the helperInstance itself (which is shared via
               // _tagHelperInstanceCache) so it survives across closure re-creation.
+              // Only dedup during force-rerender — during normal reactive updates,
+              // always call compute() so helpers pick up tracked property changes.
               let argsSerialized: string | null = null;
               // Include recompute tag value in dedup key so recompute() invalidates cache
               const recomputeVal = (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag)
                 ? recomputeTag.value : 0;
               try { argsSerialized = JSON.stringify({ p: positional, n: named, r: recomputeVal }); } catch { /* skip dedup */ }
-              if (argsSerialized !== null && argsSerialized === helperInstance.__gxtLastArgsSerialized) {
+              if ((globalThis as any).__gxtIsForceRerender && argsSerialized !== null && argsSerialized === helperInstance.__gxtLastArgsSerialized) {
                 // recomputeTag.value already consumed above for the dedup key
                 return helperInstance.__gxtLastResult;
               }
@@ -4917,6 +4988,15 @@ export function precompileTemplate(templateString: string, options?: {
   // Transform the template
   let transformedTemplate = templateString;
 
+  // Pre-process onclick={{this.xxx}} → {{on "click" this.xxx}}
+  // GXT's deepFnValue calls arrow function handlers immediately during attribute
+  // resolution instead of attaching them as event listeners. Converting to the
+  // {{on}} modifier ensures proper event binding.
+  transformedTemplate = transformedTemplate.replace(
+    /\bon(click|mousedown|mouseup|mousemove|mouseenter|mouseleave|keydown|keyup|keypress|input|change|submit|focus|blur|focusin|focusout|touchstart|touchend|touchmove)={{([^}]+)}}/gi,
+    (_match, eventName, expr) => `{{on "${eventName.toLowerCase()}" ${expr}}}`
+  );
+
   // Check for dotted-path mustache expressions like {{foo.bar}} where foo is not in scope.
   // In Ember, these are errors because foo is a free variable path that can't be resolved.
   // Collect block param names first so we don't flag those.
@@ -4946,6 +5026,26 @@ export function precompileTemplate(templateString: string, options?: {
   // This mirrors the Glimmer AST plugin behavior
   if (/\{\{this\.attrs\./.test(transformedTemplate)) {
     transformedTemplate = transformedTemplate.replace(/this\.attrs\.([a-zA-Z0-9_]+)/g, '@$1');
+  }
+
+  // Transform {{#in-element dest insertBefore=EXPR}} to extract the insertBefore
+  // parameter. GXT's native $_inElement only takes (elementRef, roots, ctx) but
+  // Ember also supports insertBefore=null (append mode) and validates the destination.
+  // We strip the insertBefore param from the template and set a global flag
+  // that our $_inElement override reads at runtime.
+  // Possible insertBefore values:
+  //   null      → append mode (don't clear existing content)
+  //   undefined → replace mode (default, clear existing content)
+  //   other     → assert error (Ember only allows null)
+  let _inElementInsertBefore: string | null = null; // null = no insertBefore specified
+  if (/\{\{#in-element\b/.test(transformedTemplate)) {
+    transformedTemplate = transformedTemplate.replace(
+      /\{\{#in-element\s+([^\s}]+)\s+insertBefore=([^\s}]+)\s*\}\}/g,
+      (_match, dest, insertBeforeExpr) => {
+        _inElementInsertBefore = insertBeforeExpr;
+        return `{{#in-element ${dest}}}`;
+      }
+    );
   }
 
   // Strip {{mount ...}} — GXT doesn't support Ember engines.
@@ -4995,6 +5095,12 @@ export function precompileTemplate(templateString: string, options?: {
         const valueRegex = new RegExp(`\\{\\{${valueParam}\\}\\}`, 'g');
         rewrittenBody = rewrittenBody.replace(keyRegex, `{{${entryVar}.k}}`);
         rewrittenBody = rewrittenBody.replace(valueRegex, `{{${entryVar}.v}}`);
+        // Also handle nested {{#each valueParam as |v|}} where valueParam is
+        // used as the iteration source (not just as a standalone mustache).
+        const nestedEachKeyRegex = new RegExp(`\\{\\{#each\\s+${keyParam}\\b`, 'g');
+        const nestedEachValueRegex = new RegExp(`\\{\\{#each\\s+${valueParam}\\b`, 'g');
+        rewrittenBody = rewrittenBody.replace(nestedEachKeyRegex, `{{#each ${entryVar}.k`);
+        rewrittenBody = rewrittenBody.replace(nestedEachValueRegex, `{{#each ${entryVar}.v`);
         return `{{#each this.${propName} as |${entryVar}|}}${rewrittenBody}{{/each}}`;
       }
     );
@@ -5636,6 +5742,7 @@ export function precompileTemplate(templateString: string, options?: {
           ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}
           ${eachInInjections.join('\n          ')}
+          ${_inElementInsertBefore === 'null' ? 'globalThis.__gxtInElementAppendMode = true;' : _inElementInsertBefore !== null && _inElementInsertBefore !== 'undefined' ? `globalThis.__gxtInElementInsertBeforeValue = ${JSON.stringify(_inElementInsertBefore)};` : ''}
           return ${modifiedCode};
         };
       `;

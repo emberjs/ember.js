@@ -364,9 +364,12 @@ function createEmberMaybeHelper(original: Function) {
                 if (helperCell) return helperCell.value;
                 return result;
               } else {
-                // Check if args actually changed — if not, return cached result
-                // Skip cache check if any positional arg is a function (e.g., fn helper result)
-                // because functions serialize as null, making stale results appear unchanged.
+                // Arg-based dedup: check if args actually changed — if not, return
+                // cached result. This prevents duplicate compute calls within the
+                // same render pass (GXT formula system may evaluate the getter
+                // multiple times). Skip cache check if any positional arg is a
+                // function (e.g., fn helper result) because functions serialize as
+                // null, making stale results appear unchanged.
                 const hasFnArg = positional.some((a: any) => typeof a === 'function');
                 let argsSer: string | null = null;
                 if (!hasFnArg) {
