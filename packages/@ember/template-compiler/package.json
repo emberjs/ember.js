@@ -6,7 +6,8 @@
     "./runtime": "./runtime.ts",
     "./-internal-primitives": "./-internal-primitives.ts",
     "./-internal-utils": "./-internal-utils.ts",
-    "./types": "./lib/types.ts"
+    "./types": "./lib/types.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
@@ -18,11 +19,12 @@
     "@glimmer/env": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
+    "@glimmer/runtime": "workspace:*",
     "@glimmer/opcode-compiler": "workspace:*",
     "@glimmer/syntax": "workspace:*",
     "expect-type": "^0.15.0"
   },
   "devDependencies": {
-     "internal-test-helpers": "workspace:*"
+    "internal-test-helpers": "workspace:*"
   }
 }

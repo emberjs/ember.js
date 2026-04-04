@@ -2,23 +2,20 @@
   @module @ember/object/core
 */
 
-import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
+import { getFactoryFor, setFactoryFor } from '@ember/-internals/container/lib/container';
 import { type default as Owner, getOwner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils';
-import { meta } from '@ember/-internals/meta';
-import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/metal';
-import {
-  PROXY_CONTENT,
-  sendEvent,
-  activateObserver,
-  defineProperty,
-  descriptorForProperty,
-  isClassicDecorator,
-  DEBUG_INJECTION_FUNCTIONS,
-  hasUnknownProperty,
-} from '@ember/-internals/metal';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
+import { meta } from '@ember/-internals/meta/lib/meta';
+import type { ComputedProperty } from '@ember/-internals/metal/lib/computed';
+import type { HasUnknownProperty } from '@ember/-internals/metal/lib/property_get';
+import { PROXY_CONTENT, hasUnknownProperty } from '@ember/-internals/metal/lib/property_get';
+import { sendEvent } from '@ember/-internals/metal/lib/events';
+import { activateObserver } from '@ember/-internals/metal/lib/observer';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
+import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
+import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
 import Mixin, { applyMixin } from '@ember/object/mixin';
-import { ActionHandler } from '@ember/-internals/runtime';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';

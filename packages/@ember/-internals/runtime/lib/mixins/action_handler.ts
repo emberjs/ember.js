@@ -3,7 +3,7 @@
 */
 
 import Mixin from '@ember/object/mixin';
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/-internals/metal/lib/property_get';
 import { assert } from '@ember/debug';
 
 /**

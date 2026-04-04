@@ -15,8 +15,10 @@ import type {
   ResolveOptionalComponentOrHelperOp,
   SexpOpcode,
 } from '@glimmer/interfaces';
-import { debugToString, expect, assert, unwrap } from '@glimmer/debug-util';
-import { SexpOpcodes } from '@glimmer/wire-format';
+import debugToString from '@glimmer/debug-util/lib/debug-to-string';
+import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
+import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;

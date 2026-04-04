@@ -1,5 +1,5 @@
 import { and, array, element, eq, fn, hash, neq, not, lt, lte, gt, gte, or } from '@ember/helper';
-import { on } from '@ember/modifier';
+import { on } from '@ember/modifier/on';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,

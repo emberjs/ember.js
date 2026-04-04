@@ -7,7 +7,7 @@ import type {
   FullName,
 } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
-import { dictionary } from '@ember/-internals/utils';
+import dictionary from '@ember/-internals/utils/lib/dictionary';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { DebugRegistry } from './registry';

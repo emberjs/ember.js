@@ -1,8 +1,10 @@
-import { meta as metaFor } from '@ember/-internals/meta';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
+import { trackedData } from '@glimmer/validator/lib/tracked-data';
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';

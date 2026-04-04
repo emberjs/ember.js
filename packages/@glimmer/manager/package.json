@@ -8,7 +8,10 @@
     "directory": "packages/@glimmer/manager"
   },
   "type": "module",
-  "exports": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts"
+  },
   "publishConfig": {
     "access": "public",
     "exports": {

@@ -18,10 +18,12 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import { expect, assert, setLocalDebugType } from '@glimmer/debug-util';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
+import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { Stack } from '@glimmer/util';
+import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 

@@ -7,9 +7,10 @@ import type {
   Program,
   RuntimeOp,
 } from '@glimmer/interfaces';
-import { exhausted, expect, unreachable } from '@glimmer/debug-util';
+import { exhausted, expect, unreachable } from '@glimmer/debug-util/lib/platform-utils';
 import { LOCAL_DEBUG, LOCAL_SUBTLE_LOGGING, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-import { enumerate, LOCAL_LOGGER } from '@glimmer/util';
+import { enumerate } from '@glimmer/util/lib/array-utils';
+import { LOCAL_LOGGER } from '@glimmer/util';
 
 import type { Primitive, RegisterName } from './dism/dism';
 import type { NormalizedOperand, OperandType, ShorthandOperand } from './dism/operand-types';

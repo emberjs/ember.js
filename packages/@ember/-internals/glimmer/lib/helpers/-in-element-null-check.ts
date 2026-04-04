@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, Helper } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { internalHelper } from './internal-helper';
 
 let helper: Helper;

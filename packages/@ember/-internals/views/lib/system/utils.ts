@@ -1,7 +1,7 @@
-import type { View } from '@ember/-internals/glimmer';
+import type { View } from '@ember/-internals/glimmer/lib/renderer';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
 import type { Dict } from '@glimmer/interfaces';
 

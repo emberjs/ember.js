@@ -1,4 +1,5 @@
-import { deprecate, unwrap } from '@glimmer/debug-util';
+import { deprecate } from '@glimmer/debug-util/lib/assert';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 
 import type * as ASTv1 from '../v1/api';
 import type { VisitorKey, VisitorKeys } from '../v1/visitor-keys';

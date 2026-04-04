@@ -2,15 +2,17 @@ import {
   VM_ENTER_OP,
   VM_EXIT_OP,
   VM_JUMP_EQ_OP,
-  VM_JUMP_OP,
   VM_JUMP_UNLESS_OP,
-  VM_POP_FRAME_OP,
   VM_POP_OP,
+} from '@glimmer/constants/lib/syscall-ops';
+import {
+  VM_JUMP_OP,
+  VM_POP_FRAME_OP,
   VM_PUSH_FRAME_OP,
   VM_RETURN_OP,
   VM_RETURN_TO_OP,
-} from '@glimmer/constants';
-import { unwrap } from '@glimmer/debug-util';
+} from '@glimmer/constants/lib/vm-ops';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 
 import type { PushStatementOp } from '../../syntax/compilers';
 

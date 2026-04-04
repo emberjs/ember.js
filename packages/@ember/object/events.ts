@@ -1,1 +1,1 @@
-export { addListener, removeListener, sendEvent } from '@ember/-internals/metal';
+export { addListener, removeListener, sendEvent } from '@ember/-internals/metal/lib/events';

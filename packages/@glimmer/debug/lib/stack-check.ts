@@ -9,9 +9,9 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm';
+import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm/lib/registers';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
+import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm/lib/registers';
 
 import type { Primitive } from './dism/dism';
 

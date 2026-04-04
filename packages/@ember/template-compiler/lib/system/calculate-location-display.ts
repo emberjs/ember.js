@@ -1,4 +1,4 @@
-import type { AST } from '@glimmer/syntax';
+import type * as AST from '@glimmer/syntax/lib/v1/api';
 
 export default function calculateLocationDisplay(
   moduleName: string | undefined,

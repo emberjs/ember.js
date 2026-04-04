@@ -444,7 +444,7 @@
   @public
  */
 
-export { templateFactory as template, templateCacheCounters } from '@glimmer/opcode-compiler';
+export { default as template, templateCacheCounters } from '@glimmer/opcode-compiler/lib/template';
 
 export { default as RootTemplate } from './lib/templates/root';
 export { default as Input } from './lib/components/input';

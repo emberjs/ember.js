@@ -2,7 +2,7 @@
 @module ember
 */
 
-import type { Registry } from '@ember/-internals/container';
+import type Registry from '@ember/-internals/container/lib/registry';
 import type { RegistryProxy } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utility-types';
 

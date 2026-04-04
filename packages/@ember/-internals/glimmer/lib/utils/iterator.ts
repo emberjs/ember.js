@@ -1,10 +1,11 @@
-import { objectAt } from '@ember/-internals/metal';
+import { objectAt } from '@ember/-internals/metal/lib/object-at';
 import type EmberArray from '@ember/array';
 import { isEmberArray } from '@ember/array/-internals';
-import { isObject } from '@ember/-internals/utils';
+import { isObject } from '@ember/-internals/utils/lib/spec';
 import type { Nullable } from '@ember/-internals/utility-types';
-import type { IteratorDelegate } from '@glimmer/reference';
-import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
+import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
+import { consumeTag, isTracking } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
 import { EachInWrapper } from '../helpers/each-in';
 import type { NativeArray } from '@ember/array';
 

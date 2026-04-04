@@ -3,8 +3,8 @@
 */
 
 import type { CapturedArguments, InternalComponentManager } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef, NULL_REFERENCE } from '@glimmer/reference';
-import { setInternalComponentManager } from '@glimmer/manager';
+import { createComputeRef, valueForRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
+import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { internalHelper } from './internal-helper';

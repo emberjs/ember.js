@@ -31,7 +31,7 @@
   @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
 import { type Opaque } from '@ember/-internals/utility-types';
-import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/runtime';
+import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
 
 /**
  * Template-only components have no backing class instance, so `this` in their

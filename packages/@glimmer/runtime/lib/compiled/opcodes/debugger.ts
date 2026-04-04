@@ -1,10 +1,11 @@
 // Allow the contents of `debugCallback` without extra annotations
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import type { DebuggerInfo, Scope } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { decodeHandle, VM_DEBUGGER_OP } from '@glimmer/constants';
-import { unwrap } from '@glimmer/debug-util';
-import { childRefFor, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { decodeHandle } from '@glimmer/constants/lib/immediate';
+import { VM_DEBUGGER_OP } from '@glimmer/constants/lib/syscall-ops';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import { childRefFor, valueForRef } from '@glimmer/reference/lib/reference';
 
 import { APPEND_OPCODES } from '../../opcodes';
 

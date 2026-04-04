@@ -9,18 +9,13 @@ import type {
   ReferenceType,
   UnboundReference,
 } from '@glimmer/interfaces';
-import type { Revision, Tag } from '@glimmer/validator';
-import { expect } from '@glimmer/debug-util';
+import type { Revision } from '@glimmer/validator/lib/validators';
+import type { Tag } from '@glimmer/interfaces';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { getProp, setProp } from '@glimmer/global-context';
-import { isDict } from '@glimmer/util';
-import {
-  CONSTANT_TAG,
-  consumeTag,
-  INITIAL,
-  track,
-  validateTag,
-  valueForTag,
-} from '@glimmer/validator';
+import { isDict } from '@glimmer/util/lib/collections';
+import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { consumeTag, track } from '@glimmer/validator/lib/tracking';
 
 export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
 

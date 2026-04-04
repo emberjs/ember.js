@@ -1,4 +1,4 @@
-import { getFactoryFor } from '@ember/-internals/container';
+import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -10,8 +10,9 @@ import type {
   VMArguments,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { capabilityFlagsFrom } from '@glimmer/manager';
-import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
+import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
+import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';

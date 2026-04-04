@@ -1,4 +1,5 @@
-import type { ASTv2, SymbolTable } from '@glimmer/syntax';
+import type * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import type { SymbolTable } from '@glimmer/syntax/lib/symbol-table';
 
 import type { OptionalList } from '../../shared/list';
 import type { Result } from '../../shared/result';

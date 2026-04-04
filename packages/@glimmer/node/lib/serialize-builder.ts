@@ -10,8 +10,9 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { RemoteBlock } from '@glimmer/runtime';
-import { ConcreteBounds, NewTreeBuilder } from '@glimmer/runtime';
+import type { RemoteBlock } from '@glimmer/runtime/lib/vm/element-builder';
+import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
+import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 
 const TEXT_NODE = 3;
 

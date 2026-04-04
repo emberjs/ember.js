@@ -1,6 +1,6 @@
 import type { SimpleText, UpdatingOpcode } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { valueForRef } from '@glimmer/reference/lib/reference';
 
 import { isEmpty, isString } from '../../dom/normalize';
 

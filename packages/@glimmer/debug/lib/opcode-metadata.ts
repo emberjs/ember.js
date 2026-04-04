@@ -3,6 +3,16 @@
 import type { Nullable, VmMachineOp, VmOp } from '@glimmer/interfaces';
 import {
   isMachineOp,
+  VM_INVOKE_STATIC_OP,
+  VM_INVOKE_VIRTUAL_OP,
+  VM_JUMP_OP,
+  VM_MACHINE_SIZE,
+  VM_POP_FRAME_OP,
+  VM_PUSH_FRAME_OP,
+  VM_RETURN_OP,
+  VM_RETURN_TO_OP,
+} from '@glimmer/constants/lib/vm-ops';
+import {
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
   VM_APPEND_HTML_OP,
   VM_APPEND_NODE_OP,
@@ -48,16 +58,12 @@ import {
   VM_HELPER_OP,
   VM_IF_INLINE_OP,
   VM_INVOKE_COMPONENT_LAYOUT_OP,
-  VM_INVOKE_STATIC_OP,
-  VM_INVOKE_VIRTUAL_OP,
   VM_INVOKE_YIELD_OP,
   VM_ITERATE_OP,
   VM_JUMP_EQ_OP,
   VM_JUMP_IF_OP,
-  VM_JUMP_OP,
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
-  VM_MACHINE_SIZE,
   VM_MAIN_OP,
   VM_MODIFIER_OP,
   VM_NOT_OP,
@@ -65,7 +71,6 @@ import {
   VM_OPEN_ELEMENT_OP,
   VM_POP_ARGS_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
-  VM_POP_FRAME_OP,
   VM_POP_OP,
   VM_POP_REMOTE_ELEMENT_OP,
   VM_POP_SCOPE_OP,
@@ -79,15 +84,12 @@ import {
   VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
   VM_PUSH_DYNAMIC_SCOPE_OP,
   VM_PUSH_EMPTY_ARGS_OP,
-  VM_PUSH_FRAME_OP,
   VM_PUSH_REMOTE_ELEMENT_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
   VM_PUT_COMPONENT_OPERATIONS_OP,
   VM_REGISTER_COMPONENT_DESTRUCTOR_OP,
   VM_REIFY_U32_OP,
   VM_RESOLVE_DYNAMIC_COMPONENT_OP,
-  VM_RETURN_OP,
-  VM_RETURN_TO_OP,
   VM_ROOT_SCOPE_OP,
   VM_SET_BLOCK_OP,
   VM_SET_BLOCKS_OP,
@@ -99,7 +101,7 @@ import {
   VM_TEXT_OP,
   VM_TO_BOOLEAN_OP,
   VM_VIRTUAL_ROOT_SCOPE_OP,
-} from '@glimmer/constants';
+} from '@glimmer/constants/lib/syscall-ops';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 import type { NormalizedMetadata } from './metadata';

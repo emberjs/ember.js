@@ -1,5 +1,5 @@
-import type { Meta } from '@ember/-internals/meta';
-import { peekMeta } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta/lib/meta';
+import { peekMeta } from '@ember/-internals/meta/lib/meta';
 import { assert } from '@ember/debug';
 import {
   flushSyncObservers,

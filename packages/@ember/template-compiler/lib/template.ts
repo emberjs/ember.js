@@ -1,8 +1,8 @@
 import templateOnly, { type TemplateOnlyComponent } from '@ember/component/template-only';
-import { precompile as glimmerPrecompile } from '@glimmer/compiler';
+import { precompile as glimmerPrecompile } from '@glimmer/compiler/lib/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
-import { setComponentTemplate } from '@glimmer/manager';
-import { templateFactory } from '@glimmer/opcode-compiler';
+import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
+import templateFactory from '@glimmer/opcode-compiler/lib/template';
 import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 

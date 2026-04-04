@@ -1,8 +1,10 @@
 import { DEBUG } from '@glimmer/env';
 import type { Dict, Nullable } from '@glimmer/interfaces';
 import { getPath, toIterator } from '@glimmer/global-context';
-import { EMPTY_ARRAY, isIndexable } from '@glimmer/util';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
+import { isIndexable } from '@glimmer/util/lib/collections';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 
 import type { Reference, ReferenceEnvironment } from './reference';
 
