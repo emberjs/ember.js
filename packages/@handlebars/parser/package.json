@@ -33,7 +33,7 @@
   "devDependencies": {
     "combine-files": "^1.1.8",
     "jison": "^0.4.18",
-    "mocha": "^10.7.3",
+    "mocha": "^11.0.0",
     "npm-run-all2": "^8.0.0"
   }
 }
