@@ -21,6 +21,66 @@ const path = require('path');
 const barrelCache = new Map();
 
 /**
+ * Resolve a source file path (relative, without extension) to an absolute path.
+ * Tries .ts, .js, /index.ts, /index.js suffixes.
+ */
+function resolveFile(dir, relativePath) {
+  const base = path.resolve(dir, relativePath);
+  for (const suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+    const candidate = base + suffix;
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * Parse a source file and extract its named exports.
+ * Returns an array of exported names (strings).
+ */
+function getFileExports(filePath) {
+  let content;
+  try {
+    content = fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return [];
+  }
+
+  const names = [];
+
+  // export function foo / export class Foo / export const foo / export let foo / export var foo
+  const reDeclExport =
+    /export\s+(?:declare\s+)?(?:function|class|const|let|var|enum|interface|type|abstract\s+class)\s+(\w+)/g;
+  let m;
+  while ((m = reDeclExport.exec(content)) !== null) {
+    names.push(m[1]);
+  }
+
+  // export { Foo, Bar as Baz } — local exports (no "from")
+  const reLocalExport = /export\s+(?:type\s+)?{([^}]+)}\s*(?:;|$)/gm;
+  while ((m = reLocalExport.exec(content)) !== null) {
+    // Make sure this isn't a re-export (has "from")
+    const afterBrace = content.slice(m.index, m.index + m[0].length + 30);
+    if (/from\s+['"]/.test(afterBrace)) continue;
+
+    for (let part of m[1].split(',')) {
+      part = part.trim().replace(/^type\s+/, '');
+      if (!part) continue;
+      const asParts = part.split(/\s+as\s+/);
+      names.push((asParts[1] || asParts[0]).trim());
+    }
+  }
+
+  // export default
+  if (/export\s+default\s/.test(content)) {
+    names.push('default');
+  }
+
+  return names;
+}
+
+/**
  * Given the absolute path to a barrel index.ts, parse its re-exports and
  * return a Map<exportedName, relativeSourcePath>.
  *
@@ -29,11 +89,13 @@ const barrelCache = new Map();
  *   export { Baz as Qux } from './lib/baz';
  *   export { default as Foo } from './lib/foo';
  *   export type { Foo } from './lib/foo';
+ *   export * from './lib/foo';
  */
 function parseBarrelExports(barrelPath) {
   if (barrelCache.has(barrelPath)) return barrelCache.get(barrelPath);
 
   const map = new Map(); // exportedName -> relativePath (without extension)
+  const barrelDir = path.dirname(barrelPath);
 
   let content;
   try {
@@ -48,27 +110,32 @@ function parseBarrelExports(barrelPath) {
   let m;
   while ((m = re.exec(content)) !== null) {
     const names = m[1];
-    let sourcePath = m[2];
+    const sourcePath = m[2];
 
-    // Parse individual names: "Foo", "Foo as Bar", "default as Foo", "type Foo"
     for (let part of names.split(',')) {
       part = part.trim();
       if (!part) continue;
-
-      // Strip leading "type " for type-only re-exports
       part = part.replace(/^type\s+/, '');
-
       const asParts = part.split(/\s+as\s+/);
       const exportedName = (asParts[1] || asParts[0]).trim();
-
       map.set(exportedName, sourcePath);
     }
   }
 
-  // Match: export { default } from 'source';  (shorthand)
-  const reDefault = /export\s+{\s*default\s*}\s+from\s+['"]([^'"]+)['"]/g;
-  while ((m = reDefault.exec(content)) !== null) {
-    map.set('default', m[1]);
+  // Match: export * from 'source';
+  const reStarExport = /export\s+\*\s+from\s+['"]([^'"]+)['"]/g;
+  while ((m = reStarExport.exec(content)) !== null) {
+    const sourcePath = m[1];
+    const resolvedFile = resolveFile(barrelDir, sourcePath);
+    if (resolvedFile) {
+      const exportedNames = getFileExports(resolvedFile);
+      for (const name of exportedNames) {
+        // Don't override named re-exports (they take precedence)
+        if (!map.has(name)) {
+          map.set(name, sourcePath);
+        }
+      }
+    }
   }
 
   barrelCache.set(barrelPath, map);
@@ -77,10 +144,8 @@ function parseBarrelExports(barrelPath) {
 
 /**
  * Resolve a package specifier to the absolute path of its index.ts barrel.
- * Returns null if no barrel is found.
  */
 function resolveBarrelPath(packagesRoot, importSource) {
-  // Try direct: packages/<importSource>/index.ts
   const candidates = [
     path.join(packagesRoot, importSource, 'index.ts'),
     path.join(packagesRoot, importSource, 'index.js'),
@@ -95,32 +160,19 @@ function resolveBarrelPath(packagesRoot, importSource) {
 }
 
 /**
- * Given a relative source from a barrel (e.g. './lib/renderer') and
- * the barrel's package specifier (e.g. '@ember/-internals/glimmer'),
- * compute the full package import path.
+ * Convert a barrel-relative source to a full package import path.
  */
 function toPackagePath(barrelPackage, relativeSource) {
-  // './lib/renderer' -> '@ember/-internals/glimmer/lib/renderer'
-  // '../foo' -> would be outside package, skip
   if (!relativeSource.startsWith('./')) return null;
   return barrelPackage + '/' + relativeSource.slice(2);
 }
 
 /**
- * Check if an import specifier looks like a barrel import.
- * A barrel import is one that points to a package entrypoint (index.ts)
- * rather than a specific source file.
- *
- * Heuristic: if the specifier matches a known package directory that
- * contains an index.ts, it's a barrel import.
+ * Check if an import specifier resolves to a barrel index.ts.
  */
 function isBarrelImport(packagesRoot, importSource) {
-  // Must start with @ or a package name, not be a relative import
   if (importSource.startsWith('.') || importSource.startsWith('/')) return false;
-
-  // Must be inside our packages/ directory
-  const barrelPath = resolveBarrelPath(packagesRoot, importSource);
-  return barrelPath !== null;
+  return resolveBarrelPath(packagesRoot, importSource) !== null;
 }
 
 /** @type {import('eslint').Rule.RuleModule} */
@@ -134,27 +186,19 @@ module.exports = {
     },
     messages: {
       noBarrelImport:
-        "Do not import from the barrel '{{source}}'. Import directly from the source file instead.",
+        "Do not import from the barrel '{{source}}'. Import from {{suggestion}} instead.",
       noBarrelImportNoFix:
-        "Do not import from the barrel '{{source}}'. Could not auto-fix: {{reason}}",
+        "Do not import from the barrel '{{source}}'. Could not determine source file for: {{names}}. Manually import from the specific file.",
     },
-    schema: [], // no options
+    schema: [],
   },
 
   create(context) {
     const filename = context.filename || context.getFilename();
 
-    // Only apply to files inside packages/
-    if (!filename.includes('/packages/')) {
-      return {};
-    }
+    if (!filename.includes('/packages/')) return {};
+    if (/\/(tests|type-tests)\//.test(filename)) return {};
 
-    // Skip test and type-test files
-    if (/\/(tests|type-tests)\//.test(filename)) {
-      return {};
-    }
-
-    // Find the packages root
     const packagesIdx = filename.indexOf('/packages/');
     if (packagesIdx === -1) return {};
     const packagesRoot = filename.substring(0, packagesIdx) + '/packages';
@@ -162,11 +206,14 @@ module.exports = {
     function check(node) {
       const source = node.source && node.source.value;
       if (typeof source !== 'string') return;
-
-      // Check if this is a barrel import
       if (!isBarrelImport(packagesRoot, source)) return;
 
-      // Get the imported names from the AST node
+      const barrelPath = resolveBarrelPath(packagesRoot, source);
+      if (!barrelPath) return;
+
+      const exportMap = parseBarrelExports(barrelPath);
+
+      // Collect imported names from the AST
       const importedNames = [];
 
       if (node.type === 'ImportDeclaration') {
@@ -178,13 +225,41 @@ module.exports = {
               isType: spec.importKind === 'type',
             });
           } else if (spec.type === 'ImportDefaultSpecifier') {
-            importedNames.push({
-              imported: 'default',
-              local: spec.local.name,
-              isType: false,
-            });
+            importedNames.push({ imported: 'default', local: spec.local.name, isType: false });
           }
-          // ImportNamespaceSpecifier (import *) — can't auto-fix
+          // ImportNamespaceSpecifier (import *) handled below
+        }
+
+        // import * as Foo — can't split, but can suggest the source
+        const nsStar = (node.specifiers || []).find((s) => s.type === 'ImportNamespaceSpecifier');
+        if (nsStar) {
+          // If the barrel only re-exports from one source, we can fix it
+          const sources = new Set(exportMap.values());
+          if (sources.size === 1) {
+            const [relSource] = sources;
+            const pkgPath = toPackagePath(source, relSource);
+            if (pkgPath) {
+              context.report({
+                node,
+                messageId: 'noBarrelImport',
+                data: { source, suggestion: `'${pkgPath}'` },
+                fix(fixer) {
+                  return fixer.replaceText(
+                    node.source,
+                    `'${pkgPath}'`
+                  );
+                },
+              });
+              return;
+            }
+          }
+          // Multi-source barrel with import * — can't auto-fix
+          context.report({
+            node: node.source,
+            messageId: 'noBarrelImportNoFix',
+            data: { source, names: `* (namespace import)` },
+          });
+          return;
         }
       } else if (node.type === 'ExportNamedDeclaration') {
         for (const spec of node.specifiers || []) {
@@ -194,38 +269,68 @@ module.exports = {
             isType: spec.exportKind === 'type',
           });
         }
+      } else if (node.type === 'ExportAllDeclaration') {
+        // export * from 'barrel' — rewrite to the barrel's source
+        const sources = new Set(exportMap.values());
+        if (sources.size === 1) {
+          const [relSource] = sources;
+          const pkgPath = toPackagePath(source, relSource);
+          if (pkgPath) {
+            context.report({
+              node,
+              messageId: 'noBarrelImport',
+              data: { source, suggestion: `'${pkgPath}'` },
+              fix(fixer) {
+                return fixer.replaceText(node.source, `'${pkgPath}'`);
+              },
+            });
+            return;
+          }
+        }
+        // Multi-source barrel — expand export * to named exports
+        const bySource = new Map();
+        for (const [name, relSource] of exportMap) {
+          const pkgPath = toPackagePath(source, relSource);
+          if (!pkgPath) continue;
+          if (!bySource.has(pkgPath)) bySource.set(pkgPath, []);
+          bySource.get(pkgPath).push(name);
+        }
+        if (bySource.size > 0) {
+          const suggestion = [...bySource.keys()].map((p) => `'${p}'`).join(', ');
+          context.report({
+            node,
+            messageId: 'noBarrelImport',
+            data: { source, suggestion },
+            fix(fixer) {
+              const statements = [];
+              for (const [pkgPath, names] of bySource) {
+                statements.push(`export { ${names.join(', ')} } from '${pkgPath}';`);
+              }
+              return fixer.replaceText(node, statements.join('\n'));
+            },
+          });
+        } else {
+          context.report({
+            node: node.source,
+            messageId: 'noBarrelImportNoFix',
+            data: { source, names: '* (could not resolve exports)' },
+          });
+        }
+        return;
       }
-      // ExportAllDeclaration — can't auto-fix, just report
 
-      if (node.type === 'ExportAllDeclaration' || importedNames.length === 0) {
+      if (importedNames.length === 0) {
+        // Side-effect import: import 'barrel'
         context.report({
           node: node.source,
           messageId: 'noBarrelImportNoFix',
-          data: {
-            source,
-            reason: node.type === 'ExportAllDeclaration'
-              ? 'export * cannot be auto-fixed'
-              : 'no named imports to trace',
-          },
+          data: { source, names: '(side-effect import)' },
         });
         return;
       }
 
-      // Resolve the barrel and trace exports
-      const barrelPath = resolveBarrelPath(packagesRoot, source);
-      if (!barrelPath) {
-        context.report({
-          node: node.source,
-          messageId: 'noBarrelImport',
-          data: { source },
-        });
-        return;
-      }
-
-      const exportMap = parseBarrelExports(barrelPath);
-
-      // Group imported names by their source file
-      const bySource = new Map(); // sourcePath -> [{imported, local, isType}]
+      // Group imported names by source file
+      const bySource = new Map();
       const unfixed = [];
 
       for (const entry of importedNames) {
@@ -234,35 +339,31 @@ module.exports = {
           unfixed.push(entry.imported);
           continue;
         }
-
         const pkgPath = toPackagePath(source, relSource);
         if (!pkgPath) {
           unfixed.push(entry.imported);
           continue;
         }
-
         if (!bySource.has(pkgPath)) bySource.set(pkgPath, []);
         bySource.get(pkgPath).push(entry);
       }
 
-      if (unfixed.length > 0 || bySource.size === 0) {
-        // Can't fully auto-fix — report without fix
+      if (unfixed.length > 0) {
         context.report({
           node: node.source,
           messageId: 'noBarrelImportNoFix',
-          data: {
-            source,
-            reason: `could not trace: ${unfixed.join(', ')}`,
-          },
+          data: { source, names: unfixed.join(', ') },
         });
         return;
       }
 
-      // Build the replacement import(s)
+      // Build suggestion string for the error message
+      const suggestion = [...bySource.keys()].map((p) => `'${p}'`).join(', ');
+
       context.report({
         node,
         messageId: 'noBarrelImport',
-        data: { source },
+        data: { source, suggestion },
         fix(fixer) {
           const isExport = node.type === 'ExportNamedDeclaration';
           const keyword = isExport ? 'export' : 'import';
@@ -272,17 +373,13 @@ module.exports = {
           for (const [pkgPath, entries] of bySource) {
             const specifiers = entries.map((e) => {
               const typeStr = e.isType && !typePrefix ? 'type ' : '';
-              if (e.imported === e.local) {
-                return `${typeStr}${e.imported}`;
-              }
+              if (e.imported === e.local) return `${typeStr}${e.imported}`;
               return `${typeStr}${e.imported} as ${e.local}`;
             });
-
             statements.push(
               `${keyword}${typePrefix} { ${specifiers.join(', ')} } from '${pkgPath}';`
             );
           }
-
           return fixer.replaceText(node, statements.join('\n'));
         },
       });
