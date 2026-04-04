@@ -5243,7 +5243,12 @@ export function precompileTemplate(templateString: string, options?: {
   // Check for {{attrs.X}} (assert) and {{this.attrs.X}} (deprecation)
   // This mirrors the Glimmer AST plugin assert-against-attrs.ts
   {
+    // Skip the {{attrs.X}} assertion if `attrs` is used as a block param
+    // (e.g., {{#let ... as |attrs|}}) since that's a valid use case.
+    const hasAttrsBlockParam = /as\s*\|[^|]*\battrs\b[^|]*\|/.test(templateString);
+
     // Check for {{attrs.X}} - this should trigger an assert (throw)
+    if (!hasAttrsBlockParam) {
     const attrsPattern = /\{\{attrs\.([a-zA-Z0-9_]+)/g;
     let attrsMatch;
     while ((attrsMatch = attrsPattern.exec(templateString)) !== null) {
@@ -5256,6 +5261,7 @@ export function precompileTemplate(templateString: string, options?: {
       const locationDisplay = `(L${line}:C${col}) `;
       const message = `Using {{attrs}} to reference named arguments is not supported. {{attrs.${propName}}} should be updated to {{@${propName}}}. ${locationDisplay}`;
       emberAssert(message, false);
+    }
     }
 
     // Check for {{this.attrs.X}} - this should trigger a deprecation

@@ -4,7 +4,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 // import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import { validator } from '@lifeart/gxt/glimmer-compatibility';
-import { dirtyTagFor } from '@glimmer/validator';
+import { dirtyTagFor, consumeTag as compatConsumeTag, tagFor as compatTagFor } from '@glimmer/validator';
 
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
@@ -13,8 +13,12 @@ import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './de
 import { SELF_TAG } from './tags';
 
 const {
-  consumeTag, tagFor, trackedData
+  consumeTag: _nativeConsumeTag, tagFor: _nativeTagFor, trackedData
 } = validator;
+
+// Use compat versions that integrate with createCache tracking
+const consumeTag = compatConsumeTag;
+const tagFor = compatTagFor;
 
 
 /**
@@ -168,6 +172,11 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
 
   function get(this: object): unknown {
     let value = getter(this);
+
+    // Consume the property tag so that createCache tracking captures this
+    // dependency. Without this, GXT cell reads from trackedData.getter are
+    // invisible to our compat createCache's tag-based invalidation system.
+    consumeTag(tagFor(this, key as string));
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed

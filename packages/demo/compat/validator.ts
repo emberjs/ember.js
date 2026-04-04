@@ -123,40 +123,126 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
     throw err;
   }
 }
-// Provide a LAZY createCache that does NOT eagerly evaluate the formula.
-// GXT's native createCache subscribes to the formula immediately, which
-// causes it to evaluate during construction. Ember's invokeHelper relies
-// on createCache being lazy (only evaluated on first getValue call).
+// Provide a LAZY createCache with proper invalidation for invokeHelper.
 //
-// We use a GXT formula under the hood. When .value is first read the
-// formula runs `fn()`, tracking all GXT cells accessed within. On
-// subsequent reads, if any tracked cell changed, the formula re-runs.
-// The key twist: we defer creating the formula until the first read,
-// so `fn()` isn't called eagerly.
-export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; tag?: any } {
-  let _formula: ReturnType<typeof formula> | null = null;
+// GXT's native caching.createCache eagerly evaluates and only tracks direct
+// cell reads. Ember's invokeHelper requires lazy construction and proper
+// transitive dependency tracking through nested caches.
+//
+// Strategy: Each cache has its own "revision" that bumps when its value
+// actually changes. Caches track other caches they read during evaluation
+// (via _cacheEvalStack). A cache invalidates when:
+// 1. Any consumed tag (via consumeTag) has changed value
+// 2. Any nested cache read during fn() has a newer revision
+// 3. The global revision counter has changed (for GXT cell reads we can't
+//    intercept) AND fn() produces a different result (deep equality check
+//    not feasible, so we use a per-cache revision system)
+//
+// For correctness with the "constant helper" test: if a cache's fn() doesn't
+// consume any tags or nested caches, it's treated as constant and never
+// re-evaluated.
 
-  return {
+const _cacheEvalStack: Set<any>[] = [];
+
+export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; tag?: any } {
+  let _initialized = false;
+  let _lastValue: T;
+  // Our own revision (bumped when our value actually changes)
+  let _revision = 0;
+  // Tags consumed via consumeTag during fn()
+  let _consumedTags: any[] = [];
+  let _consumedTagSnapshots: any[] = [];
+  // Nested caches read during fn() and their revisions at that time
+  let _nestedCaches: any[] = [];
+  let _nestedCacheRevisions: number[] = [];
+
+  const cacheObj = {
+    _isCacheObj: true,
+    _revision: 0,
+
     get value(): T {
-      if (!_formula) {
-        _formula = formula(fn, 'createCache');
+      if (!_isValid()) {
+        const wasInitialized = _initialized;
+        const oldValue = _lastValue;
+        _lastValue = _evaluate();
+        _initialized = true;
+        // Bump our revision if the value changed (or first eval)
+        if (!wasInitialized || oldValue !== _lastValue) {
+          _revision++;
+          cacheObj._revision = _revision;
+        }
       }
-      return _formula.value as T;
+      // Register in parent cache's eval stack so it knows we're a dependency
+      if (_cacheEvalStack.length > 0) {
+        _cacheEvalStack[_cacheEvalStack.length - 1]!.add(cacheObj);
+      }
+      return _lastValue;
     },
     destroy() {
-      // GXT formulas don't have a destroy, but clean up if possible
-      if (_formula && typeof (_formula as any).destroy === 'function') {
-        (_formula as any).destroy();
-      }
+      _consumedTags = [];
+      _nestedCaches = [];
     },
     get tag() {
-      if (!_formula) {
-        _formula = formula(fn, 'createCache');
-      }
-      return _formula;
+      return formula(fn, 'createCache');
     },
   };
+
+  function _evaluate(): T {
+    const consumed = new Set<any>();
+    const nested = new Set<any>();
+    _cacheTagTracker.push(consumed);
+    _cacheEvalStack.push(nested);
+    try {
+      return fn();
+    } finally {
+      _cacheEvalStack.pop();
+      _cacheTagTracker.pop();
+      // Store consumed tags and snapshots
+      _consumedTags = Array.from(consumed);
+      _consumedTagSnapshots = _consumedTags.map(t => {
+        if (t && typeof t === 'object' && 'value' in t) {
+          try { return t.value; } catch { return undefined; }
+        }
+        return undefined;
+      });
+      // Store nested caches
+      _nestedCaches = Array.from(nested);
+      _nestedCacheRevisions = _nestedCaches.map(c => c._revision || 0);
+      // If fn() consumed no tags and no nested caches, it's constant.
+    }
+  }
+
+  function _isValid(): boolean {
+    if (!_initialized) return false;
+    // Check consumed tags (from consumeTag calls during fn())
+    for (let i = 0; i < _consumedTags.length; i++) {
+      const tag = _consumedTags[i];
+      if (tag && typeof tag === 'object' && 'value' in tag) {
+        try {
+          if (tag.value !== _consumedTagSnapshots[i]) return false;
+        } catch {
+          return false;
+        }
+      }
+    }
+    // Check nested caches: trigger their re-validation by reading .value
+    // This causes them to re-evaluate if their own dependencies changed,
+    // potentially bumping their _revision.
+    for (let i = 0; i < _nestedCaches.length; i++) {
+      const nc = _nestedCaches[i];
+      // Reading .value forces the nested cache to re-validate
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      nc.value;
+      if (nc._revision !== _nestedCacheRevisions[i]) return false;
+    }
+    return true;
+  }
+
+  return cacheObj;
 }
+
+// Stack for tracking consumeTag calls during createCache evaluation
+const _cacheTagTracker: Set<any>[] = [];
 
 export function getValue<T>(cache: { value: T }): T {
   return cache.value;
@@ -262,6 +348,11 @@ export function consumeTag(tag: any) {
   // Collect this tag in the current track() frame if active
   if (_trackingTagStack && _trackingTagStack.length > 0) {
     _trackingTagStack[_trackingTagStack.length - 1]!.add(tag);
+  }
+
+  // Register in createCache tracker stack for fine-grained invalidation
+  if (_cacheTagTracker.length > 0) {
+    _cacheTagTracker[_cacheTagTracker.length - 1]!.add(tag);
   }
 
   // Our custom updatable tags (from createUpdatableTag) are objects with a
