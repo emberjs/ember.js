@@ -62,6 +62,15 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
     return value;
   }
 
+  // GXT backtracking detection: check if this set() modifies a component
+  // whose template was already rendered in the current render pass.
+  if (DEBUG) {
+    const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
+    if (typeof checkBacktracking === 'function') {
+      checkBacktracking(obj, keyName);
+    }
+  }
+
   return isPath(keyName) ? _setPath(obj, keyName, value, tolerant) : _setProp(obj, keyName, value);
 }
 

@@ -1,4 +1,4 @@
-import { Component } from '@lifeart/gxt';
+import { Component, createRoot, setParentContext, getParentContext } from '@lifeart/gxt';
 
 /**
  * EmberOutletElement - Custom HTML element for Ember's {{outlet}} helper.
@@ -113,16 +113,36 @@ class EmberOutletElement extends HTMLElement {
     }
 
     try {
-      // Render the template
-      if (typeof tpl?.render === 'function') {
-        tpl.render(nestedContext, this);
-        this._rendered = true;
-      } else if (typeof tpl === 'function') {
-        // Factory function - call it to get the template
-        const resolved = tpl(nestedContext.owner);
-        if (resolved && typeof resolved.render === 'function') {
-          resolved.render(nestedContext, this);
+      // Establish a GXT root context for this outlet element.
+      // GXT's internal tree requires a parent context; without this,
+      // rendering inside the outlet fails with "Cannot read properties
+      // of undefined (reading 'Symbol()')" because te() returns undefined.
+      // Use the shared root context (same as runtime-hbs uses).
+      const savedParent = getParentContext();
+      let gxtRoot = (globalThis as any).__gxtRootContext;
+      if (!gxtRoot) {
+        gxtRoot = createRoot(document);
+        (globalThis as any).__gxtRootContext = gxtRoot;
+      }
+      setParentContext(gxtRoot);
+
+      try {
+        // Render the template
+        if (typeof tpl?.render === 'function') {
+          tpl.render(nestedContext, this);
           this._rendered = true;
+        } else if (typeof tpl === 'function') {
+          // Factory function - call it to get the template
+          const resolved = tpl(nestedContext.owner);
+          if (resolved && typeof resolved.render === 'function') {
+            resolved.render(nestedContext, this);
+            this._rendered = true;
+          }
+        }
+      } finally {
+        // Restore previous parent context
+        if (savedParent) {
+          setParentContext(savedParent);
         }
       }
     } catch (e: any) {

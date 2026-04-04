@@ -38,6 +38,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect } from '@lifeart/gxt';
+import { destroy as _destroyDestroyable } from './destroyable';
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
@@ -355,7 +356,9 @@ function getCachedOrCreateInstance(
 
   if (requestedElementId) {
     // Explicit elementId provided - find instance with matching elementId
-    poolEntry = pool.find((e) => !e.claimed && e.instance?.elementId === requestedElementId);
+    // Convert to string for comparison since Ember may store elementId as string
+    const reqIdStr = String(requestedElementId);
+    poolEntry = pool.find((e) => !e.claimed && String(e.instance?.elementId) === reqIdStr);
 
     // If no exact match found, fall back to sequential ordering.
     // This handles the case where elementId arg changes but we should reuse the same instance
@@ -806,9 +809,10 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
 
   // First pass: detect if there are any changes
   let hasChanges = false;
-  const keys = extractArgKeys(args);
+  const newKeys = extractArgKeys(args);
+  const newKeySet = new Set(newKeys);
 
-  for (const key of keys) {
+  for (const key of newKeys) {
     const { resolved: newValue } = getArgValue(args, key);
     const oldValue = lastArgValues[key];
 
@@ -818,9 +822,22 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
     }
   }
 
+  // Also check for removed args: if a previously-present arg is no longer provided,
+  // we need to reset it to undefined. This prevents stale values from leaking when
+  // instances are reused from the pool for invocations with different arg sets.
+  if (!hasChanges) {
+    for (const key of Object.keys(lastArgValues)) {
+      if (key === 'elementId' || key === 'id') continue;
+      if (!newKeySet.has(key) && lastArgValues[key] !== undefined) {
+        hasChanges = true;
+        break;
+      }
+    }
+  }
+
   if (hasChanges) {
     // Second pass: apply the changes (set properties first, then fire hooks)
-    for (const key of keys) {
+    for (const key of newKeys) {
       const { resolved: newValue } = getArgValue(args, key);
       const oldValue = lastArgValues[key];
 
@@ -836,6 +853,20 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
           }
         }
         lastArgValues[key] = newValue;
+      }
+    }
+
+    // Reset args that are no longer provided
+    for (const key of Object.keys(lastArgValues)) {
+      if (key === 'elementId' || key === 'id') continue;
+      if (!newKeySet.has(key) && lastArgValues[key] !== undefined) {
+        try {
+          instance.__gxtDispatchingArgs = true;
+          instance[key] = undefined;
+        } finally {
+          instance.__gxtDispatchingArgs = false;
+        }
+        lastArgValues[key] = undefined;
       }
     }
 
@@ -982,6 +1013,48 @@ const _afterInsertQueue: Array<() => void> = [];
  * didInsertElement(), destroy(), etc.
  */
 const _renderErrors: Error[] = [];
+
+/**
+ * Backtracking re-render detection.
+ * Tracks instances whose templates have been rendered in the current render pass.
+ * If set() is called on a rendered instance during the same pass, it's a
+ * "backtracking" modification that Ember's Glimmer VM would assert against.
+ */
+const _templateRenderedInstances = new Set<any>();
+let _isInRenderPass = false;
+
+export function markTemplateRendered(instance: any): void {
+  if (instance) {
+    _templateRenderedInstances.add(instance);
+  }
+}
+
+export function beginRenderPass(): void {
+  _isInRenderPass = true;
+  _templateRenderedInstances.clear();
+}
+
+export function endRenderPass(): void {
+  _isInRenderPass = false;
+  _templateRenderedInstances.clear();
+}
+
+/**
+ * Check if setting a property on an instance constitutes backtracking.
+ * Called from Ember's set() during rendering to detect modifications
+ * to already-rendered component state.
+ */
+(globalThis as any).__gxtCheckBacktracking = function(targetObj: any, key: string): void {
+  if (!_isInRenderPass) return;
+  if (!_templateRenderedInstances.has(targetObj)) return;
+  // This instance's template was already rendered in this pass.
+  // Setting a property on it is backtracking.
+  const objName = targetObj?.toString?.() || '<unknown>';
+  assert(
+    `You modified "${key}" on "${objName}" after it was rendered. This was unreliable in Ember and is no longer allowed. [GXT] Backtracking re-render detected.`,
+    false
+  );
+};
 
 export function captureRenderError(err: unknown): void {
   if (err instanceof Error) {
@@ -1276,7 +1349,21 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
           continue;
         }
       }
-      if (value === undefined || value === null || value === false) {
+      // For 'value' on input/textarea/select elements, set as a DOM property
+      // instead of an HTML attribute. The HTML 'value' attribute only sets the
+      // default value; the DOM property sets the current value. Ember's Glimmer VM
+      // uses property-based setting for these, so the attribute doesn't appear in outerHTML.
+      const isPropertyOnlyAttr = (attrName === 'value' && (
+        wrapper.tagName === 'INPUT' || wrapper.tagName === 'TEXTAREA' || wrapper.tagName === 'SELECT'
+      ));
+
+      if (isPropertyOnlyAttr) {
+        (wrapper as any)[attrName] = value != null && value !== false ? String(value) : '';
+        // Remove the HTML attribute if it was previously set
+        if (wrapper.hasAttribute(attrName)) {
+          wrapper.removeAttribute(attrName);
+        }
+      } else if (value === undefined || value === null || value === false) {
         wrapper.removeAttribute(attrName);
       } else if (value === true) {
         wrapper.setAttribute(attrName, '');
@@ -2102,7 +2189,16 @@ function buildWrapperElement(
           continue;
         }
       }
-      if (value !== undefined && value !== null && value !== false) {
+      // For 'value' on input/textarea/select, set as DOM property (not HTML attribute)
+      const isPropertyOnlyAttr = (attrName === 'value' && (
+        wrapper.tagName === 'INPUT' || wrapper.tagName === 'TEXTAREA' || wrapper.tagName === 'SELECT'
+      ));
+
+      if (isPropertyOnlyAttr) {
+        if (value !== undefined && value !== null && value !== false) {
+          (wrapper as any)[attrName] = String(value);
+        }
+      } else if (value !== undefined && value !== null && value !== false) {
         wrapper.setAttribute(attrName, value === true ? '' : String(value));
       }
     }
@@ -2287,7 +2383,10 @@ function createRenderContext(
       // Resolve the initial value, unwrapping mut/readonly cells for the args proxy
       const descriptor = Object.getOwnPropertyDescriptor(args, key);
       const getter = descriptor?.get;
-      let rawVal = getter ? getter() : (typeof args[key] === 'function' ? args[key]() : args[key]);
+      const rawProp = args[key];
+      // Don't unwrap fn helper results, mut cells, curried helpers/components —
+      // they are real functions, not GXT reactive getters.
+      let rawVal = getter ? getter() : (typeof rawProp === 'function' && !rawProp.__isFnHelper && !rawProp.__isMutCell && !rawProp.__isEmberCurriedHelper && !rawProp.__isCurriedComponent && !rawProp.prototype ? rawProp() : rawProp);
       // Unwrap mut cells for args proxy (template rendering needs plain values)
       let initialVal = rawVal;
       if (rawVal && rawVal.__isMutCell) {
@@ -2314,7 +2413,8 @@ function createRenderContext(
         Object.defineProperty(attrsProxy, key, {
           get() {
             const val = args[key];
-            let resolved = typeof val === 'function' ? val() : val;
+            // Don't unwrap fn helper results, mut cells, curried helpers
+            let resolved = (typeof val === 'function' && !val.__isFnHelper && !val.__isMutCell && !val.__isEmberCurriedHelper && !val.__isCurriedComponent && !val.prototype) ? val() : val;
             if (resolved && resolved.__isMutCell) return resolved.value;
             if (resolved && resolved.__isReadonly) return resolved.__readonlyValue;
             return resolved;
@@ -2464,7 +2564,9 @@ function createRenderContext(
         getter = descriptor.get;
       } else {
         const argRef = args[key];
-        getter = typeof argRef === 'function' ? argRef : undefined;
+        // Only treat as getter if it's a GXT reactive getter (arrow fn with no args).
+        // Don't unwrap fn helper results, mut cells, curried helpers, or class constructors.
+        getter = (typeof argRef === 'function' && !argRef.prototype && !argRef.__isFnHelper && !argRef.__isMutCell && !argRef.__isEmberCurriedHelper && !argRef.__isCurriedComponent) ? argRef : undefined;
       }
     }
 
@@ -4037,7 +4139,7 @@ const $_MANAGERS = {
                   const destroyable = cached.manager.getDestroyable?.(cached.instance);
                   if (destroyable) {
                     try { if (typeof _gxtRunDestructors === 'function') _gxtRunDestructors(destroyable); } catch { /* ignore */ }
-                    if (typeof destroy === 'function') destroy(destroyable);
+                    _destroyDestroyable(destroyable);
                   }
                 } else if (cached.manager.destroyModifier) {
                   cached.manager.destroyModifier(cached.instance);
@@ -4099,9 +4201,7 @@ try {
     _gxtRunDestructors(destroyable);
   }
 } catch { /* ignore */ }
-                    if (typeof destroy === 'function') {
-                      destroy(destroyable);
-                    }
+                    _destroyDestroyable(destroyable);
                   }
                 } else if (cached.manager.destroyModifier) {
                   cached.manager.destroyModifier(cached.instance);
@@ -4232,9 +4332,7 @@ try {
     _gxtRunDestructors(destroyable);
   }
 } catch { /* ignore */ }
-                if (typeof destroy === 'function') {
-                  destroy(destroyable);
-                }
+                _destroyDestroyable(destroyable);
               }
               const c = self._cache.get(element);
               if (c) {
@@ -5491,6 +5589,8 @@ function renderClassicComponent(
       setViewElement(instance, wrapper);
       setElementView(wrapper, instance);
     }
+    // Mark this instance as rendering for backtracking detection (before template render)
+    markTemplateRendered(instance);
     // Render template into wrapper (rebuild DOM content)
     renderTemplateWithParentView(template, renderContext, wrapper, instance);
 
@@ -5531,6 +5631,12 @@ function renderClassicComponent(
 
     // willInsertElement is called in hasElement state (element now available)
     triggerLifecycleHook(instance, 'willInsertElement');
+
+    // Mark this instance as rendering for backtracking detection.
+    // This must happen BEFORE renderTemplateWithParentView so that if a child
+    // component's lifecycle hook (e.g., didReceiveAttrs) modifies this instance's
+    // properties, the backtracking assertion fires.
+    markTemplateRendered(instance);
 
     // Render template into wrapper
     renderTemplateWithParentView(template, renderContext, wrapper, instance);

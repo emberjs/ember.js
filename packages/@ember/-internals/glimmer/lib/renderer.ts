@@ -8,7 +8,7 @@ import { getViewElement, getViewId, setViewElement } from '@ember/-internals/vie
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
 (globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
 
-import { pushParentView, popParentView, flushAfterInsertQueue, flushRenderErrors } from '@glimmer/manager';
+import { pushParentView, popParentView, flushAfterInsertQueue, flushRenderErrors, beginRenderPass, endRenderPass } from '@glimmer/manager';
 // @ts-ignore
 import {
   destroyElementSync as _destroyElementSync,
@@ -560,7 +560,13 @@ class ClassicRootState {
                     : [binding, binding];
                   const value = component[propName];
                   if (value !== undefined && value !== null && attrName !== 'id' && attrName !== 'class') {
-                    if (typeof value === 'boolean') {
+                    // For 'value' on input/textarea/select, use DOM property (not HTML attribute)
+                    const isPropertyOnly = attrName === 'value' && (
+                      wrapper.tagName === 'INPUT' || wrapper.tagName === 'TEXTAREA' || wrapper.tagName === 'SELECT'
+                    );
+                    if (isPropertyOnly) {
+                      (wrapper as any)[attrName] = String(value);
+                    } else if (typeof value === 'boolean') {
                       if (value) {
                         wrapper.setAttribute(attrName, '');
                       }
@@ -587,6 +593,9 @@ class ClassicRootState {
           // render-phase errors from lifecycle-phase errors.
           (globalThis as any).__gxtRenderErrorCount = 0;
 
+          // Begin render pass for backtracking detection
+          beginRenderPass();
+
           // Push root component onto parentView stack before rendering
           if (root && 'layoutName' in root) {
             pushParentView(root);
@@ -610,6 +619,9 @@ class ClassicRootState {
         // (e.g., init() errors). If so, clear the DOM before re-throwing because
         // the render did not complete successfully (matching Glimmer VM behavior).
         const hadRenderPhaseErrors = (globalThis as any).__gxtRenderErrorCount > 0;
+
+        // End render pass (backtracking detection)
+        endRenderPass();
 
         // Flush queued didInsertElement / didRender hooks now that all DOM
         // has been inserted into the live document by GXT.

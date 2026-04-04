@@ -99,7 +99,7 @@ export {
   $__array,
   $__debugger,
   $__eq,
-  $__fn,
+  $__fn as $__fn_original,
   $__hash,
   $__if,
   $__log,
@@ -118,6 +118,48 @@ export {
   $fwProp,
   $template,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+
+// Override $__fn to mark results with __isFnHelper so getArgValue doesn't unwrap them
+// GXT's original $__fn returns plain arrow functions that look like getters to the
+// Ember compat layer. By marking them, we prevent accidental invocation during
+// component arg processing.
+function $__fn_ember(fn: any, ...partialArgs: any[]): any {
+  // Check if first arg is a mut cell
+  if (fn && fn.__isMutCell) {
+    const result = (...callArgs: any[]) => {
+      const resolvedArgs = partialArgs.map((a: any) =>
+        typeof a === 'function' && !a.prototype && a.length === 0 && !a.__isMutCell ? a() : a
+      );
+      return fn(...resolvedArgs, ...callArgs);
+    };
+    (result as any).__isFnHelper = true;
+    return result;
+  }
+  // Check if first arg is a getter wrapping a mut cell
+  if (typeof fn === 'function' && !fn.__isMutCell && fn.length === 0 && !fn.prototype) {
+    try {
+      const fnResult = fn();
+      if (fnResult && fnResult.__isMutCell) {
+        const result = (...callArgs: any[]) => {
+          const resolvedArgs = partialArgs.map((a: any) =>
+            typeof a === 'function' && !a.prototype && a.length === 0 && !a.__isMutCell ? a() : a
+          );
+          const currentMut = fn();
+          return currentMut(...resolvedArgs, ...callArgs);
+        };
+        (result as any).__isFnHelper = true;
+        return result;
+      }
+    } catch { /* ignore */ }
+  }
+  // Default: delegate to original $__fn but mark result
+  const result = $__fn_original(fn, ...partialArgs);
+  if (typeof result === 'function') {
+    (result as any).__isFnHelper = true;
+  }
+  return result;
+}
+export { $__fn_ember as $__fn };
 
 // Override hbs with runtime-compatible version
 export { hbs } from './runtime-hbs';

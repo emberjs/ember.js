@@ -2412,35 +2412,67 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       if (managers?.component?.canHandle?.(comp)) {
         const $PROPS = Symbol.for('gxt-props');
         const $SLOTS = Symbol.for('gxt-slots');
-        const fw = args?.[$PROPS] || null;
+        let fw = args?.[$PROPS] || null;
 
         // Extract named args from the GXT args object
         const namedArgs: any = {};
         if (args) {
-          for (const key of Object.keys(args)) {
-            if (key === 'args' || key.startsWith('$')) continue;
-            const desc = Object.getOwnPropertyDescriptor(args, key);
-            if (desc) {
-              Object.defineProperty(namedArgs, key, desc);
-            }
-          }
-          // Also check args.args (GXT puts named args in args['args'])
-          const argsObj = args['args'];
-          if (argsObj && typeof argsObj === 'object') {
-            for (const key of Object.keys(argsObj)) {
-              if (!key.startsWith('$')) {
-                const desc = Object.getOwnPropertyDescriptor(argsObj, key);
-                if (desc) {
-                  Object.defineProperty(namedArgs, key, desc);
+          // GXT may pass args in tagProps format: [props[], attrs[], events[]]
+          // Check if args is an array (tagProps format from $_dc)
+          if (Array.isArray(args) && args.length >= 2 && Array.isArray(args[1])) {
+            // tagProps format: extract named args from attrs array (index 1)
+            fw = args;  // The whole tagProps array is the fw
+            const attrs = args[1];
+            for (const entry of attrs) {
+              if (Array.isArray(entry) && entry.length >= 2) {
+                let key = entry[0];
+                const val = entry[1];
+                if (typeof key === 'string' && key.startsWith('@')) {
+                  key = key.slice(1);
+                }
+                if (typeof val === 'function' && !val.prototype) {
+                  Object.defineProperty(namedArgs, key, {
+                    get: val,
+                    enumerable: true,
+                    configurable: true,
+                  });
+                } else {
+                  namedArgs[key] = val;
                 }
               }
             }
-          }
+            // Extract slots from tagProps
+            const gxtSlots = args[$SLOTS as any];
+            if (gxtSlots && typeof gxtSlots === 'object') {
+              _setInternalProp(namedArgs, '$slots', gxtSlots);
+            }
+          } else {
+            // Plain object format
+            for (const key of Object.keys(args)) {
+              if (key === 'args' || key.startsWith('$')) continue;
+              const desc = Object.getOwnPropertyDescriptor(args, key);
+              if (desc) {
+                Object.defineProperty(namedArgs, key, desc);
+              }
+            }
+            // Also check args.args (GXT puts named args in args['args'])
+            const argsObj = args['args'];
+            if (argsObj && typeof argsObj === 'object') {
+              for (const key of Object.keys(argsObj)) {
+                if (!key.startsWith('$')) {
+                  const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+                  if (desc) {
+                    Object.defineProperty(namedArgs, key, desc);
+                  }
+                }
+              }
+            }
 
-          // Extract slots from GXT args for {{yield}} support
-          const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
-          if (gxtSlots && typeof gxtSlots === 'object') {
-            _setInternalProp(namedArgs, '$slots', gxtSlots);
+            // Extract slots from GXT args for {{yield}} support
+            const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+            if (gxtSlots && typeof gxtSlots === 'object') {
+              _setInternalProp(namedArgs, '$slots', gxtSlots);
+            }
           }
         }
 
@@ -2452,7 +2484,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       }
     }
 
-    // Also handle functions with __stringComponentName (from old $_componentHelper)
+    // Also handle functions with __stringComponentName (from $_dc_ember markers)
     if (typeof comp === 'function' && comp.__stringComponentName) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
@@ -2507,6 +2539,20 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           return handleResult();
         }
         return handleResult;
+      } else {
+        // Component with __stringComponentName but canHandle returned false.
+        // This means the component name could not be resolved. Throw an error
+        // matching Ember's behavior for {{component "does-not-exist"}}.
+        const compName = comp.__stringComponentName;
+        const notFoundErr = new Error(
+          `Attempted to resolve \`${compName}\`, which was expected to be a component, but nothing was found. ` +
+          `Could not find component named "${compName}" (no component or template with that name was found)`
+        );
+        const captureErr = g.__captureRenderError;
+        if (typeof captureErr === 'function') {
+          captureErr(notFoundErr);
+        }
+        throw notFoundErr;
       }
     }
 
@@ -3636,6 +3682,36 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
     }
 
+    // Check if this tag came from {{component "name"}} helper (has @__fromComponentHelper__ marker).
+    // If so, throw an error instead of falling through to custom element rendering.
+    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
+      let hasFromComponentHelper = false;
+      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+        for (const [key] of tagProps[1]) {
+          if (key === '@__fromComponentHelper__') {
+            hasFromComponentHelper = true;
+            break;
+          }
+        }
+      }
+      if (hasFromComponentHelper) {
+        const kebabName = resolvedTag
+          .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+          .toLowerCase()
+          .replace(/--/g, '/');
+        const notFoundErr = new Error(
+          `Attempted to resolve \`${kebabName}\`, which was expected to be a component, but nothing was found. ` +
+          `Could not find component named "${kebabName}" (no component or template with that name was found)`
+        );
+        const captureErr = g.__captureRenderError;
+        if (typeof captureErr === 'function') {
+          captureErr(notFoundErr);
+        }
+        throw notFoundErr;
+      }
+    }
+
     // Custom element fallback: dash-containing tags that were not resolved as
     // components or helpers — render as plain HTML custom elements with attrs.
     if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string' && resolvedTag.includes('-')) {
@@ -4445,7 +4521,9 @@ function transformComponentHelper(code: string): string {
     }
     const pascalName = toPascalCase(name);
     const transformedAttrs = transformAttrs(attrs);
-    return `<${pascalName}${transformedAttrs} />`;
+    // Add marker so $_tag handler knows this came from {{component}} helper
+    // and should throw for non-existent components instead of rendering as custom element
+    return `<${pascalName} @__fromComponentHelper__={{true}}${transformedAttrs} />`;
   });
 
   // Inline form with dynamic name: {{component this.xxx arg=val}} or
@@ -6059,9 +6137,12 @@ export function precompileTemplate(templateString: string, options?: {
             // fn receives (fn, ...args) where fn and args may be getters.
             // Resolve getters before calling the scope function, and mark the
             // result with __isFnHelper so it's not mistakenly unwrapped as a getter.
+            // IMPORTANT: Only unwrap zero-length arrow functions (GXT reactive getters).
+            // Functions with length > 0 are real user functions (e.g., scope values
+            // like `id = (arg) => arg`) and must NOT be unwrapped.
             modifiedCode = modifiedCode.replace(
               new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
-              `(function(){var __args=Array.from(arguments).map(function(a){return typeof a==='function'&&!a.prototype&&!a.__isMutCell?a():a;});var __r=${jsName}(...__args);if(typeof __r==='function')__r.__isFnHelper=true;return __r;})(`
+              `(function(){var __args=Array.from(arguments).map(function(a){return typeof a==='function'&&!a.prototype&&!a.__isMutCell&&a.length===0?a():a;});var __r=${jsName}(...__args);if(typeof __r==='function')__r.__isFnHelper=true;return __r;})(`
             );
           } else {
             modifiedCode = modifiedCode.replace(

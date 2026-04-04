@@ -537,7 +537,17 @@ function createEmberMaybeHelper(original: Function) {
             if (hash && typeof hash === 'object') {
               for (const key of Object.keys(hash)) {
                 if (!key.startsWith('$_') && key !== 'hash') {
-                  componentArgs[key] = hash[key];
+                  // Preserve getters from hash so component manager can track reactivity
+                  const desc = Object.getOwnPropertyDescriptor(hash, key);
+                  if (desc && desc.get) {
+                    Object.defineProperty(componentArgs, key, {
+                      get: desc.get,
+                      enumerable: true,
+                      configurable: true,
+                    });
+                  } else {
+                    componentArgs[key] = hash[key];
+                  }
                 }
               }
             }
