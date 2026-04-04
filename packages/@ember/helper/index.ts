@@ -11,7 +11,7 @@ import {
   get as glimmerGet,
   fn as glimmerFn,
 } from '@glimmer/runtime';
-import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
+import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer/lib/helpers/unique-id';
 import { type Opaque } from '@ember/-internals/utility-types';
 
 /**

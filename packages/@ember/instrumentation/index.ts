@@ -1,7 +1,7 @@
 /* eslint no-console:off */
 /* global console */
 
-import { ENV } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { assert } from '@ember/debug';
 
 export interface Listener<T> {

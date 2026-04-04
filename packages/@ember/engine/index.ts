@@ -13,7 +13,7 @@ import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
 import { ComponentLookup } from '@ember/-internals/views';
-import { setupEngineRegistry } from '@ember/-internals/glimmer';
+import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import { RegistryProxyMixin } from '@ember/-internals/runtime';
 
 function props(obj: object) {

@@ -1,5 +1,9 @@
 import { privatize as P } from '@ember/-internals/container';
-import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals/glimmer';
+import type {
+  BootEnvironment,
+  default as OutletView,
+} from '@ember/-internals/glimmer/lib/views/outlet';
+import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import { computed, get, set } from '@ember/object';
 import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner } from '@ember/owner';
