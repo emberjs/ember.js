@@ -165,9 +165,6 @@ export interface GlobalContext {
       id: string;
     }
   ) => void;
-  FEATURES?: {
-    DEFAULT_HELPER_MANAGER?: boolean;
-  };
 }
 
 let globalContextWasSet = false;

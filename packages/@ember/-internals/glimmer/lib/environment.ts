@@ -19,10 +19,6 @@ import toBool from './utils/to-bool';
 // Setup global context
 
 setGlobalContext({
-  FEATURES: {
-    DEFAULT_HELPER_MANAGER: true,
-  },
-
   scheduleRevalidate() {
     _backburner.ensureInstance();
   },
