@@ -5498,26 +5498,6 @@ export function precompileTemplate(templateString: string, options?: {
     (_match, eventName, expr) => `{{on "${eventName.toLowerCase()}" ${expr}}}`
   );
 
-  // Route {{on}} modifier through $_maybeModifier instead of GXT's native event
-  // binding. GXT's compiler special-cases `{{on ...}}` into a native addEventListener
-  // call that bypasses OnModifierManager lifecycle hooks (install/update/destroy).
-  // Ember tests expect those hooks to fire (e.g., counter tracking in on-test.js).
-  // Renaming to __ember_on__ makes GXT treat it as a regular modifier, then we
-  // provide the actual `on` object in scope so $_maybeModifier resolves it via
-  // INTERNAL_MODIFIER_MANAGERS.
-  if (transformedTemplate.includes('{{on ') || transformedTemplate.includes('(on ')) {
-    // Replace {{on "event" ...}} with {{__ember_on__ "event" ...}}
-    // Also handle subexpression form: (on "event" ...)
-    transformedTemplate = transformedTemplate.replace(
-      /\{\{on\s+/g,
-      '{{__ember_on__ '
-    );
-    transformedTemplate = transformedTemplate.replace(
-      /\(on\s+/g,
-      '(__ember_on__ '
-    );
-  }
-
   // Check for dotted-path mustache expressions like {{foo.bar}} where foo is not in scope.
   // In Ember, these are errors because foo is a free variable path that can't be resolved.
   // Collect block param names first so we don't flag those.
@@ -5918,12 +5898,6 @@ export function precompileTemplate(templateString: string, options?: {
   // helperInjections, but GXT needs to know it's a scope variable at compile time.
   if (/\bunique_id\b/.test(transformedTemplate)) {
     scopeBindings.add('unique_id');
-  }
-
-  // Add __ember_on__ to scope bindings if the template was transformed
-  // from {{on}} to {{__ember_on__}} (see transform above).
-  if (transformedTemplate.includes('__ember_on__')) {
-    scopeBindings.add('__ember_on__');
   }
 
   // Compile using GXT runtime compiler
@@ -6410,15 +6384,13 @@ export function precompileTemplate(templateString: string, options?: {
             }
           }
         }
-        // Route the `on` modifier through $_maybeModifier instead of GXT's
-        // native event binding. The template transform renamed {{on}} to
-        // {{__ember_on__}}, so move the scope value to match. The original
-        // `on` object (from @glimmer/runtime) is kept as the value so the
-        // modifier manager resolves it via INTERNAL_MODIFIER_MANAGERS and
-        // calls OnModifierManager.create/install (with proper counters).
-        if (scopeVals['on'] !== undefined) {
-          scopeVals['__ember_on__'] = scopeVals['on'];
-          delete scopeVals['on'];
+        // Also replace the Glimmer VM `on` modifier with a GXT-compatible version.
+        // GXT handles {{on "event" handler}} natively, so we provide a no-op modifier
+        // that the GXT compiler already transforms into event bindings.
+        if (scopeVals['on'] !== undefined && typeof scopeVals['on'] !== 'function') {
+          // The `on` modifier from @glimmer/runtime is an object, not a function.
+          // GXT handles {{on}} natively, so we just need a passthrough.
+          scopeVals['on'] = g.__EMBER_BUILTIN_HELPERS__?.['on'] || scopeVals['on'];
         }
         scopeStoreKey = `__gxtScope_${Date.now()}_${Math.random().toString(36).slice(2)}`;
         g[scopeStoreKey] = scopeVals;
@@ -6480,16 +6452,6 @@ export function precompileTemplate(templateString: string, options?: {
             }
           }
         }
-      }
-      // Inject __ember_on__ variable for {{on}} modifier routing.
-      // When the template uses {{on}}, the pre-processing renames it to
-      // {{__ember_on__}} so GXT treats it as a regular modifier (not native event).
-      // Provide the actual `on` modifier object so $_maybeModifier resolves it
-      // through OnModifierManager with proper lifecycle hooks.
-      if (modifiedCode.includes('__ember_on__')) {
-        helperInjections.push(
-          `const __ember_on__ = globalThis.__gxtEmberOnModifier || "on";`
-        );
       }
       // Generate each-in entries getter injections
       const eachInInjections: string[] = [];
