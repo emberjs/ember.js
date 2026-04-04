@@ -167,12 +167,45 @@ function toPackagePath(barrelPackage, relativeSource) {
   return barrelPackage + '/' + relativeSource.slice(2);
 }
 
+// Cache for isBarrel check
+const isBarrelCache = new Map();
+
+/**
+ * Check if a file is a barrel (has re-exports from other files) vs.
+ * a standalone module (defines its own exports).
+ *
+ * A barrel contains `export { ... } from '...'` or `export * from '...'`.
+ * A standalone module only has `export const/function/class/default`.
+ */
+function isBarrelFile(filePath) {
+  if (isBarrelCache.has(filePath)) return isBarrelCache.get(filePath);
+
+  let content;
+  try {
+    content = fs.readFileSync(filePath, 'utf8');
+  } catch {
+    isBarrelCache.set(filePath, false);
+    return false;
+  }
+
+  // Has re-exports? (export { ... } from '...' or export * from '...')
+  const hasReExports = /export\s+(?:type\s+)?{[^}]+}\s+from\s+['"]/.test(content) ||
+    /export\s+\*\s+from\s+['"]/.test(content);
+
+  isBarrelCache.set(filePath, hasReExports);
+  return hasReExports;
+}
+
 /**
  * Check if an import specifier resolves to a barrel index.ts.
  */
 function isBarrelImport(packagesRoot, importSource) {
   if (importSource.startsWith('.') || importSource.startsWith('/')) return false;
-  return resolveBarrelPath(packagesRoot, importSource) !== null;
+
+  const barrelPath = resolveBarrelPath(packagesRoot, importSource);
+  if (!barrelPath) return false;
+
+  return isBarrelFile(barrelPath);
 }
 
 /** @type {import('eslint').Rule.RuleModule} */
