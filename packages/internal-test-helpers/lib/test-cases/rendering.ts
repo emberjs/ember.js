@@ -101,11 +101,16 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       }
     } finally {
       _resetRenderers();
-      // Reset pending sync AFTER destroy — destroy triggers notifyPropertyChange
-      // which sets __gxtPendingSync = true. Without this, a setInterval timer
-      // fires __gxtSyncDomNow() during the next test's initialization.
+      // Reset pending sync AFTER destroy
       (globalThis as any).__gxtPendingSync = false;
       (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      // Replace #qunit-fixture element to drop accumulated event listeners
+      // (EventDispatcher.setup adds listeners that aren't always cleaned up)
+      const fixture = document.getElementById('qunit-fixture');
+      if (fixture && (globalThis as any).__GXT_MODE__) {
+        const fresh = fixture.cloneNode(false) as HTMLElement;
+        fixture.parentNode?.replaceChild(fresh, fixture);
+      }
     }
   }
 

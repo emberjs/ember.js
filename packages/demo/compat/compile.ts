@@ -1683,8 +1683,11 @@ setInterval(() => {
   (globalThis as any).__gxtSyncScheduled = false;
   // Reset slots context stack
   slotsContextStack.length = 0;
-  // Clear template cache to avoid stale templates across tests
-  templateCache.clear();
+  // NOTE: Do NOT clear templateCache between tests. Each clear forces
+  // re-compilation via new Function() which leaks V8 code space memory.
+  // After ~3000 tests this causes Chromium renderer OOM.
+  // Template cache entries are keyed by template string so identical
+  // templates safely reuse compiled functions.
   // Clear curried render infos
   if ((globalThis as any).__curriedRenderInfos) {
     (globalThis as any).__curriedRenderInfos.length = 0;
