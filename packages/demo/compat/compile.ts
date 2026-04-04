@@ -5372,6 +5372,7 @@ function wrapTopLevelChildren(childrenStr: string): string {
 
 // Template cache for performance
 const templateCache = new Map<string, any>();
+let _functionCodeCache: Map<string, Function> | null = null;
 
 /**
  * Runtime precompileTemplate implementation using GXT runtime compiler
@@ -6499,8 +6500,14 @@ export function precompileTemplate(templateString: string, options?: {
           return ${modifiedCode};
         };
       `;
-      compilationResult.templateFn = Function(templateFnCode)();
-      // DEBUG
+      // Cache compiled Function() to reduce V8 code space growth (OOM prevention)
+      if (!_functionCodeCache) _functionCodeCache = new Map();
+      let cachedFn = _functionCodeCache.get(templateFnCode);
+      if (!cachedFn) {
+        cachedFn = Function(templateFnCode)();
+        _functionCodeCache.set(templateFnCode, cachedFn);
+      }
+      compilationResult.templateFn = cachedFn;
     } catch (e) {
       console.error('[gxt-compile] Failed to recreate template function:', e);
     }
