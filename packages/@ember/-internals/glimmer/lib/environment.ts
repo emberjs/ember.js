@@ -19,7 +19,11 @@ import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
 
+import { flushAsyncObservers } from '@ember/-internals/metal';
+import { registerFlushAsyncObservers } from '@ember/runloop';
 import { registerEmberGlobalContextImplementations } from './glimmer-global-context';
+
+registerFlushAsyncObservers(flushAsyncObservers);
 
 registerEmberGlobalContextImplementations({
   _getProp,
