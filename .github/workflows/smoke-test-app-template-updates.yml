@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: 20
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Generate ember-test-app using classic blueprint
         run: |
           set -euo pipefail
@@ -88,7 +88,7 @@ jobs:
         with:
           node-version: 20
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
       - name: Generate v2-app-template
         run: |
           set -euo pipefail
