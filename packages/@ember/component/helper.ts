@@ -1,5 +1,5 @@
 export {
-  default as default,
+  default,
   helper,
   type FunctionBasedHelper,
   type FunctionBasedHelperInstance,
