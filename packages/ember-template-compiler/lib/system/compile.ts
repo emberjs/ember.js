@@ -4,7 +4,7 @@
 import type { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
 import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
-import { template } from '@ember/-internals/glimmer';
+import { templateFactory as template } from '@glimmer/opcode-compiler';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.

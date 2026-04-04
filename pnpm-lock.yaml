@@ -2521,6 +2521,9 @@ importers:
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../@glimmer/manager
+      '@glimmer/opcode-compiler':
+        specifier: workspace:*
+        version: link:../@glimmer/opcode-compiler
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../@glimmer/runtime

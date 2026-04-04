@@ -61,8 +61,6 @@
   @public
 */
 
-export { renderSettled } from '@ember/-internals/glimmer';
-
 /**
  * Render a component into a DOM element.
  *
@@ -79,4 +77,8 @@ export { renderSettled } from '@ember/-internals/glimmer';
  * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive as long as it is an object or object-like
  * @public
  */
-export { renderComponent } from '@ember/-internals/glimmer';
+
+// Import directly from the source module (not the barrel) so that
+// bundlers produce a separate chunk without the classic Renderer's
+// heavy dependencies (routing, @ember/object, etc.)
+export { renderComponent, renderSettled } from '@ember/-internals/glimmer/lib/render-component';

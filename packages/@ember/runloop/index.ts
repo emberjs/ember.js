@@ -1,6 +1,5 @@
 import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
-import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
@@ -33,6 +32,15 @@ type RemainingParams<PartialParams extends any[], All extends any[]> = PartialPa
     ? All
     : never;
 
+// Lazy observer flushing — no-op until metal registers its implementation.
+// This avoids eagerly importing @ember/-internals/metal (which pulls in the
+// entire observer/meta/object system) for apps that don't use classic observers.
+let _flushAsyncObservers: (scheduleFn: typeof schedule) => void = () => {};
+
+export function registerFlushAsyncObservers(fn: (scheduleFn: typeof schedule) => void): void {
+  _flushAsyncObservers = fn;
+}
+
 let currentRunLoop: DeferredActionQueues | null = null;
 export function _getCurrentRunLoop() {
   return currentRunLoop;
@@ -45,12 +53,12 @@ function onBegin(current: DeferredActionQueues) {
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  flushAsyncObservers(schedule);
+  _flushAsyncObservers(schedule);
 }
 
 function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    flushAsyncObservers(schedule);
+    _flushAsyncObservers(schedule);
   }
 
   next();

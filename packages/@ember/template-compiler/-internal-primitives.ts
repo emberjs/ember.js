@@ -1,1 +1,6 @@
-export * from './lib/-internal/primitives';
+export {
+  RESOLUTION_MODE_TRANSFORMS,
+  STRICT_MODE_TRANSFORMS,
+  STRICT_MODE_KEYWORDS,
+  INTERNAL_PLUGINS,
+} from './lib/-internal/primitives';

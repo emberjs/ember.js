@@ -15,4 +15,4 @@ export const setModifierManager: <T extends object>(
 export type { ModifierManager };
 
 export type { ModifierCapabilities } from '@glimmer/interfaces';
-export { modifierCapabilities as capabilities } from '@ember/-internals/glimmer';
+export { modifierCapabilities as capabilities } from '@ember/-internals/glimmer/lib/utils/managers';

@@ -5,6 +5,7 @@
   "keywords": [
     "ember-addon"
   ],
+  "sideEffects": false,
   "exports": {
     "./*": {
       "development": "./dist/dev/packages/*",

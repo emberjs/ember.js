@@ -1,96 +1,41 @@
-import { ENV } from '@ember/-internals/environment';
+/**
+ * Full Ember-specific global context registration.
+ *
+ * This module registers the heavy Ember implementations (metal get/set,
+ * EmberArray iteration, proxy truthiness, HTMLSafe style checking, etc.)
+ * into the lightweight global context set up by glimmer-global-context.ts.
+ *
+ * It is imported by setup-registry.ts (full Ember app boot path) but NOT
+ * by the standalone renderComponent path, enabling tree-shaking of metal,
+ * @ember/array, and @ember/-internals/views for apps that only use
+ * renderComponent.
+ */
 import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
-import type { InternalOwner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
-import { assert, deprecate, warn } from '@ember/debug';
-import type { DeprecationOptions } from '@ember/debug';
-import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import setGlobalContext from '@glimmer/global-context';
-import type { EnvironmentDelegate } from '@glimmer/runtime';
 import { debug } from '@glimmer/validator';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
 
-///////////
+import { flushAsyncObservers } from '@ember/-internals/metal';
+import { registerFlushAsyncObservers } from '@ember/runloop';
+import { registerEmberGlobalContextImplementations } from './glimmer-global-context';
 
-// Setup global context
+registerFlushAsyncObservers(flushAsyncObservers);
 
-setGlobalContext({
-  FEATURES: {
-    DEFAULT_HELPER_MANAGER: true,
-  },
-
-  scheduleRevalidate() {
-    _backburner.ensureInstance();
-  },
-
+registerEmberGlobalContextImplementations({
+  _getProp,
+  _setProp,
+  get,
+  set,
   toBool,
   toIterator,
-
-  getProp: _getProp,
-  setProp: _setProp,
-  getPath: get,
-  setPath: set,
-
-  scheduleDestroy(destroyable, destructor) {
-    schedule('actions', null, destructor, destroyable);
-  },
-
-  scheduleDestroyed(finalizeDestructor) {
-    schedule('destroy', null, finalizeDestructor);
-  },
-
-  warnIfStyleNotTrusted(value: unknown) {
-    warn(
-      constructStyleDeprecationMessage(String(value)),
-      (() => {
-        if (value === null || value === undefined || isHTMLSafe(value)) {
-          return true;
-        }
-        return false;
-      })(),
-      { id: 'ember-htmlbars.style-xss-warning' }
-    );
-  },
-
-  assert(test: unknown, msg: string, options?: { id: string }) {
-    if (DEBUG) {
-      let id = options?.id;
-
-      let override = VM_ASSERTION_OVERRIDES.filter((o) => o.id === id)[0];
-
-      assert(override?.message ?? msg, test);
-    }
-  },
-
-  deprecate(msg: string, test: unknown, options: { id: string }) {
-    if (DEBUG) {
-      let { id } = options;
-
-      if (id === 'argument-less-helper-paren-less-invocation') {
-        throw new Error(
-          `A resolved helper cannot be passed as a named argument as the syntax is ` +
-            `ambiguously a pass-by-reference or invocation. Use the ` +
-            `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
-            `invoke the helper with parens: \`{{(fooHelper)}}\`.`
-        );
-      }
-
-      let override = VM_DEPRECATION_OVERRIDES.filter((o) => o.id === id)[0];
-
-      if (!override) throw new Error(`deprecation override for ${id} not found`);
-
-      // allow deprecations to be disabled in the VM_DEPRECATION_OVERRIDES array below
-      if (!override.disabled) {
-        deprecate(override.message ?? msg, Boolean(test), override);
-      }
-    }
-  },
+  isHTMLSafe,
 });
 
+// Override the debug tracking message with the richer getDebugName
 if (DEBUG) {
   debug?.setTrackingTransactionEnv?.({
     debugMessage(obj, keyName) {
@@ -103,38 +48,5 @@ if (DEBUG) {
   });
 }
 
-///////////
-
-// VM Assertion/Deprecation overrides
-
-const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
-  disabled?: boolean;
-  message?: string;
-})[] = [
-  {
-    id: 'setting-on-hash',
-    until: '4.4.0',
-    for: 'ember-source',
-    since: {
-      available: '3.28.0',
-      enabled: '3.28.0',
-    },
-  },
-];
-
-const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
-
-///////////
-
-// Define environment delegate
-
-export class EmberEnvironmentDelegate implements EnvironmentDelegate {
-  public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
-
-  constructor(
-    public owner: InternalOwner,
-    public isInteractive: boolean
-  ) {}
-
-  onTransactionCommit(): void {}
-}
+// Re-export warnIfStyleNotTrusted using the full implementation
+export { constructStyleDeprecationMessage };

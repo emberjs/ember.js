@@ -1,4 +1,4 @@
-import { context } from '@ember/-internals/environment';
+import { context } from '@ember/-internals/environment/lib/context';
 import { getName, setName } from '@ember/-internals/utils';
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
