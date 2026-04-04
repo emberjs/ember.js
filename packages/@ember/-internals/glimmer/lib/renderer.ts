@@ -1,9 +1,9 @@
-import { privatize as P } from '@ember/-internals/container';
-import { ENV } from '@ember/-internals/environment';
+import { privatize as P } from '@ember/-internals/container/lib/registry';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils';
-import { getViewElement, getViewId } from '@ember/-internals/views';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
+import { getViewElement, getViewId } from '@ember/-internals/views/lib/system/utils';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
@@ -30,23 +30,19 @@ import type {
 } from '@glimmer/interfaces';
 
 import type { Nullable } from '@ember/-internals/utility-types';
-import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
-import {
-  clientBuilder,
-  createCapturedArgs,
-  curry,
-  EMPTY_POSITIONAL,
-  inTransaction,
-  renderComponent as glimmerRenderComponent,
-  renderMain,
-  runtimeOptions,
-} from '@glimmer/runtime';
-import { dict } from '@glimmer/util';
+import { artifacts } from '@glimmer/program/lib/helpers';
+import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
+import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
+import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
+import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { curry } from '@glimmer/runtime/lib/curried-value';
+import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
+import { renderComponent as glimmerRenderComponent, renderMain } from '@glimmer/runtime/lib/render';
+import { dict } from '@glimmer/util/lib/collections';
 import { unwrapTemplate } from './component-managers/unwrap-template';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
+import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
@@ -60,7 +56,7 @@ import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 import { makeRouteTemplate } from './component-managers/route-template';
-import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
+import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 

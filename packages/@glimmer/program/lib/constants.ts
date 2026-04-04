@@ -9,19 +9,20 @@ import type {
   ResolvedComponentDefinition,
   Template,
 } from '@glimmer/interfaces';
-import { constants } from '@glimmer/constants';
-import { expect, assert, unwrapTemplate } from '@glimmer/debug-util';
+import { constants } from '@glimmer/constants/lib/immediate';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
+import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
+import { capabilityFlagsFrom, managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
+import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
 import {
-  capabilityFlagsFrom,
-  getComponentTemplate,
   getInternalComponentManager,
   getInternalHelperManager,
   getInternalModifierManager,
-  managerHasCapability,
-} from '@glimmer/manager';
-import { templateFactory } from '@glimmer/opcode-compiler';
-import { enumerate } from '@glimmer/util';
-import { InternalComponentCapabilities } from '@glimmer/vm';
+} from '@glimmer/manager/lib/internal/api';
+import templateFactory from '@glimmer/opcode-compiler/lib/template';
+import { enumerate } from '@glimmer/util/lib/array-utils';
+import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 
 import { DEFAULT_TEMPLATE } from './util/default-template';
 

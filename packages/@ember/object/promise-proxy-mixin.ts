@@ -1,4 +1,6 @@
-import { get, setProperties, computed } from '@ember/object';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
+import computed from '@ember/-internals/metal/lib/computed';
 import Mixin from '@ember/object/mixin';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utility-types';
 import type RSVP from 'rsvp';

@@ -2,24 +2,25 @@
 @module @ember/array
 */
 import { DEBUG } from '@glimmer/env';
-import { PROXY_CONTENT } from '@ember/-internals/metal';
+import { PROXY_CONTENT } from '@ember/-internals/metal/lib/property_get';
+import { objectAt } from '@ember/-internals/metal/lib/object-at';
+import { replaceInNativeArray, replace } from '@ember/-internals/metal/lib/array';
+import computed from '@ember/-internals/metal/lib/computed';
 import {
-  objectAt,
-  replaceInNativeArray,
-  replace,
-  computed,
   beginPropertyChanges,
   endPropertyChanges,
-} from '@ember/-internals/metal';
-import { get, set } from '@ember/object';
+} from '@ember/-internals/metal/lib/property_events';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
-import { compare, typeOf } from '@ember/utils';
+import compare from '@ember/utils/lib/compare';
+import typeOf from '@ember/utils/lib/type-of';
 import Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
-import type { ComputedPropertyCallback } from '@ember/-internals/metal';
+import type { ComputedPropertyCallback } from '@ember/-internals/metal/lib/computed';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
 
 export { default as makeArray } from './make';

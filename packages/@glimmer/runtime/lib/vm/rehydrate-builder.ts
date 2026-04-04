@@ -11,9 +11,11 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { Stack } from '@glimmer/util';
-import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants';
-import { castToBrowser, castToSimple, expect, assert } from '@glimmer/debug-util';
+import type { StackImpl as Stack } from '@glimmer/util/lib/collections';
+import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants/lib/dom';
+import { castToBrowser, castToSimple } from '@glimmer/debug-util/lib/simple-cast';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { NewTreeBuilder, RemoteBlock } from './element-builder';

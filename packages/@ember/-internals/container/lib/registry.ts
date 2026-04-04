@@ -7,9 +7,10 @@ import type {
   RegisterOptions,
   Resolver,
 } from '@ember/-internals/owner';
-import { dictionary, intern } from '@ember/-internals/utils';
+import dictionary from '@ember/-internals/utils/lib/dictionary';
+import intern from '@ember/-internals/utils/lib/intern';
 import { assert } from '@ember/debug';
-import type { set } from '@ember/object';
+import type { set } from '@ember/-internals/metal/lib/property_set';
 import { DEBUG } from '@glimmer/env';
 import type { ContainerOptions, LazyInjection } from './container';
 import Container from './container';

@@ -1,7 +1,7 @@
 import type { Program, ProgramConstants, ProgramHeap, StdLibOperand } from '@glimmer/interfaces';
-import { unwrap } from '@glimmer/debug-util';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { MACHINE_MASK } from '@glimmer/vm';
+import { MACHINE_MASK } from '@glimmer/vm/lib/flags';
 
 import { RuntimeOpImpl } from './opcode';
 

@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@glimmer/interfaces';
-import { assert, setLocalDebugType } from '@glimmer/debug-util';
+import assert from '@glimmer/debug-util/lib/assert';
+import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 
 import type { PrecompileOptions } from '../parser/tokenizer-event-handlers';
 import type { SourceLocation, SourcePosition } from './location';

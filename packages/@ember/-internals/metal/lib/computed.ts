@@ -1,21 +1,19 @@
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor } from '@ember/-internals/meta';
-import { toString } from '@ember/-internals/utils';
-import { assert, inspect } from '@ember/debug';
+import type { Meta } from '@ember/-internals/meta/lib/meta';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
+import toString from '@ember/-internals/utils/lib/to-string';
+import inspect from '@ember/debug/lib/inspect';
+import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type { UpdatableTag } from '@glimmer/validator';
+import type { UpdatableTag } from '@glimmer/interfaces';
 import {
   ALLOW_CYCLES,
-  consumeTag,
-  tagFor,
-  tagMetaFor,
-  track,
-  untrack,
-  updateTag,
+  UPDATE_TAG as updateTag,
   validateTag,
   valueForTag,
-} from '@glimmer/validator';
+} from '@glimmer/validator/lib/validators';
+import { consumeTag, track, untrack } from '@glimmer/validator/lib/tracking';
+import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import type {
   ExtendedMethodDecorator,

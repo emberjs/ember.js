@@ -1,5 +1,5 @@
 import type { BlockMetadata, ProgramConstants, ProgramHeap } from '@glimmer/interfaces';
-import { decodeHandle } from '@glimmer/constants';
+import { decodeHandle } from '@glimmer/constants/lib/immediate';
 
 import type { RawDisassembledOperand } from '../debug';
 import type {

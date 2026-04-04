@@ -1,7 +1,8 @@
 import type { Core, Dict } from '@glimmer/interfaces';
-import { setLocalDebugType, unwrap } from '@glimmer/debug-util';
-import { dict } from '@glimmer/util';
-import { SexpOpcodes } from '@glimmer/wire-format';
+import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import { dict } from '@glimmer/util/lib/collections';
+import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 import * as ASTv2 from './v2/api';
 

@@ -1,8 +1,9 @@
 import { isHTMLSafe } from './string';
-import { get, tagForProperty } from '@ember/-internals/metal';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { tagForProperty } from '@ember/-internals/metal/lib/tags';
 import { isArray } from '@ember/array';
-import { isProxy } from '@ember/-internals/utils';
-import { consumeTag } from '@glimmer/validator';
+import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
 
 export default function toBool(predicate: unknown): boolean {
   if (isProxy(predicate)) {

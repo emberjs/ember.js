@@ -1,27 +1,24 @@
 import { assert } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment';
-import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
-import {
-  isElementDescriptor,
-  expandProperties,
-  setClassicDecorator,
-} from '@ember/-internals/metal';
-import { getFactoryFor } from '@ember/-internals/container';
-import { setObservers } from '@ember/-internals/utils';
+import { ENV } from '@ember/-internals/environment/lib/env';
+import type {
+  ElementDescriptor,
+  ExtendedMethodDecorator,
+} from '@ember/-internals/metal/lib/decorator';
+import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal/lib/decorator';
+import expandProperties from '@ember/-internals/metal/lib/expand_properties';
+import { getFactoryFor } from '@ember/-internals/container/lib/container';
+import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
 
-export {
-  notifyPropertyChange,
-  defineProperty,
-  get,
-  set,
-  getProperties,
-  setProperties,
-  computed,
-  trySet,
-} from '@ember/-internals/metal';
+export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
+export { defineProperty } from '@ember/-internals/metal/lib/properties';
+export { get } from '@ember/-internals/metal/lib/property_get';
+export { set, trySet } from '@ember/-internals/metal/lib/property_set';
+export { default as getProperties } from '@ember/-internals/metal/lib/get_properties';
+export { default as setProperties } from '@ember/-internals/metal/lib/set_properties';
+export { default as computed } from '@ember/-internals/metal/lib/computed';
 
 /**
 @module @ember/object

@@ -10,12 +10,13 @@ import type {
   SimpleElement,
   UpdatableTag,
 } from '@glimmer/interfaces';
-import { castToBrowser } from '@glimmer/debug-util';
+import { castToBrowser } from '@glimmer/debug-util/lib/simple-cast';
 import { registerDestructor } from '@glimmer/destroyable';
 import { debugAssert } from '@glimmer/global-context';
-import { valueForRef } from '@glimmer/reference';
-import { dict } from '@glimmer/util';
-import { createUpdatableTag, untrack } from '@glimmer/validator';
+import { valueForRef } from '@glimmer/reference/lib/reference';
+import { dict } from '@glimmer/util/lib/collections';
+import { createUpdatableTag } from '@glimmer/validator/lib/validators';
+import { untrack } from '@glimmer/validator/lib/tracking';
 
 import type { ManagerFactory } from '.';
 

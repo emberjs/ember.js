@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- @fixme */
 import type { Tag } from '@glimmer/interfaces';
-import { asPresentArray, getLast } from '@glimmer/debug-util';
+import { asPresentArray, getLast } from '@glimmer/debug-util/lib/present';
 import { assert } from '@glimmer/global-context';
 
 interface DebugTransaction {

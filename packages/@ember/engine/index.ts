@@ -1,20 +1,21 @@
 export { getEngineParent, setEngineParent } from './parent';
 
-import { canInvoke } from '@ember/-internals/utils';
+import { canInvoke } from '@ember/-internals/utils/lib/invoke';
 import Controller from '@ember/controller';
 import Namespace from '@ember/application/namespace';
-import { Registry } from '@ember/-internals/container';
-import type { ResolverClass } from '@ember/-internals/container';
+import Registry from '@ember/-internals/container/lib/registry';
+import type { ResolverClass } from '@ember/-internals/container/lib/registry';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
-import { get, set } from '@ember/object';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
-import { ComponentLookup } from '@ember/-internals/views';
-import { setupEngineRegistry } from '@ember/-internals/glimmer';
-import { RegistryProxyMixin } from '@ember/-internals/runtime';
+import ComponentLookup from '@ember/-internals/views/lib/component_lookup';
+import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
+import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 
 function props(obj: object) {
   let properties = [];

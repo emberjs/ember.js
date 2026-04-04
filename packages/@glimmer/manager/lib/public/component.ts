@@ -16,9 +16,9 @@ import type {
   Owner,
   VMArguments,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
 import { registerDestructor } from '@glimmer/destroyable';
-import { createConstRef } from '@glimmer/reference';
+import { createConstRef } from '@glimmer/reference/lib/reference';
 
 import type { ManagerFactory } from './api';
 

@@ -2,16 +2,17 @@
 @module @ember/application
 */
 
-import { getOwner as actualGetOwner, setOwner as actualSetOwner } from '@ember/owner';
-import { dictionary } from '@ember/-internals/utils';
-import { ENV } from '@ember/-internals/environment';
-import { hasDOM } from '@ember/-internals/browser-environment';
+import { setOwner as actualSetOwner } from '@ember/-internals/owner';
+import { getOwner as actualGetOwner } from '@ember/owner';
+import dictionary from '@ember/-internals/utils/lib/dictionary';
+import { ENV } from '@ember/-internals/environment/lib/env';
+import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { join, once, run, schedule } from '@ember/runloop';
-import { libraries } from '@ember/-internals/metal';
-import { RSVP } from '@ember/-internals/runtime';
-import { EventDispatcher } from '@ember/-internals/views';
+import libraries from '@ember/-internals/metal/lib/libraries';
+import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
+import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import HashLocation from '@ember/routing/hash-location';
@@ -21,9 +22,10 @@ import { BucketCache } from '@ember/routing/-internals';
 import ApplicationInstance from '@ember/application/instance';
 import Engine, { buildInitializerMethod } from '@ember/engine';
 import type { BootOptions } from '@ember/engine/instance';
-import type { Container, Registry } from '@ember/-internals/container';
-import { privatize as P } from '@ember/-internals/container';
-import { setupApplicationRegistry } from '@ember/-internals/glimmer';
+import type Container from '@ember/-internals/container/lib/container';
+import type Registry from '@ember/-internals/container/lib/registry';
+import { privatize as P } from '@ember/-internals/container/lib/registry';
+import { setupApplicationRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';

@@ -1,1 +1,1 @@
-export { createCache, getValue, isConst } from '@ember/-internals/metal';
+export { createCache, getValue, isConst } from '@glimmer/validator/lib/tracking';

@@ -15,7 +15,8 @@
     "./compat": "./compat.ts",
     "./proxy": "./proxy.ts",
     "./promise-proxy-mixin": "./promise-proxy-mixin.ts",
-    "./observers": "./observers.ts"
+    "./observers": "./observers.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
@@ -28,6 +29,7 @@
     "@ember/utils": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
     "@glimmer/env": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/owner": "workspace:*",
     "@glimmer/util": "workspace:*",

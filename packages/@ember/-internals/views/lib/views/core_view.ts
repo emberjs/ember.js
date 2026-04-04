@@ -1,6 +1,6 @@
-import type { Renderer, View } from '@ember/-internals/glimmer';
-import { inject } from '@ember/-internals/metal';
-import { ActionHandler } from '@ember/-internals/runtime';
+import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
+import inject from '@ember/-internals/metal/lib/injected_property';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';

@@ -5,9 +5,9 @@ import type {
   CapturedNamedArguments,
   CapturedPositionalArguments,
 } from '@glimmer/interfaces';
-import type { Tag } from '@glimmer/validator';
-import { valueForRef } from '@glimmer/reference';
-import { track } from '@glimmer/validator';
+import type { Tag } from '@glimmer/interfaces';
+import { valueForRef } from '@glimmer/reference/lib/reference';
+import { track } from '@glimmer/validator/lib/tracking';
 
 const CUSTOM_TAG_FOR = new WeakMap<object, (obj: object, key: string) => Tag>();
 

@@ -1,11 +1,15 @@
 import { getOwner } from '@ember/-internals/owner'; // This is imported from -internals to avoid circularity
-import { computed, get } from '@ember/object';
+import computed from '@ember/-internals/metal/lib/computed';
+import { get } from '@ember/-internals/metal/lib/property_get';
 import { FrameworkObject } from '@ember/object/-internals';
-import { inject as metalInject } from '@ember/-internals/metal';
-import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
+import metalInject from '@ember/-internals/metal/lib/injected_property';
+import type {
+  DecoratorPropertyDescriptor,
+  ElementDescriptor,
+} from '@ember/-internals/metal/lib/decorator';
 import Mixin from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/routing/-internals';
-import { ActionHandler } from '@ember/-internals/runtime';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';

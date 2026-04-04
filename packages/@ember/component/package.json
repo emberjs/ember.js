@@ -5,7 +5,8 @@
   "exports": {
     ".": "./index.ts",
     "./helper": "./helper.ts",
-    "./template-only": "./template-only.ts"
+    "./template-only": "./template-only.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

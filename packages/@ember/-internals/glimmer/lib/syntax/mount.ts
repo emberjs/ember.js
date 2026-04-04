@@ -6,10 +6,11 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { CapturedArguments, CurriedComponent } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
-import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
+import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
+import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { curry } from '@glimmer/runtime/lib/curried-value';
 import { MountDefinition } from '../component-managers/mount';
 import { internalHelper } from '../helpers/internal-helper';
 

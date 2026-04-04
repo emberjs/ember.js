@@ -6,9 +6,9 @@ import {
   getFirst,
   getLast,
   isPresentArray,
-  assert,
-} from '@glimmer/debug-util';
-import { assign } from '@glimmer/util';
+} from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
+import { assign } from '@glimmer/util/lib/object-utils';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
 

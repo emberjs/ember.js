@@ -2,18 +2,18 @@
 @module @ember/helper
 */
 
-import { setHelperManager as glimmerSetHelperManager, helperCapabilities } from '@glimmer/manager';
-import {
-  invokeHelper as glimmerInvokeHelper,
-  hash as glimmerHash,
-  array as glimmerArray,
-  concat as glimmerConcat,
-  eq as glimmerEq,
-  get as glimmerGet,
-  fn as glimmerFn,
-  neq as glimmerNeq,
-} from '@glimmer/runtime';
-import { element as glimmerElement, uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
+import { setHelperManager as glimmerSetHelperManager } from '@glimmer/manager/lib/public/api';
+import { helperCapabilities } from '@glimmer/manager/lib/public/helper';
+import { invokeHelper as glimmerInvokeHelper } from '@glimmer/runtime/lib/helpers/invoke';
+import { hash as glimmerHash } from '@glimmer/runtime/lib/helpers/hash';
+import { array as glimmerArray } from '@glimmer/runtime/lib/helpers/array';
+import { concat as glimmerConcat } from '@glimmer/runtime/lib/helpers/concat';
+import { eq as glimmerEq } from '@glimmer/runtime/lib/helpers/eq';
+import { get as glimmerGet } from '@glimmer/runtime/lib/helpers/get';
+import { fn as glimmerFn } from '@glimmer/runtime/lib/helpers/fn';
+import { neq as glimmerNeq } from '@glimmer/runtime/lib/helpers/neq';
+import glimmerElement from '@ember/-internals/glimmer/lib/helpers/element';
+import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer/lib/helpers/unique-id';
 import { type Opaque } from '@ember/-internals/utility-types';
 
 /**

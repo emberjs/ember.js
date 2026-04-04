@@ -1,7 +1,7 @@
 import type { CompilableTemplate, Optional, Reference, SimpleNode } from '@glimmer/interfaces';
-import { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants';
-import { REFERENCE } from '@glimmer/reference';
-import { isIndexable } from '@glimmer/util';
+import { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants/lib/brand';
+import { REFERENCE } from '@glimmer/reference/lib/reference';
+import { isIndexable } from '@glimmer/util/lib/collections';
 
 import type { IntoFragment } from './fragment';
 import type { LeafFragment, ValueFragment } from './fragment-type';

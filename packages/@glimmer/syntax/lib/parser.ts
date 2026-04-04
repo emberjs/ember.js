@@ -1,6 +1,8 @@
 import type { Nullable } from '@glimmer/interfaces';
-import { asPresentArray, expect, getLast, assert, unwrap } from '@glimmer/debug-util';
-import { assign } from '@glimmer/util';
+import { asPresentArray, getLast } from '@glimmer/debug-util/lib/present';
+import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
+import { assign } from '@glimmer/util/lib/object-utils';
 import {
   EntityParser,
   EventedTokenizer,
