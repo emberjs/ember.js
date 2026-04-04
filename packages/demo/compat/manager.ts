@@ -2941,15 +2941,31 @@ function argsForInternalManager(args: any, fw: any) {
     const getter = desc?.get || (() => args[arg]);
     named[arg] = {
       get value() {
-        return getter();
+        const v = getter();
+        // If the getter returns a mut cell, unwrap it to get the plain value
+        if (v && v.__isMutCell) return v.value;
+        if (v && v.__isReadonly) return v.__readonlyValue;
+        return v;
       },
       set value(v: any) {
+        // Check if the getter returns a mut cell — use its update method
+        const current = getter();
+        if (current && current.__isMutCell) {
+          current.update(v);
+          return;
+        }
         // Allow setting via .value = for internal use
         if (desc?.set) {
           desc.set(v);
         }
       },
       update(v: any) {
+        // Check if the getter returns a mut cell — use its update method
+        const current = getter();
+        if (current && current.__isMutCell) {
+          current.update(v);
+          return;
+        }
         // Support updateRef() protocol for two-way binding
         if (desc?.set) {
           desc.set(v);
@@ -2993,6 +3009,40 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
       .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
       .toLowerCase();
     factory = owner.factoryFor(`component:${kebabName}`);
+  }
+
+  // GXT fix: When both a class-based component and a template-only component are
+  // registered (e.g., via registerComponent in tests), the resolver may return the
+  // template-only one since it's checked first. If the factory is template-only,
+  // also check the registry's direct registrations for a class-based component.
+  if (factory?.class) {
+    const cls = factory.class;
+    const isTO = cls.constructor?.name === 'TemplateOnlyComponentDefinition' ||
+      (cls as any).__templateOnly === true ||
+      (cls as any).moduleName === '@glimmer/component/template-only';
+    if (isTO) {
+      // Check if there's a class-based component in the direct registrations.
+      // In test harness's registerComponent(), both owner.register (class-based)
+      // and resolver.add (template-only) are called. The resolver takes precedence
+      // in Ember's registry.resolve(), hiding the class-based registration.
+      // We fix this by overriding the resolve cache with the class-based class.
+      const registry = (owner as any).__registry__ || (owner as any).__container__?.registry;
+      const regKey = `component:${normalizedName}`;
+      const directReg = registry?.registrations?.[regKey];
+      if (directReg && directReg !== cls) {
+        // Override the resolve cache with the class-based component
+        if (registry?._resolveCache) {
+          registry._resolveCache[regKey] = directReg;
+        }
+        // Clear the factory manager cache so factoryFor picks up the new resolve
+        const container = (owner as any).__container__;
+        if (container?.factoryManagerCache) {
+          delete container.factoryManagerCache[regKey];
+        }
+        // Re-resolve with the class-based component
+        factory = owner.factoryFor(regKey);
+      }
+    }
   }
 
   // Template can be:

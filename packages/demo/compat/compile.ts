@@ -1948,6 +1948,80 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     }
     return resolvedObj[resolvedKey];
   },
+  // __mutGet: Two-way binding for (mut (get obj key)) pattern.
+  // Creates a mut cell that reads from obj[key] and writes to obj[key].
+  // This is used when the template transform converts (mut (get obj key))
+  // into (__mutGet obj key).
+  '__mutGet': (obj: any, key: any) => {
+    const capturedCtx = (globalThis as any).__gxtMutContext;
+    const resolveObj = () => typeof obj === 'function' ? obj() : obj;
+    const resolveKey = () => typeof key === 'function' ? key() : key;
+    const getValue = () => {
+      const o = resolveObj();
+      const k = resolveKey();
+      if (o == null) return undefined;
+      if (typeof k === 'string' && k.includes('.')) {
+        let current = o;
+        for (const part of k.split('.')) {
+          if (current == null) return undefined;
+          current = current[part];
+        }
+        return current;
+      }
+      return o[k];
+    };
+    const mutCell = function mutGetCell(newValue?: any) {
+      if (arguments.length === 0) {
+        return getValue();
+      }
+      // Write mode: set the property at the dynamic key path
+      const o = resolveObj();
+      const k = resolveKey();
+      if (o == null) return newValue;
+      if (typeof k === 'string' && k.includes('.')) {
+        const parts = k.split('.');
+        let target = o;
+        for (let i = 0; i < parts.length - 1; i++) {
+          target = target[parts[i]!];
+          if (target == null) return newValue;
+        }
+        const lastProp = parts[parts.length - 1]!;
+        if (typeof target.set === 'function') {
+          target.set(lastProp, newValue);
+        } else {
+          target[lastProp] = newValue;
+        }
+      } else {
+        if (typeof o.set === 'function') {
+          o.set(k, newValue);
+        } else {
+          o[k] = newValue;
+        }
+      }
+      // Trigger re-render
+      const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+      if (triggerReRender && o != null) {
+        const rk = typeof k === 'string' && k.includes('.') ? k.split('.')[0]! : k;
+        triggerReRender(o, rk);
+      }
+      if (capturedCtx && typeof capturedCtx.notifyPropertyChange === 'function') {
+        const rk = typeof k === 'string' && k.includes('.') ? k.split('.')[0]! : k;
+        capturedCtx.notifyPropertyChange(rk);
+      }
+      return newValue;
+    };
+    (mutCell as any).__isMutCell = true;
+    Object.defineProperty(mutCell, 'value', {
+      get() { return getValue(); },
+      enumerable: true,
+    });
+    (mutCell as any).update = function(newValue: any) {
+      return mutCell(newValue);
+    };
+    mutCell.toString = () => String(getValue());
+    mutCell.valueOf = () => getValue();
+    return mutCell;
+  },
   // helper: The (helper) keyword resolves a helper by name and returns a curried helper reference.
   // {{helper "hello-world"}} renders the result of invoking the helper (via toString/valueOf).
   // {{helper (helper "hello-world") "wow"}} passes extra args to the curried helper.
@@ -2193,8 +2267,15 @@ function unwrapReactiveValue(value: any): any {
     }
   }
 
-  // Check if it's a function that should be evaluated (reactive getter)
-  if (typeof value === 'function') {
+  // Check if it's a GXT reactive getter function that should be evaluated.
+  // Only call functions that are GXT-internal reactive wrappers — NOT plain
+  // user functions like arrow functions yielded as block params (e.g.,
+  // {{yield this.updatePerson}}). GXT reactive getters are typically created
+  // by $_slot and have no prototype (arrow-style) and no user-facing markers.
+  // However, yielded user functions also lack prototypes. The safest check:
+  // only unwrap functions that have GXT-specific markers like __isReactiveGetter
+  // or that come from formula.fn. Plain functions (user callbacks) are returned as-is.
+  if (typeof value === 'function' && (value as any).__isReactiveGetter) {
     try {
       return value();
     } catch {
@@ -2898,7 +2979,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // Check if the user is trying to override a built-in helper.
         // Built-in helpers (array, hash, concat, fn, etc.) cannot be overridden.
         if (helperFactory || helperLookup) {
-          const BUILTIN_HELPERS = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound'];
+          const BUILTIN_HELPERS = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound', '__mutGet'];
           if (BUILTIN_HELPERS.includes(kebabName)) {
             emberAssert(
               `You attempted to overwrite the built-in helper "${kebabName}" which is not allowed. Please rename the helper.`,
@@ -3341,12 +3422,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
             const slotFn = (slotCtx: any, ...params: any[]) => {
               const unwrappedParams = params.map(param => {
+                // Unwrap GXT reactive formulas (objects with fn/isConst)
                 if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
                   try { return param.fn(); } catch { return param; }
                 }
-                if (typeof param === 'function') {
-                  try { return param(); } catch { return param; }
-                }
+                // Do NOT call plain functions here — they may be user functions
+                // yielded as block params (e.g., {{yield this.updatePerson}}).
+                // Calling them would invoke the function instead of passing it
+                // as a value. GXT reactive getters are formula objects (handled
+                // above), not plain functions.
                 return param;
               });
 
@@ -4718,6 +4802,27 @@ function transformBlockParams(templateString: string): { transformed: string; bl
           return `<this.${bpVar}${transformedArgs} />`;
         });
       }
+
+      // General catch-all: replace remaining bare block param references inside
+      // mustache expressions (e.g., {{on "click" update}} → {{on "click" this.$_bp1}}).
+      // This handles block params used as arguments to helpers/modifiers that
+      // weren't caught by the more specific patterns above.
+      // Match param as a bare word inside {{ }} that is NOT at the start of the expression
+      // (the start position is the helper/modifier name, not a block param).
+      // Also replace in subexpressions: (helper param) → (helper this.$_bp0)
+      {
+        // Replace inside {{...}} expressions: param after a space (as argument)
+        const helperArgPattern = new RegExp(
+          `(\\{\\{[^}]*\\s)\\b${param}\\b(?=[\\s}])`, 'g'
+        );
+        transformedContent = transformedContent.replace(helperArgPattern, `$1this.${bpVar}`);
+
+        // Replace inside subexpressions: (helper param) → (helper this.$_bp0)
+        const subexprArgPattern = new RegExp(
+          `(\\([^)]*\\s)\\b${param}\\b(?=[\\s)])`, 'g'
+        );
+        transformedContent = transformedContent.replace(subexprArgPattern, `$1this.${bpVar}`);
+      }
     }
 
     // Reconstruct the element without the `as |...|` part
@@ -5420,6 +5525,21 @@ export function precompileTemplate(templateString: string, options?: {
     );
   }
 
+  // Transform (mut (get obj key)) to (__mutGet obj key)
+  // This creates a two-way binding for dynamic property access.
+  // Must come BEFORE the simple (mut this.prop) transform to avoid conflicts.
+  // Handles both:
+  //   {{mut (get obj key)}} — mustache expression
+  //   (mut (get obj key))  — subexpression
+  transformedTemplate = transformedTemplate.replace(
+    /\{\{mut\s+\(get\s+([^)]+)\)\s*\}\}/g,
+    (_match, getArgs) => `{{__mutGet ${getArgs}}}`
+  );
+  transformedTemplate = transformedTemplate.replace(
+    /\(mut\s+\(get\s+([^)]+)\)\)/g,
+    (_match, getArgs) => `(__mutGet ${getArgs})`
+  );
+
   // Transform (mut this.prop) / (mut @arg) to pass the property path as a second arg
   // so the mut helper can create a proper setter function.
   // (mut this.foo) → (mut this.foo "this.foo")
@@ -5932,6 +6052,14 @@ export function precompileTemplate(templateString: string, options?: {
               new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
               `(function(){return ${jsName}(...Array.from(arguments).map(function(a){return typeof a==='function'?a():a;}))})(`
             );
+          } else if (sym === '$__fn') {
+            // fn receives (fn, ...args) where fn and args may be getters.
+            // Resolve getters before calling the scope function, and mark the
+            // result with __isFnHelper so it's not mistakenly unwrapped as a getter.
+            modifiedCode = modifiedCode.replace(
+              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
+              `(function(){var __args=Array.from(arguments).map(function(a){return typeof a==='function'&&!a.prototype&&!a.__isMutCell?a():a;});var __r=${jsName}(...__args);if(typeof __r==='function')__r.__isFnHelper=true;return __r;})(`
+            );
           } else {
             modifiedCode = modifiedCode.replace(
               new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
@@ -6196,7 +6324,7 @@ export function precompileTemplate(templateString: string, options?: {
       const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
-        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'gxtEntriesOf'];
+        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'gxtEntriesOf', '__mutGet'];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
           const jsName = name.replace(/-/g, '_');
@@ -6957,7 +7085,7 @@ export function precompileTemplate(templateString: string, options?: {
           {
             const _owner = (globalThis as any).owner;
             if (_owner && !_owner.isDestroyed) {
-              const BUILTIN_HELPER_NAMES = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound'];
+              const BUILTIN_HELPER_NAMES = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound', '__mutGet'];
               for (const builtinName of BUILTIN_HELPER_NAMES) {
                 let hasOverride = false;
                 try { hasOverride = !!_owner.factoryFor?.(`helper:${builtinName}`); } catch { /* ignore */ }
@@ -7128,14 +7256,21 @@ export function precompileTemplate(templateString: string, options?: {
           try {
             result = compilationResult.templateFn.call(renderContext);
           } finally {
+            // Stop blocking tracked setters from calling __gxtTriggerReRender,
+            // but KEEP isRendering=true so that GXT formulas created during
+            // itemToNode (e.g., gxtEffect for reactive text nodes) properly
+            // track cell dependencies and register in GXT's relatedTags map.
+            // Without this, formulas created outside isRendering=true won't
+            // re-evaluate when their tracked dependencies change.
             (globalThis as any).__gxtCurrentlyRendering = false;
-            _setRendering(false);
             // Pop slots from stack
             slotsStack.pop();
           }
 
-          // Handle the result
+          // Handle the result — keep isRendering=true so gxtEffect calls
+          // inside itemToNode create properly-tracked formulas.
           const nodes: Node[] = [];
+          try {
           if (Array.isArray(result)) {
             for (const item of result) {
               const node = itemToNode(item);
@@ -7166,6 +7301,9 @@ export function precompileTemplate(templateString: string, options?: {
                 parentElement.appendChild(node);
               }
             }
+          }
+          } finally {
+            _setRendering(false);
           }
 
           // Restore previous global values

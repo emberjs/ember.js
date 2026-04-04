@@ -267,6 +267,18 @@ function createEmberMaybeHelper(original: Function) {
         const namedObj = unwrapHash(hash);
         return helper(namedObj);
       }
+      // For '__mutGet' helper, pass obj and key with context set
+      if (name === '__mutGet' && Array.isArray(args) && args.length > 0) {
+        const ctx = maybeCtx || hashOrCtx;
+        const prevCtx = g.__gxtMutContext;
+        g.__gxtMutContext = ctx;
+        try {
+          // Pass raw getters so __mutGet can re-evaluate them reactively
+          return helper(args[0], args[1]);
+        } finally {
+          g.__gxtMutContext = prevCtx;
+        }
+      }
       // For 'mut' helper, pass the raw getter + path, and set context
       if (name === 'mut' && Array.isArray(args) && args.length > 0) {
         // args[0] = getter for the value, args[1] = path string (added by template transform)
@@ -826,12 +838,12 @@ function createEmberTag(original: Function) {
 
             const slotFn = (slotCtx: any, ...params: any[]) => {
               const unwrappedParams = params.map(param => {
+                // Unwrap GXT reactive formulas (objects with fn/isConst)
                 if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
                   try { return param.fn(); } catch { return param; }
                 }
-                if (typeof param === 'function') {
-                  try { return param(); } catch { return param; }
-                }
+                // Do NOT call plain functions — they may be user functions
+                // yielded as block params (e.g., {{yield this.updatePerson}}).
                 return param;
               });
 

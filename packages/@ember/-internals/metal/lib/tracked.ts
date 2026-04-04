@@ -178,6 +178,39 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // invisible to our compat createCache's tag-based invalidation system.
     consumeTag(tagFor(this, key as string));
 
+    // In GXT mode, synchronize the cellFor cell for this property.
+    // trackedData from @lifeart/gxt/glimmer-compatibility and cellFor from
+    // @lifeart/gxt may use different internal cell instances in Vite dev mode
+    // (module duplication). GXT's $_tag formulas only track cellFor cells.
+    // By reading from cellFor here, we ensure the formula's tracker captures
+    // this cell as a dependency. The setter's cellFor.update() call ensures
+    // the cell is dirtied when the property changes.
+    if ((globalThis as any).__GXT_MODE__) {
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (typeof _cellFor === 'function') {
+        try {
+          // Use skipDefine=true to avoid replacing the tracked getter/setter.
+          // This creates the cell in cellFor's storage without installing
+          // a getter/setter on the property.
+          const cell = _cellFor(this, key, /* skipDefine */ true);
+          if (cell) {
+            // Silently sync the cell value without triggering dirty marking.
+            // We set _value directly to avoid adding to tagsToRevalidate
+            // during render, which would cause infinite re-render loops.
+            if (cell._value !== value) {
+              cell._value = value;
+            }
+            // Read cell.value to add this cell to the current GXT tracker.
+            // This is the key step: the formula's tracker now knows about
+            // this cell, so when the setter's cellFor.update() dirties it,
+            // syncDom will re-evaluate the formula.
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            cell.value;
+          }
+        } catch { /* ignore */ }
+      }
+    }
+
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
     if (Array.isArray(value) || isEmberArray(value)) {
@@ -189,6 +222,20 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
 
   function set(this: object, newValue: unknown): void {
     setter(this, newValue);
+    // Directly update the GXT cell for this property using cellFor.
+    // trackedData.setter (above) updates the cell via GXT's native validator,
+    // but the cell may not be in the same tracking system as the formulas
+    // created by gxtEffect in the compat layer. Using cellFor ensures the
+    // cell that GXT effects track is also dirtied.
+    if ((globalThis as any).__GXT_MODE__) {
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (typeof _cellFor === 'function') {
+        try {
+          const cell = _cellFor(this, key, /* skipDefine */ true);
+          if (cell) cell.update(newValue);
+        } catch { /* ignore */ }
+      }
+    }
     dirtyTagFor(this, SELF_TAG);
     // Also dirty the property-specific tag so observers watching 'key' or
     // 'key.[]' detect the change via getChainTagsForKey.
