@@ -19,6 +19,7 @@
     "./glimmer/lib/dom": "./glimmer/lib/dom.ts",
     "./glimmer/lib/helper": "./glimmer/lib/helper.ts",
     "./glimmer/lib/helpers/unique-id": "./glimmer/lib/helpers/unique-id.ts",
+    "./glimmer/lib/render-component": "./glimmer/lib/render-component.ts",
     "./glimmer/lib/renderer": "./glimmer/lib/renderer.ts",
     "./glimmer/lib/setup-registry": "./glimmer/lib/setup-registry.ts",
     "./glimmer/lib/template": "./glimmer/lib/template.ts",
