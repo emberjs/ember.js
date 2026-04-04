@@ -5690,6 +5690,14 @@ export function precompileTemplate(templateString: string, options?: {
     }
   }
 
+  // Add unique_id to scope bindings if the template references it.
+  // Without this, GXT compiles {{unique_id}} as this.unique_id (property on context)
+  // instead of the injected local variable. We inject the actual value later via
+  // helperInjections, but GXT needs to know it's a scope variable at compile time.
+  if (/\bunique_id\b/.test(transformedTemplate)) {
+    scopeBindings.add('unique_id');
+  }
+
   // Compile using GXT runtime compiler
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
@@ -6198,7 +6206,37 @@ export function precompileTemplate(templateString: string, options?: {
           // Match word boundary to avoid false positives (e.g. "getElement")
           const regex = new RegExp(`\\b${jsName}\\b`);
           if (regex.test(modifiedCode)) {
-            helperInjections.push(`const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`);
+            if (name === 'unique-id') {
+              // unique-id needs per-component-instance caching so that:
+              // 1. Each {{unique-id}} invocation returns a UNIQUE value
+              // 2. The SAME invocation returns the SAME value across re-renders
+              // 3. {{#let (unique-id) as |id|}} produces a stable id
+              //
+              // GXT compiles #let block params as getters: let id = () => unique_id();
+              // Each access to `id` calls unique_id() again. To make ids stable,
+              // we count unique_id() call sites in the compiled code, pre-generate
+              // that many IDs (cached per component instance), and replace each
+              // unique_id() call with a lookup into the pre-generated array.
+              //
+              // Count unique_id() calls in modifiedCode
+              const uidCallCount = (modifiedCode.match(/\bunique_id\(\)/g) || []).length;
+              if (uidCallCount > 0) {
+                // Replace each unique_id() call with _uid[N] where N is the call index
+                let uidIdx = 0;
+                modifiedCode = modifiedCode.replace(/\bunique_id\(\)/g, () => `_uid[${uidIdx++}]`);
+                // Mark that we need the _uid array in the outer scope.
+                // The array is generated ONCE when the template factory function
+                // is first evaluated, so IDs remain stable across re-renders.
+                // We set a flag here and inject the code into the outer scope
+                // of templateFnCode (before `return function()`).
+                (compilationResult as any).__uidCount = uidCallCount;
+              } else {
+                // unique_id referenced but not called — inject as plain function
+                helperInjections.push(`const unique_id = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];`);
+              }
+            } else {
+              helperInjections.push(`const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`);
+            }
           }
         }
       }
@@ -6224,9 +6262,19 @@ export function precompileTemplate(templateString: string, options?: {
           );
         }
       }
+      // Generate unique-id pre-computed array in outer scope if needed.
+      // This runs ONCE per template compilation (not per render), so IDs
+      // remain stable across re-renders of the same component instance.
+      const uidCount = (compilationResult as any).__uidCount || 0;
+      const uidOuterScope = uidCount > 0
+        ? `var _uid_fn = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];` +
+          `var _uid = []; for (var _uid_i = 0; _uid_i < ${uidCount}; _uid_i++) _uid.push(_uid_fn());`
+        : '';
+
       const templateFnCode = `
         "use strict";
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
+        ${uidOuterScope}
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
           ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}

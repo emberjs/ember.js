@@ -3771,7 +3771,80 @@ const $_MANAGERS = {
         const unwrapVal = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
         const isGxtInternal = (k: string) => k.startsWith('$_') || k === 'hash';
 
-        // Resolve the helper to a callable function.
+        // For string-based helpers, check if the definition has a delegate manager.
+        // If so, create the helper bucket ONCE and reuse it across re-renders,
+        // updating reactive args in place. This ensures:
+        // 1. Helper instances are stable (tracked property mutations trigger re-renders)
+        // 2. getValue is called on the same bucket (count increments correctly)
+        if (owner && !owner.isDestroyed && !owner.isDestroying) {
+          const factory = owner.factoryFor?.(`helper:${helper}`);
+          if (factory) {
+            const definition = factory.class || factory;
+            const internalManager = getInternalHelperManager(definition);
+            if (internalManager && typeof internalManager.getDelegateFor === 'function') {
+              const delegate = internalManager.getDelegateFor(owner);
+              // Validate that capabilities were created via helperCapabilities()
+              if (delegate && delegate.capabilities && !FROM_CAPABILITIES.has(delegate.capabilities)) {
+                throw new Error(
+                  `Custom helper managers must have a \`capabilities\` property ` +
+                  `that is the result of calling the \`capabilities('3.23')\` ` +
+                  `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
+                  `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
+                );
+              }
+              if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+                const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
+                const curriedNamed = hash && typeof hash === 'object'
+                  ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+                  : {};
+
+                // Create a reactive args object that the helper instance holds a reference to.
+                // On re-render we update its positional/named in place so getValue sees fresh data.
+                const reactiveArgs: { positional: any[]; named: Record<string, any> } = {
+                  positional: [...curriedPositionals],
+                  named: { ...(curriedNamed as Record<string, any>) },
+                };
+
+                // Create the helper bucket ONCE
+                const bucket = delegate.createHelper(definition, reactiveArgs);
+
+                // If the delegate has a destroyable, register it for cleanup
+                if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
+                  const destroyable = delegate.getDestroyable(bucket);
+                  if (destroyable) {
+                    (bucket as any).__destroyable = destroyable;
+                  }
+                }
+
+                const curried = function __emberCurriedHelper(additionalParams?: any[], additionalHash?: any) {
+                  // Update the reactive args object in place
+                  const newPositional = [
+                    ...curriedPositionals,
+                    ...(Array.isArray(additionalParams) ? additionalParams.map(unwrapVal) : [])
+                  ];
+                  const newNamed = {
+                    ...(curriedNamed as Record<string, any>),
+                    ...(additionalHash && typeof additionalHash === 'object'
+                      ? Object.fromEntries(Object.entries(additionalHash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
+                      : {}),
+                  };
+                  // Update in place so the bucket's reference to args sees changes
+                  reactiveArgs.positional = newPositional;
+                  reactiveArgs.named = newNamed;
+                  return delegate.getValue(bucket);
+                };
+                (curried as any).__isEmberCurriedHelper = true;
+                (curried as any).__helperBucket = bucket;
+                (curried as any).__helperDelegate = delegate;
+                (curried as any).__reactiveArgs = reactiveArgs;
+                return curried;
+              }
+            }
+          }
+        }
+
+        // Fallback: resolve via _resolveEmberHelper for built-in helpers and
+        // helpers without a delegate manager
         const resolvedFn = _resolveEmberHelper(helper, owner);
         if (resolvedFn) {
           // Unwrap curried positional args from params
