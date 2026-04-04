@@ -23,7 +23,7 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { hasInternalComponentManager } from '@glimmer/manager';
-import type { RenderState } from '@ember/-internals/glimmer';
+import type { RenderState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import type { TemplateFactory } from '@glimmer/interfaces';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';

@@ -5,11 +5,13 @@
 
 export { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 
-export { Component as default, Input, Textarea } from '@ember/-internals/glimmer';
+export { default as default } from '@ember/-internals/glimmer/lib/component';
+export { default as Input } from '@ember/-internals/glimmer/lib/components/input';
+export { default as Textarea } from '@ember/-internals/glimmer/lib/components/textarea';
 export {
   componentCapabilities as capabilities,
   setComponentManager,
-} from '@ember/-internals/glimmer';
+} from '@ember/-internals/glimmer/lib/utils/managers';
 
 /**
  * Assigns a TemplateFactory to a component class.

@@ -1,2 +1,2 @@
-export * from './lib/context';
-export * from './lib/env';
+export { context, getLookup, setLookup, type GlobalContext } from './lib/context';
+export { ENV, getENV } from './lib/env';

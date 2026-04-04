@@ -1,5 +1,5 @@
 import type { DeprecationOptions } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';
 import { dasherize } from '../string/index';

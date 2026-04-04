@@ -4,7 +4,7 @@
 
 import { getOwner as actualGetOwner, setOwner as actualSetOwner } from '@ember/owner';
 import { dictionary } from '@ember/-internals/utils';
-import { ENV } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -23,7 +23,7 @@ import Engine, { buildInitializerMethod } from '@ember/engine';
 import type { BootOptions } from '@ember/engine/instance';
 import type { Container, Registry } from '@ember/-internals/container';
 import { privatize as P } from '@ember/-internals/container';
-import { setupApplicationRegistry } from '@ember/-internals/glimmer';
+import { setupApplicationRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';

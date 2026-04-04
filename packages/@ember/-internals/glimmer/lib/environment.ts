@@ -1,4 +1,4 @@
-import { ENV } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';

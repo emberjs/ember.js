@@ -14,7 +14,7 @@ import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
+import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type { SimpleElement } from '@simple-dom/interface';
 
 export interface BootOptions {
