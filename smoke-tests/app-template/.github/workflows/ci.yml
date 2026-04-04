@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Install Node
         uses: actions/setup-node@v6
         with:
@@ -35,7 +35,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Install Node
         uses: actions/setup-node@v6
         with:
