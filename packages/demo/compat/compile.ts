@@ -1530,6 +1530,16 @@ queueMicrotask(patchGlobalEachSync);
         try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
+    // PHASE 1b: After gxtSyncDom handled cell-based updates, mark all GXT
+    // roots as clean so the force-rerender morph (Phase 2b) is skipped when
+    // GXT already applied the DOM changes. Without this, gxtLastTagValue is
+    // stale and the morph ALWAYS fires, creating duplicate components/modifiers
+    // on temporary elements. Only update root tag values (NOT hadPendingSync)
+    // so that property-change-driven syncs still trigger the morph when needed.
+    try {
+      const updateRootTags = (globalThis as any).__gxtUpdateRootTagValues;
+      if (typeof updateRootTags === 'function') updateRootTags();
+    } catch { /* ignore */ }
     // PHASE 2a: Snapshot live instances before force-rerender
     try {
       const snapshot = (globalThis as any).__gxtSnapshotLiveInstances;

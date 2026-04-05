@@ -4123,7 +4123,11 @@ const $_MANAGERS = {
       };
 
       // Check for cached modifier instance (update path)
-      const modKey = typeof modifier === 'string' ? modifier : (modifier?.name || String(modifier));
+      // Include the first positional arg in the key to differentiate multiple
+      // {{on}} modifiers on the same element with different event names.
+      const baseName = typeof modifier === 'string' ? modifier : (modifier?.name || String(modifier));
+      const firstArg = props && props.length > 0 ? String(typeof props[0] === 'function' && !props[0].prototype ? props[0]() : props[0]) : '';
+      const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
       const elCache = self._cache.get(element);
       if (elCache) {
         const cached = elCache.get(modKey);
