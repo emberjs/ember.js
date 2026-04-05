@@ -1,8 +1,15 @@
 'use strict';
 
+let cachedChalk;
+async function getChalk() {
+  if (!cachedChalk) {
+    ({ default: cachedChalk } = await import('chalk'));
+  }
+  return cachedChalk;
+}
+
 const fs = require('fs');
 const path = require('path');
-const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
 const SilentError = require('silent-error');
@@ -144,19 +151,19 @@ module.exports = {
     );
   },
 
-  afterInstall: function (options) {
-    updateRouter.call(this, 'add', options);
+  afterInstall: async function (options) {
+    await updateRouter.call(this, 'add', options);
   },
 
-  afterUninstall: function (options) {
-    updateRouter.call(this, 'remove', options);
+  afterUninstall: async function (options) {
+    await updateRouter.call(this, 'remove', options);
   },
   normalizeEntityName: function (entityName) {
     return entityName.replace(/\.js$/, ''); //Prevent generation of ".js.js" files
   },
 };
 
-function updateRouter(action, options) {
+async function updateRouter(action, options) {
   let entity = options.entity;
   let actionColorMap = {
     add: 'green',
@@ -168,6 +175,7 @@ function updateRouter(action, options) {
     writeRoute(action, entity.name, options);
 
     this.ui.writeLine('updating router');
+    const chalk = await getChalk();
     this._writeStatusToUI(chalk[color], action + ' route', entity.name);
   }
 }

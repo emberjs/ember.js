@@ -1,6 +1,13 @@
 'use strict';
 
-const chalk = require('chalk');
+let cachedChalk;
+async function getChalk() {
+  if (!cachedChalk) {
+    ({ default: cachedChalk } = await import('chalk'));
+  }
+  return cachedChalk;
+}
+
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
@@ -99,10 +106,11 @@ module.exports = {
     this.savedLocals = locals;
   },
 
-  afterInstall(options) {
+  async afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
 
     if (options.componentAuthoringFormat === 'loose') {
+      const chalk = await getChalk();
       this.skippedJsFiles.forEach((file) => {
         let mapped = this.mapFile(file, this.savedLocals);
         this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);

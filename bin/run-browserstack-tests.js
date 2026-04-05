@@ -1,19 +1,20 @@
 /* eslint-disable no-console */
 
 const execa = require('execa');
-const chalk = require('chalk');
-
-function run(command, args = []) {
-  console.log(chalk.dim('$ ' + command + ' ' + args.join(' ')));
-
-  let p = execa(command, args);
-  p.stdout.pipe(process.stdout);
-  p.stderr.pipe(process.stderr);
-
-  return p;
-}
 
 (async function () {
+  const { default: chalk } = await import('chalk');
+
+  function run(command, args = []) {
+    console.log(chalk.dim('$ ' + command + ' ' + args.join(' ')));
+
+    let p = execa(command, args);
+    p.stdout.pipe(process.stdout);
+    p.stderr.pipe(process.stderr);
+
+    return p;
+  }
+
   await run('ember', ['browserstack:connect']);
 
   try {
