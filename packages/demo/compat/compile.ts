@@ -5992,6 +5992,38 @@ export function precompileTemplate(templateString: string, options?: {
     scopeBindings.add('unique_id');
   }
 
+  // Strict mode keyword shadowing: when scope provides a value for a GXT built-in
+  // keyword (if, each, let, unless), we rename it in the template before compilation
+  // so GXT doesn't treat it as the built-in. The scope injection will provide the
+  // actual value under the renamed alias.
+  const GXT_KEYWORD_NAMES: Record<string, string> = {
+    'if': 'GxtScopedIf',
+    'unless': 'GxtScopedUnless',
+    'each': 'GxtScopedEach',
+    'let': 'GxtScopedLet',
+  };
+  const _keywordAliases = new Map<string, string>(); // original -> alias
+  if (options?.scopeValues) {
+    for (const [keyword, alias] of Object.entries(GXT_KEYWORD_NAMES)) {
+      if (scopeBindings.has(keyword) && options.scopeValues[keyword] !== undefined) {
+        // Replace {{#keyword}}...{{/keyword}} and {{keyword ...}} in the template
+        // with the alias before GXT compilation
+        const blockOpenRe = new RegExp(`\\{\\{#${keyword}\\b`, 'g');
+        const blockCloseRe = new RegExp(`\\{\\{/${keyword}\\}\\}`, 'g');
+        const inlineRe = new RegExp(`\\{\\{${keyword}\\b(?![-])`, 'g');
+        transformedTemplate = transformedTemplate
+          .replace(blockOpenRe, `{{#${alias}`)
+          .replace(blockCloseRe, `{{/${alias}}}`)
+          .replace(inlineRe, `{{${alias}`);
+        _keywordAliases.set(keyword, alias);
+        // Add alias to bindings so GXT treats it as a scope variable
+        scopeBindings.add(alias);
+        // Map the alias to the same scope value
+        options.scopeValues[alias] = options.scopeValues[keyword];
+      }
+    }
+  }
+
   // Compile using GXT runtime compiler
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
@@ -7033,6 +7065,21 @@ export function precompileTemplate(templateString: string, options?: {
           if ((_RNPROP && _RNPROP in finalResult) || Array.isArray(finalResult) ||
               typeof finalResult.toHTML === 'function') {
             return itemToNode(finalResult, depth + 1);
+          }
+          // Check if this is a component definition (from {{this.Foo}} where Foo is a component).
+          // In Ember, curly syntax {{value}} renders components when the value is a
+          // component definition. Detect by checking COMPONENT_TEMPLATES or manager.
+          const _gMgrs = (globalThis as any).$_MANAGERS;
+          if (_gMgrs?.component?.canHandle?.(finalResult)) {
+            const _handleRes = _gMgrs.component.handle(finalResult, {}, null, null);
+            let _compNode: Node | null = null;
+            if (typeof _handleRes === 'function') {
+              _compNode = _handleRes();
+            } else {
+              _compNode = _handleRes;
+            }
+            if (_compNode instanceof Node) return _compNode;
+            if (_compNode) return itemToNode(_compNode, depth + 1);
           }
           // Plain object (Date, {foo:'bar'}, etc.) — stringify for text rendering.
           // Ember's Glimmer VM stringifies all values in text positions.

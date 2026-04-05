@@ -1325,8 +1325,23 @@ function _renderComponentGxt(
       // No template found — try using the manager system directly
       const managers = (globalThis as any).$_MANAGERS;
       if (managers?.component?.canHandle?.(component)) {
-        // Let the manager system handle it (renders into a fragment, then append)
-        const handleResult = managers.component.handle(component, args || {}, null, { owner });
+        // Build args with reactive getters so GXT tracks dependencies
+        const gxtArgs: any = {};
+        if (args) {
+          for (const key of Object.keys(args)) {
+            const desc = Object.getOwnPropertyDescriptor(args, key);
+            if (desc?.get) {
+              Object.defineProperty(gxtArgs, key, desc);
+            } else {
+              Object.defineProperty(gxtArgs, key, {
+                get: () => (args as any)[key],
+                enumerable: true,
+                configurable: true,
+              });
+            }
+          }
+        }
+        const handleResult = managers.component.handle(component, gxtArgs, null, { owner });
         let nodes: Node | null = null;
         if (typeof handleResult === 'function') {
           nodes = handleResult();
@@ -1362,15 +1377,54 @@ function _renderComponentGxt(
     if (!isTemplateOnly && isClass) {
       // Instantiate the component class
       const ComponentClass = component as any;
-      if (typeof ComponentClass.create === 'function') {
-        instance = ComponentClass.create(
-          Object.assign({}, args || {}, { owner })
-        );
-      } else {
-        try {
-          instance = new ComponentClass(owner, args || {});
-        } catch {
-          instance = new ComponentClass();
+
+      // Check for custom component manager (from setComponentManager)
+      let customManager: any = null;
+      let managerFactory: any = (globalThis as any).COMPONENT_MANAGERS?.get(ComponentClass);
+      if (!managerFactory) {
+        let proto = Object.getPrototypeOf(ComponentClass);
+        while (proto && proto !== Object.prototype && proto !== Function.prototype) {
+          managerFactory = (globalThis as any).COMPONENT_MANAGERS?.get(proto);
+          if (managerFactory) break;
+          proto = Object.getPrototypeOf(proto);
+        }
+      }
+
+      if (typeof managerFactory === 'function') {
+        // Use the custom manager to create the instance
+        customManager = managerFactory(owner);
+        if (customManager && typeof customManager.createComponent === 'function') {
+          // Build named args for the custom manager
+          const namedArgs: Record<string, any> = {};
+          if (args) {
+            for (const [key, value] of Object.entries(args)) {
+              namedArgs[key] = value;
+            }
+          }
+          const capturedArgs = { named: namedArgs, positional: [] };
+          instance = customManager.createComponent(ComponentClass, capturedArgs);
+          // Get the rendering context from the manager
+          if (typeof customManager.getContext === 'function') {
+            const ctx = customManager.getContext(instance);
+            if (ctx && ctx !== instance) {
+              // Use the manager's context as the render context
+              instance = ctx;
+            }
+          }
+        }
+      }
+
+      if (!instance) {
+        if (typeof ComponentClass.create === 'function') {
+          instance = ComponentClass.create(
+            Object.assign({}, args || {}, { owner })
+          );
+        } else {
+          try {
+            instance = new ComponentClass(owner, args || {});
+          } catch {
+            instance = new ComponentClass();
+          }
         }
       }
 
@@ -1385,16 +1439,29 @@ function _renderComponentGxt(
       }
     }
 
-    // Build render context
+    // Build render context with reactive arg getters
     const renderContext: any = instance || {};
     if (args) {
-      // For template-only components, args go directly on the context
+      // For template-only components, args go directly on the context as getters
       if (!instance) {
-        for (const [key, value] of Object.entries(args)) {
-          renderContext[key] = value;
+        for (const key of Object.keys(args)) {
+          Object.defineProperty(renderContext, key, {
+            get: () => (args as any)[key],
+            enumerable: true,
+            configurable: true,
+          });
         }
       }
-      renderContext.args = args;
+      // Set up args object with reactive getters
+      const argsObj: any = {};
+      for (const key of Object.keys(args)) {
+        Object.defineProperty(argsObj, key, {
+          get: () => (args as any)[key],
+          enumerable: true,
+          configurable: true,
+        });
+      }
+      renderContext.args = argsObj;
     }
     renderContext.owner = owner;
 

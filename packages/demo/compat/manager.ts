@@ -4181,19 +4181,36 @@ const $_MANAGERS = {
 
           if (cached.isInternal) {
             // Internal modifier manager update path
-            // Rebuild captured args so the state's refs reflect current values
-            const freshArgs = cached._buildCapturedArgs ? cached._buildCapturedArgs() : null;
-            if (freshArgs && cached.instance.args) {
+            // Use CURRENT props/hashArgs (from this handle() call), not the
+            // stale closure from install time. GXT re-calls the modifier
+            // function with fresh arguments on each formula re-evaluation.
+            const freshPositional = (props || []).map((v: any) => {
+              return { value: v, debugLabel: '' };
+            });
+            const rawHash = hashArgs ? (typeof hashArgs === 'function' ? hashArgs() : hashArgs) : {};
+            const freshNamed: Record<string, any> = {};
+            for (const k of Object.keys(rawHash)) {
+              if (k.startsWith('$_') || k === 'hash') continue;
+              const val = rawHash[k];
+              const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent) ? val() : val;
+              freshNamed[k] = { value: resolved, debugLabel: k };
+            }
+
+            if (cached.instance.args) {
               // Update positional refs in-place
-              for (let i = 0; i < freshArgs.positional.length; i++) {
+              for (let i = 0; i < freshPositional.length; i++) {
                 if (cached.instance.args.positional[i]) {
-                  cached.instance.args.positional[i].value = freshArgs.positional[i].value;
+                  cached.instance.args.positional[i].value = freshPositional[i].value;
+                } else {
+                  cached.instance.args.positional.push(freshPositional[i]);
                 }
               }
               // Update named refs in-place
-              for (const k of Object.keys(freshArgs.named)) {
+              for (const k of Object.keys(freshNamed)) {
                 if (cached.instance.args.named[k]) {
-                  cached.instance.args.named[k].value = freshArgs.named[k].value;
+                  cached.instance.args.named[k].value = freshNamed[k].value;
+                } else {
+                  cached.instance.args.named[k] = freshNamed[k];
                 }
               }
             }
@@ -4310,12 +4327,23 @@ try {
 
       if (isInternalManager) {
         // Internal modifier manager path (e.g., {{on}} modifier)
-        // Build CapturedArguments-like object with refs
+        // Build CapturedArguments-like object with refs.
+        // IMPORTANT: GXT compiles modifier positional args as direct values
+        // (not reactive getters), so we must NOT call them.  The old heuristic
+        // `typeof v === 'function' && !v.prototype` was wrong because concise
+        // methods and arrow-function callbacks also lack `.prototype`.
+        // Instead, just wrap every value in a ref without unwrapping.
         const buildCapturedArgs = () => {
+          // Positional args: GXT compiles modifier positionals as direct values
+          // (e.g., "click", this.callback), NOT reactive getters. We must NOT
+          // call them — concise methods and arrow callbacks lack .prototype and
+          // would be incorrectly invoked by the old heuristic.
           const positional = (props || []).map((v: any) => {
-            const unwrapped = (typeof v === 'function' && !v.prototype) ? v() : v;
-            return { value: unwrapped, debugLabel: '' };
+            return { value: v, debugLabel: '' };
           });
+          // Named args: GXT wraps dynamic named values in () => getters
+          // (e.g., once: () => this.once), but passes literals directly
+          // (e.g., once: true). Unwrap getter functions for named args only.
           const rawHash = hashArgs ? (typeof hashArgs === 'function' ? hashArgs() : hashArgs) : {};
           const named: Record<string, any> = {};
           for (const k of Object.keys(rawHash)) {
