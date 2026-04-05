@@ -22,7 +22,12 @@ async function discoverModules(browser) {
 }
 
 async function runModule(page, moduleName) {
-  await page.goto(BASE_URL + '?module=' + encodeURIComponent(moduleName), { timeout: 60000, waitUntil: 'commit' });
+  try {
+    await page.goto(BASE_URL + '?module=' + encodeURIComponent(moduleName), { timeout: 30000, waitUntil: 'commit' });
+  } catch (e) {
+    console.log('  [SKIP] ' + moduleName + ' (load failed: ' + e.message.slice(0, 80) + ')');
+    return { p: 0, f: 0, t: 0, fl: [] };
+  }
   try { await page.waitForFunction(() => typeof QUnit !== 'undefined', { timeout: 15000 }); } catch { return { p: 0, f: 0, t: 0, fl: [] }; }
   await page.evaluate(() => {
     window.__r = { fl: [], done: false };

@@ -1937,11 +1937,28 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   // Returns objects with .k and .v properties (not arrays) since GXT
   // doesn't support numeric property access like entry.0.
   'gxtEntriesOf': (obj: any) => {
-    const resolved = typeof obj === 'function' ? obj() : obj;
+    let resolved = typeof obj === 'function' ? obj() : obj;
     if (!resolved || typeof resolved !== 'object') return [];
-    // Support Map-like objects
+    // Unwrap ObjectProxy — iterate over .content, not the proxy itself.
+    // ObjectProxy has unknownProperty/setUnknownProperty and stores data in .content
+    if (typeof resolved.unknownProperty === 'function' && typeof resolved.setUnknownProperty === 'function') {
+      const content = resolved.content;
+      if (!content || typeof content !== 'object') return [];
+      resolved = content;
+    }
+    // Support Map-like objects (ES6 Map, etc.)
     if (typeof resolved.entries === 'function' && typeof resolved.forEach === 'function') {
       return Array.from(resolved.entries()).map(([k, v]: any) => ({ k, v }));
+    }
+    // Support custom iterables with Symbol.iterator
+    if (typeof resolved[Symbol.iterator] === 'function' && !Array.isArray(resolved) && typeof resolved !== 'string') {
+      const entries: { k: any; v: any }[] = [];
+      for (const entry of resolved) {
+        if (Array.isArray(entry) && entry.length >= 2) {
+          entries.push({ k: entry[0], v: entry[1] });
+        }
+      }
+      return entries;
     }
     const keys = Object.keys(resolved);
     return keys.map(key => ({ k: key, v: (resolved as any)[key] }));
@@ -2982,8 +2999,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
     // Special handling for EmberHtmlRaw component (triple mustaches)
     // This component outputs raw HTML without escaping.
-    // Returns an object with __htmlRaw marker so itemToNode can handle
-    // it with proper reactive updates (using the same effect scope).
+    // Returns a live DOM fragment with a reactive effect that updates innerHTML.
+    // We return DOM nodes directly (not a __htmlRaw function) so that GXT's
+    // $_if and other block helpers handle them correctly.
     if (resolvedTag === 'EmberHtmlRaw') {
       let valueGetter: any;
       if (tagProps && tagProps !== g.$_edp) {
@@ -2998,16 +3016,62 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
       }
 
-      // Return a getter function that itemToNode will call inside gxtEffect.
-      // Mark it as __htmlRaw so itemToNode uses innerHTML instead of textContent.
-      const htmlGetter = () => {
+      const getHtml = () => {
         const raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
         const actual = typeof raw === 'function' ? raw() : raw;
         if (actual == null) return '';
         return actual?.toHTML?.() ?? String(actual);
       };
-      (htmlGetter as any).__htmlRaw = true;
-      return htmlGetter;
+
+      // Create start/end anchors and initial content
+      const startAnchor = document.createComment('htmlRaw');
+      const endAnchor = document.createComment('/htmlRaw');
+      const fragment = document.createDocumentFragment();
+      let contentNodes: Node[] = [];
+
+      const initialHtml = getHtml();
+      fragment.appendChild(startAnchor);
+      if (initialHtml) {
+        const tpl = document.createElement('template');
+        tpl.innerHTML = initialHtml;
+        while (tpl.content.firstChild) {
+          const child = tpl.content.firstChild;
+          contentNodes.push(child);
+          fragment.appendChild(child);
+        }
+      }
+      fragment.appendChild(endAnchor);
+
+      let lastHtml = initialHtml;
+
+      // Set up reactive update
+      try {
+        _gxtEffect(() => {
+          const html = getHtml();
+          const parent = endAnchor.parentNode;
+          if (!parent) return;
+          if (html === lastHtml) return;
+          lastHtml = html;
+
+          // Remove old content nodes
+          for (const n of contentNodes) {
+            if (n.parentNode === parent) parent.removeChild(n);
+          }
+          contentNodes = [];
+
+          if (html) {
+            const tpl = document.createElement('template');
+            tpl.innerHTML = html;
+            while (tpl.content.firstChild) {
+              const child = tpl.content.firstChild;
+              contentNodes.push(child);
+              parent.insertBefore(child, endAnchor);
+            }
+          }
+        });
+      } catch {}
+
+      return fragment;
     }
 
     // Check if this looks like a component name (PascalCase or contains hyphen)
@@ -5565,10 +5629,10 @@ export function precompileTemplate(templateString: string, options?: {
 
   // Fix empty true-branch in {{#if}}: GXT compiler can't handle
   // {{#if cond}}{{else}}content{{/if}} (empty true branch).
-  // Insert a zero-width space so the true branch isn't empty.
+  // Insert an HTML comment so the true branch isn't empty but produces no text.
   transformedTemplate = transformedTemplate.replace(
     /\{\{#(if|unless)\s+([^}]+)\}\}\s*\{\{else\}\}/g,
-    '{{#$1 $2}} {{else}}'
+    '{{#$1 $2}}<!-- -->{{else}}'
   );
 
   // Transform bare {{this}} to {{this.__gxtSelfString__}} so GXT renders toString() value
@@ -5587,8 +5651,11 @@ export function precompileTemplate(templateString: string, options?: {
     let eachInIdx = 0;
     // Collect all each-in blocks with their key/value param names
     const eachInBlocks: Array<{ keyParam: string; valueParam: string; entryVar: string }> = [];
+    // Match {{#each-in SOURCE [key=...] as |params|}}BODY{{/each-in}}
+    // SOURCE can be a simple path or a subexpression like (get x y)
+    // Optional named args (key='@identity') may appear between SOURCE and `as`
     transformedTemplate = transformedTemplate.replace(
-      /\{\{#each-in\s+([^\s}]+)\s+as\s*\|([^|]+)\|\s*\}\}([\s\S]*?)\{\{\/each-in\}\}/g,
+      /\{\{#each-in\s+((?:\([^)]+\)|[^\s}]+))(?:\s+[a-zA-Z]+=(?:'[^']*'|"[^"]*"|[^\s}]+))*\s+as\s*\|([^|]+)\|\s*\}\}([\s\S]*?)\{\{\/each-in\}\}/g,
       (match, obj, params, body) => {
         const parts = params.trim().split(/\s+/);
         const keyParam = parts[0] || 'key';
@@ -5599,13 +5666,14 @@ export function precompileTemplate(templateString: string, options?: {
         _eachInSources.push({ propName, sourceExpr: obj });
         // Rewrite block param references in the body:
         // {{key}} -> {{entryVar.k}}, {{value}} -> {{entryVar.v}}
+        // Also handle sub-path access: {{value.foo.bar}} -> {{entryVar.v.foo.bar}}
         let rewrittenBody = body;
-        // Replace {{keyParam}} and {{valueParam}} with entry property access
-        // Be careful not to replace inside component tags or other block params
-        const keyRegex = new RegExp(`\\{\\{${keyParam}\\}\\}`, 'g');
-        const valueRegex = new RegExp(`\\{\\{${valueParam}\\}\\}`, 'g');
-        rewrittenBody = rewrittenBody.replace(keyRegex, `{{${entryVar}.k}}`);
-        rewrittenBody = rewrittenBody.replace(valueRegex, `{{${entryVar}.v}}`);
+        // Replace {{keyParam.subpath}} and {{valueParam.subpath}} with entry property access
+        // Match both exact {{param}} and sub-path {{param.foo.bar}} patterns
+        const keySubpathRegex = new RegExp(`\\{\\{${keyParam}(\\.[^}]+)?\\}\\}`, 'g');
+        const valueSubpathRegex = new RegExp(`\\{\\{${valueParam}(\\.[^}]+)?\\}\\}`, 'g');
+        rewrittenBody = rewrittenBody.replace(keySubpathRegex, (_m, subpath) => `{{${entryVar}.k${subpath || ''}}}`);
+        rewrittenBody = rewrittenBody.replace(valueSubpathRegex, (_m, subpath) => `{{${entryVar}.v${subpath || ''}}}`);
         // Also handle nested {{#each valueParam as |v|}} where valueParam is
         // used as the iteration source (not just as a standalone mustache).
         const nestedEachKeyRegex = new RegExp(`\\{\\{#each\\s+${keyParam}\\b`, 'g');
@@ -6478,11 +6546,19 @@ export function precompileTemplate(templateString: string, options?: {
         const entriesOfFn = `globalThis.__EMBER_BUILTIN_HELPERS__["gxtEntriesOf"]`;
         for (const { propName, sourceExpr } of _eachInSources) {
           // Generate getter that computes entries from the source expression.
-          // sourceExpr is like "this.args" or "@model" etc.
+          // sourceExpr is like "this.hash", "@model", or "(get this.hashes this.hashes.type)".
           // Convert @argName to $a.argName for the compiled context.
+          // Convert (helperName args...) subexpressions to JS helper calls.
           let jsExpr = sourceExpr;
           if (jsExpr.startsWith('@')) {
             jsExpr = `(this['args'] || {}).${jsExpr.slice(1)}`;
+          } else if (jsExpr.startsWith('(') && jsExpr.endsWith(')')) {
+            // Subexpression like (get this.hashes this.hashes.type)
+            const inner = jsExpr.slice(1, -1).trim();
+            const subParts = inner.split(/\s+/);
+            const helperName = subParts[0];
+            const helperArgs = subParts.slice(1).join(', ');
+            jsExpr = `globalThis.__EMBER_BUILTIN_HELPERS__["${helperName}"](${helperArgs})`;
           }
           eachInInjections.push(
             `if (!Object.getOwnPropertyDescriptor(this, "${propName}")) {` +
