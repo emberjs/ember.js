@@ -2,15 +2,13 @@
 
 const fs = require('fs');
 const path = require('path');
-const execa = require('execa');
 const buildInfo = require('../broccoli/build-info').buildInfo();
 
-function exec(command, args) {
+async function exec(command, args) {
+  const { execa } = await import('execa');
   // eslint-disable-next-line
   console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
-  let stream = execa(command, args);
-  stream.stdout.pipe(process.stdout);
-  return stream;
+  return execa(command, args, { stdout: 'inherit', stderr: 'inherit' });
 }
 
 /*
