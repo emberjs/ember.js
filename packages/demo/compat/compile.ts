@@ -6402,7 +6402,16 @@ export function precompileTemplate(templateString: string, options?: {
           // GXT handles {{on}} natively, so we just need a passthrough.
           scopeVals['on'] = g.__EMBER_BUILTIN_HELPERS__?.['on'] || scopeVals['on'];
         }
-        scopeStoreKey = `__gxtScope_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        // Deterministic key based on sorted scope key names so that
+        // templates with the same compiled code + scope shape produce
+        // identical templateFnCode strings, enabling Function() cache hits.
+        const sortedKeys = Array.from(scopeKeys).sort().join(',');
+        let h = 0x811c9dc5; // FNV-1a 32-bit
+        for (let i = 0; i < sortedKeys.length; i++) {
+          h ^= sortedKeys.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        scopeStoreKey = `__gxtScope_${(h >>> 0).toString(36)}`;
         g[scopeStoreKey] = scopeVals;
         for (const key of scopeKeys) {
           // Use valid JS identifier (convert hyphens, etc.)
