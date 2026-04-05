@@ -181,8 +181,8 @@ importers:
         specifier: ^8.1.2
         version: 8.2.6(eslint@9.39.4)
       execa:
-        specifier: ^5.1.1
-        version: 5.1.1
+        specifier: ^9.0.0
+        version: 9.6.1
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0

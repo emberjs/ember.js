@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { basename, join } from 'node:path';
 import { styleText } from 'node:util';
 
-import execa from 'execa';
+import { execa } from 'execa';
 import fs from 'fs-extra';
 import { existsSync } from 'node:fs';
 
