@@ -866,6 +866,26 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         } finally {
           instance.__gxtDispatchingArgs = false;
         }
+        // If the property has a cell-backed getter from createRenderContext,
+        // the setter may have set _useLocal=false but the getter still calls
+        // the old arg getter (which returns the stale value). Install a new
+        // property descriptor that returns undefined, overwriting the stale
+        // cell-backed getter.
+        if (instance[key] !== undefined) {
+          try {
+            Object.defineProperty(instance, key, {
+              value: undefined,
+              writable: true,
+              enumerable: true,
+              configurable: true,
+            });
+          } catch { /* non-configurable */ }
+        }
+        // Also remove from argGetters to prevent createRenderContext from
+        // re-installing a getter that reads from the old args object.
+        if (instance.__argGetters && key in instance.__argGetters) {
+          delete instance.__argGetters[key];
+        }
         lastArgValues[key] = undefined;
       }
     }

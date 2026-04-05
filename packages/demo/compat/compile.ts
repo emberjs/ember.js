@@ -1085,6 +1085,14 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
 }
 (globalThis as any).__gxtRegisterArrayOwner = registerArrayOwner;
 
+// Pending if-watcher notifications accumulated during __gxtTriggerReRender.
+// Flushed in __gxtSyncDomNow after all cells have been updated atomically.
+// This prevents IfCondition branch switching during batched property changes
+// (e.g., set(cond2, true); set(cond1, false) in a single runTask), which
+// could create components in branches that will be removed when the outer
+// conditional is updated.
+let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = [];
+
 // GXT re-render trigger hook - called by Ember's notifyPropertyChange.
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
@@ -1263,19 +1271,14 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
 
   (globalThis as any).__gxtPendingSync = true;
   (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
-  // Only do a quick cell sync here — don't fire lifecycle hooks or
-  // run __gxtSyncAllWrappers. Property changes may be batched (e.g.,
-  // setProperties), so lifecycle hooks should fire once after ALL
-  // property changes are applied, not after each individual change.
-  // The full lifecycle hook cycle runs in __gxtSyncDomNow (called
-  // after runTask completes).
-  if (!(globalThis as any).__gxtSyncing) {
-    (globalThis as any).__gxtSyncing = true;
-    try {
-      gxtSyncDom();
-    } catch { /* ignore */ }
-    finally { (globalThis as any).__gxtSyncing = false; }
-  }
+  // DON'T call gxtSyncDom() here — property changes may be batched (e.g.,
+  // set(cond2, true); set(cond1, false) in a single runTask). Calling
+  // gxtSyncDom after each set() processes inner conditionals before outer
+  // ones have been updated, creating components that should never exist.
+  // Instead, let __gxtSyncDomNow handle all cell updates atomically
+  // after the entire runTask callback completes.
+  // The cells are already dirtied (via cell.update above), and the
+  // __gxtSyncDomNow call from runTask will process them correctly.
   // Signal to __gxtForceEmberRerender that nested object changes occurred.
   // When a property changes on a nested object (e.g., set(m, 'message', ...)),
   // the component's SELF_TAG is NOT dirtied by Ember (only m's tag is).
@@ -1284,13 +1287,12 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
   if (_deferredTagDirties && _deferredTagDirties.length > 0) {
     (globalThis as any).__gxtHadNestedObjectChange = true;
   }
-  // Manually notify any $_if conditions watching this property.
-  // This bypasses GXT's broken cross-module-instance cell tracking.
-  // Must happen AFTER __gxtSyncing is cleared so IfCondition.renderBranch
-  // can properly insert new DOM nodes without re-entrancy issues.
-  try {
-    notifyIfWatchers(obj, keyName);
-  } catch { /* ignore */ }
+  // Defer if-watcher notifications to __gxtSyncDomNow so batched property
+  // changes are applied atomically. Firing syncState here would process
+  // inner conditionals before outer ones are updated (e.g., set(cond2, true)
+  // triggers inner IfCondition to create components, but set(cond1, false)
+  // hasn't happened yet to suppress the outer conditional).
+  _pendingIfWatcherNotifications.push({ obj, keyName });
 };
 
 // Expose cellFor on globalThis so manager.ts can use it without circular imports.
@@ -1530,6 +1532,16 @@ queueMicrotask(patchGlobalEachSync);
         try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
+    // PHASE 1a: Flush deferred if-watcher notifications. These were accumulated
+    // during __gxtTriggerReRender calls and are flushed HERE (after all gxtSyncDom
+    // calls) so batched property changes are applied atomically — IfConditions see
+    // the final state of all conditions, not intermediate states.
+    if (_pendingIfWatcherNotifications.length > 0) {
+      const pending = _pendingIfWatcherNotifications.splice(0);
+      for (const { obj, keyName } of pending) {
+        try { notifyIfWatchers(obj, keyName); } catch { /* ignore */ }
+      }
+    }
     // PHASE 1b: After gxtSyncDom handled cell-based updates, mark all GXT
     // roots as clean so the force-rerender morph (Phase 2b) is skipped when
     // GXT already applied the DOM changes. Without this, gxtLastTagValue is
@@ -1722,6 +1734,8 @@ setInterval(() => {
   if (typeof (globalThis as any).__gxtClearIfWatchers === 'function') {
     (globalThis as any).__gxtClearIfWatchers();
   }
+  // Clear pending if-watcher notifications from the previous test
+  _pendingIfWatcherNotifications.length = 0;
   // Clear component contexts to prevent stale render contexts accumulating
   if ((globalThis as any).__gxtComponentContexts) {
     (globalThis as any).__gxtComponentContexts = new WeakMap();
