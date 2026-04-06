@@ -282,12 +282,9 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
     let scope = options.scope?.();
 
     if (!scope) {
-      if (Object.keys(keywords).length > 0) {
-        return (source: string) => {
-          return new Function(RUNTIME_KEYWORDS_NAME, `return (${source})`)(keywords);
-        };
-      }
-      return evaluator;
+      return (source: string) => {
+        return new Function(RUNTIME_KEYWORDS_NAME, `return (${source})`)(keywords);
+      };
     }
 
     scope = Object.assign({ [RUNTIME_KEYWORDS_NAME]: keywords }, scope);
