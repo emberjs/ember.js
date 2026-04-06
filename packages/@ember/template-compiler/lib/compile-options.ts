@@ -95,7 +95,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
 
   // When neither eval nor scope is provided, the keywords container
   // still needs to be visible to the compiler.
-  if (!options.lexicalScope && Object.keys(keywords).length > 0) {
+  if (!options.lexicalScope) {
     options.lexicalScope = (variable: string) => variable === RUNTIME_KEYWORDS_NAME;
   }
 
