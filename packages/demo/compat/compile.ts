@@ -6489,13 +6489,23 @@ export function precompileTemplate(templateString: string, options?: {
           }
           if (bracketStart >= 0 && bracketEnd > bracketStart) {
             const inner = fullCall.slice(bracketStart + 1, bracketEnd - 1);
-            if (inner.includes('.$_bp')) {
-              // Wrap the inner content in () =>
-              const newCall = fullCall.slice(0, bracketStart + 1) +
-                '() => ' + inner +
-                fullCall.slice(bracketEnd - 1);
-              newCode += modifiedCode.slice(lastEnd, tagStart) + newCall;
-              lastEnd = tagEnd;
+            // Only wrap if children reference $_bp AND don't contain named blocks
+            // (named blocks like :inverse/:default break when wrapped in () =>)
+            // Named blocks appear as $_tag(':name', ...) in compiled code
+            if (inner.includes('.$_bp') &&
+                !inner.includes("':default'") && !inner.includes("':inverse'") &&
+                !inner.includes("':else'")) {
+              // Additional safety: only wrap if it looks like a single top-level
+              // $_tag call (not multiple comma-separated children)
+              const trimmed = inner.trim();
+              const startsWithTag = trimmed.startsWith('$_tag(') || trimmed.startsWith('/*#__PURE__*/$_tag(');
+              if (startsWithTag) {
+                const newCall = fullCall.slice(0, bracketStart + 1) +
+                  '() => ' + inner +
+                  fullCall.slice(bracketEnd - 1);
+                newCode += modifiedCode.slice(lastEnd, tagStart) + newCall;
+                lastEnd = tagEnd;
+              }
             }
           }
         }
