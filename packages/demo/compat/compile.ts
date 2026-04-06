@@ -1278,13 +1278,7 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
   } catch { /* ignore */ }
 
   (globalThis as any).__gxtPendingSync = true;
-  // For array mutations ('[]'/'length' on arrays), GXT's cell-based list sync
-  // handles the update in Phase 1 of __gxtSyncDomNow. Setting
-  // __gxtPendingSyncFromPropertyChange would trigger the force-rerender morph
-  // which can produce incorrect DOM by re-rendering with stale context.
-  if (!((keyName === '[]' || keyName === 'length') && Array.isArray(obj))) {
-    (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
-  }
+  (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
   // DON'T call gxtSyncDom() here — property changes may be batched (e.g.,
   // set(cond2, true); set(cond1, false) in a single runTask). Calling
   // gxtSyncDom after each set() processes inner conditionals before outer
