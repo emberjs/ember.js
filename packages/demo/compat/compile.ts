@@ -6449,6 +6449,63 @@ export function precompileTemplate(templateString: string, options?: {
       }
     }
 
+    // Wrap children of components with block params in arrow functions.
+    // GXT compiles children eagerly, but block params ($_bp) are only
+    // available when the slot function is called. By wrapping children
+    // in () =>, their evaluation is deferred until the slot function
+    // provides block params on the global stack.
+    if (modifiedCode.includes('.$_bp') && modifiedCode.includes('__hasBlockParams__')) {
+      // Find $_tag calls containing __hasBlockParams__
+      const tagRe = /\$_tag\(/g;
+      let tagMatch;
+      let newCode = '';
+      let lastEnd = 0;
+      while ((tagMatch = tagRe.exec(modifiedCode)) !== null) {
+        const tagStart = tagMatch.index;
+        // Match parens to find the full $_tag(...) call
+        let depth = 1;
+        let pos = tagStart + '$_tag('.length;
+        for (; pos < modifiedCode.length && depth > 0; pos++) {
+          if (modifiedCode[pos] === '(') depth++;
+          else if (modifiedCode[pos] === ')') depth--;
+        }
+        const tagEnd = pos;
+        const fullCall = modifiedCode.slice(tagStart, tagEnd);
+        // Only process $_tag calls that have __hasBlockParams__ and .$_bp
+        if (fullCall.includes('__hasBlockParams__') && fullCall.includes('.$_bp')) {
+          // Find the children array: the last top-level [...] before the final )
+          // Scan backwards from the end of the call
+          let bracketEnd = -1;
+          let bracketStart = -1;
+          let bd = 0;
+          for (let k = fullCall.length - 2; k >= 0; k--) {
+            if (fullCall[k] === ']') {
+              if (bd === 0) bracketEnd = k + 1;
+              bd++;
+            } else if (fullCall[k] === '[') {
+              bd--;
+              if (bd === 0) { bracketStart = k; break; }
+            }
+          }
+          if (bracketStart >= 0 && bracketEnd > bracketStart) {
+            const inner = fullCall.slice(bracketStart + 1, bracketEnd - 1);
+            if (inner.includes('.$_bp')) {
+              // Wrap the inner content in () =>
+              const newCall = fullCall.slice(0, bracketStart + 1) +
+                '() => ' + inner +
+                fullCall.slice(bracketEnd - 1);
+              newCode += modifiedCode.slice(lastEnd, tagStart) + newCall;
+              lastEnd = tagEnd;
+            }
+          }
+        }
+      }
+      if (lastEnd > 0) {
+        newCode += modifiedCode.slice(lastEnd);
+        modifiedCode = newCode;
+      }
+    }
+
     compilationResult.code = modifiedCode;
     // Temporary debug: capture compiled code for scope-valued templates
     if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {

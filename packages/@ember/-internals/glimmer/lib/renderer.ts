@@ -724,9 +724,18 @@ class ClassicRootState {
               (gxtRootState as any).__gxtRerenderCount = rerenderCount + 1;
               const tempContainer = document.createDocumentFragment();
               pushParentView(component);
+              // Collect modifier invocations during the temp-container render
+              // so we can replay them as updates on real DOM elements after
+              // morphing.  Modifier installation on temp elements is suppressed
+              // to avoid drifting add/remove counters.
+              const morphModInvocations: any[] = [];
+              (globalThis as any).__gxtMorphModifierInvocations = morphModInvocations;
+              (globalThis as any).__gxtMorphRenderInProgress = true;
               try {
                 (gxtTemplate as any).render(freshContext, tempContainer);
               } finally {
+                (globalThis as any).__gxtMorphRenderInProgress = false;
+                (globalThis as any).__gxtMorphModifierInvocations = null;
                 popParentView();
               }
               // Morph: update existing DOM nodes in-place where possible
@@ -736,6 +745,67 @@ class ClassicRootState {
                 // Lifecycle errors during morphing (e.g., destroy throws)
                 // should not disable future re-renders. Defer the error.
                 (gxtRootState as any).__gxtDeferredError = morphErr;
+              }
+              // Replay collected modifier invocations as updates on real DOM
+              // elements ONLY if an actual property change triggered this sync.
+              // Stable rerenders (rerender() without set()) should not trigger
+              // modifier updates.
+              const hadPropertyChange = !!(globalThis as any).__gxtHadPendingSync;
+              if (hadPropertyChange && morphModInvocations.length > 0) {
+                const realEls: Element[] = [];
+                const walk = (n: Node) => {
+                  if (n.nodeType === 1) realEls.push(n as Element);
+                  let c = n.firstChild;
+                  while (c) { walk(c); c = c.nextSibling; }
+                };
+                walk(gxtRenderTarget as unknown as Node);
+
+                // Match temp elements to real elements by tag in order
+                let ri = 0;
+                const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+                for (const inv of morphModInvocations) {
+                  const tag = inv.element.tagName;
+                  let realEl: HTMLElement | null = null;
+                  for (let j = ri; j < realEls.length; j++) {
+                    if (realEls[j]!.tagName === tag) {
+                      realEl = realEls[j] as HTMLElement;
+                      ri = j + 1;
+                      break;
+                    }
+                  }
+                  if (realEl && modMgr) {
+                    // Check if this modifier has a cached entry on the real element
+                    const cache = modMgr._cache.get(realEl);
+                    if (cache) {
+                      const baseName = typeof inv.modifier === 'string'
+                        ? inv.modifier
+                        : (inv.modifier?.name || String(inv.modifier));
+                      const firstArg = inv.props && inv.props.length > 0
+                        ? String(typeof inv.props[0] === 'function' && !inv.props[0].prototype ? inv.props[0]() : inv.props[0])
+                        : '';
+                      const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
+                      const cached = cache.get(modKey);
+                      if (cached && !cached.pendingDestroy) {
+                        // Check if already updated by Phase 1 (gxtSyncDom)
+                        const syncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+                        if (cached.__gxtUpdatedInSyncCycle === syncCycle) {
+                          continue; // Phase 1 already handled this
+                        }
+                        // Only replay for internal modifiers ({{on}}, etc.).
+                        // Custom modifier managers handle updates via autotracking
+                        // and formula reactivity; replaying would cause spurious
+                        // didUpdate calls.
+                        if (!cached.isInternal) {
+                          continue;
+                        }
+                        // Trigger the update path: mark as pending destroy,
+                        // then call handle() which will take the update branch.
+                        cached.pendingDestroy = true;
+                        modMgr.handle(inv.modifier, realEl, inv.props, inv.hashArgs);
+                      }
+                    }
+                  }
+                }
               }
             }
 
@@ -1465,8 +1535,28 @@ function _renderComponentGxt(
     }
     renderContext.owner = owner;
 
-    // Render the template into the target
-    template.render(renderContext, targetElement);
+    // Enable isRendering so GXT formulas created during template.render()
+    // properly track cell dependencies (e.g., trackedObject cells).
+    // Use globalThis.__gxtSetIsRendering which is from the SAME module
+    // instance as GXT's formula system. The direct import may be from a
+    // different module copy.
+    // Save and restore the previous isRendering state to avoid clobbering
+    // it when renderComponent is called from within another render pass
+    // (e.g., from a component constructor during an outer template render).
+    const _setRendering = (globalThis as any).__gxtSetIsRendering;
+    const _isRendering = (globalThis as any).__gxtIsRendering;
+    const wasRendering = typeof _isRendering === 'function' ? _isRendering() : false;
+    if (typeof _setRendering === 'function') {
+      _setRendering(true);
+    }
+    try {
+      // Render the template into the target
+      template.render(renderContext, targetElement);
+    } finally {
+      if (typeof _setRendering === 'function' && !wasRendering) {
+        _setRendering(false);
+      }
+    }
 
     // Flush queued didInsertElement / didRender hooks
     try {

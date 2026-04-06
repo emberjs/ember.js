@@ -13,7 +13,7 @@
 import { assert, getDebugFunction } from '@ember/debug';
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
-import { setViewElement, setElementView, getViewElement, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
+import { setViewElement, setElementView, getViewElement, getElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
 
 // Helper to detect assertion-related throws that must escape catch blocks.
 function _isAssertionLike(e: unknown): boolean {
@@ -39,6 +39,11 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect } from '@lifeart/gxt';
 import { destroy as _destroyDestroyable } from './destroyable';
+
+// Expose destroy helpers so compile.ts can flush pending modifier destroys
+// synchronously at the end of a sync cycle.
+(globalThis as any).__gxtRunDestructorsFn = _gxtRunDestructors;
+(globalThis as any).__gxtDestroyDestroyableFn = _destroyDestroyable;
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
@@ -414,6 +419,28 @@ function getCachedOrCreateInstance(
   // Store thunkId on instance for dedup during re-evaluations
   if (thunkId) {
     instance.__gxtThunkId = thunkId;
+  }
+
+  // During force-rerender, mark all unclaimed entries in ALL pools for this
+  // parent. When the component name changes (e.g., {{component this.name}}),
+  // the new instance goes into a different pool (keyed by factory). The old
+  // instance in the previous pool is unclaimed and should be destroyed.
+  if ((globalThis as any).__gxtIsForceRerender) {
+    const parentPools = instancePools.get(parentKey);
+    if (parentPools) {
+      for (const [, poolArr] of parentPools) {
+        for (const entry of poolArr) {
+          if (!entry.claimed && entry.instance && !entry.instance.isDestroyed && !entry.instance.isDestroying) {
+            let markedSet = (globalThis as any).__gxtInstancesMarkedForDestruction;
+            if (!markedSet) {
+              markedSet = new Set();
+              (globalThis as any).__gxtInstancesMarkedForDestruction = markedSet;
+            }
+            markedSet.add(entry.instance);
+          }
+        }
+      }
+    }
   }
 
   // Add to pool and mark as claimed
@@ -1629,6 +1656,9 @@ let _preRerenderSnapshot: Set<any> = new Set();
 
 (globalThis as any).__gxtSnapshotLiveInstances = function() {
   _preRerenderSnapshot.clear();
+  // Clear the marked-for-destruction set from the previous cycle
+  const markedSet = (globalThis as any).__gxtInstancesMarkedForDestruction;
+  if (markedSet) markedSet.clear();
   for (const instance of _allLiveInstances) {
     _preRerenderSnapshot.add(instance);
   }
@@ -1692,6 +1722,18 @@ let _preRerenderSnapshot: Set<any> = new Set();
           try { setViewElement(instance, liveEl); } catch { /* ignore */ }
           try { setElementView(liveEl, instance); } catch { /* ignore */ }
           isAlive = true;
+        }
+      }
+
+      // Check for instances explicitly marked for destruction during the
+      // force-rerender (e.g., dynamic component switching via {{component}}).
+      // These are added to __gxtInstancesMarkedForDestruction by the rendering
+      // code when a new instance replaces an old one at the same position.
+      if (isAlive) {
+        const markedForDestruction = (globalThis as any).__gxtInstancesMarkedForDestruction;
+        if (markedForDestruction && markedForDestruction.has(instance)) {
+          isAlive = false;
+          markedForDestruction.delete(instance);
         }
       }
 
@@ -1905,6 +1947,71 @@ let _preRerenderSnapshot: Set<any> = new Set();
   _afterInsertQueue.length = 0;
   _allLiveInstances.clear();
   _preRerenderSnapshot.clear();
+};
+
+/**
+ * Destroy a single Ember component instance with full lifecycle hooks.
+ * Used by $_dc_ember when dynamic component switching occurs.
+ * Fires: willDestroyElement -> willClearRender -> didDestroyElement -> willDestroy
+ */
+(globalThis as any).__gxtDestroyEmberComponentInstance = function(instance: any) {
+  if (!instance || instance.isDestroyed || instance.isDestroying) return;
+
+  const gOwner = (globalThis as any).owner;
+  let viewRegistry: any;
+  try {
+    viewRegistry = gOwner?.lookup?.('-view-registry:main');
+  } catch { /* ignore */ }
+
+  // Phase 1: willDestroyElement + willClearRender (element still available)
+  // Re-attach element temporarily if disconnected so tests see it in DOM
+  const el = getViewElement(instance);
+  let reattached = false;
+  if (el instanceof HTMLElement && !el.isConnected) {
+    const tempContainer = document.getElementById('qunit-fixture') || document.body;
+    tempContainer.appendChild(el);
+    reattached = true;
+  }
+
+  try {
+    if (instance._transitionTo && instance._state !== 'inDOM') {
+      try { instance._transitionTo('inDOM'); } catch {}
+    }
+    triggerLifecycleHook(instance, 'willDestroyElement');
+    triggerLifecycleHook(instance, 'willClearRender');
+  } catch { /* ignore */ }
+
+  // Detach re-attached element
+  if (reattached && el instanceof HTMLElement && el.parentNode) {
+    try { el.parentNode.removeChild(el); } catch { /* ignore */ }
+  }
+
+  // Phase 2: transition to destroying, clear element, didDestroyElement
+  try { if (instance._transitionTo) instance._transitionTo('destroying'); } catch { /* ignore */ }
+  try { setViewElement(instance, null); } catch { /* ignore */ }
+  try {
+    if (viewRegistry) {
+      const viewId = getViewId(instance);
+      if (viewId) delete viewRegistry[viewId];
+    }
+  } catch { /* ignore */ }
+  try { triggerLifecycleHook(instance, 'didDestroyElement'); } catch { /* ignore */ }
+
+  // Phase 3: destroy (fires willDestroy)
+  try {
+    if (typeof instance.destroy === 'function' && !instance.isDestroyed && !instance.isDestroying) {
+      instance.destroy();
+    }
+  } catch { /* ignore */ }
+
+  // Cleanup tracking
+  _allLiveInstances.delete(instance);
+  for (const entry of trackedArgCells) {
+    if (entry.instance === instance) { trackedArgCells.delete(entry); break; }
+  }
+  for (const entry of trackedWrapperInstances) {
+    if (entry.instance === instance) { trackedWrapperInstances.delete(entry); break; }
+  }
 };
 
 /**
@@ -4121,6 +4228,20 @@ const $_MANAGERS = {
     },
 
     handle(modifier: any, element: HTMLElement, props: any[], hashArgs: any): any {
+      // During morph re-renders the template is rendered into a throwaway
+      // container.  Instead of installing modifiers on temp elements (which
+      // drifts add/remove counters), find the corresponding real DOM element
+      // and update its cached modifier with fresh args.
+      if ((globalThis as any).__gxtMorphRenderInProgress) {
+        // During morph re-renders, collect modifier invocations so they can
+        // be replayed as updates on real DOM elements after morphing.
+        const pending = (globalThis as any).__gxtMorphModifierInvocations;
+        if (pending) {
+          pending.push({ modifier, element, props, hashArgs });
+        }
+        return undefined;
+      }
+
       const owner = (globalThis as any).owner;
       if (!owner) return undefined;
 
@@ -4157,20 +4278,20 @@ const $_MANAGERS = {
         if (cached && !cached.pendingDestroy) {
           return () => {
             cached.pendingDestroy = true;
-            Promise.resolve().then(() => {
-              if (cached.pendingDestroy) {
-                if (cached.isInternal) {
-                  const destroyable = cached.manager.getDestroyable?.(cached.instance);
-                  if (destroyable) {
-                    try { if (typeof _gxtRunDestructors === 'function') _gxtRunDestructors(destroyable); } catch { /* ignore */ }
-                    _destroyDestroyable(destroyable);
-                  }
-                } else if (cached.manager.destroyModifier) {
-                  cached.manager.destroyModifier(cached.instance);
-                }
-                elCache.delete(modKey);
-                if (elCache.size === 0) self._cache.delete(element);
-              }
+            // Register for synchronous flush at end of sync cycle
+            let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+            if (!pendingDestroys) {
+              pendingDestroys = [];
+              (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
+            }
+            const destroyable = cached.isInternal ? cached.manager.getDestroyable?.(cached.instance) : null;
+            pendingDestroys.push({
+              cached,
+              destroyable,
+              element,
+              modKey,
+              cache: self._cache,
+              isCustom: !cached.isInternal,
             });
           };
         }
@@ -4178,6 +4299,11 @@ const $_MANAGERS = {
           // The destructor was called (GXT formula re-eval), but we haven't
           // actually destroyed yet — this is an update, not a reinstall.
           cached.pendingDestroy = false;
+          // Mark that this modifier was updated in Phase 1 (GXT native reactivity)
+          // for the current render pass.  The morph (Phase 2b) checks this to
+          // avoid double-updating.  Uses the render pass ID so stale flags from
+          // previous sync cycles are ignored.
+          cached.__gxtUpdatedInSyncCycle = (globalThis as any).__gxtSyncCycleId || 0;
 
           if (cached.isInternal) {
             // Internal modifier manager update path
@@ -4228,28 +4354,20 @@ const $_MANAGERS = {
           // Return a destructor that marks pending destroy
           return () => {
             cached.pendingDestroy = true;
-            // Schedule actual destroy for next microtask — if handle() is called
-            // again before then, we'll intercept it as an update.
-            Promise.resolve().then(() => {
-              if (cached.pendingDestroy) {
-                // Not re-entered — actually destroy
-                if (cached.isInternal) {
-                  const destroyable = cached.manager.getDestroyable?.(cached.instance);
-                  if (destroyable) {
-                    // Use GXT's runDestructors for cleanup
-try {
-  if (typeof _gxtRunDestructors === 'function') {
-    _gxtRunDestructors(destroyable);
-  }
-} catch { /* ignore */ }
-                    _destroyDestroyable(destroyable);
-                  }
-                } else if (cached.manager.destroyModifier) {
-                  cached.manager.destroyModifier(cached.instance);
-                }
-                elCache.delete(modKey);
-                if (elCache.size === 0) self._cache.delete(element);
-              }
+            // Register for synchronous flush at end of sync cycle
+            let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+            if (!pendingDestroys) {
+              pendingDestroys = [];
+              (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
+            }
+            const destroyable = cached.isInternal ? cached.manager.getDestroyable?.(cached.instance) : null;
+            pendingDestroys.push({
+              cached,
+              destroyable,
+              element,
+              modKey,
+              cache: self._cache,
+              isCustom: !cached.isInternal,
             });
           };
         }
@@ -4371,27 +4489,29 @@ try {
         // Handle destroyable
         const destroyable = manager.getDestroyable(state);
 
-        // Return a destructor
+        // Return a destructor.
+        // The deferred approach (Promise.resolve) distinguishes formula
+        // re-evaluation (destructor -> handle within one synchronous block)
+        // from actual element removal (destructor with no subsequent handle).
+        // But because test assertions run before microtasks, we need to
+        // detect element removal synchronously.
+        //
+        // Strategy: mark pendingDestroy, then at end of current GXT sync
+        // cycle, flush any still-pending destroys synchronously.
         return () => {
           cached.pendingDestroy = true;
-          Promise.resolve().then(() => {
-            if (cached.pendingDestroy) {
-              // For internal managers, destroy via the destroyable system
-              if (destroyable) {
-                // Use GXT's runDestructors for cleanup
-try {
-  if (typeof _gxtRunDestructors === 'function') {
-    _gxtRunDestructors(destroyable);
-  }
-} catch { /* ignore */ }
-                _destroyDestroyable(destroyable);
-              }
-              const c = self._cache.get(element);
-              if (c) {
-                c.delete(modKey);
-                if (c.size === 0) self._cache.delete(element);
-              }
-            }
+          // Register for synchronous flush at end of sync cycle
+          let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+          if (!pendingDestroys) {
+            pendingDestroys = [];
+            (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
+          }
+          pendingDestroys.push({
+            cached,
+            destroyable,
+            element,
+            modKey,
+            cache: self._cache,
           });
         };
       }
@@ -4434,19 +4554,19 @@ try {
       // (for updates) and also during final teardown.
       return () => {
         cached.pendingDestroy = true;
-        // Schedule actual destroy — if handle() is called again before the
-        // microtask runs, we'll intercept it as an update.
-        Promise.resolve().then(() => {
-          if (cached.pendingDestroy) {
-            if (manager.destroyModifier) {
-              manager.destroyModifier(instance);
-            }
-            const c = self._cache.get(element);
-            if (c) {
-              c.delete(modKey);
-              if (c.size === 0) self._cache.delete(element);
-            }
-          }
+        // Register for synchronous flush at end of sync cycle
+        let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        if (!pendingDestroys) {
+          pendingDestroys = [];
+          (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
+        }
+        pendingDestroys.push({
+          cached,
+          destroyable: null,
+          element,
+          modKey,
+          cache: self._cache,
+          isCustom: true,
         });
       };
     },
@@ -5558,6 +5678,10 @@ function renderClassicComponent(
   }
   const skipInitHooks = isReused && isForceRerender;
 
+  // Expose the current instance via side-channel so $_dc_ember can track it
+  // for destroy lifecycle when dynamic component switching occurs.
+  (globalThis as any).__gxtLastCreatedEmberInstance = instance;
+
   // Track this instance for destroy detection during force-rerender
   if (instance) {
     _allLiveInstances.add(instance);
@@ -5743,6 +5867,9 @@ function renderGlimmerComponent(
   fw: any,
   owner: any
 ): any {
+  // Expose the current instance via side-channel for $_dc_ember tracking
+  (globalThis as any).__gxtLastCreatedEmberInstance = instance;
+
   const container = document.createDocumentFragment();
   const renderContext = createRenderContext(instance, args, fw, owner);
 

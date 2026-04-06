@@ -1038,7 +1038,6 @@ function createEmberDc(original: Function) {
     } catch {
       // Getter failed — likely block params not set yet.
       // Return a lazy thunk that evaluates when GXT processes the children.
-      // This happens after the parent component's slot function sets up block params.
       const lazyThunk = () => {
         try {
           const val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
