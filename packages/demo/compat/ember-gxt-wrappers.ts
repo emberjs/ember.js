@@ -1167,6 +1167,19 @@ function createEmberDc(original: Function) {
       if (managers?.component?.canHandle?.(componentValue)) {
         return renderComponent(componentValue, gxtArgs, ctx, /* allowPositionalParams */ true);
       }
+      // String component name that can't be resolved — throw an error matching
+      // Ember's behavior for {{component "non-existent"}}.
+      if (componentValue.length > 0) {
+        const err = new Error(
+          `Attempted to resolve \`${componentValue}\`, which was expected to be a component, but nothing was found. ` +
+          `Could not find component named "${componentValue}" (no component or template with that name was found)`
+        );
+        const captureErr = g.__captureRenderError;
+        if (typeof captureErr === 'function') {
+          captureErr(err);
+        }
+        throw err;
+      }
     }
 
     // Handle component definitions (template-only, GlimmerishComponent, etc.)

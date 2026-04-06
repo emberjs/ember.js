@@ -13,7 +13,12 @@ import { trackedData } from '@glimmer/validator';
  */
 export function tracked(target: object, key: string, desc?: PropertyDescriptor): any {
   // Get the trackedData getter/setter for this key
-  const { getter, setter } = trackedData<any, string>(key, desc ? () => desc.value : undefined);
+  // decorator-transforms passes { initializer: () => value } instead of { value }
+  const descAny = desc as any;
+  const initializer = descAny?.initializer
+    ? () => descAny.initializer.call(undefined)
+    : (desc && 'value' in desc ? () => desc.value : undefined);
+  const { getter, setter } = trackedData<any, string>(key, initializer);
 
   return {
     enumerable: true,

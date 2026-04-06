@@ -883,8 +883,44 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   if (hasChanges) {
     // Second pass: apply the changes (set properties first, then fire hooks)
     for (const key of newKeys) {
-      const { resolved: newValue } = getArgValue(args, key);
+      const { resolved: newValue, getter: newGetter } = getArgValue(args, key);
       const oldValue = lastArgValues[key];
+
+      // Update the arg getter to the new one so that reactive reads
+      // (e.g., this.get('name') inside willRender) return fresh values from the
+      // new args closure. This is critical for {{#each}} where each iteration
+      // captures its own 'item' in the getter closure — without updating, the
+      // instance's reactive getter would read from the stale old closure.
+      if (newGetter && argGetters && key !== 'elementId' && key !== 'id') {
+        argGetters[key] = newGetter;
+        // Reinstall the reactive property descriptor with the new getter,
+        // preserving the useLocal/dispatching semantics from createComponentInstance.
+        try {
+          let localValue = newValue;
+          const getter = newGetter;
+          let useLocal = false;
+          Object.defineProperty(instance, key, {
+            get() {
+              if (useLocal) return localValue;
+              try { return getter(); } catch { return localValue; }
+            },
+            set(v: any) {
+              if ((instance as any).__gxtDispatchingArgs) {
+                localValue = v;
+                useLocal = false;
+                if (instance.__gxtLocalOverrides) instance.__gxtLocalOverrides.delete(key);
+              } else {
+                localValue = v;
+                useLocal = true;
+                if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
+                instance.__gxtLocalOverrides.add(key);
+              }
+            },
+            configurable: true,
+            enumerable: true,
+          });
+        } catch { /* non-configurable */ }
+      }
 
       if (newValue !== oldValue) {
         // Update the instance property (but not elementId - it's frozen)
@@ -1095,9 +1131,17 @@ export function markTemplateRendered(instance: any): void {
     // This enables backtracking detection for shared dependencies
     // (e.g., this.wrapper.content where wrapper is an EmberObject or tracked class).
     try {
-      const keys = Object.keys(instance);
-      for (let i = 0; i < keys.length; i++) {
-        const k = keys[i]!;
+      // Use both own keys and prototype keys to catch class fields like `wrapper = new Wrapper()`
+      // that may have been moved to the prototype by cellFor or reactive getters.
+      const allKeys = new Set<string>();
+      const ownKeys = Object.keys(instance);
+      for (const k of ownKeys) allKeys.add(k);
+      // Also check getOwnPropertyNames to catch non-enumerable getter properties
+      try {
+        for (const k of Object.getOwnPropertyNames(instance)) allKeys.add(k);
+      } catch { /* ignore */ }
+
+      for (const k of allKeys) {
         if (k.charCodeAt(0) === 95 || k.charCodeAt(0) === 36) continue; // skip _ and $
         let val: any;
         try { val = instance[k]; } catch { continue; }
@@ -1135,8 +1179,18 @@ export function endRenderPass(): void {
     // The target might be a Proxy created by wrapNestedObjectForTracking.
     // Check if the raw (unwrapped) target is in the set.
     const rawTarget = _proxyToRaw.get(targetObj);
-    if (!rawTarget || !_templateRenderedInstances.has(rawTarget)) {
-      return;
+    if (rawTarget && _templateRenderedInstances.has(rawTarget)) {
+      // Found via raw→proxy lookup
+    } else {
+      // The target might be the raw object while the set has the proxy.
+      // Check if a proxy of this target is in the set.
+      // Use the lazily-available _nestedTrackingProxies WeakMap (defined later
+      // in the module but accessed at runtime after initialization).
+      const proxyMap = (globalThis as any).__gxtNestedTrackingProxies;
+      const proxyOfTarget = proxyMap?.get?.(targetObj);
+      if (!proxyOfTarget || !_templateRenderedInstances.has(proxyOfTarget)) {
+        return;
+      }
     }
   }
   // This instance's template was already rendered in this pass.
@@ -1191,7 +1245,11 @@ export function endRenderPass(): void {
   treeLines.push(propIndent + propPath);
   const renderTree = treeLines.join('\n');
 
-  assert(
+  // Use getDebugFunction to get the CURRENT assert function.
+  // During expectAssertion(), setDebugFunction replaces assert with a stub.
+  // The module-level import may not see the update (non-live binding in bundlers).
+  const currentAssert = getDebugFunction('assert') || assert;
+  currentAssert(
     `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  -top-level\n${renderTree}\n\nStack trace for the update:`,
     false
   );
@@ -1297,8 +1355,13 @@ function triggerLifecycleHook(instance: any, hookName: string): void {
       instance.trigger(hookName);
     }
   } catch (e) {
-    // Only capture assertion/render errors — other lifecycle errors are swallowed
-    if (e instanceof Error && (e.message?.includes('Assertion Failed') || e.message?.includes('Error in'))) {
+    // Re-throw non-Error values (e.g., expectAssertion's BREAK sentinel)
+    // so they propagate to the test harness.
+    if (!(e instanceof Error)) {
+      throw e;
+    }
+    // Capture assertion/render errors so they can be re-thrown after render
+    if (e.message?.includes('Assertion Failed') || e.message?.includes('Error in')) {
       captureRenderError(e);
     }
   }
@@ -2444,6 +2507,7 @@ function buildWrapperElement(
  * identity comparisons stay stable.
  */
 const _nestedTrackingProxies = new WeakMap<object, any>();
+(globalThis as any).__gxtNestedTrackingProxies = _nestedTrackingProxies;
 const _proxyToRaw = new WeakMap<object, any>();
 
 function wrapNestedObjectForTracking(obj: any): any {

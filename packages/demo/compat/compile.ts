@@ -7435,56 +7435,37 @@ export function precompileTemplate(templateString: string, options?: {
         //
         // When a value transitions to a DOM Node (e.g., {{this.attached}}
         // changing from undefined to an Element), we replace the text node
-        // with the actual DOM node and use marker comments for future updates.
-        let _dynamicMarkers: { start: Comment; end: Comment } | null = null;
+        // with the actual DOM node. We track the current content node so we
+        // can swap it reactively without leaving comment markers in the DOM.
+        let _currentContentNode: Node = textNode;
+        let _isNodeContent = false;
         try {
           gxtEffect(() => {
             const v = item();
             const fv = typeof v === 'function' ? v() : v;
 
             if (fv instanceof Node) {
-              // Transition to DOM Node content
-              if (_dynamicMarkers) {
-                // Already using markers — replace content between them
-                const parent = _dynamicMarkers.start.parentNode;
-                if (!parent) return;
-                let _n = _dynamicMarkers.start.nextSibling;
-                while (_n && _n !== _dynamicMarkers.end) {
-                  const _nx = _n.nextSibling;
-                  parent.removeChild(_n);
-                  _n = _nx;
-                }
-                parent.insertBefore(fv, _dynamicMarkers.end);
-              } else {
-                // First time transitioning to Node — set up markers
-                const parent = textNode.parentNode;
-                if (!parent) return;
-                const start = document.createComment('');
-                const end = document.createComment('');
-                parent.insertBefore(start, textNode);
-                parent.insertBefore(end, textNode.nextSibling);
-                parent.removeChild(textNode);
-                parent.insertBefore(fv, end);
-                _dynamicMarkers = { start, end };
+              // Transition to or update DOM Node content
+              const parent = _currentContentNode.parentNode;
+              if (!parent) return;
+              if (_currentContentNode !== fv) {
+                parent.replaceChild(fv, _currentContentNode);
+                _currentContentNode = fv;
               }
+              _isNodeContent = true;
               return;
             }
 
-            if (_dynamicMarkers) {
-              // Was Node, now primitive — replace content between markers
-              const parent = _dynamicMarkers.start.parentNode;
+            if (_isNodeContent) {
+              // Was Node, now primitive — replace with text node
+              const parent = _currentContentNode.parentNode;
               if (!parent) return;
-              let _n = _dynamicMarkers.start.nextSibling;
-              while (_n && _n !== _dynamicMarkers.end) {
-                const _nx = _n.nextSibling;
-                parent.removeChild(_n);
-                _n = _nx;
-              }
-              if (fv != null && fv !== '') {
-                parent.insertBefore(document.createTextNode(String(fv)), _dynamicMarkers.end);
-              }
+              const newText = document.createTextNode(fv == null ? '' : String(fv));
+              parent.replaceChild(newText, _currentContentNode);
+              _currentContentNode = newText;
+              _isNodeContent = false;
             } else {
-              textNode.textContent = fv == null ? '' : String(fv);
+              (textNode as Text).textContent = fv == null ? '' : String(fv);
             }
           });
         } catch {
