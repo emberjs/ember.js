@@ -665,7 +665,6 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
       args = vm.args.capture();
     }
 
-    let moduleName: string;
     let compilable: CompilableProgram | null = definition.compilable;
 
     if (compilable === null) {
@@ -680,26 +679,13 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
 
       let resolver = vm.context.resolver;
       compilable = resolver === null ? null : manager.getDynamicLayout(state, resolver);
-
-      if (compilable !== null) {
-        moduleName = compilable.moduleName;
-      } else {
-        moduleName = '__default__.hbs';
-      }
-    } else {
-      moduleName = compilable.moduleName;
     }
 
     // For tearing down the debugRenderTree
     vm.associateDestroyable(instance);
 
     if (hasCustomDebugRenderTreeLifecycle(manager)) {
-      let nodes = manager.getDebugCustomRenderTree(
-        instance.definition.state,
-        instance.state,
-        args,
-        moduleName
-      );
+      let nodes = manager.getDebugCustomRenderTree(instance.definition.state, instance.state, args);
 
       nodes.forEach((node) => {
         let { bucket } = node;
@@ -719,7 +705,6 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
         type: 'component',
         name,
         args,
-        template: moduleName,
         instance: valueForRef(selfRef),
       });
 

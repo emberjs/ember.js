@@ -106,14 +106,14 @@ export function CompilePositional(
 }
 
 export function meta(layout: LayoutWithContext): BlockMetadata {
-  let [, locals, upvars, lexicalSymbols] = layout.block;
+  let [, locals, upvars] = layout.block;
   let scopeRecord = layout.scope?.() ?? null;
 
   return {
     symbols: {
       locals,
       upvars,
-      lexical: scopeRecord ? Object.keys(scopeRecord) : lexicalSymbols,
+      lexical: scopeRecord ? Object.keys(scopeRecord) : undefined,
     },
     scopeValues: scopeRecord ? Object.values(scopeRecord) : null,
     isStrictMode: layout.isStrictMode,

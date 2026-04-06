@@ -131,7 +131,6 @@ class OutletComponentManager
       name: 'main',
       args: EMPTY_ARGS,
       instance: undefined,
-      template: undefined,
     });
 
     if (state.engine) {
@@ -141,7 +140,6 @@ class OutletComponentManager
         name: state.engine.mountPoint,
         args: EMPTY_ARGS,
         instance: state.engine.instance,
-        template: undefined,
       });
     }
 

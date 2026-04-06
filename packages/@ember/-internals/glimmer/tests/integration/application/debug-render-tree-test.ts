@@ -36,7 +36,6 @@ interface ExpectedRenderNode {
   name: CapturedRenderNode['name'];
   args: Expected<CapturedRenderNode['args']>;
   instance: Expected<CapturedRenderNode['instance']>;
-  template: Expected<CapturedRenderNode['template']>;
   bounds: Expected<CapturedRenderNode['bounds']>;
   children: Expected<CapturedRenderNode['children']> | ExpectedRenderNode[];
 }
@@ -104,7 +103,6 @@ if (ENV._DEBUG_RENDER_TREE) {
               named: { controller: this.controllerFor('index'), model: undefined },
             },
             instance: this.controllerFor('index'),
-            template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
             children: [],
           }),
@@ -121,7 +119,6 @@ if (ENV._DEBUG_RENDER_TREE) {
               named: { controller: this.controllerFor('foo'), model: undefined },
             },
             instance: this.controllerFor('foo'),
-            template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
             children: [
               this.outlet({
@@ -132,7 +129,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                   named: { controller: this.controllerFor('foo.index'), model: undefined },
                 },
                 instance: this.controllerFor('foo.index'),
-                template: 'my-app/templates/foo/index.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
                 children: [],
               }),
@@ -151,7 +147,6 @@ if (ENV._DEBUG_RENDER_TREE) {
               named: { controller: this.controllerFor('foo'), model: undefined },
             },
             instance: this.controllerFor('foo'),
-            template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
             children: [
               this.outlet({
@@ -162,7 +157,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                   named: { controller: this.controllerFor('foo.inner'), model: 'wow' },
                 },
                 instance: this.controllerFor('foo.inner'),
-                template: 'my-app/templates/foo/inner.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
                 children: [],
               }),
@@ -181,7 +175,6 @@ if (ENV._DEBUG_RENDER_TREE) {
               named: { controller: this.controllerFor('foo'), model: undefined },
             },
             instance: this.controllerFor('foo'),
-            template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
             children: [
               this.outlet({
@@ -192,7 +185,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                   named: { controller: this.controllerFor('foo.inner'), model: 'zomg' },
                 },
                 instance: this.controllerFor('foo.inner'),
-                template: 'my-app/templates/foo/inner.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
                 children: [],
               }),
@@ -288,7 +280,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static')[0]!),
             children: [
               {
@@ -297,7 +288,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#static')[0]!),
                 children: [],
               },
@@ -316,7 +306,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static')[0]!),
             children: [
               {
@@ -325,7 +314,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#static')[0]!),
                 children: [],
               },
@@ -337,7 +325,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isBarEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#dynamic')[0]!),
             children: [
               {
@@ -346,7 +333,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'bar/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#dynamic')[0]!),
                 children: [],
               },
@@ -365,7 +351,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static')[0]!),
             children: [
               {
@@ -374,7 +359,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#static')[0]!),
                 children: [],
               },
@@ -402,7 +386,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static')[0]!),
             children: [
               {
@@ -411,7 +394,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#static')[0]!),
                 children: [],
               },
@@ -423,7 +405,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: { model } },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static-with-model')[0]!),
             children: [
               {
@@ -432,7 +413,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: { model } },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#static-with-model')[0]!),
                 children: [
                   {
@@ -440,7 +420,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                     name: 'inspect-model',
                     args: { positional: [], named: { model } },
                     instance: null,
-                    template: 'foo/components/inspect-model.hbs',
                     bounds: this.nodeBounds(this.$('#static-with-model')[0]!.lastChild),
                     children: [],
                   },
@@ -461,7 +440,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static')[0]!),
             children: [
               {
@@ -470,7 +448,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#static')[0]!),
                 children: [],
               },
@@ -482,7 +459,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isBarEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#dynamic')[0]!),
             children: [
               {
@@ -491,7 +467,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'bar/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#dynamic')[0]!),
                 children: [],
               },
@@ -503,7 +478,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: { model } },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static-with-model')[0]!),
             children: [
               {
@@ -513,14 +487,12 @@ if (ENV._DEBUG_RENDER_TREE) {
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
                 bounds: this.elementBounds(this.$('#static-with-model')[0]!),
-                template: 'foo/templates/application.hbs',
                 children: [
                   {
                     type: 'component',
                     name: 'inspect-model',
                     args: { positional: [], named: { model } },
                     instance: null,
-                    template: 'foo/components/inspect-model.hbs',
                     bounds: this.nodeBounds(this.$('#static-with-model')[0]!.lastChild),
                     children: [],
                   },
@@ -534,7 +506,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: { model } },
             instance: (instance: Record<string, boolean>) =>
               instance['isBarEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#dynamic-with-model')[0]!),
             children: [
               {
@@ -543,7 +514,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: { model } },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'bar/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#dynamic-with-model')[0]!),
                 children: [
                   {
@@ -551,7 +521,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                     name: 'inspect-model',
                     args: { positional: [], named: { model } },
                     instance: null,
-                    template: 'bar/components/inspect-model.hbs',
                     bounds: this.nodeBounds(this.$('#dynamic-with-model')[0]!.lastChild),
                     children: [],
                   },
@@ -575,7 +544,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: (instance: Record<string, boolean>) =>
               instance['isFooEngineInstance'] === true,
-            template: null,
             bounds: this.elementBounds(this.$('#static')[0]!),
             children: [
               {
@@ -584,7 +552,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 args: { positional: [], named: {} },
                 instance: (instance: object) =>
                   instance.toString() === '(generated application controller)',
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.$('#static')[0]!),
                 children: [],
               },
@@ -654,7 +621,6 @@ if (ENV._DEBUG_RENDER_TREE) {
               named: { controller: this.controllerFor('index'), model: undefined },
             },
             instance: this.controllerFor('index'),
-            template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
             children: [],
           }),
@@ -668,7 +634,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'foo',
             args: { positional: [], named: {} },
             instance: instance!,
-            template: null,
             bounds: this.elementBounds(this.element!),
             children: [
               {
@@ -682,7 +647,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                   },
                 },
                 instance: instance!.lookup('controller:application'),
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
                 children: [
                   this.outlet({
@@ -693,7 +657,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                       named: { controller: instance!.lookup('controller:index'), model: undefined },
                     },
                     instance: instance!.lookup('controller:index'),
-                    template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
                     children: [],
                   }),
@@ -715,7 +678,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'foo',
             args: { positional: [], named: {} },
             instance: instance!,
-            template: null,
             bounds: this.elementBounds(this.element!),
             children: [
               {
@@ -729,7 +691,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                   },
                 },
                 instance: instance!.lookup('controller:application'),
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
                 children: [
                   this.outlet({
@@ -740,7 +701,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                       named: { controller: instance!.lookup('controller:index'), model: undefined },
                     },
                     instance: instance!.lookup('controller:index'),
-                    template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
                     children: [],
                   }),
@@ -749,7 +709,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                     name: 'hello',
                     args: { positional: [], named: { message: 'World' } },
                     instance: null,
-                    template: 'foo/components/hello.hbs',
                     bounds: this.nodeBounds(this.element!.lastChild),
                     children: [],
                   },
@@ -771,7 +730,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'foo',
             args: { positional: [], named: {} },
             instance: instance!,
-            template: null,
             bounds: this.elementBounds(this.element!),
             children: [
               {
@@ -785,7 +743,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                   },
                 },
                 instance: instance!.lookup('controller:application'),
-                template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
                 children: [
                   this.outlet({
@@ -796,7 +753,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                       named: { controller: instance!.lookup('controller:index'), model: undefined },
                     },
                     instance: instance!.lookup('controller:index'),
-                    template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
                     children: [],
                   }),
@@ -817,7 +773,6 @@ if (ENV._DEBUG_RENDER_TREE) {
               named: { controller: this.controllerFor('index'), model: undefined },
             },
             instance: this.controllerFor('index'),
-            template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
             children: [],
           }),
@@ -846,7 +801,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -862,7 +816,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -871,7 +824,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -887,7 +839,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -916,7 +867,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -932,7 +882,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -941,7 +890,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -957,7 +905,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -989,7 +936,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/components/hello-world.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1005,7 +951,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/components/hello-world.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1014,7 +959,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: null,
-            template: 'my-app/components/hello-world.hbs',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1030,7 +974,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/components/hello-world.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1059,7 +1002,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1075,7 +1017,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1084,7 +1025,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1100,7 +1040,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1144,7 +1083,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1160,7 +1098,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1169,7 +1106,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1185,7 +1121,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1213,7 +1148,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'on',
             instance: null,
             args: { named: {}, positional: ['change', anyFunc] },
-            template: null,
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1221,7 +1155,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['input', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1230,7 +1163,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['keyup', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1239,7 +1171,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['paste', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1248,7 +1179,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['cut', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1261,7 +1191,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'input',
             args: { positional: [], named: { type: 'text', value: 'first' } },
             instance: (instance: object) => inputToString.test(instance.toString()),
-            template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [...firstModifiers],
           },
@@ -1275,7 +1204,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'on',
             instance: null,
             args: { named: {}, positional: ['change', anyFunc] },
-            template: null,
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1283,7 +1211,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['input', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1292,7 +1219,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['keyup', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1301,7 +1227,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['paste', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1310,7 +1235,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['cut', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1323,7 +1247,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'input',
             args: { positional: [], named: { type: 'text', value: 'first' } },
             instance: (instance: object) => inputToString.test(instance.toString()),
-            template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [...firstModifiers],
           },
@@ -1332,7 +1255,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'input',
             args: { positional: [], named: { type: 'checkbox', checked: false } },
             instance: (instance: object) => inputToString.test(instance.toString()),
-            template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [...secondModifiers],
           },
@@ -1346,7 +1268,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'input',
             args: { positional: [], named: { type: 'text', value: 'first' } },
             instance: (instance: object) => inputToString.test(instance.toString()),
-            template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [...firstModifiers],
           },
@@ -1370,7 +1291,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'on',
             instance: null,
             args: { named: {}, positional: ['change', anyFunc] },
-            template: null,
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1378,7 +1298,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['input', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1387,7 +1306,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['keyup', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1396,7 +1314,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['paste', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1405,7 +1322,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['cut', anyFunc] },
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
@@ -1423,7 +1339,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: { value } },
             instance: (instance: Record<string, string>) => instance['value'] === value,
             bounds: this.nodeBounds(node),
-            template: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
             children,
           };
         };
@@ -1440,7 +1355,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'on',
             instance: null,
             args: { named: {}, positional: ['change', anyFunc] },
-            template: null,
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1448,7 +1362,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['input', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1457,7 +1370,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['keyup', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1466,7 +1378,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['paste', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1475,7 +1386,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             type: 'modifier',
             name: 'on',
             instance: null,
-            template: null,
             args: { named: {}, positional: ['cut', anyFunc] },
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
@@ -1510,15 +1420,12 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         await this.visit('/');
 
-        let template = `packages/@ember/-internals/glimmer/lib/templates/link-to.hbs`;
-
         const firstModifiers: ExpectedRenderNode['children'] = [
           {
             type: 'modifier',
             name: 'on',
             instance: null,
             args: { named: {}, positional: ['click', anyFunc] },
-            template: null,
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1530,7 +1437,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'link-to',
             args: { positional: [], named: { route: 'foo' } },
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
-            template,
+
             bounds: this.nodeBounds(this.element!.firstChild),
             children: firstModifiers,
           },
@@ -1546,7 +1453,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'on',
             instance: null,
             args: { named: {}, positional: ['click', anyFunc] },
-            template: null,
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1558,7 +1464,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'link-to',
             args: { positional: [], named: { route: 'foo' } },
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
-            template,
+
             bounds: this.nodeBounds(this.element!.firstChild),
             children: firstModifiers,
           },
@@ -1567,7 +1473,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'link-to',
             args: { positional: [], named: { route: 'bar' } },
             instance: (instance: Record<string, string>) => instance['route'] === 'bar',
-            template,
+
             bounds: this.nodeBounds(this.element!.lastChild),
             children: secondModifiers,
           },
@@ -1583,7 +1489,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'link-to',
             args: { positional: [], named: { route: 'foo' } },
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
-            template,
+
             bounds: this.nodeBounds(this.element!.firstChild),
             children: firstModifiers,
           },
@@ -1618,7 +1524,6 @@ if (ENV._DEBUG_RENDER_TREE) {
           name,
           instance: undefined,
           args: { positional: [], named: {} },
-          template: null,
           bounds: node.bounds,
           children: [node],
         };
@@ -1645,7 +1550,6 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       assertRenderTree(expected: ExpectedRenderNode[]): void {
-        let outlet = 'packages/@ember/-internals/glimmer/lib/templates/outlet.hbs';
         let actual = captureRenderTree(this.owner);
         let controller = this.controllerFor('application');
         let wrapped: ExpectedRenderNode[] = [
@@ -1654,7 +1558,6 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: '-top-level',
             args: { positional: [], named: { controller: undefined, model: undefined } },
             instance: undefined,
-            template: outlet,
             bounds: this.elementBounds(this.element!),
             children: [
               this.outlet({
@@ -1662,9 +1565,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 name: 'application',
                 args: { positional: [], named: { controller, model: undefined } },
                 instance: controller,
-                template: this.owner.hasRegistration('template:application')
-                  ? 'my-app/templates/application.hbs'
-                  : outlet,
                 bounds: this.elementBounds(this.element!),
                 children: expected,
               }),
@@ -1724,7 +1624,6 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.assertProperty(actual.name, expected.name, false, `${path} (name)`);
         this.assertProperty(actual.args, expected.args, true, `${path} (args)`);
         this.assertProperty(actual.instance, expected.instance, false, `${path} (instance)`);
-        this.assertProperty(actual.template, expected.template, false, `${path} (template)`);
         this.assertProperty(actual.bounds, expected.bounds, true, `${path} (bounds)`);
 
         if (Array.isArray(expected.children)) {
