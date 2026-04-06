@@ -22,6 +22,11 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
       return getter(this);
     },
     set(this: object, value: any) {
+      // GXT backtracking detection for @tracked properties
+      const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
+      if (typeof checkBacktracking === 'function') {
+        checkBacktracking(this, key);
+      }
       setter(this, value);
     },
   };
