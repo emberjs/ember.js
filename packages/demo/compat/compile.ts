@@ -123,6 +123,10 @@ var gxtSyncDom = _syncDomFromDirectImport;
   setParentContext: gxtSetParentContext,
 };
 
+// Ensure the validator compat module is loaded (registers backtracking detection
+// functions on globalThis that ember-gxt-wrappers.ts needs at runtime).
+import '@glimmer/validator';
+
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
 import { installEmberWrappers } from './ember-gxt-wrappers';
 
@@ -5456,6 +5460,39 @@ function transformCurlyBlockComponents(code: string): string {
  * Used when children of a component reference block params ($_bp), which are only
  * available after the slot function is invoked.
  */
+function wrapAllTopLevelChildren(childrenStr: string): string {
+  // Parse top-level items (respecting nested parens/brackets)
+  const items: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (let i = 0; i < childrenStr.length; i++) {
+    const ch = childrenStr[i];
+    if (ch === '(' || ch === '[') depth++;
+    else if (ch === ')' || ch === ']') depth--;
+    if (ch === ',' && depth === 0) {
+      items.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim()) items.push(current.trim());
+
+  let changed = false;
+  const wrapped = items.map(item => {
+    // Already a function? Don't double-wrap
+    if (item.startsWith('() =>') || item.startsWith('function')) return item;
+    // Only wrap items that contain component calls
+    if (item.includes('$_tag(') || item.includes('$_c(')) {
+      changed = true;
+      return `() => ${item}`;
+    }
+    return item;
+  });
+  if (!changed) return childrenStr;
+  return wrapped.join(', ');
+}
+
 function wrapTopLevelChildren(childrenStr: string): string {
   // Parse top-level items (respecting nested parens/brackets)
   const items: string[] = [];
@@ -6543,6 +6580,73 @@ export function precompileTemplate(templateString: string, options?: {
       }
     }
 
+    // Wrap ALL children of component $_tag calls in lazy arrow functions.
+    // GXT evaluates children eagerly (JavaScript evaluates array literals
+    // left-to-right), but Ember components expect children to be evaluated
+    // during {{yield}} (after the parent component's init has run).
+    // Without this, child components are created before their parent, which
+    // breaks closure variable patterns (e.g., capturing `this` in init).
+    if (modifiedCode.includes('$_tag(')) {
+      const tagRe2 = /\$_tag\(/g;
+      let tagMatch2;
+      let newCode2 = '';
+      let lastEnd2 = 0;
+      while ((tagMatch2 = tagRe2.exec(modifiedCode)) !== null) {
+        const tagStart2 = tagMatch2.index;
+        // Find the matching close paren
+        let depth2 = 1;
+        let pos2 = tagStart2 + '$_tag('.length;
+        for (; pos2 < modifiedCode.length && depth2 > 0; pos2++) {
+          if (modifiedCode[pos2] === '(') depth2++;
+          else if (modifiedCode[pos2] === ')') depth2--;
+        }
+        const tagEnd2 = pos2;
+        const fullCall2 = modifiedCode.slice(tagStart2, tagEnd2);
+
+        // Only process $_tag calls with 4 arguments (component calls with children)
+        // The 4th arg is the children array [...]
+        // Pattern: $_tag('Name', tagProps, this, [children])
+        // Find the children array (last top-level [...])
+        let bracketEnd2 = -1;
+        let bracketStart2 = -1;
+        let bd2 = 0;
+        for (let k = fullCall2.length - 2; k >= 0; k--) {
+          if (fullCall2[k] === ']') {
+            if (bd2 === 0) bracketEnd2 = k + 1;
+            bd2++;
+          } else if (fullCall2[k] === '[') {
+            bd2--;
+            if (bd2 === 0) { bracketStart2 = k; break; }
+          }
+        }
+        if (bracketStart2 >= 0 && bracketEnd2 > bracketStart2) {
+          const inner2 = fullCall2.slice(bracketStart2 + 1, bracketEnd2 - 1).trim();
+          // Only wrap if children contain $_tag or $_c calls (component invocations)
+          // Don't wrap text-only children or already-wrapped arrow functions
+          if (inner2.length > 0 &&
+              (inner2.includes('$_tag(') || inner2.includes('$_c(')) &&
+              !inner2.startsWith('() =>')) {
+            // Don't wrap named blocks (`:inverse`, `:default`, `:else`)
+            if (!inner2.includes("':default'") && !inner2.includes("':inverse'") && !inner2.includes("':else'")) {
+              // Wrap each top-level child in () =>
+              const wrappedInner2 = wrapAllTopLevelChildren(inner2);
+              if (wrappedInner2 !== inner2) {
+                const newCall2 = fullCall2.slice(0, bracketStart2 + 1) +
+                  wrappedInner2 +
+                  fullCall2.slice(bracketEnd2 - 1);
+                newCode2 += modifiedCode.slice(lastEnd2, tagStart2) + newCall2;
+                lastEnd2 = tagEnd2;
+              }
+            }
+          }
+        }
+      }
+      if (lastEnd2 > 0) {
+        newCode2 += modifiedCode.slice(lastEnd2);
+        modifiedCode = newCode2;
+      }
+    }
+
     compilationResult.code = modifiedCode;
     // Temporary debug: capture compiled code for scope-valued templates
     if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
@@ -7204,7 +7308,42 @@ export function precompileTemplate(templateString: string, options?: {
           return symTextNode;
         }
 
-        // Create a text node with the initial value
+        // Create a text node with the initial value.
+        // If the initial value is a DOM Node, use a marker-based approach
+        // that can swap between text and node content reactively.
+        if (finalResult instanceof Node) {
+          // DOM node in content position — insert it directly with
+          // start/end markers for reactive replacement.
+          const startMarker = document.createComment('');
+          const endMarker = document.createComment('');
+          const fragment = document.createDocumentFragment();
+          fragment.appendChild(startMarker);
+          fragment.appendChild(finalResult);
+          fragment.appendChild(endMarker);
+          try {
+            gxtEffect(() => {
+              const v = item();
+              const fv = typeof v === 'function' ? v() : v;
+              const parent = startMarker.parentNode;
+              if (!parent) return;
+              // Remove existing content between markers
+              let node = startMarker.nextSibling;
+              while (node && node !== endMarker) {
+                const next = node.nextSibling;
+                parent.removeChild(node);
+                node = next;
+              }
+              // Insert new content
+              if (fv instanceof Node) {
+                parent.insertBefore(fv, endMarker);
+              } else if (fv != null && fv !== '') {
+                parent.insertBefore(document.createTextNode(String(fv)), endMarker);
+              }
+            });
+          } catch { /* effect setup may fail */ }
+          return fragment;
+        }
+
         const textValue = finalResult == null ? '' : String(finalResult);
         const textNode = document.createTextNode(textValue);
 
@@ -7213,11 +7352,60 @@ export function precompileTemplate(templateString: string, options?: {
         // effect() tracks those cell reads. When set() updates the value,
         // the cell is dirtied, gxtSyncDom() runs the effect, and the
         // text node content is updated.
+        //
+        // When a value transitions to a DOM Node (e.g., {{this.attached}}
+        // changing from undefined to an Element), we replace the text node
+        // with the actual DOM node and use marker comments for future updates.
+        let _dynamicMarkers: { start: Comment; end: Comment } | null = null;
         try {
           gxtEffect(() => {
             const v = item();
             const fv = typeof v === 'function' ? v() : v;
-            textNode.textContent = fv == null ? '' : String(fv);
+
+            if (fv instanceof Node) {
+              // Transition to DOM Node content
+              if (_dynamicMarkers) {
+                // Already using markers — replace content between them
+                const parent = _dynamicMarkers.start.parentNode;
+                if (!parent) return;
+                let _n = _dynamicMarkers.start.nextSibling;
+                while (_n && _n !== _dynamicMarkers.end) {
+                  const _nx = _n.nextSibling;
+                  parent.removeChild(_n);
+                  _n = _nx;
+                }
+                parent.insertBefore(fv, _dynamicMarkers.end);
+              } else {
+                // First time transitioning to Node — set up markers
+                const parent = textNode.parentNode;
+                if (!parent) return;
+                const start = document.createComment('');
+                const end = document.createComment('');
+                parent.insertBefore(start, textNode);
+                parent.insertBefore(end, textNode.nextSibling);
+                parent.removeChild(textNode);
+                parent.insertBefore(fv, end);
+                _dynamicMarkers = { start, end };
+              }
+              return;
+            }
+
+            if (_dynamicMarkers) {
+              // Was Node, now primitive — replace content between markers
+              const parent = _dynamicMarkers.start.parentNode;
+              if (!parent) return;
+              let _n = _dynamicMarkers.start.nextSibling;
+              while (_n && _n !== _dynamicMarkers.end) {
+                const _nx = _n.nextSibling;
+                parent.removeChild(_n);
+                _n = _nx;
+              }
+              if (fv != null && fv !== '') {
+                parent.insertBefore(document.createTextNode(String(fv)), _dynamicMarkers.end);
+              }
+            } else {
+              textNode.textContent = fv == null ? '' : String(fv);
+            }
           });
         } catch {
           // Effect setup failed — text node stays static

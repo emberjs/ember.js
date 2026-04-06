@@ -4,7 +4,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 // import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import { validator } from '@lifeart/gxt/glimmer-compatibility';
-import { dirtyTagFor, consumeTag as compatConsumeTag, tagFor as compatTagFor } from '@glimmer/validator';
+import { dirtyTagFor, consumeTag as compatConsumeTag, tagFor as compatTagFor, trackedData as compatTrackedData } from '@glimmer/validator';
 
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
@@ -13,8 +13,12 @@ import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './de
 import { SELF_TAG } from './tags';
 
 const {
-  consumeTag: _nativeConsumeTag, tagFor: _nativeTagFor, trackedData
+  consumeTag: _nativeConsumeTag, tagFor: _nativeTagFor, trackedData: _nativeTrackedData
 } = validator;
+
+// Use compat trackedData for backtracking detection support.
+// The native GXT trackedData doesn't support backtracking detection.
+const trackedData = compatTrackedData;
 
 // Use compat versions that integrate with createCache tracking
 const consumeTag = compatConsumeTag;
@@ -221,6 +225,13 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   }
 
   function set(this: object, newValue: unknown): void {
+    // GXT backtracking detection for @tracked properties
+    if (DEBUG) {
+      const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
+      if (typeof checkBacktracking === 'function') {
+        checkBacktracking(this, key);
+      }
+    }
     setter(this, newValue);
     // Directly update the GXT cell for this property using cellFor.
     // trackedData.setter (above) updates the cell via GXT's native validator,

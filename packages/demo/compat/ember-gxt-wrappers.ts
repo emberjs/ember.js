@@ -353,7 +353,20 @@ function createEmberMaybeHelper(original: Function) {
               const _cellFor = g.__gxtCellFor;
               if (!cached || cached.__managerBucket !== true) {
                 const reactiveArgs = { positional: Object.freeze([...positional]), named: Object.freeze({ ...named }) };
-                const bucket = delegate.createHelper(factoryClass, reactiveArgs);
+                // Wrap createHelper in backtracking frame to detect
+                // read-then-write of tracked properties in constructor.
+                // Import lazily since the validator module may not be loaded yet.
+                const _beginBT = g.__gxtBeginBacktrackingFrame;
+                const _endBT = g.__gxtEndBacktrackingFrame;
+                const debugName = typeof delegate.getDebugName === 'function'
+                  ? delegate.getDebugName(factoryClass) : undefined;
+                if (_beginBT) _beginBT(debugName);
+                let bucket: any;
+                try {
+                  bucket = delegate.createHelper(factoryClass, reactiveArgs);
+                } finally {
+                  if (_endBT) _endBT();
+                }
 
                 // Wire up destroyable if supported
                 if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
@@ -366,7 +379,16 @@ function createEmberMaybeHelper(original: Function) {
                   }
                 }
 
-                const result = delegate.getValue(bucket);
+                // Wrap getValue in backtracking frame
+                const _beginBT2 = g.__gxtBeginBacktrackingFrame;
+                const _endBT2 = g.__gxtEndBacktrackingFrame;
+                if (_beginBT2) _beginBT2(debugName);
+                let result: any;
+                try {
+                  result = delegate.getValue(bucket);
+                } finally {
+                  if (_endBT2) _endBT2();
+                }
 
                 // Create a GXT cell to hold the result. Reading cell.value inside
                 // a formula establishes tracking, preventing const-optimization.
@@ -406,7 +428,17 @@ function createEmberMaybeHelper(original: Function) {
                 // Update args in place for the existing bucket
                 cached.reactiveArgs.positional = positional;
                 cached.reactiveArgs.named = named;
-                const result = cached.delegate.getValue(cached.bucket);
+                const _beginBT3 = g.__gxtBeginBacktrackingFrame;
+                const _endBT3 = g.__gxtEndBacktrackingFrame;
+                const cachedDebugName = typeof cached.delegate?.getDebugName === 'function'
+                  ? cached.delegate.getDebugName(factoryClass) : undefined;
+                if (_beginBT3) _beginBT3(cachedDebugName);
+                let result: any;
+                try {
+                  result = cached.delegate.getValue(cached.bucket);
+                } finally {
+                  if (_endBT3) _endBT3();
+                }
                 cached.lastArgsSer = argsSer;
                 cached.lastResult = result;
 

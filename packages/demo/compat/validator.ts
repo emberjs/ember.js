@@ -253,6 +253,30 @@ export function getValue<T>(cache: { value: T }): T {
 // tracked getter again. Our version uses internal WeakMap storage instead.
 const trackedDataStorage = new WeakMap<object, Map<string | symbol, ReturnType<typeof createCell>>>();
 
+// Backtracking detection: track which cells have been read in the current
+// computation frame. If a cell is read and then written in the same frame,
+// that's a backtracking re-render which Ember disallows.
+let _backtrackingFrame: Map<any, { key: string | symbol; obj: object }> | null = null;
+
+let _backtrackingDebugName: string | null = null;
+
+export function beginBacktrackingFrame(debugName?: string) {
+  _backtrackingFrame = new Map();
+  _backtrackingDebugName = debugName || null;
+}
+
+export function endBacktrackingFrame() {
+  _backtrackingFrame = null;
+}
+
+export function isInBacktrackingFrame() {
+  return _backtrackingFrame !== null;
+}
+
+// Expose on globalThis for ember-gxt-wrappers.ts (avoids circular imports)
+(globalThis as any).__gxtBeginBacktrackingFrame = beginBacktrackingFrame;
+(globalThis as any).__gxtEndBacktrackingFrame = endBacktrackingFrame;
+
 export function trackedData<T, K extends string | symbol>(
   key: K,
   initializer?: () => T
@@ -273,6 +297,11 @@ export function trackedData<T, K extends string | symbol>(
         objStorage.set(key, cellForKey);
       }
 
+      // Record this read in the backtracking frame
+      if (_backtrackingFrame !== null) {
+        _backtrackingFrame.set(cellForKey, { key, obj });
+      }
+
       return cellForKey.value as T;
     },
     setter(obj: object, value: T): void {
@@ -287,6 +316,29 @@ export function trackedData<T, K extends string | symbol>(
         cellForKey = createCell(value, `tracked:${String(key)}`);
         objStorage.set(key, cellForKey);
       } else {
+        // Backtracking detection: if this cell was read in the current frame,
+        // setting it is backtracking
+        if (_backtrackingFrame !== null && _backtrackingFrame.has(cellForKey)) {
+          const info = _backtrackingFrame.get(cellForKey)!;
+          // Try to get a useful name: class name, toString, or fallback
+          const rawObj = info.obj as any;
+          const objName = rawObj?.constructor?.name && rawObj.constructor.name !== 'Object'
+            ? rawObj.constructor.name
+            : (rawObj?.toString?.() !== '[object Object]' ? rawObj?.toString?.() : '<unknown>');
+          // Clear the frame before calling assert to prevent recursion
+          _backtrackingFrame = null;
+          const renderTree = _backtrackingDebugName
+            ? `(result of a \`${_backtrackingDebugName}\` helper)`
+            : '(unknown)';
+          const msg = `You attempted to update \`${String(info.key)}\` on \`${objName}\`, but it had already been used previously in the same computation. Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.\n\n\`${String(info.key)}\` was first used:\n\n- While rendering:\n  -top-level\n    ${renderTree}\n\nStack trace for the update:`;
+          // Use the Ember assert function directly. The __emberAssertDirect
+          // is a live reference to the assert from @ember/debug, which
+          // is updated when expectAssertion stubs it via setDebugFunction.
+          const assertDirect = (globalThis as any).__emberAssertDirect;
+          if (typeof assertDirect === 'function') {
+            assertDirect(msg, false);
+          }
+        }
         cellForKey.value = value;
       }
     }

@@ -11,6 +11,19 @@
  */
 
 import { assert, getDebugFunction } from '@ember/debug';
+// Expose the Ember assert function on globalThis so the validator compat can use it
+// for backtracking detection. The assert function is stub-able via setDebugFunction
+// which is what expectAssertion() hooks into.
+Object.defineProperty(globalThis, '__emberAssertFn', {
+  get() { return getDebugFunction('assert'); },
+  configurable: true,
+});
+// Direct assert function — a wrapper that always calls the current (possibly stubbed)
+// assert. Unlike __emberAssertFn which returns the function for later call, this
+// wrapper is called immediately and uses the ESM live binding of `assert`.
+(globalThis as any).__emberAssertDirect = function(msg: string, test: unknown) {
+  assert(msg, test);
+};
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
 import { setViewElement, setElementView, getViewElement, getElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
@@ -37,6 +50,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
   );
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+import { beginBacktrackingFrame, endBacktrackingFrame } from '@glimmer/validator';
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect } from '@lifeart/gxt';
 import { destroy as _destroyDestroyable } from './destroyable';
 
@@ -1073,16 +1087,36 @@ let _isInRenderPass = false;
 export function markTemplateRendered(instance: any): void {
   if (instance) {
     _templateRenderedInstances.add(instance);
+    // Also track non-component objects that are properties of the rendered component.
+    // This enables backtracking detection for shared dependencies
+    // (e.g., this.wrapper.content where wrapper is an EmberObject or tracked class).
+    try {
+      const keys = Object.keys(instance);
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i]!;
+        if (k.charCodeAt(0) === 95 || k.charCodeAt(0) === 36) continue; // skip _ and $
+        let val: any;
+        try { val = instance[k]; } catch { continue; }
+        if (val && typeof val === 'object' && !Array.isArray(val) &&
+            !(val instanceof Node) && !(val instanceof Date) &&
+            !(val instanceof RegExp) && !(val instanceof Error) &&
+            !(val instanceof Promise)) {
+          _templateRenderedInstances.add(val);
+        }
+      }
+    } catch { /* ignore prototype or frozen objects */ }
   }
 }
 
 export function beginRenderPass(): void {
   _isInRenderPass = true;
+  (globalThis as any).__gxtIsInRenderPass = true;
   _templateRenderedInstances.clear();
 }
 
 export function endRenderPass(): void {
   _isInRenderPass = false;
+  (globalThis as any).__gxtIsInRenderPass = false;
   _templateRenderedInstances.clear();
 }
 
@@ -1093,12 +1127,68 @@ export function endRenderPass(): void {
  */
 (globalThis as any).__gxtCheckBacktracking = function(targetObj: any, key: string): void {
   if (!_isInRenderPass) return;
-  if (!_templateRenderedInstances.has(targetObj)) return;
+  if (!_templateRenderedInstances.has(targetObj)) {
+    // The target might be a Proxy created by wrapNestedObjectForTracking.
+    // Check if the raw (unwrapped) target is in the set.
+    const rawTarget = _proxyToRaw.get(targetObj);
+    if (!rawTarget || !_templateRenderedInstances.has(rawTarget)) {
+      return;
+    }
+  }
   // This instance's template was already rendered in this pass.
   // Setting a property on it is backtracking.
   const objName = targetObj?.toString?.() || '<unknown>';
+
+  // Build a render tree string from the parentView stack for the message.
+  // Walk the parentView chain to build component names (skip the root test context).
+  const renderTreeParts: string[] = [];
+  let propPath = `this.${key}`;
+
+  // Check if targetObj is a component (has parentView/debugContainerKey)
+  let startObj: any = targetObj;
+  if (!startObj._debugContainerKey && !startObj.parentView) {
+    // Target is a non-component object (e.g., EmberObject, tracked class).
+    // Find the owning component by checking which rendered component has this
+    // object as a property value.
+    for (const rendered of _templateRenderedInstances) {
+      if (!rendered._debugContainerKey) continue;
+      const keys = Object.keys(rendered);
+      for (const k of keys) {
+        if (k.startsWith('_') || k.startsWith('$')) continue;
+        try {
+          const val = rendered[k];
+          // Check both raw and proxy-unwrapped identity
+          const rawTarget = _proxyToRaw.get(targetObj) || targetObj;
+          if (val === rawTarget || val === targetObj) {
+            startObj = rendered;
+            propPath = `this.${k}.${key}`;
+            break;
+          }
+        } catch { /* ignore */ }
+      }
+      if (startObj !== targetObj) break;
+    }
+  }
+
+  let pv: any = startObj;
+  while (pv) {
+    const dbgKey = pv._debugContainerKey;
+    if (dbgKey) {
+      const name = dbgKey.replace('component:', '');
+      if (name !== '-top-level') {
+        renderTreeParts.unshift(name);
+      }
+    }
+    pv = pv.parentView;
+  }
+  // Build indented tree
+  const treeLines = renderTreeParts.map((n, i) => ' '.repeat((i + 2) * 2) + n);
+  const propIndent = ' '.repeat((renderTreeParts.length + 1) * 2);
+  treeLines.push(propIndent + propPath);
+  const renderTree = treeLines.join('\n');
+
   assert(
-    `You modified "${key}" on "${objName}" after it was rendered. This was unreliable in Ember and is no longer allowed. [GXT] Backtracking re-render detected.`,
+    `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  -top-level\n${renderTree}\n\nStack trace for the update:`,
     false
   );
 };
@@ -2350,6 +2440,7 @@ function buildWrapperElement(
  * identity comparisons stay stable.
  */
 const _nestedTrackingProxies = new WeakMap<object, any>();
+const _proxyToRaw = new WeakMap<object, any>();
 
 function wrapNestedObjectForTracking(obj: any): any {
   if (obj == null || typeof obj !== 'object') return obj;
@@ -2391,6 +2482,7 @@ function wrapNestedObjectForTracking(obj: any): any {
   });
 
   _nestedTrackingProxies.set(obj, proxy);
+  _proxyToRaw.set(proxy, obj);
   return proxy;
 }
 
@@ -3964,12 +4056,14 @@ const $_MANAGERS = {
             const delegate = internalManager.getDelegateFor(owner);
             // Validate that capabilities were created via helperCapabilities()
             if (delegate && delegate.capabilities && !FROM_CAPABILITIES.has(delegate.capabilities)) {
-              throw new Error(
+              const err = new Error(
                 `Custom helper managers must have a \`capabilities\` property ` +
                 `that is the result of calling the \`capabilities('3.23')\` ` +
                 `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
                 `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
               );
+              captureRenderError(err);
+              throw err;
             }
             if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
               const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
@@ -3984,8 +4078,14 @@ const $_MANAGERS = {
                 named: { ...(curriedNamed as Record<string, any>) },
               };
 
-              // Create the helper bucket once
-              const bucket = delegate.createHelper(helper, reactiveArgs);
+              // Create the helper bucket once, with backtracking detection
+              beginBacktrackingFrame();
+              let bucket: any;
+              try {
+                bucket = delegate.createHelper(helper, reactiveArgs);
+              } finally {
+                endBacktrackingFrame();
+              }
 
               // If the delegate has a destroyable, register it for cleanup
               if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
@@ -4011,7 +4111,13 @@ const $_MANAGERS = {
                 // Update in place so the bucket's reference to args sees changes
                 reactiveArgs.positional = newPositional;
                 reactiveArgs.named = newNamed;
-                return delegate.getValue(bucket);
+                // Wrap getValue in backtracking frame to detect read-then-write
+                beginBacktrackingFrame();
+                try {
+                  return delegate.getValue(bucket);
+                } finally {
+                  endBacktrackingFrame();
+                }
               };
               (curried as any).__isEmberCurriedHelper = true;
               (curried as any).__helperBucket = bucket;
@@ -4076,12 +4182,14 @@ const $_MANAGERS = {
               const delegate = internalManager.getDelegateFor(owner);
               // Validate that capabilities were created via helperCapabilities()
               if (delegate && delegate.capabilities && !FROM_CAPABILITIES.has(delegate.capabilities)) {
-                throw new Error(
+                const err = new Error(
                   `Custom helper managers must have a \`capabilities\` property ` +
                   `that is the result of calling the \`capabilities('3.23')\` ` +
                   `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
                   `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
                 );
+                captureRenderError(err);
+                throw err;
               }
               if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
                 const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
@@ -4096,8 +4204,14 @@ const $_MANAGERS = {
                   named: { ...(curriedNamed as Record<string, any>) },
                 };
 
-                // Create the helper bucket ONCE
-                const bucket = delegate.createHelper(definition, reactiveArgs);
+                // Create the helper bucket ONCE, with backtracking detection
+                beginBacktrackingFrame();
+                let bucket: any;
+                try {
+                  bucket = delegate.createHelper(definition, reactiveArgs);
+                } finally {
+                  endBacktrackingFrame();
+                }
 
                 // If the delegate has a destroyable, register it for cleanup
                 if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
@@ -4122,7 +4236,13 @@ const $_MANAGERS = {
                   // Update in place so the bucket's reference to args sees changes
                   reactiveArgs.positional = newPositional;
                   reactiveArgs.named = newNamed;
-                  return delegate.getValue(bucket);
+                  // Wrap getValue in backtracking frame to detect read-then-write
+                  beginBacktrackingFrame();
+                  try {
+                    return delegate.getValue(bucket);
+                  } finally {
+                    endBacktrackingFrame();
+                  }
                 };
                 (curried as any).__isEmberCurriedHelper = true;
                 (curried as any).__helperBucket = bucket;
@@ -4356,6 +4476,8 @@ const $_MANAGERS = {
               cached.manager.update(cached.instance);
             }
           } else {
+            // Custom modifier manager update path with per-arg tracking.
+            // Only call updateModifier if consumed args have actually changed.
             // Custom modifier manager update path
             const args = buildArgs();
             if (cached.manager.updateModifier) {
@@ -4550,8 +4672,14 @@ const $_MANAGERS = {
 
       // Install the modifier immediately.
       const args = buildArgs();
-      const instance = manager.createModifier(ModifierClass, args);
-      manager.installModifier(instance, element, args);
+      beginBacktrackingFrame();
+      let instance: any;
+      try {
+        instance = manager.createModifier(ModifierClass, args);
+        manager.installModifier(instance, element, args);
+      } finally {
+        endBacktrackingFrame();
+      }
 
       // Cache the instance for subsequent update calls
       let cache = self._cache.get(element);
