@@ -21,7 +21,8 @@
     "./utility-types": "./utility-types/index.ts",
     "./utils": "./utils/index.ts",
     "./views": "./views/index.ts",
-    "./views/lib/system/utils": "./views/lib/system/utils.ts"
+    "./views/lib/system/utils": "./views/lib/system/utils.ts",
+    "./glimmer/lib/utils/string": "./glimmer/lib/utils/string.ts"
   },
   "dependencies": {
     "@ember/application": "workspace:*",
