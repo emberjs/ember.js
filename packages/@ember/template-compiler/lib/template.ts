@@ -253,10 +253,6 @@ export function template(
   return component;
 }
 
-const evaluator = (source: string) => {
-  return new Function(`return ${source}`)();
-};
-
 /**
  * Builds the source wireformat JSON block
  *
