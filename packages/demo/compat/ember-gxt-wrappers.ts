@@ -127,6 +127,10 @@ function createEmberMaybeHelper(original: Function) {
     const hash = maybeCtx ? hashOrCtx : (isCtx ? {} : (hashOrCtx ?? {}));
 
     // Handle CurriedComponent — when a curried component is used as {{curried ...}} or {{object.comp ...}}
+    // Return the merged CurriedComponent as-is so the rendering pipeline (itemToNode
+    // in compile.ts) can detect it and render it as a proper component with correct
+    // parent context. Rendering here (inside $_maybeHelper) would produce DOM nodes
+    // in text position, which gets stringified instead of inserted into the DOM.
     if (nameOrFn && nameOrFn.__isCurriedComponent) {
       // Merge the invocation args into the curried component
       const namedArgs: Record<string, any> = {};
@@ -142,18 +146,7 @@ function createEmberMaybeHelper(original: Function) {
       // Create a new curried component with merged args
       const createCurried = g.__createCurriedComponent;
       if (!createCurried) return nameOrFn;
-      const merged = createCurried(nameOrFn, namedArgs, positionals);
-
-      // Render it through the component manager
-      const managers = g.$_MANAGERS;
-      if (managers?.component?.canHandle?.(merged)) {
-        const handleResult = managers.component.handle(merged, {}, null, null);
-        if (typeof handleResult === 'function') {
-          return handleResult();
-        }
-        return handleResult;
-      }
-      return merged;
+      return createCurried(nameOrFn, namedArgs, positionals);
     }
 
     // Function/class arguments — check for a registered helper manager first.
@@ -338,12 +331,17 @@ function createEmberMaybeHelper(original: Function) {
             // Validate capabilities were created via helperCapabilities()
             const _FROM_CAPS = g.FROM_CAPABILITIES;
             if (delegate && delegate.capabilities && _FROM_CAPS && !_FROM_CAPS.has(delegate.capabilities)) {
-              throw new Error(
+              const err = new Error(
                 `Custom helper managers must have a \`capabilities\` property ` +
                 `that is the result of calling the \`capabilities('3.23')\` ` +
                 `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
                 `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
               );
+              // Capture the error so flushRenderErrors() can re-throw it after
+              // GXT's TRY_CATCH_ERROR_HANDLING catches the direct throw.
+              const capture = g.__captureRenderError;
+              if (typeof capture === 'function') capture(err);
+              throw err;
             }
             if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
               // Cache the helper bucket per name so re-renders don't create new instances.
@@ -1091,94 +1089,23 @@ function createEmberDc(original: Function) {
     gxtArgs: any,
     ctx: any
   ): any {
-    // Try to evaluate the component getter to check if it's a curried component.
-    // If it fails (e.g., block params not set yet), delegate to original $_dc.
-    let componentValue: any;
-    try {
-      componentValue = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-    } catch {
-      // Getter failed — likely block params not set yet.
-      // Return a lazy thunk that evaluates when GXT processes the children.
-      const lazyThunk = () => {
-        try {
-          const val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-          if (val && val.__isCurriedComponent) {
-            return renderComponent(val, gxtArgs, ctx);
-          }
-          if (typeof val === 'string') {
-            const mgrs = g.$_MANAGERS;
-            if (mgrs?.component?.canHandle?.(val)) {
-              return renderComponent(val, gxtArgs, ctx);
-            }
-          }
-          return val;
-        } catch {
-          return undefined;
-        }
-      };
-      (lazyThunk as any).__isComponentThunk = true;
-      return lazyThunk;
-    }
-
-    // If getter returned undefined/null, the block param may not be set yet.
-    // Return a lazy thunk.
-    if (componentValue == null) {
-      const lazyThunk = () => {
-        try {
-          const val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-          if (val && val.__isCurriedComponent) {
-            return renderComponent(val, gxtArgs, ctx);
-          }
-          if (typeof val === 'string') {
-            const mgrs = g.$_MANAGERS;
-            if (mgrs?.component?.canHandle?.(val)) {
-              return renderComponent(val, gxtArgs, ctx);
-            }
-          }
-          return val;
-        } catch {
-          return undefined;
-        }
-      };
-      (lazyThunk as any).__isComponentThunk = true;
-      return lazyThunk;
-    }
-
-    // Handle CurriedComponent — pass componentGetter as a "live source"
-    // so the component's arg cells can re-read from the LATEST curried
-    // component's args when $_componentHelper re-evaluates with new values.
-    if (componentValue && componentValue.__isCurriedComponent) {
-      const prev = g.__dcComponentGetter;
-      g.__dcComponentGetter = componentGetter;
-      try {
-        const result = renderComponent(componentValue, gxtArgs, ctx);
-        return result;
-      } finally {
-        g.__dcComponentGetter = prev;
-      }
-    }
-
-    // Handle string component name — pass positional params through since the
-    // component manager needs them for positionalParams mapping (e.g.,
-    // {{component this.componentName this.name this.age}} where the component
-    // class has static positionalParams = ['name', 'age'])
-    if (typeof componentValue === 'string') {
-      const managers = g.$_MANAGERS;
-      if (managers?.component?.canHandle?.(componentValue)) {
-        return renderComponent(componentValue, gxtArgs, ctx, /* allowPositionalParams */ true);
-      }
-    }
-
-    // Handle component definitions (template-only, GlimmerishComponent, etc.)
-    // that have a template in COMPONENT_TEMPLATES
-    if (componentValue && (typeof componentValue === 'object' || typeof componentValue === 'function')) {
-      const managers = g.$_MANAGERS;
-      if (managers?.component?.canHandle?.(componentValue)) {
-        return renderComponent(componentValue, gxtArgs, ctx);
-      }
-    }
-
-    // Fall back to original GXT $_dc for native GXT components
+    // Always delegate to the original GXT $_dc.
+    //
+    // The $_dc_ember wrapper in compile.ts wraps the componentGetter to convert
+    // strings, CurriedComponents, and falsy values into unique marker functions.
+    // These markers carry __stringComponentName, __isCurriedComponent, or
+    // __emptyComponent properties that $_MANAGERS.component.canHandle() detects.
+    //
+    // GXT's native $_dc creates a formula from the getter, watches for reference
+    // changes (new marker function = component swap), and calls component() which
+    // delegates to the Ember component manager via _component → $_MANAGERS.
+    //
+    // Previously, this function short-circuited GXT's reactive swap mechanism
+    // by rendering CurriedComponents/strings directly. This broke:
+    // - Transition from undefined/null to a valid component (test 3)
+    // - willDestroy lifecycle on swap (test 5)
+    // - Computed property changes triggering swap (test 6)
+    // - New instance creation on name change (test 4)
     return original(componentGetter, gxtArgs, ctx);
   };
 }
