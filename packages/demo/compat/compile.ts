@@ -4246,7 +4246,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 // $_dc's swap logic to detect component changes and re-render.
 {
   const g = globalThis as any;
-  if (g.$_dc && !g.$_dc.__dcMarkerWrapped) {
+  if (g.$_dc && !g.$_dc.__emberWrapped) {
     const originalDc = g.$_dc;
 
     // Per-name marker functions so $_dc detects reference changes and swaps.
@@ -4316,28 +4316,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
         // String component name — create a new marker when name changes
         if (typeof raw === 'string') {
-          // Validate that the component exists (matches Ember's eager validation
-          // for {{component "name"}} during render). Throws for non-existent components.
-          if (raw.length > 0) {
-            const validationOwner = g.owner;
-            if (validationOwner && !validationOwner.isDestroyed && !validationOwner.isDestroying) {
-              const factory = validationOwner.factoryFor?.(`component:${raw}`);
-              const template = validationOwner.lookup?.(`template:components/${raw}`);
-              const looked = !factory ? validationOwner.lookup?.(`component:${raw}`) : factory;
-              if (!factory && !template && !looked) {
-                const err = new Error(
-                  `Attempted to resolve \`${raw}\`, which was expected to be a component, but nothing was found. ` +
-                  `Could not find component named "${raw}" (no component or template with that name was found)`
-                );
-                const captureErr = g.__captureRenderError;
-                if (typeof captureErr === 'function') {
-                  captureErr(err);
-                }
-                throw err;
-              }
-            }
-          }
-
           const key = '__str:' + raw;
           if (_lastIdentityKey !== key) {
             _destroyOldDcInstance();
@@ -4389,7 +4367,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
       return originalDc(wrappedGetter, args, ctx);
     };
-    g.$_dc.__dcMarkerWrapped = true;
+    g.$_dc.__emberWrapped = true;
   }
 }
 
@@ -4738,116 +4716,6 @@ function transformComponentHelper(code: string): string {
     }
     return `<${name} />`;
   });
-
-  return result;
-}
-
-/**
- * Transform block-param dot-path component invocations inside {{#let}} and {{#with}} blocks.
- *
- * In Ember, when a let/with block yields a hash containing components:
- *   {{#let (hash comp=(component "foo")) as |object|}}
- *     {{object.comp args}}
- *   {{/let}}
- *
- * The {{object.comp args}} should render the component. But GXT compiles this as
- * $_maybeHelper (text output) instead of $_c/$_dc (component invocation).
- *
- * This function transforms:
- *   {{param.prop arg1 key=val}} -> <param.prop @__pos0__={{arg1}} @key={{val}} />
- *   {{param.prop}} -> <param.prop />
- *   {{#param.prop args}}content{{/param.prop}} -> <param.prop args>content</param.prop>
- */
-function transformLetBlockParamComponents(code: string): string {
-  let result = code;
-  const blockHelpers = ['let', 'with'];
-
-  for (const helper of blockHelpers) {
-    // Find all {{#helper ... as |param1 param2|}} blocks
-    const openPattern = new RegExp(`\\{\\{#${helper}\\s+([^}]*?)\\s+as\\s*\\|([^|]+)\\|\\s*\\}\\}`, 'g');
-    let match;
-
-    // Process matches from end to start to preserve indices
-    const matches: Array<{ fullMatch: string; index: number; params: string[] }> = [];
-    while ((match = openPattern.exec(result)) !== null) {
-      const params = match[2].trim().split(/\s+/);
-      matches.push({ fullMatch: match[0], index: match.index, params });
-    }
-
-    // Process in reverse order
-    for (let i = matches.length - 1; i >= 0; i--) {
-      const { fullMatch, index: startIdx, params } = matches[i];
-      const afterOpen = startIdx + fullMatch.length;
-
-      // Find matching {{/helper}}
-      let depth = 1;
-      let searchPos = afterOpen;
-      let endIdx = -1;
-      const closeTag = `{{/${helper}}}`;
-      const openTag = `{{#${helper} `;
-
-      while (depth > 0 && searchPos < result.length) {
-        const nextOpen = result.indexOf(openTag, searchPos);
-        const nextClose = result.indexOf(closeTag, searchPos);
-        if (nextClose === -1) break;
-
-        if (nextOpen !== -1 && nextOpen < nextClose) {
-          depth++;
-          searchPos = nextOpen + openTag.length;
-        } else {
-          depth--;
-          if (depth === 0) {
-            endIdx = nextClose + closeTag.length;
-          } else {
-            searchPos = nextClose + closeTag.length;
-          }
-        }
-      }
-
-      if (endIdx === -1) continue;
-
-      // Extract block content
-      let content = result.slice(afterOpen, endIdx - closeTag.length);
-
-      // Transform block-param dot-path invocations in the content
-      for (const param of params) {
-        // Block form: {{#param.prop args}}content{{/param.prop}}
-        const blockDotPattern = new RegExp(
-          `\\{\\{#${param}(\\.[a-zA-Z0-9_.]+)(\\s[^}]*)?\\}\\}([\\s\\S]*?)\\{\\{/${param}\\1\\}\\}`, 'g'
-        );
-        content = content.replace(blockDotPattern, (m: string, dotPath: string, args: string, blockContent: string) => {
-          const transformedArgs = args ? transformCurlyArgsToAngleBracket(args.trim()) : '';
-          return `<${param}${dotPath}${transformedArgs}>${blockContent}</${param}${dotPath}>`;
-        });
-
-        // Block form: {{#param args}}content{{/param}}
-        const blockSimplePattern = new RegExp(
-          `\\{\\{#${param}(\\s[^}]*)?\\}\\}([\\s\\S]*?)\\{\\{/${param}\\}\\}`, 'g'
-        );
-        content = content.replace(blockSimplePattern, (m: string, args: string, blockContent: string) => {
-          const transformedArgs = args ? transformCurlyArgsToAngleBracket(args.trim()) : '';
-          return `<${param}${transformedArgs}>${blockContent}</${param}>`;
-        });
-
-        // Inline with args: {{param.prop arg1 key=val}} -> <param.prop @__pos0__={{arg1}} @key={{val}} />
-        const inlineDotWithArgs = new RegExp(
-          `\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.]+)(\\s+[^}]+)\\}\\}`, 'g'
-        );
-        content = content.replace(inlineDotWithArgs, (m: string, dotPath: string, args: string) => {
-          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
-          return `<${param}${dotPath}${transformedArgs} />`;
-        });
-
-        // Note: bare {{param.prop}} (no args) is NOT transformed here because
-        // the value might be a plain value (string/number), not a component.
-        // CurriedComponents in text position are handled by the renderElement
-        // CurriedComponent detection in GXT's render-core.ts.
-      }
-
-      // Reconstruct
-      result = result.slice(0, afterOpen) + content + result.slice(endIdx - closeTag.length);
-    }
-  }
 
   return result;
 }
@@ -6084,15 +5952,6 @@ export function precompileTemplate(templateString: string, options?: {
     transformedTemplate = transformComponentHelper(transformedTemplate);
   }
 
-  // Transform block-param dot-path invocations inside {{#let}} and {{#with}} blocks.
-  // In Ember, {{object.comp}} and {{object.comp args}} where `object` is a block param
-  // from {{#let (hash comp=(component "foo")) as |object|}} should render the component.
-  // GXT compiles these as $_maybeHelper (text), not $_c/$_dc (component).
-  // Fix: convert to angle-bracket syntax so GXT compiles them as component invocations.
-  if (/\{\{#(?:let|with)\s/.test(transformedTemplate)) {
-    transformedTemplate = transformLetBlockParamComponents(transformedTemplate);
-  }
-
   // Transform built-in curly components ({{input ...}} and {{textarea ...}}) to angle-bracket syntax
   // These don't have hyphens so transformCurlyBlockComponents won't handle them
   transformedTemplate = transformedTemplate.replace(
@@ -6460,17 +6319,6 @@ export function precompileTemplate(templateString: string, options?: {
         /\$_if\(\(?(\(\)\s*=>\s*this\.([a-zA-Z_$][a-zA-Z0-9_$]*))\)?\s*,/g,
         (match, getter, propName) => {
           return `$_if(globalThis.__gxtGetCellOrFormula(this, '${propName}'),`;
-        }
-      );
-      // Also transform $_if(() => VAR.PROP, ...) for scope variables with
-      // @tracked properties (e.g., state.showSecond). This ensures the
-      // patched $_if registers manual watchers for scope-provided objects.
-      modifiedCode = modifiedCode.replace(
-        /\$_if\(\(?(\(\)\s*=>\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\.([a-zA-Z_$][a-zA-Z0-9_$]*))\)?\s*,/g,
-        (match, getter, varName, propName) => {
-          // Skip 'this.PROP' — already handled above
-          if (varName === 'this') return match;
-          return `$_if(globalThis.__gxtGetCellOrFormula(${varName}, '${propName}'),`;
         }
       );
     }
