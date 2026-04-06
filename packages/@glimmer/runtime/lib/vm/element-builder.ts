@@ -61,7 +61,7 @@ export class Fragment implements Bounds {
     this.bounds = bounds;
   }
 
-  parentElement(): SimpleElement {
+  parentElement(): SimpleElement | SimpleDocumentFragment {
     return this.bounds.parentElement();
   }
 
@@ -110,7 +110,11 @@ export class NewTreeBuilder implements TreeBuilder {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
+  constructor(
+    env: Environment,
+    parentNode: SimpleElement | SimpleDocumentFragment,
+    nextSibling: Nullable<SimpleNode>
+  ) {
     this.pushElement(parentNode, nextSibling);
     this.env = env;
     this.dom = env.getAppendOperations();
@@ -134,7 +138,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return this.blockStack.toArray();
   }
 
-  get element(): SimpleElement {
+  get element(): SimpleElement | SimpleDocumentFragment {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     return this.cursors.current!.element;
   }
@@ -221,7 +225,7 @@ export class NewTreeBuilder implements TreeBuilder {
     this.didOpenElement(element);
   }
 
-  __flushElement(parent: SimpleElement, constructing: SimpleElement) {
+  __flushElement(parent: SimpleElement | SimpleDocumentFragment, constructing: SimpleElement) {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
   }
 
@@ -232,7 +236,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
@@ -240,7 +244,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     _guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
@@ -264,7 +268,10 @@ export class NewTreeBuilder implements TreeBuilder {
     return block;
   }
 
-  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
+  protected pushElement(
+    element: SimpleElement | SimpleDocumentFragment,
+    nextSibling: Maybe<SimpleNode> = null
+  ): void {
     this.cursors.push(new CursorImpl(element, nextSibling));
   }
 
@@ -405,7 +412,7 @@ export class AppendingBlockImpl implements AppendingBlock {
   protected last: Nullable<LastNode> = null;
   protected nesting = 0;
 
-  constructor(private parent: SimpleElement) {
+  constructor(private parent: SimpleElement | SimpleDocumentFragment) {
     setLocalDebugType('block:simple', this);
 
     if (LOCAL_DEBUG) {
@@ -475,7 +482,7 @@ export class AppendingBlockImpl implements AppendingBlock {
 }
 
 export class RemoteBlock extends AppendingBlockImpl {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleElement | SimpleDocumentFragment) {
     super(parent);
 
     setLocalDebugType('block:remote', this);
@@ -518,7 +525,7 @@ export class RemoteBlock extends AppendingBlockImpl {
 }
 
 export class ResettableBlockImpl extends AppendingBlockImpl implements ResettableBlock {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleElement | SimpleDocumentFragment) {
     super(parent);
     setLocalDebugType('block:resettable', this);
   }
@@ -538,7 +545,7 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
 // FIXME: All the noops in here indicate a modelling problem
 export class AppendingBlockList implements AppendingBlock {
   constructor(
-    private readonly parent: SimpleElement,
+    private readonly parent: SimpleElement | SimpleDocumentFragment,
     public boundList: AppendingBlock[]
   ) {
     this.parent = parent;

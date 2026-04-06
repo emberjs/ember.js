@@ -7,7 +7,6 @@ import type {
   ModifierInstance,
   Nullable,
   Owner,
-  SimpleElement,
   UpdatingOpcode,
   UpdatingVM,
 } from '@glimmer/interfaces';
@@ -77,10 +76,7 @@ APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
   let insertBeforeRef = check(vm.stack.pop(), CheckReference);
   let guidRef = check(vm.stack.pop(), CheckReference);
 
-  let element = check(
-    valueForRef(elementRef),
-    CheckOr(CheckElement, CheckDocumentFragment)
-  ) as SimpleElement;
+  let element = check(valueForRef(elementRef), CheckOr(CheckElement, CheckDocumentFragment));
   let insertBefore = check(valueForRef(insertBeforeRef), CheckMaybe(CheckNullable(CheckNode)));
   let guid = valueForRef(guidRef) as string;
 

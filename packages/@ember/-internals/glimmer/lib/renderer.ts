@@ -47,7 +47,12 @@ import {
 import { dict } from '@glimmer/util';
 import { unwrapTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type {
+  SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+} from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
 import { hasDOM } from '../../browser-environment';
@@ -991,7 +996,7 @@ export class Renderer extends BaseRenderer {
   }
 
   getBounds(component: View): {
-    parentElement: SimpleElement;
+    parentElement: SimpleElement | SimpleDocumentFragment;
     firstNode: SimpleNode;
     lastNode: SimpleNode;
   } {

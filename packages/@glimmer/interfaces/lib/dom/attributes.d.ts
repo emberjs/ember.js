@@ -20,7 +20,7 @@ import type {
 export interface AppendingBlock extends Bounds {
   debug?: { first: () => Nullable<SimpleNode>; last: () => Nullable<SimpleNode> };
 
-  openElement(element: SimpleElement): void;
+  openElement(element: SimpleElement | SimpleDocumentFragment): void;
   closeElement(): void;
   didAppendNode(node: SimpleNode): void;
   didAppendBounds(bounds: Bounds): void;
@@ -49,7 +49,7 @@ export interface ResettableBlock extends FixedBlock {
 
 export interface DOMStack {
   pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): FixedBlock;
@@ -101,7 +101,7 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   dom: GlimmerTreeConstruction;
   updateOperations: GlimmerTreeChanges;
   constructing: Nullable<SimpleElement>;
-  element: SimpleElement;
+  element: SimpleElement | SimpleDocumentFragment;
 
   hasBlocks: boolean;
   debugBlocks(): AppendingBlock[];

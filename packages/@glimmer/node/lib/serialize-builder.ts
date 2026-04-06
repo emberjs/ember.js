@@ -5,6 +5,7 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
@@ -33,9 +34,12 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   private serializeBlockDepth = 0;
 
   override __openBlock(): void {
-    let { tagName } = this.element;
-
-    if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      this.element.tagName !== 'TITLE' &&
+      this.element.tagName !== 'SCRIPT' &&
+      this.element.tagName !== 'STYLE'
+    ) {
       let depth = this.serializeBlockDepth++;
       this.__appendComment(`%+b:${depth}%`);
     }
@@ -44,26 +48,32 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __closeBlock(): void {
-    let { tagName } = this.element;
-
     super.__closeBlock();
 
-    if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      this.element.tagName !== 'TITLE' &&
+      this.element.tagName !== 'SCRIPT' &&
+      this.element.tagName !== 'STYLE'
+    ) {
       let depth = --this.serializeBlockDepth;
       this.__appendComment(`%-b:${depth}%`);
     }
   }
 
   override __appendHTML(html: string): Bounds {
-    let { tagName } = this.element;
-
-    if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      (this.element.tagName === 'TITLE' ||
+        this.element.tagName === 'SCRIPT' ||
+        this.element.tagName === 'STYLE')
+    ) {
       return super.__appendHTML(html);
     }
 
     // Do we need to run the html tokenizer here?
     let first = this.__appendComment('%glmr%');
-    if (tagName === 'TABLE') {
+    if ('tagName' in this.element && this.element.tagName === 'TABLE') {
       let openIndex = html.indexOf('<');
       if (openIndex > -1) {
         let tr = html.slice(openIndex + 1, openIndex + 3);
@@ -83,10 +93,14 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendText(string: string): SimpleText {
-    let { tagName } = this.element;
     let current = currentNode(this);
 
-    if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      (this.element.tagName === 'TITLE' ||
+        this.element.tagName === 'SCRIPT' ||
+        this.element.tagName === 'STYLE')
+    ) {
       return super.__appendText(string);
     } else if (string === '') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,6 +124,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   override openElement(tag: string) {
     if (tag === 'tr') {
       if (
+        'tagName' in this.element &&
         this.element.tagName !== 'TBODY' &&
         this.element.tagName !== 'THEAD' &&
         this.element.tagName !== 'TFOOT'
@@ -129,7 +144,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
   ): RemoteBlock {
@@ -143,7 +158,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
 
 export function serializeBuilder(
   env: Environment,
-  cursor: { element: SimpleElement; nextSibling: Nullable<SimpleNode> }
+  cursor: { element: SimpleElement | SimpleDocumentFragment; nextSibling: Nullable<SimpleNode> }
 ): TreeBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }
