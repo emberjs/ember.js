@@ -182,11 +182,21 @@ export default class DebugRenderTreeImpl<
 
   private captureNode(id: string, state: TBucket): CapturedRenderNode {
     let node = this.nodeFor(state);
-    let { type, name, args, instance, refs } = node;
+    let { type, name, args, instance, refs, meta = null } = node;
     let template = this.captureTemplate(node);
     let bounds = this.captureBounds(node);
     let children = this.captureRefs(refs);
-    return { id, type, name, args: reifyArgsDebug(args), instance, template, bounds, children };
+    return {
+      id,
+      type,
+      name,
+      args: reifyArgsDebug(args),
+      instance,
+      template,
+      bounds,
+      children,
+      meta,
+    };
   }
 
   private captureTemplate({ template }: InternalRenderNode<TBucket>): Nullable<string> {
