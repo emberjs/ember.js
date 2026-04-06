@@ -289,10 +289,12 @@ class LifeCycleHooksTest extends RenderingTestCase {
       }
     };
 
-    if (typeof template === 'string') {
-      runtimeTemplate(template, { component: ComponentClass, strictMode: false });
-    }
-    this.owner.register(`component:${name}`, ComponentClass);
+    ;
+    
+    this.owner.register(
+      `component:${name}`,
+      runtimeTemplate(template, { component: ComponentClass, strictMode: false }),
+    );
   }
 
   assertHooks({ label, interactive, nonInteractive }) {
