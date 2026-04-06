@@ -401,8 +401,37 @@ function createEmberMaybeHelper(original: Function) {
                 let argsSer: string | null = null;
                 try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
 
-                cached = { __managerBucket: true, bucket, delegate, reactiveArgs, lastArgsSer: argsSer, lastResult: result, helperCell };
+                cached = { __managerBucket: true, bucket, delegate, reactiveArgs, lastArgsSer: argsSer, lastResult: result, helperCell } as any;
                 classHelperInstanceCache.set(name, cached);
+
+                // Install PROPERTY_DID_CHANGE hook on the helper bucket so that
+                // tracked property changes (e.g., instance.foo = 456) trigger
+                // re-evaluation of getValue and update the GXT cell.
+                if (bucket && typeof bucket === 'object' && helperCell) {
+                  const PROP_CHANGE = g.PROPERTY_DID_CHANGE;
+                  if (PROP_CHANGE) {
+                    const _cached = cached;
+                    const origPropChange = bucket[PROP_CHANGE];
+                    bucket[PROP_CHANGE] = function(key: string) {
+                      if (origPropChange) origPropChange.call(this, key);
+                      // Re-compute getValue and update the cell
+                      try {
+                        const newResult = _cached.delegate.getValue(_cached.bucket);
+                        if (newResult !== _cached.lastResult) {
+                          _cached.lastResult = newResult;
+                          if (_cached.helperCell && _cached.helperCell.update) {
+                            _cached.helperCell.update(newResult);
+                          }
+                          // Trigger DOM sync
+                          const syncDomNow = g.__gxtSyncDomNow;
+                          if (typeof syncDomNow === 'function') {
+                            queueMicrotask(() => syncDomNow());
+                          }
+                        }
+                      } catch { /* ignore errors during recompute */ }
+                    };
+                  }
+                }
 
                 // Read from cell to establish tracking in enclosing formula
                 if (helperCell) return helperCell.value;

@@ -13,6 +13,12 @@
  * exports that aren't directly imported by app code.
  */
 
+// Set the WITH_EMBER_INTEGRATION global flag BEFORE importing GXT modules.
+// GXT's $_maybeModifier, $_maybeHelper, etc. check this flag to decide whether
+// to delegate to the Ember manager system. Without this, string-based modifier/
+// helper resolution (e.g., {{replace}}, {{on}}) doesn't work.
+(globalThis as any).WITH_EMBER_INTEGRATION = true;
+
 // Use direct path to avoid circular alias (since @lifeart/gxt is aliased to this file)
 // @ts-ignore - direct path import for GXT
 export {
@@ -174,6 +180,11 @@ export { $_maybeHelper, $_tag, $_dc } from './ember-gxt-wrappers';
 // Default export with overrides
 // @ts-ignore - direct path import
 import * as gxtModule from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+// Store the GXT module reference on globalThis so that manager.ts can access
+// the original $_MANAGERS object (which GXT's internal functions close over).
+// This must happen before manager.ts runs.
+(globalThis as any).__gxtDirectModule = gxtModule;
+(globalThis as any).__gxtOriginalManagers = gxtModule.$_MANAGERS;
 import { hbs } from './runtime-hbs';
 export default {
   ...gxtModule,

@@ -62,6 +62,10 @@ import { destroy as _destroyDestroyable } from './destroyable';
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 export { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+// Expose PROPERTY_DID_CHANGE on globalThis so ember-gxt-wrappers.ts can install
+// change hooks on helper instances for tracked property reactivity.
+// Deferred to avoid "before initialization" error from circular imports.
+queueMicrotask(() => { (globalThis as any).PROPERTY_DID_CHANGE = PROPERTY_DID_CHANGE; });
 
 const DEFAULT_HELPER_MANAGER = new CustomHelperManager(() => new FunctionHelperManager());
 
@@ -4476,9 +4480,12 @@ const $_MANAGERS = {
               cached.manager.update(cached.instance);
             }
           } else {
-            // Custom modifier manager update path with per-arg tracking.
-            // Only call updateModifier if consumed args have actually changed.
-            // Custom modifier manager update path
+            // Custom modifier manager update path.
+            // GXT tracks ALL cells during modifier formula evaluation, so this
+            // fires whenever any tracked value changes (args or autotracked).
+            // We always call updateModifier to support both cases:
+            // - Arg changes (traditional modifier updates)
+            // - Autotracked value changes (tracked properties consumed during hooks)
             const args = buildArgs();
             if (cached.manager.updateModifier) {
               cached.manager.updateModifier(cached.instance, args);
@@ -6387,19 +6394,37 @@ export class CustomModifierManager {
 // =============================================================================
 
 // Install our handlers onto GXT's original $_MANAGERS object (referenced by GXT's
-// internal `ie` variable). Creating a new object and replacing globalThis.$_MANAGERS
-// would NOT update GXT's internal closure references (e.g., in $_helperHelper).
+// internal module-scope variable). We must MUTATE the original object rather than
+// replacing it, because GXT's $_maybeModifier, $_maybeHelper, etc. close over the
+// original object reference.
+// Import the GXT-original $_MANAGERS using the same direct path that compile.ts uses.
+// This gives us a reference to the exact same object that GXT's internal functions close over.
 {
-  const gxtManagers = (globalThis as any).$_MANAGERS;
-  if (gxtManagers) {
-    // Copy our component, helper, and modifier handlers onto GXT's original managers object
-    gxtManagers.component = $_MANAGERS.component;
-    gxtManagers.helper = $_MANAGERS.helper;
-    gxtManagers.modifier = $_MANAGERS.modifier;
-  } else {
-    // Fallback: set as new if no original exists
-    (globalThis as any).$_MANAGERS = $_MANAGERS;
+  // @ts-ignore - direct path import
+  let gxtOrigManagers: any = null;
+  try {
+    // Use the direct path import to get the same module-scope object
+    const gxtMod = (globalThis as any).__gxtDirectModule;
+    if (gxtMod?.$_MANAGERS) {
+      gxtOrigManagers = gxtMod.$_MANAGERS;
+    }
+  } catch { /* ignore */ }
+  if (gxtOrigManagers && gxtOrigManagers !== $_MANAGERS) {
+    gxtOrigManagers.component = $_MANAGERS.component;
+    gxtOrigManagers.helper = $_MANAGERS.helper;
+    gxtOrigManagers.modifier = $_MANAGERS.modifier;
   }
+  // Also set on globalThis
+  (globalThis as any).$_MANAGERS = $_MANAGERS;
+  // Deferred retry: compile.ts may set __gxtOriginalManagers after this module runs
+  queueMicrotask(() => {
+    const gxtMgrs = (globalThis as any).__gxtOriginalManagers;
+    if (gxtMgrs && gxtMgrs !== $_MANAGERS) {
+      gxtMgrs.component = $_MANAGERS.component;
+      gxtMgrs.helper = $_MANAGERS.helper;
+      gxtMgrs.modifier = $_MANAGERS.modifier;
+    }
+  });
 }
 
 export { $_MANAGERS };

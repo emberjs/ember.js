@@ -1111,7 +1111,11 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
     if (owners) {
       for (const { obj: ownerObj, key: ownerKey } of owners) {
         try {
-          const c = cellFor(ownerObj, ownerKey, /* skipDefine */ false);
+          // Use skipDefine=true to avoid overwriting custom getters on renderContext
+          // that were set up during createRenderContext. The custom getter reads
+          // from the Ember instance via a getter function, while cellFor's default
+          // getter reads from cell._value which may be stale for same-ref arrays.
+          const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
           if (c) c.update(obj);
         } catch { /* ignore */ }
       }
@@ -1274,7 +1278,13 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
   } catch { /* ignore */ }
 
   (globalThis as any).__gxtPendingSync = true;
-  (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+  // For array mutations ('[]'/'length' on arrays), GXT's cell-based list sync
+  // handles the update in Phase 1 of __gxtSyncDomNow. Setting
+  // __gxtPendingSyncFromPropertyChange would trigger the force-rerender morph
+  // which can produce incorrect DOM by re-rendering with stale context.
+  if (!((keyName === '[]' || keyName === 'length') && Array.isArray(obj))) {
+    (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+  }
   // DON'T call gxtSyncDom() here — property changes may be batched (e.g.,
   // set(cond2, true); set(cond1, false) in a single runTask). Calling
   // gxtSyncDom after each set() processes inner conditionals before outer
@@ -1792,9 +1802,48 @@ setInterval(() => {
 const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: any }>();
 (globalThis as any).__gxtClearTagHelperCache = () => _tagHelperInstanceCache.clear();
 
-// Expose $_MANAGERS on globalThis so the $_tag wrapper can access it
-// (manager.ts will configure it later, but we need the same reference)
+// Expose $_MANAGERS on globalThis so the $_tag wrapper can access it.
+// IMPORTANT: We store the GXT-original reference so that manager.ts can
+// later MUTATE it (install Ember's component/helper/modifier handlers
+// directly onto this object). GXT's internal functions ($_maybeModifier,
+// $_maybeHelper, etc.) close over this same object reference.
 (globalThis as any).$_MANAGERS = $_MANAGERS;
+// Also store a reference under a different key so manager.ts can find
+// the GXT-original object reliably (even after globalThis.$_MANAGERS
+// is reassigned).
+(globalThis as any).__gxtOriginalManagers = $_MANAGERS;
+
+// Replace globalThis.$_maybeModifier with a version that delegates to our
+// Ember modifier manager. The GXT-original function closes over the module-scope
+// $_MANAGERS object which may not have been updated yet (timing issue with imports).
+// This ensures that runtime-compiled template functions (which reference
+// globalThis.$_maybeModifier via the Function() constructor) use Ember's modifier
+// manager for string-based modifier resolution.
+// Protect with Object.defineProperty to prevent setupGlobalScope from overwriting.
+{
+  const origMaybeModifier = (globalThis as any).$_maybeModifier;
+  if (origMaybeModifier) {
+    const emberMaybeModifier = function(modifier: any, element: HTMLElement, props: any[], hashArgs: any) {
+      // Always try our manager first
+      const mgrs = (globalThis as any).$_MANAGERS;
+      if (mgrs?.modifier?.canHandle?.(modifier)) {
+        return mgrs.modifier.handle(modifier, element, props, hashArgs);
+      }
+      // Fall back to GXT's original
+      return origMaybeModifier(modifier, element, props, hashArgs);
+    };
+    try {
+      Object.defineProperty(globalThis, '$_maybeModifier', {
+        get() { return emberMaybeModifier; },
+        set(_v: any) { /* protect from setupGlobalScope overwrite */ },
+        configurable: true,
+        enumerable: true,
+      });
+    } catch {
+      (globalThis as any).$_maybeModifier = emberMaybeModifier;
+    }
+  }
+}
 
 // Register built-in keyword helpers for GXT integration
 // These are simplified implementations for GXT since it doesn't have Glimmer VM's reference system
@@ -2215,6 +2264,16 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       }
       return undefined;
     };
+  },
+  // modifier: The (modifier) keyword for currying modifiers.
+  // Delegates to $_modifierHelper which handles string names and modifier references.
+  modifier: (...args: any[]) => {
+    const g = globalThis as any;
+    const modHelper = g.$_modifierHelper;
+    if (typeof modHelper === 'function') {
+      return modHelper(args, {});
+    }
+    return undefined;
   },
 };
 
@@ -5012,14 +5071,16 @@ function transformBlockParams(templateString: string): { transformed: string; bl
       // Also replace in subexpressions: (helper param) → (helper this.$_bp0)
       {
         // Replace inside {{...}} expressions: param after a space (as argument)
+        // Also handles param.property paths (e.g., {{#each values.people}} → {{#each this.$_bp0.people}})
         const helperArgPattern = new RegExp(
-          `(\\{\\{[^}]*\\s)\\b${param}\\b(?=[\\s}])`, 'g'
+          `(\\{\\{[^}]*\\s)\\b${param}\\b(?=[\\s}.])`, 'g'
         );
         transformedContent = transformedContent.replace(helperArgPattern, `$1this.${bpVar}`);
 
         // Replace inside subexpressions: (helper param) → (helper this.$_bp0)
+        // Also handles (helper param.prop) → (helper this.$_bp0.prop)
         const subexprArgPattern = new RegExp(
-          `(\\([^)]*\\s)\\b${param}\\b(?=[\\s)])`, 'g'
+          `(\\([^)]*\\s)\\b${param}\\b(?=[\\s).])`, 'g'
         );
         transformedContent = transformedContent.replace(subexprArgPattern, `$1this.${bpVar}`);
       }
@@ -5818,6 +5879,31 @@ export function precompileTemplate(templateString: string, options?: {
         false
       );
     }
+  }
+
+  // Transform (modifier "name" args...) in element modifier position.
+  // GXT's compiler doesn't handle the (modifier) subexpression keyword.
+  // We transform {{(modifier "name" args...)}} into {{name args...}} which
+  // GXT compiles as a modifier in element position. For modifier references
+  // used as values (e.g. @value={{modifier foo "arg"}}), we transform them
+  // into calls to the __gxtModifierHelper builtin.
+  if (transformedTemplate.includes('modifier')) {
+    // Pattern 1: {{(modifier "name" args...) extraArgs...}} in element modifier position
+    // This handles cases like: <div {{(modifier "replace")}}>
+    // and: <div {{(modifier "replace") "wow"}}>
+    transformedTemplate = transformedTemplate.replace(
+      /\{\{\(modifier\s+"([^"]+)"([^)]*)\)([^}]*)\}\}/g,
+      (match, name, curriedArgs, extraArgs) => {
+        const allArgs = (curriedArgs.trim() + ' ' + extraArgs.trim()).trim();
+        if (allArgs) {
+          return `{{${name} ${allArgs}}}`;
+        }
+        return `{{${name}}}`;
+      }
+    );
+    // Pattern 2: @attr={{modifier refExpr "arg"}} — named arg position (curried modifier)
+    // Leave as-is for the modifier helper in ember-gxt-wrappers.ts to handle.
+    // GXT compiles this as a helper call, and $_modifierHelper_ember creates the curried modifier.
   }
 
   // Transform namespaced angle-bracket components: <Foo::Bar::BazBing /> to <foo--bar--baz-bing />
@@ -6740,7 +6826,7 @@ export function precompileTemplate(templateString: string, options?: {
       const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
-        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'gxtEntriesOf', '__mutGet'];
+        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'modifier', 'gxtEntriesOf', '__mutGet'];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
           const jsName = name.replace(/-/g, '_');
@@ -7605,6 +7691,16 @@ export function precompileTemplate(templateString: string, options?: {
           g.$slots = context.$slots || context[_SLOTS_SYM] || {};
           g.$fw = context.$fw || [[], [], []];
 
+          // Ensure globalThis.owner is set before the template renders.
+          // During top-level component rendering (via runAppend), the owner may
+          // not be set on globalThis yet. Extract it from the component context.
+          if (!(globalThis as any).owner && context) {
+            const ctxOwner = context.owner || context._owner || (context.__gxtRawTarget || context)?.owner;
+            if (ctxOwner && typeof ctxOwner === 'object' && typeof ctxOwner.lookup === 'function') {
+              (globalThis as any).owner = ctxOwner;
+            }
+          }
+
           // Initialize GXT context symbols on the render context if not present
           // GXT requires these for proper parent/child tracking
           // Use the actual symbols exported from GXT
@@ -7847,7 +7943,7 @@ export function precompileTemplate(templateString: string, options?: {
 
           // Rethrow non-Error values (expectAssertion's BREAK sentinel) and
           // assertion errors so they propagate to test harnesses
-          if (_isAssertionLike(err) || (err && ((err as any).message?.includes('Could not find') || (err as any).message?.includes('Custom modifier managers must have')))) {
+          if (_isAssertionLike(err) || (err && ((err as any).message?.includes('Could not find') || (err as any).message?.includes('Custom modifier managers must have') || (err as any).message?.includes('Custom helper managers must have')))) {
             throw err;
           }
           // Swallow other render errors gracefully
