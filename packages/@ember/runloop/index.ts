@@ -60,6 +60,17 @@ function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
     // Reset budget when all runloops complete
     if (!next) {
       _gxtFlushBudget = 0;
+      // Flush GXT DOM updates when the outermost run loop ends, but ONLY if
+      // we're not inside a runTask call (which has its own explicit sync).
+      // This ensures tracked property changes from bare run() calls (e.g.,
+      // renderComponent tests) are reflected in the DOM before assertions run,
+      // without double-syncing during runTask calls.
+      if ((globalThis as any).__gxtPendingSync && !(globalThis as any).__gxtRunTaskActive) {
+        const syncNow = (globalThis as any).__gxtSyncDomNow;
+        if (typeof syncNow === 'function') {
+          try { syncNow(); } catch { /* errors handled by sync */ }
+        }
+      }
     }
   } else {
     flushAsyncObservers(schedule);

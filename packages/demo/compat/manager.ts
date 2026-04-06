@@ -3650,7 +3650,13 @@ const $_MANAGERS = {
           (globalThis as any).owner = resolveOwner;
         }
         try {
-          return this.handle(resolvedKomp, mergedArgs, fw, ctx);
+          const result = this.handle(resolvedKomp, mergedArgs, fw, ctx);
+          // Capture the Ember instance for $_dc lifecycle tracking
+          if (typeof komp.__dcCaptureInstance === 'function') {
+            const inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+            if (inst) komp.__dcCaptureInstance(inst);
+          }
+          return result;
         } finally {
           if (resolveOwner !== prevOwner) {
             (globalThis as any).owner = prevOwner;
@@ -3691,7 +3697,13 @@ const $_MANAGERS = {
           (globalThis as any).owner = owner;
         }
         try {
-          return this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
+          const result = this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
+          // Capture the Ember instance for $_dc lifecycle tracking
+          if (typeof komp.__dcCaptureInstance === 'function') {
+            const inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+            if (inst) komp.__dcCaptureInstance(inst);
+          }
+          return result;
         } finally {
           if (!prevOwner2 && owner) {
             (globalThis as any).owner = prevOwner2;
@@ -4250,7 +4262,7 @@ const $_MANAGERS = {
       // Helper to unwrap GXT getter args
       const unwrapGxtArg = (v: any) => (typeof v === 'function' && !v.prototype) ? v() : v;
 
-      // Build args object
+      // Build args object (eager — reads all args immediately)
       const buildArgs = () => {
         const positional = (props || []).map(unwrapGxtArg);
         const rawHash = hashArgs ? (typeof hashArgs === 'function' ? hashArgs() : hashArgs) : {};

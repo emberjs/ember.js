@@ -4222,14 +4222,28 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // detect the swap and re-render.
       let _lastIdentityKey: string | null = null;
       let _currentMarker: Function | null = null;
+      // Track the Ember component instance created for this dynamic component
+      // slot so we can fire Ember lifecycle hooks when the component is swapped.
+      let _dcEmberInstance: any = null;
 
       const wrappedGetter = () => {
         const raw = componentGetter();
+
+        // Helper to destroy the old Ember instance when the dynamic component swaps.
+        const _destroyOldDcInstance = () => {
+          if (!_dcEmberInstance) return;
+          try {
+            const destroyFn = (g as any).__gxtDestroyEmberComponentInstance;
+            if (typeof destroyFn === 'function') destroyFn(_dcEmberInstance);
+          } catch { /* ignore destroy errors during swap */ }
+          _dcEmberInstance = null;
+        };
 
         // Falsy (undefined, null, '') — render nothing
         if (!raw && raw !== 0) {
           const key = '__empty__';
           if (_lastIdentityKey !== key) {
+            _destroyOldDcInstance();
             _lastIdentityKey = key;
             _currentMarker = function _dcEmptyMarker() {};
             (_currentMarker as any).__emptyComponent = true;
@@ -4241,9 +4255,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         if (typeof raw === 'string') {
           const key = '__str:' + raw;
           if (_lastIdentityKey !== key) {
+            _destroyOldDcInstance();
             _lastIdentityKey = key;
             _currentMarker = function _dcStringMarker() {};
             (_currentMarker as any).__stringComponentName = raw;
+            // After GXT creates the component, capture the Ember instance.
+            // The manager sets __gxtLastCreatedEmberInstance after creation.
+            (_currentMarker as any).__dcCaptureInstance = (inst: any) => {
+              _dcEmberInstance = inst;
+            };
           }
           return _currentMarker;
         }
@@ -4252,10 +4272,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         if (raw && raw.__isCurriedComponent) {
           const key = '__curried:' + (raw.__name || '') + ':' + JSON.stringify(Object.keys(raw.__curriedArgs || {}));
           if (_lastIdentityKey !== key) {
+            _destroyOldDcInstance();
             _lastIdentityKey = key;
             _currentMarker = function _dcCurriedMarker() {};
             (_currentMarker as any).__isCurriedComponent = true;
             (_currentMarker as any).__name = raw.__name;
+            (_currentMarker as any).__dcCaptureInstance = (inst: any) => {
+              _dcEmberInstance = inst;
+            };
           }
           // Always update args on the marker since they may have changed
           if (_currentMarker) {
@@ -4267,6 +4291,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
 
         // Function (native GXT component) — pass through unchanged
+        if (_lastIdentityKey !== null) {
+          _destroyOldDcInstance();
+        }
         _lastIdentityKey = null;
         _currentMarker = null;
         return raw;

@@ -52,7 +52,15 @@ export function runDestroy(toDestroy: any): void {
 }
 
 export function runTask<F extends () => any>(callback: F): ReturnType<F> {
-  const result = run(callback);
+  // Mark that we're inside runTask so the runloop's onEnd hook doesn't
+  // double-sync GXT DOM (runTask has its own explicit sync below).
+  (globalThis as any).__gxtRunTaskActive = true;
+  let result: ReturnType<F>;
+  try {
+    result = run(callback);
+  } finally {
+    (globalThis as any).__gxtRunTaskActive = false;
+  }
   // In GXT mode, flush pending DOM updates synchronously after the task
   // so test assertions see the updated DOM immediately
   const syncNow = (globalThis as any).__gxtSyncDomNow;
