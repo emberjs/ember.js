@@ -1,5 +1,10 @@
 import { castToBrowser } from '@glimmer/debug-util';
-import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import {
+  GlimmerishComponent,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 
@@ -41,6 +46,25 @@ class KeywordOn extends RenderTest {
     });
 
     this.renderComponent(compiled);
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    assert.verifySteps(['success']);
+  }
+
+  @test
+  'no eval and no scope'(assert: Assert) {
+    class Foo extends GlimmerishComponent {
+      static {
+        template('<button {{on "click" this.handleClick}}>Click</button>', {
+          strictMode: true,
+          component: this,
+        });
+      }
+
+      handleClick = () => assert.step('success');
+    }
+
+    this.renderComponent(Foo);
 
     castToBrowser(this.element, 'div').querySelector('button')!.click();
     assert.verifySteps(['success']);
