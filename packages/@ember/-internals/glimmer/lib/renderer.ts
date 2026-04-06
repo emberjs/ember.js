@@ -193,10 +193,29 @@ function morphChildren(target: Element | SimpleElement, source: DocumentFragment
         if (oldEl.tagName === newEl.tagName) {
           // Same element type — update attributes in-place
           morphAttributes(oldEl, newEl);
-          // Recursively morph children
-          const frag = document.createDocumentFragment();
-          while (newEl.firstChild) frag.appendChild(newEl.firstChild);
-          morphChildren(oldEl as any, frag);
+          // Skip morphing children of elements that have custom modifier
+          // cache entries. Custom modifiers (e.g., ones that set innerHTML)
+          // have already applied their effects to the old element during
+          // the initial render. The morph source was rendered without
+          // modifier effects (they are suppressed during morph rendering),
+          // so morphing children would overwrite the modifier's DOM changes.
+          const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+          const modCache = modMgr?._cache?.get(oldEl as HTMLElement);
+          let hasCustomModifier = false;
+          if (modCache) {
+            for (const [, cached] of modCache) {
+              if (!cached.isInternal && !cached.pendingDestroy) {
+                hasCustomModifier = true;
+                break;
+              }
+            }
+          }
+          if (!hasCustomModifier) {
+            // Recursively morph children
+            const frag = document.createDocumentFragment();
+            while (newEl.firstChild) frag.appendChild(newEl.firstChild);
+            morphChildren(oldEl as any, frag);
+          }
           continue;
         }
       } else if (oldNode.nodeType === 3 /* TEXT_NODE */) {
