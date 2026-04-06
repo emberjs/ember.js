@@ -1183,9 +1183,6 @@ export function endRenderPass(): void {
       // Found via raw→proxy lookup
     } else {
       // The target might be the raw object while the set has the proxy.
-      // Check if a proxy of this target is in the set.
-      // Use the lazily-available _nestedTrackingProxies WeakMap (defined later
-      // in the module but accessed at runtime after initialization).
       const proxyMap = (globalThis as any).__gxtNestedTrackingProxies;
       const proxyOfTarget = proxyMap?.get?.(targetObj);
       if (!proxyOfTarget || !_templateRenderedInstances.has(proxyOfTarget)) {
@@ -1245,14 +1242,21 @@ export function endRenderPass(): void {
   treeLines.push(propIndent + propPath);
   const renderTree = treeLines.join('\n');
 
-  // Use getDebugFunction to get the CURRENT assert function.
-  // During expectAssertion(), setDebugFunction replaces assert with a stub.
-  // The module-level import may not see the update (non-live binding in bundlers).
-  const currentAssert = getDebugFunction('assert') || assert;
-  currentAssert(
-    `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  -top-level\n${renderTree}\n\nStack trace for the update:`,
-    false
-  );
+  // Call the current assert function — use the dynamic getter on globalThis
+  // to pick up the stub installed by expectAssertion(). The module-level
+  // import `assert` may be a stale reference in bundled/HMR'd code.
+  const _assertFn = (globalThis as any).__emberAssertFn;
+  if (typeof _assertFn === 'function') {
+    _assertFn(
+      `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  -top-level\n${renderTree}\n\nStack trace for the update:`,
+      false
+    );
+  } else {
+    assert(
+      `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  -top-level\n${renderTree}\n\nStack trace for the update:`,
+      false
+    );
+  }
 };
 
 export function captureRenderError(err: unknown): void {

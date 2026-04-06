@@ -626,6 +626,9 @@ class ClassicRootState {
             if (root && 'layoutName' in root) {
               popParentView();
             }
+            // End render pass in the finally block so it's cleaned up even when
+            // BREAK or other sentinels propagate (e.g., from expectAssertion).
+            endRenderPass();
           }
         } else if ('$nodes' in template) {
           // Build-time compiled gxt template with $nodes
@@ -639,8 +642,7 @@ class ClassicRootState {
         // the render did not complete successfully (matching Glimmer VM behavior).
         const hadRenderPhaseErrors = (globalThis as any).__gxtRenderErrorCount > 0;
 
-        // End render pass (backtracking detection)
-        endRenderPass();
+        // End render pass moved to finally block above (handles BREAK propagation)
 
         // Flush queued didInsertElement / didRender hooks now that all DOM
         // has been inserted into the live document by GXT.
