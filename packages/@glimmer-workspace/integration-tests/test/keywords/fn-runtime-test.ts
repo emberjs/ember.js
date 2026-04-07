@@ -52,6 +52,30 @@ class KeywordFn extends RenderTest {
   }
 
   @test
+  'MustacheStatement with explicit scope'(assert: Assert) {
+    let greet = (greeting: string) => {
+      assert.step(greeting);
+    };
+
+    const Child = template('<button {{on "click" @callback}}>Click</button>', {
+      strictMode: true,
+    });
+
+    const compiled = template('<Child @callback={{fn greet "hello"}} />', {
+      strictMode: true,
+      scope: () => ({
+        greet,
+        Child,
+      }),
+    });
+
+    this.renderComponent(compiled);
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    assert.verifySteps(['hello']);
+  }
+
+  @test
   'no eval and no scope'(assert: Assert) {
     class Foo extends GlimmerishComponent {
       static {

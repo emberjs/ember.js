@@ -58,6 +58,32 @@ class KeywordFn extends RenderTest {
   }
 
   @test
+  'it works as a MustacheStatement'(assert: Assert) {
+    let greet = (greeting: string) => {
+      assert.step(greeting);
+    };
+
+    const Child = template('<button {{on "click" @callback}}>Click</button>', {
+      strictMode: true,
+      scope: () => ({ on }),
+    });
+
+    const compiled = template('<Child @callback={{fn greet "hello"}} />', {
+      strictMode: true,
+      scope: () => ({
+        greet,
+        fn,
+        Child,
+      }),
+    });
+
+    this.renderComponent(compiled);
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    assert.verifySteps(['hello']);
+  }
+
+  @test
   'can be shadowed'(assert: Assert) {
     let fn = () => {
       assert.step('shadowed:success');
