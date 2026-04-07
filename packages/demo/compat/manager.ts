@@ -1787,13 +1787,14 @@ const _updatedInstances: any[] = [];
                 entry.instance[key] = newValue;
               } catch { /* ignore */ }
               finally { entry.instance.__gxtDispatchingArgs = false; }
-              // Call notifyPropertyChange to dirty Ember tags for computed
-              // properties that depend on this arg. This is needed for $_dc
-              // dynamic component swapping: @computed('location') on a classic
-              // component won't recompute unless the Ember tag for 'location'
-              // is dirtied. Only call for instances that have active $_dc
-              // bindings to avoid unnecessary re-renders.
-              if (entry.instance.__gxtHasDcBinding) {
+              // When there are active $_dc dynamic component listeners,
+              // call notifyPropertyChange to dirty Ember tags for @computed
+              // properties that depend on this arg. Without this, computed
+              // properties on classic components won't recompute after arg
+              // updates via syncAll (the Ember tag isn't dirtied by direct
+              // property assignment).
+              if ((globalThis as any).__dcChangeListeners?.size > 0 &&
+                  entry.instance && typeof entry.instance.trigger === 'function') {
                 try {
                   const npc = (globalThis as any).__emberNotifyPropertyChange;
                   if (typeof npc === 'function') npc(entry.instance, key);
@@ -4775,6 +4776,9 @@ const $_MANAGERS = {
               // If no consumed args changed, check if this was triggered by an
               // external tracked value change (not an arg change at all).
               // We detect this by checking: did ANY positional/named arg change?
+              // Only trigger external tracking in a DIFFERENT sync cycle from the
+              // last update — within the same cycle, GXT's formula double-fires
+              // should not cause spurious updates.
               if (!shouldUpdate) {
                 let anyArgChanged = false;
                 for (let i = 0; i < freshArgs.positional.length; i++) {
@@ -4791,8 +4795,14 @@ const $_MANAGERS = {
                     }
                   }
                 }
-                // If no arg changed at all, this was triggered by external tracking
-                if (!anyArgChanged) {
+                // If no arg changed at all, this was triggered by external tracking.
+                // But only if this is a different sync cycle from the last update.
+                // Within the same cycle, GXT's formula double-fires should not
+                // trigger spurious updates. Track on the element to survive cache
+                // entry replacement.
+                const syncCycleNow = (globalThis as any).__gxtSyncCycleId || 0;
+                const elLastUpdate = (element as any).__gxtModLastUpdate || {};
+                if (!anyArgChanged && (elLastUpdate[modKey] || 0) < syncCycleNow) {
                   shouldUpdate = true;
                 }
               }
@@ -4801,16 +4811,19 @@ const $_MANAGERS = {
               shouldUpdate = true;
             }
             // Guard against duplicate updates within the same sync cycle.
-            // GXT formulas can fire multiple times per sync cycle, and if the
-            // cache entry gets replaced (e.g., due to a fresh install from a
-            // parallel formula), the dedup check on the cached object may miss.
-            // Track the last update on the modifier INSTANCE instead.
+            // GXT formulas can fire multiple times per cycle, and the cache entry
+            // may be replaced by a parallel fresh install. Track updates in a
+            // global map keyed by ModifierClass to survive cache churn.
             const syncCycleId = (globalThis as any).__gxtSyncCycleId || 0;
-            if (shouldUpdate && cached.instance?.__gxtLastUpdateCycle === syncCycleId && syncCycleId > 0) {
+            if (!self._updateCycleMap) self._updateCycleMap = new WeakMap();
+            const classMap = self._updateCycleMap.get(cached.ModifierClass) || new Map();
+            self._updateCycleMap.set(cached.ModifierClass, classMap);
+            const lastCycle = classMap.get(element) || 0;
+            if (shouldUpdate && lastCycle === syncCycleId && syncCycleId > 0) {
               shouldUpdate = false;
             }
             if (shouldUpdate && cached.manager.updateModifier) {
-              cached.instance.__gxtLastUpdateCycle = syncCycleId;
+              classMap.set(element, syncCycleId);
               // Use lazy args for the actual update call so GXT tracks per-consumed-arg
               const lazyArgs = buildLazyArgs(props, hashArgs);
               cached.manager.updateModifier(cached.instance, lazyArgs);

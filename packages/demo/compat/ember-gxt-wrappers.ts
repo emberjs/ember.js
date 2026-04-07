@@ -1105,27 +1105,6 @@ function createEmberDc(original: Function) {
     return handleResult;
   }
 
-  /**
-   * Checks whether this componentGetter is "dynamic" — i.e., it reads from
-   * a reactive cell that may change over time (e.g., this.componentName).
-   * We probe this by evaluating the getter twice: if the value is a string
-   * or CurriedComponent, it likely comes from a tracked property that may
-   * change. Functions are typically static component references.
-   */
-  function isDynamicGetter(componentGetter: any): boolean {
-    if (typeof componentGetter !== 'function') return false;
-    try {
-      const val = componentGetter();
-      // String names and CurriedComponents are dynamic — they come from
-      // tracked properties like this.componentName
-      if (typeof val === 'string') return true;
-      if (val && val.__isCurriedComponent) return true;
-      return false;
-    } catch {
-      return false;
-    }
-  }
-
   return function $_dc_ember(
     componentGetter: () => any,
     gxtArgs: any,
@@ -1214,6 +1193,20 @@ function createEmberDc(original: Function) {
     // and we update it whenever the Ember property system notifies a change.
     // This enables reactive component swapping when set() changes the component name.
     if (typeof componentValue === 'string') {
+      // Eagerly check if the component exists. If it doesn't, throw immediately
+      // so assert.throws() in tests can catch it (matching Ember behavior).
+      const managers = g.$_MANAGERS;
+      if (componentValue.length > 0 && managers?.component && !managers.component.canHandle(componentValue)) {
+        const err = new Error(
+          `Attempted to resolve \`${componentValue}\`, which was expected to be a component, but nothing was found. ` +
+          `Could not find component named "${componentValue}" (no component or template with that name was found)`
+        );
+        const captureErr = g.__captureRenderError;
+        if (typeof captureErr === 'function') {
+          captureErr(err);
+        }
+        throw err;
+      }
       // Create a GXT cell to bridge Ember's property change notifications
       // into GXT's reactive tracking system. The cell holds a monotonically
       // increasing revision counter that we bump on every detected change.
