@@ -1232,12 +1232,7 @@ export function endRenderPass(): void {
   }
   // This instance's template was already rendered in this pass.
   // Setting a property on it is backtracking.
-  // Use class constructor name if available (matches Glimmer VM behavior).
-  // Fall back to toString() for Ember objects that override it.
-  const ctorName = targetObj?.constructor?.name;
-  const objName = (ctorName && ctorName !== 'Object' && ctorName !== 'Array')
-    ? ctorName
-    : (targetObj?.toString?.() || '<unknown>');
+  const objName = targetObj?.toString?.() || '<unknown>';
 
   // Build a render tree string from the parentView stack for the message.
   // Walk the parentView chain to build component names (skip the root test context).
@@ -3881,12 +3876,10 @@ const $_MANAGERS = {
           // Store dcCaptureInstance globally so renderClassicComponent can call
           // it after the instance is created (push/pop stack doesn't work with
           // lazy closures returned by handleStringComponent).
-          const _prevCap1 = (globalThis as any).__gxtDcCaptureCallback;
           if (typeof komp.__dcCaptureInstance === 'function') {
             (globalThis as any).__gxtDcCaptureCallback = komp.__dcCaptureInstance;
           }
           const result = this.handle(resolvedKomp, mergedArgs, fw, ctx);
-          (globalThis as any).__gxtDcCaptureCallback = _prevCap1;
           return result;
         } finally {
           if (resolveOwner !== prevOwner) {
@@ -3928,12 +3921,13 @@ const $_MANAGERS = {
           (globalThis as any).owner = owner;
         }
         try {
-          const _prevCap2 = (globalThis as any).__gxtDcCaptureCallback;
+          // Set the capture callback but DON'T clear it after handle() returns —
+          // handle() returns a lazy closure that GXT calls later, and the closure
+          // calls renderClassicComponent which will invoke and clear the callback.
           if (typeof komp.__dcCaptureInstance === 'function') {
             (globalThis as any).__gxtDcCaptureCallback = komp.__dcCaptureInstance;
           }
           const result = this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
-          (globalThis as any).__gxtDcCaptureCallback = _prevCap2;
           return result;
         } finally {
           if (!prevOwner2 && owner) {

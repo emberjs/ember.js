@@ -3167,14 +3167,19 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     const managers = g.$_MANAGERS;
 
     // Engine support: ctx.owner may be the engine instance while g.owner is the app.
-    // Only swap when ctx.owner looks like an engine instance (has factoryFor and
-    // is different from g.owner). Use __gxtIsEngineCtx flag set by the outlet code.
-    const _eoCtx = ctx?.owner;
-    const _eoSwap = _eoCtx && !_eoCtx.isDestroyed && !_eoCtx.isDestroying
-      && _eoCtx !== g.owner && ctx.__gxtIsEngineCtx === true;
-    const _eoPrev = _eoSwap ? g.owner : undefined;
-    if (_eoSwap) g.owner = _eoCtx;
-    try {
+    // Swap only during component-related resolution (mightBeComponent section).
+    let _eoSwap = false;
+    let _eoPrev: any;
+    if (mightBeComponent) {
+      const _eoCtx = ctx?.owner;
+      _eoSwap = !!(_eoCtx && typeof _eoCtx === 'object'
+        && typeof _eoCtx.factoryFor === 'function'
+        && !_eoCtx.isDestroyed && !_eoCtx.isDestroying
+        && _eoCtx !== g.owner);
+      if (_eoSwap) { _eoPrev = g.owner; g.owner = _eoCtx; }
+    }
+
+    try { // Engine owner swap try block
 
     if (mightBeComponent && managers?.component?.canHandle) {
       // Convert PascalCase to kebab-case for Ember component lookup
@@ -3952,6 +3957,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       return ceEl;
     }
 
+    } finally { if (_eoSwap) { g.owner = _eoPrev; } } // Engine owner swap restore
+
     // Fall back to original $_tag for regular HTML elements
     // GXT handles ...attributes internally via tagProps[3] ($fw):
     // - fw[0] = props (class, id, etc.)
@@ -4258,8 +4265,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     }
 
     return result;
-
-    } finally { if (_eoSwap) g.owner = _eoPrev; }
   };
 
   // Mark as wrapped to prevent re-wrapping
