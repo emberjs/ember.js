@@ -99,8 +99,6 @@ import {
   getTracker as _gxtGetTracker,
   resolveRenderable as _gxtResolveRenderable,
   $_TO_VALUE as _gxtOrigToValue,
-  // @ts-ignore - newly exported
-  tagsToRevalidate as _gxtTagsToRevalidate,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
 // After setupGlobalScope(), __gxtCellFor and __gxtEffect are set from GXT's
@@ -124,7 +122,6 @@ var gxtSyncDom = _syncDomFromDirectImport;
   createRoot: gxtCreateRoot,
   setParentContext: gxtSetParentContext,
 };
-(globalThis as any).__gxtTagsToRevalidate = _gxtTagsToRevalidate;
 
 // Ensure the validator compat module is loaded (registers backtracking detection
 // functions on globalThis that ember-gxt-wrappers.ts needs at runtime).
@@ -1132,7 +1129,6 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
     }
   }
   const newValue = (obj as any)[keyName];
-  // (no debug)
   try {
     // Use skipDefine=true to avoid replacing tracked setters on the object.
     // The tracked setter calls dirtyTagFor which bumps the global revision
@@ -7508,7 +7504,6 @@ export function precompileTemplate(templateString: string, options?: {
         }
 
         const textValue = finalResult == null ? '' : String(finalResult);
-        // (debug removed)
         const textNode = document.createTextNode(textValue);
 
         // Set up reactive text binding via GXT effect().
@@ -7523,16 +7518,10 @@ export function precompileTemplate(templateString: string, options?: {
         // can swap it reactively without leaving comment markers in the DOM.
         let _currentContentNode: Node = textNode;
         let _isNodeContent = false;
-        const _dbgItem = item;
         try {
           gxtEffect(() => {
-            const v = _dbgItem();
+            const v = item();
             const fv = typeof v === 'function' ? v() : v;
-
-            // DEBUG: log internalName effect reads
-            if (_dbgItem.toString && _dbgItem.toString().includes('internalName')) {
-              console.log(`[DBG-EFF] internalName effect: v=${v} fv=${fv} textWas=${(textNode as Text).textContent}`);
-            }
 
             if (fv instanceof Node) {
               // Transition to or update DOM Node content
@@ -7995,23 +7984,6 @@ export function precompileTemplate(templateString: string, options?: {
           } finally {
             _setRendering(false);
           }
-
-          // Clear tagsToRevalidate to prevent spurious effect re-evaluations.
-          // During rendering, lifecycle hooks (willRender, didReceiveAttrs) may
-          // call set() which creates cells via __gxtTriggerReRender and adds
-          // them to tagsToRevalidate. The scheduled syncDom microtask would
-          // then re-evaluate effects that read these cells. When multiple
-          // components render in sequence (e.g., {{each}}), each component's
-          // effects get their correct initial values during rendering. But if
-          // syncDom re-evaluates them AFTER all components have rendered, the
-          // effects may read stale values from cells that were dirtied in
-          // interleaved order. Clearing tagsToRevalidate after each component
-          // render prevents this.
-          try {
-            if (_gxtTagsToRevalidate && typeof _gxtTagsToRevalidate.clear === 'function') {
-              _gxtTagsToRevalidate.clear();
-            }
-          } catch { /* ignore */ }
 
           // Restore previous global values
           g.$slots = prevSlots;

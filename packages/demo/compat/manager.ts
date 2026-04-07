@@ -6142,6 +6142,8 @@ function renderClassicComponent(
   componentDef: any,
   owner: any
 ): any {
+  const g = globalThis as any;
+
   // Check if this is a reused instance from the pool during force-rerender.
   // If so, skip initial lifecycle hooks (willRender, willInsertElement, etc.)
   // since the component already went through its initial render lifecycle.
@@ -6151,6 +6153,24 @@ function renderClassicComponent(
     delete instance.__gxtReusedFromPool;
     delete instance.__gxtPoolHasArgChanges;
   }
+
+  // Suppress notifyPropertyChange → __gxtTriggerReRender during the FIRST
+  // rendering of a NEW classic component (not reused from pool). Property
+  // changes during the initial willRender and didReceiveAttrs are part of the
+  // initial render and should not dirty cells or schedule re-renders. The
+  // template render will create effects with the correct initial values.
+  // Without suppression, dirtied cells cause spurious effect re-evaluations
+  // in sibling components (e.g., inside {{each}}).
+  // For REUSED instances (pool hit), __gxtTriggerReRender must remain active
+  // because the instance already has cellFor getters from a previous render
+  // and cell updates are needed to propagate property changes to the DOM.
+  const suppressTrigger = !isReused;
+  const prevTriggerReRender = suppressTrigger ? g.__gxtTriggerReRender : null;
+  if (suppressTrigger) {
+    g.__gxtTriggerReRender = null;
+  }
+
+  try {
   const skipInitHooks = isReused && isForceRerender;
 
   // Expose the current instance via stack-based capture so $_dc_ember can
@@ -6338,6 +6358,11 @@ function renderClassicComponent(
 
   // Return GXT-compatible result
   return createGxtResult(wrapper);
+  } finally {
+    if (suppressTrigger) {
+      g.__gxtTriggerReRender = prevTriggerReRender;
+    }
+  }
 }
 
 /**
