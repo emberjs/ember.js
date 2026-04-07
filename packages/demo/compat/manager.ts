@@ -1787,6 +1787,18 @@ const _updatedInstances: any[] = [];
                 entry.instance[key] = newValue;
               } catch { /* ignore */ }
               finally { entry.instance.__gxtDispatchingArgs = false; }
+              // Call notifyPropertyChange to dirty Ember tags for computed
+              // properties that depend on this arg. This is needed for $_dc
+              // dynamic component swapping: @computed('location') on a classic
+              // component won't recompute unless the Ember tag for 'location'
+              // is dirtied. Only call for instances that have active $_dc
+              // bindings to avoid unnecessary re-renders.
+              if (entry.instance.__gxtHasDcBinding) {
+                try {
+                  const npc = (globalThis as any).__emberNotifyPropertyChange;
+                  if (typeof npc === 'function') npc(entry.instance, key);
+                } catch { /* ignore */ }
+              }
             }
             hasChanges = true;
           }
@@ -4607,13 +4619,21 @@ const $_MANAGERS = {
       };
 
       // Check for cached modifier instance (update path)
-      // Include the first positional arg in the key to differentiate multiple
-      // {{on}} modifiers on the same element with different event names.
+      // Include the first positional arg in the key ONLY for string-based
+      // modifiers (built-in keywords like "on") to differentiate multiple
+      // {{on "click" fn}} / {{on "mouseenter" fn}} on the same element.
+      // For custom modifier classes, use only the baseName — including the
+      // first arg would cause cache misses when positional args change,
+      // breaking per-arg tracking (the modifier would be re-created instead
+      // of updated).
       // IMPORTANT: Read firstArg UNTRACKED so it doesn't establish a cell dependency.
-      // Otherwise, all positional args would be tracked by the GXT formula.
       const baseName = typeof modifier === 'string' ? modifier : (modifier?.name || String(modifier));
+      // Only include firstArg for the built-in "on" modifier to differentiate
+      // {{on "click" fn}} from {{on "mouseenter" fn}} on the same element.
+      // Other modifiers (including custom string-based ones) should use a stable
+      // key so positional arg changes trigger the update path, not fresh installs.
       let firstArg = '';
-      {
+      if (modifier === 'on') {
         const _setT = (globalThis as any).__gxtSetTracker;
         const _getT = (globalThis as any).__gxtGetTracker;
         if (_setT && _getT) {
@@ -4659,11 +4679,24 @@ const $_MANAGERS = {
           // The destructor was called (GXT formula re-eval), but we haven't
           // actually destroyed yet — this is an update, not a reinstall.
           cached.pendingDestroy = false;
+          // Check if this modifier was already updated in the current sync cycle.
+          // GXT formulas can fire multiple times per sync (e.g., when tracked cells
+          // are re-bound during the first evaluation). Skip duplicate updates.
+          const currentSyncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+          if (cached.__gxtUpdatedInSyncCycle === currentSyncCycle && currentSyncCycle > 0) {
+            // Already updated — return a lightweight destructor that only marks
+            // pendingDestroy for the next handle() call. Do NOT push to the
+            // pending destroys queue — that would cause Phase 2d to actually
+            // destroy the modifier, breaking subsequent formula re-evaluations.
+            return () => {
+              cached.pendingDestroy = true;
+            };
+          }
           // Mark that this modifier was updated in Phase 1 (GXT native reactivity)
           // for the current render pass.  The morph (Phase 2b) checks this to
-          // avoid double-updating.  Uses the render pass ID so stale flags from
+          // avoid double-updating.  Uses the sync cycle ID so stale flags from
           // previous sync cycles are ignored.
-          cached.__gxtUpdatedInSyncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+          cached.__gxtUpdatedInSyncCycle = currentSyncCycle;
 
           if (cached.isInternal) {
             // Internal modifier manager update path
@@ -4767,7 +4800,17 @@ const $_MANAGERS = {
               // No consumption tracking info — always update
               shouldUpdate = true;
             }
+            // Guard against duplicate updates within the same sync cycle.
+            // GXT formulas can fire multiple times per sync cycle, and if the
+            // cache entry gets replaced (e.g., due to a fresh install from a
+            // parallel formula), the dedup check on the cached object may miss.
+            // Track the last update on the modifier INSTANCE instead.
+            const syncCycleId = (globalThis as any).__gxtSyncCycleId || 0;
+            if (shouldUpdate && cached.instance?.__gxtLastUpdateCycle === syncCycleId && syncCycleId > 0) {
+              shouldUpdate = false;
+            }
             if (shouldUpdate && cached.manager.updateModifier) {
+              cached.instance.__gxtLastUpdateCycle = syncCycleId;
               // Use lazy args for the actual update call so GXT tracks per-consumed-arg
               const lazyArgs = buildLazyArgs(props, hashArgs);
               cached.manager.updateModifier(cached.instance, lazyArgs);
@@ -5032,7 +5075,8 @@ const $_MANAGERS = {
       const cached: any = { instance, manager, ModifierClass, pendingDestroy: false,
         _consumedPositional, _consumedNamed,
         _lastPositional: [...initialArgs.positional],
-        _lastNamed: { ...initialArgs.named }
+        _lastNamed: { ...initialArgs.named },
+        __gxtUpdatedInSyncCycle: (globalThis as any).__gxtSyncCycleId || 0,
       };
       cache.set(modKey, cached);
 

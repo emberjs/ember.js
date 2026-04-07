@@ -1033,6 +1033,7 @@ function createEmberTag(original: Function) {
  * Ember's component manager instead of GXT's native component system.
  */
 function createEmberDc(original: Function) {
+  const $PROPS = Symbol.for('gxt-props');
   const $SLOTS_SYM = Symbol.for('gxt-slots');
 
   function extractArgsAndSlots(gxtArgs: any, allowPositionalParams = false): { mergedArgs: any; } {
@@ -1104,13 +1105,45 @@ function createEmberDc(original: Function) {
     return handleResult;
   }
 
+  /**
+   * Checks whether this componentGetter is "dynamic" — i.e., it reads from
+   * a reactive cell that may change over time (e.g., this.componentName).
+   * We probe this by evaluating the getter twice: if the value is a string
+   * or CurriedComponent, it likely comes from a tracked property that may
+   * change. Functions are typically static component references.
+   */
+  function isDynamicGetter(componentGetter: any): boolean {
+    if (typeof componentGetter !== 'function') return false;
+    try {
+      const val = componentGetter();
+      // String names and CurriedComponents are dynamic — they come from
+      // tracked properties like this.componentName
+      if (typeof val === 'string') return true;
+      if (val && val.__isCurriedComponent) return true;
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
   return function $_dc_ember(
     componentGetter: () => any,
     gxtArgs: any,
     ctx: any
   ): any {
-    // Try to evaluate the component getter to check if it's a curried component.
-    // If it fails (e.g., block params not set yet), delegate to original $_dc.
+    // Inject $PROPS on args so GXT's $_c (component function) can find them.
+    if (gxtArgs && typeof gxtArgs === 'object' && !($PROPS in gxtArgs)) {
+      try {
+        Object.defineProperty(gxtArgs, $PROPS, {
+          value: gxtArgs,
+          enumerable: false,
+          configurable: true,
+          writable: true,
+        });
+      } catch { /* frozen object */ }
+    }
+
+    // Try to evaluate the component getter to check what kind of value it returns.
     let componentValue: any;
     try {
       componentValue = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
@@ -1176,28 +1209,166 @@ function createEmberDc(original: Function) {
       }
     }
 
-    // Handle string component name — pass positional params through since the
-    // component manager needs them for positionalParams mapping (e.g.,
-    // {{component this.componentName this.name this.age}} where the component
-    // class has static positionalParams = ['name', 'age'])
+    // Handle string component name — render through Ember's component manager.
+    // Use a GXT cell as a bridge: the cell is tracked by GXT's formula system,
+    // and we update it whenever the Ember property system notifies a change.
+    // This enables reactive component swapping when set() changes the component name.
     if (typeof componentValue === 'string') {
-      const managers = g.$_MANAGERS;
-      if (managers?.component?.canHandle?.(componentValue)) {
-        return renderComponent(componentValue, gxtArgs, ctx, /* allowPositionalParams */ true);
-      }
-      // String component name that can't be resolved — throw an error matching
-      // Ember's behavior for {{component "non-existent"}}.
-      if (componentValue.length > 0) {
-        const err = new Error(
-          `Attempted to resolve \`${componentValue}\`, which was expected to be a component, but nothing was found. ` +
-          `Could not find component named "${componentValue}" (no component or template with that name was found)`
-        );
-        const captureErr = g.__captureRenderError;
-        if (typeof captureErr === 'function') {
-          captureErr(err);
+      // Create a GXT cell to bridge Ember's property change notifications
+      // into GXT's reactive tracking system. The cell holds a monotonically
+      // increasing revision counter that we bump on every detected change.
+      const _dcRevision = gxtModule.cell(0, 'dc-ember-revision');
+      let _lastComponentValue: any = componentValue;
+      let _dcDestroyed = false;
+
+      // Register a listener for property changes on the component's context.
+      // When any Ember property changes, re-evaluate componentGetter and
+      // bump the revision cell if the result is different.
+      const _dcChangeListener = (): boolean => {
+        if (_dcDestroyed) return false;
+        // Always bump the revision cell to trigger formula re-evaluation.
+        // The actual value comparison happens inside wrappedGetter which
+        // runs during GXT's sync cycle (after all Ember tags are dirtied).
+        _dcRevision.update(_dcRevision.value + 1);
+        return true;
+      };
+
+      // Hook into __gxtSyncAllWrappers to bump the revision cell AFTER
+      // arg cells have been updated. This ensures that when the formula
+      // re-evaluates (in the subsequent gxtSyncDom pass), componentGetter()
+      // reads the latest values through the updated arg cells.
+      if (!g.__dcChangeListeners) {
+        g.__dcChangeListeners = new Set();
+        const origSyncAll = g.__gxtSyncAllWrappers;
+        if (typeof origSyncAll === 'function') {
+          g.__gxtSyncAllWrappers = function() {
+            // First, run the original syncAllWrappers to update arg cells
+            origSyncAll();
+            // Then bump revision cells for all active dc listeners
+            // so the second gxtSyncDom pass picks them up
+            for (const listener of g.__dcChangeListeners) {
+              try { listener(); } catch { /* ignore */ }
+            }
+          };
         }
-        throw err;
       }
+      g.__dcChangeListeners.add(_dcChangeListener);
+
+      // Wrap the getter to read the revision cell (for GXT tracking)
+      // and translate values into marker functions for swap detection.
+      // Cache the current marker to avoid creating new functions when the
+      // value hasn't changed (GXT compares function identity for swaps).
+      let _cachedMarker: Function | null = null;
+      let _cachedRaw: any = undefined;
+      let _cachedIdentityKey: string | null = null;
+
+      const wrappedGetter = () => {
+        // Read the revision cell to establish GXT formula tracking.
+        // When this cell is updated, the formula re-evaluates.
+        void _dcRevision.value;
+
+        const raw = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+        _lastComponentValue = raw;
+
+        // Return cached marker if the identity key hasn't changed
+        // (same component name/value = same function reference = no swap)
+        if (!raw && raw !== 0) {
+          const key = '__empty__';
+          if (_cachedIdentityKey === key) return _cachedMarker;
+          _cachedIdentityKey = key;
+          _cachedMarker = function _dcEmptyMarker() {};
+          (_cachedMarker as any).__emptyComponent = true;
+          return _cachedMarker;
+        }
+        if (typeof raw === 'string') {
+          const key = '__str:' + raw;
+          if (_cachedIdentityKey === key) return _cachedMarker;
+          _cachedIdentityKey = key;
+          _cachedMarker = function _dcStringMarker() {};
+          (_cachedMarker as any).__stringComponentName = raw;
+          return _cachedMarker;
+        }
+        if (raw && raw.__isCurriedComponent) {
+          const key = '__curried:' + (raw.__name || '') + ':' + String(raw.__curriedArgs);
+          if (_cachedIdentityKey === key && _cachedRaw === raw) return _cachedMarker;
+          _cachedIdentityKey = key;
+          _cachedRaw = raw;
+          _cachedMarker = function _dcCurriedMarker() {};
+          (_cachedMarker as any).__isCurriedComponent = true;
+          (_cachedMarker as any).__name = raw.__name;
+          (_cachedMarker as any).__curriedArgs = raw.__curriedArgs;
+          (_cachedMarker as any).__curriedPositionals = raw.__curriedPositionals;
+          (_cachedMarker as any).__owner = raw.__owner;
+          return _cachedMarker;
+        }
+        _cachedIdentityKey = null;
+        _cachedRaw = raw;
+        _cachedMarker = null;
+        return raw;
+      };
+
+      // Register a destructor to clean up the change listener
+      const _cleanupDcListener = () => {
+        _dcDestroyed = true;
+        g.__dcChangeListeners?.delete(_dcChangeListener);
+      };
+
+      // Expose getter so the component manager can read the latest curried component
+      g.__dcComponentGetter = componentGetter;
+
+      // Custom component factory for GXT's $_dc: renders through Ember's
+      // component manager instead of GXT's native component() function.
+      const RNODES = gxtModule.RENDERED_NODES_PROPERTY;
+      const RCTX = gxtModule.RENDERING_CONTEXT_PROPERTY;
+      const CID = gxtModule.COMPONENT_ID_PROPERTY;
+      const emberComponentFactory = (markerValue: any, factoryArgs: any, factoryCtx: any) => {
+        // Handle empty component marker
+        if (typeof markerValue === 'function' && (markerValue as any).__emptyComponent) {
+          const comment = document.createComment('empty dynamic component');
+          return { [RNODES]: [comment], [CID]: 0, [RCTX]: null };
+        }
+
+        const result = renderComponent(markerValue, factoryArgs, factoryCtx, true);
+
+        // If the marker has a string name that couldn't be resolved, throw
+        if (result == null && typeof markerValue === 'function' && (markerValue as any).__stringComponentName) {
+          const name = (markerValue as any).__stringComponentName;
+          const err = new Error(
+            `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found. ` +
+            `Could not find component named "${name}" (no component or template with that name was found)`
+          );
+          const captureErr = g.__captureRenderError;
+          if (typeof captureErr === 'function') {
+            captureErr(err);
+          }
+          throw err;
+        }
+
+        // Wrap result into GXT-compatible ComponentReturnType if needed
+        if (result instanceof Node) {
+          const nodes = result instanceof DocumentFragment
+            ? Array.from(result.childNodes) : [result];
+          return { [RNODES]: nodes, [CID]: 0, [RCTX]: null };
+        }
+        if (result != null && result[RNODES]) {
+          return result;
+        }
+        if (result != null) {
+          return { [RNODES]: [result], [CID]: 0, [RCTX]: null };
+        }
+        return { [RNODES]: [], [CID]: 0, [RCTX]: null };
+      };
+
+      // Register cleanup destructor on the context if available
+      if (ctx && typeof gxtModule.registerDestructor === 'function') {
+        try {
+          gxtModule.registerDestructor(ctx, _cleanupDcListener);
+        } catch { /* ignore if ctx doesn't support destructors */ }
+      }
+
+      // Delegate to GXT's native $_dc with the revision-tracked wrappedGetter
+      // and the custom componentFactory.
+      return original(wrappedGetter, gxtArgs, ctx, emberComponentFactory);
     }
 
     // Handle component definitions (template-only, GlimmerishComponent, etc.)

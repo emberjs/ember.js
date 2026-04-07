@@ -803,9 +803,14 @@ class ClassicRootState {
                       const baseName = typeof inv.modifier === 'string'
                         ? inv.modifier
                         : (inv.modifier?.name || String(inv.modifier));
-                      const firstArg = inv.props && inv.props.length > 0
-                        ? String(typeof inv.props[0] === 'function' && !inv.props[0].prototype ? inv.props[0]() : inv.props[0])
-                        : '';
+                      // Only include firstArg for the "on" modifier
+                      // to match the modKey logic in handle()
+                      let firstArg = '';
+                      if (inv.modifier === 'on') {
+                        firstArg = inv.props && inv.props.length > 0
+                          ? String(typeof inv.props[0] === 'function' && !inv.props[0].prototype ? inv.props[0]() : inv.props[0])
+                          : '';
+                      }
                       const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
                       const cached = cache.get(modKey);
                       if (cached && !cached.pendingDestroy) {
@@ -1536,8 +1541,24 @@ function _renderComponentGxt(
         if (!instance.args) {
           instance.args = {};
         }
-        for (const [key, value] of Object.entries(args)) {
-          instance.args[key] = value;
+        // Use Object.keys + defineProperty instead of Object.entries to avoid
+        // eagerly evaluating arg getters. Arg getters may have side effects
+        // (e.g., tracking steps in tests) and should only be called lazily.
+        for (const key of Object.keys(args)) {
+          const desc = Object.getOwnPropertyDescriptor(args, key);
+          if (desc?.get) {
+            Object.defineProperty(instance.args, key, {
+              get: desc.get,
+              enumerable: true,
+              configurable: true,
+            });
+          } else {
+            Object.defineProperty(instance.args, key, {
+              get: () => (args as any)[key],
+              enumerable: true,
+              configurable: true,
+            });
+          }
         }
       }
     }
@@ -1582,10 +1603,23 @@ function _renderComponentGxt(
     if (typeof _setRendering === 'function') {
       _setRendering(true);
     }
+    // When renderComponent is called during an existing render pass (e.g.,
+    // from a @cached getter during template evaluation), suppress gxtEffect
+    // creation for text nodes. These nested renders are "static snapshots" —
+    // reactivity is handled by the parent destroying and recreating the render
+    // when tracked deps change. Independent text effects would fire out-of-order
+    // (before the parent re-renders) and cause double getter evaluations.
+    // Top-level renderComponent calls (wasRendering=false) DO need text effects
+    // for trackedObject reactivity.
+    const prevSkipTextEffects = (globalThis as any).__gxtSkipTextEffects;
+    if (wasRendering) {
+      (globalThis as any).__gxtSkipTextEffects = true;
+    }
     try {
       // Render the template into the target
       template.render(renderContext, targetElement);
     } finally {
+      (globalThis as any).__gxtSkipTextEffects = prevSkipTextEffects;
       if (typeof _setRendering === 'function' && !wasRendering) {
         _setRendering(false);
       }

@@ -1530,6 +1530,8 @@ queueMicrotask(patchGlobalEachSync);
     (globalThis as any).__gxtHadPendingSync = !!(globalThis as any).__gxtPendingSyncFromPropertyChange;
     (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
     (globalThis as any).__gxtSyncing = true;
+    // Increment sync cycle ID so modifier update dedup works correctly.
+    (globalThis as any).__gxtSyncCycleId = ((globalThis as any).__gxtSyncCycleId || 0) + 1;
     // Wrap ALL phases in try/finally so __gxtSyncing is ALWAYS reset,
     // even if an unexpected error escapes a catch block.
     try {
@@ -1593,6 +1595,34 @@ queueMicrotask(patchGlobalEachSync);
       // Store destroy errors for propagation to assert.throws
       (globalThis as any).__gxtDeferredSyncError = (globalThis as any).__gxtDeferredSyncError || destroyErr;
     }
+    // PHASE 2d: Flush pending modifier destroys — call destroyModifier on
+    // custom modifier managers whose elements were removed (e.g., by #if toggle).
+    // This must happen BEFORE post-render hooks so willDestroyElement fires
+    // before didInsertElement of the replacement element.
+    try {
+      const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+      if (pendingDestroys && pendingDestroys.length > 0) {
+        const toFlush = pendingDestroys.splice(0);
+        for (const entry of toFlush) {
+          if (!entry.cached.pendingDestroy) continue; // Already reclaimed by update path
+          try {
+            if (entry.isCustom && entry.cached.manager?.destroyModifier) {
+              entry.cached.manager.destroyModifier(entry.cached.instance);
+            }
+            if (entry.destroyable) {
+              const destroyFn = (globalThis as any).__gxtDestroyFn;
+              if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
+            }
+          } catch { /* ignore individual modifier destroy errors */ }
+          // Remove from cache
+          const elCache = entry.cache?.get(entry.element);
+          if (elCache) {
+            elCache.delete(entry.modKey);
+            if (elCache.size === 0) entry.cache.delete(entry.element);
+          }
+        }
+      }
+    } catch { /* ignore */ }
     // PHASE 3: Post-render hooks (didUpdate, didRender) — fire after DOM
     // is fully updated by the force-rerender.
     try {
@@ -1755,6 +1785,10 @@ setInterval(() => {
   }
   // Clear pending if-watcher notifications from the previous test
   _pendingIfWatcherNotifications.length = 0;
+  // Clear dynamic component change listeners from $_dc_ember
+  if ((globalThis as any).__dcChangeListeners) {
+    (globalThis as any).__dcChangeListeners.clear();
+  }
   // Clear component contexts to prevent stale render contexts accumulating
   if ((globalThis as any).__gxtComponentContexts) {
     (globalThis as any).__gxtComponentContexts = new WeakMap();
@@ -7503,9 +7537,6 @@ export function precompileTemplate(templateString: string, options?: {
           return fragment;
         }
 
-        const textValue = finalResult == null ? '' : String(finalResult);
-        const textNode = document.createTextNode(textValue);
-
         // Set up reactive text binding via GXT effect().
         // Cell-backed getters on the instance make property reads trackable.
         // effect() tracks those cell reads. When set() updates the value,
@@ -7516,8 +7547,17 @@ export function precompileTemplate(templateString: string, options?: {
         // changing from undefined to an Element), we replace the text node
         // with the actual DOM node. We track the current content node so we
         // can swap it reactively without leaving comment markers in the DOM.
+        //
+        // When __gxtSkipTextEffects is set (nested renderComponent), skip
+        // creating effects. Nested renders are destroyed and recreated by
+        // the parent, so independent effects cause ordering issues.
+        const textValue = finalResult == null ? '' : String(finalResult);
+        const textNode = document.createTextNode(textValue);
+        if ((globalThis as any).__gxtSkipTextEffects) {
+          return textNode;
+        }
         let _currentContentNode: Node = textNode;
-        let _isNodeContent = false;
+        let _isNodeContent = finalResult instanceof Node;
         try {
           gxtEffect(() => {
             const v = item();

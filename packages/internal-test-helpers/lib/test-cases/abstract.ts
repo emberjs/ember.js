@@ -71,6 +71,34 @@ export abstract class AbstractStrictTestCase {
       }
 
       runDestroy(this);
+
+      // Flush pending modifier destroys so willDestroyElement fires during
+      // teardown (matching Glimmer VM behavior where destroyModifier is called
+      // synchronously when the element is removed).
+      try {
+        const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        if (pendingDestroys && pendingDestroys.length > 0) {
+          const toFlush = pendingDestroys.splice(0);
+          for (const entry of toFlush) {
+            if (!entry.cached.pendingDestroy) continue;
+            try {
+              if (entry.isCustom && entry.cached.manager?.destroyModifier) {
+                entry.cached.manager.destroyModifier(entry.cached.instance);
+              }
+              if (entry.destroyable) {
+                const destroyFn = (globalThis as any).__gxtDestroyFn;
+                if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
+              }
+            } catch { /* ignore individual modifier destroy errors */ }
+            const elCache = entry.cache?.get(entry.element);
+            if (elCache) {
+              elCache.delete(entry.modKey);
+              if (elCache.size === 0) entry.cache.delete(entry.element);
+            }
+          }
+        }
+      } catch { /* ignore */ }
+
       // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
       if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
         (globalThis as any).owner = null;
