@@ -1,6 +1,5 @@
 import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
-import { helperCapabilities, setHelperManager } from '@glimmer/manager';
 
 import { template } from '@ember/template-compiler/runtime';
 import { fn } from '@ember/helper';
@@ -60,19 +59,9 @@ class KeywordFn extends RenderTest {
 
   @test
   'can be shadowed'(assert: Assert) {
-    let fn = setHelperManager(
-      () => ({
-        capabilities: helperCapabilities('3.23', { hasValue: true }),
-        createHelper() {
-          assert.step('shadowed:success');
-          return {};
-        },
-        getValue() {
-          return () => {};
-        },
-      }),
-      {}
-    );
+    let fn = () => {
+      assert.step('shadowed:success');
+    };
 
     let greet = () => {};
 

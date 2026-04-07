@@ -385,17 +385,15 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
               import Component from '@glimmer/component';
               import { tracked } from '@glimmer/tracking';
-              import { helper } from '@ember/component/helper';
 
               module('{{fn}} as keyword (but it is shadowed)', function(hooks) {
                 setupRenderingTest(hooks);
 
                 test('it works', async function(assert) {
                   // shadows keyword!
-                  const fn = helper(() => {
-                    assert.step('shadowed:fn:create');
-                    return () => {};
-                  });
+                  const fn = () => {
+                    assert.step('shadowed:fn:invoke');
+                  };
 
                   class Demo extends Component {
                     @tracked message = 'hello';
@@ -407,7 +405,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   }
 
                   await render(Demo);
-                  assert.verifySteps(['shadowed:fn:create']);
+                  assert.verifySteps(['shadowed:fn:invoke']);
 
                   assert.dom('button').hasText('hello');
                   await click('button');
