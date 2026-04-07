@@ -59,6 +59,7 @@ class KeywordFn extends RenderTest {
 
     const Child = template('<button {{on "click" @callback}}>Click</button>', {
       strictMode: true,
+      scope: () => ({}),
     });
 
     const compiled = template('<Child @callback={{fn greet "hello"}} />', {
