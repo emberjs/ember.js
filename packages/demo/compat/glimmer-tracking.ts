@@ -5,7 +5,7 @@
  * This eliminates backtracking assertions and makes @tracked work
  * natively with GXT's formula tracking.
  */
-import { trackedData } from '@glimmer/validator';
+import { trackedData, consumeTag, tagFor, dirtyTagFor } from '@glimmer/validator';
 
 /**
  * @tracked decorator — makes a class property reactive.
@@ -24,7 +24,12 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
     enumerable: true,
     configurable: true,
     get(this: object) {
-      return getter(this);
+      const value = getter(this);
+      // Consume the property tag so createCache tracking captures this
+      // dependency. Without this, @cached getters that read @tracked
+      // properties from @glimmer/tracking won't invalidate.
+      consumeTag(tagFor(this, key));
+      return value;
     },
     set(this: object, value: any) {
       // GXT backtracking detection for @tracked properties
@@ -33,6 +38,20 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
         checkBacktracking(this, key);
       }
       setter(this, value);
+      // Dirty the property tag so createCache invalidates
+      dirtyTagFor(this, key);
+      // Mark GXT sync as pending so run() flushes DOM updates
+      const schedule = (globalThis as any).__gxtExternalSchedule;
+      if (typeof schedule === 'function') {
+        schedule();
+      }
+      // Notify GXT for cross-object reactivity
+      if (!(globalThis as any).__gxtCurrentlyRendering) {
+        const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+        if (typeof triggerReRender === 'function') {
+          triggerReRender(this, key);
+        }
+      }
     },
   };
 }

@@ -3166,6 +3166,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // Access managers dynamically - they may be set up after this module loads
     const managers = g.$_MANAGERS;
 
+    // Engine support: ctx.owner may be the engine instance while g.owner is the app.
+    // Temporarily swap so all downstream resolution uses the correct owner.
+    const _eoCtx = ctx?.owner;
+    const _eoSwap = _eoCtx && !_eoCtx.isDestroyed && !_eoCtx.isDestroying && _eoCtx !== g.owner;
+    const _eoPrev = _eoSwap ? g.owner : undefined;
+    if (_eoSwap) g.owner = _eoCtx;
+    try {
+
     if (mightBeComponent && managers?.component?.canHandle) {
       // Convert PascalCase to kebab-case for Ember component lookup
       // Also convert -- (namespace separator from ::) to /
@@ -4248,6 +4256,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     }
 
     return result;
+
+    } finally { if (_eoSwap) g.owner = _eoPrev; }
   };
 
   // Mark as wrapped to prevent re-wrapping

@@ -231,8 +231,12 @@ class EmberMountElement extends HTMLElement {
 
   disconnectedCallback() {
     this._rendered = false;
-    if (this._engineInstance && typeof this._engineInstance.destroy === 'function') {
-      try { this._engineInstance.destroy(); } catch { /* ignore */ }
+    // During force-rerender elements are removed and recreated; don't destroy
+    // the engine instance — it will be reused via __gxtEngineInstances cache.
+    if (!(globalThis as any).__gxtIsForceRerender) {
+      if (this._engineInstance && typeof this._engineInstance.destroy === 'function') {
+        try { this._engineInstance.destroy(); } catch { /* ignore */ }
+      }
     }
     this._engineInstance = null;
   }

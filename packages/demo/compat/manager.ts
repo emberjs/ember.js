@@ -1232,7 +1232,12 @@ export function endRenderPass(): void {
   }
   // This instance's template was already rendered in this pass.
   // Setting a property on it is backtracking.
-  const objName = targetObj?.toString?.() || '<unknown>';
+  // Use class constructor name if available (matches Glimmer VM behavior).
+  // Fall back to toString() for Ember objects that override it.
+  const ctorName = targetObj?.constructor?.name;
+  const objName = (ctorName && ctorName !== 'Object' && ctorName !== 'Array')
+    ? ctorName
+    : (targetObj?.toString?.() || '<unknown>');
 
   // Build a render tree string from the parentView stack for the message.
   // Walk the parentView chain to build component names (skip the root test context).
@@ -2584,12 +2589,29 @@ function wrapNestedObjectForTracking(obj: any): any {
       const value = Reflect.get(target, prop, target);
       // Don't create cells for methods
       if (typeof value === 'function') return value;
-      // Create/read cell so GXT formula tracks this dependency
+      // Create/read cell so GXT formula tracks this dependency.
+      // Use skipDefine=true to avoid overwriting @tracked getter/setters
+      // which include backtracking detection. We sync the cell value
+      // with the actual property value and read cell.value for GXT
+      // formula tracking.
       try {
-        const cell = _cellFor(target, prop, /* skipDefine */ false);
-        if (cell) return cell.value;
+        const cell = _cellFor(target, prop, /* skipDefine */ true);
+        if (cell) {
+          // Sync cell value silently (bypass update() to avoid dirty marking)
+          if (cell._value !== value) {
+            cell._value = value;
+          }
+          // Read cell.value to register with GXT's currentTracker
+          cell.value;
+        }
       } catch { /* ignore */ }
       return value;
+    },
+    // Delegate sets to the original target so @tracked setters run with
+    // this = target (not proxy). This ensures backtracking detection and
+    // tracked property storage (WeakMap keyed by `this`) work correctly.
+    set(target, prop, value) {
+      return Reflect.set(target, prop, value, target);
     },
   });
 
@@ -3856,15 +3878,15 @@ const $_MANAGERS = {
           (globalThis as any).owner = resolveOwner;
         }
         try {
-          pushInstanceCapture();
-          const result = this.handle(resolvedKomp, mergedArgs, fw, ctx);
-          // Capture the Ember instance for $_dc lifecycle tracking
+          // Store dcCaptureInstance globally so renderClassicComponent can call
+          // it after the instance is created (push/pop stack doesn't work with
+          // lazy closures returned by handleStringComponent).
+          const _prevCap1 = (globalThis as any).__gxtDcCaptureCallback;
           if (typeof komp.__dcCaptureInstance === 'function') {
-            const inst = popInstanceCapture();
-            if (inst) komp.__dcCaptureInstance(inst);
-          } else {
-            popInstanceCapture();
+            (globalThis as any).__gxtDcCaptureCallback = komp.__dcCaptureInstance;
           }
+          const result = this.handle(resolvedKomp, mergedArgs, fw, ctx);
+          (globalThis as any).__gxtDcCaptureCallback = _prevCap1;
           return result;
         } finally {
           if (resolveOwner !== prevOwner) {
@@ -3906,15 +3928,12 @@ const $_MANAGERS = {
           (globalThis as any).owner = owner;
         }
         try {
-          pushInstanceCapture();
-          const result = this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
-          // Capture the Ember instance for $_dc lifecycle tracking
+          const _prevCap2 = (globalThis as any).__gxtDcCaptureCallback;
           if (typeof komp.__dcCaptureInstance === 'function') {
-            const inst = popInstanceCapture();
-            if (inst) komp.__dcCaptureInstance(inst);
-          } else {
-            popInstanceCapture();
+            (globalThis as any).__gxtDcCaptureCallback = komp.__dcCaptureInstance;
           }
+          const result = this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
+          (globalThis as any).__gxtDcCaptureCallback = _prevCap2;
           return result;
         } finally {
           if (!prevOwner2 && owner) {
@@ -6130,6 +6149,14 @@ function renderClassicComponent(
   // Expose the current instance via stack-based capture so $_dc_ember can
   // track it for destroy lifecycle when dynamic component switching occurs.
   setInstanceCapture(instance);
+
+  // Call the global $_dc capture callback if set — used by $_dc_ember to track
+  // Ember instances for willDestroy lifecycle when dynamic components are swapped.
+  const _dcCap = (globalThis as any).__gxtDcCaptureCallback;
+  if (typeof _dcCap === 'function') {
+    _dcCap(instance);
+    (globalThis as any).__gxtDcCaptureCallback = null;
+  }
 
   // Track this instance for destroy detection during force-rerender
   if (instance) {
