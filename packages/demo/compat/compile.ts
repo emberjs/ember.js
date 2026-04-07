@@ -3167,9 +3167,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     const managers = g.$_MANAGERS;
 
     // Engine support: ctx.owner may be the engine instance while g.owner is the app.
-    // Temporarily swap so all downstream resolution uses the correct owner.
+    // Only swap when ctx.owner looks like an engine instance (has factoryFor and
+    // is different from g.owner). Use __gxtIsEngineCtx flag set by the outlet code.
     const _eoCtx = ctx?.owner;
-    const _eoSwap = _eoCtx && !_eoCtx.isDestroyed && !_eoCtx.isDestroying && _eoCtx !== g.owner;
+    const _eoSwap = _eoCtx && !_eoCtx.isDestroyed && !_eoCtx.isDestroying
+      && _eoCtx !== g.owner && ctx.__gxtIsEngineCtx === true;
     const _eoPrev = _eoSwap ? g.owner : undefined;
     if (_eoSwap) g.owner = _eoCtx;
     try {
