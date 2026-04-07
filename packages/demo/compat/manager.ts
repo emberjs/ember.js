@@ -974,6 +974,14 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
           }
         }
         lastArgValues[key] = newValue;
+        // Notify Ember's computed property system that this property changed.
+        // This triggers __gxtTriggerReRender which recomputes @computed
+        // dependent keys (e.g., @computed('location') get componentName()).
+        // Without this, computed properties that depend on args never invalidate.
+        const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+        if (triggerReRender) {
+          try { triggerReRender(instance, key); } catch { /* ignore */ }
+        }
       }
     }
 
@@ -1238,6 +1246,9 @@ export function endRenderPass(): void {
   let objName: string;
   if (toStr && toStr !== '[object Object]' && toStr.startsWith('<')) {
     // EmberObject subclass — use toString() which gives `<ClassName:emberN>`
+    objName = toStr;
+  } else if (toStr && toStr !== '[object Object]' && typeof toStr === 'string') {
+    // Object with a custom toString() — use it (e.g., Person (Ben))
     objName = toStr;
   } else {
     // Plain tracked class — use constructor name directly (no angle brackets)

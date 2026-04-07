@@ -4,8 +4,10 @@ import { tokenize } from 'simple-html-tokenizer';
 function stripGxtArtifacts(html: string): string {
   if (!(globalThis as any).__GXT_MODE__) return html;
   return html
-    // Remove GXT placeholder comments
-    .replace(/<!--(?:placeholder|if-entry|each-entry|list-target|list item|list bottom marker|sync-each-placeholder|htmlRaw|\/htmlRaw|curried-start|curried-end)[^>]*-->/g, '')
+    // Remove GXT placeholder comments (including if-entry)
+    .replace(/<!--(?:placeholder|if-entry|each-entry|list-target|list item|list bottom marker|list fragment target marker|sync-each-placeholder|htmlRaw|\/htmlRaw|curried-start|curried-end)[^>]*-->/g, '')
+    // Remove empty comments left by Glimmer VM (<!---->)
+    .replace(/<!---->/g, '')
     // Remove data-node-id attributes
     .replace(/\s*data-node-id="[^"]*"/g, '')
     // Unwrap <ember-outlet> wrappers
@@ -17,9 +19,15 @@ function stripGxtArtifacts(html: string): string {
 
 function generateTokens(containerOrHTML: string | Element) {
   if (typeof containerOrHTML === 'string') {
+    let html = containerOrHTML;
+    // In GXT mode, also strip empty comments from expected strings
+    // since GXT doesn't emit them the same way Glimmer VM does
+    if ((globalThis as any).__GXT_MODE__) {
+      html = html.replace(/<!---->/g, '');
+    }
     return {
-      tokens: tokenize(containerOrHTML),
-      html: containerOrHTML,
+      tokens: tokenize(html),
+      html,
     };
   } else {
     let html = containerOrHTML.innerHTML;

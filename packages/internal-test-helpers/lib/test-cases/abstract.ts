@@ -257,6 +257,7 @@ export default abstract class AbstractTestCase {
         text.includes('list-target') ||
         text.includes('list item') ||
         text.includes('list bottom marker') ||
+        text.includes('list fragment target marker') ||
         text.includes('curried-start') ||
         text.includes('curried-end')
       ) {
