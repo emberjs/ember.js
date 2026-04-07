@@ -4467,11 +4467,80 @@ const $_MANAGERS = {
         return { positional, named };
       };
 
+      // Build LAZY args object — only resolves GXT getters when actually accessed.
+      // This is crucial for per-arg tracking: GXT's formula only tracks cells that
+      // are read, so non-consumed args won't trigger formula re-evaluation.
+      const buildLazyArgs = (currentProps: any[], currentHashArgs: any) => {
+        const rawPositional = currentProps || [];
+        const positionalProxy = new Proxy([] as any[], {
+          get(target, prop, receiver) {
+            if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+              const idx = Number(prop);
+              if (idx < rawPositional.length) {
+                return unwrapGxtArg(rawPositional[idx]);
+              }
+              return undefined;
+            }
+            if (prop === 'length') return rawPositional.length;
+            if (prop === Symbol.iterator) {
+              return function* () {
+                for (let i = 0; i < rawPositional.length; i++) {
+                  yield unwrapGxtArg(rawPositional[i]);
+                }
+              };
+            }
+            return Reflect.get(target, prop, receiver);
+          }
+        });
+
+        const rawHash = currentHashArgs ? (typeof currentHashArgs === 'function' ? currentHashArgs() : currentHashArgs) : {};
+        const namedKeys = Object.keys(rawHash).filter((k: string) => !k.startsWith('$_') && k !== 'hash');
+        const namedProxy = new Proxy({} as Record<string, any>, {
+          get(target, prop, receiver) {
+            if (typeof prop === 'string' && namedKeys.includes(prop)) {
+              const val = rawHash[prop];
+              return (typeof val === 'function' && !(val as any).__isCurriedComponent) ? (val as any)() : val;
+            }
+            return Reflect.get(target, prop, receiver);
+          },
+          ownKeys() { return namedKeys; },
+          getOwnPropertyDescriptor(target, prop) {
+            if (typeof prop === 'string' && namedKeys.includes(prop)) {
+              return { configurable: true, enumerable: true, writable: true, value: undefined };
+            }
+            return Object.getOwnPropertyDescriptor(target, prop);
+          },
+          has(target, prop) {
+            if (typeof prop === 'string') return namedKeys.includes(prop);
+            return Reflect.has(target, prop);
+          }
+        });
+
+        return { positional: positionalProxy, named: namedProxy };
+      };
+
       // Check for cached modifier instance (update path)
       // Include the first positional arg in the key to differentiate multiple
       // {{on}} modifiers on the same element with different event names.
+      // IMPORTANT: Read firstArg UNTRACKED so it doesn't establish a cell dependency.
+      // Otherwise, all positional args would be tracked by the GXT formula.
       const baseName = typeof modifier === 'string' ? modifier : (modifier?.name || String(modifier));
-      const firstArg = props && props.length > 0 ? String(typeof props[0] === 'function' && !props[0].prototype ? props[0]() : props[0]) : '';
+      let firstArg = '';
+      {
+        const _setT = (globalThis as any).__gxtSetTracker;
+        const _getT = (globalThis as any).__gxtGetTracker;
+        if (_setT && _getT) {
+          const savedTracker = _getT();
+          _setT(null);
+          try {
+            firstArg = props && props.length > 0 ? String(typeof props[0] === 'function' && !props[0].prototype ? props[0]() : props[0]) : '';
+          } finally {
+            _setT(savedTracker);
+          }
+        } else {
+          firstArg = props && props.length > 0 ? String(typeof props[0] === 'function' && !props[0].prototype ? props[0]() : props[0]) : '';
+        }
+      }
       const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
       const elCache = self._cache.get(element);
       if (elCache) {
@@ -4549,15 +4618,76 @@ const $_MANAGERS = {
             }
           } else {
             // Custom modifier manager update path.
-            // GXT tracks ALL cells during modifier formula evaluation, so this
-            // fires whenever any tracked value changes (args or autotracked).
-            // We always call updateModifier to support both cases:
-            // - Arg changes (traditional modifier updates)
-            // - Autotracked value changes (tracked properties consumed during hooks)
-            const args = buildArgs();
-            if (cached.manager.updateModifier) {
-              cached.manager.updateModifier(cached.instance, args);
+            // Per-arg tracking: only call updateModifier when consumed args changed
+            // OR when external tracked values changed (autotracking).
+            // We eagerly read ALL args UNTRACKED to get fresh values for comparison.
+            let freshArgs: any;
+            {
+              const _setT = (globalThis as any).__gxtSetTracker;
+              const _getT = (globalThis as any).__gxtGetTracker;
+              if (_setT && _getT) {
+                const saved = _getT();
+                _setT(null);
+                try { freshArgs = buildArgs(); } finally { _setT(saved); }
+              } else {
+                freshArgs = buildArgs();
+              }
             }
+            let shouldUpdate = false;
+            if (cached._consumedPositional && cached._lastPositional) {
+              // Check if any consumed positional args changed
+              for (const idx of cached._consumedPositional) {
+                if (idx < freshArgs.positional.length &&
+                    freshArgs.positional[idx] !== cached._lastPositional[idx]) {
+                  shouldUpdate = true;
+                  break;
+                }
+              }
+              // Check if any consumed named args changed
+              if (!shouldUpdate && cached._consumedNamed && cached._lastNamed) {
+                for (const key of cached._consumedNamed) {
+                  if (freshArgs.named[key] !== cached._lastNamed[key]) {
+                    shouldUpdate = true;
+                    break;
+                  }
+                }
+              }
+              // If no consumed args changed, check if this was triggered by an
+              // external tracked value change (not an arg change at all).
+              // We detect this by checking: did ANY positional/named arg change?
+              if (!shouldUpdate) {
+                let anyArgChanged = false;
+                for (let i = 0; i < freshArgs.positional.length; i++) {
+                  if (freshArgs.positional[i] !== cached._lastPositional[i]) {
+                    anyArgChanged = true;
+                    break;
+                  }
+                }
+                if (!anyArgChanged) {
+                  for (const key of Object.keys(freshArgs.named)) {
+                    if (freshArgs.named[key] !== cached._lastNamed?.[key]) {
+                      anyArgChanged = true;
+                      break;
+                    }
+                  }
+                }
+                // If no arg changed at all, this was triggered by external tracking
+                if (!anyArgChanged) {
+                  shouldUpdate = true;
+                }
+              }
+            } else {
+              // No consumption tracking info — always update
+              shouldUpdate = true;
+            }
+            if (shouldUpdate && cached.manager.updateModifier) {
+              // Use lazy args for the actual update call so GXT tracks per-consumed-arg
+              const lazyArgs = buildLazyArgs(props, hashArgs);
+              cached.manager.updateModifier(cached.instance, lazyArgs);
+            }
+            // Snapshot for next comparison
+            cached._lastPositional = [...freshArgs.positional];
+            cached._lastNamed = { ...freshArgs.named };
           }
 
           // Return a destructor that marks pending destroy
@@ -4746,14 +4876,64 @@ const $_MANAGERS = {
       }
 
       // Install the modifier immediately.
-      const args = buildArgs();
+      // Use lazy args with consumption tracking so we know which args
+      // the modifier reads. Only consumed args trigger future updates.
+      const _consumedPositional = new Set<number>();
+      const _consumedNamed = new Set<string>();
+      const lazyInstallArgs = buildLazyArgs(props, hashArgs);
+      // Wrap with consumption-tracking proxies.
+      // Must handle both numeric indexing AND destructuring (Symbol.iterator).
+      const trackedInstallArgs = {
+        positional: new Proxy(lazyInstallArgs.positional, {
+          get(target: any, prop: any, receiver: any) {
+            if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+              _consumedPositional.add(Number(prop));
+            }
+            // Intercept Symbol.iterator to track which indices are accessed during destructuring
+            if (prop === Symbol.iterator) {
+              const innerIter = Reflect.get(target, prop, receiver);
+              return function* () {
+                let idx = 0;
+                for (const val of { [Symbol.iterator]: innerIter }) {
+                  _consumedPositional.add(idx++);
+                  yield val;
+                }
+              };
+            }
+            return Reflect.get(target, prop, receiver);
+          }
+        }),
+        named: new Proxy(lazyInstallArgs.named, {
+          get(target: any, prop: any, receiver: any) {
+            if (typeof prop === 'string') {
+              _consumedNamed.add(prop);
+            }
+            return Reflect.get(target, prop, receiver);
+          }
+        })
+      };
       beginBacktrackingFrame();
       let instance: any;
       try {
-        instance = manager.createModifier(ModifierClass, args);
-        manager.installModifier(instance, element, args);
+        instance = manager.createModifier(ModifierClass, trackedInstallArgs);
+        manager.installModifier(instance, element, trackedInstallArgs);
       } finally {
         endBacktrackingFrame();
+      }
+
+      // Snapshot initial arg values for change detection.
+      // Read UNTRACKED to avoid establishing cell dependencies outside the formula.
+      let initialArgs: any;
+      {
+        const _setT = (globalThis as any).__gxtSetTracker;
+        const _getT = (globalThis as any).__gxtGetTracker;
+        if (_setT && _getT) {
+          const savedTracker = _getT();
+          _setT(null);
+          try { initialArgs = buildArgs(); } finally { _setT(savedTracker); }
+        } else {
+          initialArgs = buildArgs();
+        }
       }
 
       // Cache the instance for subsequent update calls
@@ -4762,7 +4942,11 @@ const $_MANAGERS = {
         cache = new Map();
         self._cache.set(element, cache);
       }
-      const cached = { instance, manager, ModifierClass, pendingDestroy: false };
+      const cached: any = { instance, manager, ModifierClass, pendingDestroy: false,
+        _consumedPositional, _consumedNamed,
+        _lastPositional: [...initialArgs.positional],
+        _lastNamed: { ...initialArgs.named }
+      };
       cache.set(modKey, cached);
 
       // Return a destructor. GXT calls this before re-evaluating the formula

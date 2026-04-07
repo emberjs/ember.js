@@ -170,6 +170,20 @@ function createEmberMaybeHelper(original: Function) {
 
         if (typeof helperMgr.getDelegateFor === 'function') {
           const delegate = helperMgr.getDelegateFor(g.owner);
+          // Validate that capabilities were created via helperCapabilities()
+          const _FROM_CAPS = g.FROM_CAPABILITIES;
+          if (delegate && delegate.capabilities && _FROM_CAPS && !_FROM_CAPS.has(delegate.capabilities)) {
+            const err = new Error(
+              `Custom helper managers must have a \`capabilities\` property ` +
+              `that is the result of calling the \`capabilities('3.23')\` ` +
+              `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
+              `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
+            );
+            // Capture for flushRenderErrors so assert.throws() can see it
+            const captureFn = g.__captureRenderError;
+            if (typeof captureFn === 'function') captureFn(err);
+            throw err;
+          }
           if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
             // Check cache — reuse the same bucket across re-evaluations
             let cached = managedHelperBucketCache.get(nameOrFn);

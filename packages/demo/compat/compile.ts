@@ -4278,6 +4278,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // previously-seen name), a NEW marker is created to force GXT's $_dc to
       // detect the swap and re-render.
       let _lastIdentityKey: string | null = null;
+      let _lastRaw: any = undefined; // Track the actual raw value reference
       let _currentMarker: Function | null = null;
       // Track the Ember component instance created for this dynamic component
       // slot so we can fire Ember lifecycle hooks when the component is swapped.
@@ -4296,53 +4297,73 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           _dcEmberInstance = null;
         };
 
+        // Helper to create a new string marker with instance capture
+        const _makeStringMarker = (name: string) => {
+          _currentMarker = function _dcStringMarker() {};
+          (_currentMarker as any).__stringComponentName = name;
+          (_currentMarker as any).__dcCaptureInstance = (inst: any) => {
+            _dcEmberInstance = inst;
+          };
+        };
+
+        // Helper to create a new curried marker with instance capture
+        const _makeCurriedMarker = (curriedRaw: any) => {
+          _currentMarker = function _dcCurriedMarker() {};
+          (_currentMarker as any).__isCurriedComponent = true;
+          (_currentMarker as any).__name = curriedRaw.__name;
+          (_currentMarker as any).__curriedArgs = curriedRaw.__curriedArgs;
+          (_currentMarker as any).__curriedPositionals = curriedRaw.__curriedPositionals;
+          (_currentMarker as any).__owner = curriedRaw.__owner;
+          (_currentMarker as any).__dcCaptureInstance = (inst: any) => {
+            _dcEmberInstance = inst;
+          };
+        };
+
         // Falsy (undefined, null, '') — render nothing
         if (!raw && raw !== 0) {
           const key = '__empty__';
           if (_lastIdentityKey !== key) {
             _destroyOldDcInstance();
             _lastIdentityKey = key;
+            _lastRaw = raw;
             _currentMarker = function _dcEmptyMarker() {};
             (_currentMarker as any).__emptyComponent = true;
           }
           return _currentMarker;
         }
 
-        // String component name — create a new marker when name changes
+        // String component name — ALWAYS create a new marker when the key
+        // changes or when the raw value changes from a different category.
+        // Even returning to the same name (A→B→A) must create a new component.
         if (typeof raw === 'string') {
           const key = '__str:' + raw;
-          if (_lastIdentityKey !== key) {
+          if (_lastIdentityKey !== key || _lastRaw !== raw) {
             _destroyOldDcInstance();
             _lastIdentityKey = key;
-            _currentMarker = function _dcStringMarker() {};
-            (_currentMarker as any).__stringComponentName = raw;
-            // After GXT creates the component, capture the Ember instance.
-            // The manager sets __gxtLastCreatedEmberInstance after creation.
-            (_currentMarker as any).__dcCaptureInstance = (inst: any) => {
-              _dcEmberInstance = inst;
-            };
+            _lastRaw = raw;
+            _makeStringMarker(raw);
           }
           return _currentMarker;
         }
 
-        // CurriedComponent object — create a new marker when identity changes
+        // CurriedComponent object — detect changes by raw object identity.
+        // Different curried objects (even with same name) must trigger re-render
+        // because each represents a new component instance lifecycle.
         if (raw && raw.__isCurriedComponent) {
           const key = '__curried:' + (raw.__name || '') + ':' + JSON.stringify(Object.keys(raw.__curriedArgs || {}));
-          if (_lastIdentityKey !== key) {
+          // Always create new marker when raw reference changes (A→B→A scenario)
+          if (_lastIdentityKey !== key || _lastRaw !== raw) {
             _destroyOldDcInstance();
             _lastIdentityKey = key;
-            _currentMarker = function _dcCurriedMarker() {};
-            (_currentMarker as any).__isCurriedComponent = true;
-            (_currentMarker as any).__name = raw.__name;
-            (_currentMarker as any).__dcCaptureInstance = (inst: any) => {
-              _dcEmberInstance = inst;
-            };
-          }
-          // Always update args on the marker since they may have changed
-          if (_currentMarker) {
-            (_currentMarker as any).__curriedArgs = raw.__curriedArgs;
-            (_currentMarker as any).__curriedPositionals = raw.__curriedPositionals;
-            (_currentMarker as any).__owner = raw.__owner;
+            _lastRaw = raw;
+            _makeCurriedMarker(raw);
+          } else {
+            // Same raw reference — just update args in case they mutated
+            if (_currentMarker) {
+              (_currentMarker as any).__curriedArgs = raw.__curriedArgs;
+              (_currentMarker as any).__curriedPositionals = raw.__curriedPositionals;
+              (_currentMarker as any).__owner = raw.__owner;
+            }
           }
           return _currentMarker;
         }
@@ -4352,6 +4373,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           _destroyOldDcInstance();
         }
         _lastIdentityKey = null;
+        _lastRaw = raw;
         _currentMarker = null;
         return raw;
       };
