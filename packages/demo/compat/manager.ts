@@ -1232,7 +1232,20 @@ export function endRenderPass(): void {
   }
   // This instance's template was already rendered in this pass.
   // Setting a property on it is backtracking.
-  const objName = targetObj?.toString?.() || '<unknown>';
+  // Glimmer VM uses toString() for EmberObject subclasses (returns `<ClassName:emberN>`)
+  // and constructor.name for plain tracked classes (returns `ClassName`).
+  const toStr = targetObj?.toString?.();
+  let objName: string;
+  if (toStr && toStr !== '[object Object]' && toStr.startsWith('<')) {
+    // EmberObject subclass — use toString() which gives `<ClassName:emberN>`
+    objName = toStr;
+  } else {
+    // Plain tracked class — use constructor name directly (no angle brackets)
+    const ctorName = targetObj?.constructor?.name;
+    objName = (ctorName && ctorName !== 'Object' && ctorName !== 'Array')
+      ? ctorName
+      : '<unknown>';
+  }
 
   // Build a render tree string from the parentView stack for the message.
   // Walk the parentView chain to build component names (skip the root test context).

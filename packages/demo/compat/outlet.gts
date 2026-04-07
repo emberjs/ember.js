@@ -12,6 +12,10 @@ import { Component, createRoot, setParentContext, getParentContext } from '@life
 class EmberOutletElement extends HTMLElement {
   private _rendered = false;
   private _outletState: any = null;
+  // Track the last rendered template identity + context for in-place updates
+  private _lastTemplate: any = null;
+  private _lastContext: any = null;
+  private _lastArgsObj: any = null;
 
   connectedCallback() {
     // Get outlet state from the global context
@@ -37,17 +41,52 @@ class EmberOutletElement extends HTMLElement {
       activeOutlets.delete(this);
     }
     this._rendered = false;
+    this._lastTemplate = null;
+    this._lastContext = null;
+    this._lastArgsObj = null;
   }
 
   /**
    * Called by OutletView.setOutletState when the route changes.
-   * Re-renders the outlet with the new state.
+   * Re-renders the outlet with the new state, or updates in-place
+   * if the template is the same (preserving DOM node stability).
    */
   updateOutletState(newState: any) {
     this._outletState = newState;
-    // Clear and re-render
+
+    // Check if we can do an in-place update (same template, different model)
+    const nestedOutlet = newState?.outlets?.main;
+    const newTemplate = nestedOutlet?.render?.template;
+    if (this._rendered && this._lastTemplate && newTemplate === this._lastTemplate && this._lastContext) {
+      // Same template — update model/controller in-place via GXT cells
+      const { model, controller } = nestedOutlet.render;
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (_cellFor) {
+        try {
+          // Update model on the render context
+          const modelCell = _cellFor(this._lastContext, 'model', true);
+          if (modelCell) modelCell.update(model);
+          // Update model on the args object
+          if (this._lastArgsObj) {
+            const argsModelCell = _cellFor(this._lastArgsObj, 'model', true);
+            if (argsModelCell) argsModelCell.update(model);
+          }
+          // Update the outlet state reference
+          this._lastContext.outletState = nestedOutlet;
+          // Trigger GXT sync to apply the update
+          const syncDom = (globalThis as any).__gxtSyncDom;
+          if (typeof syncDom === 'function') syncDom();
+          return;
+        } catch { /* fall through to full re-render */ }
+      }
+    }
+
+    // Full re-render: clear and re-render
     this.innerHTML = '';
     this._rendered = false;
+    this._lastTemplate = null;
+    this._lastContext = null;
+    this._lastArgsObj = null;
     this.renderOutlet();
   }
 
@@ -188,6 +227,12 @@ class EmberOutletElement extends HTMLElement {
             resolved.render(nestedContext, this);
             this._rendered = true;
           }
+        }
+        // Save template identity + context for in-place model updates
+        if (this._rendered) {
+          this._lastTemplate = tpl;
+          this._lastContext = nestedContext;
+          this._lastArgsObj = argsObj;
         }
       } finally {
         // Restore previous parent context
