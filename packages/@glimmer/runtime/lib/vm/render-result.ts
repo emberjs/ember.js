@@ -2,8 +2,6 @@ import type {
   AppendingBlock,
   Environment,
   RenderResult,
-  SimpleDocumentFragment,
-  SimpleElement,
   SimpleNode,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
@@ -30,7 +28,7 @@ export default class RenderResultImpl implements RenderResult {
     vm.execute(updating, this);
   }
 
-  parentElement(): SimpleElement | SimpleDocumentFragment {
+  parentElement(): SimpleNode {
     return this.bounds.parentElement();
   }
 

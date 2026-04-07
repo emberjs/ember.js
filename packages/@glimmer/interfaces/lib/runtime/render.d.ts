@@ -1,4 +1,4 @@
-import type { SimpleDocumentFragment, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleNode } from '@simple-dom/interface';
 
 import type { RichIteratorResult } from '../core.js';
 import type { Bounds } from '../dom/bounds.js';
@@ -14,7 +14,7 @@ export interface RenderResult extends Bounds, ExceptionHandler {
 
   rerender(options?: { alwaysRevalidate: false }): void;
 
-  parentElement(): SimpleElement | SimpleDocumentFragment;
+  parentElement(): SimpleNode;
 
   firstNode(): SimpleNode;
   lastNode(): SimpleNode;

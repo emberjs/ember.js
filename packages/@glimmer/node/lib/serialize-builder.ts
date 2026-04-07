@@ -5,7 +5,6 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
-  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
@@ -144,7 +143,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override pushRemoteElement(
-    element: SimpleElement | SimpleDocumentFragment,
+    element: SimpleNode,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
   ): RemoteBlock {
@@ -158,7 +157,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
 
 export function serializeBuilder(
   env: Environment,
-  cursor: { element: SimpleElement | SimpleDocumentFragment; nextSibling: Nullable<SimpleNode> }
+  cursor: { element: SimpleNode; nextSibling: Nullable<SimpleNode> }
 ): TreeBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }

@@ -1,14 +1,14 @@
 import type { Nullable } from '../core.js';
-import type { SimpleDocumentFragment, SimpleElement, SimpleNode } from './simple.js';
+import type { SimpleNode } from './simple.js';
 
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately
-  parentElement(): SimpleElement | SimpleDocumentFragment;
+  parentElement(): SimpleNode;
   firstNode(): SimpleNode;
   lastNode(): SimpleNode;
 }
 
 export interface Cursor {
-  readonly element: SimpleElement | SimpleDocumentFragment;
+  readonly element: SimpleNode;
   readonly nextSibling: Nullable<SimpleNode>;
 }

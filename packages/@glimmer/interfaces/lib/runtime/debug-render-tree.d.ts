@@ -1,4 +1,4 @@
-import type { SimpleDocumentFragment, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleNode } from '@simple-dom/interface';
 
 import type { Bounds } from '../dom/bounds.js';
 import type { Arguments, CapturedArguments } from './arguments.js';
@@ -27,7 +27,7 @@ export interface CapturedRenderNode {
   instance: unknown;
   template: string | null;
   bounds: null | {
-    parentElement: SimpleElement | SimpleDocumentFragment;
+    parentElement: SimpleNode;
     firstNode: SimpleNode;
     lastNode: SimpleNode;
   };
