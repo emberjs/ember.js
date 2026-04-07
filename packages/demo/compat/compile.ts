@@ -4986,7 +4986,7 @@ function transformBlockParams(templateString: string): { transformed: string; bl
       const bpVar = `$_bp${j}`;
 
       // Replace {{param.property}} with {{this.$_bp0.property}} (do this first for longer matches)
-      const pathPattern = new RegExp(`\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.]+)\\s*\\}\\}`, 'g');
+      const pathPattern = new RegExp(`\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.\-]+)\\s*\\}\\}`, 'g');
       transformedContent = transformedContent.replace(pathPattern, `{{this.${bpVar}$1}}`);
 
       // Replace {{param}} with {{this.$_bp0}} (simple case)
@@ -4994,7 +4994,7 @@ function transformBlockParams(templateString: string): { transformed: string; bl
       transformedContent = transformedContent.replace(simplePattern, `{{this.${bpVar}}}`);
 
       // Replace in attribute values: @attr={{param.property}}
-      const attrPathPattern = new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}(\\.[a-zA-Z0-9_.]+)\\}\\}`, 'g');
+      const attrPathPattern = new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}(\\.[a-zA-Z0-9_.\-]+)\\}\\}`, 'g');
       transformedContent = transformedContent.replace(attrPathPattern, `$1{{this.${bpVar}$2}}`);
 
       // Replace in attribute values: @attr={{param}}
@@ -5041,7 +5041,7 @@ function transformBlockParams(templateString: string): { transformed: string; bl
       {
         // Block form: {{#param.prop args}}content{{/param.prop}}
         const blockDotPattern = new RegExp(
-          `\\{\\{#${param}(\\.[a-zA-Z0-9_.]+)(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${param}\\1\\}\\}`, 'g'
+          `\\{\\{#${param}(\\.[a-zA-Z0-9_.\-]+)(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${param}\\1\\}\\}`, 'g'
         );
         transformedContent = transformedContent.replace(blockDotPattern, (match: string, dotPath: string, args: string, content: string) => {
           const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
@@ -5060,7 +5060,7 @@ function transformBlockParams(templateString: string): { transformed: string; bl
         // Inline form with args: {{param.prop arg1 key=val}} (must have at least one arg after the path)
         // Make sure not to match simple {{param.prop}} (no extra args)
         const inlineDotWithArgsPattern = new RegExp(
-          `\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.]+)(\\s+[^}]+)\\}\\}`, 'g'
+          `\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.\-]+)(\\s+[^}]+)\\}\\}`, 'g'
         );
         transformedContent = transformedContent.replace(inlineDotWithArgsPattern, (match: string, dotPath: string, args: string) => {
           const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
@@ -7362,7 +7362,12 @@ export function precompileTemplate(templateString: string, options?: {
         if (finalResult && typeof finalResult === 'object' && !(finalResult instanceof Node)) {
           // Check if it looks like a GXT component (has RENDERED_NODES_PROPERTY)
           const _RNPROP = RENDERED_NODES_PROPERTY;
-          if ((_RNPROP && _RNPROP in finalResult) || Array.isArray(finalResult) ||
+          // Arrays: only recurse if they contain Node or function items (GXT node arrays).
+          // Plain value arrays (e.g., from rest positionalParams) should be stringified.
+          const isGxtArray = Array.isArray(finalResult) && finalResult.length > 0 &&
+            finalResult.some((v: any) => v instanceof Node || typeof v === 'function' ||
+              (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date)));
+          if ((_RNPROP && _RNPROP in finalResult) || isGxtArray ||
               typeof finalResult.toHTML === 'function') {
             return itemToNode(finalResult, depth + 1);
           }

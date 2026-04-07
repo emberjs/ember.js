@@ -352,12 +352,16 @@ function createEmberMaybeHelper(original: Function) {
             // Validate capabilities were created via helperCapabilities()
             const _FROM_CAPS = g.FROM_CAPABILITIES;
             if (delegate && delegate.capabilities && _FROM_CAPS && !_FROM_CAPS.has(delegate.capabilities)) {
-              throw new Error(
+              const err = new Error(
                 `Custom helper managers must have a \`capabilities\` property ` +
                 `that is the result of calling the \`capabilities('3.23')\` ` +
                 `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
                 `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
               );
+              // Capture for flushRenderErrors so assert.throws() can see it
+              const captureFn = g.__captureRenderError;
+              if (typeof captureFn === 'function') captureFn(err);
+              throw err;
             }
             if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
               // Cache the helper bucket per name so re-renders don't create new instances.

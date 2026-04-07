@@ -163,10 +163,30 @@ export function createCurriedComponent(
       }
 
       const handleResult = managers.component.handle(curried, invocationArgs, null, null);
-      if (typeof handleResult === 'function') {
-        return handleResult();
+      // Extract rendered DOM from the component result.
+      let rendered = typeof handleResult === 'function' ? handleResult() : handleResult;
+      // If the result is already a DOM Node (e.g., wrapper div from classic component),
+      // return it directly — GXT's renderElement handles Node insertion.
+      if (rendered instanceof Node) {
+        return rendered;
       }
-      return handleResult;
+      // Extract rendered DOM from ComponentReturnType objects (Symbol('nodes'))
+      if (rendered && typeof rendered === 'object') {
+        const sym = Object.getOwnPropertySymbols(rendered).find(
+          s => Array.isArray(rendered[s])
+        );
+        if (sym) {
+          const nodes = rendered[sym];
+          if (nodes.length > 0) {
+            const frag = document.createDocumentFragment();
+            for (const n of nodes) {
+              if (n instanceof Node) frag.appendChild(n);
+            }
+            return frag;
+          }
+        }
+      }
+      return rendered;
     }
     return undefined;
   };
