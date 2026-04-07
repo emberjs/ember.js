@@ -21,6 +21,41 @@ function embroiderWebpack(project: Project) {
 
 function embroiderVite(project: Project) {}
 
+// Swap the v2-app-template's default app.js for a strict-resolver variant:
+// no ember-resolver, no compatModules, no modulePrefix — just a `modules =
+// {...import.meta.glob(...)}` literal. Making this a variant of
+// v2AppScenarios means every test that runs against v2AppScenarios also
+// runs against this configuration.
+function strictResolver(project: Project) {
+  project.mergeFiles({
+    app: {
+      'app.js': `
+        import Application from '@ember/application';
+        import Router from './router';
+        // v2 addons don't auto-register with the strict resolver the way
+        // classic ember-resolver + compat-modules does; we have to explicitly
+        // wire each addon-provided module into \`modules\`. The
+        // v2-app-template uses \`{{pageTitle}}\` in application.gjs, which
+        // injects \`@service('page-title')\`, so we need to register it here.
+        import PageTitleService from 'ember-page-title/services/page-title';
+
+        export default class App extends Application {
+          modules = {
+            './router': { default: Router },
+            './services/page-title': { default: PageTitleService },
+            ...import.meta.glob('./services/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./controllers/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./routes/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./components/**/*.{gjs,gts,js,ts}', { eager: true }),
+            ...import.meta.glob('./helpers/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./templates/**/*.{hbs,gjs,gts}', { eager: true }),
+          };
+        }
+      `,
+    },
+  });
+}
+
 export const v1AppScenarios = Scenarios.fromProject(() =>
   Project.fromDir(dirname(require.resolve('../app-template/package.json')), { linkDevDeps: true })
 ).expand({
@@ -34,6 +69,15 @@ export const v2AppScenarios = Scenarios.fromProject(() =>
   })
 ).expand({
   embroiderVite,
+  strictResolver,
+});
+
+export const strictAppScenarios = Scenarios.fromProject(() =>
+  Project.fromDir(dirname(require.resolve('../v2-app-template/package.json')), {
+    linkDevDeps: true,
+  })
+).expand({
+  strictResolver,
 });
 
 function node(project: Project) {
