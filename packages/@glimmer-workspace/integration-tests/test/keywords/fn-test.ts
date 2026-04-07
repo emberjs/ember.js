@@ -61,6 +61,7 @@ class KeywordFn extends RenderTest {
   'can be shadowed'(assert: Assert) {
     let fn = () => {
       assert.step('shadowed:success');
+      return () => {};
     };
 
     let greet = () => {};
