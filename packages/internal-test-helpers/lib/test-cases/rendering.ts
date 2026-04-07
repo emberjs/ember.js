@@ -95,6 +95,32 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       if (this.owner) {
         runDestroy(this.owner);
       }
+
+      // Destroy active custom modifier instances during teardown so
+      // willDestroyElement fires (matching Glimmer VM behavior).
+      // Only destroy each modifier class once (the LAST instance) to match
+      // Glimmer VM's behavior of one destroy per active modifier.
+      try {
+        const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+        if (modMgr?._updatedInstances?.size > 0) {
+          // Only destroy the LAST instance (most recently installed modifier).
+          // Multiple instances may exist due to GXT formula double-fires creating
+          // parallel cache entries. Only the last one is "active".
+          const instances = [...modMgr._updatedInstances];
+          const lastInst = instances[instances.length - 1];
+          if (lastInst?.__gxtModManager?.destroyModifier && !lastInst.__gxtTeardownDestroyed) {
+            try {
+              lastInst.__gxtModManager.destroyModifier(lastInst);
+              lastInst.__gxtTeardownDestroyed = true;
+            } catch { /* ignore */ }
+          }
+          modMgr._updatedInstances.clear();
+        }
+        // Clear pending destroys without processing (already handled above)
+        const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        if (pendingDestroys) pendingDestroys.length = 0;
+      } catch { /* ignore */ }
+
       // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
       if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
         (globalThis as any).owner = null;

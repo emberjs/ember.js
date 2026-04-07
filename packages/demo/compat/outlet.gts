@@ -332,7 +332,12 @@ class EmberMountElement extends HTMLElement {
           // Build the instance if needed (Ember engines have buildInstance)
           if (typeof engineInstance.buildInstance === 'function') {
             const instance = engineInstance.buildInstance();
-            if (instance) engineInstance = instance;
+            if (instance) {
+              // Store the original engine class instance so it can be destroyed
+              // during cleanup (its init() added it to NAMESPACES).
+              instance.__gxtOriginalEngine = engineInstance;
+              engineInstance = instance;
+            }
           }
         }
 

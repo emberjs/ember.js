@@ -5060,6 +5060,8 @@ const $_MANAGERS = {
       try {
         instance = manager.createModifier(ModifierClass, trackedInstallArgs);
         manager.installModifier(instance, element, trackedInstallArgs);
+        // Store manager reference on instance for teardown cleanup
+        if (instance) instance.__gxtModManager = manager;
       } finally {
         endBacktrackingFrame();
       }
@@ -5092,6 +5094,8 @@ const $_MANAGERS = {
         __gxtUpdatedInSyncCycle: (globalThis as any).__gxtSyncCycleId || 0,
       };
       cache.set(modKey, cached);
+      // Track instance for teardown cleanup (destroyModifier -> willDestroyElement)
+      self._updatedInstances.add(instance);
 
       // Return a destructor. GXT calls this before re-evaluating the formula
       // (for updates) and also during final teardown.

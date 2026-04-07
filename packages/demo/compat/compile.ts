@@ -1629,6 +1629,8 @@ queueMicrotask(patchGlobalEachSync);
         const toFlush = pendingDestroys.splice(0);
         for (const entry of toFlush) {
           if (!entry.cached.pendingDestroy) continue; // Already reclaimed by update path
+          // Only destroy if the element is actually disconnected from the DOM.
+          if (entry.element && entry.element.isConnected) continue;
           try {
             if (entry.isCustom && entry.cached.manager?.destroyModifier) {
               entry.cached.manager.destroyModifier(entry.cached.instance);
@@ -1808,6 +1810,11 @@ setInterval(() => {
   if ((globalThis as any).__gxtEngineInstances) {
     for (const [, engineInst] of (globalThis as any).__gxtEngineInstances) {
       try {
+        // Destroy the original engine class instance (its init added it to NAMESPACES)
+        const origEngine = engineInst?.__gxtOriginalEngine;
+        if (origEngine && typeof origEngine.destroy === 'function' && !origEngine.isDestroyed && !origEngine.isDestroying) {
+          origEngine.destroy();
+        }
         if (engineInst && typeof engineInst.destroy === 'function' && !engineInst.isDestroyed && !engineInst.isDestroying) {
           engineInst.destroy();
         }

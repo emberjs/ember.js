@@ -97,6 +97,22 @@ export abstract class AbstractStrictTestCase {
             }
           }
         }
+        // Also destroy any custom modifiers that are still active (their
+        // formula destructors might not have fired during cleanup).
+        const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+        if (modMgr?._destroyedInstances) {
+          // Already tracked — skip
+        } else if (modMgr?._updatedInstances) {
+          // Walk recently-active instances and call destroyModifier on their managers
+          for (const inst of modMgr._updatedInstances) {
+            try {
+              if (inst?.__gxtModManager?.destroyModifier) {
+                inst.__gxtModManager.destroyModifier(inst);
+              }
+            } catch { /* ignore */ }
+          }
+          modMgr._updatedInstances.clear();
+        }
       } catch { /* ignore */ }
 
       // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
