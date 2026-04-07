@@ -1742,6 +1742,10 @@ setInterval(() => {
   if (typeof (globalThis as any).__gxtClearIfWatchers === 'function') {
     (globalThis as any).__gxtClearIfWatchers();
   }
+  // Clear cached engine instances from {{mount}} to prevent reuse across tests
+  if ((globalThis as any).__gxtEngineInstances) {
+    (globalThis as any).__gxtEngineInstances.clear();
+  }
   // Clear pending if-watcher notifications from the previous test
   _pendingIfWatcherNotifications.length = 0;
   // Clear component contexts to prevent stale render contexts accumulating
@@ -2223,11 +2227,13 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 
     return undefined;
   },
-  // mount: Engine mounting stub — GXT doesn't support Ember engines
-  // Returns empty to prevent infinite loops during engine resolution
-  mount: () => {
-    console.warn('[gxt] {{mount}} is not supported in GXT mode');
-    return '';
+  // mount: Engine mounting — handled by <ember-mount> custom element.
+  // This stub exists for any remaining {{mount}} calls that weren't transformed.
+  mount: (engineName: string) => {
+    // Create the custom element dynamically
+    const el = document.createElement('ember-mount');
+    el.setAttribute('data-engine', typeof engineName === 'function' ? (engineName as any)() : engineName);
+    return el;
   },
   // unique-id: Returns a unique identifier string that always starts with a letter
   // (valid CSS selector / HTML ID). Uses the same algorithm as Ember's uniqueId().
@@ -3156,11 +3162,18 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     if (mightBeComponent && managers?.component?.canHandle) {
       // Convert PascalCase to kebab-case for Ember component lookup
       // Also convert -- (namespace separator from ::) to /
-      const kebabName = resolvedTag
+      let kebabName = resolvedTag
         .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
         .toLowerCase()
         .replace(/--/g, '/');
+
+      // Strip the curly-c- prefix added by the Vite plugin's transformCurlyComponents.
+      // The plugin converts {{foo-bar}} to <curly-c-foo-bar /> so GXT compiles it as
+      // a tag (not a variable), but the actual component/helper name is just "foo-bar".
+      if (kebabName.startsWith('curly-c-')) {
+        kebabName = kebabName.slice(8); // 8 = 'curly-c-'.length
+      }
 
       // Check for HELPER first — inline curlies like {{to-js "foo"}} get transformed
       // to <ToJs @__pos0__="foo" /> by transformCurlyBlockComponents. These should be
@@ -5778,9 +5791,17 @@ export function precompileTemplate(templateString: string, options?: {
     );
   }
 
-  // Strip {{mount ...}} — GXT doesn't support Ember engines.
-  // Without this, the mount keyword triggers infinite resolution loops.
-  transformedTemplate = transformedTemplate.replace(/\{\{mount\s+[^}]*\}\}/g, '<!-- mount not supported -->');
+  // Transform {{mount "engine-name"}} to <ember-mount> custom element.
+  // This allows GXT to compile it as a custom element that mounts the engine at runtime.
+  transformedTemplate = transformedTemplate.replace(
+    /\{\{mount\s+["']([^"']+)["']\s*(?:model=([^\s}]+))?\s*\}\}/g,
+    (_match, engineName, modelExpr) => {
+      if (modelExpr) {
+        return `<ember-mount data-engine="${engineName}" @model={{${modelExpr}}} />`;
+      }
+      return `<ember-mount data-engine="${engineName}" />`;
+    }
+  );
 
   // Fix empty true-branch in {{#if}}: GXT compiler can't handle
   // {{#if cond}}{{else}}content{{/if}} (empty true branch).

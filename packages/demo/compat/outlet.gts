@@ -209,6 +209,157 @@ if (typeof customElements !== 'undefined' && !customElements.get('ember-outlet')
 }
 
 /**
+ * EmberMountElement - Custom HTML element for Ember's {{mount}} helper.
+ *
+ * Mounts a routeless engine by:
+ * 1. Looking up the engine class from the application container
+ * 2. Building (creating + booting) the engine instance
+ * 3. Rendering the engine's application template with its controller
+ */
+class EmberMountElement extends HTMLElement {
+  private _rendered = false;
+  private _engineInstance: any = null;
+  private _everRendered = false;
+
+  connectedCallback() {
+    // Only render once per element instance to avoid double-mounting
+    if (!this._everRendered) {
+      this._everRendered = true;
+      this.renderEngine();
+    }
+  }
+
+  disconnectedCallback() {
+    this._rendered = false;
+    if (this._engineInstance && typeof this._engineInstance.destroy === 'function') {
+      try { this._engineInstance.destroy(); } catch { /* ignore */ }
+    }
+    this._engineInstance = null;
+  }
+
+  renderEngine() {
+    if (this._rendered) return;
+
+    const engineName = this.getAttribute('data-engine');
+    if (!engineName) return;
+
+    // Intentionally no debug logging in production
+
+    const owner = (globalThis as any).owner;
+    if (!owner) return;
+
+    // Use a global cache to prevent duplicate engine instances when the
+    // application template is re-rendered (which creates new <ember-mount> elements).
+    const engineCache: Map<string, any> = ((globalThis as any).__gxtEngineInstances ||= new Map<string, any>());
+
+    try {
+      // Check if we already have an engine instance for this name
+      let engineInstance = engineCache.get(engineName);
+      if (!engineInstance || engineInstance.isDestroyed || engineInstance.isDestroying) {
+        // Look up the engine class from the application
+        const engineFactory = owner.factoryFor?.(`engine:${engineName}`);
+        if (!engineFactory) {
+          if ((globalThis as any).__DEBUG_GXT_RENDER) {
+            console.warn(`[ember-mount] Engine "${engineName}" not found in container`);
+          }
+          return;
+        }
+
+        // Build the engine instance
+        const EngineClass = engineFactory.class;
+
+        if (EngineClass) {
+          // Create the engine instance with the parent owner
+          engineInstance = EngineClass.create({
+            _parent: owner,
+            parent: owner,
+          });
+
+          // Build the instance if needed (Ember engines have buildInstance)
+          if (typeof engineInstance.buildInstance === 'function') {
+            const instance = engineInstance.buildInstance();
+            if (instance) engineInstance = instance;
+          }
+        }
+
+        if (!engineInstance) return;
+        engineCache.set(engineName, engineInstance);
+      }
+
+      this._engineInstance = engineInstance;
+
+      // Get the engine's application template and controller
+      const tpl = engineInstance.lookup?.('template:application') || engineInstance.resolve?.('template:application');
+      // Cache controller per engine instance to avoid double-init when re-rendering
+      let controller = engineInstance.__gxtCachedController;
+      if (!controller) {
+        const controllerFactory = engineInstance.factoryFor?.('controller:application');
+        controller = controllerFactory ? controllerFactory.create() : null;
+        if (controller) engineInstance.__gxtCachedController = controller;
+      }
+
+      if (!tpl) {
+        if ((globalThis as any).__DEBUG_GXT_RENDER) {
+          console.warn(`[ember-mount] Engine "${engineName}" has no application template`);
+        }
+        return;
+      }
+
+      // Set up the rendering context
+      const $ARGS_KEY = Symbol.for('gxt-args');
+      const $SLOTS_KEY = Symbol.for('gxt-slots');
+
+      const renderContext: any = controller ? Object.create(controller) : {};
+      renderContext.owner = engineInstance;
+      renderContext.args = {};
+      renderContext[$ARGS_KEY] = {};
+      renderContext[$SLOTS_KEY] = {};
+      renderContext.$fw = [[], [], []];
+
+      // Swap owner to engine for component/helper resolution
+      const previousOwner = (globalThis as any).owner;
+      (globalThis as any).owner = engineInstance;
+
+      // Set up GXT rendering context
+      const savedParent = getParentContext();
+      let gxtRoot = (globalThis as any).__gxtRootContext;
+      if (!gxtRoot) {
+        gxtRoot = createRoot(document);
+        (globalThis as any).__gxtRootContext = gxtRoot;
+      }
+      setParentContext(gxtRoot);
+
+      try {
+        if (typeof tpl?.render === 'function') {
+          tpl.render(renderContext, this);
+          this._rendered = true;
+        } else if (typeof tpl === 'function') {
+          const resolved = tpl(engineInstance);
+          if (resolved && typeof resolved.render === 'function') {
+            resolved.render(renderContext, this);
+            this._rendered = true;
+          }
+        }
+      } finally {
+        if (savedParent) {
+          setParentContext(savedParent);
+        }
+        (globalThis as any).owner = previousOwner;
+      }
+    } catch (e: any) {
+      if ((globalThis as any).__DEBUG_GXT_RENDER) {
+        console.warn(`[ember-mount] Engine render failed:`, e?.message);
+      }
+    }
+  }
+}
+
+// Register the ember-mount custom element
+if (typeof customElements !== 'undefined' && !customElements.get('ember-mount')) {
+  customElements.define('ember-mount', EmberMountElement);
+}
+
+/**
  * GXT-compatible Outlet component for Ember routing.
  * (Legacy - kept for compatibility but prefer using custom element)
  */

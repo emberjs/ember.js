@@ -3643,10 +3643,12 @@ const $_MANAGERS = {
         if (komp === 'ember-html-raw') return true;
         const owner = getOwnerWithFallback();
         if (owner && !owner.isDestroyed && !owner.isDestroying) {
-          const resolved = resolveComponent(komp, owner);
+          // Strip curly-c- prefix added by Vite plugin's transformCurlyComponents
+          const strippedKomp = komp.startsWith('curly-c-') ? komp.slice(8) : komp;
+          const resolved = resolveComponent(strippedKomp, owner);
           if (resolved !== null) return true;
           // Convert PascalCase to kebab-case for helper lookup
-          const kebab = komp
+          let kebab = strippedKomp
             .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
             .toLowerCase();
@@ -3939,7 +3941,9 @@ const $_MANAGERS = {
 
       // Handle string-based component lookup
       if (typeof komp === 'string') {
-        const result = handleStringComponent(komp, args, fw, ctx, owner);
+        // Strip curly-c- prefix added by Vite plugin's transformCurlyComponents
+        const resolvedKomp = komp.startsWith('curly-c-') ? komp.slice(8) : komp;
+        const result = handleStringComponent(resolvedKomp, args, fw, ctx, owner);
         if (result !== null) return result;
 
         // Helper fallback — inline curlies like {{my-helper "foo"}} get transformed
@@ -3948,7 +3952,7 @@ const $_MANAGERS = {
         if (owner) {
           try {
             // Convert PascalCase to kebab-case for helper lookup
-            const helperName = komp
+            const helperName = resolvedKomp
               .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
               .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
               .toLowerCase();
