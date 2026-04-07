@@ -25,9 +25,7 @@ moduleFor(
       let expectedURL;
 
       let location = {
-        protocol: 'http:',
-        hostname: 'emberjs.com',
-        port: '1337',
+        origin: 'http://emberjs.com:1337',
 
         replace(url) {
           assert.equal(url, expectedURL);

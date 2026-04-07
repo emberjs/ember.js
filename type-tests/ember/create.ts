@@ -1,21 +1,21 @@
-import Ember from 'ember';
+import EmberObject, { computed } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 /**
  * Zero-argument case
  */
-const o = Ember.Object.create();
+const o = EmberObject.create();
 // create returns an object
 expectTypeOf(o).toBeObject();
-// object returned by create type-checks as an instance of Ember.Object
+// object returned by create type-checks as an instance of EmberObject
 expectTypeOf(o.isDestroyed).toBeBoolean();
 expectTypeOf(o.isDestroying).toBeBoolean();
-expectTypeOf(o.get).toMatchTypeOf<<K extends keyof Ember.Object>(key: K) => Ember.Object[K]>();
+expectTypeOf(o.get).toMatchTypeOf<<K extends keyof EmberObject>(key: K) => EmberObject[K]>();
 
 /**
  * One-argument case
  */
-class O1 extends Ember.Object {
+class O1 extends EmberObject {
   declare x: number;
   declare y: string;
   declare z: boolean;
@@ -26,7 +26,7 @@ expectTypeOf(o1.x).toBeNumber();
 expectTypeOf(o1.y).toBeString();
 expectTypeOf(o1.z).toBeBoolean();
 
-class O2 extends Ember.Object {
+class O2 extends EmberObject {
   declare a: number;
   declare b: number;
   declare c: number;
@@ -36,12 +36,12 @@ expectTypeOf(obj.b).toBeNumber();
 expectTypeOf(obj.a).toBeNumber();
 expectTypeOf(obj.c).toBeNumber();
 
-export class Person extends Ember.Object {
+export class Person extends EmberObject {
   declare firstName: string;
   declare lastName: string;
   declare age: number;
 
-  @Ember.computed('firstName', 'lastName')
+  @computed('firstName', 'lastName')
   get fullName() {
     return [this.firstName + this.lastName].join(' ');
   }

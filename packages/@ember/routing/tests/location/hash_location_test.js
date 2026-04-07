@@ -46,9 +46,7 @@ function mockBrowserLocation(path) {
 }
 
 function triggerHashchange() {
-  let event = document.createEvent('HTMLEvents');
-  event.initEvent('hashchange', true, false);
-  window.dispatchEvent(event);
+  window.dispatchEvent(new Event('hashchange', { bubbles: true, cancelable: false }));
 }
 
 moduleFor(

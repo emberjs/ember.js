@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
@@ -75,10 +76,10 @@ moduleFor(
     }
 
     ['@test predefined classes do not get logged'](assert) {
-      this.add('controller:application', Controller.extend());
-      this.add('controller:posts', Controller.extend());
-      this.add('route:application', Route.extend());
-      this.add('route:posts', Route.extend());
+      this.add('controller:application', class extends Controller {});
+      this.add('controller:posts', class extends Controller {});
+      this.add('route:application', class extends Route {});
+      this.add('route:posts', class extends Route {});
 
       return this.visit('/posts').then(() => {
         assert.ok(
@@ -129,7 +130,7 @@ moduleFor(
         return;
       }
 
-      this.addTemplate('application', '{{outlet}}');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
 
       return this.visit('/')
         .then(() => this.visit('/posts'))

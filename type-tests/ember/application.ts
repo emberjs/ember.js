@@ -1,7 +1,7 @@
+import Application from '@ember/application';
 import EmberObject from '@ember/object';
-import Ember from 'ember';
 
-const BaseApp = Ember.Application.extend({
+const BaseApp = Application.extend({
   modulePrefix: 'my-app',
 });
 

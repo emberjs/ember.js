@@ -9,6 +9,8 @@ import {
   getViewClientRects,
   getViewBoundingClientRect,
 } from '@ember/-internals/views';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -18,27 +20,32 @@ moduleFor(
     constructor() {
       super(...arguments);
 
-      this.addComponent('x-tagless', {
-        ComponentClass: Component.extend({
-          tagName: '',
-        }),
+      this.add(
+        'component:x-tagless',
+        setComponentTemplate(
+          precompileTemplate(
+            '<div id="{{this.id}}">[{{this.id}}] {{#if this.isShowing}}{{yield}}{{/if}}</div>'
+          ),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
-        template:
-          '<div id="{{this.id}}">[{{this.id}}] {{#if this.isShowing}}{{yield}}{{/if}}</div>',
-      });
+      this.add(
+        'component:x-toggle',
+        setComponentTemplate(
+          precompileTemplate('[{{this.id}}] {{#if this.isExpanded}}{{yield}}{{/if}}'),
+          class extends Component {
+            isExpanded = true;
 
-      this.addComponent('x-toggle', {
-        ComponentClass: Component.extend({
-          isExpanded: true,
-
-          click() {
-            this.toggleProperty('isExpanded');
-            return false;
-          },
-        }),
-
-        template: '[{{this.id}}] {{#if this.isExpanded}}{{yield}}{{/if}}',
-      });
+            click() {
+              this.toggleProperty('isExpanded');
+              return false;
+            }
+          }
+        )
+      );
 
       class ToggleController extends Controller {
         @tracked isExpanded = true;
@@ -50,9 +57,10 @@ moduleFor(
 
       this.add('controller:application', ToggleController);
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
       {{x-tagless id="root-1"}}
 
       {{#x-toggle id="root-2"}}
@@ -71,6 +79,7 @@ moduleFor(
 
       {{outlet}}
     `
+        )
       );
 
       this.add(
@@ -80,9 +89,10 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
       {{x-tagless id="root-4"}}
 
       {{#x-toggle id="root-5" isExpanded=false}}
@@ -99,11 +109,13 @@ moduleFor(
         {{x-toggle id="root-6"}}
       {{/if}}
     `
+        )
       );
 
-      this.addTemplate(
-        'zomg',
-        `
+      this.add(
+        'template:zomg',
+        precompileTemplate(
+          `
       {{x-tagless id="root-7"}}
 
       {{#x-toggle id="root-8"}}
@@ -118,13 +130,16 @@ moduleFor(
         {{outlet}}
       {{/x-toggle}}
     `
+        )
       );
 
-      this.addTemplate(
-        'zomg.lol',
-        `
+      this.add(
+        'template:zomg.lol',
+        precompileTemplate(
+          `
       {{x-toggle id="inner-10"}}
     `
+        )
       );
 
       this.router.map(function () {
@@ -259,41 +274,23 @@ moduleFor(
   }
 );
 
-let hasGetClientRects, hasGetBoundingClientRect;
-let ClientRectListCtor, ClientRectCtor;
-
-(function () {
-  if (document.createRange) {
-    let range = document.createRange();
-
-    if (range.getClientRects) {
-      let clientRectsList = range.getClientRects();
-      hasGetClientRects = true;
-      ClientRectListCtor = clientRectsList && clientRectsList.constructor;
-    }
-
-    if (range.getBoundingClientRect) {
-      let clientRect = range.getBoundingClientRect();
-      hasGetBoundingClientRect = true;
-      ClientRectCtor = clientRect && clientRect.constructor;
-    }
-  }
-})();
-
 moduleFor(
   'Bounds tests',
   class extends RenderingTestCase {
     ['@test getViewBounds on a regular component'](assert) {
       let component;
-      this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            component = this;
-          },
-        }),
-        template: `<p>Hi, mom!</p>`,
-      });
+      this.owner.register(
+        'component:hi-mom',
+        setComponentTemplate(
+          precompileTemplate(`<p>Hi, mom!</p>`),
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render(`{{hi-mom}}`);
 
@@ -318,16 +315,20 @@ moduleFor(
 
     ['@test getViewBounds on a tagless component'](assert) {
       let component;
-      this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
-          tagName: '',
-          init() {
-            this._super(...arguments);
-            component = this;
-          },
-        }),
-        template: `<span id="start-node">Hi,</span> <em id="before-end-node">mom</em>!`,
-      });
+      this.owner.register(
+        'component:hi-mom',
+        setComponentTemplate(
+          precompileTemplate(`<span id="start-node">Hi,</span> <em id="before-end-node">mom</em>!`),
+          class extends Component {
+            tagName = '';
+
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render(`{{hi-mom}}`);
 
@@ -351,53 +352,43 @@ moduleFor(
     }
 
     ['@test getViewClientRects'](assert) {
-      if (!hasGetClientRects || !ClientRectListCtor) {
-        assert.ok(
-          true,
-          'The test environment does not support the DOM API required to run this test.'
-        );
-        return;
-      }
-
       let component;
-      this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            component = this;
-          },
-        }),
-        template: `<p>Hi, mom!</p>`,
-      });
+      this.owner.register(
+        'component:hi-mom',
+        setComponentTemplate(
+          precompileTemplate(`<p>Hi, mom!</p>`),
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render(`{{hi-mom}}`);
 
-      assert.ok(getViewClientRects(component) instanceof ClientRectListCtor);
+      assert.ok(getViewClientRects(component) instanceof DOMRectList);
     }
 
     ['@test getViewBoundingClientRect'](assert) {
-      if (!hasGetBoundingClientRect || !ClientRectCtor) {
-        assert.ok(
-          true,
-          'The test environment does not support the DOM API required to run this test.'
-        );
-        return;
-      }
-
       let component;
-      this.registerComponent('hi-mom', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            component = this;
-          },
-        }),
-        template: `<p>Hi, mom!</p>`,
-      });
+      this.owner.register(
+        'component:hi-mom',
+        setComponentTemplate(
+          precompileTemplate(`<p>Hi, mom!</p>`),
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render(`{{hi-mom}}`);
 
-      assert.ok(getViewBoundingClientRect(component) instanceof ClientRectCtor);
+      assert.ok(getViewBoundingClientRect(component) instanceof DOMRect);
     }
   }
 );

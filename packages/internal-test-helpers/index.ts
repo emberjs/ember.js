@@ -18,18 +18,17 @@ export {
   expectDeprecationAsync,
   ignoreDeprecation,
 } from './lib/ember-dev/deprecation';
-export {
-  defineComponent,
-  defineSimpleHelper,
-  defineSimpleModifier,
-} from './lib/define-template-values';
+export { defineSimpleHelper, defineSimpleModifier } from './lib/define-template-values';
 export { testIf, testUnless } from './lib/conditional-test';
-export { default as compile } from './lib/compile';
 export { equalsElement, classes, styles, regex } from './lib/matchers';
 export { runAppend, runDestroy, runTask, runTaskNext, runLoopSettled } from './lib/run';
 export { getContext, setContext, unsetContext } from './lib/test-context';
 
-export { default as AbstractTestCase } from './lib/test-cases/abstract';
+export {
+  default as AbstractTestCase,
+  type TestCase,
+  AbstractStrictTestCase,
+} from './lib/test-cases/abstract';
 export { default as AbstractApplicationTestCase } from './lib/test-cases/abstract-application';
 export { default as ApplicationTestCase } from './lib/test-cases/application';
 export { default as QueryParamTestCase } from './lib/test-cases/query-param';
@@ -37,11 +36,19 @@ export { default as RenderingTestCase } from './lib/test-cases/rendering';
 export { default as RouterNonApplicationTestCase } from './lib/test-cases/router-non-application';
 export { default as RouterTestCase } from './lib/test-cases/router';
 export { default as AutobootApplicationTestCase } from './lib/test-cases/autoboot-application';
+export { getAssert } from './lib/assert-helpers';
+export {
+  getElement,
+  assertElement,
+  assertHTML,
+  assertClassicComponentElement,
+  type ClassicComponentShape,
+} from './lib/element-helpers';
+export { clickElement } from './lib/event-helpers';
 
 export {
   default as TestResolver,
   ModuleBasedResolver as ModuleBasedTestResolver,
 } from './lib/test-resolver';
 
-export { isEdge } from './lib/browser-detect';
 export { verifyRegistration } from './lib/registry-check';

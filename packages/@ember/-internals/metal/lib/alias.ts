@@ -58,7 +58,7 @@ class AliasDecoratorImpl extends Function {
   }
 }
 
-export class AliasedProperty extends ComputedDescriptor {
+class AliasedProperty extends ComputedDescriptor {
   readonly altKey: string;
 
   constructor(altKey: string) {

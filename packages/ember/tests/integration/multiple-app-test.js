@@ -1,9 +1,11 @@
-import { moduleFor, ApplicationTestCase, runTask, defineComponent } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
 import { Component } from '@ember/-internals/glimmer';
 import { getOwner } from '@ember/-internals/owner';
 import { resolve } from 'rsvp';
 import { action } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'View Integration',
@@ -48,15 +50,17 @@ moduleFor(
     addFactoriesToResolver(actions, resolver) {
       resolver.add(
         'component:special-button',
-        defineComponent(
-          null,
-          `<button class='do-stuff' {{on "click" this.doStuff}}>Button</button>`,
-          Component.extend({
-            doStuff: action(function () {
+        setComponentTemplate(
+          precompileTemplate(
+            `<button class='do-stuff' {{on "click" this.doStuff}}>Button</button>`
+          ),
+          class extends Component {
+            @action
+            doStuff() {
               let rootElement = getOwner(this).application.rootElement;
               actions.push(rootElement);
-            }),
-          })
+            }
+          }
         )
       );
 
@@ -65,10 +69,7 @@ moduleFor(
         this.compile(
           `
         <h1>Node 1</h1>{{special-button}}
-      `,
-          {
-            moduleName: 'my-app/templates/index.hbs',
-          }
+      `
         )
       );
     }

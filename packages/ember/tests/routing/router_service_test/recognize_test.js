@@ -1,4 +1,5 @@
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 import Route from '@ember/routing/route';
 
 moduleFor(
@@ -21,8 +22,8 @@ moduleFor(
     }
 
     '@test does not transition'(assert) {
-      this.addTemplate('parent', 'Parent');
-      this.addTemplate('dynamic-with-child.child', 'Dynamic Child');
+      this.add('template:parent', precompileTemplate('Parent'));
+      this.add('template:dynamic-with-child.child', precompileTemplate('Dynamic Child'));
 
       return this.visit('/').then(() => {
         this.routerService.recognize('/dynamic-with-child/123/1?a=b');
@@ -47,8 +48,8 @@ moduleFor(
     }
 
     '@test must include rootURL'() {
-      this.addTemplate('parent', 'Parent');
-      this.addTemplate('dynamic-with-child.child', 'Dynamic Child');
+      this.add('template:parent', precompileTemplate('Parent'));
+      this.add('template:dynamic-with-child.child', precompileTemplate('Dynamic Child'));
 
       this.router.reopen({
         rootURL: '/app/',
@@ -76,19 +77,19 @@ moduleFor(
     '@test returns a RouteInfoWithAttributes for recognized URL'(assert) {
       this.add(
         'route:dynamicWithChild',
-        Route.extend({
+        class extends Route {
           model(params) {
             return { name: 'dynamicWithChild', data: params.dynamic_id };
-          },
-        })
+          }
+        }
       );
       this.add(
         'route:dynamicWithChild.child',
-        Route.extend({
+        class extends Route {
           model(params) {
             return { name: 'dynamicWithChild.child', data: params.child_id };
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/')
@@ -113,16 +114,16 @@ moduleFor(
     }
 
     '@test does not transition'(assert) {
-      this.addTemplate('parent', 'Parent{{outlet}}');
-      this.addTemplate('parent.child', 'Child');
+      this.add('template:parent', precompileTemplate('Parent{{outlet}}'));
+      this.add('template:parent.child', precompileTemplate('Child'));
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             return { name: 'child', data: ['stuff'] };
-          },
-        })
+          }
+        }
       );
       return this.visit('/')
         .then(() => {
@@ -167,16 +168,16 @@ moduleFor(
     }
 
     '@test rejects if url is not recognized'(assert) {
-      this.addTemplate('parent', 'Parent{{outlet}}');
-      this.addTemplate('parent.child', 'Child');
+      this.add('template:parent', precompileTemplate('Parent{{outlet}}'));
+      this.add('template:parent.child', precompileTemplate('Child'));
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             return { name: 'child', data: ['stuff'] };
-          },
-        })
+          }
+        }
       );
       return this.visit('/')
         .then(() => {
@@ -193,16 +194,16 @@ moduleFor(
     }
 
     '@test rejects if there is an unhandled error'(assert) {
-      this.addTemplate('parent', 'Parent{{outlet}}');
-      this.addTemplate('parent.child', 'Child');
+      this.add('template:parent', precompileTemplate('Parent{{outlet}}'));
+      this.add('template:parent.child', precompileTemplate('Child'));
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             throw Error('Unhandled');
-          },
-        })
+          }
+        }
       );
       return this.visit('/')
         .then(() => {

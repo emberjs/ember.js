@@ -1,8 +1,9 @@
 import Application from '@ember/application';
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
-import { compile } from 'ember-template-compiler';
-import { moduleFor, ApplicationTestCase, defineComponent } from 'internal-test-helpers';
+import { setComponentTemplate } from '@glimmer/manager';
+import { precompileTemplate } from '@ember/template-compilation';
+import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
 import templateOnly from '@ember/component/template-only';
 
@@ -11,15 +12,18 @@ moduleFor(
   class extends ApplicationTestCase {
     // This is necessary for this.application.instanceInitializer to not leak between tests
     createApplication(options) {
-      return super.createApplication(options, Application.extend());
+      return super.createApplication(options, class extends Application {});
     }
 
     ['@test The helper becomes the body of the component']() {
-      this.addComponent('expand-it', {
-        ComponentClass: templateOnly(),
-        template: '<p>hello {{yield}}</p>',
-      });
-      this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
+      this.add(
+        'component:expand-it',
+        setComponentTemplate(precompileTemplate('<p>hello {{yield}}</p>'), templateOnly())
+      );
+      this.add(
+        'template:application',
+        precompileTemplate('Hello world {{#expand-it}}world{{/expand-it}}')
+      );
 
       return this.visit('/').then(() => {
         this.assertInnerHTML('Hello world <p>hello world</p>');
@@ -27,19 +31,21 @@ moduleFor(
     }
 
     ['@test If a component is registered, it is used'](assert) {
-      this.addTemplate('application', `Hello world {{#expand-it}}world{{/expand-it}}`);
+      this.add(
+        'template:application',
+        precompileTemplate(`Hello world {{#expand-it}}world{{/expand-it}}`)
+      );
 
       this.application.instanceInitializer({
         name: 'expand-it-component',
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:expand-it',
-            defineComponent(
-              {},
-              `<p>hello {{yield}}</p>`,
-              Component.extend({
-                classNames: 'testing123',
-              })
+            setComponentTemplate(
+              precompileTemplate(`<p>hello {{yield}}</p>`),
+              class extends Component {
+                classNames = ['testing123'];
+              }
             )
           );
         },
@@ -52,17 +58,20 @@ moduleFor(
     }
 
     ['@test Late-registered components can be rendered with custom `layout` property'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>there goes {{my-hero}}</div>`);
+      this.add(
+        'template:application',
+        precompileTemplate(`<div id='wrapper'>there goes {{my-hero}}</div>`)
+      );
 
       this.application.instanceInitializer({
         name: 'my-hero-component',
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-hero',
-            Component.extend({
-              classNames: 'testing123',
-              layout: compile('watch him as he GOES'),
-            })
+            class extends Component {
+              classNames = ['testing123'];
+              layout = precompileTemplate('watch him as he GOES');
+            }
           );
         },
       });
@@ -80,20 +89,22 @@ moduleFor(
     ['@test Assigning layoutName to a component should setup the template as a layout'](assert) {
       assert.expect(1);
 
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
+        )
       );
-      this.addTemplate('foo-bar-baz', '{{this.text}}-{{yield}}');
+      this.add('template:foo-bar-baz', precompileTemplate('{{this.text}}-{{yield}}'));
 
       this.application.instanceInitializer({
         name: 'application-controller',
         initialize(applicationInstance) {
           applicationInstance.register(
             'controller:application',
-            Controller.extend({
-              text: 'outer',
-            })
+            class extends Controller {
+              text = 'outer';
+            }
           );
         },
       });
@@ -102,10 +113,10 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-component',
-            Component.extend({
-              text: 'inner',
-              layoutName: 'foo-bar-baz',
-            })
+            class extends Component {
+              text = 'inner';
+              layoutName = 'foo-bar-baz';
+            }
           );
         },
       });
@@ -119,20 +130,22 @@ moduleFor(
     ['@test Assigning layoutName and layout to a component should use the `layout` value'](assert) {
       assert.expect(1);
 
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
+        )
       );
-      this.addTemplate('foo-bar-baz', 'No way!');
+      this.add('template:foo-bar-baz', precompileTemplate('No way!'));
 
       this.application.instanceInitializer({
         name: 'application-controller-layout',
         initialize(applicationInstance) {
           applicationInstance.register(
             'controller:application',
-            Controller.extend({
-              text: 'outer',
-            })
+            class extends Controller {
+              text = 'outer';
+            }
           );
         },
       });
@@ -141,11 +154,11 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-component',
-            Component.extend({
-              text: 'inner',
-              layoutName: 'foo-bar-baz',
-              layout: compile('{{this.text}}-{{yield}}'),
-            })
+            class extends Component {
+              text = 'inner';
+              layoutName = 'foo-bar-baz';
+              layout = precompileTemplate('{{this.text}}-{{yield}}');
+            }
           );
         },
       });
@@ -157,7 +170,10 @@ moduleFor(
     }
 
     async ['@test Using name of component that does not exist'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{#no-good}} {{/no-good}}</div>`);
+      this.add(
+        'template:application',
+        precompileTemplate(`<div id='wrapper'>{{#no-good}} {{/no-good}}</div>`)
+      );
 
       if (DEBUG) {
         await assert.rejectsAssertion(this.visit('/'), /Attempted to resolve `no-good`/);

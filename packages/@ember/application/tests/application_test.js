@@ -6,7 +6,6 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import EmberRoute from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
-import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import {
@@ -19,6 +18,7 @@ import {
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import Application from '..';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Application, autobooting multiple apps',
@@ -176,8 +176,8 @@ moduleFor(
     [`@test initialized application goes to initial route`]() {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '{{outlet}}');
-        this.addTemplate('index', '<h1>Hi from index</h1>');
+        this.add('template:application', precompileTemplate('{{outlet}}'));
+        this.add('template:index', precompileTemplate('<h1>Hi from index</h1>'));
       });
 
       this.assertText('Hi from index');
@@ -188,20 +188,20 @@ moduleFor(
 
       runTask(() => {
         function registerRoute(application, name, callback) {
-          let route = EmberRoute.extend({
-            activate: callback,
-          });
+          let route = class extends EmberRoute {
+            activate = callback;
+          };
 
           application.register('route:' + name, route);
         }
 
-        let MyApplication = Application.extend({
+        let MyApplication = class extends Application {
           ready() {
             registerRoute(this, 'index', () => {
               assert.ok(true, 'last-minute route is activated');
             });
-          },
-        });
+          }
+        };
 
         let app = this.createApplication({}, MyApplication);
 
@@ -227,7 +227,7 @@ moduleFor(
     ) {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '<h1>Hello!</h1>');
+        this.add('template:application', precompileTemplate('<h1>Hello!</h1>'));
       });
       // This is not a public way to access the container; we just
       // need to make some assertions about the created router
@@ -239,12 +239,12 @@ moduleFor(
     [`@test Application Controller backs the appplication template`]() {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '<h1>{{this.greeting}}</h1>');
+        this.add('template:application', precompileTemplate('<h1>{{this.greeting}}</h1>'));
         this.add(
           'controller:application',
-          Controller.extend({
-            greeting: 'Hello!',
-          })
+          class extends Controller {
+            greeting = 'Hello!';
+          }
         );
       });
       this.assertText('Hello!');
@@ -285,7 +285,7 @@ moduleFor(
     }
 
     [`@test can resolve custom router`](assert) {
-      let CustomRouter = Router.extend();
+      let CustomRouter = class extends Router {};
 
       runTask(() => {
         this.createApplication();
@@ -296,14 +296,6 @@ moduleFor(
         this.application.__deprecatedInstance__.lookup('router:main') instanceof CustomRouter,
         'application resolved the correct router'
       );
-    }
-
-    [`@test does not leak itself in onLoad._loaded`](assert) {
-      assert.equal(_loaded.application, undefined);
-      runTask(() => this.createApplication());
-      assert.equal(_loaded.application, this.application);
-      runTask(() => this.application.destroy());
-      assert.equal(_loaded.application, undefined);
     }
 
     [`@test can build a registry via Application.buildRegistry() --- simulates ember-test-helpers`](

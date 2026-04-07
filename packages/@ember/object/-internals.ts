@@ -3,7 +3,6 @@ export { guidFor } from '@ember/-internals/utils';
 
 import { addListener } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import { symbol } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '.';
 
@@ -27,7 +26,7 @@ let FrameworkObject: typeof EmberObject = class FrameworkObject extends EmberObj
 
 if (DEBUG) {
   const INIT_WAS_CALLED = Symbol('INIT_WAS_CALLED');
-  let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
+  let ASSERT_INIT_WAS_CALLED = Symbol('ASSERT_INIT_WAS_CALLED');
 
   FrameworkObject = class DebugFrameworkObject extends EmberObject {
     [INIT_WAS_CALLED] = false;

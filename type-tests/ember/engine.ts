@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import Engine from "@ember/engine";
+import EmberObject from "@ember/object";
 
-class BaseEngine extends Ember.Engine {
+class BaseEngine extends Engine {
   modulePrefix = 'my-engine';
 }
 
-class Obj extends Ember.Object {
+class Obj extends EmberObject {
   foo = 'bar';
 }
 

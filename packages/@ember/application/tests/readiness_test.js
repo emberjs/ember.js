@@ -29,15 +29,15 @@ moduleFor(
         addEventListener,
       };
 
-      Application = EmberApplication.extend({
-        Resolver: ModuleBasedTestResolver,
-        _document,
+      Application = class extends EmberApplication {
+        Resolver = ModuleBasedTestResolver;
+        _document = _document;
 
         ready() {
           this._super();
           readyWasCalled++;
-        },
-      });
+        }
+      };
     }
 
     teardown() {

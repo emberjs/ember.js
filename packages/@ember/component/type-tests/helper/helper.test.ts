@@ -1,4 +1,4 @@
-import type { FunctionBasedHelper } from '@ember/-internals/glimmer/lib/helper';
+import type { FunctionBasedHelper } from '@ember/-internals/glimmer';
 import { helper } from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';
 

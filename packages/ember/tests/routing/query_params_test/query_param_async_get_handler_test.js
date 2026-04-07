@@ -3,6 +3,7 @@ import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 // These tests mimic what happens with lazily loaded Engines.
 moduleFor(
@@ -67,13 +68,15 @@ moduleFor(
       this.setSingleQPController('post');
 
       let setupAppTemplate = () => {
-        this.addTemplate(
-          'application',
-          `
+        this.add(
+          'template:application',
+          precompileTemplate(
+            `
           <LinkTo @route='post' @model={{1337}} @query={{hash foo='bar'}} class='post-link is-1337'>Post</LinkTo>
           <LinkTo @route='post' @model={{7331}} @query={{hash foo='boo'}} class='post-link is-7331'>Post</LinkTo>
           {{outlet}}
           `
+          )
         );
       };
 
@@ -292,9 +295,11 @@ moduleFor(
         this.route('example');
       });
 
-      this.addTemplate(
-        'application',
-        "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
+      this.add(
+        'template:application',
+        precompileTemplate(
+          "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
+        )
       );
 
       this.setSingleQPController('example', 'foo', undefined, {
@@ -303,11 +308,11 @@ moduleFor(
 
       this.add(
         'route:example',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { foo: undefined });
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/').then(() => {

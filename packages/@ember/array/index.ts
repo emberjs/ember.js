@@ -198,9 +198,6 @@ export function isArray(obj: unknown): obj is ArrayLike<unknown> | EmberArray<un
 
 /*
   This allows us to define computed properties that are not enumerable.
-  The primary reason this is important is that when `NativeArray` is
-  applied to `Array.prototype` we need to ensure that we do not add _any_
-  new enumerable properties.
 */
 function nonEnumerableComputed(callback: ComputedPropertyCallback) {
   let property = computed(callback);
@@ -615,11 +612,12 @@ interface EmberArray<T> extends Enumerable {
     Example:
 
     ```javascript
+    import { A } from '@ember/array';
     function isAdult(person) {
       return person.age > 18;
     };
 
-    let people = Ember.A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
+    let people = A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
 
     people.filter(isAdult); // returns [{ name: 'Joan', age: 45 }];
     ```
@@ -640,7 +638,7 @@ interface EmberArray<T> extends Enumerable {
         super(...arguments);
 
         this.engineering = opts.engineering;
-        this.people = Ember.A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
+        this.people = A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
       }
     }
 
@@ -710,7 +708,8 @@ interface EmberArray<T> extends Enumerable {
     Example Usage:
 
     ```javascript
-    let things = Ember.A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
+    import { A } from '@ember/array';
+    let things = A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
 
     things.filterBy('food', 'beans'); // [{ food: 'beans', isFruit: false }]
     things.filterBy('isFruit'); // [{ food: 'apple', isFruit: true }]
@@ -850,11 +849,12 @@ interface EmberArray<T> extends Enumerable {
     Usage example:
 
     ```javascript
+    import { A } from '@ember/array';
     function isAdult(person) {
       return person.age > 18;
     };
 
-    const people = Ember.A([{ name: 'John', age: 24 }, { name: 'Joan', age: 45 }]);
+    const people = A([{ name: 'John', age: 24 }, { name: 'Joan', age: 45 }]);
     const areAllAdults = people.every(isAdult);
     ```
 
@@ -1387,15 +1387,26 @@ const EmberArray = Mixin.create(Enumerable, {
   reduce<T, V>(
     this: EmberArray<T>,
     callback: (summation: V, current: T, index: number, arr: EmberArray<T>) => V,
-    initialValue: V
+    initialValue?: V
   ) {
     assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 
-    let ret = initialValue;
+    let hasInitialValue = arguments.length > 1;
+    let ret: any = initialValue;
+    let startIndex = 0;
 
-    this.forEach(function (item, i) {
+    if (!hasInitialValue) {
+      if (this.length === 0) {
+        throw new TypeError('Reduce of empty array with no initial value');
+      }
+      ret = this.objectAt(0);
+      startIndex = 1;
+    }
+
+    for (let i = startIndex; i < this.length; i++) {
+      let item = this.objectAt(i) as T;
       ret = callback(ret, item, i, this);
-    }, this);
+    }
 
     return ret;
   },
@@ -1856,7 +1867,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 });
 
 /**
-  Creates an `Ember.NativeArray` from an Array-like object.
+  Creates an `NativeArray` from an Array-like object.
   Does not modify the original object's contents.
 
   Example
@@ -1933,8 +1944,10 @@ type RETURN_SELF_ARRAY_METHODS =
   | 'setEach';
 
 // This is the same as MutableArray, but removes the actual native methods that exist on Array.prototype.
-interface MutableArrayWithoutNative<T>
-  extends Omit<MutableArray<T>, IGNORED_MUTABLE_ARRAY_METHODS | RETURN_SELF_ARRAY_METHODS> {
+interface MutableArrayWithoutNative<T> extends Omit<
+  MutableArray<T>,
+  IGNORED_MUTABLE_ARRAY_METHODS | RETURN_SELF_ARRAY_METHODS
+> {
   /**
    * Remove all elements from the array. This is useful if you
    * want to reuse an existing array without having to recreate it.

@@ -1,4 +1,7 @@
-import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { setComponentTemplate } from '@glimmer/manager';
+import { precompileTemplate } from '@ember/template-compilation';
+import { template } from '@ember/template-compiler/runtime';
 
 import { Component } from '../../utils/helpers';
 
@@ -22,9 +25,9 @@ moduleFor(
         Object.entries(obj)
           .map(([key, value]) => `hash:${key}=${value}`)
           .join(',');
-      let Root = defineComponent(
-        { hash, shadowHash: hash },
-        `({{hash apple='red' banana='yellow'}}) ({{#let shadowHash as |hash|}}{{hash apple='green'}}{{/let}})`
+      let Root = template(
+        `({{hash apple='red' banana='yellow'}}) ({{#let shadowHash as |hash|}}{{hash apple='green'}}{{/let}})`,
+        { scope: () => ({ hash, shadowHash: hash }) }
       );
 
       this.renderComponent(Root, {
@@ -129,18 +132,21 @@ moduleFor(
 
     ['@test should yield hash of internal properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init(...arguments);
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{yield (hash firstName=this.model.firstName)}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (hash firstName=this.model.firstName)}}`),
+          FooBarComponent
+        )
+      );
 
       this.render(`{{#foo-bar as |values|}}{{values.firstName}}{{/foo-bar}}`);
 
@@ -161,18 +167,23 @@ moduleFor(
 
     ['@test should yield hash of internal and external properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init(...arguments);
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{yield (hash firstName=this.model.firstName lastName=this.lastName)}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            `{{yield (hash firstName=this.model.firstName lastName=this.lastName)}}`
+          ),
+          FooBarComponent
+        )
+      );
 
       this.render(
         `{{#foo-bar lastName=this.model.lastName as |values|}}{{values.firstName}} {{values.lastName}}{{/foo-bar}}`,
@@ -203,16 +214,17 @@ moduleFor(
     }
 
     ['@test works with computeds']() {
-      let FooBarComponent = Component.extend({
-        fullName: computed('hash.firstName', 'hash.lastName', function () {
+      let FooBarComponent = class extends Component {
+        @computed('hash.firstName', 'hash.lastName')
+        get fullName() {
           return `${this.hash.firstName} ${this.hash.lastName}`;
-        }),
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{this.fullName}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`{{this.fullName}}`), FooBarComponent)
+      );
 
       this.render(`{{foo-bar hash=(hash firstName=this.firstName lastName=this.lastName)}}`, {
         firstName: 'Chad',

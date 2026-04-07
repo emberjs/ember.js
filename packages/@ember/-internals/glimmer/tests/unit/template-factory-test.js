@@ -2,7 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
 
 import { template, templateCacheCounters } from '@ember/-internals/glimmer';
-import { precompile, compile } from 'ember-template-compiler';
+import { precompile } from 'ember-template-compiler';
 
 import { Component } from '../utils/helpers';
 
@@ -15,16 +15,15 @@ moduleFor(
 
       let { owner } = this;
 
-      let templateStr = 'Hello {{this.name}}';
       let options = { moduleName: 'my-app/templates/some-module.hbs' };
 
-      let spec = precompile(templateStr, options);
+      let spec = precompile('Hello {{this.name}}', options);
       let body = `exports.default = template(${spec});`;
       let module = new Function('exports', 'template', body);
       let exports = {};
       module(exports, template);
       let Precompiled = exports['default'];
-      let Compiled = compile(templateStr, options);
+      let Compiled = this.compile('Hello {{this.name}}', options);
 
       assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
       assert.equal(typeof Compiled, 'function', 'compiled is a factory');
@@ -52,17 +51,19 @@ moduleFor(
       assert.ok(typeof precompiled.spec !== 'string', 'Spec has been parsed');
       assert.ok(typeof compiled.spec !== 'string', 'Spec has been parsed');
 
-      this.registerComponent('x-precompiled', {
-        ComponentClass: Component.extend({
-          layout: Precompiled,
-        }),
-      });
+      this.owner.register(
+        'component:x-precompiled',
+        class extends Component {
+          layout = Precompiled;
+        }
+      );
 
-      this.registerComponent('x-compiled', {
-        ComponentClass: Component.extend({
-          layout: Compiled,
-        }),
-      });
+      this.owner.register(
+        'component:x-compiled',
+        class extends Component {
+          layout = Compiled;
+        }
+      );
 
       this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');
 

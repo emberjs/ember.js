@@ -9,6 +9,8 @@ import {
 } from 'internal-test-helpers';
 import { Helper, Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Helpers test: custom helpers',
@@ -594,9 +596,13 @@ moduleFor(
         },
       });
 
-      this.registerComponent('some-component', {
-        template: '{{@first}} {{@second}} {{@third}} {{@fourth}} {{@fifth}}',
-      });
+      this.owner.register(
+        'component:some-component',
+        setComponentTemplate(
+          precompileTemplate('{{@first}} {{@second}} {{@third}} {{@fourth}} {{@fifth}}'),
+          class extends Component {}
+        )
+      );
 
       this.render(
         `{{some-component first="Who"
@@ -737,14 +743,20 @@ moduleFor(
     '@test Can use a curried dynamic helper'() {
       let val = defineSimpleHelper((value) => value);
 
-      this.registerComponent('foo', {
-        template: '{{@value}}',
-      });
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(precompileTemplate('{{@value}}'), class extends Component {})
+      );
 
-      this.registerComponent('bar', {
-        template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
-        ComponentClass: Component.extend({ val }),
-      });
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('<Foo @value={{helper this.val "Hello, world!"}}/>'),
+          class extends Component {
+            val = val;
+          }
+        )
+      );
 
       this.render('<Bar/>');
       this.assertText('Hello, world!');
@@ -755,10 +767,16 @@ moduleFor(
       let foo = defineSimpleHelper(() => 'world!');
       let bar = defineSimpleHelper((value) => 'Hello, ' + value);
 
-      this.registerComponent('baz', {
-        template: '{{this.bar (this.foo)}}',
-        ComponentClass: Component.extend({ foo, bar }),
-      });
+      this.owner.register(
+        'component:baz',
+        setComponentTemplate(
+          precompileTemplate('{{this.bar (this.foo)}}'),
+          class extends Component {
+            foo = foo;
+            bar = bar;
+          }
+        )
+      );
 
       this.render('<Baz/>');
       this.assertText('Hello, world!');
@@ -776,6 +794,17 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertText('hello');
+    }
+
+    ['@test accessing negative index of positional args returns undefined']() {
+      this.registerHelper('my-helper', (positional) => {
+        return String(positional[-1]);
+      });
+
+      this.render('{{my-helper "hello"}}');
+
+      this.assertText('undefined');
+      this.assertStableRerender();
     }
   }
 );
@@ -855,9 +884,13 @@ if (DEBUG) {
       constructor() {
         super(...arguments);
 
-        this.registerComponent('bar', {
-          template: '[{{is-string @content}}][{{@content}}]',
-        });
+        this.owner.register(
+          'component:bar',
+          setComponentTemplate(
+            precompileTemplate('[{{is-string @content}}][{{@content}}]'),
+            class extends Component {}
+          )
+        );
 
         this.registerHelper('is-string', ([value]) => typeof value === 'string');
       }

@@ -4,7 +4,7 @@ import {
   getOwner,
   setOwner,
 } from '@ember/-internals/owner';
-import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
+import { guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
@@ -53,8 +53,13 @@ import {
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 
-export const ARGS = enumerableSymbol('ARGS');
-export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
+const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
+
+export function getComponentCapturedArgs(
+  component: object
+): CapturedArguments['named'] | undefined {
+  return COMPONENT_ARGS_MAP.get(component);
+}
 
 export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
@@ -248,8 +253,7 @@ export default class CurlyComponentManager
     args: VMArguments,
     { isInteractive }: Environment,
     dynamicScope: DynamicScope,
-    callerSelfRef: Reference,
-    hasBlock: boolean
+    callerSelfRef: Reference
   ): ComponentStateBucket {
     // Get the nearest concrete component instance from the scope. "Virtual"
     // components will be skipped.
@@ -261,7 +265,6 @@ export default class CurlyComponentManager
 
     beginTrackFrame();
     let props = processComponentArgs(capturedArgs);
-    props[ARGS] = capturedArgs;
     let argsTag = endTrackFrame();
 
     // Alias `id` argument to `elementId` property on the component instance.
@@ -270,11 +273,6 @@ export default class CurlyComponentManager
     // Set component instance's parentView property to point to nearest concrete
     // component.
     props.parentView = parentView;
-
-    // Set whether this component was invoked with a block
-    // (`{{#my-component}}{{/my-component}}`) or without one
-    // (`{{my-component}}`).
-    props[HAS_BLOCK] = hasBlock;
 
     // Save the current `this` context of the template as the component's
     // `_target`, so bubbled actions are routed to the right place.
@@ -292,6 +290,10 @@ export default class CurlyComponentManager
     // actually create it.
     beginUntrackFrame();
     let component = ComponentClass.create(props);
+
+    // Store capturedArgs in a WeakMap keyed by the component instance so that
+    // PROPERTY_DID_CHANGE can look them up
+    COMPONENT_ARGS_MAP.set(component, capturedArgs);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -529,11 +531,11 @@ export function initialRenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: true });
 }
 
-export function rerenderInstrumentDetails(component: any): any {
+function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
 
-export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
+const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,

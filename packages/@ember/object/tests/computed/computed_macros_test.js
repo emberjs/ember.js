@@ -24,13 +24,13 @@ moduleFor(
   'CP macros',
   class extends AbstractTestCase {
     ['@test empty part 1/2'](assert) {
-      let obj = EmberObject.extend({
-        bestLannister: null,
-        lannisters: null,
+      let obj = class extends EmberObject {
+        bestLannister = null;
+        lannisters = null;
 
-        bestLannisterUnspecified: empty('bestLannister'),
-        noLannistersKnown: empty('lannisters'),
-      }).create({
+        @empty('bestLannister') bestLannisterUnspecified;
+        @empty('lannisters') noLannistersKnown;
+      }.create({
         lannisters: emberA(),
       });
 
@@ -45,13 +45,13 @@ moduleFor(
     }
 
     ['@test notEmpty part 1/2'](assert) {
-      let obj = EmberObject.extend({
-        bestLannister: null,
-        lannisters: null,
+      let obj = class extends EmberObject {
+        bestLannister = null;
+        lannisters = null;
 
-        bestLannisterSpecified: notEmpty('bestLannister'),
-        LannistersKnown: notEmpty('lannisters'),
-      }).create({
+        @notEmpty('bestLannister') bestLannisterSpecified;
+        @notEmpty('lannisters') LannistersKnown;
+      }.create({
         lannisters: emberA(),
       });
 

@@ -1,16 +1,14 @@
 import Route from '@ember/routing/route';
 import Array from '@ember/array';
-import Ember from 'ember'; // currently needed for Transition
+
 import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
 import { service } from '@ember/service';
 import RouterService from '@ember/routing/router-service';
+import type EmberObject from '@ember/object';
+import type Controller from '@ember/controller';
 
-// Ensure that Ember.Transition is private
-// @ts-expect-error
-Ember.Transition;
-
-interface Post extends Ember.Object {
+interface Post extends EmberObject {
   title: string;
 }
 
@@ -36,12 +34,12 @@ class Test extends Route {
     }
   }
 
-  setupController(controller: Ember.Controller, model: {}) {
+  setupController(controller: Controller, model: {}) {
     this._super(controller, model);
     this.controllerFor('application').set('model', model);
   }
 
-  resetController(controller: Ember.Controller, isExiting: boolean, transition: Transition) {
+  resetController(controller: Controller, isExiting: boolean, transition: Transition) {
     if (isExiting) {
       //   controller.set('page', 1);
     }

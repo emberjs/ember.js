@@ -1,6 +1,8 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -15,22 +17,23 @@ moduleFor(
 
     ['@test fragments do not render an outer tag']() {
       let instance;
-      let FooBarComponent = Component.extend({
-        tagName: '',
+      let FooBarComponent = class extends Component {
+        tagName = '';
         init() {
-          this._super();
+          super.init(...arguments);
           instance = this;
           this.foo = true;
           this.bar = 'bar';
-        },
-      });
+        }
+      };
 
-      let template = `{{#if this.foo}}<div>Hey</div>{{/if}}{{yield this.bar}}`;
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{#if this.foo}}<div>Hey</div>{{/if}}{{yield this.bar}}'),
+          FooBarComponent
+        )
+      );
 
       this.render(`{{#foo-bar as |bar|}}{{bar}}{{/foo-bar}}`);
 
@@ -53,17 +56,16 @@ moduleFor(
     }
 
     ['@test throws an error if an event function is defined in a tagless component']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        click() {},
-        mouseEnter() {},
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+        click() {}
+        mouseEnter() {}
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hit dem folks'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
@@ -71,16 +73,15 @@ moduleFor(
     }
 
     ['@test throws an error if a custom defined event function is defined in a tagless component']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        folks() {},
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+        folks() {}
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hit dem folks'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
@@ -88,17 +89,16 @@ moduleFor(
     }
 
     ['@test throws an error if `tagName` is an empty string and `classNameBindings` are specified']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        foo: true,
-        classNameBindings: ['foo:is-foo:is-bar'],
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+        foo = true;
+        classNameBindings = ['foo:is-foo:is-bar'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hit dem folks'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
@@ -106,91 +106,85 @@ moduleFor(
     }
 
     ['@test throws an error if `tagName` is an empty string and `attributeBindings` are specified']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        attributeBindings: ['href'],
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+        attributeBindings = ['href'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hit dem folks'), FooBarComponent)
+      );
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
       }, /You cannot use `attributeBindings` on a tag-less component/);
     }
 
     ['@test throws an error if `tagName` is an empty string and `elementId` is specified via JS']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        elementId: 'turntUp',
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+        elementId = 'turntUp';
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hit dem folks'), FooBarComponent)
+      );
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
       }, /You cannot use `elementId` on a tag-less component/);
     }
 
     ['@test throws an error if `tagName` is an empty string and `elementId` is specified via template']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hit dem folks'), FooBarComponent)
+      );
       expectAssertion(() => {
         this.render(`{{#foo-bar elementId='turntUp'}}{{/foo-bar}}`);
       }, /You cannot use `elementId` on a tag-less component/);
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via JS']() {
-      let template = `{{this.id}}`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        id: 'baz',
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+        id = 'baz';
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.id}}'), FooBarComponent)
+      );
       this.render(`{{#foo-bar}}{{/foo-bar}}`);
       this.assertText('baz');
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template']() {
-      let template = `{{this.id}}`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.id}}'), FooBarComponent)
+      );
       this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
       this.assertText('baz');
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is bound property specified via template']() {
-      let template = `{{this.id}}`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-      });
+      let FooBarComponent = class extends Component {
+        tagName = '';
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.id}}'), FooBarComponent)
+      );
 
       this.render(`{{#foo-bar id=this.fooBarId}}{{/foo-bar}}`, { fooBarId: 'baz' });
 
@@ -208,46 +202,56 @@ moduleFor(
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template and passed to child component']() {
-      let fooBarTemplate = `{{#baz-child id=this.id}}{{/baz-child}}`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-      });
-      let BazChildComponent = Component.extend();
-      let bazChildTemplate = `{{this.id}}`;
+      let FooBarComponent = class extends Component {
+        tagName = '';
+      };
+      let BazChildComponent = class extends Component {};
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: fooBarTemplate,
-      });
-      this.registerComponent('baz-child', {
-        ComponentClass: BazChildComponent,
-        template: bazChildTemplate,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{#baz-child id=this.id}}{{/baz-child}}'),
+          FooBarComponent
+        )
+      );
+      this.owner.register(
+        'component:baz-child',
+        setComponentTemplate(precompileTemplate('{{this.id}}'), BazChildComponent)
+      );
       this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
       this.assertText('baz');
     }
 
     ['@test renders a contained view with omitted start tag and tagless parent view context']() {
-      this.registerComponent('root-component', {
-        ComponentClass: Component.extend({
-          tagName: 'section',
-        }),
-        template: '{{frag-ment}}',
-      });
+      this.owner.register(
+        'component:root-component',
+        setComponentTemplate(
+          precompileTemplate('{{frag-ment}}'),
+          class extends Component {
+            tagName = 'section';
+          }
+        )
+      );
 
-      this.registerComponent('frag-ment', {
-        ComponentClass: Component.extend({
-          tagName: '',
-        }),
-        template: '{{my-span}}',
-      });
+      this.owner.register(
+        'component:frag-ment',
+        setComponentTemplate(
+          precompileTemplate('{{my-span}}'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
 
-      this.registerComponent('my-span', {
-        ComponentClass: Component.extend({
-          tagName: 'span',
-        }),
-        template: 'dab',
-      });
+      this.owner.register(
+        'component:my-span',
+        setComponentTemplate(
+          precompileTemplate('dab'),
+          class extends Component {
+            tagName = 'span';
+          }
+        )
+      );
 
       this.render(`{{root-component}}`);
 

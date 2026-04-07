@@ -1,10 +1,7 @@
-import {
-  RenderingTestCase,
-  defineComponent,
-  moduleFor,
-  runTask,
-  strip,
-} from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask, strip } from 'internal-test-helpers';
+import { setComponentTemplate } from '@glimmer/manager';
+import { precompileTemplate } from '@ember/template-compilation';
+import templateOnly from '@ember/component/template-only';
 
 import { set } from '@ember/object';
 
@@ -31,11 +28,20 @@ moduleFor(
         return list.map((n) => n * 2);
       }
 
-      let First = defineComponent({ array }, `{{#each (array 1 2 3) as |n|}}[{{n}}]{{/each}}`);
+      let First = setComponentTemplate(
+        precompileTemplate(`{{#each (array 1 2 3) as |n|}}[{{n}}]{{/each}}`, {
+          strictMode: true,
+          scope: () => ({ array }),
+        }),
+        templateOnly()
+      );
 
-      let Root = defineComponent(
-        { shadowArray: array, First },
-        `{{#let shadowArray as |array|}}{{#each (array 5 10 15) as |n|}}[{{n}}]{{/each}}{{/let}}<First />`
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          `{{#let shadowArray as |array|}}{{#each (array 5 10 15) as |n|}}[{{n}}]{{/each}}{{/let}}<First />`,
+          { strictMode: true, scope: () => ({ shadowArray: array, First }) }
+        ),
+        templateOnly()
       );
 
       this.renderComponent(Root, { expect: '[10][20][30][2][4][6]' });
@@ -148,18 +154,21 @@ moduleFor(
 
     ['@test should yield hash of an array of internal properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarInstance = this;
           this.model = { personOne: 'Chad' };
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{yield (hash people=(array this.model.personOne))}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (hash people=(array this.model.personOne))}}`),
+          FooBarComponent
+        )
+      );
 
       this.render(strip`
       {{#foo-bar as |values|}}
@@ -187,18 +196,21 @@ moduleFor(
 
     ['@test should yield hash of an array of internal and external properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarInstance = this;
           this.model = { personOne: 'Chad' };
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{yield (hash people=(array this.model.personOne this.personTwo))}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (hash people=(array this.model.personOne this.personTwo))}}`),
+          FooBarComponent
+        )
+      );
 
       this.render(
         strip`
@@ -232,15 +244,15 @@ moduleFor(
     }
 
     ['@test should render when passing as argument to a component invocation']() {
-      let FooBarComponent = Component.extend({});
+      let FooBarComponent = class extends Component {};
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: strip`
-        {{#each this.people as |personName|}}
-          {{personName}},
-        {{/each}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.people as |personName|}}{{personName}},{{/each}}'),
+          FooBarComponent
+        )
+      );
 
       this.render(strip`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
 
@@ -259,20 +271,20 @@ moduleFor(
 
     ['@test should return an entirely new array when any argument change']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarInstance = this;
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: strip`
-        {{#each this.people as |personName|}}
-          {{personName}},
-        {{/each}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.people as |personName|}}{{personName}},{{/each}}'),
+          FooBarComponent
+        )
+      );
 
       this.render(strip`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
 

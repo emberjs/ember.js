@@ -1,6 +1,5 @@
 'use strict';
 
-const isPackageMissing = require('ember-cli-is-package-missing');
 const semver = require('semver');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
@@ -49,17 +48,5 @@ module.exports = {
     }
 
     return false;
-  },
-
-  afterInstall: function (options) {
-    if (
-      !options.dryRun &&
-      !this._useNamedHbsImport() &&
-      isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
-    ) {
-      return this.addPackagesToProject([
-        { name: 'ember-cli-htmlbars-inline-precompile', target: '^0.3.1' },
-      ]);
-    }
   },
 };

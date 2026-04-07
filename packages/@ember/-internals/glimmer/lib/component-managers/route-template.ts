@@ -28,7 +28,6 @@ interface RouteTemplateInstanceState {
 
 export interface RouteTemplateDefinitionState {
   name: string;
-  templateName: string;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -79,7 +78,7 @@ class RouteTemplateManager
   }
 
   getDebugCustomRenderTree(
-    { name, templateName }: RouteTemplateDefinitionState,
+    { name }: RouteTemplateDefinitionState,
     state: RouteTemplateInstanceState,
     args: CapturedArguments
   ): CustomRenderNode[] {
@@ -90,7 +89,6 @@ class RouteTemplateManager
         name,
         args,
         instance: state.controller,
-        template: templateName,
       },
     ];
   }
@@ -118,14 +116,11 @@ const ROUTE_TEMPLATE_MANAGER = new RouteTemplateManager();
  * so unless the stability is desirable for other reasons, it's probably not
  * worth caching this.
  */
-export class RouteTemplate
-  implements
-    ComponentDefinition<
-      RouteTemplateDefinitionState,
-      RouteTemplateInstanceState,
-      RouteTemplateManager
-    >
-{
+export class RouteTemplate implements ComponentDefinition<
+  RouteTemplateDefinitionState,
+  RouteTemplateInstanceState,
+  RouteTemplateManager
+> {
   // handle is not used by this custom definition
   public handle = -1;
   public resolvedName: string;
@@ -140,7 +135,7 @@ export class RouteTemplate
     // outlet's name. Also, setting this overrides `getDebugName()` in that
     // message. Is that desirable?
     this.resolvedName = name;
-    this.state = { name, templateName: unwrapped.moduleName };
+    this.state = { name };
     this.compilable = unwrapped.asLayout();
   }
 }

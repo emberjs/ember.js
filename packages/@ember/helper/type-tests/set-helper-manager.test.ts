@@ -1,4 +1,4 @@
-import type { HelperFactory, SimpleHelper } from '@ember/-internals/glimmer/lib/helper';
+import type { HelperFactory, SimpleHelper } from '@ember/-internals/glimmer';
 import { getDebugName } from '@ember/-internals/utils';
 import { capabilities, setHelperManager } from '@ember/helper';
 import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';

@@ -102,15 +102,15 @@ moduleFor(
     }
 
     ['@test mergedProperties should exist even if not explicitly set on create'](assert) {
-      let AnObj = EmberObject.extend({
-        mergedProperties: ['options'],
-        options: {
+      let AnObj = class extends EmberObject {
+        mergedProperties = ['options'];
+        options = {
           a: 'a',
           b: {
             c: 'ccc',
           },
-        },
-      });
+        };
+      };
 
       let obj = AnObj.create({
         options: {
@@ -123,12 +123,12 @@ moduleFor(
     }
 
     ['@test defining mergedProperties at create time should not modify the prototype'](assert) {
-      let AnObj = EmberObject.extend({
-        mergedProperties: ['options'],
-        options: {
+      let AnObj = class extends EmberObject {
+        mergedProperties = ['options'];
+        options = {
           a: 1,
-        },
-      });
+        };
+      };
 
       let objA = AnObj.create({
         options: {

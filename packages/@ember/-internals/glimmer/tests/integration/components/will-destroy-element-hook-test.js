@@ -1,6 +1,8 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -10,21 +12,21 @@ moduleFor(
     ['@test it calls willDestroyElement when removed by if'](assert) {
       let didInsertElementCount = 0;
       let willDestroyElementCount = 0;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         didInsertElement() {
           didInsertElementCount++;
           assert.notEqual(this.element.parentNode, null, 'precond component is in DOM');
-        },
+        }
         willDestroyElement() {
           willDestroyElementCount++;
           assert.notEqual(this.element.parentNode, null, 'has not been removed from DOM yet');
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{#if this.switch}}{{foo-bar}}{{/if}}', { switch: true });
 

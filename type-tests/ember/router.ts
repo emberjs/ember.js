@@ -1,8 +1,10 @@
 import RouterService from '@ember/routing/router-service';
-import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
+import Router from '@ember/routing/router';
+import Service, { service } from '@ember/service';
+import EmberObject, { get } from '@ember/object';
 
-const AppRouter = Ember.Router.extend({});
+const AppRouter = Router.extend({});
 
 AppRouter.map(function () {
   this.route('index', { path: '/' });
@@ -24,8 +26,8 @@ AppRouter.map(function () {
   this.mount('my-engine', { as: 'some-other-engine', path: '/some-other-engine' });
 });
 
-class RouterServiceConsumer extends Ember.Service {
-  @Ember.inject.service('router')
+class RouterServiceConsumer extends Service {
+  @service('router')
   declare router: RouterService;
 
   currentRouteName() {
@@ -35,18 +37,18 @@ class RouterServiceConsumer extends Ember.Service {
     expectTypeOf(this.router.currentURL).toEqualTypeOf<string | null>();
   }
   transitionWithoutModel() {
-    Ember.get(this, 'router').transitionTo('some-route');
+    get(this, 'router').transitionTo('some-route');
   }
   transitionWithModel() {
-    const model = Ember.Object.create();
-    Ember.get(this, 'router').transitionTo('some.other.route', model);
+    const model = EmberObject.create();
+    get(this, 'router').transitionTo('some.other.route', model);
   }
   transitionWithMultiModel() {
-    const model = Ember.Object.create();
-    Ember.get(this, 'router').transitionTo('some.other.route', model, model);
+    const model = EmberObject.create();
+    get(this, 'router').transitionTo('some.other.route', model, model);
   }
   transitionWithModelAndOptions() {
-    const model = Ember.Object.create();
-    Ember.get(this, 'router').transitionTo('index', model, { queryParams: { search: 'ember' } });
+    const model = EmberObject.create();
+    get(this, 'router').transitionTo('index', model, { queryParams: { search: 'ember' } });
   }
 }

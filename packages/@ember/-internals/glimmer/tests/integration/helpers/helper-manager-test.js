@@ -176,9 +176,9 @@ moduleFor(
     ['@test services can be injected']() {
       this.registerService(
         'hello',
-        Service.extend({
-          value: 'hello',
-        })
+        class extends Service {
+          value = 'hello';
+        }
       );
 
       this.registerCustomHelper(

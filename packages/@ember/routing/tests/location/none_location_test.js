@@ -17,7 +17,7 @@ moduleFor(
   class extends AbstractTestCase {
     constructor() {
       super();
-      NoneTestLocation = NoneLocation.extend({});
+      NoneTestLocation = class extends NoneLocation {};
     }
 
     teardown() {

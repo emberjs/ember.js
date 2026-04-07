@@ -1,27 +1,11 @@
 /* eslint-disable no-var */
-/* globals global globalThis self */
 /* eslint-disable-next-line no-unused-vars */
 var define, require;
 
 (function () {
-  var globalObj =
-    typeof globalThis !== 'undefined'
-      ? globalThis
-      : typeof self !== 'undefined'
-        ? self
-        : typeof window !== 'undefined'
-          ? window
-          : typeof global !== 'undefined'
-            ? global
-            : null;
-
-  if (globalObj === null) {
-    throw new Error('unable to locate global object');
-  }
-
-  if (typeof globalObj.define === 'function' && typeof globalObj.require === 'function') {
-    define = globalObj.define;
-    require = globalObj.require;
+  if (typeof globalThis.define === 'function' && typeof globalThis.require === 'function') {
+    define = globalThis.define;
+    require = globalThis.require;
 
     return;
   }

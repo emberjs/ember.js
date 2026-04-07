@@ -37,12 +37,12 @@ moduleFor(
     '@test Ember.isArray does not trigger proxy assertion when probing for length GH#16495'(
       assert
     ) {
-      let instance = EmberObject.extend({
+      let instance = class extends EmberObject {
         // intentionally returning non-null / non-undefined
         unknownProperty() {
           return false;
-        },
-      }).create();
+        }
+      }.create();
 
       assert.equal(isArray(instance), false);
     }

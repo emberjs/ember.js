@@ -5,23 +5,23 @@ moduleFor(
   'strict mode tests',
   class extends AbstractTestCase {
     ['@test __superWrapper does not throw errors in strict mode'](assert) {
-      let Foo = EmberObject.extend({
+      let Foo = class extends EmberObject {
         blah() {
           return 'foo';
-        },
-      });
+        }
+      };
 
-      let Bar = Foo.extend({
+      let Bar = class extends Foo {
         blah() {
           return 'bar';
-        },
+        }
 
         callBlah() {
           let blah = this.blah;
 
           return blah();
-        },
-      });
+        }
+      };
 
       let bar = Bar.create();
 

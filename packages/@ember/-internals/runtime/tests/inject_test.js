@@ -9,9 +9,10 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test attempting to inject a nonexistent container key should error']() {
       let owner = buildOwner();
-      let AnObject = EmberObject.extend({
-        foo: inject('bar', 'baz'),
-      });
+      let AnObject = class extends EmberObject {
+        @inject('bar', 'baz')
+        foo;
+      };
 
       owner.register('foo:main', AnObject);
 
@@ -24,10 +25,13 @@ moduleFor(
 
     ['@test factories should return a list of lazy injection full names'](assert) {
       if (DEBUG) {
-        let AnObject = EmberObject.extend({
-          foo: inject('foo', 'bar'),
-          bar: inject('quux'),
-        });
+        let AnObject = class extends EmberObject {
+          @inject('foo', 'bar')
+          foo;
+
+          @inject('quux')
+          bar;
+        };
 
         assert.deepEqual(
           AnObject._lazyInjections(),

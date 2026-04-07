@@ -1,26 +1,27 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
-import { componentCapabilities } from '@glimmer/manager';
+import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object';
 import { set, setProperties, computed } from '@ember/object';
 import { setComponentManager } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
 
-const BasicComponentManager = EmberObject.extend({
-  capabilities: componentCapabilities('3.13'),
+class BasicComponentManager extends EmberObject {
+  capabilities = componentCapabilities('3.13');
 
   createComponent(factory, args) {
     return factory.create({ args });
-  },
+  }
 
   updateComponent(component, args) {
     set(component, 'args', args);
-  },
+  }
 
   getContext(component) {
     return component;
-  },
-});
+  }
+}
 
 /* eslint-disable */
 function createBasicManager(owner) {
@@ -38,42 +39,42 @@ class ComponentManagerTest extends RenderingTestCase {
   constructor(assert) {
     super(...arguments);
 
-    InstrumentedComponentManager = EmberObject.extend({
-      capabilities: componentCapabilities('3.13', {
+    InstrumentedComponentManager = class extends EmberObject {
+      capabilities = componentCapabilities('3.13', {
         destructor: true,
         asyncLifecycleCallbacks: true,
-      }),
+      });
 
       createComponent(factory, args) {
         assert.step('createComponent');
         return factory.create({ args });
-      },
+      }
 
       updateComponent(component, args) {
         assert.step('updateComponent');
         set(component, 'args', args);
-      },
+      }
 
       destroyComponent(component) {
         assert.step('destroyComponent');
         component.destroy();
-      },
+      }
 
       getContext(component) {
         assert.step('getContext');
         return component;
-      },
+      }
 
       didCreateComponent(component) {
         assert.step('didCreateComponent');
         component.didRender();
-      },
+      }
 
       didUpdateComponent(component) {
         assert.step('didUpdateComponent');
         component.didUpdate();
-      },
-    });
+      }
+    };
   }
 }
 
@@ -83,15 +84,15 @@ moduleFor(
     ['@test it can render a basic component with custom component manager']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          greeting: 'hello',
-        })
+        class extends EmberObject {
+          greeting = 'hello';
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -101,15 +102,15 @@ moduleFor(
     ['@test it can render a basic component with custom component manager with a factory']() {
       let ComponentClass = setComponentManager(
         () => BasicComponentManager.create(),
-        EmberObject.extend({
-          greeting: 'hello',
-        })
+        class extends EmberObject {
+          greeting = 'hello';
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -119,25 +120,29 @@ moduleFor(
     ['@test it can have no template context']() {
       class ComponentWithNoTemplate {}
       setComponentManager(() => {
-        return EmberObject.create({
-          capabilities: componentCapabilities('3.13'),
+        let Manager = class extends EmberObject {
+          capabilities = componentCapabilities('3.13');
 
           createComponent() {
             return null;
-          },
+          }
 
-          updateComponent() {},
+          updateComponent() {}
 
           getContext() {
             return null;
-          },
-        });
+          }
+        };
+        return new Manager();
       }, ComponentWithNoTemplate);
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{@greeting}} world</p>`,
-        ComponentClass: ComponentWithNoTemplate,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{@greeting}} world</p>`),
+          ComponentWithNoTemplate
+        )
+      );
 
       this.render('{{foo-bar greeting="hello"}}');
 
@@ -147,19 +152,20 @@ moduleFor(
     ['@test it can discover component manager through inheritance - ES Classes']() {
       class Base {}
       setComponentManager(() => {
-        return EmberObject.create({
-          capabilities: componentCapabilities('3.13'),
+        let Manager = class extends EmberObject {
+          capabilities = componentCapabilities('3.13');
 
           createComponent(Factory, args) {
             return new Factory(args);
-          },
+          }
 
-          updateComponent() {},
+          updateComponent() {}
 
           getContext(component) {
             return component;
-          },
-        });
+          }
+        };
+        return new Manager();
       }, Base);
       class Child extends Base {}
       class Grandchild extends Child {
@@ -169,10 +175,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('foo-bar', {
-        template: `{{this.name}}`,
-        ComponentClass: Grandchild,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`{{this.name}}`), Grandchild)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -180,19 +186,19 @@ moduleFor(
     }
 
     ['@test it can discover component manager through inheritance - Ember Object']() {
-      let Parent = setComponentManager(createBasicManager, EmberObject.extend());
-      let Child = Parent.extend();
-      let Grandchild = Child.extend({
+      let Parent = setComponentManager(createBasicManager, class extends EmberObject {});
+      let Child = class extends Parent {};
+      let Grandchild = class extends Child {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           this.name = 'grandchild';
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        template: `{{this.name}}`,
-        ComponentClass: Grandchild,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`{{this.name}}`), Grandchild)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -206,30 +212,34 @@ moduleFor(
 
       let ComponentClass = setComponentManager(
         () => {
-          return EmberObject.create({
-            capabilities: componentCapabilities('3.13'),
+          let Manager = class extends EmberObject {
+            capabilities = componentCapabilities('3.13');
 
             createComponent(factory) {
               return factory.create();
-            },
+            }
 
             getContext() {
               return customContext;
-            },
+            }
 
-            updateComponent() {},
-          });
+            updateComponent() {}
+          };
+          return new Manager();
         },
-        EmberObject.extend({
-          greeting: 'hello',
-          count: 1234,
-        })
+        class extends EmberObject {
+          greeting = 'hello';
+          count = 1234;
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world {{this.count}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} world {{this.count}}</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('{{foo-bar}}');
 
@@ -243,17 +253,18 @@ moduleFor(
     ['@test it can set arguments on the component instance']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
+        class extends EmberObject {
+          @computed('args.named.firstName', 'args.named.lastName')
+          get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
-          }),
-        })
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar firstName="Yehuda" lastName="Katz"}}');
 
@@ -263,17 +274,18 @@ moduleFor(
     ['@test arguments are updated if they change']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
+        class extends EmberObject {
+          @computed('args.named.firstName', 'args.named.lastName')
+          get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
-          }),
-        })
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar firstName=this.firstName lastName=this.lastName}}', {
         firstName: 'Yehuda',
@@ -295,17 +307,18 @@ moduleFor(
     ['@test it can set positional params on the component instance']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          salutation: computed('args.positional.[]', function () {
+        class extends EmberObject {
+          @computed('args.positional.[]')
+          get salutation() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
-          }),
-        })
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar "Yehuda" "Katz"}}');
 
@@ -315,17 +328,18 @@ moduleFor(
     ['@test positional params are updated if they change (computed, arr tag)']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          salutation: computed('args.positional.[]', function () {
+        class extends EmberObject {
+          @computed('args.positional.[]')
+          get salutation() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
-          }),
-        })
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
@@ -347,17 +361,18 @@ moduleFor(
     ['@test positional params are updated if they change (computed, individual tags)']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          salutation: computed('args.positional.0', 'args.positional.1', function () {
+        class extends EmberObject {
+          @computed('args.positional.0', 'args.positional.1')
+          get salutation() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
-          }),
-        })
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
@@ -386,10 +401,10 @@ moduleFor(
         }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
@@ -433,19 +448,19 @@ moduleFor(
             },
           });
         },
-        EmberObject.extend({
-          greeting: 'hello',
+        class extends EmberObject {
+          greeting = 'hello';
           destroy() {
             assert.step('component.destroy()');
-            this._super(...arguments);
-          },
-        })
+            super.destroy();
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('{{#if this.show}}{{foo-bar}}{{/if}}', { show: true });
 
@@ -496,15 +511,18 @@ moduleFor(
             },
           });
         },
-        EmberObject.extend({
-          greeting: 'hello',
-        })
+        class extends EmberObject {
+          greeting = 'hello';
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} {{@name}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} {{@name}}</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('{{foo-bar name=this.name}}', { name: 'world' });
 
@@ -560,15 +578,18 @@ moduleFor(
             },
           });
         },
-        EmberObject.extend({
-          greeting: 'hello',
-        })
+        class extends EmberObject {
+          greeting = 'hello';
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} {{@name}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} {{@name}}</p>`),
+          ComponentClass
+        )
+      );
 
       assert.throws(() => {
         this.render('{{foo-bar name=this.name}}', { name: 'world' });
@@ -585,15 +606,15 @@ moduleFor(
     ['@test it can render a basic component with custom component manager']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          greeting: 'hello',
-        })
+        class extends EmberObject {
+          greeting = 'hello';
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} world</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.greeting}} world</p>`), ComponentClass)
+      );
 
       this.render('<FooBar />');
 
@@ -603,17 +624,18 @@ moduleFor(
     ['@test it can set arguments on the component instance']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
+        class extends EmberObject {
+          @computed('args.named.firstName', 'args.named.lastName')
+          get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
-          }),
-        })
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('<FooBar @firstName="Yehuda" @lastName="Katz" />');
 
@@ -621,12 +643,15 @@ moduleFor(
     }
 
     ['@test it can pass attributes']() {
-      let ComponentClass = setComponentManager(createBasicManager, EmberObject.extend());
+      let ComponentClass = setComponentManager(createBasicManager, class extends EmberObject {});
 
-      this.registerComponent('foo-bar', {
-        template: `<p ...attributes>Hello world!</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p ...attributes>Hello world!</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('<FooBar data-test="foo" />');
 
@@ -636,17 +661,18 @@ moduleFor(
     ['@test arguments are updated if they change']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
-        EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
+        class extends EmberObject {
+          @computed('args.named.firstName', 'args.named.lastName')
+          get salutation() {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
-          }),
-        })
+          }
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.salutation}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(`<p>{{this.salutation}}</p>`), ComponentClass)
+      );
 
       this.render('<FooBar @firstName={{this.firstName}} @lastName={{this.lastName}} />', {
         firstName: 'Yehuda',
@@ -666,57 +692,60 @@ moduleFor(
     }
 
     ['@test updating attributes triggers updateComponent and didUpdateComponent'](assert) {
-      let TestManager = EmberObject.extend({
-        capabilities: componentCapabilities('3.13', {
+      let TestManager = class extends EmberObject {
+        capabilities = componentCapabilities('3.13', {
           destructor: true,
           asyncLifecycleCallbacks: true,
           updateHook: true,
-        }),
+        });
 
         createComponent(factory, args) {
           assert.step('createComponent');
           return factory.create({ args });
-        },
+        }
 
         updateComponent(component, args) {
           assert.step('updateComponent');
           set(component, 'args', args);
-        },
+        }
 
         destroyComponent(component) {
           component.destroy();
-        },
+        }
 
         getContext(component) {
           assert.step('getContext');
           return component;
-        },
+        }
 
         didCreateComponent(component) {
           assert.step('didCreateComponent');
           component.didRender();
-        },
+        }
 
         didUpdateComponent(component) {
           assert.step('didUpdateComponent');
           component.didUpdate();
-        },
-      });
+        }
+      };
 
       let ComponentClass = setComponentManager(
         () => {
           return TestManager.create();
         },
-        EmberObject.extend({
-          didRender() {},
-          didUpdate() {},
-        })
+        class extends EmberObject {
+          didRender() {}
+          didUpdate() {}
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p ...attributes>Hello world!</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p ...attributes>Hello world!</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
 
@@ -757,10 +786,10 @@ moduleFor(
 
       let ComponentClass = setComponentManager(() => new TestManager(), {});
 
-      this.registerComponent('foo-bar', {
-        template: '{{yield}}',
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{yield}}'), ComponentClass)
+      );
 
       this.render(
         strip`
@@ -816,10 +845,13 @@ moduleFor(
 
       let ComponentClass = setComponentManager(() => new TestManager(), {});
 
-      this.registerComponent('foo-bar', {
-        template: `<p ...attributes>Hello world!</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p ...attributes>Hello world!</p>`),
+          ComponentClass
+        )
+      );
 
       this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
 
@@ -874,15 +906,18 @@ moduleFor(
             },
           });
         },
-        EmberObject.extend({
-          greeting: 'hello',
-        })
+        class extends EmberObject {
+          greeting = 'hello';
+        }
       );
 
-      this.registerComponent('foo-bar', {
-        template: `<p>{{this.greeting}} {{@name}}</p>`,
-        ComponentClass,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`<p>{{this.greeting}} {{@name}}</p>`),
+          ComponentClass
+        )
+      );
 
       assert.throws(() => {
         this.render('<FooBar @name={{this.name}} />', { name: 'world' });

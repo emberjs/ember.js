@@ -4,6 +4,8 @@ import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
 } from '@ember/instrumentation';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -51,19 +53,22 @@ moduleFor(
     ['@test it should only receive an instrumentation event for initial render']() {
       let testCase = this;
 
-      let BaseClass = Component.extend({
-        tagName: '',
+      let BaseClass = class extends Component {
+        tagName = '';
 
         willRender() {
           testCase.expected.before.push(this);
           testCase.expected.after.unshift(this);
-        },
-      });
+        }
+      };
 
-      this.registerComponent('x-bar', {
-        template: '[x-bar: {{this.bar}}]',
-        ComponentClass: BaseClass.extend(),
-      });
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate('[x-bar: {{this.bar}}]'),
+          class extends BaseClass {}
+        )
+      );
 
       this.render(`[-top-level: {{this.foo}}] {{x-bar bar=this.bar}}`, {
         foo: 'foo',

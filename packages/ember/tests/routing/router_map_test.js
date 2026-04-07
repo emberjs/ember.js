@@ -1,6 +1,7 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import Router from '@ember/routing/router';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Router.map',
@@ -18,8 +19,8 @@ moduleFor(
     ['@test Router.map can be called multiple times'](assert) {
       assert.expect(2);
 
-      this.addTemplate('hello', 'Hello!');
-      this.addTemplate('goodbye', 'Goodbye!');
+      this.add('template:hello', precompileTemplate('Hello!'));
+      this.add('template:goodbye', precompileTemplate('Goodbye!'));
 
       this.router.map(function () {
         this.route('hello');

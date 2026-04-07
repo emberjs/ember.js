@@ -1,4 +1,6 @@
 import { moduleFor, RenderingTestCase, styles, runTask } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { set, computed } from '@ember/object';
 
@@ -8,7 +10,10 @@ moduleFor(
   'Components test: attrs lookup',
   class extends RenderingTestCase {
     ['@test it should be able to lookup attrs without `attrs.` - template access']() {
-      this.registerComponent('foo-bar', { template: '{{this.first}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.first}}'), class extends Component {})
+      );
 
       this.render(`{{foo-bar first=this.firstAttr}}`, {
         firstAttr: 'first attr',
@@ -32,16 +37,16 @@ moduleFor(
     ['@test it should be able to lookup attrs without `attrs.` - component access'](assert) {
       let instance;
 
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           instance = this;
-        },
-      });
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '{{this.first}}',
-      });
+        }
+      };
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.first}}'), FooBarComponent)
+      );
 
       this.render(`{{foo-bar first=this.firstAttr}}`, {
         firstAttr: 'first attr',
@@ -64,20 +69,20 @@ moduleFor(
 
     ['@test should be able to modify a provided attr into local state #11571 / #11559'](assert) {
       let instance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           instance = this;
-        },
+        }
 
         didReceiveAttrs() {
           this.set('first', this.get('first').toUpperCase());
-        },
-      });
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '{{this.first}}',
-      });
+        }
+      };
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.first}}'), FooBarComponent)
+      );
 
       this.render(`{{foo-bar first="first attr"}}`);
 
@@ -101,17 +106,17 @@ moduleFor(
       let instance;
       let wootVal = 'yes';
 
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           instance = this;
-        },
+        }
 
         didReceiveAttrs() {
           assert.equal(this.get('woot'), wootVal, 'found attr in didReceiveAttrs');
-        },
-      });
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+        }
+      };
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render(`{{foo-bar woot=this.woot}}`, {
         woot: wootVal,
@@ -142,11 +147,11 @@ moduleFor(
       assert.expect(33);
 
       let instance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           instance = this;
-        },
+        }
 
         didReceiveAttrs() {
           let rootFirstPositional = this.get('firstPositional');
@@ -163,14 +168,14 @@ moduleFor(
           );
           assert.equal(rootFirst, attrFirst, 'root property matches attrs value');
           assert.equal(rootSecond, attrSecond, 'root property matches attrs value');
-        },
-      });
+        }
+      };
 
       FooBarComponent.reopenClass({
         positionalParams: ['firstPositional'],
       });
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render(`{{foo-bar this.firstPositional first=this.first second=this.second}}`, {
         firstPositional: 'firstPositional',
@@ -224,27 +229,28 @@ moduleFor(
     }
 
     ['@test bound computed properties can be overridden in extensions, set during init, and passed in as attrs']() {
-      let FooClass = Component.extend({
-        attributeBindings: ['style'],
-        style: computed('height', 'color', function () {
+      let FooClass = class extends Component {
+        attributeBindings = ['style'];
+        @computed('height', 'color')
+        get style() {
           let height = this.get('height');
           let color = this.get('color');
           return htmlSafe(`height: ${height}px; background-color: ${color};`);
-        }),
-        color: 'red',
-        height: 20,
-      });
+        }
+        color = 'red';
+        height = 20;
+      };
 
-      let BarClass = FooClass.extend({
+      let BarClass = class extends FooClass {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           this.height = 150;
-        },
-        color: 'yellow',
-      });
+        }
+        color = 'yellow';
+      };
 
-      this.registerComponent('x-foo', { ComponentClass: FooClass });
-      this.registerComponent('x-bar', { ComponentClass: BarClass });
+      this.owner.register('component:x-foo', FooClass);
+      this.owner.register('component:x-bar', BarClass);
 
       this.render('{{x-foo}}{{x-bar}}{{x-bar color="green"}}');
 

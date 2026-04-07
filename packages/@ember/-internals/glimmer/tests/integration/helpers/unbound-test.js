@@ -8,6 +8,8 @@ import {
 
 import { set, get, setProperties } from '@ember/object';
 import { A as emberA } from '@ember/array';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -601,18 +603,21 @@ moduleFor(
 
     ['@test yielding unbound does not update']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           fooBarInstance = this;
-        },
-        model: { foo: 'bork' },
-      });
+        }
+        model = { foo: 'bork' };
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{yield (unbound this.model.foo)}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (unbound this.model.foo)}}`),
+          FooBarComponent
+        )
+      );
 
       this.render(`{{#foo-bar as |value|}}{{value}}{{/foo-bar}}`);
 
@@ -633,18 +638,21 @@ moduleFor(
 
     ['@test yielding unbound hash does not update']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           fooBarInstance = this;
-        },
-        model: { foo: 'bork' },
-      });
+        }
+        model = { foo: 'bork' };
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{yield (unbound (hash foo=this.model.foo))}}`,
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (unbound (hash foo=this.model.foo))}}`),
+          FooBarComponent
+        )
+      );
 
       this.render(`{{#foo-bar as |value|}}{{value.foo}}{{/foo-bar}}`);
 

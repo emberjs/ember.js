@@ -1,4 +1,3 @@
-import EmberObject from '@ember/object';
 import { computed, get, set, setProperties } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -20,16 +19,9 @@ moduleFor(
         @firstNameAlias otherFirstName;
       }
 
-      let Class2 = EmberObject.extend({
-        firstName,
-        otherFirstName: firstNameAlias,
-      });
-
       let obj1 = new Class1();
-      let obj2 = Class2.create();
 
       assert.equal(firstName, obj1.otherFirstName);
-      assert.equal(firstName, obj2.otherFirstName);
     }
 
     ['@test decorator can still have a configuration object'](assert) {

@@ -7,9 +7,9 @@ import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
 /**
-  `Ember.ActionHandler` is available on some familiar classes including
+  `ActionHandler` is available on some familiar classes including
   `Route`, `Component`, and `Controller`.
-  (Internally the mixin is used by `Ember.CoreView`, `Ember.ControllerMixin`,
+  (Internally the mixin is used by `CoreView`, `ControllerMixin`,
   and `Route` and available to the above classes through
   inheritance.)
 

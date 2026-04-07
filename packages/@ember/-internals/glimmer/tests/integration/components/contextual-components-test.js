@@ -6,6 +6,8 @@ import { action } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Components test: contextual components',
@@ -13,9 +15,10 @@ moduleFor(
     ['@test renders with component helper']() {
       let expectedText = 'Hodi';
 
-      this.registerComponent('-looked-up', {
-        template: expectedText,
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(precompileTemplate('Hodi'), class extends Component {})
+      );
 
       this.render('{{component (component "-looked-up")}}');
 
@@ -27,12 +30,15 @@ moduleFor(
     }
 
     ['@test renders with component helper with invocation params, hash']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name'],
-        }),
-        template: '{{this.greeting}} {{this.name}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.greeting}} {{this.name}}'),
+          class extends Component {
+            static positionalParams = ['name'];
+          }
+        )
+      );
 
       this.render(strip`
       {{component (component "-looked-up") "Hodari" greeting="Hodi"}}`);
@@ -45,12 +51,15 @@ moduleFor(
     }
 
     ['@test GH#13742 keeps nested rest positional parameters if rendered with no positional parameters']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: '{{#each this.params as |p|}}{{p}}{{/each}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
+          class extends Component {
+            static positionalParams = 'params';
+          }
+        )
+      );
 
       this.render('{{component (component "-looked-up" this.model.greeting this.model.name)}}', {
         model: {
@@ -80,12 +89,15 @@ moduleFor(
 
     // Take a look at this one. Seems to pass even when currying isn't implemented.
     ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: '{{#each this.params as |p|}}{{p}}{{/each}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
+          class extends Component {
+            static positionalParams = 'params';
+          }
+        )
+      );
 
       this.render(
         '{{component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting}}',
@@ -117,12 +129,15 @@ moduleFor(
     }
 
     ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: '{{#each this.params as |p|}}{{p}}{{/each}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
+          class extends Component {
+            static positionalParams = 'params';
+          }
+        )
+      );
 
       this.render(
         '{{component (component (component "-looked-up" this.model.greeting this.model.name))}}',
@@ -154,12 +169,15 @@ moduleFor(
     }
 
     ['@test overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: '{{#each this.params as |p|}}{{p}}{{/each}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
+          class extends Component {
+            static positionalParams = 'params';
+          }
+        )
+      );
 
       this.render(
         '{{component (component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting)}}',
@@ -191,12 +209,15 @@ moduleFor(
     }
 
     ['@test renders with component helper with curried params, hash']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name'],
-        }),
-        template: '{{this.greeting}} {{this.name}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.greeting}} {{this.name}}'),
+          class extends Component {
+            static positionalParams = ['name'];
+          }
+        )
+      );
 
       this.render(strip`
       {{component (component "-looked-up" "Hodari" greeting="Hodi")
@@ -210,13 +231,15 @@ moduleFor(
     }
 
     ['@test updates when component path is bound']() {
-      this.registerComponent('-mandarin', {
-        template: 'ni hao',
-      });
+      this.owner.register(
+        'component:-mandarin',
+        setComponentTemplate(precompileTemplate('ni hao'), class extends Component {})
+      );
 
-      this.registerComponent('-hindi', {
-        template: 'Namaste',
-      });
+      this.owner.register(
+        'component:-hindi',
+        setComponentTemplate(precompileTemplate('Namaste'), class extends Component {})
+      );
 
       this.render('{{component (component this.model.lookupComponent)}}', {
         model: {
@@ -240,9 +263,10 @@ moduleFor(
     }
 
     ['@test updates when curried hash argument is bound']() {
-      this.registerComponent('-looked-up', {
-        template: '{{this.greeting}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(precompileTemplate('{{this.greeting}}'), class extends Component {})
+      );
 
       this.render(`{{component (component "-looked-up" greeting=this.model.greeting)}}`, {
         model: {
@@ -266,9 +290,10 @@ moduleFor(
     }
 
     ['@test updates when curried hash arguments is bound in block form']() {
-      this.registerComponent('-looked-up', {
-        template: '{{this.greeting}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(precompileTemplate('{{this.greeting}}'), class extends Component {})
+      );
 
       this.render(
         strip`
@@ -298,12 +323,15 @@ moduleFor(
     }
 
     ['@test nested components do not overwrite positional parameters']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age'],
-        }),
-        template: '{{this.name}} {{this.age}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.name}} {{this.age}}'),
+          class extends Component {
+            static positionalParams = ['name', 'age'];
+          }
+        )
+      );
 
       this.render(
         '{{component (component (component "-looked-up" "Sergio" 29) "Marvin" 21) "Hodari"}}'
@@ -317,12 +345,15 @@ moduleFor(
     }
 
     ['@test positional parameters are combined not clobbered']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['greeting', 'name', 'age'],
-        }),
-        template: '{{this.greeting}} {{this.name}} {{this.age}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
+          class extends Component {
+            static positionalParams = ['greeting', 'name', 'age'];
+          }
+        )
+      );
 
       this.render('{{component (component (component "-looked-up" "Hi") "Max") 9}}');
 
@@ -334,9 +365,13 @@ moduleFor(
     }
 
     ['@test nested components overwrite hash parameters']() {
-      this.registerComponent('-looked-up', {
-        template: '{{this.greeting}} {{this.name}} {{this.age}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
+          class extends Component {}
+        )
+      );
 
       this.render(
         strip`
@@ -368,19 +403,25 @@ moduleFor(
     }
 
     ['@test bound outer named parameters get updated in the right scope']() {
-      this.registerComponent('-inner-component', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['comp'],
-        }),
-        template: '{{component this.comp "Inner"}}',
-      });
+      this.owner.register(
+        'component:-inner-component',
+        setComponentTemplate(
+          precompileTemplate('{{component this.comp "Inner"}}'),
+          class extends Component {
+            static positionalParams = ['comp'];
+          }
+        )
+      );
 
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age'],
-        }),
-        template: '{{this.name}} {{this.age}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.name}} {{this.age}}'),
+          class extends Component {
+            static positionalParams = ['name', 'age'];
+          }
+        )
+      );
 
       this.render(
         '{{component "-inner-component" (component "-looked-up" this.model.outerName this.model.outerAge)}}',
@@ -417,16 +458,23 @@ moduleFor(
     }
 
     ['@test bound outer hash parameters get updated in the right scope']() {
-      this.registerComponent('-inner-component', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['comp'],
-        }),
-        template: '{{component this.comp name="Inner"}}',
-      });
+      this.owner.register(
+        'component:-inner-component',
+        setComponentTemplate(
+          precompileTemplate('{{component this.comp name="Inner"}}'),
+          class extends Component {
+            static positionalParams = ['comp'];
+          }
+        )
+      );
 
-      this.registerComponent('-looked-up', {
-        template: '{{this.name}} {{this.age}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.name}} {{this.age}}'),
+          class extends Component {}
+        )
+      );
 
       this.render(
         '{{component "-inner-component" (component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
@@ -465,12 +513,15 @@ moduleFor(
     ['@test conflicting positional and hash parameters does not raise an assertion if rerendered']() {
       // In some cases, rerendering with a positional param used to cause an
       // assertion. This test checks it does not.
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name'],
-        }),
-        template: '{{this.greeting}} {{this.name}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.greeting}} {{this.name}}'),
+          class extends Component {
+            static positionalParams = ['name'];
+          }
+        )
+      );
 
       this.render('{{component (component "-looked-up" this.model.name greeting="Hodi")}}', {
         model: {
@@ -494,7 +545,10 @@ moduleFor(
     }
 
     ['@test component with dynamic component name resolving to undefined, then an existing component']() {
-      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+      );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
         componentName: undefined,
@@ -517,7 +571,10 @@ moduleFor(
     }
 
     ['@test component with dynamic component name resolving to a component, then undefined']() {
-      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+      );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
         componentName: 'foo-bar',
@@ -540,7 +597,10 @@ moduleFor(
     }
 
     ['@test component with dynamic component name resolving to null, then an existing component']() {
-      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+      );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
         componentName: null,
@@ -563,7 +623,10 @@ moduleFor(
     }
 
     ['@test component with dynamic component name resolving to a component, then null']() {
-      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+      );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
         componentName: 'foo-bar',
@@ -611,9 +674,10 @@ moduleFor(
 
     ['@test renders with dot path']() {
       let expectedText = 'Hodi';
-      this.registerComponent('-looked-up', {
-        template: expectedText,
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(precompileTemplate('Hodi'), class extends Component {})
+      );
 
       this.render(strip`
       {{#let (hash lookedup=(component "-looked-up")) as |object|}}
@@ -629,9 +693,13 @@ moduleFor(
 
     ['@test renders with dot path and attr']() {
       let expectedText = 'Hodi';
-      this.registerComponent('-looked-up', {
-        template: '{{this.expectedText}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.expectedText}}'),
+          class extends Component {}
+        )
+      );
 
       this.render(
         strip`
@@ -662,9 +730,13 @@ moduleFor(
 
     ['@test renders with dot path and curried over attr']() {
       let expectedText = 'Hodi';
-      this.registerComponent('-looked-up', {
-        template: '{{this.expectedText}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.expectedText}}'),
+          class extends Component {}
+        )
+      );
 
       this.render(
         strip`
@@ -694,12 +766,15 @@ moduleFor(
     }
 
     ['@test renders with dot path and with rest positional parameters']() {
-      this.registerComponent('-looked-up', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: '{{this.params}}',
-      });
+      this.owner.register(
+        'component:-looked-up',
+        setComponentTemplate(
+          precompileTemplate('{{this.params}}'),
+          class extends Component {
+            static positionalParams = 'params';
+          }
+        )
+      );
 
       let expectedText = 'Hodi';
 
@@ -736,15 +811,16 @@ moduleFor(
       // component itself.
       let value = false;
 
-      this.registerComponent('my-component', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:my-component',
+        class extends Component {
+          static positionalParams = ['value'];
+
           didReceiveAttrs() {
             value = this.getAttr('value');
-          },
-        }).reopenClass({
-          positionalParams: ['value'],
-        }),
-      });
+          }
+        }
+      );
 
       this.render(
         strip`
@@ -758,33 +834,44 @@ moduleFor(
     }
 
     ['@test renders with dot path and updates attributes'](assert) {
-      this.registerComponent('my-nested-component', {
-        ComponentClass: Component.extend({
-          didReceiveAttrs() {
-            this.set('myProp', this.getAttr('my-parent-attr'));
-          },
-        }),
-        template: '<span id="nested-prop">{{this.myProp}}</span>',
-      });
+      this.owner.register(
+        'component:my-nested-component',
+        setComponentTemplate(
+          precompileTemplate('<span id="nested-prop">{{this.myProp}}</span>'),
+          class extends Component {
+            static positionalParams = ['my-parent-attr'];
 
-      this.registerComponent('my-component', {
-        template:
-          '{{yield (hash my-nested-component=(component "my-nested-component" my-parent-attr=this.my-attr))}}',
-      });
+            didReceiveAttrs() {
+              this.set('myProp', this.getAttr('my-parent-attr'));
+            }
+          }
+        )
+      );
 
-      this.registerComponent('my-action-component', {
-        ComponentClass: Component.extend({
-          changeValue: action(function () {
-            this.incrementProperty('myProp');
-          }),
-        }),
-        template: strip`
-        {{#my-component my-attr=this.myProp as |api|}}
-          {{api.my-nested-component}}
-        {{/my-component}}
-        <br>
-        <button onclick={{this.changeValue}}>Change value</button>`,
-      });
+      this.owner.register(
+        'component:my-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{yield (hash my-nested-component=(component "my-nested-component" my-parent-attr=this.my-attr))}}'
+          ),
+          class extends Component {}
+        )
+      );
+
+      this.owner.register(
+        'component:my-action-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#my-component my-attr=this.myProp as |api|}}{{api.my-nested-component}}{{/my-component}}<br><button onclick={{this.changeValue}}>Change value</button>'
+          ),
+          class extends Component {
+            @action
+            changeValue() {
+              this.incrementProperty('myProp');
+            }
+          }
+        )
+      );
 
       this.render('{{my-action-component myProp=this.model.myProp}}', {
         model: {
@@ -814,13 +901,18 @@ moduleFor(
     ["@test adding parameters to a contextual component's instance does not add it to other instances"]() {
       // If parameters and attributes are not handled correctly, setting a value
       // in an invokation can leak to others invocation.
-      this.registerComponent('select-box', {
-        template: '{{yield (hash option=(component "select-box-option"))}}',
-      });
+      this.owner.register(
+        'component:select-box',
+        setComponentTemplate(
+          precompileTemplate('{{yield (hash option=(component "select-box-option"))}}'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('select-box-option', {
-        template: '{{this.label}}',
-      });
+      this.owner.register(
+        'component:select-box-option',
+        setComponentTemplate(precompileTemplate('{{this.label}}'), class extends Component {})
+      );
 
       this.render(strip`
       {{#select-box as |sb|}}
@@ -838,15 +930,17 @@ moduleFor(
     ['@test parameters in a contextual component are mutable when value is a param'](assert) {
       // This checks that a `(mut)` is added to parameters and attributes to
       // contextual components when it is a param.
-      this.registerComponent('change-button', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['val'],
-        }),
-        template: strip`
-        <button {{on "click" (fn (mut this.val) 10)}} class="my-button">
-          Change to 10
-        </button>`,
-      });
+      this.owner.register(
+        'component:change-button',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
+          ),
+          class extends Component {
+            static positionalParams = ['val'];
+          }
+        )
+      );
 
       this.render(
         strip`
@@ -875,9 +969,12 @@ moduleFor(
     }
 
     ['@test tagless blockless components render'](assert) {
-      this.registerComponent('my-comp', {
-        ComponentClass: Component.extend({ tagName: '' }),
-      });
+      this.owner.register(
+        'component:my-comp',
+        class extends Component {
+          tagName = '';
+        }
+      );
 
       this.render(`{{my-comp}}`);
 
@@ -887,23 +984,28 @@ moduleFor(
     }
 
     ['@test GH#13494 tagless blockless component with property binding'](assert) {
-      this.registerComponent('outer-component', {
-        ComponentClass: Component.extend({
-          message: 'hello',
-          change: action(function () {
-            this.set('message', 'goodbye');
-          }),
-        }),
-        template: strip`
-        message: {{this.message}}{{inner-component message=this.message}}
-        <button onclick={{this.change}} />`,
-      });
+      this.owner.register(
+        'component:outer-component',
+        setComponentTemplate(
+          precompileTemplate(
+            'message: {{this.message}}{{inner-component message=this.message}}<button onclick={{this.change}} />'
+          ),
+          class extends Component {
+            message = 'hello';
+            @action
+            change() {
+              this.set('message', 'goodbye');
+            }
+          }
+        )
+      );
 
-      this.registerComponent('inner-component', {
-        ComponentClass: Component.extend({
-          tagName: '',
-        }),
-      });
+      this.owner.register(
+        'component:inner-component',
+        class extends Component {
+          tagName = '';
+        }
+      );
 
       this.render(`{{outer-component}}`);
 
@@ -926,18 +1028,21 @@ moduleFor(
       let instance, previousInstance;
       let initCount = 0;
 
-      this.registerComponent('my-comp', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super();
-            previousInstance = instance;
-            instance = this;
-            initCount++;
-          },
-          isOpen: undefined,
-        }),
-        template: '{{if this.isOpen "open" "closed"}}',
-      });
+      this.owner.register(
+        'component:my-comp',
+        setComponentTemplate(
+          precompileTemplate('{{if this.isOpen "open" "closed"}}'),
+          class extends Component {
+            init() {
+              super.init();
+              previousInstance = instance;
+              instance = this;
+              initCount++;
+            }
+            isOpen = undefined;
+          }
+        )
+      );
 
       this.render(
         strip`
@@ -990,18 +1095,21 @@ moduleFor(
       let instance, previousInstance;
       let initCount = 0;
 
-      this.registerComponent('my-comp', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super();
-            previousInstance = instance;
-            instance = this;
-            initCount++;
-          },
-          isOpen: undefined,
-        }),
-        template: '{{if this.isOpen "open" "closed"}}',
-      });
+      this.owner.register(
+        'component:my-comp',
+        setComponentTemplate(
+          precompileTemplate('{{if this.isOpen "open" "closed"}}'),
+          class extends Component {
+            init() {
+              super.init();
+              previousInstance = instance;
+              instance = this;
+              initCount++;
+            }
+            isOpen = undefined;
+          }
+        )
+      );
 
       this.render(
         strip`
@@ -1055,31 +1163,37 @@ moduleFor(
       let instance, previousInstance;
       let initCount = 0;
 
-      this.registerComponent('my-comp', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super();
-            previousInstance = instance;
-            instance = this;
-            initCount++;
-          },
-          isOpen: undefined,
-        }),
-        template: 'my-comp: {{if this.isOpen "open" "closed"}}',
-      });
+      this.owner.register(
+        'component:my-comp',
+        setComponentTemplate(
+          precompileTemplate('my-comp: {{if this.isOpen "open" "closed"}}'),
+          class extends Component {
+            init() {
+              super.init();
+              previousInstance = instance;
+              instance = this;
+              initCount++;
+            }
+            isOpen = undefined;
+          }
+        )
+      );
 
-      this.registerComponent('your-comp', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super();
-            previousInstance = instance;
-            instance = this;
-            initCount++;
-          },
-          isOpen: undefined,
-        }),
-        template: 'your-comp: {{if this.isOpen "open" "closed"}}',
-      });
+      this.owner.register(
+        'component:your-comp',
+        setComponentTemplate(
+          precompileTemplate('your-comp: {{if this.isOpen "open" "closed"}}'),
+          class extends Component {
+            init() {
+              super.init();
+              previousInstance = instance;
+              instance = this;
+              initCount++;
+            }
+            isOpen = undefined;
+          }
+        )
+      );
 
       this.render(
         strip`
@@ -1146,12 +1260,15 @@ moduleFor(
     }
 
     ['@test GH#14508 rest positional params are received when passed as named parameter']() {
-      this.registerComponent('my-link', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: '{{#each this.params as |p|}}{{p}}{{/each}}',
-      });
+      this.owner.register(
+        'component:my-link',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
+          class extends Component {
+            positionalParams = 'params';
+          }
+        )
+      );
 
       this.render('{{component (component "my-link") params=this.allParams}}', {
         allParams: emberA(['a', 'b']),
@@ -1185,12 +1302,15 @@ moduleFor(
     }
 
     ['@test GH#14508 rest positional params are received when passed as named parameter with dot notation']() {
-      this.registerComponent('my-link', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: '{{#each this.params as |p|}}{{p}}{{/each}}',
-      });
+      this.owner.register(
+        'component:my-link',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
+          class extends Component {
+            positionalParams = 'params';
+          }
+        )
+      );
 
       this.render(
         '{{#let (hash link=(component "my-link")) as |c|}}{{c.link params=this.allParams}}{{/let}}',
@@ -1280,7 +1400,10 @@ moduleFor(
     ['@test GH#17121 local variable should win over helper (without arguments)']() {
       this.registerHelper('foo', () => 'foo helper');
 
-      this.registerComponent('foo-bar', { template: 'foo-bar component' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('foo-bar component'), class extends Component {})
+      );
 
       this.render(strip`
         {{#let (component 'foo-bar') as |foo|}}
@@ -1296,12 +1419,17 @@ moduleFor(
     ['@test GH#17121 local variable should win over helper (with arguments)']() {
       this.registerHelper('foo', (params) => `foo helper: ${params.join(' ')}`);
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: 'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(
+            'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}'
+          ),
+          class extends Component {
+            static positionalParams = 'params';
+          }
+        )
+      );
 
       this.render(strip`
         {{#let (component 'foo-bar') as |foo|}}
@@ -1315,8 +1443,14 @@ moduleFor(
     }
 
     ['@test RFC#311 invoking named args (without arguments)']() {
-      this.registerComponent('x-outer', { template: '{{@inner}}' });
-      this.registerComponent('x-inner', { template: 'inner' });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(precompileTemplate('{{@inner}}'), class extends Component {})
+      );
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(precompileTemplate('inner'), class extends Component {})
+      );
 
       this.render('{{x-outer inner=(component "x-inner")}}');
 
@@ -1326,14 +1460,20 @@ moduleFor(
     }
 
     ['@test RFC#311 invoking named args (with arguments)']() {
-      this.registerComponent('x-outer', { template: '{{@inner 1 2 3}}' });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(precompileTemplate('{{@inner 1 2 3}}'), class extends Component {})
+      );
 
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params',
-        }),
-        template: 'inner:{{#each this.params as |param|}} {{param}}{{/each}}',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('inner:{{#each this.params as |param|}} {{param}}{{/each}}'),
+          class extends Component {
+            static positionalParams = 'params';
+          }
+        )
+      );
 
       this.render('{{x-outer inner=(component "x-inner")}}');
 
@@ -1343,8 +1483,17 @@ moduleFor(
     }
 
     ['@test RFC#311 invoking named args (with a block)']() {
-      this.registerComponent('x-outer', { template: '{{#@inner}}outer{{/@inner}}' });
-      this.registerComponent('x-inner', { template: 'inner {{yield}}' });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate('{{#@inner}}outer{{/@inner}}'),
+          class extends Component {}
+        )
+      );
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(precompileTemplate('inner {{yield}}'), class extends Component {})
+      );
 
       this.render('{{x-outer inner=(component "x-inner")}}');
 
@@ -1354,21 +1503,31 @@ moduleFor(
     }
 
     ['@test GH#18732 (has-block) works within a yielded curried component invoked within mustaches']() {
-      this.registerComponent('component-with-has-block', {
-        ComponentClass: Component.extend(),
-        template: '<div>{{(has-block)}}</div>',
-      });
+      this.owner.register(
+        'component:component-with-has-block',
+        setComponentTemplate(
+          precompileTemplate('<div>{{(has-block)}}</div>'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('yielding-component', {
-        ComponentClass: Component.extend(),
-        template: '{{yield (component "component-with-has-block")}}',
-      });
+      this.owner.register(
+        'component:yielding-component',
+        setComponentTemplate(
+          precompileTemplate('{{yield (component "component-with-has-block")}}'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('test-component', {
-        ComponentClass: Component.extend(),
-        template:
-          '{{#yielding-component as |componentWithHasBlock|}}{{componentWithHasBlock}}{{/yielding-component}}',
-      });
+      this.owner.register(
+        'component:test-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#yielding-component as |componentWithHasBlock|}}{{componentWithHasBlock}}{{/yielding-component}}'
+          ),
+          class extends Component {}
+        )
+      );
 
       this.render('{{test-component}}');
 
@@ -1376,21 +1535,31 @@ moduleFor(
     }
 
     ['@test GH#18732 (has-block) works within a yielded curried component invoked with angle bracket invocation (falsy)']() {
-      this.registerComponent('component-with-has-block', {
-        ComponentClass: Component.extend(),
-        template: '<div>{{(has-block)}}</div>',
-      });
+      this.owner.register(
+        'component:component-with-has-block',
+        setComponentTemplate(
+          precompileTemplate('<div>{{(has-block)}}</div>'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('yielding-component', {
-        ComponentClass: Component.extend(),
-        template: '{{yield (component "component-with-has-block")}}',
-      });
+      this.owner.register(
+        'component:yielding-component',
+        setComponentTemplate(
+          precompileTemplate('{{yield (component "component-with-has-block")}}'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('test-component', {
-        ComponentClass: Component.extend(),
-        template:
-          '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock/>{{/yielding-component}}',
-      });
+      this.owner.register(
+        'component:test-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock/>{{/yielding-component}}'
+          ),
+          class extends Component {}
+        )
+      );
 
       this.render('{{test-component}}');
 
@@ -1398,21 +1567,31 @@ moduleFor(
     }
 
     ['@test GH#18732 (has-block) works within a yielded curried component invoked with angle bracket invocation (truthy)']() {
-      this.registerComponent('component-with-has-block', {
-        ComponentClass: Component.extend(),
-        template: '<div>{{(has-block)}}</div>',
-      });
+      this.owner.register(
+        'component:component-with-has-block',
+        setComponentTemplate(
+          precompileTemplate('<div>{{(has-block)}}</div>'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('yielding-component', {
-        ComponentClass: Component.extend(),
-        template: '{{yield (component "component-with-has-block")}}',
-      });
+      this.owner.register(
+        'component:yielding-component',
+        setComponentTemplate(
+          precompileTemplate('{{yield (component "component-with-has-block")}}'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('test-component', {
-        ComponentClass: Component.extend(),
-        template:
-          '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock></componentWithHasBlock>{{/yielding-component}}',
-      });
+      this.owner.register(
+        'component:test-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock></componentWithHasBlock>{{/yielding-component}}'
+          ),
+          class extends Component {}
+        )
+      );
 
       this.render('{{test-component}}');
 
@@ -1438,15 +1617,17 @@ class MutableParamTestGenerator {
   generate({ title, setup }) {
     return {
       [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
-        this.registerComponent('change-button', {
-          ComponentClass: Component.extend().reopenClass({
-            positionalParams: ['val'],
-          }),
-          template: strip`
-          <button {{on "click" (fn (mut this.val) 10)}} class="my-button">
-            Change to 10
-          </button>`,
-        });
+        this.owner.register(
+          'component:change-button',
+          setComponentTemplate(
+            precompileTemplate(
+              '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
+            ),
+            class extends Component {
+              static positionalParams = ['val'];
+            }
+          )
+        );
 
         setup.call(this, assert);
 
@@ -1481,12 +1662,15 @@ applyMixins(
     {
       title: 'nested param',
       setup() {
-        this.registerComponent('my-comp', {
-          ComponentClass: Component.extend().reopenClass({
-            positionalParams: ['components'],
-          }),
-          template: '{{component this.components.comp}}',
-        });
+        this.owner.register(
+          'component:my-comp',
+          setComponentTemplate(
+            precompileTemplate('{{component this.components.comp}}'),
+            class extends Component {
+              static positionalParams = ['components'];
+            }
+          )
+        );
 
         this.render('{{my-comp (hash comp=(component "change-button" this.model.val2))}}');
       },
@@ -1495,9 +1679,13 @@ applyMixins(
     {
       title: 'hash value',
       setup() {
-        this.registerComponent('my-comp', {
-          template: '{{component this.component}}',
-        });
+        this.owner.register(
+          'component:my-comp',
+          setComponentTemplate(
+            precompileTemplate('{{component this.component}}'),
+            class extends Component {}
+          )
+        );
 
         this.render('{{my-comp component=(component "change-button" val=this.model.val2)}}');
       },
@@ -1506,9 +1694,13 @@ applyMixins(
     {
       title: 'nested hash value',
       setup() {
-        this.registerComponent('my-comp', {
-          template: '{{component this.components.button}}',
-        });
+        this.owner.register(
+          'component:my-comp',
+          setComponentTemplate(
+            precompileTemplate('{{component this.components.button}}'),
+            class extends Component {}
+          )
+        );
 
         this.render(
           '{{my-comp components=(hash button=(component "change-button" val=this.model.val2))}}'

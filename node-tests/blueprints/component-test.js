@@ -11,19 +11,9 @@ const expect = chai.expect;
 
 const fixture = require('../helpers/fixture');
 
-const glimmerComponentContents = `import Component from '@glimmer/component';
-
-export default class Foo extends Component {}
-`;
-
 const emberComponentContents = `import Component from '@ember/component';
 
-export default Component.extend({});
-`;
-
-const templateOnlyContents = `import templateOnly from '@ember/component/template-only';
-
-export default templateOnly();
+export default class extends Component {}
 `;
 
 describe('Blueprint: component', function () {
@@ -37,13 +27,16 @@ describe('Blueprint: component', function () {
     it('component foo', function () {
       return emberGenerateDestroy(['component', 'foo'], (_file) => {
         expect(_file('app/components/foo.js')).to.not.exist;
-        expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
+        expect(_file('app/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
-        expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/app.js', {
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
+              testDescription: 'Integration | Component | foo',
             },
           })
         );
@@ -61,15 +54,18 @@ describe('Blueprint: component', function () {
           'foo',
         ],
         (_file) => {
-          expect(_file('app/components/foo.js')).to.equal(glimmerComponentContents);
+          expect(_file('app/components/foo.js')).to.not.exist;
+          expect(_file('app/components/foo.hbs')).to.not.exist;
+          expect(_file('app/components/foo.gjs')).to.equal(
+            fixture('component/glimmer-component.gjs')
+          );
 
-          expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/app.js', {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
+                testDescription: 'Integration | Component | foo',
               },
             })
           );
@@ -81,13 +77,16 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(
         ['component', '--component-structure', 'flat', 'foo'],
         (_file) => {
-          expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
+          expect(_file('app/components/foo.gjs')).to.equal(
+            fixture('component/template-only-component.gjs')
+          );
 
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/app.js', {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
+                testDescription: 'Integration | Component | foo',
               },
             })
           );
@@ -99,13 +98,16 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(
         ['component', '--component-structure', 'nested', 'foo'],
         (_file) => {
-          expect(_file('app/components/foo/index.hbs')).to.equal('{{yield}}');
+          expect(_file('app/components/foo/index.gjs')).to.equal(
+            fixture('component/template-only-component.gjs')
+          );
 
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/app.js', {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
+                testDescription: 'Integration | Component | foo',
               },
             })
           );
@@ -115,7 +117,7 @@ describe('Blueprint: component', function () {
 
     it('component foo --component-class=@ember/component', function () {
       return emberGenerateDestroy(
-        ['component', '--component-class', '@ember/component', 'foo'],
+        ['component', '--component-class', '@ember/component', '--loose', 'foo'],
         (_file) => {
           expect(_file('app/components/foo.js')).to.equal(emberComponentContents);
 
@@ -137,15 +139,18 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(
         ['component', '--component-class', '@glimmer/component', 'foo'],
         (_file) => {
-          expect(_file('app/components/foo.js')).to.equal(glimmerComponentContents);
+          expect(_file('app/components/foo.js')).to.not.exist;
+          expect(_file('app/components/foo.hbs')).to.not.exist;
+          expect(_file('app/components/foo.gjs')).to.equal(
+            fixture('component/glimmer-component.gjs')
+          );
 
-          expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/app.js', {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
+                testDescription: 'Integration | Component | foo',
               },
             })
           );
@@ -157,15 +162,18 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(
         ['component', '--component-class', '@ember/component/template-only', 'foo'],
         (_file) => {
-          expect(_file('app/components/foo.js')).to.equal(templateOnlyContents);
+          expect(_file('app/components/foo.js')).to.not.exist;
+          expect(_file('app/components/foo.hbs')).to.not.exist;
+          expect(_file('app/components/foo.gjs')).to.equal(
+            fixture('component/template-only-component.gjs')
+          );
 
-          expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/app.js', {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
+                testDescription: 'Integration | Component | foo',
               },
             })
           );
@@ -177,13 +185,16 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(['component', '--no-component-class', 'foo'], (_file) => {
         expect(_file('app/components/foo.js')).to.not.exist;
 
-        expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
+        expect(_file('app/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
-        expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/app.js', {
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
+              testDescription: 'Integration | Component | foo',
             },
           })
         );
@@ -193,13 +204,16 @@ describe('Blueprint: component', function () {
     it('component x-foo', function () {
       return emberGenerateDestroy(['component', 'x-foo'], (_file) => {
         expect(_file('app/components/x-foo.js')).to.not.exist;
-        expect(_file('app/components/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('app/components/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
-        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/app.js', {
+        expect(_file('tests/integration/components/x-foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs', {
             replace: {
               component: 'x-foo',
               componentInvocation: 'XFoo',
+              testDescription: 'Integration | Component | x-foo',
             },
           })
         );
@@ -213,13 +227,16 @@ describe('Blueprint: component', function () {
         expect(_file('app/templates/components/x-foo.js.hbs')).to.not.exist;
         expect(_file('tests/integration/components/x-foo-test.js.js')).to.not.exist;
 
-        expect(_file('app/components/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('app/components/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
-        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/app.js', {
+        expect(_file('tests/integration/components/x-foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs', {
             replace: {
               component: 'x-foo',
               componentInvocation: 'XFoo',
+              testDescription: 'Integration | Component | x-foo',
             },
           })
         );
@@ -229,13 +246,16 @@ describe('Blueprint: component', function () {
     it('component foo/x-foo', function () {
       return emberGenerateDestroy(['component', 'foo/x-foo'], (_file) => {
         expect(_file('app/components/foo/x-foo.js')).to.not.exist;
-        expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('app/components/foo/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
-        expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/app.js', {
+        expect(_file('tests/integration/components/foo/x-foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs', {
             replace: {
               component: 'foo/x-foo',
-              componentInvocation: 'Foo::XFoo',
+              componentInvocation: 'XFoo',
+              testDescription: 'Integration | Component | foo/x-foo',
             },
           })
         );
@@ -246,16 +266,18 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(
         ['component', 'foo/x-foo', '--component-class', '@glimmer/component'],
         (_file) => {
-          expect(_file('app/components/foo/x-foo.js')).to.equal(
-            glimmerComponentContents.replace('Foo', 'FooXFoo')
+          expect(_file('app/components/foo/x-foo.js')).to.not.exist;
+          expect(_file('app/components/foo/x-foo.hbs')).to.not.exist;
+          expect(_file('app/components/foo/x-foo.gjs')).to.equal(
+            fixture('component/glimmer-component.gjs', {}).replace('Foo', 'FooXFoo')
           );
-          expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
-          expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-            fixture('component-test/app.js', {
+          expect(_file('tests/integration/components/foo/x-foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs', {
               replace: {
                 component: 'foo/x-foo',
-                componentInvocation: 'Foo::XFoo',
+                componentInvocation: 'XFoo',
+                testDescription: 'Integration | Component | foo/x-foo',
               },
             })
           );
@@ -270,7 +292,13 @@ describe('Blueprint: component', function () {
         );
 
         expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
-          fixture('component-test/app.gjs')
+          fixture('component-test/app.gjs', {
+            replace: {
+              component: 'foo',
+              componentInvocation: 'Foo',
+              testDescription: 'Integration | Component | foo',
+            },
+          })
         );
       });
     });
@@ -284,7 +312,13 @@ describe('Blueprint: component', function () {
           );
 
           expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
-            fixture('component-test/app.gjs')
+            fixture('component-test/app.gjs', {
+              replace: {
+                component: 'foo',
+                componentInvocation: 'Foo',
+                testDescription: 'Integration | Component | foo',
+              },
+            })
           );
         }
       );
@@ -335,7 +369,9 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(['component', 'foo'], (_file) => {
         expect(_file('addon/components/foo.js')).to.not.exist;
 
-        expect(_file('addon/components/foo.hbs')).to.equal('{{yield}}');
+        expect(_file('addon/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
         expect(_file('app/components/foo.js')).to.contain(
           "export { default } from 'my-addon/components/foo';"
@@ -343,11 +379,12 @@ describe('Blueprint: component', function () {
 
         expect(_file('app/templates/components/foo.js')).to.not.exist;
 
-        expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/addon.js', {
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/addon.gjs', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
+              testDescription: 'Integration | Component | foo',
             },
           })
         );
@@ -358,7 +395,9 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(['component', 'x-foo'], (_file) => {
         expect(_file('addon/components/x-foo.js')).to.not.exist;
 
-        expect(_file('addon/components/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('addon/components/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
         expect(_file('app/components/x-foo.js')).to.contain(
           "export { default } from 'my-addon/components/x-foo';"
@@ -367,11 +406,12 @@ describe('Blueprint: component', function () {
         expect(_file('app/templates/components/x-foo.js')).to.not.exist;
         expect(_file('app/components/x-foo.hbs')).to.not.exist;
 
-        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/addon.js', {
+        expect(_file('tests/integration/components/x-foo-test.gjs')).to.equal(
+          fixture('component-test/addon.gjs', {
             replace: {
               component: 'x-foo',
               componentInvocation: 'XFoo',
+              testDescription: 'Integration | Component | x-foo',
             },
           })
         );
@@ -439,7 +479,9 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(['component', 'foo/x-foo'], (_file) => {
         expect(_file('addon/components/foo/x-foo.js')).to.not.exist;
 
-        expect(_file('addon/components/foo/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('addon/components/foo/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
         expect(_file('app/components/foo/x-foo.js')).to.contain(
           "export { default } from 'my-addon/components/foo/x-foo';"
@@ -447,11 +489,12 @@ describe('Blueprint: component', function () {
 
         expect(_file('app/templates/components/foo/x-foo.js')).to.not.exist;
 
-        expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/addon.js', {
+        expect(_file('tests/integration/components/foo/x-foo-test.gjs')).to.equal(
+          fixture('component-test/addon.gjs', {
             replace: {
               component: 'foo/x-foo',
-              componentInvocation: 'Foo::XFoo',
+              componentInvocation: 'XFoo',
+              testDescription: 'Integration | Component | foo/x-foo',
             },
           })
         );
@@ -462,7 +505,9 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(['component', 'x-foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/components/x-foo.js')).to.not.exist;
 
-        expect(_file('tests/dummy/app/components/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('tests/dummy/app/components/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
 
         expect(_file('app/components/x-foo.js')).to.not.exist;
         expect(_file('app/components/x-foo.hbs')).to.not.exist;
@@ -476,7 +521,9 @@ describe('Blueprint: component', function () {
       return emberGenerateDestroy(['component', 'foo/x-foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/components/foo/x-foo.js')).to.not.exist;
 
-        expect(_file('tests/dummy/app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('tests/dummy/app/components/foo/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
         expect(_file('tests/dummy/app/templates/components/foo/x-foo.hbs')).to.not.exist;
 
         expect(_file('app/components/foo/x-foo.js')).to.not.exist;
@@ -496,7 +543,9 @@ describe('Blueprint: component', function () {
     it('component foo --in-repo-addon=my-addon', function () {
       return emberGenerateDestroy(['component', 'foo', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/components/foo.js')).to.not.exist;
-        expect(_file('lib/my-addon/addon/components/foo.hbs')).to.equal('{{yield}}');
+        expect(_file('lib/my-addon/addon/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
         expect(_file('lib/my-addon/addon/templates/components/foo.hbs')).to.not.exist;
 
         expect(_file('lib/my-addon/app/components/foo.js')).to.contain(
@@ -506,11 +555,12 @@ describe('Blueprint: component', function () {
         expect(_file('lib/my-addon/app/templates/components/foo.js')).to.not.exist;
         expect(_file('lib/my-addon/app/components/foo.hbs')).to.not.exist;
 
-        expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/app.js', {
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
+              testDescription: 'Integration | Component | foo',
             },
           })
         );
@@ -520,7 +570,9 @@ describe('Blueprint: component', function () {
     it('component x-foo --in-repo-addon=my-addon', function () {
       return emberGenerateDestroy(['component', 'x-foo', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/components/x-foo.js')).to.not.exist;
-        expect(_file('lib/my-addon/addon/components/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('lib/my-addon/addon/components/x-foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
         expect(_file('lib/my-addon/addon/templates/components/x-foo.hbs')).to.not.exist;
 
         expect(_file('lib/my-addon/app/components/x-foo.js')).to.contain(
@@ -530,11 +582,12 @@ describe('Blueprint: component', function () {
         expect(_file('lib/my-addon/app/templates/components/x-foo.js')).to.not.exist;
         expect(_file('lib/my-addon/app/components/x-foo.hbs')).to.not.exist;
 
-        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/app.js', {
+        expect(_file('tests/integration/components/x-foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs', {
             replace: {
               component: 'x-foo',
               componentInvocation: 'XFoo',
+              testDescription: 'Integration | Component | x-foo',
             },
           })
         );

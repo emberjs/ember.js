@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/object';
+import { action, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
@@ -15,19 +15,20 @@ moduleFor(
 
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           init() {
-            this._super();
+            super.init();
             component = this;
-          },
-          actions: {
-            foo(message) {
-              assert.equal('bar', message);
-            },
-          },
-        }),
-      });
+          }
+
+          @action
+          foo(message) {
+            assert.equal('bar', message);
+          }
+        }
+      );
 
       this.render('{{foo-bar}}');
 
@@ -47,15 +48,16 @@ moduleFor(
         },
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           init() {
-            this._super();
+            super.init(...arguments);
             component = this;
-          },
-          target,
-        }),
-      });
+          }
+          target = target;
+        }
+      );
 
       this.render('{{foo-bar}}');
 
@@ -67,8 +69,9 @@ moduleFor(
 
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({
           init() {
             this._super(...arguments);
             component = this;
@@ -86,8 +89,8 @@ moduleFor(
               },
             },
           }).create(),
-        }),
-      });
+        })
+      );
 
       this.render('{{foo-bar poke="poke"}}');
 
@@ -99,16 +102,17 @@ moduleFor(
 
       let component;
 
-      let SuperComponent = Component.extend({
-        actions: {
-          foo() {
-            assert.ok(true, 'foo');
-          },
-          bar(msg) {
-            assert.equal(msg, 'HELLO');
-          },
-        },
-      });
+      let SuperComponent = class extends Component {
+        @action
+        foo() {
+          assert.ok(true, 'foo');
+        }
+
+        @action
+        bar(msg) {
+          assert.equal(msg, 'HELLO');
+        }
+      };
 
       let BarViewMixin = Mixin.create({
         actions: {
@@ -119,19 +123,20 @@ moduleFor(
         },
       });
 
-      this.registerComponent('x-index', {
-        ComponentClass: SuperComponent.extend(BarViewMixin, {
+      this.owner.register(
+        'component:x-index',
+        class extends SuperComponent.extend(BarViewMixin) {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             component = this;
-          },
-          actions: {
-            baz() {
-              assert.ok(true, 'baz');
-            },
-          },
-        }),
-      });
+          }
+
+          @action
+          baz() {
+            assert.ok(true, 'baz');
+          }
+        }
+      );
 
       this.render('{{x-index}}');
 
@@ -143,7 +148,7 @@ moduleFor(
     }
 
     ['@test actions cannot be provided at create time'](assert) {
-      this.registerComponent('foo-bar', Component.extend());
+      this.owner.register('component:foo-bar', class extends Component {});
       let ComponentFactory = this.owner.factoryFor('component:foo-bar');
 
       expectAssertion(() => {
@@ -164,18 +169,19 @@ moduleFor(
     ['@test asserts if called on a destroyed component']() {
       let component;
 
-      this.registerComponent('rip-alley', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:rip-alley',
+        class extends Component {
           init() {
-            this._super();
+            super.init(...arguments);
             component = this;
-          },
+          }
 
           toString() {
             return 'component:rip-alley';
-          },
-        }),
-      });
+          }
+        }
+      );
 
       this.render('{{#if this.shouldRender}}{{rip-alley}}{{/if}}', {
         shouldRender: true,

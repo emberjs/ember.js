@@ -1,0 +1,101 @@
+name: PR Title Lint
+
+on:
+  pull_request_target: # This workflow has permissions on the repo, do NOT run code from PRs in this workflow. See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/ # zizmor: ignore[dangerous-triggers] we know what we are doing here
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint-pr-title:
+    name: Lint PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate title
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const title = context.payload.pull_request.title || "";
+
+            const bracketedAllowed = [
+              /^\[BREAKING\]/,
+              /^\[BUGFIX\]/,
+              /^\[BUGFIX beta\]/,
+              /^\[BUGFIX lts\]/,
+              /^\[BUGFIX release\]/,
+              /^\[BUGFIX lts-\d+-\d+\]/,
+              /^\[DOC\]/,
+              /^\[DOC beta\]/,
+              /^\[DOC release\]/,
+              /^\[SECURITY\]/,
+              /^\[SECURITY CVE-\d+\]/,
+              /^\[FEATURE [^\]]+\]/,
+              /^\[CLEANUP\]/
+            ];
+
+            const bracketMatch = title.match(/^\[[^\]]+\]/);
+            if (bracketMatch) {
+              const ok = bracketedAllowed.some((re) => re.test(title));
+              if (!ok) {
+                core.setFailed(
+                  `Invalid bracket tag in PR title: "${bracketMatch[0]}". ` +
+                  "Allowed: [BREAKING], [BUGFIX], [BUGFIX beta], [BUGFIX lts], [BUGFIX release], " +
+                  "[BUGFIX lts-6-8], [DOC], [DOC beta], [DOC release], [SECURITY], [SECURITY CVE-1234], " +
+                  "[FEATURE any-feature-flag-name], [CLEANUP]."
+                );
+              }
+              return;
+            }
+
+            const conventionalMatch = title.match(/^([a-z]+)(\([^)]+\))?:\s/);
+            if (conventionalMatch) {
+              core.setFailed(
+                "Conventional or semantic prefixes are not allowed in PR titles. (ex: `fix:` or `feat:`) " +
+                "Use an allowed bracket tag or no prefix."
+              );
+            }
+
+  comment-if-fix:
+    name: Comment on PR if title includes "Fix" without a bracket tag
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Validate title
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const title = context.payload.pull_request.title || "";
+            const prNumber = context.payload.pull_request.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const marker = "<!-- pr-title-lint-fix-suggestion -->";
+            const bracketMatch = title.match(/^\[[^\]]+\]/);
+            if (!bracketMatch && /\bFix\b/i.test(title)) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number: prNumber
+              });
+
+              const alreadyCommented = comments.some(
+                (comment) =>
+                  comment.user?.type === "Bot" &&
+                  typeof comment.body === "string" &&
+                  comment.body.includes(marker)
+              );
+
+              if (!alreadyCommented) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body:
+                    `${marker}\n` +
+                    "This PR title includes \"Fix\". Should it include `[BUGFIX]` at the start? See https://github.com/emberjs/ember.js/blob/main/CONTRIBUTING.md#commit-tagging"
+                });
+              }
+            }      

@@ -1,34 +1,34 @@
-import Ember from 'ember';
+import EmberObject, { computed } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 function customMacro(message: string) {
-  return Ember.computed(() => {
+  return computed(() => {
     return [message, message];
   });
 }
 
-class Person extends Ember.Object {
+class Person extends EmberObject {
   firstName = '';
   lastName = '';
   age = 0;
 
   // Equivalent to a per-instance `defineProperty` call.
-  @Ember.computed()
+  @computed()
   get noArgs() {
     return 'test';
   }
 
-  @Ember.computed('firstName', 'lastName')
+  @computed('firstName', 'lastName')
   get fullName(): string {
     return `${this.get('firstName')} ${this.get('lastName')}`;
   }
 
-  @(Ember.computed('fullName').readOnly())
+  @(computed('fullName').readOnly())
   get fullNameReadonly() {
     return this.get('fullName');
   }
 
-  @Ember.computed('firstName', 'lastName')
+  @computed('firstName', 'lastName')
   get fullNameWritable(): string {
     return this.get('fullName');
   }
@@ -39,7 +39,7 @@ class Person extends Ember.Object {
     this.set('lastName', last);
   }
 
-  @(Ember.computed().meta({ foo: 'bar' }).readOnly())
+  @(computed().meta({ foo: 'bar' }).readOnly())
   get combinators() {
     return this.get('firstName');
   }
@@ -92,8 +92,8 @@ expectTypeOf(person3.get('firstName')).toEqualTypeOf<string>();
 expectTypeOf(person3.get('fullName')).toEqualTypeOf<string>();
 
 const person4 = Person.extend({
-  firstName: Ember.computed(() => 'Fred'),
-  fullName: Ember.computed(() => 'Fred Smith'),
+  firstName: computed(() => 'Fred'),
+  fullName: computed(() => 'Fred Smith'),
 }).create();
 
 expectTypeOf(person4.get('firstName')).toEqualTypeOf<string>();

@@ -1,6 +1,7 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import { helperCapabilities, setHelperManager } from '@glimmer/manager';
+import { helperCapabilities, setHelperManager, setComponentTemplate } from '@glimmer/manager';
 import { Helper, helper, Component as EmberComponent } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
 import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
@@ -34,10 +35,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('plus-one', {
-        template: `{{this.value}}`,
-        ComponentClass: PlusOne,
-      });
+      this.owner.register(
+        'component:plus-one',
+        setComponentTemplate(precompileTemplate(`{{this.value}}`), PlusOne)
+      );
 
       this.render(`<PlusOne @number={{this.value}} />`, {
         value: 4,
@@ -71,10 +72,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('plus-one', {
-        template: `{{this.value}}`,
-        ComponentClass: PlusOne,
-      });
+      this.owner.register(
+        'component:plus-one',
+        setComponentTemplate(precompileTemplate(`{{this.value}}`), PlusOne)
+      );
 
       this.render(`<PlusOne @number={{this.value}} />`, {
         value: 4,
@@ -126,10 +127,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('plus-one', {
-        template: `{{this.value}}`,
-        ComponentClass: PlusOne,
-      });
+      this.owner.register(
+        'component:plus-one',
+        setComponentTemplate(precompileTemplate(`{{this.value}}`), PlusOne)
+      );
 
       this.render(`<PlusOne />`);
 
@@ -505,10 +506,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('plus-one', {
-        template: `{{this.value}}`,
-        ComponentClass: PlusOne,
-      });
+      this.owner.register(
+        'component:plus-one',
+        setComponentTemplate(precompileTemplate(`{{this.value}}`), PlusOne)
+      );
 
       this.render(`<PlusOne @number={{this.value}} />`, {
         value: 4,

@@ -61,7 +61,7 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
 }
 
 /**
-  `Ember.ProxyMixin` forwards all properties not defined by the proxy itself
+  `ProxyMixin` forwards all properties not defined by the proxy itself
   to a proxied `content` object.  See ObjectProxy for more details.
 
   @class ProxyMixin

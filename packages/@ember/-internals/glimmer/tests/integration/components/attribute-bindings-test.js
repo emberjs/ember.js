@@ -3,19 +3,21 @@ import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-help
 import { set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Attribute bindings integration',
   class extends RenderingTestCase {
     ['@test it can have attribute bindings']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['foo:data-foo', 'bar:data-bar'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['foo:data-foo', 'bar:data-bar'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo bar=this.bar}}', { foo: 'foo', bar: 'bar' });
 
@@ -57,14 +59,14 @@ moduleFor(
     }
 
     ['@test it can have attribute bindings with attrs']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.model.foo baz=this.model.baz}}', {
         model: { foo: undefined, baz: { bar: 'bar' } },
@@ -110,14 +112,14 @@ moduleFor(
     }
 
     ['@test it can have attribute bindings with a nested path']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['foo.bar:data-foo-bar'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['foo.bar:data-foo-bar'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
 
@@ -169,14 +171,14 @@ moduleFor(
     }
 
     ['@test handles non-microsyntax attributeBindings']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['type'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['type'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar type=this.submit}}', {
         submit: 'submit',
@@ -222,14 +224,14 @@ moduleFor(
     }
 
     ['@test non-microsyntax attributeBindings cannot contain nested paths']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['foo.bar'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['foo.bar'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
@@ -237,14 +239,14 @@ moduleFor(
     }
 
     ['@test normalizes attributeBindings for property names']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['tiTLe'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['tiTLe'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar tiTLe=this.name}}', {
         name: 'qux',
@@ -276,14 +278,14 @@ moduleFor(
     }
 
     ['@test normalizes attributeBindings for attribute names']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['foo:data-FOO'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['foo:data-FOO'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo}}', {
         foo: 'qux',
@@ -315,15 +317,15 @@ moduleFor(
     }
 
     ['@test  attributeBindings preserves case for mixed-case attributes']() {
-      let FooBarComponent = Component.extend({
-        tagName: 'svg',
-        attributeBindings: ['viewBox'],
-      });
+      let FooBarComponent = class extends Component {
+        tagName = 'svg';
+        attributeBindings = ['viewBox'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(''), FooBarComponent)
+      );
 
       this.render('{{foo-bar viewBox=this.foo}}', {
         foo: '0 0 100 100',
@@ -351,14 +353,14 @@ moduleFor(
     }
 
     ['@test attributeBindings handles null/undefined']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['fizz', 'bar'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['fizz', 'bar'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar fizz=this.fizz bar=this.bar}}', {
         fizz: null,
@@ -403,14 +405,14 @@ moduleFor(
     }
 
     ['@test attributeBindings handles number value']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['size'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['size'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar size=this.size}}', {
         size: 21,
@@ -449,19 +451,19 @@ moduleFor(
 
     ['@test handles internal and external changes']() {
       let component;
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['type'],
-        type: 'password',
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['type'];
+        type = 'password';
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           component = this;
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -497,12 +499,12 @@ moduleFor(
     }
 
     ['@test can set attributeBindings on component with a different tagName']() {
-      let FooBarComponent = Component.extend({
-        tagName: 'input',
-        attributeBindings: ['type', 'isDisabled:disabled'],
-      });
+      let FooBarComponent = class extends Component {
+        tagName = 'input';
+        attributeBindings = ['type', 'isDisabled:disabled'];
+      };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar type=this.type isDisabled=this.disabled}}', {
         type: 'password',
@@ -543,11 +545,11 @@ moduleFor(
     }
 
     ['@test should allow namespaced attributes in micro syntax']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['xlinkHref:xlink:href'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['xlinkHref:xlink:href'];
+      };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar type=this.type xlinkHref=this.xlinkHref}}', {
         xlinkHref: '/foo.png',
@@ -584,11 +586,11 @@ moduleFor(
     // passed array item is a String, it will be converted into a
     // String object instead of a normal string.
     ['@test should allow for String objects']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['foo'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['foo'];
+      };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar foo=this.foo}}', {
         foo: function () {
@@ -640,11 +642,11 @@ moduleFor(
     }
 
     ['@test can set id initially via attributeBindings ']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['specialSauce:id'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['specialSauce:id'];
+      };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar specialSauce=this.sauce}}', {
         sauce: 'special-sauce',
@@ -678,16 +680,16 @@ moduleFor(
     }
 
     ['@test attributeBindings are overwritten']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['href'],
-        href: 'a href',
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['href'];
+        href = 'a href';
+      };
 
-      let FizzBarComponent = FooBarComponent.extend({
-        attributeBindings: ['newHref:href'],
-      });
+      let FizzBarComponent = class extends FooBarComponent {
+        attributeBindings = ['newHref:href'];
+      };
 
-      this.registerComponent('fizz-bar', { ComponentClass: FizzBarComponent });
+      this.owner.register('component:fizz-bar', FizzBarComponent);
 
       this.render('{{fizz-bar newHref=this.href}}', {
         href: 'dog.html',
@@ -714,9 +716,9 @@ moduleFor(
     }
 
     ['@test it can set attribute bindings in the constructor']() {
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init(...arguments);
 
           let bindings = [];
 
@@ -729,13 +731,13 @@ moduleFor(
           }
 
           this.attributeBindings = bindings;
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render(
         strip`
@@ -868,14 +870,14 @@ moduleFor(
     }
 
     ['@test asserts if an attributeBinding is setup on class']() {
-      let FooBarComponent = Component.extend({
-        attributeBindings: ['class'],
-      });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['class'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -883,15 +885,15 @@ moduleFor(
     }
 
     ['@test blacklists href bindings based on protocol']() {
-      let FooBarComponent = Component.extend({
-        tagName: 'a',
-        attributeBindings: ['href'],
-      });
+      let FooBarComponent = class extends Component {
+        tagName = 'a';
+        attributeBindings = ['href'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar href=this.xss}}', {
         xss: "javascript:alert('foo')",
@@ -904,12 +906,14 @@ moduleFor(
     }
 
     ['@test it can bind the role attribute (issue #14007)']() {
-      let FooBarComponent = Component.extend({ attributeBindings: ['role'] });
+      let FooBarComponent = class extends Component {
+        attributeBindings = ['role'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar role=this.role}}', { role: 'button' });
 
@@ -938,21 +942,23 @@ moduleFor(
     }
 
     ['@test component with an `id` attribute binding of undefined']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['id'],
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          attributeBindings = ['id'];
 
-          id: undefined,
-        }),
-      });
+          id = undefined;
+        }
+      );
 
-      this.registerComponent('baz-qux', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['somethingUndefined:id'],
+      this.owner.register(
+        'component:baz-qux',
+        class extends Component {
+          attributeBindings = ['somethingUndefined:id'];
 
-          somethingUndefined: undefined,
-        }),
-      });
+          somethingUndefined = undefined;
+        }
+      );
       this.render(`{{foo-bar}}{{baz-qux}}`);
 
       this.assertComponentElement(this.nthChild(0), { content: '' });
@@ -963,21 +969,23 @@ moduleFor(
     }
 
     ['@test component with an `id` attribute binding of null']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['id'],
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          attributeBindings = ['id'];
 
-          id: null,
-        }),
-      });
+          id = null;
+        }
+      );
 
-      this.registerComponent('baz-qux', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['somethingNull:id'],
+      this.owner.register(
+        'component:baz-qux',
+        class extends Component {
+          attributeBindings = ['somethingNull:id'];
 
-          somethingNull: null,
-        }),
-      });
+          somethingNull = null;
+        }
+      );
       this.render(`{{foo-bar}}{{baz-qux}}`);
 
       this.assertComponentElement(this.nthChild(0), { content: '' });

@@ -9,10 +9,11 @@
 
   ```app/components/person-profile.js
   import Component from '@ember/component';
+  import { tracked } from '@glimmer/tracking';
 
-  export default Component.extend({
-    name: 'Jill'
-  });
+  export default class extends Component {
+    @tracked name = 'Jill'
+  }
   ```
 
   ```app/components/person-profile.hbs
@@ -455,9 +456,24 @@ export {
   helper,
   type FunctionBasedHelper,
   type FunctionBasedHelperInstance,
+  type HelperFactory,
+  type SimpleHelper,
 } from './lib/helper';
-export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
-export { Renderer, _resetRenderers, renderSettled } from './lib/renderer';
+export {
+  TrustedHTML,
+  SafeString,
+  trustHTML,
+  isTrustedHTML,
+  htmlSafe,
+  isHTMLSafe,
+} from './lib/utils/string';
+export {
+  Renderer,
+  _resetRenderers,
+  renderSettled,
+  renderComponent,
+  type View,
+} from './lib/renderer';
 export {
   getTemplate,
   setTemplate,

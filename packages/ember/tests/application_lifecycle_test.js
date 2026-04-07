@@ -1,13 +1,10 @@
-import {
-  moduleFor,
-  AutobootApplicationTestCase,
-  runTask,
-  defineComponent,
-} from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import { Component } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
@@ -20,9 +17,9 @@ moduleFor(
       let application = super.createApplication(...arguments);
       this.add(
         'router:main',
-        Router.extend({
-          location: 'none',
-        })
+        class extends Router {
+          location = 'none';
+        }
       );
       return application;
     }
@@ -35,14 +32,14 @@ moduleFor(
       runTask(() => {
         this.createApplication();
 
-        let SettingRoute = Route.extend({
+        let SettingRoute = class extends Route {
           setupController() {
             this.controller.set('selectedMenuItem', menuItem);
-          },
+          }
           deactivate() {
             this.controller.set('selectedMenuItem', null);
-          },
-        });
+          }
+        };
         this.add('route:index', SettingRoute);
         this.add('route:application', SettingRoute);
       });
@@ -97,9 +94,9 @@ moduleFor(
       let application = super.createApplication(...arguments);
       this.add(
         'router:main',
-        Router.extend({
-          location: 'none',
-        })
+        class extends Router {
+          location = 'none';
+        }
       );
       return application;
     }
@@ -109,8 +106,8 @@ moduleFor(
     ) {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('index', `Index!`);
-        this.addTemplate('application', `Application! {{outlet}}`);
+        this.add('template:index', precompileTemplate(`Index!`));
+        this.add('template:application', precompileTemplate(`Application! {{outlet}}`));
       });
 
       let router = this.applicationInstance.lookup('router:main');
@@ -129,7 +126,7 @@ moduleFor(
     [`@test initializers can augment an applications customEvents hash`](assert) {
       assert.expect(1);
 
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.initializer({
         name: 'customize-things',
@@ -145,18 +142,17 @@ moduleFor(
 
         this.add(
           'component:foo-bar',
-          defineComponent(
-            {},
-            `<div id='wowza-thingy'></div>`,
-            Component.extend({
+          setComponentTemplate(
+            precompileTemplate(`<div id='wowza-thingy'></div>`),
+            class extends Component {
               wowza() {
                 assert.ok(true, 'fired the event!');
-              },
-            })
+              }
+            }
           )
         );
 
-        this.addTemplate('application', `{{foo-bar}}`);
+        this.add('template:application', precompileTemplate(`{{foo-bar}}`));
       });
 
       this.$('#wowza-thingy').trigger('wowza');
@@ -165,7 +161,7 @@ moduleFor(
     [`@test instanceInitializers can augment an the customEvents hash`](assert) {
       assert.expect(1);
 
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.instanceInitializer({
         name: 'customize-things',
@@ -180,18 +176,17 @@ moduleFor(
 
         this.add(
           'component:foo-bar',
-          defineComponent(
-            {},
-            `<div id='herky-thingy'></div>`,
-            Component.extend({
+          setComponentTemplate(
+            precompileTemplate(`<div id='herky-thingy'></div>`),
+            class extends Component {
               jerky() {
                 assert.ok(true, 'fired the event!');
-              },
-            })
+              }
+            }
           )
         );
 
-        this.addTemplate('application', `{{foo-bar}}`);
+        this.add('template:application', precompileTemplate(`{{foo-bar}}`));
       });
 
       this.$('#herky-thingy').trigger('herky');

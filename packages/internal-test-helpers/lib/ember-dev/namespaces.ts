@@ -6,7 +6,7 @@ export function setupNamespacesCheck(hooks: NestedHooks): void {
     let { assert } = QUnit.config.current;
 
     if (NAMESPACES.length > 0) {
-      assert.ok(false, 'Should not have any NAMESPACES after tests');
+      assert.ok(false, `Should not have any NAMESPACES after tests (had: ${NAMESPACES.join(',')})`);
       run(() => {
         let namespaces = NAMESPACES.slice();
         for (let namespace of namespaces) {

@@ -1,0 +1,272 @@
+name: Reusable CI Jobs
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: linting
+        run: pnpm lint
+      - id: set-matrix
+        working-directory: smoke-tests/scenarios
+        run: |
+          matrix_json=$(pnpm scenario-tester list --require @swc-node/register --files "*-test.ts" --matrix "pnpm run test --filter %s"   )
+          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+
+  types:
+    name: Type Checking (current version)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build types
+        run: pnpm build:types
+      - name: Check internal types
+        run: pnpm type-check:internals
+      - name: Check @handlebars/parser types
+        run: pnpm type-check:handlebars
+      - name: Check published types
+        run: pnpm type-check:types
+
+  types-range:
+    name: Type Checking (other supported versions)
+    runs-on: ubuntu-latest
+    needs: ["types"]
+    strategy:
+      matrix:
+        ts-version: ["5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9"]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build stable type definitions
+        run: pnpm build:types
+      - name: install TS@${{matrix.ts-version}}
+        run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
+      - name: Check published types
+        run: pnpm type-check:types
+
+  build-test:
+    name: package preparation test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          use_lockfile: "false"
+      - name: build
+        run: pnpm build
+      - uses: wyvox/action-no-git-diff@6d1f5759a221e2ea447974af795e395672e33328 # v1.0.1
+
+  basic-test:
+    name: Basic Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build
+        run: pnpm vite build --mode=development
+        env:
+          NODE_ENV: development
+      - name: test
+        run: pnpm test
+
+  variant-tests:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "All deprecations enabled"
+            ALL_DEPRECATIONS_ENABLED: "true"
+          - name: "All deprecations enabled, with optional features"
+            ALL_DEPRECATIONS_ENABLED: "true"
+            ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Deprecations as errors"
+            OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+          - name: "Deprecations as errors, with optional features"
+            OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+            ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Production build"
+            BUILD: "production"
+          - name: "Production build, with optional features"
+            BUILD: "production"
+            ENABLE_OPTIONAL_FEATURES: "true"
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build
+        run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
+        env:
+          NODE_ENV: ${{ matrix.BUILD || 'development' }}
+      - name: test
+        env:
+          ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
+          OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
+          ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
+          RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
+
+        run: pnpm test
+
+  browserstack-test:
+    name: Browserstack Tests (Safari, Edge)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build
+        env:
+          ALL_SUPPORTED_BROWSERS: true
+          NODE_ENV: development
+        run: pnpm vite build --mode=development
+
+      - name: Set BrowserStack Local Identifier
+        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-ember-source')
+        run: |
+          BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
+
+      - name: test:browserstack
+        env:
+          BROWSERSTACK_USERNAME: emberjscoreteam1
+          # This is in plaintext on purpose. It has no privileged access to anything (this is a free
+          # account) and it allows us to run browserstack tests against PRs.
+          BROWSERSTACK_ACCESS_KEY: o5LNEdygq1SP4L9kst4s
+        run: pnpm test:browserstack
+
+  smoke-test:
+    name: Smoke tests (Full Ember Apps)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types, build-test]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.lint.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          use_lockfile: "false"
+      - name: build
+        run: pnpm build
+      - name: test
+        working-directory: smoke-tests/scenarios
+        run: |
+          ${MATRIX_COMMAND}
+        env:
+          MATRIX_COMMAND: ${{ matrix.command }}
+
+  smoke-test-with-deprecations-removed:
+    name: Smoke tests with Deprecations Removed (Full Ember Apps)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types, build-test]
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.lint.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          use_lockfile: "false"
+      - name: build
+        run: pnpm build
+      - name: test
+        env:
+          OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+          MATRIX_COMMAND: ${{ matrix.command }}
+        working-directory: smoke-tests/scenarios
+        run: |
+          ${MATRIX_COMMAND}
+
+  node-test:
+    name: Node.js Tests
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types, build-test]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build
+        env:
+          SHOULD_TRANSPILE_FOR_NODE: true
+        run: pnpm build
+      - name: test
+        run: pnpm test:node && pnpm --filter "@handlebars/parser" test
+
+  blueprint-test:
+    name: Blueprint Tests
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: test
+        run: pnpm test:blueprints
+
+  browser-test:
+    name: Browser Tests (Firefox)
+    runs-on: ubuntu-22.04 # Firefox is not installing on Ubuntu 24 on GitHub Actions https://github.com/browser-actions/setup-firefox/issues/622
+    needs: [basic-test, lint, types]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build
+        run: pnpm vite build --mode=development
+      - name: Setup firefox
+        uses: browser-actions/setup-firefox@fcf821c621167805dd63a29662bd7cb5676c81a8 # v1.7.1
+        with:
+          firefox-version: 115.9.1esr
+      - run: firefox --version
+      - name: test
+        run: pnpm ember test --path dist -c testem.ci-browsers.js
+
+  perf-check:
+    name: Perf script still works
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }} # Don't run on tags
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Check that the perf script works, so we don't regress
+        run: RUNS='2' pnpm bench
+        env:
+          GIT_LFS_SKIP_SMUDGE: 1

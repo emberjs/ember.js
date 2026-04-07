@@ -1,4 +1,4 @@
-import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import type { View } from '@ember/-internals/glimmer';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
@@ -16,7 +16,7 @@ export function isSimpleClick(event: Event): boolean {
     return false;
   }
   let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
-  let secondaryClick = event.which > 1; // IE9 may return undefined
+  let secondaryClick = event.button !== 0;
 
   return !modifier && !secondaryClick;
 }
@@ -120,7 +120,7 @@ export function getChildViews(view: View): View[] {
   return collectChildViews(view, registry);
 }
 
-export function initChildViews(view: View): Set<string> {
+function initChildViews(view: View): Set<string> {
   let childViews: Set<string> = new Set();
   CHILD_VIEW_IDS.set(view, childViews);
   return childViews;
@@ -135,7 +135,7 @@ export function addChildView(parent: View, child: View): void {
   childViews.add(getViewId(child));
 }
 
-export function collectChildViews(view: View, registry: Dict<View>): View[] {
+function collectChildViews(view: View, registry: Dict<View>): View[] {
   let views: View[] = [];
   let childViews = CHILD_VIEW_IDS.get(view);
 
@@ -165,7 +165,7 @@ export function getViewBounds(view: View) {
   @method getViewRange
   @param {Ember.View} view
 */
-export function getViewRange(view: View): Range {
+function getViewRange(view: View): Range {
   let bounds = getViewBounds(view);
 
   let range = document.createRange();
@@ -179,8 +179,7 @@ export function getViewRange(view: View): Range {
   `getViewClientRects` provides information about the position of the border
   box edges of a view relative to the viewport.
 
-  It is only intended to be used by development tools like the Ember Inspector
-  and may not work on older browsers.
+  It is only intended to be used by development tools like the Ember Inspector.
 
   @private
   @method getViewClientRects
@@ -195,45 +194,13 @@ export function getViewClientRects(view: View): DOMRectList {
   `getViewBoundingClientRect` provides information about the position of the
   bounding border box edges of a view relative to the viewport.
 
-  It is only intended to be used by development tools like the Ember Inspector
-  and may not work on older browsers.
+  It is only intended to be used by development tools like the Ember Inspector.
 
   @private
   @method getViewBoundingClientRect
   @param {Ember.View} view
 */
-export function getViewBoundingClientRect(view: View): ClientRect | DOMRect {
+export function getViewBoundingClientRect(view: View): DOMRect {
   let range = getViewRange(view);
   return range.getBoundingClientRect();
-}
-
-/**
-  Determines if the element matches the specified selector.
-
-  @private
-  @method matches
-  @param {DOMElement} el
-  @param {String} selector
-*/
-export const elMatches: typeof Element.prototype.matches | undefined =
-  typeof Element !== 'undefined' ? Element.prototype.matches : undefined;
-
-export function matches(el: Element, selector: string): boolean {
-  assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
-  return elMatches.call(el, selector);
-}
-
-export function contains(a: Node, b: Node): boolean {
-  if (a.contains !== undefined) {
-    return a.contains(b);
-  }
-
-  let current: Nullable<Node> = b.parentNode;
-
-  while (current && (current = current.parentNode)) {
-    if (current === a) {
-      return true;
-    }
-  }
-  return false;
 }

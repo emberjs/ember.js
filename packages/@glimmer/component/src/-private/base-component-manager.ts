@@ -6,9 +6,9 @@ export interface Constructor<T> {
   new (owner: unknown, args: Record<string, unknown>): T;
 }
 
-export default abstract class BaseComponentManager<GlimmerComponent extends BaseComponent>
-  implements ComponentManager<GlimmerComponent>
-{
+export default abstract class BaseComponentManager<
+  GlimmerComponent extends BaseComponent,
+> implements ComponentManager<GlimmerComponent> {
   abstract capabilities: ComponentCapabilities;
 
   private owner: unknown;

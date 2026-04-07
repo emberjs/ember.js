@@ -1,4 +1,5 @@
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { action } from '@ember/object';
 import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import { later } from '@ember/runloop';
@@ -10,10 +11,11 @@ moduleFor(
       assert.expect(12);
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.router.on('routeWillChange', (transition) => {
               assert.ok(transition);
               assert.equal(transition.from, undefined);
@@ -34,8 +36,8 @@ moduleFor(
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.localName, 'index');
             });
-          },
-        })
+          }
+        }
       );
       return this.visit('/');
     }
@@ -46,10 +48,11 @@ moduleFor(
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.router.on('routeWillChange', (transition) => {
               if (toParent) {
                 assert.equal(this.router.currentURL, null, 'starts as null');
@@ -89,8 +92,8 @@ moduleFor(
                 assert.equal(transition.to.name, 'parent.sister');
               }
             });
-          },
-        })
+          }
+        }
       );
       return this.visit('/child').then(() => {
         toParent = false;
@@ -102,18 +105,17 @@ moduleFor(
       let done = assert.async();
       this.add(
         `route:parent.child`,
-        Route.extend({
-          actions: {
-            willTransition(transition) {
-              transition.abort();
-              this.intermediateTransitionTo('parent.sister');
-              later(() => {
-                transition.retry();
-                done();
-              }, 500);
-            },
-          },
-        })
+        class extends Route {
+          @action
+          willTransition(transition) {
+            transition.abort();
+            this.intermediateTransitionTo('parent.sister');
+            later(() => {
+              transition.retry();
+              done();
+            }, 500);
+          }
+        }
       );
 
       return this.visit('/child')
@@ -132,30 +134,33 @@ moduleFor(
 
       this.add(
         `route:parent`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             this.router.transitionTo('parent.child');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:parent.child`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             this.router.transitionTo('parent.sister');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.from, undefined, 'initial');
@@ -177,8 +182,8 @@ moduleFor(
               assert.equal(transition.from, undefined, 'initial');
               assert.equal(transition.to.name, 'parent.sister', 'landed on /sister');
             });
-          },
-        })
+          }
+        }
       );
       return this.visit('/');
     }
@@ -190,30 +195,33 @@ moduleFor(
 
       this.add(
         `route:parent`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             this.router.replaceWith('parent.child');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:parent.child`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             this.router.replaceWith('parent.sister');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.from, undefined, 'initial');
@@ -235,8 +243,8 @@ moduleFor(
               assert.equal(transition.from, undefined, 'initial');
               assert.equal(transition.to.name, 'parent.sister', 'landed on /sister');
             });
-          },
-        })
+          }
+        }
       );
       return this.visit('/');
     }
@@ -248,20 +256,22 @@ moduleFor(
 
       this.add(
         `route:parent.child`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             this.router.transitionTo('parent.sister');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               if (toChild) {
@@ -288,8 +298,8 @@ moduleFor(
                 assert.equal(transition.to.name, 'parent.index', 'landed on /');
               }
             });
-          },
-        })
+          }
+        }
       );
       return this.visit('/').then(() => {
         toChild = true;
@@ -306,20 +316,22 @@ moduleFor(
 
       this.add(
         `route:parent.child`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             this.router.replaceWith('parent.sister');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               if (toChild) {
@@ -346,8 +358,8 @@ moduleFor(
                 assert.equal(transition.to.name, 'parent.index', 'landed on /');
               }
             });
-          },
-        })
+          }
+        }
       );
       return this.visit('/').then(() => {
         toChild = true;
@@ -364,20 +376,21 @@ moduleFor(
 
       this.add(
         `route:parent.child`,
-        Route.extend({
+        class extends Route {
           model(_model, transition) {
             didAbort = true;
             transition.abort();
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               if (didAbort) {
@@ -401,8 +414,8 @@ moduleFor(
                 assert.equal(transition.from, undefined, 'transition aborted');
               }
             });
-          },
-        })
+          }
+        }
       );
       return this.visit('/').then(() => {
         toChild = true;
@@ -420,10 +433,11 @@ moduleFor(
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
@@ -455,8 +469,8 @@ moduleFor(
                 assert.ok(false, 'never');
               }
             });
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/?a=true')
@@ -478,21 +492,23 @@ moduleFor(
 
       this.add(
         `route:parent.child`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             toSister = true;
             this.router.transitionTo('/sister?a=a');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               if (toSister) {
@@ -508,8 +524,8 @@ moduleFor(
               assert.equal(transition.to.name, 'parent.sister');
               assert.deepEqual(transition.to.queryParams, { a: 'a' });
             });
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/child');
@@ -520,21 +536,23 @@ moduleFor(
 
       this.add(
         `route:parent.child`,
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service('router')
+          router;
           model() {
             toSister = true;
             this.router.replaceWith('/sister?a=a');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               if (toSister) {
@@ -550,8 +568,8 @@ moduleFor(
               assert.equal(transition.to.name, 'parent.sister');
               assert.deepEqual(transition.to.queryParams, { a: 'a' });
             });
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/child');
@@ -564,7 +582,7 @@ moduleFor(
 
       this.add(
         'route:dynamic',
-        Route.extend({
+        class extends Route {
           model(params) {
             if (initial) {
               assert.deepEqual(params, { dynamic_id: '123' });
@@ -572,16 +590,17 @@ moduleFor(
               assert.deepEqual(params, { dynamic_id: '1' });
             }
             return params;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'dynamic');
@@ -603,8 +622,8 @@ moduleFor(
                 assert.deepEqual(transition.to.params, { dynamic_id: '1' });
               }
             });
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/dynamic/123').then(() => {
@@ -619,7 +638,7 @@ moduleFor(
 
       this.add(
         'route:dynamicWithChild',
-        Route.extend({
+        class extends Route {
           model(params) {
             if (initial) {
               assert.deepEqual(params, { dynamic_id: '123' });
@@ -627,26 +646,27 @@ moduleFor(
               assert.deepEqual(params, { dynamic_id: '456' });
             }
             return params.dynamic_id;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:dynamicWithChild.child',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { child_id: '456' });
             return params.child_id;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service('router')
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'dynamicWithChild.child');
@@ -677,8 +697,8 @@ moduleFor(
                 assert.deepEqual(transition.to.parent.params, { dynamic_id: '456' });
               }
             });
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/dynamic-with-child/123/456').then(() => {

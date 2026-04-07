@@ -1,22 +1,22 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
-import { compile } from 'ember-template-compiler';
+import { precompileTemplate } from '@ember/template-compilation';
+import templateOnly from '@ember/component/template-only';
 import EmberObject from '@ember/object';
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
-class TemplateOnlyComponentsTest extends RenderingTestCase {
-  registerTemplateOnlyComponent(name, template) {
-    super.registerComponent(name, { template, ComponentClass: null });
-  }
-}
+class TemplateOnlyComponentsTest extends RenderingTestCase {}
 
 moduleFor(
   'Components test: template-only components (glimmer components)',
   class extends TemplateOnlyComponentsTest {
     ['@test it can render a template-only component']() {
-      this.registerTemplateOnlyComponent('foo-bar', 'hello');
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), templateOnly())
+      );
 
       this.render('{{foo-bar}}');
 
@@ -26,7 +26,10 @@ moduleFor(
     }
 
     ['@test it can render named arguments']() {
-      this.registerTemplateOnlyComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('|{{@foo}}|{{@bar}}|'), templateOnly())
+      );
 
       this.render('{{foo-bar foo=this.foo bar=this.bar}}', {
         foo: 'foo',
@@ -51,7 +54,10 @@ moduleFor(
     }
 
     ['@test it does not reflected arguments as properties']() {
-      this.registerTemplateOnlyComponent('foo-bar', '|{{this.foo}}|{{this.bar}}|');
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('|{{this.foo}}|{{this.bar}}|'), templateOnly())
+      );
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
@@ -76,7 +82,10 @@ moduleFor(
     }
 
     ['@test it does not have curly component features']() {
-      this.registerTemplateOnlyComponent('foo-bar', 'hello');
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), templateOnly())
+      );
 
       this.render('{{foo-bar tagName="p" class=class}}', {
         class: 'foo bar',
@@ -100,7 +109,10 @@ moduleFor(
     }
 
     ['@test it has the correct bounds']() {
-      this.registerTemplateOnlyComponent('foo-bar', 'hello');
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), templateOnly())
+      );
 
       this.render('outside {{#if this.isShowing}}before {{foo-bar}} after{{/if}} outside', {
         isShowing: true,
@@ -124,26 +136,36 @@ moduleFor(
     }
 
     ['@test asserts when a shared dependency is changed during rendering, and keeps original context']() {
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          value: 1,
-          wrapper: EmberObject.create({ content: null }),
-        }),
-        template:
-          '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=this.wrapper}}</div>{{x-inner value=this.value wrapper=this.wrapper}}',
-      });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate(
+            '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=this.wrapper}}</div>{{x-inner value=this.value wrapper=this.wrapper}}'
+          ),
+          class extends Component {
+            value = 1;
+            wrapper = EmberObject.create({ content: null });
+          }
+        )
+      );
 
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          didReceiveAttrs() {
-            this.get('wrapper').set('content', this.get('value'));
-          },
-          value: null,
-        }),
-        template: '<div id="inner-value">{{this.wrapper.content}}</div>',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('<div id="inner-value">{{this.wrapper.content}}</div>'),
+          class extends Component {
+            didReceiveAttrs() {
+              this.get('wrapper').set('content', this.get('value'));
+            }
+            value = null;
+          }
+        )
+      );
 
-      this.registerTemplateOnlyComponent('x-inner-template-only', '{{@value}}');
+      this.owner.register(
+        'component:x-inner-template-only',
+        setComponentTemplate(precompileTemplate('{{@value}}'), templateOnly())
+      );
 
       let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
         renderTree: ['x-outer', 'x-inner-template-only', 'this.wrapper.content'],
@@ -160,10 +182,10 @@ moduleFor(
   'Components test: template-only components (using `templateOnlyComponent()`)',
   class extends RenderingTestCase {
     ['@test it can render a component']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: templateOnlyComponent(),
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), templateOnlyComponent())
+      );
 
       this.render('{{foo-bar}}');
 
@@ -174,9 +196,9 @@ moduleFor(
 
     ['@test it can render a component when template was not registered']() {
       let ComponentClass = templateOnlyComponent();
-      setComponentTemplate(compile('hello'), ComponentClass);
+      setComponentTemplate(precompileTemplate('hello'), ComponentClass);
 
-      this.registerComponent('foo-bar', { ComponentClass });
+      this.owner.register('component:foo-bar', ComponentClass);
 
       this.render('{{foo-bar}}');
 
@@ -187,12 +209,9 @@ moduleFor(
 
     ['@test setComponentTemplate takes precedence over registered layout']() {
       let ComponentClass = templateOnlyComponent();
-      setComponentTemplate(compile('hello'), ComponentClass);
+      setComponentTemplate(precompileTemplate('hello'), ComponentClass);
 
-      this.registerComponent('foo-bar', {
-        ComponentClass,
-        resolveableTemplate: 'this should not be rendered',
-      });
+      this.owner.register('component:foo-bar', ComponentClass);
 
       this.render('{{foo-bar}}');
 

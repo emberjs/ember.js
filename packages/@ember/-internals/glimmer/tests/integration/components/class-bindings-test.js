@@ -1,6 +1,8 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -8,14 +10,14 @@ moduleFor(
   'ClassNameBindings integration',
   class extends RenderingTestCase {
     ['@test it can have class name bindings on the class definition']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: ['foo', 'isEnabled:enabled', 'isHappy:happy:sad'],
-      });
+      let FooBarComponent = class extends Component {
+        classNameBindings = ['foo', 'isEnabled:enabled', 'isHappy:happy:sad'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo isEnabled=this.isEnabled isHappy=this.isHappy}}', {
         foo: 'foo',
@@ -73,14 +75,14 @@ moduleFor(
     }
 
     ['@test attrs in classNameBindings']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: ['attrs.joker:purple:green', 'attrs.batman.robin:black:red'],
-      });
+      let FooBarComponent = class extends Component {
+        classNameBindings = ['attrs.joker:purple:green', 'attrs.batman.robin:black:red'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar joker=this.model.wat batman=this.model.super}}', {
         model: { wat: false, super: { robin: true } },
@@ -126,14 +128,14 @@ moduleFor(
     }
 
     ['@test it can have class name bindings with nested paths']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad'],
-      });
+      let FooBarComponent = class extends Component {
+        classNameBindings = ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo is=this.is}}', {
         foo: { bar: 'foo-bar' },
@@ -200,14 +202,14 @@ moduleFor(
     }
 
     ['@test it should dasherize the path when the it resolves to true']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: ['fooBar', 'nested.fooBarBaz'],
-      });
+      let FooBarComponent = class extends Component {
+        classNameBindings = ['fooBar', 'nested.fooBarBaz'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar fooBar=this.fooBar nested=this.nested}}', {
         fooBar: true,
@@ -271,14 +273,14 @@ moduleFor(
     }
 
     ['@test :: class name syntax works with an empty true class']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: ['isEnabled::not-enabled'],
-      });
+      let FooBarComponent = class extends Component {
+        classNameBindings = ['isEnabled::not-enabled'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar isEnabled=this.enabled}}', {
         enabled: false,
@@ -308,14 +310,14 @@ moduleFor(
     }
 
     ['@test uses all provided static class names (issue #11193)']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: [':class-one', ':class-two'],
-      });
+      let FooBarComponent = class extends Component {
+        classNameBindings = [':class-one', ':class-two'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar}}', {
         enabled: false,
@@ -337,14 +339,14 @@ moduleFor(
     }
 
     ['@test Providing a binding with a space in it asserts']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: 'i:think:i am:so:clever',
-      });
+      let FooBarComponent = class extends Component {
+        classNameBindings = ['i:think:i am:so:clever'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -352,16 +354,16 @@ moduleFor(
     }
 
     ['@test it asserts that items must be strings']() {
-      let FooBarComponent = Component.extend({
-        foo: 'foo',
-        bar: 'bar',
-        classNameBindings: ['foo', , 'bar'], // eslint-disable-line no-sparse-arrays
-      });
+      let FooBarComponent = class extends Component {
+        foo = 'foo';
+        bar = 'bar';
+        classNameBindings = ['foo', , 'bar']; // eslint-disable-line no-sparse-arrays
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -369,16 +371,16 @@ moduleFor(
     }
 
     ['@test it asserts that items must be non-empty strings']() {
-      let FooBarComponent = Component.extend({
-        foo: 'foo',
-        bar: 'bar',
-        classNameBindings: ['foo', '', 'bar'],
-      });
+      let FooBarComponent = class extends Component {
+        foo = 'foo';
+        bar = 'bar';
+        classNameBindings = ['foo', '', 'bar'];
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -386,11 +388,11 @@ moduleFor(
     }
 
     ['@test it can set class name bindings in the constructor']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: ['foo'],
+      let FooBarComponent = class extends Component {
+        classNameBindings = ['foo'];
 
         init() {
-          this._super();
+          super.init();
 
           let bindings = (this.classNameBindings = this.classNameBindings.slice());
 
@@ -401,13 +403,13 @@ moduleFor(
           if (this.get('bindIsHappy')) {
             bindings.push('isHappy:happy:sad');
           }
-        },
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render(
         strip`
@@ -544,16 +546,17 @@ moduleFor(
     }
 
     ['@test using a computed property for classNameBindings triggers an assertion']() {
-      let FooBarComponent = Component.extend({
-        classNameBindings: computed(function () {
+      let FooBarComponent = class extends Component {
+        @computed
+        get classNameBindings() {
           return ['isHappy:happy:sad'];
-        }),
-      });
+        }
+      };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');

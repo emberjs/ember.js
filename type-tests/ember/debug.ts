@@ -1,15 +1,8 @@
-import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
-
-const {
-  runInDebug,
-  warn,
-  debug,
-  Debug: { registerDeprecationHandler, registerWarnHandler },
-} = Ember;
+import { debug, assert as EmberAssert, registerDeprecationHandler, registerWarnHandler, runInDebug, warn } from '@ember/debug';
 
 // Workaround for https://github.com/microsoft/TypeScript/issues/36931.
-const assert: typeof Ember.assert = Ember.assert;
+const assert: typeof EmberAssert = EmberAssert;
 
 /**
  * @ember/debug tests

@@ -1,4 +1,4 @@
-import type { ResolverClass } from '@ember/-internals/container/lib/registry';
+import type { ResolverClass } from '@ember/-internals/container';
 import type { default as Owner, RegisterOptions, Factory } from '@ember/owner';
 import type Namespace from '@ember/application/namespace';
 import type { Initializer } from '@ember/engine';

@@ -2,12 +2,16 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { Helper, helper } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Application Lifecycle - Helper Registration',
   class extends ApplicationTestCase {
     ['@test Unbound dashed helpers registered on the container can be late-invoked'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`);
+      this.add(
+        'template:application',
+        precompileTemplate(`<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`)
+      );
 
       let myHelper = helper((params) => params[0] || 'BORF');
       this.application.register('helper:x-borf', myHelper);
@@ -22,16 +26,16 @@ moduleFor(
     }
 
     ['@test Bound helpers registered on the container can be late-invoked'](assert) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{x-reverse}} {{x-reverse this.foo}}</div>`
+      this.add(
+        'template:application',
+        precompileTemplate(`<div id='wrapper'>{{x-reverse}} {{x-reverse this.foo}}</div>`)
       );
 
       this.add(
         'controller:application',
-        Controller.extend({
-          foo: 'alex',
-        })
+        class extends Controller {
+          foo = 'alex';
+        }
       );
 
       this.application.register(
@@ -51,9 +55,9 @@ moduleFor(
     }
 
     ['@test Undashed helpers registered on the container can be invoked'](assert) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`
+      this.add(
+        'template:application',
+        precompileTemplate(`<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`)
       );
 
       this.application.register(
@@ -76,27 +80,29 @@ moduleFor(
     }
 
     ['@test Helpers can receive injections'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{full-name}}</div>`);
+      this.add('template:application', precompileTemplate(`<div id='wrapper'>{{full-name}}</div>`));
 
       let serviceCalled = false;
 
       this.add(
         'service:name-builder',
-        Service.extend({
+        class extends Service {
           build() {
             serviceCalled = true;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'helper:full-name',
-        Helper.extend({
-          nameBuilder: service('name-builder'),
+        class extends Helper {
+          @service('name-builder')
+          nameBuilder;
+
           compute() {
             this.get('nameBuilder').build();
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {

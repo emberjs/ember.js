@@ -1,5 +1,4 @@
 import { DEBUG } from '@glimmer/env';
-import global from './global';
 
 /**
   The hash of environment variables used to control various configuration
@@ -145,24 +144,20 @@ export const ENV = {
    */
   _RERENDER_LOOP_LIMIT: 1000,
 
-  EMBER_LOAD_HOOKS: {} as {
-    [hook: string]: Function[];
-  },
-
   FEATURES: {} as {
     [feature: string]: boolean;
   },
 };
 
-((
-  EmberENV: Record<string, unknown> & {
-    EXTEND_PROTOTYPES?: { Array?: boolean } | boolean;
-    EMBER_LOAD_HOOKS?: Record<string, unknown>;
-    FEATURES?: Record<string, unknown>;
-  }
-) => {
-  if (typeof EmberENV !== 'object' || EmberENV === null) return;
+interface EmberENVConfig extends Record<string, unknown> {
+  EXTEND_PROTOTYPES?: boolean;
+  EMBER_LOAD_HOOKS?: Record<string, unknown>;
+  FEATURES?: Record<string, unknown>;
+}
 
+const EmberENV = (globalThis as { EmberENV?: EmberENVConfig }).EmberENV;
+
+if (typeof EmberENV === 'object' && EmberENV !== null) {
   for (let flag in EmberENV) {
     if (
       !Object.prototype.hasOwnProperty.call(EmberENV, flag) ||
@@ -180,30 +175,6 @@ export const ENV = {
     }
   }
 
-  // TODO: Remove in Ember 6.5. This setting code for EXTEND_PROTOTYPES
-  // should stay for at least an LTS cycle so that users get the explicit
-  // deprecation exception when it breaks in >= 6.0.0.
-  let { EXTEND_PROTOTYPES } = EmberENV;
-  if (EXTEND_PROTOTYPES !== undefined) {
-    if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {
-      ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES.Array !== false;
-    } else {
-      ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES !== false;
-    }
-  }
-
-  // TODO this does not seem to be used by anything,
-  //      can we remove it? do we need to deprecate it?
-  let { EMBER_LOAD_HOOKS } = EmberENV;
-  if (typeof EMBER_LOAD_HOOKS === 'object' && EMBER_LOAD_HOOKS !== null) {
-    for (let hookName in EMBER_LOAD_HOOKS) {
-      if (!Object.prototype.hasOwnProperty.call(EMBER_LOAD_HOOKS, hookName)) continue;
-      let hooks = EMBER_LOAD_HOOKS[hookName];
-      if (Array.isArray(hooks)) {
-        ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter((hook) => typeof hook === 'function');
-      }
-    }
-  }
   let { FEATURES } = EmberENV;
   if (typeof FEATURES === 'object' && FEATURES !== null) {
     for (let feature in FEATURES) {
@@ -215,7 +186,7 @@ export const ENV = {
   if (DEBUG) {
     ENV._DEBUG_RENDER_TREE = true;
   }
-})(global.EmberENV);
+}
 
 export function getENV(): object {
   return ENV;

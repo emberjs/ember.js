@@ -1,10 +1,11 @@
 import { service } from '@ember/service';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
-import { get } from '@ember/object';
+import { action, get } from '@ember/object';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
 import { RouterNonApplicationTestCase, moduleFor } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Router Service - non application test',
@@ -12,7 +13,12 @@ moduleFor(
     constructor() {
       super(...arguments);
 
-      this.resolver.add('router:main', Router.extend(this.routerOptions));
+      this.resolver.add(
+        'router:main',
+        class extends Router {
+          location = 'none';
+        }
+      );
       this.router.map(function () {
         this.route('parent', { path: '/' }, function () {
           this.route('child');
@@ -80,25 +86,25 @@ moduleFor(
       let router = this.owner.lookup('router:main');
       router.setupRouter();
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
 
-      let FooBar = Component.extend({
-        routerService: service('router'),
-        layout: this.compile('foo-bar'),
+      let self = this;
+
+      let FooBar = class extends Component {
+        @service('router')
+        routerService;
+        layout = self.compile('foo-bar');
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           componentInstance = this;
-        },
-        actions: {
-          transitionToSister() {
-            get(this, 'routerService').transitionTo('parent.sister');
-          },
-        },
-      });
+        }
+        @action
+        transitionToSister() {
+          get(this, 'routerService').transitionTo('parent.sister');
+        }
+      };
 
-      this.addComponent('foo-bar', {
-        ComponentClass: FooBar,
-      });
+      this.add('component:foo-bar', FooBar);
 
       this.render('{{foo-bar}}');
 

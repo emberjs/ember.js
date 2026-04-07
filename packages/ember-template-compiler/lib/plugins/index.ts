@@ -1,3 +1,4 @@
+import type { ASTPluginBuilder } from '@glimmer/syntax';
 import AssertAgainstAttrs from './assert-against-attrs';
 import AssertAgainstNamedOutlets from './assert-against-named-outlets';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
@@ -9,8 +10,9 @@ import TransformInElement from './transform-in-element';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
+import AutoImportBuiltins from './auto-import-builtins';
 
-export const INTERNAL_PLUGINS = {
+export const INTERNAL_PLUGINS: Record<string, ASTPluginBuilder> = {
   AssertAgainstAttrs,
   AssertAgainstNamedOutlets,
   AssertInputHelperWithoutBlock,
@@ -25,7 +27,7 @@ export const INTERNAL_PLUGINS = {
 } as const;
 
 // order of plugins is important
-export const RESOLUTION_MODE_TRANSFORMS = Object.freeze([
+export const RESOLUTION_MODE_TRANSFORMS: readonly ASTPluginBuilder[] = Object.freeze([
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
   TransformActionSyntax,
@@ -39,7 +41,8 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze([
   TransformResolutions,
 ]);
 
-export const STRICT_MODE_TRANSFORMS = Object.freeze([
+export const STRICT_MODE_TRANSFORMS: readonly ASTPluginBuilder[] = Object.freeze([
+  AutoImportBuiltins,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
   TransformActionSyntax,

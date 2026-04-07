@@ -2,6 +2,9 @@ import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-he
 
 import Service, { service } from '@ember/service';
 import { Component, Helper } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
+import templateOnly from '@ember/component/template-only';
 
 function expect(value) {
   if (!value) {
@@ -26,22 +29,22 @@ moduleFor(
 
       this.add(
         'service:reloader',
-        Service.extend({
+        class extends Service {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.revisions = {};
             this.callbacks = [];
 
             didCreateReloader(this);
-          },
+          }
 
           onReload(callback) {
             this.callbacks.push(callback);
-          },
+          }
 
           revisionFor(name) {
             return this.revisions[name];
-          },
+          }
 
           invalidate(name) {
             let revision = this.revisions[name];
@@ -53,19 +56,20 @@ moduleFor(
             this.revisions[name] = ++revision;
 
             this.callbacks.forEach((callback) => callback());
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'helper:hot-reload',
-        Helper.extend({
-          reloader: service(),
+        class extends Helper {
+          @service
+          reloader;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.reloader.onReload(() => this.recompute());
-          },
+          }
 
           compute([name]) {
             let revision = this.reloader.revisionFor(name);
@@ -75,44 +79,51 @@ moduleFor(
             } else {
               return `${name}--hot-reload-${revision}`;
             }
-          },
-        })
+          }
+        }
       );
     }
 
-    hotReload(name, template) {
+    hotReload(name, compiledTemplate) {
       let reloader = expect(this.reloader);
       let revision = (reloader.revisionFor(name) || 0) + 1;
       let ComponentClass =
         this.applicationInstance.resolveRegistration(`component:${name}`) || null;
 
-      this.addComponent(`${name}--hot-reload-${revision}`, {
-        ComponentClass,
-        template,
-      });
+      // Create a fresh class/instance so setComponentTemplate doesn't collide
+      // with the template already set on the existing class
+      let FreshClass;
+      if (ComponentClass && 'extend' in ComponentClass) {
+        FreshClass = ComponentClass.extend({});
+      } else {
+        FreshClass = templateOnly();
+      }
+
+      this.add(
+        `component:${name}--hot-reload-${revision}`,
+        setComponentTemplate(compiledTemplate, FreshClass)
+      );
 
       reloader.invalidate(name);
     }
 
     ['@test hot reloading template-only components']() {
-      this.addTemplate(
-        'application',
-        strip`
-          [{{component (hot-reload "x-foo") name="first"}}]
-          [{{component (hot-reload "x-foo") name="second"}}]
-          [{{component (hot-reload "x-bar")}}]
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          '[{{component (hot-reload "x-foo") name="first"}}][{{component (hot-reload "x-foo") name="second"}}][{{component (hot-reload "x-bar")}}]'
+        )
       );
 
-      this.addComponent('x-foo', {
-        ComponentClass: null,
-        template: 'x-foo: {{@name}}',
-      });
+      this.add(
+        'component:x-foo',
+        setComponentTemplate(precompileTemplate('x-foo: {{@name}}'), templateOnly())
+      );
 
-      this.addComponent('x-bar', {
-        ComponentClass: null,
-        template: 'x-bar',
-      });
+      this.add(
+        'component:x-bar',
+        setComponentTemplate(precompileTemplate('x-bar'), templateOnly())
+      );
 
       return this.visit('/').then(() => {
         this.assertInnerHTML(strip`
@@ -122,7 +133,7 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-foo', '<h1>{{@name}}</h1>');
+          this.hotReload('x-foo', precompileTemplate('<h1>{{@name}}</h1>'));
         });
 
         this.assertInnerHTML(strip`
@@ -132,7 +143,7 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-bar', '<h2>wow</h2>');
+          this.hotReload('x-bar', precompileTemplate('<h2>wow</h2>'));
         });
 
         this.assertInnerHTML(strip`
@@ -142,7 +153,7 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-foo', '<strong>x-foo</strong> <em>{{@name}}</em>');
+          this.hotReload('x-foo', precompileTemplate('<strong>x-foo</strong> <em>{{@name}}</em>'));
         });
 
         this.assertInnerHTML(strip`
@@ -152,8 +163,8 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-foo', 'x-foo: {{@name}}');
-          this.hotReload('x-bar', 'x-bar');
+          this.hotReload('x-foo', precompileTemplate('x-foo: {{@name}}'));
+          this.hotReload('x-bar', precompileTemplate('x-bar'));
         });
 
         this.assertInnerHTML(strip`
@@ -165,38 +176,42 @@ moduleFor(
     }
 
     ['@test hot reloading class-based components']() {
-      this.addTemplate(
-        'application',
-        strip`
-          [{{component (hot-reload "x-foo") name="first"}}]
-          [{{component (hot-reload "x-foo") name="second"}}]
-          [{{component (hot-reload "x-bar")}}]
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          '[{{component (hot-reload "x-foo") name="first"}}][{{component (hot-reload "x-foo") name="second"}}][{{component (hot-reload "x-bar")}}]'
+        )
       );
 
       let id = 0;
 
-      this.addComponent('x-foo', {
-        ComponentClass: Component.extend({
-          tagName: '',
-          init() {
-            this._super(...arguments);
-            this.set('id', id++);
-          },
-        }),
-        template: 'x-foo: {{@name}} ({{this.id}})',
-      });
+      this.add(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate('x-foo: {{@name}} ({{this.id}})'),
+          class extends Component {
+            tagName = '';
+            init() {
+              super.init(...arguments);
+              this.set('id', id++);
+            }
+          }
+        )
+      );
 
-      this.addComponent('x-bar', {
-        ComponentClass: Component.extend({
-          tagName: '',
-          init() {
-            this._super(...arguments);
-            this.set('id', id++);
-          },
-        }),
-        template: 'x-bar ({{this.id}})',
-      });
+      this.add(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate('x-bar ({{this.id}})'),
+          class extends Component {
+            tagName = '';
+            init() {
+              super.init(...arguments);
+              this.set('id', id++);
+            }
+          }
+        )
+      );
 
       return this.visit('/').then(() => {
         this.assertInnerHTML(strip`
@@ -206,7 +221,7 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-foo', '<h1>{{@name}} ({{this.id}})</h1>');
+          this.hotReload('x-foo', precompileTemplate('<h1>{{@name}} ({{this.id}})</h1>'));
         });
 
         this.assertInnerHTML(strip`
@@ -216,7 +231,7 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-bar', '<h2>wow ({{this.id}})</h2>');
+          this.hotReload('x-bar', precompileTemplate('<h2>wow ({{this.id}})</h2>'));
         });
 
         this.assertInnerHTML(strip`
@@ -226,7 +241,10 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-foo', '<strong>x-foo</strong> <em>{{@name}} ({{this.id}})</em>');
+          this.hotReload(
+            'x-foo',
+            precompileTemplate('<strong>x-foo</strong> <em>{{@name}} ({{this.id}})</em>')
+          );
         });
 
         this.assertInnerHTML(strip`
@@ -236,8 +254,8 @@ moduleFor(
         `);
 
         runTask(() => {
-          this.hotReload('x-foo', 'x-foo: {{@name}} ({{this.id}})');
-          this.hotReload('x-bar', 'x-bar ({{this.id}})');
+          this.hotReload('x-foo', precompileTemplate('x-foo: {{@name}} ({{this.id}})'));
+          this.hotReload('x-bar', precompileTemplate('x-bar ({{this.id}})'));
         });
 
         this.assertInnerHTML(strip`

@@ -16,9 +16,9 @@ import { internalHelper } from './internal-helper';
   To specify that a binding is read-only, when invoking the child `Component`:
 
   ```app/components/my-parent.js
-  export default Component.extend({
-    totalClicks: 3
-  });
+  export default class MyParent extends Component {
+    totalClicks = 3;
+  }
   ```
 
   ```app/templates/components/my-parent.hbs
@@ -32,11 +32,11 @@ import { internalHelper } from './internal-helper';
   Now, when you update `childClickCount`:
 
   ```app/components/my-child.js
-  export default Component.extend({
+  export default class MyChild extends Component {
     click() {
       this.incrementProperty('childClickCount');
     }
-  });
+  }
   ```
 
   The value updates in the child component, but not the parent component:
@@ -69,14 +69,14 @@ import { internalHelper } from './internal-helper';
   ```app/components/my-parent.js
   import Component from '@ember/component';
 
-  export default Component.extend({
+  export default class MyParent extends Component {
     clicks: null,
 
     init() {
       this._super(...arguments);
       this.set('clicks', { total: 3 });
     }
-  });
+  }
   ```
 
   ```app/templates/components/my-parent.hbs
@@ -93,11 +93,11 @@ import { internalHelper } from './internal-helper';
   ```app/components/my-child.js
   import Component from '@ember/component';
 
-  export default Component.extend({
+  export default class MyChild extends Component {
     click() {
       this.get('clicks').incrementProperty('total');
     }
-  });
+  }
   ```
 
   You will see the following happen:

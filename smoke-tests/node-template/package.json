@@ -1,0 +1,15 @@
+{
+  "name": "ember-test-node-template",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node-focused smoke test template for ember-source",
+  "scripts": {
+    "test:node": "qunit tests/node/**/*-test.js"
+  },
+  "dependencies": {
+    "html-differ": "^1.4.0",
+    "qunit": "^2.20.1",
+    "simple-dom": "^1.4.0"
+  }
+}

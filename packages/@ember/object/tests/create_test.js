@@ -80,13 +80,14 @@ moduleFor(
 
     ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
       if (DEBUG) {
-        let MyClass = EmberObject.extend({
-          foo: null,
-          bar: null,
-          fooAlias: computed('foo', function () {
+        let MyClass = class extends EmberObject {
+          foo = null;
+          bar = null;
+          @computed('foo')
+          get fooAlias() {
             return this.foo;
-          }),
-        });
+          }
+        };
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
         assert.equal(o.get('fooAlias'), 'bar');
@@ -105,11 +106,12 @@ moduleFor(
 
     ['@test sets up mandatory setters for simple properties watched with aliases'](assert) {
       if (DEBUG) {
-        let MyClass = EmberObject.extend({
-          foo: null,
-          bar: null,
-          fooAlias: alias('foo'),
-        });
+        let MyClass = class extends EmberObject {
+          foo = null;
+          bar = null;
+          @alias('foo')
+          fooAlias;
+        };
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
         assert.equal(o.get('fooAlias'), 'bar');
@@ -166,11 +168,11 @@ moduleFor(
     ['@test calls setUnknownProperty if undefined'](assert) {
       let setUnknownPropertyCalled = false;
 
-      let MyClass = EmberObject.extend({
+      let MyClass = class extends EmberObject {
         setUnknownProperty(/* key, value */) {
           setUnknownPropertyCalled = true;
-        },
-      });
+        }
+      };
 
       MyClass.create({ foo: 'bar' });
       assert.ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
@@ -233,17 +235,19 @@ moduleFor(
       let options = {};
       setOwner(options, owner);
 
-      EmberObject.extend({
+      let ProxyClass = class extends EmberObject {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           let localOwner = getOwner(this);
 
           assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
-        },
+        }
         unknownProperty() {
           return undefined;
-        },
-      }).create(options);
+        }
+      };
+
+      ProxyClass.create(options);
     }
 
     ['@test does not create enumerable properties for owner and init factory when created by the container factory'](

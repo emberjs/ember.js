@@ -7,15 +7,15 @@ moduleFor(
     ['@test works with getters'](assert) {
       let value = 'building';
 
-      let Base = EmberObject.extend({
+      let Base = class extends EmberObject {
         get foo() {
           if (value === 'building') {
             throw Error('base should not be called yet');
           }
 
           return "base's foo";
-        },
-      });
+        }
+      };
 
       // force Base to be finalized so its properties will contain `foo`
       Base.proto();
@@ -32,15 +32,15 @@ moduleFor(
 
       Child.proto();
 
-      let Grandchild = Child.extend({
+      let Grandchild = class extends Child {
         get foo() {
           if (value === 'building') {
             throw Error('grandchild should not be called yet');
           }
 
           return value;
-        },
-      });
+        }
+      };
 
       let instance = Grandchild.create();
 

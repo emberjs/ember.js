@@ -1,13 +1,15 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import Mixin from '@ember/object/mixin';
+import Route from '@ember/routing/route';
 import { expectTypeOf } from 'expect-type';
 
-interface EditableMixin extends Ember.Mixin {
+interface EditableMixin extends Mixin {
   edit(): void;
   isEditing: boolean;
 }
 
-const EditableMixin = Ember.Mixin.create({
-  edit(this: EditableMixin & Ember.Object) {
+const EditableMixin = Mixin.create({
+  edit(this: EditableMixin & EmberObject) {
     this.get('controller');
     console.log('starting to edit');
     this.set('isEditing', true);
@@ -16,7 +18,7 @@ const EditableMixin = Ember.Mixin.create({
 });
 
 interface EditableComment extends EditableMixin {}
-class EditableComment extends Ember.Route.extend(EditableMixin) {
+class EditableComment extends Route.extend(EditableMixin) {
   postId = 0;
 
   canEdit() {
@@ -41,7 +43,7 @@ expectTypeOf(comment.isEditing).toBeBoolean();
 expectTypeOf(comment.postId).toBeNumber();
 
 // We do not expect this to update the type; we do expect it to minimally check
-const LiteralMixins = Ember.Object.extend({ a: 1 }, { b: 2 }, { c: 3 });
+const LiteralMixins = EmberObject.extend({ a: 1 }, { b: 2 }, { c: 3 });
 const obj = LiteralMixins.create();
 // @ts-expect-error
 obj.a;
@@ -54,12 +56,12 @@ obj.c;
 interface EditableAndCancelableMixin extends EditableMixin {
   cancelled: boolean;
 }
-const EditableAndCancelableMixin = Ember.Mixin.create(EditableMixin, {
+const EditableAndCancelableMixin = Mixin.create(EditableMixin, {
   cancelled: false,
 });
 
 interface EditableAndCancelableComment extends EditableAndCancelableMixin {}
-class EditableAndCancelableComment extends Ember.Route.extend(EditableAndCancelableMixin) {}
+class EditableAndCancelableComment extends Route.extend(EditableAndCancelableMixin) {}
 
 const editableAndCancelable = EditableAndCancelableComment.create();
 expectTypeOf(editableAndCancelable.isEditing).toBeBoolean();

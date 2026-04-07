@@ -6,7 +6,7 @@ moduleFor(
   'system/object/reopenClass',
   class extends AbstractTestCase {
     ['@test adds new properties to subclass'](assert) {
-      let Subclass = EmberObject.extend();
+      let Subclass = class extends EmberObject {};
       Subclass.reopenClass({
         foo() {
           return 'FOO';
@@ -19,7 +19,7 @@ moduleFor(
     }
 
     ['@test class properties inherited by subclasses'](assert) {
-      let Subclass = EmberObject.extend();
+      let Subclass = class extends EmberObject {};
       Subclass.reopenClass({
         foo() {
           return 'FOO';
@@ -27,7 +27,7 @@ moduleFor(
         bar: 'BAR',
       });
 
-      let SubSub = Subclass.extend();
+      let SubSub = class extends Subclass {};
 
       assert.equal(SubSub.foo(), 'FOO', 'Adds method');
       assert.equal(get(SubSub, 'bar'), 'BAR', 'Adds property');

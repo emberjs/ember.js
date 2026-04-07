@@ -1,9 +1,11 @@
+import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,
   STRICT_MODE_KEYWORDS,
   STRICT_MODE_TRANSFORMS,
 } from './plugins/index';
+import { ALLOWED_GLOBALS } from './plugins/allowed-globals';
 import type { EmberPrecompileOptions, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
@@ -13,11 +15,22 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
+/**
+ * The variable name used to inject the keywords object into the
+ * template's evaluation scope. auto-import-builtins rewrites bare
+ * keyword references (e.g. `on`) to property accesses on this
+ * variable (e.g. `__ember_keywords__.on`).
+ */
+export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
+
+export const keywords: Record<string, unknown> = {
+  on,
+};
+
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
 
-  let options: EmberPrecompileOptions & Partial<EmberPrecompileOptions> = {
-    meta: {},
+  let options = {
     isProduction: false,
     plugins: { ast: [] },
     ..._options,
@@ -34,11 +47,33 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     },
   };
 
-  if ('eval' in options) {
-    const localScopeEvaluator = options.eval as (value: string) => unknown;
+  options.meta ||= {};
+  options.meta.emberRuntime ||= {
+    lookupKeyword(name: string): string {
+      assert(
+        `${name} is not a known keyword. Available keywords: ${Object.keys(keywords).join(', ')}`,
+        name in keywords
+      );
+
+      return `${RUNTIME_KEYWORDS_NAME}.${name}`;
+    },
+  };
+
+  if ('eval' in options && options.eval) {
+    const localScopeEvaluator = options.eval;
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
+      // The keywords container variable is always "in scope" —
+      // we inject it via the evaluator in template.ts.
+      if (variable === RUNTIME_KEYWORDS_NAME) {
+        return true;
+      }
+
+      if (ALLOWED_GLOBALS.has(variable)) {
+        return variable in globalThis;
+      }
+
       if (inScope(variable, localScopeEvaluator)) {
         return !inScope(variable, globalScopeEvaluator);
       }
@@ -52,9 +87,16 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   if ('scope' in options) {
     const scope = (options.scope as () => Record<string, unknown>)();
 
-    options.lexicalScope = (variable: string) => variable in scope;
+    options.lexicalScope = (variable: string) =>
+      variable in scope || variable === RUNTIME_KEYWORDS_NAME;
 
     delete options.scope;
+  }
+
+  // When neither eval nor scope is provided, the keywords container
+  // still needs to be visible to the compiler.
+  if (!options.lexicalScope) {
+    options.lexicalScope = (variable: string) => variable === RUNTIME_KEYWORDS_NAME;
   }
 
   if ('locals' in options && !options.locals) {

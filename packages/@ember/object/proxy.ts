@@ -55,16 +55,17 @@ import { _ProxyMixin } from '@ember/-internals/runtime';
   import { computed } from '@ember/object';
   import ObjectProxy from '@ember/object/proxy';
 
-  ProxyWithComputedProperty = ObjectProxy.extend({
-    fullName: computed('firstName', 'lastName', function() {
+  class ProxyWithComputedProperty extends ObjectProxy {
+    @computed('firstName', 'lastName')
+    get fullName() {
       var firstName = this.get('firstName'),
           lastName = this.get('lastName');
       if (firstName && lastName) {
         return firstName + ' ' + lastName;
       }
       return firstName || lastName;
-    })
-  });
+    }
+  }
 
   let exampleProxy = ProxyWithComputedProperty.create();
 

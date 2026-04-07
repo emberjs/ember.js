@@ -221,10 +221,10 @@ function testDebounce() {
     }
   }
 
-  EmberObject.extend({
-    searchValue: 'test',
-    fetchResults(value: string) {},
-  });
+  class TestObj extends EmberObject {
+    searchValue = 'test';
+    fetchResults(value: string) {}
+  }
 }
 
 function testBegin() {
@@ -284,7 +284,7 @@ class TestOnce extends EmberObject {
 }
 
 function testSchedule() {
-  EmberObject.extend({
+  class TestSchedule extends EmberObject {
     init() {
       schedule('sync', this, () => {
         // this will be executed in the first RunLoop queue, when bindings are synced
@@ -295,8 +295,8 @@ function testSchedule() {
         // this will be executed in the 'actions' queue, after bindings have synced.
         console.log('scheduled on actions queue');
       });
-    },
-  });
+    }
+  }
 
   schedule('actions', () => {
     // Do more things

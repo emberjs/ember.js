@@ -1,19 +1,11 @@
 import {
   helperCapabilities,
   modifierCapabilities,
-  setComponentTemplate,
   setHelperManager,
   setModifierManager,
 } from '@glimmer/manager';
-import { templateOnlyComponent } from '@glimmer/runtime';
 
-import type {
-  Arguments,
-  ComponentDefinitionState,
-  HelperManager,
-  ModifierManager,
-} from '@glimmer/interfaces';
-import compile from './compile';
+import type { Arguments, HelperManager, ModifierManager } from '@glimmer/interfaces';
 
 interface SimpleHelperState {
   fn: (...args: unknown[]) => unknown;
@@ -87,26 +79,12 @@ class FunctionalModifierManager implements ModifierManager<SimpleModifierState> 
 const FUNCTIONAL_MODIFIER_MANAGER = new FunctionalModifierManager();
 const FUNCTIONAL_MODIFIER_MANAGER_FACTORY = () => FUNCTIONAL_MODIFIER_MANAGER;
 
-export function defineComponent(
-  scopeValues: Record<string, unknown> | null,
-  templateSource: string,
-  definition: object = templateOnlyComponent()
-): ComponentDefinitionState {
-  let templateFactory = compile(
-    templateSource,
-    { strictMode: scopeValues !== null },
-    scopeValues ?? {}
-  );
-
-  setComponentTemplate(templateFactory, definition);
-
-  return definition;
-}
-
-export function defineSimpleHelper<T extends Function>(helperFn: T): T {
+export function defineSimpleHelper<T extends (...args: unknown[]) => unknown>(helperFn: T): T {
   return setHelperManager(FUNCTIONAL_HELPER_MANAGER_FACTORY, helperFn);
 }
 
-export function defineSimpleModifier<T extends Function>(modifierFn: T): T {
+export function defineSimpleModifier<T extends (element: Element, ...args: any[]) => any>(
+  modifierFn: T
+): T {
   return setModifierManager(FUNCTIONAL_MODIFIER_MANAGER_FACTORY, modifierFn);
 }

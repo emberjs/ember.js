@@ -1,0 +1,98 @@
+name: Generate Docs
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        required: true
+        description: Tag name or branch or ref to generate docs for
+
+permissions: 
+  contents: read
+  
+jobs:
+  generate-and-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ember.js
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: emberjs/ember.js
+          path: ember.js
+          ref: ${{ inputs.ref || github.ref_name }}
+          persist-credentials: false
+
+      - name: Checkout ember-jsonapi-docs
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: kategengler/ember-jsonapi-docs
+          path: ember-jsonapi-docs
+          persist-credentials: false
+
+      - name: Checkout ember-api-docs-data
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ember-learn/ember-api-docs-data
+          path: ember-api-docs-data
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '20'
+          package-manager-cache: false
+
+      - name: Install dependencies for ember-jsonapi-docs
+        run: pnpm install
+        working-directory: ember-jsonapi-docs
+
+      - name: Install dependencies for ember-api-docs-data
+        run: npm install
+        working-directory: ember-api-docs-data
+
+      - name: Get Ember version from package.json
+        id: pkg
+        run: |
+          echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+        working-directory: ember.js
+
+      - name: Generate API docs
+        run: pnpm run gen --project ember --version "${STEPS_PKG_OUTPUTS_VERSION}"
+        working-directory: ember-jsonapi-docs
+        env:
+          STEPS_PKG_OUTPUTS_VERSION: ${{ steps.pkg.outputs.version }}
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Add docs for Ember ${STEPS_PKG_OUTPUTS_VERSION}"
+        working-directory: ember-api-docs-data
+        env:
+          STEPS_PKG_OUTPUTS_VERSION: ${{ steps.pkg.outputs.version }}
+
+      - name: Fix docs, commit, push
+        run: |
+          npm run fix:files
+          git add .
+          git commit -m "fix urls and rev-index for ember"
+        working-directory: ember-api-docs-data
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ secrets.DOCS_GITHUB_TOKEN }}
+          path: ember-api-docs-data
+          commit-message: "Update Ember API docs for version ${{ steps.pkg.outputs.version }}"
+          branch: update-api-docs-${{ steps.pkg.outputs.version }}
+          title: "Update Ember API docs from workflow for version ${{ steps.pkg.outputs.version }}"
+          body: "Automated update of API docs using ember-jsonapi-docs."

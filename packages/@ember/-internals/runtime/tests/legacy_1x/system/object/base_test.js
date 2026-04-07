@@ -71,12 +71,12 @@ moduleFor(
   'EmberObject superclass and subclasses',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
+      obj = class extends EmberObject {
         method1() {
           return 'hello';
-        },
-      });
-      obj1 = obj.extend();
+        }
+      };
+      obj1 = class extends obj {};
     }
 
     afterEach() {

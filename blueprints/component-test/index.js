@@ -2,7 +2,6 @@
 
 const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
-const isPackageMissing = require('ember-cli-is-package-missing');
 const getPathOption = require('ember-cli-get-component-path-option');
 const semver = require('semver');
 
@@ -141,18 +140,5 @@ module.exports = {
     }
 
     return false;
-  },
-
-  afterInstall: function (options) {
-    if (
-      !options.dryRun &&
-      options.testType === 'integration' &&
-      !this._useNamedHbsImport() &&
-      isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
-    ) {
-      return this.addPackagesToProject([
-        { name: 'ember-cli-htmlbars-inline-precompile', target: '^0.3.1' },
-      ]);
-    }
   },
 };

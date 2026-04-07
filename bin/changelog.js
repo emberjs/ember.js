@@ -14,47 +14,69 @@
  * bin/changelog.js
  */
 
-const RSVP = require('rsvp');
-const GitHubApi = require('github');
+const { Octokit } = require('@octokit/rest');
 const execSync = require('child_process').execSync;
 
-const github = new GitHubApi({ version: '3.0.0' });
-if (process.env.GITHUB_TOKEN) {
-  github.authenticate({
-    type: 'token',
-    token: process.env.GITHUB_TOKEN,
-  });
-}
-const compareCommits = RSVP.denodeify(github.repos.compareCommits);
-const getPullRequest = RSVP.denodeify(github.pullRequests.get);
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
+
+const DEBUG = process.env.DEBUG === 'true';
+const debug = (...args) => DEBUG && console.error('[DEBUG]', ...args);
 
 const currentVersion = process.env.PRIOR_VERSION;
-const head = process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' });
+const head = (process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' })).trim();
+
+debug('Current version:', currentVersion);
+debug('Head:', head);
 
 generateChangelog()
   .then(console.log)
   .catch((err) => console.error(err));
 
 async function fetchAllChanges() {
-  let result = await compareCommits({
-    user: 'emberjs',
+  debug('Fetching comparison:', `${currentVersion}...${head}`);
+  const comparison = await octokit.repos.compareCommitsWithBasehead({
+    owner: 'emberjs',
     repo: 'ember.js',
-    base: currentVersion,
-    head,
+    basehead: `${currentVersion}...${head}`,
+    per_page: 100,
   });
-  let data = result.commits;
-  while (github.hasNextPage(result)) {
-    result = await github.getNextPage(result);
-    data.concat(result.commits);
+
+  let commits = comparison.data.commits;
+  const totalCommits = comparison.data.total_commits;
+  debug('Total commits:', totalCommits, 'Fetched:', commits.length);
+
+  // If there are more commits than returned, fetch them page by page
+  if (totalCommits > commits.length) {
+    let page = 2;
+    while (commits.length < totalCommits) {
+      debug('Fetching page:', page);
+      const nextPage = await octokit.repos.compareCommitsWithBasehead({
+        owner: 'emberjs',
+        repo: 'ember.js',
+        basehead: `${currentVersion}...${head}`,
+        per_page: 100,
+        page: page,
+      });
+      commits = commits.concat(nextPage.data.commits);
+      debug('Now have', commits.length, 'commits');
+      page++;
+
+      // Safety check to prevent infinite loops
+      if (nextPage.data.commits.length === 0) break;
+    }
   }
 
-  return data;
+  return commits;
 }
 
 async function generateChangelog() {
   let commits = await fetchAllChanges();
+  debug('Processing', commits.length, 'commits');
 
   let contributions = commits.filter(excludeDependabot).filter(isMergeOrCherryPick);
+  debug('Found', contributions.length, 'contributions after filtering');
 
   let changes = await Promise.all(
     contributions.map(async function (commitInfo) {
@@ -83,10 +105,12 @@ async function generateChangelog() {
         result.title = message.split('\n\n')[0];
       }
 
+      debug('Processed commit:', result.number || result.sha.slice(0, 8), '-', result.title);
       return result;
     })
   );
 
+  debug('Sorting and deduplicating changes');
   return changes
     .sort(comparePrNumber)
     .filter(uniqueByPrNumber)
@@ -112,6 +136,7 @@ async function getCommitMessage(commitInfo) {
   let matches;
 
   if (message.indexOf('cherry picked from commit') > -1) {
+    debug('Processing cherry-pick commit:', commitInfo.sha.slice(0, 8));
     let cherryPickRegex = /cherry picked from commit ([a-z0-9]+)/;
     let originalCommit = cherryPickRegex.exec(message)[1];
 
@@ -125,7 +150,9 @@ async function getCommitMessage(commitInfo) {
           '..origin/main --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit',
         { encoding: 'utf8' }
       );
+      debug('Found original merge commit for cherry-pick');
     } catch {
+      debug('Could not find original merge commit for cherry-pick');
       // ignored
     }
   }
@@ -139,10 +166,11 @@ async function getCommitMessage(commitInfo) {
     let lines = message.split(/\n\n/);
 
     if (!lines[1]) {
-      let pullRequest = await getPullRequest({
-        user: 'emberjs',
+      debug('Fetching PR title for #' + prNumber);
+      let { data: pullRequest } = await octokit.pulls.get({
+        owner: 'emberjs',
         repo: 'ember.js',
-        number: prNumber,
+        pull_number: prNumber,
       });
       return `Merge pull request #${prNumber}\n\n${pullRequest.title}`;
     }

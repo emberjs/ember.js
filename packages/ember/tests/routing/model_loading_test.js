@@ -5,8 +5,9 @@ import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { computed, set } from '@ember/object';
+import { action, computed, set } from '@ember/object';
 import { service } from '@ember/service';
+import { precompileTemplate } from '@ember/template-compilation';
 
 let originalConsoleError;
 
@@ -15,9 +16,15 @@ moduleFor(
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
-      this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
+      this.add('template:home', precompileTemplate('<h3 class="hours">Hours</h3>'));
+      this.add(
+        'template:camelot',
+        precompileTemplate('<section id="camelot"><h3>Is a silly place</h3></section>')
+      );
+      this.add(
+        'template:homepage',
+        precompileTemplate('<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>')
+      );
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -58,7 +65,10 @@ moduleFor(
 
       this.add('route:track', HomeRoute);
       this.add('controller:track', HomeController);
-      this.addTemplate('track', '<h3 class="derivedProperty">{{this.derivedProperty}}</h3>');
+      this.add(
+        'template:track',
+        precompileTemplate('<h3 class="derivedProperty">{{this.derivedProperty}}</h3>')
+      );
 
       return this.visit('/track/2')
         .then(() => {
@@ -80,26 +90,28 @@ moduleFor(
     }
 
     ['@test The Homepage with a `setupController` hook'](assert) {
-      this.addTemplate(
-        'home',
-        `<ul>{{#each this.hours as |entry|}}
+      this.add(
+        'template:home',
+        precompileTemplate(
+          `<ul>{{#each this.hours as |entry|}}
         <li>{{entry}}</li>
       {{/each}}
       </ul>
     `
+        )
       );
 
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           setupController(controller) {
             controller.set('hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ]);
-          },
-        })
+          }
+        }
       );
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
@@ -115,15 +127,15 @@ moduleFor(
     [`@test The route controller is still set when overriding the setupController hook`](assert) {
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           setupController() {
             // no-op
             // importantly, we are not calling this._super
-          },
-        })
+          }
+        }
       );
 
-      this.add('controller:home', Controller.extend());
+      this.add('controller:home', class extends Controller {});
 
       return this.visit('/').then(() => {
         let homeRoute = this.applicationInstance.lookup('route:home');
@@ -138,18 +150,18 @@ moduleFor(
     }
 
     ['@test the route controller can be specified via controllerName'](assert) {
-      this.addTemplate('home', '<p>{{this.myValue}}</p>');
+      this.add('template:home', precompileTemplate('<p>{{this.myValue}}</p>'));
       this.add(
         'route:home',
-        Route.extend({
-          controllerName: 'myController',
-        })
+        class extends Route {
+          controllerName = 'myController';
+        }
       );
       this.add(
         'controller:myController',
-        Controller.extend({
-          myValue: 'foo',
-        })
+        class extends Controller {
+          myValue = 'foo';
+        }
       );
 
       return this.visit('/').then(() => {
@@ -177,27 +189,27 @@ moduleFor(
         this.route('home', { path: '/' });
       });
 
-      this.addTemplate('home', '<p>home: {{this.myValue}}</p>');
+      this.add('template:home', precompileTemplate('<p>home: {{this.myValue}}</p>'));
 
       this.add(
         'route:home',
-        Route.extend({
-          controllerName: 'myController',
-        })
+        class extends Route {
+          controllerName = 'myController';
+        }
       );
 
       this.add(
         'controller:home',
-        Controller.extend({
-          myValue: 'home',
-        })
+        class extends Controller {
+          myValue = 'home';
+        }
       );
 
       this.add(
         'controller:myController',
-        Controller.extend({
-          myValue: 'myController',
-        })
+        class extends Controller {
+          myValue = 'myController';
+        }
       );
 
       return this.visit('/').then(() => {
@@ -226,20 +238,20 @@ moduleFor(
 
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           setupController(/* controller */) {
             this.controllerFor('home').set('hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ]);
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
+      this.add(
+        'template:home',
+        precompileTemplate('<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>')
       );
 
       return this.visit('/').then(() => {
@@ -260,20 +272,23 @@ moduleFor(
 
       this.add(
         'controller:home',
-        Controller.extend({
-          model: computed(function () {
+        class extends Controller {
+          @computed
+          get model() {
             return [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ];
-          }),
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each this.model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
+      this.add(
+        'template:home',
+        precompileTemplate(
+          '<ul>{{#each this.model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
+        )
       );
 
       return this.visit('/').then(() => {
@@ -294,26 +309,26 @@ moduleFor(
 
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           model() {
             return [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
               'Sunday: Noon to 6pm',
             ];
-          },
+          }
 
           setupController(controller, model) {
             assert.equal(this.controllerFor('home'), controller);
 
             this.controllerFor('home').set('hours', model);
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
+      this.add(
+        'template:home',
+        precompileTemplate('<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>')
       );
 
       return this.visit('/').then(() => {
@@ -335,16 +350,16 @@ moduleFor(
 
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model(params) {
             return EmberObject.create({
               menuItemId: params.menu_item_id,
             });
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate('special', '<p>{{@model.menuItemId}}</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.menuItemId}}</p>'));
 
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
@@ -354,12 +369,11 @@ moduleFor(
     }
 
     ['@test The Specials Page defaults to looking models up via `find`']() {
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           return MenuItem.create({ id });
-        },
-      });
+        }
+      };
       this.add('model:menu_item', MenuItem);
 
       let SpecialRoute = class extends Route {
@@ -375,7 +389,7 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      this.addTemplate('special', '{{@model.id}}');
+      this.add('template:special', precompileTemplate('{{@model.id}}'));
 
       return this.visit('/specials/1').then(() => {
         this.assertText('1', 'The model was used to render the template');
@@ -390,12 +404,11 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           return MenuItem.create({ id: id });
-        },
-      });
+        }
+      };
       this.add('model:menu_item', MenuItem);
 
       let SpecialRoute = class extends Route {
@@ -405,8 +418,8 @@ moduleFor(
       };
       this.add('route:special', SpecialRoute);
 
-      this.addTemplate('home', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
+      this.add('template:home', precompileTemplate('<h3>Home</h3>'));
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
 
       return this.visit('/')
         .then(() => {
@@ -429,13 +442,12 @@ moduleFor(
       let menuItem;
       let rootElement;
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           menuItem = MenuItem.create({ id: id });
           return menuItem;
-        },
-      });
+        }
+      };
 
       this.router.map(function () {
         this.route('root', { path: '/' }, function () {
@@ -448,40 +460,41 @@ moduleFor(
 
       this.add(
         'route:root',
-        Route.extend({
+        class extends Route {
           model() {
             rootModel++;
-            return this._super(...arguments);
-          },
+            return super.model(...arguments);
+          }
 
           setupController() {
             rootSetup++;
-          },
+          }
 
           serialize() {
             rootSerialize++;
-            return this._super(...arguments);
-          },
-        })
+            return super.serialize(...arguments);
+          }
+        }
       );
 
-      this.add('route:loading', Route.extend({}));
-      this.add('route:home', Route.extend({}));
+      this.add('route:loading', class extends Route {});
+      this.add('route:home', class extends Route {});
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model({ menu_item_id }) {
             return MenuItem.find(menu_item_id);
-          },
+          }
+
           setupController(controller, model) {
             set(controller, 'model', model);
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate('root.index', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:root.index', precompileTemplate('<h3>Home</h3>'));
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       return this.visit('/').then(() => {
         rootElement = document.getElementById('qunit-fixture');
@@ -544,42 +557,42 @@ moduleFor(
 
       this.add(
         'route:the-post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:the-post.comments',
-        Route.extend({
+        class extends Route {
           afterModel(post /*, transition */) {
             let parent_model = this.modelFor('the-post');
 
             assert.equal(post, parent_model);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:shares',
-        Route.extend({
+        class extends Route {
           model(params) {
             return shares[params.share_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:shares.share',
-        Route.extend({
+        class extends Route {
           afterModel(share /*, transition */) {
             let parent_model = this.modelFor('shares');
 
             assert.equal(share, parent_model);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1/comments')
@@ -629,22 +642,22 @@ moduleFor(
 
       this.add(
         'route:the-post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:comments',
-        Route.extend({
+        class extends Route {
           afterModel(post /*, transition */) {
             let parent_model = this.modelFor('the-post');
 
             assert.equal(post, parent_model);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1/comments')
@@ -683,20 +696,20 @@ moduleFor(
 
       this.add(
         'route:the-post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:comments',
-        Route.extend({
+        class extends Route {
           model() {
             assert.equal(this.modelFor('the-post'), currentPost);
-          },
-        })
+          }
+        }
       );
 
       currentPost = post1;
@@ -720,11 +733,11 @@ moduleFor(
       let editCount = 0;
       let editedPostIds = emberA();
 
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('posts', '{{outlet}}');
-      this.addTemplate('post', '{{outlet}}');
-      this.addTemplate('post/index', 'showing');
-      this.addTemplate('post/edit', 'editing');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
+      this.add('template:posts', precompileTemplate('{{outlet}}'));
+      this.add('template:post', precompileTemplate('{{outlet}}'));
+      this.add('template:post.index', precompileTemplate('showing'));
+      this.add('template:post.edit', precompileTemplate('editing'));
 
       this.router.map(function () {
         this.route('posts', function () {
@@ -736,50 +749,52 @@ moduleFor(
 
       this.add(
         'route:posts',
-        Route.extend({
-          router: service(),
-          actions: {
-            showPost(context) {
-              this.router.transitionTo('post', context);
-            },
-          },
-        })
+        class extends Route {
+          @service
+          router;
+
+          @action
+          showPost(context) {
+            this.router.transitionTo('post', context);
+          }
+        }
       );
 
       this.add(
         'route:post',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
 
           model(params) {
             return { id: params.postId };
-          },
+          }
 
           serialize(model) {
             return { postId: model.id };
-          },
+          }
 
-          actions: {
-            editPost() {
-              this.router.transitionTo('post.edit');
-            },
-          },
-        })
+          @action
+          editPost() {
+            this.router.transitionTo('post.edit');
+          }
+        }
       );
 
       this.add(
         'route:post.edit',
-        Route.extend({
+        class extends Route {
           model() {
             let postId = this.modelFor('post').id;
             editedPostIds.push(postId);
             return null;
-          },
+          }
+
           setup() {
-            this._super(...arguments);
+            super.setup(...arguments);
             editCount++;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1').then(() => {
@@ -807,11 +822,11 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return model;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -827,13 +842,12 @@ moduleFor(
 
     ['@test Route model hook finds the same model as a manual find'](assert) {
       let post;
-      let Post = EmberObject.extend();
-      Post.reopenClass({
-        find() {
+      let Post = class extends EmberObject {
+        static find() {
           post = this;
           return {};
-        },
-      });
+        }
+      };
       this.add('model:post', Post);
 
       let PostRoute = class extends Route {
@@ -862,37 +876,38 @@ moduleFor(
       let appcount = 0;
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             ++appcount;
-          },
-        })
+          }
+        }
       );
 
       let parentcount = 0;
       this.add(
         'route:parent',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.equal(params.parent_id, '123');
             ++parentcount;
-          },
-          actions: {
+          }
+
+          actions = {
             refreshParent() {
               this.refresh();
             },
-          },
-        })
+          };
+        }
       );
 
       let childcount = 0;
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             ++childcount;
-          },
-        })
+          }
+        }
       );
 
       let router;

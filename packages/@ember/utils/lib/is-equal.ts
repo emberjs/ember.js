@@ -20,9 +20,9 @@
   import { isEqual } from '@ember/utils';
   import EmberObject from '@ember/object';
 
-  let Person = EmberObject.extend({
-    isEqual(other) { return this.ssn == other.ssn; }
-  });
+  class Person extends EmberObject {
+    isEqual(other: Person) { return this.ssn == other.ssn; }
+  }
 
   let personA = Person.create({name: 'Muhammad Ali', ssn: '123-45-6789'});
   let personB = Person.create({name: 'Cassius Clay', ssn: '123-45-6789'});

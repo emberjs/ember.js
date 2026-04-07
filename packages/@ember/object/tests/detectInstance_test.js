@@ -5,9 +5,9 @@ moduleFor(
   'system/object/detectInstance',
   class extends AbstractTestCase {
     ['@test detectInstance detects instances correctly'](assert) {
-      let A = EmberObject.extend();
-      let B = A.extend();
-      let C = A.extend();
+      let A = class extends EmberObject {};
+      let B = class extends A {};
+      let C = class extends A {};
 
       let o = EmberObject.create();
       let a = A.create();

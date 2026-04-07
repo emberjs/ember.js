@@ -331,7 +331,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
     @service myAnimations;
 
     willDestroy() {
-      super.willDestroy(...arguments);
+      super.willDestroy();
 
       this.myAnimations.unregister(this);
     }
@@ -389,7 +389,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   @module @glimmer/component
   @public
 */
-export default class GlimmerComponent<S = unknown> extends _GlimmerComponent<S> {
+export default class Component<S = unknown> extends _GlimmerComponent<S> {
   constructor(owner: Owner, args: Args<S>) {
     super(owner, args);
 
@@ -405,4 +405,4 @@ export default class GlimmerComponent<S = unknown> extends _GlimmerComponent<S> 
 
 setComponentManager((owner: Owner) => {
   return new GlimmerComponentManager(owner);
-}, GlimmerComponent);
+}, Component);

@@ -3,7 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import compileOptions from './compile-options';
+import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
@@ -93,8 +93,9 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
  * }
  * ```
  */
-export interface ExplicitClassOptions<C extends ComponentClass>
-  extends BaseClassTemplateOptions<C> {
+export interface ExplicitClassOptions<
+  C extends ComponentClass,
+> extends BaseClassTemplateOptions<C> {
   scope(instance?: InstanceType<C>): Record<string, unknown>;
 }
 
@@ -236,45 +237,73 @@ export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
-  const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
-  const evaluate = buildEvaluator(options);
+  const options = { strictMode: true, ...providedOptions };
 
+  const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
-  queueMicrotask(() => {
-    const source = glimmerPrecompile(templateString, normalizedOptions);
-    const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
+  const source = glimmerPrecompile(templateString, normalizedOptions);
+  const wire = evaluate(`(${source})`) as SerializedTemplateWithLazyBlock;
 
-    setComponentTemplate(template, component);
-  });
+  const template = templateFactory(wire);
+
+  setComponentTemplate(template, component);
 
   return component;
 }
 
-const evaluator = (source: string) => {
-  return new Function(`return  ${source}`)();
-};
-
-function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
-  if (options === undefined) {
-    return evaluator;
-  }
-
+/**
+ * Builds the source wireformat JSON block
+ *
+ * @param options
+ * @returns
+ */
+function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
-    return options.eval;
+    const userEval = options.eval;
+
+    // Wrap the compiled source in a function that receives the keywords
+    // container as a parameter. The user's eval evaluates this in the
+    // caller's scope, so local variables (like `handleClick`) are captured
+    // via closure, while `__keywords__` comes from the function parameter.
+    return (source: string) => {
+      let wrapperFn = userEval(`(function(${RUNTIME_KEYWORDS_NAME}){ return (${source}); })`) as (
+        ...args: unknown[]
+      ) => unknown;
+
+      return wrapperFn(keywords);
+    };
   } else {
-    const scope = options.scope?.();
+    let scope = options.scope?.();
 
     if (!scope) {
-      return evaluator;
+      return (source: string) => {
+        return new Function(RUNTIME_KEYWORDS_NAME, `return (${source})`)(keywords);
+      };
     }
 
-    return (source: string) => {
-      const argNames = Object.keys(scope);
-      const argValues = Object.values(scope);
+    scope = Object.assign({ [RUNTIME_KEYWORDS_NAME]: keywords }, scope);
 
-      return new Function(...argNames, `return (${source})`)(...argValues);
+    return (source: string) => {
+      let hasThis = Object.prototype.hasOwnProperty.call(scope, 'this');
+      let thisValue = hasThis ? (scope as { this?: unknown }).this : undefined;
+
+      let argNames: string[] = [];
+      let argValues: unknown[] = [];
+
+      for (let [name, value] of Object.entries(scope)) {
+        if (name === 'this') {
+          continue;
+        }
+
+        argNames.push(name);
+        argValues.push(value);
+      }
+
+      let fn = new Function(...argNames, `return (${source})`);
+
+      return hasThis ? fn.call(thisValue, ...argValues) : fn(...argValues);
     };
   }
 }

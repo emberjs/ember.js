@@ -10,7 +10,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { join, once, run, schedule } from '@ember/runloop';
 import { libraries } from '@ember/-internals/metal';
-import { _loaded, onLoad, runLoadHooks } from './lib/lazy_load';
 import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import Route from '@ember/routing/route';
@@ -263,14 +262,14 @@ class Application extends Engine {
   declare _document: SimpleDocument | Document | null;
 
   /**
-    The `Ember.EventDispatcher` responsible for delegating events to this
+    The `EventDispatcher` responsible for delegating events to this
     application's views.
 
     The event dispatcher is created by the application at initialization time
     and sets up event listeners on the DOM element described by the
     application's `rootElement` property.
 
-    See the documentation for `Ember.EventDispatcher` for more information.
+    See the documentation for `EventDispatcher` for more information.
 
     @property eventDispatcher
     @type Ember.EventDispatcher
@@ -342,55 +341,6 @@ class Application extends Engine {
   declare autoboot: boolean;
 
   /**
-    Whether the application should be configured for the legacy "globals mode".
-    Under this mode, the Application object serves as a global namespace for all
-    classes.
-
-    ```javascript
-    import Application from '@ember/application';
-    import Component from '@ember/component';
-
-    let App = Application.create({
-      ...
-    });
-
-    App.Router.reopen({
-      location: 'none'
-    });
-
-    App.Router.map({
-      ...
-    });
-
-    App.MyComponent = Component.extend({
-      ...
-    });
-    ```
-
-    This flag also exposes other internal APIs that assumes the existence of
-    a special "default instance", like `App.__container__.lookup(...)`.
-
-    This option is currently not configurable, its value is derived from
-    the `autoboot` flag – disabling `autoboot` also implies opting-out of
-    globals mode support, although they are ultimately orthogonal concerns.
-
-    Some of the global modes features are already deprecated in 1.x. The
-    existence of this flag is to untangle the globals mode code paths from
-    the autoboot code paths, so that these legacy features can be reviewed
-    for deprecation/removal separately.
-
-    Forcing the (autoboot=true, _globalsMode=false) here and running the tests
-    would reveal all the places where we are still relying on these legacy
-    behavior internally (mostly just tests).
-
-    @property _globalsMode
-    @type Boolean
-    @default true
-    @private
-  */
-  declare _globalsMode: boolean;
-
-  /**
     An array of application instances created by `buildInstance()`. Used
     internally to ensure that all instances get destroyed.
 
@@ -413,7 +363,6 @@ class Application extends Engine {
     this.customEvents ??= null;
     this.autoboot ??= true;
     this._document ??= hasDOM ? window.document : null;
-    this._globalsMode ??= true;
 
     if (DEBUG) {
       if (ENV.LOG_VERSION) {
@@ -429,13 +378,15 @@ class Application extends Engine {
     this._booted = false;
     this._applicationInstances = new Set();
 
-    this.autoboot = this._globalsMode = Boolean(this.autoboot);
-
-    if (this._globalsMode) {
-      this._prepareForGlobalsMode();
-    }
+    this.autoboot = Boolean(this.autoboot);
 
     if (this.autoboot) {
+      // Create subclass of Router for this Application instance.
+      // This is to ensure that someone reopening `App.Router` does not
+      // tamper with the default `Router`.
+      this.Router = (this.Router || Router).extend() as typeof Router;
+
+      this._buildDeprecatedInstance();
       this.waitForDOMReady();
     }
   }
@@ -488,26 +439,6 @@ class Application extends Engine {
   }
 
   Router?: typeof Router;
-
-  /**
-    Enable the legacy globals mode by allowing this application to act
-    as a global namespace. See the docs on the `_globalsMode` property
-    for details.
-
-    Most of these features are already deprecated in 1.x, so we can
-    stop using them internally and try to remove them.
-
-    @private
-    @method _prepareForGlobalsMode
-  */
-  _prepareForGlobalsMode(): void {
-    // Create subclass of Router for this Application instance.
-    // This is to ensure that someone reopening `App.Router` does not
-    // tamper with the default `Router`.
-    this.Router = (this.Router || Router).extend() as typeof Router;
-
-    this._buildDeprecatedInstance();
-  }
 
   __deprecatedInstance__?: ApplicationInstance;
   __container__?: Container;
@@ -590,7 +521,7 @@ class Application extends Engine {
     ```javascript
     _autoBoot() {
       this.boot().then(() => {
-        let instance = (this._globalsMode) ? this.__deprecatedInstance__ : this.buildInstance();
+        let instance = this.__deprecatedInstance__;
         return instance.boot();
       }).then((instance) => {
         App.ready();
@@ -779,7 +710,6 @@ class Application extends Engine {
 
     try {
       this.runInitializers();
-      runLoadHooks('application', this);
       this.advanceReadiness();
       // Continues to `didBecomeReady`
     } catch (error) {
@@ -872,10 +802,10 @@ class Application extends Engine {
 
     assert(
       `Calling reset() on instances of \`Application\` is not
-            supported when globals mode is disabled; call \`visit()\` to
+            supported when autoboot is disabled; call \`visit()\` to
             create new \`ApplicationInstance\`s and dispose them
             via their \`destroy()\` method instead.`,
-      this._globalsMode && this.autoboot
+      this.autoboot
     );
 
     let instance = this.__deprecatedInstance__;
@@ -907,24 +837,12 @@ class Application extends Engine {
     assert('expected _bootResolver', this._bootResolver);
 
     try {
-      // TODO: Is this still needed for _globalsMode = false?
-
       // See documentation on `_autoboot()` for details
       if (this.autoboot) {
-        let instance;
-
-        if (this._globalsMode) {
-          // If we already have the __deprecatedInstance__ lying around, boot it to
-          // avoid unnecessary work
-          instance = this.__deprecatedInstance__;
-          assert('expected instance', instance);
-        } else {
-          // Otherwise, build an instance and boot it. This is currently unreachable,
-          // because we forced _globalsMode to === autoboot; but having this branch
-          // allows us to locally toggle that flag for weeding out legacy globals mode
-          // dependencies independently
-          instance = this.buildInstance();
-        }
+        // If we already have the __deprecatedInstance__ lying around, boot it to
+        // avoid unnecessary work
+        let instance = this.__deprecatedInstance__;
+        assert('expected instance', instance);
 
         instance._bootSync();
 
@@ -962,10 +880,6 @@ class Application extends Engine {
   // This method must be moved to the application instance object
   willDestroy() {
     super.willDestroy();
-
-    if (_loaded['application'] === this) {
-      _loaded['application'] = undefined;
-    }
 
     if (this._applicationInstances.size) {
       this._applicationInstances.forEach((i) => i.destroy());
@@ -1217,4 +1131,4 @@ function commonSetupRegistry(registry: Registry) {
   registry.register('service:router', RouterService);
 }
 
-export { Application as default, _loaded, onLoad, runLoadHooks };
+export { Application as default };

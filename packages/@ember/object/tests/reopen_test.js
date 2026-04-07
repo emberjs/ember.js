@@ -6,7 +6,7 @@ moduleFor(
   'system/core_object/reopen',
   class extends AbstractTestCase {
     ['@test adds new properties to subclass instance'](assert) {
-      let Subclass = EmberObject.extend();
+      let Subclass = class extends EmberObject {};
       Subclass.reopen({
         foo() {
           return 'FOO';
@@ -19,8 +19,8 @@ moduleFor(
     }
 
     ['@test reopened properties inherited by subclasses'](assert) {
-      let Subclass = EmberObject.extend();
-      let SubSub = Subclass.extend();
+      let Subclass = class extends EmberObject {};
+      let SubSub = class extends Subclass {};
 
       Subclass.reopen({
         foo() {
@@ -34,7 +34,7 @@ moduleFor(
     }
 
     ['@test allows reopening already instantiated classes'](assert) {
-      let Subclass = EmberObject.extend();
+      let Subclass = class extends EmberObject {};
 
       Subclass.create();
 

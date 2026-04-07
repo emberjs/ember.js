@@ -76,7 +76,7 @@ export abstract class ComputedDescriptor {
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 }
 
-export let COMPUTED_GETTERS: WeakSet<() => unknown>;
+let COMPUTED_GETTERS: WeakSet<() => unknown>;
 
 if (DEBUG) {
   COMPUTED_GETTERS = new WeakSet();

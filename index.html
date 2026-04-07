@@ -15,15 +15,6 @@
       // Test under octane defaults
       EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
 
-      // Test for "hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"
-      EmberENV.EMBER_LOAD_HOOKS = EmberENV.EMBER_LOAD_HOOKS || {};
-      EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ =
-        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
-      EmberENV.__test_hook_count__ = 0;
-      EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function (object) {
-        EmberENV.__test_hook_count__ += object;
-      });
-
       // Handle testing feature flags
       if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
         EmberENV.ENABLE_OPTIONAL_FEATURES = true;
@@ -40,6 +31,17 @@
       if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
         EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
       }
+
+      QUnit.config.urlConfig.push({
+        id: 'OVERRIDE_DEPRECATION_VERSION',
+        value: ['20.0.0', '6.0.0', '5.12.0'],
+        label: 'Deprecation Version',
+      });
+
+      QUnit.config.urlConfig.push({
+        id: 'skip_tests_with_target_blank',
+        label: 'Skip tests w/ target _blank',
+      });
     </script>
 
     <script type="module">
@@ -55,19 +57,28 @@
 
     <script type="module">
       // tests in internal packages
-      import.meta.glob('./packages/@ember/-internals/*/tests/**/*.{js,ts}', {
+      import.meta.glob('./packages/@ember/-internals/*/tests/**/*.{js,ts,gjs,gts}', {
         eager: true,
       });
 
       // tests in scoped packages
-      import.meta.glob('./packages/*/*/tests/**/*.{js,ts}', {
+      import.meta.glob('./packages/*/*/tests/**/*.{js,ts,gjs,gts}', {
         eager: true,
       });
 
       // tests in non-scoped packages
-      import.meta.glob('./packages/*/tests/**/*.{js,ts}', {
+      import.meta.glob('./packages/*/tests/**/*.{js,ts,gjs,gts}', {
         eager: true,
       });
+
+      // packages originally authored in glimmer-vm repo have a different test
+      // naming convention
+      import.meta.glob(
+        './packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.{js,ts,gjs,gts}',
+        {
+          eager: true,
+        }
+      );
     </script>
 
     <div id="qunit"></div>

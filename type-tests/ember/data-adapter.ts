@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import type ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
+import DataAdapter from '@ember/debug/data-adapter';
 import { expectTypeOf } from 'expect-type';
 
-const da = Ember.DataAdapter.create();
+const da = DataAdapter.create();
 
 const filters = da.getFilters();
 expectTypeOf(filters.includes({ name: 'foo', desc: 'bar' })).toBeBoolean();
@@ -52,8 +53,8 @@ expectTypeOf(
 da.watchRecords(() => {});
 
 expectTypeOf(da.acceptsModelName).toEqualTypeOf<boolean>();
-expectTypeOf(da.containerDebugAdapter).toEqualTypeOf<Ember.ContainerDebugAdapter>();
+expectTypeOf(da.containerDebugAdapter).toEqualTypeOf<ContainerDebugAdapter>();
 
-const ca: Ember.ContainerDebugAdapter = da.containerDebugAdapter;
+const ca: ContainerDebugAdapter = da.containerDebugAdapter;
 expectTypeOf(ca.canCatalogEntriesByType('controller')).toEqualTypeOf<boolean>();
 expectTypeOf(ca.catalogEntriesByType('controller')).toEqualTypeOf<string[]>();

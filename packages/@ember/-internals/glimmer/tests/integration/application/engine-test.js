@@ -2,7 +2,6 @@ import {
   moduleFor,
   ApplicationTestCase,
   ModuleBasedTestResolver,
-  strip,
   runTaskNext,
 } from 'internal-test-helpers';
 
@@ -13,7 +12,7 @@ import Controller from '@ember/controller';
 import Engine from '@ember/engine';
 import { next } from '@ember/runloop';
 
-import { compile } from '../../utils/helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 
@@ -62,7 +61,7 @@ moduleFor(
     setupAppAndRoutableEngine(hooks = []) {
       let self = this;
 
-      this.addTemplate('application', 'Application{{outlet}}');
+      this.add('template:application', precompileTemplate('Application{{outlet}}'));
 
       this.router.map(function () {
         this.mount('blog');
@@ -77,60 +76,63 @@ moduleFor(
       });
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             hooks.push('application - application');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register(
               'controller:application',
-              Controller.extend({
-                queryParams: ['lang'],
-                lang: '',
-              })
+              class extends Controller {
+                queryParams = ['lang'];
+                lang = '';
+              }
             );
             this.register(
               'controller:category',
-              Controller.extend({
-                queryParams: ['type'],
-              })
+              class extends Controller {
+                queryParams = ['type'];
+              }
             );
             this.register(
               'controller:authorKtrl',
-              Controller.extend({
-                queryParams: ['official'],
-              })
+              class extends Controller {
+                queryParams = ['official'];
+              }
             );
-            this.register('template:application', compile('Engine{{this.lang}}{{outlet}}'));
+            this.register(
+              'template:application',
+              precompileTemplate('Engine{{this.lang}}{{outlet}}')
+            );
             this.register(
               'route:application',
-              Route.extend({
+              class extends Route {
                 model() {
                   hooks.push('engine - application');
-                },
-              })
+                }
+              }
             );
             this.register(
               'route:author',
-              Route.extend({
-                controllerName: 'authorKtrl',
-              })
+              class extends Route {
+                controllerName = 'authorKtrl';
+              }
             );
 
             if (self._additionalEngineRegistrations) {
               self._additionalEngineRegistrations.call(this);
             }
-          },
-        })
+          }
+        }
       );
     }
 
@@ -139,35 +141,35 @@ moduleFor(
 
       this.add(
         'engine:chat-engine',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
-            this.register('template:application', compile('Engine'));
+            super.init(...arguments);
+            this.register('template:application', precompileTemplate('Engine'));
             this.register(
               'controller:application',
-              Controller.extend({
+              class extends Controller {
                 init() {
-                  this._super(...arguments);
+                  super.init(...arguments);
                   hooks.push('engine - application');
-                },
-              })
+                }
+              }
             );
-          },
-        })
+          }
+        }
       );
     }
 
     setupRoutelessEngine(hooks) {
-      this.addTemplate('application', 'Application{{mount "chat-engine"}}');
+      this.add('template:application', precompileTemplate('Application{{mount "chat-engine"}}'));
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             hooks.push('application - application');
-          },
-        })
+          }
+        }
       );
     }
 
@@ -182,20 +184,17 @@ moduleFor(
     ['@test sharing a template between engine and application has separate refinements']() {
       this.assert.expect(1);
 
-      let sharedTemplate = compile(strip`
-      <h1>{{this.contextType}}</h1>
-      {{ambiguous-curlies}}
-
-      {{outlet}}
-    `);
+      let sharedTemplate = precompileTemplate(
+        '<h1>{{this.contextType}}</h1>{{ambiguous-curlies}}{{outlet}}'
+      );
 
       this.add('template:application', sharedTemplate);
       this.add(
         'controller:application',
-        Controller.extend({
-          contextType: 'Application',
-          'ambiguous-curlies': 'Controller Data!',
-        })
+        class extends Controller {
+          contextType = 'Application';
+          'ambiguous-curlies' = 'Controller Data!';
+        }
       );
 
       this.router.map(function () {
@@ -205,25 +204,25 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.register(
               'controller:application',
-              Controller.extend({
-                contextType: 'Engine',
-              })
+              class extends Controller {
+                contextType = 'Engine';
+              }
             );
             this.register('template:application', sharedTemplate);
             this.register(
               'component:ambiguous-curlies',
-              setComponentTemplate(compile(`<p>Component!</p>`), templateOnlyComponent())
+              setComponentTemplate(precompileTemplate(`<p>Component!</p>`), templateOnlyComponent())
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog').then(() => {
@@ -234,21 +233,17 @@ moduleFor(
     ['@test sharing a layout between engine and application has separate refinements']() {
       this.assert.expect(1);
 
-      let sharedLayout = compile(strip`
-        {{ambiguous-curlies}}
-      `);
+      let sharedLayout = precompileTemplate('{{ambiguous-curlies}}');
 
-      let sharedComponent = Component.extend({
-        layout: sharedLayout,
-      });
+      let sharedComponent = class extends Component {
+        layout = sharedLayout;
+      };
 
-      this.addTemplate(
-        'application',
-        strip`
-          <h1>Application</h1>
-          {{my-component ambiguous-curlies="Local Data!"}}
-          {{outlet}}
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          '<h1>Application</h1>{{my-component ambiguous-curlies="Local Data!"}}{{outlet}}'
+        )
       );
 
       this.add('component:my-component', sharedComponent);
@@ -260,26 +255,22 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register(
               'template:application',
-              compile(strip`
-                <h1>Engine</h1>
-                {{my-component}}
-                {{outlet}}
-              `)
+              precompileTemplate('<h1>Engine</h1>{{my-component}}{{outlet}}')
             );
             this.register('component:my-component', sharedComponent);
             this.register(
               'component:ambiguous-curlies',
-              setComponentTemplate(compile(`<p>Component!</p>`), templateOnlyComponent())
+              setComponentTemplate(precompileTemplate(`<p>Component!</p>`), templateOnlyComponent())
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog').then(() => {
@@ -358,23 +349,23 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
-            this.register('template:application', compile('Engine{{outlet}}'));
+            super.init(...arguments);
+            this.register('template:application', precompileTemplate('Engine{{outlet}}'));
             this.register(
               'route:application',
-              Route.extend({
+              class extends Route {
                 deactivate() {
                   assert.notOk(this.isDestroyed, 'Route is not destroyed');
                   assert.notOk(this.isDestroying, 'Route is not being destroyed');
-                },
-              })
+                }
+              }
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog').then(() => {
@@ -399,20 +390,23 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
-        this.register('template:application_error', compile('Error! {{@model.message}}'));
+        this.register(
+          'template:application_error',
+          precompileTemplate('Error! {{@model.message}}')
+        );
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -438,20 +432,20 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
-        this.register('template:error', compile('Error! {{@model.message}}'));
+        this.register('template:error', precompileTemplate('Error! {{@model.message}}'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -477,20 +471,20 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:post_error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
-        this.register('template:post_error', compile('Error! {{@model.message}}'));
+        this.register('template:post_error', precompileTemplate('Error! {{@model.message}}'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -516,20 +510,20 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:post.error',
-          Route.extend({
+          class extends Route {
             activate() {
               next(errorEntered.resolve);
-            },
-          })
+            }
+          }
         );
-        this.register('template:post.error', compile('Error! {{@model.message}}'));
+        this.register('template:post.error', precompileTemplate('Error! {{@model.message}}'));
         this.register(
           'route:post.comments',
-          Route.extend({
+          class extends Route {
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            },
-          })
+            }
+          }
         );
       });
 
@@ -557,21 +551,21 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_loading',
-          Route.extend({
+          class extends Route {
             activate() {
               next(loadingEntered.resolve);
-            },
-          })
+            }
+          }
         );
-        this.register('template:application_loading', compile('Loading'));
-        this.register('template:post', compile('Post'));
+        this.register('template:application_loading', precompileTemplate('Loading'));
+        this.register('template:post', precompileTemplate('Post'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return resolveLoading.promise;
-            },
-          })
+            }
+          }
         );
       });
 
@@ -604,21 +598,21 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:loading',
-          Route.extend({
+          class extends Route {
             activate() {
               next(loadingEntered.resolve);
-            },
-          })
+            }
+          }
         );
-        this.register('template:loading', compile('Loading'));
-        this.register('template:post', compile('Post'));
+        this.register('template:loading', precompileTemplate('Loading'));
+        this.register('template:post', precompileTemplate('Post'));
         this.register(
           'route:post',
-          Route.extend({
+          class extends Route {
             model() {
               return resolveLoading.promise;
-            },
-          })
+            }
+          }
         );
       });
 
@@ -647,19 +641,19 @@ moduleFor(
 
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
-        this.register('template:post', compile('{{outlet}}'));
-        this.register('template:post.comments', compile('Comments'));
-        this.register('template:post.likes_loading', compile('Loading'));
-        this.register('template:post.likes', compile('Likes'));
+        this.register('template:post', precompileTemplate('{{outlet}}'));
+        this.register('template:post.comments', precompileTemplate('Comments'));
+        this.register('template:post.likes_loading', precompileTemplate('Loading'));
+        this.register('template:post.likes', precompileTemplate('Likes'));
         this.register(
           'route:post.likes',
-          Route.extend({
+          class extends Route {
             model() {
               return new RSVP.Promise((resolve) => {
                 resolveLoading = resolve;
               });
-            },
-          })
+            }
+          }
         );
       });
 
@@ -687,25 +681,25 @@ moduleFor(
 
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
-        this.register('template:post', compile('{{outlet}}'));
-        this.register('template:post.comments', compile('Comments'));
+        this.register('template:post', precompileTemplate('{{outlet}}'));
+        this.register('template:post.comments', precompileTemplate('Comments'));
         this.register(
           'route:post.loading',
-          Route.extend({
+          class extends Route {
             activate() {
               next(loadingEntered.resolve);
-            },
-          })
+            }
+          }
         );
-        this.register('template:post.loading', compile('Loading'));
-        this.register('template:post.likes', compile('Likes'));
+        this.register('template:post.loading', precompileTemplate('Loading'));
+        this.register('template:post.likes', precompileTemplate('Likes'));
         this.register(
           'route:post.likes',
-          Route.extend({
+          class extends Route {
             model() {
               return resolveLoading.promise;
-            },
-          })
+            }
+          }
         );
       });
 
@@ -730,11 +724,12 @@ moduleFor(
     ["@test query params don't have stickiness by default between model"](assert) {
       assert.expect(1);
 
-      let tmpl = '<LinkTo @route="category" @model={{1337}}>Category 1337</LinkTo>';
-
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
-        this.register('template:category', compile(tmpl));
+        this.register(
+          'template:category',
+          precompileTemplate('<LinkTo @route="category" @model={{1337}}>Category 1337</LinkTo>')
+        );
       });
 
       return this.visit('/blog/category/1?type=news').then(() => {
@@ -749,11 +744,12 @@ moduleFor(
     '@test query params only transitions work properly'(assert) {
       assert.expect(1);
 
-      let tmpl = '<LinkTo @query={{hash type="news"}}>News</LinkTo>';
-
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
-        this.register('template:category', compile(tmpl));
+        this.register(
+          'template:category',
+          precompileTemplate('<LinkTo @query={{hash type="news"}}>News</LinkTo>')
+        );
       });
 
       return this.visit('/blog/category/1').then(() => {
@@ -769,11 +765,14 @@ moduleFor(
       assert
     ) {
       assert.expect(2);
-      let tmpl =
-        '<LinkTo @route="author" @model={{1337}} class="author-1337">Author 1337</LinkTo><LinkTo @route="author" @model=1 class="author-1">Author 1</LinkTo>';
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
-        this.register('template:author', compile(tmpl));
+        this.register(
+          'template:author',
+          precompileTemplate(
+            '<LinkTo @route="author" @model={{1337}} class="author-1337">Author 1337</LinkTo><LinkTo @route="author" @model=1 class="author-1">Author 1</LinkTo>'
+          )
+        );
       });
 
       await this.visit('/blog/author/1?official=true');
@@ -796,11 +795,11 @@ moduleFor(
       this.additionalEngineRegistrations(function () {
         this.register(
           'route:application',
-          Route.extend({
+          class extends Route {
             init() {
               throw new Error('Whoops! Something went wrong...');
-            },
-          })
+            }
+          }
         );
       });
 
@@ -826,42 +825,44 @@ moduleFor(
 
       this.add(
         'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.register(
               'controller:application',
-              Controller.extend({
-                queryParams: ['lazyQueryParam'],
-              })
+              class extends Controller {
+                queryParams = ['lazyQueryParam'];
+              }
             );
 
             this.register(
               'template:application',
-              compile('Engine<div class="lazy-query-param">{{this.lazyQueryParam}}</div>{{outlet}}')
+              precompileTemplate(
+                'Engine<div class="lazy-query-param">{{this.lazyQueryParam}}</div>{{outlet}}'
+              )
             );
 
             this.register(
               'route:application',
-              Route.extend({
-                queryParams: {
+              class extends Route {
+                queryParams = {
                   lazyQueryParam: {
                     defaultValue: null,
                   },
-                },
+                };
                 deserializeQueryParam() {
                   hooks.push('engine - deserialize query param');
                   return 'foo';
-                },
+                }
                 model() {
                   hooks.push('engine - application');
-                },
-              })
+                }
+              }
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/blog?lazyQueryParam=bar', { shouldRender: true }).then(() => {

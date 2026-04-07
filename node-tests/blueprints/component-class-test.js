@@ -15,7 +15,7 @@ export default class Foo extends Component {}
 
 const emberComponentContents = `import Component from '@ember/component';
 
-export default Component.extend({});
+export default class extends Component {}
 `;
 
 const templateOnlyContents = `import templateOnly from '@ember/component/template-only';

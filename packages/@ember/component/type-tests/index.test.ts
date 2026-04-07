@@ -1,9 +1,9 @@
 import Component from '@ember/component';
 import type { CoreView } from '@ember/-internals/views';
 import { expectTypeOf } from 'expect-type';
-import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import type { View } from '@ember/-internals/glimmer';
 
-const MyComponent = Component.extend();
+class MyComponent extends Component {}
 
 let component = MyComponent.create();
 

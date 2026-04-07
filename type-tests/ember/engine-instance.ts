@@ -1,5 +1,4 @@
-import Ember from 'ember';
-const { EngineInstance } = Ember;
+import EngineInstance from "@ember/engine/instance";
 
 const engineInstance = EngineInstance.create();
 engineInstance.register('some:injection', class Foo {});

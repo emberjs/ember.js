@@ -9,12 +9,14 @@ import { set } from '@ember/object';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 import { template } from '@ember/template-compiler';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Application test: rendering',
   class extends ApplicationTestCase {
     ['@test it can render the application template without a wrapper']() {
-      this.addTemplate('application', 'Hello world!');
+      this.add('template:application', precompileTemplate('Hello world!'));
 
       return this.visit('/').then(() => {
         this.assertInnerHTML('Hello world!');
@@ -24,22 +26,16 @@ moduleFor(
     ['@test it can access the model provided by the route via @model']() {
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return ['red', 'yellow', 'blue'];
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'application',
-        strip`
-        <ul>
-          {{#each @model as |item|}}
-            <li>{{item}}</li>
-          {{/each}}
-        </ul>
-        `
+      this.add(
+        'template:application',
+        precompileTemplate('<ul>{{#each @model as |item|}}<li>{{item}}</li>{{/each}}</ul>')
       );
 
       return this.visit('/').then(() => {
@@ -56,22 +52,16 @@ moduleFor(
     ['@test it can access the model provided by the route via this.model']() {
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return ['red', 'yellow', 'blue'];
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'application',
-        strip`
-        <ul>
-          {{#each this.model as |item|}}
-            <li>{{item}}</li>
-          {{/each}}
-        </ul>
-        `
+      this.add(
+        'template:application',
+        precompileTemplate('<ul>{{#each this.model as |item|}}<li>{{item}}</li>{{/each}}</ul>')
       );
 
       return this.visit('/').then(() => {
@@ -92,20 +82,18 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return { color };
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'color',
-        strip`
-        [@model: {{@model.color}}]
-        [this.model: {{this.model.color}}]
-        [model: {{this.model.color}}]
-        `
+      this.add(
+        'template:color',
+        precompileTemplate(
+          '[@model: {{@model.color}}][this.model: {{this.model.color}}][model: {{this.model.color}}]'
+        )
       );
 
       await this.visit('/red');
@@ -157,20 +145,18 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return new Model(color);
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'color',
-        strip`
-        [@model: {{@model.color}}]
-        [this.model: {{this.model.color}}]
-        [model: {{this.model.color}}]
-        `
+      this.add(
+        'template:color',
+        precompileTemplate(
+          '[@model: {{@model.color}}][this.model: {{this.model.color}}][model: {{this.model.color}}]'
+        )
       );
 
       await this.visit('/red');
@@ -213,20 +199,18 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return color;
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'color',
-        strip`
-        [@model: {{@model}}]
-        [this.model: {{this.model}}]
-        [model: {{this.model}}]
-        `
+      this.add(
+        'template:color',
+        precompileTemplate(
+          '[@model: {{@model}}][this.model: {{this.model}}][model: {{this.model}}]'
+        )
       );
 
       await this.visit('/red');
@@ -270,11 +254,11 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return color;
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -284,13 +268,11 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'color',
-        strip`
-        [@model: {{@model}}]
-        [this.model: {{this.model}}]
-        [model: {{this.model}}]
-        `
+      this.add(
+        'template:color',
+        precompileTemplate(
+          '[@model: {{@model}}][this.model: {{this.model}}][model: {{this.model}}]'
+        )
       );
 
       await this.visit('/red');
@@ -338,22 +320,16 @@ moduleFor(
       // The "favorite" route will inherit the model
       this.add(
         'route:lists.colors',
-        Route.extend({
+        class extends Route {
           model() {
             return ['red', 'yellow', 'blue'];
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate(
-        'lists.colors.favorite',
-        strip`
-        <ul>
-          {{#each @model as |item|}}
-            <li>{{item}}</li>
-          {{/each}}
-        </ul>
-        `
+      this.add(
+        'template:lists.colors.favorite',
+        precompileTemplate('<ul>{{#each @model as |item|}}<li>{{item}}</li>{{/each}}</ul>')
       );
 
       return this.visit('/lists/colors/favorite').then(() => {
@@ -376,10 +352,10 @@ moduleFor(
         });
       });
 
-      this.addTemplate('a', 'A{{outlet}}');
-      this.addTemplate('b', 'B{{outlet}}');
-      this.addTemplate('b.c', 'C');
-      this.addTemplate('b.d', 'D');
+      this.add('template:a', precompileTemplate('A{{outlet}}'));
+      this.add('template:b', precompileTemplate('B{{outlet}}'));
+      this.add('template:b.c', precompileTemplate('C'));
+      this.add('template:b.d', precompileTemplate('D'));
 
       return this.visit('/b/c')
         .then(() => {
@@ -405,14 +381,14 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model(params) {
             return params.color;
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate('color', 'color: {{@model}}');
+      this.add('template:color', precompileTemplate('color: {{@model}}'));
 
       return this.visit('/colors/red')
         .then(() => {
@@ -434,20 +410,20 @@ moduleFor(
 
       this.add(
         'controller:a',
-        Controller.extend({
-          value: 'a',
-        })
+        class extends Controller {
+          value = 'a';
+        }
       );
 
       this.add(
         'controller:b',
-        Controller.extend({
-          value: 'b',
-        })
+        class extends Controller {
+          value = 'b';
+        }
       );
 
-      this.addTemplate('a', '{{this.value}}');
-      this.addTemplate('b', '{{this.value}}');
+      this.add('template:a', precompileTemplate('{{this.value}}'));
+      this.add('template:b', precompileTemplate('{{this.value}}'));
 
       return this.visit('/a')
         .then(() => {
@@ -462,8 +438,8 @@ moduleFor(
     // I wish there was a way to assert that the OutletComponentManager did not
     // receive a didCreateElement.
     ['@test a child outlet is always a fragment']() {
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('index', '{{#if true}}1{{/if}}<div>2</div>');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
+      this.add('template:index', precompileTemplate('{{#if true}}1{{/if}}<div>2</div>'));
       return this.visit('/').then(() => {
         this.assertInnerHTML('1<div>2</div>');
       });
@@ -476,16 +452,17 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
 
           activate() {
             this.router.transitionTo('a');
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate('a', 'Hello from A!');
+      this.add('template:a', precompileTemplate('Hello from A!'));
 
       return this.visit('/').then(() => {
         this.assertInnerHTML('Hello from A!');
@@ -499,7 +476,7 @@ moduleFor(
 
       this.add(
         'route:routeWithError',
-        Route.extend({
+        class extends Route {
           model() {
             return {
               name: 'Alex',
@@ -507,11 +484,14 @@ moduleFor(
                 return `Person (${this.name})`;
               },
             };
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate('routeWithError', 'Hi {{@model.name}} <Foo @person={{@model}} />');
+      this.add(
+        'template:routeWithError',
+        precompileTemplate('Hi {{@model.name}} <Foo @person={{@model}} />')
+      );
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
         includeTopLevel: 'outlet',
@@ -526,15 +506,18 @@ moduleFor(
 
       await this.visit('/');
 
-      this.addComponent('foo', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            this.set('person.name', 'Ben');
-          },
-        }),
-        template: 'Hi {{this.person.name}} from component',
-      });
+      this.add(
+        'component:foo',
+        setComponentTemplate(
+          precompileTemplate('Hi {{this.person.name}} from component'),
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              this.set('person.name', 'Ben');
+            }
+          }
+        )
+      );
 
       return assert.rejectsAssertion(this.visit('/routeWithError'), expectedBacktrackingMessage);
     }
@@ -545,8 +528,8 @@ moduleFor(
         this.route('second');
       });
 
-      this.addTemplate('first', 'first');
-      this.addTemplate('second', '{{{undefined}}}second');
+      this.add('template:first', precompileTemplate('first'));
+      this.add('template:second', precompileTemplate('{{{undefined}}}second'));
 
       return this.visit('/first')
         .then(() => {
@@ -569,13 +552,13 @@ moduleFor(
 
       this.add(
         'route:example',
-        Route.extend({
+        class extends Route {
           model() {
             return {
               message: 'I am the model',
             };
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -635,9 +618,9 @@ moduleFor(
         this.route('second');
       });
       this.add('template:first', template('First'));
-      this.addTemplate(
-        'second',
-        'Second sees {{#if @component}}A Component{{else}}No Component{{/if}}'
+      this.add(
+        'template:second',
+        precompileTemplate('Second sees {{#if @component}}A Component{{else}}No Component{{/if}}')
       );
       await this.visit('/first');
       this.assertText('First');

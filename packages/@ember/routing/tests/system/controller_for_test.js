@@ -19,7 +19,7 @@ moduleFor(
     }
 
     ['@test controllerFor should lookup for registered controllers'](assert) {
-      this.add('controller:app', Controller.extend());
+      this.add('controller:app', class extends Controller {});
 
       return this.visit('/').then(() => {
         let appInstance = this.applicationInstance;
@@ -51,7 +51,7 @@ moduleFor(
     }
 
     ['@test generateController should return controller:basic if resolved'](assert) {
-      let BasicController = Controller.extend();
+      let BasicController = class extends Controller {};
       this.add('controller:basic', BasicController);
 
       return this.visit('/').then(() => {
@@ -61,7 +61,7 @@ moduleFor(
     }
 
     ['@test generateController should return controller:basic if registered'](assert) {
-      let BasicController = Controller.extend();
+      let BasicController = class extends Controller {};
       this.application.register('controller:basic', BasicController);
 
       return this.visit('/').then(() => {

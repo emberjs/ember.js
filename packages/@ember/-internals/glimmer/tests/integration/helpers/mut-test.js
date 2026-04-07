@@ -1,6 +1,8 @@
 import { RenderingTestCase, moduleFor, styles, runTask } from 'internal-test-helpers';
 
 import { set, get, computed } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 
@@ -10,18 +12,25 @@ moduleFor(
     ['@test a simple mutable binding using `mut` propagates properly']() {
       let bottom;
 
-      this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            bottom = this;
-          },
-        }),
-        template: '{{this.setMe}}',
-      });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(
+          precompileTemplate('{{this.setMe}}'),
+          class extends Component {
+            didInsertElement() {
+              bottom = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('middle-mut', {
-        template: '{{bottom-mut setMe=this.value}}',
-      });
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{bottom-mut setMe=this.value}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
@@ -53,23 +62,29 @@ moduleFor(
     ['@test a simple mutable binding using `mut` inserts into the DOM']() {
       let bottom, middle;
 
-      this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            bottom = this;
-          },
-        }),
-        template: '{{this.setMe}}',
-      });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(
+          precompileTemplate('{{this.setMe}}'),
+          class extends Component {
+            didInsertElement() {
+              bottom = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('middle-mut', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            middle = this;
-          },
-        }),
-        template: '{{bottom-mut setMe=(mut this.value)}}',
-      });
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{bottom-mut setMe=(mut this.value)}}'),
+          class extends Component {
+            didInsertElement() {
+              middle = this;
+            }
+          }
+        )
+      );
 
       this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
@@ -103,7 +118,10 @@ moduleFor(
     }
 
     ['@test passing a literal results in a assertion']() {
-      this.registerComponent('bottom-mut', { template: '{{this.setMe}}' });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(precompileTemplate('{{this.setMe}}'), class extends Component {})
+      );
 
       expectAssertion(() => {
         this.render('{{bottom-mut setMe=(mut "foo bar")}}');
@@ -111,7 +129,10 @@ moduleFor(
     }
 
     ['@test passing the result of a helper invocation results in an assertion']() {
-      this.registerComponent('bottom-mut', { template: '{{this.setMe}}' });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(precompileTemplate('{{this.setMe}}'), class extends Component {})
+      );
 
       expectAssertion(() => {
         this.render('{{bottom-mut setMe=(mut (concat "foo" " " "bar"))}}');
@@ -122,18 +143,25 @@ moduleFor(
     ['@test using a string value through middle tier does not trigger assertion (due to the auto-mut transform)']() {
       let bottom;
 
-      this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            bottom = this;
-          },
-        }),
-        template: '{{this.stuff}}',
-      });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(
+          precompileTemplate('{{this.stuff}}'),
+          class extends Component {
+            didInsertElement() {
+              bottom = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('middle-mut', {
-        template: '{{bottom-mut stuff=this.value}}',
-      });
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{bottom-mut stuff=this.value}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{middle-mut value="foo"}}');
 
@@ -148,23 +176,29 @@ moduleFor(
     ['@test {{readonly}} of a {{mut}} is converted into an immutable binding']() {
       let middle, bottom;
 
-      this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            bottom = this;
-          },
-        }),
-        template: '{{this.setMe}}',
-      });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(
+          precompileTemplate('{{this.setMe}}'),
+          class extends Component {
+            didInsertElement() {
+              bottom = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('middle-mut', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            middle = this;
-          },
-        }),
-        template: '{{bottom-mut setMe=(readonly this.value)}}',
-      });
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{bottom-mut setMe=(readonly this.value)}}'),
+          class extends Component {
+            didInsertElement() {
+              middle = this;
+            }
+          }
+        )
+      );
 
       this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
@@ -197,13 +231,18 @@ moduleFor(
     }
 
     ['@test mutable bindings work inside of yielded content']() {
-      this.registerComponent('bottom-mut', {
-        template: '{{yield}}',
-      });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+      );
 
-      this.registerComponent('middle-mut', {
-        template: '{{#bottom-mut}}{{@model.name}}{{/bottom-mut}}',
-      });
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{#bottom-mut}}{{@model.name}}{{/bottom-mut}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{middle-mut model=(mut this.model)}}', {
         model: { name: 'Matthew Beale' },
@@ -227,22 +266,29 @@ moduleFor(
       let willRender = [];
       let didInsert = [];
 
-      this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
-          willRender() {
-            willRender.push(get(this, 'setMe'));
-          },
-          didInsertElement() {
-            didInsert.push(get(this, 'setMe'));
-            bottom = this;
-          },
-        }),
-        template: '{{this.setMe}}',
-      });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(
+          precompileTemplate('{{this.setMe}}'),
+          class extends Component {
+            willRender() {
+              willRender.push(get(this, 'setMe'));
+            }
+            didInsertElement() {
+              didInsert.push(get(this, 'setMe'));
+              bottom = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('middle-mut', {
-        template: '{{bottom-mut setMe=(mut this.value)}}',
-      });
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{bottom-mut setMe=(mut this.value)}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
@@ -278,28 +324,35 @@ moduleFor(
     ['@test a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023']() {
       let bottom, middle;
 
-      this.registerComponent('bottom-mut', {
-        ComponentClass: Component.extend({
-          thingy: null,
-          didInsertElement() {
-            bottom = this;
-          },
-        }),
-        template: '{{this.thingy}}',
-      });
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(
+          precompileTemplate('{{this.thingy}}'),
+          class extends Component {
+            thingy = null;
+            didInsertElement() {
+              bottom = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('middle-mut', {
-        ComponentClass: Component.extend({
-          baseValue: 12,
-          val: computed('baseValue', function () {
-            return this.get('baseValue');
-          }),
-          didInsertElement() {
-            middle = this;
-          },
-        }),
-        template: '{{bottom-mut thingy=(mut this.val)}}',
-      });
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{bottom-mut thingy=(mut this.val)}}'),
+          class extends Component {
+            baseValue = 12;
+            @computed('baseValue')
+            get val() {
+              return this.baseValue;
+            }
+            didInsertElement() {
+              middle = this;
+            }
+          }
+        )
+      );
 
       this.render('{{middle-mut}}');
 
@@ -331,18 +384,25 @@ moduleFor(
     ['@test automatic mutable bindings exposes a mut cell in attrs']() {
       let inner;
 
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            inner = this;
-          },
-        }),
-        template: '{{this.foo}}',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('{{this.foo}}'),
+          class extends Component {
+            didInsertElement() {
+              inner = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('x-outer', {
-        template: '{{x-inner foo=this.bar}}',
-      });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate('{{x-inner foo=this.bar}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{x-outer bar=this.baz}}', { baz: 'foo' });
 
@@ -364,18 +424,25 @@ moduleFor(
     ['@test automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them']() {
       let inner;
 
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            inner = this;
-          },
-        }),
-        template: '{{@model}}',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('{{@model}}'),
+          class extends Component {
+            didInsertElement() {
+              inner = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('x-outer', {
-        template: '{{x-inner model=this.nonexistent}}',
-      });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate('{{x-inner model=this.nonexistent}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{x-outer}}');
 
@@ -397,21 +464,30 @@ moduleFor(
     ['@test automatic mutable bindings tolerate constant non-stream inputs and attempts to set them']() {
       let inner;
 
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            inner = this;
-          },
-        }),
-        template: 'hello{{@model}}',
-      });
+      this.owner.register(
+        'component:x-inner',
+        setComponentTemplate(
+          precompileTemplate('hello{{@model}}'),
+          class extends Component {
+            didInsertElement() {
+              inner = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('x-outer', {
-        // Use `this.x` here instead of `@x` to let `x-inner` mutate `this.x`.
-        // `@x` points to the literal binding from `x-outer`, which is of
-        // course immutable.
-        template: '{{x-inner model=this.x}}',
-      });
+      this.owner.register(
+        'component:x-outer',
+        setComponentTemplate(
+          precompileTemplate(
+            // Use `this.x` here instead of `@x` to let `x-inner` mutate `this.x`.
+            // `@x` points to the literal binding from `x-outer`, which is of
+            // course immutable.
+            '{{x-inner model=this.x}}'
+          ),
+          class extends Component {}
+        )
+      );
 
       this.render('{{x-outer x="foo"}}');
 
@@ -438,28 +514,33 @@ moduleFor(
     ['@test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes']() {
       let input, output;
 
-      this.registerComponent('x-input', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:x-input',
+        class extends Component {
           didInsertElement() {
             input = this;
-          },
-        }),
-      });
+          }
+        }
+      );
 
-      this.registerComponent('x-output', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['style'],
-          didInsertElement() {
-            output = this;
-          },
-          style: computed('height', function () {
-            let height = this.get('height');
-            return htmlSafe(`height: ${height}px;`);
-          }),
-          height: 20,
-        }),
-        template: '{{this.height}}',
-      });
+      this.owner.register(
+        'component:x-output',
+        setComponentTemplate(
+          precompileTemplate('{{this.height}}'),
+          class extends Component {
+            attributeBindings = ['style'];
+            didInsertElement() {
+              output = this;
+            }
+            @computed('height')
+            get style() {
+              let height = this.get('height');
+              return htmlSafe(`height: ${height}px;`);
+            }
+            height = 20;
+          }
+        )
+      );
 
       this.render('{{x-output height=this.height}}{{x-input height=(mut this.height)}}', {
         height: 60,
@@ -506,38 +587,41 @@ moduleFor(
     ['@test an attribute binding of a computed property with a setter of a 2-way bound attr recomputes when the attr changes']() {
       let input, output;
 
-      this.registerComponent('x-input', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:x-input',
+        class extends Component {
           didInsertElement() {
             input = this;
-          },
-        }),
-      });
+          }
+        }
+      );
 
-      this.registerComponent('x-output', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['style'],
-          didInsertElement() {
-            output = this;
-          },
-          style: computed('height', 'width', function () {
-            let height = this.get('height');
-            let width = this.get('width');
-            return htmlSafe(`height: ${height}px; width: ${width}px;`);
-          }),
-          height: 20,
-          width: computed('height', {
-            get() {
+      this.owner.register(
+        'component:x-output',
+        setComponentTemplate(
+          precompileTemplate('{{this.width}}x{{this.height}}'),
+          class extends Component {
+            attributeBindings = ['style'];
+            didInsertElement() {
+              output = this;
+            }
+            @computed('height', 'width')
+            get style() {
+              let height = this.get('height');
+              let width = this.get('width');
+              return htmlSafe(`height: ${height}px; width: ${width}px;`);
+            }
+            height = 20;
+            @computed('height')
+            get width() {
               return this.get('height') * 2;
-            },
-            set(keyName, width) {
+            }
+            set width(width) {
               this.set('height', width / 2);
-              return width;
-            },
-          }),
-        }),
-        template: '{{this.width}}x{{this.height}}',
-      });
+            }
+          }
+        )
+      );
 
       this.render('{{x-output width=this.width}}{{x-input width=(mut this.width)}}', {
         width: 70,

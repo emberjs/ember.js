@@ -8,10 +8,9 @@ import EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
 import { renderSettled } from '@ember/-internals/glimmer';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
+import type { BootEnvironment, Component } from '@ember/-internals/glimmer';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
-import type { ViewMixin } from '@ember/-internals/views';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Registry } from '@ember/-internals/container';
 import type { SimpleElement } from '@simple-dom/interface';
@@ -149,7 +148,7 @@ class ApplicationInstance extends EngineInstance {
     @deprecated
     @private
   */
-  didCreateRootView(view: ViewMixin) {
+  didCreateRootView(view: Component) {
     view.appendTo(this.rootElement!);
   }
 
@@ -264,11 +263,6 @@ class ApplicationInstance extends EngineInstance {
     let handleTransitionReject = (error: any): unknown => {
       if (error.error && error.error instanceof Error) {
         throw error.error;
-      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
-        return router._routerMicrolib.activeTransition.then(
-          handleTransitionResolve,
-          handleTransitionReject
-        );
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -285,6 +279,7 @@ class ApplicationInstance extends EngineInstance {
     // getURL returns the set url with the rootURL stripped off
     return router
       .handleURL(location.getURL())
+      .followRedirects()
       .then(handleTransitionResolve, handleTransitionReject);
   }
 

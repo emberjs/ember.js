@@ -1,0 +1,79 @@
+import { trackedWeakMap } from '@glimmer/validator';
+import { expectTypeOf } from 'expect-type';
+
+import { module, test } from '../-utils';
+
+expectTypeOf<ReturnType<typeof trackedWeakMap<object, number>>>().toMatchTypeOf<
+  WeakMap<object, number>
+>();
+
+module('@glimmer/validator: trackedWeakMap()', function () {
+  test('constructor', (assert) => {
+    const obj = {};
+    const map = trackedWeakMap([[obj, 123]]);
+
+    assert.strictEqual(map.get(obj), 123);
+    assert.ok(map instanceof WeakMap);
+  });
+
+  test('does not work with built-ins', (assert) => {
+    const map = trackedWeakMap();
+    const pattern =
+      /(Invalid value used as weak map key)|(WeakMap key must be an object)|(Attempted to set a non-object key in a WeakMap)|(must be an object or an unregistered symbol)/u;
+
+    assert.throws(
+      // @ts-expect-error -- point is testing constructor error
+      () => map.set('aoeu', 123),
+      pattern
+    );
+    assert.throws(
+      // @ts-expect-error -- point is testing constructor error
+      () => map.set(true, 123),
+      pattern
+    );
+    assert.throws(
+      // @ts-expect-error -- point is testing constructor error
+      () => map.set(123, 123),
+      pattern
+    );
+    assert.throws(
+      // @ts-expect-error -- point is testing constructor error
+      () => map.set(undefined, 123),
+      pattern
+    );
+  });
+
+  test('get/set', (assert) => {
+    const obj = {};
+    const map = trackedWeakMap();
+
+    map.set(obj, 123);
+    assert.strictEqual(map.get(obj), 123);
+
+    map.set(obj, 456);
+    assert.strictEqual(map.get(obj), 456);
+  });
+
+  test('has', (assert) => {
+    const obj = {};
+    const map = trackedWeakMap();
+
+    assert.false(map.has(obj));
+    map.set(obj, 123);
+    assert.true(map.has(obj));
+  });
+
+  test('delete', (assert) => {
+    const obj = {};
+    const map = trackedWeakMap();
+
+    assert.false(map.has(obj));
+    assert.false(map.delete(obj), 'returns false when key does not exist');
+
+    map.set(obj, 123);
+    assert.true(map.has(obj));
+
+    assert.true(map.delete(obj), 'returns true when key exists');
+    assert.false(map.has(obj));
+  });
+});

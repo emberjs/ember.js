@@ -5,6 +5,8 @@ import { get, set, computed } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import { RSVP } from '@ember/-internals/runtime';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 import {
@@ -96,21 +98,6 @@ class ArrayDelegate {
   }
 }
 
-const makeSet = (() => {
-  // IE11 does not support `new Set(items);`
-  let set = new Set([1, 2, 3]);
-
-  if (set.size === 3) {
-    return (items) => new Set(items);
-  } else {
-    return (items) => {
-      let s = new Set();
-      items.forEach((value) => s.add(value));
-      return s;
-    };
-  }
-})();
-
 class SetDelegate extends ArrayDelegate {
   constructor(set) {
     let array = [];
@@ -158,7 +145,7 @@ class BasicEachTest extends TogglingEachTest {}
 const TRUTHY_CASES = [
   ['hello'],
   emberA(['hello']),
-  makeSet(['hello']),
+  new Set(['hello']),
   new ForEachable(['hello']),
   ArrayProxy.create({ content: ['hello'] }),
   ArrayProxy.create({ content: emberA(['hello']) }),
@@ -173,7 +160,7 @@ const FALSY_CASES = [
   0,
   [],
   emberA([]),
-  makeSet([]),
+  new Set([]),
   new ForEachable([]),
   ArrayProxy.create({ content: [] }),
   ArrayProxy.create({ content: emberA([]) }),
@@ -519,26 +506,29 @@ class EachTest extends AbstractEachTest {
   [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-    let FooBarComponent = Component.extend({
+    let FooBarComponent = class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.isEven = true;
         this.tagName = 'li';
-      },
+      }
 
       _isEven() {
         this.set('isEven', this.get('item.value') % 2 === 0);
-      },
+      }
 
       didUpdate() {
         this._isEven();
-      },
-    });
+      }
+    };
 
-    this.registerComponent('foo-bar', {
-      ComponentClass: FooBarComponent,
-      template: '{{#if this.isEven}}{{this.item.value}}{{/if}}',
-    });
+    this.owner.register(
+      'component:foo-bar',
+      setComponentTemplate(
+        precompileTemplate('{{#if this.isEven}}{{this.item.value}}{{/if}}'),
+        FooBarComponent
+      )
+    );
 
     this.render(strip`
       {{#each this.list as |item|}}
@@ -792,7 +782,10 @@ class EachTest extends AbstractEachTest {
     // tag. Currently the only way to observe this the "JUMP-IF-NOT-MODIFIED", i.e. by
     // wrapping it in an component.
 
-    this.registerComponent('x-wrapper', { template: '{{yield}}' });
+    this.owner.register(
+      'component:x-wrapper',
+      setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+    );
 
     this.makeList([]);
 
@@ -1039,7 +1032,7 @@ moduleFor(
   'Syntax test: {{#each}} with native Set',
   class extends EachTest {
     createList(items) {
-      let set = makeSet(items);
+      let set = new Set(items);
       return { list: set, delegate: new SetDelegate(set) };
     }
 
@@ -1101,12 +1094,13 @@ moduleFor(
   class extends EachTest {
     createList(items) {
       let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        arrangedContent: computed('wrappedItems.[]', function () {
+      let proxy = class extends ArrayProxy {
+        @computed('wrappedItems.[]')
+        get arrangedContent() {
           // Slice the items to ensure that updates must be propogated
           return this.wrappedItems.slice();
-        }),
-      }).create({
+        }
+      }.create({
         wrappedItems: wrapped,
       });
 

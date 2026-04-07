@@ -1,4 +1,6 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { set, get } from '@ember/object';
 
@@ -10,14 +12,17 @@ moduleFor(
     ['@test {{readonly}} of a path should work']() {
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            component = this;
-          },
-        }),
-        template: '{{this.value}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.value}}'),
+          class extends Component {
+            didInsertElement() {
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render('{{foo-bar value=(readonly this.val)}}', {
         val: 12,
@@ -39,15 +44,18 @@ moduleFor(
     '@test updating a {{readonly}} property from above works'(assert) {
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            component = this;
-          },
-        }),
-        template: '{{this.value}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.value}}'),
+          class extends Component {
+            init() {
+              super.init(...arguments);
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render('{{foo-bar value=(readonly this.thing)}}', {
         thing: 'initial',
@@ -75,14 +83,17 @@ moduleFor(
     '@test updating a nested path of a {{readonly}}'(assert) {
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            component = this;
-          },
-        }),
-        template: '{{this.value.prop}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.value.prop}}'),
+          class extends Component {
+            didInsertElement() {
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render('{{foo-bar value=(readonly this.thing)}}', {
         thing: {
@@ -112,14 +123,17 @@ moduleFor(
     ['@test {{readonly}} of a string renders correctly']() {
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            component = this;
-          },
-        }),
-        template: '{{this.value}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.value}}'),
+          class extends Component {
+            didInsertElement() {
+              component = this;
+            }
+          }
+        )
+      );
 
       this.render('{{foo-bar value=(readonly "12")}}');
 
@@ -143,23 +157,29 @@ moduleFor(
     ['@test {{mut}} of a {{readonly}} mutates only the middle and bottom tiers']() {
       let middle, bottom;
 
-      this.registerComponent('x-bottom', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            bottom = this;
-          },
-        }),
-        template: '{{this.bar}}',
-      });
+      this.owner.register(
+        'component:x-bottom',
+        setComponentTemplate(
+          precompileTemplate('{{this.bar}}'),
+          class extends Component {
+            didInsertElement() {
+              bottom = this;
+            }
+          }
+        )
+      );
 
-      this.registerComponent('x-middle', {
-        ComponentClass: Component.extend({
-          didInsertElement() {
-            middle = this;
-          },
-        }),
-        template: '{{this.foo}} {{x-bottom bar=(mut this.foo)}}',
-      });
+      this.owner.register(
+        'component:x-middle',
+        setComponentTemplate(
+          precompileTemplate('{{this.foo}} {{x-bottom bar=(mut this.foo)}}'),
+          class extends Component {
+            didInsertElement() {
+              middle = this;
+            }
+          }
+        )
+      );
 
       this.render('{{x-middle foo=(readonly this.val)}}', {
         val: 12,

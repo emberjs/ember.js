@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
-import { compile } from 'ember-template-compiler';
+import { precompileTemplate } from '@ember/template-compilation';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
@@ -38,9 +38,15 @@ moduleFor(
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
-      this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
+      this.add('template:home', precompileTemplate('<h3 class="hours">Hours</h3>'));
+      this.add(
+        'template:camelot',
+        precompileTemplate('<section id="camelot"><h3>Is a silly place</h3></section>')
+      );
+      this.add(
+        'template:homepage',
+        precompileTemplate('<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>')
+      );
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -116,16 +122,15 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           menuItem = MenuItem.create({ id: id });
 
           return new RSVP.Promise(function (res) {
             resolve = res;
           });
-        },
-      });
+        }
+      };
 
       this.add('model:menu_item', MenuItem);
 
@@ -137,8 +142,8 @@ moduleFor(
 
       this.add('route:special', SpecialRoute);
 
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       let promise;
       ignoreDeprecation(() => {
@@ -162,12 +167,11 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           return { id: id };
-        },
-      });
+        }
+      };
 
       this.add('model:menu_item', MenuItem);
 
@@ -181,15 +185,15 @@ moduleFor(
 
       this.add(
         'route:loading',
-        Route.extend({
+        class extends Route {
           enter() {
             assert.ok(false, "LoadingRoute shouldn't have been entered.");
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
@@ -210,14 +214,14 @@ moduleFor(
 
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model() {
             return new RSVP.Promise((res) => (resolve = res));
-          },
+          }
           setup() {
             throw new Error('Setup error');
-          },
-          actions: {
+          }
+          actions = {
             error(reason) {
               assert.equal(
                 reason.message,
@@ -226,8 +230,8 @@ moduleFor(
               );
               return true;
             },
-          },
-        })
+          };
+        }
       );
 
       runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
@@ -245,20 +249,18 @@ moduleFor(
 
       let menuItem, resolve;
 
-      let MenuItem = EmberObject.extend();
-
-      MenuItem.reopenClass({
-        find(id) {
+      let MenuItem = class extends EmberObject {
+        static find(id) {
           menuItem = MenuItem.create({ id: id });
           return new RSVP.Promise((res) => (resolve = res));
-        },
-      });
+        }
+      };
       this.add('model:menu_item', MenuItem);
 
       this.add(
         'route:application',
-        Route.extend({
-          actions: {
+        class extends Route {
+          actions = {
             error(reason) {
               assert.equal(
                 reason.message,
@@ -267,21 +269,21 @@ moduleFor(
               );
               return true;
             },
-          },
-        })
+          };
+        }
       );
 
       this.add(
         'route:special',
-        Route.extend({
+        class extends Route {
           model({ menu_item_id }) {
             return MenuItem.find(menu_item_id);
-          },
+          }
 
           setup() {
             throw new Error('Setup error');
-          },
-        })
+          }
+        }
       );
 
       let promise = runTask(() => handleURLRejectsWith(this, assert, '/specials/1', 'Setup error'));
@@ -411,18 +413,19 @@ moduleFor(
 
       this.add(
         'route:choose',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             if (destination) {
               this.router.transitionTo(destination);
             }
-          },
+          }
 
           setupController() {
             chooseFollowed++;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -455,24 +458,25 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             this.router.transitionTo('home');
-          },
+          }
           setupController() {
             assert.ok(false, 'Should transition before setupController');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:bar-baz',
-        Route.extend({
+        class extends Route {
           enter() {
             assert.ok(false, 'Should abort transition getting to next route');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -501,27 +505,28 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             return this.router.transitionTo('bar.baz').then(function () {
               successCount++;
             });
-          },
+          }
 
           setupController() {
             assert.ok(true, "Should still invoke bar's setupController");
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:bar.baz',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, "Should still invoke bar.baz's setupController");
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/foo/bar/baz').then(() => {
@@ -551,25 +556,26 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel() {
             if (count++ > 10) {
               assert.ok(false, 'infinite loop');
             } else {
               this.router.transitionTo('bar.baz', model);
             }
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:bar.baz',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, 'Should still invoke setupController');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -596,14 +602,15 @@ moduleFor(
 
       this.add(
         'route:foo',
-        Route.extend({
-          router: service(),
-          actions: {
+        class extends Route {
+          @service
+          router;
+          actions = {
             goToQux() {
               this.router.transitionTo('foo.qux');
             },
-          },
-        })
+          };
+        }
       );
 
       return this.visit('/foo/bar/baz').then(() => {
@@ -658,13 +665,13 @@ moduleFor(
 
       this.add(
         'route:posts',
-        Route.extend({
-          model() {},
+        class extends Route {
+          model() {}
           setupController() {
             postsTemplateRendered = true;
             this._super(...arguments);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -697,7 +704,11 @@ moduleFor(
         // if we transition in this test we will receive failures
         // if the tests are run from a static file
         _doURLTransition() {
-          return RSVP.resolve('');
+          return {
+            followRedirects() {
+              return RSVP.resolve('');
+            },
+          };
         },
       });
 
@@ -716,11 +727,11 @@ moduleFor(
 
       this.add(
         'route:post',
-        Route.extend({
+        class extends Route {
           model(params) {
             return posts[params.post_id];
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/posts/1').then(() => {
@@ -763,15 +774,15 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
-      this.addTemplate('index', '<p>INDEX</p>');
-      this.addTemplate('loading', '<p>LOADING</p>');
+      this.add('template:index', precompileTemplate('<p>INDEX</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING</p>'));
 
       run(() => this.visit('/'));
       let rootElement = document.getElementById('qunit-fixture');
@@ -803,9 +814,10 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          router: service(),
-          actions: {
+        class extends Route {
+          @service
+          router;
+          actions = {
             willTransition(transition) {
               assert.ok(true, 'willTransition was called');
               if (redirect) {
@@ -815,45 +827,45 @@ moduleFor(
                 transition.abort();
               }
             },
-          },
-        })
+          };
+        }
       );
 
       let deferred = null;
 
       this.add(
         'route:loading',
-        Route.extend({
+        class extends Route {
           activate() {
             assert.ok(deferred, 'LoadingRoute should be entered at this time');
-          },
+          }
           deactivate() {
             assert.ok(true, 'LoadingRoute was exited');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:nork',
-        Route.extend({
+        class extends Route {
           activate() {
             assert.ok(true, 'NorkRoute was entered');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           activate() {
             assert.ok(true, 'AboutRoute was entered');
-          },
+          }
           model() {
             if (deferred) {
               return deferred.promise;
             }
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -887,21 +899,21 @@ moduleFor(
 
       this.add(
         'route:nork',
-        Route.extend({
+        class extends Route {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.on('activate', function (transition) {
               assert.equal(++eventFired, 1, 'activate event is fired once');
               assert.ok(transition, 'transition is passed to activate event');
             });
-          },
+          }
 
           activate(transition) {
             assert.ok(true, 'activate hook is called');
             assert.ok(transition, 'transition is passed to activate hook');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/nork');
@@ -919,21 +931,21 @@ moduleFor(
 
       this.add(
         'route:nork',
-        Route.extend({
+        class extends Route {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.on('deactivate', function (transition) {
               assert.equal(++eventFired, 1, 'deactivate event is fired once');
               assert.ok(transition, 'transition is passed');
             });
-          },
+          }
 
           deactivate(transition) {
             assert.ok(true, 'deactivate hook is called');
             assert.ok(transition, 'transition is passed');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/nork').then(() => this.visit('/dork'));
@@ -1029,23 +1041,24 @@ moduleFor(
 
       this.add(
         'route:about',
-        Route.extend({
-          serialize: function (model) {
+        class extends Route {
+          serialize(model) {
             if (model === null) {
               return { hurhurhur: 'TreeklesMcGeekles' };
             }
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:home',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           beforeModel() {
             this.router.transitionTo('about', null);
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -1082,14 +1095,14 @@ moduleFor(
 
       this.add(
         'route:yippie',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject({
               message: rejectedMessage,
               stack: rejectedStack,
             });
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(
@@ -1129,13 +1142,13 @@ moduleFor(
 
       this.add(
         'route:yippie',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject({
               errorThrown: { message: rejectedMessage, stack: rejectedStack },
             });
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(
@@ -1164,11 +1177,11 @@ moduleFor(
 
       this.add(
         'route:wowzers',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject();
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/'));
@@ -1197,11 +1210,11 @@ moduleFor(
 
       this.add(
         'route:yondo',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject(rejectedMessage);
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
@@ -1222,22 +1235,22 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          actions: {
+        class extends Route {
+          actions = {
             willChangeModel: shouldNotFire,
             willChangeContext: shouldNotFire,
             willLeave: shouldNotFire,
-          },
-        })
+          };
+        }
       );
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(true, 'about route was entered');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/about');
@@ -1254,12 +1267,13 @@ moduleFor(
 
       this.add(
         'route:yondo',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
             this.router.transitionTo('stink-bomb', { something: 'goes boom' });
-          },
-        })
+          }
+        }
       );
 
       console.error = function () {
@@ -1280,7 +1294,7 @@ moduleFor(
     }
 
     ['@test Errors in transition show error template if available'](assert) {
-      this.addTemplate('error', "<div id='error'>Error!</div>");
+      this.add('template:error', precompileTemplate("<div id='error'>Error!</div>"));
 
       this.router.map(function () {
         this.route('yondo', { path: '/' });
@@ -1289,12 +1303,13 @@ moduleFor(
 
       this.add(
         'route:yondo',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           redirect() {
-            this.transitionTo('stink-bomb', { something: 'goes boom' });
-          },
-        })
+            this.router.transitionTo('stink-bomb', { something: 'goes boom' });
+          }
+        }
       );
       console.error = () => {};
 
@@ -1321,20 +1336,20 @@ moduleFor(
 
       let calls = [];
 
-      let SpyRoute = Route.extend({
+      class SpyRoute extends Route {
         setupController(/* controller, model, transition */) {
           calls.push(['setup', this.routeName]);
-        },
+        }
 
         resetController(/* controller */) {
           calls.push(['reset', this.routeName]);
-        },
-      });
+        }
+      }
 
-      this.add('route:a', SpyRoute.extend());
-      this.add('route:b', SpyRoute.extend());
-      this.add('route:c', SpyRoute.extend());
-      this.add('route:out', SpyRoute.extend());
+      this.add('route:a', class extends SpyRoute {});
+      this.add('route:b', class extends SpyRoute {});
+      this.add('route:c', class extends SpyRoute {});
+      this.add('route:out', class extends SpyRoute {});
 
       let router;
       return this.visit('/')
@@ -1374,11 +1389,11 @@ moduleFor(
       });
       this.add(
         'route:boom',
-        Route.extend({
+        class extends Route {
           init() {
             throw new Error('boom!');
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/boom'), /\bboom\b/);
@@ -1390,11 +1405,11 @@ moduleFor(
       });
       this.add(
         'route:boom',
-        Route.extend({
+        class extends Route {
           init() {
             throw new Error('boom!');
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(this.visit('/'), /\bboom\b/);
@@ -1402,9 +1417,9 @@ moduleFor(
 
     async ['@test Doesnt swallow exception thrown from willTransition'](assert) {
       assert.expect(1);
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('index', 'index');
-      this.addTemplate('other', 'other');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
+      this.add('template:index', precompileTemplate('index'));
+      this.add('template:other', precompileTemplate('other'));
 
       this.router.map(function () {
         this.route('index', { path: '/' });
@@ -1413,13 +1428,13 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          actions: {
+        class extends Route {
+          actions = {
             willTransition() {
               throw new Error('boom');
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visit('/');
@@ -1434,9 +1449,9 @@ moduleFor(
       assert.expect(2);
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      class BlogEngine extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      }
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -1472,9 +1487,9 @@ moduleFor(
       assert.expect(1);
 
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      class BlogEngine extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      }
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -1490,7 +1505,9 @@ moduleFor(
       await this.visit('/');
 
       let router = this.applicationInstance.lookup('router:main');
-      let PostRoute = Route.extend({ serialize() {} });
+      let PostRoute = class extends Route {
+        serialize() {}
+      };
       this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
 
       try {
@@ -1508,16 +1525,16 @@ moduleFor(
 
       let engineInstance;
       // Register engine
-      let BlogEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      class BlogEngine extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      }
       this.add('engine:blog', BlogEngine);
-      let EngineIndexRoute = Route.extend({
+      class EngineIndexRoute extends Route {
         init() {
           this._super(...arguments);
           engineInstance = getOwner(this);
-        },
-      });
+        }
+      }
 
       // Register engine route map
       let BlogMap = function () {
@@ -1533,7 +1550,7 @@ moduleFor(
         .then(() => {
           let engine = this.applicationInstance.lookup('engine:blog');
           engine.register('route:index', EngineIndexRoute);
-          engine.register('template:index', compile('Engine Post!'));
+          engine.register('template:index', precompileTemplate('Engine Post!'));
           return this.visit('/blog');
         })
         .then(() => {
@@ -1559,7 +1576,7 @@ moduleFor(
         this.route('posts');
       });
 
-      let AppRoute = Route.extend();
+      let AppRoute = class extends Route {};
       this.add('route:basic', AppRoute);
 
       return this.visit('/posts').then(() => {

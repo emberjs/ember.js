@@ -1,16 +1,12 @@
 /* eslint-disable no-console */
 
-const execa = require('execa');
 const chalk = require('chalk');
 
-function run(command, args = []) {
+async function run(command, args = []) {
+  const { execa } = await import('execa');
   console.log(chalk.dim('$ ' + command + ' ' + args.join(' ')));
 
-  let p = execa(command, args);
-  p.stdout.pipe(process.stdout);
-  p.stderr.pipe(process.stderr);
-
-  return p;
+  return execa(command, args, { stdout: 'inherit', stderr: 'inherit' });
 }
 
 (async function () {

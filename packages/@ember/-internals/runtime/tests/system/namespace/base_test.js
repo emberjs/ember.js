@@ -79,12 +79,6 @@ moduleFor(
       );
     }
 
-    //test("Classes under Ember are properly named", function() {
-    //  // ES6TODO: This test does not work reliably when running independent package build with Broccoli config.
-    //  Ember.TestObject = EmberObject.extend({});
-    //  equal(Ember.TestObject.toString(), "Ember.TestObject", "class under Ember is given a string representation");
-    //});
-
     ['@test Lowercase namespaces are no longer supported'](assert) {
       let nsC = (lookup.namespaceC = Namespace.create());
       Namespace.processAll();
@@ -101,8 +95,8 @@ moduleFor(
           name: 'CustomNamespaceB',
         }));
 
-        nsA.Foo = EmberObject.extend();
-        nsB.Foo = EmberObject.extend();
+        nsA.Foo = class extends EmberObject {};
+        nsB.Foo = class extends EmberObject {};
 
         Namespace.processAll();
 
@@ -126,8 +120,8 @@ moduleFor(
 
       let namespace = (lookup.NS = Namespace.create());
 
-      namespace.ClassA = EmberObject.extend();
-      namespace.ClassB = EmberObject.extend();
+      namespace.ClassA = class extends EmberObject {};
+      namespace.ClassB = class extends EmberObject {};
 
       Namespace.processAll();
 

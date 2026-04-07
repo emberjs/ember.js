@@ -1,0 +1,68 @@
+# aka: our primary CLI-land consumer of @glimmer/syntax
+name: "Prettier Smoke Test"
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+      - release
+      - release*
+      - lts*
+    paths:
+      - ".github/workflows/glimmer-syntax-prettier-smoke-test.yml"
+      - ".github/actions/setup/**"
+      - "rollup.config.mjs"
+      - "packages/@glimmer/syntax/**"
+      - "packages/@glimmer/interfaces/**"
+      - "packages/@glimmer/util/**"
+      - "packages/@glimmer/wire-format/**"
+      - "packages/@handlebars/parser/**"
+  pull_request:
+    paths:
+      - ".github/workflows/glimmer-syntax-prettier-smoke-test.yml"
+      - ".github/actions/setup/**"
+      - "rollup.config.mjs"
+      - "packages/@glimmer/syntax/**"
+      - "packages/@glimmer/interfaces/**"
+      - "packages/@glimmer/util/**"
+      - "packages/@glimmer/wire-format/**"
+      - "packages/@handlebars/parser/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prettier-smoke-test:
+    name: Prettier handlebars smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+
+      - name: Pack @glimmer/syntax
+        working-directory: packages/@glimmer/syntax
+        run: pnpm pack --out ${{ github.workspace }}/glimmer-syntax.tgz
+
+      - name: Checkout prettier/prettier
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          repository: prettier/prettier
+          path: prettier-repo
+
+      - name: Install prettier dependencies
+        working-directory: prettier-repo
+        run: yarn install
+
+      - name: Install local @glimmer/syntax into prettier
+        working-directory: prettier-repo
+        run: yarn add "@glimmer/syntax@file:${{ github.workspace }}/glimmer-syntax.tgz"
+
+      - name: Run prettier handlebars tests
+        working-directory: prettier-repo
+        run: yarn jest tests/format/handlebars

@@ -1,0 +1,184 @@
+/* eslint-disable no-console */
+import { join } from 'node:path';
+import { killPortProcess } from 'kill-port-process';
+
+import fs from 'fs-extra';
+
+import { getOrBuildControlTarball } from './control.mjs';
+import { buildExperimentTarball } from './experiment.mjs';
+import { run, prepareApp, startVitePreview, waitForServer } from './utils.mjs';
+
+const { ensureDir, remove } = fs;
+
+function buildMarkersString(markers) {
+  return markers
+    .reduce((acc, marker) => {
+      return acc + ',' + marker + 'Start,' + marker + 'End';
+    }, '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join(',');
+}
+
+// Default configuration for runBenchmark
+const DEFAULT_CONTROL_BRANCH_NAME = 'main';
+const DEFAULT_CONTROL_APP_FROM_MAIN = false;
+const DEFAULT_CONTROL_PORT = 4500;
+const DEFAULT_EXPERIMENT_PORT = 4501;
+const DEFAULT_FIDELITY = process.env['RUNS'] || '20';
+const DEFAULT_THROTTLE = '1';
+const DEFAULT_REGRESSION_THRESHOLD = '25';
+const DEFAULT_SAMPLE_TIMEOUT = '60';
+const DEFAULT_MARKERS = [
+  // Copied from glimmer-vm/bin/setup-bench.mts (krausest benchmark)
+  'render',
+  'render1000Items1',
+  'clearItems1',
+  'render1000Items2',
+  'clearItems2',
+  'render5000Items1',
+  'clearManyItems1',
+  'render5000Items2',
+  'clearManyItems2',
+  'render1000Items3',
+  'append1000Items1',
+  'append1000Items2',
+  'updateEvery10thItem1',
+  'updateEvery10thItem2',
+  'selectFirstRow1',
+  'selectSecondRow1',
+  'removeFirstRow1',
+  'removeSecondRow1',
+  'swapRows1',
+  'swapRows2',
+  'clearItems4',
+];
+
+import { REPO_ROOT, BENCH_ROOT } from './utils.mjs';
+
+const CONTROL_DIRS = {
+  repo: join(BENCH_ROOT, 'ember-source-control'),
+  app: join(BENCH_ROOT, 'control'),
+};
+const EXPERIMENT_DIRS = {
+  app: join(BENCH_ROOT, 'experiment'),
+  repo: REPO_ROOT,
+};
+
+export async function runBenchmark({ force = false, reuse = false, headless = true } = {}) {
+  await ensureDir(BENCH_ROOT);
+
+  if (force) {
+    await killPortProcess([DEFAULT_CONTROL_PORT, DEFAULT_EXPERIMENT_PORT]);
+    await remove(CONTROL_DIRS.repo);
+    await remove(CONTROL_DIRS.app);
+    await remove(EXPERIMENT_DIRS.app);
+  }
+
+  await ensureDir(BENCH_ROOT);
+  await ensureDir(EXPERIMENT_DIRS.app);
+  await ensureDir(CONTROL_DIRS.app);
+
+  const controlTarball = await getOrBuildControlTarball({
+    repoRoot: REPO_ROOT,
+    controlRepoDir: CONTROL_DIRS.repo,
+    controlBranchName: DEFAULT_CONTROL_BRANCH_NAME,
+  });
+
+  const experimentTarball = await buildExperimentTarball({
+    repoDir: EXPERIMENT_DIRS.repo,
+    reuse,
+  });
+
+  const experimentAppSource = join(REPO_ROOT, 'smoke-tests/benchmark-app');
+  const controlAppSource = DEFAULT_CONTROL_APP_FROM_MAIN
+    ? join(CONTROL_DIRS.repo, 'smoke-tests/benchmark-app')
+    : experimentAppSource;
+
+  await Promise.all([
+    prepareApp({
+      sourceAppDir: controlAppSource,
+      destAppDir: CONTROL_DIRS.app,
+      emberSourceTarball: controlTarball,
+      reuse,
+    }),
+    prepareApp({
+      sourceAppDir: experimentAppSource,
+      destAppDir: EXPERIMENT_DIRS.app,
+      emberSourceTarball: experimentTarball,
+      reuse,
+    }),
+  ]);
+
+  // These will error if the parts are occupied (--strict-port)
+  const controlServer = startVitePreview({ appDir: CONTROL_DIRS.app, port: DEFAULT_CONTROL_PORT });
+  const experimentServer = startVitePreview({
+    appDir: EXPERIMENT_DIRS.app,
+    port: DEFAULT_EXPERIMENT_PORT,
+  });
+
+  controlServer.catch((err) => {
+    console.error('Control server exited unexpectedly:', err.message);
+  });
+  experimentServer.catch((err) => {
+    console.error('Experiment server exited unexpectedly:', err.message);
+  });
+
+  try {
+    await bootAndRun({ headless });
+  } finally {
+    console.log(`\n\tCleaning up servers with SIGKILL...`);
+
+    await killPortProcess([DEFAULT_CONTROL_PORT, DEFAULT_EXPERIMENT_PORT]);
+  }
+}
+
+async function bootAndRun({ headless = true } = {}) {
+  const controlUrl = `http://127.0.0.1:${DEFAULT_CONTROL_PORT}`;
+  const experimentUrl = `http://127.0.0.1:${DEFAULT_EXPERIMENT_PORT}`;
+  const markersString = buildMarkersString(DEFAULT_MARKERS);
+
+  console.log('\n\tWaiting for servers to be ready...');
+  await Promise.all([
+    waitForServer(controlUrl, { timeout: 30_000 }),
+    waitForServer(experimentUrl, { timeout: 30_000 }),
+  ]);
+  console.log('\tBoth servers are ready.\n');
+
+  const tracerbenchBin = join(REPO_ROOT, 'node_modules/tracerbench/bin/run');
+
+  const args = [
+    '--single-threaded-gc',
+    tracerbenchBin,
+    'compare',
+    '--regressionThreshold',
+    DEFAULT_REGRESSION_THRESHOLD,
+    '--sampleTimeout',
+    DEFAULT_SAMPLE_TIMEOUT,
+    '--fidelity',
+    DEFAULT_FIDELITY,
+    '--controlURL',
+    controlUrl,
+    '--experimentURL',
+    experimentUrl,
+    '--report',
+    '--cpuThrottleRate',
+    DEFAULT_THROTTLE,
+    '--markers',
+    markersString,
+    '--debug',
+    '--browserArgs',
+    [
+      // Use the new headless mode to support multiple targets
+      ...(headless ? ['--headless=new'] : []),
+      // GPU: use software rendering via SwiftShader, but do NOT
+      // combine --disable-gpu with --use-gl or --disable-software-rasterizer
+      // as the contradictory flags cause use-after-free crashes on macOS
+      '--disable-gpu',
+      '--disable-gpu-compositing',
+    ].join(','),
+  ];
+
+  await run('node', args, { cwd: EXPERIMENT_DIRS.app });
+}

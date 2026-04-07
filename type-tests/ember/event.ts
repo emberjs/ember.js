@@ -1,20 +1,23 @@
-import Ember from 'ember';
+import Component from "@ember/component";
+import EmberObject, { observer } from "@ember/object";
+import Evented, { on } from "@ember/object/evented";
+import { addListener, removeListener, sendEvent } from "@ember/object/events";
 
 function testOn() {
-  const Job = Ember.Object.extend({
-    logCompleted: Ember.on('completed', () => {
+  const Job = EmberObject.extend({
+    logCompleted: on('completed', () => {
       console.log('Job completed!');
     }),
   });
 
   const job = Job.create();
 
-  Ember.sendEvent(job, 'completed'); // Logs 'Job completed!'
+  sendEvent(job, 'completed'); // Logs 'Job completed!'
 }
 
 function testEvented() {
-  interface Person extends Ember.Evented {}
-  class Person extends Ember.Object {
+  interface Person extends Evented {}
+  class Person extends EmberObject {
     greet() {
       this.trigger('greet');
     }
@@ -39,22 +42,22 @@ function testEvented() {
 }
 
 function testObserver() {
-  Ember.Object.extend({
-    valueObserver: Ember.observer('value', () => {
+  EmberObject.extend({
+    valueObserver: observer('value', () => {
       // Executes whenever the "value" property changes
     }),
   });
 }
 
 function testListener() {
-  class TestListener extends Ember.Component {
+  class TestListener extends Component {
     init() {
-      Ember.addListener(this, 'willDestroyElement', this, 'willDestroyListener');
-      Ember.addListener(this, 'willDestroyElement', this, 'willDestroyListener', true);
-      Ember.addListener(this, 'willDestroyElement', this, this.willDestroyListener);
-      Ember.addListener(this, 'willDestroyElement', this, this.willDestroyListener, true);
-      Ember.removeListener(this, 'willDestroyElement', this, 'willDestroyListener');
-      Ember.removeListener(this, 'willDestroyElement', this, this.willDestroyListener);
+      addListener(this, 'willDestroyElement', this, 'willDestroyListener');
+      addListener(this, 'willDestroyElement', this, 'willDestroyListener', true);
+      addListener(this, 'willDestroyElement', this, this.willDestroyListener);
+      addListener(this, 'willDestroyElement', this, this.willDestroyListener, true);
+      removeListener(this, 'willDestroyElement', this, 'willDestroyListener');
+      removeListener(this, 'willDestroyElement', this, this.willDestroyListener);
     }
     willDestroyListener() {}
   }

@@ -2,6 +2,8 @@ import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-help
 
 import { A as emberA } from '@ember/array';
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
@@ -41,15 +43,18 @@ moduleFor(
     ) {
       let destroyedChildrenCount = 0;
 
-      this.registerComponent('foo-bar', {
-        template: '{{this.number}}',
-        ComponentClass: Component.extend({
-          willDestroy() {
-            this._super();
-            destroyedChildrenCount++;
-          },
-        }),
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.number}}'),
+          class extends Component {
+            willDestroy() {
+              super.willDestroy();
+              destroyedChildrenCount++;
+            }
+          }
+        )
+      );
 
       this.render(
         strip`
