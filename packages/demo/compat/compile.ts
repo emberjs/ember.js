@@ -1286,6 +1286,14 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 
   (globalThis as any).__gxtPendingSync = true;
   (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+  // Track whether ANY property change was on a nested object (not a component's
+  // own cell). Nested changes need the morph (Phase 2b) because GXT's cell
+  // tracking doesn't cover nested property paths (e.g., this.model.color).
+  // Direct cell changes (e.g., this.positionTwo) are handled by Phase 1.
+  const isNestedChange = keyName.includes('.') || _deferredTagDirties?.length > 0;
+  if (isNestedChange) {
+    (globalThis as any).__gxtHadNestedPropertyChange = true;
+  }
   // DON'T call gxtSyncDom() here — property changes may be batched (e.g.,
   // set(cond2, true); set(cond1, false) in a single runTask). Calling
   // gxtSyncDom after each set() processes inner conditionals before outer
@@ -1532,6 +1540,9 @@ queueMicrotask(patchGlobalEachSync);
     (globalThis as any).__gxtSyncing = true;
     // Increment sync cycle ID so modifier update dedup works correctly.
     (globalThis as any).__gxtSyncCycleId = ((globalThis as any).__gxtSyncCycleId || 0) + 1;
+    // Clear modifier update tracking for this new sync cycle
+    const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+    if (modMgr?._updatedInstances) modMgr._updatedInstances.clear();
     // Wrap ALL phases in try/finally so __gxtSyncing is ALWAYS reset,
     // even if an unexpected error escapes a catch block.
     try {
@@ -1569,6 +1580,19 @@ queueMicrotask(patchGlobalEachSync);
       const updateRootTags = (globalThis as any).__gxtUpdateRootTagValues;
       if (typeof updateRootTags === 'function') updateRootTags();
     } catch { /* ignore */ }
+    // After Phase 1b, if ALL property changes were direct cell updates (no nested
+    // object mutations), and root tags are current, skip the morph. Direct cell
+    // changes are fully handled by Phase 1 and the morph would redundantly
+    // replace elements, breaking modifier element identity.
+    if (!(globalThis as any).__gxtHadNestedPropertyChange) {
+      try {
+        const checkTags = (globalThis as any).__gxtCheckAllTagsCurrent;
+        if (typeof checkTags === 'function' && checkTags()) {
+          (globalThis as any).__gxtHadPendingSync = false;
+        }
+      } catch { /* ignore */ }
+    }
+    (globalThis as any).__gxtHadNestedPropertyChange = false;
     // PHASE 2a: Snapshot live instances before force-rerender
     try {
       const snapshot = (globalThis as any).__gxtSnapshotLiveInstances;
@@ -1779,8 +1803,16 @@ setInterval(() => {
   if (typeof (globalThis as any).__gxtClearIfWatchers === 'function') {
     (globalThis as any).__gxtClearIfWatchers();
   }
-  // Clear cached engine instances from {{mount}} to prevent reuse across tests
+  // Destroy cached engine instances from {{mount}} so Namespace.destroy()
+  // removes them from NAMESPACES (prevents "Should not have any NAMESPACES" failures).
   if ((globalThis as any).__gxtEngineInstances) {
+    for (const [, engineInst] of (globalThis as any).__gxtEngineInstances) {
+      try {
+        if (engineInst && typeof engineInst.destroy === 'function' && !engineInst.isDestroyed && !engineInst.isDestroying) {
+          engineInst.destroy();
+        }
+      } catch { /* ignore */ }
+    }
     (globalThis as any).__gxtEngineInstances.clear();
   }
   // Clear pending if-watcher notifications from the previous test

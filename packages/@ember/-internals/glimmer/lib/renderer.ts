@@ -232,6 +232,22 @@ function morphChildren(target: Element | SimpleElement, source: DocumentFragment
     }
 
     // Type mismatch or different tag — replace
+    // Migrate modifier cache from old element to new element so modifiers
+    // survive DOM replacement during morph.
+    if (oldNode.nodeType === 1 && newNode.nodeType === 1) {
+      const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+      if (modMgr?._cache) {
+        const oldCache = modMgr._cache.get(oldNode as HTMLElement);
+        if (oldCache && oldCache.size > 0) {
+          modMgr._cache.set(newNode as HTMLElement, oldCache);
+          modMgr._cache.delete(oldNode as HTMLElement);
+          // Update element reference in cached modifier instances
+          for (const [, entry] of oldCache) {
+            if (entry.instance) entry.instance.element = newNode;
+          }
+        }
+      }
+    }
     target.replaceChild(newNode, oldNode);
   }
 
@@ -1104,6 +1120,26 @@ if (!(globalThis as any).__GXT_MODE__) {
       }
     }
   }
+};
+
+// Check if all GXT root tag values are current (meaning cell-based updates
+// already brought the DOM up to date). Used to skip redundant morph renders.
+(globalThis as any).__gxtCheckAllTagsCurrent = function(): boolean {
+  for (const renderer of renderers) {
+    const state = (renderer as any).state as RendererState;
+    if (!state) continue;
+    const debugRoots = state.debug?.roots;
+    if (!debugRoots) continue;
+    for (const root of debugRoots) {
+      const classicRoot = root as any;
+      if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
+        if (valueForTag(classicRoot.gxtComponentTag) !== classicRoot.gxtLastTagValue) {
+          return false; // At least one root is stale
+        }
+      }
+    }
+  }
+  return true;
 };
 
 interface ViewRegistry {

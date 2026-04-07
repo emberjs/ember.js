@@ -142,6 +142,12 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
 
     runAppend(this.component);
+
+    // After the initial render, reset pendingSyncFromPropertyChange to prevent
+    // the setInterval fallback from triggering a morph (Phase 2b). Property
+    // change notifications during the initial render (e.g., from EmberObject.create
+    // in modifier managers) should NOT cause a morph — the DOM is already correct.
+    (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
   }
 
   renderComponent(component: object, options: { expect: string }) {

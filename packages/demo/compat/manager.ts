@@ -4472,6 +4472,9 @@ const $_MANAGERS = {
     // The formula pattern is: call destructor() → call fn(element) again.
     // We intercept this to provide install/update/destroy lifecycle.
     _cache: new WeakMap<HTMLElement, Map<string, { instance: any; manager: any; ModifierClass: any; pendingDestroy: boolean }>>(),
+    // Track which modifier instances were already updated in the current sync cycle.
+    // Cleared at the start of each sync via __gxtClearModUpdateSet.
+    _updatedInstances: new Set<any>(),
 
     // Built-in keyword modifiers resolved lazily.
     // The 'on' modifier from @glimmer/runtime is registered via
@@ -4650,7 +4653,8 @@ const $_MANAGERS = {
         }
       }
       const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
-      const elCache = self._cache.get(element);
+      let elCache = self._cache.get(element);
+      // If the element-based cache misses, check the secondary (element-independent)
       if (elCache) {
         const cached = elCache.get(modKey);
         // If the modifier is already active and not pending destroy, return a no-op
@@ -4812,18 +4816,14 @@ const $_MANAGERS = {
             }
             // Guard against duplicate updates within the same sync cycle.
             // GXT formulas can fire multiple times per cycle, and the cache entry
-            // may be replaced by a parallel fresh install. Track updates in a
-            // global map keyed by ModifierClass to survive cache churn.
-            const syncCycleId = (globalThis as any).__gxtSyncCycleId || 0;
-            if (!self._updateCycleMap) self._updateCycleMap = new WeakMap();
-            const classMap = self._updateCycleMap.get(cached.ModifierClass) || new Map();
-            self._updateCycleMap.set(cached.ModifierClass, classMap);
-            const lastCycle = classMap.get(element) || 0;
-            if (shouldUpdate && lastCycle === syncCycleId && syncCycleId > 0) {
+            // may be replaced by a parallel fresh install. Use a Set of already-
+            // updated instances (cleared at the start of each sync cycle) to
+            // reliably prevent duplicate updateModifier calls.
+            if (shouldUpdate && self._updatedInstances.has(cached.instance)) {
               shouldUpdate = false;
             }
             if (shouldUpdate && cached.manager.updateModifier) {
-              classMap.set(element, syncCycleId);
+              self._updatedInstances.add(cached.instance);
               // Use lazy args for the actual update call so GXT tracks per-consumed-arg
               const lazyArgs = buildLazyArgs(props, hashArgs);
               cached.manager.updateModifier(cached.instance, lazyArgs);
