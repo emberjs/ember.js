@@ -393,6 +393,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   // shadows keyword!
                   const fn = () => {
                     assert.step('shadowed:fn:invoke');
+                    return () => {};
                   };
 
                   class Demo extends Component {
