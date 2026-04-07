@@ -57,6 +57,23 @@ import { destroy as _destroyDestroyable } from './destroyable';
 // Expose destroy helpers so compile.ts can flush pending modifier destroys
 // synchronously at the end of a sync cycle.
 (globalThis as any).__gxtRunDestructorsFn = _gxtRunDestructors;
+
+// Stack-based instance capture for $_dc_ember lifecycle tracking.
+// Previously a single global (__gxtLastCreatedEmberInstance) was used, which
+// broke when nested components were created during handle() — only the LAST
+// instance survived, and __dcCaptureInstance got the wrong one.
+// Now: before calling handle(), push a null slot; creation code sets the top;
+// after handle(), pop and use the captured value.
+const _instanceCaptureStack: Array<any> = [];
+function pushInstanceCapture() { _instanceCaptureStack.push(null); }
+function popInstanceCapture(): any { return _instanceCaptureStack.pop() ?? null; }
+function setInstanceCapture(inst: any) {
+  if (_instanceCaptureStack.length > 0) {
+    _instanceCaptureStack[_instanceCaptureStack.length - 1] = inst;
+  }
+  // Keep the global for backward compat with any other consumers
+  (globalThis as any).__gxtLastCreatedEmberInstance = inst;
+}
 (globalThis as any).__gxtDestroyDestroyableFn = _destroyDestroyable;
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
@@ -3834,11 +3851,14 @@ const $_MANAGERS = {
           (globalThis as any).owner = resolveOwner;
         }
         try {
+          pushInstanceCapture();
           const result = this.handle(resolvedKomp, mergedArgs, fw, ctx);
           // Capture the Ember instance for $_dc lifecycle tracking
           if (typeof komp.__dcCaptureInstance === 'function') {
-            const inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+            const inst = popInstanceCapture();
             if (inst) komp.__dcCaptureInstance(inst);
+          } else {
+            popInstanceCapture();
           }
           return result;
         } finally {
@@ -3881,11 +3901,14 @@ const $_MANAGERS = {
           (globalThis as any).owner = owner;
         }
         try {
+          pushInstanceCapture();
           const result = this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
           // Capture the Ember instance for $_dc lifecycle tracking
           if (typeof komp.__dcCaptureInstance === 'function') {
-            const inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+            const inst = popInstanceCapture();
             if (inst) komp.__dcCaptureInstance(inst);
+          } else {
+            popInstanceCapture();
           }
           return result;
         } finally {
@@ -6097,9 +6120,9 @@ function renderClassicComponent(
   }
   const skipInitHooks = isReused && isForceRerender;
 
-  // Expose the current instance via side-channel so $_dc_ember can track it
-  // for destroy lifecycle when dynamic component switching occurs.
-  (globalThis as any).__gxtLastCreatedEmberInstance = instance;
+  // Expose the current instance via stack-based capture so $_dc_ember can
+  // track it for destroy lifecycle when dynamic component switching occurs.
+  setInstanceCapture(instance);
 
   // Track this instance for destroy detection during force-rerender
   if (instance) {
@@ -6286,8 +6309,8 @@ function renderGlimmerComponent(
   fw: any,
   owner: any
 ): any {
-  // Expose the current instance via side-channel for $_dc_ember tracking
-  (globalThis as any).__gxtLastCreatedEmberInstance = instance;
+  // Expose the current instance via stack-based capture for $_dc_ember tracking
+  setInstanceCapture(instance);
 
   const container = document.createDocumentFragment();
   const renderContext = createRenderContext(instance, args, fw, owner);

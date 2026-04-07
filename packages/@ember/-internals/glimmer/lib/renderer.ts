@@ -354,6 +354,7 @@ class ClassicRootState {
   public render: () => void;
   readonly env: Environment;
   public isGxt: boolean = false; // Track if this root uses GXT templates
+  public isOutletView: boolean = false; // Track if this root is an OutletView
   public gxtNeedsRerender: boolean = false; // Flag for GXT re-render scheduling
   public gxtComponentTag: Tag | null = null; // Track component's dirty tag for GXT reactivity
   public gxtLastTagValue: number = 0; // Last known tag value for comparison
@@ -443,6 +444,7 @@ class ClassicRootState {
 
           if (root && 'state' in root && 'ref' in root) {
             // This is an OutletView - transform to expected format
+            this.isOutletView = true;
             const outletView = root as any;
             renderContext = {
               rootState: {
@@ -847,6 +849,16 @@ class ClassicRootState {
             if (gxtRootState.gxtComponentTag) {
               gxtRootState.gxtLastTagValue = valueForTag(gxtRootState.gxtComponentTag);
             }
+          } else if (gxtRoot && 'state' in gxtRoot && 'ref' in gxtRoot) {
+            // OutletView re-render: call the root outlet re-render function
+            // which clears innerHTML and re-renders the outlet state.
+            const outletRerender = (globalThis as any).__gxtRootOutletRerender;
+            if (typeof outletRerender === 'function') {
+              const outletRef = (gxtRoot as any).ref || (globalThis as any).__gxtTopOutletRef;
+              if (outletRef) {
+                outletRerender(outletRef);
+              }
+            }
           }
         });
 
@@ -1027,8 +1039,8 @@ if (!(globalThis as any).__GXT_MODE__) {
     if (!debugRoots) continue;
     for (const root of debugRoots) {
       const classicRoot = root as any;
-      if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
-        const currentTagValue = valueForTag(classicRoot.gxtComponentTag);
+      if (classicRoot.isGxt && (classicRoot.gxtComponentTag || classicRoot.isOutletView)) {
+        const currentTagValue = classicRoot.gxtComponentTag ? valueForTag(classicRoot.gxtComponentTag) : 0;
         // Also trigger for pending syncs from property changes — nested object
         // property changes (e.g., set(m, 'message', ...)) dirty m's tag but
         // not the component's SELF_TAG. The force-rerender is needed to

@@ -90,18 +90,12 @@ class EmberOutletElement extends HTMLElement {
       console.log('[ember-outlet] Rendering nested template:', tpl?.moduleName || typeof tpl);
     }
 
-    // Build context for nested template
-    const nestedContext = {
-      ...(controller || {}),
-      model,
-      owner: owner || (globalThis as any).owner,
-      outletState: nestedOutlet,
-      args: {
-        model,
-        controller,
-        outletState: nestedOutlet,
-      },
-    };
+    // Build context from controller via prototype chain.
+    const nestedContext: any = controller ? Object.create(controller) : {};
+    nestedContext.model = model;
+    nestedContext.owner = owner || (globalThis as any).owner;
+    nestedContext.outletState = nestedOutlet;
+    nestedContext.args = { model, controller, outletState: nestedOutlet };
 
     // Update the global outlet state for nested outlets
     const previousOutletState = (globalThis as any).__currentOutletState;
@@ -180,35 +174,32 @@ export default function createOutletTemplate(_owner: any) {
     }
 
     if (nestedTemplate && typeof nestedTemplate.render === 'function') {
-      // Build context for nested template using the nested outlet's data
-      const nestedContext = {
-        ...(nestedOutlet?.render?.controller || {}),
+      // Build context using controller DIRECTLY to preserve identity
+      const nestedCtrl = nestedOutlet?.render?.controller;
+      const nestedCtx: any = nestedCtrl ? Object.create(nestedCtrl) : {};
+      nestedCtx.model = nestedOutlet?.render?.model;
+      nestedCtx.owner = nestedOutlet?.render?.owner || context?.owner;
+      nestedCtx.outletState = nestedOutlet;
+      nestedCtx.args = {
         model: nestedOutlet?.render?.model,
-        owner: nestedOutlet?.render?.owner || context?.owner,
-        outletState: nestedOutlet, // Pass the nested outlet for further nesting
-        args: {
+        controller: nestedOutlet?.render?.controller,
+        outletState: nestedOutlet,
+      };
+      nestedTemplate.render(nestedCtx, parentElement);
+    } else if (nestedTemplate && typeof nestedTemplate === 'function') {
+      const tpl = nestedTemplate(context?.owner);
+      if (tpl && typeof tpl.render === 'function') {
+        const nestedCtrl = nestedOutlet?.render?.controller;
+        const nestedCtx: any = nestedCtrl ? Object.create(nestedCtrl) : {};
+        nestedCtx.model = nestedOutlet?.render?.model;
+        nestedCtx.owner = nestedOutlet?.render?.owner || context?.owner;
+        nestedCtx.outletState = nestedOutlet;
+        nestedCtx.args = {
           model: nestedOutlet?.render?.model,
           controller: nestedOutlet?.render?.controller,
           outletState: nestedOutlet,
-        },
-      };
-      nestedTemplate.render(nestedContext, parentElement);
-    } else if (nestedTemplate && typeof nestedTemplate === 'function') {
-      // It's a factory - call it first
-      const tpl = nestedTemplate(context?.owner);
-      if (tpl && typeof tpl.render === 'function') {
-        const nestedContext = {
-          ...(nestedOutlet?.render?.controller || {}),
-          model: nestedOutlet?.render?.model,
-          owner: nestedOutlet?.render?.owner || context?.owner,
-          outletState: nestedOutlet,
-          args: {
-            model: nestedOutlet?.render?.model,
-            controller: nestedOutlet?.render?.controller,
-            outletState: nestedOutlet,
-          },
         };
-        tpl.render(nestedContext, parentElement);
+        tpl.render(nestedCtx, parentElement);
       }
     }
     // If no nested template, just return empty - outlet has nothing to show

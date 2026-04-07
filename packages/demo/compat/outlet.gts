@@ -88,18 +88,18 @@ class EmberOutletElement extends HTMLElement {
       outletState: nestedOutlet,
     };
 
-    // Build context for nested template
-    // Spread controller properties so `this.value` on the controller works
-    const nestedContext: any = {
-      ...(controller || {}),
-      model,
-      owner: owner || (globalThis as any).owner,
-      outletState: nestedOutlet,
-      args: argsObj,
-      [$ARGS_KEY]: argsObj,
-      [$SLOTS_KEY]: {},
-      $fw: [[], [], []],
-    };
+    // Build context from controller via prototype chain so property reads
+    // fall through to the controller. GXT cells are installed on this
+    // renderContext, and __gxtComponentContexts maps the controller to it
+    // so set(controller, key, val) updates propagate.
+    const nestedContext: any = controller ? Object.create(controller) : {};
+    nestedContext.model = model;
+    nestedContext.owner = owner || (globalThis as any).owner;
+    nestedContext.outletState = nestedOutlet;
+    nestedContext.args = argsObj;
+    nestedContext[$ARGS_KEY] = argsObj;
+    nestedContext[$SLOTS_KEY] = {};
+    nestedContext.$fw = [[], [], []];
 
     // Update the global outlet state for nested outlets
     const previousOutletState = (globalThis as any).__currentOutletState;
@@ -125,6 +125,51 @@ class EmberOutletElement extends HTMLElement {
         (globalThis as any).__gxtRootContext = gxtRoot;
       }
       setParentContext(gxtRoot);
+
+      // Install GXT cells on the context so property reads inside formulas
+      // are tracked. Without this, set(model, 'color', 'blue') won't trigger
+      // re-renders because the formula never tracked cell(context, 'model').
+      // Use the global cellFor to ensure we use the SAME module instance as
+      // compile.ts (which handles __gxtTriggerReRender).
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      const registerOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
+      if (_cellFor) {
+        try {
+          const internalKeys = new Set([
+            'args', 'owner', 'outletState', '$fw', '$slots',
+            'constructor', 'init', 'willDestroy', 'toString',
+          ]);
+          const argsKeys = new Set(['model', 'controller', 'outletState']);
+          for (const key of Object.getOwnPropertyNames(nestedContext)) {
+            if (key.startsWith('_') || key.startsWith('$') || internalKeys.has(key)) continue;
+            const desc = Object.getOwnPropertyDescriptor(nestedContext, key);
+            if (desc && !desc.get && !desc.set && desc.configurable &&
+                typeof desc.value !== 'function') {
+              try {
+                _cellFor(nestedContext, key, false);
+                // Register reverse mapping for object values so mutations
+                // on nested objects dirty the parent cell
+                if (desc.value && typeof desc.value === 'object' && registerOwner) {
+                  registerOwner(desc.value, nestedContext, key);
+                }
+              } catch { /* ignore */ }
+            }
+          }
+          // Also install cells on the args object
+          for (const key of argsKeys) {
+            const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+            if (desc && !desc.get && !desc.set && desc.configurable &&
+                typeof desc.value !== 'function') {
+              try {
+                _cellFor(argsObj, key, false);
+                if (desc.value && typeof desc.value === 'object' && registerOwner) {
+                  registerOwner(desc.value, argsObj, key);
+                }
+              } catch { /* ignore */ }
+            }
+          }
+        } catch { /* ignore cell installation errors */ }
+      }
 
       try {
         // Render the template

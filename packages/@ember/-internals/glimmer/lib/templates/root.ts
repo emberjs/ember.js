@@ -415,11 +415,24 @@ export default function createRootTemplate(_owner: any) {
       // Check if routeTemplate is a component (e.g., from template('First'))
       // rather than a regular template factory. Components have templates
       // set via setComponentTemplate which we can retrieve.
+      let componentInstance: any = null;
       if (routeTemplate && typeof routeTemplate?.render !== 'function') {
         const componentTpl = getComponentTemplate(routeTemplate) ||
           getComponentTemplate(routeTemplate?.constructor) ||
           (typeof routeTemplate === 'function' && getComponentTemplate(routeTemplate.prototype));
         if (componentTpl) {
+          // The route template is a Component class. Instantiate it so that
+          // `this.message` in the template reads from the component, not the
+          // controller. Pass @model and @controller through args.
+          try {
+            const ComponentClass = typeof routeTemplate === 'function'
+              ? routeTemplate
+              : routeTemplate?.constructor;
+            if (ComponentClass && typeof ComponentClass === 'function') {
+              componentInstance = new ComponentClass();
+            }
+          } catch { /* ignore instantiation errors */ }
+
           // Instantiate the template factory with the owner
           const resolvedTemplate = typeof componentTpl === 'function' ? componentTpl(outletOwner) : componentTpl;
           if (resolvedTemplate) {
@@ -437,21 +450,31 @@ export default function createRootTemplate(_owner: any) {
         outletState: outletState,
       };
 
-      // Build render context from controller (this = controller in route templates).
-      // Use controller.model for this.model (the route sets it via controller.set('model', ...)),
-      // and use the route model for @model (through args).
-      const renderContext: any = {
-        ...(controller || {}),
-        owner: outletOwner,
-        outletState: outletState,
-        args: argsObj,
-        [$ARGS_KEY]: argsObj,
-        [$SLOTS_KEY]: {},
-        $fw: [[], [], []],
-      };
+      let renderContext: any;
+      if (componentInstance) {
+        // When a Component class is the route template, use the component
+        // instance as the render context so `this.message` reads from the
+        // component. Pass @model and @controller through args.
+        renderContext = componentInstance;
+      } else if (controller) {
+        // Build render context via Object.create(controller) so property
+        // reads fall through to the controller via prototype chain.
+        // GXT cells are installed on this renderContext, and
+        // __gxtComponentContexts maps the controller (prototype) to
+        // this renderContext, so set(controller, key, val) updates propagate.
+        renderContext = Object.create(controller);
+      } else {
+        renderContext = {};
+      }
+      renderContext.owner = outletOwner;
+      renderContext.outletState = outletState;
+      renderContext.args = argsObj;
+      renderContext[$ARGS_KEY] = argsObj;
+      renderContext[$SLOTS_KEY] = {};
+      renderContext.$fw = [[], [], []];
 
-      // Install model as a getter delegating to the controller so tracked/set changes
-      // on controller.model are reflected in this.model (route template context).
+      // Install model as a live getter so this.model reads from
+      // the controller (which gets model set via controller.set('model', ...)).
       if (controller) {
         const ctrl = controller;
         Object.defineProperty(renderContext, 'model', {
@@ -460,8 +483,65 @@ export default function createRootTemplate(_owner: any) {
           enumerable: true,
           configurable: true,
         });
-      } else {
+      } else if (!componentInstance) {
         renderContext.model = model;
+      }
+
+      // Register the renderContext in __gxtComponentContexts so that
+      // __gxtTriggerReRender(controller, key) can find and update cells
+      // on this renderContext. The map is keyed by prototype.
+      if (controller && typeof controller === 'object') {
+        if (!(globalThis as any).__gxtComponentContexts) {
+          (globalThis as any).__gxtComponentContexts = new WeakMap();
+        }
+        const ctxsMap = (globalThis as any).__gxtComponentContexts;
+        if (!ctxsMap.has(controller)) {
+          ctxsMap.set(controller, new Set());
+        }
+        ctxsMap.get(controller).add(renderContext);
+      }
+
+      // Install GXT cells on the render context so property reads inside formulas
+      // are tracked. Without this, set(model, 'color', 'blue') won't trigger
+      // re-renders because the formula never tracked cell(context, 'model').
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      const _registerOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
+      if (_cellFor) {
+        try {
+          const skipKeys = new Set([
+            'args', 'owner', 'outletState', '$fw', '$slots',
+            'constructor', 'init', 'willDestroy', 'toString',
+            'isDestroying', 'isDestroyed',
+          ]);
+          for (const key of Object.getOwnPropertyNames(renderContext)) {
+            if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+            const desc = Object.getOwnPropertyDescriptor(renderContext, key);
+            if (desc && !desc.get && !desc.set && desc.configurable &&
+                typeof desc.value !== 'function') {
+              try {
+                _cellFor(renderContext, key, false);
+                // Register reverse mapping so nested object mutations
+                // dirty the parent cell (e.g., model.color changes → dirty cell(ctx, 'model'))
+                if (desc.value && typeof desc.value === 'object' && _registerOwner) {
+                  _registerOwner(desc.value, renderContext, key);
+                }
+              } catch { /* ignore non-configurable properties */ }
+            }
+          }
+          // Also install cells on argsObj for @model etc.
+          for (const key of ['model', 'controller']) {
+            const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+            if (desc && !desc.get && !desc.set && desc.configurable &&
+                typeof desc.value !== 'function') {
+              try {
+                _cellFor(argsObj, key, false);
+                if (desc.value && typeof desc.value === 'object' && _registerOwner) {
+                  _registerOwner(desc.value, argsObj, key);
+                }
+              } catch { /* ignore */ }
+            }
+          }
+        } catch { /* ignore cell installation errors */ }
       }
 
       // Set global outlet state for nested <ember-outlet> elements
