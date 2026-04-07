@@ -331,6 +331,7 @@ module.exports = {
     'model',
     'modelFor',
     'modifier',
+    'modules',
     'mount',
     'mut',
     'name',
