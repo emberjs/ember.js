@@ -350,6 +350,73 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'fn-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render, click } from '@ember/test-helpers';
+
+              import Component from '@glimmer/component';
+              import { tracked } from '@glimmer/tracking';
+
+              class Demo extends Component {
+                @tracked message = 'hello';
+                setMessage = (msg) => this.message = msg;
+
+                <template>
+                  <button {{on 'click' (fn this.setMessage 'goodbye')}}>{{this.message}}</button>
+                </template>
+              }
+
+              module('{{fn}} as keyword', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  await render(Demo);
+                  assert.dom('button').hasText('hello');
+                  await click('button');
+                  assert.dom('button').hasText('goodbye');
+                });
+              });
+            `,
+            'fn-as-keyword-but-its-shadowed-test.gjs': `
+              import QUnit, { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render, click } from '@ember/test-helpers';
+
+              import Component from '@glimmer/component';
+              import { tracked } from '@glimmer/tracking';
+              import { helper } from '@ember/component/helper';
+
+              module('{{fn}} as keyword (but it is shadowed)', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  // shadows keyword!
+                  const fn = helper(() => {
+                    assert.step('shadowed:fn:create');
+                    return () => {};
+                  });
+
+                  class Demo extends Component {
+                    @tracked message = 'hello';
+                    setMessage = (msg) => this.message = msg;
+
+                    <template>
+                      <button {{on 'click' (fn this.setMessage 'goodbye')}}>{{this.message}}</button>
+                    </template>
+                  }
+
+                  await render(Demo);
+                  assert.verifySteps(['shadowed:fn:create']);
+
+                  assert.dom('button').hasText('hello');
+                  await click('button');
+                  assert.dom('button').hasText('hello', 'not changed because the shadowed fn returns a no-op');
+
+                  assert.verifySteps([]);
+                });
+              });
+            `,
             'on-as-keyword-but-its-shadowed-test.gjs': `
               import QUnit, { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
