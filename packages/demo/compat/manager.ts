@@ -414,22 +414,25 @@ function getCachedOrCreateInstance(
 
   let poolEntry: PoolEntry | undefined;
 
+  // Helper: skip destroyed/destroying instances in pool lookup
+  const isAlive = (e: PoolEntry) => !e.claimed && !e.instance?.isDestroyed && !e.instance?.isDestroying;
+
   if (requestedElementId) {
     // Explicit elementId provided - find instance with matching elementId
     // Convert to string for comparison since Ember may store elementId as string
     const reqIdStr = String(requestedElementId);
-    poolEntry = pool.find((e) => !e.claimed && String(e.instance?.elementId) === reqIdStr);
+    poolEntry = pool.find((e) => isAlive(e) && String(e.instance?.elementId) === reqIdStr);
 
     // If no exact match found, fall back to sequential ordering.
     // This handles the case where elementId arg changes but we should reuse the same instance
     // (elementId is frozen after first render, so the instance won't have the new requestedElementId)
     if (!poolEntry) {
-      poolEntry = pool.find((e) => !e.claimed);
+      poolEntry = pool.find(isAlive);
     }
   } else {
     // No explicit elementId - use sequential ordering
-    // First unclaimed instance gets claimed
-    poolEntry = pool.find((e) => !e.claimed);
+    // First unclaimed, non-destroyed instance gets claimed
+    poolEntry = pool.find(isAlive);
   }
 
   if (poolEntry) {

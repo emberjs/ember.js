@@ -833,6 +833,13 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // Resolve the first arg (component name/ref)
       const first = unwrapArg(params[0]);
 
+      // If the component name is undefined/null, return undefined so that
+      // $_dc sees a falsy value and renders nothing (matching Ember behavior
+      // for {{component undefined}}).
+      if (first == null || first === '') {
+        return undefined;
+      }
+
       // Track the owner — prefer globalThis.owner, fall back to cached.
       // Also use the shared getOwnerWithFallback from manager.ts which has
       // a more robust cache that survives across reactive re-evaluations.
@@ -3816,10 +3823,16 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Pass the stable thunkId to enable instance caching
           _setInternalProp(args as any, '__thunkId', thunkId);
           const handleResult = managers.component.handle(kebabName, args, fw, ctx);
-          if (typeof handleResult === 'function') {
-            return handleResult();
+          let rendered = handleResult;
+          if (typeof rendered === 'function') {
+            rendered = rendered();
           }
-          return handleResult;
+          // If the result is a primitive (from a helper resolved as component
+          // fallback), wrap it in a text node so GXT can insert it in the DOM.
+          if (rendered != null && typeof rendered !== 'object') {
+            return document.createTextNode(String(rendered));
+          }
+          return rendered;
         };
         // Mark as component thunk for debugging
         (renderComponent as any).__isComponentThunk = true;

@@ -55,6 +55,10 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
   );
 
   if ((obj as ExtendedObject).isDestroyed) {
+    if ((globalThis as any).__GXT_MODE__) {
+      // In GXT mode, silently skip set() on destroyed objects during teardown
+      return value;
+    }
     assert(
       `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
