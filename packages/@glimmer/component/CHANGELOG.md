@@ -1,5 +1,9 @@
 # @glimmer/component
 
+## 2.1.1 2026-04-07
+
+- BUGFIX: publish with pnpm instead of npm
+
 ## 2.1.0 2026-04-07
 
  - ENHANCEMENT: [Rename default export GlimmerComponent to Component](https://github.com/emberjs/ember.js/pull/21014)
