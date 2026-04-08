@@ -14,8 +14,6 @@ import { internalHelper } from './internal-helper';
 // content without a wrapper for empty string.
 
 const ELEMENT_CAPABILITIES = {
-  dynamicLayout: true,
-  dynamicTag: true,
   createInstance: true,
   wrapped: true,
 };
@@ -42,10 +40,6 @@ class ElementComponentManager {
   create(_owner: object, state: ElementComponentDefinition) {
     // For empty string, return null so getTagName returns null (no wrapper element)
     return state.tagName || null;
-  }
-
-  getDynamicLayout() {
-    return null;
   }
 
   getTagName(state: string | null) {
