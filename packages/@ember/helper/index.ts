@@ -11,7 +11,7 @@ import {
   get as glimmerGet,
   fn as glimmerFn,
 } from '@glimmer/runtime';
-import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
+import { element as glimmerElement, uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
 import { type Opaque } from '@ember/-internals/utility-types';
 
 /**
@@ -469,6 +469,26 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  */
 export const fn = glimmerFn as FnHelper;
 export interface FnHelper extends Opaque<'helper:fn'> {}
+
+/**
+ * The `element` helper lets you dynamically set the tag name of an element.
+ *
+ * ```js
+ * import { element } from '@ember/helper';
+ *
+ * <template>
+ *   {{#let (element @tagName) as |Tag|}}
+ *     <Tag class="my-element">Hello</Tag>
+ *   {{/let}}
+ * </template>
+ * ```
+ *
+ * When `@tagName` is `"h1"`, this renders `<h1 class="my-element">Hello</h1>`.
+ * When `@tagName` is an empty string, the block content is rendered without a
+ * wrapping element. When `@tagName` is `null` or `undefined`, nothing is rendered.
+ */
+export const element = glimmerElement as ElementHelper;
+export interface ElementHelper extends Opaque<'helper:element'> {}
 
 /**
  * Use the {{uniqueId}} helper to generate a unique ID string suitable for use as
