@@ -56,6 +56,9 @@ export default class WireFormatDebugger {
             opcode[3] ? this.formatOpcode(opcode[3]) : undefined,
           ];
 
+        case Op.ShadowRoot:
+          return ['shadow-root', opcode[3], opcode[2]];
+
         case Op.OpenElement:
           return ['open-element', inflateTagName(opcode[1])];
 
