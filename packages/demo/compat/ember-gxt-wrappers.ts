@@ -1335,14 +1335,11 @@ function createEmberDc(original: Function) {
         if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
           g.owner = _dcCapturedOwner;
         }
-        const markerName = (markerValue as any)?.__stringComponentName || 'unknown';
-        console.log('[DC-FACTORY] called for', markerName, 'owner=', !!g.owner);
         let result: any;
         try {
           result = renderComponent(markerValue, factoryArgs, factoryCtx, true);
-          console.log('[DC-FACTORY] result for', markerName, ':', result instanceof Node ? 'Node' : (result ? 'non-null' : 'NULL'));
         } catch (dcSwapErr) {
-          console.error('[DC-SWAP] Error rendering dynamic component during swap:', dcSwapErr);
+          // Re-throw so the error propagates properly
           throw dcSwapErr;
         } finally {
           if (!prevOwner && g.owner === _dcCapturedOwner) {

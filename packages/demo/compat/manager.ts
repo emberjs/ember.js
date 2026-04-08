@@ -3374,7 +3374,7 @@ function removeGxtArtifacts(container: Element | DocumentFragment): void {
     // IfCondition for branch switching (they need to stay in the DOM
     // so IfCondition.renderBranch can insert content relative to them).
     // IfCondition placeholders contain 'if-entry' in their text.
-    if (text.includes('if-entry') || text.includes('each-entry')) {
+    if (text.includes('if-entry') || text.includes('each-entry') || text.includes('dc-placeholder')) {
       // Keep these — they're needed by GXT's control flow for DOM manipulation
       continue;
     }
