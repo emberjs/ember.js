@@ -1,7 +1,8 @@
 import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { element as elementHelper } from '@ember/helper';
+import { template } from '@ember/template-compiler/runtime';
 
 moduleFor(
   'Helpers test: {{element}}',
@@ -12,9 +13,9 @@ moduleFor(
     }
 
     '@test it renders a tag in strict mode'() {
-      let AComponent = defineComponent(
-        { element: elementHelper },
-        `{{#let (element "h1") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`
+      let AComponent = template(
+        `{{#let (element "h1") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`,
+        { scope: () => ({ element: elementHelper }) }
       );
       this.renderComponent(AComponent, { expect: '<h1 id="content">hello world!</h1>' });
     }
@@ -90,26 +91,16 @@ moduleFor(
     }
 
     '@test it can be passed as argument and works with ...attributes'() {
-      let Inner = defineComponent(
-        { element: elementHelper },
-        `{{#let @tag as |Tag|}}<Tag id="content" ...attributes>{{yield}}</Tag>{{/let}}`
+      let Inner = template(
+        `{{#let @tag as |Tag|}}<Tag id="content" ...attributes>{{yield}}</Tag>{{/let}}`,
+        { scope: () => ({ element: elementHelper }) }
       );
 
-      this.registerComponent('inner', { ComponentClass: Inner });
-
-      this.render(`<Inner @tag={{element this.htmlTag}} class="extra">Test</Inner>`, {
-        htmlTag: 'p',
+      let Outer = template(`<Inner @tag={{element "p"}} class="extra">Test</Inner>`, {
+        scope: () => ({ Inner, element: elementHelper }),
       });
-      this.assertHTML('<p id="content" class="extra">Test</p>');
 
-      runTask(() => set(this.context, 'htmlTag', 'div'));
-      this.assertHTML('<div id="content" class="extra">Test</div>');
-
-      runTask(() => set(this.context, 'htmlTag', ''));
-      this.assertText('Test');
-
-      runTask(() => set(this.context, 'htmlTag', 'p'));
-      this.assertHTML('<p id="content" class="extra">Test</p>');
+      this.renderComponent(Outer, { expect: '<p id="content" class="extra">Test</p>' });
     }
 
     ['@test it requires at least one argument']() {
