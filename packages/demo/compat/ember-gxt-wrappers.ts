@@ -1160,6 +1160,8 @@ function createEmberDc(original: Function) {
       let _nullDestroyed = false;
       let _nullLastKey = '__empty__';
       const _dcCapturedOwner = g.owner;
+      // Track nodes inserted by _nullSwap so they can be removed on teardown
+      let _insertedNodes: Node[] = [];
 
       const _nullSwap = () => {
         if (_nullDestroyed) return;
@@ -1168,12 +1170,18 @@ function createEmberDc(original: Function) {
           newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
         } catch { return; }
 
-        const newKey = !newVal ? '__empty__' : (newVal.__isCurriedComponent ? '__curried:' + (newVal.__name || '') : '__other');
+        const newKey = !newVal ? '__empty__' : (newVal.__isCurriedComponent ? '__curried:' + (newVal.__name || '') : (typeof newVal === 'string' ? '__str:' + newVal : '__other'));
         if (newKey === _nullLastKey) return;
         _nullLastKey = newKey;
 
         const parent = nullPlaceholder.parentNode;
         if (!parent) return;
+
+        // Remove previously inserted nodes before rendering new content
+        for (const node of _insertedNodes) {
+          if (node.parentNode) node.parentNode.removeChild(node);
+        }
+        _insertedNodes = [];
 
         // Render the new component
         if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
@@ -1200,6 +1208,11 @@ function createEmberDc(original: Function) {
           }
 
           if (newResult instanceof Node) {
+            if (newResult instanceof DocumentFragment) {
+              _insertedNodes = Array.from(newResult.childNodes);
+            } else {
+              _insertedNodes = [newResult];
+            }
             parent.insertBefore(newResult, nullPlaceholder);
           }
         }
@@ -1512,7 +1525,11 @@ function createEmberDc(original: Function) {
         if (g.__dcStringListenerCount > 0) g.__dcStringListenerCount--;
       };
 
-      // Expose getter so the component manager can read the latest curried component
+      // Expose getter so the component manager can read the latest curried component.
+      // Save the previous value so we can restore it after initial render — this
+      // prevents leaking the getter to subsequent tests/templates. The getter is
+      // only needed during the initial render and reactive swap callbacks.
+      const _prevDcComponentGetter = g.__dcComponentGetter;
       g.__dcComponentGetter = componentGetter;
 
       // Custom component factory for GXT's $_dc: renders through Ember's
@@ -1585,7 +1602,12 @@ function createEmberDc(original: Function) {
 
       // Delegate to GXT's native $_dc with the revision-tracked wrappedGetter
       // and the custom componentFactory.
-      return original(wrappedGetter, gxtArgs, ctx, emberComponentFactory);
+      const result = original(wrappedGetter, gxtArgs, ctx, emberComponentFactory);
+      // Restore the previous __dcComponentGetter to avoid leaking to subsequent
+      // templates/tests. The emberComponentFactory closure captures componentGetter
+      // directly, so it doesn't need the global for reactive swaps.
+      g.__dcComponentGetter = _prevDcComponentGetter;
+      return result;
     }
 
     // Handle component definitions (template-only, GlimmerishComponent, etc.)

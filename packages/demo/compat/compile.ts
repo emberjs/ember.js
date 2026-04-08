@@ -833,11 +833,22 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // Resolve the first arg (component name/ref)
       const first = unwrapArg(params[0]);
 
-      // If the component name is undefined/null, return undefined so that
-      // $_dc sees a falsy value and renders nothing (matching Ember behavior
-      // for {{component undefined}}).
+      // If the component name is undefined/null, return a special empty
+      // CurriedComponent marker. This ensures that when used in a mustache
+      // rendering context ({{component (component this.componentName ...)}})
+      // the itemToNode function enters the CurriedComponent reactive rendering
+      // path — which handles the undefined→component transition. Without this,
+      // returning plain undefined would cause GXT to treat the value as text
+      // with no reactive tracking (GXT skips opcodes for empty text values).
       if (first == null || first === '') {
-        return undefined;
+        const emptyMarker = {
+          __isCurriedComponent: true,
+          __name: null,
+          __curriedArgs: {},
+          __curriedPositionals: [],
+          __isEmpty: true,
+        };
+        return emptyMarker;
       }
 
       // Track the owner — prefer globalThis.owner, fall back to cached.
@@ -1833,7 +1844,8 @@ setInterval(() => {
   }
   // Clear pending if-watcher notifications from the previous test
   _pendingIfWatcherNotifications.length = 0;
-  // Clear dynamic component change listeners from $_dc_ember
+  // Clear dynamic component change listeners and stale getter from $_dc_ember
+  (globalThis as any).__dcComponentGetter = null;
   if ((globalThis as any).__dcChangeListeners) {
     (globalThis as any).__dcChangeListeners.clear();
   }
@@ -7376,6 +7388,9 @@ export function precompileTemplate(templateString: string, options?: {
             const capturedOwner = (globalThis as any).owner;
             const renderCurriedComponent = (curried: any): Node | null => {
               if (!curried) return null;
+              // Empty curried component marker — renders nothing but preserves
+              // the reactive rendering infrastructure for future transitions.
+              if (curried.__isEmpty) return null;
               // Restore owner for component resolution during reactive re-evaluation
               if (capturedOwner && !(globalThis as any).owner) {
                 (globalThis as any).owner = capturedOwner;
