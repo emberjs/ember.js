@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { tracked } from '@glimmer/tracking';
-import { RenderingTestCase, defineSimpleHelper, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { element as elementHelper, hash } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { template } from '@ember/template-compiler/runtime';
@@ -82,11 +82,10 @@ moduleFor(
       }
 
       let state = new State();
-      let getTag = defineSimpleHelper(() => state.htmlTag);
 
       let AComponent = template(
-        `{{#let (element (getTag)) as |Tag|}}<Tag id="content">hello</Tag>{{/let}}`,
-        { scope: () => ({ element: elementHelper, getTag }) }
+        `{{#let (element state.htmlTag) as |Tag|}}<Tag id="content">hello</Tag>{{/let}}`,
+        { scope: () => ({ element: elementHelper, state }) }
       );
       this.renderComponent(AComponent, {
         expect: '<h1 id="content">hello</h1>',
@@ -116,6 +115,49 @@ moduleFor(
       });
 
       this.renderComponent(Outer, { expect: '<p id="content" class="extra">Test</p>' });
+    }
+
+    ['@test it requires at least one argument']() {
+      if (!DEBUG) {
+        this.assert.expect(0);
+        return;
+      }
+
+      this.assert.throws(() => {
+        let AComponent = template(`{{#let (element) as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
+      }, /The `element` helper takes a single positional argument/);
+    }
+
+    ['@test it requires no more than one argument']() {
+      if (!DEBUG) {
+        this.assert.expect(0);
+        return;
+      }
+
+      this.assert.throws(() => {
+        let AComponent = template(`{{#let (element "h1" "h2") as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
+      }, /The `element` helper takes a single positional argument/);
+    }
+
+    ['@test it does not take any named arguments']() {
+      if (!DEBUG) {
+        this.assert.expect(0);
+        return;
+      }
+
+      this.assert.throws(() => {
+        let AComponent = template(
+          `{{#let (element "h1" id="content") as |Tag|}}<Tag>hello</Tag>{{/let}}`,
+          { scope: () => ({ element: elementHelper }) }
+        );
+        this.renderComponent(AComponent, { expect: '' });
+      }, /The `element` helper does not take any named arguments/);
     }
 
     ['@test it throws when passed a number']() {
