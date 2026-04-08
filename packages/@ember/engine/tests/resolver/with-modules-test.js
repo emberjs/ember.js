@@ -1,9 +1,7 @@
-/* eslint-disable no-console */
-
 import { module, test } from 'qunit';
-import Resolver from 'ember-resolver';
+import Resolver from '@ember/engine/lib/strict-resolver';
 
-module('ember-resolver withModules', function () {
+module('strict-resolver | withModules', function () {
   test('explicit withModules', function (assert) {
     let resolver = Resolver.withModules({
       'alpha/components/hello': {
@@ -17,13 +15,18 @@ module('ember-resolver withModules', function () {
   });
 
   test('can resolve self', function (assert) {
-    let resolver = Resolver.create({ namespace: { modulePrefix: 'alpha' } });
-    assert.strictEqual(resolver, resolver.resolve('resolver:current').create());
+    let resolver = Resolver.withModules({}).create({
+      namespace: { modulePrefix: 'alpha' },
+    });
+    assert.strictEqual(
+      resolver,
+      resolver.resolve('resolver:current').create()
+    );
   });
 
   test('can addModules', function (assert) {
     let startingModules = {};
-    let resolver = Resolver.withModules({}).create({
+    let resolver = Resolver.withModules(startingModules).create({
       namespace: { modulePrefix: 'alpha' },
     });
 

@@ -1,31 +1,13 @@
 import { dasherize, classify, underscore } from './strict-resolver/string';
 import classFactory from './strict-resolver/class-factory';
 
-export class ModuleRegistry {
-  constructor(entries) {
-    this._entries = entries || globalThis.requirejs.entries;
-  }
-  moduleNames() {
-    return Object.keys(this._entries);
-  }
-  has(moduleName) {
-    return moduleName in this._entries;
-  }
-  get(...args) {
-    return globalThis.require(...args);
-  }
-}
-
 /**
- * This module defines a subclass of Ember.DefaultResolver that adds two
- * important features:
+ * This module defines a Resolver that is aware of es6 modules
+ * via explicit module maps.
  *
- *  1) The resolver makes the container aware of es6 modules via the AMD
- *     output. The loader's _moduleEntries is consulted so that classes can be
- *     resolved directly via the module loader, without needing a manual
- *     `import`.
- *  2) is able to provide injections to classes that implement `extend`
- *     (as is typical with Ember).
+ * Modules are provided via `Resolver.withModules(moduleMap)`,
+ * where the moduleMap keys are module paths and values are
+ * module objects (with `default` exports).
  */
 export default class Resolver {
   static moduleBasedResolver = true;
@@ -80,10 +62,9 @@ export default class Resolver {
           },
         };
       } else {
-        if (typeof globalThis.requirejs.entries === 'undefined') {
-          globalThis.requirejs.entries = globalThis.requirejs._eak_seen;
-        }
-        this._moduleRegistry = new ModuleRegistry();
+        throw new Error(
+          'Resolver requires explicit modules. Use Resolver.withModules(moduleMap) to provide them.'
+        );
       }
     }
 
@@ -180,10 +161,7 @@ export default class Resolver {
     let normalizedModuleName = this.findModuleName(parsedName);
 
     if (normalizedModuleName) {
-      let defaultExport = this._extractDefaultExport(
-        normalizedModuleName,
-        parsedName
-      );
+      let defaultExport = this._extractDefaultExport(normalizedModuleName);
 
       if (defaultExport === undefined) {
         throw new Error(
@@ -466,12 +444,7 @@ export default class Resolver {
   }
 
   _extractDefaultExport(normalizedModuleName) {
-    let module = this._moduleRegistry.get(
-      normalizedModuleName,
-      null,
-      null,
-      true /* force sync */
-    );
+    let module = this._moduleRegistry.get(normalizedModuleName);
 
     if (module && module['default']) {
       module = module['default'];

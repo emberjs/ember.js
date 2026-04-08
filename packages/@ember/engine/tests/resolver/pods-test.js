@@ -1,38 +1,28 @@
 import { module, test } from 'qunit';
 
-import { setupResolver, resolver, loader } from './-setup-resolver';
+import { setupResolver, resolver, modules } from './-setup-resolver';
 
-module('pods lookup structure', function (hooks) {
+module('strict-resolver | pods lookup structure', function (hooks) {
   hooks.beforeEach(function () {
     setupResolver();
   });
 
   test('will lookup modulePrefix/name/type before prefix/type/name', function (assert) {
-    loader.define('appkit/controllers/foo', [], function () {
-      assert.ok(false, 'appkit/controllers was used');
-      return 'whatever';
-    });
+    modules['appkit/controllers/foo'] = 'non-pod';
+    modules['appkit/foo/controller'] = 'pod';
 
-    loader.define('appkit/foo/controller', [], function () {
-      assert.ok(true, 'appkit/foo/controllers was used');
-      return 'whatever';
-    });
+    let result = resolver.resolve('controller:foo');
 
-    resolver.resolve('controller:foo');
+    assert.strictEqual(result, 'pod', 'pod layout was used');
   });
 
   test('will lookup names with slashes properly', function (assert) {
-    loader.define('appkit/controllers/foo/index', [], function () {
-      assert.ok(false, 'appkit/controllers was used');
-      return 'whatever';
-    });
+    modules['appkit/controllers/foo/index'] = 'non-pod';
+    modules['appkit/foo/index/controller'] = 'pod';
 
-    loader.define('appkit/foo/index/controller', [], function () {
-      assert.ok(true, 'appkit/foo/index/controller was used');
-      return 'whatever';
-    });
+    let result = resolver.resolve('controller:foo/index');
 
-    resolver.resolve('controller:foo/index');
+    assert.strictEqual(result, 'pod', 'pod layout was used');
   });
 
   test('specifying a podModulePrefix overrides the general modulePrefix', function (assert) {
@@ -43,176 +33,148 @@ module('pods lookup structure', function (hooks) {
       },
     });
 
-    loader.define('appkit/controllers/foo', [], function () {
-      assert.ok(false, 'appkit/controllers was used');
-      return 'whatever';
-    });
+    modules['appkit/controllers/foo'] = 'non-pod';
+    modules['appkit/foo/controller'] = 'non-pod-prefix';
+    modules['appkit/pods/foo/controller'] = 'pod-prefix';
 
-    loader.define('appkit/foo/controller', [], function () {
-      assert.ok(false, 'appkit/foo/controllers was used');
-      return 'whatever';
-    });
+    let result = resolver.resolve('controller:foo');
 
-    loader.define('appkit/pods/foo/controller', [], function () {
-      assert.ok(true, 'appkit/pods/foo/controllers was used');
-      return 'whatever';
-    });
-
-    resolver.resolve('controller:foo');
+    assert.strictEqual(result, 'pod-prefix', 'podModulePrefix was used');
   });
 
   test('will not use custom type prefix when using POD format', function (assert) {
     resolver.namespace['controllerPrefix'] = 'foobar';
 
-    loader.define('foobar/controllers/foo', [], function () {
-      assert.ok(false, 'foobar/controllers was used');
-      return 'whatever';
-    });
+    modules['foobar/controllers/foo'] = 'custom-prefix-non-pod';
+    modules['foobar/foo/controller'] = 'custom-prefix-pod';
+    modules['appkit/foo/controller'] = 'default-prefix-pod';
 
-    loader.define('foobar/foo/controller', [], function () {
-      assert.ok(false, 'foobar/foo/controllers was used');
-      return 'whatever';
-    });
+    let result = resolver.resolve('controller:foo');
 
-    loader.define('appkit/foo/controller', [], function () {
-      assert.ok(true, 'appkit/foo/controllers was used');
-      return 'whatever';
-    });
-
-    resolver.resolve('controller:foo');
+    assert.strictEqual(
+      result,
+      'default-prefix-pod',
+      'modulePrefix was used for pod layout'
+    );
   });
 
   test('it will find components nested in app/components/name/index.js', function (assert) {
-    loader.define('appkit/components/foo-bar/index', [], function () {
-      assert.ok(true, 'appkit/components/foo-bar was used');
+    modules['appkit/components/foo-bar/index'] = 'nested-component';
 
-      return 'whatever';
-    });
+    let result = resolver.resolve('component:foo-bar');
 
-    resolver.resolve('component:foo-bar');
+    assert.strictEqual(
+      result,
+      'nested-component',
+      'nested component was found'
+    );
   });
 
   test('will lookup a components template without being rooted in `components/`', function (assert) {
-    loader.define('appkit/components/foo-bar/template', [], function () {
-      assert.ok(false, 'appkit/components was used');
-      return 'whatever';
-    });
+    modules['appkit/components/foo-bar/template'] = 'in-components';
+    modules['appkit/foo-bar/template'] = 'at-root';
 
-    loader.define('appkit/foo-bar/template', [], function () {
-      assert.ok(true, 'appkit/foo-bar/template was used');
-      return 'whatever';
-    });
+    let result = resolver.resolve('template:components/foo-bar');
 
-    resolver.resolve('template:components/foo-bar');
+    assert.strictEqual(
+      result,
+      'at-root',
+      'template was found without components/ root'
+    );
   });
 
   test('will use pods format to lookup components in components/', function (assert) {
-    assert.expect(3);
-
     let expectedComponent = { isComponentFactory: true };
-    loader.define('appkit/components/foo-bar/template', [], function () {
-      assert.ok(true, 'appkit/components was used');
-      return 'whatever';
-    });
+    modules['appkit/components/foo-bar/template'] = 'the-template';
+    modules['appkit/components/foo-bar/component'] = {
+      default: expectedComponent,
+    };
 
-    loader.define('appkit/components/foo-bar/component', [], function () {
-      assert.ok(true, 'appkit/components was used');
-      return { default: expectedComponent };
-    });
-
-    resolver.resolve('template:components/foo-bar');
+    let template = resolver.resolve('template:components/foo-bar');
     let component = resolver.resolve('component:foo-bar');
 
-    assert.equal(component, expectedComponent, 'default export was returned');
+    assert.ok(template, 'template was resolved');
+    assert.strictEqual(
+      component,
+      expectedComponent,
+      'default export was returned'
+    );
   });
 
   test('will not lookup routes in components/', function (assert) {
-    assert.expect(1);
+    modules['appkit/components/foo-bar/route'] = { isRouteFactory: true };
+    modules['appkit/routes/foo-bar'] = { isRouteFactory: true };
 
-    loader.define('appkit/components/foo-bar/route', [], function () {
-      assert.ok(false, 'appkit/components was used');
-      return { isRouteFactory: true };
-    });
+    let result = resolver.resolve('route:foo-bar');
 
-    loader.define('appkit/routes/foo-bar', [], function () {
-      assert.ok(true, 'appkit/routes was used');
-      return { isRouteFactory: true };
-    });
-
-    resolver.resolve('route:foo-bar');
+    assert.strictEqual(
+      result,
+      modules['appkit/routes/foo-bar'],
+      'routes/ was used, not components/'
+    );
   });
 
   test('will not lookup non component templates in components/', function (assert) {
-    assert.expect(1);
+    modules['appkit/components/foo-bar/template'] = 'component-template';
+    modules['appkit/templates/foo-bar'] = 'regular-template';
 
-    loader.define('appkit/components/foo-bar/template', [], function () {
-      assert.ok(false, 'appkit/components was used');
-      return 'whatever';
-    });
+    let result = resolver.resolve('template:foo-bar');
 
-    loader.define('appkit/templates/foo-bar', [], function () {
-      assert.ok(true, 'appkit/templates was used');
-      return 'whatever';
-    });
-
-    resolver.resolve('template:foo-bar');
+    assert.strictEqual(
+      result,
+      'regular-template',
+      'templates/ was used, not components/'
+    );
   });
 
   module('custom pluralization');
 
   test('will use the pluralization specified for a given type', function (assert) {
-    assert.expect(1);
-
     setupResolver({
       namespace: {
         modulePrefix: 'appkit',
       },
-
       pluralizedTypes: {
         sheep: 'sheep',
         octipus: 'octipii',
       },
     });
 
-    loader.define('appkit/sheep/baaaaaa', [], function () {
-      assert.ok(true, 'custom pluralization used');
-      return 'whatever';
-    });
+    modules['appkit/sheep/baaaaaa'] = 'whatever';
 
-    resolver.resolve('sheep:baaaaaa');
+    let result = resolver.resolve('sheep:baaaaaa');
+
+    assert.strictEqual(result, 'whatever', 'custom pluralization was used');
   });
 
   test("will pluralize 'config' as 'config' by default", function (assert) {
-    assert.expect(1);
-
     setupResolver();
 
-    loader.define('appkit/config/environment', [], function () {
-      assert.ok(true, 'config/environment is found');
-      return 'whatever';
-    });
+    modules['appkit/config/environment'] = 'whatever';
 
-    resolver.resolve('config:environment');
+    let result = resolver.resolve('config:environment');
+
+    assert.strictEqual(result, 'whatever', 'config/environment is found');
   });
 
   test("'config' can be overridden", function (assert) {
-    assert.expect(1);
-
     setupResolver({
       namespace: {
         modulePrefix: 'appkit',
       },
-
       pluralizedTypes: {
         config: 'super-duper-config',
       },
     });
 
-    loader.define('appkit/super-duper-config/environment', [], function () {
-      assert.ok(true, 'super-duper-config/environment is found');
-      return 'whatever';
-    });
+    modules['appkit/super-duper-config/environment'] = 'whatever';
 
-    resolver.resolve('config:environment');
+    let result = resolver.resolve('config:environment');
+
+    assert.strictEqual(
+      result,
+      'whatever',
+      'super-duper-config/environment is found'
+    );
   });
 });

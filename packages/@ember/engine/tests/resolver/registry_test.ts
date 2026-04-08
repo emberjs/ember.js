@@ -1,42 +1,11 @@
 import { module, test } from 'qunit';
-import { setupTest } from 'ember-qunit';
+import Application from '@ember/application';
+import Resolver from '@ember/engine/lib/strict-resolver';
+import Service from '@ember/service';
+import type ApplicationInstance from '@ember/application/instance';
 
-module('Registry', function (hooks) {
-  setupTest(hooks);
-
-  test('has the router', function (assert) {
-    // eslint-disable-next-line ember/no-private-routing-service
-    const router = this.owner.lookup('router:main');
-
-    assert.ok(router);
-  });
-
-  test('has a manually registered service', function (assert) {
-    const manual = this.owner.lookup('service:manual') as { weDidIt: boolean };
-
-    assert.ok(manual);
-    assert.ok(manual.weDidIt);
-  });
-
-  test('has a manually registered (shorthand) service', function (assert) {
-    const manual = this.owner.lookup('service:manual-shorthand') as {
-      weDidIt: boolean;
-    };
-
-    assert.ok(manual);
-    assert.ok(manual.weDidIt);
-  });
-
-  test('has a service from import.meta.glob', function (assert) {
-    const metaGlob = this.owner.lookup('service:from-meta-glob') as {
-      weDidIt: boolean;
-    };
-
-    assert.ok(metaGlob);
-    assert.ok(metaGlob.weDidIt);
-  });
-
-  test('registered stuff can be looked up', function (assert) {
+module('strict-resolver | Registry with Application', function () {
+  test('registered stuff can be looked up', async function (assert) {
     class Foo {
       static create() {
         return new this();
@@ -44,10 +13,45 @@ module('Registry', function (hooks) {
 
       two = 2;
     }
-    this.owner.register('not-standard:main', Foo);
 
-    const value = this.owner.lookup('not-standard:main') as Foo;
+    let app = Application.create({
+      Resolver: Resolver.withModules({}),
+      modulePrefix: 'test-app',
+      rootElement: '#qunit-fixture',
+      autoboot: false,
+    });
+
+    let instance = (await app.visit('/')) as ApplicationInstance;
+
+    instance.register('not-standard:main', Foo);
+
+    let value = instance.lookup('not-standard:main') as Foo;
 
     assert.strictEqual(value.two, 2);
+
+    instance.destroy();
+  });
+
+  test('resolves modules provided via withModules', async function (assert) {
+    class MyService extends Service {
+      weDidIt = true;
+    }
+
+    let app = Application.create({
+      Resolver: Resolver.withModules({
+        'test-app/services/my-thing': { default: MyService },
+      }),
+      modulePrefix: 'test-app',
+      rootElement: '#qunit-fixture',
+      autoboot: false,
+    });
+
+    let instance = (await app.visit('/')) as ApplicationInstance;
+    let service = instance.lookup('service:my-thing') as MyService;
+
+    assert.ok(service, 'service was found');
+    assert.ok(service.weDidIt, 'service has the right property');
+
+    instance.destroy();
   });
 });

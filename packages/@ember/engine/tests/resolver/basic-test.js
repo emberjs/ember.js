@@ -1,326 +1,183 @@
-/* eslint-disable no-console */
-
 import { module, test } from 'qunit';
-import { setupResolver, resolver, loader } from './-setup-resolver';
+import { setupResolver, resolver, modules } from './-setup-resolver';
 
-let originalConsoleInfo;
-
-module('ember-resolver/resolvers/classic', function (hooks) {
+module('strict-resolver | basic', function (hooks) {
   hooks.beforeEach(function () {
     setupResolver();
   });
 
-  hooks.afterEach(function () {
-    if (originalConsoleInfo) {
-      console.info = originalConsoleInfo;
-    }
-  });
-
-  // ember @ 3.3 breaks this: https://github.com/emberjs/ember.js/commit/b8613c20289cc8a730e181c4c51ecfc4b6836052#r29790209
-  // ember @ 3.4.0-beta.1 restores this: https://github.com/emberjs/ember.js/commit/ddd8d9b9d9f6d315185a34802618a666bb3aeaac
-  // test('does not require `namespace` to exist at `init` time', function(assert) {
-  //   assert.expect(0);
-
-  //   Resolver.create({ namespace: '' });
-  // });
-
   test('can lookup something', function (assert) {
-    assert.expect(2);
+    let expected = {};
+    modules['appkit/adapters/post'] = { default: expected };
 
-    loader.define('appkit/adapters/post', [], function () {
-      assert.ok(true, 'adapter was invoked properly');
-
-      return {};
-    });
-
-    var adapter = resolver.resolve('adapter:post');
+    let adapter = resolver.resolve('adapter:post');
 
     assert.ok(adapter, 'adapter was returned');
+    assert.strictEqual(adapter, expected, 'default export was returned');
   });
 
   test('can lookup something in another namespace', function (assert) {
-    assert.expect(3);
-
     let expected = {};
+    modules['other/adapters/post'] = { default: expected };
 
-    loader.define('other/adapters/post', [], function () {
-      assert.ok(true, 'adapter was invoked properly');
-
-      return {
-        default: expected,
-      };
-    });
-
-    var adapter = resolver.resolve('other@adapter:post');
+    let adapter = resolver.resolve('other@adapter:post');
 
     assert.ok(adapter, 'adapter was returned');
-    assert.equal(adapter, expected, 'default export was returned');
+    assert.strictEqual(adapter, expected, 'default export was returned');
   });
 
   test('can lookup something in another namespace with an @ scope', function (assert) {
-    assert.expect(3);
-
     let expected = {};
+    modules['@scope/other/adapters/post'] = { default: expected };
 
-    loader.define('@scope/other/adapters/post', [], function () {
-      assert.ok(true, 'adapter was invoked properly');
-
-      return {
-        default: expected,
-      };
-    });
-
-    var adapter = resolver.resolve('@scope/other@adapter:post');
+    let adapter = resolver.resolve('@scope/other@adapter:post');
 
     assert.ok(adapter, 'adapter was returned');
-    assert.equal(adapter, expected, 'default export was returned');
+    assert.strictEqual(adapter, expected, 'default export was returned');
   });
 
   test('can lookup something with an @ sign', function (assert) {
-    assert.expect(3);
-
     let expected = {};
-    loader.define('appkit/helpers/@content-helper', [], function () {
-      assert.ok(true, 'helper was invoked properly');
+    modules['appkit/helpers/@content-helper'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var helper = resolver.resolve('helper:@content-helper');
+    let helper = resolver.resolve('helper:@content-helper');
 
     assert.ok(helper, 'helper was returned');
-    assert.equal(helper, expected, 'default export was returned');
+    assert.strictEqual(helper, expected, 'default export was returned');
   });
 
   test('can lookup something in another namespace with different syntax', function (assert) {
-    assert.expect(3);
-
     let expected = {};
-    loader.define('other/adapters/post', [], function () {
-      assert.ok(true, 'adapter was invoked properly');
+    modules['other/adapters/post'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var adapter = resolver.resolve('adapter:other@post');
+    let adapter = resolver.resolve('adapter:other@post');
 
     assert.ok(adapter, 'adapter was returned');
-    assert.equal(adapter, expected, 'default export was returned');
+    assert.strictEqual(adapter, expected, 'default export was returned');
   });
 
   test('can lookup something in another namespace with an @ scope with different syntax', function (assert) {
-    assert.expect(3);
-
     let expected = {};
-    loader.define('@scope/other/adapters/post', [], function () {
-      assert.ok(true, 'adapter was invoked properly');
+    modules['@scope/other/adapters/post'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var adapter = resolver.resolve('adapter:@scope/other@post');
+    let adapter = resolver.resolve('adapter:@scope/other@post');
 
     assert.ok(adapter, 'adapter was returned');
-    assert.equal(adapter, expected, 'default export was returned');
+    assert.strictEqual(adapter, expected, 'default export was returned');
   });
 
   test('can lookup a view in another namespace', function (assert) {
-    assert.expect(3);
-
     let expected = { isViewFactory: true };
-    loader.define('other/views/post', [], function () {
-      assert.ok(true, 'view was invoked properly');
+    modules['other/views/post'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var view = resolver.resolve('other@view:post');
+    let view = resolver.resolve('other@view:post');
 
     assert.ok(view, 'view was returned');
-    assert.equal(view, expected, 'default export was returned');
+    assert.strictEqual(view, expected, 'default export was returned');
   });
 
   test('can lookup a view in another namespace with an @ scope', function (assert) {
-    assert.expect(3);
-
     let expected = { isViewFactory: true };
-    loader.define('@scope/other/views/post', [], function () {
-      assert.ok(true, 'view was invoked properly');
+    modules['@scope/other/views/post'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var view = resolver.resolve('@scope/other@view:post');
+    let view = resolver.resolve('@scope/other@view:post');
 
     assert.ok(view, 'view was returned');
-    assert.equal(view, expected, 'default export was returned');
+    assert.strictEqual(view, expected, 'default export was returned');
   });
 
   test('can lookup a view in another namespace with different syntax', function (assert) {
-    assert.expect(3);
-
     let expected = { isViewFactory: true };
-    loader.define('other/views/post', [], function () {
-      assert.ok(true, 'view was invoked properly');
+    modules['other/views/post'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var view = resolver.resolve('view:other@post');
+    let view = resolver.resolve('view:other@post');
 
     assert.ok(view, 'view was returned');
-    assert.equal(view, expected, 'default export was returned');
+    assert.strictEqual(view, expected, 'default export was returned');
   });
 
   test('can lookup a view in another namespace with an @ scope with different syntax', function (assert) {
-    assert.expect(3);
-
     let expected = { isViewFactory: true };
-    loader.define('@scope/other/views/post', [], function () {
-      assert.ok(true, 'view was invoked properly');
+    modules['@scope/other/views/post'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var view = resolver.resolve('view:@scope/other@post');
+    let view = resolver.resolve('view:@scope/other@post');
 
     assert.ok(view, 'view was returned');
-    assert.equal(view, expected, 'default export was returned');
+    assert.strictEqual(view, expected, 'default export was returned');
   });
 
   test('can lookup a component template in another namespace with different syntax', function (assert) {
-    assert.expect(2);
-
     let expected = { isTemplate: true };
-    loader.define('other/templates/components/foo-bar', [], function () {
-      assert.ok(true, 'template was looked up properly');
+    modules['other/templates/components/foo-bar'] = { default: expected };
 
-      return { default: expected };
-    });
+    let template = resolver.resolve('template:components/other@foo-bar');
 
-    var template = resolver.resolve('template:components/other@foo-bar');
-
-    assert.equal(template, expected, 'default export was returned');
+    assert.strictEqual(template, expected, 'default export was returned');
   });
 
   test('can lookup a component template in another namespace with an @ scope with different syntax', function (assert) {
-    assert.expect(2);
-
     let expected = { isTemplate: true };
-    loader.define('@scope/other/templates/components/foo-bar', [], function () {
-      assert.ok(true, 'template was looked up properly');
+    modules['@scope/other/templates/components/foo-bar'] = {
+      default: expected,
+    };
 
-      return { default: expected };
-    });
+    let template = resolver.resolve('template:components/@scope/other@foo-bar');
 
-    var template = resolver.resolve('template:components/@scope/other@foo-bar');
-
-    assert.equal(template, expected, 'default export was returned');
+    assert.strictEqual(template, expected, 'default export was returned');
   });
 
   test('can lookup a view', function (assert) {
-    assert.expect(3);
-
     let expected = { isViewFactory: true };
-    loader.define('appkit/views/queue-list', [], function () {
-      assert.ok(true, 'view was invoked properly');
+    modules['appkit/views/queue-list'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var view = resolver.resolve('view:queue-list');
+    let view = resolver.resolve('view:queue-list');
 
     assert.ok(view, 'view was returned');
-    assert.equal(view, expected, 'default export was returned');
+    assert.strictEqual(view, expected, 'default export was returned');
   });
 
   test('can lookup a helper', function (assert) {
-    assert.expect(3);
-
     let expected = { isHelperInstance: true };
-    loader.define('appkit/helpers/reverse-list', [], function () {
-      assert.ok(true, 'helper was invoked properly');
+    modules['appkit/helpers/reverse-list'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var helper = resolver.resolve('helper:reverse-list');
+    let helper = resolver.resolve('helper:reverse-list');
 
     assert.ok(helper, 'helper was returned');
-    assert.equal(helper, expected, 'default export was returned');
+    assert.strictEqual(helper, expected, 'default export was returned');
   });
 
   test('can lookup an engine', function (assert) {
-    assert.expect(3);
-
     let expected = {};
-    loader.define('appkit/engine', [], function () {
-      assert.ok(true, 'engine was invoked properly');
-
-      return { default: expected };
-    });
+    modules['appkit/engine'] = { default: expected };
 
     let engine = resolver.resolve('engine:appkit');
 
     assert.ok(engine, 'engine was returned');
-    assert.equal(engine, expected, 'default export was returned');
+    assert.strictEqual(engine, expected, 'default export was returned');
   });
 
   test('can lookup an engine from a scoped package', function (assert) {
-    assert.expect(3);
-
     let expected = {};
-    loader.define('@some-scope/some-module/engine', [], function () {
-      assert.ok(true, 'engine was invoked properly');
+    modules['@some-scope/some-module/engine'] = { default: expected };
 
-      return { default: expected };
-    });
-
-    var engine = resolver.resolve('engine:@some-scope/some-module');
+    let engine = resolver.resolve('engine:@some-scope/some-module');
 
     assert.ok(engine, 'engine was returned');
-    assert.equal(engine, expected, 'default export was returned');
+    assert.strictEqual(engine, expected, 'default export was returned');
   });
 
   test('can lookup a route-map', function (assert) {
-    assert.expect(3);
-
     let expected = { isRouteMap: true };
-    loader.define('appkit/routes', [], function () {
-      assert.ok(true, 'route-map was invoked properly');
-
-      return { default: expected };
-    });
+    modules['appkit/routes'] = { default: expected };
 
     let routeMap = resolver.resolve('route-map:appkit');
 
     assert.ok(routeMap, 'route-map was returned');
-    assert.equal(routeMap, expected, 'default export was returned');
-  });
-
-  // the assert.expectWarning helper no longer works
-  test.skip('warns if looking up a camelCase helper that has a dasherized module present', function (assert) {
-    assert.expect(1);
-
-    loader.define('appkit/helpers/reverse-list', [], function () {
-      return { default: { isHelperInstance: true } };
-    });
-
-    var helper = resolver.resolve('helper:reverseList');
-
-    assert.ok(!helper, 'no helper was returned');
-    // assert.expectWarning('Attempted to lookup "helper:reverseList" which was not found. In previous versions of ember-resolver, a bug would have caused the module at "appkit/helpers/reverse-list" to be returned for this camel case helper name. This has been fixed. Use the dasherized name to resolve the module that would have been returned in previous versions.');
+    assert.strictEqual(routeMap, expected, 'default export was returned');
   });
 
   test('errors if lookup of a route-map does not specify isRouteMap', function (assert) {
-    assert.expect(2);
-
-    let expected = { isRouteMap: false };
-    loader.define('appkit/routes', [], function () {
-      assert.ok(true, 'route-map was invoked properly');
-
-      return { default: expected };
-    });
+    modules['appkit/routes'] = { default: { isRouteMap: false } };
 
     assert.throws(() => {
       resolver.resolve('route-map:appkit');
@@ -328,112 +185,80 @@ module('ember-resolver/resolvers/classic', function (hooks) {
   });
 
   test("will return the raw value if no 'default' is available", function (assert) {
-    loader.define('appkit/fruits/orange', [], function () {
-      return 'is awesome';
-    });
+    modules['appkit/fruits/orange'] = 'is awesome';
 
-    assert.equal(
+    assert.strictEqual(
       resolver.resolve('fruit:orange'),
       'is awesome',
-      'adapter was returned'
+      'raw value was returned'
     );
   });
 
   test("will unwrap the 'default' export automatically", function (assert) {
-    loader.define('appkit/fruits/orange', [], function () {
-      return { default: 'is awesome' };
-    });
+    modules['appkit/fruits/orange'] = { default: 'is awesome' };
 
-    assert.equal(
+    assert.strictEqual(
       resolver.resolve('fruit:orange'),
       'is awesome',
-      'adapter was returned'
+      'default export was unwrapped'
     );
   });
 
   test('router:main is hard-coded to prefix/router.js', function (assert) {
-    assert.expect(1);
+    modules['appkit/router'] = 'whatever';
 
-    loader.define('appkit/router', [], function () {
-      assert.ok(true, 'router:main was looked up');
-      return 'whatever';
-    });
+    let result = resolver.resolve('router:main');
 
-    resolver.resolve('router:main');
+    assert.strictEqual(result, 'whatever', 'router:main was looked up');
   });
 
   test('store:main is looked up as prefix/store', function (assert) {
-    assert.expect(1);
+    modules['appkit/store'] = 'whatever';
 
-    loader.define('appkit/store', [], function () {
-      assert.ok(true, 'store:main was looked up');
-      return 'whatever';
-    });
+    let result = resolver.resolve('store:main');
 
-    resolver.resolve('store:main');
+    assert.strictEqual(result, 'whatever', 'store:main was looked up');
   });
 
   test('store:posts as prefix/stores/post', function (assert) {
-    assert.expect(1);
+    modules['appkit/stores/post'] = 'whatever';
 
-    loader.define('appkit/stores/post', [], function () {
-      assert.ok(true, 'store:post was looked up');
-      return 'whatever';
-    });
+    let result = resolver.resolve('store:post');
 
-    resolver.resolve('store:post');
+    assert.strictEqual(result, 'whatever', 'store:post was looked up');
   });
 
   test('will raise error if both dasherized and underscored modules exist', function (assert) {
-    loader.define('appkit/big-bands/steve-miller-band', [], function () {
-      assert.ok(true, 'dasherized version looked up');
-      return 'whatever';
-    });
+    modules['appkit/big-bands/steve-miller-band'] = 'whatever';
+    modules['appkit/big_bands/steve_miller_band'] = 'whatever';
 
-    loader.define('appkit/big_bands/steve_miller_band', [], function () {
-      assert.ok(false, 'underscored version looked up');
-      return 'whatever';
-    });
-
-    try {
-      resolver.resolve('big-band:steve-miller-band');
-    } catch (e) {
-      assert.equal(
-        e.message,
+    assert.throws(
+      () => resolver.resolve('big-band:steve-miller-band'),
+      (e) =>
+        e.message ===
         `Ambiguous module names: 'appkit/big-bands/steve-miller-band' and 'appkit/big_bands/steve_miller_band'`,
-        'error with a descriptive value is thrown'
-      );
-    }
+      'error with a descriptive value is thrown'
+    );
   });
 
   test('will lookup an underscored version of the module name when the dasherized version is not found', function (assert) {
-    assert.expect(1);
+    modules['appkit/big_bands/steve_miller_band'] = 'whatever';
 
-    loader.define('appkit/big_bands/steve_miller_band', [], function () {
-      assert.ok(true, 'underscored version looked up properly');
-      return 'whatever';
-    });
+    let result = resolver.resolve('big-band:steve-miller-band');
 
-    resolver.resolve('big-band:steve-miller-band');
+    assert.strictEqual(
+      result,
+      'whatever',
+      'underscored version looked up properly'
+    );
   });
 
-  test('it provides eachForType which invokes the callback for each item found', function (assert) {
-    function orange() {}
-    loader.define('appkit/fruits/orange', [], function () {
-      return { default: orange };
-    });
+  test('knownForType returns known modules for a given type', function (assert) {
+    modules['appkit/fruits/orange'] = { default: function orange() {} };
+    modules['appkit/fruits/apple'] = { default: function apple() {} };
+    modules['appkit/stuffs/other'] = { default: function other() {} };
 
-    function apple() {}
-    loader.define('appkit/fruits/apple', [], function () {
-      return { default: apple };
-    });
-
-    function other() {}
-    loader.define('appkit/stuffs/other', [], function () {
-      return { default: other };
-    });
-
-    var items = resolver.knownForType('fruit');
+    let items = resolver.knownForType('fruit');
 
     assert.deepEqual(items, {
       'fruit:orange': true,
@@ -441,18 +266,11 @@ module('ember-resolver/resolvers/classic', function (hooks) {
     });
   });
 
-  test('eachForType can find both pod and non-pod factories', function (assert) {
-    function orange() {}
-    loader.define('appkit/fruits/orange', [], function () {
-      return { default: orange };
-    });
+  test('knownForType can find both pod and non-pod factories', function (assert) {
+    modules['appkit/fruits/orange'] = { default: function orange() {} };
+    modules['appkit/lemon/fruit'] = { default: function lemon() {} };
 
-    function lemon() {}
-    loader.define('appkit/lemon/fruit', [], function () {
-      return { default: lemon };
-    });
-
-    var items = resolver.knownForType('fruit');
+    let items = resolver.knownForType('fruit');
 
     assert.deepEqual(items, {
       'fruit:orange': true,
@@ -462,148 +280,144 @@ module('ember-resolver/resolvers/classic', function (hooks) {
 
   test('if shouldWrapInClassFactory returns true a wrapped object is returned', function (assert) {
     resolver.shouldWrapInClassFactory = function (defaultExport, parsedName) {
-      assert.equal(defaultExport, 'foo');
-      assert.equal(parsedName.fullName, 'string:foo');
+      assert.strictEqual(defaultExport, 'foo');
+      assert.strictEqual(parsedName.fullName, 'string:foo');
 
       return true;
     };
 
-    loader.define('appkit/strings/foo', [], function () {
-      return { default: 'foo' };
-    });
+    modules['appkit/strings/foo'] = { default: 'foo' };
 
-    var value = resolver.resolve('string:foo');
+    let value = resolver.resolve('string:foo');
 
-    assert.equal(value.create(), 'foo');
+    assert.strictEqual(value.create(), 'foo');
   });
 
   test('normalization', function (assert) {
     assert.ok(resolver.normalize, 'resolver#normalize is present');
 
-    assert.equal(resolver.normalize('foo:bar'), 'foo:bar');
+    assert.strictEqual(resolver.normalize('foo:bar'), 'foo:bar');
 
-    assert.equal(resolver.normalize('controller:posts'), 'controller:posts');
-    assert.equal(
+    assert.strictEqual(
+      resolver.normalize('controller:posts'),
+      'controller:posts'
+    );
+    assert.strictEqual(
       resolver.normalize('controller:posts_index'),
       'controller:posts-index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:posts.index'),
       'controller:posts/index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:posts-index'),
       'controller:posts-index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:posts.post.index'),
       'controller:posts/post/index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:posts_post.index'),
       'controller:posts-post/index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:posts.post_index'),
       'controller:posts/post-index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:posts.post-index'),
       'controller:posts/post-index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:postsIndex'),
       'controller:posts-index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:blogPosts.index'),
       'controller:blog-posts/index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:blog/posts.index'),
       'controller:blog/posts/index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:blog/posts-index'),
       'controller:blog/posts-index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:blog/posts.post.index'),
       'controller:blog/posts/post/index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:blog/posts_post.index'),
       'controller:blog/posts-post/index'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('controller:blog/posts_post-index'),
       'controller:blog/posts-post-index'
     );
 
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('template:blog/posts_index'),
       'template:blog/posts-index'
     );
-    assert.equal(resolver.normalize('service:userAuth'), 'service:user-auth');
+    assert.strictEqual(
+      resolver.normalize('service:userAuth'),
+      'service:user-auth'
+    );
 
     // For helpers, we have special logic to avoid the situation of a template's
     // `{{someName}}` being surprisingly shadowed by a `some-name` helper
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('helper:make-fabulous'),
       'helper:make-fabulous'
     );
-    assert.equal(resolver.normalize('helper:fabulize'), 'helper:fabulize');
-    assert.equal(
+    assert.strictEqual(
+      resolver.normalize('helper:fabulize'),
+      'helper:fabulize'
+    );
+    assert.strictEqual(
       resolver.normalize('helper:make_fabulous'),
       'helper:make-fabulous'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('helper:makeFabulous'),
       'helper:makeFabulous'
     );
 
     // The same applies to components
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('component:fabulous-component'),
       'component:fabulous-component'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('component:fabulousComponent'),
       'component:fabulousComponent'
     );
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('template:components/fabulousComponent'),
       'template:components/fabulousComponent'
     );
 
     // and modifiers
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('modifier:fabulous-component'),
       'modifier:fabulous-component'
     );
 
     // deprecated when fabulously-missing actually exists, but normalize still returns it
-    assert.equal(
+    assert.strictEqual(
       resolver.normalize('modifier:fabulouslyMissing'),
       'modifier:fabulouslyMissing'
     );
   });
 
   test('camel case modifier is not normalized', function (assert) {
-    assert.expect(2);
-
     let expected = {};
-    loader.define('appkit/modifiers/other-thing', [], function () {
-      assert.ok(false, 'appkit/modifiers/other-thing was accessed');
-
-      return { default: 'oh no' };
-    });
-
-    loader.define('appkit/modifiers/otherThing', [], function () {
-      assert.ok(true, 'appkit/modifiers/otherThing was accessed');
-
-      return { default: expected };
-    });
+    modules['appkit/modifiers/other-thing'] = { default: 'oh no' };
+    modules['appkit/modifiers/otherThing'] = { default: expected };
 
     let modifier = resolver.resolve('modifier:otherThing');
 
@@ -619,7 +433,7 @@ module('ember-resolver/resolvers/classic', function (hooks) {
     ];
 
     examples.forEach((example) => {
-      assert.equal(
+      assert.strictEqual(
         resolver.normalize(resolver.normalize(example)),
         resolver.normalize(example)
       );

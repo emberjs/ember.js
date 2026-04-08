@@ -1,8 +1,8 @@
 import { module, test } from 'qunit';
 
-import { setupResolver, resolver, loader } from './-setup-resolver';
+import { setupResolver, resolver, modules } from './-setup-resolver';
 
-module('custom prefixes by type', function (hooks) {
+module('strict-resolver | custom prefixes by type', function (hooks) {
   hooks.beforeEach(function () {
     setupResolver();
   });
@@ -15,11 +15,10 @@ module('custom prefixes by type', function (hooks) {
       },
     });
 
-    loader.define('grovestand/fruits/orange', [], function () {
-      assert.ok(true, 'custom prefix used');
-      return 'whatever';
-    });
+    modules['grovestand/fruits/orange'] = 'whatever';
 
-    resolver.resolve('fruit:orange');
+    let result = resolver.resolve('fruit:orange');
+
+    assert.strictEqual(result, 'whatever', 'custom prefix was used');
   });
 });

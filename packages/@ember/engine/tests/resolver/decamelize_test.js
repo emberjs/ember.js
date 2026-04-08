@@ -1,13 +1,25 @@
 import { module } from 'qunit';
-import { decamelize } from 'ember-resolver/string/index';
-import createTestFunction from './helpers/create-test-function';
+import { decamelize } from '@ember/engine/lib/strict-resolver/string';
+import createTestFunction from './create-test-function';
 
-module('decamelize', function () {
+module('strict-resolver | decamelize', function () {
   const test = createTestFunction(decamelize);
 
-  test('my favorite items', 'my favorite items', 'does nothing with normal string');
-  test('css-class-name', 'css-class-name', 'does nothing with dasherized string');
-  test('action_name', 'action_name', 'does nothing with underscored string');
+  test(
+    'my favorite items',
+    'my favorite items',
+    'does nothing with normal string'
+  );
+  test(
+    'css-class-name',
+    'css-class-name',
+    'does nothing with dasherized string'
+  );
+  test(
+    'action_name',
+    'action_name',
+    'does nothing with underscored string'
+  );
   test(
     'innerHTML',
     'inner_html',
