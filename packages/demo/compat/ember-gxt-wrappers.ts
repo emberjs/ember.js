@@ -1224,7 +1224,6 @@ function createEmberDc(original: Function) {
       // bump the revision cell if the result is different.
       const _dcChangeListener = (): boolean => {
         if (_dcDestroyed) return false;
-        console.log('[DC-LISTENER] bumping revision for', typeof componentGetter === 'function' ? 'dynamic' : componentGetter);
         _dcRevision.update(_dcRevision.value + 1);
         return true;
       };
@@ -1265,9 +1264,6 @@ function createEmberDc(original: Function) {
 
         const raw = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
         _lastComponentValue = raw;
-        if (typeof raw === 'string') {
-          console.log('[DC-GETTER] wrappedGetter called, raw=', raw, 'cachedKey=', _cachedIdentityKey);
-        }
 
         // Return cached marker if the identity key hasn't changed
         // (same component name/value = same function reference = no swap)

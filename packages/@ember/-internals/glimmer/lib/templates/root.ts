@@ -449,7 +449,6 @@ export default function createRootTemplate(_owner: any) {
         controller: controller,
         outletState: outletState,
       };
-
       let renderContext: any;
       if (componentInstance) {
         // When a Component class is the route template, use the component
@@ -543,7 +542,6 @@ export default function createRootTemplate(_owner: any) {
           }
         } catch { /* ignore cell installation errors */ }
       }
-
       // Set global outlet state for nested <ember-outlet> elements
       (globalThis as any).__currentOutletState = outletState;
 
@@ -568,10 +566,12 @@ export default function createRootTemplate(_owner: any) {
         if (typeof _endRenderPass === 'function') _endRenderPass();
       }
 
-      // Track render context for cell-based updates on re-render
+      // Track render context for cell-based updates on re-render.
+      // Use the outletState's render name (which may be the nested route after
+      // -outlet skip) rather than mainOutlet.render.name (always 'application').
       lastRenderContext = renderContext;
       lastArgsObj = argsObj;
-      lastRouteName = mainOutlet.render.name;
+      lastRouteName = outletState.render?.name || mainOutlet.render.name;
     }
 
     // Store the top-level outlet ref for re-rendering on property changes
@@ -584,14 +584,43 @@ export default function createRootTemplate(_owner: any) {
 
     // Register a re-render function that setOutletState can call
     (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
-      const mainOutlet = outletRef?.outlets?.main;
-      const newModel = mainOutlet?.render?.model;
-      const newRouteName = mainOutlet?.render?.name;
-      const newTemplate = mainOutlet?.render?.template;
+      let mainOutlet = outletRef?.outlets?.main;
 
-      // If same route template, try to update existing cells in-place
-      // to preserve DOM node identity (stable DOM).
-      if (lastRenderContext && lastArgsObj && newRouteName && newRouteName === lastRouteName && newTemplate) {
+      // When the main outlet is a -outlet template, look at the nested route
+      // (same skip logic as renderOutletState uses for the initial render).
+      let effectiveOutlet = mainOutlet;
+      if (mainOutlet?.render?.template?.moduleName === 'template:-outlet' &&
+          mainOutlet?.outlets?.main?.render?.template) {
+        effectiveOutlet = mainOutlet.outlets.main;
+      }
+
+      const newModel = effectiveOutlet?.render?.model;
+      const newRouteName = effectiveOutlet?.render?.name;
+      const newTemplate = effectiveOutlet?.render?.template;
+
+      // Check if nested outlet structure changed at any depth (error/loading
+      // substates, engine-internal route transitions, etc.)
+      const nestedOutletChanged = (() => {
+        if (!lastRenderContext?.outletState) return false;
+        // Walk the outlet tree comparing old vs new at each level
+        let oldLevel = lastRenderContext.outletState;
+        let newLevel = effectiveOutlet;
+        for (let depth = 0; depth < 10; depth++) {
+          const oldNested = oldLevel?.outlets?.main;
+          const newNested = newLevel?.outlets?.main;
+          if (!oldNested && !newNested) return false; // Both empty, no change
+          if (!!oldNested !== !!newNested) return true; // One exists, other doesn't
+          if (oldNested?.render?.template !== newNested?.render?.template) return true;
+          if (oldNested?.render?.name !== newNested?.render?.name) return true;
+          oldLevel = oldNested;
+          newLevel = newNested;
+        }
+        return false;
+      })();
+
+      // If same route template AND nested outlets haven't changed, try to
+      // update existing cells in-place to preserve DOM node identity.
+      if (lastRenderContext && lastArgsObj && newRouteName && newRouteName === lastRouteName && newTemplate && !nestedOutletChanged) {
         const _cellFor = (globalThis as any).__gxtCellFor;
         if (_cellFor) {
           try {
@@ -599,6 +628,15 @@ export default function createRootTemplate(_owner: any) {
             const cell = _cellFor(lastArgsObj, 'model', /* skipDefine */ true);
             if (cell) {
               cell.value = newModel;
+            }
+            // Re-register the new model object for interior mutation tracking.
+            // The previous model was registered via registerObjectValueOwner,
+            // but the new model is a different object reference that needs its
+            // own entry in _objectValueCellMap.
+            const _registerOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
+            if (newModel && typeof newModel === 'object' && _registerOwner) {
+              _registerOwner(newModel, lastArgsObj, 'model');
+              _registerOwner(newModel, lastRenderContext, 'model');
             }
             // Also update model on the render context if it's a direct property
             const ctxDesc = Object.getOwnPropertyDescriptor(lastRenderContext, 'model');
@@ -609,7 +647,7 @@ export default function createRootTemplate(_owner: any) {
               }
             }
             // Update outletState
-            lastRenderContext.outletState = mainOutlet;
+            lastRenderContext.outletState = effectiveOutlet;
             // Sync DOM now so GXT formulas re-evaluate and update text nodes
             const syncDomNow = (globalThis as any).__gxtSyncDomNow;
             if (typeof syncDomNow === 'function') {
@@ -622,24 +660,14 @@ export default function createRootTemplate(_owner: any) {
         }
       }
 
-      // Full re-render: clear and re-render from scratch
-      // Use morphing to preserve DOM node identity when possible
-      const morphChildren = (globalThis as any).__gxtMorphChildren;
-      if (morphChildren) {
-        const tempWrapper = document.createElement('div');
-        renderOutletState(outletRef, tempWrapper);
-        const frag = document.createDocumentFragment();
-        while (tempWrapper.firstChild) frag.appendChild(tempWrapper.firstChild);
-        try {
-          morphChildren(parentElement, frag);
-        } catch {
-          parentElement.innerHTML = '';
-          renderOutletState(outletRef);
-        }
-      } else {
-        parentElement.innerHTML = '';
-        renderOutletState(outletRef);
-      }
+      // Full re-render: clear and re-render from scratch.
+      // Don't use morphing for outlet re-renders — morphChildren can't handle
+      // <ember-outlet> custom elements properly (they render via connectedCallback
+      // which doesn't fire when morph updates in-place). Instead, clear the
+      // parent and re-render. The <ember-outlet> elements will fire connectedCallback
+      // when inserted into the live DOM and render their nested content.
+      parentElement.innerHTML = '';
+      renderOutletState(outletRef);
     };
 
     // Perform initial render
