@@ -27,6 +27,9 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         }
       },
       SubExpression(node: AST.SubExpression) {
+        if (isArray(node, hasLocal)) {
+          rewriteKeyword(env, node, 'array', '@ember/helper');
+        }
         if (isFn(node, hasLocal)) {
           rewriteKeyword(env, node, 'fn', '@ember/helper');
         }
@@ -35,6 +38,9 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         }
       },
       MustacheStatement(node: AST.MustacheStatement) {
+        if (isArray(node, hasLocal)) {
+          rewriteKeyword(env, node, 'array', '@ember/helper');
+        }
         if (isFn(node, hasLocal)) {
           rewriteKeyword(env, node, 'fn', '@ember/helper');
         }
@@ -66,6 +72,13 @@ function isOn(
   hasLocal: (k: string) => boolean
 ): node is AST.ElementModifierStatement & { path: AST.PathExpression } {
   return isPath(node.path) && node.path.original === 'on' && !hasLocal('on');
+}
+
+function isArray(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'array' && !hasLocal('array');
 }
 
 function isFn(

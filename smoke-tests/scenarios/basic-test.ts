@@ -516,12 +516,45 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { setupRenderingTest } from 'ember-qunit';
               import { render } from '@ember/test-helpers';
 
-              module('{{hash}} as keyword', function(hooks) {
+              module('{{hash}} as keyword (shadowed)', function(hooks) {
                 setupRenderingTest(hooks);
 
                 test('it works', async function(assert) {
                   const hash = (data) => data;
                   await render(<template>{{hash "hello"}}</template>);
+                  assert.dom().hasText('hello');
+                });
+              });
+            `,
+            'array-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{array}} as keyword', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  await render(
+                    <template>
+                      {{JSON.stringify (array "hello" "goodbye")}}
+                    </template>
+                  );
+                  assert.dom().hasText('["hello", "goodbye"]');
+                });
+              });
+            `,
+            'array-as-keyword-shadowed-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{array}} as keyword (shadowed)', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  const array = (data) => data;
+                  await render(<template>{{array "hello"}}</template>);
                   assert.dom().hasText('hello');
                 });
               });
