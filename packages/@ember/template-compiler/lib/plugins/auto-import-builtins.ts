@@ -30,10 +30,16 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         if (isFn(node, hasLocal)) {
           rewriteKeyword(env, node, 'fn', '@ember/helper');
         }
+        if (isHash(node, hasLocal)) {
+          rewriteKeyword(env, node, 'hash', '@ember/helper');
+        }
       },
       MustacheStatement(node: AST.MustacheStatement) {
         if (isFn(node, hasLocal)) {
           rewriteKeyword(env, node, 'fn', '@ember/helper');
+        }
+        if (isHash(node, hasLocal)) {
+          rewriteKeyword(env, node, 'hash', '@ember/helper');
         }
       },
     },
@@ -67,4 +73,11 @@ function isFn(
   hasLocal: (k: string) => boolean
 ): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
   return isPath(node.path) && node.path.original === 'fn' && !hasLocal('fn');
+}
+
+function isHash(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'hash' && !hasLocal('hash');
 }

@@ -454,6 +454,40 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'hash-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render, click } from '@ember/test-helpers';
+
+              import Component from '@glimmer/component';
+              import { tracked } from '@glimmer/tracking';
+
+              class Demo extends Component {
+                @tracked data = null;
+                setData = (d) => this.data = d;
+
+                <template>
+                  <button {{on 'click' (fn this.setData (hash greeting="hello" farewell="goodbye"))}}>
+                    {{#if this.data}}
+                      {{this.data.greeting}} {{this.data.farewell}}
+                    {{else}}
+                      click me
+                    {{/if}}
+                  </button>
+                </template>
+              }
+
+              module('{{hash}} as keyword', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  await render(Demo);
+                  assert.dom('button').hasText('click me');
+                  await click('button');
+                  assert.dom('button').hasText('hello goodbye');
+                });
+              });
+            `,
           },
         },
       });
