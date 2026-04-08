@@ -13,6 +13,7 @@ import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
 import { ComponentLookup } from '@ember/-internals/views';
+import { StrictResolver } from './lib/strict-resolver';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';
 import { RegistryProxyMixin } from '@ember/-internals/runtime';
 
@@ -330,6 +331,26 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
   */
   declare Resolver: ResolverClass;
 
+  /**
+    Set this to opt-in to using a strict resolver that will only return the
+    given set of ES modules. The names of the modules should all be relative to
+    the root of the app and start with "./"
+
+    @property modules
+    @public
+  */
+  declare modules?: Record<string, unknown>;
+
+  /**
+    Custom pluralization rules for the strict resolver. By default, types are
+    pluralized by appending 's' (e.g. 'service' -> 'services'). The 'config'
+    type is pre-mapped to 'config' (no pluralization).
+
+    @property plurals
+    @public
+  */
+  declare plurals?: Record<string, string>;
+
   init(properties: object | undefined) {
     super.init(properties);
     this.buildRegistry();
@@ -462,6 +483,10 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace: Engine) {
+  if (namespace.modules) {
+    return new StrictResolver(namespace.modules, namespace.plurals);
+  }
+
   let ResolverClass = namespace.Resolver;
   let props = { namespace };
   return ResolverClass.create(props);

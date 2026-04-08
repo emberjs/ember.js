@@ -1,24 +1,12 @@
-import Resolver from '@ember/engine/lib/strict-resolver';
-
-import { setOwner } from '@ember/owner';
+import { StrictResolver } from '@ember/engine/lib/strict-resolver';
 
 export let resolver;
 export let modules;
 
 export function setupResolver(options = {}) {
-  let owner = options.owner;
-  delete options.owner;
+  modules = {};
 
-  if (!options.namespace) {
-    options.namespace = { modulePrefix: 'appkit' };
-  }
+  let plurals = options.plurals;
 
-  modules = Object.create(null);
-
-  let ResolverClass = Resolver.withModules(modules);
-  resolver = ResolverClass.create(options);
-
-  if (owner) {
-    setOwner(resolver, owner);
-  }
+  resolver = new StrictResolver(modules, plurals);
 }

@@ -1,10 +1,9 @@
 import { module, test } from 'qunit';
 import Application from '@ember/application';
-import Resolver from '@ember/engine/lib/strict-resolver';
 import Service from '@ember/service';
 import type ApplicationInstance from '@ember/application/instance';
 
-module('strict-resolver | Registry with Application', function () {
+module('strict-resolver | Application with modules', function () {
   test('registered stuff can be looked up', async function (assert) {
     class Foo {
       static create() {
@@ -15,8 +14,7 @@ module('strict-resolver | Registry with Application', function () {
     }
 
     let app = Application.create({
-      Resolver: Resolver.withModules({}),
-      modulePrefix: 'test-app',
+      modules: {},
       rootElement: '#qunit-fixture',
       autoboot: false,
     });
@@ -32,16 +30,15 @@ module('strict-resolver | Registry with Application', function () {
     instance.destroy();
   });
 
-  test('resolves modules provided via withModules', async function (assert) {
+  test('resolves modules provided via modules property', async function (assert) {
     class MyService extends Service {
       weDidIt = true;
     }
 
     let app = Application.create({
-      Resolver: Resolver.withModules({
-        'test-app/services/my-thing': { default: MyService },
-      }),
-      modulePrefix: 'test-app',
+      modules: {
+        './services/my-thing': { default: MyService },
+      },
       rootElement: '#qunit-fixture',
       autoboot: false,
     });
@@ -51,6 +48,45 @@ module('strict-resolver | Registry with Application', function () {
 
     assert.ok(service, 'service was found');
     assert.ok(service.weDidIt, 'service has the right property');
+
+    instance.destroy();
+  });
+
+  test('resolves shorthand modules (without default wrapper)', async function (assert) {
+    class MyService extends Service {
+      shorthand = true;
+    }
+
+    let app = Application.create({
+      modules: {
+        './services/shorthand-svc': MyService,
+      },
+      rootElement: '#qunit-fixture',
+      autoboot: false,
+    });
+
+    let instance = (await app.visit('/')) as ApplicationInstance;
+    let service = instance.lookup('service:shorthand-svc') as MyService;
+
+    assert.ok(service, 'service was found');
+    assert.ok(service.shorthand, 'service has the right property');
+
+    instance.destroy();
+  });
+
+  test('resolves router:main via ./router module', async function (assert) {
+    let app = Application.create({
+      modules: {},
+      rootElement: '#qunit-fixture',
+      autoboot: false,
+    });
+
+    let instance = (await app.visit('/')) as ApplicationInstance;
+
+    // eslint-disable-next-line ember/no-private-routing-service
+    let router = instance.lookup('router:main');
+
+    assert.ok(router, 'router was resolved');
 
     instance.destroy();
   });
