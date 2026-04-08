@@ -1150,47 +1150,247 @@ function createEmberDc(original: Function) {
       return lazyThunk;
     }
 
-    // If getter returned undefined/null, the block param may not be set yet.
-    // Return a lazy thunk.
+    // Handle null/undefined — the value may become a CurriedComponent later.
+    // Use a placeholder comment node that stays in the DOM. Set up a listener
+    // to detect when the value transitions to a CurriedComponent and perform
+    // a manual DOM swap (the morph can't handle this because tags get marked
+    // current by gxtSyncDom before the morph check).
     if (componentValue == null) {
-      const lazyThunk = () => {
+      const nullPlaceholder = document.createComment('dc-null');
+      let _nullDestroyed = false;
+      let _nullLastKey = '__empty__';
+      const _dcCapturedOwner = g.owner;
+
+      const _nullSwap = () => {
+        if (_nullDestroyed) return;
+        let newVal: any;
         try {
-          const val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-          if (val && val.__isCurriedComponent) {
-            return renderComponent(val, gxtArgs, ctx);
+          newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+        } catch { return; }
+
+        const newKey = !newVal ? '__empty__' : (newVal.__isCurriedComponent ? '__curried:' + (newVal.__name || '') : '__other');
+        if (newKey === _nullLastKey) return;
+        _nullLastKey = newKey;
+
+        const parent = nullPlaceholder.parentNode;
+        if (!parent) return;
+
+        // Render the new component
+        if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
+          const prevOwner = g.owner;
+          if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
+            g.owner = _dcCapturedOwner;
           }
-          if (typeof val === 'string') {
-            const mgrs = g.$_MANAGERS;
-            if (mgrs?.component?.canHandle?.(val)) {
-              return renderComponent(val, gxtArgs, ctx);
+          const prevDcGetter = g.__dcComponentGetter;
+          g.__dcComponentGetter = componentGetter;
+          let newResult: any = null;
+          try {
+            if (newVal.__isCurriedComponent) {
+              const hasCurriedPositionals = (newVal.__curriedPositionals || []).length > 0;
+              newResult = renderComponent(newVal, gxtArgs, ctx, !hasCurriedPositionals);
+            } else {
+              newResult = renderComponent(newVal, gxtArgs, ctx, true);
+            }
+          } catch { /* ignore */ }
+          finally {
+            g.__dcComponentGetter = prevDcGetter;
+            if (!prevOwner && g.owner === _dcCapturedOwner) {
+              g.owner = prevOwner;
             }
           }
-          return val;
-        } catch {
-          return undefined;
+
+          if (newResult instanceof Node) {
+            parent.insertBefore(newResult, nullPlaceholder);
+          }
         }
       };
-      (lazyThunk as any).__isComponentThunk = true;
-      return lazyThunk;
+
+      const _nullListener = (): boolean => {
+        if (_nullDestroyed) return false;
+        _nullSwap();
+        return true;
+      };
+
+      if (!g.__dcChangeListeners) {
+        g.__dcChangeListeners = new Set();
+        const origSyncAll = g.__gxtSyncAllWrappers;
+        if (typeof origSyncAll === 'function') {
+          g.__gxtSyncAllWrappers = function() {
+            origSyncAll();
+            for (const listener of g.__dcChangeListeners) {
+              try { listener(); } catch { /* ignore */ }
+            }
+          };
+        }
+      }
+      g.__dcChangeListeners.add(_nullListener);
+
+      const _nullCleanup = () => {
+        _nullDestroyed = true;
+        g.__dcChangeListeners?.delete(_nullListener);
+      };
+      if (ctx && typeof gxtModule.registerDestructor === 'function') {
+        try { gxtModule.registerDestructor(ctx, _nullCleanup); } catch { /* ignore */ }
+      }
+
+      return nullPlaceholder;
     }
 
-    // Handle CurriedComponent — pass componentGetter as a "live source"
-    // so the component's arg cells can re-read from the LATEST curried
-    // component's args when $_componentHelper re-evaluates with new values.
+    // Handle CurriedComponent — render one-shot initially (preserving existing behavior),
+    // but also set up a __gxtSyncAllWrappers listener that performs manual DOM swaps when
+    // the underlying component identity changes (e.g., compName switches between 'my-comp'
+    // and 'your-comp'). We avoid GXT's $_dc for CurriedComponents because its factory
+    // mechanism causes regressions with Ember's component manager.
     if (componentValue && componentValue.__isCurriedComponent) {
-      const prev = g.__dcComponentGetter;
-      g.__dcComponentGetter = componentGetter;
-      try {
-        // Allow positional params through only when the CurriedComponent itself has
-        // no curried positionals. When it does, the positionals were already embedded
-        // by $_componentHelper (e.g., (component curried "Inner")), and the invocation
-        // args should NOT override them.
-        const hasCurriedPositionals = (componentValue.__curriedPositionals || []).length > 0;
-        const result = renderComponent(componentValue, gxtArgs, ctx, !hasCurriedPositionals);
-        return result;
-      } finally {
-        g.__dcComponentGetter = prev;
+      const RNODES = gxtModule.RENDERED_NODES_PROPERTY;
+      const RCTX = gxtModule.RENDERING_CONTEXT_PROPERTY;
+      const CID = gxtModule.COMPONENT_ID_PROPERTY;
+
+      // --- Initial one-shot render ---
+      let initialResult: any = null;
+      if (componentValue && componentValue.__isCurriedComponent) {
+        const prev = g.__dcComponentGetter;
+        g.__dcComponentGetter = componentGetter;
+        try {
+          const hasCurriedPositionals = (componentValue.__curriedPositionals || []).length > 0;
+          initialResult = renderComponent(componentValue, gxtArgs, ctx, !hasCurriedPositionals);
+        } finally {
+          g.__dcComponentGetter = prev;
+        }
       }
+
+      // --- Reactive swap tracking ---
+      const getIdentityKey = (val: any): string => {
+        if (!val && val !== 0) return '__empty__';
+        if (typeof val === 'string') return '__str:' + val;
+        if (val && val.__isCurriedComponent) return '__curried:' + (val.__name || '');
+        return '__other:' + String(val);
+      };
+
+      let _lastIdentityKey = getIdentityKey(componentValue);
+      let _dcDestroyed = false;
+      const _dcCapturedOwner = g.owner;
+
+      // Collect initial rendered nodes for later removal during swaps.
+      let currentNodes: Node[] = [];
+      if (initialResult instanceof Node) {
+        if (initialResult instanceof DocumentFragment) {
+          currentNodes = Array.from(initialResult.childNodes);
+        } else {
+          currentNodes = [initialResult];
+        }
+      } else if (initialResult != null && initialResult[RNODES]) {
+        currentNodes = [...initialResult[RNODES]].filter((n: any) => n instanceof Node);
+      }
+
+      // Perform DOM swap when the component identity changes.
+      const performSwap = () => {
+        if (_dcDestroyed) return;
+
+        let newVal: any;
+        try {
+          newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+        } catch {
+          return;
+        }
+
+        const newKey = getIdentityKey(newVal);
+        if (newKey === _lastIdentityKey) return;
+        _lastIdentityKey = newKey;
+
+        // Find insertion reference from current nodes
+        const lastNode = currentNodes.length > 0 ? currentNodes[currentNodes.length - 1] : null;
+        const parent = lastNode?.parentNode;
+        if (!parent) return;
+        const insertBefore = lastNode?.nextSibling || null;
+
+        // Remove old nodes
+        for (const node of currentNodes) {
+          if (node.parentNode) node.parentNode.removeChild(node);
+        }
+        currentNodes = [];
+
+        // Render the new component
+        if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
+          const prevOwner = g.owner;
+          if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
+            g.owner = _dcCapturedOwner;
+          }
+          const prevDcGetter = g.__dcComponentGetter;
+          g.__dcComponentGetter = componentGetter;
+          let newResult: any = null;
+          try {
+            if (newVal.__isCurriedComponent) {
+              const hasCurriedPositionals = (newVal.__curriedPositionals || []).length > 0;
+              newResult = renderComponent(newVal, gxtArgs, ctx, !hasCurriedPositionals);
+            } else {
+              newResult = renderComponent(newVal, gxtArgs, ctx, true);
+            }
+          } catch {
+            // Component not found or render error — leave empty
+          } finally {
+            g.__dcComponentGetter = prevDcGetter;
+            if (!prevOwner && g.owner === _dcCapturedOwner) {
+              g.owner = prevOwner;
+            }
+          }
+
+          // Insert new nodes at the position of the old nodes
+          if (newResult instanceof Node) {
+            if (newResult instanceof DocumentFragment) {
+              currentNodes = Array.from(newResult.childNodes);
+            } else {
+              currentNodes = [newResult];
+            }
+            parent.insertBefore(newResult, insertBefore);
+          } else if (newResult != null && newResult[RNODES]) {
+            const nodes = newResult[RNODES] as Node[];
+            currentNodes = [...nodes].filter((n: any) => n instanceof Node);
+            for (const n of currentNodes) {
+              parent.insertBefore(n, insertBefore);
+            }
+          }
+        }
+        // If newVal is null/undefined, currentNodes stays empty (component removed)
+      };
+
+      // Register change listener on __gxtSyncAllWrappers
+      const _dcChangeListener = (): boolean => {
+        if (_dcDestroyed) return false;
+        performSwap();
+        return true;
+      };
+
+      // Add listener to __dcChangeListeners (shared with the string path).
+      // Both paths use the same Set and the same __gxtSyncAllWrappers wrapper.
+      if (!g.__dcChangeListeners) {
+        g.__dcChangeListeners = new Set();
+        const origSyncAll = g.__gxtSyncAllWrappers;
+        if (typeof origSyncAll === 'function') {
+          g.__gxtSyncAllWrappers = function() {
+            origSyncAll();
+            for (const listener of g.__dcChangeListeners) {
+              try { listener(); } catch { /* ignore */ }
+            }
+          };
+        }
+      }
+      g.__dcChangeListeners.add(_dcChangeListener);
+
+      // Cleanup destructor
+      const _cleanupDcListener = () => {
+        _dcDestroyed = true;
+        g.__dcChangeListeners?.delete(_dcChangeListener);
+      };
+      if (ctx && typeof gxtModule.registerDestructor === 'function') {
+        try {
+          gxtModule.registerDestructor(ctx, _cleanupDcListener);
+        } catch { /* ignore */ }
+      }
+
+      // Return the initial result exactly as the baseline did (preserving return type).
+      // The performSwap function uses currentNodes to find the insertion point.
+      return initialResult;
     }
 
     // Handle string component name — render through Ember's component manager.
@@ -1248,6 +1448,8 @@ function createEmberDc(original: Function) {
         }
       }
       g.__dcChangeListeners.add(_dcChangeListener);
+      // Track string-path listener count for morph skip logic in compile.ts
+      g.__dcStringListenerCount = (g.__dcStringListenerCount || 0) + 1;
 
       // Wrap the getter to read the revision cell (for GXT tracking)
       // and translate values into marker functions for swap detection.
@@ -1306,6 +1508,8 @@ function createEmberDc(original: Function) {
       const _cleanupDcListener = () => {
         _dcDestroyed = true;
         g.__dcChangeListeners?.delete(_dcChangeListener);
+        // Decrement string-path listener count
+        if (g.__dcStringListenerCount > 0) g.__dcStringListenerCount--;
       };
 
       // Expose getter so the component manager can read the latest curried component

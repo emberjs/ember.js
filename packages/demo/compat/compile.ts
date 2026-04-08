@@ -1558,12 +1558,12 @@ queueMicrotask(patchGlobalEachSync);
       if (typeof syncAll === 'function') {
         syncAll(); // Pre-render hooks + arg cell updates
         try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
-        // When $_dc change listeners are active, the second gxtSyncDom pass
-        // may have handled dynamic component swaps via cell tracking. In that
-        // case, skip the force-rerender morph (Phase 2b) because the morph
-        // would rebuild the DOM from scratch, undoing the cell-based swap and
-        // creating duplicate $_dc instances with stale node references.
-        if ((globalThis as any).__dcChangeListeners?.size > 0) {
+        // When STRING-path $_dc change listeners are active (using GXT cells),
+        // the second gxtSyncDom pass may have handled dynamic component swaps
+        // via cell tracking. Skip the force-rerender morph (Phase 2b) only when
+        // cell-based listeners exist. CurriedComponent listeners use manual DOM
+        // swap and need the morph for other property changes to propagate.
+        if ((globalThis as any).__dcStringListenerCount > 0) {
           (globalThis as any).__gxtHadPendingSync = false;
         }
       }

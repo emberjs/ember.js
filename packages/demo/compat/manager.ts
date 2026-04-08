@@ -1311,7 +1311,10 @@ export function endRenderPass(): void {
   // This matches Glimmer VM's render tree which includes outlet entries.
   const outletState = (globalThis as any).__currentOutletState;
   const inOutletRender = !!(globalThis as any).__gxtInOutletRender;
-  if (outletState && inOutletRender && renderTreeParts.length === 0) {
+  if (outletState && inOutletRender) {
+    // Clear parentView-derived entries (e.g., "controller:routeWithError")
+    // and rebuild with the proper outlet hierarchy that Glimmer VM produces.
+    renderTreeParts.length = 0;
     // Build outlet hierarchy from the top-level outlet ref
     const topOutletRef = (globalThis as any).__gxtTopOutletRef;
     if (topOutletRef) {
@@ -1332,18 +1335,6 @@ export function endRenderPass(): void {
         renderTreeParts.push(`{{outlet}} for ${name}`);
         renderTreeParts.push(name);
       }
-    }
-    // Add component entries from the parentView chain
-    let cpv: any = startObj;
-    while (cpv) {
-      const dbgKey = cpv._debugContainerKey;
-      if (dbgKey) {
-        const name = dbgKey.replace('component:', '');
-        if (name !== '-top-level') {
-          renderTreeParts.push(name);
-        }
-      }
-      cpv = cpv.parentView;
     }
     // Use @model.key as the property path for outlet-rendered models
     propPath = `@model.${key}`;
@@ -1397,6 +1388,16 @@ export function flushRenderErrors(): void {
     throw err;
   }
 }
+
+/**
+ * Clear any stale render errors without throwing.
+ * Called during test teardown to prevent errors from leaking between tests.
+ */
+export function clearRenderErrors(): void {
+  _renderErrors.length = 0;
+  (globalThis as any).__gxtRenderErrorCount = 0;
+}
+(globalThis as any).__gxtClearRenderErrors = clearRenderErrors;
 
 /**
  * Flush all queued didInsertElement / didRender callbacks.
@@ -1844,7 +1845,7 @@ const _updatedInstances: any[] = [];
               // properties on classic components won't recompute after arg
               // updates via syncAll (the Ember tag isn't dirtied by direct
               // property assignment).
-              if ((globalThis as any).__dcChangeListeners?.size > 0 &&
+              if ((globalThis as any).__dcStringListenerCount > 0 &&
                   entry.instance && typeof entry.instance.trigger === 'function') {
                 try {
                   const npc = (globalThis as any).__emberNotifyPropertyChange;
@@ -4850,14 +4851,12 @@ const $_MANAGERS = {
                     }
                   }
                 }
-                // If no arg changed at all, this was triggered by external tracking.
-                // But only if this is a different sync cycle from the last update.
-                // Within the same cycle, GXT's formula double-fires should not
-                // trigger spurious updates. Track on the element to survive cache
-                // entry replacement.
+                // If no arg changed at all, this may be an external tracking
+                // change (e.g., a @tracked value read in didInsertElement changed).
+                // Skip if this is the sync cycle immediately after install —
+                // that is just GXT's run-loop settling, not a real change.
                 const syncCycleNow = (globalThis as any).__gxtSyncCycleId || 0;
-                const elLastUpdate = (element as any).__gxtModLastUpdate || {};
-                if (!anyArgChanged && (elLastUpdate[modKey] || 0) < syncCycleNow) {
+                if (!anyArgChanged && (syncCycleNow - (cached.__gxtInstallCycle || 0)) > 1) {
                   shouldUpdate = true;
                 }
               }
@@ -5143,6 +5142,9 @@ const $_MANAGERS = {
         _lastPositional: [...initialArgs.positional],
         _lastNamed: { ...initialArgs.named },
         __gxtUpdatedInSyncCycle: (globalThis as any).__gxtSyncCycleId || 0,
+        // Record the install sync cycle so we can skip the spurious re-eval
+        // that happens in the very next cycle (run-loop settling).
+        __gxtInstallCycle: (globalThis as any).__gxtSyncCycleId || 0,
       };
       cache.set(modKey, cached);
       // Track instance for teardown cleanup (destroyModifier -> willDestroyElement)

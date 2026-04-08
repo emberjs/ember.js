@@ -126,6 +126,13 @@ export abstract class AbstractStrictTestCase {
       (globalThis as any).__gxtPendingSync = false;
       (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
       (globalThis as any).__gxtSyncScheduled = false;
+      // Clear stale render errors so they don't leak into the next test's
+      // beforeEach. Errors like backtracking assertions are caught by
+      // assert.rejectsAssertion but also captured in _renderErrors via
+      // captureRenderError, leaving a stale copy that would re-throw on
+      // the next flushRenderErrors() call.
+      const clearErrors = (globalThis as any).__gxtClearRenderErrors;
+      if (typeof clearErrors === 'function') clearErrors();
     }
   }
 
