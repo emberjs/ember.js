@@ -1,4 +1,5 @@
 import type { Factory, Resolver } from '@ember/owner';
+import { dasherize } from './strict-resolver/string';
 
 export class StrictResolver implements Resolver {
   #modules = new Map<string, unknown>();
@@ -104,16 +105,6 @@ export class StrictResolver implements Resolver {
 
 const fileExtension = /\.\w{1,4}$/;
 const leadingDotSlash = /^\.\//;
-
-const STRING_DECAMELIZE_REGEXP = /([a-z\d])([A-Z])/g;
-function decamelize(str: string): string {
-  return str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase();
-}
-
-const STRING_DASHERIZE_REGEXP = /[ _]/g;
-function dasherize(key: string): string {
-  return decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-');
-}
 
 type Result =
   | {

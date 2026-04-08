@@ -1,10 +1,13 @@
 import { module, test } from 'qunit';
 import { StrictResolver } from '@ember/engine/lib/strict-resolver';
-import { setupResolver, resolver, modules } from './-setup-resolver';
+import { setupResolver } from './-setup-resolver';
 
 module('strict-resolver | basic', function (hooks) {
+  let resolver;
+  let modules;
+
   hooks.beforeEach(function () {
-    setupResolver();
+    ({ resolver, modules } = setupResolver());
   });
 
   test('can lookup something', function (assert) {
@@ -38,6 +41,72 @@ module('strict-resolver | basic', function (hooks) {
 
     assert.ok(helper, 'helper was returned');
     assert.strictEqual(helper, expected, 'default export was returned');
+  });
+
+  test('can lookup a component', function (assert) {
+    let expected = { isComponentFactory: true };
+    modules['./components/my-widget'] = { default: expected };
+    resolver.addModules(modules);
+
+    let component = resolver.resolve('component:my-widget');
+
+    assert.ok(component, 'component was returned');
+    assert.strictEqual(component, expected, 'default export was returned');
+  });
+
+  test('can lookup a modifier', function (assert) {
+    let expected = { isModifier: true };
+    modules['./modifiers/auto-focus'] = { default: expected };
+    resolver.addModules(modules);
+
+    let modifier = resolver.resolve('modifier:auto-focus');
+
+    assert.ok(modifier, 'modifier was returned');
+    assert.strictEqual(modifier, expected, 'default export was returned');
+  });
+
+  test('can lookup a template', function (assert) {
+    let expected = { isTemplate: true };
+    modules['./templates/application'] = { default: expected };
+    resolver.addModules(modules);
+
+    let template = resolver.resolve('template:application');
+
+    assert.ok(template, 'template was returned');
+    assert.strictEqual(template, expected, 'default export was returned');
+  });
+
+  test('can lookup a view', function (assert) {
+    let expected = { isViewFactory: true };
+    modules['./views/queue-list'] = { default: expected };
+    resolver.addModules(modules);
+
+    let view = resolver.resolve('view:queue-list');
+
+    assert.ok(view, 'view was returned');
+    assert.strictEqual(view, expected, 'default export was returned');
+  });
+
+  test('can lookup a route', function (assert) {
+    let expected = { isRouteFactory: true };
+    modules['./routes/index'] = { default: expected };
+    resolver.addModules(modules);
+
+    let route = resolver.resolve('route:index');
+
+    assert.ok(route, 'route was returned');
+    assert.strictEqual(route, expected, 'default export was returned');
+  });
+
+  test('can lookup a controller', function (assert) {
+    let expected = { isController: true };
+    modules['./controllers/application'] = { default: expected };
+    resolver.addModules(modules);
+
+    let controller = resolver.resolve('controller:application');
+
+    assert.ok(controller, 'controller was returned');
+    assert.strictEqual(controller, expected, 'default export was returned');
   });
 
   test("will return the raw value if no 'default' is available", function (assert) {
@@ -139,7 +208,11 @@ module('strict-resolver | basic', function (hooks) {
   });
 
   test('shorthand module registration (no default wrapper)', function (assert) {
-    let MyService = { create() { return this; } };
+    let MyService = {
+      create() {
+        return this;
+      },
+    };
 
     let resolver2 = new StrictResolver({
       './services/my-thing': MyService,
@@ -164,37 +237,124 @@ module('strict-resolver | basic', function (hooks) {
       'controller:posts/index'
     );
     assert.strictEqual(
+      resolver.normalize('controller:posts_index'),
+      'controller:posts-index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:posts-index'),
+      'controller:posts-index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:posts.post.index'),
+      'controller:posts/post/index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:posts_post.index'),
+      'controller:posts-post/index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:posts.post_index'),
+      'controller:posts/post-index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:posts.post-index'),
+      'controller:posts/post-index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:blogPosts.index'),
+      'controller:blog-posts/index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:blog/posts.index'),
+      'controller:blog/posts/index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:blog/posts-index'),
+      'controller:blog/posts-index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:blog/posts.post.index'),
+      'controller:blog/posts/post/index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:blog/posts_post.index'),
+      'controller:blog/posts-post/index'
+    );
+    assert.strictEqual(
+      resolver.normalize('controller:blog/posts_post-index'),
+      'controller:blog/posts-post-index'
+    );
+
+    assert.strictEqual(
+      resolver.normalize('template:blog/posts_index'),
+      'template:blog/posts-index'
+    );
+    assert.strictEqual(
       resolver.normalize('service:userAuth'),
       'service:user-auth'
     );
 
-    // helpers preserve camelCase (avoid shadowing template expressions)
+    // For helpers, we have special logic to avoid the situation of a template's
+    // `{{someName}}` being surprisingly shadowed by a `some-name` helper
     assert.strictEqual(
-      resolver.normalize('helper:makeFabulous'),
-      'helper:makeFabulous'
+      resolver.normalize('helper:make-fabulous'),
+      'helper:make-fabulous'
+    );
+    assert.strictEqual(
+      resolver.normalize('helper:fabulize'),
+      'helper:fabulize'
     );
     assert.strictEqual(
       resolver.normalize('helper:make_fabulous'),
       'helper:make-fabulous'
     );
+    assert.strictEqual(
+      resolver.normalize('helper:makeFabulous'),
+      'helper:makeFabulous'
+    );
 
-    // components preserve camelCase
+    // The same applies to components
+    assert.strictEqual(
+      resolver.normalize('component:fabulous-component'),
+      'component:fabulous-component'
+    );
     assert.strictEqual(
       resolver.normalize('component:fabulousComponent'),
       'component:fabulousComponent'
     );
+    assert.strictEqual(
+      resolver.normalize('template:components/fabulousComponent'),
+      'template:components/fabulousComponent'
+    );
 
-    // modifiers preserve camelCase
+    // and modifiers
+    assert.strictEqual(
+      resolver.normalize('modifier:fabulous-component'),
+      'modifier:fabulous-component'
+    );
     assert.strictEqual(
       resolver.normalize('modifier:fabulouslyMissing'),
       'modifier:fabulouslyMissing'
     );
   });
 
+  test('camel case modifier is not normalized to dasherized', function (assert) {
+    let expected = {};
+    resolver.addModules({
+      './modifiers/other-thing': { default: 'oh no' },
+      './modifiers/otherThing': { default: expected },
+    });
+
+    let modifier = resolver.resolve('modifier:otherThing');
+
+    assert.strictEqual(modifier, expected);
+  });
+
   test('normalization is idempotent', function (assert) {
     let examples = [
       'controller:posts',
       'controller:posts.post.index',
+      'controller:blog/posts.post_index',
       'template:foo_bar',
     ];
 
@@ -224,5 +384,20 @@ module('strict-resolver | basic', function (hooks) {
     let result = resolver2.resolve('sheep:baaaaaa');
 
     assert.strictEqual(result, 'whatever', 'custom plural was used');
+  });
+
+  test("'config' plural can be overridden", function (assert) {
+    let resolver2 = new StrictResolver(
+      { './super-duper-config/environment': 'whatever' },
+      { config: 'super-duper-config' }
+    );
+
+    let result = resolver2.resolve('config:environment');
+
+    assert.strictEqual(
+      result,
+      'whatever',
+      'super-duper-config/environment is found'
+    );
   });
 });

@@ -6,7 +6,8 @@
     ".": "./index.ts",
     "./instance": "./instance.ts",
     "./parent": "./parent.ts",
-    "./lib/strict-resolver": "./lib/strict-resolver.ts"
+    "./lib/strict-resolver": "./lib/strict-resolver.ts",
+    "./lib/strict-resolver/string": "./lib/strict-resolver/string.js"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

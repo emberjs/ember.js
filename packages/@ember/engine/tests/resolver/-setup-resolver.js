@@ -1,12 +1,9 @@
 import { StrictResolver } from '@ember/engine/lib/strict-resolver';
 
-export let resolver;
-export let modules;
-
 export function setupResolver(options = {}) {
-  modules = {};
-
+  let modules = {};
   let plurals = options.plurals;
+  let resolver = new StrictResolver(modules, plurals);
 
-  resolver = new StrictResolver(modules, plurals);
+  return { resolver, modules };
 }
