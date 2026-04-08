@@ -1827,8 +1827,15 @@ const _updatedInstances: any[] = [];
 
           // Skip cell update if the key is locally overridden and the arg hasn't actually changed from parent
           const isLocallyOverridden = entry.instance?.__gxtLocalOverrides?.has(key);
-          if (isLocallyOverridden && !argActuallyChanged) {
-            // Local override is in effect and arg hasn't changed — skip
+          // Also skip when a locally-overridden arg transitions to undefined
+          // while the last known arg value was defined. This protects against
+          // GXT reactive getters that temporarily return undefined during
+          // gxtSyncDom cell processing (the getter's closure may reference a
+          // context that is stale during the sync cycle). Without this guard,
+          // the sync would clobber the local value (e.g., incrementProperty)
+          // with undefined, cascading incorrect values to child components.
+          if (isLocallyOverridden && (!argActuallyChanged || (newValue === undefined && lastKnownArg !== undefined))) {
+            // Local override is in effect and arg hasn't changed (or getter returned stale undefined) — skip
           } else if (cell.__value !== newValue || (argActuallyChanged && isLocallyOverridden)) {
             cell.update(newValue);
             if (entry.instance && key !== 'class' && key !== 'classNames') {
