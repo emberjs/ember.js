@@ -1632,8 +1632,9 @@ queueMicrotask(patchGlobalEachSync);
           // Only destroy if the element is actually disconnected from the DOM.
           if (entry.element && entry.element.isConnected) continue;
           try {
-            if (entry.isCustom && entry.cached.manager?.destroyModifier) {
+            if (entry.isCustom && entry.cached.manager?.destroyModifier && !entry.cached.instance?.__gxtModDestroyed) {
               entry.cached.manager.destroyModifier(entry.cached.instance);
+              if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
             }
             if (entry.destroyable) {
               const destroyFn = (globalThis as any).__gxtDestroyFn;
@@ -3751,13 +3752,20 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               stack.push(unwrappedParams);
 
               try {
-                // Evaluate lazy children (wrapped in () => ... for deferred block param access)
-                // and return raw children. GXT's rendering pipeline
-                // (renderElement → resolveRenderable) will handle functions
-                // by wrapping them in formulas that track cell dependencies.
+                // Evaluate lazy-wrapped component children (contain $_tag/$_c/$_dc)
+                // but preserve reactive text getters as functions so GXT can track
+                // cell dependencies and create reactive text nodes via gxtEffect.
+                // Without this, yielded {{this.message}} becomes a static string
+                // and won't update when the outer context changes via set().
                 return slotChildren.map((child: any) => {
                   if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
-                    try { return child(); } catch { return child; }
+                    const fnStr = child.toString();
+                    // Lazy-wrapped component children contain $_tag or $_c calls — evaluate them
+                    if (fnStr.includes('$_tag(') || fnStr.includes('$_c(') || fnStr.includes('$_dc(') || fnStr.includes('$_eachSync(')) {
+                      try { return child(); } catch { return child; }
+                    }
+                    // Reactive text getters — return as functions for GXT reactive tracking
+                    return child;
                   }
                   return child;
                 });
@@ -3828,12 +3836,16 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             stack.push(rawParams);
 
             try {
-              // Evaluate lazy children (wrapped in () => ... for deferred block param access)
-              // and return raw children. GXT's rendering pipeline handles functions via
-              // resolveRenderable → formula tracking.
+              // Evaluate lazy-wrapped component children (contain $_tag/$_c/$_dc)
+              // but preserve reactive text getters as functions so GXT can track
+              // cell dependencies and create reactive text nodes via gxtEffect.
               return effectiveChildren.map((child: any) => {
                 if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
-                  try { return child(); } catch { return child; }
+                  const fnStr = child.toString();
+                  if (fnStr.includes('$_tag(') || fnStr.includes('$_c(') || fnStr.includes('$_dc(') || fnStr.includes('$_eachSync(')) {
+                    try { return child(); } catch { return child; }
+                  }
+                  return child;
                 }
                 return child;
               });
@@ -4462,19 +4474,23 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           return _currentMarker;
         }
 
-        // CurriedComponent object — detect changes by raw object identity.
-        // Different curried objects (even with same name) must trigger re-render
-        // because each represents a new component instance lifecycle.
+        // CurriedComponent object — detect changes by component NAME only.
+        // The hash getter creates a new CurriedComponent object each time it's
+        // accessed, so we can't use raw reference identity. Instead, we use the
+        // component name + arg keys as the identity key. When the name changes
+        // (A→B or A→B→A), the key changes and we create a new marker. When only
+        // arg VALUES change but the name stays the same, we update the existing
+        // marker's args without re-creating the component.
         if (raw && raw.__isCurriedComponent) {
           const key = '__curried:' + (raw.__name || '') + ':' + JSON.stringify(Object.keys(raw.__curriedArgs || {}));
-          // Always create new marker when raw reference changes (A→B→A scenario)
-          if (_lastIdentityKey !== key || _lastRaw !== raw) {
+          if (_lastIdentityKey !== key) {
             _destroyOldDcInstance();
             _lastIdentityKey = key;
             _lastRaw = raw;
             _makeCurriedMarker(raw);
           } else {
-            // Same raw reference — just update args in case they mutated
+            // Same identity key — just update args in case they mutated
+            _lastRaw = raw;
             if (_currentMarker) {
               (_currentMarker as any).__curriedArgs = raw.__curriedArgs;
               (_currentMarker as any).__curriedPositionals = raw.__curriedPositionals;
@@ -4992,6 +5008,80 @@ function transformCurlyArgsToAngleBracket(args: string): string {
     }
     result += ` @__posCount__={{${positionalParams.length}}}`;
   }
+  return result;
+}
+
+/**
+ * Transform {{#let ... as |param|}} block param invocations with args to angle-bracket syntax.
+ *
+ * GXT compiles {{#let}} blocks into JS let-bindings. When a let-bound value is accessed
+ * with args (e.g., {{param.prop key=val}}), GXT compiles it as a function call:
+ *   Let_param_scope0().prop({key: val})
+ *
+ * For Ember's contextual components, this breaks reactivity because:
+ * 1. Args are evaluated eagerly (not wrapped in reactive getters)
+ * 2. No $_dc wrapper for component identity tracking and swapping
+ *
+ * This transform converts such invocations to angle-bracket syntax:
+ *   {{param.prop key=val}} → <param.prop @key={{val}} />
+ *   {{param.prop positional1 key=val}} → <param.prop @__pos0__={{positional1}} @__posCount__={{1}} @key={{val}} />
+ *   {{#param.prop key=val}}content{{/param.prop}} → <param.prop @key={{val}}>content</param.prop>
+ *
+ * GXT then compiles <param.prop ...> as $_dc(() => Let_param_scope0().prop, args, this),
+ * which flows through $_dc_ember for proper Ember integration.
+ */
+function transformLetBlockParamInvocations(templateString: string): string {
+  let result = templateString;
+
+  // Match {{#let PARAMS as |param1 param2 ...|}}BODY{{/let}}
+  // Support nested let blocks by matching from innermost out
+  const letPattern = /\{\{#let\s+[\s\S]*?\s+as\s*\|([^|]+)\|\s*\}\}([\s\S]*?)\{\{\/let\}\}/g;
+
+  // Process iteratively to handle nested let blocks
+  let maxIter = 20;
+  while (maxIter-- > 0) {
+    // Find the INNERMOST {{#let...}}...{{/let}} (one that has no nested {{#let}} in its body)
+    const innerLetPattern = /\{\{#let\s+([\s\S]*?)\s+as\s*\|([^|]+)\|\s*\}\}((?:(?!\{\{#let\s)[\s\S])*?)\{\{\/let\}\}/;
+    const letMatch = innerLetPattern.exec(result);
+    if (!letMatch) break;
+
+    const [fullMatch, , paramsStr, body] = letMatch;
+    const matchStart = letMatch.index;
+    const params = paramsStr.trim().split(/\s+/);
+
+    let transformedBody = body;
+
+    for (const param of params) {
+      // Skip empty params
+      if (!param) continue;
+      // Escape for regex
+      const escaped = param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      // 1. Block form with dot path: {{#param.prop args}}content{{/param.prop}}
+      const blockDotPattern = new RegExp(
+        `\\{\\{#${escaped}(\\.[a-zA-Z0-9_.\\-]+)(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${escaped}\\1\\}\\}`, 'g'
+      );
+      transformedBody = transformedBody.replace(blockDotPattern, (m: string, dotPath: string, args: string, content: string) => {
+        const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
+        return `<${param}${dotPath}${transformedArgs}>${content}</${param}${dotPath}>`;
+      });
+
+      // 2. Inline form with dot path and args: {{param.prop arg1 key=val}}
+      const inlineDotWithArgsPattern = new RegExp(
+        `\\{\\{\\s*${escaped}(\\.[a-zA-Z0-9_.\\-]+)(\\s+[^}]+)\\}\\}`, 'g'
+      );
+      transformedBody = transformedBody.replace(inlineDotWithArgsPattern, (m: string, dotPath: string, args: string) => {
+        const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
+        return `<${param}${dotPath}${transformedArgs} />`;
+      });
+    }
+
+    // Replace the body in the result
+    const bodyStart = matchStart + fullMatch.indexOf(body);
+    const bodyEnd = bodyStart + body.length;
+    result = result.slice(0, bodyStart) + transformedBody + result.slice(bodyEnd);
+  }
+
   return result;
 }
 
@@ -6087,9 +6177,18 @@ export function precompileTemplate(templateString: string, options?: {
   if (/\{\{\{/.test(transformedTemplate)) {
     transformedTemplate = transformTripleMustaches(transformedTemplate);
   }
-  // Transform {{component}} helper to angle-bracket
+  // Transform {{#component}} helper to angle-bracket
   if (/\{\{#?component\s+/.test(transformedTemplate)) {
     transformedTemplate = transformComponentHelper(transformedTemplate);
+  }
+
+  // Transform {{#let ... as |param|}} block param invocations with args to
+  // angle-bracket syntax so GXT compiles them as $_dc (dynamic component).
+  // Without this, GXT compiles {{param.prop key=val}} as a function call
+  // (Let_param_scope0().prop({key: val})) instead of $_dc which breaks
+  // reactivity and contextual component rendering.
+  if (/\{\{#let\s/.test(transformedTemplate)) {
+    transformedTemplate = transformLetBlockParamInvocations(transformedTemplate);
   }
 
   // Transform built-in curly components ({{input ...}} and {{textarea ...}}) to angle-bracket syntax
@@ -7492,8 +7591,24 @@ export function precompileTemplate(templateString: string, options?: {
           const isGxtArray = Array.isArray(finalResult) && finalResult.length > 0 &&
             finalResult.some((v: any) => v instanceof Node || typeof v === 'function' ||
               (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date)));
-          if ((_RNPROP && _RNPROP in finalResult) || isGxtArray ||
-              typeof finalResult.toHTML === 'function') {
+          if (_RNPROP && _RNPROP in finalResult && !isGxtArray) {
+            // Extract DOM nodes from GXT ComponentReturnType objects (e.g., from $_dc).
+            // These objects have RENDERED_NODES_PROPERTY containing the actual DOM nodes.
+            const renderedNodes = finalResult[_RNPROP];
+            if (Array.isArray(renderedNodes) && renderedNodes.length > 0) {
+              if (renderedNodes.length === 1 && renderedNodes[0] instanceof Node) {
+                return renderedNodes[0];
+              }
+              const frag = document.createDocumentFragment();
+              for (const rn of renderedNodes) {
+                if (rn instanceof Node) frag.appendChild(rn);
+              }
+              return frag;
+            }
+            // Empty rendered nodes — return a placeholder comment
+            return document.createComment('');
+          }
+          if (isGxtArray || typeof finalResult.toHTML === 'function') {
             return itemToNode(finalResult, depth + 1);
           }
           // Check if this is a component definition (from {{this.Foo}} where Foo is a component).

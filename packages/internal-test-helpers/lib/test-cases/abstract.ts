@@ -82,8 +82,9 @@ export abstract class AbstractStrictTestCase {
           for (const entry of toFlush) {
             if (!entry.cached.pendingDestroy) continue;
             try {
-              if (entry.isCustom && entry.cached.manager?.destroyModifier) {
+              if (entry.isCustom && entry.cached.manager?.destroyModifier && !entry.cached.instance?.__gxtModDestroyed) {
                 entry.cached.manager.destroyModifier(entry.cached.instance);
+                if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
               }
               if (entry.destroyable) {
                 const destroyFn = (globalThis as any).__gxtDestroyFn;
@@ -106,8 +107,9 @@ export abstract class AbstractStrictTestCase {
           // Walk recently-active instances and call destroyModifier on their managers
           for (const inst of modMgr._updatedInstances) {
             try {
-              if (inst?.__gxtModManager?.destroyModifier) {
+              if (inst?.__gxtModManager?.destroyModifier && !inst.__gxtModDestroyed) {
                 inst.__gxtModManager.destroyModifier(inst);
+                inst.__gxtModDestroyed = true;
               }
             } catch { /* ignore */ }
           }

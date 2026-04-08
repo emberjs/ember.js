@@ -1216,6 +1216,12 @@ export function endRenderPass(): void {
   _templateRenderedInstances.clear();
 }
 
+// Expose render pass functions on globalThis so outlet rendering (root.ts)
+// can enable backtracking detection without circular imports.
+(globalThis as any).__gxtBeginRenderPass = beginRenderPass;
+(globalThis as any).__gxtEndRenderPass = endRenderPass;
+(globalThis as any).__gxtMarkTemplateRendered = markTemplateRendered;
+
 /**
  * Check if setting a property on an instance constitutes backtracking.
  * Called from Ember's set() during rendering to detect modifications
@@ -1300,26 +1306,71 @@ export function endRenderPass(): void {
     }
     pv = pv.parentView;
   }
+
+  // If rendering inside an outlet context, build the outlet hierarchy.
+  // This matches Glimmer VM's render tree which includes outlet entries.
+  const outletState = (globalThis as any).__currentOutletState;
+  const inOutletRender = !!(globalThis as any).__gxtInOutletRender;
+  if (outletState && inOutletRender && renderTreeParts.length === 0) {
+    // Build outlet hierarchy from the top-level outlet ref
+    const topOutletRef = (globalThis as any).__gxtTopOutletRef;
+    if (topOutletRef) {
+      const outletChain: string[] = [];
+      const routeName = outletState.render?.name;
+      const walkOutlets = (ref: any, target: string | undefined): void => {
+        const main = ref?.outlets?.main;
+        if (!main?.render?.name) return;
+        outletChain.push(main.render.name);
+        if (main.render.name === target) return;
+        if (main.outlets?.main) {
+          walkOutlets(main, target);
+        }
+      };
+      walkOutlets(topOutletRef, routeName);
+      // Build render tree: {{outlet}} for X, X, {{outlet}} for Y, Y, ...
+      for (const name of outletChain) {
+        renderTreeParts.push(`{{outlet}} for ${name}`);
+        renderTreeParts.push(name);
+      }
+    }
+    // Add component entries from the parentView chain
+    let cpv: any = startObj;
+    while (cpv) {
+      const dbgKey = cpv._debugContainerKey;
+      if (dbgKey) {
+        const name = dbgKey.replace('component:', '');
+        if (name !== '-top-level') {
+          renderTreeParts.push(name);
+        }
+      }
+      cpv = cpv.parentView;
+    }
+    // Use @model.key as the property path for outlet-rendered models
+    propPath = `@model.${key}`;
+  }
+
   // Build indented tree
-  const treeLines = renderTreeParts.map((n, i) => ' '.repeat((i + 2) * 2) + n);
-  const propIndent = ' '.repeat((renderTreeParts.length + 1) * 2);
+  const isInOutlet = !!(globalThis as any).__currentOutletState && renderTreeParts.some(p => p.startsWith('{{outlet}}'));
+  // In outlet context, base indent is 6 (matching Glimmer VM's outlet nesting).
+  // In component context, base indent is 4 (matching Glimmer VM's component nesting).
+  const baseIndent = isInOutlet ? 3 : 2; // multiplied by 2 below
+  const treeLines = renderTreeParts.map((n, i) => ' '.repeat((i + baseIndent) * 2) + n);
+  const propIndent = ' '.repeat((renderTreeParts.length + baseIndent - 1) * 2);
   treeLines.push(propIndent + propPath);
   const renderTree = treeLines.join('\n');
+  const topLevelPrefix = isInOutlet
+    ? '  {{outlet}} for -top-level\n    -top-level\n'
+    : '  -top-level\n';
 
   // Call the current assert function — use the dynamic getter on globalThis
   // to pick up the stub installed by expectAssertion(). The module-level
   // import `assert` may be a stale reference in bundled/HMR'd code.
   const _assertFn = (globalThis as any).__emberAssertFn;
+  const msg = `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n${topLevelPrefix}${renderTree}\n\nStack trace for the update:`;
   if (typeof _assertFn === 'function') {
-    _assertFn(
-      `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  -top-level\n${renderTree}\n\nStack trace for the update:`,
-      false
-    );
+    _assertFn(msg, false);
   } else {
-    assert(
-      `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n  -top-level\n${renderTree}\n\nStack trace for the update:`,
-      false
-    );
+    assert(msg, false);
   }
 };
 

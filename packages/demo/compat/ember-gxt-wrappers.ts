@@ -1181,7 +1181,12 @@ function createEmberDc(original: Function) {
       const prev = g.__dcComponentGetter;
       g.__dcComponentGetter = componentGetter;
       try {
-        const result = renderComponent(componentValue, gxtArgs, ctx);
+        // Allow positional params through only when the CurriedComponent itself has
+        // no curried positionals. When it does, the positionals were already embedded
+        // by $_componentHelper (e.g., (component curried "Inner")), and the invocation
+        // args should NOT override them.
+        const hasCurriedPositionals = (componentValue.__curriedPositionals || []).length > 0;
+        const result = renderComponent(componentValue, gxtArgs, ctx, !hasCurriedPositionals);
         return result;
       } finally {
         g.__dcComponentGetter = prev;
@@ -1219,9 +1224,7 @@ function createEmberDc(original: Function) {
       // bump the revision cell if the result is different.
       const _dcChangeListener = (): boolean => {
         if (_dcDestroyed) return false;
-        // Always bump the revision cell to trigger formula re-evaluation.
-        // The actual value comparison happens inside wrappedGetter which
-        // runs during GXT's sync cycle (after all Ember tags are dirtied).
+        console.log('[DC-LISTENER] bumping revision for', typeof componentGetter === 'function' ? 'dynamic' : componentGetter);
         _dcRevision.update(_dcRevision.value + 1);
         return true;
       };
@@ -1262,6 +1265,9 @@ function createEmberDc(original: Function) {
 
         const raw = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
         _lastComponentValue = raw;
+        if (typeof raw === 'string') {
+          console.log('[DC-GETTER] wrappedGetter called, raw=', raw, 'cachedKey=', _cachedIdentityKey);
+        }
 
         // Return cached marker if the identity key hasn't changed
         // (same component name/value = same function reference = no swap)
@@ -1314,6 +1320,9 @@ function createEmberDc(original: Function) {
       const RNODES = gxtModule.RENDERED_NODES_PROPERTY;
       const RCTX = gxtModule.RENDERING_CONTEXT_PROPERTY;
       const CID = gxtModule.COMPONENT_ID_PROPERTY;
+      // Capture the owner at creation time so it's available during swaps
+      // (reactive re-evaluations may occur when globalThis.owner is null)
+      const _dcCapturedOwner = g.owner;
       const emberComponentFactory = (markerValue: any, factoryArgs: any, factoryCtx: any) => {
         // Handle empty component marker
         if (typeof markerValue === 'function' && (markerValue as any).__emptyComponent) {
@@ -1321,7 +1330,25 @@ function createEmberDc(original: Function) {
           return { [RNODES]: [comment], [CID]: 0, [RCTX]: null };
         }
 
-        const result = renderComponent(markerValue, factoryArgs, factoryCtx, true);
+        // Ensure owner is available during reactive swaps
+        const prevOwner = g.owner;
+        if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
+          g.owner = _dcCapturedOwner;
+        }
+        const markerName = (markerValue as any)?.__stringComponentName || 'unknown';
+        console.log('[DC-FACTORY] called for', markerName, 'owner=', !!g.owner);
+        let result: any;
+        try {
+          result = renderComponent(markerValue, factoryArgs, factoryCtx, true);
+          console.log('[DC-FACTORY] result for', markerName, ':', result instanceof Node ? 'Node' : (result ? 'non-null' : 'NULL'));
+        } catch (dcSwapErr) {
+          console.error('[DC-SWAP] Error rendering dynamic component during swap:', dcSwapErr);
+          throw dcSwapErr;
+        } finally {
+          if (!prevOwner && g.owner === _dcCapturedOwner) {
+            g.owner = prevOwner;
+          }
+        }
 
         // If the marker has a string name that couldn't be resolved, throw
         if (result == null && typeof markerValue === 'function' && (markerValue as any).__stringComponentName) {

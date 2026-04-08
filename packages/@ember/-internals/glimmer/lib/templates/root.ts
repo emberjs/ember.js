@@ -387,7 +387,7 @@ export default function createRootTemplate(_owner: any) {
 
     // Render the outlet state into the parent element.
     // This function is also called by setOutletState to re-render on route changes.
-    function renderOutletState(outletRef: any) {
+    function renderOutletState(outletRef: any, targetElement?: Element) {
       const mainOutlet = outletRef?.outlets?.main;
       if (!mainOutlet?.render?.template) return;
 
@@ -547,17 +547,99 @@ export default function createRootTemplate(_owner: any) {
       // Set global outlet state for nested <ember-outlet> elements
       (globalThis as any).__currentOutletState = outletState;
 
-      renderTemplateWithContext(routeTemplate, parentElement, renderContext, outletOwner);
+      // Begin render pass for backtracking detection (detects mutations
+      // to already-consumed values during rendering, e.g., component init
+      // setting a property that was already read by the template).
+      const _beginRenderPass = (globalThis as any).__gxtBeginRenderPass;
+      const _endRenderPass = (globalThis as any).__gxtEndRenderPass;
+      const _markRendered = (globalThis as any).__gxtMarkTemplateRendered;
+      if (typeof _beginRenderPass === 'function') _beginRenderPass();
+      // Mark the render context and model as rendered so backtracking
+      // detection can catch mutations during child component init().
+      if (typeof _markRendered === 'function') {
+        _markRendered(renderContext);
+        if (model && typeof model === 'object') _markRendered(model);
+      }
+      (globalThis as any).__gxtInOutletRender = true;
+      try {
+        renderTemplateWithContext(routeTemplate, targetElement || parentElement, renderContext, outletOwner);
+      } finally {
+        (globalThis as any).__gxtInOutletRender = false;
+        if (typeof _endRenderPass === 'function') _endRenderPass();
+      }
+
+      // Track render context for cell-based updates on re-render
+      lastRenderContext = renderContext;
+      lastArgsObj = argsObj;
+      lastRouteName = mainOutlet.render.name;
     }
 
     // Store the top-level outlet ref for re-rendering on property changes
     (globalThis as any).__gxtTopOutletRef = instance.outletRef;
 
+    // Track the last render context and args for cell-based updates
+    let lastRenderContext: any = null;
+    let lastArgsObj: any = null;
+    let lastRouteName: string | undefined = undefined;
+
     // Register a re-render function that setOutletState can call
     (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
-      // Clear current content
-      parentElement.innerHTML = '';
-      renderOutletState(outletRef);
+      const mainOutlet = outletRef?.outlets?.main;
+      const newModel = mainOutlet?.render?.model;
+      const newRouteName = mainOutlet?.render?.name;
+      const newTemplate = mainOutlet?.render?.template;
+
+      // If same route template, try to update existing cells in-place
+      // to preserve DOM node identity (stable DOM).
+      if (lastRenderContext && lastArgsObj && newRouteName && newRouteName === lastRouteName && newTemplate) {
+        const _cellFor = (globalThis as any).__gxtCellFor;
+        if (_cellFor) {
+          try {
+            // Update the model cell on the args object
+            const cell = _cellFor(lastArgsObj, 'model', /* skipDefine */ true);
+            if (cell) {
+              cell.value = newModel;
+            }
+            // Also update model on the render context if it's a direct property
+            const ctxDesc = Object.getOwnPropertyDescriptor(lastRenderContext, 'model');
+            if (ctxDesc && !ctxDesc.get) {
+              const ctxCell = _cellFor(lastRenderContext, 'model', /* skipDefine */ true);
+              if (ctxCell) {
+                ctxCell.value = newModel;
+              }
+            }
+            // Update outletState
+            lastRenderContext.outletState = mainOutlet;
+            // Sync DOM now so GXT formulas re-evaluate and update text nodes
+            const syncDomNow = (globalThis as any).__gxtSyncDomNow;
+            if (typeof syncDomNow === 'function') {
+              (globalThis as any).__gxtPendingSync = true;
+              (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+              syncDomNow();
+            }
+            return;
+          } catch { /* fall through to full re-render */ }
+        }
+      }
+
+      // Full re-render: clear and re-render from scratch
+      // Use morphing to preserve DOM node identity when possible
+      const morphChildren = (globalThis as any).__gxtMorphChildren;
+      if (morphChildren) {
+        const tempWrapper = document.createElement('div');
+        renderOutletState(outletRef, tempWrapper);
+        const frag = document.createDocumentFragment();
+        while (tempWrapper.firstChild) frag.appendChild(tempWrapper.firstChild);
+        try {
+          morphChildren(parentElement, frag);
+        } catch {
+          parentElement.innerHTML = '';
+          renderOutletState(outletRef);
+        }
+      } else {
+        parentElement.innerHTML = '';
+        renderOutletState(outletRef);
+      }
     };
 
     // Perform initial render
