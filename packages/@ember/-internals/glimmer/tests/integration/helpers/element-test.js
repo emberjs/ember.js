@@ -24,16 +24,30 @@ moduleFor(
       this.assertText('hello world!');
     }
 
-    '@test it does not render anything when passed null'() {
-      this.render(`{{#let (element null) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`);
-      this.assertHTML('<!---->');
+    ['@test it throws when passed null']() {
+      if (!DEBUG) {
+        this.assert.expect(0);
+        return;
+      }
+
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element null) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The argument passed to the `element` helper must be a string/);
     }
 
-    '@test it does not render anything when passed undefined'() {
-      this.render(
-        `{{#let (element undefined) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`
-      );
-      this.assertHTML('<!---->');
+    ['@test it throws when passed undefined']() {
+      if (!DEBUG) {
+        this.assert.expect(0);
+        return;
+      }
+
+      this.assert.throws(() => {
+        this.render(
+          `<div>{{#let (element undefined) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
+        );
+      }, /The argument passed to the `element` helper must be a string/);
     }
 
     '@test it works with element modifiers'() {

@@ -9,7 +9,6 @@ import type {
   Destroyable,
   Environment,
   InternalComponentCapabilities,
-  InternalComponentManager,
   VMArguments,
   WithCreateInstance,
   WithDynamicLayout,
@@ -18,70 +17,10 @@ import type {
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { Reference } from '@glimmer/reference';
 import { createComputeRef, valueForRef, NULL_REFERENCE } from '@glimmer/reference';
-import { setInternalComponentManager, setComponentTemplate } from '@glimmer/manager';
-import { templateFactory } from '@glimmer/opcode-compiler';
+import { setInternalComponentManager } from '@glimmer/manager';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { internalHelper } from './internal-helper';
-
-// ============ Void Element Component (for null/undefined) ============
-// Renders nothing (no yield, no wrapper element)
-
-const VOID_CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: false,
-  dynamicTag: false,
-  prepareArgs: false,
-  createArgs: false,
-  attributeHook: false,
-  elementHook: false,
-  createCaller: false,
-  dynamicScope: false,
-  updateHook: false,
-  createInstance: false,
-  wrapped: false,
-  willDestroy: false,
-  hasSubOwner: false,
-};
-
-class VoidElementManager implements InternalComponentManager {
-  getCapabilities(): InternalComponentCapabilities {
-    return VOID_CAPABILITIES;
-  }
-
-  getDebugName(): string {
-    return '(element null)';
-  }
-
-  getSelf(): Reference {
-    return NULL_REFERENCE;
-  }
-
-  getDestroyable(): null {
-    return null;
-  }
-}
-
-const VOID_ELEMENT_MANAGER = new VoidElementManager();
-
-// Empty template that renders nothing and does not yield
-const EMPTY_TEMPLATE_FACTORY = templateFactory({
-  id: 'element-helper-void',
-  moduleName: '__element_void__.hbs',
-  block: JSON.stringify([[], [], []]),
-  scope: null,
-  isStrictMode: true,
-});
-
-class VoidElementComponentDefinition {
-  toString(): string {
-    return '(element null)';
-  }
-}
-
-setComponentTemplate(EMPTY_TEMPLATE_FACTORY, VoidElementComponentDefinition.prototype);
-setInternalComponentManager(VOID_ELEMENT_MANAGER, VoidElementComponentDefinition.prototype);
-
-const VOID_DEFINITION = new VoidElementComponentDefinition();
 
 // ============ Element Component (for string tag names) ============
 // Renders content wrapped in the specified HTML element, or just renders
@@ -212,7 +151,7 @@ function getElementDefinition(tagName: string): ElementComponentDefinition {
   When `@tagName` is an empty string `""`, the block content is rendered without
   a wrapping element.
 
-  When `@tagName` is `null` or `undefined`, nothing is rendered.
+  Passing `null`, `undefined`, or non-string values will throw an assertion error.
 
   Changing the tag name will tear down and recreate the element and its contents.
 
@@ -233,14 +172,12 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
 
       let tagName = valueForRef(positional[0]!);
 
-      if (tagName === null || tagName === undefined) {
-        return VOID_DEFINITION;
-      }
-
       if (DEBUG) {
         assert(
           `The argument passed to the \`element\` helper must be a string${
-            typeof tagName === 'object' ? '' : ` (you passed \`${tagName}\`)`
+            tagName === null || tagName === undefined || typeof tagName === 'object'
+              ? ''
+              : ` (you passed \`${tagName}\`)`
           }`,
           typeof tagName === 'string'
         );
