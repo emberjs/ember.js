@@ -2,20 +2,7 @@
   @module @ember/helper
 */
 
-import type {
-  Bounds,
-  CapturedArguments,
-  CompilableProgram,
-  Destroyable,
-  Environment,
-  InternalComponentCapabilities,
-  VMArguments,
-  WithCreateInstance,
-  WithDynamicLayout,
-  WithDynamicTagName,
-} from '@glimmer/interfaces';
-import type { Nullable } from '@ember/-internals/utility-types';
-import type { Reference } from '@glimmer/reference';
+import type { CapturedArguments, InternalComponentManager } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef, NULL_REFERENCE } from '@glimmer/reference';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { assert } from '@ember/debug';
@@ -26,89 +13,49 @@ import { internalHelper } from './internal-helper';
 // Renders content wrapped in the specified HTML element, or just renders
 // content without a wrapper for empty string.
 
-const ELEMENT_CAPABILITIES: InternalComponentCapabilities = {
+const ELEMENT_CAPABILITIES = {
   dynamicLayout: true,
   dynamicTag: true,
-  prepareArgs: false,
-  createArgs: false,
-  attributeHook: false,
-  elementHook: false,
-  createCaller: false,
-  dynamicScope: false,
-  updateHook: false,
   createInstance: true,
   wrapped: true,
-  willDestroy: false,
-  hasSubOwner: false,
 };
 
-// The instance state is just the tag name string or null (for empty string)
-type ElementInstanceState = string | null;
-
-class ElementComponentManager
-  implements
-    WithCreateInstance<ElementInstanceState, ElementComponentDefinition>,
-    WithDynamicLayout<ElementInstanceState>,
-    WithDynamicTagName<ElementInstanceState>
-{
-  getCapabilities(): InternalComponentCapabilities {
+class ElementComponentManager {
+  getCapabilities() {
     return ELEMENT_CAPABILITIES;
   }
 
-  getDebugName(state: ElementComponentDefinition): string {
+  getDebugName(state: ElementComponentDefinition) {
     return `(element "${state.tagName}")`;
   }
 
-  getSelf(): Reference {
+  getSelf() {
     return NULL_REFERENCE;
   }
 
-  getDestroyable(): Nullable<Destroyable> {
+  getDestroyable() {
     return null;
   }
 
-  didCreateElement(): void {
-    // no-op: element helper doesn't need to customize the element after creation
-  }
+  didCreateElement() {}
 
-  create(
-    _owner: object,
-    state: ElementComponentDefinition,
-    _args: Nullable<VMArguments>,
-    _env: Environment,
-    _dynamicScope: unknown,
-    _caller: Nullable<Reference>,
-    _hasDefaultBlock: boolean
-  ): ElementInstanceState {
+  create(_owner: object, state: ElementComponentDefinition) {
     // For empty string, return null so getTagName returns null (no wrapper element)
     return state.tagName || null;
   }
 
-  getDynamicLayout(): CompilableProgram | null {
-    // Return null to fall back to the VM's defaultTemplate.asWrappedLayout()
-    // The default template is {{yield}}, which yields to the block content
+  getDynamicLayout() {
     return null;
   }
 
-  getTagName(state: ElementInstanceState): Nullable<string> {
+  getTagName(state: string | null) {
     return state;
   }
 
-  didRenderLayout(_state: ElementInstanceState, _bounds: Bounds): void {
-    // no-op
-  }
-
-  didUpdateLayout(_state: ElementInstanceState, _bounds: Bounds): void {
-    // no-op
-  }
-
-  didCreate(_state: ElementInstanceState): void {
-    // no-op
-  }
-
-  didUpdate(_state: ElementInstanceState): void {
-    // no-op
-  }
+  didRenderLayout() {}
+  didUpdateLayout() {}
+  didCreate() {}
+  didUpdate() {}
 }
 
 const ELEMENT_COMPONENT_MANAGER = new ElementComponentManager();
@@ -121,7 +68,10 @@ class ElementComponentDefinition {
   }
 }
 
-setInternalComponentManager(ELEMENT_COMPONENT_MANAGER, ElementComponentDefinition.prototype);
+setInternalComponentManager(
+  ELEMENT_COMPONENT_MANAGER as unknown as InternalComponentManager,
+  ElementComponentDefinition.prototype
+);
 
 // Cache component definitions per tag name to avoid creating duplicate definitions
 const ELEMENT_DEFINITIONS = new Map<string, ElementComponentDefinition>();
