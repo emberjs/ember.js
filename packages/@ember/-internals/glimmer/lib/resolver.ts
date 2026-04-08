@@ -38,7 +38,6 @@ import { default as eachIn } from './helpers/each-in';
 import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
-import { default as element } from './helpers/element';
 import { default as uniqueId } from './helpers/unique-id';
 
 import { mountHelper } from './syntax/mount';
@@ -109,7 +108,6 @@ const BUILTIN_HELPERS: Record<string, object> = {
   fn,
   get,
   hash,
-  element,
   'unique-id': uniqueId,
 };
 

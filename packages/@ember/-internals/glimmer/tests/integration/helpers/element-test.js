@@ -1,18 +1,14 @@
-import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import { element as elementHelper } from '@ember/helper';
+import { tracked } from '@glimmer/tracking';
+import { RenderingTestCase, defineSimpleHelper, moduleFor, runTask } from 'internal-test-helpers';
+import { element as elementHelper, hash } from '@ember/helper';
+import { on } from '@ember/modifier';
 import { template } from '@ember/template-compiler/runtime';
 
 moduleFor(
   'Helpers test: {{element}}',
   class extends RenderingTestCase {
     '@test it renders a tag with the given tag name'() {
-      this.render(`{{#let (element "h1") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`);
-      this.assertHTML('<h1 id="content">hello world!</h1>');
-    }
-
-    '@test it renders a tag in strict mode'() {
       let AComponent = template(
         `{{#let (element "h1") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`,
         { scope: () => ({ element: elementHelper }) }
@@ -21,8 +17,11 @@ moduleFor(
     }
 
     '@test it does not render any tags when passed an empty string'() {
-      this.render(`{{#let (element "") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`);
-      this.assertText('hello world!');
+      let AComponent = template(
+        `{{#let (element "") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}`,
+        { scope: () => ({ element: elementHelper }) }
+      );
+      this.renderComponent(AComponent, { expect: 'hello world!' });
     }
 
     ['@test it throws when passed null']() {
@@ -31,10 +30,12 @@ moduleFor(
         return;
       }
 
+      let nil = null;
       this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element null) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
+        let AComponent = template(`{{#let (element nil) as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, nil }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
       }, /The argument passed to the `element` helper must be a string/);
     }
 
@@ -44,49 +45,63 @@ moduleFor(
         return;
       }
 
+      let undef = undefined;
       this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element undefined) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
+        let AComponent = template(`{{#let (element undef) as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, undef }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
       }, /The argument passed to the `element` helper must be a string/);
     }
 
     '@test it works with element modifiers'() {
-      this.render(
-        `{{#let (element "button") as |Tag|}}<Tag type="button" id="action" {{on "click" this.didClick}}>hello world!</Tag>{{/let}}`,
-        { didClick: () => {} }
+      let didClick = () => {};
+      let AComponent = template(
+        `{{#let (element "button") as |Tag|}}<Tag type="button" id="action" {{on "click" didClick}}>hello world!</Tag>{{/let}}`,
+        { scope: () => ({ element: elementHelper, on, didClick }) }
       );
-
-      this.assertHTML('<button type="button" id="action">hello world!</button>');
+      this.renderComponent(AComponent, {
+        expect: '<button type="button" id="action">hello world!</button>',
+      });
     }
 
     '@test it can be rendered multiple times'() {
-      this.render(
-        `{{#let (element "h1") as |Tag|}}<Tag id="content-1">hello</Tag><Tag id="content-2">world</Tag><Tag id="content-3">!!!!!</Tag>{{/let}}`
+      let AComponent = template(
+        `{{#let (element "h1") as |Tag|}}<Tag id="content-1">hello</Tag><Tag id="content-2">world</Tag><Tag id="content-3">!!!!!</Tag>{{/let}}`,
+        { scope: () => ({ element: elementHelper }) }
       );
-      this.assertHTML(
-        '<h1 id="content-1">hello</h1><h1 id="content-2">world</h1><h1 id="content-3">!!!!!</h1>'
-      );
+      this.renderComponent(AComponent, {
+        expect:
+          '<h1 id="content-1">hello</h1><h1 id="content-2">world</h1><h1 id="content-3">!!!!!</h1>',
+      });
     }
 
     '@test it renders when the tag name changes'() {
-      // Note: use htmlTag instead of tagName, because RenderingTestCase
-      // overrides tagName on the root component context
-      this.render(`{{#let (element this.htmlTag) as |Tag|}}<Tag id="content">hello</Tag>{{/let}}`, {
-        htmlTag: 'h1',
-      });
-      this.assertHTML('<h1 id="content">hello</h1>');
+      class State {
+        @tracked htmlTag = 'h1';
+      }
 
-      runTask(() => set(this.context, 'htmlTag', 'h2'));
+      let state = new State();
+      let getTag = defineSimpleHelper(() => state.htmlTag);
+
+      let AComponent = template(
+        `{{#let (element (getTag)) as |Tag|}}<Tag id="content">hello</Tag>{{/let}}`,
+        { scope: () => ({ element: elementHelper, getTag }) }
+      );
+      this.renderComponent(AComponent, {
+        expect: '<h1 id="content">hello</h1>',
+      });
+
+      runTask(() => (state.htmlTag = 'h2'));
       this.assertHTML('<h2 id="content">hello</h2>');
 
-      runTask(() => set(this.context, 'htmlTag', 'h3'));
+      runTask(() => (state.htmlTag = 'h3'));
       this.assertHTML('<h3 id="content">hello</h3>');
 
-      runTask(() => set(this.context, 'htmlTag', ''));
+      runTask(() => (state.htmlTag = ''));
       this.assertText('hello');
 
-      runTask(() => set(this.context, 'htmlTag', 'h1'));
+      runTask(() => (state.htmlTag = 'h1'));
       this.assertHTML('<h1 id="content">hello</h1>');
     }
 
@@ -103,55 +118,18 @@ moduleFor(
       this.renderComponent(Outer, { expect: '<p id="content" class="extra">Test</p>' });
     }
 
-    ['@test it requires at least one argument']() {
-      if (!DEBUG) {
-        this.assert.expect(0);
-        return;
-      }
-
-      this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
-      }, /The `element` helper takes a single positional argument/);
-    }
-
-    ['@test it requires no more than one argument']() {
-      if (!DEBUG) {
-        this.assert.expect(0);
-        return;
-      }
-
-      this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element "h1" "h2") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
-      }, /The `element` helper takes a single positional argument/);
-    }
-
-    ['@test it does not take any named arguments']() {
-      if (!DEBUG) {
-        this.assert.expect(0);
-        return;
-      }
-
-      this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element "h1" id="content") as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
-      }, /The `element` helper does not take any named arguments/);
-    }
-
     ['@test it throws when passed a number']() {
       if (!DEBUG) {
         this.assert.expect(0);
         return;
       }
 
+      let num = 123;
       this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element 123) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
+        let AComponent = template(`{{#let (element num) as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, num }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
       }, /The argument passed to the `element` helper must be a string \(you passed `123`\)/);
     }
 
@@ -161,10 +139,12 @@ moduleFor(
         return;
       }
 
+      let bool = false;
       this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element false) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
+        let AComponent = template(`{{#let (element bool) as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, bool }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
       }, /The argument passed to the `element` helper must be a string \(you passed `false`\)/);
     }
 
@@ -175,9 +155,10 @@ moduleFor(
       }
 
       this.assert.throws(() => {
-        this.render(
-          `<div>{{#let (element (hash)) as |Tag|}}<Tag id="content">hello world!</Tag>{{/let}}</div>`
-        );
+        let AComponent = template(`{{#let (element (hash)) as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, hash }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
       }, /The argument passed to the `element` helper must be a string/);
     }
   }
