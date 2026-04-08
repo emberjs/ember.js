@@ -62,10 +62,12 @@ QUnit.module('parseTagVersion', () => {
     });
   });
 
-  QUnit.test('parseTagVersion raises on non-semver tags', function (assert) {
-    assert.throws(() => {
-      parseTagVersion('some-non-version-tag');
-    });
+  QUnit.test('parseTagVersion returns null for non-semver tags', function (assert) {
+    assert.equal(parseTagVersion('some-non-version-tag'), null);
+  });
+
+  QUnit.test('parseTagVersion returns null for non-ember-source package tags', function (assert) {
+    assert.equal(parseTagVersion('v2.1.1-@glimmer/component'), null);
   });
 });
 
@@ -132,6 +134,27 @@ QUnit.module('buildFromParts', () => {
         tagVersion: '3.4.4-beta.2',
         version: '3.4.4-beta.2',
         isBuildForTag: true,
+      },
+    },
+    {
+      args: [
+        '3.4.4', // Non-ember-source tag (e.g. @glimmer/component) should be treated as channel build
+        {
+          sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
+          branch: 'main',
+          tag: 'v2.1.1-@glimmer/component',
+        },
+      ],
+      expected: {
+        tag: null,
+        branch: 'main',
+        sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
+        shortSha: 'f572d396',
+        channel: 'canary',
+        packageVersion: '3.4.4',
+        tagVersion: null,
+        version: '3.4.4-canary+f572d396',
+        isBuildForTag: false,
       },
     },
   ].forEach(({ args, expected }) => {

@@ -75,8 +75,8 @@ function buildGitInfo(root) {
 function buildFromParts(packageVersion, gitInfo) {
   let { tag, branch, sha } = gitInfo;
   let shortSha = sha.slice(0, 8);
-  if (tag) {
-    let tagVersion = parseTagVersion(tag);
+  let tagVersion = tag ? parseTagVersion(tag) : null;
+  if (tag && tagVersion) {
     return {
       tag,
       branch: null,
@@ -126,7 +126,8 @@ function readPackageVersion(root) {
  */
 function parseTagVersion(tag) {
   if (tag) {
-    return semver.parse(tag.replace(/-ember-source$/, '')).version;
+    let parsed = semver.parse(tag.replace(/-ember-source$/, ''));
+    return parsed ? parsed.version : null;
   }
 }
 
