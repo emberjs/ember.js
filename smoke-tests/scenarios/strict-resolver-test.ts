@@ -36,7 +36,9 @@ strictAppScenarios
           }
 
           Router.map(function () {
-            this.route('strict-example');
+            this.route('posts', function () {
+              this.route('show', { path: '/:post_id' });
+            });
           });
         `,
         services: {
@@ -49,17 +51,38 @@ strictAppScenarios
           `,
         },
         routes: {
-          'strict-example.js': `
+          'index.js': `
             import Route from '@ember/routing/route';
             export default class extends Route {
               model() {
-                return { message: 'strict model data' };
+                return { welcome: 'Welcome to the strict app' };
               }
             }
           `,
+          'posts.js': `
+            import Route from '@ember/routing/route';
+            export default class extends Route {
+              model() {
+                return [
+                  { id: 1, title: 'First Post' },
+                  { id: 2, title: 'Second Post' },
+                ];
+              }
+            }
+          `,
+          'posts': {
+            'show.js': `
+              import Route from '@ember/routing/route';
+              export default class extends Route {
+                model(params) {
+                  return { id: params.post_id, title: 'Post ' + params.post_id };
+                }
+              }
+            `,
+          },
         },
         controllers: {
-          'strict-example.js': `
+          'application.js': `
             import Controller from '@ember/controller';
             import { service } from '@ember/service';
 
@@ -68,13 +91,46 @@ strictAppScenarios
             }
           `,
         },
-        templates: {
-          'strict-example.gjs': `
-            <template>
-              <div data-test="model">{{@model.message}}</div>
-              <div data-test="greeting">{{@controller.greeter.greeting}}</div>
-            </template>
+        components: {
+          'site-header.hbs': `
+            <header data-test="site-header">
+              <h1>{{@title}}</h1>
+            </header>
           `,
+          'post-card.gjs': `
+            import Component from '@glimmer/component';
+
+            export default class PostCard extends Component {
+              <template>
+                <article data-test="post-card">
+                  <h2>{{@post.title}}</h2>
+                </article>
+              </template>
+            }
+          `,
+        },
+        templates: {
+          'application.hbs': `
+            <div data-test="app-greeting">{{this.greeter.greeting}}</div>
+            <SiteHeader @title="Strict App" />
+            {{outlet}}
+          `,
+          'index.hbs': `
+            <div data-test="index-welcome">{{@model.welcome}}</div>
+          `,
+          'posts.hbs': `
+            <div data-test="posts">
+              {{#each @model as |post|}}
+                <PostCard @post={{post}} />
+              {{/each}}
+            </div>
+            {{outlet}}
+          `,
+          'posts': {
+            'show.hbs': `
+              <div data-test="post-detail">{{@model.title}}</div>
+            `,
+          },
         },
       },
       tests: {
@@ -87,11 +143,38 @@ strictAppScenarios
             module('Acceptance | strict resolver', function (hooks) {
               setupApplicationTest(hooks);
 
-              test('visiting /strict-example resolves route, controller, template, and service', async function (assert) {
-                await visit('/strict-example');
-                assert.strictEqual(currentURL(), '/strict-example');
-                assert.dom('[data-test="model"]').hasText('strict model data');
-                assert.dom('[data-test="greeting"]').hasText('Hello from strict resolver!');
+              test('index route renders with model', async function (assert) {
+                await visit('/');
+                assert.strictEqual(currentURL(), '/');
+                assert.dom('[data-test="index-welcome"]').hasText('Welcome to the strict app');
+              });
+
+              test('application template renders with service injection', async function (assert) {
+                await visit('/');
+                assert.dom('[data-test="app-greeting"]').hasText('Hello from strict resolver!');
+              });
+
+              test('hbs component resolves from modules', async function (assert) {
+                await visit('/');
+                assert.dom('[data-test="site-header"]').exists();
+                assert.dom('[data-test="site-header"] h1').hasText('Strict App');
+              });
+
+              test('sub-route with nested model', async function (assert) {
+                await visit('/posts');
+                assert.strictEqual(currentURL(), '/posts');
+                assert.dom('[data-test="post-card"]').exists({ count: 2 });
+              });
+
+              test('dynamic segment sub-route', async function (assert) {
+                await visit('/posts/42');
+                assert.strictEqual(currentURL(), '/posts/42');
+                assert.dom('[data-test="post-detail"]').hasText('Post 42');
+              });
+
+              test('gjs component resolves from modules', async function (assert) {
+                await visit('/posts');
+                assert.dom('[data-test="post-card"] h2').exists();
               });
             });
           `,
