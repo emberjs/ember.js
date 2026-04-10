@@ -31,6 +31,7 @@ export {
   inTransaction,
   runtimeOptions,
 } from './lib/environment';
+export { and } from './lib/helpers/and';
 export { array } from './lib/helpers/array';
 export { concat } from './lib/helpers/concat';
 export { eq } from './lib/helpers/eq';
@@ -39,6 +40,8 @@ export { get } from './lib/helpers/get';
 export { hash } from './lib/helpers/hash';
 export { invokeHelper } from './lib/helpers/invoke';
 export { neq } from './lib/helpers/neq';
+export { not } from './lib/helpers/not';
+export { or } from './lib/helpers/or';
 export { on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
 export { DynamicScopeImpl, ScopeImpl } from './lib/scope';
