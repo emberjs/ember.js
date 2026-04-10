@@ -1,4 +1,4 @@
-import { fn } from '@ember/helper';
+import { and, fn, not, or } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
@@ -25,8 +25,11 @@ function malformedComponentLookup(string: string) {
 export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 
 export const keywords: Record<string, unknown> = {
+  and,
   fn,
+  not,
   on,
+  or,
 };
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {

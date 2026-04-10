@@ -10,6 +10,9 @@ import {
   concat as glimmerConcat,
   get as glimmerGet,
   fn as glimmerFn,
+  and as glimmerAnd,
+  or as glimmerOr,
+  not as glimmerNot,
 } from '@glimmer/runtime';
 import { element as glimmerElement, uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
 import { type Opaque } from '@ember/-internals/utility-types';
@@ -510,5 +513,76 @@ export interface ElementHelper extends Opaque<'helper:element'> {}
  */
 export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
+
+/**
+ * The `{{and}}` helper evaluates arguments left to right, returning the first
+ * falsy value (using Handlebars truthiness) or the right-most value if all
+ * are truthy. Requires at least two arguments.
+ *
+ * ```js
+ * import { and } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (and @isAdmin @isLoggedIn) "Welcome, admin!" "Access denied"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `and` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method and
+ * @param {unknown} args Two or more values to evaluate
+ * @return {unknown} The first falsy value or the last value
+ * @public
+ */
+export const and = glimmerAnd as unknown as AndHelper;
+export interface AndHelper extends Opaque<'helper:and'> {}
+
+/**
+ * The `{{or}}` helper evaluates arguments left to right, returning the first
+ * truthy value (using Handlebars truthiness) or the right-most value if all
+ * are falsy. Requires at least two arguments.
+ *
+ * ```js
+ * import { or } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (or @hasAccess @isAdmin) "Welcome!" "No access"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `or` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method or
+ * @param {unknown} args Two or more values to evaluate
+ * @return {unknown} The first truthy value or the last value
+ * @public
+ */
+export const or = glimmerOr as unknown as OrHelper;
+export interface OrHelper extends Opaque<'helper:or'> {}
+
+/**
+ * The `{{not}}` helper returns the logical negation of its argument using
+ * Handlebars truthiness. Takes exactly one argument.
+ *
+ * ```js
+ * import { not } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (not @isDisabled) "Enabled" "Disabled"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `not` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method not
+ * @param {unknown} value The value to negate
+ * @return {boolean}
+ * @public
+ */
+export const not = glimmerNot as unknown as NotHelper;
+export interface NotHelper extends Opaque<'helper:not'> {}
 
 /* eslint-enable @typescript-eslint/no-empty-object-type */
