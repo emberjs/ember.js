@@ -588,6 +588,10 @@ export interface LteHelper extends Opaque<'helper:lte'> {}
  * When `@tagName` is `"h1"`, this renders `<h1 class="my-element">Hello</h1>`.
  * When `@tagName` is an empty string, the block content is rendered without a
  * wrapping element. When `@tagName` is `null` or `undefined`, nothing is rendered.
+ *
+ * @method element
+ * @param {string} tagName
+ * @private
  */
 export const element = glimmerElement as ElementHelper;
 export interface ElementHelper extends Opaque<'helper:element'> {}
