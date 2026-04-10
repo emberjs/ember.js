@@ -1,4 +1,4 @@
-import { array, eq, fn, hash, neq } from '@ember/helper';
+import { array, eq, fn, hash, neq, lt, lte, gt, gte } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
@@ -30,6 +30,10 @@ export const keywords: Record<string, unknown> = {
   fn,
   hash,
   neq,
+  gt,
+  gte,
+  lt,
+  lte,
   on,
 };
 
