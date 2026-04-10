@@ -1,4 +1,4 @@
-import { fn } from '@ember/helper';
+import { eq, fn, neq } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
@@ -25,7 +25,9 @@ function malformedComponentLookup(string: string) {
 export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 
 export const keywords: Record<string, unknown> = {
+  eq,
   fn,
+  neq,
   on,
 };
 
