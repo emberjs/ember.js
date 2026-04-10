@@ -36,6 +36,12 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         if (isHash(node, hasLocal)) {
           rewriteKeyword(env, node, 'hash', '@ember/helper');
         }
+        if (isEq(node, hasLocal)) {
+          rewriteKeyword(env, node, 'eq', '@ember/helper');
+        }
+        if (isNeq(node, hasLocal)) {
+          rewriteKeyword(env, node, 'neq', '@ember/helper');
+        }
       },
       MustacheStatement(node: AST.MustacheStatement) {
         if (isArray(node, hasLocal)) {
@@ -46,6 +52,12 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         }
         if (isHash(node, hasLocal)) {
           rewriteKeyword(env, node, 'hash', '@ember/helper');
+        }
+        if (isEq(node, hasLocal)) {
+          rewriteKeyword(env, node, 'eq', '@ember/helper');
+        }
+        if (isNeq(node, hasLocal)) {
+          rewriteKeyword(env, node, 'neq', '@ember/helper');
         }
       },
     },
@@ -93,4 +105,18 @@ function isHash(
   hasLocal: (k: string) => boolean
 ): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
   return isPath(node.path) && node.path.original === 'hash' && !hasLocal('hash');
+}
+
+function isEq(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'eq' && !hasLocal('eq');
+}
+
+function isNeq(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'neq' && !hasLocal('neq');
 }
