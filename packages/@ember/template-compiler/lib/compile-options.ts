@@ -1,4 +1,4 @@
-import { array, element, eq, fn, hash, neq, lt, lte, gt, gte } from '@ember/helper';
+import { and, array, element, eq, fn, hash, neq, not, lt, lte, gt, gte, or } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
@@ -28,6 +28,7 @@ export const keywords: Record<string, unknown> = {
   array,
   eq,
   element,
+  and,
   fn,
   hash,
   neq,
@@ -35,7 +36,9 @@ export const keywords: Record<string, unknown> = {
   gte,
   lt,
   lte,
+  not,
   on,
+  or,
 };
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
