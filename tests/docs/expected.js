@@ -505,6 +505,7 @@ module.exports = {
     'uniq',
     'uniqBy',
     'unique-id',
+    'uniqueId',
     'unless',
     'unregister',
     'unregisterDestructor',
