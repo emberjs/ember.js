@@ -10,6 +10,10 @@ import {
   concat as glimmerConcat,
   get as glimmerGet,
   fn as glimmerFn,
+  gt as glimmerGt,
+  gte as glimmerGte,
+  lt as glimmerLt,
+  lte as glimmerLte,
 } from '@glimmer/runtime';
 import { element as glimmerElement, uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
 import { type Opaque } from '@ember/-internals/utility-types';
@@ -469,6 +473,102 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  */
 export const fn = glimmerFn as FnHelper;
 export interface FnHelper extends Opaque<'helper:fn'> {}
+
+/**
+ * The `{{gt}}` helper returns `true` if the first argument is greater than
+ * the second argument.
+ *
+ * ```js
+ * import { gt } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (gt @score 100) "High score!" "Keep trying"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `gt` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method gt
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @public
+ */
+export const gt = glimmerGt as unknown as GtHelper;
+export interface GtHelper extends Opaque<'helper:gt'> {}
+
+/**
+ * The `{{gte}}` helper returns `true` if the first argument is greater than
+ * or equal to the second argument.
+ *
+ * ```js
+ * import { gte } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (gte @age 18) "Adult" "Minor"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `gte` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method gte
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @public
+ */
+export const gte = glimmerGte as unknown as GteHelper;
+export interface GteHelper extends Opaque<'helper:gte'> {}
+
+/**
+ * The `{{lt}}` helper returns `true` if the first argument is less than
+ * the second argument.
+ *
+ * ```js
+ * import { lt } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (lt @temperature 0) "Freezing" "Above zero"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `lt` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method lt
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @public
+ */
+export const lt = glimmerLt as unknown as LtHelper;
+export interface LtHelper extends Opaque<'helper:lt'> {}
+
+/**
+ * The `{{lte}}` helper returns `true` if the first argument is less than
+ * or equal to the second argument.
+ *
+ * ```js
+ * import { lte } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (lte @count 0) "Empty" "Has items"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `lte` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method lte
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @public
+ */
+export const lte = glimmerLte as unknown as LteHelper;
+export interface LteHelper extends Opaque<'helper:lte'> {}
 
 /**
  * The `element` helper lets you dynamically set the tag name of an element.
