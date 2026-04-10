@@ -401,6 +401,38 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'comparison-helpers-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              import Component from '@glimmer/component';
+
+              class LtDemo extends Component {
+                <template>
+                  <span data-test="lt">{{if (lt 1 2) "yes" "no"}}</span>
+                  <span data-test="lte-equal">{{if (lte 2 2) "yes" "no"}}</span>
+                  <span data-test="gt">{{if (gt 3 2) "yes" "no"}}</span>
+                  <span data-test="gte-equal">{{if (gte 2 2) "yes" "no"}}</span>
+                  <span data-test="lt-false">{{if (lt 3 2) "yes" "no"}}</span>
+                  <span data-test="gt-false">{{if (gt 1 2) "yes" "no"}}</span>
+                </template>
+              }
+
+              module('comparison helpers as keywords', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('lt, lte, gt, gte work without imports', async function(assert) {
+                  await render(LtDemo);
+                  assert.dom('[data-test="lt"]').hasText('yes');
+                  assert.dom('[data-test="lte-equal"]').hasText('yes');
+                  assert.dom('[data-test="gt"]').hasText('yes');
+                  assert.dom('[data-test="gte-equal"]').hasText('yes');
+                  assert.dom('[data-test="lt-false"]').hasText('no');
+                  assert.dom('[data-test="gt-false"]').hasText('no');
+                });
+              });
+            `,
             'fn-as-keyword-but-its-shadowed-test.gjs': `
               import QUnit, { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
