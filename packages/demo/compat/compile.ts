@@ -5307,6 +5307,45 @@ let _functionCodeCache: Map<string, Function> | null = null;
 let _globalLogSiteCounter = 0;
 
 /**
+ * Replace bare `{{outlet}}` mustaches with `<ember-outlet />`.
+ *
+ * This mirrors the build-time transform in
+ * packages/demo/compat/gxt-template-compiler-plugin.mjs so that templates
+ * compiled at runtime (via `compile()` / `precompileTemplate()` from
+ * addTemplate(), rendering test helpers, etc.) get the same handling as
+ * templates compiled at build time. Without it, the GXT compiler treats
+ * `{{outlet}}` like `{{yield}}` (a default-slot yield) and no
+ * <ember-outlet> element is produced — which breaks nested route rendering.
+ */
+function transformOutletMustaches(code: string): string {
+  if (!code || code.indexOf('outlet') === -1) return code;
+  const isIdent = (ch: string | undefined) =>
+    !!ch && /[A-Za-z0-9_$]/.test(ch);
+  const skipWS = (c: string, i: number) => {
+    while (i < c.length && (c[i] === ' ' || c[i] === '\t' || c[i] === '\n' || c[i] === '\r')) i++;
+    return i;
+  };
+  let r = '';
+  let i = 0;
+  while (i < code.length) {
+    if (code[i] === '{' && code[i + 1] === '{') {
+      const j = skipWS(code, i + 2);
+      if (code.startsWith('outlet', j) && !isIdent(code[j + 6])) {
+        const k = skipWS(code, j + 6);
+        if (code[k] === '}' && code[k + 1] === '}') {
+          r += '<ember-outlet />';
+          i = k + 2;
+          continue;
+        }
+      }
+    }
+    r += code[i];
+    i++;
+  }
+  return r;
+}
+
+/**
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
  */
@@ -5403,6 +5442,14 @@ export function precompileTemplate(templateString: string, options?: {
 
   // Transform the template
   let transformedTemplate = templateString;
+
+  // Transform {{outlet}} → <ember-outlet /> so that GXT emits a custom element
+  // that the routing outlet subsystem can hook. Without this, `{{outlet}}` is
+  // treated as a default-slot yield and emits empty comment markers, which
+  // breaks nested-route rendering for tests that register templates via
+  // addTemplate() (index/posts/zomg routes, etc.).
+  // Mirrors the build-time plugin in gxt-template-compiler-plugin.mjs.
+  transformedTemplate = transformOutletMustaches(transformedTemplate);
 
   // Transform {{#each-in EXPR as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}
   // into {{#each (gxtEntriesOf EXPR) key="@identity" as |__ei__|}}{{#let __ei__.k __ei__.v as |KEY VALUE|}}BODY{{/let}}{{else}}ELSE{{/each}}
