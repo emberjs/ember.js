@@ -10,6 +10,7 @@
 import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
+import { pascalToKebab, isAllDigits } from './utils';
 
 // Helper to detect assertion-related throws that must escape catch blocks.
 // The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
@@ -20,6 +21,510 @@ function _isAssertionLike(e: unknown): boolean {
   }
   // Non-Error, non-null/undefined objects may be the BREAK sentinel from expectAssertion.
   if (e !== null && e !== undefined && typeof e === 'object') return true;
+  return false;
+}
+
+// === Utility functions (regex-free) ===
+
+/** Replace all hyphens with underscores without regex */
+function hyphenToUnderscore(str: string): string {
+  return str.split('-').join('_');
+}
+
+/** Replace all double-dashes with forward slashes without regex */
+function doubleDashToSlash(str: string): string {
+  return str.split('--').join('/');
+}
+
+/** Check if template contains <TextArea followed by whitespace, / or > (typo check) without regex */
+function hasTextAreaTag(str: string): boolean {
+  let idx = 0;
+  while (idx < str.length) {
+    const found = str.indexOf('<TextArea', idx);
+    if (found === -1) return false;
+    const nextIdx = found + 9; // '<TextArea'.length
+    if (nextIdx >= str.length) return false;
+    const c = str[nextIdx]!;
+    if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '/' || c === '>') return true;
+    idx = found + 1;
+  }
+  return false;
+}
+
+/** Check if a string contains a $_bp<digit> reference (block param) without regex */
+function hasBlockParamRef(str: string): boolean {
+  let idx = 0;
+  while (idx < str.length) {
+    const found = str.indexOf('$_bp', idx);
+    if (found === -1) return false;
+    const nextIdx = found + 4;
+    if (nextIdx < str.length) {
+      const c = str[nextIdx]!;
+      if (c >= '0' && c <= '9') return true;
+    }
+    idx = found + 1;
+  }
+  return false;
+}
+
+
+/** Check if a string contains a word (surrounded by non-word-char boundaries) without regex */
+function containsWord(text: string, word: string): boolean {
+  let idx = 0;
+  while (idx <= text.length - word.length) {
+    const found = text.indexOf(word, idx);
+    if (found === -1) return false;
+    const before = found > 0 ? text[found - 1]! : ' ';
+    const after = found + word.length < text.length ? text[found + word.length]! : ' ';
+    const isWordCharBefore = (before >= 'a' && before <= 'z') || (before >= 'A' && before <= 'Z') || (before >= '0' && before <= '9') || before === '_';
+    const isWordCharAfter = (after >= 'a' && after <= 'z') || (after >= 'A' && after <= 'Z') || (after >= '0' && after <= '9') || after === '_';
+    if (!isWordCharBefore && !isWordCharAfter) return true;
+    idx = found + 1;
+  }
+  return false;
+}
+
+/** Count occurrences of a word (with word boundaries) in text without regex */
+function countWord(text: string, word: string): number {
+  let count = 0;
+  let idx = 0;
+  while (idx <= text.length - word.length) {
+    const found = text.indexOf(word, idx);
+    if (found === -1) break;
+    const before = found > 0 ? text[found - 1]! : ' ';
+    const after = found + word.length < text.length ? text[found + word.length]! : ' ';
+    const isWordCharBefore = (before >= 'a' && before <= 'z') || (before >= 'A' && before <= 'Z') || (before >= '0' && before <= '9') || before === '_';
+    const isWordCharAfter = (after >= 'a' && after <= 'z') || (after >= 'A' && after <= 'Z') || (after >= '0' && after <= '9') || after === '_';
+    if (!isWordCharBefore && !isWordCharAfter) count++;
+    idx = found + 1;
+  }
+  return count;
+}
+
+/** Replace all occurrences of a word (with word boundaries) using a callback without regex */
+function replaceWord(text: string, word: string, replacer: () => string): string {
+  let result = '';
+  let idx = 0;
+  while (idx <= text.length - word.length) {
+    const found = text.indexOf(word, idx);
+    if (found === -1) break;
+    const before = found > 0 ? text[found - 1]! : ' ';
+    const after = found + word.length < text.length ? text[found + word.length]! : ' ';
+    const isWordCharBefore = (before >= 'a' && before <= 'z') || (before >= 'A' && before <= 'Z') || (before >= '0' && before <= '9') || before === '_';
+    const isWordCharAfter = (after >= 'a' && after <= 'z') || (after >= 'A' && after <= 'Z') || (after >= '0' && after <= '9') || after === '_';
+    if (!isWordCharBefore && !isWordCharAfter) {
+      result += text.slice(idx, found) + replacer();
+      idx = found + word.length;
+    } else {
+      result += text.slice(idx, found + 1);
+      idx = found + 1;
+    }
+  }
+  result += text.slice(idx);
+  return result;
+}
+
+/** Generate a UUID string (starts with letter, valid CSS selector / HTML ID) without regex */
+function generateUUID(): string {
+  const hex = '0123456789abcdef';
+  // Template: 30000000-1000-4000-2000-100000000000
+  const template = '30000000-1000-4000-2000-100000000000';
+  let result = '';
+  for (let i = 0; i < template.length; i++) {
+    const ch = template[i]!;
+    if (ch === '-') {
+      result += '-';
+    } else if (ch === '4') {
+      result += '4'; // version 4
+    } else if (ch >= '0' && ch <= '3') {
+      const a = parseInt(ch, 10);
+      result += hex[(a * 4) ^ ((Math.random() * 16) >> (a & 2))]!;
+    } else {
+      result += hex[Math.floor(Math.random() * 16)]!;
+    }
+  }
+  return result;
+}
+
+/** Extract property path from getter toString that starts with 'this.' without regex */
+function extractThisPath(getterStr: string): string | null {
+  const marker = 'this.';
+  const idx = getterStr.indexOf(marker);
+  if (idx === -1) return null;
+  let end = idx + marker.length;
+  // Scan valid identifier chars: a-zA-Z0-9_$?.
+  while (end < getterStr.length) {
+    const c = getterStr[end]!;
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '_' || c === '$' || c === '?' || c === '.') {
+      end++;
+    } else {
+      break;
+    }
+  }
+  if (end === idx + marker.length) return null;
+  return getterStr.slice(idx + marker.length, end);
+}
+
+/**
+ * Find all `as |...|` block param sections in a string, returning the names.
+ * Replaces regex /as\s+\|([^|]+)\|/g
+ */
+function findBlockParamNames(str: string): Set<string> {
+  const names = new Set<string>();
+  let idx = 0;
+  while (idx < str.length) {
+    const asIdx = str.indexOf('as', idx);
+    if (asIdx === -1) break;
+    // Check that 'as' is preceded by whitespace or start, and followed by whitespace then |
+    if (asIdx > 0) {
+      const before = str[asIdx - 1]!;
+      if (before !== ' ' && before !== '\t' && before !== '\n' && before !== '\r') {
+        idx = asIdx + 2;
+        continue;
+      }
+    }
+    // Skip whitespace after 'as'
+    let pos = asIdx + 2;
+    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')) pos++;
+    if (pos >= str.length || str[pos] !== '|') {
+      idx = asIdx + 2;
+      continue;
+    }
+    // Found 'as' followed by '|', find closing '|'
+    const pipeStart = pos + 1;
+    const pipeEnd = str.indexOf('|', pipeStart);
+    if (pipeEnd === -1) break;
+    const content = str.slice(pipeStart, pipeEnd).trim();
+    // Split on whitespace
+    const parts = splitOnWhitespace(content);
+    for (const p of parts) {
+      if (p) names.add(p);
+    }
+    idx = pipeEnd + 1;
+  }
+  return names;
+}
+
+/** Split a string on whitespace without regex */
+function splitOnWhitespace(str: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i]!;
+    if (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
+      if (current) {
+        result.push(current);
+        current = '';
+      }
+    } else {
+      current += c;
+    }
+  }
+  if (current) result.push(current);
+  return result;
+}
+
+/**
+ * Find all `<lowercase.Something>` dotted tag patterns in a string.
+ * Returns array of [head, tail] pairs.
+ * Replaces regex /<([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9]*)\s/g
+ */
+function findDottedTags(str: string): Array<[string, string]> {
+  const results: Array<[string, string]> = [];
+  let idx = 0;
+  while (idx < str.length) {
+    const ltIdx = str.indexOf('<', idx);
+    if (ltIdx === -1) break;
+    let pos = ltIdx + 1;
+    // First char must be lowercase
+    if (pos >= str.length || str[pos]! < 'a' || str[pos]! > 'z') {
+      idx = ltIdx + 1;
+      continue;
+    }
+    // Read head identifier: [a-zA-Z0-9]*
+    const headStart = pos;
+    while (pos < str.length && (
+      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+      (str[pos]! >= '0' && str[pos]! <= '9')
+    )) pos++;
+    const head = str.slice(headStart, pos);
+    // Next must be '.'
+    if (pos >= str.length || str[pos] !== '.') {
+      idx = ltIdx + 1;
+      continue;
+    }
+    pos++; // skip dot
+    // Next must start with [a-zA-Z]
+    if (pos >= str.length || !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))) {
+      idx = ltIdx + 1;
+      continue;
+    }
+    const tailStart = pos;
+    while (pos < str.length && (
+      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+      (str[pos]! >= '0' && str[pos]! <= '9')
+    )) pos++;
+    const tail = str.slice(tailStart, pos);
+    // Must be followed by whitespace
+    if (pos < str.length && (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')) {
+      results.push([head, tail]);
+    }
+    idx = pos;
+  }
+  return results;
+}
+
+/**
+ * Find all {{attrs.X}} patterns in a string.
+ * Returns array of { propName, index } objects.
+ * Replaces regex /\{\{attrs\.([a-zA-Z0-9_]+)/g
+ */
+function findAttrsPatterns(str: string): Array<{ propName: string; index: number }> {
+  const results: Array<{ propName: string; index: number }> = [];
+  const marker = '{{attrs.';
+  let idx = 0;
+  while (idx < str.length) {
+    const found = str.indexOf(marker, idx);
+    if (found === -1) break;
+    let pos = found + marker.length;
+    const nameStart = pos;
+    while (pos < str.length && (
+      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+      (str[pos]! >= '0' && str[pos]! <= '9') ||
+      str[pos] === '_'
+    )) pos++;
+    if (pos > nameStart) {
+      results.push({ propName: str.slice(nameStart, pos), index: found });
+    }
+    idx = pos;
+  }
+  return results;
+}
+
+/**
+ * Find all {{this.attrs.X}} patterns in a string.
+ * Returns array of { propName, index } objects.
+ * Replaces regex /\{\{this\.attrs\.([a-zA-Z0-9_]+)/g
+ */
+function findThisAttrsPatterns(str: string): Array<{ propName: string; index: number }> {
+  const results: Array<{ propName: string; index: number }> = [];
+  const marker = '{{this.attrs.';
+  let idx = 0;
+  while (idx < str.length) {
+    const found = str.indexOf(marker, idx);
+    if (found === -1) break;
+    let pos = found + marker.length;
+    const nameStart = pos;
+    while (pos < str.length && (
+      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+      (str[pos]! >= '0' && str[pos]! <= '9') ||
+      str[pos] === '_'
+    )) pos++;
+    if (pos > nameStart) {
+      results.push({ propName: str.slice(nameStart, pos), index: found });
+    }
+    idx = pos;
+  }
+  return results;
+}
+
+/**
+ * Find all {{identifier.path}} dotted mustache expressions.
+ * Returns array of { head, tail, full } objects.
+ * Replaces regex /\{\{([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9.]*)\}\}/g
+ */
+function findDottedMustaches(str: string): Array<{ head: string; tail: string }> {
+  const results: Array<{ head: string; tail: string }> = [];
+  let idx = 0;
+  while (idx < str.length) {
+    const found = str.indexOf('{{', idx);
+    if (found === -1) break;
+    let pos = found + 2;
+    // Head must start with lowercase letter
+    if (pos >= str.length || str[pos]! < 'a' || str[pos]! > 'z') {
+      idx = found + 2;
+      continue;
+    }
+    const headStart = pos;
+    while (pos < str.length && (
+      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+      (str[pos]! >= '0' && str[pos]! <= '9')
+    )) pos++;
+    const head = str.slice(headStart, pos);
+    // Must be followed by '.'
+    if (pos >= str.length || str[pos] !== '.') {
+      idx = found + 2;
+      continue;
+    }
+    pos++; // skip dot
+    // Tail must start with [a-zA-Z]
+    if (pos >= str.length || !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))) {
+      idx = found + 2;
+      continue;
+    }
+    const tailStart = pos;
+    while (pos < str.length && (
+      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+      (str[pos]! >= '0' && str[pos]! <= '9') ||
+      str[pos] === '.'
+    )) pos++;
+    const tail = str.slice(tailStart, pos);
+    // Must be followed by '}}'
+    if (pos + 1 < str.length && str[pos] === '}' && str[pos + 1] === '}') {
+      results.push({ head, tail });
+    }
+    idx = pos;
+  }
+  return results;
+}
+
+/**
+ * Check if 'as |...|' block contains the word 'attrs'.
+ * Replaces regex /as\s*\|[^|]*\battrs\b[^|]*\|/
+ */
+function hasAttrsInBlockParams(str: string): boolean {
+  let idx = 0;
+  while (idx < str.length) {
+    const asIdx = str.indexOf('as', idx);
+    if (asIdx === -1) return false;
+    // 'as' can be preceded by any char (the regex has no lookbehind requirement except implicitly)
+    let pos = asIdx + 2;
+    // Skip optional whitespace
+    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')) pos++;
+    if (pos >= str.length || str[pos] !== '|') {
+      idx = asIdx + 2;
+      continue;
+    }
+    const pipeStart = pos + 1;
+    const pipeEnd = str.indexOf('|', pipeStart);
+    if (pipeEnd === -1) return false;
+    const content = str.slice(pipeStart, pipeEnd);
+    // Check if 'attrs' appears as a word in this content
+    if (containsWord(content, 'attrs')) return true;
+    idx = pipeEnd + 1;
+  }
+  return false;
+}
+
+/**
+ * Parse {{#in-element dest insertBefore=expr}} and replace with {{#in-element dest}}.
+ * Returns { result: string, insertBefore: string | null }.
+ */
+function parseInElementInsertBefore(template: string): { result: string; insertBefore: string | null } {
+  const marker = '{{#in-element';
+  let insertBefore: string | null = null;
+  let idx = template.indexOf(marker);
+  if (idx === -1) return { result: template, insertBefore: null };
+
+  let result = '';
+  let searchFrom = 0;
+  while (idx !== -1) {
+    let pos = idx + marker.length;
+    // Skip whitespace
+    while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+    // Read dest (non-whitespace, non-})
+    const destStart = pos;
+    while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+    const dest = template.slice(destStart, pos);
+    // Skip whitespace
+    while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+    // Check for insertBefore=
+    const ibMarker = 'insertBefore=';
+    if (pos + ibMarker.length <= template.length && template.slice(pos, pos + ibMarker.length) === ibMarker) {
+      pos += ibMarker.length;
+      const exprStart = pos;
+      while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+      insertBefore = template.slice(exprStart, pos);
+      // Skip whitespace
+      while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+      // Skip }}
+      if (pos + 1 < template.length && template[pos] === '}' && template[pos + 1] === '}') {
+        result += template.slice(searchFrom, idx) + `{{#in-element ${dest}}}`;
+        searchFrom = pos + 2;
+      } else {
+        result += template.slice(searchFrom, pos);
+        searchFrom = pos;
+      }
+    } else {
+      // No insertBefore, leave as-is
+      result += template.slice(searchFrom, pos);
+      searchFrom = pos;
+    }
+    idx = template.indexOf(marker, searchFrom);
+  }
+  result += template.slice(searchFrom);
+  return { result, insertBefore };
+}
+
+/**
+ * Check if a template contains a dynamic helper pattern like {{helper this.xxx}} or {{helper @xxx}}.
+ * Replaces regex /\{\{helper\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\}\}/
+ */
+function hasDynamicHelper(str: string): boolean {
+  const marker = '{{helper ';
+  let idx = str.indexOf(marker);
+  while (idx !== -1) {
+    let pos = idx + marker.length;
+    // Skip whitespace
+    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
+    // Check for this. or @
+    if (pos < str.length && (str.slice(pos, pos + 5) === 'this.' || str[pos] === '@')) {
+      // Read identifier chars
+      const start = pos;
+      while (pos < str.length && (
+        (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9') ||
+        str[pos] === '_' || str[pos] === '.' || str[pos] === '@'
+      )) pos++;
+      if (pos > start) {
+        // Skip optional whitespace then check for }}
+        while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
+        if (pos + 1 < str.length && str[pos] === '}' && str[pos + 1] === '}') {
+          return true;
+        }
+      }
+    }
+    idx = str.indexOf(marker, idx + 1);
+  }
+  return false;
+}
+
+/**
+ * Check if a template contains a dynamic modifier pattern like (modifier this.xxx) or (modifier @xxx).
+ * Replaces regex /\(modifier\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\)/
+ */
+function hasDynamicModifier(str: string): boolean {
+  const marker = '(modifier ';
+  let idx = str.indexOf(marker);
+  while (idx !== -1) {
+    let pos = idx + marker.length;
+    // Skip whitespace
+    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
+    // Check for this. or @
+    if (pos < str.length && (str.slice(pos, pos + 5) === 'this.' || str[pos] === '@')) {
+      const start = pos;
+      while (pos < str.length && (
+        (str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9') ||
+        str[pos] === '_' || str[pos] === '.' || str[pos] === '@'
+      )) pos++;
+      if (pos > start) {
+        while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
+        if (pos < str.length && str[pos] === ')') {
+          return true;
+        }
+      }
+    }
+    idx = str.indexOf(marker, idx + 1);
+  }
   return false;
 }
 
@@ -81,6 +586,7 @@ import {
   syncDom as _syncDomFromDirectImport,
   cellFor as _cellForFromDirectImport,
   effect as _effectFromDirectImport,
+  formula as _formulaFromDirectImport,
   // Symbols needed by renderer.ts / root.ts exposed via globalThis
   RENDERING_CONTEXT as _GXT_RENDERING_CONTEXT,
   HTMLBrowserDOMApi as _GXT_HTMLBrowserDOMApi,
@@ -101,13 +607,15 @@ import {
   $_TO_VALUE as _gxtOrigToValue,
 } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 
-// After setupGlobalScope(), __gxtCellFor and __gxtEffect are set from GXT's
-// runtime module instance (sharing currentTracker with formulas).
-// Use those for cell creation/tracking. Fall back to direct imports if not available.
-// These are module-level vars reassigned after setupGlobalScope.
-var cellFor = _cellForFromDirectImport;
-var gxtEffect = _effectFromDirectImport;
-var gxtSyncDom = _syncDomFromDirectImport;
+// Use direct imports for cellFor/effect/syncDom — the manualChunks consolidation
+// ensures all GXT internals share a single module instance (gxt.core.es.js).
+const cellFor = _cellForFromDirectImport;
+const gxtEffect = _effectFromDirectImport;
+const gxtSyncDom = _syncDomFromDirectImport;
+const gxtFormula = _formulaFromDirectImport;
+
+// Expose formula on globalThis so patchedEachSync can create reactive MergedCells
+(globalThis as any).__gxtFormula = gxtFormula;
 
 // Expose GXT symbols on globalThis so renderer.ts and root.ts can access them
 // without importing from @lifeart/gxt (whose pre-bundled version drops these exports)
@@ -148,30 +656,6 @@ function _setInternalProp(obj: any, key: string, value: any): void {
 // Ensure global scope is set up
 if (!isGlobalScopeReady()) {
   setupGlobalScope();
-}
-
-// Use cellFor/effect/syncDom from GXT's runtime (same module instance as formulas).
-// setupGlobalScope() exposes these from the SAME module instance that holds
-// tagsToRevalidate, relatedTags, and currentTracker. Using these ensures
-// cell tracking and sync work across the Ember compat layer.
-if ((globalThis as any).__gxtCellFor) cellFor = (globalThis as any).__gxtCellFor;
-if ((globalThis as any).__gxtEffect) gxtEffect = (globalThis as any).__gxtEffect;
-if ((globalThis as any).__gxtSyncDom) gxtSyncDom = (globalThis as any).__gxtSyncDom;
-// Re-expose for manager.ts
-(globalThis as any).__gxtCellFor = cellFor;
-(globalThis as any).__gxtEffect = gxtEffect;
-// Expose isRendering check for tracked setter to avoid dirtying during render
-(globalThis as any).__gxtIsRendering = gxtIsRendering;
-// Expose setTracker/getTracker for {{unbound}} helper support
-(globalThis as any).__gxtSetTracker = _gxtSetTracker;
-(globalThis as any).__gxtGetTracker = _gxtGetTracker;
-
-// Use setIsRendering from GXT's runtime module (setupGlobalScope sets __gxtSetIsRendering).
-// The direct import (gxtSetIsRendering) may be from a different module copy,
-// which would set isRendering on a different variable than what formulas check.
-// Fall back to direct import if runtime version isn't available yet.
-if (!(globalThis as any).__gxtSetIsRendering) {
-  (globalThis as any).__gxtSetIsRendering = gxtSetIsRendering;
 }
 
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
@@ -303,8 +787,7 @@ if (false as boolean) {
 
     // Set up reactive effect to track curried arg changes
     try {
-      const _eff = g.__gxtEffect || gxtEffect;
-      _eff(() => {
+      gxtEffect(() => {
         // Re-evaluate the getter to get the latest curried component
         let newResult: any;
         try {
@@ -1329,9 +1812,6 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
   _pendingIfWatcherNotifications.push({ obj, keyName });
 };
 
-// Expose cellFor on globalThis so manager.ts can use it without circular imports.
-(globalThis as any).__gxtCellFor = cellFor;
-
 // ---- Cross-module-instance $_if fix ----
 //
 // Problem: Vite serves GXT's internal chunks (vm-*.js, dom-*.js) with inconsistent
@@ -1489,9 +1969,41 @@ function patchGlobalEachSync() {
   g.$_eachSync = function patchedEachSync(
     items: any, fn: any, key: any, ctx: any, inverseFn?: any
   ) {
-    // Wrap items cell/getter to normalize collection values
+    // Wrap the callback fn to ensure `index` is always a cell-like object.
+    // GXT's compiled code emits `() => index.value` for block params,
+    // but in non-dev GXT builds, $SyncListComponent passes `index` as
+    // a plain number (no .value property). This causes `() => index.value`
+    // to return `undefined`, breaking {{get array index}} patterns.
+    const origFn = fn;
+    fn = function wrappedEachFn(item: any, index: any, ctx0: any) {
+      // If index is a plain number (not a cell), wrap it in a cell-like object
+      if (typeof index === 'number') {
+        const cellLike: any = { id: index };
+        Object.defineProperty(cellLike, 'value', {
+          get() { return index; },
+          enumerable: true,
+          configurable: true,
+        });
+        return origFn(item, cellLike, ctx0);
+      }
+      return origFn(item, index, ctx0);
+    };
+
+    // Wrap items cell/getter to normalize collection values.
+    // CRITICAL: $_eachSync expects a Cell/MergedCell (with .id and .value),
+    // NOT a plain getter function. Wrap in __gxtFormula so that
+    // opcodeFor(tag, ...) can track reactivity and read .value correctly.
+    const gxtFormula = g.__gxtFormula;
     if (typeof items === 'function' && !items.prototype) {
       const origGetter = items;
+      if (gxtFormula) {
+        // Wrap in formula → MergedCell so $_eachSync gets a proper reactive tag
+        const wrappedCell = gxtFormula(() => {
+          return normalizeEachCollection(origGetter());
+        });
+        return origEachSync(wrappedCell, fn, key, ctx, inverseFn);
+      }
+      // Fallback: pass function directly (legacy behavior)
       const wrappedGetter: any = function() { return normalizeEachCollection(origGetter()); };
       if (origGetter.__gxtWatchTarget) wrappedGetter.__gxtWatchTarget = origGetter.__gxtWatchTarget;
       if (origGetter.__gxtWatchKey) wrappedGetter.__gxtWatchKey = origGetter.__gxtWatchKey;
@@ -1560,7 +2072,21 @@ queueMicrotask(patchGlobalEachSync);
     // Start a new render pass to prevent double-firing of lifecycle hooks
     const newPass = (globalThis as any).__gxtNewRenderPass;
     if (typeof newPass === 'function') newPass();
-    try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
+    // Only run gxtSyncDom when a real property change triggered the sync.
+    // Cell creation during initial render also sets __gxtPendingSync, but those
+    // cells may have stale values (e.g., each-formula re-evaluates with [] before
+    // the correct value propagates). Skipping gxtSyncDom for non-property-change
+    // syncs prevents spurious #each inverse rendering on first render.
+    if ((globalThis as any).__gxtHadPendingSync) {
+      try { gxtSyncDom(); } catch { /* ignore */ }
+    } else {
+      // Clear tagsToRevalidate to prevent stale formulas from re-evaluating
+      // on the next gxtSyncDom call. These tags were dirtied during component
+      // initialization (not from user property changes) and their formulas
+      // may produce incorrect values (e.g., each-formula returning []).
+      const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
+      if (typeof clearTags === 'function') clearTags();
+    }
     // PHASE 1: Update arg cells and fire pre-render lifecycle hooks BEFORE
     // the force-rerender. The force-rerender (innerHTML='' + rebuild) resets
     // arg cells to current values, so changes must be detected first.
@@ -1568,7 +2094,9 @@ queueMicrotask(patchGlobalEachSync);
       const syncAll = (globalThis as any).__gxtSyncAllWrappers;
       if (typeof syncAll === 'function') {
         syncAll(); // Pre-render hooks + arg cell updates
-        try { ((globalThis as any).__gxtSyncDom || gxtSyncDom)(); } catch { /* ignore */ }
+        if ((globalThis as any).__gxtHadPendingSync) {
+          try { gxtSyncDom(); } catch { /* ignore */ }
+        }
         // When STRING-path $_dc change listeners are active (using GXT cells),
         // the second gxtSyncDom pass may have handled dynamic component swaps
         // via cell tracking. Skip the force-rerender morph (Phase 2b) only when
@@ -1599,18 +2127,13 @@ queueMicrotask(patchGlobalEachSync);
       const updateRootTags = (globalThis as any).__gxtUpdateRootTagValues;
       if (typeof updateRootTags === 'function') updateRootTags();
     } catch { /* ignore */ }
-    // After Phase 1b, if ALL property changes were direct cell updates (no nested
-    // object mutations), and root tags are current, skip the morph. Direct cell
-    // changes are fully handled by Phase 1 and the morph would redundantly
-    // replace elements, breaking modifier element identity.
-    if (!(globalThis as any).__gxtHadNestedPropertyChange) {
-      try {
-        const checkTags = (globalThis as any).__gxtCheckAllTagsCurrent;
-        if (typeof checkTags === 'function' && checkTags()) {
-          (globalThis as any).__gxtHadPendingSync = false;
-        }
-      } catch { /* ignore */ }
-    }
+    // NOTE: Previously this block used __gxtCheckAllTagsCurrent to skip the morph
+    // when root tags appeared current. However, __gxtUpdateRootTagValues (Phase 1b
+    // above) already updates tags to match current values, so checkAllTagsCurrent
+    // always returned true — incorrectly skipping the morph for cases where
+    // gxtSyncDom didn't handle the update (e.g., inline $__if with function values,
+    // undefined → truthy transitions). The morph must always run when hadPendingSync
+    // is true from a property change to ensure correctness.
     (globalThis as any).__gxtHadNestedPropertyChange = false;
     // PHASE 2a: Snapshot live instances before force-rerender
     try {
@@ -1993,10 +2516,10 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
         if (parentCtx) {
           const getterStr = sourceGetter.toString();
           // Match patterns like: () => this.model?.val2, () => this.model.val2
-          const pathMatch = getterStr.match(/this\.([a-zA-Z_$][a-zA-Z0-9_$?.]*)/);
-          if (pathMatch) {
+          const extractedPath = extractThisPath(getterStr);
+          if (extractedPath) {
             // Clean the path: remove optional chaining operators
-            const fullPath = pathMatch[1].replace(/\?/g, '');
+            const fullPath = extractedPath.split('?').join('');
             // Split into parts and set the nested property
             const parts = fullPath.split('.');
             if (parts.length === 1) {
@@ -2104,6 +2627,19 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   // doesn't support numeric property access like entry.0.
   'gxtEntriesOf': (obj: any) => {
     let resolved = typeof obj === 'function' ? obj() : obj;
+    // Functions can have own properties (e.g., function Foo() {}; Foo.bar = 1).
+    // In each-in, these should be iterable. However, we must distinguish between
+    // plain functions (which should have their keys enumerated) and getter functions
+    // (which should be called to get the actual value).
+    // After the first unwrap, if we still have a function, it's a real value —
+    // check if it has own enumerable keys.
+    if (typeof resolved === 'function') {
+      const keys = Object.keys(resolved);
+      if (keys.length > 0) {
+        return keys.map(key => ({ k: key, v: (resolved as any)[key] }));
+      }
+      return [];
+    }
     if (!resolved || typeof resolved !== 'object') return [];
     // Unwrap ObjectProxy — iterate over .content, not the proxy itself.
     // ObjectProxy has unknownProperty/setUnknownProperty and stores data in .content
@@ -2112,11 +2648,14 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       if (!content || typeof content !== 'object') return [];
       resolved = content;
     }
-    // Support Map-like objects (ES6 Map, etc.)
-    if (typeof resolved.entries === 'function' && typeof resolved.forEach === 'function') {
+    // Support Map-like objects (ES6 Map, etc.) but NOT arrays.
+    // Arrays have both .entries() and .forEach(), but should use Object.keys()
+    // to iterate like `for (key in obj)` — including non-numeric own properties
+    // and skipping sparse holes.
+    if (!Array.isArray(resolved) && typeof resolved.entries === 'function' && typeof resolved.forEach === 'function') {
       return Array.from(resolved.entries()).map(([k, v]: any) => ({ k, v }));
     }
-    // Support custom iterables with Symbol.iterator
+    // Support custom iterables with Symbol.iterator (but not arrays or strings)
     if (typeof resolved[Symbol.iterator] === 'function' && !Array.isArray(resolved) && typeof resolved !== 'string') {
       const entries: { k: any; v: any }[] = [];
       for (const entry of resolved) {
@@ -2126,6 +2665,12 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       }
       return entries;
     }
+    // For objects and arrays: use Object.keys() which returns own enumerable properties.
+    // This correctly handles:
+    // - Plain objects: all own keys
+    // - Object.create(proto): only own keys (not inherited)
+    // - Arrays: numeric indices + custom properties like arr.foo = 'bar'
+    // - Sparse arrays: only defined indices (skips holes)
     const keys = Object.keys(resolved);
     return keys.map(key => ({ k: key, v: (resolved as any)[key] }));
   },
@@ -2339,10 +2884,7 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   // unique-id: Returns a unique identifier string that always starts with a letter
   // (valid CSS selector / HTML ID). Uses the same algorithm as Ember's uniqueId().
   'unique-id': () => {
-    // @ts-expect-error - abuses weird JS semantics for UUID generation
-    return ([3e7] + -1e3 + -4e3 + -2e3 + -1e11).replace(/[0-3]/g, (a: any) =>
-      ((a * 4) ^ ((Math.random() * 16) >> (a & 2))).toString(16)
-    );
+    return generateUUID();
   },
   // fn: Partially applies a function with arguments
   fn: (func: any, ...args: any[]) => {
@@ -2410,19 +2952,13 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     if (key in cacheObj) return cacheObj[key];
 
     // First evaluation: suppress GXT cell tracking
-    const _setTracker = (globalThis as any).__gxtSetTracker;
-    const _getTracker = (globalThis as any).__gxtGetTracker;
     let result;
-    if (_setTracker && _getTracker) {
-      const savedTracker = _getTracker();
-      _setTracker(null);
-      try {
-        result = valueFn();
-      } finally {
-        _setTracker(savedTracker);
-      }
-    } else {
+    const savedTracker = _gxtGetTracker();
+    _gxtSetTracker(null);
+    try {
       result = valueFn();
+    } finally {
+      _gxtSetTracker(savedTracker);
     }
     cacheObj[key] = result;
     return result;
@@ -2609,6 +3145,24 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       }
       // No default slot — return empty
       return [];
+    }
+
+    // Handle string component names (e.g., $_c('FooBar', ...)) from curly block
+    // invocations like {{#foo-bar}}...{{/foo-bar}}. The GXT compiler emits these
+    // as $_c('FooBar', $_args({...}, {default: ...}, $_edp), ctx) in compat mode.
+    // The manager resolves the string name from Ember's registry and returns a
+    // rendering closure. We invoke it directly and return the DOM result.
+    if (typeof comp === 'string') {
+      const managers = g.$_MANAGERS;
+      if (managers?.component?.canHandle?.(comp)) {
+        const $PROPS = Symbol.for('gxt-props');
+        const fw = args?.[$PROPS] || null;
+        const handleResult = managers.component.handle(comp, args, fw, ctx);
+        if (typeof handleResult === 'function') {
+          return handleResult();
+        }
+        return handleResult;
+      }
     }
 
     if (comp && comp.__isCurriedComponent) {
@@ -2847,6 +3401,15 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     return originalC(comp, args, ctx);
   };
   g.$_c.__emberWrapped = true;
+  // Protect from setupGlobalScope overwrite — GXT's setupGlobalScope iterates its
+  // symbol table and writes each symbol to globalThis, which would replace our
+  // $_c_ember wrapper with the raw GXT $_c function.
+  const _protectedC = g.$_c;
+  Object.defineProperty(g, '$_c', {
+    get() { return _protectedC; },
+    set() { /* ignore setupGlobalScope overwrites */ },
+    configurable: true,
+  });
 }
 
 // Override $_tag to check for Ember components before creating HTML elements
@@ -3278,11 +3841,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     if (mightBeComponent && managers?.component?.canHandle) {
       // Convert PascalCase to kebab-case for Ember component lookup
       // Also convert -- (namespace separator from ::) to /
-      let kebabName = resolvedTag
-        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-        .toLowerCase()
-        .replace(/--/g, '/');
+      let kebabName = doubleDashToSlash(pascalToKebab(resolvedTag));
 
       // Strip the curly-c- prefix added by the Vite plugin's transformCurlyComponents.
       // The plugin converts {{foo-bar}} to <curly-c-foo-bar /> so GXT compiles it as
@@ -3667,7 +4226,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             if (typeof child === 'function') {
               const fnStr = child.toString();
               // Look for $_bp references which indicate block params are used
-              if (/\$_bp\d/.test(fnStr)) {
+              if (hasBlockParamRef(fnStr)) {
                 return true;
               }
             }
@@ -3689,7 +4248,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               // ON_CREATED (modifier events). Key "1" = TEXT_CONTENT.
               // Modifier functions (key "0") take an element parameter and should
               // be forwarded as events, not treated as text content.
-              if (typeof key === 'string' && /^\d+$/.test(key) && key !== '0') {
+              if (typeof key === 'string' && isAllDigits(key) && key !== '0') {
                 textChildren.push(entry[1]);
               } else {
                 realEvents.push(entry);
@@ -3986,11 +4545,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
       }
       if (hasFromComponentHelper) {
-        const kebabName = resolvedTag
-          .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-          .toLowerCase()
-          .replace(/--/g, '/');
+        const kebabName = doubleDashToSlash(pascalToKebab(resolvedTag));
         const notFoundErr = new Error(
           `Attempted to resolve \`${kebabName}\`, which was expected to be a component, but nothing was found. ` +
           `Could not find component named "${kebabName}" (no component or template with that name was found)`
@@ -4007,7 +4562,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // components or helpers — render as plain HTML custom elements with attrs.
     if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string' && resolvedTag.includes('-')) {
       const ceEl = document.createElement(resolvedTag);
-      const _gxtEff = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+      const _gxtEff = gxtEffect;
 
       if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[0])) {
         for (const [key, value] of tagProps[0]) {
@@ -4539,1295 +5094,208 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
   }
 }
 
-/**
- * Transform capitalized component names to kebab-case for runtime resolution.
- */
-function transformCapitalizedComponents(code: string): string {
-  let result = code;
+// NOTE: transformCapitalizedComponents has been moved to the GXT AST compiler
+// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-  // List of known Ember built-in components that need transformation
-  const knownComponents = ['LinkTo', 'Outlet'];
+// NOTE: transformTripleMustaches has been removed.
+// Triple-mustache {{{expr}}} → <EmberHtmlRaw @value={{expr}} /> is now handled
+// at compile time in the GXT AST compiler (mustache visitor, escaped === false).
 
-  for (const component of knownComponents) {
-    const kebab = component.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+// NOTE: transformAngleBracketPositionalParams has been removed.
+// Positional params transform (<Component "Foo" 4 /> → @__pos0__="Foo" @__pos1__={{4}} ...)
+// is now handled in the GXT AST compiler (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-    // Opening tag: <LinkTo to <link-to
-    const openTagRegex = new RegExp(`<${component}(?=[\\s/>])`, 'g');
-    result = result.replace(openTagRegex, `<${kebab}`);
+// NOTE: transformComponentHelper, transformCurlyArgsToAngleBracket, and
+// transformLetBlockParamInvocations have been moved to the GXT AST compiler
+// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-    // Closing tag: </LinkTo> to </link-to>
-    const closeTagRegex = new RegExp(`</${component}>`, 'g');
-    result = result.replace(closeTagRegex, `</${kebab}>`);
-  }
+// transformBlockParams() has been removed — block params rewriting is now done
+// at the AST level in the GXT compiler (visitors/element.ts rewriteBlockParamsCompat),
+// gated behind IS_GLIMMER_COMPAT_MODE.
 
-  return result;
-}
+// NOTE: isInsideHtmlAttributeValue and isElementModifier have been moved to the GXT AST compiler
+// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-/**
- * Transform {{outlet}} to <ember-outlet />
- */
-function transformOutletHelper(code: string): string {
-  return code.replace(/\{\{\s*outlet\s*\}\}/g, '<ember-outlet />');
-}
+// NOTE: transformCurlyBlockComponents (inline form) has been moved to the GXT AST compiler
+// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-/**
- * Transform triple mustaches {{{expr}}} to raw HTML output
- * Triple mustaches in Handlebars output HTML without escaping
- * We transform them to a special component that handles raw HTML
- */
-function transformTripleMustaches(code: string): string {
-  // Match {{{...}}} but not {{{{...}}}}
-  // Transform to <EmberHtmlRaw @value={{expr}} /> component
-  return code.replace(/\{\{\{([^}]+)\}\}\}/g, (match, expr) => {
-    return `<EmberHtmlRaw @value={{${expr.trim()}}} />`;
-  });
-}
-
-/**
- * Transform angle-bracket components with positional parameters
- * <SampleComponent "Foo" 4 "Bar" @namedArg=val /> -> <SampleComponent @__pos0__="Foo" @__pos1__={{4}} @__pos2__="Bar" @__posCount__={{3}} @namedArg=val />
- */
-function transformAngleBracketPositionalParams(code: string): string {
-  // Match angle-bracket component with potential positional params
-  // Pattern: <PascalCaseName followed by content that includes unattributed values
-  const componentPattern = /<([A-Z][a-zA-Z0-9]*)(\s+[^>]*?)?(\s*\/>|>)/g;
-
-  return code.replace(componentPattern, (match, tagName, attrsSection, closing) => {
-    if (!attrsSection || !attrsSection.trim()) {
-      return match; // No attrs, nothing to transform
-    }
-
-    let remaining = attrsSection.trim();
-    const positionalParams: string[] = [];
-    const namedParams: string[] = [];
-
-    // Parse the attrs string token by token
-    while (remaining.length > 0) {
-      remaining = remaining.trim();
-      if (remaining.length === 0) break;
-
-      // Check for named parameter: @name=value or name=value
-      const namedMatch = remaining.match(/^(@?[a-zA-Z_][a-zA-Z0-9_-]*)=/);
-      if (namedMatch) {
-        const fullName = namedMatch[1];
-        let valueStr = remaining.slice(namedMatch[0].length);
-        let value: string;
-
-        // Determine the value type and extract it
-        if (valueStr.startsWith('{{')) {
-          // Mustache: find matching }}
-          let depth = 0;
-          let i = 0;
-          for (; i < valueStr.length; i++) {
-            if (valueStr[i] === '{' && valueStr[i + 1] === '{') depth++;
-            else if (valueStr[i] === '}' && valueStr[i + 1] === '}') {
-              depth--;
-              if (depth === 0) {
-                i += 2;
-                break;
-              }
-            }
-          }
-          value = valueStr.slice(0, i);
-        } else if (valueStr.startsWith('"')) {
-          const match = valueStr.match(/^"(?:[^"\\]|\\.)*"/);
-          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
-        } else if (valueStr.startsWith("'")) {
-          const match = valueStr.match(/^'(?:[^'\\]|\\.)*'/);
-          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
-        } else {
-          value = valueStr.split(/[\s>]/)[0] || '';
-        }
-
-        namedParams.push(`${fullName}=${value}`);
-        remaining = remaining.slice(namedMatch[0].length + value.length);
-        continue;
-      }
-
-      // Check for as |...| block params marker
-      if (remaining.startsWith('as ')) {
-        // Keep the rest as-is
-        namedParams.push(remaining);
-        break;
-      }
-
-      // Check for positional parameter: "string", 'string', {{expr}}, number, or boolean
-      // Quoted string
-      const quotedMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
-      if (quotedMatch) {
-        positionalParams.push(quotedMatch[1]);
-        remaining = remaining.slice(quotedMatch[1].length);
-        continue;
-      }
-
-      // Mustache expression
-      if (remaining.startsWith('{{')) {
-        let depth = 0;
-        let i = 0;
-        for (; i < remaining.length; i++) {
-          if (remaining[i] === '{' && remaining[i + 1] === '{') depth++;
-          else if (remaining[i] === '}' && remaining[i + 1] === '}') {
-            depth--;
-            if (depth === 0) {
-              i += 2;
-              break;
-            }
-          }
-        }
-        const mustacheExpr = remaining.slice(0, i);
-        // Check if this is a modifier invocation: {{name args...}} where name is a
-        // simple identifier (not this.x or @arg) and has arguments after the name.
-        // Modifiers on components should be kept as-is for GXT to handle.
-        const innerExpr = mustacheExpr.slice(2, -2).trim();
-        const firstSpace = innerExpr.indexOf(' ');
-        const isModifier = firstSpace > 0 &&
-          !innerExpr.startsWith('this.') &&
-          !innerExpr.startsWith('@') &&
-          !innerExpr.startsWith('(') &&
-          /^[a-zA-Z][a-zA-Z0-9-]*/.test(innerExpr);
-        if (isModifier) {
-          // Keep modifier as-is in the named params — it will be part of the element
-          namedParams.push(mustacheExpr);
-        } else {
-          positionalParams.push(mustacheExpr);
-        }
-        remaining = remaining.slice(i);
-        continue;
-      }
-
-      // Number or boolean
-      const numberMatch = remaining.match(/^(-?\d+(?:\.\d+)?|true|false)\b/);
-      if (numberMatch) {
-        positionalParams.push(numberMatch[1]);
-        remaining = remaining.slice(numberMatch[1].length);
-        continue;
-      }
-
-      // Path like this.name (as positional param)
-      const pathMatch = remaining.match(/^(this\.[a-zA-Z0-9_.]+)/);
-      if (pathMatch) {
-        positionalParams.push(`{{${pathMatch[1]}}}`);
-        remaining = remaining.slice(pathMatch[1].length);
-        continue;
-      }
-
-      // Skip unknown character
-      remaining = remaining.slice(1);
-    }
-
-    // If no positional params, return unchanged
-    if (positionalParams.length === 0) {
-      return match;
-    }
-
-    // Build the new attrs string
-    let newAttrs = '';
-
-    // First add positional params as @__posN__ args
-    for (let i = 0; i < positionalParams.length; i++) {
-      const p = positionalParams[i];
-      if (p.startsWith('"') || p.startsWith("'")) {
-        newAttrs += ` @__pos${i}__=${p}`;
-      } else if (p.startsWith('{{') && p.endsWith('}}')) {
-        newAttrs += ` @__pos${i}__=${p}`;
-      } else {
-        // Numbers and booleans
-        newAttrs += ` @__pos${i}__={{${p}}}`;
-      }
-    }
-    newAttrs += ` @__posCount__={{${positionalParams.length}}}`;
-
-    // Then add named params
-    for (const param of namedParams) {
-      newAttrs += ` ${param}`;
-    }
-
-    return `<${tagName}${newAttrs}${closing}`;
-  });
-}
-
-/**
- * Transform {{component}} helper to angle-bracket syntax
- * - {{#component "foo-bar"}}content{{/component}} → <FooBar>content</FooBar>
- * - {{#component "foo-bar" arg=val}}content{{/component}} → <FooBar @arg={{val}}>content</FooBar>
- * - {{component "foo-bar"}} → <FooBar />
- */
-function transformComponentHelper(code: string): string {
-  let result = code;
-
-  // Helper to convert kebab-case to PascalCase
-  const toPascalCase = (name: string) => {
-    return name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
-  };
-
-  // Helper to convert attrs like arg=val to @arg={{val}}
-  const transformAttrs = (attrs: string) => {
-    if (!attrs.trim()) return '';
-
-    let transformed = attrs.trim();
-
-    // Transform each attribute - need to handle:
-    // name=value, name={{value}}, name="value", name='value', name=this.value
-    transformed = transformed.replace(/([a-zA-Z][a-zA-Z0-9-]*)=(\{\{[^}]+\}\}|"[^"]*"|'[^']*'|this\.[a-zA-Z0-9.]+|[^\s}]+)/g,
-      (match, name, value) => {
-        // Add @ prefix if not already present
-        const attrName = name.startsWith('@') ? name : `@${name}`;
-        // Wrap value in {{}} if it's a bare path and not already wrapped
-        let attrValue = value;
-        if (!value.startsWith('{{') && !value.startsWith('"') && !value.startsWith("'")) {
-          // Bare values: this.xxx, item.name, true, false, numbers, etc.
-          attrValue = `{{${value}}}`;
-        }
-        return `${attrName}=${attrValue}`;
-      });
-
-    // Return with leading space
-    return ' ' + transformed;
-  };
-
-  // Block form: {{#component "name"}}...{{/component}}
-  // Need to handle nested components properly using depth-based matching
-  // to support nested {{#component}} blocks
-  {
-    let iterations = 0;
-    const maxIter = 50;
-    while (/\{\{#component\s/.test(result) && iterations < maxIter) {
-      iterations++;
-      // Find the first {{#component ...}} block
-      const openMatch = result.match(/\{\{#component\s+(["']([^"']+)["']|this\.[a-zA-Z0-9_.]+)([^}]*)\}\}/);
-      if (!openMatch) break;
-
-      const fullOpen = openMatch[0];
-      const startIdx = result.indexOf(fullOpen);
-      const isStringName = openMatch[2] !== undefined;
-      const name = isStringName ? openMatch[2] : openMatch[1]; // string name or this.xxx
-      const attrs = openMatch[3] || '';
-
-      // Find the matching {{/component}} with depth tracking
-      let depth = 1;
-      let searchPos = startIdx + fullOpen.length;
-      let endIdx = -1;
-
-      while (depth > 0 && searchPos < result.length) {
-        const nextOpen = result.indexOf('{{#component ', searchPos);
-        const nextClose = result.indexOf('{{/component}}', searchPos);
-
-        if (nextClose === -1) break;
-
-        if (nextOpen !== -1 && nextOpen < nextClose) {
-          depth++;
-          searchPos = nextOpen + 13; // past '{{#component '
-        } else {
-          depth--;
-          if (depth === 0) {
-            endIdx = nextClose + '{{/component}}'.length;
-          } else {
-            searchPos = nextClose + '{{/component}}'.length;
-          }
-        }
-      }
-
-      if (endIdx === -1) break;
-
-      const content = result.slice(startIdx + fullOpen.length, endIdx - '{{/component}}'.length);
-
-      let replacement: string;
-      if (isStringName) {
-        if (attrs && /(?<!=)\s*\(/.test(attrs)) {
-          // Has subexpressions, skip
-          break;
-        }
-        const pascalName = toPascalCase(name);
-        const transformedAttrs = transformAttrs(attrs);
-        replacement = `<${pascalName}${transformedAttrs}>${content}</${pascalName}>`;
-      } else {
-        // Dynamic name: this.componentName
-        // Transform to <this.xxx @attrs>content</this.xxx> which GXT compiles to $_dc()
-        const transformedAttrs = transformAttrs(attrs);
-        replacement = `<${name}${transformedAttrs}>${content}</${name}>`;
-      }
-
-      result = result.slice(0, startIdx) + replacement + result.slice(endIdx);
-    }
-  }
-
-  // Inline form: {{component "name" arg=val}}
-  // Skip transformation if attrs contain positional subexpressions (e.g., (component ...))
-  // that are NOT part of a named arg value. Named arg values with subexpressions
-  // like greeting=(hash ...) are OK to transform, but bare (component ...) positional
-  // args cannot be converted to angle-bracket syntax.
-  const inlinePattern = /\{\{component\s+["']([^"']+)["']([^}]*)\}\}/g;
-  result = result.replace(inlinePattern, (match, name, attrs) => {
-    if (attrs) {
-      // Check for bare positional subexpressions: (word ...) NOT preceded by =
-      // This detects positional args like (component "-foo") but not named args like greeting=(hash ...)
-      if (/(?<!=)\s*\(/.test(attrs)) {
-        return match; // Leave as-is for GXT to handle via $_componentHelper
-      }
-    }
-    const pascalName = toPascalCase(name);
-    const transformedAttrs = transformAttrs(attrs);
-    // Add marker so $_tag handler knows this came from {{component}} helper
-    // and should throw for non-existent components instead of rendering as custom element
-    return `<${pascalName} @__fromComponentHelper__={{true}}${transformedAttrs} />`;
-  });
-
-  // Inline form with dynamic name: {{component this.xxx arg=val}} or
-  // {{component this.xxx positional1 positional2}}
-  // Transform to <this.xxx @arg={{val}} /> which GXT compiles to $_dc()
-  // The $_dc_ember override handles resolving string names to components at runtime.
-  const inlineDynamicPattern = /\{\{component\s+(this\.[a-zA-Z0-9_.]+)([^}]*)\}\}/g;
-  result = result.replace(inlineDynamicPattern, (match, name, attrs) => {
-    if (attrs && attrs.trim()) {
-      const transformedAttrs = transformCurlyArgsToAngleBracket(attrs.trim());
-      return `<${name}${transformedAttrs} />`;
-    }
-    return `<${name} />`;
-  });
-
-  return result;
-}
-
-/**
- * Transform curly-style arguments to angle-bracket @-prefixed arguments.
- * E.g., 'label="Foo" count=this.count' -> ' @label="Foo" @count={{this.count}}'
- * Also handles positional parameters:
- * E.g., '"Foo" 42 key=val' -> ' @__pos0__="Foo" @__pos1__={{42}} @__posCount__={{2}} @key={{val}}'
- */
-function transformCurlyArgsToAngleBracket(args: string): string {
-  if (!args) return '';
-
-  let remaining = args.trim();
-  const positionalParams: string[] = [];
-  const namedParams: string[] = [];
-
-  // Parse args token by token (similar to transformAttrs in transformCurlyBlockComponents)
-  while (remaining.length > 0) {
-    remaining = remaining.trim();
-    if (remaining.length === 0) break;
-
-    // Skip 'as |...|' block params clause
-    const asMatch = remaining.match(/^as\s*\|([^|]+)\|/);
-    if (asMatch) {
-      // Preserve block params clause - it will be handled elsewhere
-      remaining = remaining.slice(asMatch[0].length);
-      continue;
-    }
-
-    // Named parameter: key=value
-    const nameMatch = remaining.match(/^([a-zA-Z][a-zA-Z0-9-]*)=/);
-    if (nameMatch) {
-      const name = nameMatch[1];
-      let valueStr = remaining.slice(nameMatch[0].length);
-      let value: string;
-
-      if (valueStr.startsWith('{{')) {
-        const endIdx = valueStr.indexOf('}}');
-        value = endIdx !== -1 ? valueStr.slice(0, endIdx + 2) : valueStr.split(/\s/)[0] || '';
-      } else if (valueStr.startsWith('"')) {
-        const match = valueStr.match(/^"(?:[^"\\]|\\.)*"/);
-        value = match ? match[0] : valueStr.split(/\s/)[0] || '';
-      } else if (valueStr.startsWith("'")) {
-        const match = valueStr.match(/^'(?:[^'\\]|\\.)*'/);
-        value = match ? match[0] : valueStr.split(/\s/)[0] || '';
-      } else if (valueStr.startsWith('(')) {
-        // Match balanced parens for subexpressions
-        let depth = 0, i = 0;
-        for (; i < valueStr.length; i++) {
-          if (valueStr[i] === '(') depth++;
-          else if (valueStr[i] === ')') { depth--; if (depth === 0) { i++; break; } }
-        }
-        value = valueStr.slice(0, i);
-      } else {
-        value = valueStr.split(/[\s}]/)[0] || '';
-      }
-
-      const attrName = `@${name}`;
-      let attrValue = value;
-      // Wrap non-quoted, non-mustache values in {{}}
-      if (!value.startsWith('{{') && !value.startsWith('"') && !value.startsWith("'")) {
-        attrValue = `{{${value}}}`;
-      }
-      namedParams.push(`${attrName}=${attrValue}`);
-      remaining = remaining.slice(nameMatch[0].length + value.length);
-      continue;
-    }
-
-    // Positional: quoted string
-    const quotedMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
-    if (quotedMatch) {
-      positionalParams.push(quotedMatch[1]);
-      remaining = remaining.slice(quotedMatch[1].length);
-      continue;
-    }
-
-    // Positional: mustache expression
-    const mustacheMatch = remaining.match(/^(\{\{[^}]+\}\})/);
-    if (mustacheMatch) {
-      positionalParams.push(mustacheMatch[1]);
-      remaining = remaining.slice(mustacheMatch[1].length);
-      continue;
-    }
-
-    // Positional: number or boolean
-    const numberMatch = remaining.match(/^(-?\d+(?:\.\d+)?|true|false)\b/);
-    if (numberMatch) {
-      positionalParams.push(numberMatch[1]);
-      remaining = remaining.slice(numberMatch[1].length);
-      continue;
-    }
-
-    // Positional: subexpression
-    if (remaining.startsWith('(')) {
-      let depth = 0, i = 0;
-      for (; i < remaining.length; i++) {
-        if (remaining[i] === '(') depth++;
-        else if (remaining[i] === ')') { depth--; if (depth === 0) { i++; break; } }
-      }
-      const expr = remaining.slice(0, i);
-      positionalParams.push(expr);
-      remaining = remaining.slice(i);
-      continue;
-    }
-
-    // Positional: path like this.name or @foo or bare identifier
-    const pathMatch = remaining.match(/^(this\.[a-zA-Z0-9_.]+|@[a-zA-Z][a-zA-Z0-9-]*|[a-zA-Z_][a-zA-Z0-9_.]*)/);
-    if (pathMatch) {
-      // Check if followed by '=' - then it's a named param starting, don't consume as positional
-      if (remaining.charAt(pathMatch[0].length) === '=') {
-        // This is actually a named param without our regex matching - advance
-        remaining = remaining.slice(1);
-        continue;
-      }
-      positionalParams.push(`{{${pathMatch[1]}}}`);
-      remaining = remaining.slice(pathMatch[1].length);
-      continue;
-    }
-
-    // Skip unknown character
-    remaining = remaining.slice(1);
-  }
-
-  // Build the result
-  let result = '';
-  if (namedParams.length > 0) {
-    result += ' ' + namedParams.join(' ');
-  }
-  if (positionalParams.length > 0) {
-    for (let i = 0; i < positionalParams.length; i++) {
-      const p = positionalParams[i];
-      if (p.startsWith('"') || p.startsWith("'")) {
-        result += ` @__pos${i}__=${p}`;
-      } else if (p.startsWith('{{') && p.endsWith('}}')) {
-        result += ` @__pos${i}__=${p}`;
-      } else if (p.startsWith('(')) {
-        result += ` @__pos${i}__={{${p}}}`;
-      } else {
-        result += ` @__pos${i}__={{${p}}}`;
-      }
-    }
-    result += ` @__posCount__={{${positionalParams.length}}}`;
-  }
-  return result;
-}
-
-/**
- * Transform {{#let ... as |param|}} block param invocations with args to angle-bracket syntax.
- *
- * GXT compiles {{#let}} blocks into JS let-bindings. When a let-bound value is accessed
- * with args (e.g., {{param.prop key=val}}), GXT compiles it as a function call:
- *   Let_param_scope0().prop({key: val})
- *
- * For Ember's contextual components, this breaks reactivity because:
- * 1. Args are evaluated eagerly (not wrapped in reactive getters)
- * 2. No $_dc wrapper for component identity tracking and swapping
- *
- * This transform converts such invocations to angle-bracket syntax:
- *   {{param.prop key=val}} → <param.prop @key={{val}} />
- *   {{param.prop positional1 key=val}} → <param.prop @__pos0__={{positional1}} @__posCount__={{1}} @key={{val}} />
- *   {{#param.prop key=val}}content{{/param.prop}} → <param.prop @key={{val}}>content</param.prop>
- *
- * GXT then compiles <param.prop ...> as $_dc(() => Let_param_scope0().prop, args, this),
- * which flows through $_dc_ember for proper Ember integration.
- */
-function transformLetBlockParamInvocations(templateString: string): string {
-  let result = templateString;
-
-  // Match {{#let PARAMS as |param1 param2 ...|}}BODY{{/let}}
-  // Support nested let blocks by matching from innermost out
-  const letPattern = /\{\{#let\s+[\s\S]*?\s+as\s*\|([^|]+)\|\s*\}\}([\s\S]*?)\{\{\/let\}\}/g;
-
-  // Process iteratively to handle nested let blocks
-  let maxIter = 20;
-  while (maxIter-- > 0) {
-    // Find the INNERMOST {{#let...}}...{{/let}} (one that has no nested {{#let}} in its body)
-    const innerLetPattern = /\{\{#let\s+([\s\S]*?)\s+as\s*\|([^|]+)\|\s*\}\}((?:(?!\{\{#let\s)[\s\S])*?)\{\{\/let\}\}/;
-    const letMatch = innerLetPattern.exec(result);
-    if (!letMatch) break;
-
-    const [fullMatch, , paramsStr, body] = letMatch;
-    const matchStart = letMatch.index;
-    const params = paramsStr.trim().split(/\s+/);
-
-    let transformedBody = body;
-
-    for (const param of params) {
-      // Skip empty params
-      if (!param) continue;
-      // Escape for regex
-      const escaped = param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-      // 1. Block form with dot path: {{#param.prop args}}content{{/param.prop}}
-      const blockDotPattern = new RegExp(
-        `\\{\\{#${escaped}(\\.[a-zA-Z0-9_.\\-]+)(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${escaped}\\1\\}\\}`, 'g'
-      );
-      transformedBody = transformedBody.replace(blockDotPattern, (m: string, dotPath: string, args: string, content: string) => {
-        const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
-        return `<${param}${dotPath}${transformedArgs}>${content}</${param}${dotPath}>`;
-      });
-
-      // 2. Inline form with dot path and args: {{param.prop arg1 key=val}}
-      const inlineDotWithArgsPattern = new RegExp(
-        `\\{\\{\\s*${escaped}(\\.[a-zA-Z0-9_.\\-]+)(\\s+[^}]+)\\}\\}`, 'g'
-      );
-      transformedBody = transformedBody.replace(inlineDotWithArgsPattern, (m: string, dotPath: string, args: string) => {
-        const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
-        return `<${param}${dotPath}${transformedArgs} />`;
-      });
-    }
-
-    // Replace the body in the result
-    const bodyStart = matchStart + fullMatch.indexOf(body);
-    const bodyEnd = bodyStart + body.length;
-    result = result.slice(0, bodyStart) + transformedBody + result.slice(bodyEnd);
-  }
-
-  return result;
-}
-
-/**
- * Transform Ember's block params syntax so that block param references use a global accessor.
- *
- * The key insight is that GXT compiles expressions to arrow functions which capture `this`
- * lexically. We cannot change `this` for arrow functions with .call(). Instead, we use
- * a global object that can be accessed from anywhere.
- *
- * This function transforms:
- *   <Foo as |x y|>{{x}} {{y}}</Foo>
- * To:
- *   <Foo>{{$_bp.0}} {{$_bp.1}}</Foo>
- *
- * Before evaluating children, we set globalThis.$_bp = params, allowing the functions
- * to access the yield values through this global reference.
- */
-function transformBlockParams(templateString: string): { transformed: string; blockParamMappings: Map<string, string[]> } {
-  let result = templateString;
-  const blockParamMappings = new Map<string, string[]>();
-
-  // Find all components with `as |...|` block params
-  // Pattern: <ComponentName (attrs) as |param1 param2 ...|>
-  // Note: Attribute names can include underscores (e.g., @__hasBlock__)
-  const blockParamPattern = /<([A-Z][a-zA-Z0-9-]*)((?:\s+(?:[@a-zA-Z_][a-zA-Z0-9_-]*(?:=(?:"[^"]*"|'[^']*'|\{\{[^}]*\}\}|[^\s>]*))?))*)(\s+as\s*\|([^|]+)\|)(\s*)>/g;
-
-  interface BlockParamScope {
-    componentName: string;
-    params: string[];
-    startIndex: number;
-    endIndex: number;
-    openTagEnd: number;
-  }
-
-  const scopes: BlockParamScope[] = [];
-  let match;
-
-  // First pass: find all block param scopes
-  while ((match = blockParamPattern.exec(result)) !== null) {
-    const [fullMatch, componentName, attrs, asClause, paramsStr] = match;
-    const startIndex = match.index;
-    const openTagEnd = startIndex + fullMatch.length;
-
-    // Parse params (space-separated)
-    const params = paramsStr.trim().split(/\s+/);
-
-    // Find the closing tag for this component
-    const closingTag = `</${componentName}>`;
-    let depth = 1;
-    let searchPos = openTagEnd;
-    let endIndex = -1;
-
-    // Simple tag matching (doesn't handle all edge cases but works for most templates)
-    const tagOpenPattern = new RegExp(`<${componentName}(?:\\s|>|/>)`, 'g');
-    const tagClosePattern = new RegExp(`</${componentName}>`, 'g');
-
-    // Find matching closing tag
-    while (depth > 0 && searchPos < result.length) {
-      tagOpenPattern.lastIndex = searchPos;
-      tagClosePattern.lastIndex = searchPos;
-
-      const openMatch = tagOpenPattern.exec(result);
-      const closeMatch = tagClosePattern.exec(result);
-
-      if (!closeMatch) break;
-
-      if (openMatch && openMatch.index < closeMatch.index && !openMatch[0].endsWith('/>')) {
-        depth++;
-        searchPos = openMatch.index + openMatch[0].length;
-      } else {
-        depth--;
-        if (depth === 0) {
-          endIndex = closeMatch.index + closeMatch[0].length;
-        } else {
-          searchPos = closeMatch.index + closeMatch[0].length;
-        }
-      }
-    }
-
-    if (endIndex === -1) continue;
-
-    scopes.push({
-      componentName,
-      params,
-      startIndex,
-      endIndex,
-      openTagEnd,
-    });
-
-    blockParamMappings.set(componentName + '_' + startIndex, params);
-  }
-
-  // Second pass: transform references within each scope (process in reverse to preserve indices)
-  for (let i = scopes.length - 1; i >= 0; i--) {
-    const scope = scopes[i];
-    const { params, startIndex, endIndex, openTagEnd, componentName } = scope;
-
-    // Extract the block content
-    const blockContent = result.slice(openTagEnd, endIndex - `</${componentName}>`.length);
-
-    // Replace each param reference with a positional accessor
-    // Transform {{param}} to {{this.$_bp0}} and {{param.prop}} to {{this.$_bp0.prop}}
-    // The slot function will set up $_bp0, $_bp1, etc. on the context
-    let transformedContent = blockContent;
-    for (let j = 0; j < params.length; j++) {
-      const param = params[j];
-      const bpVar = `$_bp${j}`;
-
-      // Replace {{param.property}} with {{this.$_bp0.property}} (do this first for longer matches)
-      const pathPattern = new RegExp(`\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.\-]+)\\s*\\}\\}`, 'g');
-      transformedContent = transformedContent.replace(pathPattern, `{{this.${bpVar}$1}}`);
-
-      // Replace {{param}} with {{this.$_bp0}} (simple case)
-      const simplePattern = new RegExp(`\\{\\{\\s*${param}\\s*\\}\\}`, 'g');
-      transformedContent = transformedContent.replace(simplePattern, `{{this.${bpVar}}}`);
-
-      // Replace in attribute values: @attr={{param.property}}
-      const attrPathPattern = new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}(\\.[a-zA-Z0-9_.\-]+)\\}\\}`, 'g');
-      transformedContent = transformedContent.replace(attrPathPattern, `$1{{this.${bpVar}$2}}`);
-
-      // Replace in attribute values: @attr={{param}}
-      const attrPattern = new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}\\}\\}`, 'g');
-      transformedContent = transformedContent.replace(attrPattern, `$1{{this.${bpVar}}}`);
-
-      // Replace param used as component tag name: <Param ...> -> <this.$_bp0 ...>
-      // This handles the case where a block param is a component reference
-      // (e.g., {{#let (component 'foo') as |Comp|}}<Comp />{{/let}})
-      // Also handles lowercase block params used as angle bracket tags
-      // (e.g., {{#yielding-component as |comp|}}<comp />{{/yielding-component}})
-      {
-        // Self-closing tag: <Param ... /> -> <this.$_bp0 ... />
-        const selfClosePattern = new RegExp(`<${param}((?:\\s+[^>]*)?)\\s*/>`, 'g');
-        transformedContent = transformedContent.replace(selfClosePattern, `<this.${bpVar}$1 />`);
-
-        // Open tag: <Param ...> -> <this.$_bp0 ...>
-        const openTagPattern = new RegExp(`<${param}((?:\\s+[^>]*)?)>`, 'g');
-        transformedContent = transformedContent.replace(openTagPattern, `<this.${bpVar}$1>`);
-
-        // Close tag: </Param> -> </this.$_bp0>
-        const closeTagPattern = new RegExp(`</${param}>`, 'g');
-        transformedContent = transformedContent.replace(closeTagPattern, `</this.${bpVar}>`);
-      }
-
-      // Replace param.property used as component tag: <param.baz ...> -> <this.$_bp0.baz ...>
-      {
-        const dotSelfClosePattern = new RegExp(`<${param}\\.(\\S+?)((?:\\s+[^>]*)?)\\s*/>`, 'g');
-        transformedContent = transformedContent.replace(dotSelfClosePattern, `<this.${bpVar}.$1$2 />`);
-
-        const dotOpenPattern = new RegExp(`<${param}\\.(\\S+?)((?:\\s+[^>]*)?)>`, 'g');
-        transformedContent = transformedContent.replace(dotOpenPattern, `<this.${bpVar}.$1$2>`);
-
-        const dotClosePattern = new RegExp(`</${param}\\.(\\S+?)>`, 'g');
-        transformedContent = transformedContent.replace(dotClosePattern, `</this.${bpVar}.$1>`);
-      }
-
-      // Handle curly invocations of block params with arguments:
-      // {{param.prop argName=argVal}} -> <this.$_bp0.prop @argName={{argVal}} />
-      // {{param.prop positional1 argName=argVal}} -> <this.$_bp0.prop @__pos0__={{positional1}} @__posCount__={{1}} @argName={{argVal}} />
-      // {{param positional1 positional2}} -> <this.$_bp0 @__pos0__={{positional1}} @__pos1__={{positional2}} @__posCount__={{2}} />
-      // {{#param.prop argName=argVal}}content{{/param.prop}} -> <this.$_bp0.prop @argName={{argVal}}>content</this.$_bp0.prop>
-      // {{#param argName=argVal}}content{{/param}} -> <this.$_bp0 @argName={{argVal}}>content</this.$_bp0>
-      {
-        // Block form: {{#param.prop args}}content{{/param.prop}}
-        const blockDotPattern = new RegExp(
-          `\\{\\{#${param}(\\.[a-zA-Z0-9_.\-]+)(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${param}\\1\\}\\}`, 'g'
-        );
-        transformedContent = transformedContent.replace(blockDotPattern, (match: string, dotPath: string, args: string, content: string) => {
-          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
-          return `<this.${bpVar}${dotPath}${transformedArgs}>${content}</this.${bpVar}${dotPath}>`;
-        });
-
-        // Block form: {{#param args}}content{{/param}}
-        const blockSimplePattern = new RegExp(
-          `\\{\\{#${param}(\\s[^}]*)\\}\\}([\\s\\S]*?)\\{\\{/${param}\\}\\}`, 'g'
-        );
-        transformedContent = transformedContent.replace(blockSimplePattern, (match: string, args: string, content: string) => {
-          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
-          return `<this.${bpVar}${transformedArgs}>${content}</this.${bpVar}>`;
-        });
-
-        // Inline form with args: {{param.prop arg1 key=val}} (must have at least one arg after the path)
-        // Make sure not to match simple {{param.prop}} (no extra args)
-        const inlineDotWithArgsPattern = new RegExp(
-          `\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.\-]+)(\\s+[^}]+)\\}\\}`, 'g'
-        );
-        transformedContent = transformedContent.replace(inlineDotWithArgsPattern, (match: string, dotPath: string, args: string) => {
-          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
-          return `<this.${bpVar}${dotPath}${transformedArgs} />`;
-        });
-
-        // Inline form with args: {{param arg1 key=val}} (must have at least one arg)
-        // Be careful not to match {{param}} or {{param.prop}} without args
-        const inlineSimpleWithArgsPattern = new RegExp(
-          `\\{\\{\\s*${param}(\\s+(?!\\.|\\})[^}]+)\\}\\}`, 'g'
-        );
-        transformedContent = transformedContent.replace(inlineSimpleWithArgsPattern, (match: string, args: string) => {
-          const transformedArgs = transformCurlyArgsToAngleBracket(args.trim());
-          return `<this.${bpVar}${transformedArgs} />`;
-        });
-      }
-
-      // General catch-all: replace remaining bare block param references inside
-      // mustache expressions (e.g., {{on "click" update}} → {{on "click" this.$_bp1}}).
-      // This handles block params used as arguments to helpers/modifiers that
-      // weren't caught by the more specific patterns above.
-      // Match param as a bare word inside {{ }} that is NOT at the start of the expression
-      // (the start position is the helper/modifier name, not a block param).
-      // Also replace in subexpressions: (helper param) → (helper this.$_bp0)
-      {
-        // Replace inside {{...}} expressions: param after a space (as argument)
-        // Also handles param.property paths (e.g., {{#each values.people}} → {{#each this.$_bp0.people}})
-        const helperArgPattern = new RegExp(
-          `(\\{\\{[^}]*\\s)\\b${param}\\b(?=[\\s}.])`, 'g'
-        );
-        transformedContent = transformedContent.replace(helperArgPattern, `$1this.${bpVar}`);
-
-        // Replace inside subexpressions: (helper param) → (helper this.$_bp0)
-        // Also handles (helper param.prop) → (helper this.$_bp0.prop)
-        const subexprArgPattern = new RegExp(
-          `(\\([^)]*\\s)\\b${param}\\b(?=[\\s).])`, 'g'
-        );
-        transformedContent = transformedContent.replace(subexprArgPattern, `$1this.${bpVar}`);
-      }
-    }
-
-    // Reconstruct the element without the `as |...|` part
-    // Add a marker to indicate that block params were declared
-    const originalOpenTag = result.slice(startIndex, openTagEnd);
-    const tagWithoutBlockParams = originalOpenTag.replace(/\s+as\s*\|[^|]+\|/, '');
-    // Insert the __hasBlockParams__ marker before the closing >
-    const newOpenTag = tagWithoutBlockParams.replace(/>$/, ' @__hasBlockParams__="default">');
-
-    const closingTag = `</${componentName}>`;
-    const newElement = newOpenTag + transformedContent + closingTag;
-
-    result = result.slice(0, startIndex) + newElement + result.slice(endIndex);
-  }
-
-  return { transformed: result, blockParamMappings };
-}
-
-/**
- * Check if a position in a template string is inside an HTML attribute value.
- * Scans backwards from the offset to determine if we're between quotes in an
- * attribute context like `<div attr="...HERE...">`.
- *
- * This prevents transforming helpers like `{{foo-bar}}` into components when
- * they appear inside attribute values (e.g. `<div data-x="{{foo-bar}}">`).
- */
-function isInsideHtmlAttributeValue(str: string, offset: number): boolean {
-  // Scan backwards from the offset to find if we're inside an attribute value.
-  // We look for the pattern: attrName= followed by a quote that is still open.
-  // Track quote state by scanning from the last '<' before the offset.
-  let angleBracketPos = -1;
-  for (let i = offset - 1; i >= 0; i--) {
-    if (str[i] === '>') {
-      // We hit a closing angle bracket before an opening one,
-      // so we're not inside an HTML tag at all
-      return false;
-    }
-    if (str[i] === '<') {
-      angleBracketPos = i;
-      break;
-    }
-  }
-
-  if (angleBracketPos === -1) {
-    // No opening '<' found before this position - not inside a tag
-    return false;
-  }
-
-  // Now scan from the '<' to the offset, tracking quote state
-  let inQuote: string | null = null;
-  for (let i = angleBracketPos; i < offset; i++) {
-    const ch = str[i];
-    if (inQuote === null) {
-      if (ch === '"' || ch === "'") {
-        inQuote = ch;
-      }
-    } else if (ch === inQuote) {
-      inQuote = null;
-    }
-  }
-
-  // If we're still inside an open quote, the mustache is in an attribute value
-  return inQuote !== null;
-}
-
-/**
- * Check if a position in a template string is inside an HTML element's opening tag,
- * but NOT inside an attribute value. This detects element modifiers like
- * `<h1 {{foo-bar}}>` where the mustache is a modifier, not a component invocation.
- */
-function isElementModifier(str: string, offset: number): boolean {
-  // Scan backwards from the offset to find the nearest '<' or '>'
-  let angleBracketPos = -1;
-  for (let i = offset - 1; i >= 0; i--) {
-    if (str[i] === '>') {
-      // We hit a closing '>' before an opening '<',
-      // so we're NOT inside an element's opening tag
-      return false;
-    }
-    if (str[i] === '<') {
-      angleBracketPos = i;
-      break;
-    }
-  }
-
-  if (angleBracketPos === -1) {
-    return false;
-  }
-
-  // Check that what follows '<' is a tag name (not another '<' or '/')
-  // This ensures we're in an element like <h1 ...> and not in text content
-  const afterAngle = str.substring(angleBracketPos + 1, offset).trim();
-  // If the content starts with '/' it's a closing tag, not relevant
-  if (afterAngle.startsWith('/')) return false;
-  // Must start with a valid tag name character
-  if (!/^[a-zA-Z]/.test(afterAngle)) return false;
-
-  // Scan from '<' to offset, tracking quote state to ensure we're not in a quoted attribute
-  let inQuote: string | null = null;
-  for (let i = angleBracketPos; i < offset; i++) {
-    const ch = str[i];
-    if (inQuote === null) {
-      if (ch === '"' || ch === "'") {
-        inQuote = ch;
-      }
-    } else if (ch === inQuote) {
-      inQuote = null;
-    }
-  }
-
-  // If we're inside a quote, it's an attribute value, not a modifier
-  if (inQuote !== null) return false;
-
-  // We're inside an element's opening tag and not in an attribute value:
-  // this mustache is an element modifier
-  return true;
-}
-
-/**
- * Transform curly block component syntax to angle-bracket syntax
- * - {{#foo-bar}}content{{/foo-bar}} → <FooBar>content</FooBar>
- * - {{#foo-bar arg=val}}content{{/foo-bar}} → <FooBar @arg={{val}}>content</FooBar>
- * - {{foo-bar}} → <FooBar />
- */
-function transformCurlyBlockComponents(code: string): string {
-  let result = code;
-
-  // Helper to convert kebab-case to PascalCase
-  const toPascalCase = (name: string) => {
-    return name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
-  };
-
-  // Helper to convert attrs like arg=val to @arg={{val}}
-  // Also handles positional parameters
-  const transformAttrs = (attrs: string) => {
-    if (!attrs.trim()) return '';
-
-    let remaining = attrs.trim();
-    const positionalParams: string[] = [];
-    const namedParams: string[] = [];
-
-    // Helper to match balanced parentheses
-    const matchBalancedParens = (str: string): string | null => {
-      if (!str.startsWith('(')) return null;
-      let depth = 0;
-      let i = 0;
-      for (; i < str.length; i++) {
-        if (str[i] === '(') depth++;
-        else if (str[i] === ')') {
-          depth--;
-          if (depth === 0) return str.slice(0, i + 1);
-        }
-      }
-      return null;
-    };
-
-    // Parse the attrs string token by token
-    while (remaining.length > 0) {
-      remaining = remaining.trim();
-      if (remaining.length === 0) break;
-
-      // Check for named parameter: name=value
-      // Value can be: {{...}}, "...", '...', (...), or bare word/path
-      const nameMatch = remaining.match(/^([a-zA-Z][a-zA-Z0-9-]*)=/);
-      if (nameMatch) {
-        const name = nameMatch[1];
-        let valueStr = remaining.slice(nameMatch[0].length);
-        let value: string;
-
-        // Determine the value type and extract it
-        if (valueStr.startsWith('{{')) {
-          // Mustache: match until }}
-          const endIdx = valueStr.indexOf('}}');
-          if (endIdx !== -1) {
-            value = valueStr.slice(0, endIdx + 2);
-          } else {
-            value = valueStr.split(/\s/)[0] || '';
-          }
-        } else if (valueStr.startsWith('"')) {
-          // Double quoted string
-          const match = valueStr.match(/^"(?:[^"\\]|\\.)*"/);
-          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
-        } else if (valueStr.startsWith("'")) {
-          // Single quoted string
-          const match = valueStr.match(/^'(?:[^'\\]|\\.)*'/);
-          value = match ? match[0] : valueStr.split(/\s/)[0] || '';
-        } else if (valueStr.startsWith('(')) {
-          // Subexpression: match balanced parens
-          const parenMatch = matchBalancedParens(valueStr);
-          value = parenMatch || valueStr.split(/\s/)[0] || '';
-        } else {
-          // Bare word/path
-          value = valueStr.split(/[\s}]/)[0] || '';
-        }
-
-        const attrName = name.startsWith('@') ? name : `@${name}`;
-        let attrValue = value;
-        // Wrap subexpressions and bare words in {{}}
-        if (!value.startsWith('{{') && !value.startsWith('"') && !value.startsWith("'")) {
-          attrValue = `{{${value}}}`;
-        }
-        namedParams.push(`${attrName}=${attrValue}`);
-        remaining = remaining.slice(nameMatch[0].length + value.length);
-        continue;
-      }
-
-      // Check for positional parameter: "string" or 'string' or {{expr}} or (subexpr) or number or this.path
-      // Subexpression: balanced parentheses like (helper-name arg1 arg2)
-      const subexprMatch = matchBalancedParens(remaining);
-      if (subexprMatch) {
-        // Wrap subexpression in {{}} so GXT compiles it as a helper call
-        positionalParams.push(`{{${subexprMatch}}}`);
-        remaining = remaining.slice(subexprMatch.length);
-        continue;
-      }
-
-      // Quoted string
-      const quotedMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
-      if (quotedMatch) {
-        positionalParams.push(quotedMatch[1]);
-        remaining = remaining.slice(quotedMatch[1].length);
-        continue;
-      }
-
-      // Mustache expression
-      const mustacheMatch = remaining.match(/^(\{\{[^}]+\}\})/);
-      if (mustacheMatch) {
-        positionalParams.push(mustacheMatch[1]);
-        remaining = remaining.slice(mustacheMatch[1].length);
-        continue;
-      }
-
-      // Number or boolean
-      const numberMatch = remaining.match(/^(-?\d+(?:\.\d+)?|true|false)\b/);
-      if (numberMatch) {
-        positionalParams.push(numberMatch[1]);
-        remaining = remaining.slice(numberMatch[1].length);
-        continue;
-      }
-
-      // Path like this.name or @foo
-      const pathMatch = remaining.match(/^(this\.[a-zA-Z0-9_.]+|@[a-zA-Z][a-zA-Z0-9-]*)/);
-      if (pathMatch) {
-        positionalParams.push(`{{${pathMatch[1]}}}`);
-        remaining = remaining.slice(pathMatch[1].length);
-        continue;
-      }
-
-      // Skip unknown character
-      remaining = remaining.slice(1);
-    }
-
-    // Build the result
-    let result = '';
-    if (namedParams.length > 0) {
-      result += ' ' + namedParams.join(' ');
-    }
-    if (positionalParams.length > 0) {
-      // Pass positional params as individual @__pos0__, @__pos1__, etc. arguments
-      // The component manager will map these to named params based on positionalParams
-      for (let i = 0; i < positionalParams.length; i++) {
-        const p = positionalParams[i];
-        // If it's a quoted string, use it directly
-        if (p.startsWith('"') || p.startsWith("'")) {
-          result += ` @__pos${i}__=${p}`;
-        }
-        // If it's a mustache, pass it through
-        else if (p.startsWith('{{') && p.endsWith('}}')) {
-          result += ` @__pos${i}__=${p}`;
-        }
-        // Numbers and booleans need to be wrapped
-        else {
-          result += ` @__pos${i}__={{${p}}}`;
-        }
-      }
-      // Also pass the count
-      result += ` @__posCount__={{${positionalParams.length}}}`;
-    }
-    return result;
-  };
-
-  // Known block helpers that should NOT be transformed (they're control flow, not components)
-  const blockHelpers = ['if', 'unless', 'each', 'each-in', 'with', 'let', 'in-element'];
-
-  // Block form: {{#component-name attrs}}...{{/component-name}}
-  // Use a recursive approach to handle nested blocks
-  const transformBlocks = (input: string): string => {
-    // Match opening block: {{#name attrs}}
-    const blockOpenPattern = /\{\{#([a-z][a-zA-Z0-9-]*)([^}]*)\}\}/;
-
-    let output = input;
-    let match;
-    let iterations = 0;
-    const maxIterations = 100; // Prevent infinite loops
-    const skipMap = new Map<string, string>(); // Store markers to restore
-
-    while ((match = blockOpenPattern.exec(output)) !== null && iterations < maxIterations) {
-      iterations++;
-      const [fullMatch, name, attrs] = match;
-      const startIndex = match.index;
-
-      // Skip known block helpers - preserve the full original opening tag
-      if (blockHelpers.includes(name)) {
-        // Mark the opening tag as processed so we don't match it again
-        // Use a unique marker that won't conflict with template content
-        const markerId = `__SKIP_${name}_${iterations}__`;
-        output = output.slice(0, startIndex) + markerId + output.slice(startIndex + fullMatch.length);
-        skipMap.set(markerId, fullMatch);
-        continue;
-      }
-
-      // Find the matching closing tag
-      const closingTag = `{{/${name}}}`;
-      let depth = 1;
-      let searchPos = startIndex + fullMatch.length;
-      let endIndex = -1;
-
-      while (depth > 0 && searchPos < output.length) {
-        const nextOpen = output.indexOf(`{{#${name}`, searchPos);
-        const nextClose = output.indexOf(closingTag, searchPos);
-
-        if (nextClose === -1) break;
-
-        if (nextOpen !== -1 && nextOpen < nextClose) {
-          depth++;
-          searchPos = nextOpen + 3;
-        } else {
-          depth--;
-          if (depth === 0) {
-            endIndex = nextClose + closingTag.length;
-          } else {
-            searchPos = nextClose + closingTag.length;
-          }
-        }
-      }
-
-      if (endIndex === -1) {
-        // Can't find closing tag, skip this opening tag
-        const markerId = `__SKIP_${name}_${iterations}_nf__`;
-        output = output.slice(0, startIndex) + markerId + output.slice(startIndex + fullMatch.length);
-        skipMap.set(markerId, fullMatch);
-        continue;
-      }
-
-      // Extract content between opening and closing tags
-      let content = output.slice(startIndex + fullMatch.length, endIndex - closingTag.length);
-
-      // Check for {{else}} block - split into default and inverse content
-      // Note: Only split on top-level {{else}}, not nested ones
-      let defaultContent = content;
-      let inverseContent = '';
-      const elseMatch = content.match(/\{\{else\}\}/);
-      if (elseMatch) {
-        // Simple split - assumes no nested {{else}} at the same level
-        // TODO: Handle nested else properly with depth tracking
-        const elseIndex = content.indexOf('{{else}}');
-        defaultContent = content.slice(0, elseIndex);
-        inverseContent = content.slice(elseIndex + 8); // 8 = length of '{{else}}'
-      }
-
-      // Transform to angle-bracket syntax
-      const pascalName = toPascalCase(name);
-
-      // Check for block params: `as |param1 param2|`
-      const blockParamMatch = attrs.match(/\s+as\s*\|([^|]+)\|/);
-      let blockParamClause = '';
-      let attrsWithoutBlockParams = attrs;
-      if (blockParamMatch) {
-        blockParamClause = ` as |${blockParamMatch[1]}|`;
-        attrsWithoutBlockParams = attrs.replace(blockParamMatch[0], '');
-      }
-
-      const transformedAttrs = transformAttrs(attrsWithoutBlockParams);
-
-      let replacement: string;
-      // Check if there was an {{else}} block (even if empty)
-      // elseMatch is set if we found {{else}}, regardless of content length
-
-      if (elseMatch) {
-        // Has else block - use named blocks syntax
-        // <Component><:default>content</:default><:inverse>else content</:inverse></Component>
-        replacement = `<${pascalName}${transformedAttrs}${blockParamClause}><:default>${defaultContent}</:default><:inverse>${inverseContent}</:inverse></${pascalName}>`;
-      } else {
-        // No else block - regular content
-        // Add __hasBlock__ marker if block is empty (for has-block helper)
-        const hasBlockMarker = defaultContent.trim() === '' ? ' @__hasBlock__="default"' : '';
-        replacement = `<${pascalName}${transformedAttrs}${hasBlockMarker}${blockParamClause}>${defaultContent}</${pascalName}>`;
-      }
-
-      output = output.slice(0, startIndex) + replacement + output.slice(endIndex);
-    }
-
-    // Restore skipped blocks from the map
-    for (const [marker, original] of skipMap) {
-      output = output.replace(marker, original);
-    }
-
-    return output;
-  };
-
-  result = transformBlocks(result);
-
-  // Inline form: {{component-name arg=val}} (not followed by block content)
-  // Only transform if it looks like a component (has hyphen = kebab-case)
-  // Be careful not to transform helpers like {{if}} or {{log}}
-  // Also skip mustaches inside HTML attribute values (e.g. <div data-x="{{foo-bar}}">)
-  // Built-in helpers with hyphens that should NOT be transformed to components
-  const builtinHyphenatedHelpers = new Set(['unique-id', 'each-in']);
-  const inlinePattern = /\{\{([a-z][a-zA-Z0-9]*-[a-zA-Z0-9-]*)([^}]*)\}\}/g;
-  result = result.replace(inlinePattern, (match, name, attrs, offset) => {
-    // Skip built-in helpers — they should be resolved by $_maybeHelper, not as components
-    if (builtinHyphenatedHelpers.has(name)) {
-      return match;
-    }
-    // Check if this mustache is inside an HTML attribute value by scanning
-    // backwards from the match position for an unmatched opening quote
-    if (isInsideHtmlAttributeValue(result, offset)) {
-      return match; // Leave it as-is; it's a helper call in attribute context
-    }
-    // Check if this mustache is an element modifier (e.g. <h1 {{foo-bar}}>)
-    // Element modifiers should be left as-is for GXT's $_maybeModifier to handle
-    if (isElementModifier(result, offset)) {
-      return match; // Leave it as-is; it's an element modifier
-    }
-    const pascalName = toPascalCase(name);
-    const transformedAttrs = transformAttrs(attrs);
-    return `<${pascalName}${transformedAttrs} />`;
-  });
-
-  return result;
-}
-
-/**
- * Wrap top-level children expressions in arrow functions for deferred evaluation.
- * Used when children of a component reference block params ($_bp), which are only
- * available after the slot function is invoked.
- */
-function wrapAllTopLevelChildren(childrenStr: string): string {
-  // Parse top-level items (respecting nested parens/brackets)
-  const items: string[] = [];
-  let depth = 0;
-  let current = '';
-  for (let i = 0; i < childrenStr.length; i++) {
-    const ch = childrenStr[i];
-    if (ch === '(' || ch === '[') depth++;
-    else if (ch === ')' || ch === ']') depth--;
-    if (ch === ',' && depth === 0) {
-      items.push(current.trim());
-      current = '';
-    } else {
-      current += ch;
-    }
-  }
-  if (current.trim()) items.push(current.trim());
-
-  let changed = false;
-  const wrapped = items.map(item => {
-    // Already a function? Don't double-wrap
-    if (item.startsWith('() =>') || item.startsWith('function')) return item;
-    // Only wrap items that contain component calls
-    if (item.includes('$_tag(') || item.includes('$_c(')) {
-      changed = true;
-      return `() => ${item}`;
-    }
-    return item;
-  });
-  if (!changed) return childrenStr;
-  return wrapped.join(', ');
-}
-
-function wrapTopLevelChildren(childrenStr: string): string {
-  // Parse top-level items (respecting nested parens/brackets)
-  const items: string[] = [];
-  let depth = 0;
-  let current = '';
-  for (let i = 0; i < childrenStr.length; i++) {
-    const ch = childrenStr[i];
-    if (ch === '(' || ch === '[') depth++;
-    else if (ch === ')' || ch === ']') depth--;
-    if (ch === ',' && depth === 0) {
-      items.push(current.trim());
-      current = '';
-    } else {
-      current += ch;
-    }
-  }
-  if (current.trim()) items.push(current.trim());
-
-  // Wrap each item that references $_bp in () => ...
-  return items.map(item => {
-    if (item.includes('$_bp')) {
-      // Already a function? Don't double-wrap
-      if (item.startsWith('() =>') || item.startsWith('function')) return item;
-      return `() => ${item}`;
-    }
-    return item;
-  }).join(', ');
-}
+// NOTE: wrapAllTopLevelChildren and wrapTopLevelChildren removed — children lazy
+// wrapping is now handled in the GXT serializer (element.ts) at compile time.
 
 // Template cache for performance
 const templateCache = new Map<string, any>();
+/**
+ * Transform {{#each-in EXPR as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}
+ * into {{#each (gxtEntriesOf EXPR) key="@identity" as |__ei__|}}{{#let __ei__.k __ei__.v as |KEY VALUE|}}BODY{{/let}}{{else}}ELSE{{/each}}
+ *
+ * This avoids Ember's (-each-in) SubExpression which GXT doesn't understand.
+ * gxtEntriesOf returns [{k, v}, ...] for objects, Maps, proxies, custom iterables.
+ * The let block destructures each entry into the original key/value block params.
+ *
+ * Handles nesting by processing from innermost to outermost.
+ */
+function transformEachInBlocks(template: string): string {
+  // Quick bail if no each-in
+  if (!template.includes('each-in')) return template;
+
+  let result = template;
+  // Process repeatedly since nested each-in may exist
+  let safety = 20;
+  while (result.includes('{{#each-in') && safety-- > 0) {
+    // Find the innermost {{#each-in ...}} block (one with no nested {{#each-in}})
+    const openRegex = /\{\{#each-in\s+/g;
+    let match: RegExpExecArray | null;
+    let lastMatch: RegExpExecArray | null = null;
+
+    while ((match = openRegex.exec(result)) !== null) {
+      // Check if there's no nested {{#each-in between this and its {{/each-in}}
+      const closeIdx = result.indexOf('{{/each-in}}', match.index);
+      if (closeIdx === -1) break;
+      const between = result.slice(match.index + match[0].length, closeIdx);
+      if (!between.includes('{{#each-in')) {
+        lastMatch = match;
+        break; // Found innermost
+      }
+    }
+
+    if (!lastMatch) break;
+
+    const startIdx = lastMatch.index;
+    const openTag = lastMatch[0]; // "{{#each-in "
+
+    // Parse the expression and block params from the opening tag
+    // Find the closing }} of the opening tag
+    let braceDepth = 0;
+    let openEnd = -1;
+    for (let i = startIdx; i < result.length - 1; i++) {
+      if (result[i] === '{' && result[i + 1] === '{') {
+        braceDepth++;
+        i++; // skip second {
+      } else if (result[i] === '}' && result[i + 1] === '}') {
+        braceDepth--;
+        if (braceDepth === 0) {
+          openEnd = i + 2;
+          break;
+        }
+        i++; // skip second }
+      }
+    }
+    if (openEnd === -1) break;
+
+    const openTagContent = result.slice(startIdx + 2, openEnd - 2); // strip {{ and }}
+    // openTagContent looks like: #each-in EXPR as |KEY VALUE|
+    // or: #each-in EXPR as |KEY|
+
+    // Extract the expression and block params
+    const asMatch = openTagContent.match(/^#each-in\s+([\s\S]+?)\s+as\s+\|([^|]*)\|\s*$/);
+    if (!asMatch) {
+      // No block params — just transform to {{#each (gxtEntriesOf EXPR)}}
+      const exprMatch = openTagContent.match(/^#each-in\s+([\s\S]+?)\s*$/);
+      if (!exprMatch) break;
+      const expr = exprMatch[1].trim();
+      const closeIdx = result.indexOf('{{/each-in}}', openEnd);
+      if (closeIdx === -1) break;
+      const body = result.slice(openEnd, closeIdx);
+      // Check for {{else}} in body
+      const elseParts = splitElse(body);
+      let replacement: string;
+      if (elseParts) {
+        replacement = `{{#each (gxtEntriesOf ${expr}) key="@identity"}}${elseParts.main}{{else}}${elseParts.inverse}{{/each}}`;
+      } else {
+        replacement = `{{#each (gxtEntriesOf ${expr}) key="@identity"}}${body}{{/each}}`;
+      }
+      result = result.slice(0, startIdx) + replacement + result.slice(closeIdx + '{{/each-in}}'.length);
+      continue;
+    }
+
+    const expr = asMatch[1].trim();
+    const paramStr = asMatch[2].trim();
+    const params = paramStr.split(/\s+/);
+
+    // Find closing {{/each-in}}
+    const closeIdx = result.indexOf('{{/each-in}}', openEnd);
+    if (closeIdx === -1) break;
+
+    const body = result.slice(openEnd, closeIdx);
+
+    // Split on {{else}} at the same nesting level
+    const elseParts = splitElse(body);
+
+    let mainBody: string;
+    let inverseBody: string | null = null;
+    if (elseParts) {
+      mainBody = elseParts.main;
+      inverseBody = elseParts.inverse;
+    } else {
+      mainBody = body;
+    }
+
+    // Build the replacement
+    // Use a unique entry var name to avoid collisions with user block params
+    const entryVar = '__ei__';
+
+    let letParams: string;
+    if (params.length >= 2) {
+      // {{#each-in obj as |key value|}} — key is first, value is second
+      letParams = `${entryVar}.k ${entryVar}.v as |${params[0]} ${params[1]}|`;
+    } else if (params.length === 1) {
+      // {{#each-in obj as |key|}} — only key
+      letParams = `${entryVar}.k as |${params[0]}|`;
+    } else {
+      // No params — shouldn't happen but handle gracefully
+      letParams = '';
+    }
+
+    let replacement: string;
+    if (letParams) {
+      const wrappedMain = `{{#let ${letParams}}}${mainBody}{{/let}}`;
+      if (inverseBody !== null) {
+        replacement = `{{#each (gxtEntriesOf ${expr}) key="@identity" as |${entryVar}|}}${wrappedMain}{{else}}${inverseBody}{{/each}}`;
+      } else {
+        replacement = `{{#each (gxtEntriesOf ${expr}) key="@identity" as |${entryVar}|}}${wrappedMain}{{/each}}`;
+      }
+    } else {
+      if (inverseBody !== null) {
+        replacement = `{{#each (gxtEntriesOf ${expr}) key="@identity"}}${mainBody}{{else}}${inverseBody}{{/each}}`;
+      } else {
+        replacement = `{{#each (gxtEntriesOf ${expr}) key="@identity"}}${mainBody}{{/each}}`;
+      }
+    }
+
+    result = result.slice(0, startIdx) + replacement + result.slice(closeIdx + '{{/each-in}}'.length);
+  }
+
+  return result;
+}
+
+/**
+ * Split a template body on {{else}} at the same nesting level.
+ * Returns null if no {{else}} found.
+ */
+function splitElse(body: string): { main: string; inverse: string } | null {
+  // Find {{else}} that's not inside a nested block
+  let depth = 0;
+  for (let i = 0; i < body.length; i++) {
+    if (body[i] === '{' && body[i + 1] === '{' && body[i + 2] === '#') {
+      depth++;
+    } else if (body[i] === '{' && body[i + 1] === '{' && body[i + 2] === '/') {
+      depth--;
+    } else if (depth === 0 && body.slice(i, i + 8) === '{{else}}') {
+      return {
+        main: body.slice(0, i),
+        inverse: body.slice(i + 8),
+      };
+    }
+  }
+  return null;
+}
+
 let _functionCodeCache: Map<string, Function> | null = null;
+// Global counter for log site IDs — ensures uniqueness across compilations.
+// Without this, every compiled template gets __logSite:0, __logSite:1, etc.
+// and the dedup logic in $__log_ember incorrectly skips log calls from
+// different templates that happen to share the same site ID.
+let _globalLogSiteCounter = 0;
 
 /**
  * Runtime precompileTemplate implementation using GXT runtime compiler
@@ -5856,27 +5324,12 @@ export function precompileTemplate(templateString: string, options?: {
   // a block param. Check if the template provides any block params that
   // could bring the head into scope.
   {
-    // Collect all block param names from `as |name1 name2|` patterns
-    const blockParamNames = new Set<string>();
-    const blockParamPattern = /as\s+\|([^|]+)\|/g;
-    let bpMatch;
-    while ((bpMatch = blockParamPattern.exec(templateString)) !== null) {
-      const params = bpMatch[1].trim().split(/\s+/);
-      for (const p of params) {
-        if (p) blockParamNames.add(p);
-      }
-    }
-
-    // Match <lowercase.Something> or <lowercase.something> patterns
-    // but NOT <this.something> (which is valid)
-    const dottedTagPattern = /<([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9]*)\s/g;
-    let dottedMatch;
-    while ((dottedMatch = dottedTagPattern.exec(templateString)) !== null) {
-      const head = dottedMatch[1];
-      const scopeKeys = options?.scopeValues ? new Set(Object.keys(options.scopeValues)) : new Set<string>();
+    const blockParamNames = findBlockParamNames(templateString);
+    const scopeKeys = options?.scopeValues ? new Set(Object.keys(options.scopeValues)) : new Set<string>();
+    for (const [head, tail] of findDottedTags(templateString)) {
       if (head !== 'this' && !blockParamNames.has(head) && !scopeKeys.has(head)) {
         throw new Error(
-          `Error: You used ${head}.${dottedMatch[2]} as a tag name, but ${head} is not in scope`
+          `Error: You used ${head}.${tail} as a tag name, but ${head} is not in scope`
         );
       }
     }
@@ -5887,16 +5340,15 @@ export function precompileTemplate(templateString: string, options?: {
   {
     // Skip the {{attrs.X}} assertion if `attrs` is used as a block param
     // (e.g., {{#let ... as |attrs|}}) since that's a valid use case.
-    const hasAttrsBlockParam = /as\s*\|[^|]*\battrs\b[^|]*\|/.test(templateString);
+    const hasAttrsBlockParam = hasAttrsInBlockParams(templateString);
 
     // Check for {{attrs.X}} - this should trigger an assert (throw)
     if (!hasAttrsBlockParam) {
-    const attrsPattern = /\{\{attrs\.([a-zA-Z0-9_]+)/g;
-    let attrsMatch;
-    while ((attrsMatch = attrsPattern.exec(templateString)) !== null) {
-      const propName = attrsMatch[1];
+    const attrsMatches = findAttrsPatterns(templateString);
+    for (const attrMatch of attrsMatches) {
+      const propName = attrMatch.propName;
       // Calculate location: column points to 'attrs' (after '{{'), so add 2
-      const beforeMatch = templateString.slice(0, attrsMatch.index);
+      const beforeMatch = templateString.slice(0, attrMatch.index);
       const lines = beforeMatch.split('\n');
       const line = lines.length;
       const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
@@ -5907,12 +5359,11 @@ export function precompileTemplate(templateString: string, options?: {
     }
 
     // Check for {{this.attrs.X}} - this should trigger a deprecation
-    const thisAttrsPattern = /\{\{this\.attrs\.([a-zA-Z0-9_]+)/g;
-    let thisAttrsMatch;
-    while ((thisAttrsMatch = thisAttrsPattern.exec(templateString)) !== null) {
-      const propName = thisAttrsMatch[1];
+    const thisAttrsMatches = findThisAttrsPatterns(templateString);
+    for (const thisAttrMatch of thisAttrsMatches) {
+      const propName = thisAttrMatch.propName;
       // Calculate location: column points to 'this' (after '{{'), so add 2
-      const beforeMatch = templateString.slice(0, thisAttrsMatch.index);
+      const beforeMatch = templateString.slice(0, thisAttrMatch.index);
       const lines = beforeMatch.split('\n');
       const line = lines.length;
       const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
@@ -5933,7 +5384,7 @@ export function precompileTemplate(templateString: string, options?: {
 
   // Check for <TextArea /> typo — should be <Textarea />.
   // Use getDebugFunction('assert') so expectAssertion's stub is called.
-  if (/<TextArea[\s/>]/.test(templateString)) {
+  if (hasTextAreaTag(templateString)) {
     const _assert = getDebugFunction('assert');
     if (_assert) _assert(
       'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
@@ -5944,45 +5395,33 @@ export function precompileTemplate(templateString: string, options?: {
   // Transform the template
   let transformedTemplate = templateString;
 
-  // Pre-process onclick={{this.xxx}} → {{on "click" this.xxx}}
-  // GXT's deepFnValue calls arrow function handlers immediately during attribute
-  // resolution instead of attaching them as event listeners. Converting to the
-  // {{on}} modifier ensures proper event binding.
-  transformedTemplate = transformedTemplate.replace(
-    /\bon(click|mousedown|mouseup|mousemove|mouseenter|mouseleave|keydown|keyup|keypress|input|change|submit|focus|blur|focusin|focusout|touchstart|touchend|touchmove)={{([^}]+)}}/gi,
-    (_match, eventName, expr) => `{{on "${eventName.toLowerCase()}" ${expr}}}`
-  );
+  // Transform {{#each-in EXPR as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}
+  // into {{#each (gxtEntriesOf EXPR) key="@identity" as |__ei__|}}{{#let __ei__.k __ei__.v as |KEY VALUE|}}BODY{{/let}}{{else}}ELSE{{/each}}
+  // gxtEntriesOf returns [{k, v}, ...] for objects, Maps, proxies, custom iterables.
+  // Must run BEFORE the GXT compiler to avoid Ember's (-each-in) SubExpression.
+  transformedTemplate = transformEachInBlocks(transformedTemplate);
+
+  // onclick={{expr}} → {{on "click" expr}} transform is now handled at the AST level
+  // in the GXT compiler (visitors/element.ts rewriteOnEventAttributes),
+  // gated behind IS_GLIMMER_COMPAT_MODE.
 
   // Check for dotted-path mustache expressions like {{foo.bar}} where foo is not in scope.
   // In Ember, these are errors because foo is a free variable path that can't be resolved.
   // Collect block param names first so we don't flag those.
   {
-    const blockParamNames = new Set<string>();
-    const bpPattern = /as\s+\|([^|]+)\|/g;
-    let bpM;
-    while ((bpM = bpPattern.exec(transformedTemplate)) !== null) {
-      for (const p of bpM[1].trim().split(/\s+/)) {
-        if (p) blockParamNames.add(p);
-      }
-    }
-    // Match {{identifier.path}} but not {{this.path}}, {{@path}}, or inside subexpressions
-    const dottedMustachePattern = /\{\{([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9.]*)\}\}/g;
-    let dm;
-    while ((dm = dottedMustachePattern.exec(transformedTemplate)) !== null) {
-      const head = dm[0] === dm.input ? dm[1] : dm[1]; // just the head identifier
+    const blockParamNames = findBlockParamNames(transformedTemplate);
+    for (const { head, tail } of findDottedMustaches(transformedTemplate)) {
       if (head !== 'this' && !blockParamNames.has(head)) {
         throw new Error(
-          `You attempted to render a path (\`{{${dm[1]}.${dm[2]}}}\`), but ${head} was not in scope`
+          `You attempted to render a path (\`{{${head}.${tail}}}\`), but ${head} was not in scope`
         );
       }
     }
   }
 
-  // Transform {{this.attrs.X}} to {{@X}} (after deprecation was fired above)
-  // This mirrors the Glimmer AST plugin behavior
-  if (/\{\{this\.attrs\./.test(transformedTemplate)) {
-    transformedTemplate = transformedTemplate.replace(/this\.attrs\.([a-zA-Z0-9_]+)/g, '@$1');
-  }
+  // NOTE: `this.attrs.X` → `@X` rewriting is now handled in the GXT AST compiler
+  // (visitors/utils.ts resolvePath and visitors/index.ts visitPathExpression),
+  // gated behind IS_GLIMMER_COMPAT_MODE.
 
   // Transform {{#in-element dest insertBefore=EXPR}} to extract the insertBefore
   // parameter. GXT's native $_inElement only takes (elementRef, roots, ctx) but
@@ -5994,109 +5433,33 @@ export function precompileTemplate(templateString: string, options?: {
   //   undefined → replace mode (default, clear existing content)
   //   other     → assert error (Ember only allows null)
   let _inElementInsertBefore: string | null = null; // null = no insertBefore specified
-  if (/\{\{#in-element\b/.test(transformedTemplate)) {
-    transformedTemplate = transformedTemplate.replace(
-      /\{\{#in-element\s+([^\s}]+)\s+insertBefore=([^\s}]+)\s*\}\}/g,
-      (_match, dest, insertBeforeExpr) => {
-        _inElementInsertBefore = insertBeforeExpr;
-        return `{{#in-element ${dest}}}`;
-      }
-    );
+  if (transformedTemplate.includes('{{#in-element')) {
+    const parsed = parseInElementInsertBefore(transformedTemplate);
+    transformedTemplate = parsed.result;
+    _inElementInsertBefore = parsed.insertBefore;
   }
 
-  // Transform {{mount "engine-name"}} to <ember-mount> custom element.
-  // This allows GXT to compile it as a custom element that mounts the engine at runtime.
-  transformedTemplate = transformedTemplate.replace(
-    /\{\{mount\s+["']([^"']+)["']\s*(?:model=([^\s}]+))?\s*\}\}/g,
-    (_match, engineName, modelExpr) => {
-      if (modelExpr) {
-        return `<ember-mount data-engine="${engineName}" @model={{${modelExpr}}} />`;
-      }
-      return `<ember-mount data-engine="${engineName}" />`;
-    }
-  );
+  // {{mount "engine-name"}} is now handled at the AST level in the GXT compiler
+  // (mustache.ts createMountElement). No runtime regex transform needed.
 
-  // Fix empty true-branch in {{#if}}: GXT compiler can't handle
-  // {{#if cond}}{{else}}content{{/if}} (empty true branch).
-  // Insert an HTML comment so the true branch isn't empty but produces no text.
-  transformedTemplate = transformedTemplate.replace(
-    /\{\{#(if|unless)\s+([^}]+)\}\}\s*\{\{else\}\}/g,
-    '{{#$1 $2}}<!-- -->{{else}}'
-  );
+  // Empty true-branch in {{#if cond}}{{else}}content{{/if}} is now handled
+  // at the AST level in the GXT compiler (block.ts visitBlock allows empty
+  // main body when an inverse/else branch exists). No runtime regex needed.
 
-  // Transform bare {{this}} to {{this.__gxtSelfString__}} so GXT renders toString() value
-  // Ember's {{this}} in curly component templates calls toString() on the component instance.
-  // We use a getter property (__gxtSelfString__) that calls toString() on the component.
-  if (/\{\{this\}\}/.test(transformedTemplate)) {
-    transformedTemplate = transformedTemplate.replace(/\{\{this\}\}/g, '{{this.__gxtSelfString__}}');
-  }
+  // Bare {{this}} → {{this.__gxtSelfString__}} is now handled at the AST level
+  // in the GXT compiler (mustache.ts visitMustache). No runtime regex transform needed.
 
-  // Transform {{#each-in obj as |key value|}}...{{/each-in}} into
-  // GXT-compatible code. We convert to {{#each}} over entries stored as a computed
-  // property on the render context. Entries are {k, v} objects.
-  // Block param references are rewritten from |key value| to use entry.k/entry.v.
+  // {{#each-in}} is now handled at the AST level in the GXT compiler
+  // (block.ts visitEachInBlock). No runtime regex transform needed.
   let _eachInSources: Array<{ propName: string; sourceExpr: string }> = [];
-  if (/\{\{#each-in\b/.test(transformedTemplate)) {
-    let eachInIdx = 0;
-    // Collect all each-in blocks with their key/value param names
-    const eachInBlocks: Array<{ keyParam: string; valueParam: string; entryVar: string }> = [];
-    // Match {{#each-in SOURCE [key=...] as |params|}}BODY{{/each-in}}
-    // SOURCE can be a simple path or a subexpression like (get x y)
-    // Optional named args (key='@identity') may appear between SOURCE and `as`
-    transformedTemplate = transformedTemplate.replace(
-      /\{\{#each-in\s+((?:\([^)]+\)|[^\s}]+))(?:\s+[a-zA-Z]+=(?:'[^']*'|"[^"]*"|[^\s}]+))*\s+as\s*\|([^|]+)\|\s*\}\}([\s\S]*?)\{\{\/each-in\}\}/g,
-      (match, obj, params, body) => {
-        const parts = params.trim().split(/\s+/);
-        const keyParam = parts[0] || 'key';
-        const valueParam = parts[1] || 'value';
-        const propName = `__gxtEachIn${eachInIdx}__`;
-        const entryVar = `__ei${eachInIdx}__`;
-        eachInIdx++;
-        _eachInSources.push({ propName, sourceExpr: obj });
-        // Rewrite block param references in the body:
-        // {{key}} -> {{entryVar.k}}, {{value}} -> {{entryVar.v}}
-        // Also handle sub-path access: {{value.foo.bar}} -> {{entryVar.v.foo.bar}}
-        let rewrittenBody = body;
-        // Replace {{keyParam.subpath}} and {{valueParam.subpath}} with entry property access
-        // Match both exact {{param}} and sub-path {{param.foo.bar}} patterns
-        const keySubpathRegex = new RegExp(`\\{\\{${keyParam}(\\.[^}]+)?\\}\\}`, 'g');
-        const valueSubpathRegex = new RegExp(`\\{\\{${valueParam}(\\.[^}]+)?\\}\\}`, 'g');
-        rewrittenBody = rewrittenBody.replace(keySubpathRegex, (_m, subpath) => `{{${entryVar}.k${subpath || ''}}}`);
-        rewrittenBody = rewrittenBody.replace(valueSubpathRegex, (_m, subpath) => `{{${entryVar}.v${subpath || ''}}}`);
-        // Also handle nested {{#each valueParam as |v|}} where valueParam is
-        // used as the iteration source (not just as a standalone mustache).
-        const nestedEachKeyRegex = new RegExp(`\\{\\{#each\\s+${keyParam}\\b`, 'g');
-        const nestedEachValueRegex = new RegExp(`\\{\\{#each\\s+${valueParam}\\b`, 'g');
-        rewrittenBody = rewrittenBody.replace(nestedEachKeyRegex, `{{#each ${entryVar}.k`);
-        rewrittenBody = rewrittenBody.replace(nestedEachValueRegex, `{{#each ${entryVar}.v`);
-        return `{{#each this.${propName} as |${entryVar}|}}${rewrittenBody}{{/each}}`;
-      }
-    );
-  }
 
-  // Transform (mut (get obj key)) to (__mutGet obj key)
-  // This creates a two-way binding for dynamic property access.
-  // Must come BEFORE the simple (mut this.prop) transform to avoid conflicts.
-  // Handles both:
-  //   {{mut (get obj key)}} — mustache expression
-  //   (mut (get obj key))  — subexpression
-  transformedTemplate = transformedTemplate.replace(
-    /\{\{mut\s+\(get\s+([^)]+)\)\s*\}\}/g,
-    (_match, getArgs) => `{{__mutGet ${getArgs}}}`
-  );
-  transformedTemplate = transformedTemplate.replace(
-    /\(mut\s+\(get\s+([^)]+)\)\)/g,
-    (_match, getArgs) => `(__mutGet ${getArgs})`
-  );
+  // (mut (get obj key)) -> (__mutGet obj key) is now handled at the AST level
+  // in the GXT compiler (visitors/index.ts visitSubExpression and
+  // visitors/mustache.ts visitHelperMustache). No runtime regex transform needed.
 
-  // Transform (mut this.prop) / (mut @arg) to pass the property path as a second arg
-  // so the mut helper can create a proper setter function.
-  // (mut this.foo) → (mut this.foo "this.foo")
-  // (mut @bar)     → (mut @bar "@bar")
-  transformedTemplate = transformedTemplate.replace(
-    /\(mut\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\)/g,
-    (_match, path) => `(mut ${path} "${path}")`
-  );
+  // (mut this.prop) / (mut @arg) path annotation is now handled at the AST level
+  // in the GXT compiler (visitors/index.ts visitSubExpression), gated behind
+  // IS_GLIMMER_COMPAT_MODE. No runtime regex transform needed.
 
   // Check for dynamic (helper ...) usage — disallowed in Ember.
   // {{helper this.xxx}} or (helper @xxx) pass dynamic strings which is not allowed.
@@ -6108,8 +5471,7 @@ export function precompileTemplate(templateString: string, options?: {
     // represents "dynamic string resolution". Template-local refs like this.val
     // where val is a defineSimpleHelper result use a different template structure
     // (they're inside component templates where this.val is set as a class property).
-    const dynamicHelperPattern = /\{\{helper\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\}\}/;
-    if (dynamicHelperPattern.test(transformedTemplate)) {
+    if (hasDynamicHelper(transformedTemplate)) {
       emberAssert(
         'Passing a dynamic string to the `(helper)` keyword is disallowed.',
         false
@@ -6122,8 +5484,7 @@ export function precompileTemplate(templateString: string, options?: {
   // Only (modifier "static-name") or (modifier this.modifierRef) (where ref is a
   // modifier function, not a string) are valid.
   {
-    const dynamicModifierPattern = /\(modifier\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\)/;
-    if (dynamicModifierPattern.test(transformedTemplate)) {
+    if (hasDynamicModifier(transformedTemplate)) {
       emberAssert(
         'Passing a dynamic string to the `(modifier)` keyword is disallowed.',
         false
@@ -6131,257 +5492,66 @@ export function precompileTemplate(templateString: string, options?: {
     }
   }
 
-  // Transform (modifier "name" args...) in element modifier position.
-  // GXT's compiler doesn't handle the (modifier) subexpression keyword.
-  // We transform {{(modifier "name" args...)}} into {{name args...}} which
-  // GXT compiles as a modifier in element position. For modifier references
-  // used as values (e.g. @value={{modifier foo "arg"}}), we transform them
-  // into calls to the __gxtModifierHelper builtin.
-  if (transformedTemplate.includes('modifier')) {
-    // Pattern 1: {{(modifier "name" args...) extraArgs...}} in element modifier position
-    // This handles cases like: <div {{(modifier "replace")}}>
-    // and: <div {{(modifier "replace") "wow"}}>
-    transformedTemplate = transformedTemplate.replace(
-      /\{\{\(modifier\s+"([^"]+)"([^)]*)\)([^}]*)\}\}/g,
-      (match, name, curriedArgs, extraArgs) => {
-        const allArgs = (curriedArgs.trim() + ' ' + extraArgs.trim()).trim();
-        if (allArgs) {
-          return `{{${name} ${allArgs}}}`;
-        }
-        return `{{${name}}}`;
-      }
-    );
-    // Pattern 2: @attr={{modifier refExpr "arg"}} — named arg position (curried modifier)
-    // Leave as-is for the modifier helper in ember-gxt-wrappers.ts to handle.
-    // GXT compiles this as a helper call, and $_modifierHelper_ember creates the curried modifier.
-  }
+  // {{(modifier "name" args...)}} in element modifier position is now handled at the
+  // AST level in the GXT compiler (visitors/element.ts processEvents), gated behind
+  // IS_GLIMMER_COMPAT_MODE. No runtime regex transform needed.
+  // Pattern 2 (@attr={{modifier refExpr "arg"}}) is left as-is for the modifier helper
+  // in ember-gxt-wrappers.ts to handle at runtime.
 
-  // Transform namespaced angle-bracket components: <Foo::Bar::BazBing /> to <foo--bar--baz-bing />
-  // The :: separator maps to / in the Ember component name. GXT cannot parse ::
-  // in tag names, so we convert each PascalCase segment to kebab-case and join
-  // with -- (double hyphen). The runtime handler converts -- back to /.
-  if (transformedTemplate.includes('::')) {
-    transformedTemplate = transformedTemplate.replace(
-      /<([A-Z][a-zA-Z0-9]*(?:::[A-Z][a-zA-Z0-9]*)*)(\s|\/|>)/g,
-      (match, name: string, suffix: string) => {
-        if (!name.includes('::')) return match;
-        const segments = name.split('::');
-        const kebabSegments = segments.map((seg: string) =>
-          seg.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-             .toLowerCase()
-        );
-        return `<${kebabSegments.join('--')}${suffix}`;
-      }
-    );
-    transformedTemplate = transformedTemplate.replace(
-      /<\/([A-Z][a-zA-Z0-9]*(?:::[A-Z][a-zA-Z0-9]*)*)>/g,
-      (match, name: string) => {
-        if (!name.includes('::')) return match;
-        const segments = name.split('::');
-        const kebabSegments = segments.map((seg: string) =>
-          seg.replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-             .toLowerCase()
-        );
-        return `</${kebabSegments.join('--')}>`;
-      }
-    );
-  }
+  // Foo::Bar namespaced component transform is now handled as a pre-processor
+  // in the GXT compiler (compile.ts transformNamespacedComponents),
+  // gated behind IS_GLIMMER_COMPAT_MODE.
 
-  transformedTemplate = transformCapitalizedComponents(transformedTemplate);
-  if (/\{\{\s*outlet\s*\}\}/.test(transformedTemplate)) {
-    transformedTemplate = transformOutletHelper(transformedTemplate);
-  }
-  // Transform triple mustaches {{{expr}}} to raw HTML component
-  if (/\{\{\{/.test(transformedTemplate)) {
-    transformedTemplate = transformTripleMustaches(transformedTemplate);
-  }
-  // Transform {{#component}} helper to angle-bracket
-  if (/\{\{#?component\s+/.test(transformedTemplate)) {
-    transformedTemplate = transformComponentHelper(transformedTemplate);
-  }
+  // PascalCase → kebab-case transform for component names is now handled by the
+  // GXT compiler's customizeComponentName callback (passed in the compile options below).
+  // Triple-mustache {{{expr}}} transform is now handled at compile time
+  // in the GXT AST compiler (mustache visitor, escaped === false check).
 
-  // Transform {{#let ... as |param|}} block param invocations with args to
-  // angle-bracket syntax so GXT compiles them as $_dc (dynamic component).
-  // Without this, GXT compiles {{param.prop key=val}} as a function call
-  // (Let_param_scope0().prop({key: val})) instead of $_dc which breaks
-  // reactivity and contextual component rendering.
-  if (/\{\{#let\s/.test(transformedTemplate)) {
-    transformedTemplate = transformLetBlockParamInvocations(transformedTemplate);
-  }
+  // NOTE: {{component}} helper transform ({{#component "name"}} → <Name />, etc.)
+  // is now handled as a pre-processor in the GXT compiler (plugins/compiler/compile.ts),
+  // gated behind IS_GLIMMER_COMPAT_MODE.
 
-  // Transform built-in curly components ({{input ...}} and {{textarea ...}}) to angle-bracket syntax
-  // These don't have hyphens so transformCurlyBlockComponents won't handle them
-  transformedTemplate = transformedTemplate.replace(
-    /\{\{(input|textarea)(\s[^}]*)?\}\}/g,
-    (match, name, attrs) => {
-      const pascalName = name === 'input' ? 'Input' : 'Textarea';
-      if (attrs && attrs.trim()) {
-        const transformedAttrs = transformCurlyArgsToAngleBracket(attrs.trim());
-        return `<${pascalName}${transformedAttrs} />`;
-      }
-      return `<${pascalName} />`;
-    }
-  );
+  // NOTE: transformLetBlockParamInvocations has been moved to the GXT AST compiler
+  // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-  // Replace hyphenated built-in helper names with valid JS identifiers BEFORE
-  // GXT compilation. GXT treats `unique-id` as `unique - id` (subtraction).
-  // This replacement makes them valid identifiers that the helper injection
-  // system (below) will bind to the actual built-in helper functions.
-  // Only replace in mustache/subexpression contexts, not in HTML tag names.
-  {
-    const hyphenatedBuiltins: Record<string, string> = { 'unique-id': 'unique_id' };
-    for (const [hyphenated, jsName] of Object.entries(hyphenatedBuiltins)) {
-      // Replace in subexpression position: (unique-id) → (unique_id)
-      transformedTemplate = transformedTemplate.replace(
-        new RegExp(`\\(${hyphenated}(?=[\\s)])`, 'g'),
-        `(${jsName}`
-      );
-      // Replace in mustache content position: {{unique-id}} → {{unique_id}}
-      transformedTemplate = transformedTemplate.replace(
-        new RegExp(`\\{\\{${hyphenated}\\}\\}`, 'g'),
-        `{{${jsName}}}`
-      );
-      // Replace in mustache with args: {{unique-id arg}} → {{unique_id arg}}
-      transformedTemplate = transformedTemplate.replace(
-        new RegExp(`\\{\\{${hyphenated}(\\s)`, 'g'),
-        `{{${jsName}$1`
-      );
-    }
-  }
+  // {{input ...}} / {{textarea ...}} → <Input /> / <Textarea /> is now handled at the AST level
+  // in the GXT compiler (mustache.ts createInputTextareaElement). No runtime regex transform needed.
 
-  // Transform curly block component syntax to angle-bracket
-  // {{#foo-bar}}...{{/foo-bar}} → <FooBar>...</FooBar>
-  // Also transforms inline {{foo-bar ...}} calls
-  if (/\{\{#?[a-z][a-zA-Z0-9]*-[a-zA-Z0-9-]*[\s}]/.test(transformedTemplate)) {
-    transformedTemplate = transformCurlyBlockComponents(transformedTemplate);
-  }
+  // Hyphenated built-in helper name renaming (e.g., unique-id → unique_id) is now
+  // handled by the GXT compiler's scope tracker in IS_GLIMMER_COMPAT_MODE.
+  // The compiler normalizes hyphenated names to underscored JS identifiers during
+  // path resolution, so the template text no longer needs pre-processing.
 
-  // Transform {{#@argName args}}content{{/@argName}} block invocations to angle bracket
-  // These are block invocations of components passed as named args
-  if (/\{\{#@/.test(transformedTemplate)) {
-    transformedTemplate = transformedTemplate.replace(
-      /\{\{#@([a-zA-Z][a-zA-Z0-9]*)([^}]*)\}\}([\s\S]*?)\{\{\/@\1\}\}/g,
-      (match, argName, attrs, content) => {
-        const transformedAttrs = attrs.trim() ? transformCurlyArgsToAngleBracket(attrs.trim()) : '';
-        return `<@${argName}${transformedAttrs}>${content}</@${argName}>`;
-      }
-    );
-  }
+  // NOTE: transformCurlyBlockComponents (inline form) has been moved to the GXT AST compiler
+  // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
+  // Block form was already handled by the GXT block visitor.
 
-  // Transform empty angle-bracket component invocations: <Component></Component>
-  // These need a @__hasBlock__ marker so has-block returns true.
-  // Self-closing <Component /> does NOT get the marker (has-block = false).
-  // Only matches components (PascalCase or kebab-case starting with uppercase).
-  transformedTemplate = transformedTemplate.replace(
-    /<([A-Z][a-zA-Z0-9]*)(\s[^>]*)?(?<!\/)>(\s*)<\/\1>/g,
-    (match, tagName, attrs, whitespace) => {
-      // Already has __hasBlock__? Skip.
-      if (attrs && attrs.includes('__hasBlock__')) return match;
-      const attrStr = attrs || '';
-      return `<${tagName}${attrStr} @__hasBlock__="default">${whitespace}</${tagName}>`;
-    }
-  );
+  // {{#@argName args}}content{{/@argName}} block invocations are now handled
+  // directly in the GXT AST compiler's block visitor (AtHead detection).
 
-  // Transform angle-bracket components with positional parameters
-  // <SampleComponent "Foo" 4 "Bar" @namedArg=val /> -> <SampleComponent @__pos0__="Foo" @__pos1__={{4}} ... @__posCount__={{3}} @namedArg=val />
-  transformedTemplate = transformAngleBracketPositionalParams(transformedTemplate);
+  // NOTE: Empty component @__hasBlock__ marker transform has been moved to the GXT AST compiler
+  // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-  // Transform reserved word variable names to this.varName to avoid invalid JS
-  // e.g., class=class -> class=this.class (because `class` is a reserved word)
-  const reservedWords = ['class', 'default', 'new', 'delete', 'void', 'typeof', 'instanceof', 'in', 'const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'try', 'catch', 'finally', 'throw', 'with', 'debugger', 'import', 'export', 'extends', 'super', 'static', 'yield', 'await', 'enum', 'implements', 'interface', 'package', 'private', 'protected', 'public'];
-  for (const word of reservedWords) {
-    // Match word=word pattern (not word="value" or word={{expr}})
-    const pattern = new RegExp(`(\\s)(${word})=(${word})(?=[\\s}/>])`, 'g');
-    transformedTemplate = transformedTemplate.replace(pattern, `$1$2=this.$3`);
-  }
+  // NOTE: Positional params transform (<Component "Foo" 4 /> → @__pos0__="Foo" @__pos1__={{4}} ...)
+  // has been moved to the GXT AST compiler (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-  // Transform block params: <Foo as |x|>{{x}}</Foo> → <Foo>{{@__bp_0__}}</Foo>
-  // This transforms block param references to special @args that we pass through slots
-  let blockParamMappings = new Map<string, string[]>();
-  if (/\s+as\s*\|[^|]+\|/.test(transformedTemplate)) {
-    const result = transformBlockParams(transformedTemplate);
-    transformedTemplate = result.transformed;
-    blockParamMappings = result.blockParamMappings;
-  }
+  // NOTE: Reserved-word attribute value transforms (e.g. class=class → class=this.class)
+  // are now handled in the GXT AST compiler's resolvePath (visitors/utils.ts).
+  // The Glimmer parser produces a PathExpression for the value and resolvePath
+  // prefixes JS reserved words with `this.` when IS_GLIMMER_COMPAT_MODE is set.
 
-  // Second pass: Add __hasBlock__ marker for empty block param component invocations
-  // After block params transform, <componentWithHasBlock></componentWithHasBlock> becomes
-  // <this.$_bp0></this.$_bp0>. These need the marker for has-block to work correctly.
-  // Match <this.$_bpN ...></this.$_bpN> (empty content = has-block true)
-  transformedTemplate = transformedTemplate.replace(
-    /<(this\.\$_bp\d+(?:\.[a-zA-Z0-9_.]+)?)(\s[^>]*)?>(\s*)<\/\1>/g,
-    (match, tagName, attrs, whitespace) => {
-      if (attrs && attrs.includes('__hasBlock__')) return match;
-      const attrStr = attrs || '';
-      return `<${tagName}${attrStr} @__hasBlock__="default">${whitespace}</${tagName}>`;
-    }
-  );
+  // Block params transform (`<Foo as |x|>{{x}}</Foo>` → `<Foo @__hasBlockParams__="default">{{this.$_bp0}}</Foo>`)
+  // is now handled at the AST level in the GXT compiler (visitors/element.ts rewriteBlockParamsCompat),
+  // gated behind IS_GLIMMER_COMPAT_MODE.
 
-  // Transform has-block and has-block-params helpers to global function calls
-  // (has-block) -> (this.$_hasBlock)
-  // (has-block "inverse") -> (this.$_hasBlock "inverse")
-  // In attribute contexts (e.g., name={{(has-block)}}), use (if ...) to produce strings
-  // because GXT drops attributes with boolean false values.
-  if (/\(has-block/.test(transformedTemplate)) {
-    // First transform has-block-params
-    transformedTemplate = transformedTemplate.replace(/\(has-block-params(?:\s+"([^"]+)")?\)/g, (match, blockName) => {
-      return blockName ? `(this.$_hasBlockParams "${blockName}")` : '(this.$_hasBlockParams)';
-    });
-    // Then transform has-block
-    transformedTemplate = transformedTemplate.replace(/\(has-block(?:\s+"([^"]+)")?\)/g, (match, blockName) => {
-      return blockName ? `(this.$_hasBlock "${blockName}")` : '(this.$_hasBlock)';
-    });
+  // has-block and has-block-params transforms (including attribute-position wrapping)
+  // are now handled at the AST level in the GXT compiler (visitors/index.ts
+  // visitSubExpression + visitors/element.ts visitAttributeValue), gated behind
+  // IS_GLIMMER_COMPAT_MODE. No runtime regex transform needed.
 
-    // When (has-block) or (has-block-params) is used in attribute position like
-    // name={{(has-block)}} -> name={{if (this.$_hasBlock) "true" "false"}}
-    // This ensures GXT produces string attribute values instead of booleans
-    // which GXT would strip (false -> no attribute).
-    transformedTemplate = transformedTemplate.replace(
-      /=\{\{(\(this\.\$_hasBlock(?:Params)?(?:\s+"[^"]*")?\))\}\}/g,
-      (match, subexpr) => {
-        return `={{if ${subexpr} "true" "false"}}`;
-      }
-    );
-  }
-
-  // Encode ...attributes position for splattributes precedence.
-  // In Ember, attrs AFTER ...attributes override fw; attrs BEFORE are overridden by fw.
-  // GXT always gives fw priority, so we need to mark attrs that come AFTER ...attributes
-  // as "local overrides" so the runtime can handle precedence correctly.
-  // We add a hidden __splatLocal__ attr listing the attr names that should override fw.
-  if (/\.\.\.attributes/.test(transformedTemplate)) {
-    transformedTemplate = transformedTemplate.replace(
-      /<([a-zA-Z][a-zA-Z0-9.-]*)(\s[^>]*?)(\.\.\.attributes)([^>]*?)\s*\/?>/g,
-      (match, tagName, beforeSplat, splat, afterSplat) => {
-        // Extract attr names from afterSplat (attrs after ...attributes)
-        const afterAttrNames: string[] = [];
-        let hasClassAfterSplat = false;
-        const attrPattern = /\b([a-zA-Z_][a-zA-Z0-9_-]*)=/g;
-        let m;
-        while ((m = attrPattern.exec(afterSplat)) !== null) {
-          const name = m[1];
-          if (name === 'class') {
-            hasClassAfterSplat = true;
-          } else if (!name.startsWith('@')) {
-            afterAttrNames.push(name);
-          }
-        }
-        if (afterAttrNames.length > 0 || hasClassAfterSplat) {
-          // Build marker value: non-class attrs + optional __class__ marker
-          const markerParts = [...afterAttrNames];
-          if (hasClassAfterSplat) markerParts.push('__class__');
-          const marker = ` __splatLocal__="${markerParts.join(',')}"`;
-          // Check if the original matched tag was self-closing (/>) or open (>).
-          // Converting a non-self-closing tag to self-closing would eat its content.
-          const isSelfClose = match.trimEnd().endsWith('/>');
-          return `<${tagName}${beforeSplat}${splat}${afterSplat}${marker}${isSelfClose ? ' />' : '>'}`;
-        }
-        return match;
-      }
-    );
-  }
+  // ...attributes local override tracking (__splatLocal__ marker) is now handled at the
+  // AST level in the GXT compiler (visitors/element.ts rewriteSplatLocalOverrides),
+  // gated behind IS_GLIMMER_COMPAT_MODE.
 
   // Build bindings set from scopeValues so the GXT compiler knows which names
   // are in scope and should NOT be transformed to built-in symbols (e.g. the
@@ -6393,45 +5563,28 @@ export function precompileTemplate(templateString: string, options?: {
     }
   }
 
-  // Add unique_id to scope bindings if the template references it.
-  // Without this, GXT compiles {{unique_id}} as this.unique_id (property on context)
-  // instead of the injected local variable. We inject the actual value later via
-  // helperInjections, but GXT needs to know it's a scope variable at compile time.
-  if (/\bunique_id\b/.test(transformedTemplate)) {
+  // Add unique_id to scope bindings if the template references unique-id or unique_id.
+  // The GXT compiler normalizes hyphenated names to underscores in IS_GLIMMER_COMPAT_MODE,
+  // so `{{unique-id}}` resolves to the `unique_id` scope binding.
+  // We inject the actual value later via helperInjections.
+  if (containsWord(transformedTemplate, 'unique-id') || containsWord(transformedTemplate, 'unique_id')) {
     scopeBindings.add('unique_id');
   }
 
-  // Strict mode keyword shadowing: when scope provides a value for a GXT built-in
-  // keyword (if, each, let, unless), we rename it in the template before compilation
-  // so GXT doesn't treat it as the built-in. The scope injection will provide the
-  // actual value under the renamed alias.
-  const GXT_KEYWORD_NAMES: Record<string, string> = {
-    'if': 'GxtScopedIf',
-    'unless': 'GxtScopedUnless',
-    'each': 'GxtScopedEach',
-    'let': 'GxtScopedLet',
-  };
-  const _keywordAliases = new Map<string, string>(); // original -> alias
-  if (options?.scopeValues) {
-    for (const [keyword, alias] of Object.entries(GXT_KEYWORD_NAMES)) {
-      if (scopeBindings.has(keyword) && options.scopeValues[keyword] !== undefined) {
-        // Replace {{#keyword}}...{{/keyword}} and {{keyword ...}} in the template
-        // with the alias before GXT compilation
-        const blockOpenRe = new RegExp(`\\{\\{#${keyword}\\b`, 'g');
-        const blockCloseRe = new RegExp(`\\{\\{/${keyword}\\}\\}`, 'g');
-        const inlineRe = new RegExp(`\\{\\{${keyword}\\b(?![-])`, 'g');
-        transformedTemplate = transformedTemplate
-          .replace(blockOpenRe, `{{#${alias}`)
-          .replace(blockCloseRe, `{{/${alias}}}`)
-          .replace(inlineRe, `{{${alias}`);
-        _keywordAliases.set(keyword, alias);
-        // Add alias to bindings so GXT treats it as a scope variable
-        scopeBindings.add(alias);
-        // Map the alias to the same scope value
-        options.scopeValues[alias] = options.scopeValues[keyword];
-      }
-    }
+  // Add gxtEntriesOf to scope bindings if referenced (from each-in transform).
+  // This ensures the GXT compiler generates a direct function call instead of $_maybeHelper.
+  if (containsWord(transformedTemplate, 'gxtEntriesOf')) {
+    scopeBindings.add('gxtEntriesOf');
   }
+
+  // NOTE: Input and Textarea are intentionally NOT added to scopeBindings.
+  // Adding them causes the GXT compiler to emit $_c(Input, ...) with a variable
+  // reference, but no actual Input/Textarea variable is injected. Without the
+  // binding, GXT emits $_tag('Input', ...) with a string tag, which the
+  // $_tag_ember wrapper correctly resolves to the Ember Input/Textarea component
+  // via the component manager (PascalCase string → kebab-case registry lookup).
+  // The $_tag_ember wrapper handles @-prefixed args properly for string component
+  // tags, extracting them as named args for the component manager.
 
   // Compile using GXT runtime compiler
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
@@ -6444,6 +5597,11 @@ export function precompileTemplate(templateString: string, options?: {
       WITH_MODIFIER_MANAGER: true,
       WITH_CONTEXT_API: true,
       TRY_CATCH_ERROR_HANDLING: false,
+    },
+    // Convert PascalCase component names to kebab-case for Ember registry lookup.
+    // This replaces the regex-based transformCapitalizedComponents() pre-processing.
+    customizeComponentName: (name: string) => {
+      return pascalToKebab(name);
     },
   });
 
@@ -6478,157 +5636,22 @@ export function precompileTemplate(templateString: string, options?: {
   // 3. Inject $a alias for @named args
   if (compilationResult.code) {
     let modifiedCode = compilationResult.code;
-    // Replace async $_each with synchronous $_eachSync
-    if (modifiedCode.includes('$_each(')) {
-      modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
-    }
-    // Unwrap $__log calls from reactive getters AND assign unique call-site IDs.
-    // GXT compiles {{log x}} as () => $__log(x), a reactive getter that gets
-    // re-evaluated on each sync cycle. Ember's {{log}} should only fire once.
-    // Transform: () => $__log(...) → ($__log("__logId:N", ...), "")
-    // The ID lets $__log_ember deduplicate calls from multiple render paths
-    // (root.ts + manager.ts) that render the same template.
-    if (modifiedCode.includes('$__log(')) {
-      if (!(globalThis as any).__gxtLogSiteCounter) (globalThis as any).__gxtLogSiteCounter = 0;
-      const logNeedle = '() => $__log(';
-      let logResult = '';
-      let logI = 0;
-      while (logI < modifiedCode.length) {
-        const nextLog = modifiedCode.indexOf(logNeedle, logI);
-        if (nextLog === -1) {
-          logResult += modifiedCode.slice(logI);
-          break;
-        }
-        logResult += modifiedCode.slice(logI, nextLog);
-        // Find matching close paren for $__log(
-        const openParen = nextLog + '() => $__log'.length;
-        let depth = 1;
-        let j = openParen + 1;
-        for (; j < modifiedCode.length && depth > 0; j++) {
-          if (modifiedCode[j] === '(') depth++;
-          else if (modifiedCode[j] === ')') depth--;
-        }
-        if (depth !== 0) {
-          logResult += modifiedCode.slice(nextLog, j);
-          logI = j;
-          continue;
-        }
-        // Extract the args from $__log(args)
-        const argsContent = modifiedCode.slice(openParen + 1, j - 1);
-        const siteId = `__logSite:${(globalThis as any).__gxtLogSiteCounter++}`;
-        logResult += `($__log("${siteId}", ${argsContent}), "")`;
-        logI = j;
-      }
-      modifiedCode = logResult;
-    }
-    // Transform {{unbound}} calls to cache their value on first evaluation.
-    // GXT wraps template expressions in reactive getters that re-evaluate when
-    // tracked cells change. The unbound helper should snapshot the value once
-    // and never update. We wrap each call with globalThis.__gxtUnboundCached
-    // using a closure-scoped cache object that persists across re-evaluations.
-    let hasUnbound = false;
-    if (modifiedCode.includes('"unbound"')) {
-      let unboundIdx = 0;
-      const needle = '$_maybeHelper("unbound",';
-      let result = '';
-      let i = 0;
-      while (i < modifiedCode.length) {
-        const nextIdx = modifiedCode.indexOf(needle, i);
-        if (nextIdx === -1) {
-          result += modifiedCode.slice(i);
-          break;
-        }
-        result += modifiedCode.slice(i, nextIdx);
-        // Find the matching close paren for $_maybeHelper(
-        const openParen = nextIdx + '$_maybeHelper('.length - 1;
-        let depth = 1;
-        let j = openParen + 1;
-        for (; j < modifiedCode.length && depth > 0; j++) {
-          if (modifiedCode[j] === '(') depth++;
-          else if (modifiedCode[j] === ')') depth--;
-        }
-        if (depth !== 0) {
-          result += modifiedCode.slice(nextIdx, j);
-          i = j;
-          continue;
-        }
-        const fullCall = modifiedCode.slice(nextIdx, j);
-        const id = `__ub${unboundIdx++}`;
-        hasUnbound = true;
-        // Wrap in __gxtUnboundEval: suppresses tracking + caches result
-        result += `globalThis.__gxtUnboundEval(__ubCache,"${id}",()=>(${fullCall}))`;
-        i = j;
-      }
-      modifiedCode = result;
-    }
-    // Fix GXT compiler bug: nested {{#let}} blocks produce double-call
-    // patterns like Let_ring_scope5()() where the first () returns the value
-    // and the second () tries to call that value as a function.
-    // Replace Let_XXX_scopeN()() with Let_XXX_scopeN().
-    if (modifiedCode.includes('Let_')) {
-      modifiedCode = modifiedCode.replace(
-        /\b(Let_[a-zA-Z_]+_scope\d+)\(\)\(\)/g,
-        '$1()'
-      );
-    }
-    // Transform $_if(() => this.PROP, ...) to use __gxtGetCellOrFormula.
-    // This tags the condition getter so our patched $_if can register
-    // manual watchers for cross-module-instance notification.
-    if (modifiedCode.includes('$_if(')) {
-      modifiedCode = modifiedCode.replace(
-        /\$_if\(\(?(\(\)\s*=>\s*this\.([a-zA-Z_$][a-zA-Z0-9_$]*))\)?\s*,/g,
-        (match, getter, propName) => {
-          return `$_if(globalThis.__gxtGetCellOrFormula(this, '${propName}'),`;
-        }
-      );
-    }
-    // Wrap the first argument of $__fn in a getter for reactivity.
-    // GXT compiles (fn this.X ...) as $__fn(this.X, ...) — passing the resolved
-    // function directly. This prevents detecting when the function changes.
-    // We transform to $__fn(() => this.X, ...) so our $__fn_ember can resolve
-    // it lazily at call time, supporting function swaps via set().
-    if (modifiedCode.includes('$__fn(')) {
-      modifiedCode = modifiedCode.replace(
-        /\$__fn\((this\.[a-zA-Z_$][a-zA-Z0-9_$.?]*)\s*,/g,
-        (_match, expr) => `$__fn(() => ${expr},`
-      );
-    }
-    // Wrap children of component $_tag calls in lazy functions when they
-    // reference block params ($._bp). Block params are only available when
-    // the slot function is invoked, but GXT eagerly evaluates children.
-    // Wrapping in () => ... defers evaluation until the slot context is set up.
-    if (modifiedCode.includes('$_bp') && modifiedCode.includes('$_tag(')) {
-      // Match: $_tag('PascalOrKebab', tagProps, this, [children])
-      // We need to wrap each child in the children array with () =>
-      // Strategy: find the children array (4th arg) of $_tag calls for components
-      // and wrap each top-level element in () =>
-      modifiedCode = modifiedCode.replace(
-        /(\$_tag\('[A-Z][^']*',\s*\[[^\]]*\],\s*this,\s*)\[([^\]]+)\]/g,
-        (match, prefix, childrenContent) => {
-          // Only wrap if children reference block params
-          if (!childrenContent.includes('$_bp')) return match;
-          // Wrap each top-level $_tag or expression in the array with () =>
-          // Split by top-level commas (respect nested brackets)
-          const wrappedChildren = wrapTopLevelChildren(childrenContent);
-          return `${prefix}[${wrappedChildren}]`;
-        }
-      );
-    }
+    // NOTE: $_each -> $_eachSync replacement is now handled in the GXT serializer
+    // (control.ts emits $_eachSync directly in IS_GLIMMER_COMPAT_MODE)
+    // NOTE: $__log site ID wrapping is now handled in the GXT serializer
+    // (value.ts emits comma expression with site ID directly in IS_GLIMMER_COMPAT_MODE)
+    // Post-process: replace per-compilation __logSite:N with globally unique IDs
+    // to prevent dedup collisions across different template compilations.
+    modifiedCode = modifiedCode.replace(/__logSite:\d+/g, () => `__logSite:${_globalLogSiteCounter++}`);
 
-    // When scopeValues are provided (strict-mode defineComponent), the scope
-    // values should shadow built-in helpers and unknown-binding resolution.
-    // The GXT compiler may still produce:
-    //   1. $_maybeHelper("name", [...args], this) — unknown binding, string name
-    //   2. $__array(...) / $__fn(...) / $__hash(...) — built-in helper symbols
-    // Replace these with direct calls through the scope variable so the scope
-    // value takes precedence over built-ins.
-    if (scopeBindings.size > 0) {
-      // Debug: verify scopeBindings are available
-      const _g5 = globalThis as any;
-      if (!_g5.__gxtDebugPostProc) _g5.__gxtDebugPostProc = [];
-      _g5.__gxtDebugPostProc.push({ size: scopeBindings.size, names: Array.from(scopeBindings), codeBefore: modifiedCode.slice(0, 200) });
-      // JS reserved words set for renaming scope bindings in compiled code
-      const _RESERVED = new Set([
+    // Post-process: When GXT emits $_maybeHelper("name", ...) with a string for a
+    // name that is in scope bindings, replace the string with a variable reference.
+    // The GXT compiler sometimes emits string-based lookups even for known bindings
+    // (e.g., when WITH_HELPER_MANAGER path isn't taken). The scope injection later
+    // creates `const get = globalThis[scopeKey]["get"]`, but the compiled code
+    // references the string "get" — this fix bridges that gap.
+    if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
+      const _jsReserved = new Set([
         'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete',
         'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
         'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
@@ -6636,362 +5659,52 @@ export function precompileTemplate(templateString: string, options?: {
         'import', 'super', 'implements', 'interface', 'let', 'package', 'private',
         'protected', 'public', 'static', 'yield', 'await',
       ]);
-      // 1. Replace $_maybeHelper("name", ...) with $_maybeHelper(name, ...)
-      //    for names in scope. This converts unknown-binding (string) resolution
-      //    to known-binding (reference) resolution.
-      for (const name of scopeBindings) {
-        let jsName = name.replace(/-/g, '_');
-        if (_RESERVED.has(jsName)) jsName = `__scope_${jsName}`;
-        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const pattern = new RegExp(`\\$_maybeHelper\\("${escapedName}"\\s*,`, 'g');
-        modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsName},`);
-      }
-      // 2. Replace GXT built-in symbol calls with scope references.
-      //    GXT passes lazy getter objects: { key: () => value }.
-      //    The built-in $__hash/$__array resolve these internally.
-      //    When replacing with a user-provided function, we must resolve getters first.
-      const BUILTIN_SYMBOL_MAP: Record<string, string> = {
-        '$__array': 'array', '$__hash': 'hash', '$__fn': 'fn',
-      };
-      for (const [sym, scopeName] of Object.entries(BUILTIN_SYMBOL_MAP)) {
-        if (scopeBindings.has(scopeName) && modifiedCode.includes(sym + '(')) {
-          const jsName = scopeName.replace(/-/g, '_');
-          if (sym === '$__hash') {
-            // Hash receives { key: getter } — resolve getters before calling user fn
-            modifiedCode = modifiedCode.replace(
-              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
-              `((function(__h){var __r={};for(var __k in __h)__r[__k]=typeof __h[__k]==='function'?__h[__k]():__h[__k];return ${jsName}(__r);}))(`
-            );
-          } else if (sym === '$__array') {
-            // Array receives (...args) where args may be getters
-            modifiedCode = modifiedCode.replace(
-              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
-              `(function(){return ${jsName}(...Array.from(arguments).map(function(a){return typeof a==='function'?a():a;}))})(`
-            );
-          } else if (sym === '$__fn') {
-            // fn receives (fn, ...args) where fn and args may be getters.
-            // Resolve getters before calling the scope function, and mark the
-            // result with __isFnHelper so it's not mistakenly unwrapped as a getter.
-            // IMPORTANT: Only unwrap zero-length arrow functions (GXT reactive getters).
-            // Functions with length > 0 are real user functions (e.g., scope values
-            // like `id = (arg) => arg`) and must NOT be unwrapped.
-            modifiedCode = modifiedCode.replace(
-              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
-              `(function(){var __args=Array.from(arguments).map(function(a){return typeof a==='function'&&!a.prototype&&!a.__isMutCell&&a.length===0?a():a;});var __r=${jsName}(...__args);if(typeof __r==='function')__r.__isFnHelper=true;return __r;})(`
-            );
-          } else {
-            modifiedCode = modifiedCode.replace(
-              new RegExp(sym.replace(/\$/g, '\\$') + '\\(', 'g'),
-              `${jsName}(`
-            );
-          }
+      const scopeKeySet = new Set(Object.keys(options.scopeValues));
+      for (const key of scopeKeySet) {
+        let jsKey = hyphenToUnderscore(key);
+        if (_jsReserved.has(jsKey)) {
+          jsKey = `__scope_${jsKey}`;
         }
-      }
-
-      // 3. Fix let-block shadowing: GXT's {{#let shadowX as |x|}} creates
-      //    Let_x_scopeN = () => shadowX inside an IIFE. After our replacement
-      //    above, calls to x() inside that IIFE still use the outer scope var.
-      //    Replace those with Let_x_scopeN()() to use the block-param value.
-      const letScopePattern = /let (Let_([a-zA-Z_]+)_scope(\d+))\s*=\s*\(\)\s*=>/g;
-      let letMatch;
-      while ((letMatch = letScopePattern.exec(modifiedCode)) !== null) {
-        const varName = letMatch[1]; // e.g., Let_hash_scope0
-        const helperName = letMatch[2]; // e.g., hash
-        const scopeIdx = letMatch[3]; // e.g., 0
-
-        // Find the enclosing IIFE: ...(() => { ... })()
-        // The let declaration is inside the IIFE. Find the matching close.
-        const declPos = letMatch.index;
-        // Walk backwards to find the IIFE start: (() => {
-        let iifeStart = modifiedCode.lastIndexOf('(() => {', declPos);
-        if (iifeStart === -1) iifeStart = modifiedCode.lastIndexOf('(()=>{', declPos);
-        if (iifeStart === -1) continue;
-
-        // Walk forward from declPos to find the return [...] or end of IIFE
-        // The IIFE ends with })(). Find it by bracket matching.
-        let depth = 1;
-        let iifeEnd = iifeStart + 1;
-        // Skip to the { after =>
-        const arrowBrace = modifiedCode.indexOf('{', iifeStart + 3);
-        if (arrowBrace === -1) continue;
-        iifeEnd = arrowBrace + 1;
-        for (; iifeEnd < modifiedCode.length && depth > 0; iifeEnd++) {
-          if (modifiedCode[iifeEnd] === '{') depth++;
-          else if (modifiedCode[iifeEnd] === '}') depth--;
-        }
-
-        // Extract the IIFE body after the let declaration.
-        // We need to find the `;` that ENDS the `let X = () => EXPR;` statement.
-        // The EXPR may contain nested `;` (e.g., wrapper functions), so we must
-        // bracket-match past them to find the statement-ending semicolon.
-        const arrowPos = modifiedCode.indexOf('=>', declPos + varName.length);
-        if (arrowPos === -1) continue;
-        let scanPos = arrowPos + 2;
-        // Skip whitespace
-        while (scanPos < modifiedCode.length && /\s/.test(modifiedCode[scanPos]!)) scanPos++;
-        // Track bracket depth to skip past nested expressions
-        let bracketDepth = 0;
-        let bodyStartFound = false;
-        let bodyStart = -1;
-        for (; scanPos < iifeEnd; scanPos++) {
-          const ch = modifiedCode[scanPos];
-          if (ch === '(' || ch === '{' || ch === '[') bracketDepth++;
-          else if (ch === ')' || ch === '}' || ch === ']') bracketDepth--;
-          else if (ch === ';' && bracketDepth === 0) {
-            bodyStart = scanPos + 1;
-            bodyStartFound = true;
-            break;
-          }
-        }
-        if (!bodyStartFound) continue;
-        const bodyEnd = iifeEnd - 1; // Before the closing }
-        if (bodyStart <= declPos || bodyEnd <= bodyStart) continue;
-
-        let body = modifiedCode.slice(bodyStart, bodyEnd);
-
-        // Replace calls to helperName( with varName()( inside this body
-        const callPattern = new RegExp(`\\b${helperName}\\(`, 'g');
-        if (callPattern.test(body)) {
-          body = body.replace(callPattern, `${varName}()(`);
-          modifiedCode = modifiedCode.slice(0, bodyStart) + body + modifiedCode.slice(bodyEnd);
-        }
+        // Replace $_maybeHelper("key", with $_maybeHelper(jsKey,
+        // Use a regex that matches both quote styles
+        const escapedKey = key.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const pattern = new RegExp(`\\$_maybeHelper\\("${escapedKey}",`, 'g');
+        modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsKey},`);
+        const pattern2 = new RegExp(`\\$_maybeHelper\\('${escapedKey}',`, 'g');
+        modifiedCode = modifiedCode.replace(pattern2, `$_maybeHelper(${jsKey},`);
       }
     }
 
-    // Wrap $_componentHelper hash values in getter functions for reactivity.
-    // GXT's compiler generates eager values: $_componentHelper(["name"], { key: expr })
-    // We transform to: $_componentHelper(["name"], { key: () => expr })
-    // This preserves reactivity so curried component args update when dependencies change.
-    modifiedCode = modifiedCode.replace(
-      /\$_componentHelper\s*\(\s*(\[[^\]]*\])\s*,\s*\{/g,
-      (match, paramsArr) => {
-        // Find the matching closing brace for the hash object
-        const hashStart = match.length;
-        return match; // We'll handle this differently — see below
-      }
-    );
-    // More robust approach: wrap the entire hash argument.
-    // Transform: $_componentHelper([params], { k1: v1, k2: v2 })
-    // To:        $_componentHelper([params], (function(__h){var r={};for(var k in __h){var v=__h[k];r[k]=typeof v==='function'?v:v;}return r;})({ k1: v1, k2: v2 }))
-    // Actually, that won't make values reactive. We need to wrap EACH value in () =>.
-    // Let's use a different strategy: make params array elements lazy too.
-    // Transform: $_componentHelper(["name", expr1], { key: expr2 })
-    // To:        $_componentHelper([() => "name", () => expr1], { key: () => (expr2) })
-    {
-      // Use a function to transform each $_componentHelper call
-      const chPattern = '$_componentHelper(';
-      let chIdx = modifiedCode.indexOf(chPattern);
-      while (chIdx !== -1) {
-        // Find the matching closing paren
-        let depth = 0;
-        let i = chIdx + chPattern.length - 1; // position of opening (
-        for (; i < modifiedCode.length; i++) {
-          if (modifiedCode[i] === '(') depth++;
-          else if (modifiedCode[i] === ')') { depth--; if (depth === 0) break; }
-        }
-        if (depth !== 0) { chIdx = modifiedCode.indexOf(chPattern, chIdx + 1); continue; }
+    // NOTE: {{unbound}} caching is now handled in the GXT serializer
+    // (value.ts wraps $_maybeHelper("unbound",...) in __gxtUnboundEval directly)
+    // Detect unbound usage by checking for __ubCache in the compiled code
+    const hasUnbound = modifiedCode.includes('__ubCache');
+    // NOTE: The Let_XXX_scopeN()() double-call fix has been removed — the root cause
+    // was fixed in GXT's applyVariableReplacements() in block.ts, and GXT no longer
+    // generates Let_ naming patterns.
+    // NOTE: $_if condition tagging (__gxtGetCellOrFormula) is now handled in the GXT
+    // serializer (control.ts emits the wrapped call directly in IS_GLIMMER_COMPAT_MODE)
+    // NOTE: $__fn first-arg getter wrapping is now handled in the GXT serializer
+    // (value.ts wraps this.X paths in getters directly in IS_GLIMMER_COMPAT_MODE)
+    // NOTE: Block param children wrapping ($_bp) is now handled in the GXT serializer
+    // (element.ts wraps children containing component calls in arrow functions in IS_GLIMMER_COMPAT_MODE)
 
-        const callEnd = i + 1; // position after closing )
-        const argsStr = modifiedCode.slice(chIdx + chPattern.length, i);
+    // Scope resolution for helpers (string→ref, built-in shadowing, getter
+    // unwrapping for hash/array/fn) is now handled at compile time by the GXT
+    // compiler's buildHelper/buildScopeOverriddenBuiltIn in value.ts.
+    // The compiler receives scopeBindings via the `bindings` option and:
+    //   1. Emits $_maybeHelper(ref, ...) with direct variable references for
+    //      scope-bound names (no string-based resolution needed)
+    //   2. Emits getter-unwrapping IIFE wrappers for hash/array/fn when a
+    //      scope binding shadows the GXT built-in
+    //   3. Let-block shadowing fix is no longer needed because the built-in
+    //      symbol replacement (step 2) no longer happens as a regex
 
-        // Parse: first arg is [...], second arg is {...}
-        // Find the comma separating the two args
-        let commaPos = -1;
-        let d = 0;
-        for (let j = 0; j < argsStr.length; j++) {
-          const c = argsStr[j];
-          if (c === '[' || c === '(' || c === '{') d++;
-          else if (c === ']' || c === ')' || c === '}') d--;
-          else if (c === ',' && d === 0) { commaPos = j; break; }
-        }
+    // NOTE: $_componentHelper hash getter wrapping is now handled in the GXT serializer
+    // (value.ts wraps hash values in getters directly in IS_GLIMMER_COMPAT_MODE)
 
-        if (commaPos !== -1) {
-          const paramsStr = argsStr.slice(0, commaPos).trim();
-          const hashStr = argsStr.slice(commaPos + 1).trim();
-
-          // Transform the hash: { key: expr } -> { key: () => (expr) }
-          if (hashStr.startsWith('{') && hashStr.endsWith('}')) {
-            const inner = hashStr.slice(1, -1).trim();
-            if (inner.length > 0) {
-              // Parse key:value pairs, handling nested brackets
-              const pairs: string[] = [];
-              let pairStart = 0;
-              let pd = 0;
-              for (let j = 0; j <= inner.length; j++) {
-                if (j === inner.length || (inner[j] === ',' && pd === 0)) {
-                  const pair = inner.slice(pairStart, j).trim();
-                  if (pair) pairs.push(pair);
-                  pairStart = j + 1;
-                } else {
-                  const c = inner[j];
-                  if (c === '(' || c === '[' || c === '{') pd++;
-                  else if (c === ')' || c === ']' || c === '}') pd--;
-                }
-              }
-
-              // Transform each pair: "key: expr" -> "key: () => (expr)"
-              const transformedPairs = pairs.map(pair => {
-                const colonIdx = pair.indexOf(':');
-                if (colonIdx === -1) return pair;
-                const key = pair.slice(0, colonIdx).trim();
-                const val = pair.slice(colonIdx + 1).trim();
-                // Don't wrap if already a function
-                if (val.startsWith('()') || val.startsWith('function')) return pair;
-                return `${key}: () => (${val})`;
-              });
-
-              const newHash = '{ ' + transformedPairs.join(', ') + ' }';
-              const newCall = `$_componentHelper(${paramsStr}, ${newHash})`;
-              modifiedCode = modifiedCode.slice(0, chIdx) + newCall + modifiedCode.slice(callEnd);
-              // Adjust search position
-              chIdx = chIdx + newCall.length;
-            } else {
-              chIdx = callEnd;
-            }
-          } else {
-            chIdx = callEnd;
-          }
-        } else {
-          chIdx = callEnd;
-        }
-
-        chIdx = modifiedCode.indexOf(chPattern, chIdx);
-      }
-    }
-
-    // Wrap children of components with block params in arrow functions.
-    // GXT compiles children eagerly, but block params ($_bp) are only
-    // available when the slot function is called. By wrapping children
-    // in () =>, their evaluation is deferred until the slot function
-    // provides block params on the global stack.
-    if (modifiedCode.includes('.$_bp') && modifiedCode.includes('__hasBlockParams__')) {
-      // Find $_tag calls containing __hasBlockParams__
-      const tagRe = /\$_tag\(/g;
-      let tagMatch;
-      let newCode = '';
-      let lastEnd = 0;
-      while ((tagMatch = tagRe.exec(modifiedCode)) !== null) {
-        const tagStart = tagMatch.index;
-        // Match parens to find the full $_tag(...) call
-        let depth = 1;
-        let pos = tagStart + '$_tag('.length;
-        for (; pos < modifiedCode.length && depth > 0; pos++) {
-          if (modifiedCode[pos] === '(') depth++;
-          else if (modifiedCode[pos] === ')') depth--;
-        }
-        const tagEnd = pos;
-        const fullCall = modifiedCode.slice(tagStart, tagEnd);
-        // Only process $_tag calls that have __hasBlockParams__ and .$_bp
-        if (fullCall.includes('__hasBlockParams__') && fullCall.includes('.$_bp')) {
-          // Find the children array: the last top-level [...] before the final )
-          // Scan backwards from the end of the call
-          let bracketEnd = -1;
-          let bracketStart = -1;
-          let bd = 0;
-          for (let k = fullCall.length - 2; k >= 0; k--) {
-            if (fullCall[k] === ']') {
-              if (bd === 0) bracketEnd = k + 1;
-              bd++;
-            } else if (fullCall[k] === '[') {
-              bd--;
-              if (bd === 0) { bracketStart = k; break; }
-            }
-          }
-          if (bracketStart >= 0 && bracketEnd > bracketStart) {
-            const inner = fullCall.slice(bracketStart + 1, bracketEnd - 1);
-            // Only wrap if children reference $_bp AND don't contain named blocks
-            // (named blocks like :inverse/:default break when wrapped in () =>)
-            // Named blocks appear as $_tag(':name', ...) in compiled code
-            if (inner.includes('.$_bp') &&
-                !inner.includes("':default'") && !inner.includes("':inverse'") &&
-                !inner.includes("':else'")) {
-              // Additional safety: only wrap if it looks like a single top-level
-              // $_tag call (not multiple comma-separated children)
-              const trimmed = inner.trim();
-              const startsWithTag = trimmed.startsWith('$_tag(') || trimmed.startsWith('/*#__PURE__*/$_tag(');
-              if (startsWithTag) {
-                const newCall = fullCall.slice(0, bracketStart + 1) +
-                  '() => ' + inner +
-                  fullCall.slice(bracketEnd - 1);
-                newCode += modifiedCode.slice(lastEnd, tagStart) + newCall;
-                lastEnd = tagEnd;
-              }
-            }
-          }
-        }
-      }
-      if (lastEnd > 0) {
-        newCode += modifiedCode.slice(lastEnd);
-        modifiedCode = newCode;
-      }
-    }
-
-    // Wrap ALL children of component $_tag calls in lazy arrow functions.
-    // GXT evaluates children eagerly (JavaScript evaluates array literals
-    // left-to-right), but Ember components expect children to be evaluated
-    // during {{yield}} (after the parent component's init has run).
-    // Without this, child components are created before their parent, which
-    // breaks closure variable patterns (e.g., capturing `this` in init).
-    if (modifiedCode.includes('$_tag(')) {
-      const tagRe2 = /\$_tag\(/g;
-      let tagMatch2;
-      let newCode2 = '';
-      let lastEnd2 = 0;
-      while ((tagMatch2 = tagRe2.exec(modifiedCode)) !== null) {
-        const tagStart2 = tagMatch2.index;
-        // Find the matching close paren
-        let depth2 = 1;
-        let pos2 = tagStart2 + '$_tag('.length;
-        for (; pos2 < modifiedCode.length && depth2 > 0; pos2++) {
-          if (modifiedCode[pos2] === '(') depth2++;
-          else if (modifiedCode[pos2] === ')') depth2--;
-        }
-        const tagEnd2 = pos2;
-        const fullCall2 = modifiedCode.slice(tagStart2, tagEnd2);
-
-        // Only process $_tag calls with 4 arguments (component calls with children)
-        // The 4th arg is the children array [...]
-        // Pattern: $_tag('Name', tagProps, this, [children])
-        // Find the children array (last top-level [...])
-        let bracketEnd2 = -1;
-        let bracketStart2 = -1;
-        let bd2 = 0;
-        for (let k = fullCall2.length - 2; k >= 0; k--) {
-          if (fullCall2[k] === ']') {
-            if (bd2 === 0) bracketEnd2 = k + 1;
-            bd2++;
-          } else if (fullCall2[k] === '[') {
-            bd2--;
-            if (bd2 === 0) { bracketStart2 = k; break; }
-          }
-        }
-        if (bracketStart2 >= 0 && bracketEnd2 > bracketStart2) {
-          const inner2 = fullCall2.slice(bracketStart2 + 1, bracketEnd2 - 1).trim();
-          // Only wrap if children contain $_tag or $_c calls (component invocations)
-          // Don't wrap text-only children or already-wrapped arrow functions
-          if (inner2.length > 0 &&
-              (inner2.includes('$_tag(') || inner2.includes('$_c(')) &&
-              !inner2.startsWith('() =>')) {
-            // Don't wrap named blocks (`:inverse`, `:default`, `:else`)
-            if (!inner2.includes("':default'") && !inner2.includes("':inverse'") && !inner2.includes("':else'")) {
-              // Wrap each top-level child in () =>
-              const wrappedInner2 = wrapAllTopLevelChildren(inner2);
-              if (wrappedInner2 !== inner2) {
-                const newCall2 = fullCall2.slice(0, bracketStart2 + 1) +
-                  wrappedInner2 +
-                  fullCall2.slice(bracketEnd2 - 1);
-                newCode2 += modifiedCode.slice(lastEnd2, tagStart2) + newCall2;
-                lastEnd2 = tagEnd2;
-              }
-            }
-          }
-        }
-      }
-      if (lastEnd2 > 0) {
-        newCode2 += modifiedCode.slice(lastEnd2);
-        modifiedCode = newCode2;
-      }
-    }
+    // NOTE: Component children lazy wrapping ($_tag children) is now handled in the GXT
+    // serializer (element.ts wraps component children in arrow functions in IS_GLIMMER_COMPAT_MODE)
 
     compilationResult.code = modifiedCode;
     // Temporary debug: capture compiled code for scope-valued templates
@@ -7073,7 +5786,7 @@ export function precompileTemplate(templateString: string, options?: {
         g[scopeStoreKey] = scopeVals;
         for (const key of scopeKeys) {
           // Use valid JS identifier (convert hyphens, etc.)
-          let jsKey = key.replace(/-/g, '_');
+          let jsKey = hyphenToUnderscore(key);
           // Prefix reserved words so they can be used as variable names
           if (JS_RESERVED_WORDS.has(jsKey)) {
             jsKey = `__scope_${jsKey}`;
@@ -7089,13 +5802,12 @@ export function precompileTemplate(templateString: string, options?: {
         const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'modifier', 'gxtEntriesOf', '__mutGet'];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
-          const jsName = name.replace(/-/g, '_');
+          const jsName = hyphenToUnderscore(name);
           // Skip if this name is provided in scope values (scope shadows built-in)
           if (scopeKeys.has(name) || scopeKeys.has(jsName)) continue;
           // Check if the compiled code references this as a bare identifier
           // Match word boundary to avoid false positives (e.g. "getElement")
-          const regex = new RegExp(`\\b${jsName}\\b`);
-          if (regex.test(modifiedCode)) {
+          if (containsWord(modifiedCode, jsName)) {
             if (name === 'unique-id') {
               // unique-id needs per-component-instance caching so that:
               // 1. Each {{unique-id}} invocation returns a UNIQUE value
@@ -7109,11 +5821,11 @@ export function precompileTemplate(templateString: string, options?: {
               // unique_id() call with a lookup into the pre-generated array.
               //
               // Count unique_id() calls in modifiedCode
-              const uidCallCount = (modifiedCode.match(/\bunique_id\(\)/g) || []).length;
+              const uidCallCount = countWord(modifiedCode, 'unique_id()');
               if (uidCallCount > 0) {
                 // Replace each unique_id() call with _uid[N] where N is the call index
                 let uidIdx = 0;
-                modifiedCode = modifiedCode.replace(/\bunique_id\(\)/g, () => `_uid[${uidIdx++}]`);
+                modifiedCode = replaceWord(modifiedCode, 'unique_id()', () => `_uid[${uidIdx++}]`);
                 // Mark that we need the _uid array in the outer scope.
                 // The array is generated ONCE when the template factory function
                 // is first evaluated, so IDs remain stable across re-renders.
@@ -7130,36 +5842,8 @@ export function precompileTemplate(templateString: string, options?: {
           }
         }
       }
-      // Generate each-in entries getter injections
+      // each-in entries getter injections (now handled at AST level in GXT compiler)
       const eachInInjections: string[] = [];
-      if (_eachInSources.length > 0) {
-        const entriesOfFn = `globalThis.__EMBER_BUILTIN_HELPERS__["gxtEntriesOf"]`;
-        for (const { propName, sourceExpr } of _eachInSources) {
-          // Generate getter that computes entries from the source expression.
-          // sourceExpr is like "this.hash", "@model", or "(get this.hashes this.hashes.type)".
-          // Convert @argName to $a.argName for the compiled context.
-          // Convert (helperName args...) subexpressions to JS helper calls.
-          let jsExpr = sourceExpr;
-          if (jsExpr.startsWith('@')) {
-            jsExpr = `(this['args'] || {}).${jsExpr.slice(1)}`;
-          } else if (jsExpr.startsWith('(') && jsExpr.endsWith(')')) {
-            // Subexpression like (get this.hashes this.hashes.type)
-            const inner = jsExpr.slice(1, -1).trim();
-            const subParts = inner.split(/\s+/);
-            const helperName = subParts[0];
-            const helperArgs = subParts.slice(1).join(', ');
-            jsExpr = `globalThis.__EMBER_BUILTIN_HELPERS__["${helperName}"](${helperArgs})`;
-          }
-          eachInInjections.push(
-            `if (!Object.getOwnPropertyDescriptor(this, "${propName}")) {` +
-            `  Object.defineProperty(this, "${propName}", {` +
-            `    get() { return ${entriesOfFn}(${jsExpr}); },` +
-            `    configurable: true, enumerable: false` +
-            `  });` +
-            `}`
-          );
-        }
-      }
       // Generate unique-id pre-computed array in outer scope if needed.
       // This runs ONCE per template compilation (not per render), so IDs
       // remain stable across re-renders of the same component instance.
@@ -8142,12 +6826,8 @@ export function precompileTemplate(templateString: string, options?: {
 
           // Call the compiled template function with the render context.
           // Enable isRendering so GXT formulas track cell dependencies.
-          // Use globalThis.__gxtSetIsRendering which is from the SAME module
-          // instance as GXT's $_tag/formula system. The direct import
-          // (gxtSetIsRendering) may be from a different module copy.
           let result;
-          const _setRendering = (globalThis as any).__gxtSetIsRendering || gxtSetIsRendering;
-          _setRendering(true);
+          gxtSetIsRendering(true);
           (globalThis as any).__gxtCurrentlyRendering = true;
           try {
             result = compilationResult.templateFn.call(renderContext);
@@ -8199,7 +6879,7 @@ export function precompileTemplate(templateString: string, options?: {
             }
           }
           } finally {
-            _setRendering(false);
+            gxtSetIsRendering(false);
           }
 
           // Restore previous global values
@@ -8280,3 +6960,25 @@ export default function templateCompilation() {
 
 // Register the GXT compiler globally for @ember/template-compiler to use
 (globalThis as any).__gxtCompileTemplate = compileTemplate;
+
+// @internal — exported for unit testing only
+export const __test_internals = {
+  hyphenToUnderscore,
+  doubleDashToSlash,
+  containsWord,
+  countWord,
+  replaceWord,
+  generateUUID,
+  extractThisPath,
+  hasTextAreaTag,
+  hasBlockParamRef,
+  findBlockParamNames,
+  findDottedTags,
+  findDottedMustaches,
+  hasAttrsInBlockParams,
+  findAttrsPatterns,
+  findThisAttrsPatterns,
+  parseInElementInsertBefore,
+  hasDynamicHelper,
+  hasDynamicModifier,
+};

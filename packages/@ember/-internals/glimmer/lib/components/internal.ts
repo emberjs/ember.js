@@ -23,7 +23,7 @@ const { createConstRef } = reference;
 function isConstRef() {
   return true;
 }
-function valueForRef(ref) {
+function valueForRef(ref: any) {
   if (!ref) {
     debugger;
   }

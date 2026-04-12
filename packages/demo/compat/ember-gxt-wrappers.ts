@@ -368,7 +368,7 @@ function createEmberMaybeHelper(original: Function) {
               // We create a GXT cell to hold the result so GXT's formula system tracks
               // it and re-renders automatically when the cell is updated.
               let cached = classHelperInstanceCache.get(name) as any;
-              const _cellFor = g.__gxtCellFor;
+              const _cellFor = gxtModule.cellFor;
               if (!cached || cached.__managerBucket !== true) {
                 const reactiveArgs = { positional: Object.freeze([...positional]), named: Object.freeze({ ...named }) };
                 // Wrap createHelper in backtracking frame to detect

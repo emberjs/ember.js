@@ -11,6 +11,7 @@
  */
 
 import { assert, getDebugFunction } from '@ember/debug';
+import { pascalToKebab, isAllDigits, hasUpperCase, dasherize, doubleColonToSlash } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
 // which is what expectAssertion() hooks into.
@@ -27,6 +28,7 @@ Object.defineProperty(globalThis, '__emberAssertFn', {
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
 import { setViewElement, setElementView, getViewElement, getElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
+import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
 
 // Helper to detect assertion-related throws that must escape catch blocks.
 function _isAssertionLike(e: unknown): boolean {
@@ -51,7 +53,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 import { beginBacktrackingFrame, endBacktrackingFrame } from '@glimmer/validator';
-import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect } from '@lifeart/gxt';
+import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '@lifeart/gxt';
 import { destroy as _destroyDestroyable } from './destroyable';
 
 // Expose destroy helpers so compile.ts can flush pending modifier destroys
@@ -844,12 +846,18 @@ function createComponentInstance(
   // Only do this in interactive mode (non-interactive mode expects no registered views).
   if (isInteractiveModeChecked()) {
     try {
-      const gOwner = (globalThis as any).owner;
+      // Use the instance's own owner (set by CoreObject.create via setOwner) instead
+      // of globalThis.owner — the global ref can be stale/swapped by the time we
+      // reach this point, causing views to register under the wrong owner's registry.
+      const instanceOwner = _glimmerGetOwner(instance);
+      const gOwner = instanceOwner || (globalThis as any).owner;
       if (gOwner) {
         const viewRegistry = gOwner.lookup?.('-view-registry:main');
         if (viewRegistry) {
           const viewId = getViewId(instance);
-          if (viewId && !viewRegistry[viewId]) {
+          if (viewId) {
+            // Always register (don't guard with !viewRegistry[viewId]) so that
+            // pooled/recycled instances are re-registered after destroy cleanup.
             viewRegistry[viewId] = instance;
           }
         }
@@ -1501,12 +1509,7 @@ function parseAttributeBinding(binding: string): { propName: string; attrName: s
   return { propName: binding.slice(0, idx), attrName: binding.slice(idx + 1) };
 }
 
-/**
- * Dasherize a camelCase string: 'fooBar' -> 'foo-bar', 'isEnabled' -> 'is-enabled'
- */
-function dasherize(str: string): string {
-  return str.replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
-}
+// dasherize imported from ./utils
 
 /**
  * Resolve a value from an instance by a potentially nested path like 'foo.bar.baz'.
@@ -1608,10 +1611,10 @@ function syncWrapperElement(instance: any, wrapper: HTMLElement, componentDef: a
   let argsClassNames = argGetters?.classNames ? argGetters.classNames() : (typeof args?.classNames === 'function' ? args.classNames() : args?.classNames);
 
   if (argsClass && typeof argsClass === 'string') {
-    classList.push(...argsClass.split(/\s+/).filter(Boolean));
+    classList.push(...argsClass.split(' ').filter(Boolean));
   }
   if (argsClassNames && typeof argsClassNames === 'string') {
-    classList.push(...argsClassNames.split(/\s+/).filter(Boolean));
+    classList.push(...argsClassNames.split(' ').filter(Boolean));
   }
 
   // Static classNames from component definition
@@ -1741,6 +1744,13 @@ interface TrackedArgEntry {
   instance?: any; // component instance for lifecycle hooks
 }
 const trackedArgCells = new Set<TrackedArgEntry>();
+
+// Direct sync callbacks for internal components (Input, Textarea).
+// These are called from __gxtSyncAllWrappers to directly update DOM elements
+// when parent args change. GXT's effect system doesn't track Ember property
+// changes, so we need this manual sync path.
+type InternalSyncCallback = () => void;
+const _internalComponentSyncCallbacks = new Set<{ callback: InternalSyncCallback; el: HTMLElement }>();
 
 // Set of component instances that had .rerender() explicitly called.
 // When non-empty, __gxtSyncAllWrappers will fire update hooks for the
@@ -1889,6 +1899,16 @@ const _updatedInstances: any[] = [];
   }
   // Clear forced set after processing
   _forcedRerenderInstances.clear();
+
+  // Phase 1c: Sync internal component DOM elements (Input, Textarea).
+  // These don't use GXT's effect system for arg tracking, so we sync manually.
+  for (const entry of _internalComponentSyncCallbacks) {
+    if (!entry.el.isConnected) {
+      _internalComponentSyncCallbacks.delete(entry);
+      continue;
+    }
+    try { entry.callback(); } catch { /* ignore */ }
+  }
 
   // Phase 2: Sync wrapper element attributes/classes
   for (const entry of trackedWrapperInstances) {
@@ -2475,10 +2495,10 @@ function buildWrapperElement(
   const argsClassNames = typeof args?.classNames === 'function' ? args.classNames() : args?.classNames;
 
   if (argsClass && typeof argsClass === 'string') {
-    classList.push(...argsClass.split(/\s+/).filter(Boolean));
+    classList.push(...argsClass.split(' ').filter(Boolean));
   }
   if (argsClassNames && typeof argsClassNames === 'string') {
-    classList.push(...argsClassNames.split(/\s+/).filter(Boolean));
+    classList.push(...argsClassNames.split(' ').filter(Boolean));
   }
 
   // Add classNames from component definition (prototype or instance)
@@ -2665,7 +2685,7 @@ function wrapNestedObjectForTracking(obj: any): any {
   // Don't wrap if already a Proxy created by us
   if (_nestedTrackingProxies.has(obj)) return _nestedTrackingProxies.get(obj);
 
-  const _cellFor = (globalThis as any).__gxtCellFor;
+  const _cellFor = _gxtCellFor;
   if (!_cellFor) return obj;
 
   const proxy = new Proxy(obj, {
@@ -2762,9 +2782,10 @@ function createRenderContext(
     } catch { /* ignore */ }
   }
 
-  // Get slots from args.$slots (passed from compile.ts)
+  // Get slots from args.$slots (passed from compile.ts's $_tag path) or
+  // from args[$SLOTS_SYMBOL] (passed from GXT's $_args in the $_c path).
   // GXT templates use $slots.default() for {{yield}}
-  const slots = args?.$slots || {};
+  const slots = args?.$slots || args?.[$SLOTS_SYMBOL] || {};
   renderContext[$SLOTS_SYMBOL] = slots;
   Object.defineProperty(renderContext, '$slots', {
     value: slots,
@@ -2811,7 +2832,7 @@ function createRenderContext(
 
   // Set up attrs proxy for this.attrs.argName.value / this.args.argName access
   const attrsProxy: Record<string, any> = {};
-  const cellForFn = (globalThis as any).__gxtCellFor;
+  const cellForFn = _gxtCellFor;
   // Store arg cells for reactive updates
   const argCells: Record<string, any> = {};
   // Build Ember-style attrs object separately: mut→mutCell, readonly→plain, regular→{value,update()}
@@ -2986,7 +3007,7 @@ function createRenderContext(
   // NOT as properties on `this` (this.foo). Installing getters on the bare
   // renderContext {} would make {{this.foo}} resolve to the arg value, which
   // violates Ember's template-only component contract.
-  const cellForFn2 = (globalThis as any).__gxtCellFor;
+  const cellForFn2 = _gxtCellFor;
   const renderCtxArgCells: Record<string, any> = {};
   const argGetters = instance?.__argGetters || {};
 
@@ -3227,7 +3248,7 @@ function createRenderContext(
   // reads cell.value, and the effect tracks the cell as a dependency.
   // __gxtTriggerReRender also uses cellFor on the instance, so both reads
   // and writes use the same cell.
-  const _cellFor = (globalThis as any).__gxtCellFor;
+  const _cellFor = _gxtCellFor;
   const SKIP_CELL_PROPS = new Set([
     'constructor', 'args', 'attrs', '$slots', '$fw', 'init', 'destroy',
     '$_hasBlock', '$_hasBlockParams', $ARGS_KEY,
@@ -3481,11 +3502,24 @@ const formula = <T>(fn: () => T, name?: string) => {
 function argsForInternalManager(args: any, fw: any) {
   const named: Record<string, any> = {};
   Object.keys(args).forEach((arg) => {
-    // Create a reactive ref that reads from the GXT args getter each time
-    // and supports two-way binding via update()
+    // Create a reactive ref that reads from the GXT args getter each time.
+    // Only add update() when a real setter exists or the value is a mut cell,
+    // so that isUpdatableRef returns false for plain args. This causes
+    // valueFrom() to create a ForkedValue, which properly handles local
+    // overrides (e.g., user typing in an input field) while still tracking
+    // upstream changes.
     const desc = Object.getOwnPropertyDescriptor(args, arg);
     const getter = desc?.get || (() => args[arg]);
-    named[arg] = {
+    // Check if this arg supports two-way binding (is a mut cell).
+    // Only mut cells should create updatable refs — plain args (even with
+    // GXT property descriptor setters) should use ForkedValue so that
+    // local overrides (e.g., user typing in an input/textarea) are preserved
+    // without writing back upstream (which GXT's sync would then overwrite).
+    const initialValue = (() => { try { return getter(); } catch { return undefined; } })();
+    const hasMutCell = initialValue && initialValue.__isMutCell;
+    const isUpdatable = hasMutCell;
+
+    const ref: any = {
       get value() {
         const v = getter();
         // If the getter returns a mut cell, unwrap it to get the plain value
@@ -3505,19 +3539,25 @@ function argsForInternalManager(args: any, fw: any) {
           desc.set(v);
         }
       },
-      update(v: any) {
-        // Check if the getter returns a mut cell — use its update method
+    };
+
+    // Only add update() for refs that support two-way binding.
+    // Without update(), isUpdatableRef returns false → valueFrom creates
+    // ForkedValue → local overrides work (user typing doesn't get clobbered).
+    if (isUpdatable) {
+      ref.update = function(v: any) {
         const current = getter();
         if (current && current.__isMutCell) {
           current.update(v);
           return;
         }
-        // Support updateRef() protocol for two-way binding
         if (desc?.set) {
           desc.set(v);
         }
-      },
-    };
+      };
+    }
+
+    named[arg] = ref;
   });
 
   return {
@@ -3541,7 +3581,7 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
   if (!owner || owner.isDestroyed || owner.isDestroying) return null;
 
   // Handle namespaced components: foo::bar::baz-bing -> foo/bar/baz-bing
-  const normalizedName = name.replace(/::/g, '/');
+  const normalizedName = doubleColonToSlash(name);
 
   // Try component lookup
   let factory = owner.factoryFor(`component:${normalizedName}`);
@@ -3549,11 +3589,8 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
   // If not found and name is PascalCase, try kebab-case.
   // GXT's runtime compiler transforms {{foo-bar}} to <FooBar /> which becomes
   // $_c("FooBar", ...). The Ember registry uses kebab-case names.
-  if (!factory && /[A-Z]/.test(normalizedName)) {
-    const kebabName = normalizedName
-      .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-      .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
-      .toLowerCase();
+  if (!factory && hasUpperCase(normalizedName)) {
+    const kebabName = pascalToKebab(normalizedName);
     factory = owner.factoryFor(`component:${kebabName}`);
   }
 
@@ -3605,11 +3642,8 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
     // Fallback to registry lookup
     template = owner.lookup(`template:components/${normalizedName}`);
     // Also try kebab-case for PascalCase names
-    if (!template && /[A-Z]/.test(normalizedName)) {
-      const kebabName = normalizedName
-        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-        .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
-        .toLowerCase();
+    if (!template && hasUpperCase(normalizedName)) {
+      const kebabName = pascalToKebab(normalizedName);
       template = owner.lookup(`template:components/${kebabName}`);
     }
   }
@@ -3764,10 +3798,7 @@ const $_MANAGERS = {
           const resolved = resolveComponent(strippedKomp, owner);
           if (resolved !== null) return true;
           // Convert PascalCase to kebab-case for helper lookup
-          let kebab = strippedKomp
-            .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-            .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-            .toLowerCase();
+          let kebab = pascalToKebab(strippedKomp);
           // Also check for helpers — inline curlies like {{my-helper "foo"}} get
           // transformed to <MyHelper @__pos0__="foo" /> which GXT compiles as $_c.
           try {
@@ -4064,10 +4095,7 @@ const $_MANAGERS = {
         if (owner) {
           try {
             // Convert PascalCase to kebab-case for helper lookup
-            const helperName = resolvedKomp
-              .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-              .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-              .toLowerCase();
+            const helperName = pascalToKebab(resolvedKomp);
             const helperFactory = owner.factoryFor(`helper:${helperName}`);
             const helperLookup = !helperFactory ? owner.lookup(`helper:${helperName}`) : null;
             if (helperFactory || helperLookup) {
@@ -4123,10 +4151,7 @@ const $_MANAGERS = {
 
         // Custom element fallback: names containing a dash that are not registered
         // as components or helpers should render as plain HTML custom elements.
-        const kebabKomp = komp
-          .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-          .toLowerCase();
+        const kebabKomp = pascalToKebab(komp);
         if (kebabKomp.includes('-')) {
           return renderCustomElement(kebabKomp, args, fw, ctx);
         }
@@ -4485,8 +4510,21 @@ const $_MANAGERS = {
           }
         }
 
-        // Fallback: resolve via _resolveEmberHelper for built-in helpers and
-        // helpers without a delegate manager
+        // Fast path for built-in helpers: call them directly with the raw args.
+        // Built-in helpers like `get`, `concat`, etc. already handle getter
+        // functions (they check typeof arg === 'function' and call it). Eagerly
+        // unwrapping the args via unwrapVal would lose reactivity and break
+        // cases where the getter reads from a GXT formula (e.g., each-loop index).
+        const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
+        if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) {
+          const builtinFn = BUILTIN_HELPERS[helper];
+          // Call built-in directly with the raw params (which may be getter fns)
+          const rawPositionals = Array.isArray(params) ? params : [];
+          return builtinFn(...rawPositionals);
+        }
+
+        // Fallback: resolve via _resolveEmberHelper for registered helpers
+        // without a delegate manager
         const resolvedFn = _resolveEmberHelper(helper, owner);
         if (resolvedFn) {
           // Unwrap curried positional args from params
@@ -4636,7 +4674,7 @@ const $_MANAGERS = {
         const rawPositional = currentProps || [];
         const positionalProxy = new Proxy([] as any[], {
           get(target, prop, receiver) {
-            if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+            if (typeof prop === 'string' && isAllDigits(prop)) {
               const idx = Number(prop);
               if (idx < rawPositional.length) {
                 return unwrapGxtArg(rawPositional[idx]);
@@ -4697,8 +4735,8 @@ const $_MANAGERS = {
       // key so positional arg changes trigger the update path, not fresh installs.
       let firstArg = '';
       if (modifier === 'on') {
-        const _setT = (globalThis as any).__gxtSetTracker;
-        const _getT = (globalThis as any).__gxtGetTracker;
+        const _setT = _gxtSetTracker;
+        const _getT = _gxtGetTracker;
         if (_setT && _getT) {
           const savedTracker = _getT();
           _setT(null);
@@ -4807,8 +4845,8 @@ const $_MANAGERS = {
             // We eagerly read ALL args UNTRACKED to get fresh values for comparison.
             let freshArgs: any;
             {
-              const _setT = (globalThis as any).__gxtSetTracker;
-              const _getT = (globalThis as any).__gxtGetTracker;
+              const _setT = _gxtSetTracker;
+              const _getT = _gxtGetTracker;
               if (_setT && _getT) {
                 const saved = _getT();
                 _setT(null);
@@ -5086,7 +5124,7 @@ const $_MANAGERS = {
       const trackedInstallArgs = {
         positional: new Proxy(lazyInstallArgs.positional, {
           get(target: any, prop: any, receiver: any) {
-            if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+            if (typeof prop === 'string' && isAllDigits(prop)) {
               _consumedPositional.add(Number(prop));
             }
             // Intercept Symbol.iterator to track which indices are accessed during destructuring
@@ -5127,8 +5165,8 @@ const $_MANAGERS = {
       // Read UNTRACKED to avoid establishing cell dependencies outside the formula.
       let initialArgs: any;
       {
-        const _setT = (globalThis as any).__gxtSetTracker;
-        const _getT = (globalThis as any).__gxtGetTracker;
+        const _setT = _gxtSetTracker;
+        const _getT = _gxtGetTracker;
         if (_setT && _getT) {
           const savedTracker = _getT();
           _setT(null);
@@ -5702,7 +5740,7 @@ function renderCustomElement(
 ): () => any {
   return () => {
     const el = document.createElement(tagName);
-    const gxtEffect = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+    const gxtEffect = _gxtEffect;
 
     if (args) {
       for (const key of Object.keys(args)) {
@@ -5794,7 +5832,7 @@ function renderCustomElement(
  */
 function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorElement {
   const el = document.createElement('a');
-  const gxtEffect = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+  const gxtEffect = _gxtEffect;
 
   // id attribute
   gxtEffect(() => {
@@ -5913,7 +5951,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
         // The getter reads this.title (a controller/context property).
         // We need cellFor tracking so set(controller, 'title', ...) triggers re-render.
         const textNode = document.createTextNode('');
-        const cellFor = (globalThis as any).__gxtCellFor;
+        const cellFor = _gxtCellFor;
         gxtEffect(() => {
           const val = child();
           textNode.textContent = val == null ? '' : String(val);
@@ -5945,6 +5983,29 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   return el;
 }
 
+// Cache for managed component instances and DOM elements (Input, Textarea, LinkTo).
+// GXT re-invokes handle() on reactive updates, creating new InternalComponent
+// instances (new guidFor ids, losing ForkedValue state). This cache ensures
+// the same instance+element are reused across re-renders within the same owner.
+// Keyed by owner → { slots: Map<slotKey, { instance, renderFn }>, callCounter }.
+// The call counter resets at the start of each render pass so that sequential
+// invocations match to the same slot across re-renders.
+const _managedComponentCache = new WeakMap<object, {
+  slots: Map<string, { instance: any; renderFn: () => any }>;
+  callCounter: Map<any, number>;
+}>();
+
+// Generation counter: increments on each render/sync pass.
+// Used to detect when handleManagedComponent enters a new render cycle
+// so that the per-komp call counters can be reset.
+let _managedComponentGeneration = 0;
+const _managedComponentLastGeneration = new WeakMap<object, number>();
+
+// Call this at the start of each render/sync pass to advance the generation.
+(globalThis as any).__resetManagedComponentCounters = function() {
+  _managedComponentGeneration++;
+};
+
 function handleManagedComponent(
   komp: any,
   args: any,
@@ -5953,16 +6014,65 @@ function handleManagedComponent(
   manager: any,
   owner: any
 ): () => any {
+  // Check cache using owner + komp + invocation-order as key.
+  // Multiple invocations of the same komp within one render pass
+  // (e.g., <Input @type="text" /><Input @type="file" />) get
+  // distinct slots via a sequential counter that resets per sync.
+  if (owner && typeof owner === 'object') {
+    let cache = _managedComponentCache.get(owner);
+    if (!cache) {
+      cache = { slots: new Map(), callCounter: new Map() };
+      _managedComponentCache.set(owner, cache);
+    }
+    // Reset call counters when entering a new render generation
+    const lastGen = _managedComponentLastGeneration.get(owner) || -1;
+    if (lastGen !== _managedComponentGeneration) {
+      cache.callCounter.clear();
+      _managedComponentLastGeneration.set(owner, _managedComponentGeneration);
+    }
+
+    const callIdx = cache.callCounter.get(komp) || 0;
+    cache.callCounter.set(komp, callIdx + 1);
+    const slotKey = `${komp?.toString?.() || 'unknown'}#${callIdx}`;
+
+    const cached = cache.slots.get(slotKey);
+    if (cached) {
+      return cached.renderFn;
+    }
+  }
+
+  // Collect arg getters for later use in sync callbacks.
+  // These getters read from the parent context (e.g., () => this.value).
+  const argGetters: Record<string, () => any> = {};
+  for (const key of Object.keys(args)) {
+    if (key.startsWith('$') || key === 'args') continue;
+    const desc = Object.getOwnPropertyDescriptor(args, key);
+    argGetters[key] = desc?.get || (() => args[key]);
+  }
+  // Also collect fw attribute getters
+  if (fw && Array.isArray(fw)) {
+    for (const fwSet of [fw[0], fw[1]]) {
+      if (!Array.isArray(fwSet)) continue;
+      for (const [key, value] of fwSet) {
+        const attrKey = key === '' ? 'class' : key;
+        if (attrKey.startsWith('@') || attrKey === '__splatLocal__') continue;
+        if (argGetters[attrKey]) continue;
+        argGetters[attrKey] = typeof value === 'function' ? value : () => value;
+      }
+    }
+  }
+
+  const internalArgs = argsForInternalManager(args, fw);
   const instance = manager.create(
     owner,
     komp,
-    argsForInternalManager(args, fw),
+    internalArgs,
     {},
     {},
     formula(() => ctx, 'internalManager:caller')
   );
 
-  return () => {
+  const renderFn = () => {
     // Determine component type from the static toString() method
     const componentType = komp?.toString?.();
 
@@ -5976,13 +6086,10 @@ function handleManagedComponent(
     const el = document.createElement(tagName);
 
     // Set initial attributes and set up reactive bindings
-    const gxtEffect = (globalThis as any).__gxtEffect || ((fn: Function) => fn());
+    const gxtEffect = _gxtEffect;
 
-    // id attribute
-    gxtEffect(() => {
-      const id = instance.id;
-      if (id) el.id = id;
-    });
+    // id attribute — set once eagerly (guidFor is stable per instance)
+    el.id = instance.id;
 
     // class attribute
     gxtEffect(() => {
@@ -6083,19 +6190,42 @@ function handleManagedComponent(
       }
     });
 
-    // Wire up event handlers
+    // Wire up event handlers.
+    // Wrap handlers to suppress the morph (Phase 2b) — user interaction updates
+    // the component's local value (ForkedValue.set), NOT the parent arg. The morph
+    // would re-create the element using the parent's stale value, clobbering the
+    // user's input. We clear __gxtPendingSync after the handler so the morph is
+    // skipped. The next parent arg change will trigger a proper sync.
+    const wrapHandler = (handler: (e: Event) => void) => (e: Event) => {
+      // Suppress rendering during handler — user-interaction changes the component's
+      // local value (ForkedValue.set), NOT the parent arg. Without suppression,
+      // @tracked setters inside the handler trigger __gxtTriggerReRender and
+      // __gxtExternalSchedule which dirty cells and schedule a sync. The subsequent
+      // gxtSyncDom() would re-run the gxtEffect that reads instance.value, but since
+      // the ForkedValue hasn't been re-read yet, it might return the upstream value.
+      const prevRendering = (globalThis as any).__gxtCurrentlyRendering;
+      (globalThis as any).__gxtCurrentlyRendering = true;
+      try {
+        handler(e);
+      } finally {
+        (globalThis as any).__gxtCurrentlyRendering = prevRendering;
+        // Clear any pending sync that was scheduled during the handler
+        (globalThis as any).__gxtPendingSync = false;
+        (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      }
+    };
     if (typeof instance.change === 'function') {
-      el.addEventListener('change', (e: Event) => instance.change(e));
+      el.addEventListener('change', wrapHandler((e: Event) => instance.change(e)));
     }
     if (typeof instance.input === 'function') {
-      el.addEventListener('input', (e: Event) => instance.input(e));
+      el.addEventListener('input', wrapHandler((e: Event) => instance.input(e)));
     }
     if (typeof instance.keyUp === 'function') {
-      el.addEventListener('keyup', (e: Event) => instance.keyUp(e));
+      el.addEventListener('keyup', wrapHandler((e: Event) => instance.keyUp(e)));
     }
     if (typeof instance.valueDidChange === 'function') {
-      el.addEventListener('paste', (e: Event) => instance.valueDidChange(e));
-      el.addEventListener('cut', (e: Event) => instance.valueDidChange(e));
+      el.addEventListener('paste', wrapHandler((e: Event) => instance.valueDidChange(e)));
+      el.addEventListener('cut', wrapHandler((e: Event) => instance.valueDidChange(e)));
     }
 
     // Apply forwarded attributes (...attributes) from fw with reactive bindings
@@ -6196,8 +6326,122 @@ function handleManagedComponent(
       }
     }
 
+    // Register a sync callback to manually update the DOM element when
+    // parent args change. GXT effects don't track Ember property changes
+    // (set() → notifyPropertyChange → cellFor with skipDefine=true), so
+    // we poll the arg getters during __gxtSyncAllWrappers and apply changes.
+    const lastArgValues: Record<string, any> = {};
+    for (const key of Object.keys(argGetters)) {
+      try { lastArgValues[key] = argGetters[key](); } catch { /* ignore */ }
+    }
+
+    const syncCallback = () => {
+      // Check each arg getter individually and only update what changed.
+      // This prevents clobbering DOM values set by user interaction (two-way binding).
+      const changedKeys = new Set<string>();
+      for (const key of Object.keys(argGetters)) {
+        try {
+          const newVal = argGetters[key]();
+          if (newVal !== lastArgValues[key]) {
+            lastArgValues[key] = newVal;
+            changedKeys.add(key);
+          }
+        } catch { /* ignore */ }
+      }
+      if (changedKeys.size === 0) return;
+
+      // Value — only update if the VALUE arg actually changed
+      if (changedKeys.has('value')) {
+        const value = instance.value;
+        if (value !== undefined && value !== null) {
+          if ((el as HTMLInputElement).value !== String(value)) {
+            (el as HTMLInputElement).value = String(value);
+          }
+        } else {
+          if ((el as HTMLInputElement).value !== '') {
+            (el as HTMLInputElement).value = '';
+          }
+        }
+      }
+
+      // Type — only update if type arg changed
+      if (tagName === 'input' && changedKeys.has('type')) {
+        const type = instance.type;
+        if (type && el.getAttribute('type') !== type) {
+          el.setAttribute('type', String(type));
+        }
+      }
+
+      // Checked — only update if checked arg changed
+      if (changedKeys.has('checked')) {
+        const checked = instance.checked;
+        if (checked !== undefined) {
+          (el as HTMLInputElement).checked = !!checked;
+        }
+      }
+
+      // HTML attrs from fw — check both HTML attribute names and DOM property
+      // names (GXT normalizes some: maxlength→maxLength, tabindex→tabIndex)
+      const allHtmlAttrs: Array<[string, string]> = [
+        ['disabled', 'disabled'], ['readonly', 'readonly'],
+        ['placeholder', 'placeholder'], ['name', 'name'],
+        ['maxlength', 'maxLength'], ['minlength', 'minlength'],
+        ['size', 'size'], ['tabindex', 'tabIndex'],
+        ['role', 'role'], ['aria-label', 'aria-label'],
+        ['aria-describedby', 'aria-describedby'], ['pattern', 'pattern'],
+        ['autocomplete', 'autocomplete'], ['autofocus', 'autofocus'],
+        ['form', 'form'], ['multiple', 'multiple'],
+        ['step', 'step'], ['min', 'min'], ['max', 'max'],
+        ['accept', 'accept'], ['required', 'required'],
+        ['title', 'title'], ['lang', 'lang'], ['dir', 'dir'],
+        ['spellcheck', 'spellcheck'], ['wrap', 'wrap'],
+        ['rows', 'rows'], ['cols', 'cols'],
+      ];
+      for (const [attr, propName] of allHtmlAttrs) {
+        // Only update attrs whose getter value actually changed
+        if (!changedKeys.has(attr) && !changedKeys.has(propName)) continue;
+        // Check both the HTML attribute name and the DOM property name
+        const getter = argGetters[attr] || argGetters[propName];
+        if (!getter) continue;
+        const val = getter();
+        if (attr === 'disabled') {
+          if (val || val === '') {
+            el.setAttribute(attr, '');
+            (el as HTMLInputElement).disabled = true;
+          } else {
+            el.removeAttribute(attr);
+            (el as HTMLInputElement).disabled = false;
+          }
+        } else if (val === true) {
+          el.setAttribute(attr, '');
+        } else if (val === false || val === undefined || val === null) {
+          el.removeAttribute(attr);
+        } else {
+          el.setAttribute(attr, String(val));
+        }
+      }
+    };
+
+    _internalComponentSyncCallbacks.add({ callback: syncCallback, el });
+
     return el;
   };
+
+  // Cache the render function for reuse on re-renders (same owner + komp + slot).
+  if (owner && typeof owner === 'object') {
+    let cache = _managedComponentCache.get(owner);
+    if (!cache) {
+      cache = { slots: new Map(), callCounter: new Map() };
+      _managedComponentCache.set(owner, cache);
+    }
+    // The slot index was already incremented in the cache-check above,
+    // so the current slot is (counter - 1).
+    const callIdx = (cache.callCounter.get(komp) || 1) - 1;
+    const slotKey = `${komp?.toString?.() || 'unknown'}#${callIdx}`;
+    cache.slots.set(slotKey, { instance, renderFn });
+  }
+
+  return renderFn;
 }
 
 /**

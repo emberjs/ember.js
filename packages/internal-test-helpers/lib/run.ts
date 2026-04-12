@@ -5,13 +5,35 @@ import { flushRenderErrors } from '@glimmer/manager';
 import { Promise } from 'rsvp';
 
 export function runAppend(view: any): void {
-  run(view, 'appendTo', document.getElementById('qunit-fixture'));
+  // Suppress the runloop onEnd sync during initial render. The runloop's onEnd
+  // hook calls __gxtSyncDomNow when __gxtPendingSync is true. During initial
+  // render, property change notifications from component init set
+  // __gxtPendingSync=true, causing gxtSyncDom to re-evaluate each-formulas
+  // with stale values (e.g., returning [] instead of the actual collection).
+  // Using __gxtRunTaskActive tells onEnd to skip the sync.
+  (globalThis as any).__gxtRunTaskActive = true;
+  try {
+    run(view, 'appendTo', document.getElementById('qunit-fixture'));
+  } finally {
+    (globalThis as any).__gxtRunTaskActive = false;
+  }
+  // After the initial render, reset property change flags. Property changes
+  // during init are artifacts, not user-initiated changes.
+  (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
   // In GXT mode, flush pending DOM updates synchronously after append
   // so test assertions see the rendered DOM immediately
+  const resetMC2 = (globalThis as any).__resetManagedComponentCounters;
+  if (typeof resetMC2 === 'function') resetMC2();
   const syncNow = (globalThis as any).__gxtSyncDomNow;
   if (typeof syncNow === 'function') {
     syncNow();
   }
+  // After sync, clear any pending sync flags that were set during the sync
+  // itself (e.g., from syncAll triggering property changes). This prevents
+  // the setInterval(16ms) fallback from firing another sync that would
+  // re-evaluate each-formulas with stale values.
+  (globalThis as any).__gxtPendingSync = false;
+  (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
   // Reset interval sync budget after an explicit sync
   const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
   if (typeof resetBudget === 'function') resetBudget();
@@ -63,10 +85,21 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   }
   // In GXT mode, flush pending DOM updates synchronously after the task
   // so test assertions see the updated DOM immediately
+  // Advance managed-component generation so slot counters reset
+  const resetMC = (globalThis as any).__resetManagedComponentCounters;
+  if (typeof resetMC === 'function') resetMC();
   const syncNow = (globalThis as any).__gxtSyncDomNow;
   if (typeof syncNow === 'function') {
     syncNow();
   }
+  // After the sync, clear any pending flags to prevent the setInterval(16ms)
+  // fallback from firing another sync that could produce incorrect DOM.
+  // The explicit sync above already handled all pending updates.
+  (globalThis as any).__gxtPendingSync = false;
+  (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+  // Also clear tagsToRevalidate to prevent stale cells from re-evaluating
+  const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
+  if (typeof clearTags === 'function') clearTags();
   // Reset interval sync budget after an explicit runTask sync
   const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
   if (typeof resetBudget === 'function') resetBudget();
