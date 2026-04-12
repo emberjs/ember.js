@@ -101,6 +101,43 @@ class EmberOutletElement extends HTMLElement {
     const previousOutletState = (globalThis as any).__currentOutletState;
     (globalThis as any).__currentOutletState = nestedOutlet;
 
+    // If this outlet element is an immediate child of a classic-component
+    // wrapper (`{{#x-toggle id="root-9"}}{{outlet}}{{/x-toggle}}`), push
+    // that wrapper's view on the parent-view stack so nested components
+    // end up with the correct parentView.
+    //
+    // IMPORTANT: we only push when this outlet element's enclosing wrapper
+    // view matches the CURRENTLY-ACTIVE outlet template chain. Specifically,
+    // if the direct-parent view belongs to a route that is no longer the
+    // one this outlet is rendering (stale leftover DOM from a previous
+    // route), we skip the push. Otherwise root views from a sibling route
+    // (e.g. index.hbs's `root-5`) get a dangling parentView pointer when
+    // the old route's component is destroyed.
+    let _parentViewPushed = false;
+    try {
+      const viewUtils = (globalThis as any).__gxtViewUtilsRef;
+      const pushParentFn = (globalThis as any).__gxtPushParentView;
+      if (pushParentFn && viewUtils?.getElementView) {
+        const directParent = this.parentElement;
+        if (directParent) {
+          const v = viewUtils.getElementView(directParent);
+          if (v && !v.isDestroyed && !v.isDestroying) {
+            // Only push if the owner of this view matches the owner of the
+            // render we are about to do. If owners match, the wrapper is in
+            // the same route chain as our nested template; otherwise it's
+            // leftover from a prior route and pushing it would leave stale
+            // parentView pointers on nested instances.
+            const renderOwner = nestedOutlet?.render?.owner;
+            const viewOwner = (v as any)[Symbol.for('OWNER')] || (v as any).__owner;
+            if (!renderOwner || !viewOwner || renderOwner === viewOwner) {
+              pushParentFn(v);
+              _parentViewPushed = true;
+            }
+          }
+        }
+      }
+    } catch { /* ignore */ }
+
     try {
       if (typeof tpl?.render === 'function') {
         tpl.render(nestedContext, this);
@@ -114,6 +151,12 @@ class EmberOutletElement extends HTMLElement {
       }
     } finally {
       (globalThis as any).__currentOutletState = previousOutletState;
+      if (_parentViewPushed) {
+        try {
+          const popParentFn = (globalThis as any).__gxtPopParentView;
+          if (popParentFn) popParentFn();
+        } catch { /* ignore */ }
+      }
     }
   }
 }
@@ -173,22 +216,39 @@ export default function createOutletTemplate(_owner: any) {
       console.log('[outlet.ts] nestedTemplate:', nestedTemplate ? 'exists' : 'null', 'type:', typeof nestedTemplate);
     }
 
-    if (nestedTemplate && typeof nestedTemplate.render === 'function') {
-      // Build context using controller DIRECTLY to preserve identity
-      const nestedCtrl = nestedOutlet?.render?.controller;
-      const nestedCtx: any = nestedCtrl ? Object.create(nestedCtrl) : {};
-      nestedCtx.model = nestedOutlet?.render?.model;
-      nestedCtx.owner = nestedOutlet?.render?.owner || context?.owner;
-      nestedCtx.outletState = nestedOutlet;
-      nestedCtx.args = {
-        model: nestedOutlet?.render?.model,
-        controller: nestedOutlet?.render?.controller,
-        outletState: nestedOutlet,
-      };
-      nestedTemplate.render(nestedCtx, parentElement);
-    } else if (nestedTemplate && typeof nestedTemplate === 'function') {
-      const tpl = nestedTemplate(context?.owner);
-      if (tpl && typeof tpl.render === 'function') {
+    // The factory render path is used for `{{outlet}}` invocations that
+    // appear inside another component's yield block (e.g. `{{#x-toggle
+    // id="root-9"}}{{outlet}}{{/x-toggle}}`). In that case the enclosing
+    // classic component's wrapper element is the direct parent of the
+    // rendering target, so we push it on the parent-view stack. This
+    // ensures nested components inside the outlet's template get the
+    // enclosing classic component as their parentView (and therefore
+    // don't show up as root views).
+    let _factoryParentPushed = false;
+    try {
+      const viewUtils = (globalThis as any).__gxtViewUtilsRef;
+      const pushParentFn = (globalThis as any).__gxtPushParentView;
+      if (pushParentFn && viewUtils?.getElementView && parentElement) {
+        // parentElement here is the rendering target (typically the
+        // ember-outlet custom element or its direct parent div).
+        // Walk up a couple of levels looking for the enclosing wrapper.
+        let node: Element | null = parentElement as Element;
+        let steps = 0;
+        while (node && steps++ < 3) {
+          const v = viewUtils.getElementView(node);
+          if (v && !v.isDestroyed && !v.isDestroying) {
+            pushParentFn(v);
+            _factoryParentPushed = true;
+            break;
+          }
+          node = node.parentElement;
+        }
+      }
+    } catch { /* ignore */ }
+
+    try {
+      if (nestedTemplate && typeof nestedTemplate.render === 'function') {
+        // Build context using controller DIRECTLY to preserve identity
         const nestedCtrl = nestedOutlet?.render?.controller;
         const nestedCtx: any = nestedCtrl ? Object.create(nestedCtrl) : {};
         nestedCtx.model = nestedOutlet?.render?.model;
@@ -199,12 +259,34 @@ export default function createOutletTemplate(_owner: any) {
           controller: nestedOutlet?.render?.controller,
           outletState: nestedOutlet,
         };
-        tpl.render(nestedCtx, parentElement);
+        nestedTemplate.render(nestedCtx, parentElement);
+      } else if (nestedTemplate && typeof nestedTemplate === 'function') {
+        const tpl = nestedTemplate(context?.owner);
+        if (tpl && typeof tpl.render === 'function') {
+          const nestedCtrl = nestedOutlet?.render?.controller;
+          const nestedCtx: any = nestedCtrl ? Object.create(nestedCtrl) : {};
+          nestedCtx.model = nestedOutlet?.render?.model;
+          nestedCtx.owner = nestedOutlet?.render?.owner || context?.owner;
+          nestedCtx.outletState = nestedOutlet;
+          nestedCtx.args = {
+            model: nestedOutlet?.render?.model,
+            controller: nestedOutlet?.render?.controller,
+            outletState: nestedOutlet,
+          };
+          tpl.render(nestedCtx, parentElement);
+        }
+      }
+    } finally {
+      if (_factoryParentPushed) {
+        try {
+          const popParentFn = (globalThis as any).__gxtPopParentView;
+          if (popParentFn) popParentFn();
+        } catch { /* ignore */ }
       }
     }
     // If no nested template, just return empty - outlet has nothing to show
     return { nodes: [], ctx: context };
-  };
+    };
 
   return factory;
 }

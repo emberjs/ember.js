@@ -305,6 +305,16 @@ function getCurrentParentView(): any | null {
   return parentViewStack.length > 0 ? parentViewStack[parentViewStack.length - 1] : null;
 }
 
+// Expose parent-view stack ops + lightweight view-utils on globalThis so
+// sibling compat modules (e.g. outlet.gts) can participate in parent-view
+// wiring without introducing a circular import on manager.ts.
+(globalThis as any).__gxtPushParentView = (view: any) => pushParentView(view);
+(globalThis as any).__gxtPopParentView = () => popParentView();
+(globalThis as any).__gxtViewUtilsRef = {
+  getElementView,
+  getViewElement,
+};
+
 /**
  * Add a child view to a parent's childViews array.
  * Mimics Ember's CoreView.addChildView behavior.
@@ -425,12 +435,12 @@ function getCachedOrCreateInstance(
     const reqIdStr = String(requestedElementId);
     poolEntry = pool.find((e) => isAlive(e) && String(e.instance?.elementId) === reqIdStr);
 
-    // If no exact match found, fall back to sequential ordering.
-    // This handles the case where elementId arg changes but we should reuse the same instance
-    // (elementId is frozen after first render, so the instance won't have the new requestedElementId)
-    if (!poolEntry) {
-      poolEntry = pool.find(isAlive);
-    }
+    // If no exact match found, DO NOT fall back to sequential ordering:
+    // cross-wiring a pooled instance (whose elementId is frozen) with a new
+    // requested id corrupts instance.id and all bound formulas, breaking
+    // getRootViews/getChildViews for sibling classic components sharing a
+    // pool (e.g. {{x-toggle id="root-2"}} + {{x-toggle id="root-3"}} with
+    // {{#if}}-driven lifecycle). A fresh instance is created below instead.
   } else {
     // No explicit elementId - use sequential ordering
     // First unclaimed, non-destroyed instance gets claimed
@@ -459,6 +469,21 @@ function getCachedOrCreateInstance(
     // remain visible to getRootViews/getChildViews even if an earlier
     // destruction cycle cleaned them out of the registry.
     registerInViewRegistry(poolEntry.instance);
+
+    // Re-establish the child-view relationship with the current parent.
+    // CHILD_VIEW_IDS may have been cleared when the parent was re-created or
+    // when the pooled instance's previous incarnation was destroyed. Without
+    // this, getChildViews returns stale/empty sets after toggle cycles.
+    if (currentParentView && currentParentView !== poolEntry.instance) {
+      try {
+        addChildView(currentParentView, poolEntry.instance);
+      } catch { /* ignore */ }
+      // Also update the instance's parentView pointer in case the parent
+      // was replaced (e.g., across route transitions).
+      if (poolEntry.instance.parentView !== currentParentView) {
+        try { poolEntry.instance.parentView = currentParentView; } catch { /* ignore */ }
+      }
+    }
 
     return poolEntry.instance;
   }
