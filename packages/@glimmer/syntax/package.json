@@ -30,13 +30,13 @@
   ],
   "scripts": {
     "test:publint": "publint",
-    "build:rust-parser": "cd rust-parser && ./build.sh"
+    "build:rust-parser": "./build.sh"
   },
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/wire-format": "workspace:*",
-    "glimmer-template-parser": "file:rust-parser/pkg/node"
+    "glimmer-template-parser": "file:pkg/node"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",

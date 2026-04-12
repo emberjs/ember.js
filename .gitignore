@@ -57,5 +57,5 @@ npm-debug.log
 types/stable
 
 # Rust build artifacts (WASM output in pkg/ is committed)
-packages/@glimmer/syntax/rust-parser/target/
-packages/@glimmer/syntax/rust-parser/Cargo.lock
+packages/@glimmer/syntax/target/
+packages/@glimmer/syntax/Cargo.lock

@@ -278,7 +278,7 @@ export function hiddenDependencies() {
   return {
     'glimmer-template-parser': resolve(
       packageCache.appRoot,
-      'packages/@glimmer/syntax/rust-parser/pkg/node/glimmer_template_parser.js'
+      'packages/@glimmer/syntax/pkg/node/glimmer_template_parser.js'
     ),
     ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(

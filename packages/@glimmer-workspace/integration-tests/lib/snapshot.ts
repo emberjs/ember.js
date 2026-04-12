@@ -1,16 +1,48 @@
 import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import type { EndTag, Token } from 'simple-html-tokenizer';
 import { COMMENT_NODE, TEXT_NODE } from '@glimmer/constants';
-import { castToSimple, unwrap } from '@glimmer/debug-util';
-import { tokenize } from 'simple-html-tokenizer';
+import { unwrap } from '@glimmer/debug-util';
 
-import { replaceHTML, toInnerHTML } from './dom/simple-utils';
+import { toInnerHTML } from './dom/simple-utils';
 
 export type IndividualSnapshot = 'up' | 'down' | SimpleNode;
 export type NodesSnapshot = IndividualSnapshot[];
 
 export function snapshotIsNode(snapshot: IndividualSnapshot): snapshot is SimpleNode {
   return snapshot !== 'up' && snapshot !== 'down';
+}
+
+// -- HTML equivalence (replaces simple-html-tokenizer) ----------------------
+//
+// Compares two HTML fragments for semantic equivalence by normalizing
+// attribute order via the browser's DOM parser. Ember ID attributes
+// are normalized to a stable counter so order-independent tests pass.
+
+function normalizeHTML(html: string): string {
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  sortAttributes(container);
+  return container.innerHTML;
+}
+
+function sortAttributes(element: Element): void {
+  for (const child of Array.from(element.children)) {
+    if (child.attributes.length > 1) {
+      const attrs = Array.from(child.attributes).map((a) => [a.name, a.value] as const);
+      attrs.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+      for (const [name] of attrs) {
+        child.removeAttribute(name);
+      }
+      for (const [name, value] of attrs) {
+        child.setAttribute(name, value);
+      }
+    }
+    sortAttributes(child);
+  }
+}
+
+function cleanEmberIds(html: string): string {
+  let id = 0;
+  return html.replace(/ember(\d+|\*)/gu, () => `ember${++id}`);
 }
 
 export function equalTokens(
@@ -22,41 +54,17 @@ export function equalTokens(
     throw new Error(`Unexpectedly passed null to equalTokens`);
   }
 
-  const fragTokens = generateTokens(testFragment);
-  const htmlTokens = generateTokens(testHTML);
+  const fragHTML = typeof testFragment === 'string' ? testFragment : toInnerHTML(testFragment);
+  const expectedHTML = typeof testHTML === 'string' ? testHTML : toInnerHTML(testHTML);
 
-  cleanEmberIds(fragTokens.tokens);
-  cleanEmberIds(htmlTokens.tokens);
+  const normalizedFrag = cleanEmberIds(normalizeHTML(fragHTML));
+  const normalizedExpected = cleanEmberIds(normalizeHTML(expectedHTML));
 
-  const equiv = QUnit.equiv(fragTokens.tokens, htmlTokens.tokens);
-
-  if (equiv && fragTokens.html !== htmlTokens.html) {
-    QUnit.assert.deepEqual(
-      fragTokens.tokens,
-      htmlTokens.tokens,
-      message || 'expected tokens to match'
-    );
-  } else {
-    QUnit.assert.pushResult({
-      result: QUnit.equiv(fragTokens.tokens, htmlTokens.tokens),
-      actual: fragTokens.html,
-      expected: htmlTokens.html,
-      message: message || 'expected tokens to match',
-    });
-  }
-
-  // QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
-}
-
-function cleanEmberIds(tokens: Token[]) {
-  let id = 0;
-
-  tokens.forEach((token) => {
-    const idAttr = 'attributes' in token && token.attributes.filter((a) => a[0] === 'id')[0];
-
-    if (idAttr) {
-      idAttr[1] = idAttr[1].replace(/ember(\d+|\*)/u, `ember${++id}`);
-    }
+  QUnit.assert.pushResult({
+    result: normalizedFrag === normalizedExpected,
+    actual: fragHTML,
+    expected: expectedHTML,
+    message: message || 'expected tokens to match',
   });
 }
 
@@ -84,49 +92,6 @@ export function generateSnapshot(element: SimpleElement): SimpleNode[] {
   }
 
   return snapshot;
-}
-
-function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; html: string } {
-  let div: SimpleElement;
-  if (typeof divOrHTML === 'string') {
-    div = castToSimple(document.createElement('div'));
-    replaceHTML(div, divOrHTML);
-  } else {
-    div = divOrHTML;
-  }
-
-  let tokens = tokenize(toInnerHTML(div), {});
-
-  tokens = tokens.reduce((tokens, token) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    if (token.type === 'StartTag') {
-      if (token.attributes) {
-        token.attributes.sort((a, b) => {
-          if (a[0] > b[0]) {
-            return 1;
-          }
-          if (a[0] < b[0]) {
-            return -1;
-          }
-          return 0;
-        });
-      }
-
-      if (token.selfClosing) {
-        token.selfClosing = false;
-        tokens.push(token);
-        tokens.push({ type: 'EndTag', tagName: token.tagName } as EndTag);
-      } else {
-        tokens.push(token);
-      }
-    } else {
-      tokens.push(token);
-    }
-
-    return tokens;
-  }, new Array<Token>());
-
-  return { tokens, html: toInnerHTML(div) };
 }
 
 export function equalSnapshots(a: SimpleNode[], b: SimpleNode[]) {

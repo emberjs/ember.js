@@ -1375,9 +1375,6 @@ importers:
       qunit:
         specifier: ^2.24.1
         version: 2.25.0
-      simple-html-tokenizer:
-        specifier: ^0.5.11
-        version: 0.5.11
     devDependencies:
       '@ember/runloop':
         specifier: workspace:*
@@ -2148,8 +2145,8 @@ importers:
         specifier: workspace:*
         version: link:../wire-format
       glimmer-template-parser:
-        specifier: file:rust-parser/pkg/node
-        version: file:packages/@glimmer/syntax/rust-parser/pkg/node
+        specifier: file:pkg/node
+        version: file:packages/@glimmer/syntax/pkg/node
     devDependencies:
       '@glimmer/debug-util':
         specifier: workspace:*
@@ -2707,9 +2704,6 @@ importers:
       rsvp:
         specifier: ^4.8.5
         version: 4.8.5
-      simple-html-tokenizer:
-        specifier: ^0.5.11
-        version: 0.5.11
 
   packages/router_js:
     dependencies:
@@ -8313,8 +8307,8 @@ packages:
     resolution: {integrity: sha512-kwlddnFSaoKRN/zjGUrfN2BsbARG+dJRNYFGDrmlQgJN7IHNQJwj11mS+9qQL4oVzQBf+ESblanxp5oESI5AeA==}
     engines: {node: '>= 0.10.0'}
 
-  glimmer-template-parser@file:packages/@glimmer/syntax/rust-parser/pkg/node:
-    resolution: {directory: packages/@glimmer/syntax/rust-parser/pkg/node, type: directory}
+  glimmer-template-parser@file:packages/@glimmer/syntax/pkg/node:
+    resolution: {directory: packages/@glimmer/syntax/pkg/node, type: directory}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -18817,7 +18811,7 @@ snapshots:
     dependencies:
       git-repo-info: 1.4.1
 
-  glimmer-template-parser@file:packages/@glimmer/syntax/rust-parser/pkg/node: {}
+  glimmer-template-parser@file:packages/@glimmer/syntax/pkg/node: {}
 
   glob-parent@5.1.2:
     dependencies:

@@ -14,8 +14,9 @@ package.json
 pnpm-lock.yaml
 internal-docs/**/*.md
 tracerbench-testing/
-packages/@glimmer/syntax/rust-parser/target/
-packages/@glimmer/syntax/rust-parser/pkg/
-packages/@glimmer/syntax/rust-parser/Cargo.lock
+packages/@glimmer/syntax/target/
+packages/@glimmer/syntax/pkg/
+packages/@glimmer/syntax/Cargo.lock
+packages/@glimmer/syntax/src/
 *.pest
 *.wasm
