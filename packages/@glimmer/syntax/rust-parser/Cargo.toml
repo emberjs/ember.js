@@ -1,0 +1,20 @@
+[package]
+name = "glimmer-template-parser"
+version = "0.1.0"
+edition = "2024"
+description = "A Rust-based PEG parser for Glimmer/Handlebars templates"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pest = "2"
+pest_derive = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasm-bindgen = "0.2"
+serde-wasm-bindgen = "0.6"
+
+[profile.release]
+opt-level = "z"
+lto = true

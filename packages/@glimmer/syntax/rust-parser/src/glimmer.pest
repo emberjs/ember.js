@@ -1,0 +1,457 @@
+// ============================================================================
+// Glimmer Template Grammar (pest PEG)
+//
+// Parses HTML + Handlebars template syntax into an AST.
+// No implicit WHITESPACE rule — whitespace is significant in templates
+// and must be handled explicitly in each rule.
+// ============================================================================
+
+// -- Entry Points -----------------------------------------------------------
+
+Template = { SOI ~ TopLevelStatement* ~ EOI }
+
+TopLevelStatement = _{
+    HtmlComment
+  | MustacheComment
+  | BlockStatement
+  | EscapedMustache
+  | Mustache
+  | Element
+  | TextContent
+}
+
+// -- Text Content -----------------------------------------------------------
+
+TextContent = @{
+    TextChar+
+}
+
+TextChar = @{
+    !("<" | "{{" | "\\{{") ~ ANY
+}
+
+// -- Escaped Mustaches ------------------------------------------------------
+// \{{ becomes literal {{ in output
+
+EscapedMustache = @{
+    "\\" ~ "{{"
+}
+
+// -- Mustache Statements ----------------------------------------------------
+// {{expr}}, {{{expr}}}, {{~expr~}}
+
+Mustache = {
+    TripleMustache
+  | DoubleMustache
+}
+
+DoubleMustache = {
+    "{{" ~ StripOpen? ~ WS* ~ MustacheBody ~ WS* ~ StripClose? ~ "}}"
+}
+
+TripleMustache = {
+    "{{{" ~ WS* ~ MustacheBody ~ WS* ~ "}}}"
+}
+
+MustacheBody = {
+    Expression ~ (WS+ ~ ParamOrHash)*
+}
+
+ParamOrHash = _{
+    HashPair
+  | Param
+}
+
+// -- Block Statements -------------------------------------------------------
+// {{#name}}...{{/name}}, {{#name as |params|}}...{{/name}}
+
+BlockStatement = {
+    BlockOpen ~ TopLevelStatement* ~ InverseChain? ~ BlockClose
+}
+
+BlockOpen = {
+    "{{" ~ StripOpen? ~ WS* ~ "#" ~ WS* ~ CallExpression ~ BlockParams? ~ WS* ~ StripClose? ~ "}}"
+}
+
+BlockClose = {
+    "{{" ~ StripOpen? ~ WS* ~ "/" ~ WS* ~ PathExpression ~ WS* ~ StripClose? ~ "}}"
+}
+
+InverseChain = {
+    InverseBlock ~ TopLevelStatement* ~ InverseChain?
+}
+
+InverseBlock = {
+    InverseElseBlock
+  | InverseSimple
+}
+
+InverseElseBlock = {
+    "{{" ~ StripOpen? ~ WS* ~ "else" ~ WS+ ~ CallExpression ~ BlockParams? ~ WS* ~ StripClose? ~ "}}"
+}
+
+InverseSimple = {
+    "{{" ~ StripOpen? ~ WS* ~ "else" ~ WS* ~ StripClose? ~ "}}"
+}
+
+// -- Call Expression (path + params + hash) ----------------------------------
+
+CallExpression = {
+    Expression ~ (WS+ ~ ParamOrHash)*
+}
+
+// -- Expressions ------------------------------------------------------------
+
+Expression = _{
+    SubExpression
+  | Literal
+  | PathExpression
+}
+
+Param = {
+    !BlockParamsLookahead ~ (SubExpression | Literal | PathExpression)
+}
+
+// Prevent "as |" from being consumed as a param
+BlockParamsLookahead = _{
+    "as" ~ WS+ ~ "|"
+}
+
+// -- Sub-expressions --------------------------------------------------------
+// (helper arg1 key=val)
+
+SubExpression = {
+    "(" ~ WS* ~ Expression ~ (WS+ ~ ParamOrHash)* ~ WS* ~ ")"
+}
+
+// -- Path Expressions -------------------------------------------------------
+// foo, foo.bar, this.foo, @bar, ../foo
+
+PathExpression = @{
+    PathHead ~ ("." ~ PathSegment)*
+}
+
+PathHead = @{
+    ThisRef
+  | AtName
+  | ParentRef
+  | SimpleIdentifier
+}
+
+ThisRef = @{ "this" ~ &("." | WS | "}}" | ")" | "~}}" | "=" | "|") }
+
+AtName = @{ "@" ~ IdentChars }
+
+ParentRef = @{ ("../" )+ ~ IdentChars }
+
+SimpleIdentifier = @{ IdentChars }
+
+PathSegment = @{ IdentChars }
+
+IdentChars = @{
+    IdentStart ~ IdentContinue*
+}
+
+IdentStart = @{
+    ASCII_ALPHA | "_" | "$"
+}
+
+IdentContinue = @{
+    ASCII_ALPHANUMERIC | "_" | "$" | "-"
+}
+
+// -- Literals ---------------------------------------------------------------
+
+Literal = _{
+    StringLiteral
+  | NumberLiteral
+  | BooleanLiteral
+  | UndefinedLiteral
+  | NullLiteral
+}
+
+StringLiteral = {
+    DoubleQuotedString
+  | SingleQuotedString
+}
+
+DoubleQuotedString = @{
+    "\"" ~ DoubleQuotedChar* ~ "\""
+}
+
+DoubleQuotedChar = @{
+    !("\"" | "\\") ~ ANY
+  | "\\" ~ ANY
+}
+
+SingleQuotedString = @{
+    "'" ~ SingleQuotedChar* ~ "'"
+}
+
+SingleQuotedChar = @{
+    !("'" | "\\") ~ ANY
+  | "\\" ~ ANY
+}
+
+NumberLiteral = @{
+    "-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?
+}
+
+BooleanLiteral = @{
+    ("true" | "false") ~ &(WS | "}}" | ")" | "~}}")
+}
+
+UndefinedLiteral = @{
+    "undefined" ~ &(WS | "}}" | ")" | "~}}")
+}
+
+NullLiteral = @{
+    "null" ~ &(WS | "}}" | ")" | "~}}")
+}
+
+// -- Hash Pairs -------------------------------------------------------------
+// key=value, key="string", key=(helper arg)
+
+HashPair = {
+    HashKey ~ "=" ~ HashValue
+}
+
+HashKey = @{ IdentChars }
+
+HashValue = _{
+    SubExpression
+  | Literal
+  | PathExpression
+}
+
+// -- Strip Flags ------------------------------------------------------------
+
+StripOpen = @{ "~" ~ WS* }
+StripClose = @{ WS* ~ "~" }
+
+// -- Block Params -----------------------------------------------------------
+// as |foo bar|
+
+BlockParams = {
+    WS+ ~ "as" ~ WS+ ~ "|" ~ BlockParamList ~ "|"
+}
+
+BlockParamList = {
+    (WS* ~ BlockParamName ~ WS*)+
+}
+
+BlockParamName = @{ IdentChars }
+
+// -- HTML Elements ----------------------------------------------------------
+// Order matters: try more specific matches first
+
+Element = {
+    RawElement
+  | VoidElement
+  | SelfClosingElement
+  | NormalElement
+}
+
+NormalElement = {
+    OpenTag ~ TopLevelStatement* ~ CloseTag
+}
+
+SelfClosingElement = {
+    "<" ~ TagName ~ ElementContent* ~ WS* ~ "/>"
+}
+
+VoidElement = {
+    "<" ~ VoidTagName ~ ElementContent* ~ WS* ~ TagEnd
+}
+
+// Separate TagEnd to handle both > and /> for void elements
+TagEnd = @{ "/>" | ">" }
+
+RawElement = {
+    RawOpenTag ~ RawContent ~ RawCloseTag
+}
+
+RawOpenTag = {
+    "<" ~ RawTagName ~ ElementContent* ~ WS* ~ ">"
+}
+
+RawContent = @{
+    RawContentChars*
+}
+
+RawContentChars = @{
+    !RawCloseTagLookahead ~ ANY
+}
+
+RawCloseTagLookahead = _{
+    "</" ~ RawTagName ~ ">"
+}
+
+RawCloseTag = {
+    "</" ~ RawTagName ~ ">"
+}
+
+RawTagName = @{
+    (^"script" | ^"style" | ^"textarea" | ^"pre") ~ &(WS | ">" | "/")
+}
+
+OpenTag = {
+    "<" ~ TagName ~ ElementContent* ~ WS* ~ ">"
+}
+
+CloseTag = {
+    "</" ~ TagName ~ WS* ~ ">"
+}
+
+// ElementContent covers attributes, modifiers, splattributes, block params
+ElementContent = _{
+    WS+ ~ (Splattributes | AttrModifier | AttrWithValue | AttrNameOnly)
+  | WS+ ~ BlockParams
+}
+
+TagName = @{
+    NamedBlockTag
+  | ComponentTag
+  | HtmlTag
+}
+
+NamedBlockTag = @{
+    ":" ~ IdentChars
+}
+
+ComponentTag = @{
+    ASCII_ALPHA_UPPER ~ TagNameContinue*
+  | HtmlTag ~ ("." ~ PathSegment)+
+}
+
+HtmlTag = @{
+    ASCII_ALPHA_LOWER ~ TagNameContinue*
+}
+
+TagNameContinue = @{
+    ASCII_ALPHANUMERIC | "-" | "_"
+}
+
+VoidTagName = @{
+    (
+        ^"area" | ^"base" | ^"br" | ^"col" | ^"command"
+      | ^"embed" | ^"hr" | ^"img" | ^"input" | ^"keygen"
+      | ^"link" | ^"meta" | ^"param" | ^"source" | ^"track"
+      | ^"wbr"
+    ) ~ &(WS | ">" | "/")
+}
+
+// -- Attributes -------------------------------------------------------------
+
+Splattributes = {
+    "...attributes"
+}
+
+AttrModifier = {
+    "{{" ~ StripOpen? ~ WS* ~ CallExpression ~ WS* ~ StripClose? ~ "}}"
+}
+
+AttrWithValue = {
+    AttrName ~ "=" ~ AttrValuePart
+}
+
+AttrNameOnly = {
+    AttrName
+}
+
+AttrName = @{
+    AttrNameChar+
+}
+
+AttrNameChar = @{
+    !(WS | "=" | ">" | "/" | "{{" | "\"" | "'") ~ ANY
+}
+
+AttrValuePart = _{
+    QuotedAttrValue
+  | UnquotedAttrValue
+}
+
+QuotedAttrValue = {
+    DoubleQuotedAttrValue
+  | SingleQuotedAttrValue
+}
+
+DoubleQuotedAttrValue = {
+    "\"" ~ AttrTextOrMustache_DQ* ~ "\""
+}
+
+SingleQuotedAttrValue = {
+    "'" ~ AttrTextOrMustache_SQ* ~ "'"
+}
+
+AttrTextOrMustache_DQ = _{
+    AttrMustache | AttrText_DQ
+}
+
+AttrTextOrMustache_SQ = _{
+    AttrMustache | AttrText_SQ
+}
+
+AttrText_DQ = @{
+    (!("\"" | "{{") ~ ANY)+
+}
+
+AttrText_SQ = @{
+    (!("'" | "{{") ~ ANY)+
+}
+
+AttrMustache = {
+    DoubleMustache
+}
+
+UnquotedAttrValue = {
+    UnquotedMustache
+  | UnquotedTextValue
+}
+
+UnquotedMustache = {
+    DoubleMustache
+}
+
+UnquotedTextValue = @{
+    (!(WS | ">" | "/>" | "{{") ~ ANY)+
+}
+
+// -- HTML Comments ----------------------------------------------------------
+
+HtmlComment = {
+    "<!--" ~ HtmlCommentContent ~ "-->"
+}
+
+HtmlCommentContent = @{
+    (!"-->" ~ ANY)*
+}
+
+// -- Mustache Comments ------------------------------------------------------
+// {{!-- comment --}} and {{! comment }}
+
+MustacheComment = {
+    MustacheCommentLong
+  | MustacheCommentShort
+}
+
+MustacheCommentLong = {
+    "{{" ~ StripOpen? ~ "!--" ~ MustacheCommentLongContent ~ "--" ~ StripClose? ~ "}}"
+}
+
+MustacheCommentLongContent = @{
+    (!"--}}" ~ !"--~}}" ~ ANY)*
+}
+
+MustacheCommentShort = {
+    "{{" ~ StripOpen? ~ "!" ~ MustacheCommentShortContent ~ StripClose? ~ "}}"
+}
+
+MustacheCommentShortContent = @{
+    (!("}}" | "~}}") ~ ANY)*
+}
+
+// -- Whitespace (explicit only, no implicit WHITESPACE rule) ----------------
+
+WS = _{ " " | "\t" | "\n" | "\r" }

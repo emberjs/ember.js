@@ -29,7 +29,8 @@
     "dist"
   ],
   "scripts": {
-    "test:publint": "publint"
+    "test:publint": "publint",
+    "build:rust-parser": "cd rust-parser && ./build.sh"
   },
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
