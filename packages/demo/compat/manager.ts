@@ -455,6 +455,11 @@ function getCachedOrCreateInstance(
     poolEntry.instance.__gxtReusedFromPool = true;
     poolEntry.instance.__gxtPoolHasArgChanges = hasChanges;
 
+    // Re-register in view registry (idempotent). Ensures pooled instances
+    // remain visible to getRootViews/getChildViews even if an earlier
+    // destruction cycle cleaned them out of the registry.
+    registerInViewRegistry(poolEntry.instance);
+
     return poolEntry.instance;
   }
 
@@ -508,6 +513,28 @@ function getCachedOrCreateInstance(
   pool.push({ instance, claimed: true, updatedThisPass: false });
 
   return instance;
+}
+
+/**
+ * Register a component instance in the owner's -view-registry:main so that
+ * getRootViews/getChildViews/viewFor can find it. Safe to call multiple times
+ * for the same instance (idempotent). Called when creating new instances and
+ * also when reusing pooled instances (so instances survive across re-renders
+ * even if another code path cleaned the registry).
+ */
+function registerInViewRegistry(instance: any): void {
+  if (!instance || instance.isDestroyed || instance.isDestroying) return;
+  if (!isInteractiveModeChecked()) return;
+  try {
+    const instanceOwner = _glimmerGetOwner(instance);
+    const gOwner = instanceOwner || (globalThis as any).owner;
+    if (!gOwner) return;
+    const viewRegistry = gOwner.lookup?.('-view-registry:main');
+    if (!viewRegistry) return;
+    const viewId = getViewId(instance);
+    if (!viewId) return;
+    viewRegistry[viewId] = instance;
+  } catch { /* ignore */ }
 }
 
 /**
@@ -844,26 +871,7 @@ function createComponentInstance(
   // Register in the view registry so collectChildViews() can find this component.
   // This is normally done by the renderer's register() method.
   // Only do this in interactive mode (non-interactive mode expects no registered views).
-  if (isInteractiveModeChecked()) {
-    try {
-      // Use the instance's own owner (set by CoreObject.create via setOwner) instead
-      // of globalThis.owner — the global ref can be stale/swapped by the time we
-      // reach this point, causing views to register under the wrong owner's registry.
-      const instanceOwner = _glimmerGetOwner(instance);
-      const gOwner = instanceOwner || (globalThis as any).owner;
-      if (gOwner) {
-        const viewRegistry = gOwner.lookup?.('-view-registry:main');
-        if (viewRegistry) {
-          const viewId = getViewId(instance);
-          if (viewId) {
-            // Always register (don't guard with !viewRegistry[viewId]) so that
-            // pooled/recycled instances are re-registered after destroy cleanup.
-            viewRegistry[viewId] = instance;
-          }
-        }
-      }
-    } catch { /* ignore */ }
-  }
+  registerInViewRegistry(instance);
 
   // Trigger initial didReceiveAttrs
   triggerLifecycleHook(instance, 'didReceiveAttrs');
@@ -5991,7 +5999,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
 // The call counter resets at the start of each render pass so that sequential
 // invocations match to the same slot across re-renders.
 const _managedComponentCache = new WeakMap<object, {
-  slots: Map<string, { instance: any; renderFn: () => any }>;
+  slots: Map<string, { instance: any; renderFn: () => any; liveEl?: HTMLElement }>;
   callCounter: Map<any, number>;
 }>();
 
@@ -6037,6 +6045,28 @@ function handleManagedComponent(
 
     const cached = cache.slots.get(slotKey);
     if (cached) {
+      const inst = cached.instance;
+      // Cache HIT means the parent formula is being re-evaluated to push new
+      // args down. In classic Glimmer, this would create a fresh component
+      // instance with a fresh ForkedValue. Since we reuse the instance to
+      // preserve identity, we must manually sync the input's ForkedValue
+      // fork to the current upstream value. We also directly write the
+      // upstream value to the live DOM element — because the old gxtEffect
+      // tied to the OLD LocalValue isn't guaranteed to re-fire when the
+      // primitive value equals (a new LocalValue may have been assigned
+      // and the old effect is disconnected from it).
+      if (inst && inst._value && typeof inst._value.__syncFromUpstream === 'function') {
+        inst._value.__syncFromUpstream();
+        if (cached.liveEl && cached.liveEl.isConnected) {
+          try {
+            const upstreamVal = inst.value;
+            const stringVal = upstreamVal == null ? '' : String(upstreamVal);
+            if ((cached.liveEl as HTMLInputElement).value !== stringVal) {
+              (cached.liveEl as HTMLInputElement).value = stringVal;
+            }
+          } catch { /* ignore */ }
+        }
+      }
       return cached.renderFn;
     }
   }
@@ -6072,6 +6102,10 @@ function handleManagedComponent(
     formula(() => ctx, 'internalManager:caller')
   );
 
+  // Slot reference captured by closure — allows renderFn to update liveEl
+  // and the cache-HIT path to read it without additional lookups.
+  const slotRef: { instance: any; renderFn: () => any; liveEl?: HTMLElement } = { instance, renderFn: null as any };
+
   const renderFn = () => {
     // Determine component type from the static toString() method
     const componentType = komp?.toString?.();
@@ -6084,6 +6118,9 @@ function handleManagedComponent(
     // Create the <input> or <textarea> element directly
     const tagName = componentType === 'Textarea' ? 'textarea' : 'input';
     const el = document.createElement(tagName);
+    // Store as liveEl on the cache slot so cache HITs on parent re-render
+    // can push the fresh upstream value directly to the in-DOM element.
+    slotRef.liveEl = el;
 
     // Set initial attributes and set up reactive bindings
     const gxtEffect = _gxtEffect;
@@ -6427,6 +6464,8 @@ function handleManagedComponent(
     return el;
   };
 
+  slotRef.renderFn = renderFn;
+
   // Cache the render function for reuse on re-renders (same owner + komp + slot).
   if (owner && typeof owner === 'object') {
     let cache = _managedComponentCache.get(owner);
@@ -6438,7 +6477,7 @@ function handleManagedComponent(
     // so the current slot is (counter - 1).
     const callIdx = (cache.callCounter.get(komp) || 1) - 1;
     const slotKey = `${komp?.toString?.() || 'unknown'}#${callIdx}`;
-    cache.slots.set(slotKey, { instance, renderFn });
+    cache.slots.set(slotKey, slotRef);
   }
 
   return renderFn;

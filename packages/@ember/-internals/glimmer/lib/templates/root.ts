@@ -346,18 +346,20 @@ export default function createRootTemplate(_owner: any) {
       const componentTemplate = getTemplateForComponent(component, owner);
 
       if (componentTemplate) {
-        // Build render context that inherits from component for {{this.xxx}} access
-        // CRITICAL: Use Object.create to preserve prototype chain and getters
-        // DO NOT copy properties as values - that breaks reactivity!
-        // When component.customId is updated via set(), we need renderContext.customId
-        // to also return the new value (via prototype chain delegation).
-        const renderContext: any = Object.create(component);
+        // Use the component itself as the render context so that `{{log this}}`
+        // and strict equality checks (like in log-test.js) compare against the
+        // same object that owner.lookup() returned.
+        // Previously this used Object.create(component) to avoid mutating the
+        // component, but that created a separate object with a different guidFor
+        // identity, causing `this` in the template to differ from this.context.
+        const renderContext: any = component;
 
-        // Only add the properties that we need to override
-        renderContext.owner = owner;
-        renderContext.args = component.args || {};
+        // Ensure required GXT properties are present
+        if (!renderContext.args) {
+          renderContext.args = {};
+        }
 
-        // Store ALL render contexts derived from this component
+        // Store the render context for cross-cell dirtying
         if (!(globalThis as any).__gxtComponentContexts) {
           (globalThis as any).__gxtComponentContexts = new WeakMap();
         }
