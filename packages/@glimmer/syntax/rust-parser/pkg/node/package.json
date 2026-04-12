@@ -1,0 +1,12 @@
+{
+  "name": "glimmer-template-parser",
+  "description": "A Rust-based PEG parser for Glimmer/Handlebars templates",
+  "version": "0.1.0",
+  "files": [
+    "glimmer_template_parser_bg.wasm",
+    "glimmer_template_parser.js",
+    "glimmer_template_parser.d.ts"
+  ],
+  "main": "glimmer_template_parser.js",
+  "types": "glimmer_template_parser.d.ts"
+}
