@@ -3493,10 +3493,19 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
-    // Ensure ctx has a TRUTHY GXT component ID for addToTree parent tracking.
-    // GXT's tree.ts checks `if (!PARENT_ID)` which treats 0 as falsy.
+    // Ensure ctx has a GXT component ID that points to a real node in GXT's TREE.
+    // See the detailed explanation in the template.render() function below — we
+    // assign the gxtRoot's id so addToTree's PARENT.set points at a parent that's
+    // actually registered (the root). Without this, the $_if/$_each walker crashes
+    // with "Cannot read properties of undefined (reading 'Symbol()')".
     if (ctx && typeof ctx === 'object' && COMPONENT_ID_PROPERTY) {
-      if (!ctx[COMPONENT_ID_PROPERTY as any]) {
+      const gxtRootCtx = (globalThis as any).__gxtRootContext;
+      const rootId = gxtRootCtx && gxtRootCtx[COMPONENT_ID_PROPERTY as any];
+      if (rootId !== undefined && rootId !== null) {
+        try {
+          ctx[COMPONENT_ID_PROPERTY as any] = rootId;
+        } catch { /* frozen, ignore */ }
+      } else if (!ctx[COMPONENT_ID_PROPERTY as any]) {
         ctx[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
       }
     }
@@ -6700,30 +6709,32 @@ export function precompileTemplate(templateString: string, options?: {
           if (RENDERED_NODES_PROPERTY && !renderContext[RENDERED_NODES_PROPERTY as any]) {
             renderContext[RENDERED_NODES_PROPERTY as any] = [];
           }
-          if (COMPONENT_ID_PROPERTY && !renderContext[COMPONENT_ID_PROPERTY as any]) {
-            // Generate a unique context ID
-            renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
-          }
-
-          // Register the Ember rendering context in GXT's component tree.
-          // $_inElement (and other GXT internals) call getParentContext() which
-          // looks up the context via TREE.get(id). Without this registration,
-          // getParentContext() returns undefined and addToTree crashes.
-          // Access TREE directly (exposed via getRenderTree in dev mode, or
-          // via __gxtTreeMap set during init) and insert without side effects.
-          try {
-            const id = renderContext[COMPONENT_ID_PROPERTY as any];
-            if (id) {
-              let tree = (globalThis as any).__gxtTreeMap;
-              if (!tree && typeof (globalThis as any).getRenderTree === 'function') {
-                tree = (globalThis as any).getRenderTree()?.TREE;
-                if (tree) (globalThis as any).__gxtTreeMap = tree;
-              }
-              if (tree) {
-                tree.set(id, renderContext);
-              }
+          // CRITICAL: The Ember render context is NOT registered in GXT's internal
+          // TREE map (that map is not accessible from outside GXT in production builds).
+          // When GXT's $_if/$_each/etc. call addToTree(renderContext, newChild), they
+          // set PARENT.set(newChildId, renderContext[COMPONENT_ID_PROPERTY]). Then the
+          // context walker does TREE.get(parentId) which returns undefined and crashes
+          // while trying to read RENDERING_CONTEXT_PROPERTY off the undefined parent.
+          //
+          // Fix: assign the gxtRoot's COMPONENT_ID_PROPERTY to the render context. This
+          // way addToTree writes PARENT[childId] = gxtRootId, and TREE.get(gxtRootId)
+          // returns the gxtRoot (which IS registered in TREE and has
+          // RENDERING_CONTEXT_PROPERTY set). Walker finds the DOM api and returns.
+          //
+          // This must be set UNCONDITIONALLY (not guarded by "if not set"), because an
+          // earlier classic-component render may have assigned a dangling custom id to
+          // the same instance, leaving addToTree pointing into a void.
+          if (COMPONENT_ID_PROPERTY) {
+            const rootId = gxtRoot && (gxtRoot as any)[COMPONENT_ID_PROPERTY as any];
+            if (rootId !== undefined && rootId !== null) {
+              try {
+                renderContext[COMPONENT_ID_PROPERTY as any] = rootId;
+              } catch { /* frozen context, ignore */ }
+            } else if (!renderContext[COMPONENT_ID_PROPERTY as any]) {
+              // Fallback: mint a unique ID (old behavior) if gxtRoot has no id.
+              renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
             }
-          } catch { /* ignore */ }
+          }
 
           // Ensure 'args' key is ALWAYS accessible on the render context
           // GXT's runtime compiler uses $args = 'args' (a string), so templates
