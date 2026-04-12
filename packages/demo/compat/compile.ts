@@ -1907,9 +1907,128 @@ function patchGlobalIf() {
         }
       }
 
+      // Track the placeholder's "last known parent" so we can reattach it
+      // when it gets orphaned. After the IfCondition is appended to the live
+      // DOM, GXT moves children of target (including the placeholder) into
+      // the wrapper element. If the wrapper is later force-rerendered or
+      // fastCleaned, the placeholder gets disconnected — but the IfCondition
+      // still references it for insertBefore() during syncState. We capture
+      // the placeholder's parent the first time it becomes connected, and
+      // reattach the placeholder there before each syncState call when it's
+      // orphaned.
+      let lastKnownParent: Node | null = null;
+      const repairPlaceholder = () => {
+        const ph = ifCondition.placeholder;
+        if (!ph) return;
+        if (ph.parentNode) {
+          // Currently connected — remember the parent
+          lastKnownParent = ph.parentNode;
+          return;
+        }
+        // Disconnected — try to reattach
+        // Strategy 1: use lastKnownParent if it's still connected
+        let parent: Node | null = lastKnownParent;
+        if (parent && !(parent as any).isConnected) parent = null;
+        // Strategy 2: use the prevComponent's first node's parent
+        if (!parent) {
+          const prev = ifCondition.prevComponent;
+          if (prev) {
+            const arr = Array.isArray(prev) ? prev : [prev];
+            for (const item of arr) {
+              const node = item && (item as any).nodeType ? item : (item && (item as any)[RENDERED_NODES_PROPERTY!]?.[0]);
+              if (node && node.parentNode && node.parentNode.isConnected) {
+                parent = node.parentNode;
+                break;
+              }
+            }
+          }
+        }
+        // Strategy 3: use the original target if it's connected
+        if (!parent && ifCondition.target && (ifCondition.target as any).isConnected) {
+          parent = ifCondition.target;
+        }
+        // Strategy 4: scan ifCondition[RENDERED_NODES] for any live node and use its parent
+        if (!parent) {
+          const renderedKey = RENDERED_NODES_PROPERTY;
+          const rendered = renderedKey ? (ifCondition as any)[renderedKey] : null;
+          if (rendered && Array.isArray(rendered)) {
+            for (const node of rendered) {
+              if (node && (node as any).nodeType && (node as any).parentNode && (node as any).parentNode.isConnected) {
+                parent = (node as any).parentNode;
+                break;
+              }
+            }
+          }
+        }
+        // Strategy 5: walk up from ctx (the component instance) to find its element
+        if (!parent && ctx) {
+          try {
+            const ctxAny: any = ctx;
+            const ctxElem: any = ctxAny.element || ctxAny.__gxtRawTarget?.element;
+            if (ctxElem && ctxElem.isConnected) {
+              parent = ctxElem;
+            }
+          } catch { /* ignore */ }
+        }
+        if (parent) {
+          try {
+            parent.appendChild(ph);
+            lastKnownParent = parent;
+          } catch { /* ignore */ }
+        }
+      };
+
+      // Capture initial parent post-mount via microtask
+      queueMicrotask(repairPlaceholder);
+
+      // Resolve the component instance owning this {{#if}} so that any
+      // components created by syncState (e.g., {{yield}} block content
+      // re-rendered after isExpanded toggles) are registered as children
+      // of the correct view via the parentView stack. Without this, the
+      // slot fn's captured parentView is the OUTER scope (e.g., the route
+      // controller), and re-rendered yield content is added as a child
+      // of the controller instead of the component invoking yield.
+      const ifOwnerView = (() => {
+        try {
+          const ctxAny: any = ctx;
+          const raw = ctxAny?.__gxtRawTarget || ctxAny;
+          // Only treat real Component-like instances as parents (have elementId
+          // or are Ember view instances).
+          if (raw && (raw.isView || raw.elementId || raw.id)) {
+            return raw;
+          }
+        } catch { /* ignore */ }
+        return null;
+      })();
+
       // Register manual watcher for property change notification
       if (typeof ifCondition.syncState === 'function') {
         const emberToBool = g.__gxtToBool || Boolean;
+        const origSyncState = ifCondition.syncState.bind(ifCondition);
+        ifCondition.syncState = function(v: any) {
+          repairPlaceholder();
+          // Push the owner view so any components created by syncState's
+          // re-render of the trueBranch (typically {{yield}} block content)
+          // are registered as children of the correct view via the parentView
+          // stack. Without this, slot fns capture parentView from the OUTER
+          // scope (e.g., the route controller), and re-rendered yield content
+          // is added as a child of the controller instead of the component
+          // invoking yield.
+          // Read push/pop dynamically — they may not be defined at patch time.
+          const pushPV = (globalThis as any).__gxtPushParentView;
+          const popPV = (globalThis as any).__gxtPopParentView;
+          let pushed = false;
+          if (ifOwnerView && typeof pushPV === 'function') {
+            try { pushPV(ifOwnerView); pushed = true; } catch { /* ignore */ }
+          }
+          try {
+            return origSyncState(v);
+          } finally {
+            if (pushed && typeof popPV === 'function') {
+              try { popPV(); } catch { /* ignore */ }
+            }
+          }
+        };
         registerIfWatcher(watchTarget, watchKey, () => {
           try {
             const currentValue = conditionOrCell();

@@ -376,6 +376,14 @@ export default function createRootTemplate(_owner: any) {
     }
 
     // CASE 2: OutletView rendering (routes)
+    // When called from __gxtForceEmberRerender (force re-render path), skip the
+    // re-render entirely. OutletView content is managed by __gxtRootOutletRerender
+    // (called from setOutletState). Re-rendering here would APPEND a second copy
+    // of the application template to parentElement, creating duplicate components
+    // and corrupting the view registry (e.g., root-1 appearing twice, root-6 missing).
+    if ((globalThis as any).__gxtIsForceRerender && (globalThis as any).__gxtRootOutletRerender) {
+      return { nodes: [], ctx: context };
+    }
     // Create component instance to access outlet state
     const args = context.rootState ? { rootState: context.rootState } : context;
     const instance = new RootTemplate(args) as any;
@@ -544,6 +552,49 @@ export default function createRootTemplate(_owner: any) {
           }
         } catch { /* ignore cell installation errors */ }
       }
+
+      // Fix for @tracked properties on controller prototype:
+      // Object.create(controller) makes prototype getters run with `this = renderContext`
+      // instead of `this = controller`. The @tracked getter's trackedData is keyed by
+      // `this`, so it creates a fresh storage entry for renderContext and returns the
+      // initial value (e.g., `false` for `@tracked isExpanded = false`), ignoring the
+      // actual current value on the controller (e.g., `true` after a toggle click).
+      //
+      // Fix: iterate the controller's prototype chain, find getter-based properties
+      // (likely @tracked), read the ACTUAL current value from `controller` (with the
+      // correct `this`), and update the GXT cell on renderContext to that value.
+      // This must happen BEFORE renderTemplateWithContext so the initial render sees
+      // the correct values.
+      if (controller && _cellFor) {
+        try {
+          const visitedKeys = new Set<string>();
+          let proto = Object.getPrototypeOf(controller);
+          while (proto && proto !== Object.prototype) {
+            for (const key of Object.getOwnPropertyNames(proto)) {
+              if (visitedKeys.has(key)) continue;
+              visitedKeys.add(key);
+              if (key.startsWith('_') || key.startsWith('$')) continue;
+              const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
+              // Only process getter-only or getter+setter properties (likely @tracked)
+              if (!protoDesc?.get) continue;
+              // Don't override already-installed own properties on renderContext
+              if (Object.getOwnPropertyDescriptor(renderContext, key)) continue;
+              try {
+                // Read the actual value using the controller as `this`, not renderContext.
+                // This correctly reads trackedData.get(controller) instead of a fresh entry.
+                const actualValue = (controller as any)[key];
+                // Install a GXT cell on renderContext for this key
+                _cellFor(renderContext, key, /* skipDefine */ false);
+                // Update the cell to the actual current value from the controller
+                const cell = _cellFor(renderContext, key, /* skipDefine */ true);
+                if (cell) cell.update(actualValue);
+              } catch { /* ignore */ }
+            }
+            proto = Object.getPrototypeOf(proto);
+          }
+        } catch { /* ignore */ }
+      }
+
       // Set global outlet state for nested <ember-outlet> elements
       (globalThis as any).__currentOutletState = outletState;
 

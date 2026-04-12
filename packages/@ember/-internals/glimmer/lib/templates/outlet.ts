@@ -11,6 +11,18 @@ class EmberOutletElement extends HTMLElement {
   private _lastRenderedTemplate: any = null;
 
   connectedCallback() {
+    // Skip rendering if this element is being temporarily reattached to the DOM
+    // for willDestroyElement/willClearRender lifecycle hooks. The reattachment
+    // is performed by __gxtDestroyUnclaimedPoolEntries so that tests using
+    // document.body.contains(this.element) pass during the destroy phase.
+    // Without this guard, the inner <ember-outlet> inside a just-removed component
+    // wrapper (e.g., root-9) would fire connectedCallback, read the NEW route's
+    // outlet state, and render the new route's template with the old wrapper's
+    // view on the parentView stack — corrupting the parentView of new components.
+    if ((globalThis as any).__gxtDestroyReattachInProgress) {
+      return;
+    }
+
     // Get outlet state from the global context
     this._outletState = (globalThis as any).__currentOutletState;
 
@@ -42,9 +54,36 @@ class EmberOutletElement extends HTMLElement {
   updateOutletState(newState: any) {
     this._outletState = newState;
 
-    // Check if the template actually changed
+    // If this element is no longer in the document it is stale — ignore the
+    // update entirely. This prevents a disconnected <ember-outlet> (leftover
+    // from a previous route, e.g. one nested inside a classic component
+    // wrapper like x-toggle) from scheduling a setTimeout-deferred re-render
+    // that would fire after the new route has already rendered. If that stale
+    // re-render were to proceed, it would push the old wrapper view onto the
+    // parentView stack and cause new-route components to inherit it as their
+    // parentView, making them invisible to getRootViews.
+    if (!this.isConnected) {
+      return;
+    }
+
+    // Detect a route change by comparing the deeply nested template.
+    // The top-level nested outlet (newState.outlets.main) always has
+    // render.template = applicationTemplate (same reference for every route),
+    // so comparing it is insufficient. Instead compare the ACTUAL rendered
+    // template — which is the outlets.main.outlets.main template (the leaf
+    // route template: index, zomg, etc.). This reference changes on every
+    // route transition, correctly triggering a re-render.
     const nestedOutlet = newState?.outlets?.main;
-    const newTemplate = nestedOutlet?.render?.template;
+    // The leaf template is in nestedOutlet.outlets.main (index/zomg template).
+    // Fall back to nestedOutlet.render.template for routes without sub-outlets.
+    const leafOutlet = nestedOutlet?.outlets?.main;
+    const newTemplate = leafOutlet?.render?.template ?? nestedOutlet?.render?.template;
+
+    if ((globalThis as any).__DEBUG_GXT_RENDER) {
+      console.log('[ember-outlet] updateOutletState: newTemplate=', newTemplate?.moduleName || typeof newTemplate,
+        'lastRendered=', this._lastRenderedTemplate?.moduleName || typeof this._lastRenderedTemplate,
+        'changed=', newTemplate !== this._lastRenderedTemplate);
+    }
 
     if (newTemplate !== this._lastRenderedTemplate) {
       // Schedule re-render outside of the backburner run loop to avoid
@@ -61,6 +100,16 @@ class EmberOutletElement extends HTMLElement {
 
   renderOutlet() {
     if (this._rendered) return;
+
+    // Guard: if this element is no longer connected to the live document,
+    // it is a stale <ember-outlet> left over from a previous route render
+    // (e.g. the outlet inside an x-toggle wrapper from the old route).
+    // Rendering from a disconnected element would push the old wrapper view
+    // onto the parentView stack, causing the new route's components to inherit
+    // it as their parentView (and wrongly disappear from getRootViews).
+    if (!this.isConnected) {
+      return;
+    }
 
     const outletState = this._outletState;
     if (!outletState) {
@@ -96,6 +145,47 @@ class EmberOutletElement extends HTMLElement {
     nestedContext.owner = owner || (globalThis as any).owner;
     nestedContext.outletState = nestedOutlet;
     nestedContext.args = { model, controller, outletState: nestedOutlet };
+
+    // Fix for @tracked properties on controller prototype:
+    // Object.create(controller) makes prototype getters run with `this = nestedContext`
+    // instead of `this = controller`. The @tracked getter's trackedData is keyed by `this`,
+    // so it creates a fresh storage entry for nestedContext with the initial value
+    // (e.g., `false` for `@tracked isExpanded = false`), ignoring the actual current
+    // value on the controller (e.g., `true` after a toggle click).
+    //
+    // Fix: install GXT cells on nestedContext with the ACTUAL current values from controller.
+    if (controller) {
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (_cellFor) {
+        try {
+          const skipKeys = new Set([
+            'args', 'owner', 'outletState', 'model', 'constructor',
+            'init', 'willDestroy', 'toString', 'isDestroying', 'isDestroyed',
+          ]);
+          const visited = new Set<string>();
+          let proto = Object.getPrototypeOf(controller);
+          while (proto && proto !== Object.prototype) {
+            for (const key of Object.getOwnPropertyNames(proto)) {
+              if (visited.has(key)) continue;
+              visited.add(key);
+              if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+              const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
+              if (!protoDesc?.get) continue;
+              if (Object.getOwnPropertyDescriptor(nestedContext, key)) continue;
+              try {
+                // Read the actual value from controller (not through nestedContext prototype)
+                const actualValue = (controller as any)[key];
+                // Install GXT cell on nestedContext and set it to the actual value
+                _cellFor(nestedContext, key, /* skipDefine */ false);
+                const cell = _cellFor(nestedContext, key, /* skipDefine */ true);
+                if (cell) cell.update(actualValue);
+              } catch { /* ignore */ }
+            }
+            proto = Object.getPrototypeOf(proto);
+          }
+        } catch { /* ignore */ }
+      }
+    }
 
     // Update the global outlet state for nested outlets
     const previousOutletState = (globalThis as any).__currentOutletState;
@@ -232,13 +322,22 @@ export default function createOutletTemplate(_owner: any) {
         // parentElement here is the rendering target (typically the
         // ember-outlet custom element or its direct parent div).
         // Walk up a couple of levels looking for the enclosing wrapper.
+        // Only push a view if its element is still connected to the live
+        // document — stale wrappers from a previous route (whose elements
+        // were removed by parentElement.innerHTML = '') must not be pushed,
+        // or else the new route's components inherit the wrong parentView.
         let node: Element | null = parentElement as Element;
         let steps = 0;
         while (node && steps++ < 3) {
           const v = viewUtils.getElementView(node);
           if (v && !v.isDestroyed && !v.isDestroying) {
-            pushParentFn(v);
-            _factoryParentPushed = true;
+            // Verify the view's element is in the live DOM
+            const viewEl = viewUtils.getViewElement ? viewUtils.getViewElement(v) : null;
+            const isLive = viewEl ? viewEl.isConnected : node.isConnected;
+            if (isLive) {
+              pushParentFn(v);
+              _factoryParentPushed = true;
+            }
             break;
           }
           node = node.parentElement;
