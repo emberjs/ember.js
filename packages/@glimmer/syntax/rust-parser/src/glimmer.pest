@@ -320,14 +320,15 @@ NamedBlockTag = @{
     ":" ~ IdentChars
 }
 
-// @Component style tags (used in strict mode)
+// @foo style tags (used in strict mode, both upper and lower case)
 AtComponentTag = @{
-    "@" ~ ASCII_ALPHA_UPPER ~ TagNameContinue*
+    "@" ~ IdentChars ~ ("." ~ PathSegment)*
 }
 
+// Component tags with dot paths: Foo.Bar, this.SomeComponent, Foo.Bar.Baz
 ComponentTag = @{
-    ASCII_ALPHA_UPPER ~ TagNameContinue*
-  | HtmlTag ~ ("." ~ PathSegment)+
+    (ASCII_ALPHA_UPPER ~ TagNameContinue*) ~ ("." ~ PathSegment)*
+  | "this" ~ ("." ~ PathSegment)+
 }
 
 HtmlTag = @{
