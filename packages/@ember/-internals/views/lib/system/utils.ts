@@ -42,6 +42,12 @@ export function constructStyleDeprecationMessage(affectedStyle: string): string 
 export function getRootViews(owner: InternalOwner): View[] {
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
 
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM.
+  try {
+    const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
+    if (typeof rebuild === 'function') rebuild(registry);
+  } catch { /* ignore */ }
+
   let rootViews: View[] = [];
 
   Object.keys(registry).forEach((id) => {
@@ -117,6 +123,17 @@ export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
   assert('View is unexpectedly missing an owner', owner);
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
+
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM
+  // ancestry before reading the registry. The force-rerender path can leave
+  // parentView=null or CHILD_VIEW_IDS stale when a component is created while
+  // the render-time parent-view stack was empty. Passing the registry tells
+  // the rebuild which registry the caller will read.
+  try {
+    const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
+    if (typeof rebuild === 'function') rebuild(registry);
+  } catch { /* ignore */ }
+
   return collectChildViews(view, registry);
 }
 

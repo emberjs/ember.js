@@ -2280,6 +2280,11 @@ queueMicrotask(patchGlobalEachSync);
       // Store destroy errors for propagation to assert.throws
       (globalThis as any).__gxtDeferredSyncError = (globalThis as any).__gxtDeferredSyncError || destroyErr;
     }
+    // PHASE 2c2: Rebuild view-tree parent/child relationships from DOM ancestry.
+    try {
+      const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
+      if (typeof rebuild === 'function') rebuild();
+    } catch { /* ignore */ }
     // PHASE 2d: Flush pending modifier destroys — call destroyModifier on
     // custom modifier managers whose elements were removed (e.g., by #if toggle).
     // This must happen BEFORE post-render hooks so willDestroyElement fires

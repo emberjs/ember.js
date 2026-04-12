@@ -27,7 +27,7 @@ Object.defineProperty(globalThis, '__emberAssertFn', {
 };
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
-import { setViewElement, setElementView, getViewElement, getElementView, addChildView as _addChildView, getViewId } from '@ember/-internals/views/lib/system/utils';
+import { setViewElement, setElementView, getViewElement, getElementView, addChildView as _addChildView, initChildViews as _initChildViews, getViewId } from '@ember/-internals/views/lib/system/utils';
 import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
 
 // Helper to detect assertion-related throws that must escape catch blocks.
@@ -313,6 +313,123 @@ function getCurrentParentView(): any | null {
 (globalThis as any).__gxtViewUtilsRef = {
   getElementView,
   getViewElement,
+};
+
+/**
+ * Rebuild the view-tree parent/child relationships from DOM ancestry.
+ *
+ * Called after __gxtForceEmberRerender to fix up views whose parentView was
+ * never assigned because the parentViewStack was empty during their creation
+ * (the force-rerender path bypasses patchedIf's syncState wrap that pushes the
+ * parent). Walks each live view's DOM ancestry to find the nearest ancestor
+ * element registered as another view, and wires parentView + _addChildView.
+ */
+(globalThis as any).__gxtRebuildViewTreeFromDom = function rebuildViewTreeFromDom(explicitRegistry?: any): void {
+  try {
+    const owner = (globalThis as any).owner;
+    // Collect registries from all live pool instances (they know their owner),
+    // plus the current globalThis.owner and any explicit registry passed in.
+    const registries = new Set<any>();
+    if (explicitRegistry) registries.add(explicitRegistry);
+    for (const pool of _allPoolArrays) {
+      for (const entry of pool) {
+        const inst = entry.instance;
+        if (!inst || inst.isDestroyed || inst.isDestroying) continue;
+        try {
+          const instOwner = _glimmerGetOwner(inst) || owner;
+          const reg = instOwner?.lookup?.('-view-registry:main');
+          if (reg) registries.add(reg);
+        } catch { /* ignore */ }
+      }
+    }
+    if (owner) {
+      try {
+        const reg = owner.lookup?.('-view-registry:main');
+        if (reg) registries.add(reg);
+      } catch { /* ignore */ }
+    }
+    if (registries.size === 0) return;
+
+    for (const registry of registries) {
+      const viewIds = Object.keys(registry);
+      // Pass 1: clear CHILD_VIEW_IDS for every live tagged view with a live
+      // element — we're about to repopulate from live DOM ancestry.
+      const liveElFor = new Map<any, Element>();
+      const disconnectedIds: string[] = [];
+      for (const id of viewIds) {
+        const view = registry[id];
+        if (!view || view.isDestroyed || view.isDestroying) continue;
+        // Tagless components (tagName === '') have no wrapper element. Leave
+        // their CHILD_VIEW_IDS alone — we can't walk DOM ancestry from them.
+        if (view.tagName === '') continue;
+        // Prefer document.getElementById(elementId) because setViewElement may
+        // still reference a discarded node from a prior force-rerender cycle.
+        let el: Element | null = null;
+        const elementId: string | undefined = view.elementId || id;
+        if (elementId && typeof document !== 'undefined') {
+          try { el = document.getElementById(elementId); } catch { /* ignore */ }
+        }
+        if (!el) {
+          const cached = getViewElement(view) || view.element;
+          if (cached && (cached as any).isConnected) el = cached as Element;
+        }
+        if (!el) {
+          disconnectedIds.push(id);
+          continue;
+        }
+        liveElFor.set(view, el);
+        // Refresh element↔view mapping so pass 2's DOM walk finds this view.
+        try { setElementView(el, view); } catch { /* ignore */ }
+        try { setViewElement(view, el); } catch { /* ignore */ }
+        try { _initChildViews(view); } catch { /* ignore */ }
+      }
+      // Disconnected tagged views stay in the registry (pool reuse can re-show
+      // them), but clear their CHILD_VIEW_IDS so getChildViews doesn't return
+      // a stale snapshot of a subtree hidden by {{#if}}.
+      for (const id of disconnectedIds) {
+        const v = registry[id];
+        if (v) try { _initChildViews(v); } catch { /* ignore */ }
+      }
+      // Pass 2: walk each live tagged view's DOM ancestry and wire parentView
+      // + CHILD_VIEW_IDS on the nearest ancestor that maps to another live view.
+      for (const id of viewIds) {
+        const view = registry[id];
+        if (!view || view.isDestroyed || view.isDestroying) continue;
+        if (view.tagName === '') continue;
+        const el = liveElFor.get(view);
+        if (!el) continue;
+        let ancestorView: any = null;
+        let node: any = (el as any).parentNode;
+        while (node) {
+          if (node.nodeType === 1) {
+            const candidate = getElementView(node as Element);
+            if (candidate && candidate !== view &&
+                !candidate.isDestroyed && !candidate.isDestroying) {
+              // Prefer the registry's view entry (may differ from candidate
+              // if instance was replaced/pooled). Falls back to candidate.
+              const cid = getViewId(candidate);
+              const regEntry = registry[cid];
+              ancestorView = (regEntry && !regEntry.isDestroyed && !regEntry.isDestroying)
+                ? regEntry : candidate;
+              break;
+            }
+          }
+          node = node.parentNode;
+        }
+        // Reconcile parentView + CHILD_VIEW_IDS.
+        const currentPV = view.parentView;
+        if (ancestorView) {
+          if (currentPV !== ancestorView) {
+            try { view.parentView = ancestorView; } catch { /* ignore */ }
+          }
+          try { _addChildView(ancestorView, view); } catch { /* ignore */ }
+        } else if (currentPV !== null && currentPV !== undefined) {
+          // True DOM root: ensure parentView is null so getRootViews sees it.
+          try { view.parentView = null; } catch { /* ignore */ }
+        }
+      }
+    }
+  } catch { /* ignore — best effort fixup */ }
 };
 
 /**
@@ -1453,6 +1570,16 @@ export function flushAfterInsertQueue(): void {
       captureRenderError(e);
     }
   }
+  // After all insert callbacks have fired, the DOM is fully populated for
+  // this render pass. Rebuild view-tree parent/child relationships from live
+  // DOM ancestry so getChildViews/getRootViews see the correct tree even
+  // when components were created via paths that skipped patchedIf's
+  // parentView stack push (e.g. outlet content, force-rerender of route
+  // templates).
+  try {
+    const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
+    if (typeof rebuild === 'function') rebuild();
+  } catch { /* ignore */ }
 }
 
 const INTERACTIVE_ONLY_HOOKS = new Set([
@@ -2124,6 +2251,15 @@ let _preRerenderSnapshot: Set<any> = new Set();
   const tempContainer = qunitFixture || document.body;
   const reattached: Array<{ instance: any; element: HTMLElement }> = [];
 
+  // Set a global flag so that <ember-outlet> connectedCallback fired by the
+  // temporary reattachment does NOT render content. Without this guard, the
+  // inner <ember-outlet> element (a child of root-9's wrapper) reconnects to
+  // the live DOM, fires connectedCallback, reads __currentOutletState (the
+  // NEW route), and renders the new route's template with root-9 still on the
+  // parentView stack — causing new-route components (root-5, root-6) to get
+  // parentView = root-9 and disappear from getRootViews.
+  (globalThis as any).__gxtDestroyReattachInProgress = true;
+  try {
   for (const instance of unclaimed) {
     try {
       const el = getViewElement(instance);
@@ -2132,6 +2268,9 @@ let _preRerenderSnapshot: Set<any> = new Set();
         reattached.push({ instance, element: el });
       }
     } catch { /* ignore */ }
+  }
+  } finally {
+    (globalThis as any).__gxtDestroyReattachInProgress = false;
   }
 
   for (const instance of unclaimed) {
