@@ -35,8 +35,7 @@
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/wire-format": "workspace:*",
-    "glimmer-template-parser": "file:pkg/node"
+    "@glimmer/wire-format": "workspace:*"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",

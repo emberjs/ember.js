@@ -2144,9 +2144,6 @@ importers:
       '@glimmer/wire-format':
         specifier: workspace:*
         version: link:../wire-format
-      glimmer-template-parser:
-        specifier: file:pkg/node
-        version: file:packages/@glimmer/syntax/pkg/node
     devDependencies:
       '@glimmer/debug-util':
         specifier: workspace:*
@@ -8306,9 +8303,6 @@ packages:
   git-repo-version@0.2.0:
     resolution: {integrity: sha512-kwlddnFSaoKRN/zjGUrfN2BsbARG+dJRNYFGDrmlQgJN7IHNQJwj11mS+9qQL4oVzQBf+ESblanxp5oESI5AeA==}
     engines: {node: '>= 0.10.0'}
-
-  glimmer-template-parser@file:packages/@glimmer/syntax/pkg/node:
-    resolution: {directory: packages/@glimmer/syntax/pkg/node, type: directory}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -18810,8 +18804,6 @@ snapshots:
   git-repo-version@0.2.0:
     dependencies:
       git-repo-info: 1.4.1
-
-  glimmer-template-parser@file:packages/@glimmer/syntax/pkg/node: {}
 
   glob-parent@5.1.2:
     dependencies:

@@ -153,7 +153,7 @@ let rustParserLoaded = false;
 
 // Import the WASM parser JS wrapper statically.
 // Rollup resolves this through hiddenDependencies in rollup.config.mjs.
-import * as wasmModule from 'glimmer-template-parser';
+import * as wasmModule from '../../pkg/universal.mjs';
 
 function loadRustParser(): RustWasmParser | null {
   if (rustParserLoaded) return rustParser;

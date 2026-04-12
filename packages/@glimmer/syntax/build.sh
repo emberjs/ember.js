@@ -7,25 +7,28 @@ cd "$SCRIPT_DIR"
 echo "🦀 Building Glimmer template parser (WASM)..."
 
 # Clean previous builds
-rm -rf pkg
+rm -rf pkg/standalone pkg/wasm-bytes.mjs
 
-# Build for web (ESM, browser + bundler)
+# Build only the web (standalone) target. We use a universal wrapper
+# (pkg/universal.mjs) that inlines the WASM bytes as base64, so there's
+# no need for separate Node/bundler targets.
 echo "  → Building web target..."
-wasm-pack build --target web --out-dir pkg/standalone 2>&1 | grep -v "^warning:"
+wasm-pack build --target web --out-dir pkg/standalone 2>&1 | grep -v "^warning:" || true
 
-# Build for Node.js (CommonJS)
-echo "  → Building Node.js target..."
-wasm-pack build --target nodejs --out-dir pkg/node 2>&1 | grep -v "^warning:"
+# Remove files that cause build:types issues
+rm -f pkg/standalone/.gitignore
+rm -f pkg/standalone/glimmer_template_parser_bg.wasm.d.ts
 
-# Rename node output to .cjs for dual ESM/CJS support
-if [ -f pkg/node/glimmer_template_parser.js ]; then
-  mv pkg/node/glimmer_template_parser.js pkg/node/glimmer_template_parser.cjs
-fi
-
-# Remove auto-generated .gitignore (we want these files in the package)
-rm -f pkg/standalone/.gitignore pkg/node/.gitignore
+# Generate the base64-encoded WASM bytes module for the universal wrapper
+echo "  → Generating wasm-bytes.mjs..."
+node -e "
+const fs = require('fs');
+const wasm = fs.readFileSync('pkg/standalone/glimmer_template_parser_bg.wasm');
+const base64 = wasm.toString('base64');
+const content = 'export const WASM_BYTES_BASE64 = ' + JSON.stringify(base64) + ';\n';
+fs.writeFileSync('pkg/wasm-bytes.mjs', content);
+console.log('    wasm-bytes.mjs: ' + (content.length / 1024).toFixed(1) + 'KB');
+"
 
 echo "✅ Build complete!"
-echo "   Web:  pkg/standalone/"
-echo "   Node: pkg/node/"
-ls -lh pkg/standalone/glimmer_template_parser_bg.wasm
+ls -lh pkg/standalone/glimmer_template_parser_bg.wasm pkg/wasm-bytes.mjs pkg/universal.mjs
