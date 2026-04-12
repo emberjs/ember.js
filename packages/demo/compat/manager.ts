@@ -485,6 +485,30 @@ const ROOT_PARENT_SENTINEL = {};
 };
 
 /**
+ * Remove a destroyed instance from every pool that holds it.
+ *
+ * Pool entries normally outlive a single render pass: they hold a stable
+ * instance reference so re-renders find the same component object. When an
+ * instance is destroyed (e.g. by a {{#if}} false-branch transition), its pool
+ * entry must be evicted, otherwise a subsequent re-render in the same parent
+ * may reclaim a now-dead instance and re-insert its detached element. The
+ * existing `isAlive` filter in `getCachedOrCreateInstance` defends the read
+ * side; this is the proactive write-side cleanup. Called from every destroy
+ * path that fires `instance.destroy()`.
+ */
+function removeInstanceFromPools(instance: any): void {
+  if (!instance) return;
+  for (const poolArr of _allPoolArrays) {
+    // Walk in reverse so splice() doesn't shift indices we haven't visited.
+    for (let i = poolArr.length - 1; i >= 0; i--) {
+      if (poolArr[i]?.instance === instance) {
+        poolArr.splice(i, 1);
+      }
+    }
+  }
+}
+
+/**
  * Get or create a component instance from the pool.
  * Implements stable instance identity across re-renders.
  */
@@ -2495,6 +2519,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
 
   // Cleanup tracking
   _allLiveInstances.delete(instance);
+  removeInstanceFromPools(instance);
   for (const entry of trackedArgCells) {
     if (entry.instance === instance) { trackedArgCells.delete(entry); break; }
   }
@@ -2579,6 +2604,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
 
   for (const inst of instToDestroy) {
     _allLiveInstances.delete(inst);
+    removeInstanceFromPools(inst);
     for (const entry of trackedArgCells) { if (entry.instance === inst) { trackedArgCells.delete(entry); break; } }
     for (const entry of trackedWrapperInstances) { if (entry.instance === inst) { trackedWrapperInstances.delete(entry); break; } }
   }

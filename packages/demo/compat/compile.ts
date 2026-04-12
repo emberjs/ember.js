@@ -11,6 +11,7 @@ import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
 import { pascalToKebab, isAllDigits } from './utils';
+import { initChildViews as _emberInitChildViews, getElementView as _emberGetElementView } from '@ember/-internals/views/lib/system/utils';
 
 // Helper to detect assertion-related throws that must escape catch blocks.
 // The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
@@ -1744,19 +1745,27 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 
       for (const candidate of candidates) {
         const ctxs = ctxsMap.get(candidate);
-        if (ctxs) {
-          const newValue = (obj as any)[keyName];
-          for (const ctx of ctxs) {
-            try {
-              // Use the raw target if ctx is a Proxy — cells are installed on the
-              // raw target during initial render, so we must update the SAME cell.
-              const cellTarget = (ctx as any).__gxtRawTarget || ctx;
-              const rc = cellFor(cellTarget, keyName, /* skipDefine */ false);
-              if (rc) {
-                rc.update(newValue);
-              }
-            } catch { /* ignore */ }
-          }
+        if (!ctxs) continue;
+        const isProto = candidate !== obj;
+        const newValue = (obj as any)[keyName];
+        for (const ctx of ctxs) {
+          try {
+            // Use the raw target if ctx is a Proxy — cells are installed on the
+            // raw target during initial render, so we must update the SAME cell.
+            const cellTarget = (ctx as any).__gxtRawTarget || ctx;
+            // For proto-keyed ctxs: only update cells whose raw target IS obj.
+            // The prototype bucket aggregates contexts from every instance
+            // sharing the prototype (e.g., every x-toggle instance). Without
+            // this filter, obj's new value leaks into every sibling instance's
+            // cell — the cell-aliasing bug that broke the View tree tests by
+            // flipping all x-toggle {{#if}} branches at once whenever one was
+            // toggled.
+            if (isProto && cellTarget !== obj) continue;
+            const rc = cellFor(cellTarget, keyName, /* skipDefine */ false);
+            if (rc) {
+              rc.update(newValue);
+            }
+          } catch { /* ignore */ }
         }
       }
     }
@@ -1827,14 +1836,33 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 // keyed by (object, property). When __gxtTriggerReRender fires, call syncState
 // on the IfCondition directly.
 
-let ifWatchers = new WeakMap<object, Map<string, Set<() => void>>>();
+let ifWatchers = new WeakMap<object, Map<string, Set<(notifiedTarget: object) => void>>>();
+
+// Persistent set of classic-component wrapper DOM ids that the user has
+// directly toggled to `false` via a click handler calling set()/toggleProperty.
+// Used by the __gxtRebuildViewTreeFromDom wrap below to reset the view-
+// registry's CHILD_VIEW_IDS for those wrappers so getChildViews returns
+// empty (matching the collapsed {{#if}} branch) even if GXT's own
+// destroyBranchSync was a no-op for the yield-only true branch.
+const _wrapperIfUserFalse = new Set<string>();
 
 // Allow clearing ifWatchers between tests to prevent stale callbacks
 (globalThis as any).__gxtClearIfWatchers = function() {
   ifWatchers = new WeakMap();
+  _wrapperIfUserFalse.clear();
 };
 
-function registerIfWatcher(rawTarget: object, key: string, callback: () => void) {
+// Module-scope helper: is `par` a classic-component wrapper element
+// (an element with class="ember-view")?
+function _isEmberViewWrapper(par: any): boolean {
+  if (!par || par.nodeType !== 1) return false;
+  if (!par.getAttribute) return false;
+  const cls = par.getAttribute('class');
+  if (!cls) return false;
+  return /\bember-view\b/.test(cls);
+}
+
+function registerIfWatcher(rawTarget: object, key: string, callback: (notifiedTarget: object) => void) {
   let keyMap = ifWatchers.get(rawTarget);
   if (!keyMap) { keyMap = new Map(); ifWatchers.set(rawTarget, keyMap); }
   let watchers = keyMap.get(key);
@@ -1848,15 +1876,21 @@ function notifyIfWatchers(obj: object, key: string) {
     const proto = Object.getPrototypeOf(obj);
     if (proto && proto !== Object.prototype) candidates.push(proto);
   } catch { /* ignore */ }
+  // Walk component-context mappings to also notify watchers on render-
+  // context proxies that wrap this instance. CRITICAL: only expand
+  // candidates from ctxsMap entries keyed by `obj` directly — not from
+  // proto-keyed entries. The prototype bucket aggregates contexts from
+  // every instance sharing the prototype, so expanding from it would
+  // broadcast the notify to sibling instances and fire their watchers,
+  // collapsing their {{#if}} branches on an unrelated toggle (cell-
+  // aliasing bug).
   const ctxsMap = (globalThis as any).__gxtComponentContexts;
   if (ctxsMap) {
-    for (const candidate of [...candidates]) {
-      const ctxs = ctxsMap.get(candidate);
-      if (ctxs) {
-        for (const ctx of ctxs) {
-          const raw = ctx?.__gxtRawTarget || ctx;
-          if (!candidates.includes(raw)) candidates.push(raw);
-        }
+    const ctxs = ctxsMap.get(obj);
+    if (ctxs) {
+      for (const ctx of ctxs) {
+        const raw = ctx?.__gxtRawTarget || ctx;
+        if (!candidates.includes(raw)) candidates.push(raw);
       }
     }
   }
@@ -1866,7 +1900,7 @@ function notifyIfWatchers(obj: object, key: string) {
     const watchers = keyMap.get(key);
     if (!watchers) continue;
     for (const cb of watchers) {
-      try { cb(); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
+      try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
     }
   }
 }
@@ -2029,10 +2063,27 @@ function patchGlobalIf() {
             }
           }
         };
-        registerIfWatcher(watchTarget, watchKey, () => {
+        registerIfWatcher(watchTarget, watchKey, (notifiedTarget: object) => {
           try {
             const currentValue = conditionOrCell();
-            ifCondition.syncState(emberToBool(currentValue));
+            const boolVal = emberToBool(currentValue);
+            // Track the user's toggle-off intent for classic-component
+            // wrappers with a yield-only `{{#if}}`. GXT's pooling and
+            // force-rerender can cause click-toggle-on events to route
+            // through different watcher instances than click-toggle-off,
+            // so we widen the "set on false" to direct hits only (to avoid
+            // prototype-broadcast false positives) but allow "clear on
+            // true" from any hit (so a genuine toggle-on eventually lands).
+            const ph = ifCondition.placeholder;
+            const par: any = ph && (ph as any).parentNode;
+            if (par && _isEmberViewWrapper(par) && par.id) {
+              if (notifiedTarget === watchTarget && boolVal === false) {
+                _wrapperIfUserFalse.add(par.id);
+              } else if (boolVal === true) {
+                _wrapperIfUserFalse.delete(par.id);
+              }
+            }
+            ifCondition.syncState(boolVal);
           } catch (e) { console.warn('[GXT] syncState error:', e); }
         });
       }
@@ -2057,6 +2108,74 @@ function patchGlobalIf() {
 }
 patchGlobalIf();
 queueMicrotask(patchGlobalIf);
+
+// Wrap __gxtRebuildViewTreeFromDom (defined in manager.ts and invoked from
+// getChildViews) so that after the rebuild repopulates CHILD_VIEW_IDS from
+// live DOM ancestry, any wrapper the user has toggled false (via direct
+// click → toggleProperty('isExpanded')) has its view-registry children
+// reset. This ensures getChildViews(rootWrapper) returns [] even though
+// GXT's destroyBranchSync is a no-op for yield-only true branches (the
+// inner DOM still contains the yielded nodes because prevComponent was
+// empty). View-registry-only cleanup — no DOM mutation, so a subsequent
+// toggle-back-to-true still surfaces the same DOM content.
+function _wrapGxtRebuildViewTree() {
+  const g = globalThis as any;
+  const orig = g.__gxtRebuildViewTreeFromDom;
+  if (!orig || (orig as any).__emberIfRebuildPatched) return;
+  const wrapped = function(this: any, ...args: any[]) {
+    const result = orig.apply(this, args);
+    try {
+      if (_wrapperIfUserFalse.size > 0) {
+        // Collect registries to search: the explicit arg (if any) and the
+        // current global owner's view registry.
+        const registries: any[] = [];
+        if (args && args[0]) registries.push(args[0]);
+        try {
+          const go: any = (globalThis as any).owner;
+          const reg2 = go && go.lookup && go.lookup('-view-registry:main');
+          if (reg2 && !registries.includes(reg2)) registries.push(reg2);
+        } catch { /* ignore */ }
+        for (const wrapperId of _wrapperIfUserFalse) {
+          // Candidate views to reset: registry entries + whatever view is
+          // currently associated with the live DOM element for this id.
+          const views = new Set<any>();
+          for (const reg of registries) {
+            const v = reg && reg[wrapperId];
+            if (v && !v.isDestroyed && !v.isDestroying) views.add(v);
+          }
+          try {
+            const el = typeof document !== 'undefined' && document.getElementById(wrapperId);
+            if (el) {
+              const v2 = _emberGetElementView(el);
+              if (v2 && !v2.isDestroyed && !v2.isDestroying) views.add(v2);
+            }
+          } catch { /* ignore */ }
+          for (const v of views) {
+            try { _emberInitChildViews(v); } catch { /* ignore */ }
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    return result;
+  };
+  (wrapped as any).__emberIfRebuildPatched = true;
+  g.__gxtRebuildViewTreeFromDom = wrapped;
+}
+_wrapGxtRebuildViewTree();
+queueMicrotask(_wrapGxtRebuildViewTree);
+// manager.ts may define __gxtRebuildViewTreeFromDom after compile.ts loads;
+// retry a few times until patched or a short window expires.
+{
+  let _wrapAttempts = 0;
+  const _wrapRebuildIv = setInterval(() => {
+    _wrapGxtRebuildViewTree();
+    _wrapAttempts++;
+    const g = globalThis as any;
+    if ((g.__gxtRebuildViewTreeFromDom as any)?.__emberIfRebuildPatched || _wrapAttempts > 60) {
+      clearInterval(_wrapRebuildIv);
+    }
+  }, 50);
+}
 
 // ---- $_eachSync: normalize Ember collections for GXT ----
 // Converts null/undefined/false/ArrayProxy/Set/ForEachable to native arrays.
