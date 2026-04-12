@@ -37,8 +37,6 @@ jobs:
         run: pnpm build:types
       - name: Check internal types
         run: pnpm type-check:internals
-      - name: Check @handlebars/parser types
-        run: pnpm type-check:handlebars
       - name: Check published types
         run: pnpm type-check:types
 
@@ -222,7 +220,7 @@ jobs:
           SHOULD_TRANSPILE_FOR_NODE: true
         run: pnpm build
       - name: test
-        run: pnpm test:node && pnpm --filter "@handlebars/parser" test
+        run: pnpm test:node
 
   blueprint-test:
     name: Blueprint Tests

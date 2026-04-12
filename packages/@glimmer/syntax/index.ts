@@ -38,8 +38,6 @@ export * as ASTv2 from './lib/v2/api';
 export { normalize } from './lib/v2/normalize';
 export { node } from './lib/v2/objects/node';
 
-export { preprocessRust } from './lib/parser/preprocess-rust';
-
 /** @deprecated use WalkerPath instead */
 export { default as Path } from './lib/traversal/walker';
 

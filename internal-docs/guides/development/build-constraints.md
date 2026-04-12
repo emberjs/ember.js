@@ -137,8 +137,6 @@ The build system has specific rules for what gets inlined vs treated as external
 - TypeScript helper library (`tslib`)
 
 **Always External:**
-- `@handlebars/parser`
-- `simple-html-tokenizer`
 - `babel-plugin-debug-macros`
 - Other `@glimmer/*` packages (to avoid duplication)
 - `@simple-dom/*` packages

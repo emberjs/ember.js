@@ -1,5 +1,4 @@
 import type * as ASTv1 from './v1/api';
-import type * as HBS from './v1/handlebars-ast';
 
 export function childrenFor(
   node: ASTv1.Block | ASTv1.Template | ASTv1.ElementNode
@@ -20,11 +19,7 @@ export function appendChild(
   childrenFor(parent).push(node);
 }
 
-export function isHBSLiteral(path: HBS.Expression): path is HBS.Literal;
-export function isHBSLiteral(path: ASTv1.Expression): path is ASTv1.Literal;
-export function isHBSLiteral(
-  path: HBS.Expression | ASTv1.Expression
-): path is HBS.Literal | ASTv1.Literal {
+export function isLiteral(path: ASTv1.Expression): path is ASTv1.Literal {
   return (
     path.type === 'StringLiteral' ||
     path.type === 'BooleanLiteral' ||
@@ -33,6 +28,9 @@ export function isHBSLiteral(
     path.type === 'UndefinedLiteral'
   );
 }
+
+/** @deprecated use isLiteral instead */
+export const isHBSLiteral = isLiteral;
 
 export function printLiteral(literal: ASTv1.Literal): string {
   if (literal.type === 'UndefinedLiteral') {
