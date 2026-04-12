@@ -312,6 +312,8 @@ ElementContent = _{
 TagName = @{
     NamedBlockTag
   | AtComponentTag
+  | NamespacedComponentTag
+  | DottedLocalTag
   | ComponentTag
   | HtmlTag
 }
@@ -325,7 +327,18 @@ AtComponentTag = @{
     "@" ~ IdentChars ~ ("." ~ PathSegment)*
 }
 
-// Component tags with dot paths: Foo.Bar, this.SomeComponent, Foo.Bar.Baz
+// Colon-namespaced components: Foo::Bar::Baz, Foo::Bar.Baz
+NamespacedComponentTag = @{
+    ASCII_ALPHA_UPPER ~ TagNameContinue* ~ ("::" ~ ASCII_ALPHA ~ TagNameContinue*)+ ~ ("." ~ PathSegment)*
+}
+
+// Lowercase dotted local tags: foo.bar, foo.bar.baz
+// (references to local variables or block params)
+DottedLocalTag = @{
+    ASCII_ALPHA_LOWER ~ TagNameContinue* ~ ("." ~ PathSegment)+
+}
+
+// Component tags with dot paths: Foo, Foo.Bar, this.SomeComponent
 ComponentTag = @{
     (ASCII_ALPHA_UPPER ~ TagNameContinue*) ~ ("." ~ PathSegment)*
   | "this" ~ ("." ~ PathSegment)+
