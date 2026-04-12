@@ -116,9 +116,7 @@ export function preprocessRust(
 ): ASTv1.Template {
   const parser = loadRustParser();
   if (!parser) {
-    throw new Error(
-      'Rust WASM parser not available. Build it first: cd rust-parser && ./build.sh'
-    );
+    throw new Error('Rust WASM parser not available. Build it first: cd rust-parser && ./build.sh');
   }
 
   let source: src.Source;
