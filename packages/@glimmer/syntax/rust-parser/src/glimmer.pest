@@ -303,20 +303,26 @@ CloseTag = {
     "</" ~ TagName ~ WS* ~ ">"
 }
 
-// ElementContent covers attributes, modifiers, splattributes, block params
+// ElementContent covers attributes, modifiers, splattributes, block params, and comments
 ElementContent = _{
-    WS+ ~ (Splattributes | AttrModifier | AttrWithValue | AttrNameOnly)
+    WS+ ~ (Splattributes | MustacheComment | AttrModifier | AttrWithValue | AttrNameOnly)
   | WS+ ~ BlockParams
 }
 
 TagName = @{
     NamedBlockTag
+  | AtComponentTag
   | ComponentTag
   | HtmlTag
 }
 
 NamedBlockTag = @{
     ":" ~ IdentChars
+}
+
+// @Component style tags (used in strict mode)
+AtComponentTag = @{
+    "@" ~ ASCII_ALPHA_UPPER ~ TagNameContinue*
 }
 
 ComponentTag = @{
