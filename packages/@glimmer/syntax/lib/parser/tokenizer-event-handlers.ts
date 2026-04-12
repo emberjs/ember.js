@@ -151,20 +151,16 @@ interface PlainLocation {
 let rustParser: RustWasmParser | null = null;
 let rustParserLoaded = false;
 
+// Import the WASM parser JS wrapper statically.
+// Rollup resolves this through hiddenDependencies in rollup.config.mjs.
+import * as wasmModule from 'glimmer-template-parser';
+
 function loadRustParser(): RustWasmParser | null {
   if (rustParserLoaded) return rustParser;
   rustParserLoaded = true;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    const _require = new Function(
-      'return typeof require !== "undefined" ? require : undefined'
-    )() as ((id: string) => unknown) | undefined;
-    if (_require) {
-      rustParser = _require(
-        '../../rust-parser/pkg/node/glimmer_template_parser.js'
-      ) as RustWasmParser;
-    }
+    rustParser = wasmModule as unknown as RustWasmParser;
   } catch {
     rustParser = null;
   }
