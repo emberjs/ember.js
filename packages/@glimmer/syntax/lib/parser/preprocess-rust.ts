@@ -64,17 +64,40 @@ const syntax: Syntax = {
   Walker,
 };
 
-// Dynamic import of the Rust parser
-let rustParser: any = null;
+// Dynamic import of the Rust WASM parser
+interface RustWasmParser {
+  parseTemplateToJson(source: string, srcName?: string): string;
+}
+
+interface RustParseError {
+  message: string;
+  loc?: { start: { line: number; column: number }; end: { line: number; column: number } };
+  context?: { source_line: string; pointer: string; suggestion?: string };
+}
+
+interface PlainLocation {
+  start: { line: number; column: number };
+  end: { line: number; column: number };
+}
+
+let rustParser: RustWasmParser | null = null;
 let rustParserLoaded = false;
 
-function loadRustParser() {
+function loadRustParser(): RustWasmParser | null {
   if (rustParserLoaded) return rustParser;
   rustParserLoaded = true;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    rustParser = require('../../rust-parser/pkg/node/glimmer_template_parser.js');
+    // Dynamic require that works in both CJS and bundled ESM contexts
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    const _require = new Function(
+      'return typeof require !== "undefined" ? require : undefined'
+    )() as ((id: string) => unknown) | undefined;
+    if (_require) {
+      rustParser = _require(
+        '../../rust-parser/pkg/node/glimmer_template_parser.js'
+      ) as RustWasmParser;
+    }
   } catch {
     rustParser = null;
   }
@@ -112,16 +135,16 @@ export function preprocessRust(
   const srcName = options.parseOptions?.srcName ?? options.meta?.moduleName;
 
   // Parse with the Rust WASM parser
-  let rawAst: any;
+  let rawAst: Record<string, unknown>;
   try {
     const jsonStr = parser.parseTemplateToJson(sourceStr, srcName ?? undefined);
-    rawAst = JSON.parse(jsonStr);
-  } catch (error: any) {
+    rawAst = JSON.parse(jsonStr) as Record<string, unknown>;
+  } catch (error: unknown) {
     // Convert Rust parse errors to GlimmerSyntaxError
     if (typeof error === 'string') {
-      let parsed;
+      let parsed: RustParseError;
       try {
-        parsed = JSON.parse(error);
+        parsed = JSON.parse(error) as RustParseError;
       } catch {
         throw generateSyntaxError(
           error,
@@ -158,15 +181,15 @@ export function preprocessRust(
 /**
  * Convert the raw JSON AST from Rust into proper ASTv1 nodes with SourceSpan locations.
  */
-function convertToASTv1(raw: any, source: src.Source): ASTv1.Template {
+function convertToASTv1(raw: Record<string, unknown>, source: src.Source): ASTv1.Template {
   convertLocations(raw, source);
-  return raw as ASTv1.Template;
+  return raw as unknown as ASTv1.Template;
 }
 
 /**
  * Recursively convert plain {start, end} location objects to SourceSpan instances.
  */
-function convertLocations(node: any, source: src.Source): void {
+function convertLocations(node: unknown, source: src.Source): void {
   if (node === null || node === undefined || typeof node !== 'object') return;
 
   if (Array.isArray(node)) {
@@ -176,10 +199,12 @@ function convertLocations(node: any, source: src.Source): void {
     return;
   }
 
+  const obj = node as Record<string, unknown>;
+
   // Convert 'loc' property
-  if (node.loc && typeof node.loc === 'object' && 'start' in node.loc && 'end' in node.loc && !(node.loc instanceof src.SourceSpan)) {
-    const { start, end } = node.loc;
-    node.loc = src.SourceSpan.forCharPositions(
+  if (isPlainLocation(obj['loc'])) {
+    const { start, end } = obj['loc'];
+    obj['loc'] = src.SourceSpan.forCharPositions(
       source,
       charPosToOffset(source.source, start.line, start.column),
       charPosToOffset(source.source, end.line, end.column)
@@ -187,10 +212,10 @@ function convertLocations(node: any, source: src.Source): void {
   }
 
   // Convert 'openTag' and 'closeTag' properties
-  for (const key of ['openTag', 'closeTag']) {
-    if (node[key] && typeof node[key] === 'object' && 'start' in node[key] && 'end' in node[key] && !(node[key] instanceof src.SourceSpan)) {
-      const { start, end } = node[key];
-      node[key] = src.SourceSpan.forCharPositions(
+  for (const key of ['openTag', 'closeTag'] as const) {
+    if (isPlainLocation(obj[key])) {
+      const { start, end } = obj[key];
+      obj[key] = src.SourceSpan.forCharPositions(
         source,
         charPosToOffset(source.source, start.line, start.column),
         charPosToOffset(source.source, end.line, end.column)
@@ -199,13 +224,23 @@ function convertLocations(node: any, source: src.Source): void {
   }
 
   // Recurse into all object properties
-  for (const key of Object.keys(node)) {
+  for (const key of Object.keys(obj)) {
     if (key === 'loc' || key === 'openTag' || key === 'closeTag') continue;
-    const val = node[key];
+    const val = obj[key];
     if (typeof val === 'object' && val !== null) {
       convertLocations(val, source);
     }
   }
+}
+
+function isPlainLocation(value: unknown): value is PlainLocation {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'start' in value &&
+    'end' in value &&
+    !(value instanceof src.SourceSpan)
+  );
 }
 
 /**
@@ -239,7 +274,7 @@ function charPosToOffset(source: string, line: number, column: number): number {
 /**
  * Convert a Rust parse error into a GlimmerSyntaxError.
  */
-function convertRustError(error: any, source: src.Source, sourceStr: string): Error {
+function convertRustError(error: RustParseError, source: src.Source, sourceStr: string): Error {
   const { message, loc, context } = error;
 
   let fullMessage = message || 'Parse error';
