@@ -1082,6 +1082,7 @@ fn build_normal_element(
     loc: SourceLocation,
 ) -> ElementNode {
     let mut tag_name = String::new();
+    let mut tag_loc = loc.clone();
     let mut attributes = vec![];
     let mut modifiers = vec![];
     let mut comments = vec![];
@@ -1096,7 +1097,10 @@ fn build_normal_element(
                 open_tag = span_to_loc(source, &child);
                 for sub in child.into_inner() {
                     match sub.as_rule() {
-                        Rule::TagName => tag_name = sub.as_str().to_string(),
+                        Rule::TagName => {
+                            tag_name = sub.as_str().to_string();
+                            tag_loc = span_to_loc(source, &sub);
+                        }
                         Rule::Splattributes => {
                             let attr_loc = span_to_loc(source, &sub);
                             attributes.push(AttrNode {
@@ -1142,7 +1146,7 @@ fn build_normal_element(
         }
     }
 
-    let path = build_element_path(&tag_name, &loc);
+    let path = build_element_path(&tag_name, &tag_loc);
 
     ElementNode {
         node_type: "ElementNode",
@@ -1167,6 +1171,7 @@ fn build_self_closing_element(
     loc: SourceLocation,
 ) -> ElementNode {
     let mut tag_name = String::new();
+    let mut tag_loc = loc.clone();
     let mut attributes = vec![];
     let mut modifiers = vec![];
     let mut comments = vec![];
@@ -1174,7 +1179,10 @@ fn build_self_closing_element(
 
     for child in pair.into_inner() {
         match child.as_rule() {
-            Rule::TagName => tag_name = child.as_str().to_string(),
+            Rule::TagName => {
+                tag_name = child.as_str().to_string();
+                tag_loc = span_to_loc(source, &child);
+            }
             Rule::Splattributes => {
                 let attr_loc = span_to_loc(source, &child);
                 attributes.push(AttrNode {
@@ -1207,7 +1215,7 @@ fn build_self_closing_element(
         }
     }
 
-    let path = build_element_path(&tag_name, &loc);
+    let path = build_element_path(&tag_name, &tag_loc);
 
     ElementNode {
         node_type: "ElementNode",
@@ -1232,6 +1240,7 @@ fn build_void_element(
     loc: SourceLocation,
 ) -> ElementNode {
     let mut tag_name = String::new();
+    let mut tag_loc = loc.clone();
     let mut attributes = vec![];
     let mut modifiers = vec![];
     let mut comments = vec![];
@@ -1239,7 +1248,10 @@ fn build_void_element(
 
     for child in pair.into_inner() {
         match child.as_rule() {
-            Rule::VoidTagName => tag_name = child.as_str().to_string(),
+            Rule::VoidTagName => {
+                tag_name = child.as_str().to_string();
+                tag_loc = span_to_loc(source, &child);
+            }
             Rule::TagEnd => {
                 // `/>` marks a self-closing void element like <br />
                 if child.as_str() == "/>" {
@@ -1275,7 +1287,7 @@ fn build_void_element(
         }
     }
 
-    let path = build_element_path(&tag_name, &loc);
+    let path = build_element_path(&tag_name, &tag_loc);
 
     ElementNode {
         node_type: "ElementNode",
@@ -1294,16 +1306,19 @@ fn build_void_element(
     }
 }
 
-fn build_element_path(tag_name: &str, loc: &SourceLocation) -> PathExpression {
+/// Build an element path from the tag name source span.
+/// `tag_loc` must be the location of just the tag name in the source
+/// (NOT the whole element).
+fn build_element_path(tag_name: &str, tag_loc: &SourceLocation) -> PathExpression {
     let segments: Vec<&str> = tag_name.split('.').collect();
     let head_name = segments[0];
     let tail: Vec<String> = segments[1..].iter().map(|s| s.to_string()).collect();
 
     let head_loc = SourceLocation {
-        start: loc.start.clone(),
+        start: tag_loc.start.clone(),
         end: SourcePosition {
-            line: loc.start.line,
-            column: loc.start.column + head_name.len(),
+            line: tag_loc.start.line,
+            column: tag_loc.start.column + head_name.len(),
         },
     };
 
@@ -1335,7 +1350,7 @@ fn build_element_path(tag_name: &str, loc: &SourceLocation) -> PathExpression {
         original: tag_name.to_string(),
         head,
         tail,
-        loc: loc.clone(),
+        loc: tag_loc.clone(),
     }
 }
 
