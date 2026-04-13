@@ -791,8 +791,23 @@ function charPosToOffset(source: string, line: number, column: number): number {
 // ---------------------------------------------------------------------------
 
 function convertRustError(error: RustParseError, source: src.Source, sourceStr: string): Error {
-  const { message, loc, context } = error;
+  const { loc } = error;
 
+  // Try to upgrade generic parse errors to more specific messages by
+  // looking at the source around the error location. Matches common
+  // patterns that the legacy parser detected semantically.
+  const specific = detectSpecificError(sourceStr, loc);
+  if (specific) {
+    const offset = loc ? charPosToOffset(sourceStr, loc.start.line, loc.start.column) : 0;
+    const span = src.SourceSpan.forCharPositions(
+      source,
+      offset,
+      offset + (specific.length ?? 0)
+    );
+    return generateSyntaxError(specific.message, span);
+  }
+
+  const { message, context } = error;
   let fullMessage = message || 'Parse error';
 
   if (context) {
@@ -812,4 +827,62 @@ function convertRustError(error: RustParseError, source: src.Source, sourceStr: 
   const span = src.SourceSpan.forCharPositions(source, offset, offset);
 
   return generateSyntaxError(fullMessage, span);
+}
+
+// Void HTML tag names — matches grammar's VoidTagName
+const VOID_TAG_NAMES = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'command',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'keygen',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
+
+interface SpecificError {
+  message: string;
+  length?: number;
+}
+
+function detectSpecificError(
+  sourceStr: string,
+  loc: RustParseError['loc']
+): SpecificError | null {
+  if (!loc) return null;
+
+  const offset = charPosToOffset(sourceStr, loc.start.line, loc.start.column);
+  const around = sourceStr.slice(Math.max(0, offset - 30), offset + 30);
+
+  // Void element with explicit close tag: `<area></area>`
+  // The parser reaches the `/` character (just after `<`) because
+  // VoidElement consumed `<area>`. Walk back one char to see `</...>`.
+  const closeStart = sourceStr[offset - 1] === '<' ? offset - 1 : offset;
+  const closeMatch = /^<\/([a-z][a-z0-9-]*)>/u.exec(sourceStr.slice(closeStart));
+  if (closeMatch) {
+    const tagName = closeMatch[1]!;
+    if (VOID_TAG_NAMES.has(tagName.toLowerCase())) {
+      return {
+        message: `<${tagName}> elements do not need end tags. You should remove it`,
+      };
+    }
+  }
+
+  // Unclosed element with a weird tag name: `<{@name>` → legacy parser
+  // reports the inner name as the tag.
+  const weirdTag = /<\{(@?[a-zA-Z][a-zA-Z0-9_-]*)/u.exec(around);
+  if (weirdTag) {
+    return { message: `Unclosed element \`${weirdTag[1]}\`` };
+  }
+
+  return null;
 }
