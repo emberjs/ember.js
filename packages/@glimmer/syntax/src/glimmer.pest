@@ -230,7 +230,7 @@ NullLiteral = @{
 // key=value, key="string", key=(helper arg)
 
 HashPair = {
-    HashKey ~ "=" ~ HashValue
+    HashKey ~ WS* ~ "=" ~ WS* ~ HashValue
 }
 
 HashKey = @{ IdentChars }

@@ -153,14 +153,14 @@ let rustParserLoaded = false;
 
 // Import the WASM parser JS wrapper statically.
 // Rollup resolves this through hiddenDependencies in rollup.config.mjs.
-import * as wasmModule from '../../pkg/universal.mjs';
+import { parseTemplateToJson as wasmParseTemplateToJson } from '../../pkg/universal.mjs';
 
 function loadRustParser(): RustWasmParser | null {
   if (rustParserLoaded) return rustParser;
   rustParserLoaded = true;
 
   try {
-    rustParser = wasmModule as unknown as RustWasmParser;
+    rustParser = { parseTemplateToJson: wasmParseTemplateToJson };
   } catch {
     rustParser = null;
   }

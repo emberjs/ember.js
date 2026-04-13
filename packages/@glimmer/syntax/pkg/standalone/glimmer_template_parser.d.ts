@@ -2,16 +2,11 @@
 /* eslint-disable */
 
 /**
- * Parse a Glimmer/Handlebars template string and return an ASTv1 Template as JSON.
- *
- * Called from JavaScript via wasm-bindgen.
- */
-export function parseTemplate(source: string, src_name?: string | null): any;
-
-/**
  * Parse a Glimmer/Handlebars template string and return an ASTv1 Template as a JSON string.
  *
- * Useful for debugging or when the WASM <-> JS object bridge is problematic.
+ * The JS side parses the JSON into a plain object then decorates it with
+ * SourceSpans, non-enumerable getters, etc. This avoids a wasm-bindgen
+ * serde bridge and keeps the wasm binary smaller.
  */
 export function parseTemplateToJson(source: string, src_name?: string | null): string;
 
@@ -19,14 +14,11 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly parseTemplate: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly parseTemplateToJson: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-    readonly __wbindgen_malloc: (a: number, b: number) => number;
-    readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-    readonly __wbindgen_externrefs: WebAssembly.Table;
-    readonly __externref_table_dealloc: (a: number) => void;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-    readonly __wbindgen_start: () => void;
+    readonly parseTemplateToJson: (a: number, b: number, c: number, d: number, e: number) => void;
+    readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+    readonly __wbindgen_export: (a: number, b: number) => number;
+    readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_export3: (a: number, b: number, c: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

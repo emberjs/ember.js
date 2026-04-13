@@ -19,6 +19,19 @@ wasm-pack build --target web --out-dir pkg/standalone 2>&1 | grep -v "^warning:"
 rm -f pkg/standalone/.gitignore
 rm -f pkg/standalone/glimmer_template_parser_bg.wasm.d.ts
 
+# Extra wasm-opt pass to shrink the binary further beyond wasm-pack's default.
+# Uses the wasm-opt binary that wasm-pack already downloaded.
+WASM_OPT="$(find "$HOME/.cache/.wasm-pack" -name wasm-opt -type f 2>/dev/null | head -1)"
+if [ -n "$WASM_OPT" ]; then
+  echo "  → wasm-opt -Oz (extra pass)..."
+  "$WASM_OPT" -Oz \
+    --enable-bulk-memory --enable-reference-types --enable-multivalue \
+    --strip-debug --strip-producers --vacuum \
+    pkg/standalone/glimmer_template_parser_bg.wasm \
+    -o pkg/standalone/glimmer_template_parser_bg.wasm.opt
+  mv pkg/standalone/glimmer_template_parser_bg.wasm.opt pkg/standalone/glimmer_template_parser_bg.wasm
+fi
+
 # Generate the base64-encoded WASM bytes module for the universal wrapper
 echo "  → Generating wasm-bytes.mjs..."
 node -e "

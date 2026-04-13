@@ -10,31 +10,11 @@ mod errors;
 #[grammar = "glimmer.pest"]
 pub struct GlimmerParser;
 
-/// Parse a Glimmer/Handlebars template string and return an ASTv1 Template as JSON.
-///
-/// Called from JavaScript via wasm-bindgen.
-#[wasm_bindgen(js_name = "parseTemplate")]
-pub fn parse_template(source: &str, src_name: Option<String>) -> Result<JsValue, JsValue> {
-    let result = GlimmerParser::parse(Rule::Template, source);
-
-    match result {
-        Ok(pairs) => {
-            let template = builder::build_template(pairs, source, src_name.as_deref());
-            serde_wasm_bindgen::to_value(&template)
-                .map_err(|e| JsValue::from_str(&format!("Serialization error: {e}")))
-        }
-        Err(pest_error) => {
-            let parse_error = errors::convert_pest_error(&pest_error, source, src_name.as_deref());
-            let error_json = serde_wasm_bindgen::to_value(&parse_error)
-                .map_err(|e| JsValue::from_str(&format!("Serialization error: {e}")))?;
-            Err(error_json)
-        }
-    }
-}
-
 /// Parse a Glimmer/Handlebars template string and return an ASTv1 Template as a JSON string.
 ///
-/// Useful for debugging or when the WASM <-> JS object bridge is problematic.
+/// The JS side parses the JSON into a plain object then decorates it with
+/// SourceSpans, non-enumerable getters, etc. This avoids a wasm-bindgen
+/// serde bridge and keeps the wasm binary smaller.
 #[wasm_bindgen(js_name = "parseTemplateToJson")]
 pub fn parse_template_to_json(source: &str, src_name: Option<String>) -> Result<String, String> {
     let result = GlimmerParser::parse(Rule::Template, source);
