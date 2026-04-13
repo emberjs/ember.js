@@ -214,7 +214,6 @@ fn build_mustache(pair: Pair<'_, Rule>, source: &str) -> MustacheStatement {
             loc: hash_loc,
         },
         trusting: is_triple,
-        escaped: !is_triple,
         strip: StripFlags {
             open: strip_open,
             close: strip_close,
@@ -672,7 +671,6 @@ fn build_block_statement(pair: Pair<'_, Rule>, source: &str) -> BlockStatement {
     let mut open_strip = default_strip();
     let mut close_strip = default_strip();
     let mut inverse_strip = default_strip();
-    let mut chained = None;
 
     for child in pair.into_inner() {
         match child.as_rule() {
@@ -704,12 +702,9 @@ fn build_block_statement(pair: Pair<'_, Rule>, source: &str) -> BlockStatement {
                 }
             }
             Rule::InverseChain => {
-                let (inv, inv_strip, is_chained) = build_inverse_chain(child, source);
+                let (inv, inv_strip, _is_chained) = build_inverse_chain(child, source);
                 inverse = Some(inv);
                 inverse_strip = inv_strip;
-                if is_chained {
-                    chained = Some(true);
-                }
             }
             _ => {
                 if let Some(stmt) = build_statement(child, source) {
@@ -763,14 +758,13 @@ fn build_block_statement(pair: Pair<'_, Rule>, source: &str) -> BlockStatement {
             body,
             params: var_heads,
             block_params,
-            chained: None,
+            chained: false,
             loc: program_loc,
         },
         inverse,
         open_strip,
         inverse_strip,
         close_strip,
-        chained,
         loc,
     }
 }
@@ -906,7 +900,7 @@ fn build_inverse_chain(
             body,
             params: vec![],
             block_params: vec![],
-            chained: None,
+            chained: false,
             loc,
         },
         strip,

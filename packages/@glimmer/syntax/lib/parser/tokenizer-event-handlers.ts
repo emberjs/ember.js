@@ -307,6 +307,17 @@ function convertLocations(node: unknown, source: src.Source): void {
     });
   }
 
+  // Add deprecated `escaped` as a non-enumerable getter on MustacheStatement nodes
+  if (obj['type'] === 'MustacheStatement' && !Object.getOwnPropertyDescriptor(obj, 'escaped')) {
+    Object.defineProperty(obj, 'escaped', {
+      enumerable: false,
+      configurable: true,
+      get(this: { trusting: boolean }): boolean {
+        return !this.trusting;
+      },
+    });
+  }
+
   // Recurse into all object properties
   for (const key of Object.keys(obj)) {
     if (key === 'loc' || key === 'openTag' || key === 'closeTag') continue;

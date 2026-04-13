@@ -38,8 +38,7 @@ pub struct Block {
     pub params: Vec<VarHead>,
     #[serde(rename = "blockParams")]
     pub block_params: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub chained: Option<bool>,
+    pub chained: bool, // always emitted
     pub loc: SourceLocation,
 }
 
@@ -64,7 +63,7 @@ pub struct MustacheStatement {
     pub params: Vec<Expression>,
     pub hash: Hash,
     pub trusting: bool,
-    pub escaped: bool,
+    // `escaped` is deprecated — JS wrapper adds it as a non-enumerable getter
     pub strip: StripFlags,
     pub loc: SourceLocation,
 }
@@ -77,16 +76,13 @@ pub struct BlockStatement {
     pub params: Vec<Expression>,
     pub hash: Hash,
     pub program: Block,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub inverse: Option<Block>,
+    pub inverse: Option<Block>, // always emitted (null when absent)
     #[serde(rename = "openStrip")]
     pub open_strip: StripFlags,
     #[serde(rename = "inverseStrip")]
     pub inverse_strip: StripFlags,
     #[serde(rename = "closeStrip")]
     pub close_strip: StripFlags,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub chained: Option<bool>,
     pub loc: SourceLocation,
 }
 
