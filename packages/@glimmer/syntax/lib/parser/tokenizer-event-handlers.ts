@@ -326,6 +326,7 @@ function cleanupStripFlags(node: unknown): void {
 }
 
 function stripBodyWhitespace(body: Stripable[]): void {
+  // Pass 1: apply explicit strip flags (~) and BlockStatement inner strips.
   for (let i = 0; i < body.length; i++) {
     const stmt = body[i];
     if (!stmt) continue;
@@ -373,12 +374,87 @@ function stripBodyWhitespace(body: Stripable[]): void {
     }
   }
 
+  // Pass 2: standalone stripping. If a block/comment is alone on its line
+  // (only whitespace before it back to a newline and only whitespace after
+  // it forward to a newline), strip that whitespace including the newlines.
+  applyStandaloneStripping(body);
+
   // Drop any text nodes that are now empty after stripping.
   for (let i = body.length - 1; i >= 0; i--) {
     const stmt = body[i];
     if (stmt?.type === 'TextNode' && stmt.chars === '') {
       body.splice(i, 1);
     }
+  }
+}
+
+function isStandaloneCandidate(stmt: Stripable | undefined): boolean {
+  if (!stmt) return false;
+  // BlockStatement gets standalone treatment on its open and close tags
+  // independently; MustacheCommentStatement too. MustacheStatement does
+  // NOT get standalone stripping in the legacy parser.
+  return stmt.type === 'BlockStatement' || stmt.type === 'MustacheCommentStatement';
+}
+
+function applyStandaloneStripping(body: Stripable[]): void {
+  for (let i = 0; i < body.length; i++) {
+    const stmt = body[i];
+    if (!isStandaloneCandidate(stmt)) continue;
+
+    const prev = body[i - 1];
+    const next = body[i + 1];
+
+    // For a block to be standalone:
+    //   1. The text before it (back to the previous newline or start) must
+    //      be whitespace only.
+    //   2. The text after it (forward to the next newline or end) must be
+    //      whitespace only.
+    //   3. At least one side must contain a real newline (otherwise it's
+    //      just inline whitespace around the block).
+    const prevOk = isEmptyOrWhitespaceToNewline(prev, 'backward');
+    const nextOk = isEmptyOrWhitespaceToNewline(next, 'forward');
+    const hasNewline = containsNewline(prev) || containsNewline(next);
+
+    if (prevOk && nextOk && hasNewline) {
+      // Strip trailing inline whitespace on prev (up to but NOT including
+      // the preceding newline — the newline itself marks where the content
+      // on the standalone line ends, so we leave it in place). The next
+      // text has its leading newline consumed instead.
+      if (prev?.type === 'TextNode' && typeof prev.chars === 'string') {
+        prev.chars = prev.chars.replace(/[ \t]+$/u, '');
+      }
+      // Strip leading whitespace + the trailing newline from next.
+      if (next?.type === 'TextNode' && typeof next.chars === 'string') {
+        next.chars = next.chars.replace(/^[ \t]*(?:\r\n|\r|\n)/u, '');
+      }
+    }
+  }
+}
+
+function containsNewline(node: Stripable | undefined): boolean {
+  if (!node || node.type !== 'TextNode') return false;
+  return /[\r\n]/u.test(node.chars ?? '');
+}
+
+// Check that `node` exists and (going backward from its end or forward from
+// its start) has only whitespace until the next newline, or reaches the
+// start/end of the body.
+function isEmptyOrWhitespaceToNewline(
+  node: Stripable | undefined,
+  direction: 'backward' | 'forward'
+): boolean {
+  if (!node) return true; // body boundary
+  if (node.type !== 'TextNode') return false;
+  const chars = node.chars ?? '';
+  if (direction === 'backward') {
+    // The tail (from last newline to end) must be only whitespace.
+    const lastNewline = Math.max(chars.lastIndexOf('\n'), chars.lastIndexOf('\r'));
+    const tail = lastNewline === -1 ? chars : chars.slice(lastNewline + 1);
+    return /^[ \t]*$/u.test(tail);
+  } else {
+    // The head (up to first newline) must be only whitespace.
+    const match = chars.match(/^[ \t]*(?:\r\n|\r|\n|$)/u);
+    return match !== null;
   }
 }
 
