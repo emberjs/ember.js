@@ -32,7 +32,7 @@ if [ -n "$WASM_OPT" ]; then
   mv pkg/standalone/glimmer_template_parser_bg.wasm.opt pkg/standalone/glimmer_template_parser_bg.wasm
 fi
 
-# Generate the base64-encoded WASM bytes module for the universal wrapper
+# Generate the base64-encoded WASM bytes module for the universal wrapper.
 echo "  → Generating wasm-bytes.mjs..."
 node -e "
 const fs = require('fs');
@@ -40,7 +40,8 @@ const wasm = fs.readFileSync('pkg/standalone/glimmer_template_parser_bg.wasm');
 const base64 = wasm.toString('base64');
 const content = 'export const WASM_BYTES_BASE64 = ' + JSON.stringify(base64) + ';\n';
 fs.writeFileSync('pkg/wasm-bytes.mjs', content);
-console.log('    wasm-bytes.mjs: ' + (content.length / 1024).toFixed(1) + 'KB');
+console.log('    wasm bytes: ' + (wasm.length / 1024).toFixed(1) + 'KB raw');
+console.log('    wasm-bytes.mjs: ' + (content.length / 1024).toFixed(1) + 'KB (b64)');
 "
 
 echo "✅ Build complete!"

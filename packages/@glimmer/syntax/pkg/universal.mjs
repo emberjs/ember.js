@@ -1,9 +1,7 @@
 // Universal WASM wrapper — works in both Node.js and browsers.
 //
-// The WASM is lazy-initialized on first call. This keeps rollup's
-// tree-shaking working: if a consumer bundle never calls
-// parseTemplateToJson, the ~360KB inlined base64 string (wasm-bytes.mjs)
-// is removed from the output.
+// Lazy-initialized on first call so rollup can tree-shake the WASM bytes
+// when a consumer never calls parseTemplateToJson.
 
 import {
   initSync,
