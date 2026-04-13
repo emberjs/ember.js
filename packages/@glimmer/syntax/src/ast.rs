@@ -291,6 +291,9 @@ pub struct UndefinedLiteral {
 pub struct NullLiteral {
     #[serde(rename = "type")]
     pub node_type: &'static str, // "NullLiteral"
+    // value and original are both `null` in ASTv1
+    pub value: Option<()>,
+    pub original: Option<()>,
     pub loc: SourceLocation,
 }
 

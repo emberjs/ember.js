@@ -170,7 +170,7 @@ IdentChars = @{
 }
 
 IdentStart = @{
-    ASCII_ALPHA | "_" | "$"
+    ASCII_ALPHA | "_" | "$" | ("-" ~ &ASCII_ALPHA)
 }
 
 IdentContinue = @{
@@ -326,48 +326,43 @@ ElementContent = _{
   | WS+ ~ BlockParams
 }
 
+// TagName unifies all valid angle-bracket tag name forms:
+//   :inverse           — named block
+//   @arg, @Arg.x       — argument / path
+//   this.Foo, Foo.Bar  — path expressions (upper/lower, dots, ::)
+//   Foo, FooBar        — component identifiers (PascalCase)
+//   div, my-element    — HTML/custom elements (lowercase)
 TagName = @{
     NamedBlockTag
-  | AtComponentTag
-  | NamespacedComponentTag
-  | DottedLocalTag
-  | ComponentTag
-  | HtmlTag
+  | AtPathTag
+  | NamespacedPathTag
+  | DottedPathTag
+  | ComponentIdent
+  | HtmlIdent
 }
 
-NamedBlockTag = @{
-    ":" ~ IdentChars
-}
+NamedBlockTag = @{ ":" ~ IdentChars }
 
-// @foo style tags (used in strict mode, both upper and lower case)
-AtComponentTag = @{
-    "@" ~ IdentChars ~ ("." ~ PathSegment)*
-}
+// @-prefixed path: @foo, @Foo, @foo.bar
+AtPathTag = @{ "@" ~ IdentChars ~ ("." ~ PathSegment)* }
 
-// Colon-namespaced components: Foo::Bar::Baz, Foo::Bar.Baz
-NamespacedComponentTag = @{
+// Colon-namespaced path: Foo::Bar, Foo::Bar::Baz, Foo::Bar.Baz
+NamespacedPathTag = @{
     ASCII_ALPHA_UPPER ~ TagNameContinue* ~ ("::" ~ ASCII_ALPHA ~ TagNameContinue*)+ ~ ("." ~ PathSegment)*
 }
 
-// Lowercase dotted local tags: foo.bar, foo.bar.baz
-// (references to local variables or block params)
-DottedLocalTag = @{
-    ASCII_ALPHA_LOWER ~ TagNameContinue* ~ ("." ~ PathSegment)+
+// Dotted path tags (both cases): foo.bar, Foo.Bar, this.Foo
+DottedPathTag = @{
+    ("this" | ASCII_ALPHA ~ TagNameContinue*) ~ ("." ~ PathSegment)+
 }
 
-// Component tags with dot paths: Foo, Foo.Bar, this.SomeComponent
-ComponentTag = @{
-    (ASCII_ALPHA_UPPER ~ TagNameContinue*) ~ ("." ~ PathSegment)*
-  | "this" ~ ("." ~ PathSegment)+
-}
+// Component identifier: PascalCase tags (Foo, FooBar)
+ComponentIdent = @{ ASCII_ALPHA_UPPER ~ TagNameContinue* }
 
-HtmlTag = @{
-    ASCII_ALPHA_LOWER ~ TagNameContinue*
-}
+// HTML/custom-element identifier: lowercase tags (div, my-element)
+HtmlIdent = @{ ASCII_ALPHA_LOWER ~ TagNameContinue* }
 
-TagNameContinue = @{
-    ASCII_ALPHANUMERIC | "-" | "_"
-}
+TagNameContinue = @{ ASCII_ALPHANUMERIC | "-" | "_" }
 
 VoidTagName = @{
     (

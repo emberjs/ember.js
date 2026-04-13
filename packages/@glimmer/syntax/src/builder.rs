@@ -645,6 +645,8 @@ fn build_null_literal(pair: Pair<'_, Rule>, source: &str) -> Expression {
     let loc = span_to_loc(source, &pair);
     Expression::NullLiteral(NullLiteral {
         node_type: "NullLiteral",
+        value: None,
+        original: None,
         loc,
     })
 }
