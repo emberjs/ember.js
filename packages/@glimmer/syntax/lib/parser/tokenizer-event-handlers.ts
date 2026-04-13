@@ -344,6 +344,14 @@ function stripBodyWhitespace(body: Stripable[]): void {
       }
     }
   }
+
+  // Drop any text nodes that are now empty after stripping.
+  for (let i = body.length - 1; i >= 0; i--) {
+    const stmt = body[i]!;
+    if (stmt.type === 'TextNode' && stmt.chars === '') {
+      body.splice(i, 1);
+    }
+  }
 }
 
 function getOpenStrip(stmt: Stripable): boolean {
