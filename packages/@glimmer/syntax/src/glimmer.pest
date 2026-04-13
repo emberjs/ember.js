@@ -292,9 +292,10 @@ CloseTag = {
 }
 
 // ElementContent covers attributes, modifiers, splattributes, block params, and comments
+// Check BlockParams first so `as |x|` isn't consumed as attribute name `as`.
 ElementContent = _{
-    WS+ ~ (Splattributes | MustacheComment | AttrModifier | AttrWithValue | AttrNameOnly)
-  | WS+ ~ BlockParams
+    BlockParams
+  | WS+ ~ (Splattributes | MustacheComment | AttrModifier | AttrWithValue | AttrNameOnly)
 }
 
 // TagName unifies all valid angle-bracket tag name forms:
