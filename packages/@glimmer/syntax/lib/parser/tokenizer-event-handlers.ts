@@ -327,7 +327,8 @@ function cleanupStripFlags(node: unknown): void {
 
 function stripBodyWhitespace(body: Stripable[]): void {
   for (let i = 0; i < body.length; i++) {
-    const stmt = body[i]!;
+    const stmt = body[i];
+    if (!stmt) continue;
     const leftStrip = getOpenStrip(stmt);
     const rightStrip = getCloseStrip(stmt);
 
@@ -374,8 +375,8 @@ function stripBodyWhitespace(body: Stripable[]): void {
 
   // Drop any text nodes that are now empty after stripping.
   for (let i = body.length - 1; i >= 0; i--) {
-    const stmt = body[i]!;
-    if (stmt.type === 'TextNode' && stmt.chars === '') {
+    const stmt = body[i];
+    if (stmt?.type === 'TextNode' && stmt.chars === '') {
       body.splice(i, 1);
     }
   }
@@ -396,16 +397,16 @@ function stripLastTextTrailing(body: Stripable[]): void {
 }
 
 function getOpenStrip(stmt: Stripable): boolean {
-  if (stmt.type === 'MustacheStatement') return !!stmt.strip?.open;
-  if (stmt.type === 'MustacheCommentStatement') return !!stmt.__strip?.open;
-  if (stmt.type === 'BlockStatement') return !!stmt.openStrip?.open;
+  if (stmt.type === 'MustacheStatement') return Boolean(stmt.strip?.open);
+  if (stmt.type === 'MustacheCommentStatement') return Boolean(stmt.__strip?.open);
+  if (stmt.type === 'BlockStatement') return Boolean(stmt.openStrip?.open);
   return false;
 }
 
 function getCloseStrip(stmt: Stripable): boolean {
-  if (stmt.type === 'MustacheStatement') return !!stmt.strip?.close;
-  if (stmt.type === 'MustacheCommentStatement') return !!stmt.__strip?.close;
-  if (stmt.type === 'BlockStatement') return !!stmt.closeStrip?.close;
+  if (stmt.type === 'MustacheStatement') return Boolean(stmt.strip?.close);
+  if (stmt.type === 'MustacheCommentStatement') return Boolean(stmt.__strip?.close);
+  if (stmt.type === 'BlockStatement') return Boolean(stmt.closeStrip?.close);
   return false;
 }
 
