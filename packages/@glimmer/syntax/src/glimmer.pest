@@ -146,7 +146,13 @@ PathHead = @{
     ThisRef
   | AtName
   | ParentRef
+  | SlashedIdentifier
   | SimpleIdentifier
+}
+
+// Slashed identifier: fizz-bar/baz-bar (used for component/helper lookup)
+SlashedIdentifier = @{
+    IdentChars ~ ("/" ~ IdentChars)+
 }
 
 ThisRef = @{ "this" ~ &("." | WS | "}}" | ")" | "~}}" | "=" | "|") }
@@ -433,7 +439,8 @@ AttrText_SQ = @{
 }
 
 AttrMustache = {
-    DoubleMustache
+    TripleMustache
+  | DoubleMustache
 }
 
 UnquotedAttrValue = {
@@ -442,7 +449,8 @@ UnquotedAttrValue = {
 }
 
 UnquotedMustache = {
-    DoubleMustache
+    TripleMustache
+  | DoubleMustache
 }
 
 UnquotedTextValue = @{
