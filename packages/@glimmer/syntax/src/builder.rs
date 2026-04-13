@@ -1084,8 +1084,8 @@ fn build_normal_element(
     let mut tag_name = String::new();
     let mut attributes = vec![];
     let mut modifiers = vec![];
-    let comments = vec![];
-    let block_params = vec![];
+    let mut comments = vec![];
+    let mut block_params: Vec<String> = vec![];
     let mut children = vec![];
     let mut open_tag = loc.clone();
     let mut close_tag = None;
@@ -1118,6 +1118,14 @@ fn build_normal_element(
                         }
                         Rule::AttrModifier => {
                             modifiers.push(build_element_modifier(sub, source));
+                        }
+                        Rule::BlockParams => {
+                            block_params = build_block_params(sub);
+                        }
+                        Rule::MustacheComment
+                        | Rule::MustacheCommentLong
+                        | Rule::MustacheCommentShort => {
+                            comments.push(build_mustache_comment(sub, source));
                         }
                         _ => {}
                     }
@@ -1161,6 +1169,8 @@ fn build_self_closing_element(
     let mut tag_name = String::new();
     let mut attributes = vec![];
     let mut modifiers = vec![];
+    let mut comments = vec![];
+    let mut block_params: Vec<String> = vec![];
 
     for child in pair.into_inner() {
         match child.as_rule() {
@@ -1187,6 +1197,12 @@ fn build_self_closing_element(
             Rule::AttrModifier => {
                 modifiers.push(build_element_modifier(child, source));
             }
+            Rule::BlockParams => {
+                block_params = build_block_params(child);
+            }
+            Rule::MustacheComment | Rule::MustacheCommentLong | Rule::MustacheCommentShort => {
+                comments.push(build_mustache_comment(child, source));
+            }
             _ => {}
         }
     }
@@ -1198,14 +1214,14 @@ fn build_self_closing_element(
         path,
         self_closing: true,
         attributes,
-        params: vec![],
+        params: block_params_to_var_heads(&block_params, &loc),
         modifiers,
-        comments: vec![],
+        comments,
         children: vec![],
         open_tag: loc.clone(),
         close_tag: None,
         tag: tag_name,
-        block_params: vec![],
+        block_params,
         loc,
     }
 }
@@ -1218,10 +1234,18 @@ fn build_void_element(
     let mut tag_name = String::new();
     let mut attributes = vec![];
     let mut modifiers = vec![];
+    let mut comments = vec![];
+    let mut self_closing = false;
 
     for child in pair.into_inner() {
         match child.as_rule() {
             Rule::VoidTagName => tag_name = child.as_str().to_string(),
+            Rule::TagEnd => {
+                // `/>` marks a self-closing void element like <br />
+                if child.as_str() == "/>" {
+                    self_closing = true;
+                }
+            }
             Rule::Splattributes => {
                 let attr_loc = span_to_loc(source, &child);
                 attributes.push(AttrNode {
@@ -1244,6 +1268,9 @@ fn build_void_element(
             Rule::AttrModifier => {
                 modifiers.push(build_element_modifier(child, source));
             }
+            Rule::MustacheComment | Rule::MustacheCommentLong | Rule::MustacheCommentShort => {
+                comments.push(build_mustache_comment(child, source));
+            }
             _ => {}
         }
     }
@@ -1253,11 +1280,11 @@ fn build_void_element(
     ElementNode {
         node_type: "ElementNode",
         path,
-        self_closing: false,
+        self_closing,
         attributes,
         params: vec![],
         modifiers,
-        comments: vec![],
+        comments,
         children: vec![],
         open_tag: loc.clone(),
         close_tag: None,
