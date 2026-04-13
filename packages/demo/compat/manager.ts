@@ -80,6 +80,7 @@ function setInstanceCapture(inst: any) {
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
+import { peekMeta } from '@ember/-internals/meta';
 export { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 // Expose PROPERTY_DID_CHANGE on globalThis so ember-gxt-wrappers.ts can install
 // change hooks on helper instances for tracked property reactivity.
@@ -852,6 +853,52 @@ function createComponentInstance(
   // reach assert.throws in tests (GXT dist has no try-catch wrapper).
   const instance = factory.create(props);
 
+  // Wrap willDestroy so that the user's override is only invoked for
+  // instances that actually reached the live DOM. GXT's $_if re-evaluation
+  // during a single runTask can create+destroy transient instances that
+  // never render — classic Ember would never create these at all, so their
+  // willDestroy body (which often increments destroy counters or releases
+  // resources) should not run. We still call Ember's super.willDestroy()
+  // via the prototype chain to keep internal bookkeeping consistent.
+  try {
+    const proto = Object.getPrototypeOf(instance);
+    if (proto && typeof instance.willDestroy === 'function') {
+      const ownWillDestroy = instance.willDestroy;
+      // Find the prototype's willDestroy (Ember base) to use as fallback.
+      // Walk the prototype chain past any instance-local override.
+      let p = proto;
+      let baseWillDestroy: Function | null = null;
+      while (p && p !== Object.prototype) {
+        const d = Object.getOwnPropertyDescriptor(p, 'willDestroy');
+        if (d && typeof d.value === 'function') {
+          // The TOPMOST willDestroy on a class (CoreView) is the Ember base.
+          // Keep walking to the deepest (Object.prototype boundary) to get the
+          // root implementation.
+          baseWillDestroy = d.value;
+        }
+        p = Object.getPrototypeOf(p);
+      }
+      Object.defineProperty(instance, 'willDestroy', {
+        value: function(this: any) {
+          if (this.__gxtEverInserted === false || this.__gxtEverInserted === undefined) {
+            // Never actually rendered — skip the user override but invoke
+            // the Ember base implementation (if distinct) to keep core teardown
+            // bookkeeping consistent. The root Ember willDestroy is a no-op
+            // in most cases, so this is usually just a safety call.
+            if (baseWillDestroy && baseWillDestroy !== ownWillDestroy) {
+              try { return baseWillDestroy.call(this); } catch { /* ignore */ }
+            }
+            return;
+          }
+          return ownWillDestroy.apply(this, arguments as any);
+        },
+        writable: true,
+        configurable: true,
+        enumerable: false,
+      });
+    }
+  } catch { /* ignore — willDestroy may not be wrappable */ }
+
   // GXT compat: restore user-toggled-false state for components whose
   // wrapper id is tracked in __gxtWrapperIfUserFalse. Ember's View tree
   // tests rely on x-toggle instances rendered in the persistent application
@@ -1013,6 +1060,70 @@ function createComponentInstance(
     }
     instance.__gxtTwoWayBindings = twoWayBindings;
 
+    // GH#18417: detect arg keys that map to @computed properties and record
+    // their dependent keys. When one of those deps changes on the instance,
+    // we re-read the CP (with fresh deps) and propagate the new value upstream
+    // to the parent's bound property. This makes `child.set('a', x)` flow into
+    // `parent.string` when the child's `value` is `@computed('a','b')` and
+    // passed in as `value=this.string`.
+    const cpDepToArgKey: Record<string, string[]> = {};
+    try {
+      const metaObj = peekMeta(instance) as any;
+      if (metaObj) {
+        for (const argKey of argKeySet) {
+          if (argKey === 'id' || argKey === 'elementId') continue;
+          // Walk the meta chain to find the descriptor for this key.
+          let desc: any = null;
+          try { desc = metaObj.peekDescriptors?.(argKey); } catch { /* ignore */ }
+          if (!desc) {
+            // Fall back to walking prototype's meta
+            let proto = Object.getPrototypeOf(instance);
+            while (proto && proto !== Object.prototype && !desc) {
+              try {
+                const pmeta = peekMeta(proto) as any;
+                if (pmeta) desc = pmeta.peekDescriptors?.(argKey);
+              } catch { /* ignore */ }
+              proto = Object.getPrototypeOf(proto);
+            }
+          }
+          const deps: string[] | undefined = desc?._dependentKeys;
+          if (Array.isArray(deps) && deps.length > 0) {
+            for (const dep of deps) {
+              // Only handle simple local keys (not chained paths)
+              if (dep.indexOf('.') !== -1) continue;
+              if (!cpDepToArgKey[dep]) cpDepToArgKey[dep] = [];
+              cpDepToArgKey[dep].push(argKey);
+            }
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    instance.__gxtCpDepToArgKey = cpDepToArgKey;
+    // Cache the CP descriptors for each arg key so we can call their raw getter
+    // directly (bypassing cell-cached getters installed on the instance).
+    const argKeyToCpDesc: Record<string, any> = {};
+    try {
+      for (const argKey of argKeySet) {
+        if (argKey === 'id' || argKey === 'elementId') continue;
+        let desc: any = null;
+        try { desc = (peekMeta(instance) as any)?.peekDescriptors?.(argKey); } catch { /* ignore */ }
+        if (!desc) {
+          let proto = Object.getPrototypeOf(instance);
+          while (proto && proto !== Object.prototype && !desc) {
+            try {
+              const pmeta = peekMeta(proto) as any;
+              if (pmeta) desc = pmeta.peekDescriptors?.(argKey);
+            } catch { /* ignore */ }
+            proto = Object.getPrototypeOf(proto);
+          }
+        }
+        if (desc && typeof desc.get === 'function') {
+          argKeyToCpDesc[argKey] = desc;
+        }
+      }
+    } catch { /* ignore */ }
+    instance.__gxtArgKeyToCpDesc = argKeyToCpDesc;
+
     // Override PROPERTY_DID_CHANGE on the instance.
     const triggerReRender = (globalThis as any).__gxtTriggerReRender;
     const origPDC = instance[PROPERTY_DID_CHANGE]?.bind(instance);
@@ -1031,6 +1142,74 @@ function createComponentInstance(
       // Only propagate binding logic for keys that were passed as args
       if (!argKeySet.has(key)) {
         if (origPDC) try { origPDC(key, value); } catch { /* ignore */ }
+        // GH#18417: if this key is a dep of a CP that's bound as an arg, re-read
+        // the CP value and propagate upstream to the parent's bound property.
+        const affectedArgs = cpDepToArgKey[key];
+        if (affectedArgs && affectedArgs.length > 0) {
+          // Guard against re-entry while we propagate
+          if (!(instance as any).__gxtPropagatingCpDep) {
+            (instance as any).__gxtPropagatingCpDep = true;
+            try {
+              for (const argKey of affectedArgs) {
+                let cpValue: unknown;
+                // Prefer calling the raw computed descriptor getter to bypass
+                // any cell-backed getter that may be caching a stale value.
+                const cpDesc = argKeyToCpDesc[argKey];
+                if (cpDesc && typeof cpDesc.get === 'function') {
+                  try { cpValue = cpDesc.get(instance, argKey); } catch { /* fall through */ }
+                }
+                if (cpValue === undefined) {
+                  try { cpValue = instance[argKey]; } catch { continue; }
+                }
+
+                // 1) Raw mut cell: update via .update()
+                const rawGetter2 = rawArgGetters[argKey];
+                if (rawGetter2) {
+                  try {
+                    const rawVal = rawGetter2();
+                    if (rawVal && rawVal.__isMutCell) {
+                      rawVal.update(cpValue);
+                      if (triggerReRender && instance.parentView) {
+                        triggerReRender(instance.parentView, argKey);
+                      }
+                      continue;
+                    }
+                  } catch { /* ignore */ }
+                }
+
+                // 2) Detected two-way binding source
+                const binding2 = twoWayBindings[argKey];
+                if (binding2?.sourceCtx && binding2?.sourceKey) {
+                  const srcInst = binding2.sourceCtx.__gxtRawTarget || binding2.sourceCtx;
+                  try {
+                    if (typeof srcInst.set === 'function') {
+                      srcInst.set(binding2.sourceKey, cpValue);
+                    } else {
+                      binding2.sourceCtx[binding2.sourceKey] = cpValue;
+                    }
+                    if (triggerReRender) triggerReRender(srcInst, binding2.sourceKey);
+                  } catch { /* ignore */ }
+                  continue;
+                }
+
+                // 3) Fallback: parentView has matching property
+                const pv2 = instance.parentView;
+                if (pv2 && argKey in pv2) {
+                  try {
+                    if (typeof pv2.set === 'function') {
+                      pv2.set(argKey, cpValue);
+                    } else {
+                      pv2[argKey] = cpValue;
+                      if (triggerReRender) triggerReRender(pv2, argKey);
+                    }
+                  } catch { /* ignore */ }
+                }
+              }
+            } finally {
+              (instance as any).__gxtPropagatingCpDep = false;
+            }
+          }
+        }
         return;
       }
 
@@ -3582,7 +3761,15 @@ function createRenderContext(
         if (desc && !desc.get && !desc.set && desc.configurable !== false && typeof desc.value !== 'function') {
 
           try {
-            _cellFor(instance, key, /* skipDefine */ false);
+            const _c = _cellFor(instance, key, /* skipDefine */ false);
+            // Reconcile: cellFor(skipDefine=false) may install a fresh getter/setter
+            // backed by a cell that doesn't know the current data value (it was set
+            // via this.set() BEFORE the cell was installed, e.g., in didReceiveAttrs).
+            // If the cell's value disagrees with the data value we just saw, update
+            // the cell so the getter returns the correct initial value.
+            if (_c && desc.value !== undefined && _c._value !== desc.value) {
+              try { _c.update(desc.value); } catch { /* ignore */ }
+            }
             // Register array owner for KVO array mutation tracking
             if (_registerArrayOwner && Array.isArray(desc.value)) {
               _registerArrayOwner(desc.value, instance, key);
@@ -7004,6 +7191,7 @@ function renderClassicComponent(
         if (inst._transitionTo && isInteractiveModeChecked()) {
           try { inst._transitionTo('inDOM'); } catch {}
         }
+        inst.__gxtEverInserted = true;
       });
     }
   } else {
@@ -7041,9 +7229,18 @@ function renderClassicComponent(
     if (instance) {
       const inst = instance;
       _afterInsertQueue.push(() => {
+        // Only transition + fire didInsertElement if the instance's element
+        // actually made it into the live document. Transient instances created
+        // by GXT's re-evaluation of an inner {{#if}} whose outer condition is
+        // already false end up in detached DOM trees and should be treated as
+        // never having rendered (matching classic Ember's batching semantics).
+        const el = getViewElement(inst);
+        const isConnected = !!(el && (el as any).isConnected);
+        if (!isConnected) return;
         if (inst._transitionTo && isInteractiveModeChecked()) {
           try { inst._transitionTo('inDOM'); } catch {}
         }
+        inst.__gxtEverInserted = true;
         triggerLifecycleHook(inst, 'didInsertElement');
         triggerLifecycleHook(inst, 'didRender');
       });
