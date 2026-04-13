@@ -259,7 +259,6 @@ pub struct StringLiteral {
     #[serde(rename = "type")]
     pub node_type: &'static str, // "StringLiteral"
     pub value: String,
-    pub original: String,
     pub loc: SourceLocation,
 }
 
@@ -268,7 +267,6 @@ pub struct BooleanLiteral {
     #[serde(rename = "type")]
     pub node_type: &'static str, // "BooleanLiteral"
     pub value: bool,
-    pub original: bool,
     pub loc: SourceLocation,
 }
 
@@ -277,7 +275,6 @@ pub struct NumberLiteral {
     #[serde(rename = "type")]
     pub node_type: &'static str, // "NumberLiteral"
     pub value: f64,
-    pub original: f64,
     pub loc: SourceLocation,
 }
 
@@ -294,7 +291,6 @@ pub struct NullLiteral {
     pub node_type: &'static str, // "NullLiteral"
     // value and original are both `null` in ASTv1
     pub value: Option<()>,
-    pub original: Option<()>,
     pub loc: SourceLocation,
 }
 

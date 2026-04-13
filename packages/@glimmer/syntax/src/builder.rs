@@ -589,7 +589,6 @@ fn build_string_literal(pair: Pair<'_, Rule>, source: &str) -> Expression {
     Expression::StringLiteral(StringLiteral {
         node_type: "StringLiteral",
         value: unescaped.clone(),
-        original: unescaped,
         loc,
     })
 }
@@ -601,7 +600,6 @@ fn build_number_literal(pair: Pair<'_, Rule>, source: &str) -> Expression {
     Expression::NumberLiteral(NumberLiteral {
         node_type: "NumberLiteral",
         value,
-        original: value,
         loc,
     })
 }
@@ -613,7 +611,6 @@ fn build_boolean_literal(pair: Pair<'_, Rule>, source: &str) -> Expression {
     Expression::BooleanLiteral(BooleanLiteral {
         node_type: "BooleanLiteral",
         value,
-        original: value,
         loc,
     })
 }
@@ -631,7 +628,6 @@ fn build_null_literal(pair: Pair<'_, Rule>, source: &str) -> Expression {
     Expression::NullLiteral(NullLiteral {
         node_type: "NullLiteral",
         value: None,
-        original: None,
         loc,
     })
 }

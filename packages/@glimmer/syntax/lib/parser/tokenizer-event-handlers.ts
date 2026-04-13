@@ -343,6 +343,33 @@ function stripBodyWhitespace(body: Stripable[]): void {
         next.chars = next.chars.replace(/^[ \t\r\n]+/u, '');
       }
     }
+
+    // BlockStatement has additional inner stripping:
+    //   openStrip.close   → trim leading ws on program body's first text
+    //   inverseStrip.open → trim trailing ws on program body's last text
+    //   inverseStrip.close → trim leading ws on inverse body's first text
+    //   closeStrip.open   → trim trailing ws on inverse (or program) last text
+    if (stmt.type === 'BlockStatement') {
+      const program = stmt.program?.body;
+      const inverse = stmt.inverse?.body;
+
+      if (stmt.openStrip?.close && program && program.length > 0) {
+        stripFirstTextLeading(program);
+      }
+      if (stmt.inverseStrip?.open && program && program.length > 0) {
+        stripLastTextTrailing(program);
+      }
+      if (stmt.inverseStrip?.close && inverse && inverse.length > 0) {
+        stripFirstTextLeading(inverse);
+      }
+      if (stmt.closeStrip?.open) {
+        if (inverse && inverse.length > 0) {
+          stripLastTextTrailing(inverse);
+        } else if (program && program.length > 0) {
+          stripLastTextTrailing(program);
+        }
+      }
+    }
   }
 
   // Drop any text nodes that are now empty after stripping.
@@ -351,6 +378,20 @@ function stripBodyWhitespace(body: Stripable[]): void {
     if (stmt.type === 'TextNode' && stmt.chars === '') {
       body.splice(i, 1);
     }
+  }
+}
+
+function stripFirstTextLeading(body: Stripable[]): void {
+  const first = body[0];
+  if (first?.type === 'TextNode' && typeof first.chars === 'string') {
+    first.chars = first.chars.replace(/^[ \t\r\n]+/u, '');
+  }
+}
+
+function stripLastTextTrailing(body: Stripable[]): void {
+  const last = body[body.length - 1];
+  if (last?.type === 'TextNode' && typeof last.chars === 'string') {
+    last.chars = last.chars.replace(/[ \t\r\n]+$/u, '');
   }
 }
 
@@ -430,6 +471,32 @@ function convertLocations(node: unknown, source: src.Source): void {
         return !this.trusting;
       },
     });
+  }
+
+  // Add deprecated `original` as a non-enumerable getter on literal nodes
+  // (matches the reference builder's defineProperty pattern).
+  if (
+    (obj['type'] === 'StringLiteral' ||
+      obj['type'] === 'NumberLiteral' ||
+      obj['type'] === 'BooleanLiteral' ||
+      obj['type'] === 'NullLiteral' ||
+      obj['type'] === 'UndefinedLiteral') &&
+    !Object.getOwnPropertyDescriptor(obj, 'original')
+  ) {
+    Object.defineProperty(obj, 'original', {
+      enumerable: false,
+      configurable: true,
+      get(this: { value: unknown }): unknown {
+        return this.value;
+      },
+    });
+  }
+
+  // UndefinedLiteral needs a real `value: undefined` property (the reference
+  // builder creates it this way). We can't emit undefined from JSON so we
+  // assign it here.
+  if (obj['type'] === 'UndefinedLiteral' && !('value' in obj)) {
+    obj['value'] = undefined;
   }
 
   // Decode HTML entities in text node content (precompile mode only).
