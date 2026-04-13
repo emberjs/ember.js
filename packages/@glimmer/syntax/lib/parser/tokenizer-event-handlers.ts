@@ -868,8 +868,8 @@ function detectSpecificError(
   // VoidElement consumed `<area>`. Walk back one char to see `</...>`.
   const closeStart = sourceStr[offset - 1] === '<' ? offset - 1 : offset;
   const closeMatch = /^<\/([a-z][a-z0-9-]*)>/u.exec(sourceStr.slice(closeStart));
-  if (closeMatch) {
-    const tagName = closeMatch[1]!;
+  if (closeMatch && closeMatch[1]) {
+    const tagName = closeMatch[1];
     if (VOID_TAG_NAMES.has(tagName.toLowerCase())) {
       return {
         message: `<${tagName}> elements do not need end tags. You should remove it`,
