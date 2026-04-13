@@ -1311,12 +1311,28 @@ fn build_element_path(tag_name: &str, loc: &SourceLocation) -> PathExpression {
         },
     };
 
-    let head = PathHead::Var(VarHead {
-        node_type: "VarHead",
-        name: head_name.to_string(),
-        original: head_name.to_string(),
-        loc: head_loc,
-    });
+    // Match head type to its text: <this>, <@arg>, or <Var>/<:block>
+    let head = if head_name == "this" {
+        PathHead::This(ThisHead {
+            node_type: "ThisHead",
+            original: "this",
+            loc: head_loc,
+        })
+    } else if head_name.starts_with('@') {
+        PathHead::At(AtHead {
+            node_type: "AtHead",
+            name: head_name.to_string(),
+            original: head_name.to_string(),
+            loc: head_loc,
+        })
+    } else {
+        PathHead::Var(VarHead {
+            node_type: "VarHead",
+            name: head_name.to_string(),
+            original: head_name.to_string(),
+            loc: head_loc,
+        })
+    };
 
     PathExpression {
         node_type: "PathExpression",
