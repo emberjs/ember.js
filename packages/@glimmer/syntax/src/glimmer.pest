@@ -263,8 +263,7 @@ BlockParamName = @{ IdentChars }
 // Order matters: try more specific matches first
 
 Element = {
-    RawElement
-  | VoidElement
+    VoidElement
   | SelfClosingElement
   | NormalElement
 }
@@ -283,34 +282,6 @@ VoidElement = {
 
 // Separate TagEnd to handle both > and /> for void elements
 TagEnd = @{ "/>" | ">" }
-
-RawElement = {
-    RawOpenTag ~ RawContent ~ RawCloseTag
-}
-
-RawOpenTag = {
-    "<" ~ RawTagName ~ ElementContent* ~ WS* ~ ">"
-}
-
-RawContent = @{
-    RawContentChars*
-}
-
-RawContentChars = @{
-    !RawCloseTagLookahead ~ ANY
-}
-
-RawCloseTagLookahead = _{
-    "</" ~ RawTagName ~ ">"
-}
-
-RawCloseTag = {
-    "</" ~ RawTagName ~ ">"
-}
-
-RawTagName = @{
-    (^"script" | ^"style" | ^"textarea" | ^"pre") ~ &(WS | ">" | "/")
-}
 
 OpenTag = {
     "<" ~ TagName ~ ElementContent* ~ WS* ~ ">"

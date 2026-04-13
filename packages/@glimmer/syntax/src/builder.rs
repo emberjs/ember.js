@@ -88,8 +88,9 @@ fn build_statement(pair: Pair<'_, Rule>, source: &str) -> Option<Statement> {
                 pair, source,
             )))
         }
-        Rule::Element | Rule::NormalElement | Rule::SelfClosingElement | Rule::VoidElement
-        | Rule::RawElement => Some(Statement::Element(build_element(pair, source))),
+        Rule::Element | Rule::NormalElement | Rule::SelfClosingElement | Rule::VoidElement => {
+            Some(Statement::Element(build_element(pair, source)))
+        }
         Rule::EOI => None,
         _ => None,
     }
@@ -983,7 +984,6 @@ fn build_element(pair: Pair<'_, Rule>, source: &str) -> ElementNode {
         Rule::NormalElement => build_normal_element(inner_pair, source, loc),
         Rule::SelfClosingElement => build_self_closing_element(inner_pair, source, loc),
         Rule::VoidElement => build_void_element(inner_pair, source, loc),
-        Rule::RawElement => build_raw_element(inner_pair, source, loc),
         _ => panic!("Unexpected element type: {:?}", inner_pair.as_rule()),
     }
 }
@@ -1173,71 +1173,6 @@ fn build_void_element(
         children: vec![],
         open_tag: loc.clone(),
         close_tag: None,
-        tag: tag_name,
-        block_params: vec![],
-        loc,
-    }
-}
-
-fn build_raw_element(
-    pair: Pair<'_, Rule>,
-    source: &str,
-    loc: SourceLocation,
-) -> ElementNode {
-    let mut tag_name = String::new();
-    let mut attributes = vec![];
-    let mut children = vec![];
-    let mut open_tag = loc.clone();
-    let mut close_tag = None;
-
-    for child in pair.into_inner() {
-        match child.as_rule() {
-            Rule::RawOpenTag => {
-                open_tag = span_to_loc(source, &child);
-                for sub in child.into_inner() {
-                    match sub.as_rule() {
-                        Rule::RawTagName => tag_name = sub.as_str().to_string(),
-                        Rule::AttrWithValue => {
-                            attributes.push(build_attr_with_value(sub, source));
-                        }
-                        Rule::AttrNameOnly => {
-                            attributes.push(build_attr_name_only(sub, source));
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            Rule::RawContent => {
-                let content = child.as_str();
-                if !content.is_empty() {
-                    let content_loc = span_to_loc(source, &child);
-                    children.push(Statement::Text(TextNode {
-                        node_type: "TextNode",
-                        chars: content.to_string(),
-                        loc: content_loc,
-                    }));
-                }
-            }
-            Rule::RawCloseTag => {
-                close_tag = Some(span_to_loc(source, &child));
-            }
-            _ => {}
-        }
-    }
-
-    let path = build_element_path(&tag_name, &loc);
-
-    ElementNode {
-        node_type: "ElementNode",
-        path,
-        self_closing: false,
-        attributes,
-        params: vec![],
-        modifiers: vec![],
-        comments: vec![],
-        children,
-        open_tag,
-        close_tag,
         tag: tag_name,
         block_params: vec![],
         loc,
