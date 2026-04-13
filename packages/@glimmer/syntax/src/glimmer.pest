@@ -335,12 +335,14 @@ HtmlIdent = @{ ASCII_ALPHA_LOWER ~ TagNameContinue* }
 
 TagNameContinue = @{ ASCII_ALPHANUMERIC | "-" | "_" }
 
+// Case-sensitive: PascalCase versions (e.g. <Area>) are components,
+// not void tags, so they must have matching close tags.
 VoidTagName = @{
     (
-        ^"area" | ^"base" | ^"br" | ^"col" | ^"command"
-      | ^"embed" | ^"hr" | ^"img" | ^"input" | ^"keygen"
-      | ^"link" | ^"meta" | ^"param" | ^"source" | ^"track"
-      | ^"wbr"
+        "area" | "base" | "br" | "col" | "command"
+      | "embed" | "hr" | "img" | "input" | "keygen"
+      | "link" | "meta" | "param" | "source" | "track"
+      | "wbr"
     ) ~ &(WS | ">" | "/")
 }
 
