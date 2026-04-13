@@ -213,7 +213,9 @@ pub struct PathExpression {
     pub original: String,
     pub head: PathHead,
     pub tail: Vec<String>,
-    pub parts: Vec<String>,
+    // `parts` is deprecated on the ASTv1 type; the JS wrapper adds it
+    // as a non-enumerable getter to match the reference builder output
+    // so deepEqual-based tests don't see extra keys.
     pub loc: SourceLocation,
 }
 

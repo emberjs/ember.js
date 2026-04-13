@@ -288,6 +288,25 @@ function convertLocations(node: unknown, source: src.Source): void {
     }
   }
 
+  // Add deprecated `parts` as a non-enumerable getter on PathExpression nodes
+  // so live code still works but deepEqual comparisons against the reference
+  // builder (which also uses defineProperty) match.
+  if (obj['type'] === 'PathExpression' && !Object.getOwnPropertyDescriptor(obj, 'parts')) {
+    Object.defineProperty(obj, 'parts', {
+      enumerable: false,
+      configurable: true,
+      get(this: { original: string }): readonly string[] {
+        const segs = this.original.split('.');
+        if (segs[0] === 'this') {
+          segs.shift();
+        } else if (segs[0]?.startsWith('@')) {
+          segs[0] = segs[0].slice(1);
+        }
+        return Object.freeze(segs);
+      },
+    });
+  }
+
   // Recurse into all object properties
   for (const key of Object.keys(obj)) {
     if (key === 'loc' || key === 'openTag' || key === 'closeTag') continue;

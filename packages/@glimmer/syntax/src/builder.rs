@@ -190,7 +190,7 @@ fn build_mustache(pair: Pair<'_, Rule>, source: &str) -> MustacheStatement {
                 loc: loc.clone(),
             }),
             tail: vec![],
-            parts: vec![],
+
             loc: loc.clone(),
         })
     });
@@ -311,7 +311,7 @@ fn build_mustache_body(
                 },
             }),
             tail: vec![],
-            parts: vec![],
+
             loc: SourceLocation {
                 start: SourcePosition { line: 1, column: 0 },
                 end: SourcePosition { line: 1, column: 0 },
@@ -359,26 +359,11 @@ fn build_path_expression(pair: Pair<'_, Rule>, source: &str) -> PathExpression {
 
     let (head, tail) = parse_path_parts(&original, &loc);
 
-    let parts: Vec<String> = match &head {
-        PathHead::This(_) => tail.clone(),
-        PathHead::At(a) => {
-            let mut p = vec![a.name.clone()];
-            p.extend(tail.clone());
-            p
-        }
-        PathHead::Var(v) => {
-            let mut p = vec![v.name.clone()];
-            p.extend(tail.clone());
-            p
-        }
-    };
-
     PathExpression {
         node_type: "PathExpression",
         original,
         head,
         tail,
-        parts,
         loc,
     }
 }
@@ -1199,15 +1184,11 @@ fn build_element_path(tag_name: &str, loc: &SourceLocation) -> PathExpression {
         loc: head_loc,
     });
 
-    let mut parts = vec![head_name.to_string()];
-    parts.extend(tail.clone());
-
     PathExpression {
         node_type: "PathExpression",
         original: tag_name.to_string(),
         head,
         tail,
-        parts,
         loc: loc.clone(),
     }
 }
