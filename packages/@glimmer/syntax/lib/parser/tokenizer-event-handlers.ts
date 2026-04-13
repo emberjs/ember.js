@@ -269,9 +269,17 @@ function convertToASTv1(raw: Record<string, unknown>, source: src.Source): ASTv1
 // Applies `{{~` and `~}}` strip flags by trimming whitespace from neighboring
 // text nodes. Operates on the raw JSON AST before location conversion.
 
+interface PlainLoc {
+  start: { line: number; column: number };
+  end: { line: number; column: number };
+}
+
 interface Stripable {
   type: string;
   chars?: string;
+  // plain during stripping pass, SourceSpan later — declared unknown
+  // because both shapes flow through here.
+  loc?: unknown;
   strip?: { open: boolean; close: boolean };
   __strip?: { open: boolean; close: boolean };
   openStrip?: { open: boolean; close: boolean };
@@ -325,6 +333,20 @@ function cleanupStripFlags(node: unknown): void {
   }
 }
 
+function stripTextEnd(node: Stripable, pattern: RegExp): void {
+  if (node.type !== 'TextNode' || typeof node.chars !== 'string') return;
+  const original = node.chars;
+  node.chars = original.replace(pattern, '');
+  retractEnd(node, original.length - node.chars.length, original);
+}
+
+function stripTextStart(node: Stripable, pattern: RegExp): void {
+  if (node.type !== 'TextNode' || typeof node.chars !== 'string') return;
+  const original = node.chars;
+  node.chars = original.replace(pattern, '');
+  advanceStart(node, original.length - node.chars.length, original);
+}
+
 function stripBodyWhitespace(body: Stripable[]): void {
   // Pass 1: apply explicit strip flags (~) and BlockStatement inner strips.
   for (let i = 0; i < body.length; i++) {
@@ -335,15 +357,11 @@ function stripBodyWhitespace(body: Stripable[]): void {
 
     if (leftStrip && i > 0) {
       const prev = body[i - 1];
-      if (prev?.type === 'TextNode' && typeof prev.chars === 'string') {
-        prev.chars = prev.chars.replace(/[ \t\r\n]+$/u, '');
-      }
+      if (prev) stripTextEnd(prev, /[ \t\r\n]+$/u);
     }
     if (rightStrip && i + 1 < body.length) {
       const next = body[i + 1];
-      if (next?.type === 'TextNode' && typeof next.chars === 'string') {
-        next.chars = next.chars.replace(/^[ \t\r\n]+/u, '');
-      }
+      if (next) stripTextStart(next, /^[ \t\r\n]+/u);
     }
 
     // BlockStatement has additional inner stripping:
@@ -416,16 +434,29 @@ function applyStandaloneStripping(body: Stripable[]): void {
     const hasNewline = containsNewline(prev) || containsNewline(next);
 
     if (prevOk && nextOk && hasNewline) {
-      // Strip trailing inline whitespace on prev (up to but NOT including
-      // the preceding newline — the newline itself marks where the content
-      // on the standalone line ends, so we leave it in place). The next
-      // text has its leading newline consumed instead.
-      if (prev?.type === 'TextNode' && typeof prev.chars === 'string') {
-        prev.chars = prev.chars.replace(/[ \t]+$/u, '');
-      }
+      // Strip trailing inline whitespace on prev (leave the preceding
+      // newline intact so body boundary text nodes don't vanish).
+      if (prev) stripTextEnd(prev, /[ \t]+$/u);
       // Strip leading whitespace + the trailing newline from next.
-      if (next?.type === 'TextNode' && typeof next.chars === 'string') {
-        next.chars = next.chars.replace(/^[ \t]*(?:\r\n|\r|\n)/u, '');
+      if (next) stripTextStart(next, /^[ \t]*(?:\r\n|\r|\n)/u);
+
+      // If this is a standalone BlockStatement, also strip the leading
+      // newline from its program body's first text (consumed by the block
+      // open tag) and the trailing inline whitespace from its program or
+      // inverse body's last text (consumed by the block close tag).
+      if (stmt?.type === 'BlockStatement') {
+        const program = stmt.program?.body;
+        const inverse = stmt.inverse?.body;
+
+        if (program && program.length > 0) {
+          const first = program[0];
+          if (first) stripTextStart(first, /^[ \t]*(?:\r\n|\r|\n)/u);
+        }
+        const trailingBody = (inverse && inverse.length > 0 ? inverse : program) || [];
+        if (trailingBody.length > 0) {
+          const last = trailingBody[trailingBody.length - 1];
+          if (last) stripTextEnd(last, /[ \t]+$/u);
+        }
       }
     }
   }
@@ -461,15 +492,90 @@ function isEmptyOrWhitespaceToNewline(
 function stripFirstTextLeading(body: Stripable[]): void {
   const first = body[0];
   if (first?.type === 'TextNode' && typeof first.chars === 'string') {
-    first.chars = first.chars.replace(/^[ \t\r\n]+/u, '');
+    const original = first.chars;
+    first.chars = original.replace(/^[ \t\r\n]+/u, '');
+    advanceStart(first, original.length - first.chars.length, original);
   }
 }
 
 function stripLastTextTrailing(body: Stripable[]): void {
   const last = body[body.length - 1];
   if (last?.type === 'TextNode' && typeof last.chars === 'string') {
-    last.chars = last.chars.replace(/[ \t\r\n]+$/u, '');
+    const original = last.chars;
+    last.chars = original.replace(/[ \t\r\n]+$/u, '');
+    retractEnd(last, original.length - last.chars.length, original);
   }
+}
+
+// Move a TextNode's loc.start forward by `n` characters (across newlines).
+function advanceStart(node: Stripable, n: number, original: string): void {
+  if (n <= 0) return;
+  const loc = node.loc as PlainLoc | undefined;
+  if (!loc || !isPlainLocObj(loc)) return;
+  let { line, column } = loc.start;
+  for (let i = 0; i < n; i++) {
+    const ch = original[i];
+    if (ch === '\n') {
+      line++;
+      column = 0;
+    } else if (ch === '\r') {
+      // treat \r and \r\n as single newline; peek next
+      if (original[i + 1] === '\n') continue;
+      line++;
+      column = 0;
+    } else {
+      column++;
+    }
+  }
+  loc.start = { line, column };
+}
+
+// Move a TextNode's loc.end backward by `n` characters (across newlines).
+function retractEnd(node: Stripable, n: number, original: string): void {
+  if (n <= 0) return;
+  const loc = node.loc as PlainLoc | undefined;
+  if (!loc || !isPlainLocObj(loc)) return;
+  let { line, column } = loc.end;
+  for (let i = 0; i < n; i++) {
+    const ch = original[original.length - 1 - i];
+    if (ch === '\n') {
+      // '\r\n' treated as one — peek ahead (toward start) for '\r'
+      if (original[original.length - 2 - i] === '\r') {
+        i++;
+      }
+      line--;
+      // Recompute column: find the length of the line we're now on by
+      // scanning backward to previous newline.
+      let col = 0;
+      for (let j = original.length - 2 - i; j >= 0; j--) {
+        if (original[j] === '\n' || original[j] === '\r') break;
+        col++;
+      }
+      column = col;
+    } else if (ch === '\r') {
+      line--;
+      let col = 0;
+      for (let j = original.length - 2 - i; j >= 0; j--) {
+        if (original[j] === '\n' || original[j] === '\r') break;
+        col++;
+      }
+      column = col;
+    } else {
+      column = Math.max(0, column - 1);
+    }
+  }
+  loc.end = { line, column };
+}
+
+function isPlainLocObj(value: unknown): value is PlainLoc {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'start' in value &&
+    'end' in value &&
+    // Real SourceSpan has methods; plain objects don't.
+    typeof (value as { until?: unknown }).until !== 'function'
+  );
 }
 
 function getOpenStrip(stmt: Stripable): boolean {
