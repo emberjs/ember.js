@@ -316,7 +316,7 @@ pub struct HashPair {
 
 // -- Strip Flags -------------------------------------------------------------
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct StripFlags {
     pub open: bool,
     pub close: bool,

@@ -702,7 +702,7 @@ fn build_block_statement(pair: Pair<'_, Rule>, source: &str) -> BlockStatement {
                 }
             }
             Rule::InverseChain => {
-                let (inv, inv_strip, _is_chained) = build_inverse_chain(child, source);
+                let (inv, inv_strip) = build_inverse_chain(child, source);
                 inverse = Some(inv);
                 inverse_strip = inv_strip;
             }
@@ -850,41 +850,51 @@ fn build_block_params(pair: Pair<'_, Rule>) -> Vec<String> {
     params
 }
 
-fn build_inverse_chain(
-    pair: Pair<'_, Rule>,
-    source: &str,
-) -> (Block, StripFlags, bool) {
+/// Build a Block for an InverseChain.
+///
+/// Handles both plain `{{else}}...` and `{{else if cond}}...` chains.
+/// For `{{else if cond}}`, the returned Block contains a single nested
+/// BlockStatement with `program.chained = true`, matching the legacy
+/// handlebars parser's transformation.
+///
+/// Returns (block, open_strip_flags).
+fn build_inverse_chain(pair: Pair<'_, Rule>, source: &str) -> (Block, StripFlags) {
     let loc = span_to_loc(source, &pair);
-    let mut body = vec![];
     let mut strip = default_strip();
-    let mut is_chained = false;
-    let mut _nested_inverse: Option<Block> = None;
+    let mut body = vec![];
+    let mut else_call: Option<ElseCallInfo> = None;
+    let mut block_params: Vec<String> = vec![];
+    let mut nested_inverse: Option<Block> = None;
+    let mut nested_inverse_strip = default_strip();
 
     for child in pair.into_inner() {
         match child.as_rule() {
-            Rule::InverseBlock | Rule::InverseSimple => {
-                for sub in child.into_inner() {
-                    match sub.as_rule() {
-                        Rule::StripOpen => strip.open = true,
-                        Rule::StripClose => strip.close = true,
-                        _ => {}
-                    }
-                }
-            }
-            Rule::InverseElseBlock => {
-                is_chained = true;
-                // This is an {{else if ...}} style chain
-                for sub in child.into_inner() {
-                    match sub.as_rule() {
-                        Rule::StripOpen => strip.open = true,
-                        Rule::StripClose => strip.close = true,
+            Rule::InverseBlock => {
+                // Unwrap to get the actual InverseSimple or InverseElseBlock
+                for inner in child.into_inner() {
+                    match inner.as_rule() {
+                        Rule::InverseSimple => {
+                            for sub in inner.into_inner() {
+                                match sub.as_rule() {
+                                    Rule::StripOpen => strip.open = true,
+                                    Rule::StripClose => strip.close = true,
+                                    _ => {}
+                                }
+                            }
+                        }
+                        Rule::InverseElseBlock => {
+                            let info = parse_inverse_else_block(inner, source);
+                            strip = info.strip.clone();
+                            else_call = Some(info);
+                        }
                         _ => {}
                     }
                 }
             }
             Rule::InverseChain => {
-                let (inv, _, _) = build_inverse_chain(child, source);
-                _nested_inverse = Some(inv);
+                let (inv, inv_strip) = build_inverse_chain(child, source);
+                nested_inverse = Some(inv);
+                nested_inverse_strip = inv_strip;
             }
             _ => {
                 if let Some(stmt) = build_statement(child, source) {
@@ -894,18 +904,117 @@ fn build_inverse_chain(
         }
     }
 
+    // If this inverse chain starts with `{{else if ...}}`, transform the
+    // entire body into a single nested BlockStatement with chained=true.
+    if let Some(info) = else_call {
+        let program_loc = if body.is_empty() {
+            loc.clone()
+        } else {
+            SourceLocation {
+                start: body.first().map(|s| stmt_loc(s).start.clone()).unwrap_or(loc.start.clone()),
+                end: body.last().map(|s| stmt_loc(s).end.clone()).unwrap_or(loc.end.clone()),
+            }
+        };
+        let var_heads = block_params_to_var_heads(&block_params, &loc);
+
+        let hash_loc = if info.hash_pairs.is_empty() {
+            loc.clone()
+        } else {
+            SourceLocation {
+                start: info.hash_pairs.first().unwrap().loc.start.clone(),
+                end: info.hash_pairs.last().unwrap().loc.end.clone(),
+            }
+        };
+
+        let nested_block = BlockStatement {
+            node_type: "BlockStatement",
+            path: info.path,
+            params: info.params,
+            hash: Hash {
+                node_type: "Hash",
+                pairs: info.hash_pairs,
+                loc: hash_loc,
+            },
+            program: Block {
+                node_type: "Block",
+                body,
+                params: var_heads,
+                block_params: block_params.clone(),
+                chained: false,
+                loc: program_loc,
+            },
+            inverse: nested_inverse,
+            open_strip: info.strip,
+            inverse_strip: nested_inverse_strip,
+            close_strip: default_strip(),
+            loc: loc.clone(),
+        };
+
+        return (
+            Block {
+                node_type: "Block",
+                body: vec![Statement::Block(nested_block)],
+                params: vec![],
+                block_params: vec![],
+                chained: true, // marks this inverse as `{{else if}}` chained
+                loc,
+            },
+            strip,
+        );
+    }
+
+    // Plain `{{else}}` branch — merge body and nested inverse content
+    let mut merged_body = body;
+    if let Some(inv) = nested_inverse {
+        merged_body.extend(inv.body);
+    }
+
     (
         Block {
             node_type: "Block",
-            body,
+            body: merged_body,
             params: vec![],
             block_params: vec![],
             chained: false,
             loc,
         },
         strip,
-        is_chained,
     )
+}
+
+struct ElseCallInfo {
+    path: Expression,
+    params: Vec<Expression>,
+    hash_pairs: Vec<HashPair>,
+    strip: StripFlags,
+}
+
+fn parse_inverse_else_block(pair: Pair<'_, Rule>, source: &str) -> ElseCallInfo {
+    let mut strip = default_strip();
+    let mut path = None;
+    let mut params = vec![];
+    let mut hash_pairs = vec![];
+
+    for sub in pair.into_inner() {
+        match sub.as_rule() {
+            Rule::StripOpen => strip.open = true,
+            Rule::StripClose => strip.close = true,
+            Rule::CallExpression => {
+                let (p, pars, hp) = build_call_expression(sub, source);
+                path = Some(p);
+                params = pars;
+                hash_pairs = hp;
+            }
+            _ => {}
+        }
+    }
+
+    ElseCallInfo {
+        path: path.expect("InverseElseBlock must have a call expression"),
+        params,
+        hash_pairs,
+        strip,
+    }
 }
 
 fn build_html_comment(pair: Pair<'_, Rule>, source: &str) -> CommentStatement {
