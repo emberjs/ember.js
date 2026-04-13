@@ -116,7 +116,15 @@ fn build_escaped_mustache(pair: Pair<'_, Rule>, source: &str) -> TextNode {
 
 fn build_mustache(pair: Pair<'_, Rule>, source: &str) -> MustacheStatement {
     let loc = span_to_loc(source, &pair);
-    let is_triple = matches!(pair.as_rule(), Rule::TripleMustache);
+
+    // Unwrap outer Mustache wrapper if present
+    let actual = if pair.as_rule() == Rule::Mustache {
+        pair.into_inner().next().expect("Mustache has inner rule")
+    } else {
+        pair
+    };
+
+    let is_triple = matches!(actual.as_rule(), Rule::TripleMustache);
 
     let mut strip_open = false;
     let mut strip_close = false;
@@ -124,8 +132,8 @@ fn build_mustache(pair: Pair<'_, Rule>, source: &str) -> MustacheStatement {
     let mut params = vec![];
     let mut hash_pairs = vec![];
 
-    // Navigate into the mustache: might be Mustache > DoubleMustache > MustacheBody
-    let inner = unwrap_to_body(pair);
+    // Navigate into the mustache: might be DoubleMustache/TripleMustache > MustacheBody
+    let inner = unwrap_to_body(actual);
 
     for child in inner {
         match child.as_rule() {
