@@ -99,6 +99,9 @@ pub struct MustacheCommentStatement {
     #[serde(rename = "type")]
     pub node_type: &'static str, // "MustacheCommentStatement"
     pub value: String,
+    // Transient: used by the JS wrapper for whitespace stripping, then deleted
+    #[serde(rename = "__strip")]
+    pub strip: StripFlags,
     pub loc: SourceLocation,
 }
 

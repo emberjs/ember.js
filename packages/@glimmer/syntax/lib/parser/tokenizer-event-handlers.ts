@@ -224,6 +224,14 @@ export function preprocess(
     throw error;
   }
 
+  // Apply whitespace stripping for strip flags (~) before location conversion,
+  // while text-node chars are still plain strings. Then delete the transient
+  // __strip field from comments in a second pass.
+  if (options.mode !== 'codemod') {
+    applyWhitespaceStripping(rawAst);
+  }
+  cleanupStripFlags(rawAst);
+
   // Convert plain location objects to SourceSpan instances
   const template = convertToASTv1(rawAst, source);
 
@@ -252,6 +260,104 @@ export function preprocess(
 function convertToASTv1(raw: Record<string, unknown>, source: src.Source): ASTv1.Template {
   convertLocations(raw, source);
   return raw as unknown as ASTv1.Template;
+}
+
+// ---------------------------------------------------------------------------
+// Whitespace stripping (strip flags)
+// ---------------------------------------------------------------------------
+//
+// Applies `{{~` and `~}}` strip flags by trimming whitespace from neighboring
+// text nodes. Operates on the raw JSON AST before location conversion.
+
+interface Stripable {
+  type: string;
+  chars?: string;
+  strip?: { open: boolean; close: boolean };
+  __strip?: { open: boolean; close: boolean };
+  openStrip?: { open: boolean; close: boolean };
+  inverseStrip?: { open: boolean; close: boolean };
+  closeStrip?: { open: boolean; close: boolean };
+  program?: { body: Stripable[] };
+  inverse?: { body: Stripable[] } | null;
+  body?: Stripable[];
+  children?: Stripable[];
+}
+
+function applyWhitespaceStripping(node: unknown): void {
+  if (node === null || node === undefined || typeof node !== 'object') return;
+
+  const n = node as Stripable;
+
+  // Recurse first so inner bodies are stripped before the outer array pass
+  if (Array.isArray(n.body)) {
+    for (const item of n.body) applyWhitespaceStripping(item);
+    stripBodyWhitespace(n.body);
+  }
+  if (n.program?.body) {
+    for (const item of n.program.body) applyWhitespaceStripping(item);
+    stripBodyWhitespace(n.program.body);
+  }
+  if (n.inverse?.body) {
+    for (const item of n.inverse.body) applyWhitespaceStripping(item);
+    stripBodyWhitespace(n.inverse.body);
+  }
+  if (Array.isArray(n.children)) {
+    for (const item of n.children) applyWhitespaceStripping(item);
+    stripBodyWhitespace(n.children);
+  }
+}
+
+function cleanupStripFlags(node: unknown): void {
+  if (node === null || node === undefined || typeof node !== 'object') return;
+
+  if (Array.isArray(node)) {
+    for (const item of node) cleanupStripFlags(item);
+    return;
+  }
+
+  const n = node as Stripable;
+  if (n.type === 'MustacheCommentStatement' && '__strip' in n) {
+    delete n.__strip;
+  }
+  for (const key of Object.keys(n) as Array<keyof Stripable>) {
+    const v = n[key];
+    if (typeof v === 'object' && v !== null) cleanupStripFlags(v);
+  }
+}
+
+function stripBodyWhitespace(body: Stripable[]): void {
+  for (let i = 0; i < body.length; i++) {
+    const stmt = body[i]!;
+    const leftStrip = getOpenStrip(stmt);
+    const rightStrip = getCloseStrip(stmt);
+
+    if (leftStrip && i > 0) {
+      const prev = body[i - 1];
+      if (prev?.type === 'TextNode' && typeof prev.chars === 'string') {
+        prev.chars = prev.chars.replace(/[ \t\r\n]+$/u, '');
+      }
+    }
+    if (rightStrip && i + 1 < body.length) {
+      const next = body[i + 1];
+      if (next?.type === 'TextNode' && typeof next.chars === 'string') {
+        next.chars = next.chars.replace(/^[ \t\r\n]+/u, '');
+      }
+    }
+  }
+}
+
+function getOpenStrip(stmt: Stripable): boolean {
+  if (stmt.type === 'MustacheStatement') return !!stmt.strip?.open;
+  if (stmt.type === 'MustacheCommentStatement') return !!stmt.__strip?.open;
+  if (stmt.type === 'BlockStatement') return !!stmt.openStrip?.open;
+  return false;
+}
+
+function getCloseStrip(stmt: Stripable): boolean {
+  if (stmt.type === 'MustacheStatement') return !!stmt.strip?.close;
+  if (stmt.type === 'MustacheCommentStatement') return !!stmt.__strip?.close;
+  if (stmt.type === 'BlockStatement') return !!stmt.closeStrip?.close;
+  return false;
 }
 
 function convertLocations(node: unknown, source: src.Source): void {

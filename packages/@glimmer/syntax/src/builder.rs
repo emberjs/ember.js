@@ -1037,6 +1037,7 @@ fn build_html_comment(pair: Pair<'_, Rule>, source: &str) -> CommentStatement {
 fn build_mustache_comment(pair: Pair<'_, Rule>, source: &str) -> MustacheCommentStatement {
     let loc = span_to_loc(source, &pair);
     let mut value = String::new();
+    let mut strip = default_strip();
 
     let inner_pair = match pair.as_rule() {
         Rule::MustacheComment => pair.into_inner().next().unwrap(),
@@ -1048,6 +1049,8 @@ fn build_mustache_comment(pair: Pair<'_, Rule>, source: &str) -> MustacheComment
             Rule::MustacheCommentLongContent | Rule::MustacheCommentShortContent => {
                 value = child.as_str().to_string();
             }
+            Rule::StripOpen => strip.open = true,
+            Rule::StripClose => strip.close = true,
             _ => {}
         }
     }
@@ -1055,6 +1058,7 @@ fn build_mustache_comment(pair: Pair<'_, Rule>, source: &str) -> MustacheComment
     MustacheCommentStatement {
         node_type: "MustacheCommentStatement",
         value,
+        strip,
         loc,
     }
 }
