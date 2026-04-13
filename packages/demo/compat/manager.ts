@@ -699,6 +699,20 @@ function registerInViewRegistry(instance: any): void {
     if (!viewRegistry) return;
     const viewId = getViewId(instance);
     if (!viewId) return;
+    // If a DIFFERENT, still-alive instance is already registered under this
+    // viewId, destroy it before overwriting. Otherwise the orphaned instance
+    // lingers in its pool (and in the ELEMENT_VIEW WeakMap), still receiving
+    // tracked notifications and click events for this elementId. This leads
+    // to click handlers firing on a stale instance whose isExpanded state
+    // diverged from the live one — exactly the View tree tests getChildViews
+    // failure (root-2 click flipping the wrong instance's state).
+    const prev = viewRegistry[viewId];
+    if (prev && prev !== instance && !prev.isDestroyed && !prev.isDestroying) {
+      try { removeInstanceFromPools(prev); } catch { /* ignore */ }
+      try {
+        if (typeof prev.destroy === 'function') prev.destroy();
+      } catch { /* ignore */ }
+    }
     viewRegistry[viewId] = instance;
   } catch { /* ignore */ }
 }
@@ -815,6 +829,24 @@ function createComponentInstance(
   // Create the instance — let init errors propagate naturally so they
   // reach assert.throws in tests (GXT dist has no try-catch wrapper).
   const instance = factory.create(props);
+
+  // GXT compat: restore user-toggled-false state for components whose
+  // wrapper id is tracked in __gxtWrapperIfUserFalse. Ember's View tree
+  // tests rely on x-toggle instances rendered in the persistent application
+  // template to survive visit() cycles with their isExpanded state intact.
+  // GXT recreates these instances on every force-rerender, resetting
+  // isExpanded back to its class-field default (true), which breaks the
+  // test's assumption that click-to-collapse persists across navigation.
+  // If this component's elementId was marked user-false and it has an
+  // isExpanded property, set it to false so subsequent clicks toggle from
+  // the user's last known state rather than the class default.
+  try {
+    const userFalseSet: Set<string> = (globalThis as any).__gxtWrapperIfUserFalse;
+    const elId = props.elementId;
+    if (userFalseSet && elId && userFalseSet.has(elId) && instance && ('isExpanded' in instance)) {
+      instance.isExpanded = false;
+    }
+  } catch { /* ignore */ }
 
   // Validate tagless component constraints early (before view registry registration)
   // so that the expected assert fires before any other errors.

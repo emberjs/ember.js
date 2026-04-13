@@ -11,7 +11,7 @@ import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
 import { pascalToKebab, isAllDigits } from './utils';
-import { initChildViews as _emberInitChildViews, getElementView as _emberGetElementView } from '@ember/-internals/views/lib/system/utils';
+import { initChildViews as _emberInitChildViews, getElementView as _emberGetElementView, collectChildViews as _emberCollectChildViews } from '@ember/-internals/views/lib/system/utils';
 
 // Helper to detect assertion-related throws that must escape catch blocks.
 // The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
@@ -1845,11 +1845,22 @@ let ifWatchers = new WeakMap<object, Map<string, Set<(notifiedTarget: object) =>
 // empty (matching the collapsed {{#if}} branch) even if GXT's own
 // destroyBranchSync was a no-op for the yield-only true branch.
 const _wrapperIfUserFalse = new Set<string>();
+(globalThis as any).__gxtWrapperIfUserFalse = _wrapperIfUserFalse;
+// Map of wrapperId -> Set of {condFn, placeholder} entries. Populated by the
+// ifWatcher when the user toggles to false. Used by _wrapGxtRebuildViewTree
+// to verify at read time that a LIVE-DOM-connected IfCondition for this
+// wrapper still reports false. Needed because pool-reuse creates multiple
+// stale IfCondition instances sharing the same wrapperId — only the one
+// whose placeholder is currently inside the live #wrapperId element
+// represents the user-visible state.
+type _IfCondEntry = { condFn: () => any; placeholder: any; ifCondition: any };
+const _wrapperIfCondLookup = new Map<string, Set<_IfCondEntry>>();
 
 // Allow clearing ifWatchers between tests to prevent stale callbacks
 (globalThis as any).__gxtClearIfWatchers = function() {
   ifWatchers = new WeakMap();
   _wrapperIfUserFalse.clear();
+  _wrapperIfCondLookup.clear();
 };
 
 // Module-scope helper: is `par` a classic-component wrapper element
@@ -2074,15 +2085,36 @@ function patchGlobalIf() {
             // so we widen the "set on false" to direct hits only (to avoid
             // prototype-broadcast false positives) but allow "clear on
             // true" from any hit (so a genuine toggle-on eventually lands).
+            //
+            // CRITICAL: read the "fresh" branch value from the notifiedTarget
+            // (the real live object whose property just changed) rather than
+            // exclusively from our captured conditionOrCell closure. Stale
+            // IfCondition instances from pool reuse carry closures that point
+            // at discarded controllers, so they always report their stale
+            // value and never propagate a later true-flip. The notifiedTarget
+            // is the live controller that the click-handler's set() hit, so
+            // reading watchKey on it gives the real current value.
+            let freshBoolVal = boolVal;
+            try {
+              if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
+                const v2 = (notifiedTarget as any)[watchKey];
+                freshBoolVal = emberToBool(v2);
+              }
+            } catch { /* ignore */ }
             const ph = ifCondition.placeholder;
             const par: any = ph && (ph as any).parentNode;
             if (par && _isEmberViewWrapper(par) && par.id) {
               if (notifiedTarget === watchTarget && boolVal === false) {
                 _wrapperIfUserFalse.add(par.id);
-              } else if (boolVal === true) {
+                let s = _wrapperIfCondLookup.get(par.id);
+                if (!s) { s = new Set(); _wrapperIfCondLookup.set(par.id, s); }
+                s.add({ condFn: conditionOrCell, placeholder: ph, ifCondition });
+              } else if (boolVal === true || freshBoolVal === true) {
                 _wrapperIfUserFalse.delete(par.id);
+                _wrapperIfCondLookup.delete(par.id);
               }
             }
+
             ifCondition.syncState(boolVal);
           } catch (e) { console.warn('[GXT] syncState error:', e); }
         });
@@ -2135,7 +2167,45 @@ function _wrapGxtRebuildViewTree() {
           const reg2 = go && go.lookup && go.lookup('-view-registry:main');
           if (reg2 && !registries.includes(reg2)) registries.push(reg2);
         } catch { /* ignore */ }
+        const g2: any = globalThis as any;
+        const toBool = g2.__gxtToBool || Boolean;
+        const staleIds: string[] = [];
         for (const wrapperId of _wrapperIfUserFalse) {
+          // Re-check the condition at read time. The ifWatcher may have
+          // observed a stale click-false on a pool-reused IfCondition whose
+          // closure points at a discarded controller, while the live condition
+          // for this wrapper is now true (e.g., after visit('/') recreates the
+          // route controller and a subsequent click toggles isExpanded true
+          // via a different watcher path). Trust the live condition evaluator.
+          // Check whether the branch is ACTUALLY in its "false" state right
+          // now. We recorded IfCondition instances when the user toggled
+          // false. Pool reuse can leave stale entries whose condFn closures
+          // read old controller state. The most reliable signal of the real
+          // current state is whether the live DOM between the if-placeholder
+          // and the next view element contains any rendered content. Use
+          // IfCondition.isTrue/prevComponent if present, else fall back to
+          // scanning siblings of the placeholder for non-ancestor view
+          // descendants.
+          const entries = _wrapperIfCondLookup.get(wrapperId);
+          if (entries && entries.size > 0) {
+            const liveEl: any = typeof document !== 'undefined' && document.getElementById(wrapperId);
+            let anyExpanded = false;
+            for (const e of entries) {
+              const ph = e.placeholder;
+              if (!ph || !ph.parentNode) continue;
+              if (!liveEl || !liveEl.contains(ph)) continue;
+              const ic = e.ifCondition;
+              // IfCondition tracks its currently rendered branch via prevComponent.
+              // Non-empty prevComponent => branch currently rendered (true state).
+              const pc = ic && (ic.prevComponent ?? ic._prevComponent);
+              const pcHasContent = Array.isArray(pc) ? pc.length > 0 : !!pc;
+              if (pcHasContent) { anyExpanded = true; break; }
+            }
+            if (anyExpanded) {
+              staleIds.push(wrapperId);
+              continue;
+            }
+          }
           // Candidate views to reset: registry entries + whatever view is
           // currently associated with the live DOM element for this id.
           const views = new Set<any>();
@@ -2154,6 +2224,7 @@ function _wrapGxtRebuildViewTree() {
             try { _emberInitChildViews(v); } catch { /* ignore */ }
           }
         }
+        for (const id of staleIds) _wrapperIfUserFalse.delete(id);
       }
     } catch { /* ignore */ }
     return result;
