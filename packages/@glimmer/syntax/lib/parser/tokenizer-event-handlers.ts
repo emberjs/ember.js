@@ -318,6 +318,13 @@ function convertLocations(node: unknown, source: src.Source): void {
     });
   }
 
+  // Decode HTML entities in text node content (precompile mode only).
+  // The old parser used simple-html-tokenizer's EntityParser; we inline
+  // a minimal decoder here to avoid re-adding that dependency.
+  if (obj['type'] === 'TextNode' && typeof obj['chars'] === 'string') {
+    obj['chars'] = decodeEntities(obj['chars']);
+  }
+
   // Recurse into all object properties
   for (const key of Object.keys(obj)) {
     if (key === 'loc' || key === 'openTag' || key === 'closeTag') continue;
@@ -336,6 +343,60 @@ function isPlainLocation(value: unknown): value is PlainLocation {
     'end' in value &&
     !(value instanceof src.SourceSpan)
   );
+}
+
+// Minimal HTML entity decoder. Handles named entities commonly used
+// in Glimmer templates plus numeric references (&#123; and &#xAB;).
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: '\u00a0',
+  copy: '\u00a9',
+  reg: '\u00ae',
+  trade: '\u2122',
+  hellip: '\u2026',
+  mdash: '\u2014',
+  ndash: '\u2013',
+  lsquo: '\u2018',
+  rsquo: '\u2019',
+  ldquo: '\u201c',
+  rdquo: '\u201d',
+  laquo: '\u00ab',
+  raquo: '\u00bb',
+  middot: '\u00b7',
+  bull: '\u2022',
+  deg: '\u00b0',
+  plusmn: '\u00b1',
+  times: '\u00d7',
+  divide: '\u00f7',
+  euro: '\u20ac',
+  pound: '\u00a3',
+  yen: '\u00a5',
+  cent: '\u00a2',
+  sect: '\u00a7',
+  para: '\u00b6',
+  check: '\u2713',
+  cross: '\u2717',
+};
+
+function decodeEntities(input: string): string {
+  if (!input.includes('&')) return input;
+  return input.replace(/&(#x[0-9a-f]+|#[0-9]+|[a-z][a-z0-9]*);/giu, (match, body: string) => {
+    if (body.startsWith('#x') || body.startsWith('#X')) {
+      const code = parseInt(body.slice(2), 16);
+      if (Number.isFinite(code)) return String.fromCodePoint(code);
+    } else if (body.startsWith('#')) {
+      const code = parseInt(body.slice(1), 10);
+      if (Number.isFinite(code)) return String.fromCodePoint(code);
+    } else {
+      const decoded = NAMED_ENTITIES[body];
+      if (decoded !== undefined) return decoded;
+    }
+    return match;
+  });
 }
 
 function charPosToOffset(source: string, line: number, column: number): number {
