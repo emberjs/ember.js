@@ -423,6 +423,15 @@ function getCurrentParentView(): any | null {
             try { view.parentView = ancestorView; } catch { /* ignore */ }
           }
           try { _addChildView(ancestorView, view); } catch { /* ignore */ }
+        } else if (
+          currentPV && !currentPV.isDestroyed && !currentPV.isDestroying &&
+          currentPV.tagName === '' &&
+          (currentPV._debugContainerKey === 'component:-top-level' || currentPV.layoutName === '-top-level')
+        ) {
+          // Current parentView is the test harness's tagless `-top-level`
+          // wrapper, which has no DOM element for ancestry walking. Preserve
+          // parentView and record the CHILD_VIEW_IDS entry.
+          try { _addChildView(currentPV, view); } catch { /* ignore */ }
         } else if (currentPV !== null && currentPV !== undefined) {
           // True DOM root: ensure parentView is null so getRootViews sees it.
           try { view.parentView = null; } catch { /* ignore */ }
@@ -575,6 +584,19 @@ function getCachedOrCreateInstance(
     // Convert to string for comparison since Ember may store elementId as string
     const reqIdStr = String(requestedElementId);
     poolEntry = pool.find((e) => isAlive(e) && String(e.instance?.elementId) === reqIdStr);
+
+    // If no exact match found AND the pool has exactly ONE entry (not just
+    // one alive), reuse it if its elementId was derived from the `id` arg.
+    // This targets single-instance `{{foo-bar id=this.dynamicId}}` re-renders
+    // where the arg changes but the DOM elementId must stay frozen.
+    // Strict `pool.length === 1` keeps this away from View tree tests where
+    // multiple siblings share a factory pool.
+    if (!poolEntry && pool.length === 1) {
+      const only = pool[0];
+      if (isAlive(only) && only.instance?.__elementIdFromId) {
+        poolEntry = only;
+      }
+    }
 
     // If no exact match found, DO NOT fall back to sequential ordering:
     // cross-wiring a pooled instance (whose elementId is frozen) with a new
@@ -3056,9 +3078,32 @@ function createRenderContext(
     if (slotFn.__hasBlockParams !== undefined) {
       return slotFn.__hasBlockParams;
     }
+    // GXT runtime compiler emits a sibling `${name}_` flag to indicate that
+    // the slot function declares block params (e.g., `default_: true` next
+    // to `default: (ctx0, a) => [...]` for `{{#comp as |a|}}`).
+    const markerKey = `${name}_`;
+    if (markerKey in slots && typeof slots[markerKey] === 'boolean') {
+      return slots[markerKey];
+    }
     // Conservative default
     return false;
   };
+  // Also stamp the slot function itself with `__hasBlockParams` (derived
+  // from the GXT `${name}_` sibling marker) so the render-time installer
+  // in compile.ts, which only checks `slotFn.__hasBlockParams`, picks up
+  // the correct value when it overwrites `renderContext.$_hasBlockParams`.
+  if (slots && typeof slots === 'object') {
+    for (const sname of Object.keys(slots)) {
+      if (sname.endsWith('_')) continue;
+      const sfn = slots[sname];
+      if (typeof sfn !== 'function') continue;
+      if (sfn.__hasBlockParams !== undefined) continue;
+      const markerKey = `${sname}_`;
+      if (markerKey in slots && typeof slots[markerKey] === 'boolean') {
+        try { (sfn as any).__hasBlockParams = slots[markerKey]; } catch { /* ignore */ }
+      }
+    }
+  }
 
   // Set up attrs proxy for this.attrs.argName.value / this.args.argName access
   const attrsProxy: Record<string, any> = {};
@@ -3156,16 +3201,25 @@ function createRenderContext(
         const _getter = unwrappingGetter || getter;
         const _inst = instance;
         const _key = key;
+        const _readValue = () => {
+          if (_inst) {
+            try { return _inst[_key]; } catch { /* ignore */ }
+          }
+          if (_getter) {
+            try { return _getter(); } catch { /* ignore */ }
+          }
+          return initialVal;
+        };
         emberAttrs[key] = {
-          get value() {
-            if (_inst) {
-              try { return _inst[_key]; } catch { /* ignore */ }
-            }
-            if (_getter) {
-              try { return _getter(); } catch { /* ignore */ }
-            }
-            return initialVal;
-          },
+          get value() { return _readValue(); },
+          // Make `{{this.attrs.someProp}}` render the raw value, not `[object Object]`.
+          // Ember's classic components expose `this.attrs.foo` as the raw value
+          // (with a deprecation pointing at `@foo`); the {value, update} API is an
+          // additional overlay used by `{{mut}}` consumers. Primitive coercion hooks
+          // unify both contracts without changing the data shape.
+          toString() { const v = _readValue(); return v == null ? '' : String(v); },
+          valueOf() { return _readValue(); },
+          [Symbol.toPrimitive](_hint: string) { return _readValue(); },
           update(newValue: any) {
             // Use set() which triggers PROPERTY_DID_CHANGE for upstream propagation
             if (_inst) {
@@ -3214,6 +3268,30 @@ function createRenderContext(
   renderContext.attrs = Object.keys(emberAttrs).length > 0 ? emberAttrs : attrsProxy;
   // GXT accesses @foo as this.args.foo, so also set args
   renderContext.args = attrsProxy;
+  // Back-compat shim: the GXT runtime compiler currently emits
+  //   () => $a.this?.attrs?.someProp
+  // for `{{this.attrs.someProp}}` because the `this.attrs → @` rewrite loses
+  // the original path parts in the path serializer (upstream bug). Until it
+  // is fixed, install a `this.attrs` pass-through on the args object that
+  // forwards property reads back to attrsProxy. This keeps Ember's
+  // deprecated-but-supported `{{this.attrs.foo}}` rendering in classic
+  // curly components. Skip if the component template doesn't use this.attrs.
+  if (!attrsProxy.this && !(globalThis as any).__GXT_DISABLE_THIS_ATTRS_SHIM) {
+    const attrsShim = new Proxy({}, {
+      get(_t, p: string | symbol) {
+        if (typeof p === 'symbol') return undefined;
+        return attrsProxy[p];
+      },
+      has(_t, p: string | symbol) { return typeof p === 'string' && (p in attrsProxy); },
+    });
+    try {
+      Object.defineProperty(attrsProxy, 'this', {
+        value: { attrs: attrsShim },
+        enumerable: false,
+        configurable: true,
+      });
+    } catch { /* non-configurable */ }
+  }
   // GXT runtime compiler uses Symbol.for('gxt-args') for this[$args].foo
   renderContext[$ARGS_KEY] = attrsProxy;
 

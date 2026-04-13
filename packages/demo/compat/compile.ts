@@ -5457,6 +5457,71 @@ const templateCache = new Map<string, any>();
  *
  * Handles nesting by processing from innermost to outermost.
  */
+/**
+ * Transform triple-mustache {{{expr}}} → <EmberHtmlRaw @value={{expr}} />
+ *
+ * The GXT AST compiler treats triple-mustaches identically to double-mustaches
+ * (escaped text), but Ember semantics require inserting the value as raw HTML.
+ * We rewrite to an EmberHtmlRaw component invocation so ember-gxt-wrappers.ts
+ * can parse and reactively render the HTML via innerHTML.
+ *
+ * Skips:
+ *   - {{!-- comments --}} and {{! comments}}
+ *   - Handlebars raw blocks {{{{raw}}}} ... {{{{/raw}}}}
+ *   - {{{>partial}}} (none in Ember, but belt-and-suspenders)
+ */
+function transformTripleMustaches(template: string): string {
+  if (!template.includes('{{{')) return template;
+
+  let out = '';
+  let i = 0;
+  const n = template.length;
+  while (i < n) {
+    // Skip HB comments: {{!-- ... --}} or {{! ... }}
+    if (template.startsWith('{{!--', i)) {
+      const end = template.indexOf('--}}', i + 5);
+      if (end === -1) { out += template.slice(i); break; }
+      out += template.slice(i, end + 4);
+      i = end + 4;
+      continue;
+    }
+    if (template.startsWith('{{!', i)) {
+      const end = template.indexOf('}}', i + 3);
+      if (end === -1) { out += template.slice(i); break; }
+      out += template.slice(i, end + 2);
+      i = end + 2;
+      continue;
+    }
+    // Skip raw blocks {{{{ ... }}}} (four braces)
+    if (template.startsWith('{{{{', i)) {
+      const end = template.indexOf('}}}}', i + 4);
+      if (end === -1) { out += template.slice(i); break; }
+      out += template.slice(i, end + 4);
+      i = end + 4;
+      continue;
+    }
+    // Triple-mustache: {{{ ... }}} — but NOT {{{{
+    if (template.startsWith('{{{', i)) {
+      // Find matching }}} that's not part of }}}} (raw close)
+      const end = template.indexOf('}}}', i + 3);
+      if (end === -1) { out += template.slice(i); break; }
+      const inner = template.slice(i + 3, end).trim();
+      // Wrap expression in parentheses if it contains spaces (helper invocation)
+      // so that {{{foo bar}}} becomes <EmberHtmlRaw @value={{(foo bar)}} />.
+      // Simple paths like this.inner don't need parens.
+      const valueExpr = /\s/.test(inner) && !inner.startsWith('(')
+        ? `(${inner})`
+        : inner;
+      out += `<EmberHtmlRaw @value={{${valueExpr}}} />`;
+      i = end + 3;
+      continue;
+    }
+    out += template[i];
+    i++;
+  }
+  return out;
+}
+
 function transformEachInBlocks(template: string): string {
   // Quick bail if no each-in
   if (!template.includes('each-in')) return template;
@@ -5770,6 +5835,13 @@ export function precompileTemplate(templateString: string, options?: {
   // gxtEntriesOf returns [{k, v}, ...] for objects, Maps, proxies, custom iterables.
   // Must run BEFORE the GXT compiler to avoid Ember's (-each-in) SubExpression.
   transformedTemplate = transformEachInBlocks(transformedTemplate);
+
+  // Transform triple-mustache {{{expr}}} → <EmberHtmlRaw @value={{expr}} />
+  // The GXT compiler treats {{{expr}}} the same as {{expr}} (text interpolation),
+  // but Ember semantics require the value to be inserted as raw HTML.
+  // Wrapping in <EmberHtmlRaw> routes it through ember-gxt-wrappers.ts which
+  // parses the value into DOM nodes and reactively updates via innerHTML.
+  transformedTemplate = transformTripleMustaches(transformedTemplate);
 
   // onclick={{expr}} → {{on "click" expr}} transform is now handled at the AST level
   // in the GXT compiler (visitors/element.ts rewriteOnEventAttributes),

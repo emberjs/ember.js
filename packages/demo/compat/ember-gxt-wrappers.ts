@@ -630,6 +630,30 @@ function createEmberMaybeHelper(original: Function) {
                 }
               }
             }
+            // Map positional args to __pos0__, __pos1__, ... so that the
+            // component manager can feed them into the component's static
+            // positionalParams declaration. GXT's runtime compiler emits
+            // `{{my-comp "Foo" 4}}` as $_maybeHelper("my-comp", ["Foo", 4], ctx)
+            // without a __posCount__ marker — we add one here.
+            if (Array.isArray(args) && args.length > 0) {
+              const posList = args;
+              for (let i = 0; i < posList.length; i++) {
+                const val = posList[i];
+                const posKey = `__pos${i}__`;
+                if (typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype) {
+                  Object.defineProperty(componentArgs, posKey, {
+                    get: () => {
+                      try { return (val as any)(); } catch { return val; }
+                    },
+                    enumerable: true,
+                    configurable: true,
+                  });
+                } else {
+                  componentArgs[posKey] = val;
+                }
+              }
+              componentArgs.__posCount__ = posList.length;
+            }
             const result = $_MANAGERS.component.handle(name, componentArgs, [[], [], []], null);
             if (typeof result === 'function') {
               const nodes = result();
