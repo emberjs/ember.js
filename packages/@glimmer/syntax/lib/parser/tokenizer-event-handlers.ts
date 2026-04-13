@@ -799,11 +799,7 @@ function convertRustError(error: RustParseError, source: src.Source, sourceStr: 
   const specific = detectSpecificError(sourceStr, loc);
   if (specific) {
     const offset = loc ? charPosToOffset(sourceStr, loc.start.line, loc.start.column) : 0;
-    const span = src.SourceSpan.forCharPositions(
-      source,
-      offset,
-      offset + (specific.length ?? 0)
-    );
+    const span = src.SourceSpan.forCharPositions(source, offset, offset + (specific.length ?? 0));
     return generateSyntaxError(specific.message, span);
   }
 
@@ -854,10 +850,7 @@ interface SpecificError {
   length?: number;
 }
 
-function detectSpecificError(
-  sourceStr: string,
-  loc: RustParseError['loc']
-): SpecificError | null {
+function detectSpecificError(sourceStr: string, loc: RustParseError['loc']): SpecificError | null {
   if (!loc) return null;
 
   const offset = charPosToOffset(sourceStr, loc.start.line, loc.start.column);
