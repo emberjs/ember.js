@@ -1,0 +1,46 @@
+name: GXT dual-build matrix
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - glimmer-next-fresh
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.backend }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [classic, gxt]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build (${{ matrix.backend }})
+        run: |
+          rm -rf dist
+          if [ "${{ matrix.backend }}" = "gxt" ]; then
+            EMBER_RENDER_BACKEND=gxt npx rollup --config rollup.config.mjs
+          else
+            npx rollup --config rollup.config.mjs
+          fi
+      - name: Bundle size check (${{ matrix.backend }})
+        run: node scripts/bundle-size-check.mjs ${{ matrix.backend }}
+      - name: Upload dist artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.backend }}
+          path: |
+            dist/ember.prod.js
+            dist/ember.debug.js
+            dist/ember-template-compiler.js
+            dist/ember-testing.js
+          if-no-files-found: warn

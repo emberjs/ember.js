@@ -12,8 +12,19 @@ permissions:
   contents: read
 
 jobs:
+  contract:
+    name: GXT upstream contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Run contract tests
+        run: node scripts/gxt-test-runner/contract-tests.mjs
+
   gxt-smoke:
     name: GXT smoke shard ${{ matrix.shard }}/4
+    needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:

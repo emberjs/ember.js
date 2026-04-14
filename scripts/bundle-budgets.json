@@ -1,0 +1,59 @@
+{
+  "_comment": "Bundle-size budgets for dual-build CI. Captured from HEAD with a 5% headroom already baked in; the check script fails on anything more than 5% over these numbers (effective ceiling ~10.25% over HEAD). Refresh with: node scripts/bundle-size-check.mjs <backend> after intentional size changes.",
+  "classic": {
+    "entries": [
+      {
+        "path": "dist/ember.prod.js",
+        "maxRaw": 2147958,
+        "maxGz": 436470,
+        "maxBr": 331930
+      },
+      {
+        "path": "dist/ember.debug.js",
+        "maxRaw": 2364132,
+        "maxGz": 480008,
+        "maxBr": 362929
+      },
+      {
+        "path": "dist/ember-template-compiler.js",
+        "maxRaw": 807294,
+        "maxGz": 150242,
+        "maxBr": 120182
+      },
+      {
+        "path": "dist/ember-testing.js",
+        "maxRaw": 50339,
+        "maxGz": 10659,
+        "maxBr": 9088
+      }
+    ]
+  },
+  "gxt": {
+    "entries": [
+      {
+        "path": "dist/ember.prod.js",
+        "maxRaw": 3656627,
+        "maxGz": 733004,
+        "maxBr": 554021
+      },
+      {
+        "path": "dist/ember.debug.js",
+        "maxRaw": 3854388,
+        "maxGz": 773196,
+        "maxBr": 581592
+      },
+      {
+        "path": "dist/ember-template-compiler.js",
+        "maxRaw": 771658,
+        "maxGz": 143030,
+        "maxBr": 114490
+      },
+      {
+        "path": "dist/ember-testing.js",
+        "maxRaw": 50339,
+        "maxGz": 10659,
+        "maxBr": 9088
+      }
+    ]
+  }
+}
