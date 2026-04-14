@@ -2,8 +2,12 @@ import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-// import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
-import { validator } from '@lifeart/gxt/glimmer-compatibility';
+// GXT dual-backend note: in classic mode `@glimmer/validator` resolves to the
+// vendored package; in EMBER_RENDER_BACKEND=gxt mode rollup aliases it to
+// packages/@ember/-internals/gxt-backend/validator.ts. Both shapes expose the
+// same named exports, so a namespace import yields a `validator` object with
+// the same surface as @lifeart/gxt/glimmer-compatibility's `validator`.
+import * as validator from '@glimmer/validator';
 import { dirtyTagFor, consumeTag as compatConsumeTag, tagFor as compatTagFor, trackedData as compatTrackedData } from '@glimmer/validator';
 
 import type { ElementDescriptor } from '..';
