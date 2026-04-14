@@ -86,6 +86,44 @@ export function generateSnapshot(element: SimpleElement): SimpleNode[] {
   return snapshot;
 }
 
+// Phase 4.2 — marker-format translation for rehydration assertions under
+// GXT_MODE. Tests hard-code Glimmer-VM-style block comment markers like
+// `<!--%+b:1%-->` / `<!--%-b:1%-->` / `<!--%glmr%-->`. GXT's runtime
+// instead emits `data-node-id="N"` attributes and `$[N]` comment markers.
+// To keep the existing assertion strings usable under both backends, we
+// strip both marker families from the token stream on BOTH sides of
+// `equalTokens` when GXT_MODE is active. Net effect: the structural
+// HTML shape is compared; marker bookkeeping is ignored.
+function isGxtModeActive(): boolean {
+  return Boolean((globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__);
+}
+
+// Empty comment (`<!---->`) is emitted by GXT as a cheap placeholder
+// for list/branch boundaries; classic Glimmer-VM tests never assert on
+// it, so strip it too.
+const MARKER_COMMENT_RE = /^(%[-+][^%]*%|%[a-z]+%|\$\[[^\]]*\]|)$/u;
+
+function stripMarkers(tokens: Token[]): Token[] {
+  return tokens
+    .filter((token) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      if (token.type === 'Comment') {
+        const text = (token as unknown as { chars: string }).chars ?? '';
+        if (MARKER_COMMENT_RE.test(text.trim())) return false;
+      }
+      return true;
+    })
+    .map((token) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      if (token.type === 'StartTag' && 'attributes' in token && token.attributes) {
+        token.attributes = token.attributes.filter(
+          (a) => a[0] !== 'data-node-id' && a[0] !== 'data-gxt-cid' && a[0] !== 'data-gxt-id'
+        );
+      }
+      return token;
+    });
+}
+
 function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; html: string } {
   let div: SimpleElement;
   if (typeof divOrHTML === 'string') {
@@ -96,6 +134,9 @@ function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; h
   }
 
   let tokens = tokenize(toInnerHTML(div), {});
+  if (isGxtModeActive()) {
+    tokens = stripMarkers(tokens);
+  }
 
   tokens = tokens.reduce((tokens, token) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
