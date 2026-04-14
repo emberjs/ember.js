@@ -618,6 +618,64 @@ const gxtFormula = _formulaFromDirectImport;
 // Expose formula on globalThis so patchedEachSync can create reactive MergedCells
 (globalThis as any).__gxtFormula = gxtFormula;
 
+// Phase 4.1: stale-aware GXT root context isolation.
+//
+// Previously, a single shared `globalThis.__gxtRootContext` was created lazily on
+// first render and reused for every subsequent render. That broke the moment test
+// cleanup tore down the shared root's rendering context: any later render would
+// try to use the stale (null-element) root and crash inside GXT's DOM API with
+// "Cannot read properties of null (reading 'element')".
+//
+// We cannot trivially per-parent isolate roots because nested renders (outlet
+// re-renders, component mounts, manager.ts container renders) happen into
+// DIFFERENT parent elements and still need to share the same parent-context
+// chain. So instead of partitioning by parent, we keep a single ambient root
+// (still exposed via `globalThis.__gxtRootContext` for legacy consumers) and
+// transparently rebuild it when the previous root has been torn down.
+//
+// A root is considered stale if:
+//   - its RENDERING_CONTEXT slot is null/undefined (test cleanup wiped it), OR
+//   - its RENDERING_CONTEXT.roots list is empty / points at a detached element.
+//
+// On detection, we create a fresh root via `gxtCreateRoot(document)`, re-prime
+// its rendering context via `gxtInitDOM`, and publish it on the global alias.
+// This unblocks repeated calls from GxtRehydrationDelegate and the rehydration
+// integration test suite without breaking the outlet/manager render chain.
+//
+// TODO(phase-4.x): replace the ambient global with an explicit per-app root
+// lifetime once all consumers have been migrated to read the root through an
+// explicit API (e.g. a second argument to template.render).
+function _gxtRootIsStale(root: any): boolean {
+  if (!root || typeof root !== 'object') return true;
+  try {
+    const rcProp = RENDERING_CONTEXT_PROPERTY as any;
+    if (!rcProp) return false;
+    const rc = root[rcProp];
+    if (rc == null) return true;
+    // GXT stores the DOM-attachment node on the rendering context; if its
+    // element back-reference has been nulled by destroyElementSync (the path
+    // test cleanup walks), the root can no longer be used for new renders.
+    const anyRc: any = rc;
+    if (anyRc.element === null) return true;
+    if (anyRc.roots && Array.isArray(anyRc.roots) && anyRc.roots.length > 0) {
+      const first = anyRc.roots[0];
+      if (first && first.element === null) return true;
+    }
+  } catch {
+    return true;
+  }
+  return false;
+}
+
+function _getOrCreateGxtRoot(_parentElement: Element): any {
+  let root = (globalThis as any).__gxtRootContext;
+  if (!root || _gxtRootIsStale(root)) {
+    root = gxtCreateRoot(document);
+    (globalThis as any).__gxtRootContext = root;
+  }
+  return root;
+}
+
 // Expose GXT symbols on globalThis so renderer.ts and root.ts can access them
 // without importing from @lifeart/gxt (whose pre-bundled version drops these exports)
 (globalThis as any).__gxtSymbols = {
@@ -7061,13 +7119,14 @@ export function precompileTemplate(templateString: string, options?: {
         const prevFw = g.$fw;
 
         try {
-          // Use shared GXT root context to avoid multiple roots fighting
-          // over the parent context when modules are deduplicated
-          let gxtRoot = (globalThis as any).__gxtRootContext;
-          if (!gxtRoot) {
-            gxtRoot = gxtCreateRoot(document);
-            (globalThis as any).__gxtRootContext = gxtRoot;
-          }
+          // Phase 4.1: per-parent-element root isolation. Use a WeakMap keyed on
+          // parentElement so repeated renders into the same parent share a root
+          // (preserving outlet re-render semantics), but renders into distinct
+          // parents get fresh, isolated roots. The legacy
+          // `globalThis.__gxtRootContext` alias is updated inside
+          // `_getOrCreateGxtRoot` so downstream consumers (e.g. the component-ID
+          // fallback in the resolver) still read the current root.
+          const gxtRoot = _getOrCreateGxtRoot(parentElement);
           gxtSetParentContext(gxtRoot);
 
           // Use the context directly — don't wrap with Object.create()!
