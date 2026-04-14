@@ -497,6 +497,30 @@ export function resolvePackages(deps, params) {
         return;
       }
 
+      // Phase 2.6 Fix #1: rewrite relative imports of the pre-bundled
+      // @lifeart/gxt dist files to their bare specifier forms so rollup
+      // marks them as external. Several gxt-backend shims use literal
+      // relative paths like '../node_modules/@lifeart/gxt/dist/gxt.*.es.js'
+      // to dodge vite-dev resolution subtleties (module identity via
+      // symlinks + the gxtModuleDedup plugin). Rollup, however, follows
+      // those relative paths through pnpm's symlink farm and ends up
+      // inlining @lifeart/gxt + its transitive deps (@glimmer/syntax,
+      // @handlebars/parser, simple-html-tokenizer) into ember.prod.js.
+      // Normalizing here at resolve time lets vite dev keep using the
+      // source as-is (its own gxtModuleDedup plugin handles identity),
+      // while the rollup build sees a bare specifier and externalizes.
+      // Gated on USE_GXT_BACKEND so we only fire during the GXT rollup
+      // build — vite dev imports `resolvePackages` from this same file
+      // and must not see these rewrites.
+      if (USE_GXT_BACKEND) {
+        if (source.endsWith('/dist/gxt.runtime-compiler.es.js') && source.includes('@lifeart/gxt')) {
+          return { external: true, id: '@lifeart/gxt/runtime-compiler' };
+        }
+        if (source.endsWith('/dist/gxt.index.es.js') && source.includes('@lifeart/gxt')) {
+          return { external: true, id: '@lifeart/gxt' };
+        }
+      }
+
       if (source === '@glimmer/local-debug-flags' && !enableLocalDebug) {
         return resolve(projectRoot, 'packages/@glimmer/local-debug-flags/disabled.ts');
       }

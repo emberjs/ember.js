@@ -10,6 +10,7 @@
  * - String-based component resolution from the Ember registry
  */
 
+import { DEBUG } from '@glimmer/env';
 import { assert, getDebugFunction } from '@ember/debug';
 import { pascalToKebab, isAllDigits, hasUpperCase, dasherize, doubleColonToSlash } from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
@@ -325,7 +326,7 @@ function getCurrentParentView(): any | null {
  * parent). Walks each live view's DOM ancestry to find the nearest ancestor
  * element registered as another view, and wires parentView + _addChildView.
  */
-(globalThis as any).__gxtRebuildViewTreeFromDom = function rebuildViewTreeFromDom(explicitRegistry?: any): void {
+if (DEBUG) (globalThis as any).__gxtRebuildViewTreeFromDom = function rebuildViewTreeFromDom(explicitRegistry?: any): void {
   try {
     const owner = (globalThis as any).owner;
     // Collect registries from all live pool instances (they know their owner),
