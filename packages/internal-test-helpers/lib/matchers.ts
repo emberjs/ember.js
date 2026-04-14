@@ -153,9 +153,13 @@ export function equalsElement(
       message: 'Element must be an HTML Element, not an SVG Element',
     });
   } else {
+    // Exclude GXT internal data-node-id attribute from count comparison
+    // GXT adds this in SSR/test mode for node tracking; it's not user-visible
+    const gxtInternalAttrCount = element.hasAttribute('data-node-id') ? 1 : 0;
+    const actualAttrCount = element.attributes.length - gxtInternalAttrCount;
     assert.pushResult({
-      result: element.attributes.length === expectedCount || !attributes,
-      actual: element.attributes.length,
+      result: actualAttrCount === expectedCount || !attributes,
+      actual: actualAttrCount,
       expected: expectedCount,
       message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`,
     });

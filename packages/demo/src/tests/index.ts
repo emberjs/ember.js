@@ -22,6 +22,10 @@ if (typeof QUnit !== 'undefined') {
 // Import Ember integration tests
 import './ember-tests';
 
+// Import compat layer unit tests
+import './validator-test';
+import './destroyable-test';
+
 // Import outlet to register custom element
 import '../../compat/outlet.gts';
 

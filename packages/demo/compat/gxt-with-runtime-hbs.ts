@@ -34,6 +34,8 @@ export {
   isRendering,
   registerDestructor,
   setIsRendering,
+  setTracker,
+  getTracker,
   syncDom,
   takeRenderingControl,
   tracked,

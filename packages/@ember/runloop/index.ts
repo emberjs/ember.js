@@ -66,6 +66,7 @@ function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
       // renderComponent tests) are reflected in the DOM before assertions run,
       // without double-syncing during runTask calls.
       if ((globalThis as any).__gxtPendingSync && !(globalThis as any).__gxtRunTaskActive) {
+        console.log('[ONEND-SYNC] Running sync from onEnd!');
         const syncNow = (globalThis as any).__gxtSyncDomNow;
         if (typeof syncNow === 'function') {
           try { syncNow(); } catch { /* errors handled by sync */ }

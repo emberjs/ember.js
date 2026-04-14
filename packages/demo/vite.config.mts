@@ -1,11 +1,67 @@
 import { defineConfig } from 'vite';
-import { compiler } from '@lifeart/gxt/compiler';
 import { fileURLToPath, URL } from 'node:url';
+
+// GXT's core module references build-time flags and browser globals at the top level.
+// Set defaults before dynamic import so it can be loaded in Node during config.
+(globalThis as any).IS_DEV_MODE ??= false;
+(globalThis as any).IS_GLIMMER_COMPAT_MODE ??= true;
+(globalThis as any).WITH_EMBER_INTEGRATION ??= true;
+(globalThis as any).location ??= { pathname: '', search: '', hash: '', href: '' };
+(globalThis as any).document ??= { createElement: () => ({ style: {} }), createTextNode: () => ({}), createComment: () => ({}), querySelector: () => null, querySelectorAll: () => [], head: { appendChild: () => {} }, body: { appendChild: () => {} }, addEventListener: () => {} };
+(globalThis as any).window ??= globalThis;
+(globalThis as any).requestAnimationFrame ??= (cb: any) => setTimeout(cb, 0);
+
+const { compiler } = await import('@lifeart/gxt/compiler');
+const { default: esbuildDecoratorsPlugin } = await import('./compat/esbuild-decorators-plugin.mjs');
 
 const projectRoot = import.meta.url;
 
+// GXT's core bundle incorrectly includes compiler code that imports build-time-only
+// dependencies (content-tag, @babel/core, typescript). Stub them in both Vite's
+// dev server and its esbuild-based dep optimizer.
+function stubBuildDeps() {
+  const buildOnlyDeps = ['content-tag', '@babel/core', 'typescript', '@babel/parser'];
+  return {
+    name: 'stub-gxt-build-deps',
+    enforce: 'pre' as const,
+    resolveId(id: string, importer: string | undefined, options: any) {
+      // Only stub these imports when they're requested for browser (SSR=false).
+      // The GXT compiler plugin needs the real modules on the server side.
+      if (buildOnlyDeps.includes(id) && !options?.ssr) {
+        return { id: '\0stub:' + id, moduleSideEffects: false };
+      }
+    },
+    load(id: string) {
+      if (id.startsWith('\0stub:')) {
+        return 'export default {}; export const Preprocessor = class {}; export const transformAsync = () => {}; export const transformSync = () => {};';
+      }
+    },
+  };
+}
+
+// esbuild plugin for optimizeDeps to stub the same build-only deps
+function esbuildStubPlugin() {
+  const buildOnlyDeps = ['content-tag', '@babel/core', 'typescript', '@babel/parser'];
+  return {
+    name: 'stub-gxt-build-deps',
+    setup(build: any) {
+      const filter = new RegExp('^(' + buildOnlyDeps.map(d => d.replace('/', '\\/')).join('|') + ')$');
+      build.onResolve({ filter }, (args: any) => ({
+        path: args.path,
+        namespace: 'stub-build-dep',
+      }));
+      build.onLoad({ filter: /.*/, namespace: 'stub-build-dep' }, () => ({
+        contents: 'export default {}; export const Preprocessor = class {}; export const transformAsync = () => {}; export const transformSync = () => {};',
+        loader: 'js',
+      }));
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   plugins: [
+    esbuildDecoratorsPlugin(),
+    stubBuildDeps(),
     compiler(mode, {
       flags: {
         WITH_EMBER_INTEGRATION: true,
@@ -23,6 +79,9 @@ export default defineConfig(({ mode }) => ({
   },
   optimizeDeps: {
     exclude: ['@glimmer/syntax', '@glimmer/compiler', '@lifeart/gxt', '@lifeart/gxt/glimmer-compatibility'],
+    esbuildOptions: {
+      plugins: [esbuildStubPlugin()],
+    },
   },
   resolve: {
     preserveSymlinks: true,

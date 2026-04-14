@@ -2,9 +2,10 @@
 
 import { defineConfig } from 'vite';
 import { babel } from '@rollup/plugin-babel';
-import { resolve, dirname } from 'node:path';
-import { realpathSync, statSync } from 'node:fs';
+import { resolve, dirname, join } from 'node:path';
+import { realpathSync, statSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { compiler } from '@lifeart/gxt/compiler';
 
@@ -47,7 +48,7 @@ export default defineConfig(({ mode }) => {
       // Deduplicate GXT internal modules so they share one reactive core.
       // Vite's dev server already follows symlinks for /@fs/ serving, but
       // this plugin ensures consistency in environments where that doesn't work.
-      ...(useGxt ? [gxtModuleDedup(), gxtPatchVmMemoryLeaks()] : []),
+      ...(useGxt ? [gxtStalenessCheck(), gxtModuleDedup(), gxtPatchVmMemoryLeaks()] : []),
       // Use gxt compiler for glimmer-next or templateTag for standard Ember
       useGxt
         ? compiler(mode, {
@@ -72,6 +73,10 @@ export default defineConfig(({ mode }) => {
           '@lifeart/gxt/glimmer-compatibility': '@lifeart/gxt',
           '@lifeart/gxt/runtime-compiler': '@lifeart/gxt',
           'decorator-transforms/runtime': 'decorator-transforms',
+          // GXT compile chunk externals — only used at build time by the compiler plugin
+          '@babel/core': '@lifeart/gxt',
+          'typescript': '@lifeart/gxt',
+          'content-tag': '@lifeart/gxt',
         },
         { enableLocalDebug: true }
       ),
@@ -232,7 +237,7 @@ function gxtPatchVmMemoryLeaks() {
       const cleanId = id.split('?')[0].split('#')[0];
       // Only transform the VM chunk
       if (!cleanId.startsWith(gxtDistDir) && !cleanId.startsWith(gxtRealDistDir)) return;
-      if (!cleanId.includes('vm-')) return;
+      if (!cleanId.includes('vm-') && !cleanId.includes('gxt.core')) return;
       if (!code.includes('IS_DEV_MODE')) return;
 
       let patched = code;
@@ -251,6 +256,143 @@ function gxtPatchVmMemoryLeaks() {
 
       if (patched !== code) {
         return { code: patched, map: null };
+      }
+    },
+  };
+}
+
+/**
+ * Vite plugin that checks if the GXT dist in the pnpm store is up-to-date
+ * with the glimmer-next source. Runs once at server startup.
+ *
+ * Detection methods (in order of preference):
+ * 1. If dist/.build-meta.json exists, compare its sourceHash with current source content hash
+ * 2. Fall back to comparing newest source mtime vs newest dist mtime
+ */
+function gxtStalenessCheck() {
+  const GXT_SOURCE_ROOT = '/Users/lifeart/Repos/glimmer-next';
+  const gxtDistDir = resolve(projectRoot, 'packages/demo/node_modules/@lifeart/gxt/dist');
+  let realDistDir;
+  try { realDistDir = realpathSync(gxtDistDir); } catch { realDistDir = gxtDistDir; }
+
+  function collectFiles(dir, extensions) {
+    const results = [];
+    try {
+      const entries = readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === '__tests__' || entry.name === '__test-utils__') continue;
+          results.push(...collectFiles(full, extensions));
+        } else if (extensions.some(ext => entry.name.endsWith(ext))) {
+          results.push(full);
+        }
+      }
+    } catch {}
+    return results;
+  }
+
+  function computeSourceHash(files, rootDir) {
+    const hash = createHash('md5');
+    for (const f of files) {
+      try {
+        const rel = f.slice(rootDir.length);
+        hash.update(rel + '\n');
+        hash.update(readFileSync(f));
+      } catch {}
+    }
+    return hash.digest('hex');
+  }
+
+  return {
+    name: 'gxt-staleness-check',
+    configResolved() {
+      // Only check if glimmer-next source exists locally
+      if (!existsSync(GXT_SOURCE_ROOT)) return;
+      if (!existsSync(realDistDir)) return;
+
+      const start = performance.now();
+
+      // Method 1: Check .build-meta.json (content-based hash comparison)
+      const metaPath = join(realDistDir, '.build-meta.json');
+      if (existsSync(metaPath)) {
+        try {
+          const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
+          const srcFiles = [
+            ...collectFiles(resolve(GXT_SOURCE_ROOT, 'src'), ['.ts', '.js', '.gts', '.gjs']),
+            ...collectFiles(resolve(GXT_SOURCE_ROOT, 'plugins'), ['.ts', '.js']),
+          ].sort();
+          const currentHash = computeSourceHash(srcFiles, GXT_SOURCE_ROOT);
+
+          const elapsed = (performance.now() - start).toFixed(1);
+
+          if (currentHash !== meta.sourceHash) {
+            console.error('');
+            console.error('\x1b[1;31m' + '='.repeat(70) + '\x1b[0m');
+            console.error('\x1b[1;31m  GXT DIST IS STALE!\x1b[0m');
+            console.error('\x1b[1;31m' + '='.repeat(70) + '\x1b[0m');
+            console.error('');
+            console.error('  The GXT source at /Users/lifeart/Repos/glimmer-next/ has changed');
+            console.error('  since the dist was last built and copied.');
+            console.error('');
+            console.error('  Built:   ' + meta.buildTime + ' (git: ' + meta.gitHash + (meta.gitDirty ? ' dirty' : '') + ')');
+            console.error('  Sources: ' + srcFiles.length + ' files, hash: ' + currentHash.slice(0, 12));
+            console.error('  Dist:    hash: ' + meta.sourceHash.slice(0, 12));
+            console.error('');
+            console.error('  To fix, run in /Users/lifeart/Repos/glimmer-next/:');
+            console.error('    \x1b[1;33mnpm run build-lib\x1b[0m');
+            console.error('');
+            console.error('\x1b[1;31m' + '='.repeat(70) + '\x1b[0m');
+            console.error(`  (staleness check took ${elapsed}ms)`);
+            console.error('');
+          } else {
+            console.log(`\x1b[32m[gxt] Dist is up-to-date (git: ${meta.gitHash}${meta.gitDirty ? ' dirty' : ''}, check took ${elapsed}ms)\x1b[0m`);
+          }
+          return;
+        } catch {
+          // .build-meta.json exists but is invalid, fall through to method 2
+        }
+      }
+
+      // Method 2: Timestamp comparison fallback (when no .build-meta.json)
+      const srcFiles = collectFiles(resolve(GXT_SOURCE_ROOT, 'src'), ['.ts', '.js', '.gts', '.gjs'])
+        .concat(collectFiles(resolve(GXT_SOURCE_ROOT, 'plugins'), ['.ts', '.js']));
+      if (srcFiles.length === 0) return;
+
+      const distFiles = collectFiles(realDistDir, ['.js']);
+      if (distFiles.length === 0) return;
+
+      let newestSrcMtime = 0, newestSrcPath = '';
+      for (const f of srcFiles) {
+        try { const mt = statSync(f).mtimeMs; if (mt > newestSrcMtime) { newestSrcMtime = mt; newestSrcPath = f; } } catch {}
+      }
+      let newestDistMtime = 0, newestDistPath = '';
+      for (const f of distFiles) {
+        try { const mt = statSync(f).mtimeMs; if (mt > newestDistMtime) { newestDistMtime = mt; newestDistPath = f; } } catch {}
+      }
+
+      const elapsed = (performance.now() - start).toFixed(1);
+
+      if (newestSrcMtime > newestDistMtime) {
+        console.error('');
+        console.error('\x1b[1;31m' + '='.repeat(70) + '\x1b[0m');
+        console.error('\x1b[1;31m  GXT DIST MAY BE STALE!\x1b[0m');
+        console.error('\x1b[1;31m' + '='.repeat(70) + '\x1b[0m');
+        console.error('');
+        console.error('  Newest source file is newer than newest dist file.');
+        console.error('  Source: ' + newestSrcPath.replace(GXT_SOURCE_ROOT, '.'));
+        console.error('          modified: ' + new Date(newestSrcMtime).toISOString());
+        console.error('  Dist:   ' + newestDistPath.replace(realDistDir, 'dist/'));
+        console.error('          modified: ' + new Date(newestDistMtime).toISOString());
+        console.error('');
+        console.error('  To fix, run in /Users/lifeart/Repos/glimmer-next/:');
+        console.error('    \x1b[1;33mnpm run build-lib\x1b[0m');
+        console.error('');
+        console.error('\x1b[1;31m' + '='.repeat(70) + '\x1b[0m');
+        console.error(`  (staleness check took ${elapsed}ms, no .build-meta.json — using mtime fallback)`);
+        console.error('');
+      } else {
+        console.log(`\x1b[32m[gxt] Dist appears up-to-date by mtime (check took ${elapsed}ms, consider running build-lib to generate .build-meta.json)\x1b[0m`);
       }
     },
   };

@@ -54,5 +54,8 @@
     "rsvp": "^4.8.5",
     "tailwindcss": "^3.4.4",
     "vite": "^5.0.10"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
   }
 }
