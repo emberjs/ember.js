@@ -1431,9 +1431,14 @@ function createEmberDc(original: Function) {
     }
 
     // Handle string component name — render through Ember's component manager.
-    // Use a GXT cell as a bridge: the cell is tracked by GXT's formula system,
-    // and we update it whenever the Ember property system notifies a change.
-    // This enables reactive component swapping when set() changes the component name.
+    //
+    // We cannot delegate to GXT's native $_dc (`original`) here because native
+    // $_dc expects the component factory to return a GXT component instance
+    // with [RENDERED_NODES_PROPERTY] metadata. Our `handleStringComponent`
+    // returns a lazy `() => Node` closure, which GXT's D() short-circuits and
+    // returns as a raw Node in GLIMMER_COMPAT_MODE — triggering `Node[at].push`
+    // in G() (undefined push crash). Instead we manage the DOM ourselves using
+    // the same direct-render + performSwap pattern as the curried path above.
     if (typeof componentValue === 'string') {
       // Eagerly check if the component exists. If it doesn't, throw immediately
       // so assert.throws() in tests can catch it (matching Ember behavior).
@@ -1449,35 +1454,188 @@ function createEmberDc(original: Function) {
         }
         throw err;
       }
-      // Create a GXT cell to bridge Ember's property change notifications
-      // into GXT's reactive tracking system. The cell holds a monotonically
-      // increasing revision counter that we bump on every detected change.
-      const _dcRevision = gxtModule.cell(0, 'dc-ember-revision');
-      let _lastComponentValue: any = componentValue;
-      let _dcDestroyed = false;
 
-      // Register a listener for property changes on the component's context.
-      // When any Ember property changes, re-evaluate componentGetter and
-      // bump the revision cell if the result is different.
+      const RNODES = gxtModule.RENDERED_NODES_PROPERTY;
+
+      // Track the Ember component instance created for the CURRENT dynamic
+      // component slot so that we can fire willDestroy lifecycle hooks when
+      // the component is swapped out. Captured via __gxtDcCaptureCallback
+      // which is called from renderClassicComponent with the newly-created
+      // instance (see manager.ts ~7254).
+      let _dcEmberInstance: any = null;
+      const captureInstance = (inst: any) => { _dcEmberInstance = inst; };
+
+      const destroyCurrentDcInstance = () => {
+        if (!_dcEmberInstance) return;
+        const inst = _dcEmberInstance;
+        _dcEmberInstance = null;
+        try {
+          const destroyFn = (g as any).__gxtDestroyEmberComponentInstance;
+          if (typeof destroyFn === 'function') destroyFn(inst);
+        } catch { /* ignore */ }
+      };
+
+      // --- Initial one-shot render ---
+      let initialResult: any = null;
+      {
+        const _prevDcGetter = g.__dcComponentGetter;
+        g.__dcComponentGetter = componentGetter;
+        const _prevCapture = (g as any).__gxtDcCaptureCallback;
+        (g as any).__gxtDcCaptureCallback = captureInstance;
+        try {
+          initialResult = renderComponent(componentValue, gxtArgs, ctx, true);
+        } finally {
+          g.__dcComponentGetter = _prevDcGetter;
+          // renderClassicComponent clears the callback after calling it, but
+          // if no classic component was rendered it remains — restore either way.
+          (g as any).__gxtDcCaptureCallback = _prevCapture;
+        }
+      }
+
+      // --- Reactive swap tracking ---
+      const getIdentityKey = (val: any): string => {
+        if (!val && val !== 0) return '__empty__';
+        if (typeof val === 'string') return '__str:' + val;
+        if (val && val.__isCurriedComponent) return '__curried:' + (val.__name || '');
+        return '__other:' + String(val);
+      };
+
+      let _lastIdentityKey = getIdentityKey(componentValue);
+      let _dcDestroyed = false;
+      const _dcCapturedOwner = g.owner;
+
+      // Collect initial rendered nodes for later removal during swaps.
+      let currentNodes: Node[] = [];
+      // Track the placeholder comment that holds our position when all nodes
+      // are removed (so we can find parent/insertBefore on subsequent swaps).
+      let anchor: Comment | null = null;
+
+      if (initialResult instanceof Node) {
+        if (initialResult instanceof DocumentFragment) {
+          currentNodes = Array.from(initialResult.childNodes);
+        } else {
+          currentNodes = [initialResult];
+        }
+      } else if (initialResult != null && (initialResult as any)[RNODES]) {
+        currentNodes = [...((initialResult as any)[RNODES] as Node[])].filter((n: any) => n instanceof Node);
+      }
+
+      // Perform DOM swap when the component identity changes.
+      const performSwap = () => {
+        if (_dcDestroyed) return;
+
+        let newVal: any;
+        try {
+          newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+        } catch {
+          return;
+        }
+
+        const newKey = getIdentityKey(newVal);
+        if (newKey === _lastIdentityKey) return;
+        _lastIdentityKey = newKey;
+
+        // Find insertion reference from current nodes (or anchor)
+        let parent: Node | null = null;
+        let insertBefore: Node | null = null;
+        if (currentNodes.length > 0) {
+          const lastNode = currentNodes[currentNodes.length - 1]!;
+          parent = lastNode.parentNode;
+          insertBefore = lastNode.nextSibling;
+        } else if (anchor) {
+          parent = anchor.parentNode;
+          insertBefore = anchor;
+        }
+        if (!parent) return;
+
+        // Drop the anchor before removing nodes, since it may be between them.
+        if (anchor && anchor.parentNode) {
+          // Re-attach anchor at the tail so we can re-seat new nodes before it.
+          insertBefore = anchor;
+        }
+
+        // Remove old nodes BEFORE destroying the Ember instance so that
+        // willDestroyElement assertions that check the element is still
+        // attached can re-attach and see it.
+        for (const node of currentNodes) {
+          if (node.parentNode) node.parentNode.removeChild(node);
+        }
+        currentNodes = [];
+
+        // Fire Ember willDestroy lifecycle for the previous instance.
+        destroyCurrentDcInstance();
+
+        // Render the new component
+        if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
+          const prevOwner = g.owner;
+          if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
+            g.owner = _dcCapturedOwner;
+          }
+          const prevDcGetter = g.__dcComponentGetter;
+          g.__dcComponentGetter = componentGetter;
+          const _prevCap = (g as any).__gxtDcCaptureCallback;
+          (g as any).__gxtDcCaptureCallback = captureInstance;
+          let newResult: any = null;
+          try {
+            if (newVal.__isCurriedComponent) {
+              const hasCurriedPositionals = (newVal.__curriedPositionals || []).length > 0;
+              newResult = renderComponent(newVal, gxtArgs, ctx, !hasCurriedPositionals);
+            } else {
+              newResult = renderComponent(newVal, gxtArgs, ctx, true);
+            }
+          } catch {
+            // Component not found or render error — leave empty
+          } finally {
+            g.__dcComponentGetter = prevDcGetter;
+            (g as any).__gxtDcCaptureCallback = _prevCap;
+            if (!prevOwner && g.owner === _dcCapturedOwner) {
+              g.owner = prevOwner;
+            }
+          }
+
+          if (newResult instanceof Node) {
+            if (newResult instanceof DocumentFragment) {
+              currentNodes = Array.from(newResult.childNodes);
+            } else {
+              currentNodes = [newResult];
+            }
+            parent.insertBefore(newResult, insertBefore);
+          } else if (newResult != null && (newResult as any)[RNODES]) {
+            const nodes = (newResult as any)[RNODES] as Node[];
+            currentNodes = [...nodes].filter((n: any) => n instanceof Node);
+            for (const n of currentNodes) {
+              parent.insertBefore(n, insertBefore);
+            }
+          }
+        }
+        // If newVal is null/undefined, currentNodes stays empty (component removed)
+
+        // Ensure we always have an anchor so subsequent swaps have a
+        // parent/insertion reference even when the component renders nothing.
+        if (currentNodes.length === 0) {
+          if (!anchor) {
+            anchor = document.createComment('dc-str-anchor');
+          }
+          if (!anchor.parentNode) {
+            parent.insertBefore(anchor, insertBefore);
+          }
+        }
+      };
+
+      // Register change listener on __gxtSyncAllWrappers
       const _dcChangeListener = (): boolean => {
         if (_dcDestroyed) return false;
-        _dcRevision.update(_dcRevision.value + 1);
+        performSwap();
         return true;
       };
 
-      // Hook into __gxtSyncAllWrappers to bump the revision cell AFTER
-      // arg cells have been updated. This ensures that when the formula
-      // re-evaluates (in the subsequent gxtSyncDom pass), componentGetter()
-      // reads the latest values through the updated arg cells.
+      // Add listener to __dcChangeListeners (shared with null/curried paths).
       if (!g.__dcChangeListeners) {
         g.__dcChangeListeners = new Set();
         const origSyncAll = g.__gxtSyncAllWrappers;
         if (typeof origSyncAll === 'function') {
           g.__gxtSyncAllWrappers = function() {
-            // First, run the original syncAllWrappers to update arg cells
             origSyncAll();
-            // Then bump revision cells for all active dc listeners
-            // so the second gxtSyncDom pass picks them up
             for (const listener of g.__dcChangeListeners) {
               try { listener(); } catch { /* ignore */ }
             }
@@ -1488,150 +1646,27 @@ function createEmberDc(original: Function) {
       // Track string-path listener count for morph skip logic in compile.ts
       g.__dcStringListenerCount = (g.__dcStringListenerCount || 0) + 1;
 
-      // Wrap the getter to read the revision cell (for GXT tracking)
-      // and translate values into marker functions for swap detection.
-      // Cache the current marker to avoid creating new functions when the
-      // value hasn't changed (GXT compares function identity for swaps).
-      let _cachedMarker: Function | null = null;
-      let _cachedRaw: any = undefined;
-      let _cachedIdentityKey: string | null = null;
-
-      const wrappedGetter = () => {
-        // Read the revision cell to establish GXT formula tracking.
-        // When this cell is updated, the formula re-evaluates.
-        void _dcRevision.value;
-
-        const raw = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-        _lastComponentValue = raw;
-
-        // Return cached marker if the identity key hasn't changed
-        // (same component name/value = same function reference = no swap)
-        if (!raw && raw !== 0) {
-          const key = '__empty__';
-          if (_cachedIdentityKey === key) return _cachedMarker;
-          _cachedIdentityKey = key;
-          _cachedMarker = function _dcEmptyMarker() {};
-          (_cachedMarker as any).__emptyComponent = true;
-          return _cachedMarker;
-        }
-        if (typeof raw === 'string') {
-          const key = '__str:' + raw;
-          if (_cachedIdentityKey === key) return _cachedMarker;
-          _cachedIdentityKey = key;
-          _cachedMarker = function _dcStringMarker() {};
-          (_cachedMarker as any).__stringComponentName = raw;
-          return _cachedMarker;
-        }
-        if (raw && raw.__isCurriedComponent) {
-          const key = '__curried:' + (raw.__name || '') + ':' + String(raw.__curriedArgs);
-          if (_cachedIdentityKey === key && _cachedRaw === raw) return _cachedMarker;
-          _cachedIdentityKey = key;
-          _cachedRaw = raw;
-          _cachedMarker = function _dcCurriedMarker() {};
-          (_cachedMarker as any).__isCurriedComponent = true;
-          (_cachedMarker as any).__name = raw.__name;
-          (_cachedMarker as any).__curriedArgs = raw.__curriedArgs;
-          (_cachedMarker as any).__curriedPositionals = raw.__curriedPositionals;
-          (_cachedMarker as any).__owner = raw.__owner;
-          return _cachedMarker;
-        }
-        _cachedIdentityKey = null;
-        _cachedRaw = raw;
-        _cachedMarker = null;
-        return raw;
-      };
-
-      // Register a destructor to clean up the change listener
+      // Cleanup destructor
       const _cleanupDcListener = () => {
         _dcDestroyed = true;
         g.__dcChangeListeners?.delete(_dcChangeListener);
-        // Decrement string-path listener count
         if (g.__dcStringListenerCount > 0) g.__dcStringListenerCount--;
+        // NOTE: we do NOT call destroyCurrentDcInstance here — the surrounding
+        // render tree is being torn down by Ember, which will fire destroy
+        // hooks through its normal path. Calling it here would double-destroy.
+        if (anchor && anchor.parentNode) {
+          anchor.parentNode.removeChild(anchor);
+        }
       };
-
-      // Expose getter so the component manager can read the latest curried component.
-      // Save the previous value so we can restore it after initial render — this
-      // prevents leaking the getter to subsequent tests/templates. The getter is
-      // only needed during the initial render and reactive swap callbacks.
-      const _prevDcComponentGetter = g.__dcComponentGetter;
-      g.__dcComponentGetter = componentGetter;
-
-      // Custom component factory for GXT's $_dc: renders through Ember's
-      // component manager instead of GXT's native component() function.
-      const RNODES = gxtModule.RENDERED_NODES_PROPERTY;
-      const RCTX = gxtModule.RENDERING_CONTEXT_PROPERTY;
-      const CID = gxtModule.COMPONENT_ID_PROPERTY;
-      // Capture the owner at creation time so it's available during swaps
-      // (reactive re-evaluations may occur when globalThis.owner is null)
-      const _dcCapturedOwner = g.owner;
-      const emberComponentFactory = (markerValue: any, factoryArgs: any, factoryCtx: any) => {
-        // Handle empty component marker
-        if (typeof markerValue === 'function' && (markerValue as any).__emptyComponent) {
-          const comment = document.createComment('empty dynamic component');
-          return { [RNODES]: [comment], [CID]: 0, [RCTX]: null };
-        }
-
-        // Ensure owner is available during reactive swaps
-        const prevOwner = g.owner;
-        if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
-          g.owner = _dcCapturedOwner;
-        }
-        let result: any;
-        try {
-          result = renderComponent(markerValue, factoryArgs, factoryCtx, true);
-        } catch (dcSwapErr) {
-          // Re-throw so the error propagates properly
-          throw dcSwapErr;
-        } finally {
-          if (!prevOwner && g.owner === _dcCapturedOwner) {
-            g.owner = prevOwner;
-          }
-        }
-
-        // If the marker has a string name that couldn't be resolved, throw
-        if (result == null && typeof markerValue === 'function' && (markerValue as any).__stringComponentName) {
-          const name = (markerValue as any).__stringComponentName;
-          const err = new Error(
-            `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found. ` +
-            `Could not find component named "${name}" (no component or template with that name was found)`
-          );
-          const captureErr = g.__captureRenderError;
-          if (typeof captureErr === 'function') {
-            captureErr(err);
-          }
-          throw err;
-        }
-
-        // Wrap result into GXT-compatible ComponentReturnType if needed
-        if (result instanceof Node) {
-          const nodes = result instanceof DocumentFragment
-            ? Array.from(result.childNodes) : [result];
-          return { [RNODES]: nodes, [CID]: 0, [RCTX]: null };
-        }
-        if (result != null && result[RNODES]) {
-          return result;
-        }
-        if (result != null) {
-          return { [RNODES]: [result], [CID]: 0, [RCTX]: null };
-        }
-        return { [RNODES]: [], [CID]: 0, [RCTX]: null };
-      };
-
-      // Register cleanup destructor on the context if available
       if (ctx && typeof gxtModule.registerDestructor === 'function') {
         try {
           gxtModule.registerDestructor(ctx, _cleanupDcListener);
-        } catch { /* ignore if ctx doesn't support destructors */ }
+        } catch { /* ignore */ }
       }
 
-      // Delegate to GXT's native $_dc with the revision-tracked wrappedGetter
-      // and the custom componentFactory.
-      const result = original(wrappedGetter, gxtArgs, ctx, emberComponentFactory);
-      // Restore the previous __dcComponentGetter to avoid leaking to subsequent
-      // templates/tests. The emberComponentFactory closure captures componentGetter
-      // directly, so it doesn't need the global for reactive swaps.
-      g.__dcComponentGetter = _prevDcComponentGetter;
-      return result;
+      // Return the initial result exactly as the curried path does. The
+      // performSwap function uses currentNodes to find the insertion point.
+      return initialResult;
     }
 
     // Handle component definitions (template-only, GlimmerishComponent, etc.)
