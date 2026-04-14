@@ -245,6 +245,165 @@ export class CurriedComponent {
 (globalThis as any).__captureRenderError = captureRenderError;
 
 // =============================================================================
+// Classic Helper recompute() → GXT reactivity bridge
+// =============================================================================
+//
+// Classic Ember Helper instances (subclasses of `@ember/component/helper`) use
+// a Glimmer DirtyableTag stored under the RECOMPUTE_TAG symbol. When user code
+// calls `helper.recompute()`, Glimmer dirties that tag. However, GXT's effect
+// system does NOT observe Glimmer tags — its reactivity is driven by GXT cells
+// (`cellFor` / `cell()`), so a recompute() call leaves the helper text node
+// stale.
+//
+// compile.ts's class-based helper path reads `recomputeTag.value` inside a
+// `gxtEffect(...)` closure, expecting that read to act as a reactive dep.
+// Unfortunately a `DirtyableTag` has no `.value` property at all — the read
+// returns `undefined` and tracks nothing, so subsequent recompute() calls
+// never re-run the effect and `compute()` is never re-invoked.
+//
+// To bridge this: whenever a class-based helper instance is pushed onto the
+// shared `__gxtHelperInstances` destroy-tracking array, we install a real
+// GXT cell on its RECOMPUTE_TAG object under the `value` key. compile.ts's
+// `recomputeTag.value` read will then track the cell. We also monkey-patch
+// `recompute()` on the instance so that after the original runs (which fires
+// `dirtyTag` for Glimmer's sake), we bump the GXT cell via
+// `__gxtTriggerReRender(recomputeTag, 'value')`. That causes compile.ts's
+// `gxtEffect` to re-run, reads a fresh revision number, the dedup key in
+// `_tagHelperInstanceCache` invalidates, and `compute()` runs again.
+// =============================================================================
+
+(globalThis as any).__gxtInstallHelperRecomputeBridge = function(instance: any): void {
+  if (!instance || typeof instance !== 'object') return;
+  if ((instance as any).__gxtHelperRecomputeBridgeInstalled) return;
+
+  // Find Glimmer's RECOMPUTE_TAG symbol on the instance (classic Helper only).
+  let recomputeTag: any = null;
+  try {
+    const symKeys = Object.getOwnPropertySymbols(instance);
+    for (const sym of symKeys) {
+      if (sym.toString().includes('RECOMPUTE_TAG')) {
+        recomputeTag = (instance as any)[sym];
+        break;
+      }
+    }
+  } catch { /* ignore */ }
+
+  if (!recomputeTag || typeof recomputeTag !== 'object') return;
+
+  // Mark early so repeated pushes don't re-install.
+  try { (instance as any).__gxtHelperRecomputeBridgeInstalled = true; } catch { /* ignore */ }
+
+  // Install a real, scalar `value` property on the tag object (initial 0) and
+  // route it through a GXT cell so reads are tracked by gxtEffect.
+  // Use defineProperty first so cellFor(skipDefine=false) sees an enumerable
+  // property it can wrap with a cell-backed getter/setter.
+  try {
+    if (!Object.prototype.hasOwnProperty.call(recomputeTag, 'value')) {
+      (recomputeTag as any).value = 0;
+    }
+    _gxtCellFor(recomputeTag, 'value', /* skipDefine */ false);
+  } catch { /* ignore — tag may be sealed, we still patch recompute below */ }
+
+
+  // Patch recompute() on the instance so it ALSO bumps the GXT cell.
+  // We don't rely on the classic Glimmer dirtyTag pipeline for GXT; instead,
+  // we advance our own tracked revision and trigger a GXT re-render hop.
+  try {
+    const origRecompute = (instance as any).recompute;
+    if (typeof origRecompute === 'function' && !origRecompute.__gxtPatched) {
+      const patched = function (this: any, ...args: any[]) {
+        let result: any;
+        try {
+          result = origRecompute.apply(this, args);
+        } catch (e) {
+          // Preserve original error after bumping so gxtEffect still re-runs.
+          try {
+            const rt = this && this.__gxtRecomputeTagRef;
+            if (rt) {
+              rt.value = ((rt.value as number) || 0) + 1;
+              const trig = (globalThis as any).__gxtTriggerReRender;
+              if (typeof trig === 'function') trig(rt, 'value');
+            }
+          } catch { /* ignore */ }
+          throw e;
+        }
+        try {
+          const rt = this && this.__gxtRecomputeTagRef;
+          if (rt) {
+            // Bump the scalar so the cell's update() path fires and the
+            // tracked revision changes. The setter installed by cellFor
+            // updates the underlying GXT cell, which notifies dependents.
+            rt.value = ((rt.value as number) || 0) + 1;
+            const trig = (globalThis as any).__gxtTriggerReRender;
+            if (typeof trig === 'function') trig(rt, 'value');
+          }
+          // Also invalidate the $_maybeHelper cache in ember-gxt-wrappers.ts
+          // (classHelperInstanceCache) so the next render pass re-runs
+          // delegate.getValue(bucket), which calls compute() with fresh state.
+          // The cache is keyed by helper name and short-circuits when args
+          // haven't changed — which is exactly the case after recompute().
+          try {
+            const notify = (globalThis as any).__gxtNotifyHelperPropertyChange;
+            if (typeof notify === 'function') notify(this, '__gxtRecomputeTagRef');
+          } catch { /* ignore */ }
+          // Force a full re-render so the formula that reads the helper's
+          // cell value picks up the new computed result. Without this, the
+          // cache is invalidated but nothing triggers formula re-evaluation.
+          // Mark a pending sync so force-rerender actually runs (it skips
+          // when the root GXT tag is clean).
+          try {
+            (globalThis as any).__gxtHadPendingSync = true;
+            const force = (globalThis as any).__gxtForceEmberRerender;
+            if (typeof force === 'function') force();
+          } catch { /* ignore */ }
+        } catch { /* ignore */ }
+        return result;
+      };
+      (patched as any).__gxtPatched = true;
+      (instance as any).recompute = patched;
+      // Stash the tag reference so the patched recompute can reach it without
+      // re-scanning symbol keys on every call.
+      (instance as any).__gxtRecomputeTagRef = recomputeTag;
+    }
+  } catch { /* ignore */ }
+};
+
+// Install the bridge hook onto `__gxtHelperInstances` so every class-based
+// helper instance that compile.ts registers for destruction gets its
+// recompute() wired through GXT automatically. We wrap the array's `push`
+// method in place. If compile.ts replaces the array (e.g. during cache
+// clear), we reinstall on next access via a getter-triggered re-wrap.
+(function _installHelperInstancesHook() {
+  const g = globalThis as any;
+  const install = (arr: any[]): void => {
+    if (!Array.isArray(arr) || (arr as any).__gxtRecomputeHookInstalled) return;
+    try {
+      Object.defineProperty(arr, '__gxtRecomputeHookInstalled', {
+        value: true,
+        writable: false,
+        enumerable: false,
+        configurable: true,
+      });
+    } catch { return; }
+    const origPush = arr.push.bind(arr);
+    (arr as any).push = function(...items: any[]) {
+      for (const it of items) {
+        try { g.__gxtInstallHelperRecomputeBridge?.(it); } catch { /* ignore */ }
+      }
+      return origPush(...items);
+    };
+  };
+  // If the array already exists, wrap it now.
+  if (Array.isArray(g.__gxtHelperInstances)) {
+    install(g.__gxtHelperInstances);
+  } else {
+    // Create it proactively so compile.ts picks up the wrapped instance.
+    g.__gxtHelperInstances = [];
+    install(g.__gxtHelperInstances);
+  }
+})();
+
+// =============================================================================
 // Global Registries
 // =============================================================================
 
