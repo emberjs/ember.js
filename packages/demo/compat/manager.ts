@@ -1336,6 +1336,19 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   }
 
   if (hasChanges) {
+    // If this instance had state mutated during a NAM-triggered didUpdate
+    // (see __gxtSyncAllWrappers), the arg identity is now changing. Restore
+    // the pre-hook snapshot so the instance sees its init-time defaults for
+    // the new row — matching Ember's destroy+recreate semantics.
+    if (instance.__gxtPreHookStateSnapshot) {
+      try {
+        const snap = instance.__gxtPreHookStateSnapshot;
+        for (const k of Object.keys(snap)) {
+          try { instance[k] = snap[k]; } catch { /* ignore */ }
+        }
+        instance.__gxtPreHookStateSnapshot = null;
+      } catch { /* ignore */ }
+    }
     // Second pass: apply the changes (set properties first, then fire hooks)
     for (const key of newKeys) {
       const { resolved: newValue, getter: newGetter } = getArgValue(args, key);
@@ -1887,7 +1900,6 @@ function isInteractiveModeChecked(): boolean {
 
 function triggerLifecycleHook(instance: any, hookName: string): void {
   if (!instance) return;
-
   // In non-interactive mode, suppress interactive-only hooks
   if (INTERACTIVE_ONLY_HOOKS.has(hookName) && !isInteractiveModeChecked()) {
     return;
@@ -2206,9 +2218,38 @@ function _shouldForceRerender(instance: any): boolean {
 // After gxtSyncDom(), refresh arg cells and re-sync wrapper elements.
 // Returns instances that had changes (for post-render lifecycle hooks).
 const _updatedInstances: any[] = [];
-(globalThis as any).__gxtSyncAllWrappers = function() {
-  _updatedInstances.length = 0;
 
+// Set of nested objects mutated during the current sync cycle. Populated by
+// the wrapper installed around __gxtTriggerReRender below. Consulted by
+// __gxtSyncAllWrappers to detect when an arg value (same object identity)
+// had a property mutated — e.g., set(item, 'value', 3) when `item` is
+// passed as an arg to a component. Without this, no arg cell changes and
+// the consumer's didUpdate never fires.
+let _dirtiedNestedObjectsForHooks: Set<object> = new Set();
+
+// Install a wrapper around __gxtTriggerReRender (defined in compile.ts)
+// that records the mutated object into _dirtiedNestedObjectsForHooks. Done
+// lazily on first call since compile.ts may load after manager.ts.
+let _triggerReRenderWrapped = false;
+function _installTriggerReRenderWrapper() {
+  if (_triggerReRenderWrapped) return;
+  const g = globalThis as any;
+  const orig = g.__gxtTriggerReRender;
+  if (typeof orig !== 'function') return;
+  _triggerReRenderWrapped = true;
+  g.__gxtTriggerReRender = function(obj: object, keyName: string) {
+    try {
+      if (obj && typeof obj === 'object') {
+        _dirtiedNestedObjectsForHooks.add(obj);
+      }
+    } catch { /* ignore */ }
+    return orig.call(this, obj, keyName);
+  };
+}
+
+(globalThis as any).__gxtSyncAllWrappers = function() {
+  _installTriggerReRenderWrapper();
+  _updatedInstances.length = 0;
   const hasForced = _forcedRerenderInstances.size > 0;
 
   // Phase 1: Update arg cells and trigger pre-render lifecycle hooks.
@@ -2216,11 +2257,21 @@ const _updatedInstances: any[] = [];
     // Skip destroyed/destroying instances to avoid "set on destroyed object" errors
     if (entry.instance && (entry.instance.isDestroyed || entry.instance.isDestroying)) continue;
     let hasChanges = false;
+    // hasNestedArgMutation: an arg value is the same object reference but a
+    // property on that object was mutated this cycle. In Ember semantics,
+    // this fires `didUpdate` (but NOT didUpdateAttrs/didReceiveAttrs, since
+    // the args themselves didn't change from the parent's perspective).
+    let hasNestedArgMutation = false;
     for (const key of Object.keys(entry.cells)) {
       const cellEntry = entry.cells[key]!;
       const { cell, getter, extraCell, initOverridden } = cellEntry;
       try {
         const newValue = getter();
+        // Detect same-reference arg whose internals were mutated this cycle.
+        if (newValue && typeof newValue === 'object' &&
+            _dirtiedNestedObjectsForHooks.has(newValue)) {
+          hasNestedArgMutation = true;
+        }
 
         if (initOverridden) {
           // For init-overridden properties, only update when the ARG value
@@ -2299,6 +2350,20 @@ const _updatedInstances: any[] = [];
     }
     // Check if this instance is in the forced-rerender ancestor chain
     const forceThis = hasForced && entry.instance && _shouldForceRerender(entry.instance);
+    // If this instance had state snapshotted before a NAM-triggered didUpdate
+    // ran (e.g., `this.set('isEven', ...)` in didUpdate), and the arg
+    // identity is now changing, restore the pre-hook state so the
+    // component sees its init-time defaults for the new row — matching
+    // Ember's destroy+recreate behavior for replaceList.
+    if (hasChanges && entry.instance?.__gxtPreHookStateSnapshot) {
+      try {
+        const snap = entry.instance.__gxtPreHookStateSnapshot;
+        for (const k of Object.keys(snap)) {
+          try { entry.instance[k] = snap[k]; } catch { /* ignore */ }
+        }
+        entry.instance.__gxtPreHookStateSnapshot = null;
+      } catch { /* ignore */ }
+    }
     // Pre-render lifecycle hooks (before DOM sync)
     // Order matches Ember's curly component manager: didUpdateAttrs, didReceiveAttrs, then willUpdate, willRender
     // Skip if this instance already had update hooks fired this pass (from updateInstanceWithNewArgs
@@ -2311,6 +2376,27 @@ const _updatedInstances: any[] = [];
       triggerLifecycleHook(entry.instance, 'willUpdate');
       triggerLifecycleHook(entry.instance, 'willRender');
       markInstanceUpdated(entry.instance);
+      _updatedInstances.push(entry.instance);
+    } else if (hasNestedArgMutation && entry.instance &&
+               !wasInstanceUpdatedThisPass(entry.instance)) {
+      // Same-identity arg whose internals mutated — queue a post-render
+      // didUpdate hook WITHOUT firing didUpdateAttrs/didReceiveAttrs
+      // (the arg reference did not change) and WITHOUT marking the
+      // instance as "updated this pass" (so the instance can still be
+      // destroyed by the #each diff algorithm if its row is removed).
+      // Snapshot properties that get mutated during didUpdate so we can
+      // restore them if the arg identity later changes (replaceList case).
+      try {
+        if (!entry.instance.__gxtPreHookStateSnapshot) {
+          const snap: Record<string, any> = {};
+          // Snapshot all own enumerable properties of the instance
+          for (const k of Object.keys(entry.instance)) {
+            if (k.startsWith('_') || k.startsWith('__')) continue;
+            snap[k] = entry.instance[k];
+          }
+          entry.instance.__gxtPreHookStateSnapshot = snap;
+        }
+      } catch { /* ignore */ }
       _updatedInstances.push(entry.instance);
     }
   }
@@ -2336,6 +2422,14 @@ const _updatedInstances: any[] = [];
     }
     syncWrapperElement(instance, wrapper, componentDef, undefined);
   }
+
+  // Clear dirtied-nested-objects snapshot for the next sync cycle.
+  // We do this at the end (not the start) so a recursive sync triggered
+  // from inside a didUpdate hook still sees freshly dirtied objects from
+  // the parent sync cycle if they haven't been processed yet.
+  if (_dirtiedNestedObjectsForHooks.size > 0) {
+    _dirtiedNestedObjectsForHooks = new Set();
+  }
 };
 
 // Expose the count of updated instances for the iterative sync loop.
@@ -2355,6 +2449,14 @@ function _viewDepth(instance: any): number {
   return depth;
 }
 
+// Recursion depth guard for __gxtPostRenderHooks re-entry. When a didUpdate
+// hook calls `this.set(...)` which dirties a cell, we run a follow-up sync
+// pass so the DOM reflects the change before the runTask returns. That sync
+// pass calls __gxtPostRenderHooks again; bound the recursion so a hook that
+// perpetually dirties state can't loop forever.
+let _postRenderHookReentryDepth = 0;
+const _POST_RENDER_MAX_REENTRY = 3;
+
 // Post-render lifecycle hooks — called after DOM sync completes.
 // Order: deepest children first; siblings at the same depth fire in insertion
 // order (i.e., the order they appear in _updatedInstances). Parents fire last.
@@ -2367,12 +2469,55 @@ function _viewDepth(instance: any): number {
     if (a.depth !== b.depth) return b.depth - a.depth; // deeper first
     return a.idx - b.idx; // same depth: insertion order
   });
+  // Drain the queue BEFORE firing hooks so a follow-up sync triggered from
+  // within a hook sees an empty _updatedInstances and doesn't re-fire the
+  // same hooks recursively.
+  _updatedInstances.length = 0;
+
+  const g = globalThis as any;
+  // Clear the pending flag before firing hooks so we can detect if a hook
+  // (e.g. `this.set(...)` inside didUpdate) dirtied new state.
+  const savedPending = !!g.__gxtPendingSync;
+  const savedPendingPC = !!g.__gxtPendingSyncFromPropertyChange;
+  g.__gxtPendingSync = false;
+  g.__gxtPendingSyncFromPropertyChange = false;
 
   for (const { inst } of indexed) {
     triggerLifecycleHook(inst, 'didUpdate');
     triggerLifecycleHook(inst, 'didRender');
   }
-  _updatedInstances.length = 0;
+
+  // If a lifecycle hook scheduled a property change (via `this.set(...)`),
+  // run another sync pass so the DOM reflects the change within this
+  // runTask — tests like `updating and setting within #each` write to a
+  // tracked prop inside `didUpdate` and assert on the resulting DOM before
+  // the runTask returns.
+  const hookProducedChanges = !!g.__gxtPendingSync;
+  // Restore the outer pending flags if the hooks didn't contribute new changes
+  if (!hookProducedChanges) {
+    g.__gxtPendingSync = savedPending;
+    g.__gxtPendingSyncFromPropertyChange = savedPendingPC;
+  } else {
+    // OR the outer pending flags back in so nothing is lost
+    g.__gxtPendingSync = g.__gxtPendingSync || savedPending;
+    g.__gxtPendingSyncFromPropertyChange = g.__gxtPendingSyncFromPropertyChange || savedPendingPC;
+  }
+  if (hookProducedChanges &&
+      _postRenderHookReentryDepth < _POST_RENDER_MAX_REENTRY) {
+    _postRenderHookReentryDepth++;
+    const wasSyncing = g.__gxtSyncing;
+    try {
+      // Temporarily clear the re-entrancy guard so __gxtSyncDomNow runs.
+      g.__gxtSyncing = false;
+      const syncNow = g.__gxtSyncDomNow;
+      if (typeof syncNow === 'function') {
+        try { syncNow(); } catch { /* ignore */ }
+      }
+    } finally {
+      g.__gxtSyncing = wasSyncing;
+      _postRenderHookReentryDepth--;
+    }
+  }
 };
 
 // Track ALL live component instances for destroy detection.
