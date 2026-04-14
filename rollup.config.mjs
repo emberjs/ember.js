@@ -26,7 +26,7 @@ const testDependencies = [
 
 // Phase 0.9 POC: resolver-alias strategy for GXT dual-backend.
 // When EMBER_RENDER_BACKEND=gxt, exposedDependencies() swaps a subset of
-// @glimmer/* module IDs for the compat shims under packages/demo/compat/.
+// @glimmer/* module IDs for the compat shims under packages/@ember/-internals/gxt-backend/.
 // When unset (or "classic"), exposedDependencies() returns the exact same
 // result as before — the classic build must remain byte-identical.
 const RENDER_BACKEND = process.env.EMBER_RENDER_BACKEND || 'classic';
@@ -240,6 +240,12 @@ function packages() {
       // build is actually reproducible on the glimmer-next-fresh branch.
       'demo/**',
 
+      // Phase 1: the gxt-backend package provides compat shims that are
+      // alias-injected into the graph via resolvePackages when
+      // EMBER_RENDER_BACKEND=gxt. It must not be picked up as a set of
+      // standalone entrypoints for the classic build.
+      '@ember/-internals/gxt-backend/**',
+
       // this is a real package that publishes by itself
       '@glimmer/component/**',
 
@@ -321,10 +327,11 @@ export function exposedDependencies() {
   }
 
   // GXT backend: route the @glimmer/* modules that have compat shims to
-  // packages/demo/compat/*.ts, and drop the VM/compiler packages from the
-  // entry map entirely. The POC measures whether dropping them from the
-  // entry map is enough for rollup to eliminate them from the output.
-  const compatDir = resolve(packageCache.appRoot, 'packages/demo/compat');
+  // packages/@ember/-internals/gxt-backend/*.ts, and drop the VM/compiler
+  // packages from the entry map entirely. The POC measures whether
+  // dropping them from the entry map is enough for rollup to eliminate
+  // them from the output.
+  const compatDir = resolve(packageCache.appRoot, 'packages/@ember/-internals/gxt-backend');
   const gxtOverrides = {
     '@glimmer/validator': resolve(compatDir, 'validator.ts'),
     '@glimmer/manager': resolve(compatDir, 'manager.ts'),
@@ -639,11 +646,11 @@ const allowedCycles = [
   'packages/@glimmer/compiler',
 
   // Phase 0.9 POC: when EMBER_RENDER_BACKEND=gxt, @glimmer/manager is
-  // aliased to packages/demo/compat/manager.ts. That shim transitively
-  // imports @ember/-internals/metal, which itself imports @glimmer/manager,
-  // forming a cycle that mirrors the one already allowed for the vendored
-  // @glimmer/manager package.
-  'packages/demo/compat/manager',
+  // aliased to packages/@ember/-internals/gxt-backend/manager.ts. That
+  // shim transitively imports @ember/-internals/metal, which itself
+  // imports @glimmer/manager, forming a cycle that mirrors the one
+  // already allowed for the vendored @glimmer/manager package.
+  'packages/@ember/-internals/gxt-backend/manager',
 ];
 
 function handleRollupWarnings(level, log, handler) {

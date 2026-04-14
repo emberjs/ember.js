@@ -89,43 +89,43 @@ export default defineConfig(({ mode }) => ({
       { find: /^@\/(.+)/, replacement: '/src/$1' },
       {
         find: '@ember/template-compilation',
-        replacement: fileURLToPath(new URL(`./compat/compile`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/compile`, projectRoot)),
       },
       {
         find: '@ember/-internals/deprecations',
-        replacement: fileURLToPath(new URL(`./compat/deprecate`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/deprecate`, projectRoot)),
       },
       {
         find: '@glimmer/application',
-        replacement: fileURLToPath(new URL(`./compat/glimmer-application`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-application`, projectRoot)),
       },
       {
         find: '@glimmer/utils',
-        replacement: fileURLToPath(new URL(`./compat/glimmer-util`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-util`, projectRoot)),
       },
       {
         find: '@glimmer/manager',
-        replacement: fileURLToPath(new URL(`./compat/manager`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/manager`, projectRoot)),
       },
       {
         find: '@glimmer/validator',
-        replacement: fileURLToPath(new URL(`./compat/validator`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/validator`, projectRoot)),
       },
       {
         find: '@glimmer/destroyable',
-        replacement: fileURLToPath(new URL(`./compat/destroyable`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/destroyable`, projectRoot)),
       },
       {
         find: '@glimmer/reference',
-        replacement: fileURLToPath(new URL(`./compat/reference`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/reference`, projectRoot)),
       },
       {
         find: '@glimmer/env',
-        replacement: fileURLToPath(new URL(`./compat/glimmer-env`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-env`, projectRoot)),
       },
       {
         find: '@glimmer/syntax',
-        replacement: fileURLToPath(new URL(`./compat/glimmer-syntax`, projectRoot)),
+        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-syntax`, projectRoot)),
       },
     ],
   },

@@ -123,7 +123,7 @@
     <script type="module">
       // Import GXT compat layer FIRST to register runtime compiler before templates load
       // This must happen before any @ember modules are imported
-      import './packages/demo/compat/ember-template-compiler.ts';
+      import './packages/@ember/-internals/gxt-backend/ember-template-compiler.ts';
 
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
       import { setTesting } from './packages/@ember/debug/index.ts';

@@ -99,61 +99,61 @@ export default defineConfig(({ mode }) => {
             {
               find: 'ember-template-compiler',
               replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/ember-template-compiler`, owerrideRoot)
+                new URL(`./packages/@ember/-internals/gxt-backend/ember-template-compiler`, owerrideRoot)
               ),
             },
             // Alias internal-test-helpers compile to use gxt compilation
             {
               find: /^internal-test-helpers\/lib\/compile$/,
               replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/test-compile`, owerrideRoot)
+                new URL(`./packages/@ember/-internals/gxt-backend/test-compile`, owerrideRoot)
               ),
             },
             {
               find: '@ember/template-compilation',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/compile`, owerrideRoot)),
+              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/compile`, owerrideRoot)),
             },
             {
               find: '@ember/-internals/deprecations',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/deprecate`, owerrideRoot)),
+              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/deprecate`, owerrideRoot)),
             },
             {
               find: '@glimmer/application',
               replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/glimmer-application`, owerrideRoot)
+                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-application`, owerrideRoot)
               ),
             },
             {
               find: '@glimmer/utils',
               replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/glimmer-util`, owerrideRoot)
+                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-util`, owerrideRoot)
               ),
             },
             {
               find: '@glimmer/manager',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/manager`, owerrideRoot)),
+              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/manager`, owerrideRoot)),
             },
             {
               find: '@glimmer/tracking/primitives/cache',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/glimmer-tracking`, owerrideRoot)),
+              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)),
             },
             {
               find: '@glimmer/tracking',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/glimmer-tracking`, owerrideRoot)),
+              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)),
             },
             {
               find: '@glimmer/validator',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/validator`, owerrideRoot)),
+              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/validator`, owerrideRoot)),
             },
             {
               find: '@glimmer/destroyable',
               replacement: fileURLToPath(
-                new URL(`./packages/demo/compat/destroyable`, owerrideRoot)
+                new URL(`./packages/@ember/-internals/gxt-backend/destroyable`, owerrideRoot)
               ),
             },
             {
               find: '@glimmer/reference',
-              replacement: fileURLToPath(new URL(`./packages/demo/compat/reference`, owerrideRoot)),
+              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/reference`, owerrideRoot)),
             },
             {
               find: '@lifeart/gxt/runtime-compiler',

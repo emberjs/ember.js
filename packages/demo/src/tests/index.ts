@@ -27,13 +27,13 @@ import './validator-test';
 import './destroyable-test';
 
 // Import outlet to register custom element
-import '../../compat/outlet.gts';
+import '../../../@ember/-internals/gxt-backend/outlet.gts';
 
 import Component from '@ember/component';
 import { setComponentTemplate } from '@ember/component';
 import { _backburner, run, _getCurrentRunLoop, schedule } from '@ember/runloop';
 import { renderSettled } from '@ember/-internals/glimmer';
-import { compile } from '../../compat/ember-template-compiler';
+import { compile } from '../../../@ember/-internals/gxt-backend/ember-template-compiler';
 import EmberObject, { set, get, notifyPropertyChange, computed } from '@ember/object';
 import { addObserver, removeObserver } from '@ember/object/observers';
 import { tracked } from '@glimmer/tracking';
@@ -554,7 +554,7 @@ QUnit.module('Runloop Scheduling', function(hooks: any) {
 
 QUnit.module('Reference System', function(hooks: any) {
   QUnit.test('createConstRef creates reference with correct value', async function(assert: any) {
-    const { createConstRef, valueForRef } = await import('../../compat/reference');
+    const { createConstRef, valueForRef } = await import('../../../@ember/-internals/gxt-backend/reference');
 
     const ref = createConstRef(42, 'test');
     assert.equal(valueForRef(ref), 42, 'reference has correct value');
@@ -564,7 +564,7 @@ QUnit.module('Reference System', function(hooks: any) {
   });
 
   QUnit.test('createComputeRef creates computed reference', async function(assert: any) {
-    const { createComputeRef, valueForRef } = await import('../../compat/reference');
+    const { createComputeRef, valueForRef } = await import('../../../@ember/-internals/gxt-backend/reference');
 
     let count = 0;
     const ref = createComputeRef(() => ++count, 'counter');
@@ -577,7 +577,7 @@ QUnit.module('Reference System', function(hooks: any) {
   });
 
   QUnit.test('isConstRef detects predefined constant refs', async function(assert: any) {
-    const { FALSE_REFERENCE, TRUE_REFERENCE, NULL_REFERENCE, UNDEFINED_REFERENCE, isConstRef } = await import('../../compat/reference');
+    const { FALSE_REFERENCE, TRUE_REFERENCE, NULL_REFERENCE, UNDEFINED_REFERENCE, isConstRef } = await import('../../../@ember/-internals/gxt-backend/reference');
 
     assert.ok(isConstRef(FALSE_REFERENCE), 'FALSE_REFERENCE is constant');
     assert.ok(isConstRef(TRUE_REFERENCE), 'TRUE_REFERENCE is constant');
@@ -588,7 +588,7 @@ QUnit.module('Reference System', function(hooks: any) {
 
 QUnit.module('Validator System', function(hooks: any) {
   QUnit.test('tagFor creates tag for object property', async function(assert: any) {
-    const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import('../../compat/validator');
+    const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
 
     const obj = { name: 'test' };
     const tag = tagFor(obj, 'name');
@@ -609,7 +609,7 @@ QUnit.module('Validator System', function(hooks: any) {
   });
 
   QUnit.test('combine creates combined tag', async function(assert: any) {
-    const { tagFor, combine, dirtyTagFor, validateTag, valueForTag } = await import('../../compat/validator');
+    const { tagFor, combine, dirtyTagFor, validateTag, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
 
     const obj = { a: 1, b: 2 };
     const tagA = tagFor(obj, 'a');
@@ -629,7 +629,7 @@ QUnit.module('Validator System', function(hooks: any) {
   });
 
   QUnit.test('updateTag links tags for computed properties', async function(assert: any) {
-    const { tagFor, updateTag, dirtyTagFor, validateTag, valueForTag, combine } = await import('../../compat/validator');
+    const { tagFor, updateTag, dirtyTagFor, validateTag, valueForTag, combine } = await import('../../../@ember/-internals/gxt-backend/validator');
 
     const obj = { firstName: 'John', lastName: 'Doe' };
 
