@@ -24,6 +24,42 @@ const testDependencies = [
   'expect-type',
 ];
 
+// Phase 0.9 POC: resolver-alias strategy for GXT dual-backend.
+// When EMBER_RENDER_BACKEND=gxt, exposedDependencies() swaps a subset of
+// @glimmer/* module IDs for the compat shims under packages/demo/compat/.
+// When unset (or "classic"), exposedDependencies() returns the exact same
+// result as before — the classic build must remain byte-identical.
+const RENDER_BACKEND = process.env.EMBER_RENDER_BACKEND || 'classic';
+const USE_GXT_BACKEND = RENDER_BACKEND === 'gxt';
+
+// Packages that the shims import and that rollup should treat as external
+// rather than trying to bundle. These are resolved at runtime by the host
+// (vite dev / the published gxt package). They are only applied when
+// USE_GXT_BACKEND is true so the classic build is unaffected.
+const GXT_EXTERNAL_PACKAGES = new Set([
+  '@lifeart/gxt',
+  '@lifeart/gxt/glimmer-compatibility',
+  '@lifeart/gxt/runtime-compiler',
+  '@lifeart/gxt/compiler',
+]);
+
+// Packages dropped from the top-level entry map in GXT mode. They remain
+// resolvable via exposedDependencies() (so stray imports still succeed),
+// but are no longer emitted as their own dist/packages/@glimmer/* chunks.
+// Anything not reachable from the remaining entry points gets tree-shaken.
+const GXT_DROPPED_ENTRIES = new Set([
+  '@glimmer/runtime',
+  '@glimmer/opcode-compiler',
+  '@glimmer/program',
+  '@glimmer/wire-format',
+  '@glimmer/encoder',
+  '@glimmer/vm',
+  '@glimmer/util',
+  '@glimmer/global-context',
+  '@glimmer/node',
+  '@glimmer/owner',
+]);
+
 let configs = [
   esmConfig(),
   esmProdConfig(),
@@ -197,6 +233,12 @@ function packages() {
       'loader/**',
       'ember-template-compiler/**',
       'internal-test-helpers/**',
+      // Phase 0.9 POC: the demo workspace (including compat/ shims and
+      // the vite-backed demo app) is not part of the published ember-source
+      // bundle. It was accidentally pulled in because `packages()` globs
+      // every file under `packages/`. Exclude it so the classic rollup
+      // build is actually reproducible on the glimmer-next-fresh branch.
+      'demo/**',
 
       // this is a real package that publishes by itself
       '@glimmer/component/**',
@@ -250,7 +292,7 @@ function rolledUpPackages() {
 // ember-source. That is, other packages could actually depend on the copies of
 // these that we publish.
 export function exposedDependencies() {
-  return {
+  const classic = {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
     rsvp: require.resolve('rsvp/lib/rsvp.js'),
     'dag-map': require.resolve('dag-map/dag-map.js'),
@@ -273,6 +315,44 @@ export function exposedDependencies() {
     ),
     '@glimmer/env': resolve(packageCache.appRoot, 'packages/@glimmer/env/index.ts'),
   };
+
+  if (!USE_GXT_BACKEND) {
+    return classic;
+  }
+
+  // GXT backend: route the @glimmer/* modules that have compat shims to
+  // packages/demo/compat/*.ts, and drop the VM/compiler packages from the
+  // entry map entirely. The POC measures whether dropping them from the
+  // entry map is enough for rollup to eliminate them from the output.
+  const compatDir = resolve(packageCache.appRoot, 'packages/demo/compat');
+  const gxtOverrides = {
+    '@glimmer/validator': resolve(compatDir, 'validator.ts'),
+    '@glimmer/manager': resolve(compatDir, 'manager.ts'),
+    '@glimmer/reference': resolve(compatDir, 'reference.ts'),
+    '@glimmer/destroyable': resolve(compatDir, 'destroyable.ts'),
+    '@glimmer/tracking': resolve(compatDir, 'glimmer-tracking.ts'),
+    '@glimmer/tracking/primitives/cache': resolve(compatDir, 'glimmer-tracking.ts'),
+    // ember-template-compiler is shim-replaced so @ember/template-compilation
+    // etc. don't end up pulling in @glimmer/syntax + @glimmer/compiler.
+    'ember-template-compiler': resolve(compatDir, 'ember-template-compiler.ts'),
+    '@ember/template-compilation': resolve(compatDir, 'compile.ts'),
+    '@ember/-internals/deprecations': resolve(compatDir, 'deprecate.ts'),
+    '@glimmer/application': resolve(compatDir, 'glimmer-application.ts'),
+    '@glimmer/utils': resolve(compatDir, 'glimmer-util.ts'),
+  };
+
+  return { ...classic, ...gxtOverrides };
+}
+
+// Convenience helper used by esmConfig() to build the input map. In
+// classic mode this returns exposedDependencies() verbatim. In gxt mode
+// it returns the same map minus GXT_DROPPED_ENTRIES.
+function entryExposedDependencies() {
+  const deps = exposedDependencies();
+  if (!USE_GXT_BACKEND) return deps;
+  const filtered = { ...deps };
+  for (const k of GXT_DROPPED_ENTRIES) delete filtered[k];
+  return filtered;
 }
 
 // these are dependencies that we inline into our own published code but do not
@@ -412,6 +492,18 @@ export function resolvePackages(deps, params) {
           return { external: true, id: pkgName };
         }
 
+        // Phase 0.9 POC: @lifeart/gxt and its subpath exports are always
+        // external — they're resolved by the host runtime (vite alias, the
+        // published @lifeart/gxt npm package, or the demo's pnpm-managed
+        // copy). This is needed regardless of EMBER_RENDER_BACKEND because
+        // in-repo modules on the glimmer-next-fresh branch (e.g.
+        // @ember/-internals/metal/lib/tracked.ts) statically import
+        // @lifeart/gxt/glimmer-compatibility. Treating it as external keeps
+        // the classic rollup build able to run at all.
+        if (GXT_EXTERNAL_PACKAGES.has(source) || pkgName === '@lifeart/gxt') {
+          return { external: true, id: source };
+        }
+
         if (isExternal?.(source)) {
           return { external: true, id: source };
         }
@@ -545,6 +637,13 @@ const allowedCycles = [
   'packages/@glimmer/opcode-compiler',
   'packages/@glimmer/syntax',
   'packages/@glimmer/compiler',
+
+  // Phase 0.9 POC: when EMBER_RENDER_BACKEND=gxt, @glimmer/manager is
+  // aliased to packages/demo/compat/manager.ts. That shim transitively
+  // imports @ember/-internals/metal, which itself imports @glimmer/manager,
+  // forming a cycle that mirrors the one already allowed for the vendored
+  // @glimmer/manager package.
+  'packages/demo/compat/manager',
 ];
 
 function handleRollupWarnings(level, log, handler) {
