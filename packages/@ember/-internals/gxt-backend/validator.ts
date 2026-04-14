@@ -1,5 +1,10 @@
 // Import from glimmer-compatibility to avoid gxt compiler conflicts
 import { validator, caching, storage } from '@lifeart/gxt/glimmer-compatibility';
+// Direct import of GXT's native cell primitive (NOT via storage wrapper) so we
+// can bridge classic @glimmer/validator tag mutations into GXT's effect system.
+// Using the same cell factory that _gxtEffect tracks ensures reads inside an
+// effect register a subscription that will re-fire the effect on updates.
+import { cell as _gxtNativeCell } from '@lifeart/gxt';
 
 // Create cell-like functionality using storage primitives
 const createCell = (initialValue: any, name?: string) => {
@@ -353,6 +358,52 @@ let globalRevisionCounter = 0;
 const currentTagCell = cell(globalRevisionCounter, 'CURRENT_TAG');
 export const CURRENT_TAG = currentTagCell;
 
+// Classic-tag bridge cell: a native GXT Cell (not wrapped by storage primitive)
+// that is bumped on every dirtyTagFor call. Exposed so classic components
+// rendered via GXT effects (e.g., LinkTo.href/class getters that call
+// consumeTag(tagFor(routing,'currentState'))) can subscribe once per effect
+// to receive re-fire notifications on ANY classic tag mutation.
+//
+// Using a raw Cell from @lifeart/gxt (not via storage.createStorage) guarantees
+// the cell's identity matches what GXT's effect/tracker system manipulates,
+// so reads during effect evaluation properly register a subscription.
+const _classicBridgeCell = _gxtNativeCell(0, 'classic-validator-bridge');
+export const CLASSIC_TAG_BRIDGE = _classicBridgeCell;
+let _classicBridgeCounter = 0;
+function _bumpClassicBridge() {
+  _classicBridgeCounter++;
+  try { _classicBridgeCell.update(_classicBridgeCounter); } catch { /* noop */ }
+}
+// Touch from inside an effect to subscribe: read .value.
+// Export a helper so manager.ts can call it without caring about Cell shape.
+export function touchClassicBridge(): void {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    _classicBridgeCell.value;
+  } catch { /* noop */ }
+}
+
+// Side-channel registry for effects that must re-fire on ANY classic tag
+// mutation. Used as a fallback for rendering paths where GXT's effect
+// scheduler doesn't pick up the classic-bridge cell dirty (e.g., when the
+// effect is created outside an active render/sync cycle). Callbacks are
+// invoked synchronously at the end of dirtyTagFor after the classic tag
+// has been updated but before the runloop flush. Registrants are expected
+// to be idempotent and cheap.
+const _classicReactors = new Set<() => void>();
+export function registerClassicReactor(cb: () => void): () => void {
+  _classicReactors.add(cb);
+  return () => { _classicReactors.delete(cb); };
+}
+function _fireClassicReactors() {
+  if (_classicReactors.size === 0) return;
+  // Copy to avoid mutation during iteration
+  const snapshot = Array.from(_classicReactors);
+  for (const cb of snapshot) {
+    try { cb(); } catch { /* ignore individual reactor errors */ }
+  }
+}
+
 // Wrap dirtyTagFor to also bump the global revision AND mark the specific tag as dirty
 const gxtDirtyTagFor = validator.dirtyTagFor;
 export function dirtyTagFor(obj: any, key: any) {
@@ -362,6 +413,10 @@ export function dirtyTagFor(obj: any, key: any) {
   // Bump global revision first
   globalRevisionCounter++;
   currentTagCell.value = globalRevisionCounter;
+  // Also bump the classic-tag bridge cell so GXT effects that subscribed via
+  // touchClassicBridge() will be re-scheduled on any classic tag mutation.
+  _bumpClassicBridge();
+
 
   // Get the tag for this property and mark it as dirty
   const tag = tagFor(obj, safeKey);
@@ -378,6 +433,7 @@ export function dirtyTagFor(obj: any, key: any) {
   }
 
   // Then call the original dirtyTagFor with the safe key
+  let result: any;
   try {
     // Ensure obj has a constructor for GXT's debug label
     if (obj && typeof obj === 'object' && !obj.constructor) {
@@ -385,10 +441,17 @@ export function dirtyTagFor(obj: any, key: any) {
         value: Object, writable: true, configurable: true, enumerable: false,
       });
     }
-    return gxtDirtyTagFor(obj, safeKey);
+    result = gxtDirtyTagFor(obj, safeKey);
   } catch {
     // GXT's dirtyTagFor may fail for objects without constructor
   }
+  // Fire side-channel classic reactors. These are callbacks registered by
+  // GXT-rendered classic components (e.g. LinkTo) whose template getters
+  // call consumeTag() from classic @glimmer/validator — a code path that
+  // GXT's tracker doesn't observe reliably. Firing them here ensures
+  // effects re-read their reactive classic values on every tag mutation.
+  _fireClassicReactors();
+  return result;
 }
 
 export function consumeTag(tag: any) {
@@ -679,6 +742,7 @@ export function dirtyTag(tag: any) {
     tag.dirty();
     // Bump global revision so track tags also detect this change
     globalRevisionCounter++;
+    _bumpClassicBridge();
     // Flush GXT DOM sync so the updated value is visible immediately
     const syncNow = (globalThis as any).__gxtSyncDomNow;
     if (typeof syncNow === 'function') {

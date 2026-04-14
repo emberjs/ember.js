@@ -53,7 +53,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
   );
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
-import { beginBacktrackingFrame, endBacktrackingFrame } from '@glimmer/validator';
+import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gxtTouchClassicBridge, registerClassicReactor as _gxtRegisterClassicReactor } from '@glimmer/validator';
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '@lifeart/gxt';
 import { destroy as _destroyDestroyable } from './destroyable';
 
@@ -6475,30 +6475,85 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   const el = document.createElement('a');
   const gxtEffect = _gxtEffect;
 
-  // id attribute
-  gxtEffect(() => {
-    const id = instance.id;
-    if (id) el.id = id;
-  });
+  // Bridge classic @glimmer/validator tags to GXT effects.
+  // Classic _LinkTo reads routing state via consumeTag(tagFor(routing,'currentState')).
+  // The dirty notification may land on a DIFFERENT object (router vs routingService,
+  // alias chains, etc.), and GXT's effect scheduler does not reliably pick up
+  // classic @glimmer/validator tag dirties — so we use a side-channel reactor
+  // registered per-element that re-applies the reactive attributes whenever
+  // ANY classic tag is dirtied. This keeps href/class/active in sync with
+  // router state and @tracked field mutations without depending on the GXT
+  // formula re-evaluation path.
+  const touchClassicTags = _gxtTouchClassicBridge;
+
+  // Register a side-channel reactor that auto-unsubscribes once the element
+  // is no longer connected to the DOM. This avoids leaking reactors across
+  // test runs when LinkTo elements are re-rendered.
+  let _disconnectedTicks = 0;
+  const _registerReactor = (cb: () => void) => {
+    let unsub: () => void = () => {};
+    const wrapped = () => {
+      if (!el.isConnected) {
+        _disconnectedTicks++;
+        // Give the DOM one cycle to reconnect (e.g., during morph) before
+        // unsubscribing permanently.
+        if (_disconnectedTicks > 2) {
+          try { unsub(); } catch { /* ignore */ }
+        }
+        return;
+      }
+      _disconnectedTicks = 0;
+      cb();
+    };
+    unsub = _gxtRegisterClassicReactor(wrapped);
+  };
+
+  // id attribute (doesn't change over the element's lifetime, so no reactor)
+  let _lastId: any = undefined;
+  const applyId = () => {
+    try {
+      const id = instance.id;
+      if (id && id !== _lastId) {
+        el.id = id;
+        _lastId = id;
+      }
+    } catch { /* ignore */ }
+  };
+  gxtEffect(() => { touchClassicTags(); applyId(); });
 
   // class attribute (includes 'ember-view', 'active', 'disabled', etc.)
-  gxtEffect(() => {
-    const cls = instance.class;
-    if (cls) el.className = cls;
-  });
+  let _lastClass: any = undefined;
+  const applyClass = () => {
+    try {
+      const cls = instance.class;
+      if (cls != null && cls !== _lastClass) {
+        el.className = cls;
+        _lastClass = cls;
+      }
+    } catch { /* ignore */ }
+  };
+  gxtEffect(() => { touchClassicTags(); applyClass(); });
+  _registerReactor(applyClass);
 
   // href attribute
-  gxtEffect(() => {
+  let _lastHref: any = undefined;
+  const applyHref = () => {
     try {
       const href = instance.href;
-      if (href !== undefined && href !== null) {
+      if (href !== undefined && href !== null && href !== _lastHref) {
         el.setAttribute('href', String(href));
+        _lastHref = href;
       }
     } catch {
       // href computation may throw if routing service is unavailable
-      el.setAttribute('href', '#');
+      if (_lastHref !== '#') {
+        el.setAttribute('href', '#');
+        _lastHref = '#';
+      }
     }
-  });
+  };
+  gxtEffect(() => { touchClassicTags(); applyHref(); });
+  _registerReactor(applyHref);
 
   // Optional attributes from the LinkTo template
   const optionalAttrs = ['role', 'title', 'rel', 'tabindex', 'target'];
