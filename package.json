@@ -137,6 +137,7 @@
     "recast": "^0.22.0",
     "resolve.exports": "^2.0.3",
     "rollup": "^4.57.1",
+    "rollup-plugin-visualizer": "^7.0.1",
     "router_js": "workspace:*",
     "rsvp": "^4.8.5",
     "terser": "^5.42.0",

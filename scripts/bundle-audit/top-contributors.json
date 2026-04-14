@@ -1,0 +1,967 @@
+{
+  "classic_total": {
+    "raw": 1295950,
+    "gzip": 0,
+    "brotli": 0
+  },
+  "gxt_total": {
+    "raw": 2315200,
+    "gzip": 0,
+    "brotli": 0
+  },
+  "classic_top_20": [
+    {
+      "module": "/packages/@ember/-internals/glimmer/lib/renderer.ts",
+      "raw": 64004,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/routing/route.ts",
+      "raw": 48882,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/routing/router.ts",
+      "raw": 40615,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/glimmer/lib/component.ts",
+      "raw": 32055,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/application/index.ts",
+      "raw": 29318,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/glimmer/lib/templates/root.ts",
+      "raw": 26716,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/object/core.ts",
+      "raw": 23143,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/routing/router-service.ts",
+      "raw": 21836,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/router_js/dist/modules/router.js",
+      "raw": 20363,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/object/lib/computed/reduce_computed_macros.ts",
+      "raw": 20056,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/runtime/lib/compiled/opcodes/component.ts",
+      "raw": 19927,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/runloop/index.ts",
+      "raw": 18532,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/metal/lib/computed.ts",
+      "raw": 16470,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/object/mixin.ts",
+      "raw": 14255,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/glimmer/lib/templates/outlet.ts",
+      "raw": 14234,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/runtime/lib/vm/rehydrate-builder.ts",
+      "raw": 14065,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/object/lib/computed/computed_macros.ts",
+      "raw": 13974,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/array/index.ts",
+      "raw": 13923,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/debug/data-adapter.ts",
+      "raw": 13892,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/helper/index.ts",
+      "raw": 13785,
+      "gzip": 0,
+      "brotli": 0
+    }
+  ],
+  "gxt_top_20": [
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/compile.ts",
+      "raw": 289700,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/manager.ts",
+      "raw": 288101,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/compile-DkkfIdfz.js",
+      "raw": 127093,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/ember-gxt-wrappers.ts",
+      "raw": 68213,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/glimmer/lib/renderer.ts",
+      "raw": 64014,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/routing/route.ts",
+      "raw": 48886,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/parser.js",
+      "raw": 43254,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/routing/router.ts",
+      "raw": 40625,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/simple-html-tokenizer/dist/es6/index.js",
+      "raw": 37097,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/dom-Do_f1G5r.js",
+      "raw": 37023,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/glimmer/lib/component.ts",
+      "raw": 32054,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/application/index.ts",
+      "raw": 29318,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/glimmer/lib/templates/root.ts",
+      "raw": 26716,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/validator.ts",
+      "raw": 23510,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/object/core.ts",
+      "raw": 23137,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/routing/router-service.ts",
+      "raw": 21840,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/router_js/dist/modules/router.js",
+      "raw": 20363,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/object/lib/computed/reduce_computed_macros.ts",
+      "raw": 20056,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/runtime/lib/compiled/opcodes/component.ts",
+      "raw": 19919,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/runloop/index.ts",
+      "raw": 18532,
+      "gzip": 0,
+      "brotli": 0
+    }
+  ],
+  "gxt_only": [
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/compile.ts",
+      "raw": 289700,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/manager.ts",
+      "raw": 288101,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/compile-DkkfIdfz.js",
+      "raw": 127093,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/ember-gxt-wrappers.ts",
+      "raw": 68213,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/parser.js",
+      "raw": 43254,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/simple-html-tokenizer/dist/es6/index.js",
+      "raw": 37097,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/dom-Do_f1G5r.js",
+      "raw": 37023,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/validator.ts",
+      "raw": 23510,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts",
+      "raw": 16608,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts",
+      "raw": 16299,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/generation/printer.ts",
+      "raw": 11549,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/vm-C4AcSXb0.js",
+      "raw": 10857,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/loc/span.ts",
+      "raw": 10504,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v1/public-builders.ts",
+      "raw": 7707,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/loc/offset.ts",
+      "raw": 7284,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/helpers.js",
+      "raw": 5619,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/whitespace-control.js",
+      "raw": 5612,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/printer.js",
+      "raw": 5228,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v1/parser-builders.ts",
+      "raw": 5223,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/traversal/traverse.ts",
+      "raw": 4208,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/helper-manager.ts",
+      "raw": 4069,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/gxt.runtime-compiler.es.js",
+      "raw": 3089,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/glimmer-tracking.ts",
+      "raw": 2952,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/args.ts",
+      "raw": 2692,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/reference.ts",
+      "raw": 2639,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/loc/match.ts",
+      "raw": 2621,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/visitor.js",
+      "raw": 2491,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v1/legacy-interop.ts",
+      "raw": 2385,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/source.ts",
+      "raw": 2077,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/node.ts",
+      "raw": 1896,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/and-Ckw6mGEW.js",
+      "raw": 1809,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/generation/util.ts",
+      "raw": 1653,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/expr.ts",
+      "raw": 1590,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/utils.ts",
+      "raw": 1549,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/parse.js",
+      "raw": 1465,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/destroyable.ts",
+      "raw": 1300,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/parser.ts",
+      "raw": 1276,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/content.ts",
+      "raw": 1170,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/attr-block.ts",
+      "raw": 1100,
+      "gzip": 0,
+      "brotli": 0
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/exception.js",
+      "raw": 1017,
+      "gzip": 0,
+      "brotli": 0
+    }
+  ],
+  "gxt_vs_classic_delta_top_40": [
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/compile.ts",
+      "classic_raw": 0,
+      "gxt_raw": 289700,
+      "delta": 289700
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/manager.ts",
+      "classic_raw": 0,
+      "gxt_raw": 288101,
+      "delta": 288101
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/compile-DkkfIdfz.js",
+      "classic_raw": 0,
+      "gxt_raw": 127093,
+      "delta": 127093
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/ember-gxt-wrappers.ts",
+      "classic_raw": 0,
+      "gxt_raw": 68213,
+      "delta": 68213
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/parser.js",
+      "classic_raw": 0,
+      "gxt_raw": 43254,
+      "delta": 43254
+    },
+    {
+      "module": "node_modules/simple-html-tokenizer/dist/es6/index.js",
+      "classic_raw": 0,
+      "gxt_raw": 37097,
+      "delta": 37097
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/dom-Do_f1G5r.js",
+      "classic_raw": 0,
+      "gxt_raw": 37023,
+      "delta": 37023
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/validator.ts",
+      "classic_raw": 0,
+      "gxt_raw": 23510,
+      "delta": 23510
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts",
+      "classic_raw": 0,
+      "gxt_raw": 16608,
+      "delta": 16608
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts",
+      "classic_raw": 0,
+      "gxt_raw": 16299,
+      "delta": 16299
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/generation/printer.ts",
+      "classic_raw": 0,
+      "gxt_raw": 11549,
+      "delta": 11549
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/vm-C4AcSXb0.js",
+      "classic_raw": 0,
+      "gxt_raw": 10857,
+      "delta": 10857
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/loc/span.ts",
+      "classic_raw": 0,
+      "gxt_raw": 10504,
+      "delta": 10504
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v1/public-builders.ts",
+      "classic_raw": 0,
+      "gxt_raw": 7707,
+      "delta": 7707
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/loc/offset.ts",
+      "classic_raw": 0,
+      "gxt_raw": 7284,
+      "delta": 7284
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/helpers.js",
+      "classic_raw": 0,
+      "gxt_raw": 5619,
+      "delta": 5619
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/whitespace-control.js",
+      "classic_raw": 0,
+      "gxt_raw": 5612,
+      "delta": 5612
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/printer.js",
+      "classic_raw": 0,
+      "gxt_raw": 5228,
+      "delta": 5228
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v1/parser-builders.ts",
+      "classic_raw": 0,
+      "gxt_raw": 5223,
+      "delta": 5223
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/traversal/traverse.ts",
+      "classic_raw": 0,
+      "gxt_raw": 4208,
+      "delta": 4208
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/helper-manager.ts",
+      "classic_raw": 0,
+      "gxt_raw": 4069,
+      "delta": 4069
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/gxt.runtime-compiler.es.js",
+      "classic_raw": 0,
+      "gxt_raw": 3089,
+      "delta": 3089
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/glimmer-tracking.ts",
+      "classic_raw": 0,
+      "gxt_raw": 2952,
+      "delta": 2952
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/args.ts",
+      "classic_raw": 0,
+      "gxt_raw": 2692,
+      "delta": 2692
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/reference.ts",
+      "classic_raw": 0,
+      "gxt_raw": 2639,
+      "delta": 2639
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/loc/match.ts",
+      "classic_raw": 0,
+      "gxt_raw": 2621,
+      "delta": 2621
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/visitor.js",
+      "classic_raw": 0,
+      "gxt_raw": 2491,
+      "delta": 2491
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v1/legacy-interop.ts",
+      "classic_raw": 0,
+      "gxt_raw": 2385,
+      "delta": 2385
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/source/source.ts",
+      "classic_raw": 0,
+      "gxt_raw": 2077,
+      "delta": 2077
+    },
+    {
+      "module": "/packages/@ember/object/mixin.ts",
+      "classic_raw": 14255,
+      "gxt_raw": 16165,
+      "delta": 1910
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/node.ts",
+      "classic_raw": 0,
+      "gxt_raw": 1896,
+      "delta": 1896
+    },
+    {
+      "module": "node_modules/@lifeart/gxt/dist/and-Ckw6mGEW.js",
+      "classic_raw": 0,
+      "gxt_raw": 1809,
+      "delta": 1809
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/generation/util.ts",
+      "classic_raw": 0,
+      "gxt_raw": 1653,
+      "delta": 1653
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/expr.ts",
+      "classic_raw": 0,
+      "gxt_raw": 1590,
+      "delta": 1590
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/utils.ts",
+      "classic_raw": 0,
+      "gxt_raw": 1549,
+      "delta": 1549
+    },
+    {
+      "module": "node_modules/@handlebars/parser/dist/esm/parse.js",
+      "classic_raw": 0,
+      "gxt_raw": 1465,
+      "delta": 1465
+    },
+    {
+      "module": "/packages/@ember/-internals/gxt-backend/destroyable.ts",
+      "classic_raw": 0,
+      "gxt_raw": 1300,
+      "delta": 1300
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/parser.ts",
+      "classic_raw": 0,
+      "gxt_raw": 1276,
+      "delta": 1276
+    },
+    {
+      "module": "/broccoli/amd-compat-entrypoints/ember.debug.js",
+      "classic_raw": 6398,
+      "gxt_raw": 7604,
+      "delta": 1206
+    },
+    {
+      "module": "/packages/@glimmer/syntax/lib/v2/objects/content.ts",
+      "classic_raw": 0,
+      "gxt_raw": 1170,
+      "delta": 1170
+    }
+  ],
+  "macro_buckets_classic_top_20": [
+    {
+      "bucket": "other",
+      "raw": 1181084,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 367
+    },
+    {
+      "bucket": "node_modules/rsvp",
+      "raw": 55832,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 26
+    },
+    {
+      "bucket": "node_modules/router_js",
+      "raw": 49943,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 10
+    },
+    {
+      "bucket": "node_modules/dag-map",
+      "raw": 4414,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/decorator-transforms",
+      "raw": 2607,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/@simple-dom/document",
+      "raw": 1112,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/backburner.js",
+      "raw": 771,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/route-recognizer",
+      "raw": 187,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    }
+  ],
+  "macro_buckets_gxt_top_20": [
+    {
+      "bucket": "other",
+      "raw": 1918356,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 382
+    },
+    {
+      "bucket": "@lifeart/gxt",
+      "raw": 180195,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 7
+    },
+    {
+      "bucket": "node_modules/@handlebars/parser",
+      "raw": 64686,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 7
+    },
+    {
+      "bucket": "node_modules/rsvp",
+      "raw": 55832,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 26
+    },
+    {
+      "bucket": "node_modules/router_js",
+      "raw": 49943,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 10
+    },
+    {
+      "bucket": "node_modules/simple-html-tokenizer",
+      "raw": 37097,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/dag-map",
+      "raw": 4414,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/decorator-transforms",
+      "raw": 2607,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/@simple-dom/document",
+      "raw": 1112,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/backburner.js",
+      "raw": 771,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/route-recognizer",
+      "raw": 187,
+      "gzip": 0,
+      "brotli": 0,
+      "files": 1
+    }
+  ],
+  "macro_delta_top_20": [
+    {
+      "bucket": "other",
+      "classic_raw": 1181084,
+      "gxt_raw": 1918356,
+      "delta": 737272,
+      "gxt_gzip": 0,
+      "files": 382
+    },
+    {
+      "bucket": "@lifeart/gxt",
+      "classic_raw": 0,
+      "gxt_raw": 180195,
+      "delta": 180195,
+      "gxt_gzip": 0,
+      "files": 7
+    },
+    {
+      "bucket": "node_modules/@handlebars/parser",
+      "classic_raw": 0,
+      "gxt_raw": 64686,
+      "delta": 64686,
+      "gxt_gzip": 0,
+      "files": 7
+    },
+    {
+      "bucket": "node_modules/simple-html-tokenizer",
+      "classic_raw": 0,
+      "gxt_raw": 37097,
+      "delta": 37097,
+      "gxt_gzip": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/rsvp",
+      "classic_raw": 55832,
+      "gxt_raw": 55832,
+      "delta": 0,
+      "gxt_gzip": 0,
+      "files": 26
+    },
+    {
+      "bucket": "node_modules/router_js",
+      "classic_raw": 49943,
+      "gxt_raw": 49943,
+      "delta": 0,
+      "gxt_gzip": 0,
+      "files": 10
+    },
+    {
+      "bucket": "node_modules/dag-map",
+      "classic_raw": 4414,
+      "gxt_raw": 4414,
+      "delta": 0,
+      "gxt_gzip": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/decorator-transforms",
+      "classic_raw": 2607,
+      "gxt_raw": 2607,
+      "delta": 0,
+      "gxt_gzip": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/@simple-dom/document",
+      "classic_raw": 1112,
+      "gxt_raw": 1112,
+      "delta": 0,
+      "gxt_gzip": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/backburner.js",
+      "classic_raw": 771,
+      "gxt_raw": 771,
+      "delta": 0,
+      "gxt_gzip": 0,
+      "files": 1
+    },
+    {
+      "bucket": "node_modules/route-recognizer",
+      "classic_raw": 187,
+      "gxt_raw": 187,
+      "delta": 0,
+      "gxt_gzip": 0,
+      "files": 1
+    }
+  ]
+}

@@ -32,6 +32,16 @@ const testDependencies = [
 const RENDER_BACKEND = process.env.EMBER_RENDER_BACKEND || 'classic';
 const USE_GXT_BACKEND = RENDER_BACKEND === 'gxt';
 
+// Phase 2.5: bundle visualizer (gated by BUNDLE_VISUALIZER=1). Loaded here
+// via top-level await so legacyBundleConfig() can push it synchronously
+// into its plugins list. When the env var is unset, visualizerPlugin is a
+// no-op factory and rollup's plugin array is unchanged from the default.
+let visualizerPlugin = () => null;
+if (process.env.BUNDLE_VISUALIZER === '1') {
+  const { visualizer } = await import('rollup-plugin-visualizer');
+  visualizerPlugin = visualizer;
+}
+
 // Packages that the shims import and that rollup should treat as external
 // rather than trying to bundle. These are resolved at runtime by the host
 // (vite dev / the published gxt package). They are only applied when
