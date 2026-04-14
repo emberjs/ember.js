@@ -7136,9 +7136,37 @@ export function precompileTemplate(templateString: string, options?: {
           // referenced in the RENDERING_CONTEXT_PROPERTY block below).
           const renderContext = context;
 
-          // Copy GXT rendering context from root to our render context
+          // Copy GXT rendering context from root to our render context.
+          //
+          // Phase 4.1b: this previously relied on `gxtInitDOM(gxtRoot)` which
+          // is a two-arg function (`(ctx, domApi) => domApi`) in the installed
+          // GXT build — calling it with a single arg crashes inside the
+          // try/catch, silently leaving renderContext[RENDERING_CONTEXT_PROPERTY]
+          // unset. For a freshly-created Root that hasn't yet been installed
+          // via `renderComponent`, the dom module's internal `xt` fast-path
+          // variable is also null, so `$_tag`'s `n(ctx)` walker falls through
+          // to `ctx[RENDERING_CONTEXT_PROPERTY]` — which was undefined — and
+          // the walk returns null, crashing with "Cannot read properties of
+          // null (reading 'element')".
+          //
+          // Fix: if the root has no DOMApi yet, mint one directly with
+          // `new HTMLBrowserDOMApi(root.document)` (the same constructor the
+          // dom module uses internally) and install it on BOTH the root
+          // (so subsequent renders can reuse it) AND the render context.
           try {
-            const rootRenderingCtx = gxtRoot[RENDERING_CONTEXT_PROPERTY as any] || gxtInitDOM(gxtRoot);
+            let rootRenderingCtx =
+              gxtRoot && RENDERING_CONTEXT_PROPERTY
+                ? (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any]
+                : undefined;
+            if (!rootRenderingCtx && _GXT_HTMLBrowserDOMApi) {
+              const doc = (gxtRoot && (gxtRoot as any).document) || document;
+              rootRenderingCtx = new (_GXT_HTMLBrowserDOMApi as any)(doc);
+              if (gxtRoot && RENDERING_CONTEXT_PROPERTY) {
+                try {
+                  (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
+                } catch { /* ignore frozen root */ }
+              }
+            }
             if (rootRenderingCtx && RENDERING_CONTEXT_PROPERTY) {
               renderContext[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
             }

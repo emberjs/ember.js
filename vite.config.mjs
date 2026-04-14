@@ -83,7 +83,23 @@ export default defineConfig(({ mode }) => {
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
+    optimizeDeps: {
+      noDiscovery: true,
+      include: ['expect-type'],
+      // Phase 4.1b: exclude GXT entrypoints from dep pre-bundling so their
+      // imports of shared dom/vm chunks resolve to the SAME module instances
+      // as the aliased `@lifeart/gxt` import. Without this, Vite pre-bundles
+      // `@lifeart/gxt/runtime-compiler` and produces a SECOND copy of the
+      // dom chunk with its own `xt`/`Symbol()` state — causing
+      // `GxtRehydrationDelegate.renderServerSide` to render into a root
+      // created via a `createRoot` from one module while `$_tag` reads from
+      // another, producing "Cannot read properties of null (reading 'element')".
+      exclude: [
+        '@lifeart/gxt',
+        '@lifeart/gxt/runtime-compiler',
+        '@lifeart/gxt/glimmer-compatibility',
+      ],
+    },
     publicDir: 'tests/public',
     server: {
       hmr: {
