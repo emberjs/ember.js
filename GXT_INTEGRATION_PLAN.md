@@ -1,5 +1,31 @@
 # Ember.js dual-backend integration plan
 
+## Status — 2026-04-14
+
+All phases dispatched and completed. See `GXT_INTEGRATION_PLAN_REVIEW_SYNTHESIS.md`
+for the review synthesis that restructured the phase ordering, and
+`GXT_PHASE_SUMMARY.md` (new) for the detailed landing report.
+
+| Phase | Commit | State |
+|-------|--------|-------|
+| 0 — Baseline capture | `b1b7637725` | ✅ 5,327/5,938 (89.7%) |
+| 0.5 — Production runner | `df3ffc8d69` | ✅ smoke 333/333 |
+| 0.7 — RFC + addon matrix | `a3af70295a` | ✅ draft |
+| 0.9 — Rollup POC | `ec230044fe` | ✅ dual-build proven |
+| 1 — File move → gxt-backend | `9f86bc2276` | ✅ |
+| 1.5 — Classic buildability | `699622b451` | ✅ |
+| 2 — Adapter seam + metal | `699622b451` | ✅ (no changes; Phase 1.5 covered) |
+| 3 — Dual-build CI + UX | `10f62465ce` | ✅ |
+| 4 — GxtRehydrationDelegate | `a2d839e248` | 🟡 opt-in only (see summary) |
+| 5 — Release docs | (this commit) | ✅ |
+| Upstream DOM-provider | (glimmer-next) | ✅ |
+
+Both classic and GXT builds succeed.
+Smoke: 333/333 across the 14 session-targeted modules.
+Full baseline: 5,327/5,938 tests, categorized into 5 buckets.
+
+---
+
 Target: ship Ember.js with two interchangeable rendering backends —
 **classic Glimmer VM** (current default) and **Glimmer-Next / GXT**
 (this branch's compat work) — selectable at build time with no runtime

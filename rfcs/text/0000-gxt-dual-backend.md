@@ -91,6 +91,66 @@ default. Preview status lets the project gather real-app feedback while
 preserving Ember's stability guarantees for every app that does not
 explicitly opt in.
 
+## Current state (as of 2026-04-14)
+
+All 11 dual-backend integration tasks have landed on branch
+`glimmer-next-fresh`. The tree today reflects the following confirmed state:
+
+**Builds**
+- Both `EMBER_RENDER_BACKEND=classic` (default) and `EMBER_RENDER_BACKEND=gxt`
+  produce valid bundles via the `rollup.config.mjs` backend gate introduced in
+  Phase 0.9 (`ec230044fe`).
+- Classic output is byte-for-byte identical to pre-session output on the 14
+  smoke-targeted modules. No regressions introduced on the classic path.
+
+**Test suite**
+- Full baseline committed to `test-results/gxt-baseline.json` (Phase 0,
+  `b1b7637725`): **5,327/5,938 (89.7%)** tests passing on the GXT backend.
+- Smoke suite across the 14 session-targeted modules: **333/333 (100%)**.
+- The 611 remaining failures are triaged into five buckets (rehydration/SSR,
+  Glimmer JIT internals, Ember Inspector, engine/route edge cases,
+  miscellaneous) — see `GXT_PHASE_SUMMARY.md` Phase 0 entry.
+
+**Dual-build CI workflow**
+- `.github/workflows/gxt-dual-build.yml` runs both backend builds and the
+  smoke suite on every PR. Bundle-size budget check (`scripts/bundle-size-check.mjs`)
+  and 12 API-surface contract tests (`scripts/contract-tests.mjs`) are
+  included in the CI gate (Phase 3, `10f62465ce`).
+
+**Install UX**
+- `scripts/ember-cli-gxt.mjs` provides `ember-cli-gxt enable`,
+  `ember-cli-gxt disable`, and `ember-cli-gxt status` subcommands. This is the
+  consumer-facing interface for switching backends without editing
+  `rollup.config.mjs` directly (Phase 3, `10f62465ce`).
+
+**GxtRehydrationDelegate**
+- Implemented at
+  `packages/@ember/-internals/gxt-backend/rehydration-delegate.ts` and
+  exported from `gxt-backend` as an opt-in escape hatch (Phase 4,
+  `a2d839e248`).
+- **Not wired in as the default SSR path.** Two architectural blockers prevent
+  it from replacing the classic rehydration path: root-context isolation in
+  `gxt-backend/compile.ts` (Phase 4.1 follow-up) and lossy translation of
+  nested-engine outlet cursor IDs (Phase 4.2 follow-up). See
+  `GXT_PHASE_SUMMARY.md` Phase 4 entry for the full analysis.
+
+**Bundle-size observation**
+- Measured at Phase 3: GXT prod bundle is **3,482,502 bytes raw** vs classic's
+  **2,045,674 bytes raw** — approximately **70% larger** raw, **68% larger**
+  gzip.
+- The delta is dominated by `@lifeart/gxt`'s reactive core and bundled
+  template compiler before any tree-shaking is applied to the GXT side.
+- A Phase 2.5 bundle attribution audit (`rollup-plugin-visualizer` sweep) is
+  the recommended next step before quoting this number publicly. Until that
+  audit lands, treat the 70% premium as a worst-case upper bound.
+
+**Compat layer location**
+- Canonical location: `packages/@ember/-internals/gxt-backend/` (Phase 1,
+  `9f86bc2276`).
+- Old location `packages/demo/compat/` is preserved during the transition and
+  marked deprecated via `packages/demo/compat/DEPRECATED.md`. Only the new
+  location is referenced by the Rollup and Vite alias tables.
+
 ## Detailed design
 
 ### 1. SemVer classification
