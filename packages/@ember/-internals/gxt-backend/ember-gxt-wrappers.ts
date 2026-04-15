@@ -79,6 +79,9 @@ function findHelperManager(obj: any): any {
 // Keyed by helper name for simple per-invocation caching.
 // Cleared during test teardown via __gxtClearHelperCache.
 const classHelperInstanceCache = new Map<string, any>();
+// Expose to compile.ts so it can evict entries when an if-block tears down
+// its class-based helper instances and they need to be re-created fresh.
+(globalThis as any).__gxtClassHelperInstanceCache = classHelperInstanceCache;
 // Cache for simple (function-based) helper results to deduplicate calls within
 // the same sync cycle. Keyed by helper name, stores last args serialization + result.
 const simpleHelperResultCache = new Map<string, { argsSer: string; result: any }>();
@@ -409,6 +412,13 @@ function createEmberMaybeHelper(original: Function) {
                     if (Array.isArray(helperInstances)) {
                       helperInstances.push(destroyable);
                     }
+                    // Associate with the enclosing `{{#if}}` branch (if any)
+                    // so that destroy + willDestroy fire on branch teardown,
+                    // matching Ember's classic Helper lifecycle semantics.
+                    const ifScope2 = g.__gxtCurrentHelperScope;
+                    if (ifScope2 && typeof ifScope2.add === 'function') {
+                      try { ifScope2.add(destroyable); } catch { /* ignore */ }
+                    }
                   }
                 }
 
@@ -548,6 +558,13 @@ function createEmberMaybeHelper(original: Function) {
               const helperInstances = g.__gxtHelperInstances;
               if (Array.isArray(helperInstances)) {
                 helperInstances.push(instance);
+              }
+              // If this helper was created during an `{{#if}}` branch render,
+              // associate it with that branch's teardown scope so destroy +
+              // willDestroy fire on branch swap (not only on component teardown).
+              const ifScope = g.__gxtCurrentHelperScope;
+              if (ifScope && typeof ifScope.add === 'function') {
+                try { ifScope.add(instance); } catch { /* ignore */ }
               }
             } catch (e) {
               console.error(`[ember-gxt] Error creating class helper "${name}":`, e);

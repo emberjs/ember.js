@@ -69,7 +69,7 @@ export {
   $_hasBlock,
   $_hasBlockParams,
   $_helper,
-  $_helperHelper,
+  // $_helperHelper - overridden below
   $_if,
   $_inElement,
   // $_maybeHelper - overridden below
@@ -177,6 +177,36 @@ export { $_MANAGERS } from './manager';
 
 // Override $_maybeHelper, $_tag, and $_dc with Ember-aware wrappers
 export { $_maybeHelper, $_tag, $_dc } from './ember-gxt-wrappers';
+
+// Override $_helperHelper to route through Ember's helper manager.
+// GXT compiles `{{helper "name"}}` and `{{helper (helper "name") "extra"}}` as
+// `$_helperHelper(positional, named)` calls. Ember semantics require that the
+// FIRST positional element be the helper definition (a string name, a helper
+// function, or a previously-curried helper reference), and the rest be
+// positional arguments to feed the helper.
+//
+// Behaviour:
+//   - Called in subexpression position (e.g. inner `(helper "name")`):
+//     returns a curried helper reference (an __emberCurriedHelper function
+//     produced by manager.ts's `helper.handle`).
+//   - Called in content/attribute position: the enclosing `$_maybeHelper`
+//     already invokes the resulting curried helper to get its value, so the
+//     curried-helper return propagates correctly through the usual pipeline.
+function $_helperHelper_ember(positional: any[], named: any): any {
+  const unwrapVal = (v: any) =>
+    typeof v === 'function' && !v.prototype && v.length === 0 ? v() : v;
+  const head = Array.isArray(positional) && positional.length > 0
+    ? unwrapVal(positional[0]) : undefined;
+  const rest = Array.isArray(positional) && positional.length > 1
+    ? positional.slice(1) : [];
+  const managers = (globalThis as any).$_MANAGERS;
+  if (managers?.helper?.handle) {
+    return managers.helper.handle(head, rest, named || {});
+  }
+  // Fallback: return undefined.
+  return undefined;
+}
+export { $_helperHelper_ember as $_helperHelper };
 
 
 // Default export with overrides

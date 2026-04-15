@@ -2260,7 +2260,165 @@ function patchGlobalIf() {
     const watchTarget = conditionOrCell?.__gxtWatchTarget;
     const watchKey = conditionOrCell?.__gxtWatchKey;
 
-    const ifCondition = origIf(conditionOrCell, trueBranch, falseBranch, ctx);
+    // Capture class-based helper instances created during trueBranch/falseBranch
+    // evaluation so we can call `destroy()` on them when the branch is torn down
+    // (e.g., `{{#if this.show}}{{hello-world}}{{/if}}` with `show` toggled to
+    // false). Ember's classic Helper lifecycle requires destroy + willDestroy
+    // to fire at block-teardown time, not only on top-level render teardown.
+    const trueBranchHelpers = new Set<any>();
+    const falseBranchHelpers = new Set<any>();
+    const wrapBranch = (fn: any, scope: Set<any>) => {
+      if (typeof fn !== 'function') return fn;
+      return function wrappedBranch(this: any, ...branchArgs: any[]) {
+        const g2 = globalThis as any;
+        const prev = g2.__gxtCurrentHelperScope;
+        g2.__gxtCurrentHelperScope = scope;
+        try {
+          const result = fn.apply(this, branchArgs);
+          // If the branch returns a function (common pattern:
+          // `ctx0 => $_ucw(ctx1 => [...], ctx0)` where $_ucw may invoke the
+          // inner arrow later), wrap the inner call so that scope is active
+          // when the nested render runs.
+          if (typeof result === 'function') {
+            const inner = result;
+            const wrappedInner = function wrappedInnerBranch(this: any, ...innerArgs: any[]) {
+              const g3 = globalThis as any;
+              const prev2 = g3.__gxtCurrentHelperScope;
+              g3.__gxtCurrentHelperScope = scope;
+              try {
+                return inner.apply(this, innerArgs);
+              } finally {
+                g3.__gxtCurrentHelperScope = prev2;
+              }
+            };
+            return wrappedInner;
+          }
+          return result;
+        } finally {
+          g2.__gxtCurrentHelperScope = prev;
+        }
+      };
+    };
+    const wrappedTrue = wrapBranch(trueBranch, trueBranchHelpers);
+    const wrappedFalse = wrapBranch(falseBranch, falseBranchHelpers);
+
+    const ifCondition = origIf(conditionOrCell, wrappedTrue, wrappedFalse, ctx);
+
+    // Install branch-swap helper-destroy hook unconditionally. This fires
+    // destroy + willDestroy on any class-based helper instance created during
+    // the outgoing branch's evaluation whenever the branch toggles, so that
+    // tests like `class-based helper lifecycle` (where `{{#if this.show}}` is
+    // flipped to `false`) see the full Ember Helper lifecycle.
+    if (ifCondition && typeof ifCondition.syncState === 'function' &&
+        !(ifCondition as any).__emberHelperCleanupInstalled) {
+      (ifCondition as any).__emberHelperCleanupInstalled = true;
+      const _g = globalThis as any;
+      const emberToBool = _g.__gxtToBool || Boolean;
+      const origSS = ifCondition.syncState.bind(ifCondition);
+      let prevBool: boolean | null = null;
+      const destroyScope = (scope: Set<any>) => {
+        if (!scope || scope.size === 0) return;
+        const copy = Array.from(scope);
+        scope.clear();
+        const evictFromCache = (cache: any) => {
+          try {
+            if (cache && typeof cache.forEach === 'function') {
+              const toDelete: any[] = [];
+              cache.forEach((v: any, k: any) => {
+                // Cache values may be either a raw instance, a wrapper object
+                // from the manager path `{__managerBucket, bucket, ...}`, or a
+                // `{ instance, recomputeTag }` shape from the compile-time
+                // _tagHelperInstanceCache.
+                let instCandidate: any = v;
+                if (v && v.__managerBucket) instCandidate = v.bucket?.instance;
+                else if (v && v.instance) instCandidate = v.instance;
+                if (instCandidate && copy.indexOf(instCandidate) !== -1) {
+                  toDelete.push(k);
+                }
+              });
+              for (const k of toDelete) cache.delete(k);
+            }
+          } catch { /* ignore */ }
+        };
+        evictFromCache(_g.__gxtClassHelperInstanceCache);
+        evictFromCache(_g.__gxtTagHelperInstanceCache);
+        for (const inst of copy) {
+          try {
+            if (inst && typeof inst.destroy === 'function' &&
+                !inst.isDestroyed && !inst.isDestroying) {
+              inst.destroy();
+            }
+          } catch { /* ignore */ }
+        }
+      };
+      // Initialise prevBool from the condition's current value.
+      try {
+        const initV = typeof conditionOrCell === 'function'
+          ? conditionOrCell() : conditionOrCell;
+        prevBool = emberToBool(initV);
+      } catch { prevBool = null; }
+      // Fallback: if we couldn't populate the scope because helper creation
+      // happens inside a deferred formula (outside our wrapBranch's dynamic
+      // scope), snapshot the set of live class-helper instances BEFORE the
+      // branch is evaluated and destroy any newly-added ones on branch swap.
+      let preBranchCacheKeys: Set<string> | null = null;
+      const snapshotCacheKeys = () => {
+        try {
+          const cache = _g.__gxtClassHelperInstanceCache;
+          if (cache && typeof cache.forEach === 'function') {
+            const s = new Set<string>();
+            cache.forEach((_v: any, k: string) => s.add(k));
+            return s;
+          }
+        } catch { /* ignore */ }
+        return new Set<string>();
+      };
+      const destroyNewCacheEntriesSince = (prev: Set<string> | null) => {
+        try {
+          const cache = _g.__gxtClassHelperInstanceCache;
+          if (!cache || typeof cache.forEach !== 'function') return;
+          const toDelete: string[] = [];
+          cache.forEach((_v: any, k: string) => {
+            if (!prev || !prev.has(k)) toDelete.push(k);
+          });
+          for (const k of toDelete) {
+            const entry = cache.get(k);
+            cache.delete(k);
+            // Resolve the helper instance from the cache entry (manager-path
+            // wraps it in { bucket: { instance } }; direct path stores the
+            // instance directly).
+            const inst = entry && entry.__managerBucket
+              ? entry.bucket?.instance : entry;
+            if (inst && typeof inst.destroy === 'function' &&
+                !inst.isDestroyed && !inst.isDestroying) {
+              try { inst.destroy(); } catch { /* ignore */ }
+            }
+          }
+        } catch { /* ignore */ }
+      };
+
+      // Capture the pre-branch snapshot at install time (just before the
+      // first syncState runs).
+      preBranchCacheKeys = snapshotCacheKeys();
+
+      ifCondition.syncState = function(v: any) {
+        try {
+          const nextBool = emberToBool(v);
+          if (prevBool !== null && prevBool !== nextBool) {
+            if (prevBool === true) {
+              destroyScope(trueBranchHelpers);
+              destroyNewCacheEntriesSince(preBranchCacheKeys);
+            } else {
+              destroyScope(falseBranchHelpers);
+            }
+            // Update snapshot to the cache state BEFORE the branch re-renders
+            preBranchCacheKeys = snapshotCacheKeys();
+          }
+          prevBool = nextBool;
+        } catch { /* ignore */ }
+        return origSS(v);
+      };
+    }
 
     if (watchTarget && watchKey && ifCondition) {
       // Mark as Ember-managed so itemToNode handles it correctly
@@ -2380,8 +2538,45 @@ function patchGlobalIf() {
       if (typeof ifCondition.syncState === 'function') {
         const emberToBool = g.__gxtToBool || Boolean;
         const origSyncState = ifCondition.syncState.bind(ifCondition);
+        let prevBoolState: boolean | null = null;
+        const destroyHelpersIn = (scope: Set<any>) => {
+          if (!scope || scope.size === 0) return;
+          const copy = Array.from(scope);
+          scope.clear();
+          // Also remove from the shared classHelperInstanceCache so subsequent
+          // renders create fresh instances with their full lifecycle.
+          const g2 = globalThis as any;
+          try {
+            const cache = g2.__gxtClassHelperInstanceCache;
+            if (cache && typeof cache.forEach === 'function') {
+              const toDelete: any[] = [];
+              cache.forEach((v: any, k: any) => {
+                if (copy.indexOf(v) !== -1) toDelete.push(k);
+              });
+              for (const k of toDelete) cache.delete(k);
+            }
+          } catch { /* ignore */ }
+          for (const inst of copy) {
+            try {
+              if (inst && typeof inst.destroy === 'function' &&
+                  !inst.isDestroyed && !inst.isDestroying) {
+                inst.destroy();
+              }
+            } catch { /* ignore */ }
+          }
+        };
         ifCondition.syncState = function(v: any) {
           repairPlaceholder();
+          // On branch transition, destroy helpers captured during the *outgoing*
+          // branch's evaluation so their destroy/willDestroy hooks fire.
+          try {
+            const nextBool = emberToBool(v);
+            if (prevBoolState !== null && prevBoolState !== nextBool) {
+              if (prevBoolState === true) destroyHelpersIn(trueBranchHelpers);
+              else destroyHelpersIn(falseBranchHelpers);
+            }
+            prevBoolState = nextBool;
+          } catch { /* ignore */ }
           // Push the owner view so any components created by syncState's
           // re-render of the trueBranch (typically {{yield}} block content)
           // are registered as children of the correct view via the parentView
@@ -3085,6 +3280,9 @@ setInterval(() => {
 // Cleared during test teardown via __gxtClearTagHelperCache.
 const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: any }>();
 (globalThis as any).__gxtClearTagHelperCache = () => _tagHelperInstanceCache.clear();
+// Expose so the $_if helper-destroy hook can drop cached entries whose
+// instances it's about to destroy.
+(globalThis as any).__gxtTagHelperInstanceCache = _tagHelperInstanceCache;
 
 // Expose $_MANAGERS on globalThis so the $_tag wrapper can access it.
 // IMPORTANT: We store the GXT-original reference so that manager.ts can
@@ -3147,19 +3345,8 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     const rest = Array.isArray(positional) && positional.length > 1
       ? positional.slice(1) : [];
     const managers = _g.$_MANAGERS;
-    if ((globalThis as any).__gxtDebugHelperHelper) {
-      try {
-        (globalThis as any).__gxtHelperHelperCalls = (globalThis as any).__gxtHelperHelperCalls || [];
-        (globalThis as any).__gxtHelperHelperCalls.push({
-          head: typeof head === 'function' ? (head as any).name || 'fn' : head,
-          rest,
-          isCurried: !!(head && (head as any).__isEmberCurriedHelper),
-        });
-      } catch { /* ignore */ }
-    }
     if (managers?.helper?.handle) {
-      const r = managers.helper.handle(head, rest, named || {});
-      return r;
+      return managers.helper.handle(head, rest, named || {});
     }
     return undefined;
   };
@@ -4775,6 +4962,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                   const destroyableInstances = g.__gxtHelperInstances;
                   if (Array.isArray(destroyableInstances)) {
                     destroyableInstances.push(helperInstance);
+                  }
+                  // Associate with the enclosing `{{#if}}` branch (if any) so
+                  // destroy+willDestroy fire on branch teardown, matching the
+                  // classic Ember Helper lifecycle (see class-based helper
+                  // lifecycle test).
+                  const ifScopeTag = (globalThis as any).__gxtCurrentHelperScope;
+                  if (ifScopeTag && typeof ifScopeTag.add === 'function') {
+                    try { ifScopeTag.add(helperInstance); } catch { /* ignore */ }
                   }
                 } catch (e) {
                   if (_isAssertionLike(e)) throw e;

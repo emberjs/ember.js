@@ -4901,7 +4901,63 @@ const $_MANAGERS = {
         // Helper fallback — inline curlies like {{my-helper "foo"}} get transformed
         // to <MyHelper @__pos0__="foo" /> and compiled as $_c("my-helper", ...).
         // Resolve as helper if component wasn't found.
-        if (owner) {
+        //
+        // EXCEPT: block form `{{#some-helper}}...{{/some-helper}}` is illegal in
+        // Ember — helpers cannot accept blocks. When slots are present, fall
+        // through to the "component not found" error path instead of invoking
+        // the helper silently. Detect this by checking args.$slots /
+        // args[$SLOTS_SYMBOL] / args.default (the block body function).
+        let hasBlockSlot = false;
+        if (args && typeof args === 'object') {
+          const slotsObj = (args as any).$slots || (args as any)[$SLOTS_SYMBOL];
+          if (slotsObj && typeof slotsObj === 'object') {
+            if (typeof slotsObj.default === 'function' ||
+                typeof slotsObj.inverse === 'function' ||
+                typeof slotsObj.else === 'function') {
+              hasBlockSlot = true;
+            }
+          }
+          if (!hasBlockSlot && typeof (args as any).default === 'function') {
+            hasBlockSlot = true;
+          }
+          // $_args places the slots object on the args symbol set. Walk symbol keys.
+          if (!hasBlockSlot) {
+            try {
+              const syms = Object.getOwnPropertySymbols(args);
+              for (const sym of syms) {
+                const val = (args as any)[sym];
+                if (val && typeof val === 'object' &&
+                    (typeof val.default === 'function' ||
+                     typeof val.inverse === 'function' ||
+                     typeof val.else === 'function')) {
+                  hasBlockSlot = true;
+                  break;
+                }
+              }
+            } catch { /* ignore */ }
+          }
+        }
+        // If block slot is present AND the name resolves to a helper (not a
+        // component), this is an illegal `{{#helper-name}}...{{/helper-name}}`
+        // invocation. Throw the expected Ember error immediately.
+        if (hasBlockSlot && owner) {
+          try {
+            const helperName = pascalToKebab(resolvedKomp);
+            const hf = owner.factoryFor?.(`helper:${helperName}`);
+            const hl = !hf ? owner.lookup?.(`helper:${helperName}`) : null;
+            if (hf || hl) {
+              const notFoundErr = new Error(
+                `Attempted to resolve \`${helperName}\`, which was expected to be a component, but nothing was found.`
+              );
+              captureRenderError(notFoundErr);
+              throw notFoundErr;
+            }
+          } catch (e) {
+            if ((e as any)?.message?.includes('Attempted to resolve')) throw e;
+            // Other lookup errors: fall through to normal flow.
+          }
+        }
+        if (owner && !hasBlockSlot) {
           try {
             // Convert PascalCase to kebab-case for helper lookup
             const helperName = pascalToKebab(resolvedKomp);
@@ -5090,20 +5146,28 @@ const $_MANAGERS = {
           ? Object.fromEntries(Object.entries(hash).filter(([k]) => !isGxtInternal(k)).map(([k, v]: [string, any]) => [k, unwrapVal(v)]))
           : {};
 
-        // Create a new curried function with merged args
-        const resolvedFn = helper.__resolvedFn;
+        // Create a new curried function with merged args. The inner curried
+        // may have been created via either the delegate pathway (line ~5289,
+        // which closes over `delegate`/`bucket`/`reactiveArgs` and exposes no
+        // `__resolvedFn`) or the plain-function pathway (line ~5351, which
+        // sets `__resolvedFn`). We always delegate to the inner curried,
+        // passing the merged positionals so both pathways compute correctly.
+        const innerCurried = helper;
         const prevPositionals = helper.__curriedPositionals || [];
         const prevNamed = helper.__curriedNamed || {};
         const mergedPositionals = [...prevPositionals, ...additionalPositionals];
         const mergedNamed = { ...prevNamed, ...additionalNamed };
 
         const newCurried = function __emberCurriedHelper(extraPos?: any[], extraHash?: any) {
-          const finalPos = [...mergedPositionals, ...(Array.isArray(extraPos) ? extraPos.map(unwrapVal) : [])];
-          const finalNamed = { ...mergedNamed, ...(extraHash || {}) };
-          return resolvedFn(finalPos, finalNamed);
+          const addPos = [
+            ...additionalPositionals,
+            ...(Array.isArray(extraPos) ? extraPos.map(unwrapVal) : []),
+          ];
+          const addHash = { ...additionalNamed, ...(extraHash || {}) };
+          return innerCurried(addPos, addHash);
         };
         (newCurried as any).__isEmberCurriedHelper = true;
-        (newCurried as any).__resolvedFn = resolvedFn;
+        (newCurried as any).__resolvedFn = helper.__resolvedFn;
         (newCurried as any).__curriedPositionals = mergedPositionals;
         (newCurried as any).__curriedNamed = mergedNamed;
         return newCurried;
