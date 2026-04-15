@@ -59,6 +59,24 @@ function notifyPropertyChange(
 ): void {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
+  // GXT integration: Mark (obj, keyName) as "actively invalidating" for the
+  // entire notify lifecycle — both the `__gxtTriggerReRender` side-effect
+  // reads AND the subsequent `markObjectAsDirty → dirtyTagFor` cascade.
+  // GXT cells installed by `cellFor` for CP-backed properties re-fire
+  // their formulas synchronously during either path, which would invoke
+  // the user's getter and mimic classic behavior forbids. The narrow
+  // per-(obj, keyName) marker tells `CP.get` to short-circuit to the
+  // cached value for this exact key while the cascade is in flight, and
+  // lets unrelated CPs read normally.
+  const g: any = globalThis as any;
+  if (!g.__gxtCPInvalidationSet) g.__gxtCPInvalidationSet = new WeakMap();
+  const perObj: Set<string> = g.__gxtCPInvalidationSet.get(obj) || new Set();
+  if (!g.__gxtCPInvalidationSet.has(obj)) g.__gxtCPInvalidationSet.set(obj, perObj);
+  const wasPresent = perObj.has(keyName);
+  if (!wasPresent) perObj.add(keyName);
+
+  try {
+
   // GXT integration: Trigger synchronous re-render to keep GXT components updated.
   // Skip during initialization — reading properties at this stage can trigger
   // computed-property getters whose cache revision hasn't been set yet (e.g. PromiseProxy).
@@ -110,6 +128,18 @@ function notifyPropertyChange(
 
   } finally {
     _notifyDepth--;
+  }
+
+  } finally {
+    // Clear the narrow CP invalidation marker only if we added it here.
+    if (!wasPresent) {
+      const g2: any = globalThis as any;
+      const inv: WeakMap<object, Set<string>> | undefined = g2.__gxtCPInvalidationSet;
+      if (inv) {
+        const s = inv.get(obj);
+        if (s) s.delete(keyName);
+      }
+    }
   }
 }
 
@@ -167,6 +197,15 @@ function changeProperties(callback: () => void): void {
 if (typeof (globalThis as any).__gxtTriggerReRender === 'function' || true) {
   (globalThis as any).__gxtRecomputeDependents = function(obj: object, changedKey: string): Array<{ key: string; value: unknown }> {
     const results: Array<{ key: string; value: unknown }> = [];
+    // Inside a `beginPropertyChanges`/`endPropertyChanges` batch, classic
+    // Ember never evaluates dependent computed properties — it defers all
+    // re-evaluation until the batch closes and observers flush. Mirror that
+    // here: returning an empty results array tells compile.ts's
+    // __gxtTriggerReRender loop not to eagerly update the dependent CPs'
+    // cells. GXT's own cell invalidation still happens via `dirtyTagFor`,
+    // so the next genuine read (observer callback, `get()`, render) will
+    // lazily recompute through the CP descriptor with a fresh value.
+    if (deferred > 0) return results;
     try {
       const meta = peekMeta(obj);
       if (!meta) return results;
@@ -182,10 +221,19 @@ if (typeof (globalThis as any).__gxtTriggerReRender === 'function' || true) {
           }
         }
         if (!matches) return;
-        // Recompute using the descriptor's getter
+        // Recompute using the descriptor's cache-aware `get(obj, keyName)`
+        // method when available. Calling `_getter` directly bypasses the CP
+        // cache path, which for user-defined getters with side effects (e.g.
+        // `this.incCallCount++`) means the computed runs an extra time —
+        // once here during notifyPropertyChange, and once more when the
+        // caller later reads the property through the descriptor. Routing
+        // through `descriptor.get` updates meta.valueFor/revisionFor so the
+        // subsequent read is a cache hit with the freshly-computed value.
         try {
           let newValue: unknown;
-          if (typeof descriptor._getter === 'function') {
+          if (typeof descriptor.get === 'function' && descriptor.get.length >= 2) {
+            newValue = descriptor.get(obj, propKey);
+          } else if (typeof descriptor._getter === 'function') {
             newValue = descriptor._getter.call(obj, propKey);
           } else if (typeof descriptor.get === 'function') {
             newValue = descriptor.get(obj, propKey);

@@ -454,6 +454,7 @@ function _fireClassicReactors() {
 
 // Wrap dirtyTagFor to also bump the global revision AND mark the specific tag as dirty
 const gxtDirtyTagFor = validator.dirtyTagFor;
+
 export function dirtyTagFor(obj: any, key: any) {
   // Convert Symbol keys to safe string representation
   const safeKey = typeof key === 'symbol' ? (key.description || String(key)) : key;
@@ -581,18 +582,25 @@ const combinedTagConstituents = new WeakMap<object, any[]>();
 // Track updatable tag dependencies (for updateTag)
 const updatableTagDependencies = new WeakMap<object, any[]>();
 
-// Combine multiple tags into a single computed tag
+// Combine multiple tags into a single computed tag.
+//
+// We intentionally do NOT wrap this in a GXT `formula(...)`: that would
+// eagerly read each constituent tag's `.value` at combine-time. For cells
+// installed by `cellFor` on classic CP-backed properties, reading `.value`
+// invokes the user's getter (the cell's fn wraps the classic CP getter),
+// which is a forbidden side effect — classic Ember must be able to combine
+// dependency tags without running any CP user code. Instead we return a
+// plain marker object and rely on `currentTagRevision()` to walk the
+// registered constituents lazily when `validateTag`/`valueForTag` is asked.
 export function combine(tags: any[]) {
   if (!Array.isArray(tags) || tags.length === 0) {
     return CONSTANT_TAG;
   }
-  const combinedTag = formula(() => {
-    return tags.map((t) => (typeof t === 'object' && t !== null ? t.value : t));
-  }, 'combine');
-
-  // Store the constituent tags so we can check if any were dirtied
+  const combinedTag: any = { _isCombinedTag: true };
+  Object.defineProperty(combinedTag, 'value', {
+    get() { return currentTagRevision(combinedTag); },
+  });
   combinedTagConstituents.set(combinedTag, tags);
-
   return combinedTag;
 }
 
