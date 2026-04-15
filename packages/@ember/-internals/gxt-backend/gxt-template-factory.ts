@@ -163,8 +163,27 @@ function withGxtContext(
       el.addEventListener(event, handler);
       return () => el.removeEventListener(event, handler);
     },
-    attr(el: Element, name: string, value: string | null) {
-      el.setAttribute(name, value === null ? '' : value);
+    attr(el: Element, name: string, value: unknown) {
+      // Remove the attribute entirely for undefined/null/false values.
+      // Ember semantics: `data-bar={{this.bar}}` where `bar` becomes undefined
+      // should REMOVE the attribute, not render literal "undefined".
+      if (value === undefined || value === null || value === false) {
+        el.removeAttribute(name);
+        return;
+      }
+      if (value === true) {
+        el.setAttribute(name, '');
+        return;
+      }
+      if (typeof value === 'symbol') {
+        el.setAttribute(name, (value as symbol).toString());
+        return;
+      }
+      if (typeof value === 'object' && typeof (value as any).toString !== 'function') {
+        el.setAttribute(name, '');
+        return;
+      }
+      el.setAttribute(name, String(value));
     },
     prop(el: Record<string, unknown>, name: string, value: unknown) {
       el[name] = value;

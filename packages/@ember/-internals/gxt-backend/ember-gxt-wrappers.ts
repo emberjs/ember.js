@@ -1078,8 +1078,67 @@ function createEmberTag(original: Function) {
       }
     }
 
-    // Fall back to original $_tag for regular HTML elements (GXT order: tag, tagProps, ctx, children)
-    return original(tag, tagProps, ctx, children);
+    // Fall back to original $_tag for regular HTML elements.
+    //
+    // Before delegating, strip reactive parent fw[1] (forwarded attrs from
+    // ...attributes) out of tagProps[3] and re-apply them via an ON_CREATED
+    // modifier. GXT's native reactive attr setter unconditionally calls
+    // setAttribute(key, String(value)) on updates — so when an invocation arg
+    // becomes undefined, the DOM ends up with the literal string "undefined"
+    // instead of having the attribute removed. Applying the attrs through a
+    // modifier + effect gives us a place to special-case undefined/null/false
+    // and call removeAttribute instead.
+    let patchedTagProps = tagProps;
+    if (tagProps && tagProps !== gxtModule.$_edp && Array.isArray(tagProps[3])) {
+      const parentFw = tagProps[3];
+      const parentFwAttrs = parentFw[1];
+      if (Array.isArray(parentFwAttrs) && parentFwAttrs.length > 0) {
+        const effectFn = (gxtModule as any).effect;
+        if (effectFn) {
+          const capturedAttrs: Array<[string, any]> = [];
+          const remainingFwAttrs: any[] = [];
+          for (const entry of parentFwAttrs) {
+            const [key, val] = entry;
+            // Only intercept reactive (function-valued) data-/aria-/title/etc.
+            // attrs. Skip @-prefixed entries (named args) and static values.
+            if (key && !String(key).startsWith('@') && typeof val === 'function') {
+              capturedAttrs.push([key, val]);
+            } else {
+              remainingFwAttrs.push(entry);
+            }
+          }
+          if (capturedAttrs.length > 0) {
+            const localEvents = Array.isArray(tagProps[2]) ? [...tagProps[2]] : [];
+            const onCreated = (el: Element) => {
+              for (const [aKey, aGetter] of capturedAttrs) {
+                effectFn(() => {
+                  const v = aGetter();
+                  if (v === undefined || v === null || v === false) {
+                    el.removeAttribute(aKey);
+                  } else if (v === true) {
+                    el.setAttribute(aKey, '');
+                  } else if (typeof v === 'symbol') {
+                    el.setAttribute(aKey, (v as symbol).toString());
+                  } else if (typeof v === 'object' && typeof (v as any).toString !== 'function') {
+                    el.setAttribute(aKey, '');
+                  } else {
+                    el.setAttribute(aKey, String(v));
+                  }
+                });
+              }
+            };
+            localEvents.push(['0', onCreated]);
+            patchedTagProps = [
+              tagProps[0],
+              tagProps[1],
+              localEvents,
+              [parentFw[0], remainingFwAttrs, parentFw[2]],
+            ];
+          }
+        }
+      }
+    }
+    return original(tag, patchedTagProps, ctx, children);
   };
 }
 

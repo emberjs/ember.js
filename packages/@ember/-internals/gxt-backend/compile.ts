@@ -1396,21 +1396,11 @@ setTimeout(() => {
 // This only handles null -> "" but not undefined. In Ember, when a bound attribute
 // value becomes undefined, the attribute should be REMOVED from the element.
 // Without this patch, undefined becomes the string "undefined" on the DOM.
-(globalThis as any).__gxtDomApiClassName = _GXT_HTMLBrowserDOMApi?.name || 'MISSING';
-(globalThis as any).__gxtDomApiImportReached = true;
 if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
-  (globalThis as any).__gxtDomApiPatched = true;
   const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
   const _patchedAttr = function(element: any, name: string, value: any) {
     // Style warning is now emitted from _styleEmptyGuard in the $_tag_ember wrapper
     // (earlier in the rendering pipeline) to avoid double warnings.
-    {
-      const w: any = globalThis;
-      w.__patchedAttrCalls = (w.__patchedAttrCalls || 0) + 1;
-      if (name && name.startsWith && name.startsWith('data-')) {
-        w.__patchedAttrLast = name + ':' + typeof value + ':' + String(value).slice(0, 30);
-      }
-    }
     if (value === undefined || value === false) {
       element.removeAttribute(name);
     } else if (typeof value === 'symbol' ||
@@ -7926,7 +7916,6 @@ export function precompileTemplate(templateString: string, options?: {
             if (!rootRenderingCtx && _GXT_HTMLBrowserDOMApi) {
               const doc = (gxtRoot && (gxtRoot as any).document) || document;
               rootRenderingCtx = new (_GXT_HTMLBrowserDOMApi as any)(doc);
-              (globalThis as any).__sawFreshDomApi = ((globalThis as any).__sawFreshDomApi || 0) + 1;
               if (gxtRoot && RENDERING_CONTEXT_PROPERTY) {
                 try {
                   (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
