@@ -5,6 +5,9 @@ import { validator, caching, storage } from '@lifeart/gxt/glimmer-compatibility'
 // Using the same cell factory that _gxtEffect tracks ensures reads inside an
 // effect register a subscription that will re-fire the effect on updates.
 import { cell as _gxtNativeCell } from '@lifeart/gxt';
+// Namespace import for live binding access to scheduleRevalidate (swapped by
+// testOverrideGlobalContext during tests).
+import * as _globalContext from '@glimmer/global-context';
 
 // Create cell-like functionality using storage primitives
 const createCell = (initialValue: any, name?: string) => {
@@ -52,69 +55,36 @@ export const {
   endUntrackFrame: gxtEndUntrackFrame,
 } = validator;
 
-// ---- Custom track() implementation ----
-// GXT's native track() only sets a rendering flag and doesn't return a tag
-// representing consumed dependencies. Ember's autoComputed relies on track()
-// returning a combined tag so that updateTag/validateTag can detect when
-// dependencies change.
+// ---- Classic @glimmer/validator tracking semantics ----
 //
-// Strategy: We run the callback and capture which GXT cells were read by
-// temporarily hooking into GXT's cell tracking system. We return a tag
-// that knows about these cells and can detect when they change by
-// re-running the callback and comparing results.
-let _trackingTagStack: Set<any>[] | null = null;
+// We maintain a stack of frames. Each frame is either a track frame (which
+// collects consumed tags) or an untrack frame (which blocks propagation).
+// isTracking() returns true iff the topmost frame is a track frame.
+type TrackFrame =
+  | { kind: 'track'; tags: Set<any> }
+  | { kind: 'untrack' };
 
-// A monotonic counter for tag revisions in the track/validateTag system.
-let _trackRevision = 0;
+const _frameStack: TrackFrame[] = [];
 
 export function track(cb: () => void): any {
-  // Push a new set to collect consumed tags (from explicit consumeTag calls)
-  if (!_trackingTagStack) _trackingTagStack = [];
-  const consumed = new Set<any>();
-  _trackingTagStack.push(consumed);
-
-  // Run the callback. The tracked getters read GXT cells, establishing
-  // dependencies. We can't easily capture those cells, but we CAN detect
-  // changes by re-running the callback later and checking if any tracked
-  // values changed.
-  //
-  // We store the callback itself, plus a snapshot of tracked values via
-  // a version counter. Each time a tracked cell is dirtied (via our
-  // dirtyTagFor), we bump a global revision. We compare the revision at
-  // snapshot time vs current to detect changes.
-  const revisionBefore = globalRevisionCounter;
-
-  gxtBeginTrackFrame();
+  beginTrackFrame();
   try {
     cb();
-  } finally {
-    gxtEndTrackFrame();
-    _trackingTagStack.pop();
-    if (_trackingTagStack.length === 0) _trackingTagStack = null;
+  } catch (e) {
+    // Pop the frame before rethrowing, for consistency
+    try { endTrackFrame(); } catch { /* noop */ }
+    throw e;
   }
-
-  // Snapshot the global revision counter AFTER running the callback.
-  // Any future bump means a dependency changed.
-  const snapshotRevision = globalRevisionCounter;
-
-  // Return a tag that uses the global revision counter to detect changes.
-  // consumed tags from explicit consumeTag calls are also tracked.
-  const tag = {
-    _isTrackTag: true,
-    _snapshotRevision: snapshotRevision,
-    _consumed: consumed.size > 0 ? Array.from(consumed) : null,
-    get value() {
-      return globalRevisionCounter;
-    },
-  };
-
-  return tag;
+  return endTrackFrame();
 }
 
-// Custom isTracking that also returns true when inside our custom track()
 export function isTracking(): boolean {
-  if (_trackingTagStack && _trackingTagStack.length > 0) return true;
-  return gxtIsTracking();
+  // Inside a cache evaluation (_cacheTagTracker), tracking is implicitly on,
+  // unless the topmost explicit frame is an untrack frame.
+  if (_frameStack.length > 0) {
+    return _frameStack[_frameStack.length - 1]!.kind === 'track';
+  }
+  return _cacheTagTracker.length > 0;
 }
 
 // Wrap tagFor to handle Symbol keys properly
@@ -164,6 +134,11 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
 const _cacheEvalStack: Set<any>[] = [];
 
 export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; tag?: any } {
+  if (typeof fn !== 'function') {
+    throw new Error(
+      `Error: createCache() must be passed a function as its first parameter. Called with: ${String(fn)}`
+    );
+  }
   let _initialized = false;
   let _lastValue: T;
   // Our own revision (bumped when our value actually changes)
@@ -178,6 +153,8 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
   const cacheObj = {
     _isCacheObj: true,
     _revision: 0,
+    _hasEvaluated: false,
+    _isConstCache: false,
 
     get value(): T {
       if (!_isValid()) {
@@ -185,6 +162,9 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
         const oldValue = _lastValue;
         _lastValue = _evaluate();
         _initialized = true;
+        (cacheObj as any)._hasEvaluated = true;
+        (cacheObj as any)._isConstCache =
+          _consumedTags.length === 0 && _nestedCaches.length === 0;
         // Bump our revision if the value changed (or first eval)
         if (!wasInitialized || oldValue !== _lastValue) {
           _revision++;
@@ -195,24 +175,15 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       if (_cacheEvalStack.length > 0) {
         _cacheEvalStack[_cacheEvalStack.length - 1]!.add(cacheObj);
       }
-      // Forward consumed tags to an enclosing gxt track frame / createCache
-      // frame, so that cached reads still expose the underlying dependencies
-      // to whichever tracker is currently active. Without this, a template
-      // formula that reads the cache during initial evaluation would never
-      // re-run when the underlying tracked state changes, because our cache
-      // short-circuits with _lastValue and never re-enters consumeTag.
+      // Forward consumed tags to an enclosing track frame so cached reads
+      // still expose the underlying dependencies to whichever tracker is
+      // currently active.
       if (_initialized && _consumedTags.length > 0) {
-        const gxtTracking = gxtIsTracking();
-        const cacheTrackingActive = _cacheTagTracker.length > 0;
-        if (gxtTracking || cacheTrackingActive) {
+        if (isTracking() || _cacheTagTracker.length > 0) {
           for (let i = 0; i < _consumedTags.length; i++) {
             const tag = _consumedTags[i];
             if (tag == null) continue;
-            try {
-              // consumeTag() pushes into the top cache-tag tracker AND also
-              // forwards to gxt's validator.consumeTag() for the gxt frame.
-              consumeTag(tag);
-            } catch { /* noop */ }
+            try { consumeTag(tag); } catch { /* noop */ }
           }
         }
       }
@@ -292,6 +263,11 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
 const _cacheTagTracker: Set<any>[] = [];
 
 export function getValue<T>(cache: { value: T }): T {
+  if (!cache || typeof cache !== 'object' || (cache as any)._isCacheObj !== true) {
+    throw new Error(
+      `Error: getValue() can only be used on an instance of a cache created with createCache(). Called with: ${String(cache)}`
+    );
+  }
   return cache.value;
 }
 
@@ -299,6 +275,16 @@ export function getValue<T>(cache: { value: T }): T {
 // The GXT version creates a formula that reads obj[key], which triggers the
 // tracked getter again. Our version uses internal WeakMap storage instead.
 const trackedDataStorage = new WeakMap<object, Map<string | symbol, ReturnType<typeof createCell>>>();
+// Per-(obj,key) dirtyable tag so trackedData reads/writes participate in
+// the classic @glimmer/validator tag system.
+const trackedDataTags = new WeakMap<object, Map<string | symbol, any>>();
+function _tagForTrackedData(obj: object, key: string | symbol): any {
+  let m = trackedDataTags.get(obj);
+  if (!m) { m = new Map(); trackedDataTags.set(obj, m); }
+  let t = m.get(key);
+  if (!t) { t = createTag(); m.set(key, t); }
+  return t;
+}
 
 // Backtracking detection: track which cells have been read in the current
 // computation frame. If a cell is read and then written in the same frame,
@@ -355,6 +341,13 @@ export function trackedData<T, K extends string | symbol>(
         _backtrackingFrame.set(cellForKey, { key, obj });
       }
 
+      // Participate in classic @glimmer/validator tracking — only when a
+      // track/untrack frame is active, to avoid creating per-object tag
+      // allocations on every read during smoke-test hot paths.
+      if (_frameStack.length > 0 || _cacheTagTracker.length > 0) {
+        try { consumeTag(_tagForTrackedData(obj, key)); } catch { /* noop */ }
+      }
+
       return cellForKey.value as T;
     },
     setter(obj: object, value: T): void {
@@ -394,6 +387,18 @@ export function trackedData<T, K extends string | symbol>(
         }
         cellForKey.value = value;
       }
+      // Dirty the classic tag so track frames & caches observe the mutation.
+      const tdTag = _tagForTrackedData(obj, key);
+      if (_debugTransactionActive && _debugTxConsumedTags.has(tdTag)) {
+        const rawObj = obj as any;
+        const objName = rawObj?.constructor?.name || '<unknown>';
+        throw new Error(
+          `Error: Assertion Failed: You attempted to update \`${String(key)}\` on \`${objName}\`, but it had already been used previously in the same computation.`
+        );
+      }
+      try { dirtyTag(tdTag); } catch (e) {
+        if (e instanceof Error && /already been consumed/.test(e.message)) throw e;
+      }
     }
   };
 }
@@ -401,10 +406,13 @@ export function trackedData<T, K extends string | symbol>(
 // Global revision counter - this gets bumped whenever any tag is dirtied
 let globalRevisionCounter = 0;
 
-// CURRENT_TAG is a special tag that represents the current global revision
-// It's used by the observer system to detect if any tags have changed
-const currentTagCell = cell(globalRevisionCounter, 'CURRENT_TAG');
-export const CURRENT_TAG = currentTagCell;
+// CURRENT_TAG is a special tag that always reports the latest revision, so
+// validateTag(CURRENT_TAG, snap) becomes false after any dirtyTag.
+export const CURRENT_TAG: any = {
+  _tagType: 5 /* TYPE_CURRENT */,
+  _isCurrentTag: true,
+  get value() { return $REVISION; },
+};
 
 // Classic-tag bridge cell: a native GXT Cell (not wrapped by storage primitive)
 // that is bumped on every dirtyTagFor call. Exposed so classic components
@@ -455,22 +463,28 @@ function _fireClassicReactors() {
 // Wrap dirtyTagFor to also bump the global revision AND mark the specific tag as dirty
 const gxtDirtyTagFor = validator.dirtyTagFor;
 
+// WeakMap bookkeeping for legacy (GXT-produced) tag dirty revisions.
+// Updated by dirtyTagFor, read by currentTagRevision fallback.
+const _legacyTagRev = new WeakMap<object, number>();
+
 export function dirtyTagFor(obj: any, key: any) {
   // Convert Symbol keys to safe string representation
   const safeKey = typeof key === 'symbol' ? (key.description || String(key)) : key;
 
-  // Bump global revision first
+  // Bump global revision and $REVISION so all validators see the change
   globalRevisionCounter++;
-  currentTagCell.value = globalRevisionCounter;
+  $REVISION++;
   // Also bump the classic-tag bridge cell so GXT effects that subscribed via
   // touchClassicBridge() will be re-scheduled on any classic tag mutation.
   _bumpClassicBridge();
 
-
-  // Get the tag for this property and mark it as dirty
+  // Get the tag for this property and mark it as dirty. We store the new
+  // revision in our WeakMap so currentTagRevision can see it even when the
+  // tag is an opaque GXT cell object without our `_tagType`.
   const tag = tagFor(obj, safeKey);
   if (tag && typeof tag === 'object') {
-    markTagDirty(tag);
+    try { _legacyTagRev.set(tag, $REVISION); } catch { /* noop */ }
+    (tag as any)._rev = $REVISION;
   }
 
   // Mark GXT sync as pending so __gxtSyncDomNow processes the force-rerender.
@@ -532,177 +546,185 @@ export function dirtyTagFor(obj: any, key: any) {
 
 export function consumeTag(tag: any) {
   if (!tag) {
-    // Empty tags can be safely ignored
     return;
   }
 
-  // Collect this tag in the current track() frame if active
-  if (_trackingTagStack && _trackingTagStack.length > 0) {
-    _trackingTagStack[_trackingTagStack.length - 1]!.add(tag);
+  // Collect in the topmost track frame. Untrack frames block propagation.
+  if (_frameStack.length > 0) {
+    const top = _frameStack[_frameStack.length - 1]!;
+    if (top.kind === 'track') {
+      top.tags.add(tag);
+    }
   }
 
-  // Register in createCache tracker stack for fine-grained invalidation
+  // Register in createCache tracker stack. An enclosing untrack frame blocks
+  // cache dep collection as well.
   if (_cacheTagTracker.length > 0) {
-    _cacheTagTracker[_cacheTagTracker.length - 1]!.add(tag);
+    let blocked = false;
+    for (let i = _frameStack.length - 1; i >= 0; i--) {
+      if (_frameStack[i]!.kind === 'untrack') { blocked = true; break; }
+    }
+    if (!blocked) {
+      _cacheTagTracker[_cacheTagTracker.length - 1]!.add(tag);
+    }
   }
 
-  // Our custom updatable tags (from createUpdatableTag) are objects with a
-  // cell-backed `value` getter. Reading `.value` establishes GXT tracking so
-  // that formulas depending on this tag re-evaluate when `dirty()` is called.
+  if (_debugTransactionActive) {
+    // Respect untrack frames: a tag consumed inside untrack is NOT recorded
+    // against the debug tracking transaction, so subsequent dirty is legal.
+    let blocked = false;
+    for (let i = _frameStack.length - 1; i >= 0; i--) {
+      if (_frameStack[i]!.kind === 'untrack') { blocked = true; break; }
+      if (_frameStack[i]!.kind === 'track') break;
+    }
+    if (!blocked) _debugTxConsumedTags.add(tag);
+  }
+
   if (typeof tag === 'object' && 'value' in tag && 'dirty' in tag) {
-    // Read the cell value to track it in any enclosing GXT formula
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    tag.value;
+    try { (tag as any).value; } catch { /* noop */ }
     return;
   }
-  return validator.consumeTag(tag);
+  try { validator.consumeTag(tag); } catch { /* noop */ }
 }
 
-// A constant tag that never changes
-export const CONSTANT_TAG = 11;
+// ---- Classic tag semantics ----
+const TYPE_DIRTYABLE = 0;
+const TYPE_UPDATABLE = 1;
+const TYPE_COMBINATOR = 2;
+const TYPE_CONSTANT = 3;
+const TYPE_VOLATILE = 4;
+const TYPE_CURRENT = 5;
 
-// A volatile tag that always needs recomputation
-export const VOLATILE_TAG = formula(() => Date.now() + Math.random(), 'VOLATILE_TAG');
+const INITIAL_REV = 1;
+let $REVISION = INITIAL_REV;
 
-// Revision counter for tag invalidation
-let $REVISION = 1;
-
-// Bump the global revision counter
-export function bump() {
-  $REVISION++;
-  return $REVISION;
+export function bump(): number {
+  return ++$REVISION;
 }
 
 // Allow cycles in tag dependencies - WeakMap to track which tags allow cycles
 export const ALLOW_CYCLES = new WeakMap<object, boolean>();
 
-// Track combined tags and their constituents
-const combinedTagConstituents = new WeakMap<object, any[]>();
+// Debug transaction state for runInTrackingTransaction
+let _debugTransactionActive = false;
+let _debugTxConsumedTags: Set<any> = new Set();
 
-// Track updatable tag dependencies (for updateTag)
-const updatableTagDependencies = new WeakMap<object, any[]>();
+// A constant tag that never changes
+export const CONSTANT_TAG: any = Object.freeze({
+  _tagType: TYPE_CONSTANT,
+  _isConstTag: true,
+  value: INITIAL_REV,
+});
 
-// Combine multiple tags into a single computed tag.
-//
-// We intentionally do NOT wrap this in a GXT `formula(...)`: that would
-// eagerly read each constituent tag's `.value` at combine-time. For cells
-// installed by `cellFor` on classic CP-backed properties, reading `.value`
-// invokes the user's getter (the cell's fn wraps the classic CP getter),
-// which is a forbidden side effect — classic Ember must be able to combine
-// dependency tags without running any CP user code. Instead we return a
-// plain marker object and rely on `currentTagRevision()` to walk the
-// registered constituents lazily when `validateTag`/`valueForTag` is asked.
-export function combine(tags: any[]) {
+// A volatile tag that always needs recomputation
+export const VOLATILE_TAG: any = Object.freeze({
+  _tagType: TYPE_VOLATILE,
+  _isVolatile: true,
+});
+
+// Combine multiple tags into a combinator tag.
+export function combine(tags: any[]): any {
   if (!Array.isArray(tags) || tags.length === 0) {
     return CONSTANT_TAG;
   }
-  const combinedTag: any = { _isCombinedTag: true };
+  const filtered: any[] = [];
+  for (const t of tags) {
+    if (t === CONSTANT_TAG || t == null) continue;
+    filtered.push(t);
+  }
+  if (filtered.length === 0) return CONSTANT_TAG;
+  if (filtered.length === 1) return filtered[0];
+  const combinedTag: any = {
+    _tagType: TYPE_COMBINATOR,
+    _isCombinedTag: true,
+    _subtags: filtered,
+  };
   Object.defineProperty(combinedTag, 'value', {
     get() { return currentTagRevision(combinedTag); },
   });
-  combinedTagConstituents.set(combinedTag, tags);
   return combinedTag;
 }
 
-// Track tag revisions for proper validation.
-// We use globalRevisionCounter as the single source of truth for all revisions.
-// This ensures track tags, dirty tags, and snapshot revisions are all comparable.
-const tagLastSnapshotRevision = new WeakMap<object, number>();
+// Walk the tag graph and return the current max revision.
+// Cycles: if encountered, each cycle tag must be marked in ALLOW_CYCLES;
+// otherwise throws.
+function currentTagRevision(tag: any, visited?: Set<any>): number {
+  if (tag == null) return 0;
+  if (typeof tag === 'number') return tag;
+  if (typeof tag !== 'object') return 0;
 
-// Track dirty revisions - when a tag was last dirtied (in globalRevisionCounter space)
-const tagDirtyRevision = new WeakMap<object, number>();
-
-// Get the revision for a tag (for storing as lastRevision).
-// Uses globalRevisionCounter so all revisions are in the same space.
-function getTagSnapshotRevision(tag: any): number {
-  if (!tagLastSnapshotRevision.has(tag)) {
-    // Don't bump the counter here - just use the current value.
-    // Bumping would cause false invalidations for track tags.
-    tagLastSnapshotRevision.set(tag, globalRevisionCounter);
+  if (visited && visited.has(tag)) {
+    if (ALLOW_CYCLES.has(tag)) return 0;
+    throw new Error('Error: cycle detected in tag dependency graph');
   }
-  return tagLastSnapshotRevision.get(tag)!;
-}
-
-// Mark a tag as dirtied at the current revision (uses globalRevisionCounter)
-function markTagDirty(tag: any): void {
-  // globalRevisionCounter was already bumped by dirtyTagFor before calling us
-  const rev = globalRevisionCounter;
-  tagDirtyRevision.set(tag, rev);
-  tagLastSnapshotRevision.set(tag, rev);
-}
-
-// Compute the current "revision" for a tag by taking the max of its own
-// dirty revision and all its dependencies' revisions. This mirrors how
-// Glimmer VM's tag.value works: it returns the max revision across the
-// entire dependency tree, so any mutation anywhere increases the value.
-function currentTagRevision(tag: any, visited = new Set<any>()): number {
-  if (!tag || typeof tag !== 'object') return 0;
-  if (visited.has(tag)) return 0;
+  if (!visited) visited = new Set();
   visited.add(tag);
 
-  // Track tags: their "revision" is the globalRevisionCounter at the time
-  // they were snapshot. After any mutation (which bumps globalRevisionCounter),
-  // the current revision becomes the new globalRevisionCounter.
-  if (tag._isTrackTag) {
-    return globalRevisionCounter;
-  }
+  try {
+    const type = tag._tagType;
 
-  let max = tagDirtyRevision.get(tag) || 0;
+    if (type === TYPE_CONSTANT) return INITIAL_REV;
+    if (type === TYPE_VOLATILE) return ++$REVISION; // always newer
+    if (type === TYPE_CURRENT) return $REVISION;
 
-  // Check combined tag constituents
-  const constituents = combinedTagConstituents.get(tag);
-  if (constituents) {
-    for (const c of constituents) {
-      const r = currentTagRevision(c, visited);
-      if (r > max) max = r;
+    if (type === TYPE_COMBINATOR) {
+      let max = INITIAL_REV;
+      const subs = tag._subtags as any[];
+      for (const s of subs) {
+        const r = currentTagRevision(s, visited);
+        if (r > max) max = r;
+      }
+      return max;
     }
-  }
 
-  // Check updateTag dependencies (e.g., autoComputed links propertyTag → trackTag)
-  const deps = updatableTagDependencies.get(tag);
-  if (deps) {
-    for (const d of deps) {
-      const r = currentTagRevision(d, visited);
-      if (r > max) max = r;
+    if (type === TYPE_UPDATABLE) {
+      let max = tag._rev || INITIAL_REV;
+      const sub = tag._subtag;
+      if (sub != null) {
+        const curSubRev = currentTagRevision(sub, visited);
+        if (curSubRev > tag._lastValue && curSubRev > max) {
+          max = curSubRev;
+        }
+      }
+      return max;
     }
-  }
 
-  // For updatable tags (createUpdatableTag), reading .value gives the cell value
-  // which acts as a revision (bumped by .dirty())
-  if ('dirty' in tag && 'value' in tag) {
-    const v = tag.value;
-    if (typeof v === 'number' && v > max) max = v;
-  }
+    if (type === TYPE_DIRTYABLE) {
+      return tag._rev || INITIAL_REV;
+    }
 
-  return max;
+    // Legacy fallback for GXT-produced tags (from gxtTagFor or meta). Read
+    // their dirty revision from our WeakMap populated by dirtyTagFor and
+    // walk any registered dep (from updateTag) so CP chain tags invalidate
+    // eagerly without the buffering semantics.
+    let legacyMax = 0;
+    try {
+      const rev = _legacyTagRev.get(tag);
+      if (typeof rev === 'number') legacyMax = rev;
+    } catch { /* noop */ }
+    try {
+      const dep = _legacyTagDeps.get(tag);
+      if (dep != null) {
+        const r = currentTagRevision(dep, visited);
+        if (r > legacyMax) legacyMax = r;
+      }
+    } catch { /* noop */ }
+    return legacyMax;
+  } finally {
+    visited.delete(tag);
+  }
 }
 
 export function validateTag(tag: any, revision?: number): boolean {
-  if (!tag) {
-    return true; // Null tags are always valid
-  }
-
-  // If no revision provided, always consider valid
-  if (revision === undefined) {
-    return true;
-  }
-
-  // Special handling for CURRENT_TAG - compare its value directly to revision
-  if (tag === CURRENT_TAG) {
-    return tag.value <= revision;
-  }
-
-  // The tag is valid if its current revision hasn't changed since the snapshot.
-  // currentTagRevision walks the dependency tree (including track tags and
-  // combined tags) and returns the max dirty revision.
+  if (!tag) return true;
+  if (revision === undefined) return true;
   return currentTagRevision(tag) <= revision;
 }
 
 // Update the revision snapshot for a tag (called after observer fires)
-export function updateTagRevision(tag: any): number {
-  // Use the current globalRevisionCounter - don't bump it since no actual mutation happened
-  tagLastSnapshotRevision.set(tag, globalRevisionCounter);
-  return globalRevisionCounter;
+export function updateTagRevision(_tag: any): number {
+  return $REVISION;
 }
 
 // Reset tracking state (used in testing)
@@ -717,120 +739,157 @@ export const COMPUTE = 13;
 export const INITIAL = 31;
 
 // Get the current revision value for a tag
-// This returns the revision number that can be used with validateTag later.
-// For consistency with validateTag, this walks the dependency tree to get
-// the max revision. The stored value can later be compared with a fresh
-// currentTagRevision() call to detect changes.
 export function valueForTag(tag: any): number {
   if (!tag) return 0;
   if (typeof tag === 'number') return tag;
-
-  // Special handling for CURRENT_TAG
-  if (tag === CURRENT_TAG) {
-    return tag.value;
-  }
-
-  // Use currentTagRevision to get the max revision across all dependencies.
-  // This ensures the snapshot stored by meta.setRevisionFor() is in the same
-  // space as what validateTag checks.
-  if (typeof tag === 'object') {
-    return currentTagRevision(tag);
-  }
-
+  if (typeof tag === 'object') return currentTagRevision(tag);
   return 0;
 }
 
-// Create an updatable tag
-let _updatableTagRevision = 0;
-export function createUpdatableTag() {
-  const value = cell(0, 'updatableTag');
+// Create a basic dirtyable tag. Can be dirtied but NOT updated.
+export function createTag(): any {
   return {
-    get value() {
-      return value.value;
-    },
-    dirty() {
-      value.value = ++_updatableTagRevision;
-    },
+    _tagType: TYPE_DIRTYABLE,
+    _rev: $REVISION,
   };
 }
 
-// Update a tag to depend on another tag (or array of tags)
-// This is used by computed properties to link the property tag to its dependency tags
-export function updateTag(outer: any, inner: any) {
-  if (!outer || !inner) return;
+// Create an updatable tag. Can be dirtied AND updated with a subtag.
+export function createUpdatableTag(): any {
+  const tag: any = {
+    _tagType: TYPE_UPDATABLE,
+    _rev: $REVISION,
+    _subtag: null,
+    _lastValue: INITIAL_REV,
+  };
+  Object.defineProperty(tag, 'value', {
+    get() { return currentTagRevision(tag); },
+  });
+  tag.dirty = function () { dirtyTag(tag); };
+  return tag;
+}
 
-  // If the outer tag has an update method, call it
-  if (typeof outer.update === 'function') {
-    outer.update(inner);
+// Update an updatable tag to depend on a subtag with buffering.
+// Note: we do NOT call currentTagRevision here because it throws on cycles;
+// the test explicitly expects cycle detection to happen at validateTag time.
+export function updateTag(outer: any, inner: any): void {
+  if (!outer || typeof outer !== 'object') {
+    throw new Error('Error: Attempted to update a tag that was not updatable');
   }
-
-  // Store the dependency relationship for validation
-  // inner can be a single tag or an array of tags (from combine())
-  const deps: any[] = [];
-  if (Array.isArray(inner)) {
-    deps.push(...inner);
-  } else if (typeof inner === 'object' && inner !== null) {
-    deps.push(inner);
-    // Also check if inner is a combined tag and get its constituents
-    const constituents = combinedTagConstituents.get(inner);
-    if (constituents) {
-      deps.push(...constituents);
+  // Classic @glimmer/validator strictness: only TYPE_UPDATABLE tags can be
+  // updated. Tags without `_tagType` are tolerated for backwards compat with
+  // legacy GXT-produced tags — they participate via _legacyTagDeps below.
+  const type = outer._tagType;
+  if (typeof type === 'number' && type !== TYPE_UPDATABLE) {
+    throw new Error('Error: Attempted to update a tag that was not updatable');
+  }
+  if (type === TYPE_UPDATABLE) {
+    // Our updatable tag shape: use buffered _subtag/_lastValue semantics
+    // required by the classic validator tests.
+    outer._subtag = inner;
+    let lastValue = INITIAL_REV;
+    if (inner && typeof inner === 'object') {
+      if (typeof inner._rev === 'number') {
+        lastValue = inner._rev;
+      } else if ('value' in inner && typeof (inner as any).value === 'number') {
+        lastValue = (inner as any).value;
+      }
     }
-  } else if (typeof inner === 'number') {
-    // inner is a number constant (e.g., CONSTANT_TAG = 11), no deps to track
+    outer._lastValue = lastValue;
+    return;
   }
-
-  if (deps.length > 0) {
-    updatableTagDependencies.set(outer, deps);
-  }
+  // Legacy path (GXT-produced tag): register eager deps so CP invalidation
+  // propagates immediately on any subtag dirty.
+  _legacyTagDeps.set(outer, inner);
 }
 
-// Use gxt's untrack implementation for proper integration
+// Map of legacy (GXT-produced) tag → its updateTag() inner tag. Read by
+// currentTagRevision's legacy fallback so CPs can invalidate eagerly.
+const _legacyTagDeps = new WeakMap<object, any>();
+
+// untrack: push a classic untrack frame AND delegate to gxt's native untrack
+// so GXT's own tracker is also suppressed (preserving baseline behavior that
+// the old impl relied on).
 export function untrack<T>(cb: () => T): T {
-  return gxtUntrack(cb);
+  _frameStack.push({ kind: 'untrack' });
+  try {
+    return gxtUntrack(cb);
+  } finally {
+    _frameStack.pop();
+  }
 }
 
-// Check if a tag represents a constant value
-export function isConst(tag: any): boolean {
-  return tag === CONSTANT_TAG || (tag && tag.isConst === true);
+// isConst: true if the tag/cache represents a constant value.
+export function isConst(tagOrCache: any): boolean {
+  if (tagOrCache === CONSTANT_TAG) return true;
+  if (!tagOrCache) return false;
+  if (tagOrCache._isCacheObj === true) {
+    if (tagOrCache._hasEvaluated !== true) {
+      throw new Error(
+        'Error: isConst() can only be used on a cache once getValue() has been called at least once'
+      );
+    }
+    return tagOrCache._isConstCache === true;
+  }
+  if (typeof tagOrCache === 'object' && typeof tagOrCache._tagType === 'number') {
+    return tagOrCache._tagType === TYPE_CONSTANT;
+  }
+  throw new Error(
+    `Error: isConst() can only be used on an instance of a cache created with createCache(). Called with: ${String(tagOrCache)}`
+  );
 }
 
-// Frame-based tracking - delegate to gxt
+// Frame-based tracking (manual API used by templates & tests)
 export function beginUntrackFrame() {
-  gxtBeginUntrackFrame();
+  _frameStack.push({ kind: 'untrack' });
 }
 
 export function endUntrackFrame() {
-  gxtEndUntrackFrame();
+  const f = _frameStack.pop();
+  if (!f || f.kind !== 'untrack') {
+    throw new Error('attempted to close an untrack frame, but one was not open');
+  }
 }
 
 export function beginTrackFrame() {
-  gxtBeginTrackFrame();
+  _frameStack.push({ kind: 'track', tags: new Set() });
 }
 
-export function endTrackFrame() {
-  gxtEndTrackFrame();
+export function endTrackFrame(): any {
+  const f = _frameStack.pop();
+  if (!f || f.kind !== 'track') {
+    throw new Error('attempted to close a tracking frame, but one was not open');
+  }
+  return combine(Array.from(f.tags));
 }
 
-// Create a basic tag
-export function createTag() {
-  return createUpdatableTag();
-}
-
-// Mark a tag as dirty and flush DOM updates synchronously.
-// This is needed because helper.recompute() calls dirtyTag() via join(),
-// and tests expect the DOM to be updated synchronously after recompute().
-export function dirtyTag(tag: any) {
-  if (tag && typeof tag.dirty === 'function') {
-    tag.dirty();
-    // Bump global revision so track tags also detect this change
-    globalRevisionCounter++;
-    _bumpClassicBridge();
-    // Flush GXT DOM sync so the updated value is visible immediately
-    const syncNow = (globalThis as any).__gxtSyncDomNow;
-    if (typeof syncNow === 'function') {
-      syncNow();
+// Mark a tag as dirty. Asserts the tag is dirtyable, bumps $REVISION,
+// calls the global scheduleRevalidate, bumps the classic bridge.
+export function dirtyTag(tag: any): void {
+  if (!tag || typeof tag !== 'object') {
+    throw new Error('Error: Attempted to dirty a tag that was not dirtyable');
+  }
+  const type = tag._tagType;
+  if (type !== TYPE_DIRTYABLE && type !== TYPE_UPDATABLE) {
+    throw new Error('Error: Attempted to dirty a tag that was not dirtyable');
+  }
+  if (_debugTransactionActive && _debugTxConsumedTags.has(tag)) {
+    throw new Error(
+      'Error: Assertion Failed: You attempted to update `undefined`, but it had already been consumed in this tracking transaction'
+    );
+  }
+  $REVISION++;
+  tag._rev = $REVISION;
+  globalRevisionCounter++;
+  _bumpClassicBridge();
+  try {
+    if (typeof _globalContext.scheduleRevalidate === 'function') {
+      _globalContext.scheduleRevalidate();
     }
+  } catch { /* noop */ }
+  const syncNow = (globalThis as any).__gxtSyncDomNow;
+  if (typeof syncNow === 'function') {
+    syncNow();
   }
 }
 
@@ -841,13 +900,23 @@ export function debug(tag: any, label?: string) {
   }
 }
 
-// Debug namespace for Glimmer VM compatibility
-// runInTrackingTransaction wraps a function to catch tracking-related errors
-export function runInTrackingTransaction<T>(fn: () => T, debuggingContext?: string): T {
-  // In non-debug mode, just run the function directly
-  // The tracking transaction is meant to catch autotracking assertions
-  // For GXT compatibility, we just execute directly
-  return fn();
+// runInTrackingTransaction: runs fn in a debug transaction where dirtying a
+// tag previously consumed in the same transaction throws.
+export function runInTrackingTransaction<T>(fn: () => T, _debuggingContext?: string): T {
+  const wasActive = _debugTransactionActive;
+  const prevConsumed = _debugTxConsumedTags;
+  if (!wasActive) {
+    _debugTransactionActive = true;
+    _debugTxConsumedTags = new Set();
+  }
+  try {
+    return fn();
+  } finally {
+    if (!wasActive) {
+      _debugTransactionActive = false;
+      _debugTxConsumedTags = prevConsumed;
+    }
+  }
 }
 
 // Export as namespace-like object for imports like: import * as debug from '@glimmer/validator'
