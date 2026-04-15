@@ -16,6 +16,20 @@ const createCell = (initialValue: any, name?: string) => {
 };
 const cell = createCell;
 
+// trackedObjectCell: a native GXT cell (not a storage-wrapped cell). Used by
+// trackedObject so property reads/writes register with GXT's effect tracker
+// the same way @lifeart/gxt's own cell() does. The storage-wrapped cell above
+// goes through an older compatibility shim that does not always plug into
+// GXT's effect tracking, which broke trackedObject reactivity through the
+// renderComponent args-proxy path.
+const createTrackedObjectCell = (initialValue: any, name?: string) => {
+  const c = _gxtNativeCell(initialValue, name || 'trackedObject');
+  return {
+    get value() { return c.value; },
+    set value(v: any) { c.update(v); },
+  };
+};
+
 // Create formula using cache
 const formula = <T>(fn: () => T, name?: string) => {
   const cache = caching.createCache(fn);
@@ -891,14 +905,14 @@ export function trackedObject<T extends object>(obj?: T): T {
     obj = {} as T;
   }
   const values = new Map<string | symbol, any>();
-  const tags = new Map<string | symbol, ReturnType<typeof cell>>();
+  const tags = new Map<string | symbol, ReturnType<typeof createTrackedObjectCell>>();
 
   return new Proxy(obj, {
     get(target, prop, receiver) {
       // Consume the tag for this property
       let tag = tags.get(prop);
       if (!tag) {
-        tag = cell(target[prop as keyof T], `trackedObject.${String(prop)}`);
+        tag = createTrackedObjectCell(target[prop as keyof T], `trackedObject.${String(prop)}`);
         tags.set(prop, tag);
         values.set(prop, target[prop as keyof T]);
       }
@@ -907,13 +921,21 @@ export function trackedObject<T extends object>(obj?: T): T {
     set(target, prop, value, receiver) {
       let tag = tags.get(prop);
       if (!tag) {
-        tag = cell(value, `trackedObject.${String(prop)}`);
+        tag = createTrackedObjectCell(value, `trackedObject.${String(prop)}`);
         tags.set(prop, tag);
       } else {
         tag.value = value;
       }
       values.set(prop, value);
       target[prop as keyof T] = value;
+      // Route the mutation through the full dirtyTagFor pipeline so GXT's
+      // effect scheduler, the classic-tag bridge, and registered classic
+      // reactors all see the change. The storage-backed cell above does not
+      // reliably register with every enclosing GXT effect, so dirtyTagFor is
+      // the authoritative re-render signal for trackedObject mutations.
+      try {
+        dirtyTagFor(target as any, prop);
+      } catch { /* noop */ }
       return true;
     },
   });

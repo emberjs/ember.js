@@ -101,7 +101,19 @@ import {
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { unwrapTemplate, GXT_TEMPLATE_HANDLE, isGxtTemplate } from './component-managers/unwrap-template';
+import * as _glimmerValidator from '@glimmer/validator';
 import { CURRENT_TAG, validateTag, valueForTag, type Tag } from '@glimmer/validator';
+// touchClassicBridge / registerClassicReactor exist only in the GXT-aliased
+// validator; fall back to no-ops in classic builds so these imports never
+// break the classic bundle.
+const touchClassicBridge: () => void =
+  (typeof (_glimmerValidator as any).touchClassicBridge === 'function'
+    ? (_glimmerValidator as any).touchClassicBridge
+    : () => {});
+const registerClassicReactor: (cb: () => void) => () => void =
+  (typeof (_glimmerValidator as any).registerClassicReactor === 'function'
+    ? (_glimmerValidator as any).registerClassicReactor
+    : (_: () => void) => () => {});
 import { tagForObject } from '@ember/-internals/metal';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -1438,10 +1450,15 @@ function _renderComponentGxt(
   ensureGxtContext();
 
   let destroyed = false;
+  let classicReactorUnsub: (() => void) | null = null;
 
   const doDestroy = () => {
     if (destroyed) return;
     destroyed = true;
+    if (classicReactorUnsub) {
+      try { classicReactorUnsub(); } catch { /* ignore */ }
+      classicReactorUnsub = null;
+    }
     if (targetElement instanceof Element) {
       targetElement.innerHTML = '';
     }
@@ -1472,16 +1489,21 @@ function _renderComponentGxt(
       // No template found — try using the manager system directly
       const managers = (globalThis as any).$_MANAGERS;
       if (managers?.component?.canHandle?.(component)) {
-        // Build args with reactive getters so GXT tracks dependencies
+        // Build args with reactive getters so GXT tracks dependencies.
         const gxtArgs: any = {};
         if (args) {
           for (const key of Object.keys(args)) {
             const desc = Object.getOwnPropertyDescriptor(args, key);
-            if (desc?.get) {
-              Object.defineProperty(gxtArgs, key, desc);
+            const innerGet = desc?.get;
+            if (innerGet) {
+              Object.defineProperty(gxtArgs, key, {
+                get: function () { touchClassicBridge(); return innerGet.call(this); },
+                enumerable: true,
+                configurable: true,
+              });
             } else {
               Object.defineProperty(gxtArgs, key, {
-                get: () => (args as any)[key],
+                get: () => { touchClassicBridge(); return (args as any)[key]; },
                 enumerable: true,
                 configurable: true,
               });
@@ -1585,15 +1607,16 @@ function _renderComponentGxt(
         // (e.g., tracking steps in tests) and should only be called lazily.
         for (const key of Object.keys(args)) {
           const desc = Object.getOwnPropertyDescriptor(args, key);
-          if (desc?.get) {
+          const innerGet = desc?.get;
+          if (innerGet) {
             Object.defineProperty(instance.args, key, {
-              get: desc.get,
+              get: function () { touchClassicBridge(); return innerGet.call(this); },
               enumerable: true,
               configurable: true,
             });
           } else {
             Object.defineProperty(instance.args, key, {
-              get: () => (args as any)[key],
+              get: () => { touchClassicBridge(); return (args as any)[key]; },
               enumerable: true,
               configurable: true,
             });
@@ -1609,17 +1632,22 @@ function _renderComponentGxt(
       if (!instance) {
         for (const key of Object.keys(args)) {
           Object.defineProperty(renderContext, key, {
-            get: () => (args as any)[key],
+            get: () => { touchClassicBridge(); return (args as any)[key]; },
             enumerable: true,
             configurable: true,
           });
         }
       }
-      // Set up args object with reactive getters
+      // Set up args object with reactive getters. Reads touch the
+      // classic-validator bridge so any enclosing GXT effect (e.g. the
+      // text-node formula for `{{@foo}}`) that reads through this proxy
+      // subscribes to the classic-tag bridge cell and re-fires on any
+      // classic @glimmer/validator tag mutation. This is the same pattern
+      // used by renderLinkToElement in gxt-backend/manager.ts.
       const argsObj: any = {};
       for (const key of Object.keys(args)) {
         Object.defineProperty(argsObj, key, {
-          get: () => (args as any)[key],
+          get: () => { touchClassicBridge(); return (args as any)[key]; },
           enumerable: true,
           configurable: true,
         });
@@ -1654,14 +1682,89 @@ function _renderComponentGxt(
     if (wasRendering) {
       (globalThis as any).__gxtSkipTextEffects = true;
     }
+    // Wrap the template render so we can re-invoke it from a classic-tag
+    // reactor. This is the same pattern used by renderLinkToElement in
+    // gxt-backend/manager.ts: classic @glimmer/validator tag mutations do
+    // not reliably re-fire the GXT effects created inside template.render,
+    // so we register a side-channel reactor that forces a fresh render
+    // whenever any classic tag is dirtied. The reactor is unsubscribed on
+    // destroy to avoid leaks across test runs.
+    let _rendering = false;
+    const _doRender = () => {
+      if (destroyed || _rendering) return;
+      if (!(targetElement instanceof Element) || !targetElement.isConnected && classicReactorUnsub) {
+        // Target detached — leave DOM alone until reattached. We still keep
+        // the reactor so the first reattachment triggers a fresh render.
+      }
+      _rendering = true;
+      const prevOwnerLocal = (globalThis as any).owner;
+      (globalThis as any).owner = owner;
+      const prevSkip = (globalThis as any).__gxtSkipTextEffects;
+      const wasRenderingLocal = typeof _isRendering === 'function' ? _isRendering() : false;
+      if (typeof _setRendering === 'function') _setRendering(true);
+      if (wasRenderingLocal) (globalThis as any).__gxtSkipTextEffects = true;
+      try {
+        if (targetElement instanceof Element) {
+          targetElement.innerHTML = '';
+        }
+        template.render(renderContext, targetElement);
+      } finally {
+        (globalThis as any).__gxtSkipTextEffects = prevSkip;
+        if (typeof _setRendering === 'function' && !wasRenderingLocal) {
+          _setRendering(false);
+        }
+        (globalThis as any).owner = prevOwnerLocal;
+        _rendering = false;
+      }
+    };
+
     try {
-      // Render the template into the target
+      // Render the template into the target (initial render)
+      if (wasRendering) {
+        (globalThis as any).__gxtSkipTextEffects = true;
+      }
       template.render(renderContext, targetElement);
     } finally {
       (globalThis as any).__gxtSkipTextEffects = prevSkipTextEffects;
       if (typeof _setRendering === 'function' && !wasRendering) {
         _setRendering(false);
       }
+    }
+
+    // Register a classic-tag reactor that re-renders the component whenever
+    // any classic @glimmer/validator tag is dirtied (e.g. classic
+    // trackedObject mutations, @tracked field writes). This bridges the
+    // classic tag-dirty pipeline into GXT's render system for the
+    // renderComponent path, mirroring the pattern used by
+    // renderLinkToElement in gxt-backend/manager.ts. Top-level
+    // renderComponent calls (wasRendering=false) own their own render
+    // lifecycle; nested calls rely on the parent render effect so we
+    // skip reactor registration for them.
+    if (args && Object.keys(args).length > 0) {
+      // Auto-unsubscribe once the target element is permanently disconnected
+      // (mirrors the _registerReactor pattern in renderLinkToElement). This
+      // prevents stale renderComponent instances from re-rendering after
+      // their host element has been removed from the DOM (e.g. across test
+      // runs in the View tree suite).
+      let _disconnectedTicks = 0;
+      classicReactorUnsub = registerClassicReactor(() => {
+        if (destroyed) return;
+        if (targetElement instanceof Element && !targetElement.isConnected) {
+          _disconnectedTicks++;
+          if (_disconnectedTicks > 2) {
+            try { classicReactorUnsub && classicReactorUnsub(); } catch { /* ignore */ }
+            classicReactorUnsub = null;
+          }
+          return;
+        }
+        _disconnectedTicks = 0;
+        try { _doRender(); } catch { /* ignore individual reactor errors */ }
+        // After re-render, flush GXT DOM so the new text content is visible
+        try {
+          const syncNow = (globalThis as any).__gxtSyncDomNow;
+          if (typeof syncNow === 'function') syncNow();
+        } catch { /* ignore */ }
+      });
     }
 
     // Flush queued didInsertElement / didRender hooks
