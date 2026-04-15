@@ -1396,15 +1396,19 @@ setTimeout(() => {
 // This only handles null -> "" but not undefined. In Ember, when a bound attribute
 // value becomes undefined, the attribute should be REMOVED from the element.
 // Without this patch, undefined becomes the string "undefined" on the DOM.
+(globalThis as any).__gxtDomApiClassName = _GXT_HTMLBrowserDOMApi?.name || 'MISSING';
+(globalThis as any).__gxtDomApiImportReached = true;
 if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
+  (globalThis as any).__gxtDomApiPatched = true;
   const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
-  _GXT_HTMLBrowserDOMApi.prototype.attr = function(element: any, name: string, value: any) {
-    // When setting style attribute with a dynamic non-safe value, warn (once per render pass)
-    if (name === 'style' && value !== null && value !== undefined) {
-      const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
-      if (!isHTMLSafe && _shouldWarnStyle(element, String(value))) {
-        const warnFn = getDebugFunction('warn');
-        if (warnFn) warnFn(_constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
+  const _patchedAttr = function(element: any, name: string, value: any) {
+    // Style warning is now emitted from _styleEmptyGuard in the $_tag_ember wrapper
+    // (earlier in the rendering pipeline) to avoid double warnings.
+    {
+      const w: any = globalThis;
+      w.__patchedAttrCalls = (w.__patchedAttrCalls || 0) + 1;
+      if (name && name.startsWith && name.startsWith('data-')) {
+        w.__patchedAttrLast = name + ':' + typeof value + ':' + String(value).slice(0, 30);
       }
     }
     if (value === undefined || value === false) {
@@ -1422,34 +1426,13 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
       origAttr.call(this, element, name, value);
     }
   };
+  (_patchedAttr as any).__patched = true;
+  _GXT_HTMLBrowserDOMApi.prototype.attr = _patchedAttr;
 
-  // Patch prop() to warn when setting style with a non-safe dynamic value.
-  // GXT uses prop(element, 'style', value) which sets element.style.cssText.
-  // For quoted attrs like style="{{expr}}", GXT concatenates the expression result
-  // into a string before calling prop(). A SafeString.toString() is called during
-  // this concatenation, so we track it with a counter to avoid false warnings.
+  // Patch prop() — style warning is now emitted from _styleEmptyGuard in the
+  // $_tag_ember wrapper (earlier in the pipeline) to avoid double warnings.
   const origProp = _GXT_HTMLBrowserDOMApi.prototype.prop;
   _GXT_HTMLBrowserDOMApi.prototype.prop = function(element: any, name: string, value: any) {
-    if (name === 'style' && value !== null && value !== undefined && value !== '') {
-      const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
-      // Check if the value is a string that came from a SafeString conversion.
-      // When style="{{expr}}" with SafeString, GXT calls toString() then sets the result.
-      // If the prop value exactly matches the last SafeString.toString() result,
-      // treat it as safe (no warning). If static text was mixed in (e.g., style="text {{expr}}"),
-      // the final value will differ from the SafeString output, so we still warn.
-      let isSafeFromConcat = false;
-      if (typeof value === 'string') {
-        const lastSafe = (globalThis as any).__gxtLastSafeStringResult;
-        if (lastSafe !== undefined && value === lastSafe) {
-          isSafeFromConcat = true;
-        }
-      }
-      (globalThis as any).__gxtLastSafeStringResult = undefined;
-      if (!isHTMLSafe && !isSafeFromConcat && _shouldWarnStyle(element, String(value))) {
-        const warnFn = getDebugFunction('warn');
-        if (warnFn) warnFn(_constructStyleDeprecationMessage(String(value)), false, { id: 'ember-htmlbars.style-xss-warning' });
-      }
-    }
     return origProp.call(this, element, name, value);
   };
 }
@@ -5849,16 +5832,53 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // Wrap the style getter: convert SafeString to HTML string, and when
     // the value is null/undefined/false, use a sentinel that the post-render
     // step can detect and clean up.
+    // Also emit the style-binding XSS warning when the value is a non-safe string.
     if (hasReactiveStyle && styleEntryRef) {
       const origGetter = styleEntryRef[1];
+      // Track whether we've warned for this style binding in this render pass
+      // to avoid duplicate warnings from reactive re-evaluations.
+      let _styleWarnedPassId = -1;
       styleEntryRef[1] = function _styleEmptyGuard() {
         const val = origGetter();
-        // Convert SafeString to plain string
+        // SafeString object: convert to plain HTML string, no warning needed
         if (val && typeof val === 'object' && typeof val.toHTML === 'function') {
           const html = val.toHTML();
           return html || null;
         }
         if (val == null || val === false || val === '') return null;
+        // Non-safe dynamic value — potentially warn for style binding XSS.
+        // Do not warn during force-rerender (the initial render already warned).
+        if (!((globalThis as any).__gxtIsForceRerender)) {
+          const currentPassId = (globalThis as any).__emberRenderPassId || 0;
+          if (_styleWarnedPassId !== currentPassId) {
+            // Check if the string value came from a SafeString.toString() conversion.
+            // For quoted attrs like style="{{safeExpr}}", __gxtNormAttr calls
+            // String(safeString) → toString() → sets __gxtLastSafeStringResult.
+            // If the final concatenated value matches the last SafeString result exactly,
+            // the entire value came from a single SafeString — no warning needed.
+            // If the value differs (e.g., static text was mixed in), warn.
+            let isSafeFromConcat = false;
+            if (typeof val === 'string') {
+              const lastSafe = (globalThis as any).__gxtLastSafeStringResult;
+              if (lastSafe !== undefined && val === lastSafe) {
+                isSafeFromConcat = true;
+              }
+            }
+            // Clear the last-safe-string tracker regardless
+            (globalThis as any).__gxtLastSafeStringResult = undefined;
+            if (!isSafeFromConcat) {
+              _styleWarnedPassId = currentPassId;
+              const warnFn = getDebugFunction('warn');
+              if (warnFn) {
+                warnFn(
+                  _constructStyleDeprecationMessage(String(val)),
+                  false,
+                  { id: 'ember-htmlbars.style-xss-warning' }
+                );
+              }
+            }
+          }
+        }
         return val;
       };
     }
@@ -7906,6 +7926,7 @@ export function precompileTemplate(templateString: string, options?: {
             if (!rootRenderingCtx && _GXT_HTMLBrowserDOMApi) {
               const doc = (gxtRoot && (gxtRoot as any).document) || document;
               rootRenderingCtx = new (_GXT_HTMLBrowserDOMApi as any)(doc);
+              (globalThis as any).__sawFreshDomApi = ((globalThis as any).__sawFreshDomApi || 0) + 1;
               if (gxtRoot && RENDERING_CONTEXT_PROPERTY) {
                 try {
                   (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
