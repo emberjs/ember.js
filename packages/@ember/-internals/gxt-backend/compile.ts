@@ -4489,14 +4489,24 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
 
       const getHtml = () => {
-        const raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
-        const actual = typeof raw === 'function' ? raw() : raw;
-        if (actual == null) return '';
-        return actual?.toHTML?.() ?? String(actual);
+        let raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
+        // Unwrap cell-like wrappers and nested getter functions
+        while (typeof raw === 'function') {
+          raw = raw();
+        }
+        if (raw && typeof raw === 'object' && typeof (raw as any).value !== 'undefined' && (raw as any).__isCell) {
+          raw = (raw as any).value;
+        }
+        if (raw === null || raw === undefined) return '';
+        return (raw as any)?.toHTML?.() ?? String(raw);
       };
 
-      // Create start/end anchors and initial content
-      const startAnchor = document.createComment('htmlRaw');
+      // Create start/end anchors and initial content.
+      // Start anchor uses an empty comment so test helpers treat it as a
+      // marker (see internal-test-helpers isMarker). A non-empty text like
+      // 'htmlRaw' would make `firstChild` non-null even when content is
+      // empty, breaking assertIsEmpty() for trusted null/undefined values.
+      const startAnchor = document.createComment('');
       const endAnchor = document.createComment('/htmlRaw');
       const fragment = document.createDocumentFragment();
       let contentNodes: Node[] = [];

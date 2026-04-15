@@ -864,9 +864,17 @@ function createEmberTag(original: Function) {
         const htmlGetter = () => {
           // Call the getter each time so that cell reads are tracked
           // by any enclosing gxtEffect.
-          const raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
-          const actual = typeof raw === 'function' ? raw() : raw;
-          if (actual == null) return '';
+          let actual: any = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
+          // Unwrap nested getter functions and cell-like wrappers so that
+          // null/undefined reach the explicit check below instead of being
+          // Object-coerced into '{}'.
+          while (typeof actual === 'function') {
+            actual = actual();
+          }
+          if (actual && typeof actual === 'object' && typeof actual.value !== 'undefined' && actual.__isCell) {
+            actual = actual.value;
+          }
+          if (actual === null || actual === undefined) return '';
           return actual?.toHTML?.() ?? String(actual);
         };
         (htmlGetter as any).__htmlRaw = true;
