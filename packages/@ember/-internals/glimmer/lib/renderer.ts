@@ -1740,24 +1740,17 @@ function _renderComponentGxt(
     // renderComponent calls (wasRendering=false) own their own render
     // lifecycle; nested calls rely on the parent render effect so we
     // skip reactor registration for them.
-    if (args && Object.keys(args).length > 0) {
-      // Auto-unsubscribe once the target element is permanently disconnected
-      // (mirrors the _registerReactor pattern in renderLinkToElement). This
-      // prevents stale renderComponent instances from re-rendering after
-      // their host element has been removed from the DOM (e.g. across test
-      // runs in the View tree suite).
-      let _disconnectedTicks = 0;
+    //
+    // The reactor is per-call: each renderComponent registers its own
+    // callback that closes over its own (renderContext, targetElement,
+    // destroyed flag). Cleanup is via doDestroy, chained through the owner
+    // destructor so owner.destroy() unhooks all reactors. We deliberately
+    // do NOT auto-unsubscribe based on element.isConnected, because some
+    // legitimate use cases render into a deliberately-detached element
+    // (see "can render in to a detached element" test).
+    {
       classicReactorUnsub = registerClassicReactor(() => {
         if (destroyed) return;
-        if (targetElement instanceof Element && !targetElement.isConnected) {
-          _disconnectedTicks++;
-          if (_disconnectedTicks > 2) {
-            try { classicReactorUnsub && classicReactorUnsub(); } catch { /* ignore */ }
-            classicReactorUnsub = null;
-          }
-          return;
-        }
-        _disconnectedTicks = 0;
         try { _doRender(); } catch { /* ignore individual reactor errors */ }
         // After re-render, flush GXT DOM so the new text content is visible
         try {
