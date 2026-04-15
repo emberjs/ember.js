@@ -3703,7 +3703,82 @@ if (g.$_c && !g.$_c.__emberWrapped) {
             if (key === 'args' || key.startsWith('$')) continue;
             const desc = Object.getOwnPropertyDescriptor(args, key);
             if (desc) {
-              Object.defineProperty(namedArgs, key, desc);
+              // Unwrap curried ember helpers in content-arg position.
+              // When {{helper foo "..."}} lands in @value, the underlying
+              // value/getter may be a GXT getter that yields a curried
+              // helper, or the curried helper function directly. Wrap in
+              // a getter that resolves all nested levels at read time so
+              // reactive reads see the resolved value instead of the
+              // function source (which would otherwise be stringified
+              // straight into the DOM).
+              const unwrapCurriedHelper = (v: any): any => {
+                let out = v;
+                let guard = 8;
+                while (typeof out === 'function' && (out as any).__isEmberCurriedHelper && guard-- > 0) {
+                  try { out = (out as any)(); } catch { break; }
+                }
+                return out;
+              };
+              if (desc.get) {
+                const origGet = desc.get;
+                Object.defineProperty(namedArgs, key, {
+                  get() {
+                    let v = origGet.call(args);
+                    // Unwrap nested getters that yield a curried helper.
+                    // Stop at non-functions, curried components, and
+                    // fn helpers/mut cells (those must reach the manager
+                    // untouched).
+                    while (typeof v === 'function'
+                      && !(v as any).__isEmberCurriedHelper
+                      && !(v as any).__isCurriedComponent
+                      && !(v as any).__isFnHelper
+                      && !(v as any).__isMutCell
+                      && !(v as any).prototype) {
+                      try { v = (v as any)(); } catch { break; }
+                    }
+                    return unwrapCurriedHelper(v);
+                  },
+                  enumerable: desc.enumerable,
+                  configurable: desc.configurable,
+                });
+              } else if ('value' in desc) {
+                let v = desc.value;
+                // For plain-value descriptors that hold a getter function
+                // returning a curried helper, wrap as a lazy getter too.
+                if (typeof v === 'function'
+                  && !(v as any).__isEmberCurriedHelper
+                  && !(v as any).__isCurriedComponent
+                  && !(v as any).__isFnHelper
+                  && !(v as any).__isMutCell
+                  && !(v as any).prototype) {
+                  const vGet = v;
+                  Object.defineProperty(namedArgs, key, {
+                    get() {
+                      let r: any = vGet;
+                      while (typeof r === 'function'
+                        && !(r as any).__isEmberCurriedHelper
+                        && !(r as any).__isCurriedComponent
+                        && !(r as any).__isFnHelper
+                        && !(r as any).__isMutCell
+                        && !(r as any).prototype) {
+                        try { r = (r as any)(); } catch { break; }
+                      }
+                      return unwrapCurriedHelper(r);
+                    },
+                    enumerable: desc.enumerable,
+                    configurable: desc.configurable,
+                  });
+                } else {
+                  Object.defineProperty(namedArgs, key, {
+                    value: unwrapCurriedHelper(v),
+                    writable: desc.writable,
+                    enumerable: desc.enumerable,
+                    configurable: desc.configurable,
+                  });
+                }
+              } else {
+                Object.defineProperty(namedArgs, key, desc);
+              }
             }
           }
           const argsObj = args['args'];
@@ -3738,12 +3813,40 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         const $SLOTS = Symbol.for('gxt-slots');
         const fw = args?.[$PROPS] || null;
         const namedArgs: any = {};
+        const unwrapCurriedHelper2 = (v: any): any => {
+          let out = v;
+          let guard = 8;
+          while (typeof out === 'function' && (out as any).__isEmberCurriedHelper && guard-- > 0) {
+            try { out = (out as any)(); } catch { break; }
+          }
+          return out;
+        };
         if (args) {
           for (const key of Object.keys(args)) {
             if (key === 'args' || key.startsWith('$')) continue;
             const desc = Object.getOwnPropertyDescriptor(args, key);
             if (desc) {
-              Object.defineProperty(namedArgs, key, desc);
+              if (desc.get) {
+                const origGet = desc.get;
+                Object.defineProperty(namedArgs, key, {
+                  get() {
+                    let v = origGet.call(args);
+                    while (typeof v === 'function'
+                      && !(v as any).__isEmberCurriedHelper
+                      && !(v as any).__isCurriedComponent
+                      && !(v as any).__isFnHelper
+                      && !(v as any).__isMutCell
+                      && !(v as any).prototype) {
+                      try { v = (v as any)(); } catch { break; }
+                    }
+                    return unwrapCurriedHelper2(v);
+                  },
+                  enumerable: desc.enumerable,
+                  configurable: desc.configurable,
+                });
+              } else {
+                Object.defineProperty(namedArgs, key, desc);
+              }
             }
           }
           const argsObj = args['args'];
@@ -6456,9 +6559,21 @@ export function precompileTemplate(templateString: string, options?: {
         const result = item();
         // If result is a function, it's a nested getter (e.g., from $__if)
         // BUT: do NOT call CurriedComponent functions — they need the reactive rendering path below
-        const finalResult = (typeof result === 'function' && !result.__isCurriedComponent)
+        let finalResult = (typeof result === 'function' && !result.__isCurriedComponent)
           ? result()
           : result;
+
+        // Curried dynamic helper in content position: {{@value}} where
+        // @value = {{helper foo "..."}}. The curried helper is a function
+        // marked with __isEmberCurriedHelper; invoke it (with no extra
+        // args) to get the resolved text/value and recurse.
+        while (typeof finalResult === 'function' && (finalResult as any).__isEmberCurriedHelper) {
+          try {
+            finalResult = (finalResult as any)();
+          } catch {
+            break;
+          }
+        }
 
         if (finalResult instanceof Node) {
           return finalResult;
