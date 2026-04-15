@@ -101,7 +101,12 @@ function isGxtModeActive(): boolean {
 // Empty comment (`<!---->`) is emitted by GXT as a cheap placeholder
 // for list/branch boundaries; classic Glimmer-VM tests never assert on
 // it, so strip it too.
-const MARKER_COMMENT_RE = /^(%[-+][^%]*%|%[a-z]+%|\$\[[^\]]*\]|)$/u;
+//
+// GXT also wraps `{{{triple-curly}}}` / `htmlRaw` output in a pair of
+// `<!--htmlRaw-->` / `<!--/htmlRaw-->` boundary comments so it can
+// later replace the raw HTML span reactively. Classic Glimmer-VM tests
+// assert on the inner HTML only, so strip these boundary comments.
+const MARKER_COMMENT_RE = /^(%[-+][^%]*%|%[a-z]+%|\$\[[^\]]*\]|\/?htmlRaw|)$/u;
 
 function stripMarkers(tokens: Token[]): Token[] {
   return tokens
