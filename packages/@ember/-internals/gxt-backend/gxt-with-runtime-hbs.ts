@@ -180,7 +180,7 @@ export { $_maybeHelper, $_tag, $_dc } from './ember-gxt-wrappers';
 
 
 // Default export with overrides
-// @ts-ignore - direct path import
+// @ts-ignore - direct path import (avoid circular alias: @lifeart/gxt → this file)
 import * as gxtModule from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 // Store the GXT module reference on globalThis so that manager.ts can access
 // the original $_MANAGERS object (which GXT's internal functions close over).

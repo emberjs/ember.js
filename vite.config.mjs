@@ -111,6 +111,14 @@ export default defineConfig(({ mode }) => {
     envPrefix: 'VM_',
     resolve: useGxt
       ? {
+          // Force all importers to resolve to the same @lifeart/gxt module instance.
+          // Prevents split-instance bugs (distinct cellsMap/currentTracker) that
+          // arise when any importer sneaks in a direct dist-path import.
+          dedupe: [
+            '@lifeart/gxt',
+            '@lifeart/gxt/glimmer-compatibility',
+            '@lifeart/gxt/runtime-compiler',
+          ],
           alias: [
             {
               find: 'ember-template-compiler',
