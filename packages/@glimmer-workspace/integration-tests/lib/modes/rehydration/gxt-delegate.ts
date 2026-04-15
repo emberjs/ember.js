@@ -106,6 +106,64 @@ function buildRenderContext(context: Dict): Record<string, unknown> {
   return ctx;
 }
 
+/**
+ * Minimal RenderResult for GXT. The classic RenderResult exposes
+ * `.rerender()`, `.destroy()`, `.shouldSkip()`, and an `environment`
+ * whose `.commit()` method is called by some tests. GXT commits
+ * inline via its own reactivity scheduler, so `.environment.commit()`
+ * is a no-op. `.rerender()` forces a `__gxtSyncDomNow` flush when
+ * that global hook is installed. `.destroy()` clears the target's
+ * content.
+ */
+export class GxtRenderResult {
+  constructor(
+    private _template: unknown,
+    private _context: unknown,
+    private _target: HTMLElement | null
+  ) {}
+
+  get environment(): { commit(): void } {
+    return {
+      commit() {
+        /* GXT commits inline */
+      },
+    };
+  }
+
+  rerender(_args?: Dict): void {
+    const g = globalThis as unknown as { __gxtSyncDomNow?: () => void };
+    if (typeof g.__gxtSyncDomNow === 'function') {
+      try {
+        g.__gxtSyncDomNow();
+      } catch (e) {
+        // A sync flush that throws shouldn't wedge the test harness;
+        // surface via console so the root cause is debuggable.
+        // eslint-disable-next-line no-console
+        console.warn('[GxtRenderResult] __gxtSyncDomNow threw:', e);
+      }
+    }
+  }
+
+  destroy(): void {
+    if (this._target) {
+      try {
+        this._target.innerHTML = '';
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('[GxtRenderResult] destroy threw:', e);
+      }
+    }
+  }
+
+  shouldSkip(): boolean {
+    return false;
+  }
+
+  drop(): void {
+    /* no-op */
+  }
+}
+
 export class GxtRehydrationDelegate implements RenderDelegate {
   static readonly isEager = false;
   static readonly style = 'rehydration';
@@ -241,26 +299,17 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // a follow-up.
     void template;
     void context;
-    void element;
 
     this.rehydrationStats = { clearedNodes: [] };
 
-    // Return a shaped RenderResult — the base test class inspects a
-    // few properties but tolerates a sparse implementation.
-    const stub = {
-      rerender() {
-        /* no-op; updates propagate via GXT reactivity */
-      },
-      drop() {
-        /* no-op */
-      },
-      destroy() {
-        /* no-op */
-      },
-      environment: null as unknown as Environment,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
-    return stub as RenderResult;
+    // Return a real-ish RenderResult that won't crash tests which
+    // call `.rerender()`, `.destroy()`, or reach into
+    // `result.environment.commit()`.
+    return new GxtRenderResult(
+      template,
+      context,
+      element as unknown as HTMLElement
+    ) as unknown as RenderResult;
   }
 
   renderTemplate(
@@ -326,3 +375,68 @@ export class GxtRehydrationDelegate implements RenderDelegate {
 // from this module — the classic `./delegate` already exports one
 // under the same name and the integration-tests package barrels them
 // via `export *`, which would otherwise conflict.
+
+/**
+ * GXT analogue of `PartialRehydrationDelegate`. The classic partial
+ * delegate adds `renderComponentClientSide` / `renderComponentServerSide`
+ * / `registerTemplateOnlyComponent` on top of the base rehydration
+ * delegate. Under GXT, component registration goes through the
+ * runtime-compile path (not `TestJitRegistry`), so for partial tests
+ * we stub the component-level render by rendering a top-level template
+ * that invokes the named component with the given args.
+ *
+ * This is a best-effort stub: partial-tree rehydration alignment
+ * (counter-based cursor walks) is a follow-up. For now, the goal is
+ * to let partial-rehydration modules *register and run* without
+ * crashing at delegate construction or at method-lookup time.
+ */
+export class GxtPartialRehydrationDelegate extends GxtRehydrationDelegate {
+  static override readonly isEager = false;
+  static override readonly style = 'rehydration';
+
+  registerTemplateOnlyComponent(name: string, layout: string): void {
+    this.registerComponent('TemplateOnly', 'TemplateOnly', name, layout);
+  }
+
+  renderComponentServerSide(name: string, args: Dict): string {
+    // Synthesize a top-level template that invokes the component.
+    // Note: real classic behavior uses `renderComponent` against the
+    // server registry. GXT's runtime compiler takes a template source
+    // string, so we build an equivalent invocation.
+    const template = this.buildComponentInvocation(name, args);
+    const element = this.serverDoc.createElement('div');
+    this.compileAndRenderPublic(template, args, element);
+    return this.serialize(element);
+  }
+
+  renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderResult {
+    const template = this.buildComponentInvocation(name, args);
+    this.compileAndRenderPublic(template, args, element);
+    this.rehydrationStats = { clearedNodes: [] };
+    return new GxtRenderResult(
+      template,
+      args,
+      element as unknown as HTMLElement
+    ) as unknown as RenderResult;
+  }
+
+  private buildComponentInvocation(name: string, args: Dict): string {
+    // Build `<Name @key={{this.key}} ... />` — the test body passes
+    // args via the render context, so we forward them as `@key` bindings.
+    const attrs = Object.keys(args ?? {})
+      .map((k) => `@${k}={{this.${k}}}`)
+      .join(' ');
+    return attrs.length > 0 ? `<${name} ${attrs} />` : `<${name} />`;
+  }
+
+  // Expose the private compileAndRender via a thin wrapper so the
+  // partial delegate can reuse the parent's render path without
+  // touching its private surface.
+  private compileAndRenderPublic(template: string, context: Dict, target: SimpleElement): void {
+    // Delegate to the same code path renderServerSide uses. We call
+    // renderServerSide with a no-op snapshot to reuse its error
+    // handling, but we want the result rendered into the given
+    // element rather than a fresh one.
+    this.renderServerSide(template, context, () => undefined, target);
+  }
+}
