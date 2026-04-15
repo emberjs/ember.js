@@ -6128,6 +6128,71 @@ export function precompileTemplate(templateString: string, options?: {
           if (JS_RESERVED_WORDS.has(jsKey)) {
             jsKey = `__scope_${jsKey}`;
           }
+          // Block-param shadow fix for scoped helpers like `hash`, `get`,
+          // `fn` that the template also shadows via `{{#let ... as |hash|}}`.
+          // GXT emits `(() => { let hash = () => $_maybeHelper(hash, ...); })()`
+          // which is self-referential (inner `hash` captures the let binding,
+          // not the outer scope binding). Transform the IIFE to receive the
+          // outer binding as a parameter:
+          //   (() => { let hash = () => $_maybeHelper(hash, ...); })()
+          //   → ((_$outer_hash) => { let hash = () => $_maybeHelper(_$outer_hash, ...); })(hash)
+          // This preserves outer `hash` references AND allows the shadow's
+          // RHS to reach the scope binding via the captured alias.
+          const escapedKey = key.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const iifeOpenPattern = /\(\(\)\s*=>\s*\{/g;
+          const shadowMatches: Array<{ start: number; bodyStart: number; bodyEnd: number; end: number }> = [];
+          let mm: RegExpExecArray | null;
+          while ((mm = iifeOpenPattern.exec(modifiedCode)) !== null) {
+            const iifeStart = mm.index;
+            const bodyStart = iifeOpenPattern.lastIndex;
+            let depth = 1;
+            let i = bodyStart;
+            while (i < modifiedCode.length && depth > 0) {
+              const ch = modifiedCode[i];
+              if (ch === '{') depth++;
+              else if (ch === '}') depth--;
+              else if (ch === '"' || ch === "'" || ch === '`') {
+                const quote = ch;
+                i++;
+                while (i < modifiedCode.length && modifiedCode[i] !== quote) {
+                  if (modifiedCode[i] === '\\') i++;
+                  i++;
+                }
+              }
+              i++;
+            }
+            if (depth !== 0) break;
+            const bodyEnd = i - 1;
+            if (modifiedCode.slice(bodyEnd + 1, bodyEnd + 4) !== ')()') continue;
+            const bodyText = modifiedCode.slice(bodyStart, bodyEnd);
+            const shadowRe = new RegExp(`\\blet\\s+${escapedKey}\\s*=`);
+            if (!shadowRe.test(bodyText)) continue;
+            shadowMatches.push({ start: iifeStart, bodyStart, bodyEnd, end: bodyEnd + 4 });
+            iifeOpenPattern.lastIndex = bodyEnd + 4;
+          }
+          if (shadowMatches.length > 0) {
+            const capturedAlias = `_$outer_${jsKey}`;
+            for (let si = shadowMatches.length - 1; si >= 0; si--) {
+              const { start, bodyStart, bodyEnd, end } = shadowMatches[si]!;
+              const body = modifiedCode.slice(bodyStart, bodyEnd);
+              let newBody = body.replace(
+                new RegExp(
+                  `(let\\s+${escapedKey}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*)\\$_maybeHelper\\(${escapedKey}\\s*,`,
+                  'g'
+                ),
+                (_m: string, p1: string) => `${p1}$_maybeHelper(${capturedAlias},`
+              );
+              newBody = newBody.replace(
+                new RegExp(
+                  `(let\\s+${escapedKey}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*)(\\$__?[a-zA-Z_]+)\\(${escapedKey}\\s*,`,
+                  'g'
+                ),
+                (_m: string, p1: string, p2: string) => `${p1}${p2}(${capturedAlias},`
+              );
+              const replacement = `((${capturedAlias}) => {${newBody}})(${jsKey})`;
+              modifiedCode = modifiedCode.slice(0, start) + replacement + modifiedCode.slice(end);
+            }
+          }
           scopeAliases.set(key, jsKey);
           scopeInjections.push(`const ${jsKey} = globalThis["${scopeStoreKey}"]["${key}"];`);
         }
@@ -6756,10 +6821,20 @@ export function precompileTemplate(templateString: string, options?: {
         }
         let _currentContentNode: Node = textNode;
         let _isNodeContent = finalResult instanceof Node;
+        let _effectCallCount = 0;
+        const _effectId = Math.random().toString(36).slice(2, 6);
         try {
           gxtEffect(() => {
+            _effectCallCount++;
             const v = item();
             const fv = typeof v === 'function' ? v() : v;
+            if (typeof fv === 'string' && (fv === 'hello' || fv === 'goodbye')) {
+              const parent = (textNode as Text).parentElement;
+              console.log('[DBG-MSG]', 'id=', _effectId, 'call#', _effectCallCount, 'fv=', fv,
+                'connected?', (textNode as Text).isConnected,
+                'parent=', parent?.tagName + '#' + parent?.id,
+                'innerHTML=', parent?.innerHTML?.slice(0, 100));
+            }
 
             if (fv instanceof Node) {
               // Transition to or update DOM Node content
