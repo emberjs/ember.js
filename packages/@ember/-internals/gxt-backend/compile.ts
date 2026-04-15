@@ -2499,6 +2499,18 @@ function _wrapGxtRebuildViewTree() {
         for (const id of staleIds) _wrapperIfUserFalse.delete(id);
       }
     } catch { /* ignore */ }
+    // Drain the in-element deferred-render queue now. By the time the
+    // manager's flushAfterInsertQueue has processed all didInsertElement
+    // hooks and called __gxtRebuildViewTreeFromDom, the parent fragment
+    // for the outermost render pass has been committed to the live
+    // document — so document.getElementById() can finally resolve any
+    // in-element targets whose host div was rendered in the same pass.
+    // This covers the renderComponent strict-mode path that does NOT
+    // go through globalThis.__gxtFlushAfterInsertQueue.
+    try {
+      const drain = (globalThis as any).__gxtInElementDrainDeferred;
+      if (typeof drain === 'function') drain();
+    } catch { /* ignore */ }
     return result;
   };
   (wrapped as any).__emberIfRebuildPatched = true;
@@ -2958,6 +2970,12 @@ setInterval(() => {
   if ((globalThis as any).__dcChangeListeners) {
     (globalThis as any).__dcChangeListeners.clear();
   }
+  // Reset the string-path listener counter in lockstep with clearing the Set.
+  // Without this, orphaned listener count leaks across tests and makes
+  // __gxtSyncDomNow incorrectly clear __gxtHadPendingSync in Phase 1, which
+  // then causes __gxtForceEmberRerender to skip the morph for tests that
+  // need it (e.g., classic Component.extend properties changed via set()).
+  (globalThis as any).__dcStringListenerCount = 0;
   // Clear component contexts to prevent stale render contexts accumulating
   if ((globalThis as any).__gxtComponentContexts) {
     (globalThis as any).__gxtComponentContexts = new WeakMap();
