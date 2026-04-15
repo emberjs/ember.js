@@ -242,6 +242,21 @@ function createEmberMaybeHelper(original: Function) {
       const named = unwrapHash(hash);
       const hasNamed = named && Object.keys(named).length > 0;
 
+      // If any positional arg is a non-primitive object, skip the result
+      // cache entirely — JSON.stringify-based comparison is unreliable:
+      //   - Map/Set serialize to `{}` (reference replacement missed)
+      //   - In-place mutation (setProp on a POJO passed by reference) is missed
+      //   - Objects with cycles throw
+      // For these cases we always re-invoke. The helper is called inside a
+      // reactive formula that already dedupes by tag-tracking; re-invoking
+      // per formula evaluation is safe and correct.
+      const hasObjectArg = positional.some(
+        (a: any) => a !== null && typeof a === 'object'
+      );
+      if (hasObjectArg) {
+        return hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional);
+      }
+
       let cached = managedHelperBucketCache.get(nameOrFn);
       let argsSer: string | null = null;
       try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
