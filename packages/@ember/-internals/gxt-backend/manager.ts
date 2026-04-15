@@ -54,7 +54,8 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gxtTouchClassicBridge, registerClassicReactor as _gxtRegisterClassicReactor } from '@glimmer/validator';
-import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '@lifeart/gxt';
+// @ts-ignore - direct path to share the same module instance as compile.ts
+import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 import { destroy as _destroyDestroyable } from './destroyable';
 
 // Expose destroy helpers so compile.ts can flush pending modifier destroys
@@ -1992,6 +1993,14 @@ export function clearRenderErrors(): void {
  * Called from the renderer after the GXT template.render() call has
  * synchronously appended all DOM into the live document.
  */
+// Expose flushAfterInsertQueue on globalThis so ember-gxt-wrappers.ts (the
+// $_dc_ember string path) can flush after reactive swaps insert new DOM
+// nodes — otherwise __gxtEverInserted never gets set for swapped-in instances,
+// which causes the willDestroy gate to skip the user override on swap-out.
+(globalThis as any).__gxtFlushAfterInsertQueue = function() {
+  flushAfterInsertQueue();
+};
+
 export function flushAfterInsertQueue(): void {
   while (_afterInsertQueue.length > 0) {
     const cb = _afterInsertQueue.shift()!;

@@ -1622,6 +1622,14 @@ function createEmberDc(original: Function) {
               parent.insertBefore(n, insertBefore);
             }
           }
+          // Flush the afterInsert queue so the newly-rendered instance's
+          // __gxtEverInserted flag gets set. Without this, the subsequent
+          // swap-out would skip the user willDestroy override due to the
+          // __gxtEverInserted gate in patchedComponentClass.willDestroy.
+          try {
+            const flushFn = (g as any).__gxtFlushAfterInsertQueue;
+            if (typeof flushFn === 'function') flushFn();
+          } catch { /* ignore */ }
         }
         // If newVal is null/undefined, currentNodes stays empty (component removed)
 
