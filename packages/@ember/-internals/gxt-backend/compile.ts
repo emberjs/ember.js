@@ -949,7 +949,22 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
   let _renderPassDepth = 0;
   (globalThis as any).__gxtSetIsRendering = function(on: boolean) {
     if (on) _renderPassDepth++;
-    else if (_renderPassDepth > 0) _renderPassDepth--;
+    else if (_renderPassDepth > 0) {
+      _renderPassDepth--;
+      // When the top-level render pass ends (depth 1 → 0) the parent's
+      // DOM fragment has been committed to its target. Drain any
+      // in-element deferred renders that were queued during this pass —
+      // by now their compile-time literal id targets are resolvable via
+      // document.getElementById. This is the synchronous drain point for
+      // the renderComponent strict-mode path, which does NOT go through
+      // __gxtRebuildViewTreeFromDom or __gxtFlushAfterInsertQueue.
+      if (_renderPassDepth === 0) {
+        try {
+          const drain = (globalThis as any).__gxtInElementDrainDeferred;
+          if (typeof drain === 'function') drain();
+        } catch { /* ignore */ }
+      }
+    }
   };
   (globalThis as any).__gxtIsRendering = function() {
     return _renderPassDepth > 0;
