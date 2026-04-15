@@ -195,6 +195,27 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       if (_cacheEvalStack.length > 0) {
         _cacheEvalStack[_cacheEvalStack.length - 1]!.add(cacheObj);
       }
+      // Forward consumed tags to an enclosing gxt track frame / createCache
+      // frame, so that cached reads still expose the underlying dependencies
+      // to whichever tracker is currently active. Without this, a template
+      // formula that reads the cache during initial evaluation would never
+      // re-run when the underlying tracked state changes, because our cache
+      // short-circuits with _lastValue and never re-enters consumeTag.
+      if (_initialized && _consumedTags.length > 0) {
+        const gxtTracking = gxtIsTracking();
+        const cacheTrackingActive = _cacheTagTracker.length > 0;
+        if (gxtTracking || cacheTrackingActive) {
+          for (let i = 0; i < _consumedTags.length; i++) {
+            const tag = _consumedTags[i];
+            if (tag == null) continue;
+            try {
+              // consumeTag() pushes into the top cache-tag tracker AND also
+              // forwards to gxt's validator.consumeTag() for the gxt frame.
+              consumeTag(tag);
+            } catch { /* noop */ }
+          }
+        }
+      }
       return _lastValue;
     },
     destroy() {
@@ -216,13 +237,18 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
     } finally {
       _cacheEvalStack.pop();
       _cacheTagTracker.pop();
-      // Store consumed tags and snapshots
+      // Store consumed tags and snapshots. We snapshot using
+      // currentTagRevision() rather than tag.value. For GXT tagFor tags,
+      // tag.value returns the underlying cell value (e.g. the number 4),
+      // not a revision counter, and that cell value isn't bumped by our
+      // dirtyTagFor path — it's only updated if the mutation goes through
+      // GXT's own trackedData.setter. Our compat trackedData stores values
+      // in a separate map and only calls gxtDirtyTagFor + markTagDirty. So
+      // we use our own dirty-revision bookkeeping as the source of truth
+      // for cache invalidation.
       _consumedTags = Array.from(consumed);
       _consumedTagSnapshots = _consumedTags.map(t => {
-        if (t && typeof t === 'object' && 'value' in t) {
-          try { return t.value; } catch { return undefined; }
-        }
-        return undefined;
+        try { return currentTagRevision(t); } catch { return 0; }
       });
       // Store nested caches
       _nestedCaches = Array.from(nested);
@@ -233,15 +259,17 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
 
   function _isValid(): boolean {
     if (!_initialized) return false;
-    // Check consumed tags (from consumeTag calls during fn())
+    // Check consumed tags (from consumeTag calls during fn()) against their
+    // snapshot revisions. currentTagRevision walks tag dependencies and
+    // returns the max revision across the tree, so any mutation anywhere
+    // bumps it strictly greater than the stored snapshot.
     for (let i = 0; i < _consumedTags.length; i++) {
       const tag = _consumedTags[i];
-      if (tag && typeof tag === 'object' && 'value' in tag) {
-        try {
-          if (tag.value !== _consumedTagSnapshots[i]) return false;
-        } catch {
-          return false;
-        }
+      if (tag == null) continue;
+      try {
+        if (currentTagRevision(tag) !== _consumedTagSnapshots[i]) return false;
+      } catch {
+        return false;
       }
     }
     // Check nested caches: trigger their re-validation by reading .value
@@ -295,6 +323,12 @@ export function isInBacktrackingFrame() {
 // Expose on globalThis for ember-gxt-wrappers.ts (avoids circular imports)
 (globalThis as any).__gxtBeginBacktrackingFrame = beginBacktrackingFrame;
 (globalThis as any).__gxtEndBacktrackingFrame = endBacktrackingFrame;
+
+// Expose classic tag primitives for gxt-backend/manager.ts so component-arg
+// own-property getters can participate in createCache/invokeHelper tag tracking.
+(globalThis as any).__classicConsumeTag = (tag: any) => consumeTag(tag);
+(globalThis as any).__classicTagFor = (obj: any, key: any) => tagFor(obj, key);
+(globalThis as any).__classicDirtyTagFor = (obj: any, key: any) => dirtyTagFor(obj, key);
 
 export function trackedData<T, K extends string | symbol>(
   key: K,

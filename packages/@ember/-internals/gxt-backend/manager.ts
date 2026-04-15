@@ -1123,8 +1123,41 @@ function createComponentInstance(
       const argValue = getter();
       // If instance value differs from arg value, the component overrode it in init()
       let useLocal = localValue !== argValue;
+      // Install a gxt effect that dirties the classic validator tag for
+      // (instance, key) whenever the upstream arg cell invalidates. This
+      // lets createCache / invokeHelper consumers — which captured the
+      // classic tag via consumeTag in the getter below — detect that an
+      // arg-derived property has changed even when nothing reads it
+      // explicitly after the parent mutates. The effect's first run
+      // primes `lastEffectValue`; later runs compare and dirty the tag.
+      let lastEffectValue: any = undefined;
+      let effectPrimed = false;
+      try {
+        _gxtEffect(() => {
+          let v: any;
+          try { v = getter(); } catch { v = undefined; }
+          if (effectPrimed && v !== lastEffectValue) {
+            try {
+              const dirty = (globalThis as any).__classicDirtyTagFor;
+              if (dirty) dirty(instance, key);
+            } catch { /* noop */ }
+          }
+          lastEffectValue = v;
+          effectPrimed = true;
+        });
+      } catch { /* ignore if effect can't be installed */ }
       Object.defineProperty(instance, key, {
         get() {
+          // Route through the classic @glimmer/validator tag system so that
+          // Ember's createCache (used by @ember/helper invokeHelper) tracks
+          // this property as a dependency. Without this, reading a component
+          // arg from inside a createCache callback bypasses the tag tracker
+          // entirely because the arg getter reads the parent's cell directly.
+          try {
+            const consume = (globalThis as any).__classicConsumeTag;
+            const tagFn = (globalThis as any).__classicTagFor;
+            if (consume && tagFn) consume(tagFn(instance, key));
+          } catch { /* noop */ }
           if (useLocal) return localValue;
           try { return getter(); } catch { return localValue; }
         },
@@ -1143,6 +1176,12 @@ function createComponentInstance(
             if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
             instance.__gxtLocalOverrides.add(key);
           }
+          // Dirty the classic tag so any createCache (invokeHelper) or
+          // observer watching `key` on this instance is invalidated.
+          try {
+            const dirty = (globalThis as any).__classicDirtyTagFor;
+            if (dirty) dirty(instance, key);
+          } catch { /* noop */ }
         },
         configurable: true,
         enumerable: true,
@@ -1530,6 +1569,13 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
           let useLocal = false;
           Object.defineProperty(instance, key, {
             get() {
+              // Route through classic @glimmer/validator tag system so
+              // createCache / invokeHelper consumers track this property.
+              try {
+                const consume = (globalThis as any).__classicConsumeTag;
+                const tagFn = (globalThis as any).__classicTagFor;
+                if (consume && tagFn) consume(tagFn(instance, key));
+              } catch { /* noop */ }
               if (useLocal) return localValue;
               try { return getter(); } catch { return localValue; }
             },
@@ -1544,10 +1590,33 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
                 if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
                 instance.__gxtLocalOverrides.add(key);
               }
+              try {
+                const dirty = (globalThis as any).__classicDirtyTagFor;
+                if (dirty) dirty(instance, key);
+              } catch { /* noop */ }
             },
             configurable: true,
             enumerable: true,
           });
+          // Install a gxt effect to dirty the classic tag when the upstream
+          // arg cell invalidates (same rationale as the createComponentInstance
+          // install site above).
+          try {
+            let lastEffectValue2: any = undefined;
+            let effectPrimed2 = false;
+            _gxtEffect(() => {
+              let v: any;
+              try { v = getter(); } catch { v = undefined; }
+              if (effectPrimed2 && v !== lastEffectValue2) {
+                try {
+                  const dirty = (globalThis as any).__classicDirtyTagFor;
+                  if (dirty) dirty(instance, key);
+                } catch { /* noop */ }
+              }
+              lastEffectValue2 = v;
+              effectPrimed2 = true;
+            });
+          } catch { /* ignore */ }
         } catch { /* non-configurable */ }
       }
 
@@ -3926,6 +3995,56 @@ function createRenderContext(
             if (_regArrOwner && Array.isArray(initialVal)) {
               _regArrOwner(initialVal, renderContext, key);
             }
+            // After cellFor(skipDefine=false), gxt installed its own
+            // accessor descriptor on the instance that reads cell.value.
+            // Wrap it so createCache / invokeHelper consumers also capture
+            // the classic @glimmer/validator tag for this property, and
+            // so that parent-driven arg mutations dirty that tag via a
+            // gxt effect.
+            try {
+              const curDesc = Object.getOwnPropertyDescriptor(renderContext, key);
+              if (curDesc?.get && curDesc?.set && curDesc.configurable) {
+                const innerGet = curDesc.get;
+                const innerSet = curDesc.set;
+                Object.defineProperty(renderContext, key, {
+                  get() {
+                    try {
+                      const consume = (globalThis as any).__classicConsumeTag;
+                      const tagFn = (globalThis as any).__classicTagFor;
+                      if (consume && tagFn) consume(tagFn(renderContext, key));
+                    } catch { /* noop */ }
+                    return innerGet.call(this);
+                  },
+                  set(v: any) {
+                    innerSet.call(this, v);
+                    try {
+                      const dirty = (globalThis as any).__classicDirtyTagFor;
+                      if (dirty) dirty(renderContext, key);
+                    } catch { /* noop */ }
+                  },
+                  enumerable: true,
+                  configurable: true,
+                });
+              }
+              // Install a gxt effect that dirties the classic tag whenever
+              // the upstream arg cell invalidates — handles parent mutations
+              // that don't route through the instance's setter.
+              let lastEffectValue4: any = undefined;
+              let effectPrimed4 = false;
+              _gxtEffect(() => {
+                let v: any;
+                try { v = cell.value; } catch { /* noop */ }
+                try { v = getter ? getter() : v; } catch { /* noop */ }
+                if (effectPrimed4 && v !== lastEffectValue4) {
+                  try {
+                    const dirty = (globalThis as any).__classicDirtyTagFor;
+                    if (dirty) dirty(renderContext, key);
+                  } catch { /* noop */ }
+                }
+                lastEffectValue4 = v;
+                effectPrimed4 = true;
+              });
+            } catch { /* ignore */ }
           } catch {
             try {
               const g = getter;
@@ -3951,6 +4070,14 @@ function createRenderContext(
               get() {
                 // Read cell.value to register GXT formula tracking dependency
                 try { cell.value; } catch { /* ignore */ }
+                // Also consume the classic @glimmer/validator tag so that
+                // createCache / invokeHelper consumers capture this property
+                // as a dependency.
+                try {
+                  const consume = (globalThis as any).__classicConsumeTag;
+                  const tagFn = (globalThis as any).__classicTagFor;
+                  if (consume && tagFn) consume(tagFn(renderContext, key));
+                } catch { /* noop */ }
                 return _useLocal ? _localVal : (getter ? getter() : _localVal);
               },
               set(v: any) {
@@ -3970,10 +4097,37 @@ function createRenderContext(
                     instance.__gxtLocalOverrides.add(key);
                   }
                 }
+                // Dirty the classic tag to invalidate downstream caches.
+                try {
+                  const dirty = (globalThis as any).__classicDirtyTagFor;
+                  if (dirty) dirty(renderContext, key);
+                } catch { /* noop */ }
               },
               enumerable: true,
               configurable: true,
             });
+            // Install a gxt effect that dirties the classic tag whenever
+            // the upstream arg cell invalidates. This handles the common
+            // case where nothing reads `instance.key` between a parent
+            // mutation and the downstream cache read — the effect re-runs
+            // on cell change and proactively dirties the tag.
+            try {
+              let lastEffectValue3: any = undefined;
+              let effectPrimed3 = false;
+              _gxtEffect(() => {
+                let v: any;
+                try { v = cell.value; } catch { /* noop */ }
+                try { v = getter ? getter() : v; } catch { /* noop */ }
+                if (effectPrimed3 && v !== lastEffectValue3) {
+                  try {
+                    const dirty = (globalThis as any).__classicDirtyTagFor;
+                    if (dirty) dirty(renderContext, key);
+                  } catch { /* noop */ }
+                }
+                lastEffectValue3 = v;
+                effectPrimed3 = true;
+              });
+            } catch { /* ignore */ }
             // Register array owner for KVO array mutation tracking (pushObject, shiftObject, etc.)
             const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
             if (_regArrOwner && Array.isArray(initialVal)) {
