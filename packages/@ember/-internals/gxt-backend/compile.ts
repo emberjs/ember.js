@@ -1114,19 +1114,33 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
     // synchronous assertion so expectAssertion() still catches the throw.
     const _gxtIsRenderingFn = (globalThis as any).__gxtIsRendering;
     const _insideRenderPass = typeof _gxtIsRenderingFn === 'function' && _gxtIsRenderingFn() === true;
-    if ((appendRef === null || appendRef === undefined) && _insideRenderPass) {
-      // Consume one literal id from the per-template fallback stack
-      // populated by the precompileTemplate render() wrapper.
-      let _fallbackId = '';
+    // Only defer if we have a compile-time literal id fallback to
+    // re-resolve with. Without one, we cannot distinguish "render-order
+    // timing bug" from "user actually passed null" — and deferring
+    // would break expectAssertion tests that pass a literal null
+    // destination via `{{#in-element this.someElement}}`.
+    let _fallbackId = '';
+    {
       const fbStack: string[] | undefined = (globalThis as any).__gxtInElementFallbackIds;
       if (Array.isArray(fbStack) && fbStack.length > 0) {
-        _fallbackId = fbStack.shift() || '';
+        // Peek — only consume if we actually take the defer path.
+        _fallbackId = fbStack[0] || '';
       }
+    }
+    if ((appendRef === null || appendRef === undefined) && _insideRenderPass && _fallbackId) {
+      // Consume the peeked id.
+      const fbStack2: string[] = (globalThis as any).__gxtInElementFallbackIds;
+      fbStack2.shift();
       // Snapshot the block-body closure state so the deferred callback
       // can execute the render after the parent fragment commits.
       const _deferredInsertBefore = insertBefore;
       const _deferredCtx = ctx;
       const _deferredRoots = roots;
+      // Eagerly compute the block body nodes now — the render context
+      // may be torn down by the time the deferred queue drains, so we
+      // materialize the DOM synchronously and just re-parent it later.
+      let _eagerNodes: any[] = [];
+      try { _eagerNodes = roots(ctx); } catch { /* fall through */ }
       const _deferredRender = () => {
         // Re-resolve the destination. Prefer the compile-time literal id
         // (a direct document.getElementById lookup) since the reactive
@@ -1165,8 +1179,13 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
           retryRef.innerHTML = '';
         }
 
-        let deferredNodes: any[] = [];
-        try { deferredNodes = _deferredRoots(_deferredCtx); } catch { /* roots may throw; swallow to keep render moving */ }
+        // Prefer the eagerly-computed nodes; if that list is empty (e.g.
+        // reactive text hadn't initialized yet), fall back to invoking
+        // _deferredRoots now.
+        let deferredNodes: any[] = _eagerNodes;
+        if (!deferredNodes || deferredNodes.length === 0) {
+          try { deferredNodes = _deferredRoots(_deferredCtx); } catch { /* ignore */ }
+        }
         const deferredFragment = document.createDocumentFragment();
         for (const node of deferredNodes) {
           if (node instanceof Node) {
