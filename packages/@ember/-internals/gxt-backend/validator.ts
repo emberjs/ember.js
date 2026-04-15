@@ -499,6 +499,33 @@ export function dirtyTagFor(obj: any, key: any) {
   // GXT's tracker doesn't observe reliably. Firing them here ensures
   // effects re-read their reactive classic values on every tag mutation.
   _fireClassicReactors();
+  // Helper autotracking fallback: for every cached helper bucket produced
+  // by ember-gxt-wrappers.ts, invalidate its cached arg-serialization so
+  // that the next time the enclosing GXT formula re-enters $_maybeHelper
+  // it takes the cache-miss branch and calls delegate.getValue with fresh
+  // state. This covers helpers that close over non-argument @tracked
+  // state (e.g. functional helpers reading `service.name`, class-based
+  // helpers reading a module-level tracked instance) — those reads don't
+  // participate in the argsSer cache key.
+  //
+  // Note: we do NOT re-run delegate.getValue here, because
+  //   (a) it would double-count user-visible compute() invocations, and
+  //   (b) dirtyTagFor can fire multiple times during one logical mutation.
+  // The natural cell-propagation path (the tracked setter writes the
+  // underlying cell via trackedData) handles re-rendering. Our job here
+  // is only to make sure the cache doesn't serve stale data to that
+  // re-render.
+  try {
+    const helperCache = (globalThis as any).__gxtClassHelperInstanceCache as
+      | Map<string, any>
+      | undefined;
+    if (helperCache && helperCache.size > 0) {
+      for (const [, cached] of helperCache) {
+        if (!cached || cached.__managerBucket !== true) continue;
+        cached.lastArgsSer = '__classic_tag_dirty__' + globalRevisionCounter;
+      }
+    }
+  } catch { /* noop */ }
   return result;
 }
 
