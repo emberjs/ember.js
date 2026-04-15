@@ -46,16 +46,18 @@ export class Source {
   }
 
   hbsPosFor(offset: number): Nullable<SourcePosition> {
-    if (offset > this.source.length) return null;
+    if (offset < 0 || offset > this.source.length) return null;
     const lineIdx = lowerBound(this.#newlineOffsets, offset);
     return { line: lineIdx + 1, column: offset - this.#lineStartFor(lineIdx) };
   }
 
   charPosFor({ line, column }: SourcePosition): number | null {
     const lineIdx = line - 1;
-    const lineStart = this.#lineStartFor(lineIdx);
-    const nextNl = this.#newlineOffsets[lineIdx];
-    const lineEnd = nextNl ?? this.source.length;
+    // Valid lines are [0, newlineOffsets.length]. Anything else has no offset.
+    if (lineIdx < 0 || lineIdx > this.#newlineOffsets.length || column < 0) return null;
+
+    const lineStart = lineIdx === 0 ? 0 : (this.#newlineOffsets[lineIdx - 1] as number) + 1;
+    const lineEnd = this.#newlineOffsets[lineIdx] ?? this.source.length;
     const target = lineStart + column;
 
     if (target <= lineEnd) {
