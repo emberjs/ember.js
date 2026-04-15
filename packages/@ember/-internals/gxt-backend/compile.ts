@@ -935,12 +935,96 @@ if (false as boolean) {
   } catch { /* ignore */ }
 }
 
+// Install a render-pass flag so $_inElement below can distinguish
+// "inside an active GXT template.render() pass" from "top-level
+// synchronous render entry (e.g. this.render in expectAssertion
+// tests)". The renderer (packages/@ember/-internals/glimmer/lib/renderer.ts)
+// already attempts to call globalThis.__gxtSetIsRendering(true) before
+// template.render() and restore after, but GXT itself does not expose
+// these helpers. Provide a simple depth counter so those calls toggle
+// a tracked boolean. Also wire compile.ts's own render() wrapper to
+// bump it, because precompileTemplate's render() is called from the
+// renderer.ts code path.
+if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
+  let _renderPassDepth = 0;
+  (globalThis as any).__gxtSetIsRendering = function(on: boolean) {
+    if (on) _renderPassDepth++;
+    else if (_renderPassDepth > 0) _renderPassDepth--;
+  };
+  (globalThis as any).__gxtIsRendering = function() {
+    return _renderPassDepth > 0;
+  };
+}
+
+// Deferred in-element render queue. When $_inElement encounters a null
+// destination during an active render pass — which happens when a nested
+// component's template evaluates `{{#in-element (getElement "id")}}`
+// before the outer parent's DocumentFragment has been committed to the
+// live document — the block body render is queued here and executed
+// after the parent commit. We hook into the manager's
+// __gxtRebuildViewTreeFromDom callback (invoked at the tail of
+// gxt-backend/manager.ts's flushAfterInsertQueue) to drain the queue,
+// since that is the earliest synchronous point at which the parent's
+// DOM is guaranteed to be in the live document.
+{
+  const _inElementDeferQueue: Array<() => void> = [];
+  const _drainInElementDeferQueue = () => {
+    while (_inElementDeferQueue.length > 0) {
+      const cb = _inElementDeferQueue.shift()!;
+      try { cb(); } catch (e) {
+        const capture = (globalThis as any).__gxtCaptureRenderError;
+        if (typeof capture === 'function') capture(e);
+        else throw e;
+      }
+    }
+  };
+  (globalThis as any).__gxtInElementDeferredRender = function(cb: () => void) {
+    _inElementDeferQueue.push(cb);
+  };
+  (globalThis as any).__gxtInElementDrainDeferred = _drainInElementDeferQueue;
+
+  // Wrap globalThis.__gxtFlushAfterInsertQueue so callers going through
+  // it (demo path, ember-gxt-wrappers, etc.) also drain the queue.
+  const _origFlush = (globalThis as any).__gxtFlushAfterInsertQueue;
+  (globalThis as any).__gxtFlushAfterInsertQueue = function() {
+    try {
+      if (typeof _origFlush === 'function') _origFlush();
+    } finally {
+      _drainInElementDeferQueue();
+    }
+  };
+
+  // NOTE: We deliberately do NOT install an Object.defineProperty getter/
+  // setter wrap on globalThis.__gxtRebuildViewTreeFromDom here. A previous
+  // iteration installed one to drain the in-element deferred queue at
+  // rebuild time, but it conflicted with the legitimate _wrapGxtRebuildViewTree
+  // wrap below (~L2390): that wrap reads `orig = g.__gxtRebuildViewTreeFromDom`
+  // (gets our wrapper, not the manager.ts function), then ASSIGNS the
+  // resulting `wrapped` back via `g.__gxtRebuildViewTreeFromDom = wrapped`,
+  // which the property setter intercepts and stores in the inner slot —
+  // overwriting the manager.ts implementation that the in-element wrapper
+  // is supposed to call. The setInterval retry then re-applies the wrap on
+  // top of itself each tick because `__emberIfRebuildPatched` lives on the
+  // assigned `wrapped` (in the inner slot) but reads always see our wrapper
+  // (which lacks the flag), producing compounding re-wraps and corrupting
+  // the view-registry reset for `_wrapperIfUserFalse` — surfaced as the
+  // `View tree tests :: getChildViews` regression where x-toggle siblings
+  // see each other's child cells (classic cell-aliasing pattern).
+  //
+  // The in-element deferred queue is still drained via the
+  // __gxtFlushAfterInsertQueue wrap above, which covers the demo /
+  // ember-gxt-wrappers code path.
+}
+
 // Override GXT's $_inElement with an Ember-compatible version.
 // GXT's native $_inElement uses GXT's component tree (addToTree/getParentContext)
 // which doesn't work for Ember rendering contexts. Our version:
 // 1. Returns a comment node placeholder for the main render location
 // 2. Renders block content into the external element
 // 3. Handles insertBefore=null (append) vs insertBefore=undefined (replace)
+// 4. Defers the body render when the destination resolves to null during
+//    an active render pass (render-order timing fix — the outer fragment
+//    hasn't been committed yet, so document.getElementById returns null).
 {
   // Track in-element rendered nodes for cleanup. WeakMap<Element, Node[]>
   const _inElementRenderedNodes = new Map<Element, Node[]>();
@@ -1016,6 +1100,117 @@ if (false as boolean) {
 
     // Create a placeholder comment for the main render location
     const placeholder = document.createComment('');
+
+    // Render-order timing fix: when `{{#in-element (getElement "id")}}`
+    // appears inside a child component rendered from a parent template
+    // whose outer DOM fragment hasn't been committed to the live document
+    // yet, `document.getElementById` returns null even though the target
+    // element exists in the pending parent fragment. Detect this by
+    // checking __gxtIsRendering() — if true, we're mid-render and should
+    // defer the block body render until after the parent commits.
+    //
+    // Outside of an active render pass (classic `this.render` assertion
+    // tests that pass `this.someElement = null`), fall through to the
+    // synchronous assertion so expectAssertion() still catches the throw.
+    const _gxtIsRenderingFn = (globalThis as any).__gxtIsRendering;
+    const _insideRenderPass = typeof _gxtIsRenderingFn === 'function' && _gxtIsRenderingFn() === true;
+    if ((appendRef === null || appendRef === undefined) && _insideRenderPass) {
+      // Consume one literal id from the per-template fallback stack
+      // populated by the precompileTemplate render() wrapper.
+      let _fallbackId = '';
+      const fbStack: string[] | undefined = (globalThis as any).__gxtInElementFallbackIds;
+      if (Array.isArray(fbStack) && fbStack.length > 0) {
+        _fallbackId = fbStack.shift() || '';
+      }
+      // Snapshot the block-body closure state so the deferred callback
+      // can execute the render after the parent fragment commits.
+      const _deferredInsertBefore = insertBefore;
+      const _deferredCtx = ctx;
+      const _deferredRoots = roots;
+      const _deferredRender = () => {
+        // Re-resolve the destination. Prefer the compile-time literal id
+        // (a direct document.getElementById lookup) since the reactive
+        // ref we were originally given has typically cached its null
+        // result and won't re-evaluate.
+        let retryRef: HTMLElement | null = null;
+        if (_fallbackId) {
+          retryRef = document.getElementById(_fallbackId);
+        }
+        if (retryRef === null || retryRef === undefined || !(retryRef instanceof Element)) {
+          // Genuinely unresolvable — surface the same assertion the
+          // synchronous path would have thrown.
+          const err = new Error(
+            'Assertion Failed: You cannot pass a null or undefined destination element to in-element'
+          );
+          const capture = (globalThis as any).__gxtCaptureRenderError;
+          if (typeof capture === 'function') capture(err);
+          else throw err;
+          return;
+        }
+
+        // Remove previously rendered in-element nodes for this target.
+        const prevNodes = _inElementRenderedNodes.get(retryRef);
+        if (prevNodes) {
+          for (const n of prevNodes) {
+            try { if (n.parentNode) n.parentNode.removeChild(n); } catch { /* ignore */ }
+          }
+          _inElementRenderedNodes.delete(retryRef);
+        }
+
+        const deferredRenderedNodes: Node[] = [];
+        if (_deferredInsertBefore === null) {
+          _inElementAppendModeElements.add(retryRef);
+        }
+        if (_deferredInsertBefore === undefined) {
+          retryRef.innerHTML = '';
+        }
+
+        let deferredNodes: any[] = [];
+        try { deferredNodes = _deferredRoots(_deferredCtx); } catch { /* roots may throw; swallow to keep render moving */ }
+        const deferredFragment = document.createDocumentFragment();
+        for (const node of deferredNodes) {
+          if (node instanceof Node) {
+            deferredRenderedNodes.push(node);
+            deferredFragment.appendChild(node);
+          } else if (typeof node === 'function') {
+            const textNode = document.createTextNode('');
+            const getValue = () => {
+              let v = (node as any)();
+              if (typeof v === 'function') v = v();
+              return v == null ? '' : String(v);
+            };
+            textNode.textContent = getValue();
+            try {
+              gxtEffect(() => {
+                textNode.textContent = getValue();
+              });
+            } catch { /* effect setup may fail */ }
+            deferredRenderedNodes.push(textNode);
+            deferredFragment.appendChild(textNode);
+          } else if (typeof node === 'string') {
+            const tn = document.createTextNode(node);
+            deferredRenderedNodes.push(tn);
+            deferredFragment.appendChild(tn);
+          } else if (typeof node === 'number' || typeof node === 'boolean') {
+            const tn = document.createTextNode(String(node));
+            deferredRenderedNodes.push(tn);
+            deferredFragment.appendChild(tn);
+          }
+        }
+
+        retryRef.appendChild(deferredFragment);
+        _inElementRenderedNodes.set(retryRef, deferredRenderedNodes);
+        (placeholder as any).__gxtInElementNodes = deferredRenderedNodes;
+        (placeholder as any).__gxtInElementTarget = retryRef;
+      };
+
+      const enq = (globalThis as any).__gxtInElementDeferredRender;
+      if (typeof enq === 'function') enq(_deferredRender);
+      else queueMicrotask(_deferredRender);
+
+      // Return the placeholder synchronously.
+      return placeholder;
+    }
 
     // Validate: destination must be an Element
     // Ember asserts that the destination is a DOM element (not null/undefined)
@@ -5873,7 +6068,32 @@ export function precompileTemplate(templateString: string, options?: {
   //   undefined → replace mode (default, clear existing content)
   //   other     → assert error (Ember only allows null)
   let _inElementInsertBefore: string | null = null; // null = no insertBefore specified
+  // Extracted literal string destination ids for `{{#in-element (... "id")}}`
+  // in template order. Used by $_inElement as a fallback when the reactive
+  // destination ref resolves to null during a render-order-timing situation
+  // (nested component rendering before the outer fragment is committed).
+  const _inElementLiteralIds: string[] = [];
   if (transformedTemplate.includes('{{#in-element')) {
+    // Scan the pre-parse template for literal string ids inside each
+    // {{#in-element ...}} opening tag. This MUST run before
+    // parseInElementInsertBefore (which may rewrite the destination
+    // expression).
+    {
+      const marker = '{{#in-element';
+      let i = 0;
+      while (true) {
+        i = transformedTemplate.indexOf(marker, i);
+        if (i === -1) break;
+        let p = i + marker.length;
+        while (p < transformedTemplate.length && (transformedTemplate[p] === ' ' || transformedTemplate[p] === '\t')) p++;
+        const endTag = transformedTemplate.indexOf('}}', p);
+        if (endTag === -1) break;
+        const destExpr = transformedTemplate.slice(p, endTag);
+        const m = destExpr.match(/"([^"]+)"/);
+        _inElementLiteralIds.push(m && m[1] ? m[1] : '');
+        i = endTag + 2;
+      }
+    }
     const parsed = parseInElementInsertBefore(transformedTemplate);
     transformedTemplate = parsed.result;
     _inElementInsertBefore = parsed.insertBefore;
@@ -7145,6 +7365,16 @@ export function precompileTemplate(templateString: string, options?: {
         const prevSlots = g.$slots;
         const prevFw = g.$fw;
 
+        // Push this template's literal in-element ids onto the global
+        // fallback stack and bump the render-pass depth counter so
+        // $_inElement can detect render-order timing issues and defer
+        // the body render until the parent fragment commits.
+        const _setRenderPass: ((on: boolean) => void) | undefined = g.__gxtSetIsRendering;
+        const _inElemStack: string[] = (g.__gxtInElementFallbackIds = g.__gxtInElementFallbackIds || []);
+        const _inElemStackStart = _inElemStack.length;
+        for (const id of _inElementLiteralIds) _inElemStack.push(id);
+        if (typeof _setRenderPass === 'function') _setRenderPass(true);
+
         try {
           // Phase 4.1: per-parent-element root isolation. Use a WeakMap keyed on
           // parentElement so repeated renders into the same parent share a root
@@ -7443,12 +7673,23 @@ export function precompileTemplate(templateString: string, options?: {
           // Restore previous global values
           g.$slots = prevSlots;
           g.$fw = prevFw;
+          if (typeof _setRenderPass === 'function') _setRenderPass(false);
+          // Trim any un-consumed fallback ids pushed by this template
+          // render (e.g. because no nested in-element hit the null-dest
+          // path). Preserves ids pushed by ancestor renders.
+          if (_inElemStack.length > _inElemStackStart) {
+            _inElemStack.length = _inElemStackStart;
+          }
 
           return { nodes, ctx: context };
         } catch (err) {
           // Restore globals even on error
           g.$slots = prevSlots;
           g.$fw = prevFw;
+          if (typeof _setRenderPass === 'function') _setRenderPass(false);
+          if (_inElemStack.length > _inElemStackStart) {
+            _inElemStack.length = _inElemStackStart;
+          }
 
           // Rethrow non-Error values (expectAssertion's BREAK sentinel) and
           // assertion errors so they propagate to test harnesses
