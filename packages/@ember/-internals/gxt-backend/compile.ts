@@ -27,6 +27,40 @@ function _isAssertionLike(e: unknown): boolean {
 
 // === Utility functions (regex-free) ===
 
+/**
+ * Normalize any value to a string for DOM text/attribute rendering.
+ *
+ * Matches Glimmer's `normalizeStringValue` semantics (see
+ * packages/@glimmer/runtime/lib/dom/normalize.ts):
+ *   - null/undefined    -> ''
+ *   - objects without a .toString method (e.g. Object.create(null)) -> ''
+ *   - Symbol            -> 'Symbol(desc)'  (explicit String() call, not coercion)
+ *   - anything else     -> String(value)
+ *
+ * Critically: we must use `String(value)` rather than string concatenation
+ * (`'' + value`) because concatenation throws `TypeError: Cannot convert a
+ * Symbol value to a string` for Symbol values, while `String(symbol)` is
+ * defined to return the symbol's description in `Symbol(...)` form.
+ */
+function _normalizeStringValue(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  // Objects with no toString method (e.g. Object.create(null)) would throw
+  // "Cannot convert object to primitive value" when stringified.
+  if (typeof (value as any).toString !== 'function') return '';
+  try {
+    return String(value);
+  } catch {
+    // Defensive: an overridden toString that throws shouldn't crash render.
+    return '';
+  }
+}
+
+// Expose on globalThis for use inside GXT-compiled template code.
+// The compile.ts post-processor rewrites `].join("")` to
+// `].map(globalThis.__gxtNormAttr).join("")` for quoted attribute values so
+// that Symbol and null-prototype object values don't throw on stringification.
+(globalThis as any).__gxtNormAttr = _normalizeStringValue;
+
 /** Replace all hyphens with underscores without regex */
 function hyphenToUnderscore(str: string): string {
   return str.split('-').join('_');
@@ -1375,6 +1409,15 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
     }
     if (value === undefined || value === false) {
       element.removeAttribute(name);
+    } else if (typeof value === 'symbol' ||
+               (value !== null && typeof value === 'object' && typeof (value as any).toString !== 'function')) {
+      // Symbol values throw on implicit string coercion inside setAttribute.
+      // Objects with no toString method (e.g. Object.create(null)) likewise
+      // throw "Cannot convert object to primitive value". Normalize these
+      // explicitly to match Glimmer's normalizeStringValue semantics:
+      //   Symbol(debug) -> "Symbol(debug)"
+      //   Object.create(null) -> ""
+      origAttr.call(this, element, name, _normalizeStringValue(value));
     } else {
       origAttr.call(this, element, name, value);
     }
@@ -3086,6 +3129,52 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   }
 }
 
+// Override $_helperHelper to route through Ember's helper manager.
+// GXT's native $_helperHelper doesn't understand the "curried helper reference"
+// pattern that Ember expects for `{{helper "name"}}` and nested calls like
+// `{{helper (helper "name") "extra"}}`. We override it to call
+// `$_MANAGERS.helper.handle(definition, positional, named)`, which already
+// returns a curried ember helper for subexpression use and the final value
+// for content-position use (via the curried helper being invoked automatically
+// by the enclosing formula / text serialiser).
+{
+  const _g = globalThis as any;
+  const emberHelperHelper = function(positional: any[], named: any): any {
+    const unwrapVal = (v: any) =>
+      typeof v === 'function' && !v.prototype && v.length === 0 ? v() : v;
+    const head = Array.isArray(positional) && positional.length > 0
+      ? unwrapVal(positional[0]) : undefined;
+    const rest = Array.isArray(positional) && positional.length > 1
+      ? positional.slice(1) : [];
+    const managers = _g.$_MANAGERS;
+    if ((globalThis as any).__gxtDebugHelperHelper) {
+      try {
+        (globalThis as any).__gxtHelperHelperCalls = (globalThis as any).__gxtHelperHelperCalls || [];
+        (globalThis as any).__gxtHelperHelperCalls.push({
+          head: typeof head === 'function' ? (head as any).name || 'fn' : head,
+          rest,
+          isCurried: !!(head && (head as any).__isEmberCurriedHelper),
+        });
+      } catch { /* ignore */ }
+    }
+    if (managers?.helper?.handle) {
+      const r = managers.helper.handle(head, rest, named || {});
+      return r;
+    }
+    return undefined;
+  };
+  try {
+    Object.defineProperty(globalThis, '$_helperHelper', {
+      get() { return emberHelperHelper; },
+      set(_v: any) { /* protect from setupGlobalScope overwrite */ },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch {
+    _g.$_helperHelper = emberHelperHelper;
+  }
+}
+
 // Register built-in keyword helpers for GXT integration
 // These are simplified implementations for GXT since it doesn't have Glimmer VM's reference system
 (globalThis as any).__EMBER_BUILTIN_HELPERS__ = {
@@ -3231,9 +3320,18 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     const value = args[0];
     return typeof value === 'function' ? value() : value;
   },
-  // concat: Concatenates arguments into a string
+  // concat: Concatenates arguments into a string.
+  // Must use _normalizeStringValue rather than .join('') because Symbol
+  // values throw on implicit string coercion but are defined for explicit
+  // String() conversion. Also maps Object.create(null) -> '' to match
+  // Glimmer's normalizeStringValue semantics.
   concat: (...args: any[]) => {
-    return args.map(a => (typeof a === 'function' && !a.prototype) ? a() : a).join('');
+    let out = '';
+    for (const a of args) {
+      const v = (typeof a === 'function' && !a.prototype) ? a() : a;
+      out += _normalizeStringValue(v);
+    }
+    return out;
   },
   // array: Creates an array from arguments
   array: (...args: any[]) => {
@@ -5505,6 +5603,54 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
+    // Wrap attribute/prop getters so that non-coercible values (Symbol,
+    // objects with no toString) are normalized before they reach GXT's
+    // compiled quoted-attribute concatenation. Without this, GXT's output
+    // does implicit string concatenation on the getter result, which throws
+    // TypeError for Symbols ("Cannot convert a Symbol value to a string")
+    // and for Object.create(null) ("Cannot convert object to primitive value").
+    // That throw aborts the entire render and leaves the container empty.
+    //
+    // Matches Glimmer's normalizeStringValue semantics:
+    //   Symbol(debug) -> "Symbol(debug)"
+    //   Object.create(null) -> ""
+    if (tagProps && tagProps !== g.$_edp) {
+      for (const arrIdx of [0, 1]) {
+        const arr = tagProps[arrIdx];
+        if (!Array.isArray(arr)) continue;
+        for (let i = 0; i < arr.length; i++) {
+          const entry = arr[i];
+          if (!Array.isArray(entry)) continue;
+          const key = entry[0];
+          // Skip named-args (@foo) — those go through component args and
+          // must preserve raw value (symbols/objects are valid arg values).
+          if (typeof key === 'string' && key.startsWith('@')) continue;
+          // Skip style — handled separately below.
+          if (key === 'style') continue;
+          const val = entry[1];
+          if (typeof val !== 'function') continue;
+          const origGetter = val;
+          // Preserve __isCell / __isMutCell markers etc. by only wrapping plain getters.
+          if ((origGetter as any).__isCell || (origGetter as any).__isMutCell) continue;
+          entry[1] = function _attrNormalize() {
+            const v = origGetter.apply(this, arguments);
+            if (v === null || v === undefined) return v;
+            if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return v;
+            if (typeof v === 'symbol') return String(v); // "Symbol(debug)"
+            if (typeof v === 'function') return v; // preserve helper/cell-like
+            if (typeof v === 'object') {
+              // SafeString — leave for GXT/downstream to call toHTML/toString.
+              if (typeof (v as any).toHTML === 'function') return v;
+              // Object with no toString (e.g. Object.create(null)) — normalize to ''.
+              if (typeof (v as any).toString !== 'function') return '';
+              try { return String(v); } catch { return ''; }
+            }
+            return v;
+          };
+        }
+      }
+    }
+
     // Wrap the style getter: convert SafeString to HTML string, and when
     // the value is null/undefined/false, use a sentinel that the post-render
     // step can detect and clean up.
@@ -5980,6 +6126,62 @@ function transformOutletMustaches(code: string): string {
 }
 
 /**
+ * Rewrite bare-identifier helper mustaches inside quoted HTML attribute values:
+ *   `attr="{{foo-bar}}"` → `attr="{{(foo-bar)}}"`
+ *   `attr="pre-{{foo-bar}}-post"` → `attr="pre-{{(foo-bar)}}-post"`
+ *
+ * GXT's compiler swallows these (emitting `[""].join("")`) because it treats
+ * them as PathExpressions against an empty scope. Wrapping them as
+ * SubExpressions forces the helper resolution path.
+ *
+ * Rewrites are skipped for `this.xxx`, `@arg`, mustaches with arguments, and
+ * known built-in keywords.
+ */
+function transformAttrQuotedHelperMustaches(code: string): string {
+  if (!code || code.indexOf('{{') === -1) return code;
+  const BARE_IDENT_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+  const BUILTINS = new Set([
+    'this', 'else', 'if', 'unless', 'each', 'each-in', 'let', 'with', 'yield',
+    'outlet', 'component', 'helper', 'modifier', 'debugger', 'log', 'action',
+    'concat', 'hash', 'array', 'fn', 'get', 'mut', 'readonly', 'unbound',
+    'unique-id', 'in-element', 'has-block', 'has-block-params', 'on',
+  ]);
+  let out = '';
+  let i = 0;
+  const len = code.length;
+  while (i < len) {
+    const ch = code[i]!;
+    if (ch === '=' && (code[i + 1] === '"' || code[i + 1] === "'")) {
+      const quote = code[i + 1]!;
+      const start = i + 2;
+      let end = start;
+      while (end < len && code[end] !== quote) end++;
+      if (end >= len) {
+        out += code.slice(i);
+        i = len;
+        break;
+      }
+      const inner = code.slice(start, end);
+      const rewritten = inner.replace(
+        /\{\{\s*([^}\s][^}]*?)\s*\}\}/g,
+        (m, expr: string) => {
+          const trimmed = expr.trim();
+          if (!BARE_IDENT_RE.test(trimmed)) return m;
+          if (BUILTINS.has(trimmed)) return m;
+          return `{{(${trimmed})}}`;
+        }
+      );
+      out += '=' + quote + rewritten + quote;
+      i = end + 1;
+      continue;
+    }
+    out += ch;
+    i++;
+  }
+  return out;
+}
+
+/**
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
  */
@@ -6076,6 +6278,22 @@ export function precompileTemplate(templateString: string, options?: {
 
   // Transform the template
   let transformedTemplate = templateString;
+
+  // Pre-transform: rewrite bare-identifier helper mustaches in HTML attribute
+  // quoted values from `attr="{{foo-bar}}"` → `attr="{{(foo-bar)}}"`.
+  //
+  // The upstream GXT compiler, when encountering `{{foo-bar}}` in a quoted
+  // attribute value, resolves it as a PathExpression. Because `foo-bar` is not
+  // a scope binding, not a built-in, and not a `this.`/`@` path, it drops the
+  // reference entirely and emits `[""].join("")`. Wrapping it as a
+  // SubExpression — `{{(foo-bar)}}` — forces GXT to emit a proper
+  // `$_maybeHelper("foo-bar", [], this)` call, which then resolves via Ember's
+  // helper registry.
+  //
+  // We restrict the rewrite to bare identifiers that cannot be properties of
+  // `this` (no `this.` prefix, no `@` arg, no known keyword), and only inside
+  // quoted attribute values (the only position where GXT swallows the helper).
+  transformedTemplate = transformAttrQuotedHelperMustaches(transformedTemplate);
 
   // Transform {{outlet}} → <ember-outlet /> so that GXT emits a custom element
   // that the routing outlet subsystem can hook. Without this, `{{outlet}}` is
@@ -6365,6 +6583,19 @@ export function precompileTemplate(templateString: string, options?: {
     // Post-process: replace per-compilation __logSite:N with globally unique IDs
     // to prevent dedup collisions across different template compilations.
     modifiedCode = modifiedCode.replace(/__logSite:\d+/g, () => `__logSite:${_globalLogSiteCounter++}`);
+
+    // Post-process: GXT emits quoted attribute values as `[...expressions].join("")`.
+    // This implicit string coercion throws TypeError for Symbol values and for
+    // Object.create(null). Rewrite to `[...].map(__gxtNormAttr).join("")` which
+    // uses explicit String() conversion with Glimmer's normalizeStringValue
+    // semantics (see _normalizeStringValue in this file).
+    //
+    // The pattern is very specific: `].join("")` occurs at the end of the quoted
+    // attribute serialization in GXT's output. Any other `.join` call uses a
+    // non-empty separator, so this replacement is safe.
+    if (modifiedCode.indexOf('].join("")') !== -1) {
+      modifiedCode = modifiedCode.split('].join("")').join('].map(globalThis.__gxtNormAttr).join("")');
+    }
 
     // Post-process: When GXT emits $_maybeHelper("name", ...) with a string for a
     // name that is in scope bindings, replace the string with a variable reference.
