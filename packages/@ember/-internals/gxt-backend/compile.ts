@@ -4030,6 +4030,55 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     // The manager resolves the string name from Ember's registry and returns a
     // rendering closure. We invoke it directly and return the DOM result.
     if (typeof comp === 'string') {
+      // Handle @argName — resolve named arg from context, then render as component.
+      // This occurs with {{#@inner}}content{{/@inner}} where @inner holds a curried component.
+      if (comp.startsWith('@') && ctx) {
+        const argName = comp.slice(1);
+        const $ARGS_KEY = Symbol.for('gxt-args');
+        const ctxArgs = ctx[$ARGS_KEY] || ctx['args'] || ctx?.args || {};
+        let componentValue = ctxArgs[argName];
+        // Resolve getter functions
+        let guard = 5;
+        while (typeof componentValue === 'function' && !componentValue.prototype && !componentValue.__isCurriedComponent && guard-- > 0) {
+          try { componentValue = componentValue(); } catch { break; }
+        }
+        if (componentValue && componentValue.__isCurriedComponent) {
+          const managers = g.$_MANAGERS;
+          if (managers?.component?.canHandle?.(componentValue)) {
+            const $SLOTS = Symbol.for('gxt-slots');
+            const namedArgs: any = {};
+            if (args) {
+              for (const key of Object.keys(args)) {
+                if (key === 'args' || key.startsWith('$')) continue;
+                const desc = Object.getOwnPropertyDescriptor(args, key);
+                if (desc) {
+                  Object.defineProperty(namedArgs, key, desc);
+                }
+              }
+              const argsObj = args['args'];
+              if (argsObj && typeof argsObj === 'object') {
+                for (const key of Object.keys(argsObj)) {
+                  if (!key.startsWith('$')) {
+                    const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+                    if (desc) {
+                      Object.defineProperty(namedArgs, key, desc);
+                    }
+                  }
+                }
+              }
+              const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+              if (gxtSlots && typeof gxtSlots === 'object') {
+                _setInternalProp(namedArgs, '$slots', gxtSlots);
+              }
+            }
+            const handleResult = managers.component.handle(componentValue, namedArgs, null, ctx);
+            if (typeof handleResult === 'function') {
+              return handleResult();
+            }
+            return handleResult;
+          }
+        }
+      }
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
         const $PROPS = Symbol.for('gxt-props');
@@ -4375,6 +4424,55 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           return handleResult();
         }
         return handleResult;
+      }
+    }
+
+    // Handle getter functions that resolve to a CurriedComponent.
+    // This occurs with {{#@inner}}content{{/@inner}} where @inner is a named arg
+    // holding a curried component. The GXT compiler emits $_c(() => ctx.args.inner, args, ctx).
+    if (typeof comp === 'function' && !comp.prototype && !comp.__isCurriedComponent && !comp.__stringComponentName) {
+      let resolved = comp;
+      let guard = 5;
+      while (typeof resolved === 'function' && !resolved.prototype && !resolved.__isCurriedComponent && guard-- > 0) {
+        try { resolved = resolved(); } catch { break; }
+      }
+      if (resolved && resolved.__isCurriedComponent) {
+        const managers = g.$_MANAGERS;
+        if (managers?.component?.canHandle?.(resolved)) {
+          const $PROPS = Symbol.for('gxt-props');
+          const $SLOTS = Symbol.for('gxt-slots');
+          const namedArgs: any = {};
+          let fw = args?.[$PROPS] || null;
+          if (args) {
+            for (const key of Object.keys(args)) {
+              if (key === 'args' || key.startsWith('$')) continue;
+              const desc = Object.getOwnPropertyDescriptor(args, key);
+              if (desc) {
+                Object.defineProperty(namedArgs, key, desc);
+              }
+            }
+            const argsObj = args['args'];
+            if (argsObj && typeof argsObj === 'object') {
+              for (const key of Object.keys(argsObj)) {
+                if (!key.startsWith('$')) {
+                  const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+                  if (desc) {
+                    Object.defineProperty(namedArgs, key, desc);
+                  }
+                }
+              }
+            }
+            const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+            if (gxtSlots && typeof gxtSlots === 'object') {
+              _setInternalProp(namedArgs, '$slots', gxtSlots);
+            }
+          }
+          const handleResult = managers.component.handle(resolved, namedArgs, fw, ctx);
+          if (typeof handleResult === 'function') {
+            return handleResult();
+          }
+          return handleResult;
+        }
       }
     }
 
@@ -5022,6 +5120,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
 
       // Check if the component manager can handle this
+      // Also try with a leading dash — GXT's PascalCase conversion strips
+      // leading dashes from component names like `-inner-component`
+      if (!managers.component.canHandle(kebabName) && managers.component.canHandle(`-${kebabName}`)) {
+        kebabName = `-${kebabName}`;
+      }
       if (managers.component.canHandle(kebabName)) {
         // Build args from tagProps - convert Props format to args object
         // IMPORTANT: Keep args LAZY - don't evaluate functions yet!
@@ -5568,16 +5671,23 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
       }
       if (hasFromComponentHelper) {
-        const kebabName = doubleDashToSlash(pascalToKebab(resolvedTag));
+        let kebabName2 = doubleDashToSlash(pascalToKebab(resolvedTag));
+        // Before throwing, try with leading dash — GXT strips leading dashes
+        // from component names like `-inner-component` during PascalCase conversion
+        const managers2 = g.$_MANAGERS;
+        if (managers2?.component?.canHandle?.(`-${kebabName2}`)) {
+          // The component exists with a leading dash — don't throw, just skip
+        } else {
         const notFoundErr = new Error(
-          `Attempted to resolve \`${kebabName}\`, which was expected to be a component, but nothing was found. ` +
-          `Could not find component named "${kebabName}" (no component or template with that name was found)`
+          `Attempted to resolve \`${kebabName2}\`, which was expected to be a component, but nothing was found. ` +
+          `Could not find component named "${kebabName2}" (no component or template with that name was found)`
         );
         const captureErr = g.__captureRenderError;
         if (typeof captureErr === 'function') {
           captureErr(notFoundErr);
         }
         throw notFoundErr;
+        }
       }
     }
 
@@ -6817,8 +6927,15 @@ export function precompileTemplate(templateString: string, options?: {
   // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
   // Block form was already handled by the GXT block visitor.
 
-  // {{#@argName args}}content{{/@argName}} block invocations are now handled
-  // directly in the GXT AST compiler's block visitor (AtHead detection).
+  // {{#@argName args}}content{{/@argName}} block invocations: GXT's AST compiler
+  // may not emit code for these (AtHead detection returns empty). Transform them
+  // to {{#component @argName}}content{{/component}} which GXT handles properly.
+  transformedTemplate = transformedTemplate.replace(
+    /\{\{#(@[a-zA-Z_][a-zA-Z0-9_]*)((?:\s+[^}]*)?)}}([\s\S]*?)\{\{\/@[a-zA-Z_][a-zA-Z0-9_]*\}\}/g,
+    (match, argRef, extraArgs, body) => {
+      return `{{#component ${argRef}${extraArgs}}}${body}{{/component}}`;
+    }
+  );
 
   // NOTE: Empty component @__hasBlock__ marker transform has been moved to the GXT AST compiler
   // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
