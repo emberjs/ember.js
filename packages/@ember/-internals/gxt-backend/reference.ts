@@ -1,14 +1,167 @@
 import { cell, formula } from '@lifeart/gxt';
 import { reference } from '@lifeart/gxt/glimmer-compatibility';
+import { getProp, setProp } from '@glimmer/global-context';
+import {
+  track,
+  validateTag,
+  valueForTag,
+  consumeTag,
+  createCache,
+} from './validator';
 
-export const {
-  createComputeRef,
-  createConstRef,
-  createUnboundRef,
-  createPrimitiveRef,
-  childRefFor,
-  valueForRef,
-} = reference;
+const _createConstRef = reference.createConstRef;
+const _createComputeRef = reference.createComputeRef;
+const _createUnboundRef = reference.createUnboundRef;
+const _createPrimitiveRef = reference.createPrimitiveRef;
+const _childRefFor = reference.childRefFor;
+const _valueForRef = reference.valueForRef;
+
+// Markers used by the @glimmer/reference:References test suite to decide
+// const/unbound/readonly/invokable status without touching the existing
+// cell/formula return shapes that <Input>/<Textarea>/{{mut}} depend on.
+const CONST_MARKER = Symbol('gxt:const');
+const UNBOUND_MARKER = Symbol('gxt:unbound');
+const READONLY_MARKER = Symbol('gxt:readonly');
+const COMPUTED_MARKER = Symbol('gxt:computed');
+const INVOKABLE_MARKER = Symbol('gxt:invokable');
+
+export const createPrimitiveRef = _createPrimitiveRef;
+
+export function createConstRef(value: any, debugLabel?: any): any {
+  const ref = _createConstRef(value, debugLabel);
+  try {
+    (ref as any)[CONST_MARKER] = true;
+  } catch {
+    // ignore (frozen)
+  }
+  return ref;
+}
+
+export function createUnboundRef(value: any, debugLabel?: any): any {
+  const ref = _createUnboundRef(value, debugLabel);
+  try {
+    (ref as any)[UNBOUND_MARKER] = true;
+    (ref as any).__unboundValue = value;
+  } catch {
+    // ignore
+  }
+  return ref;
+}
+
+// createComputeRef: preserve existing cell/formula-backed behavior for
+// production code paths (Input/mut/helpers) while adding classic-style
+// memoization + update contract for callers that pass a compute fn (+
+// optional update fn). The returned object still exposes a `.value` getter
+// and `.update` method so gxt-internal childRefFor/bindings see the same
+// shape.
+export function createComputeRef(
+  compute: () => any,
+  update?: ((value: any) => void) | null,
+  debugLabel?: any
+): any {
+  // If caller passes no update fn, use a memoized classic-style ref
+  // backed by track()/validateTag so that the @glimmer/reference test
+  // suite observes correct caching semantics. When an update fn is
+  // provided, fall through to the cell/formula-backed path so that
+  // two-way binding (Input/mut) keeps working unchanged.
+  if (typeof update !== 'function') {
+    // Use classic-compliant createCache() which captures consumeTag()
+    // deps (including @tracked property reads via tagFor) and only
+    // recomputes when any consumed tag's revision advances.
+    const cache = createCache(compute);
+    const ref: any = {
+      [COMPUTED_MARKER]: true,
+      debugLabel,
+      get value() {
+        return cache.value;
+      },
+      compute,
+    };
+    return ref;
+  }
+  const ref = _createComputeRef(compute);
+  try {
+    (ref as any)[COMPUTED_MARKER] = true;
+    (ref as any).update = update;
+    (ref as any).compute = compute;
+    (ref as any).debugLabel = debugLabel;
+  } catch {
+    // ignore
+  }
+  return ref;
+}
+
+export function valueForRef(ref: any): any {
+  if (ref && ref[COMPUTED_MARKER] === true && !('cell' in ref)) {
+    return ref.value;
+  }
+  return _valueForRef(ref);
+}
+
+export function childRefFor(parentRef: any, path: string): any {
+  if (parentRef == null) return _childRefFor(parentRef, path);
+  // Unbound refs: snapshot the child value and return a new unbound ref.
+  if (parentRef[UNBOUND_MARKER] === true) {
+    const parent = valueForRef(parentRef);
+    if (parent != null && (typeof parent === 'object' || typeof parent === 'function')) {
+      return createUnboundRef((parent as any)[path], path);
+    }
+    return createUnboundRef(undefined, path);
+  }
+  // For computed/const/readonly/invokable refs produced by our wrappers,
+  // route child access through the global-context getProp/setProp hooks so
+  // classic @glimmer/reference semantics are preserved.
+  if (
+    parentRef[CONST_MARKER] === true ||
+    parentRef[COMPUTED_MARKER] === true ||
+    parentRef[READONLY_MARKER] === true ||
+    parentRef[INVOKABLE_MARKER] === true
+  ) {
+    // Cache children so repeated childRefFor returns the same ref
+    let children = parentRef.__gxtChildren as Map<string, any> | undefined;
+    if (!children) {
+      children = new Map();
+      try {
+        parentRef.__gxtChildren = children;
+      } catch {
+        // ignore
+      }
+    }
+    const cached = children.get(path);
+    if (cached) return cached;
+    // Build a classic-cache-backed child ref. createCache() captures
+    // consumeTag() deps (including @tracked property reads) and only
+    // recomputes when any consumed tag's revision advances — producing
+    // the exact "N gets for N mutations" semantics asserted by the
+    // @glimmer/reference:References tests.
+    const childCompute = () => {
+      const p = valueForRef(parentRef);
+      if (p != null && (typeof p === 'object' || typeof p === 'function')) {
+        return getProp(p as object, path);
+      }
+      return undefined;
+    };
+    const childCache = createCache(childCompute);
+    const label = `${String((parentRef as any).debugLabel ?? 'const')}.${path}`;
+    const child: any = {
+      [COMPUTED_MARKER]: true,
+      debugLabel: label,
+      get value() {
+        return childCache.value;
+      },
+      compute: childCompute,
+      update(val: any) {
+        const p = valueForRef(parentRef);
+        if (p != null && (typeof p === 'object' || typeof p === 'function')) {
+          setProp(p as object, path, val);
+        }
+      },
+    };
+    children.set(path, child);
+    return child;
+  }
+  return _childRefFor(parentRef, path);
+}
 
 // Symbol to identify reference objects
 export const REFERENCE = Symbol('REFERENCE');
@@ -22,6 +175,8 @@ export const TRUE_REFERENCE = cell(true, 'TRUE_REFERENCE');
 // Check if a reference is constant (never changes)
 export function isConstRef(ref: any): boolean {
   if (!ref) return false;
+  if (ref[CONST_MARKER] === true) return true;
+  if (ref[UNBOUND_MARKER] === true) return true;
   // A const ref has no setter and is not computed
   if (ref === FALSE_REFERENCE || ref === TRUE_REFERENCE ||
       ref === NULL_REFERENCE || ref === UNDEFINED_REFERENCE) {
@@ -39,6 +194,10 @@ export function isConstRef(ref: any): boolean {
 // Check if a reference can be updated
 export function isUpdatableRef(ref: any): boolean {
   if (!ref) return false;
+  // Const and unbound refs are never updatable (additive marker check).
+  if (ref[CONST_MARKER] === true) return false;
+  if (ref[UNBOUND_MARKER] === true) return false;
+  if (ref[READONLY_MARKER] === true) return false;
   // Cell-based refs are updatable
   if ('value' in ref && typeof ref.update === 'function') {
     return true;
@@ -59,8 +218,15 @@ export function updateRef(ref: any, value: any): void {
   if (!ref) return;
   if (typeof ref.update === 'function') {
     ref.update(value);
-  } else if ('value' in ref) {
-    ref.value = value;
+    return;
+  }
+  // Avoid writing to cell getters that lack an update method.
+  try {
+    if ('value' in ref) {
+      ref.value = value;
+    }
+  } catch {
+    /* ignore: cannot set read-only getter */
   }
 }
 
@@ -76,27 +242,68 @@ export function childRefFromParts(parentRef: any, parts: string[]) {
 // Check if a reference is invokable (can be called as a function)
 export function isInvokableRef(ref: any): boolean {
   if (!ref) return false;
-  return typeof ref.invoke === 'function' || ref.isInvokable === true;
+  return (
+    ref[INVOKABLE_MARKER] === true ||
+    typeof ref.invoke === 'function' ||
+    ref.isInvokable === true
+  );
 }
 
-// Create an invokable reference (wraps a function)
-export function createInvokableRef(fn: Function, debugLabel?: string) {
-  const ref = formula(() => fn, debugLabel || 'invokableRef');
+// Create an invokable reference that transparently delegates valueForRef,
+// updateRef, and childRefFor to the inner reference (matching
+// @glimmer/reference:createInvokableRef semantics).
+export function createInvokableRef(inner: any, _debugLabel?: string) {
+  const ref = createComputeRef(
+    () => valueForRef(inner),
+    (value: any) => updateRef(inner, value),
+    (inner && inner.debugLabel) || 'invokableRef'
+  );
+  (ref as any)[INVOKABLE_MARKER] = true;
   (ref as any).isInvokable = true;
-  (ref as any).invoke = (...args: any[]) => fn(...args);
+  (ref as any).__invokableInner = inner;
+  (ref as any).invoke = (...args: any[]) => {
+    const fn = valueForRef(inner) as unknown;
+    if (typeof fn === 'function') return (fn as Function)(...args);
+    return undefined;
+  };
   return ref;
 }
 
-// Create a read-only wrapper around a reference
-export function createReadOnlyRef(ref: any, debugLabel?: string) {
-  return formula(() => valueForRef(ref), debugLabel || 'readOnlyRef');
+// Create a read-only wrapper around a reference. Matches the classic
+// semantics where a non-updatable inner ref is returned as-is.
+export function createReadOnlyRef(ref: any, _debugLabel?: string) {
+  if (!isUpdatableRef(ref)) return ref;
+  const readOnly = createComputeRef(
+    () => valueForRef(ref),
+    null,
+    (ref && ref.debugLabel) || 'readOnlyRef'
+  );
+  (readOnly as any)[READONLY_MARKER] = true;
+  return readOnly;
 }
 
-// Create a debug alias reference (for development tools)
-export function createDebugAliasRef(inner: any, debugLabel: string) {
-  const ref = formula(() => valueForRef(inner), debugLabel);
+// Create a debug alias reference (for development tools). The @glimmer
+// signature is (debugLabel, inner); support both orders for safety.
+export function createDebugAliasRef(debugLabelOrInner: any, innerOrLabel: any) {
+  let debugLabel: string;
+  let inner: any;
+  if (typeof debugLabelOrInner === 'string') {
+    debugLabel = debugLabelOrInner;
+    inner = innerOrLabel;
+  } else {
+    inner = debugLabelOrInner;
+    debugLabel = innerOrLabel;
+  }
+  const update = isUpdatableRef(inner)
+    ? (value: any) => updateRef(inner, value)
+    : null;
+  const ref = createComputeRef(() => valueForRef(inner), update, debugLabel);
   (ref as any).debugLabel = debugLabel;
   (ref as any).inner = inner;
+  if (inner && inner[INVOKABLE_MARKER] === true) {
+    (ref as any)[INVOKABLE_MARKER] = true;
+    (ref as any).isInvokable = true;
+  }
   return ref;
 }
 
