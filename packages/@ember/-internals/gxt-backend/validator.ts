@@ -107,9 +107,11 @@ export function track(cb: () => void): any {
   // If no specific tags were consumed, return a track-tag that uses the
   // global revision counter (broad invalidation) — matches existing
   // semantics relied on by autoComputed / alias chain tags.
+  const consumedArr = Array.from(consumed);
   if (consumed.size === 0) {
-    const tag = {
+    const tag: any = {
       _isTrackTag: true,
+      _consumed: consumedArr,
       get value() { return globalRevisionCounter; },
     };
     return tag;
@@ -118,12 +120,11 @@ export function track(cb: () => void): any {
   // Otherwise, return a combined tag scoped to the specific consumed
   // tags. This ensures that dirties of unrelated (especially untracked)
   // tags don't invalidate a frame that didn't actually read them.
-  const deps = Array.from(consumed);
-  const tag: any = { _isCombinedTag: true };
+  const tag: any = { _isCombinedTag: true, _consumed: consumedArr };
   Object.defineProperty(tag, 'value', {
     get() { return currentTagRevision(tag); },
   });
-  combinedTagConstituents.set(tag, deps);
+  combinedTagConstituents.set(tag, consumedArr);
   return tag;
 }
 
@@ -329,11 +330,13 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
 const _cacheTagTracker: Set<any>[] = [];
 
 export function getValue<T>(cache: { value: T }): T {
-  if (cache == null || typeof cache !== 'object' || (cache as any)._isCacheObj !== true) {
+  if (cache == null || typeof cache !== 'object') {
     throw new Error(
       `getValue() can only be used on an instance of a cache created with createCache(). Called with: ${String(cache)}`
     );
   }
+  // Support both createCache objects and any object with a .value getter
+  // (e.g. GXT cells, custom cache-like objects).
   return cache.value;
 }
 
@@ -555,6 +558,16 @@ export function dirtyTagFor(obj: any, key: any) {
   if (typeof schedule === 'function') {
     schedule();
   }
+
+  // Notify the scheduler (typically _backburner.ensureInstance()) so that the
+  // backburner run loop drains and flushAsyncObservers fires. Without this,
+  // @tracked setter → dirtyTagFor outside an explicit run() never starts a
+  // run loop, so async observers watching dependentKeyCompat getters never
+  // get flushed.
+  try {
+    const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
+    if (typeof sr === 'function') sr();
+  } catch { /* noop */ }
 
   // Then call the original dirtyTagFor with the safe key
   let result: any;
