@@ -118,9 +118,11 @@ const bindTransform: ChildRefTransform = (parent, path, value) => {
     const capturedParent = parent;
     entry = {
       original: value,
-      wrapper: function (this: unknown, ...args: unknown[]) {
-        const fn = (capturedParent as Record<string, CallableFunction>)[path];
-        return fn?.call(capturedParent, ...args);
+      wrapper: function (this: unknown, ...args: unknown[]): unknown {
+        const fn = (capturedParent as Record<string, unknown>)[path];
+        if (typeof fn === 'function') {
+          return Reflect.apply(fn, capturedParent, args) as unknown;
+        }
       },
     };
     cache.set(path, entry);
