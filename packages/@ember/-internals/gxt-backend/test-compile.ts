@@ -25,6 +25,7 @@ export default function compile(
     moduleName: options.moduleName ?? options.meta?.moduleName ?? '(unknown template module)',
     strictMode: options.strictMode ?? false,
     ...options,
+    scopeValues: Object.keys(_scopeValues).length > 0 ? _scopeValues : undefined,
   });
 }
 
