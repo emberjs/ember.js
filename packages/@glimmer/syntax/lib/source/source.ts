@@ -12,11 +12,15 @@ export class Source {
     return new Source(source, options.meta?.moduleName);
   }
 
+  /** Char offset of each `\n` in the source. */
+  readonly #newlineOffsets: readonly number[];
+
   constructor(
     readonly source: string,
     readonly module = 'an unknown module'
   ) {
     setLocalDebugType('syntax:source', this);
+    this.#newlineOffsets = computeNewlineOffsets(source);
   }
 
   /**
@@ -42,66 +46,57 @@ export class Source {
   }
 
   hbsPosFor(offset: number): Nullable<SourcePosition> {
-    let seenLines = 0;
-    let seenChars = 0;
-
-    if (offset > this.source.length) {
-      return null;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    while (true) {
-      let nextLine = this.source.indexOf('\n', seenChars);
-
-      if (offset <= nextLine || nextLine === -1) {
-        return {
-          line: seenLines + 1,
-          column: offset - seenChars,
-        };
-      } else {
-        seenLines += 1;
-        seenChars = nextLine + 1;
-      }
-    }
+    if (offset < 0 || offset > this.source.length) return null;
+    const lineIdx = lowerBound(this.#newlineOffsets, offset);
+    return { line: lineIdx + 1, column: offset - this.#lineStartFor(lineIdx) };
   }
 
-  charPosFor(position: SourcePosition): number | null {
-    let { line, column } = position;
-    let sourceString = this.source;
-    let sourceLength = sourceString.length;
-    let seenLines = 0;
-    let seenChars = 0;
+  charPosFor({ line, column }: SourcePosition): number | null {
+    const lineIdx = line - 1;
+    // Valid lines are [0, newlineOffsets.length]. Anything else has no offset.
+    if (lineIdx < 0 || lineIdx > this.#newlineOffsets.length || column < 0) return null;
 
-    while (seenChars < sourceLength) {
-      let nextLine = this.source.indexOf('\n', seenChars);
-      if (nextLine === -1) nextLine = this.source.length;
+    const lineStart = lineIdx === 0 ? 0 : (this.#newlineOffsets[lineIdx - 1] as number) + 1;
+    const lineEnd = this.#newlineOffsets[lineIdx] ?? this.source.length;
+    const target = lineStart + column;
 
-      if (seenLines === line - 1) {
-        if (seenChars + column > nextLine) return nextLine;
-
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (DEBUG) {
-          let roundTrip = this.hbsPosFor(seenChars + column);
-          localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
-          localAssert(
-            roundTrip.line === line,
-            `the round-tripped line didn't match the original line`
-          );
-          localAssert(
-            roundTrip.column === column,
-            `the round-tripped column didn't match the original column`
-          );
-        }
-
-        return seenChars + column;
-      } else if (nextLine === -1) {
-        return 0;
-      } else {
-        seenLines += 1;
-        seenChars = nextLine + 1;
+    if (target <= lineEnd) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (DEBUG) {
+        const roundTrip = this.hbsPosFor(target);
+        localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
+        localAssert(roundTrip.line === line, `line round-trip mismatch`);
+        localAssert(roundTrip.column === column, `column round-trip mismatch`);
       }
+      return target;
     }
-
-    return sourceLength;
+    return lineEnd;
   }
+
+  #lineStartFor(lineIdx: number): number {
+    if (lineIdx === 0) return 0;
+    const prevNl = this.#newlineOffsets[lineIdx - 1];
+    return prevNl === undefined ? 0 : prevNl + 1;
+  }
+}
+
+function computeNewlineOffsets(source: string): number[] {
+  const offsets: number[] = [];
+  for (let i = source.indexOf('\n'); i !== -1; i = source.indexOf('\n', i + 1)) {
+    offsets.push(i);
+  }
+  return offsets;
+}
+
+/** Lower-bound binary search: smallest i with arr[i] >= target, else arr.length. */
+function lowerBound(arr: readonly number[], target: number): number {
+  let lo = 0;
+  let hi = arr.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    // mid is in [lo, hi) so always a valid index.
+    if ((arr[mid] as number) < target) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
 }
