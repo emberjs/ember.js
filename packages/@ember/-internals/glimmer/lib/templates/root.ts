@@ -482,17 +482,14 @@ export default function createRootTemplate(_owner: any) {
       renderContext[$SLOTS_KEY] = {};
       renderContext.$fw = [[], [], []];
 
-      // Install model as a live getter so this.model reads from
-      // the controller (which gets model set via controller.set('model', ...)).
-      if (controller) {
-        const ctrl = controller;
-        Object.defineProperty(renderContext, 'model', {
-          get() { return ctrl.model; },
-          set(v: any) { ctrl.model = v; },
-          enumerable: true,
-          configurable: true,
-        });
-      } else if (!componentInstance) {
+      // Set model as a plain property so cellFor can install a tracked
+      // getter/setter. A manual getter (get() { return ctrl.model }) prevents
+      // GXT formula tracking: the formula sees no cell reads, marks itself
+      // isConst, and never re-evaluates when the model changes on route
+      // transitions. With a plain property + cellFor, the formula tracks the
+      // cell and re-evaluates when the cell is updated via __gxtComponentContexts
+      // propagation (triggered by set(controller, 'model', newValue)).
+      if (!componentInstance) {
         renderContext.model = model;
       }
 
@@ -691,13 +688,12 @@ export default function createRootTemplate(_owner: any) {
               _registerOwner(newModel, lastArgsObj, 'model');
               _registerOwner(newModel, lastRenderContext, 'model');
             }
-            // Also update model on the render context if it's a direct property
-            const ctxDesc = Object.getOwnPropertyDescriptor(lastRenderContext, 'model');
-            if (ctxDesc && !ctxDesc.get) {
-              const ctxCell = _cellFor(lastRenderContext, 'model', /* skipDefine */ true);
-              if (ctxCell) {
-                ctxCell.value = newModel;
-              }
+            // Always update model on the render context cell.
+            // The cell was installed by cellFor during initial render; updating
+            // it here ensures GXT formulas tracking this.model re-evaluate.
+            const ctxCell = _cellFor(lastRenderContext, 'model', /* skipDefine */ true);
+            if (ctxCell) {
+              ctxCell.value = newModel;
             }
             // Update outletState
             lastRenderContext.outletState = effectiveOutlet;
