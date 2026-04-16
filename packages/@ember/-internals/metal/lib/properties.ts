@@ -133,7 +133,7 @@ export function defineValue(
       value,
     });
   } else {
-    if (DEBUG && !(globalThis as any).__GXT_MODE__) {
+    if (DEBUG) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
       (obj as any)[keyName] = value;
