@@ -31,7 +31,7 @@ export function tagForProperty(
 
   let tag = tagFor(obj, propertyKey, meta);
 
-  if (DEBUG && addMandatorySetter) {
+  if (DEBUG && addMandatorySetter && !(globalThis as any).__GXT_MODE__) {
     setupMandatorySetter!(tag, obj, propertyKey);
   }
 
