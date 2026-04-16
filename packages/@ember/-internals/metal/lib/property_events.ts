@@ -89,7 +89,15 @@ function notifyPropertyChange(
   }
 
   if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
-    return;
+    // GXT fix: In GXT mode, isPrototypeMeta can return a false positive for
+    // controller instances (meta.proto === meta.source === obj). We still
+    // need markObjectAsDirty to fire so async QP observers detect changes.
+    // Skip only for true initializing metas.
+    if (!meta.isInitializing() && (globalThis as any).__GXT_MODE__) {
+      // Fall through — allow markObjectAsDirty for GXT prototype-meta objects
+    } else {
+      return;
+    }
   }
 
   // Guard against infinite re-entrant notifyPropertyChange calls

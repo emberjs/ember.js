@@ -5,6 +5,7 @@ import {
   descriptorForProperty,
   flushAsyncObservers,
 } from '@ember/-internals/metal';
+import { meta as metaFor } from '@ember/-internals/meta';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
@@ -931,6 +932,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     }
 
     let states = queryParams.states;
+
+    // GXT fix: Ensure the controller has a writable instance meta, not just an
+    // inherited prototype meta. Without this, notifyPropertyChange on QP values
+    // skips markObjectAsDirty because isPrototypeMeta(controller) returns true —
+    // causing async QP observers to never detect the dirty tag, so URL/LinkTo
+    // hrefs never update when QPs change.
+    if ((globalThis as any).__GXT_MODE__) {
+      metaFor(controller);
+    }
 
     controller._qpDelegate = states.allowOverrides;
 
