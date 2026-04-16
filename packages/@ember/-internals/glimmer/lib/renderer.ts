@@ -377,6 +377,55 @@ class ComponentRootState {
   }
 }
 
+// --- ArrayProxy content → component cell bridge ---
+// Maps a content array to { proxy, ownerObj, ownerKey } so that when
+// notifyPropertyChange(content, '[]') fires, we can dirty the component
+// cell with the proxy value (not the content array).
+const _proxyContentOwners = new WeakMap<object, Set<{ proxy: any; obj: object; key: string }>>();
+
+function _registerArrayProxyOwner(proxy: any, ownerObj: object, ownerKey: string) {
+  try {
+    const desc = Object.getOwnPropertyDescriptor(proxy, 'content');
+    if (!desc || desc.get) return; // content is a CP, skip
+    const content = desc.value;
+    if (!content || !Array.isArray(content)) return;
+    let owners = _proxyContentOwners.get(content);
+    if (!owners) {
+      owners = new Set();
+      _proxyContentOwners.set(content, owners);
+    }
+    owners.add({ proxy, obj: ownerObj, key: ownerKey });
+  } catch { /* ignore */ }
+}
+
+// Wrap __gxtTriggerReRender once to also handle ArrayProxy content arrays.
+let _triggerReRenderPatched = false;
+function _ensureTriggerReRenderPatched() {
+  if (_triggerReRenderPatched) return;
+  _triggerReRenderPatched = true;
+  const origTrigger = (globalThis as any).__gxtTriggerReRender;
+  if (!origTrigger) return;
+  const _cellFor = (globalThis as any).__gxtCellFor;
+  if (!_cellFor) return;
+  (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
+    // Call original first
+    origTrigger(obj, keyName);
+    // If this is a '[]' or 'length' notification on a native array that is
+    // the content of an ArrayProxy, dirty the component cell with the proxy.
+    if ((keyName === '[]' || keyName === 'length') && Array.isArray(obj)) {
+      const owners = _proxyContentOwners.get(obj);
+      if (owners) {
+        for (const { proxy, obj: ownerObj, key: ownerKey } of owners) {
+          try {
+            const c = _cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(proxy); // Update with proxy, not content array
+          } catch { /* ignore */ }
+        }
+      }
+    }
+  };
+}
+
 class ClassicRootState {
   readonly type = 'classic';
   public id: string;
@@ -513,6 +562,7 @@ class ClassicRootState {
             // tracking (in $_if, $_each, etc.) picks up cell.value reads.
             const _cellFor = (globalThis as any).__gxtCellFor;
             const _registerArrayOwner = (globalThis as any).__gxtRegisterArrayOwner;
+            _ensureTriggerReRenderPatched();
             if (_cellFor) {
               const skipProps = new Set(['args', 'constructor', 'element', 'tagName',
                 'layoutName', 'layout', 'elementId', 'isView', 'isComponent',
@@ -533,6 +583,13 @@ class ClassicRootState {
                   // Register array owner for KVO array mutation tracking
                   if (_registerArrayOwner && Array.isArray(value)) {
                     _registerArrayOwner(value, component, key);
+                  }
+                  // For ArrayProxy values, register the proxy in a separate map
+                  // so that when its content array fires notifyPropertyChange,
+                  // we can dirty the component cell with the proxy (not the content).
+                  if (_registerArrayOwner && value && typeof value === 'object' &&
+                      typeof value.objectAt === 'function' && !Array.isArray(value)) {
+                    _registerArrayProxyOwner(value, component, key);
                   }
                   cellCount++;
                 } catch { /* ignore */ }
