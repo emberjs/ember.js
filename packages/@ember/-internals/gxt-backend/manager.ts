@@ -4800,8 +4800,11 @@ const $_MANAGERS = {
           proto = Object.getPrototypeOf(proto);
         }
       }
-      // Also check for component templates set directly on the object
-      if (globalThis.COMPONENT_TEMPLATES?.has(komp)) {
+      // Also check for component templates set directly on the object.
+      // Unwrap Proxy if needed — GXT's cell tracking wraps objects in Proxies,
+      // but setComponentTemplate stores templates keyed by the original object.
+      if (globalThis.COMPONENT_TEMPLATES?.has(komp) ||
+          globalThis.COMPONENT_TEMPLATES?.has(_proxyToRaw.get(komp) || komp)) {
         return true;
       }
       if (komp?.create && typeof komp.create === 'function') {
@@ -5200,7 +5203,7 @@ const $_MANAGERS = {
         // If the component has a GXT template, render it directly instead of
         // going through handleManagedComponent (which requires manager.create).
         if (typeof manager.create !== 'function') {
-          const tpl = globalThis.COMPONENT_TEMPLATES?.get(komp);
+          const tpl = globalThis.COMPONENT_TEMPLATES?.get(komp) || globalThis.COMPONENT_TEMPLATES?.get(_proxyToRaw.get(komp) || komp);
           if (tpl) {
             let resolvedTpl = tpl;
             if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
@@ -5235,6 +5238,43 @@ const $_MANAGERS = {
           return () => document.createComment('template-only (no template)');
         }
         return handleManagedComponent(komp, args, fw, ctx, manager, owner);
+      }
+
+      // Fallback: if the component has a template in globalThis.COMPONENT_TEMPLATES but
+      // no manager was found in globalThis.INTERNAL_MANAGERS, it may be a template-only
+      // component whose manager was set via the original (pre-bundled) @glimmer/manager
+      // module, which has a separate private WeakMap. Render the template directly.
+      {
+        const fallbackTpl = globalThis.COMPONENT_TEMPLATES?.get(komp) || globalThis.COMPONENT_TEMPLATES?.get(_proxyToRaw.get(komp) || komp);
+        if (fallbackTpl) {
+          let resolvedTpl = fallbackTpl;
+          if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
+            resolvedTpl = resolvedTpl(owner);
+          }
+          if (resolvedTpl?.render) {
+            const $SLOTS = Symbol.for('gxt-slots');
+            const renderCtx: any = {};
+            if (args) {
+              for (const key of Object.keys(args)) {
+                if (key === 'args' || key.startsWith('$')) continue;
+                const desc = Object.getOwnPropertyDescriptor(args, key);
+                if (desc) {
+                  Object.defineProperty(renderCtx, key, desc);
+                }
+              }
+            }
+            renderCtx.args = args || {};
+            renderCtx.owner = owner;
+            const slots = args?.[$SLOTS] || args?.args?.[$SLOTS];
+            if (slots) {
+              renderCtx.$slots = slots;
+              renderCtx[Symbol.for('gxt-slots')] = slots;
+            }
+            const container = document.createDocumentFragment();
+            renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
+            return container;
+          }
+        }
       }
 
       // Handle classic factory-based component
@@ -8058,6 +8098,13 @@ export function getComponentTemplate(comp: any): any {
   // Direct lookup first
   const direct = globalThis.COMPONENT_TEMPLATES.get(comp);
   if (direct !== undefined) return direct;
+  // Unwrap Proxy if needed — GXT's cell tracking wraps objects in Proxies,
+  // but setComponentTemplate stores templates keyed by the original object.
+  const unwrapped = _proxyToRaw.get(comp);
+  if (unwrapped) {
+    const fromRaw = globalThis.COMPONENT_TEMPLATES.get(unwrapped);
+    if (fromRaw !== undefined) return fromRaw;
+  }
   // Walk prototype chain for inheritance support
   if (comp && typeof comp === 'function') {
     let proto = Object.getPrototypeOf(comp);
