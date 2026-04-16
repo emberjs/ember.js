@@ -36,7 +36,7 @@ interface ExtendedObject {
   @return {Object} the passed value.
   @public
 */
-export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
+export function set<T>(obj: object, keyName: string | number, value: T, tolerant?: boolean): T {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -49,16 +49,18 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
     `The key provided to set must be a string or number, you passed ${keyName}`,
     typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
   );
+
+  // Normalize numeric keys to strings for consistent downstream handling
+  if (typeof keyName === 'number') {
+    keyName = String(keyName);
+  }
+
   assert(
     `'this' in paths is not supported`,
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
 
   if ((obj as ExtendedObject).isDestroyed) {
-    if ((globalThis as any).__GXT_MODE__) {
-      // In GXT mode, silently skip set() on destroyed objects during teardown
-      return value;
-    }
     assert(
       `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
