@@ -39,7 +39,7 @@ import {
 } from '@glimmer/debug';
 import { debugToString, localAssert } from '@glimmer/debug-util';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
-import { debugAssert, getProp, setProp, toBool } from '@glimmer/global-context';
+import { debugAssert, setProp, toBool } from '@glimmer/global-context';
 import {
   getInternalComponentManager,
   getInternalHelperManager,
@@ -84,64 +84,39 @@ function hasDefinitionManager(value: object): boolean {
   );
 }
 
-interface BoundEntry {
-  original: CallableFunction;
-  bound: CallableFunction;
-}
-
-const BOUND_FN_CACHE: WeakMap<object, Map<string, BoundEntry>> = new WeakMap();
-
-// A unique key prefix for bound child refs, to avoid collisions with
-// regular childRefFor's cache on the same parent reference.
-const BOUND_KEY_PREFIX = '\0bound:';
-
-// Like childRefFor, but auto-binds the resolved value to its parent via
-// `.bind(parent)` when the value is a plain function (not a component or
-// modifier definition). This preserves `this` for class methods passed as
-// callbacks (e.g. `{{on "click" this.foo}}`).
+// Like childRefFor, but for function values returns a stable wrapper that
+// defers the property read to invocation time, calling it with the parent
+// as `this`. Non-function values pass through unchanged.
 //
-// The result is cached on the parent reference (same as childRefFor) so that
-// multiple reads of the same path return the same Reference identity — required
-// for modifier update diffing and autotracking stability.
+// Uses childRefFor internally for tracking — the property is only tracked
+// the same way it would be without binding.
 function boundChildRefFor(parentRef: Reference, path: string): Reference {
-  let parentImpl = parentRef as { children: null | Map<string, Reference> };
+  const innerRef = childRefFor(parentRef, path);
 
-  let cacheKey = BOUND_KEY_PREFIX + path;
+  let cachedParent: object | null = null;
+  let wrapper: CallableFunction | null = null;
 
-  if (parentImpl.children !== null) {
-    let cached = parentImpl.children.get(cacheKey);
-    if (cached) return cached;
-  } else {
-    parentImpl.children = new Map();
-  }
-
-  const ref = createComputeRef(
+  return createComputeRef(
     () => {
-      const parent = valueForRef(parentRef);
+      const value = valueForRef(innerRef);
 
-      if (isDict(parent)) {
-        const value = getProp(parent, path);
-
-        if (typeof value === 'function' && !hasDefinitionManager(value as object)) {
-          let cache = BOUND_FN_CACHE.get(parent);
-          if (cache === undefined) {
-            cache = new Map();
-            BOUND_FN_CACHE.set(parent, cache);
-          }
-
-          let entry = cache.get(path);
-          if (entry === undefined || entry.original !== value) {
-            entry = {
-              original: value as CallableFunction,
-              bound: (value as CallableFunction).bind(parent),
-            };
-            cache.set(path, entry);
-          }
-          return entry.bound;
-        }
-
+      if (typeof value !== 'function' || hasDefinitionManager(value as object)) {
         return value;
       }
+
+      const parent = valueForRef(parentRef);
+
+      // Return a stable wrapper per parent identity. The wrapper defers
+      // the property read to call time — `parent[path]` is evaluated
+      // only when the function is actually invoked, not during render.
+      if (parent !== cachedParent) {
+        cachedParent = parent;
+        wrapper = function (this: unknown, ...args: unknown[]) {
+          const fn = (parent as Record<string, CallableFunction>)[path];
+          return fn?.call(parent, ...args);
+        };
+      }
+      return wrapper;
     },
     (val) => {
       const parent = valueForRef(parentRef);
@@ -151,10 +126,6 @@ function boundChildRefFor(parentRef: Reference, path: string): Reference {
       }
     }
   );
-
-  parentImpl.children.set(cacheKey, ref);
-
-  return ref;
 }
 
 APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
