@@ -1,5 +1,4 @@
 import { set } from '@ember/object';
-import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { template } from '@ember/template-compiler/runtime';
 import { Component } from '../../utils/helpers';
@@ -129,19 +128,17 @@ moduleFor(
       assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
     }
 
-    '@test there is no `this` context within the callback'(assert) {
-      if (DEBUG) {
-        assert.expect(0);
-        return;
-      }
+    '@test this context is preserved within the callback'(assert) {
+      let seenThis;
 
       this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, {
         myFunc() {
-          assert.strictEqual(this, null, 'this is bound to null in production builds');
+          seenThis = this;
         },
       });
 
       this.stashedFn();
+      assert.ok(seenThis !== null && seenThis !== undefined, 'this is bound to the context object');
     }
 
     '@test can use `this` if bound prior to passing to fn'(assert) {

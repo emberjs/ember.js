@@ -366,21 +366,21 @@ if (hasDom) {
       }, /You must pass a function as the second argument to the `on` modifier; you passed null. While rendering:\n{2}this.foo/u);
     }
 
-    @test({ skip: !DEBUG })
-    'asserts if the provided callback accesses `this` without being bound prior to passing to on'(
-      assert: Assert
-    ) {
+    @test
+    'this.myFunc passed to on preserves this context'(assert: Assert) {
+      let seenThis: unknown;
+
       this.render(`<button {{on 'click' this.myFunc}}>Click Me</button>`, {
         myFunc(this: any) {
-          assert.throws(() => {
-            consume(this.arg1);
-          }, /You accessed `this.arg1` from a function passed to the `on` modifier, but the function itself was not bound to a valid `this` context. Consider updating to use a bound function/u);
+          seenThis = this;
         },
 
         arg1: 'foo',
       });
 
       this.findButton().click();
+      assert.ok(seenThis !== null && seenThis !== undefined, 'this is preserved');
+      assert.strictEqual((seenThis as any).arg1, 'foo', 'this is the context object');
     }
 
     @test({ skip: !DEBUG })

@@ -84,16 +84,26 @@ function hasDefinitionManager(value: object): boolean {
   );
 }
 
-// Per-parent cache of wrapper functions so that the same (parent, path) pair
-// returns a stable callable identity across revalidations.
-const BOUND_FN_CACHE: WeakMap<object, Map<string, CallableFunction>> = new WeakMap();
+interface BoundCacheEntry {
+  original: unknown;
+  wrapper: CallableFunction;
+}
+
+// Per-parent cache of wrapper functions. The entry tracks the original function
+// so that when the underlying value changes (e.g. via `set()`), a new wrapper
+// is created — giving modifiers like `{{on}}` a new identity to detect.
+const BOUND_FN_CACHE: WeakMap<object, Map<string, BoundCacheEntry>> = new WeakMap();
 
 // Transform for childRefFor that wraps function values in a stable callable
 // preserving `this`. The wrapper defers the actual property lookup to
 // invocation time — `parent[path]` is evaluated when the function is called,
 // not during render.
 const bindTransform: ChildRefTransform = (parent, path, value) => {
-  if (typeof value !== 'function' || hasDefinitionManager(value as object)) {
+  if (
+    typeof value !== 'function' ||
+    hasDefinitionManager(value as object) ||
+    Object.keys(value as object).length > 0
+  ) {
     return value;
   }
 
@@ -103,15 +113,19 @@ const bindTransform: ChildRefTransform = (parent, path, value) => {
     BOUND_FN_CACHE.set(parent, cache);
   }
 
-  let wrapper = cache.get(path);
-  if (wrapper === undefined) {
-    wrapper = function (this: unknown, ...args: unknown[]) {
-      const fn = (parent as Record<string, CallableFunction>)[path];
-      return fn?.call(parent, ...args);
+  let entry = cache.get(path);
+  if (entry === undefined || entry.original !== value) {
+    const capturedParent = parent;
+    entry = {
+      original: value,
+      wrapper: function (this: unknown, ...args: unknown[]) {
+        const fn = (capturedParent as Record<string, CallableFunction>)[path];
+        return fn?.call(capturedParent, ...args);
+      },
     };
-    cache.set(path, wrapper);
+    cache.set(path, entry);
   }
-  return wrapper;
+  return entry.wrapper;
 };
 
 APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
