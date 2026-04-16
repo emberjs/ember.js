@@ -37,6 +37,7 @@
   "scripts": {
     "actions-up": "pnpm dlx actions-up",
     "bench": "node ./bin/benchmark.mjs",
+    "bench:precompile": "node --expose-gc bin/precompile.bench.mjs",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
     "build": "npm-run-all build:*",
@@ -122,6 +123,7 @@
     "glob": "^8.0.3",
     "globals": "^16.0.0",
     "kill-port-process": "^3.2.1",
+    "mitata": "^1.0.34",
     "mocha": "^11.0.0",
     "npm-run-all2": "^8.0.0",
     "prettier": "^3.5.3",
