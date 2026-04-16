@@ -39,13 +39,14 @@ import {
 } from '@glimmer/debug';
 import { debugToString, localAssert } from '@glimmer/debug-util';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
-import { debugAssert, setProp, toBool } from '@glimmer/global-context';
+import { debugAssert, toBool } from '@glimmer/global-context';
 import {
   getInternalComponentManager,
   getInternalHelperManager,
   getInternalModifierManager,
 } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
+import type { ChildRefTransform } from '@glimmer/reference';
 import {
   childRefFor,
   createComputeRef,
@@ -54,7 +55,7 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { assign, isDict, isIndexable } from '@glimmer/util';
+import { assign, isIndexable } from '@glimmer/util';
 import { $v0 } from '@glimmer/vm';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
@@ -75,8 +76,7 @@ import {
 
 // Returns true if the value has an associated component or modifier manager —
 // meaning it is a definition object that must not be bound. Helper managers are
-// excluded because ALL functions have a default helper manager (RFC #756), and
-// binding a helper function is harmless.
+// excluded because ALL functions have a default helper manager (RFC #756).
 function hasDefinitionManager(value: object): boolean {
   return (
     getInternalModifierManager(value, true) !== null ||
@@ -84,49 +84,35 @@ function hasDefinitionManager(value: object): boolean {
   );
 }
 
-// Like childRefFor, but for function values returns a stable wrapper that
-// defers the property read to invocation time, calling it with the parent
-// as `this`. Non-function values pass through unchanged.
-//
-// Uses childRefFor internally for tracking — the property is only tracked
-// the same way it would be without binding.
-function boundChildRefFor(parentRef: Reference, path: string): Reference {
-  const innerRef = childRefFor(parentRef, path);
+// Per-parent cache of wrapper functions so that the same (parent, path) pair
+// returns a stable callable identity across revalidations.
+const BOUND_FN_CACHE: WeakMap<object, Map<string, CallableFunction>> = new WeakMap();
 
-  let cachedParent: object | null = null;
-  let wrapper: CallableFunction | null = null;
+// Transform for childRefFor that wraps function values in a stable callable
+// preserving `this`. The wrapper defers the actual property lookup to
+// invocation time — `parent[path]` is evaluated when the function is called,
+// not during render.
+const bindTransform: ChildRefTransform = (parent, path, value) => {
+  if (typeof value !== 'function' || hasDefinitionManager(value as object)) {
+    return value;
+  }
 
-  return createComputeRef(
-    () => {
-      const value = valueForRef(innerRef);
+  let cache = BOUND_FN_CACHE.get(parent);
+  if (cache === undefined) {
+    cache = new Map();
+    BOUND_FN_CACHE.set(parent, cache);
+  }
 
-      if (typeof value !== 'function' || hasDefinitionManager(value as object)) {
-        return value;
-      }
-
-      const parent = valueForRef(parentRef);
-
-      // Return a stable wrapper per parent identity. The wrapper defers
-      // the property read to call time — `parent[path]` is evaluated
-      // only when the function is actually invoked, not during render.
-      if (parent !== cachedParent) {
-        cachedParent = parent;
-        wrapper = function (this: unknown, ...args: unknown[]) {
-          const fn = (parent as Record<string, CallableFunction>)[path];
-          return fn?.call(parent, ...args);
-        };
-      }
-      return wrapper;
-    },
-    (val) => {
-      const parent = valueForRef(parentRef);
-
-      if (isDict(parent)) {
-        return setProp(parent, path, val);
-      }
-    }
-  );
-}
+  let wrapper = cache.get(path);
+  if (wrapper === undefined) {
+    wrapper = function (this: unknown, ...args: unknown[]) {
+      const fn = (parent as Record<string, CallableFunction>)[path];
+      return fn?.call(parent, ...args);
+    };
+    cache.set(path, wrapper);
+  }
+  return wrapper;
+};
 
 APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
@@ -275,7 +261,7 @@ APPEND_OPCODES.add(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {
 APPEND_OPCODES.add(VM_GET_PROPERTY_BOUND_OP, (vm, { op1: _key }) => {
   let key = vm.constants.getValue<string>(_key);
   let expr = check(vm.stack.pop(), CheckReference);
-  vm.stack.push(boundChildRefFor(expr, key));
+  vm.stack.push(childRefFor(expr, key, bindTransform));
 });
 
 APPEND_OPCODES.add(VM_GET_BLOCK_OP, (vm, { op1: _block }) => {

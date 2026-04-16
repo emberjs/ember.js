@@ -193,7 +193,13 @@ export function updateRef(_ref: Reference, value: unknown) {
   update(value);
 }
 
-export function childRefFor(_parentRef: Reference, path: string): Reference {
+export type ChildRefTransform = (parent: object, path: string, value: unknown) => unknown;
+
+export function childRefFor(
+  _parentRef: Reference,
+  path: string,
+  transform?: ChildRefTransform
+): Reference {
   const parentRef = _parentRef as ReferenceImpl;
 
   const type = parentRef[REFERENCE];
@@ -201,10 +207,14 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
   let children = parentRef.children;
   let child: Reference;
 
+  // Use a distinct cache key when a transform is provided so that the same
+  // (parent, path) pair can have both a plain and a transformed child ref.
+  const cacheKey = transform ? '\0bound:' + path : path;
+
   if (children === null) {
     children = parentRef.children = new Map();
   } else {
-    const next = children.get(path);
+    const next = children.get(cacheKey);
 
     if (next) return next;
   }
@@ -213,10 +223,9 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     const parent = valueForRef(parentRef);
 
     if (isDict(parent)) {
-      child = createUnboundRef(
-        (parent as Record<string, unknown>)[path],
-        DEBUG && `${parentRef.debugLabel}.${path}`
-      );
+      let value: unknown = (parent as Record<string, unknown>)[path];
+      if (transform) value = transform(parent, path, value);
+      child = createUnboundRef(value, DEBUG && `${parentRef.debugLabel}.${path}`);
     } else {
       child = UNDEFINED_REFERENCE;
     }
@@ -226,7 +235,8 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
         const parent = valueForRef(parentRef);
 
         if (isDict(parent)) {
-          return getProp(parent, path);
+          const value = getProp(parent, path);
+          return transform ? transform(parent, path, value) : value;
         }
       },
       (val) => {
@@ -243,7 +253,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     }
   }
 
-  children.set(path, child);
+  children.set(cacheKey, child);
 
   return child;
 }
