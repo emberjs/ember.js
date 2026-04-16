@@ -7,7 +7,6 @@ import type {
   Initializable,
   ScopeBlock,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
 import {
   CURRIED_HELPER,
   decodeHandle,
@@ -16,6 +15,7 @@ import {
   VM_DYNAMIC_HELPER_OP,
   VM_GET_BLOCK_OP,
   VM_GET_DYNAMIC_VAR_OP,
+  VM_GET_PROPERTY_BOUND_OP,
   VM_GET_PROPERTY_OP,
   VM_GET_VARIABLE_OP,
   VM_HAS_BLOCK_OP,
@@ -39,8 +39,13 @@ import {
 } from '@glimmer/debug';
 import { debugToString, localAssert } from '@glimmer/debug-util';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
-import { debugAssert, toBool } from '@glimmer/global-context';
-import { getInternalHelperManager } from '@glimmer/manager';
+import { debugAssert, getProp, setProp, toBool } from '@glimmer/global-context';
+import {
+  getInternalComponentManager,
+  getInternalHelperManager,
+  getInternalModifierManager,
+} from '@glimmer/manager';
+import type { Reference } from '@glimmer/reference';
 import {
   childRefFor,
   createComputeRef,
@@ -49,7 +54,7 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { assign, isIndexable } from '@glimmer/util';
+import { assign, isDict, isIndexable } from '@glimmer/util';
 import { $v0 } from '@glimmer/vm';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
@@ -67,6 +72,90 @@ import {
   CheckScopeBlock,
   CheckUndefinedReference,
 } from './-debug-strip';
+
+// Returns true if the value has an associated component or modifier manager —
+// meaning it is a definition object that must not be bound. Helper managers are
+// excluded because ALL functions have a default helper manager (RFC #756), and
+// binding a helper function is harmless.
+function hasDefinitionManager(value: object): boolean {
+  return (
+    getInternalModifierManager(value, true) !== null ||
+    getInternalComponentManager(value, true) !== null
+  );
+}
+
+interface BoundEntry {
+  original: CallableFunction;
+  bound: CallableFunction;
+}
+
+const BOUND_FN_CACHE: WeakMap<object, Map<string, BoundEntry>> = new WeakMap();
+
+// A unique key prefix for bound child refs, to avoid collisions with
+// regular childRefFor's cache on the same parent reference.
+const BOUND_KEY_PREFIX = '\0bound:';
+
+// Like childRefFor, but auto-binds the resolved value to its parent via
+// `.bind(parent)` when the value is a plain function (not a component or
+// modifier definition). This preserves `this` for class methods passed as
+// callbacks (e.g. `{{on "click" this.foo}}`).
+//
+// The result is cached on the parent reference (same as childRefFor) so that
+// multiple reads of the same path return the same Reference identity — required
+// for modifier update diffing and autotracking stability.
+function boundChildRefFor(parentRef: Reference, path: string): Reference {
+  let parentImpl = parentRef as { children: null | Map<string, Reference> };
+
+  let cacheKey = BOUND_KEY_PREFIX + path;
+
+  if (parentImpl.children !== null) {
+    let cached = parentImpl.children.get(cacheKey);
+    if (cached) return cached;
+  } else {
+    parentImpl.children = new Map();
+  }
+
+  const ref = createComputeRef(
+    () => {
+      const parent = valueForRef(parentRef);
+
+      if (isDict(parent)) {
+        const value = getProp(parent, path);
+
+        if (typeof value === 'function' && !hasDefinitionManager(value as object)) {
+          let cache = BOUND_FN_CACHE.get(parent);
+          if (cache === undefined) {
+            cache = new Map();
+            BOUND_FN_CACHE.set(parent, cache);
+          }
+
+          let entry = cache.get(path);
+          if (entry === undefined || entry.original !== value) {
+            entry = {
+              original: value as CallableFunction,
+              bound: (value as CallableFunction).bind(parent),
+            };
+            cache.set(path, entry);
+          }
+          return entry.bound;
+        }
+
+        return value;
+      }
+    },
+    (val) => {
+      const parent = valueForRef(parentRef);
+
+      if (isDict(parent)) {
+        return setProp(parent, path, val);
+      }
+    }
+  );
+
+  parentImpl.children.set(cacheKey, ref);
+
+  return ref;
+}
 
 APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
@@ -210,6 +299,12 @@ APPEND_OPCODES.add(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {
   let key = vm.constants.getValue<string>(_key);
   let expr = check(vm.stack.pop(), CheckReference);
   vm.stack.push(childRefFor(expr, key));
+});
+
+APPEND_OPCODES.add(VM_GET_PROPERTY_BOUND_OP, (vm, { op1: _key }) => {
+  let key = vm.constants.getValue<string>(_key);
+  let expr = check(vm.stack.pop(), CheckReference);
+  vm.stack.push(boundChildRefFor(expr, key));
 });
 
 APPEND_OPCODES.add(VM_GET_BLOCK_OP, (vm, { op1: _block }) => {

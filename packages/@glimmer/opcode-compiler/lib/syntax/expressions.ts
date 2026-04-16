@@ -5,6 +5,7 @@ import {
   VM_CONSTANT_REFERENCE_OP,
   VM_FETCH_OP,
   VM_GET_DYNAMIC_VAR_OP,
+  VM_GET_PROPERTY_BOUND_OP,
   VM_GET_PROPERTY_OP,
   VM_GET_VARIABLE_OP,
   VM_HAS_BLOCK_OP,
@@ -55,7 +56,17 @@ EXPRESSIONS.add(SexpOpcodes.Curry, (op, [, expr, type, positional, named]) => {
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {
   op(VM_GET_VARIABLE_OP, sym);
-  withPath(op, path);
+
+  if (sym === 0 && path !== undefined && path.length > 0) {
+    // For `this.*` paths, emit GetPropertyBound for the last segment so that
+    // class methods preserve their `this` binding when passed as callbacks.
+    for (let i = 0; i < path.length - 1; i++) {
+      op(VM_GET_PROPERTY_OP, path[i]);
+    }
+    op(VM_GET_PROPERTY_BOUND_OP, path[path.length - 1]);
+  } else {
+    withPath(op, path);
+  }
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetLexicalSymbol, (op, [, sym, path]) => {

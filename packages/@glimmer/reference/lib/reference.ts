@@ -193,72 +193,6 @@ export function updateRef(_ref: Reference, value: unknown) {
   update(value);
 }
 
-// When a path read like `this.foo` resolves to a prototype method on the
-// parent, we want the consumer (e.g. `{{on "click" this.foo}}`) to see a
-// `this`-bound version, but we must NOT break subsequent property reads
-// (`this.func.aProp` where `func` is a function carrying its own properties).
-//
-// A `Function.prototype.bind` call creates a brand new function object that
-// loses the original's own properties, which breaks the latter case. So
-// instead we return a callable Proxy: invoking it binds `this` to the parent,
-// while property access is forwarded transparently to the original function.
-//
-// The result is cached on the parent (weakly) so that identity is stable
-// across revalidations — required by modifiers that diff callback identity
-// (e.g. `{{on}}` only re-installs the DOM listener when the callback ref
-// changes).
-type AnyFn = (...args: unknown[]) => unknown;
-
-const BOUND_METHODS: WeakMap<object, Map<string, AnyFn>> = new WeakMap();
-
-// True when `path` resolves on the parent's prototype chain to a function
-// declared as a class method. Class-body method shorthand (`foo() {}`) is
-// non-enumerable on the prototype, while functions assigned via object
-// literals (e.g. `Component.extend({ foo() {} })` or a plain context like
-// `{ foo() {} }`) end up enumerable. We only auto-bind the former so that
-// existing object-literal contracts (no implicit `this`) are preserved.
-function isClassMethod(parent: object, path: string): boolean {
-  let proto: object | null = Object.getPrototypeOf(parent) as object | null;
-  while (proto !== null && proto !== Object.prototype && proto !== Function.prototype) {
-    const desc = Object.getOwnPropertyDescriptor(proto, path);
-    if (desc !== undefined) {
-      return desc.enumerable === false && typeof desc.value === 'function';
-    }
-    proto = Object.getPrototypeOf(proto) as object | null;
-  }
-  return false;
-}
-
-function maybeBindPrototypeMethod(parent: object, path: string, value: unknown): unknown {
-  if (
-    typeof value !== 'function' ||
-    parent === null ||
-    (typeof parent !== 'object' && typeof parent !== 'function') ||
-    Object.prototype.hasOwnProperty.call(parent, path) ||
-    !isClassMethod(parent, path)
-  ) {
-    return value;
-  }
-
-  let cache = BOUND_METHODS.get(parent);
-  if (cache === undefined) {
-    cache = new Map();
-    BOUND_METHODS.set(parent, cache);
-  }
-
-  let bound = cache.get(path);
-  if (bound === undefined) {
-    const target = value as AnyFn;
-    bound = new Proxy(target, {
-      apply(fn, _thisArg, args) {
-        return Reflect.apply(fn, parent, args);
-      },
-    });
-    cache.set(path, bound);
-  }
-  return bound;
-}
-
 export function childRefFor(_parentRef: Reference, path: string): Reference {
   const parentRef = _parentRef as ReferenceImpl;
 
@@ -279,9 +213,8 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     const parent = valueForRef(parentRef);
 
     if (isDict(parent)) {
-      const raw = (parent as Record<string, unknown>)[path];
       child = createUnboundRef(
-        maybeBindPrototypeMethod(parent, path, raw),
+        (parent as Record<string, unknown>)[path],
         DEBUG && `${parentRef.debugLabel}.${path}`
       );
     } else {
@@ -293,8 +226,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
         const parent = valueForRef(parentRef);
 
         if (isDict(parent)) {
-          const value = getProp(parent, path);
-          return maybeBindPrototypeMethod(parent, path, value);
+          return getProp(parent, path);
         }
       },
       (val) => {
