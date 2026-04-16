@@ -5278,7 +5278,23 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           const namedBlocks: Map<string, { children: any[]; hasBlockParams: boolean }> = new Map();
           const defaultChildren: any[] = [];
 
-          for (const child of effectiveChildren) {
+          for (let _ci = 0; _ci < effectiveChildren.length; _ci++) {
+            let child = effectiveChildren[_ci];
+            // GXT compiles named block children as lazy functions:
+            //   () => $_tag(':header', ...) which returns a __isNamedBlock marker.
+            // Evaluate ONLY functions that look like named block factories to avoid
+            // side effects from eagerly evaluating component children.
+            if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
+              const fnStr = child.toString();
+              if (fnStr.includes("$_tag(':") || fnStr.includes('$_tag(":')) {
+                try {
+                  const evaluated = child();
+                  if (evaluated && typeof evaluated === 'object' && evaluated.__isNamedBlock) {
+                    child = evaluated;
+                  }
+                } catch { /* not a named block factory — keep as-is */ }
+              }
+            }
             // Check if it's a named block marker
             if (child && typeof child === 'object' && child.__isNamedBlock) {
               const slotName = child.__slotName;
@@ -6038,9 +6054,139 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 // transformLetBlockParamInvocations have been moved to the GXT AST compiler
 // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-// transformBlockParams() has been removed — block params rewriting is now done
-// at the AST level in the GXT compiler (visitors/element.ts rewriteBlockParamsCompat),
-// gated behind IS_GLIMMER_COMPAT_MODE.
+// transformBlockParams() was removed assuming GXT would handle it, but GXT 0.0.53 does not.
+// Re-introduced as transformBlockParamsInTemplate() below.
+
+/**
+ * Transform block params in angle-bracket component invocations.
+ * `<Foo as |x y|>{{x}} {{y}}</Foo>` → `<Foo @__hasBlockParams__="default">{{this.$_bp0}} {{this.$_bp1}}</Foo>`
+ *
+ * This handles:
+ * - Simple mustache: {{param}} → {{this.$_bp0}}
+ * - Path expressions: {{param.prop}} → {{this.$_bp0.prop}}
+ * - Attribute values: @attr={{param}} → @attr={{this.$_bp0}}
+ * - SubExpressions: (helper param) → (helper this.$_bp0)
+ */
+function transformBlockParamsInTemplate(template: string): string {
+  // Match angle-bracket components with `as |...|`
+  // Pattern: <ComponentName ... as |params|> ... </ComponentName>
+  // We process from outermost to innermost by finding opening tags with `as |...|`
+  let result = template;
+  // Use a simple state machine approach to find and transform block params
+  // We need to handle nesting properly, so process one level at a time
+
+  // Find all opening tags with `as |...|`
+  const tagPattern = /<([A-Z][a-zA-Z0-9.-]*|[a-z][a-z0-9]*-[a-z0-9-]*)((?:\s+(?:[@a-zA-Z_][a-zA-Z0-9_-]*(?:=(?:"[^"]*"|'[^']*'|\{\{[^}]*\}\}|[^\s>]*))?))*)(\s+as\s*\|([^|]+)\|)(\s*)>/g;
+
+  let match;
+  // Process matches from last to first to avoid index shifting
+  const matches: { index: number; fullMatch: string; tagName: string; attrs: string; asClause: string; params: string; trailingWs: string }[] = [];
+
+  while ((match = tagPattern.exec(result)) !== null) {
+    matches.push({
+      index: match.index,
+      fullMatch: match[0],
+      tagName: match[1],
+      attrs: match[2],
+      asClause: match[3],
+      params: match[4],
+      trailingWs: match[5],
+    });
+  }
+
+  // Process from last to first
+  for (let mi = matches.length - 1; mi >= 0; mi--) {
+    const m = matches[mi]!;
+    const paramNames = splitOnWhitespace(m.params.trim());
+    if (paramNames.length === 0) continue;
+
+    // Find the matching closing tag
+    const closingTag = `</${m.tagName}>`;
+    const openTagEnd = m.index + m.fullMatch.length;
+
+    // Find the matching closing tag, accounting for nesting
+    let depth = 1;
+    let searchIdx = openTagEnd;
+    let closingIdx = -1;
+    const openPattern = `<${m.tagName}`;
+    while (depth > 0 && searchIdx < result.length) {
+      const nextOpen = result.indexOf(openPattern, searchIdx);
+      const nextClose = result.indexOf(closingTag, searchIdx);
+
+      if (nextClose === -1) break; // No closing tag found
+
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        // Check it's actually an opening tag (not a substring match)
+        const afterName = result[nextOpen + openPattern.length];
+        if (afterName === ' ' || afterName === '>' || afterName === '\n' || afterName === '\t' || afterName === '\r' || afterName === '/') {
+          depth++;
+        }
+        searchIdx = nextOpen + 1;
+      } else {
+        depth--;
+        if (depth === 0) {
+          closingIdx = nextClose;
+        } else {
+          searchIdx = nextClose + closingTag.length;
+        }
+      }
+    }
+
+    if (closingIdx === -1) continue; // Couldn't find closing tag
+
+    // Extract content between opening and closing tags
+    let content = result.slice(openTagEnd, closingIdx);
+
+    // Replace block param references in content
+    for (let j = 0; j < paramNames.length; j++) {
+      const param = paramNames[j]!;
+      const bpVar = `$_bp${j}`;
+
+      // Replace {{param.property}} with {{this.$_bp0.property}}
+      content = content.replace(
+        new RegExp(`\\{\\{\\s*${param}(\\.[a-zA-Z0-9_.\\-]+)\\s*\\}\\}`, 'g'),
+        `{{this.${bpVar}$1}}`
+      );
+
+      // Replace {{param}} with {{this.$_bp0}}
+      content = content.replace(
+        new RegExp(`\\{\\{\\s*${param}\\s*\\}\\}`, 'g'),
+        `{{this.${bpVar}}}`
+      );
+
+      // Replace in attribute values: @attr={{param.property}}
+      content = content.replace(
+        new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}(\\.[a-zA-Z0-9_.\\-]+)\\}\\}`, 'g'),
+        `$1{{this.${bpVar}$2}}`
+      );
+
+      // Replace in attribute values: @attr={{param}}
+      content = content.replace(
+        new RegExp(`([@a-zA-Z][a-zA-Z0-9-]*=)\\{\\{${param}\\}\\}`, 'g'),
+        `$1{{this.${bpVar}}}`
+      );
+
+      // Replace in sub-expressions and helper args: (helper param) → (helper this.$_bp0)
+      // Match param as a standalone word in mustache/subexpr context
+      content = content.replace(
+        new RegExp(`(\\{\\{[^}]*?)\\b${param}\\b([^}]*?\\}\\})`, 'g'),
+        (full: string, before: string, after: string) => {
+          // Don't replace if it's already prefixed with this. or is part of a longer word
+          if (before.endsWith('.') || before.endsWith('this.')) return full;
+          return `${before}this.${bpVar}${after}`;
+        }
+      );
+    }
+
+    // Build the new opening tag (remove `as |...|`, add @__hasBlockParams__)
+    const newOpenTag = `<${m.tagName}${m.attrs} @__hasBlockParams__="default"${m.trailingWs}>`;
+
+    // Reconstruct the template
+    result = result.slice(0, m.index) + newOpenTag + content + result.slice(closingIdx);
+  }
+
+  return result;
+}
 
 // NOTE: isInsideHtmlAttributeValue and isElementModifier have been moved to the GXT AST compiler
 // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
@@ -6686,8 +6832,11 @@ export function precompileTemplate(templateString: string, options?: {
   // prefixes JS reserved words with `this.` when IS_GLIMMER_COMPAT_MODE is set.
 
   // Block params transform (`<Foo as |x|>{{x}}</Foo>` → `<Foo @__hasBlockParams__="default">{{this.$_bp0}}</Foo>`)
-  // is now handled at the AST level in the GXT compiler (visitors/element.ts rewriteBlockParamsCompat),
-  // gated behind IS_GLIMMER_COMPAT_MODE.
+  // NOTE: This was supposed to be handled at the AST level in the GXT compiler, but
+  // GXT 0.0.53 does not implement the transform. Re-introduce it as a pre-processing step.
+  if (/\s+as\s*\|[^|]+\|/.test(transformedTemplate)) {
+    transformedTemplate = transformBlockParamsInTemplate(transformedTemplate);
+  }
 
   // has-block and has-block-params transforms (including attribute-position wrapping)
   // are now handled at the AST level in the GXT compiler (visitors/index.ts
