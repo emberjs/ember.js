@@ -913,6 +913,26 @@ function createEmberTag(original: Function) {
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
         .toLowerCase();
 
+      // When this name is a helper (not a component), short-circuit to
+      // $_maybeHelper. The component manager's handle() wraps helper results
+      // in getter functions which GXT's parent $_tag doesn't handle as children.
+      // $_maybeHelper returns raw values (strings, etc.) which work as children.
+      {
+        const _owner = g.owner;
+        if (_owner && !_owner.isDestroyed && !_owner.isDestroying) {
+          try {
+            const _helperFactory = _owner.factoryFor?.(`helper:${kebabName}`);
+            const _componentFactory = _owner.factoryFor?.(`component:${kebabName}`);
+            if (_helperFactory && !_componentFactory) {
+              const maybeHelper = g.$_maybeHelper;
+              if (typeof maybeHelper === 'function') {
+                return maybeHelper(kebabName, children || [], {}, ctx);
+              }
+            }
+          } catch { /* ignore lookup errors */ }
+        }
+      }
+
       if (managers.component.canHandle(kebabName)) {
         // Build args from tagProps - keep lazy
         let args: any = {};
@@ -1052,7 +1072,30 @@ function createEmberTag(original: Function) {
         // Pass slots via args so manager.ts can access them
         args.$slots = slots;
 
-        // Delegate to component manager
+        // Before delegating to the component manager, check if this name
+        // resolves ONLY as a helper (not as a component). When GXT compiles
+        // {{x-borf}} (bare mustache with a dashed name), it emits
+        // $_tag('XBorf', ...). The component manager's canHandle returns true
+        // because it detects the helper registration. But handle() tries
+        // component resolution first, then falls back to helper — and the
+        // helper result (a getter function) isn't a valid $_tag child for GXT.
+        // By checking helper-only upfront, we use $_maybeHelper directly,
+        // which returns a raw value that GXT can render as text.
+        {
+          const _owner = g.owner;
+          if (_owner && !_owner.isDestroyed && !_owner.isDestroying) {
+            const _helperFactory = _owner.factoryFor?.(`helper:${kebabName}`);
+            const _componentFactory = _owner.factoryFor?.(`component:${kebabName}`);
+            if (_helperFactory && !_componentFactory) {
+              // This is a helper, not a component. Use $_maybeHelper directly.
+              const maybeHelper = g.$_maybeHelper;
+              if (typeof maybeHelper === 'function') {
+                return maybeHelper(kebabName, children || [], {}, ctx);
+              }
+            }
+          }
+        }
+
         return managers.component.handle(kebabName, args, fw, ctx);
       }
     }

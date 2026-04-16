@@ -60,6 +60,12 @@ export default defineConfig(({ mode }) => {
             },
           })
         : templateTag(),
+      // Redirect $_tag, $_maybeHelper, $_dc imports from @lifeart/gxt to
+      // the Ember wrapper module. GXT-compiled templates import these
+      // primitives directly from GXT which bypasses Ember's container-based
+      // helper/component resolution. This plugin rewrites those imports so
+      // they use the Ember-aware wrappers instead.
+      ...(useGxt ? [gxtEmberWrapperRedirect()] : []),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts', '.gjs', '.gts'],
@@ -211,6 +217,79 @@ export default defineConfig(({ mode }) => {
       : undefined,
   };
 });
+
+/**
+ * Vite plugin that redirects $_tag, $_maybeHelper, $_dc imports from @lifeart/gxt
+ * to the Ember wrapper module. Without this, GXT-compiled templates call the native
+ * GXT primitives directly, bypassing Ember's container-based helper/component
+ * resolution (e.g., helpers registered via owner.register('helper:foo', ...) are
+ * invisible to the native primitives).
+ */
+function gxtEmberWrapperRedirect() {
+  const REDIRECT_SYMBOLS = new Set(['$_tag', '$_maybeHelper', '$_dc']);
+  const WRAPPER_MODULE = '@ember/-internals/gxt-backend/ember-gxt-wrappers';
+  // Match import { ... } from "@lifeart/gxt" or from GXT dist paths
+  const importRe = /import\s*\{([^}]+)\}\s*from\s*["'](@lifeart\/gxt|[^"']*gxt\.index\.es\.js[^"']*)["']/g;
+
+  return {
+    name: 'gxt-ember-wrapper-redirect',
+    // No enforce — runs in normal phase, after GXT compiler (which is enforce: 'pre')
+    transform(code, id) {
+      // Only process files that import GXT primitives
+      if (!code.includes('$_tag') && !code.includes('$_maybeHelper') && !code.includes('$_dc')) return null;
+      // Skip node_modules
+      if (id.includes('node_modules')) return null;
+
+      let result = code;
+      const redirected = [];
+      const matches = [];
+
+      importRe.lastIndex = 0;
+      let match;
+      while ((match = importRe.exec(code)) !== null) {
+        matches.push({ index: match.index, length: match[0].length, specifiers: match[1], source: match[2] });
+      }
+
+      if (matches.length === 0) return null;
+
+      // Process from last to first to preserve offsets
+      for (let i = matches.length - 1; i >= 0; i--) {
+        const m = matches[i];
+        const specifiers = m.specifiers.split(',').map(s => s.trim()).filter(Boolean);
+        const toRedirect = [];
+        const toKeep = [];
+
+        for (const spec of specifiers) {
+          const parts = spec.split(/\s+as\s+/);
+          const importedName = parts[0].trim();
+          if (REDIRECT_SYMBOLS.has(importedName)) {
+            toRedirect.push(spec);
+          } else {
+            toKeep.push(spec);
+          }
+        }
+
+        if (toRedirect.length === 0) continue;
+
+        let replacement = '';
+        if (toKeep.length > 0) {
+          replacement = `import { ${toKeep.join(', ')} } from "${m.source}"`;
+        }
+
+        result = result.slice(0, m.index) + replacement + result.slice(m.index + m.length);
+        redirected.push(...toRedirect);
+      }
+
+      if (redirected.length > 0) {
+        const importLine = `import { ${redirected.join(', ')} } from "${WRAPPER_MODULE}";\n`;
+        result = importLine + result;
+        return { code: result, map: null };
+      }
+
+      return null;
+    },
+  };
+}
 
 function gxtModuleDedup() {
   // Ensure all GXT internal module imports resolve to the same real filesystem
