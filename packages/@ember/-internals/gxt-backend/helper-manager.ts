@@ -118,12 +118,11 @@ export class CustomHelperManager {
     wrapped = Object.create(delegate);
 
     // Intercept createHelper to record bucket→definition mapping and
-    // make args reactive for createCache tracking
+    // make args reactive for createCache tracking (template path only).
+    // Skip reactive wrapping for frozen args (SimpleArgsProxy from invokeHelper).
     if (typeof origCreateHelper === 'function') {
       wrapped.createHelper = function (definition: any, args: any) {
-        // Make args reactive: wrap positional/named with classic tag tracking
-        // so that when the wrappers code replaces them, the createCache invalidates.
-        if (args && typeof args === 'object' && !args.__reactiveHelper) {
+        if (args && typeof args === 'object' && !args.__reactiveHelper && !Object.isFrozen(args)) {
           const g = globalThis as any;
           const _consumeTag = g.__classicConsumeTag;
           const _tagFor = g.__classicTagFor;
@@ -175,8 +174,6 @@ export class CustomHelperManager {
     wrapped.getValue = function (bucket: any) {
       // Use createCache to cache getValue results — avoids redundant calls
       // when the component re-renders but no tracked dependencies changed.
-      // Args changes are tracked via the reactive args instrumentation
-      // installed in wrapped.createHelper above.
       let cache = self.bucketCacheInfo.get(bucket);
       if (!cache) {
         cache = createCache(() => {
