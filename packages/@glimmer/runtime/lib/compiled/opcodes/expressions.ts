@@ -74,9 +74,12 @@ import {
   CheckUndefinedReference,
 } from './-debug-strip';
 
-// Returns true if the value has an associated component or modifier manager —
-// meaning it is a definition object that must not be bound. Helper managers are
-// excluded because ALL functions have a default helper manager (RFC #756).
+// Skip binding for values with a component or modifier manager — these are
+// definition objects whose identity must be preserved for WeakMap-based manager
+// lookups. Wrapping them in a callable would break `getInternalModifierManager`
+// / `getInternalComponentManager` since the wrapper isn't in the manager WeakMap.
+// Helper managers are excluded from this check because ALL functions have a
+// default helper manager (RFC #756).
 function hasDefinitionManager(value: object): boolean {
   return (
     getInternalModifierManager(value, true) !== null ||

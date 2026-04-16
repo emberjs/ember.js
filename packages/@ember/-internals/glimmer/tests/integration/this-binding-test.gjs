@@ -1,8 +1,5 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { on } from '@ember/modifier';
-import { precompileTemplate } from '@ember/template-compilation';
-import { setComponentTemplate } from '@glimmer/manager';
-
 import { Component } from '../utils/helpers';
 
 moduleFor(
@@ -12,29 +9,20 @@ moduleFor(
       let instance;
       let seenThis;
 
-      let DemoComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      class Demo extends Component {
+        constructor(...args) {
+          super(...args);
           instance = this;
         }
 
         foo() {
           seenThis = this;
         }
-      };
 
-      this.owner.register(
-        'component:demo-el',
-        setComponentTemplate(
-          precompileTemplate(
-            '<button type="button" {{on "click" this.foo}}>click me</button>',
-            { strictMode: true, scope: () => ({ on }) }
-          ),
-          DemoComponent
-        )
-      );
+        <template><button type="button" {{on "click" this.foo}}>click me</button></template>
+      }
 
-      this.render('{{demo-el}}');
+      this.render(`<this.Demo />`, { Demo });
 
       assert.ok(instance, 'component instance was captured');
 
@@ -61,25 +49,16 @@ moduleFor(
         }
       }
 
-      let DemoComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      class Demo extends Component {
+        constructor(...args) {
+          super(...args);
           this.obj = new Inner();
         }
-      };
 
-      this.owner.register(
-        'component:demo-el',
-        setComponentTemplate(
-          precompileTemplate(
-            '<button type="button" {{on "click" this.obj.method}}>click me</button>',
-            { strictMode: true, scope: () => ({ on }) }
-          ),
-          DemoComponent
-        )
-      );
+        <template><button type="button" {{on "click" this.obj.method}}>click me</button></template>
+      }
 
-      this.render('{{demo-el}}');
+      this.render(`<this.Demo />`, { Demo });
 
       assert.ok(innerInstance, 'inner instance was captured');
 

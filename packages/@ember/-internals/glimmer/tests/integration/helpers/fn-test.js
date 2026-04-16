@@ -131,14 +131,20 @@ moduleFor(
     '@test this context is preserved within the callback'(assert) {
       let seenThis;
 
-      this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, {
+      let context = {
         myFunc() {
           seenThis = this;
         },
-      });
+      };
+
+      this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, context);
 
       this.stashedFn();
-      assert.ok(seenThis !== null && seenThis !== undefined, 'this is bound to the context object');
+      assert.strictEqual(
+        seenThis,
+        this.context,
+        'this is bound to the object that myFunc is defined on'
+      );
     }
 
     '@test can use `this` if bound prior to passing to fn'(assert) {

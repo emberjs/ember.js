@@ -519,10 +519,7 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'on',
-        args: (args: any) =>
-          args.positional[0] === 'click' &&
-          typeof args.positional[1] === 'function' &&
-          Object.keys(args.named).length === 0,
+        args: { positional: ['click', didInsert], named: {} },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -561,10 +558,7 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'on',
-        args: (args: any) =>
-          args.positional[0] === 'click' &&
-          typeof args.positional[1] === 'function' &&
-          Object.keys(args.named).length === 0,
+        args: { positional: ['click', didInsert], named: {} },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -596,10 +590,7 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'on',
-        args: (args: any) =>
-          args.positional[0] === 'click' &&
-          typeof args.positional[1] === 'function' &&
-          args.named.passive === true,
+        args: { positional: ['click', didInsert], named: { passive: true } },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild!.lastChild),
         children: [],
@@ -614,10 +605,7 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'on',
-        args: (args: any) =>
-          args.positional[0] === 'click' &&
-          typeof args.positional[1] === 'function' &&
-          Object.keys(args.named).length === 0,
+        args: { positional: ['click', didInsert], named: {} },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
