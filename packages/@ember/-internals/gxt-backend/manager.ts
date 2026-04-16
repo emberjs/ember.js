@@ -7916,7 +7916,44 @@ export function capabilityFlagsFrom(capabilities: Record<string, boolean>): numb
   return flags;
 }
 
+function assertManagerTarget(target: any, kind: string): void {
+  if (target === null || target === undefined || (typeof target !== 'object' && typeof target !== 'function')) {
+    throw new Error(
+      `Attempted to set a manager on a non-object value. Managers can only be associated with objects or functions. Value was ${String(target)}`
+    );
+  }
+}
+
+function assertNoExistingComponentManager(handle: any): void {
+  if (
+    globalThis.INTERNAL_MANAGERS.has(handle) ||
+    globalThis.COMPONENT_MANAGERS.has(handle)
+  ) {
+    throw new Error(
+      `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${String(handle)}`
+    );
+  }
+}
+
+function assertNoExistingHelperManager(helper: any): void {
+  if (globalThis.INTERNAL_HELPER_MANAGERS.has(helper)) {
+    throw new Error(
+      `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${String(helper)}`
+    );
+  }
+}
+
+function assertNoExistingModifierManager(modifier: any): void {
+  if (globalThis.INTERNAL_MODIFIER_MANAGERS.has(modifier)) {
+    throw new Error(
+      `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${String(modifier)}`
+    );
+  }
+}
+
 export function setInternalComponentManager(manager: any, handle: any) {
+  assertManagerTarget(handle, 'component');
+  assertNoExistingComponentManager(handle);
   globalThis.INTERNAL_MANAGERS.set(handle, manager);
   return handle;
 }
@@ -7992,7 +8029,9 @@ export function componentCapabilities(_version: string, capabilities?: Record<st
 }
 
 export function setHelperManager(factory: any, helper: any) {
-  return setInternalHelperManager(new CustomHelperManager(factory), helper);
+  assertManagerTarget(helper, 'helper');
+  assertNoExistingHelperManager(helper);
+  return setInternalHelperManager(new CustomHelperManager(factory), helper, true);
 }
 
 export function getHelperManager(helper: any) {
@@ -8046,7 +8085,11 @@ export function setComponentTemplate(tpl: any, comp: any) {
 // Store pending builtin modifier registrations for when $_MANAGERS is ready
 const _pendingBuiltinModifiers: Array<{name: string, modifier: any}> = [];
 
-export function setInternalModifierManager(manager: any, modifier: any) {
+export function setInternalModifierManager(manager: any, modifier: any, _skipGuards?: boolean) {
+  if (!_skipGuards) {
+    assertManagerTarget(modifier, 'modifier');
+    assertNoExistingModifierManager(modifier);
+  }
   globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
   // Register internal modifier managers as built-in keyword modifiers
   // so that string-based resolution (e.g., {{on "click" ...}}) works.
@@ -8076,6 +8119,8 @@ export function _flushPendingBuiltinModifiers() {
 }
 
 export function setComponentManager(manager: any, component: any) {
+  assertManagerTarget(component, 'component');
+  assertNoExistingComponentManager(component);
   globalThis.COMPONENT_MANAGERS.set(component, manager);
   return component;
 }
@@ -8085,6 +8130,8 @@ export function getComponentManager(component: any) {
 }
 
 export function setModifierManager(factory: any, modifier: any) {
+  assertManagerTarget(modifier, 'modifier');
+  assertNoExistingModifierManager(modifier);
   globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, factory);
   return modifier;
 }
@@ -8099,7 +8146,11 @@ export function setCustomTagFor(obj: any, tagFn: (obj: object, key: string) => a
   CUSTOM_TAG_FOR.set(obj, tagFn);
 }
 
-export function setInternalHelperManager(manager: any, helper: any) {
+export function setInternalHelperManager(manager: any, helper: any, _skipGuards?: boolean) {
+  if (!_skipGuards) {
+    assertManagerTarget(helper, 'helper');
+    assertNoExistingHelperManager(helper);
+  }
   globalThis.INTERNAL_HELPER_MANAGERS.set(helper, manager);
   return helper;
 }
