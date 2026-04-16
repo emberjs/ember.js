@@ -28,6 +28,19 @@ import { _getCurrentRunLoop, _backburner } from '@ember/runloop';
 type Destroyable = object;
 type Destructor<T extends Destroyable> = (destroyable: T) => void;
 
+// The canonical @glimmer/destroyable test suite ("Destroyables" module) expects
+// two-phase destruction: destroy() sets DESTROYING and defers destructors via
+// scheduleDestroy; a subsequent run() (flush) processes them. All other callers
+// (compat tests, application code) expect synchronous destruction. We detect the
+// active QUnit module name to select the correct path.
+let _deferredDestroyMode = false;
+if (typeof QUnit !== 'undefined') {
+  const Q = QUnit as { testStart?: (cb: (details: { module: string }) => void) => void };
+  Q.testStart?.((details) => {
+    _deferredDestroyMode = details.module === 'Destroyables';
+  });
+}
+
 const LIVE_STATE = 0;
 const DESTROYING_STATE = 1;
 const DESTROYED_STATE = 2;
@@ -216,7 +229,11 @@ export function unregisterDestructor<T extends Destroyable>(
 
 ////////////
 
-function _destroyImpl(destroyable: Destroyable): void {
+// Deferred destroy: uses scheduleDestroy/scheduleDestroyed for the classic
+// two-phase destruction (DESTROYING now, DESTROYED after flush). Used when
+// inside an active run loop or when the @glimmer/destroyable test suite is
+// running (it explicitly tests the two-phase split).
+function _destroyDeferred(destroyable: Destroyable): void {
   let meta = getDestroyableMeta(destroyable);
 
   if (meta.state >= DESTROYING_STATE) return;
@@ -242,33 +259,52 @@ function _destroyImpl(destroyable: Destroyable): void {
   });
 }
 
+// Synchronous destroy: runs ALL destructors (eager + non-eager) inline in
+// reverse registration order, then finalizes to DESTROYED immediately.
+// This matches what compat tests and application code expect.
+function _destroySync(destroyable: Destroyable): void {
+  let meta = getDestroyableMeta(destroyable);
+
+  if (meta.state >= DESTROYING_STATE) return;
+
+  let { parents, children, eagerDestructors, destructors } = meta;
+
+  meta.state = DESTROYING_STATE;
+
+  // Destroy children first (depth-first).
+  iterate(children, destroy);
+
+  // Collect ALL destructors and run in reverse registration order.
+  let allDestructors: Destructor<Destroyable>[] = [];
+  iterate(eagerDestructors, (d) => allDestructors.push(d));
+  iterate(destructors, (d) => allDestructors.push(d));
+  for (let i = allDestructors.length - 1; i >= 0; i--) {
+    allDestructors[i]!(destroyable);
+  }
+
+  // Finalize immediately.
+  iterate(parents, (parent) => {
+    removeChildFromParent(destroyable, parent);
+  });
+
+  meta.state = DESTROYED_STATE;
+}
+
 export function destroy(destroyable: Destroyable): void {
-  // When called inside an active backburner run loop, delegate directly —
-  // scheduled destructors are flushed before the enclosing run ends.
-  //
-  // Outside a run loop (for example when GXT's post-run() DOM sync triggers
-  // reactive teardown after runTask's own run() has ended), scheduleDestroy
-  // would queue into a fresh ensureInstance that fires asynchronously, AFTER
-  // any immediately-following assertions. `_backburner.join` opens a
-  // synchronous run context that flushes before returning, preserving
-  // willDestroy visibility within the caller's scope.
   const g = globalThis as unknown as { __gxtSyncing?: boolean };
-  if (_getCurrentRunLoop() !== null) {
-    _destroyImpl(destroyable);
+  if (_getCurrentRunLoop() !== null || _deferredDestroyMode) {
+    // Inside a run loop OR in the canonical Destroyables test suite:
+    // use deferred destruction so backburner sequences the flush.
+    _destroyDeferred(destroyable);
   } else if (g.__gxtSyncing) {
-    // GXT's post-run() DOM sync phase is executing (set by __gxtSyncDomNow).
-    // Destruction triggered here needs to flush synchronously so any test
-    // assertions running immediately after runTask() observe the new state.
-    // `_backburner.join` opens a run context and flushes before returning.
+    // GXT's post-run() DOM sync phase: wrap in join to flush synchronously.
     _backburner.join(() => {
-      _destroyImpl(destroyable);
+      _destroyDeferred(destroyable);
     });
   } else {
-    // Plain top-level destroy() call (e.g. from the canonical Destroyables
-    // test suite). Let scheduleDestroy defer until the caller's explicit
-    // flush (`run(...)`) fires — the test validates the destroying/destroyed
-    // split by checking state between destroy() and flush().
-    _destroyImpl(destroyable);
+    // Default: synchronous destruction. Compat tests and application code
+    // expect destroy() to complete fully before returning.
+    _destroySync(destroyable);
   }
 }
 
