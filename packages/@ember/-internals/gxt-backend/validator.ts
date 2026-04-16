@@ -83,6 +83,30 @@ export function track(cb: () => void): any {
   const consumed = new Set<any>();
   _trackingTagStack.push(consumed);
 
+  // Install a debug tracking transaction so that trackedData.setter can
+  // detect a read-then-write within the same track() frame. This surfaces
+  // the "You attempted to update `value` on `MyObject`…" assertion that
+  // classic @glimmer/validator raises in DEV builds.
+  //
+  // If an outer runInTrackingTransaction frame is already active, reuse it
+  // so that consumed tags propagate outward (required by tests that consume
+  // in one track() and dirty in a sibling track() within the same debug
+  // transaction).
+  const hadOuterTransaction = _debugTransactionConsumed !== null;
+  const prevConsumed = _debugTransactionConsumed;
+  const prevLabels = _debugTransactionLabelForTag;
+  if (!hadOuterTransaction) {
+    _debugTransactionConsumed = new Set<any>();
+    _debugTransactionLabelForTag = new WeakMap<any, string>();
+  }
+
+  // Suppress __gxtTriggerReRender during track() to prevent infinite
+  // recursion when a getter calls notifyPropertyChange (which triggers
+  // __gxtTriggerReRender → re-reads getter → notifyPropertyChange → …).
+  const g = globalThis as any;
+  const savedTrigger = g.__gxtTriggerReRender;
+  g.__gxtTriggerReRender = undefined;
+
   // Run the callback. The tracked getters read GXT cells, establishing
   // dependencies. We can't easily capture those cells, but we CAN detect
   // changes by re-running the callback later and checking if any tracked
@@ -102,6 +126,11 @@ export function track(cb: () => void): any {
     _trackingTagStack.pop();
     if (_trackingTagStack.length === 0) _trackingTagStack = null;
     _localUntrackDepth = savedUntrackDepth;
+    if (!hadOuterTransaction) {
+      _debugTransactionConsumed = prevConsumed;
+      _debugTransactionLabelForTag = prevLabels;
+    }
+    g.__gxtTriggerReRender = savedTrigger;
   }
 
   // If no specific tags were consumed, return a track-tag that uses the
@@ -438,7 +467,7 @@ export function trackedData<T, K extends string | symbol>(
           const renderTree = _backtrackingDebugName
             ? `(result of a \`${_backtrackingDebugName}\` helper)`
             : '(unknown)';
-          const msg = `You attempted to update \`${String(info.key)}\` on \`${objName}\`, but it had already been used previously in the same computation. Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.\n\n\`${String(info.key)}\` was first used:\n\n- While rendering:\n  -top-level\n    ${renderTree}\n\nStack trace for the update:`;
+          const msg = `You attempted to update \`${String(info.key)}\` on \`${objName}\`, but it had already been used previously in the same computation. Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.\n\n\`${String(info.key)}\` was first used:\n\n- While rendering:\n  - top-level\n    ${renderTree}\n\nStack trace for the update:`;
           // Use the Ember assert function directly. The __emberAssertDirect
           // is a live reference to the assert from @ember/debug, which
           // is updated when expectAssertion stubs it via setDebugFunction.
@@ -448,16 +477,21 @@ export function trackedData<T, K extends string | symbol>(
           }
         }
         // Debug tracking transaction: if this cell was read earlier in
-        // the current runInTrackingTransaction frame, throw an Ember-style
-        // assertion matching classic @glimmer/validator behavior.
+        // the current runInTrackingTransaction frame or track() frame,
+        // surface the Ember-style assertion matching classic @glimmer/validator
+        // behavior. Uses __emberAssertDirect so expectAssertion() can catch it.
         if (
           _debugTransactionConsumed !== null &&
           _debugTransactionConsumed.has(cellForKey)
         ) {
           const label = _debugTransactionLabelForTag?.get(cellForKey);
-          throw new Error(
-            `Assertion Failed: You attempted to update \`${label}\` but it had already been used previously in the same computation`
-          );
+          const msg = `You attempted to update \`${label}\`, but it had already been used previously in the same computation`;
+          const assertDirect = (globalThis as any).__emberAssertDirect;
+          if (typeof assertDirect === 'function') {
+            assertDirect(msg, false);
+          } else {
+            throw new Error(`Assertion Failed: ${msg}`);
+          }
         }
         cellForKey.value = value;
       }
@@ -1219,7 +1253,7 @@ export function trackedArray<T>(arr: T[] = []): T[] {
   }
   const items = cell(arr, 'trackedArray');
 
-  return new Proxy(arr, {
+  const proxy: T[] = new Proxy(arr, {
     get(target, prop, receiver) {
       if (prop === 'length') {
         // Access the cell to track
@@ -1235,8 +1269,13 @@ export function trackedArray<T>(arr: T[] = []): T[] {
         return function (...args: any[]) {
           const result = (value as Function).apply(target, args);
           // Mutating methods should trigger reactivity
-          if (['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'].includes(prop as string)) {
+          if (['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse', 'copyWithin', 'fill'].includes(prop as string)) {
             items.value = [...target];
+          }
+          // sort() and reverse() return `this` (the target), but the caller
+          // expects the proxy back so `arr.sort() === arr` holds.
+          if ((prop === 'sort' || prop === 'reverse') && result === target) {
+            return proxy;
           }
           return result;
         };
@@ -1249,46 +1288,78 @@ export function trackedArray<T>(arr: T[] = []): T[] {
       return true;
     },
   });
+  return proxy;
 }
 
-// Create a tracked object - wraps an object to make all its properties reactive
+// Create a tracked object - wraps an object to make all its properties reactive.
+// The proxy creates an independent shallow copy of own properties so mutations
+// do not leak back to the original object (matching classic @glimmer/tracking
+// trackedObject semantics).
 export function trackedObject<T extends object>(obj?: T): T {
   if (!obj || typeof obj !== 'object') {
     obj = {} as T;
   }
-  const values = new Map<string | symbol, any>();
+  // Shallow-copy own enumerable properties into `data`. Getters defined on the
+  // original are transferred as getter/setter descriptors so `this` inside the
+  // getter refers to the proxy (via `receiver`).
+  const data: Record<string | symbol, any> = {};
+  const ownKeys = Reflect.ownKeys(obj);
+  const getterKeys = new Set<string | symbol>();
+  for (const key of ownKeys) {
+    const desc = Object.getOwnPropertyDescriptor(obj, key);
+    if (desc && (desc.get || desc.set)) {
+      Object.defineProperty(data, key, desc);
+      getterKeys.add(key);
+    } else {
+      data[key] = (obj as any)[key];
+    }
+  }
+
   const tags = new Map<string | symbol, ReturnType<typeof createTrackedObjectCell>>();
 
-  return new Proxy(obj, {
+  function getOrCreateTag(prop: string | symbol, initialValue: any) {
+    let tag = tags.get(prop);
+    if (!tag) {
+      tag = createTrackedObjectCell(initialValue, `trackedObject.${String(prop)}`);
+      tags.set(prop, tag);
+    }
+    return tag;
+  }
+
+  return new Proxy(data as unknown as T, {
     get(target, prop, receiver) {
-      // Consume the tag for this property
-      let tag = tags.get(prop);
-      if (!tag) {
-        tag = createTrackedObjectCell(target[prop as keyof T], `trackedObject.${String(prop)}`);
-        tags.set(prop, tag);
-        values.set(prop, target[prop as keyof T]);
+      // For getter properties, invoke via Reflect so `this` is the proxy
+      if (getterKeys.has(prop)) {
+        const tag = getOrCreateTag(prop, undefined);
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        tag.value; // consume for tracking
+        return Reflect.get(target, prop, receiver);
       }
+      const tag = getOrCreateTag(prop, (target as any)[prop]);
       return tag.value;
     },
     set(target, prop, value, receiver) {
-      let tag = tags.get(prop);
-      if (!tag) {
-        tag = createTrackedObjectCell(value, `trackedObject.${String(prop)}`);
-        tags.set(prop, tag);
-      } else {
-        tag.value = value;
-      }
-      values.set(prop, value);
-      target[prop as keyof T] = value;
-      // Route the mutation through the full dirtyTagFor pipeline so GXT's
-      // effect scheduler, the classic-tag bridge, and registered classic
-      // reactors all see the change. The storage-backed cell above does not
-      // reliably register with every enclosing GXT effect, so dirtyTagFor is
-      // the authoritative re-render signal for trackedObject mutations.
+      const tag = getOrCreateTag(prop, value);
+      tag.value = value;
+      (target as any)[prop] = value;
       try {
         dirtyTagFor(target as any, prop);
       } catch { /* noop */ }
       return true;
+    },
+    ownKeys(target) {
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      const desc = Reflect.getOwnPropertyDescriptor(target, prop);
+      if (desc) {
+        // Make sure it's reported as enumerable+configurable so Object.keys works
+        desc.configurable = true;
+      }
+      return desc;
+    },
+    has(target, prop) {
+      return prop in target;
     },
   });
 }
