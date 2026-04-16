@@ -6,8 +6,6 @@
 // a factory and provides getDelegateFor(owner) which returns the actual
 // HelperManager delegate for a given owner.
 
-import { DEBUG } from '@glimmer/env';
-
 // Shared WeakSet to track capabilities created via helperCapabilities()
 export const FROM_CAPABILITIES = new WeakSet();
 
@@ -25,27 +23,9 @@ export class CustomHelperManager {
     let delegate = this.helperManagerDelegates.get(owner);
     if (delegate === undefined) {
       delegate = this.factory(owner);
-      this.validateDelegate(delegate);
       this.helperManagerDelegates.set(owner, delegate);
     }
     return delegate;
-  }
-
-  private validateDelegate(delegate: any): void {
-    if (DEBUG) {
-      if (!delegate || !delegate.capabilities) {
-        throw new Error(
-          'Custom helper managers must have a `capabilities` property that is the result of calling the `capabilities()` function. ' +
-          'Received: `' + JSON.stringify(delegate?.capabilities) + '`.'
-        );
-      }
-      if (!FROM_CAPABILITIES.has(delegate.capabilities)) {
-        throw new Error(
-          'Custom helper managers must have a `capabilities` property that is the result of calling the `capabilities()` function. ' +
-          'Received: `' + JSON.stringify(delegate.capabilities) + '`.'
-        );
-      }
-    }
   }
 
   /**
@@ -57,7 +37,6 @@ export class CustomHelperManager {
       let { undefinedDelegate } = this;
       if (undefinedDelegate === null) {
         this.undefinedDelegate = undefinedDelegate = this.factory(undefined);
-        this.validateDelegate(undefinedDelegate);
       }
       return undefinedDelegate;
     } else {

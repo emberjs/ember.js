@@ -8122,10 +8122,6 @@ export function setComponentManager(manager: any, component: any) {
   assertManagerTarget(component, 'component');
   assertNoExistingComponentManager(component);
   globalThis.COMPONENT_MANAGERS.set(component, manager);
-  // Also store a CustomComponentManager wrapper in INTERNAL_MANAGERS
-  // so getInternalComponentManager() can find it
-  const wrapper = new CustomComponentManager(manager);
-  globalThis.INTERNAL_MANAGERS.set(component, wrapper);
   return component;
 }
 
@@ -8136,8 +8132,7 @@ export function getComponentManager(component: any) {
 export function setModifierManager(factory: any, modifier: any) {
   assertManagerTarget(modifier, 'modifier');
   assertNoExistingModifierManager(modifier);
-  const wrapper = new CustomModifierManager(factory);
-  globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, wrapper);
+  globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, factory);
   return modifier;
 }
 
@@ -8222,199 +8217,86 @@ export function hasDestroyable(manager: any): boolean {
 // =============================================================================
 
 export class CustomComponentManager {
-  capabilities!: number;
-  factory: any;
-  private _delegates: WeakMap<object, any> = new WeakMap();
+  capabilities: number;
+  delegate: any;
 
-  constructor(factory: any) {
-    this.factory = factory;
+  constructor(delegate: any) {
+    this.delegate = delegate;
+    this.capabilities = capabilityFlagsFrom(delegate.capabilities || {});
   }
 
-  private getDelegateFor(owner: any): any {
-    if (owner === undefined || owner === null) {
-      // Use a sentinel key for undefined/null owners
-      owner = CustomComponentManager;
-    }
-    let delegate = this._delegates.get(owner);
-    if (delegate === undefined) {
-      delegate = this.factory(owner === CustomComponentManager ? undefined : owner);
-      if (DEBUG) {
-        if (!delegate || !delegate.capabilities) {
-          throw new Error(
-            'Custom component managers must have a `capabilities` property that is the result of calling the `capabilities()` function. ' +
-            'Received: `' + JSON.stringify(delegate?.capabilities) + '`.'
-          );
-        }
-        if (!FROM_CAPABILITIES.has(delegate.capabilities)) {
-          throw new Error(
-            'Custom component managers must have a `capabilities` property that is the result of calling the `capabilities()` function. ' +
-            'Received: `' + JSON.stringify(delegate.capabilities) + '`.'
-          );
-        }
-      }
-      this._delegates.set(owner, delegate);
-      this.capabilities = capabilityFlagsFrom(delegate.capabilities || {});
-    }
-    return delegate;
-  }
-
-  create(owner: any, component: any, args: any, env?: any, dynamicScope?: any, caller?: any) {
-    const delegate = this.getDelegateFor(owner);
-    return delegate.createComponent(component, args);
+  create(owner: any, component: any, args: any, env: any, dynamicScope: any, caller: any) {
+    return this.delegate.createComponent(component, args);
   }
 
   getDebugName(component: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      return delegate.getDebugName?.(component) || component.name || 'Component';
-    } catch {
-      return component?.name || 'Component';
-    }
+    return this.delegate.getDebugName?.(component) || component.name || 'Component';
   }
 
   getSelf(instance: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      return delegate.getSelf?.(instance) || instance;
-    } catch {
-      return instance;
-    }
+    return this.delegate.getSelf?.(instance) || instance;
   }
 
   getDestroyable(instance: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      return delegate.getDestroyable?.(instance) || instance;
-    } catch {
-      return instance;
-    }
+    return this.delegate.getDestroyable?.(instance) || instance;
   }
 
   didCreate(instance: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      delegate.didCreateComponent?.(instance);
-    } catch { /* ignore */ }
+    this.delegate.didCreateComponent?.(instance);
   }
 
   didUpdate(instance: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      delegate.didUpdateComponent?.(instance);
-    } catch { /* ignore */ }
+    this.delegate.didUpdateComponent?.(instance);
   }
 
   didRenderLayout(instance: any, bounds: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      delegate.didRenderLayout?.(instance, bounds);
-    } catch { /* ignore */ }
+    this.delegate.didRenderLayout?.(instance, bounds);
   }
 
   didUpdateLayout(instance: any, bounds: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      delegate.didUpdateLayout?.(instance, bounds);
-    } catch { /* ignore */ }
+    this.delegate.didUpdateLayout?.(instance, bounds);
   }
 
   getStaticLayout(component: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      return delegate.getStaticLayout?.(component);
-    } catch {
-      return undefined;
-    }
+    return this.delegate.getStaticLayout?.(component);
   }
 
   getDynamicLayout(instance: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      return delegate.getDynamicLayout?.(instance);
-    } catch {
-      return undefined;
-    }
+    return this.delegate.getDynamicLayout?.(instance);
   }
 }
 
 export class CustomModifierManager {
-  capabilities!: number;
-  factory: any;
-  private _delegates: WeakMap<object, any> = new WeakMap();
+  capabilities: number;
+  delegate: any;
 
-  constructor(factory: any) {
-    this.factory = factory;
-  }
-
-  private getDelegateFor(owner: any): any {
-    if (owner === undefined || owner === null) {
-      owner = CustomModifierManager;
-    }
-    let delegate = this._delegates.get(owner);
-    if (delegate === undefined) {
-      delegate = this.factory(owner === CustomModifierManager ? undefined : owner);
-      if (DEBUG) {
-        if (!delegate || !delegate.capabilities) {
-          throw new Error(
-            'Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities()` function. ' +
-            'Received: `' + JSON.stringify(delegate?.capabilities) + '`.'
-          );
-        }
-        if (!FROM_CAPABILITIES.has(delegate.capabilities)) {
-          throw new Error(
-            'Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities()` function. ' +
-            'Received: `' + JSON.stringify(delegate.capabilities) + '`.'
-          );
-        }
-      }
-      this._delegates.set(owner, delegate);
-      this.capabilities = 0;
-    }
-    return delegate;
+  constructor(delegate: any) {
+    this.delegate = delegate;
+    this.capabilities = 0;
   }
 
   create(owner: any, element: Element, definition: any, args: any) {
-    const delegate = this.getDelegateFor(owner);
-    return delegate.createModifier(definition, args);
+    return this.delegate.createModifier(definition, args);
   }
 
   getDebugName(definition: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      return delegate.getDebugName?.(definition) || 'Modifier';
-    } catch {
-      return 'Modifier';
-    }
+    return this.delegate.getDebugName?.(definition) || 'Modifier';
   }
 
   getDestroyable(instance: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      return delegate.getDestroyable?.(instance) || instance;
-    } catch {
-      return instance;
-    }
+    return this.delegate.getDestroyable?.(instance) || instance;
   }
 
   install(instance: any, element: Element, args: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      delegate.installModifier?.(instance, element, args);
-    } catch { /* ignore */ }
+    this.delegate.installModifier?.(instance, element, args);
   }
 
   update(instance: any, args: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      delegate.updateModifier?.(instance, args);
-    } catch { /* ignore */ }
+    this.delegate.updateModifier?.(instance, args);
   }
 
   destroy(instance: any) {
-    try {
-      const delegate = this.getDelegateFor(undefined);
-      delegate.destroyModifier?.(instance);
-    } catch { /* ignore */ }
+    this.delegate.destroyModifier?.(instance);
   }
 }
 
