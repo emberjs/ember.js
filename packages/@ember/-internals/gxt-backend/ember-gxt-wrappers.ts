@@ -604,7 +604,29 @@ function createEmberMaybeHelper(original: Function) {
             }
           }
         } catch (e) {
-          console.error(`[ember-gxt] Error invoking helper "${name}":`, e);
+          // factoryClass may be a plain function registered via
+          // `owner.register('helper:name', fn)`. In classic Ember a resolver
+          // auto-wraps plain functions with a helper manager, but the
+          // container-only path used by buildOwner(…)/owner.register does
+          // not run that resolver hook in the GXT backend. Fall through to
+          // the plain-function invocation below instead of swallowing the
+          // assertion; the console.error would otherwise mask a working
+          // code path.
+        }
+
+        // Plain function registered directly via owner.register('helper:name', fn).
+        // Ember allows registering a bare function — treat it like a default
+        // function helper (positional args spread, named args as last arg).
+        if (typeof factoryClass === 'function' &&
+            (!factoryClass.prototype || typeof factoryClass.prototype.compute !== 'function')) {
+          try {
+            const hasNamed = named && Object.keys(named).length > 0;
+            return hasNamed
+              ? factoryClass(...positional, named)
+              : factoryClass(...positional);
+          } catch (e) {
+            console.error(`[ember-gxt] Error invoking plain-function helper "${name}":`, e);
+          }
         }
 
         // Helper was found in registry but couldn't be invoked
