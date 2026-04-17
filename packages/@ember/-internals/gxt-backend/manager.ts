@@ -7020,6 +7020,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
 
   // href attribute
   let _lastHref: any = undefined;
+  let _hrefAttempts = 0;
   const applyHref = () => {
     try {
       const href = instance.href;
@@ -7027,12 +7028,22 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
         el.setAttribute('href', String(href));
         _lastHref = href;
       }
-    } catch {
-      // href computation may throw if routing service is unavailable
+    } catch (e) {
+      // Fall back to '#' so the <a> remains renderable (e.g., tests that
+      // render LinkTo without a started router expect href='#/' or '#').
       if (_lastHref !== '#') {
         el.setAttribute('href', '#');
         _lastHref = '#';
       }
+      // Capture the error on the very first attempt so test assertions
+      // using assert.rejectsAssertion() during initial visit() can see it
+      // (e.g., LinkTo to a route with unsupplied dynamic segments). Later
+      // re-runs of applyHref (classic-tag bridge, reactor) must NOT capture
+      // repeatedly — that would leak an error across subsequent tests.
+      if (_hrefAttempts === 0) {
+        try { captureRenderError(e); } catch { /* ignore */ }
+      }
+      _hrefAttempts++;
     }
   };
   gxtEffect(() => { touchClassicTags(); applyHref(); });
@@ -7126,11 +7137,33 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   if (rawChildren && rawChildren.length > 0) {
     for (const child of rawChildren) {
       if (typeof child === 'function') {
-        // Reactive getter - use gxtEffect + cellFor for tracking.
-        // The getter reads this.title (a controller/context property).
-        // We need cellFor tracking so set(controller, 'title', ...) triggers re-render.
+        // Function child: could be a reactive text getter, a component thunk
+        // ($_tag/$_c/$_dc) that returns a DOM Node, or a DocumentFragment.
+        // Use the same heuristic as compile.ts: thunks containing $_tag/$_c/
+        // $_dc/$_eachSync return Nodes, everything else is a reactive text
+        // getter that should be wrapped in gxtEffect for live updates.
+        const fnStr = (child as Function).toString();
+        const isNodeThunk = fnStr.includes('$_tag(') ||
+          fnStr.includes('$_c(') ||
+          fnStr.includes('$_dc(') ||
+          fnStr.includes('$_eachSync(');
+        if (isNodeThunk) {
+          let evaluated: any;
+          try { evaluated = child(); } catch { evaluated = null; }
+          if (evaluated instanceof Node) {
+            // DocumentFragments move their children on append — snapshot first.
+            if (evaluated.nodeType === 11 /* DocumentFragment */) {
+              const kids = Array.from(evaluated.childNodes);
+              for (const k of kids) el.appendChild(k);
+            } else {
+              el.appendChild(evaluated);
+            }
+            continue;
+          }
+          // Unexpected non-Node from a component thunk — fall through to text.
+        }
+        // Reactive text getter: mirror changes to a text node via gxtEffect.
         const textNode = document.createTextNode('');
-        const cellFor = _gxtCellFor;
         gxtEffect(() => {
           const val = child();
           textNode.textContent = val == null ? '' : String(val);
@@ -7152,6 +7185,35 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
       for (const item of items) {
         if (item instanceof Node) {
           el.appendChild(item);
+        } else if (typeof item === 'function') {
+          // Reactive text getter (e.g., {{this.title}} inside {{#link-to}}).
+          // Stringifying the function directly would surface "() => this.title"
+          // in the DOM; wrap in gxtEffect to render the evaluated value and
+          // update on reactive changes.
+          const fnStr = (item as Function).toString();
+          const isNodeThunk = fnStr.includes('$_tag(') ||
+            fnStr.includes('$_c(') ||
+            fnStr.includes('$_dc(') ||
+            fnStr.includes('$_eachSync(');
+          if (isNodeThunk) {
+            let evaluated: any;
+            try { evaluated = item(); } catch { evaluated = null; }
+            if (evaluated instanceof Node) {
+              if (evaluated.nodeType === 11) {
+                const kids = Array.from(evaluated.childNodes);
+                for (const k of kids) el.appendChild(k);
+              } else {
+                el.appendChild(evaluated);
+              }
+              continue;
+            }
+          }
+          const textNode = document.createTextNode('');
+          gxtEffect(() => {
+            const val = item();
+            textNode.textContent = val == null ? '' : String(val);
+          });
+          el.appendChild(textNode);
         } else if (item != null) {
           el.appendChild(document.createTextNode(String(item)));
         }
