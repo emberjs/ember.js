@@ -183,9 +183,9 @@ export class OnModifierState {
     if (shouldUpdate) {
       let callback = userProvidedCallback;
 
-      // If the callback ref was created by VM_GET_PROPERTY_BOUND_OP (i.e. a
-      // `this.*` path read), bind the callback to the parent object so that
-      // class methods preserve their `this` context.
+      // If the callback ref was created by VM_GET_PROPERTY_BOUND_OP (a path
+      // read like `this.foo`, `o.method`, etc.), bind the callback to the
+      // parent object so that methods preserve their `this` context.
       let bindingParentRef = arg1 ? getBindingParentRef(arg1) : undefined;
       if (bindingParentRef) {
         let parentValue = valueForRef(bindingParentRef);

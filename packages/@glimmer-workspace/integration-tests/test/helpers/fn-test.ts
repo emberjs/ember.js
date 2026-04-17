@@ -181,18 +181,25 @@ class FnTest extends RenderTest {
   'this context is available within the callback'(assert: Assert) {
     let seenThis: unknown;
 
-    this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, {
+    let context = {
       myFunc() {
         assert.step('calling stashed function');
         seenThis = this;
       },
 
       arg1: 'foo',
-    });
+    };
+
+    this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, context);
 
     this.stashedFn?.();
     assert.verifySteps(['calling stashed function']);
-    assert.ok(seenThis !== null && seenThis !== undefined, 'this is bound to the context');
+    assert.ok(seenThis !== null && seenThis !== undefined, 'this is not null/undefined');
+    assert.strictEqual(
+      (seenThis as Record<string, unknown>)['arg1'],
+      'foo',
+      'this is bound to the object myFunc is defined on'
+    );
   }
 
   @test

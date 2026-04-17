@@ -45,8 +45,8 @@ import type { Reference } from '@glimmer/reference';
 import {
   childRefFor,
   createComputeRef,
-  setBindingParentRef,
   FALSE_REFERENCE,
+  setBindingParentRef,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
