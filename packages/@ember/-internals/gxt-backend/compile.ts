@@ -6410,6 +6410,161 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
   g.$_tag.__compileWrapped = true;
 }
 
+// Wrap $_dc to properly forward splattributes (tagProps) to the component
+// manager when the dynamic component is a CurriedComponent. The base
+// ember-gxt-wrappers' $_dc_ember invokes renderComponent with fw=null, which
+// drops class/attrs on constructs like `<this.foo class="..." />`. This
+// wrapper reads tagProps from Symbol.for('gxt-props') on the $_args result
+// and forwards them as fw so the target element's `...attributes` receives
+// the class/attrs.
+if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
+  const __origDc = g.$_dc;
+  const $PROPS_SYM = Symbol.for('gxt-props');
+
+  g.$_dc = function $_dc_splatfix(componentGetter: any, gxtArgs: any, ctx: any): any {
+    const tagProps = gxtArgs && typeof gxtArgs === 'object' ? gxtArgs[$PROPS_SYM] : null;
+    const hasSplatProps = Array.isArray(tagProps) && (
+      (Array.isArray(tagProps[0]) && tagProps[0].length > 0) ||
+      (Array.isArray(tagProps[1]) && tagProps[1].some((e: any) => Array.isArray(e) && typeof e[0] === 'string' && !e[0].startsWith('@')))
+    );
+    if (!hasSplatProps) {
+      return __origDc.call(this, componentGetter, gxtArgs, ctx);
+    }
+    // Narrow the intervention to angle-bracket contextual component invocations
+    // that came from `<param.prop ...>` (transformed to `<this.$_bp0.prop ...>`
+    // in transformBlockParamsInTemplate). The compiled getter body contains
+    // `this.$_bp` for block-param-based lookups. Leave other $_dc callers
+    // (e.g. `{{component this.foo}}` or curly contextual invocations) to the
+    // ember-gxt-wrappers path so we don't perturb their behavior.
+    if (typeof componentGetter !== 'function') {
+      return __origDc.call(this, componentGetter, gxtArgs, ctx);
+    }
+    let __getterSrc: string;
+    try { __getterSrc = componentGetter.toString(); } catch { __getterSrc = ''; }
+    if (!__getterSrc.includes('$_bp')) {
+      return __origDc.call(this, componentGetter, gxtArgs, ctx);
+    }
+
+    // Build fw + mergedArgs and invoke the manager directly with correct fw.
+    // This is the canonical path for curried components in a splat invocation.
+    const renderCurriedWithFw = (componentValue: any): any => {
+      const managers = (globalThis as any).$_MANAGERS;
+      if (!managers?.component?.canHandle?.(componentValue)) return null;
+
+      const fwProps: any[] = [];
+      const fwAttrs: any[] = [];
+      const events: any[] = [];
+      if (Array.isArray(tagProps![0])) {
+        for (const entry of tagProps![0]) {
+          if (!Array.isArray(entry)) continue;
+          const key = entry[0];
+          if (key === '' || key === 'class') {
+            const val = entry[1];
+            const wrapped = typeof val === 'function'
+              ? () => { const v = val(); return (v == null || v === false) ? '' : v; }
+              : (val == null || val === false) ? '' : val;
+            fwProps.push([key, wrapped]);
+          } else {
+            fwProps.push(entry);
+          }
+        }
+      }
+      if (Array.isArray(tagProps![1])) {
+        for (const entry of tagProps![1]) {
+          if (!Array.isArray(entry)) continue;
+          const key = entry[0];
+          if (typeof key === 'string' && key.startsWith('@')) continue;
+          fwAttrs.push(entry);
+        }
+      }
+      if (Array.isArray(tagProps![2])) {
+        for (const entry of tagProps![2]) {
+          if (Array.isArray(entry)) events.push(entry);
+        }
+      }
+      const fw = [fwProps, fwAttrs, events];
+
+      const mergedArgs: any = {};
+      if (gxtArgs && typeof gxtArgs === 'object') {
+        for (const key of Object.keys(gxtArgs)) {
+          if (key === 'args' || key.startsWith('$')) continue;
+          if (key.startsWith('_') && key !== '__hasBlock__' && key !== '__hasBlockParams__') continue;
+          const desc = Object.getOwnPropertyDescriptor(gxtArgs, key);
+          if (desc) Object.defineProperty(mergedArgs, key, { ...desc, configurable: true });
+        }
+        if (Array.isArray(tagProps![1])) {
+          for (const entry of tagProps![1]) {
+            if (!Array.isArray(entry)) continue;
+            const key = entry[0];
+            if (typeof key === 'string' && key.startsWith('@')) {
+              const argName = key.slice(1);
+              const val = entry[1];
+              Object.defineProperty(mergedArgs, argName, {
+                get: () => typeof val === 'function' ? val() : val,
+                enumerable: true,
+                configurable: true,
+              });
+            }
+          }
+        }
+        const $SLOTS = Symbol.for('gxt-slots');
+        const slots = gxtArgs[$SLOTS];
+        if (slots && typeof slots === 'object') {
+          _setInternalProp(mergedArgs, '$slots', slots);
+        }
+      }
+
+      const handleResult = managers.component.handle(componentValue, mergedArgs, fw, ctx);
+      if (typeof handleResult === 'function') return handleResult();
+      return handleResult;
+    };
+
+    // Try to resolve the component getter. The getter may throw if block
+    // params aren't bound yet (e.g. inside a slot that hasn't fired). In
+    // that case, defer rendering via a lazy thunk that re-resolves later.
+    let componentValue: any;
+    let getterThrew = false;
+    try {
+      componentValue = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+    } catch {
+      getterThrew = true;
+    }
+
+    if (getterThrew) {
+      // Getter threw (block params not yet bound) — defer via a lazy thunk.
+      const lazyThunk = () => {
+        let val: any;
+        try {
+          val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
+        } catch { return undefined; }
+        if (val && val.__isCurriedComponent) {
+          const rendered = renderCurriedWithFw(val);
+          if (rendered != null) return rendered;
+        }
+        // Non-curried path (string, null) — fall back to ember-gxt-wrappers' $_dc.
+        return __origDc.call(undefined, componentGetter, gxtArgs, ctx);
+      };
+      (lazyThunk as any).__isComponentThunk = true;
+      return lazyThunk;
+    }
+
+    // Only intervene for curried components — string components/null path is
+    // already handled correctly by ember-gxt-wrappers' $_dc_ember.
+    if (!componentValue || !componentValue.__isCurriedComponent) {
+      return __origDc.call(this, componentGetter, gxtArgs, ctx);
+    }
+
+    const rendered = renderCurriedWithFw(componentValue);
+    if (rendered == null) {
+      return __origDc.call(this, componentGetter, gxtArgs, ctx);
+    }
+    return rendered;
+  };
+  (g.$_dc as any).__splatForwardWrapped = true;
+  // Preserve __emberWrapped flag so ember-gxt-wrappers doesn't re-wrap
+  if ((__origDc as any).__emberWrapped) (g.$_dc as any).__emberWrapped = true;
+}
+
 // NOTE: transformCapitalizedComponents has been moved to the GXT AST compiler
 // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
@@ -6512,6 +6667,22 @@ function transformBlockParamsInTemplate(template: string): string {
     for (let j = 0; j < paramNames.length; j++) {
       const param = paramNames[j]!;
       const bpVar = `$_bp${j}`;
+
+      // Replace `<param.prop ...>` and `</param.prop>` tag invocations
+      // (contextual components yielded via (hash)) with `<this.$_bp0.prop ...>`.
+      // Without this, GXT emits `$_dc(() => param.prop, ...)` where `param` is
+      // a free JS variable that's not bound, so the getter throws and
+      // splattributes (class/title) never reach the element.
+      // Pattern matches `<fb.baz` but not `<fb ` (dot required — plain
+      // param references aren't valid as tag names anyway).
+      content = content.replace(
+        new RegExp(`<${param}(\\.[a-zA-Z0-9_.-]+)(?=[\\s/>])`, 'g'),
+        `<this.${bpVar}$1`
+      );
+      content = content.replace(
+        new RegExp(`</${param}(\\.[a-zA-Z0-9_.-]+)\\s*>`, 'g'),
+        `</this.${bpVar}$1>`
+      );
 
       // Replace {{param.property}} with {{this.$_bp0.property}}
       content = content.replace(
