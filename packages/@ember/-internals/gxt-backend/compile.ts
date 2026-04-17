@@ -66,6 +66,192 @@ function hyphenToUnderscore(str: string): string {
   return str.split('-').join('_');
 }
 
+// ---------------------------------------------------------------------------
+// {{unbound}} helper — compile-time + runtime support
+// ---------------------------------------------------------------------------
+
+/**
+ * Global monotonic counter for synthetic `__ubInlineN` cache ids so each
+ * compilation that contains inline `unbound(...)` calls gets unique ids even
+ * when multiple templates are rewritten in the same process.
+ */
+let _inlineUnboundCounter = 0;
+
+/**
+ * Post-process the GXT-compiled code: wrap bare `unbound(...)` calls that are
+ * NOT already inside a `__gxtUnboundEval(...)` wrapper with a caching wrapper.
+ *
+ * The GXT serializer only emits the caching wrapper for the TOP-LEVEL mustache
+ * form `{{unbound X}}`. When `unbound` appears in a sub-expression context
+ * (e.g. `{{yield (unbound this.x)}}`) the serializer emits a bare
+ * `unbound(this.x)` helper call that re-reads the argument every time the
+ * consumer evaluates the yielded value — breaking the frozen-value semantic.
+ * Rewrite those inline calls so they share the same caching path:
+ *   unbound(<EXPR>)  →  globalThis.__gxtUnboundEval(__ubCache,"<id>",()=>unbound(<EXPR>))
+ * The scanner respects string/template/comment boundaries and balances
+ * parentheses so nested expressions are handled correctly.
+ */
+function _rewriteInlineUnbound(code: string): string {
+  if (code.indexOf('unbound(') === -1) return code;
+  const needle = 'unbound(';
+  const out: string[] = [];
+  let i = 0;
+  while (i < code.length) {
+    const c = code[i]!;
+    if (c === '"' || c === "'" || c === '`') {
+      const end = _skipStringLiteralUB(code, i);
+      out.push(code.slice(i, end));
+      i = end;
+      continue;
+    }
+    if (c === '/' && code[i + 1] === '/') {
+      const nl = code.indexOf('\n', i);
+      const end = nl === -1 ? code.length : nl;
+      out.push(code.slice(i, end));
+      i = end;
+      continue;
+    }
+    if (c === '/' && code[i + 1] === '*') {
+      const endIdx = code.indexOf('*/', i + 2);
+      const end = endIdx === -1 ? code.length : endIdx + 2;
+      out.push(code.slice(i, end));
+      i = end;
+      continue;
+    }
+    if (c === 'u' && code.substr(i, needle.length) === needle) {
+      const prev = i === 0 ? '' : code[i - 1]!;
+      const isIdentCont =
+        (prev >= 'a' && prev <= 'z') ||
+        (prev >= 'A' && prev <= 'Z') ||
+        (prev >= '0' && prev <= '9') ||
+        prev === '_' || prev === '$' || prev === '.';
+      if (!isIdentCont) {
+        const argsStart = i + needle.length;
+        const argsEnd = _findMatchingParenUB(code, argsStart - 1);
+        if (argsEnd !== -1) {
+          // Skip when we are the inner `unbound(...)` of a top-level
+          // serializer-emitted wrapper
+          //   globalThis.__gxtUnboundEval(__ubCache,"__ubN",()=>unbound(...))
+          // — caching is already in place there and we must not double-wrap.
+          // Detect by the immediate `=>` preceding `unbound(` that sits
+          // inside a `__gxtUnboundEval(__ubCache` call.
+          const lookbackStart = Math.max(0, i - 80);
+          const lookback = code.slice(lookbackStart, i);
+          const hasWrapper = lookback.indexOf('__gxtUnboundEval(__ubCache') !== -1
+            && lookback.lastIndexOf('=>') > lookback.lastIndexOf('unbound(');
+          if (hasWrapper) {
+            out.push(code.slice(i, argsEnd + 1));
+            i = argsEnd + 1;
+            continue;
+          }
+          const id = `__ubInline${_inlineUnboundCounter++}`;
+          out.push(
+            `globalThis.__gxtUnboundEval(__ubCache,"${id}",()=>unbound(`,
+            code.slice(argsStart, argsEnd),
+            `))`
+          );
+          i = argsEnd + 1;
+          continue;
+        }
+      }
+    }
+    out.push(c);
+    i++;
+  }
+  return out.join('');
+}
+
+function _skipStringLiteralUB(code: string, start: number): number {
+  const quote = code[start]!;
+  let i = start + 1;
+  while (i < code.length) {
+    const c = code[i]!;
+    if (c === '\\') { i += 2; continue; }
+    if (c === quote) return i + 1;
+    if (quote === '`' && c === '$' && code[i + 1] === '{') {
+      let depth = 1;
+      i += 2;
+      while (i < code.length && depth > 0) {
+        const cc = code[i]!;
+        if (cc === '{') depth++;
+        else if (cc === '}') depth--;
+        else if (cc === '"' || cc === "'" || cc === '`') {
+          i = _skipStringLiteralUB(code, i);
+          continue;
+        }
+        i++;
+      }
+      continue;
+    }
+    i++;
+  }
+  return code.length;
+}
+
+function _findMatchingParenUB(code: string, openIdx: number): number {
+  if (code[openIdx] !== '(') return -1;
+  let depth = 1;
+  let i = openIdx + 1;
+  while (i < code.length) {
+    const c = code[i]!;
+    if (c === '"' || c === "'" || c === '`') {
+      i = _skipStringLiteralUB(code, i);
+      continue;
+    }
+    if (c === '/' && code[i + 1] === '/') {
+      const nl = code.indexOf('\n', i);
+      i = nl === -1 ? code.length : nl;
+      continue;
+    }
+    if (c === '/' && code[i + 1] === '*') {
+      const end = code.indexOf('*/', i + 2);
+      i = end === -1 ? code.length : end + 2;
+      continue;
+    }
+    if (c === '(') depth++;
+    else if (c === ')') {
+      depth--;
+      if (depth === 0) return i;
+    }
+    i++;
+  }
+  return -1;
+}
+
+/**
+ * Deep-snapshot a value returned from the `unbound` helper. `(unbound (hash
+ * foo=this.x))` compiles to `unbound($__hash({ foo: () => this.x }))`: the
+ * GXT `hash` builtin returns an object whose values are live getter
+ * functions, not resolved primitives. To give Ember's frozen-at-first-read
+ * semantics we replace those getters with their snapshot values before the
+ * caching wrapper stores the result.
+ */
+function _unboundSnapshot(value: any): any {
+  if (value == null) return value;
+  const t = typeof value;
+  if (t !== 'object') return value;
+  if (Array.isArray(value)) return value.map(_unboundSnapshot);
+  // Leave non-plain objects alone — we must not mutate component instances,
+  // iterators, DOM nodes, GXT cells, helper results, etc.
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) return value;
+  const out: any = {};
+  for (const key of Object.keys(value)) {
+    const v = (value as any)[key];
+    // If the raw property is a zero-arg getter (e.g. `() => this.x`),
+    // call it to capture the current value. Plain functions passed as
+    // user callbacks must not be invoked — GXT getters are arrow-style
+    // (no prototype) and are what `$__hash` emits for bindings.
+    if (typeof v === 'function' && !(v as any).prototype) {
+      try { out[key] = _unboundSnapshot((v as any)()); }
+      catch { out[key] = v; }
+    } else {
+      out[key] = _unboundSnapshot(v);
+    }
+  }
+  return out;
+}
+
 /** Replace all double-dashes with forward slashes without regex */
 function doubleDashToSlash(str: string): string {
   return str.split('--').join('/');
@@ -3482,6 +3668,14 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   },
   // unbound: Returns the value without tracking.
   // Use getDebugFunction('assert') so expectAssertion's stub is called.
+  //
+  // For `(unbound (hash foo=this.x))` the serializer emits:
+  //   unbound($__hash({ foo: () => this.x }))
+  // The `$__hash` result is an object whose `foo` property is a live GXT
+  // getter that re-reads `this.x` on every access. To give Ember-style
+  // frozen-at-first-read semantics we deep-snapshot those getters into
+  // static own-property values before returning the hash so downstream
+  // `{{value.foo}}` reads the frozen value.
   unbound: (...args: any[]) => {
     const _assert = getDebugFunction('assert');
     if (_assert) _assert(
@@ -3489,7 +3683,8 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       args.length <= 1
     );
     const value = args[0];
-    return typeof value === 'function' ? value() : value;
+    const resolved = typeof value === 'function' ? value() : value;
+    return _unboundSnapshot(resolved);
   },
   // concat: Concatenates arguments into a string.
   // Must use _normalizeStringValue rather than .join('') because Symbol
@@ -3973,33 +4168,57 @@ if (typeof (globalThis as any).EmberFunctionalHelpers === 'undefined') {
 const slotsContextStack: any[] = [];
 (globalThis as any).__slotsContextStack = slotsContextStack;
 
-// has-block helper - returns true if a block was provided
-// Usage: {{has-block}} or {{has-block "inverse"}}
-(globalThis as any).$_hasBlock = function(blockName?: string) {
-  const name = blockName || 'default';
+// has-block / has-block-params helpers — returns true if the named block exists.
+//
+// GXT emits `$_hasBlock.bind(this, $slots)(name)` for `{{has-block "name"}}`, so
+// the function receives `(slots, blockName)`. We also accept the legacy single-arg
+// `(blockName)` form (falls back to the global slotsContextStack) to stay compatible
+// with call sites that pre-date this calling convention.
+//
+// `<:inverse>` is a Glimmer alias for `<:else>` (see @glimmer/syntax/v2/normalize).
+// When looking up either block, we transparently fall back to the other so templates
+// can use `yield to="inverse"` even when the invoker wrote `<:else>`.
+function _lookupSlot(slots: any, name: string): any {
+  if (!slots) return undefined;
+  if (typeof slots[name] === 'function') return slots[name];
+  if (name === 'else' && typeof slots.inverse === 'function') return slots.inverse;
+  if (name === 'inverse' && typeof slots.else === 'function') return slots.else;
+  return undefined;
+}
+
+function _resolveHasBlockArgs(arg1: any, arg2: any): { slots: any; name: string } {
+  // GXT-bound path: (slots, blockName)
+  if (arg1 && typeof arg1 === 'object') {
+    return { slots: arg1, name: (typeof arg2 === 'string' ? arg2 : undefined) || 'default' };
+  }
+  // Legacy single-arg path: (blockName)
+  const name = (typeof arg1 === 'string' ? arg1 : undefined) || 'default';
   const slots = slotsContextStack[slotsContextStack.length - 1];
-  const hasIt = slots && typeof slots[name] === 'function';
-  return hasIt;
+  return { slots, name };
+}
+
+(globalThis as any).$_hasBlock = function(arg1?: any, arg2?: any) {
+  const { slots, name } = _resolveHasBlockArgs(arg1, arg2);
+  return _lookupSlot(slots, name) !== undefined;
 };
 
-// has-block-params helper - returns true if the block accepts params
-// This is tricky to implement properly, but we can approximate:
-// - If there's no block, return false
-// - If there's a block and we have blockParamsInfo, check it
-// - Otherwise, return false as a conservative default
-(globalThis as any).$_hasBlockParams = function(blockName?: string) {
-  const name = blockName || 'default';
-  const slots = slotsContextStack[slotsContextStack.length - 1];
-  if (!slots || typeof slots[name] !== 'function') {
-    return false;
-  }
-  // Check if the slot has block params info attached
-  const slotFn = slots[name];
+(globalThis as any).$_hasBlockParams = function(arg1?: any, arg2?: any) {
+  const { slots, name } = _resolveHasBlockArgs(arg1, arg2);
+  const slotFn = _lookupSlot(slots, name);
+  if (!slotFn) return false;
   if (slotFn.__hasBlockParams !== undefined) {
     return slotFn.__hasBlockParams;
   }
-  // Conservative default - if we don't know, assume false
-  // In real Ember, this would inspect the template's block params
+  // GXT runtime compiler emits a sibling `${name}_` flag (e.g., `default_: true`)
+  // alongside the slot function to indicate that block params were declared.
+  if (slots) {
+    const markerKey = `${name}_`;
+    if (markerKey in slots && typeof slots[markerKey] === 'boolean') {
+      return slots[markerKey];
+    }
+    if (name === 'else' && typeof slots.inverse_ === 'boolean') return slots.inverse_;
+    if (name === 'inverse' && typeof slots.else_ === 'boolean') return slots.else_;
+  }
   return false;
 };
 
@@ -5502,7 +5721,16 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Create slot functions for named blocks
           for (const [slotName, slotData] of namedBlocks) {
             // Pass both children and the explicit hasBlockParams flag
-            slots[slotName] = createSlotFn(slotData.children, slotData.hasBlockParams);
+            const fn = createSlotFn(slotData.children, slotData.hasBlockParams);
+            slots[slotName] = fn;
+            // `<:inverse>` is an alias for `<:else>` (Glimmer v2 normalize rule).
+            // Register both names so that `{{yield to="else"}}` finds the block
+            // even when the invoker wrote `<:inverse>`, and vice versa.
+            if (slotName === 'else' && !slots.inverse) {
+              slots.inverse = fn;
+            } else if (slotName === 'inverse' && !slots.else) {
+              slots.else = fn;
+            }
           }
 
           // Create default slot if there are default children
@@ -6125,6 +6353,28 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
 
         return el;
+      }
+    }
+
+    // Guard: when a slot function (e.g. `ctx0 => [$_tag('span', ..., ctx0, ...)]`)
+    // wraps yielded content in a literal HTML tag, GXT's `$_slot`/`H` creates a
+    // fresh child context with `[RENDERING_CONTEXT_PROPERTY]` unset. Calling the
+    // original GXT `$_tag` in that state crashes in `n(ctx).element(...)` because
+    // the walker (St/Q-based) cannot climb to any ancestor — the parent linkage
+    // was never recorded. Fall back to the global gxt root's rendering context so
+    // the DOM API is available for element creation. This mirrors the recovery
+    // path used in the top-level `template.render` entry (see line ~8255).
+    if (RENDERING_CONTEXT_PROPERTY && ctx && typeof ctx === 'object') {
+      const rcKey = RENDERING_CONTEXT_PROPERTY as any;
+      const existing = (ctx as any)[rcKey];
+      if (existing == null) {
+        try {
+          const gxtRoot = (globalThis as any).__gxtRootContext;
+          const rootRc = gxtRoot && gxtRoot[rcKey];
+          if (rootRc && rootRc.element !== null) {
+            (ctx as any)[rcKey] = rootRc;
+          }
+        } catch { /* ignore — let GXT raise the real error below */ }
       }
     }
 
@@ -7110,8 +7360,14 @@ export function precompileTemplate(templateString: string, options?: {
       }
     }
 
-    // NOTE: {{unbound}} caching is now handled in the GXT serializer
-    // (value.ts wraps $_maybeHelper("unbound",...) in __gxtUnboundEval directly)
+    // The GXT serializer wraps the top-level `{{unbound X}}` form in
+    // `globalThis.__gxtUnboundEval(__ubCache, "__ubN", () => unbound(...))`,
+    // but it does NOT wrap `unbound(...)` calls that appear inline in a
+    // sub-expression context (e.g. inside `{{yield (unbound this.x)}}`).
+    // Rewrite those inline calls so they share the same caching path and
+    // preserve the frozen-value semantic across consumer re-reads.
+    modifiedCode = _rewriteInlineUnbound(modifiedCode);
+
     // Detect unbound usage by checking for __ubCache in the compiled code
     const hasUnbound = modifiedCode.includes('__ubCache');
     // NOTE: The Let_XXX_scopeN()() double-call fix has been removed — the root cause
@@ -8295,24 +8551,34 @@ export function precompileTemplate(templateString: string, options?: {
             renderContext['args'] = context['args'] || context.args || {};
           }
 
-          // Add has-block helpers to the render context
-          // These check the slots context stack to see if blocks were provided
+          // Add has-block helpers to the render context.
+          // GXT-compiled code calls `$_hasBlock.bind(this, $slots)(name)` so the
+          // function may be invoked as either `(slots, name)` or `(name)`; also
+          // `<:inverse>` aliases `<:else>`. Delegate via the shared helpers
+          // (_lookupSlot / _resolveHasBlockArgs defined above) so the logic
+          // stays in one place.
           const currentSlots = g.$slots;
-          renderContext.$_hasBlock = function(blockName?: string) {
-            const name = blockName || 'default';
-            return currentSlots && typeof currentSlots[name] === 'function';
+          renderContext.$_hasBlock = function(arg1?: any, arg2?: any) {
+            const slots = (arg1 && typeof arg1 === 'object') ? arg1 : currentSlots;
+            const name = ((arg1 && typeof arg1 === 'object' ? arg2 : arg1) as string) || 'default';
+            return _lookupSlot(slots, name) !== undefined;
           };
-          renderContext.$_hasBlockParams = function(blockName?: string) {
-            const name = blockName || 'default';
-            if (!currentSlots || typeof currentSlots[name] !== 'function') {
-              return false;
-            }
-            // Check if the slot has block params info attached
-            const slotFn = currentSlots[name];
+          renderContext.$_hasBlockParams = function(arg1?: any, arg2?: any) {
+            const slots = (arg1 && typeof arg1 === 'object') ? arg1 : currentSlots;
+            const name = ((arg1 && typeof arg1 === 'object' ? arg2 : arg1) as string) || 'default';
+            const slotFn = _lookupSlot(slots, name);
+            if (!slotFn) return false;
             if (slotFn.__hasBlockParams !== undefined) {
               return slotFn.__hasBlockParams;
             }
-            // Conservative default
+            if (slots) {
+              const markerKey = `${name}_`;
+              if (markerKey in slots && typeof slots[markerKey] === 'boolean') {
+                return slots[markerKey];
+              }
+              if (name === 'else' && typeof slots.inverse_ === 'boolean') return slots.inverse_;
+              if (name === 'inverse' && typeof slots.else_ === 'boolean') return slots.else_;
+            }
             return false;
           };
 
