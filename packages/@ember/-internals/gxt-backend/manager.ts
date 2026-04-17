@@ -6778,17 +6778,51 @@ function buildCustomManagedArgs(args: any) {
     }
   }
 
+  // Memoize arg-getter reads per render pass. Without this, `this.args.<key>`
+  // invokes the upstream getter (which may chain into a user-defined `get
+  // count() { rc++; … }`) on every read. When a child component's formula
+  // re-evaluates and reads `this.args.count` multiple times (or when a force-
+  // rerender re-renders the same subtree), the upstream getter's side effects
+  // fire repeatedly. Glimmer avoids this via per-component tag caching; we
+  // approximate it by caching per `__emberRenderPassId` so that repeated
+  // reads of the same arg within one render pass share a value.
   const liveNamed: Record<string, any> = {};
   for (const key of Object.keys(namedArgs)) {
     if (argGetters[key]) {
-      Object.defineProperty(liveNamed, key, { get: argGetters[key], enumerable: true, configurable: true });
+      const origGetter = argGetters[key]!;
+      let lastPassId: number = -1;
+      let cachedValue: any = undefined;
+      const memoGet = function() {
+        const currentPassId = (globalThis as any).__emberRenderPassId | 0;
+        if (currentPassId > 0 && currentPassId === lastPassId) {
+          return cachedValue;
+        }
+        const v = origGetter();
+        lastPassId = currentPassId;
+        cachedValue = v;
+        return v;
+      };
+      Object.defineProperty(liveNamed, key, { get: memoGet, enumerable: true, configurable: true });
     } else {
       liveNamed[key] = namedArgs[key];
     }
   }
   const livePositional: any[] = [];
   for (let i = 0; i < positionalArgs.length; i++) {
-    Object.defineProperty(livePositional, i, { get: posGetters[i], enumerable: true, configurable: true });
+    const origPos = posGetters[i]!;
+    let lastPassId: number = -1;
+    let cachedValue: any = undefined;
+    const memoGet = function() {
+      const currentPassId = (globalThis as any).__emberRenderPassId | 0;
+      if (currentPassId > 0 && currentPassId === lastPassId) {
+        return cachedValue;
+      }
+      const v = origPos();
+      lastPassId = currentPassId;
+      cachedValue = v;
+      return v;
+    };
+    Object.defineProperty(livePositional, i, { get: memoGet, enumerable: true, configurable: true });
   }
   Object.defineProperty(livePositional, 'length', { value: positionalArgs.length, writable: true });
 
@@ -6914,22 +6948,45 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
 
   // Register a side-channel reactor that auto-unsubscribes once the element
   // is no longer connected to the DOM. This avoids leaking reactors across
-  // test runs when LinkTo elements are re-rendered.
+  // test runs when LinkTo elements are re-rendered. Importantly, the element
+  // is created BEFORE insertion into the DOM, so isConnected is false on the
+  // first classic-tag dirties that happen during the router transition
+  // setup — if we treated those as "detached" and unsubscribed we'd miss
+  // the href/active updates that land the moment the transition settles
+  // but before the element reaches the document. We therefore only start
+  // counting detached ticks AFTER the element has been connected at least
+  // once.
+  let _hasBeenConnected = false;
   let _disconnectedTicks = 0;
+  let _preConnectTicks = 0;
   const _registerReactor = (cb: () => void) => {
     let unsub: () => void = () => {};
     const wrapped = () => {
-      if (!el.isConnected) {
-        _disconnectedTicks++;
-        // Give the DOM one cycle to reconnect (e.g., during morph) before
-        // unsubscribing permanently.
-        if (_disconnectedTicks > 2) {
+      if (el.isConnected) {
+        _hasBeenConnected = true;
+        _disconnectedTicks = 0;
+        cb();
+        return;
+      }
+      if (!_hasBeenConnected) {
+        // Before the element ever lands in the DOM: still fire the
+        // callback so the latest reactive state is ready the moment the
+        // element is inserted. Cap pre-connection firings so we don't
+        // leak a reactor on an element that ultimately never gets
+        // inserted (e.g., rendered into a discarded branch).
+        cb();
+        _preConnectTicks++;
+        if (_preConnectTicks > 256) {
           try { unsub(); } catch { /* ignore */ }
         }
         return;
       }
-      _disconnectedTicks = 0;
-      cb();
+      // Was connected, now detached. Allow a brief grace period for morph
+      // re-attachment, then unsubscribe to prevent cross-test leaks.
+      _disconnectedTicks++;
+      if (_disconnectedTicks > 4) {
+        try { unsub(); } catch { /* ignore */ }
+      }
     };
     unsub = _gxtRegisterClassicReactor(wrapped);
   };
