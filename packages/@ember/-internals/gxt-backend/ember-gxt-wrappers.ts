@@ -313,9 +313,46 @@ function createEmberMaybeHelper(original: Function) {
       }
       // For 'mut' helper, pass the raw getter + path, and set context
       if (name === 'mut' && Array.isArray(args) && args.length > 0) {
-        // args[0] = getter for the value, args[1] = path string (added by template transform)
+        // args[0] = getter for the value, args[1] = path string (added by template transform).
+        // NOTE: GXT's AST transform emits the path literal only for single-segment
+        // `this.X` / `@X` forms. For nested paths like `{{mut this.filters.shared}}`
+        // no path is emitted (args.length === 1), and the runtime `mut` helper
+        // then rejects the call with "You can only pass a path to mut".
+        // We recover the dotted path by parsing the getter's toString() — the
+        // compiled getter is of the form `() => this.foo?.bar` (optional chaining
+        // is inserted for nested reads). This matches the path-derivation logic
+        // used downstream in compile.ts#extractThisPath.
         const rawGetter = args[0];
-        const pathArg = args.length > 1 ? (typeof args[1] === 'function' ? args[1]() : args[1]) : undefined;
+        let pathArg: any =
+          args.length > 1 ? (typeof args[1] === 'function' ? args[1]() : args[1]) : undefined;
+        if ((pathArg === undefined || typeof pathArg !== 'string') && typeof rawGetter === 'function') {
+          const getterStr = String(rawGetter);
+          const scanPath = (start: number): string | null => {
+            let end = start;
+            while (end < getterStr.length) {
+              const c = getterStr[end]!;
+              if (
+                (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') ||
+                c === '_' || c === '$' || c === '?' || c === '.'
+              ) {
+                end++;
+              } else {
+                break;
+              }
+            }
+            if (end === start) return null;
+            // Strip optional chaining: `foo?.bar` -> `foo.bar`.
+            return getterStr.slice(start, end).split('?').join('');
+          };
+          const thisMarker = 'this.';
+          const thisIdx = getterStr.indexOf(thisMarker);
+          if (thisIdx !== -1) {
+            const tail = scanPath(thisIdx + thisMarker.length);
+            if (tail) pathArg = thisMarker + tail;
+          }
+        }
         // Set the mut context so the setter can find the component instance.
         // The context is either maybeCtx (4th arg) or hashOrCtx (3rd arg).
         // For mut, the 3rd arg is always the component's render context (this)
