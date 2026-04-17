@@ -56,17 +56,7 @@ EXPRESSIONS.add(SexpOpcodes.Curry, (op, [, expr, type, positional, named]) => {
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {
   op(VM_GET_VARIABLE_OP, sym);
-
-  if (sym === 0 && path !== undefined && path.length > 0) {
-    // For `this.*` paths, emit GetPropertyBound for the last segment so that
-    // class methods preserve their `this` binding when passed as callbacks.
-    for (let i = 0; i < path.length - 1; i++) {
-      op(VM_GET_PROPERTY_OP, path[i]);
-    }
-    op(VM_GET_PROPERTY_BOUND_OP, path[path.length - 1]);
-  } else {
-    withPath(op, path);
-  }
+  withPath(op, path);
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetLexicalSymbol, (op, [, sym, path]) => {
@@ -95,9 +85,13 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHead, (op, expr) => {
 function withPath(op: PushExpressionOp, path?: string[]) {
   if (path === undefined || path.length === 0) return;
 
-  for (let i = 0; i < path.length; i++) {
+  for (let i = 0; i < path.length - 1; i++) {
     op(VM_GET_PROPERTY_OP, path[i]);
   }
+
+  // The last segment uses GetPropertyBound to tag the ref with its parent,
+  // so that consumers (on, fn) can bind `this` at invocation time.
+  op(VM_GET_PROPERTY_BOUND_OP, path[path.length - 1]);
 }
 
 EXPRESSIONS.add(SexpOpcodes.Undefined, (op) => PushPrimitiveReference(op, undefined));
