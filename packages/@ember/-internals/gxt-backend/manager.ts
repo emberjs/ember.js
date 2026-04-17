@@ -8333,7 +8333,7 @@ export function capabilityFlagsFrom(capabilities: Record<string, boolean>): numb
   let flags = 0;
   const capabilityNames = [
     'dynamicLayout', 'dynamicTag', 'prepareArgs', 'createArgs',
-    'attributeHook', 'elementHook', 'createCaller', 'dynamicScope',
+    'attributeHook', 'elementHook', 'dynamicScope', 'createCaller',
     'updateHook', 'createInstance', 'wrapped', 'willDestroy', 'hasSubOwner',
   ];
   capabilityNames.forEach((name, index) => {
@@ -8617,8 +8617,8 @@ export function getInternalModifierManager(modifier: any) {
   return globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
 }
 
-export function managerHasCapability(manager: { capabilities: number }, capability: number): boolean {
-  return hasCapability(manager.capabilities, capability);
+export function managerHasCapability(_manager: unknown, capabilities: number, capability: number): boolean {
+  return hasCapability(capabilities, capability);
 }
 
 export function hasInternalComponentManager(component: any): boolean {
