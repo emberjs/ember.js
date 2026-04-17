@@ -369,6 +369,64 @@ export default function createRootTemplate(_owner: any) {
         }
         ctxsMap.get(component).add(renderContext);
 
+        // Install GXT cells for keys declared on the component's
+        // `Component.extend({ key: value })` properties that never became
+        // own properties on the instance because Ember's Mixin system skips
+        // entries whose value is `undefined` (see `mergeProps` in
+        // `@ember/object/mixin.ts`). Without this, a template binding like
+        // `<input value={{this.value}}>` on `{ value: undefined }` has no
+        // cell to track on initial render. The formula is marked `isConst`
+        // and a subsequent `set(component, 'value', 'hello')` never dirties
+        // anything, leaving the DOM stale.
+        //
+        // Recover the original keys from the class's `PrototypeMixin` chain
+        // and pre-install cells for any missing keys. This mirrors the cell
+        // install that CASE 2 (OutletView rendering) performs for controllers.
+        const _cellFor = (globalThis as any).__gxtCellFor;
+        if (_cellFor) {
+          const skipKeys = new Set([
+            'args', 'owner', 'outletState', '$fw', '$slots',
+            'constructor', 'init', 'willDestroy', 'toString',
+            'isDestroying', 'isDestroyed',
+            'tagName', 'layoutName', 'layout', 'renderer', 'element',
+            '_debugContainerKey', '_target', '_viewRegistry', 'ownerView',
+            'parentView', 'attributeBindings', 'classNameBindings',
+            'classNames', 'concatenatedProperties', 'mergedProperties',
+            'elementId',
+          ]);
+          try {
+            const ctor: any = (component as any).constructor;
+            if (ctor && ctor.PrototypeMixin) {
+              const collected = new Set<string>();
+              const walk = (mx: any, depth = 0) => {
+                if (!mx || depth > 20) return;
+                if (mx.properties && typeof mx.properties === 'object') {
+                  for (const k of Object.keys(mx.properties)) collected.add(k);
+                }
+                if (Array.isArray(mx.mixins)) {
+                  for (const inner of mx.mixins) walk(inner, depth + 1);
+                }
+              };
+              walk(ctor.PrototypeMixin);
+              for (const key of collected) {
+                if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
+                // Only install a cell if the component doesn't already have
+                // an own descriptor for this key. If the key is already on
+                // the component (with a value or as a cell-backed
+                // getter/setter), renderer.ts's earlier pass has handled it.
+                const existing = Object.getOwnPropertyDescriptor(renderContext, key);
+                if (existing) continue;
+                try {
+                  // `cellFor(..., skipDefine=false)` creates a cell and
+                  // installs a tracked getter/setter for the key, even if
+                  // the property did not previously exist on the object.
+                  _cellFor(renderContext, key, /* skipDefine */ false);
+                } catch { /* ignore non-configurable properties */ }
+              }
+            }
+          } catch { /* ignore PrototypeMixin walk errors */ }
+        }
+
         renderTemplateWithContext(componentTemplate, parentElement, renderContext, owner);
       }
 
