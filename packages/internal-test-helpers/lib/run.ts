@@ -17,9 +17,18 @@ export function runAppend(view: any): void {
   } finally {
     (globalThis as any).__gxtRunTaskActive = false;
   }
-  // After the initial render, reset property change flags. Property changes
-  // during init are artifacts, not user-initiated changes.
-  (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+  // Preserve __gxtPendingSyncFromPropertyChange ONLY if a property change
+  // originated from a `schedule('afterRender', cb)` callback (the classic
+  // `afterRender set` pattern, where `didInsertElement` queues a set that
+  // must re-render the DOM before the test assertion). Otherwise, reset the
+  // flag to its previous "init artifacts don't trigger a full sync" behavior
+  // so tests like Textarea (which set internal bindings during init) don't
+  // regress.
+  const afterRenderChanged = !!(globalThis as any).__gxtAfterRenderPropertyChange;
+  (globalThis as any).__gxtAfterRenderPropertyChange = false;
+  if (!afterRenderChanged) {
+    (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+  }
   // In GXT mode, flush pending DOM updates synchronously after append
   // so test assertions see the rendered DOM immediately
   const resetMC2 = (globalThis as any).__resetManagedComponentCounters;

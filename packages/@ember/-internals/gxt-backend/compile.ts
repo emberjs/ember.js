@@ -2092,6 +2092,17 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 
   (globalThis as any).__gxtPendingSync = true;
   (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+  // If this property change originated from a `schedule('afterRender', ...)`
+  // callback, record that fact. runAppend uses this to decide whether a
+  // property-change flag set during the initial-render runloop should be
+  // preserved for the subsequent syncNow() call — property changes from
+  // afterRender callbacks are legitimate user sets (the `afterRender set`
+  // pattern) and must trigger gxtSyncDom, while property changes from
+  // component init (e.g. Textarea's internal bindings) are init artifacts
+  // that should not cause a post-runAppend full sync.
+  if ((globalThis as any).__gxtInAfterRender) {
+    (globalThis as any).__gxtAfterRenderPropertyChange = true;
+  }
   // Track whether ANY property change was on a nested object (not a component's
   // own cell). Nested changes need the morph (Phase 2b) because GXT's cell
   // tracking doesn't cover nested property paths (e.g., this.model.color).
