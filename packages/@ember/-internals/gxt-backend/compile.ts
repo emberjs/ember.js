@@ -6540,27 +6540,45 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
-    // Unknown curly-block component: a curly-form invocation like
-    // `{{#no-good}}...{{/no-good}}` is transformed by the AST compiler to
-    // `<curly-c-no-good>...</curly-c-no-good>`. If neither the component
-    // manager nor the helper registry can resolve the underlying name, the
-    // user wrote `{{#name}}` intending an Ember component that does not
-    // exist. Throw a helpful assertion instead of silently rendering a
-    // <curly-c-no-good> custom element.
-    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string' && resolvedTag.startsWith('curly-c-')) {
-      // Check for block marker — curly block invocation carries @__hasBlock__
-      // (or has children). Inline curly `{{name}}` also reaches here when
-      // `name` is neither a component nor a helper, which is equally broken.
-      const unresolvedName = doubleDashToSlash(pascalToKebab(resolvedTag)).slice(8);
-      console.log('[GXT-DEBUG] curly-c fallback throwing for:', resolvedTag, '→', unresolvedName);
-      const notFoundErr = new Error(
-        `Attempted to resolve \`${unresolvedName}\`, which was expected to be a component, but nothing was found.`
-      );
-      const captureErr = g.__captureRenderError;
-      if (typeof captureErr === 'function') {
-        captureErr(notFoundErr);
+    // Unknown block-form component: a curly-block invocation like
+    // `{{#no-good}}...{{/no-good}}` is transformed by the GXT AST compiler
+    // to a PascalCase tag (`<NoGood>...</NoGood>`) with a single default-slot
+    // child for the body. When the component manager cannot resolve the name
+    // and the helper registry has no match either, the author intended an
+    // Ember component that does not exist — throw a helpful assertion
+    // instead of falling through to the HTML-element path (which would emit
+    // an unknown <NoGood> tag and silently succeed).
+    //
+    // Detection signals, any of which indicate a curly-block invocation:
+    //   1. `curly-c-` prefix on the tag (legacy AST transform path)
+    //   2. `@__hasBlock__` marker in attrs (angle-bracket block form)
+    //   3. PascalCase tag name with at least one child (curly-block body)
+    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
+      let isCurlyBlockInvocation = resolvedTag.startsWith('curly-c-');
+      if (!isCurlyBlockInvocation && tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+        for (const [key] of tagProps[1]) {
+          if (key === '@__hasBlock__') { isCurlyBlockInvocation = true; break; }
+        }
       }
-      throw notFoundErr;
+      if (!isCurlyBlockInvocation && Array.isArray(children) && children.length > 0) {
+        const firstCh = resolvedTag.charCodeAt(0);
+        const isPascal = firstCh >= 65 && firstCh <= 90; // A-Z
+        if (isPascal) isCurlyBlockInvocation = true;
+      }
+      if (isCurlyBlockInvocation) {
+        // Compute the original dashed name (e.g. `no-good` from `NoGood` or
+        // `curly-c-no-good`). Strip the `curly-c-` prefix if present.
+        let rawName = doubleDashToSlash(pascalToKebab(resolvedTag));
+        if (rawName.startsWith('curly-c-')) rawName = rawName.slice(8);
+        const notFoundErr = new Error(
+          `Attempted to resolve \`${rawName}\`, which was expected to be a component, but nothing was found.`
+        );
+        const captureErr = g.__captureRenderError;
+        if (typeof captureErr === 'function') {
+          captureErr(notFoundErr);
+        }
+        throw notFoundErr;
+      }
     }
 
     // Custom element fallback: dash-containing tags that were not resolved as
