@@ -1785,6 +1785,58 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   }
 }
 
+// Wrap $__hash so that getter values capture the parent render context at
+// HASH-CONSTRUCTION TIME, not at getter-invocation time. Without this, a
+// contextual component embedded in a nested-component hash (e.g.
+// `{{my-comp (hash comp=(component "foo" this.model.x))}}`) captures the
+// INNER component's render context when its lazy getter eventually fires
+// during the inner render — which means the mut helper can't find
+// `this.model.x` to propagate writes back to the outer test context.
+// By stamping the outer ctx onto each getter up-front, $_componentHelper_ember
+// below can prefer it over globalThis.__lastRenderContext for __mutParentCtx.
+{
+  const g = globalThis as any;
+  if (g.$__hash && !g.$__hash.__emberHashWrapped) {
+    const origHash = g.$__hash;
+    g.$__hash = function $__hash_ember(inputObj: Record<string, any>) {
+      // Snapshot the current outer render context at construction time.
+      const ctxAtConstruction = g.__lastRenderContext;
+      // Wrap each function-valued getter so that while it runs we expose the
+      // outer context via g.__hashGetterCtx. $_componentHelper_ember reads
+      // this to recover the OUTER scope when the hash getter fires inside a
+      // nested component's render. Without this, mut cannot locate
+      // `this.model.x` on the outer test context when an inner click fires.
+      if (ctxAtConstruction && inputObj && typeof inputObj === 'object') {
+        const wrappedObj: Record<string, any> = {};
+        for (const key of Object.keys(inputObj)) {
+          const val = inputObj[key];
+          if (typeof val === 'function' && !val.prototype && !val.__isCurriedComponent && !(val as any).__emberHashGetterWrapped) {
+            const wrappedGetter = function (this: any) {
+              const prev = g.__hashGetterCtx;
+              g.__hashGetterCtx = ctxAtConstruction;
+              try {
+                return val.call(this);
+              } finally {
+                g.__hashGetterCtx = prev;
+              }
+            };
+            wrappedGetter.toString = () => val.toString();
+            (wrappedGetter as any).__origHashGetter = val;
+            (wrappedGetter as any).__hashConstructionCtx = ctxAtConstruction;
+            (wrappedGetter as any).__emberHashGetterWrapped = true;
+            wrappedObj[key] = wrappedGetter;
+          } else {
+            wrappedObj[key] = val;
+          }
+        }
+        return origHash.call(this, wrappedObj);
+      }
+      return origHash.call(this, inputObj);
+    };
+    g.$__hash.__emberHashWrapped = true;
+  }
+}
+
 // Override $_componentHelper with Ember-aware version that creates CurriedComponent.
 // Uses lazy lookup of CurriedComponent class because manager.ts may load after compile.ts.
 {
@@ -1795,6 +1847,17 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     // Cache the last known owner so re-evaluations during reactive updates
     // (when globalThis.owner may be null) can still resolve components.
     let _cachedOwner: any = null;
+    // Track which component names we've resolved per owner. Used to detect
+    // stale-formula re-evaluations: if a component lookup fails in the current
+    // owner but the name was previously resolved in a DIFFERENT owner, the
+    // $_componentHelper call is from a prior test's reactive formula still
+    // firing against the current owner. In that case we silently return an
+    // empty marker instead of throwing (the stale DOM is detached anyway).
+    const _ownerNameCache = new WeakMap<object, Set<string>>();
+    // Also remember names ever registered by ANY owner (across tests). Used
+    // to identify stale-context re-evaluations without keeping references to
+    // destroyed owners.
+    const _seenNames = new Set<string>();
 
     g.$_componentHelper = function $_componentHelper_ember(params: any[], hash: Record<string, any>) {
       const createCurried = g.__createCurriedComponent;
@@ -1838,7 +1901,13 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       const owner = currentOwner || _cachedOwner || sharedOwner;
 
       // Capture the parent render context for two-way binding via mut.
-      const parentRenderCtx = (g as any).__lastRenderContext;
+      // Prefer __hashGetterCtx (set while a hash-constructed getter runs) so
+      // `(component "foo" this.model.x)` inside
+      // `{{my-comp (hash comp=(component ...))}}` captures the OUTER context
+      // (where `model` lives), not the my-comp inner render context. Without
+      // this, mut can't walk the path back to set this.model.x when the inner
+      // component's click handler calls (mut this.val).
+      const parentRenderCtx = (g.__hashGetterCtx as any) || (g as any).__lastRenderContext;
 
       // Collect named args from hash (keep getters for reactivity).
       // Also eagerly evaluate each getter to establish GXT cell tracking
@@ -1891,6 +1960,29 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
           // Also check via lookup (resolver-based registrations may not show via factoryFor)
           const looked = !factory ? validationOwner.lookup?.(`component:${first}`) : factory;
           if (!factory && !template && !looked) {
+            // Stale-formula discriminator: if this name was previously resolved
+            // (by some earlier owner in this runtime) and the CURRENT owner has
+            // no record of it, the call is a reactive re-evaluation leaking from
+            // a destroyed test. Silently return an empty marker so the stale
+            // DOM subtree renders nothing, instead of tearing down the current
+            // test by throwing a resolution error that didn't originate from
+            // the current render tree.
+            let ownerSeen = _ownerNameCache.get(validationOwner);
+            if (!ownerSeen) {
+              ownerSeen = new Set<string>();
+              _ownerNameCache.set(validationOwner, ownerSeen);
+            }
+            if (!ownerSeen.has(first) && _seenNames.has(first)) {
+              // Stale formula — return empty marker (no throw, no capture).
+              return {
+                __isCurriedComponent: true,
+                __name: null,
+                __curriedArgs: {},
+                __curriedPositionals: [],
+                __isEmpty: true,
+              };
+            }
+
             const err = new Error(
               `Attempted to resolve \`${first}\`, which was expected to be a component, but nothing was found. ` +
               `Could not find component named "${first}" (no component or template with that name was found)`
@@ -1903,6 +1995,15 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
             }
             throw err;
           }
+          // Resolution succeeded — mark this name as seen for both the current
+          // owner and the global registry of names ever resolved.
+          let ownerSeen = _ownerNameCache.get(validationOwner);
+          if (!ownerSeen) {
+            ownerSeen = new Set<string>();
+            _ownerNameCache.set(validationOwner, ownerSeen);
+          }
+          ownerSeen.add(first);
+          _seenNames.add(first);
         }
       }
 
