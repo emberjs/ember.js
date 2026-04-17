@@ -1053,20 +1053,15 @@ let renderSettledDeferred: RSVP.Deferred<void> | null = null;
   @returns {Promise<void>} a promise which fulfills when rendering has settled
 */
 export function renderSettled() {
-  // In GXT mode, rendering is handled by GXT's own reactivity system,
-  // not by the Ember renderer's revalidation loop. The renderer's isValid()
-  // may never return true because GXT doesn't update Ember's tag system.
-  // Use a native Promise (not RSVP) to avoid backburner scheduling issues.
-  if ((globalThis as any).__GXT_MODE__) {
-    return Promise.resolve() as any;
-  }
-
   if (renderSettledDeferred === null) {
     renderSettledDeferred = RSVP.defer();
     // if there is no current runloop, the promise created above will not have
     // a chance to resolve (because its resolved in backburner's "end" event)
     if (!_getCurrentRunLoop()) {
-      // ensure a runloop has been kicked off
+      // In GXT mode, scheduling 'actions' triggers backburner's onEnd hook,
+      // which flushes __gxtSyncDomNow when __gxtPendingSync is set. The
+      // 'end' event listener registered below then resolves the deferred,
+      // so the promise resolves AFTER any pending DOM sync has been applied.
       _backburner.schedule('actions', null, NO_OP);
     }
   }
@@ -1108,8 +1103,23 @@ if (!(globalThis as any).__GXT_MODE__) {
   _backburner.on('begin', loopBegin);
   _backburner.on('end', loopEnd);
 } else {
-  _backburner.on('end', () => {
+  // Backburner fires 'end' event listeners BEFORE the onEnd option. Thus
+  // we must flush GXT's pending DOM sync here (not rely on runloop.onEnd)
+  // so that renderSettled()'s promise resolves AFTER the DOM is up-to-date.
+  // Only flush on the outermost runloop end (nextInstance == null) and when
+  // not inside runTask (which performs its own explicit sync).
+  _backburner.on('end', (_curr: unknown, nextInstance: unknown) => {
     loops = 0;
+    if (
+      nextInstance == null &&
+      (globalThis as any).__gxtPendingSync &&
+      !(globalThis as any).__gxtRunTaskActive
+    ) {
+      const syncNow = (globalThis as any).__gxtSyncDomNow;
+      if (typeof syncNow === 'function') {
+        try { syncNow(); } catch { /* errors handled inside sync */ }
+      }
+    }
     resolveRenderPromise();
   });
 }
