@@ -190,16 +190,20 @@ export class AppendOpcodes {
     let operation = unwrap(this.evaluateOpcode[type]);
 
     if (operation.syscall) {
-      localAssert(
-        !opcode.isMachine,
-        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
-      );
+      if (LOCAL_DEBUG) {
+        localAssert(
+          !opcode.isMachine,
+          `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
+        );
+      }
       operation.evaluate(vm, opcode);
     } else {
-      localAssert(
-        opcode.isMachine,
-        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
-      );
+      if (LOCAL_DEBUG) {
+        localAssert(
+          opcode.isMachine,
+          `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
+        );
+      }
       operation.evaluate(vm.lowlevel, opcode);
     }
   }

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import type {
   AttrNamespace,
   Bounds,
@@ -58,9 +59,11 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       node = node.nextSibling;
     }
 
-    localAssert(node, 'Must have opening comment for rehydration.');
+    if (DEBUG) {
+      localAssert(node, 'Must have opening comment for rehydration.');
+    }
     this.candidate = node;
-    const startingBlockOffset = getBlockDepth(node);
+    const startingBlockOffset = getBlockDepth(node as SimpleComment);
     if (startingBlockOffset !== 0) {
       // We are rehydrating from a partial tree and not the root component
       // We need to add an extra block before the first block to rehydrate correctly
@@ -69,8 +72,8 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       const newCandidate = this.dom.createComment(`%+b:${newBlockDepth}%`);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      node.parentNode!.insertBefore(newCandidate, this.candidate);
-      let closingNode = node.nextSibling;
+      (node as SimpleComment).parentNode!.insertBefore(newCandidate, this.candidate);
+      let closingNode = (node as SimpleComment).nextSibling;
       while (closingNode !== null) {
         if (isCloseBlock(closingNode) && getBlockDepth(closingNode) === startingBlockOffset) {
           break;
@@ -78,10 +81,15 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
         closingNode = closingNode.nextSibling;
       }
 
-      localAssert(closingNode, 'Must have closing comment for starting block comment');
+      if (DEBUG) {
+        localAssert(closingNode, 'Must have closing comment for starting block comment');
+      }
       const newClosingBlock = this.dom.createComment(`%-b:${newBlockDepth}%`);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      node.parentNode!.insertBefore(newClosingBlock, closingNode.nextSibling);
+      (node as SimpleComment).parentNode!.insertBefore(
+        newClosingBlock,
+        (closingNode as NonNullable<typeof closingNode>).nextSibling
+      );
       this.candidate = newCandidate;
       this.startingBlockOffset = newBlockDepth;
     } else {
@@ -470,10 +478,12 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   ): RemoteBlock {
     const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
 
-    localAssert(
-      !marker || marker.parentNode === element,
-      `expected remote element marker's parent node to match remote element`
-    );
+    if (DEBUG) {
+      localAssert(
+        !marker || marker.parentNode === element,
+        `expected remote element marker's parent node to match remote element`
+      );
+    }
 
     // when insertBefore is not present, we clear the element
     if (insertBefore === undefined) {

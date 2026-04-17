@@ -574,7 +574,9 @@ export class AppendingBlockList implements AppendingBlock {
   didAppendBounds(_bounds: Bounds) {}
 
   finalize(_stack: TreeBuilder) {
-    localAssert(this.boundList.length > 0, 'boundsList cannot be empty');
+    if (LOCAL_DEBUG) {
+      localAssert(this.boundList.length > 0, 'boundsList cannot be empty');
+    }
   }
 }
 

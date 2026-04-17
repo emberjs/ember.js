@@ -21,6 +21,7 @@ import type {
   ScopeSlot,
   UpdatingOpcode,
   VMArguments,
+  WithDynamicLayout,
   WithDynamicTagName,
   WithElementHook,
   WithUpdateHook,
@@ -135,7 +136,9 @@ export interface PartialComponentDefinition {
 
 APPEND_OPCODES.add(VM_PUSH_COMPONENT_DEFINITION_OP, (vm, { op1: handle }) => {
   let definition = vm.constants.getValue<ComponentDefinition>(handle);
-  localAssert(!!definition, `Missing component for ${handle}`);
+  if (DEBUG) {
+    localAssert(!!definition, `Missing component for ${handle}`);
+  }
 
   let { manager, capabilities } = definition;
 
@@ -288,10 +291,12 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
   let { definition } = instance;
 
   if (isCurriedType(definition, CURRIED_COMPONENT)) {
-    localAssert(
-      !definition.manager,
-      "If the component definition was curried, we don't yet have a manager"
-    );
+    if (DEBUG) {
+      localAssert(
+        !definition.manager,
+        "If the component definition was curried, we don't yet have a manager"
+      );
+    }
 
     let constants = vm.constants;
 
@@ -543,9 +548,15 @@ export class ComponentElementOperations implements ElementOperations {
       let name = definition.resolvedName ?? manager.getDebugName(definition.state);
       let instance = manager.getDebugInstance(state);
 
-      localAssert(constructing, `Expected a constructing element in addModifier`);
+      if (DEBUG) {
+        localAssert(constructing, `Expected a constructing element in addModifier`);
+      }
 
-      let bounds = new ConcreteBounds(element, constructing, constructing);
+      let bounds = new ConcreteBounds(
+        element,
+        constructing as NonNullable<typeof constructing>,
+        constructing as NonNullable<typeof constructing>
+      );
 
       vm.env.debugRenderTree.create(state, {
         type: 'modifier',
@@ -668,17 +679,20 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
     let compilable: CompilableProgram | null = definition.compilable;
 
     if (compilable === null) {
-      localAssert(
-        managerHasCapability(
-          manager,
-          instance.capabilities,
-          InternalComponentCapabilities.dynamicLayout
-        ),
-        'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
-      );
+      if (DEBUG) {
+        localAssert(
+          managerHasCapability(
+            manager,
+            instance.capabilities,
+            InternalComponentCapabilities.dynamicLayout
+          ),
+          'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
+        );
+      }
 
       let resolver = vm.context.resolver;
-      compilable = resolver === null ? null : manager.getDynamicLayout(state, resolver);
+      compilable =
+        resolver === null ? null : (manager as WithDynamicLayout).getDynamicLayout(state, resolver);
     }
 
     // For tearing down the debugRenderTree
@@ -746,13 +760,18 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
   if (compilable === null) {
     let { capabilities } = instance;
 
-    localAssert(
-      managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout),
-      'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
-    );
+    if (DEBUG) {
+      localAssert(
+        managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout),
+        'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
+      );
+    }
 
     let resolver = vm.context.resolver;
-    compilable = resolver === null ? null : manager.getDynamicLayout(instance.state, resolver);
+    compilable =
+      resolver === null
+        ? null
+        : (manager as WithDynamicLayout).getDynamicLayout(instance.state, resolver);
 
     if (compilable === null) {
       if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.wrapped)) {
