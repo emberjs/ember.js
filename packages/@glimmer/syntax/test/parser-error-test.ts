@@ -7,7 +7,7 @@ module('[glimmer-syntax] Parser - parse error regression fixtures', function () 
   test('empty mustache {{}} is a parse error (invalid-3.hbs)', (assert) => {
     assert.throws(
       () => {
-        parse('<a>\n\n{{}}\n', { meta: { moduleName: 'test-module' } });
+        parse('<a>\n\n{{}}\n');
       },
       /./u,
       'empty mustache should throw a parse error'
@@ -18,7 +18,7 @@ module('[glimmer-syntax] Parser - parse error regression fixtures', function () 
   test('unclosed mustache {{@name} is a parse error (invalid.hbs)', (assert) => {
     assert.throws(
       () => {
-        parse('<A >\nx, {{@name}\n', { meta: { moduleName: 'test-module' } });
+        parse('<A >\nx, {{@name}\n');
       },
       /./u,
       'unclosed mustache should throw a parse error'
@@ -29,7 +29,7 @@ module('[glimmer-syntax] Parser - parse error regression fixtures', function () 
   test('bare tilde mustache {{~}} is a parse error (tilde-comments-1.hbs)', (assert) => {
     assert.throws(
       () => {
-        parse('{{~}}\n', { meta: { moduleName: 'test-module' } });
+        parse('{{~}}\n');
       },
       /./u,
       'bare tilde mustache should throw a parse error'
@@ -40,7 +40,7 @@ module('[glimmer-syntax] Parser - parse error regression fixtures', function () 
   test('double tilde mustache {{~~}} is a parse error (tilde-comments-2.hbs)', (assert) => {
     assert.throws(
       () => {
-        parse('{{~~}}\n', { meta: { moduleName: 'test-module' } });
+        parse('{{~~}}\n');
       },
       /./u,
       'double tilde mustache should throw a parse error'
@@ -51,7 +51,7 @@ module('[glimmer-syntax] Parser - parse error regression fixtures', function () 
   test('mustache with bare @ is a parse error ({{@}})', (assert) => {
     assert.throws(
       () => {
-        parse('{{@}}', { meta: { moduleName: 'test-module' } });
+        parse('{{@}}');
       },
       /./u,
       'mustache with bare @ should throw a parse error'
@@ -62,7 +62,7 @@ module('[glimmer-syntax] Parser - parse error regression fixtures', function () 
   test('mustache with @<digit> is a parse error ({{@0}})', (assert) => {
     assert.throws(
       () => {
-        parse('{{@0}}', { meta: { moduleName: 'test-module' } });
+        parse('{{@0}}');
       },
       /./u,
       '@<digit> is not a valid identifier'
@@ -74,7 +74,7 @@ module('[glimmer-syntax] Parser - parse error regression fixtures', function () 
     for (const input of ['{{@@}}', '{{@=}}', '{{@!}}']) {
       assert.throws(
         () => {
-          parse(input, { meta: { moduleName: 'test-module' } });
+          parse(input);
         },
         /./u,
         `${input} should throw a parse error`
