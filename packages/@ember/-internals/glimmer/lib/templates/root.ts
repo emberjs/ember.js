@@ -622,6 +622,12 @@ export default function createRootTemplate(_owner: any) {
       lastRenderContext = renderContext;
       lastArgsObj = argsObj;
       lastRouteName = outletState.render?.name || mainOutlet.render.name;
+      // Remember the template that was actually rendered so the re-render
+      // fast-path (same route name) can detect template-identity changes.
+      // Needed for `@ember/test-helpers` emulation tests that call
+      // `setOutletState(...)` with a fresh `compile()` template while
+      // keeping the route name stable.
+      lastRouteTemplate = routeTemplate;
     }
 
     // Store the top-level outlet ref for re-rendering on property changes
@@ -631,6 +637,11 @@ export default function createRootTemplate(_owner: any) {
     let lastRenderContext: any = null;
     let lastArgsObj: any = null;
     let lastRouteName: string | undefined = undefined;
+    // Identity of the template that was last rendered for the current route.
+    // Used by the re-render fast-path to detect a template swap (the same
+    // route name but a freshly `compile()`d template, as used by
+    // `@ember/test-helpers` emulation tests).
+    let lastRouteTemplate: any = null;
 
     // Register a re-render function that setOutletState can call
     (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
@@ -668,9 +679,17 @@ export default function createRootTemplate(_owner: any) {
         return false;
       })();
 
+      // Detect if the ROUTE TEMPLATE identity changed. This matters for
+      // `@ember/test-helpers` emulation tests that keep the route name stable
+      // ('index') but hand us a fresh `compile()` template on each render.
+      // If we stayed on the fast-path in that case, we would only update
+      // model cells and miss the new template's DOM content.
+      const routeTemplateChanged =
+        lastRouteTemplate !== null && newTemplate && lastRouteTemplate !== newTemplate;
+
       // If same route template AND nested outlets haven't changed, try to
       // update existing cells in-place to preserve DOM node identity.
-      if (lastRenderContext && lastArgsObj && newRouteName && newRouteName === lastRouteName && newTemplate && !nestedOutletChanged) {
+      if (lastRenderContext && lastArgsObj && newRouteName && newRouteName === lastRouteName && newTemplate && !nestedOutletChanged && !routeTemplateChanged) {
         const _cellFor = (globalThis as any).__gxtCellFor;
         if (_cellFor) {
           try {
