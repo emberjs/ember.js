@@ -6253,13 +6253,72 @@ const $_MANAGERS = {
           }
         })
       };
+      // Phantom-element migration: if a prior install in the SAME sync cycle
+      // had its destructor called (pending-destroy), reuse that instance
+      // instead of creating a new one. This happens when GXT re-evaluates
+      // the modifier formula multiple times in a single sync cycle (e.g.,
+      // during an `{{#if}}` toggle that triggers intermediate DOM renders),
+      // creating then abandoning phantom elements. Without migration each
+      // phantom fires spurious didInsertElement/willDestroyElement.
+      const currentCycle = (globalThis as any).__gxtSyncCycleId || 0;
+      const pendingDestroysForMigrate = (globalThis as any).__gxtPendingModifierDestroys as
+        | Array<{ cached: any; element: HTMLElement; modKey: string; isCustom?: boolean }>
+        | undefined;
+      let migratedCached: any = null;
+      let migratedFromIndex = -1;
+      if (currentCycle > 0 && pendingDestroysForMigrate && pendingDestroysForMigrate.length > 0) {
+        for (let i = 0; i < pendingDestroysForMigrate.length; i++) {
+          const entry = pendingDestroysForMigrate[i]!;
+          if (!entry.isCustom) continue;
+          if (entry.modKey !== modKey) continue;
+          if (!entry.cached || entry.cached.ModifierClass !== ModifierClass) continue;
+          if (entry.element === element) continue;
+          // Only migrate if BOTH install AND destructor happened in this cycle.
+          // That's the phantom signature: an install-then-destructor within a
+          // single sync cycle with no intervening useful work. We do NOT check
+          // pendingDestroy here because GXT may have subsequently re-evaluated
+          // the formula on the phantom element (taking the cached-hit path,
+          // which resets pendingDestroy to false) without actually cancelling
+          // the destroy.
+          const installCycle = entry.cached.__gxtInstallCycle || 0;
+          const destructCycle = entry.cached.__gxtDestructorCycle || 0;
+          if (installCycle !== currentCycle || destructCycle !== currentCycle) continue;
+          migratedCached = entry.cached;
+          migratedFromIndex = i;
+          break;
+        }
+      }
+
       beginBacktrackingFrame();
       let instance: any;
       try {
-        instance = manager.createModifier(ModifierClass, trackedInstallArgs);
-        manager.installModifier(instance, element, trackedInstallArgs);
-        // Store manager reference on instance for teardown cleanup
-        if (instance) instance.__gxtModManager = manager;
+        if (migratedCached) {
+          // Reuse the prior instance — do NOT call createModifier/installModifier
+          // again. This suppresses the spurious phantom didInsertElement call
+          // (and the eventual phantom willDestroyElement) that would otherwise
+          // fire in a single sync cycle when GXT internally reconciles DOM.
+          instance = migratedCached.instance;
+          migratedCached.pendingDestroy = false;
+          if (pendingDestroysForMigrate && migratedFromIndex >= 0) {
+            pendingDestroysForMigrate.splice(migratedFromIndex, 1);
+          }
+          // Remove from old element's cache entry.
+          const oldEl = instance && instance.element;
+          if (oldEl) {
+            const oldCache = self._cache.get(oldEl);
+            if (oldCache) {
+              oldCache.delete(modKey);
+              if (oldCache.size === 0) self._cache.delete(oldEl);
+            }
+            // Update instance.element so future update/destroy targets correctly.
+            try { instance.element = element; } catch { /* ignore (sealed instance) */ }
+          }
+        } else {
+          instance = manager.createModifier(ModifierClass, trackedInstallArgs);
+          manager.installModifier(instance, element, trackedInstallArgs);
+          // Store manager reference on instance for teardown cleanup
+          if (instance) instance.__gxtModManager = manager;
+        }
       } finally {
         endBacktrackingFrame();
       }
@@ -6285,15 +6344,31 @@ const $_MANAGERS = {
         cache = new Map();
         self._cache.set(element, cache);
       }
-      const cached: any = { instance, manager, ModifierClass, pendingDestroy: false,
-        _consumedPositional, _consumedNamed,
-        _lastPositional: [...initialArgs.positional],
-        _lastNamed: { ...initialArgs.named },
-        __gxtUpdatedInSyncCycle: (globalThis as any).__gxtSyncCycleId || 0,
-        // Record the install sync cycle so we can skip the spurious re-eval
-        // that happens in the very next cycle (run-loop settling).
-        __gxtInstallCycle: (globalThis as any).__gxtSyncCycleId || 0,
-      };
+      let cached: any;
+      if (migratedCached) {
+        // Reuse the migrated cache entry and refresh its state for the new
+        // element.  Preserve _lastPositional/_lastNamed for the next update's
+        // per-arg diffing.
+        cached = migratedCached;
+        cached.pendingDestroy = false;
+        cached._consumedPositional = _consumedPositional;
+        cached._consumedNamed = _consumedNamed;
+        cached._lastPositional = [...initialArgs.positional];
+        cached._lastNamed = { ...initialArgs.named };
+        cached.__gxtUpdatedInSyncCycle = currentCycle;
+        cached.__gxtInstallCycle = currentCycle;
+        cached.__gxtDestructorCycle = 0;
+      } else {
+        cached = { instance, manager, ModifierClass, pendingDestroy: false,
+          _consumedPositional, _consumedNamed,
+          _lastPositional: [...initialArgs.positional],
+          _lastNamed: { ...initialArgs.named },
+          __gxtUpdatedInSyncCycle: currentCycle,
+          // Record the install sync cycle so we can skip the spurious re-eval
+          // that happens in the very next cycle (run-loop settling).
+          __gxtInstallCycle: currentCycle,
+        };
+      }
       cache.set(modKey, cached);
       // Track instance for teardown cleanup (destroyModifier -> willDestroyElement)
       self._updatedInstances.add(instance);
@@ -6302,6 +6377,7 @@ const $_MANAGERS = {
       // (for updates) and also during final teardown.
       return () => {
         cached.pendingDestroy = true;
+        cached.__gxtDestructorCycle = (globalThis as any).__gxtSyncCycleId || 0;
         // Register for synchronous flush at end of sync cycle
         let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
         if (!pendingDestroys) {
