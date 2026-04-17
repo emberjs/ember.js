@@ -113,5 +113,48 @@ moduleFor(
       );
       assert.strictEqual(receivedArg, 'did it', 'argument from fn is passed through');
     }
+
+    ['@test each over array of objects preserves this binding on item methods'](assert) {
+      let seenPairs = [];
+
+      class Item {
+        constructor(name) {
+          this.name = name;
+        }
+
+        greet() {
+          seenPairs.push({ self: this, name: this.name });
+        }
+      }
+
+      let items = [new Item('alice'), new Item('bob'), new Item('carol')];
+
+      class Demo extends Component {
+        constructor(...args) {
+          super(...args);
+          this.items = items;
+        }
+
+        <template>
+          {{#each this.items as |item|}}
+            <button type="button" class={{item.name}} {{on "click" item.greet}}>{{item.name}}</button>
+          {{/each}}
+        </template>
+      }
+
+      this.render(`<this.Demo />`, { Demo });
+
+      runTask(() => this.$('button.alice').click());
+      runTask(() => this.$('button.bob').click());
+      runTask(() => this.$('button.carol').click());
+
+      assert.strictEqual(seenPairs.length, 3, 'all three handlers fired');
+      assert.strictEqual(seenPairs[0].self, items[0], 'alice: this is the Item instance');
+      assert.strictEqual(seenPairs[0].name, 'alice', 'alice: this.name is correct');
+      assert.strictEqual(seenPairs[1].self, items[1], 'bob: this is the Item instance');
+      assert.strictEqual(seenPairs[1].name, 'bob', 'bob: this.name is correct');
+      assert.strictEqual(seenPairs[2].self, items[2], 'carol: this is the Item instance');
+      assert.strictEqual(seenPairs[2].name, 'carol', 'carol: this.name is correct');
+    }
   }
 );
