@@ -7169,10 +7169,188 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
 // Keyed by owner → { slots: Map<slotKey, { instance, renderFn }>, callCounter }.
 // The call counter resets at the start of each render pass so that sequential
 // invocations match to the same slot across re-renders.
+//
+// Each slot holds mutable "arg backing" maps (argGetters, namedRefSlots) that
+// are swapped in place on every re-invocation. Closures in the renderFn and
+// the sync callback read from these mutable maps, and the instance's
+// `this.args.named.X.value` ref reads through `namedRefSlots[X].getter`.
+// This lets us refresh the upstream args on cache HIT without re-creating the
+// instance — which matters when the SAME owner renders two DIFFERENT templates
+// (e.g., index.hbs and about.hbs both with <LinkTo @route=...>) and the slot
+// #0 assignment would otherwise return a renderFn closed over the wrong
+// template's args, leaking the previous route's href/attrs into the new DOM.
+interface _ManagedSlot {
+  instance: any;
+  renderFn: () => any;
+  liveEl?: HTMLElement;
+  argGetters: Record<string, () => any>;
+  namedRefSlots: Record<string, { getter: () => any }>;
+  lastArgValues: Record<string, any>;
+  // Latest (args, fw) from the most recent invocation. Refreshed on every
+  // cache HIT so renderFn can read args.__rawSlotChildren / fw forwards from
+  // the CURRENT template instead of the closed-over first-invocation values.
+  latestArgs: any;
+  latestFw: any;
+}
 const _managedComponentCache = new WeakMap<object, {
-  slots: Map<string, { instance: any; renderFn: () => any; liveEl?: HTMLElement }>;
+  slots: Map<string, _ManagedSlot>;
   callCounter: Map<any, number>;
 }>();
+
+// Build a named-arg getter map from the current `args` object. Used both
+// at initial construction (by argsForInternalManager via refSlots below) and
+// at every cache HIT to refresh the instance's view of upstream args.
+function _collectNamedArgGetters(args: any): Record<string, () => any> {
+  const out: Record<string, () => any> = {};
+  if (!args) return out;
+  for (const key of Object.keys(args)) {
+    if (key.startsWith('$') || key === 'args') continue;
+    const desc = Object.getOwnPropertyDescriptor(args, key);
+    out[key] = desc?.get || (() => args[key]);
+  }
+  return out;
+}
+
+// Build argGetters map used by syncCallback / reactive attribute setup.
+// Mirrors the inline assembly previously in handleManagedComponent; extracted
+// so both the initial path and the cache-HIT refresh share the same shape.
+function _collectAllArgGetters(args: any, fw: any): Record<string, () => any> {
+  const argGetters = _collectNamedArgGetters(args);
+  if (fw && Array.isArray(fw)) {
+    for (const fwSet of [fw[0], fw[1]]) {
+      if (!Array.isArray(fwSet)) continue;
+      for (const [key, value] of fwSet) {
+        const attrKey = key === '' ? 'class' : key;
+        if (attrKey.startsWith('@') || attrKey === '__splatLocal__') continue;
+        if (argGetters[attrKey]) continue;
+        argGetters[attrKey] = typeof value === 'function' ? value : () => value;
+      }
+    }
+  }
+  return argGetters;
+}
+
+// Same as argsForInternalManager but backed by a mutable `namedRefSlots`
+// record so the ref.value getter can be redirected to a fresh upstream
+// getter on each cache HIT. Returns both the CapturedArguments-compatible
+// wrapper and the mutable slot map to rewrite later.
+function _argsForInternalManagerWithSlots(args: any, fw: any): {
+  capture: () => { positional: any[]; named: Record<string, any> };
+  namedRefSlots: Record<string, { getter: () => any }>;
+} {
+  const namedRefSlots: Record<string, { getter: () => any }> = {};
+  const named: Record<string, any> = {};
+  for (const key of Object.keys(args || {})) {
+    if (key.startsWith('$') || key === 'args') continue;
+    const desc = Object.getOwnPropertyDescriptor(args, key);
+    const initialGetter = desc?.get || (() => args[key]);
+    const slot = { getter: initialGetter };
+    namedRefSlots[key] = slot;
+
+    let initialValue: any;
+    try { initialValue = slot.getter(); } catch { initialValue = undefined; }
+    const hasMutCell = initialValue && initialValue.__isMutCell;
+    const isUpdatable = hasMutCell;
+
+    const ref: any = {
+      get value() {
+        const v = slot.getter();
+        if (v && v.__isMutCell) return v.value;
+        if (v && v.__isReadonly) return v.__readonlyValue;
+        return v;
+      },
+      set value(v: any) {
+        const current = slot.getter();
+        if (current && current.__isMutCell) {
+          current.update(v);
+          return;
+        }
+        const d = Object.getOwnPropertyDescriptor(args, key);
+        if (d?.set) d.set(v);
+      },
+    };
+    if (isUpdatable) {
+      ref.update = function(v: any) {
+        const current = slot.getter();
+        if (current && current.__isMutCell) {
+          current.update(v);
+          return;
+        }
+        const d = Object.getOwnPropertyDescriptor(args, key);
+        if (d?.set) d.set(v);
+      };
+    }
+    named[key] = ref;
+  }
+  return {
+    capture() { return { positional: [], named }; },
+    namedRefSlots,
+  };
+}
+
+// On cache HIT, repoint the slot's mutable arg backings at the NEW invocation's
+// args/fw. This keeps the reused instance semantically equivalent to a freshly
+// created one without the DOM churn / id bump of reconstruction. Closures
+// inside renderFn + syncCallback read through the mutable objects we mutate
+// here, so they pick up the swap transparently. Clearing lastArgValues forces
+// the sync callback to push every attribute on the next tick, ensuring the
+// new template's values (e.g., href, class, disabled) flush to the DOM even
+// when their literal values happen to match what was cached.
+function _refreshManagedSlotArgs(slot: _ManagedSlot, args: any, fw: any): void {
+  // Swap the latest args/fw so renderFn reads fresh slot children / fw forwards.
+  slot.latestArgs = args;
+  slot.latestFw = fw;
+  const fresh = _collectAllArgGetters(args, fw);
+  for (const key of Object.keys(slot.argGetters)) {
+    if (!(key in fresh)) delete slot.argGetters[key];
+  }
+  for (const key of Object.keys(fresh)) {
+    slot.argGetters[key] = fresh[key];
+  }
+  // Redirect each existing named-arg ref to the freshest upstream getter.
+  // Add new keys that were absent at creation; swallow frozen-named errors.
+  const freshNamed = _collectNamedArgGetters(args);
+  for (const key of Object.keys(slot.namedRefSlots)) {
+    if (key in freshNamed) {
+      slot.namedRefSlots[key].getter = freshNamed[key];
+    } else {
+      // Arg missing in new invocation: make the getter report undefined so
+      // `'route' in this.args.named` style guards in LinkTo still read as
+      // "arg is present" (named object still has the key) but value is nil.
+      slot.namedRefSlots[key].getter = () => undefined;
+    }
+  }
+  for (const key of Object.keys(freshNamed)) {
+    if (slot.namedRefSlots[key]) continue;
+    slot.namedRefSlots[key] = { getter: freshNamed[key] };
+    try {
+      const named = slot.instance?.args?.named;
+      if (named && typeof named === 'object' && !(key in named)) {
+        const refSlot = slot.namedRefSlots[key];
+        const ref: any = {
+          get value() {
+            const v = refSlot.getter();
+            if (v && v.__isMutCell) return v.value;
+            if (v && v.__isReadonly) return v.__readonlyValue;
+            return v;
+          },
+        };
+        Object.defineProperty(named, key, {
+          configurable: true,
+          enumerable: true,
+          value: ref,
+          writable: true,
+        });
+      }
+    } catch { /* ignore frozen */ }
+  }
+  for (const key of Object.keys(slot.lastArgValues)) {
+    delete slot.lastArgValues[key];
+  }
+  for (const key of Object.keys(slot.argGetters)) {
+    try { slot.lastArgValues[key] = slot.argGetters[key](); } catch { /* ignore */ }
+  }
+}
 
 // Generation counter: increments on each render/sync pass.
 // Used to detect when handleManagedComponent enters a new render cycle
@@ -7217,6 +7395,14 @@ function handleManagedComponent(
     const cached = cache.slots.get(slotKey);
     if (cached) {
       const inst = cached.instance;
+      // Cache HIT: point the slot's mutable arg backings at the NEW
+      // invocation's args/fw so the reused instance + renderFn + syncCallback
+      // read from the freshest upstream getters. Without this, when two
+      // different templates (e.g., index.hbs and about.hbs) render the SAME
+      // internal component slot, the renderFn returned on the second template
+      // would still close over the first template's args object, leaking
+      // stale href/route/model/attrs into the new DOM.
+      _refreshManagedSlotArgs(cached, args, fw);
       // Cache HIT means the parent formula is being re-evaluated to push new
       // args down. In classic Glimmer, this would create a fresh component
       // instance with a fresh ForkedValue. Since we reuse the instance to
@@ -7244,26 +7430,12 @@ function handleManagedComponent(
 
   // Collect arg getters for later use in sync callbacks.
   // These getters read from the parent context (e.g., () => this.value).
-  const argGetters: Record<string, () => any> = {};
-  for (const key of Object.keys(args)) {
-    if (key.startsWith('$') || key === 'args') continue;
-    const desc = Object.getOwnPropertyDescriptor(args, key);
-    argGetters[key] = desc?.get || (() => args[key]);
-  }
-  // Also collect fw attribute getters
-  if (fw && Array.isArray(fw)) {
-    for (const fwSet of [fw[0], fw[1]]) {
-      if (!Array.isArray(fwSet)) continue;
-      for (const [key, value] of fwSet) {
-        const attrKey = key === '' ? 'class' : key;
-        if (attrKey.startsWith('@') || attrKey === '__splatLocal__') continue;
-        if (argGetters[attrKey]) continue;
-        argGetters[attrKey] = typeof value === 'function' ? value : () => value;
-      }
-    }
-  }
+  // We build the map via the shared helper so the cache-HIT refresh path
+  // (which must produce the same shape) stays in lockstep.
+  const argGetters: Record<string, () => any> = _collectAllArgGetters(args, fw);
 
-  const internalArgs = argsForInternalManager(args, fw);
+  const internalArgsWithSlots = _argsForInternalManagerWithSlots(args, fw);
+  const internalArgs = { capture: internalArgsWithSlots.capture };
   const instance = manager.create(
     owner,
     komp,
@@ -7275,15 +7447,34 @@ function handleManagedComponent(
 
   // Slot reference captured by closure — allows renderFn to update liveEl
   // and the cache-HIT path to read it without additional lookups.
-  const slotRef: { instance: any; renderFn: () => any; liveEl?: HTMLElement } = { instance, renderFn: null as any };
+  // Holds the mutable argGetters/namedRefSlots/lastArgValues that the refresh
+  // path rewrites on cache HIT. We also carry `latestArgs` and `latestFw` so
+  // the renderFn (which is invoked anew on every #each iteration) reads the
+  // freshest args/fw instead of closure-captured stale values — important for
+  // LinkTo where the renderFn's inner renderer reads args.__rawSlotChildren
+  // and forwards fw attributes directly.
+  const slotRef: _ManagedSlot & { latestArgs: any; latestFw: any } = {
+    instance,
+    renderFn: null as any,
+    argGetters,
+    namedRefSlots: internalArgsWithSlots.namedRefSlots,
+    lastArgValues: {},
+    latestArgs: args,
+    latestFw: fw,
+  };
 
   const renderFn = () => {
     // Determine component type from the static toString() method
     const componentType = komp?.toString?.();
 
-    // LinkTo: render as <a> element with reactive bindings
+    // LinkTo: render as <a> element with reactive bindings.
+    // Read args/fw through slotRef so that each call (including cache-HIT
+    // re-invocations from a different template) uses the freshest upstream
+    // values for block children and forwarded attributes. The instance itself
+    // resolves reactive props (href, class, etc.) via args.named refs that
+    // _refreshManagedSlotArgs also repoints on each HIT.
     if (componentType === 'LinkTo') {
-      return renderLinkToElement(instance, args, fw);
+      return renderLinkToElement(instance, slotRef.latestArgs, slotRef.latestFw);
     }
 
     // Create the <input> or <textarea> element directly
@@ -7538,18 +7729,23 @@ function handleManagedComponent(
     // parent args change. GXT effects don't track Ember property changes
     // (set() → notifyPropertyChange → cellFor with skipDefine=true), so
     // we poll the arg getters during __gxtSyncAllWrappers and apply changes.
-    const lastArgValues: Record<string, any> = {};
+    // Seed the slot's lastArgValues (shared, mutable) so the refresh path
+    // observes the same map that the sync callback below mutates.
     for (const key of Object.keys(argGetters)) {
-      try { lastArgValues[key] = argGetters[key](); } catch { /* ignore */ }
+      try { slotRef.lastArgValues[key] = argGetters[key](); } catch { /* ignore */ }
     }
+    const lastArgValues = slotRef.lastArgValues;
 
     const syncCallback = () => {
       // Check each arg getter individually and only update what changed.
       // This prevents clobbering DOM values set by user interaction (two-way binding).
       const changedKeys = new Set<string>();
-      for (const key of Object.keys(argGetters)) {
+      // Iterate over the mutable argGetters that lives on slotRef; the cache-HIT
+      // refresh path rewrites entries on this same object so we pick up new
+      // template args transparently without re-creating the syncCallback.
+      for (const key of Object.keys(slotRef.argGetters)) {
         try {
-          const newVal = argGetters[key]();
+          const newVal = slotRef.argGetters[key]();
           if (newVal !== lastArgValues[key]) {
             lastArgValues[key] = newVal;
             changedKeys.add(key);
@@ -7609,7 +7805,8 @@ function handleManagedComponent(
         // Only update attrs whose getter value actually changed
         if (!changedKeys.has(attr) && !changedKeys.has(propName)) continue;
         // Check both the HTML attribute name and the DOM property name
-        const getter = argGetters[attr] || argGetters[propName];
+        // (read through slotRef.argGetters — refreshed on cache HIT).
+        const getter = slotRef.argGetters[attr] || slotRef.argGetters[propName];
         if (!getter) continue;
         const val = getter();
         if (attr === 'disabled') {
