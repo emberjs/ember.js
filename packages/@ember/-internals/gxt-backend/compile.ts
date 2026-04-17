@@ -3164,6 +3164,183 @@ queueMicrotask(patchGlobalEachSync);
   return getter;
 };
 
+// Augment the backtracking assertion's render tree with template-only
+// component names. Template-only components have no instance and therefore
+// don't appear in the parentView chain that `__gxtCheckBacktracking` walks;
+// without this augmentation, the render-tree message is missing entries like
+// `x-inner-template-only` that Glimmer VM would include.
+//
+// We track active template-only renders via `__gxtTemplateOnlyStack` (pushed
+// in the $_tag thunk below) and rewrite the assertion message when it fires
+// to inject the missing names between the deepest classic parent and the
+// `this.prop` path line. We wrap `__emberAssertFn` because that's the
+// chokepoint through which __gxtCheckBacktracking reports its assertion.
+function _installTemplateOnlyRenderTreeInjection() {
+  const _g = globalThis as any;
+  if (_g.__emberAssertFn && !_g.__emberAssertFn.__emberTemplateOnlyInject) {
+    const _origAssertFn = _g.__emberAssertFn;
+    _g.__emberAssertFn = function __emberAssertFn_templateOnlyInject(msg: any, test: any) {
+      if (typeof msg === 'string' && msg.startsWith('You attempted to update') &&
+          msg.includes('- While rendering:')) {
+        const stack = (_g.__gxtTemplateOnlyStack as string[]) || [];
+        if (stack.length > 0) {
+          // Split the message into: prefix + render-tree-lines + suffix
+          const lines = msg.split('\n');
+          // Find the property-path line (last indented line before "Stack trace")
+          // and insert template-only lines BEFORE it at the same or deeper indent.
+          let propPathIdx = -1;
+          for (let i = lines.length - 1; i >= 0; i--) {
+            const ln = lines[i] || '';
+            if (ln.startsWith('Stack trace for the update:')) continue;
+            if (ln.trim().startsWith('this.') || ln.trim().startsWith('@model.')) {
+              propPathIdx = i;
+              break;
+            }
+          }
+          if (propPathIdx > 0) {
+            const propLine = lines[propPathIdx] || '';
+            const propIndent = propLine.length - propLine.trimStart().length;
+            // Insert template-only names at the prop's indent, shift prop deeper.
+            const insertedLines = stack.map((n) => ' '.repeat(propIndent) + n);
+            const newPropLine = ' '.repeat(propIndent + stack.length * 2) + propLine.trimStart();
+            const rebuilt = [
+              ...lines.slice(0, propPathIdx),
+              ...insertedLines,
+              newPropLine,
+              ...lines.slice(propPathIdx + 1),
+            ];
+            msg = rebuilt.join('\n');
+          }
+        }
+      }
+      return _origAssertFn.call(this, msg, test);
+    };
+    _g.__emberAssertFn.__emberTemplateOnlyInject = true;
+  }
+}
+_installTemplateOnlyRenderTreeInjection();
+queueMicrotask(_installTemplateOnlyRenderTreeInjection);
+
+// Wrap __gxtSyncAllWrappers so that any instance whose update hooks are
+// fired by syncAll is marked with `__gxtSyncAllFiredPassId`. The $_tag
+// force-rerender fallback (renderComponent thunk below) consults this
+// marker to avoid double-firing willUpdate/willRender on the same instance
+// in the same render pass.
+// We record the mark by wrapping `instance.trigger` on a per-instance basis
+// on first invocation. When syncAll calls `trigger(hookName)` for an
+// update hook, the wrapper stamps `__gxtSyncAllFiredPassId` on the
+// instance. Once stamped, the wrapper stays but does nothing extra.
+function _installSyncAllFiredMarker() {
+  const _g = globalThis as any;
+  if (!_g.__gxtSyncAllWrappers || _g.__gxtSyncAllWrappers.__emberMarkFired) return;
+  const _origSyncAll = _g.__gxtSyncAllWrappers;
+  const UPDATE_HOOKS = new Set(['didUpdateAttrs', 'didReceiveAttrs', 'willUpdate', 'willRender']);
+  const wrapTrigger = (inst: any) => {
+    if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
+    const origTrigger = inst.trigger;
+    const wrapped = function(this: any, name: string, ...args: any[]) {
+      if (UPDATE_HOOKS.has(name) && _g.__gxtSyncAllInFlightPass) {
+        this.__gxtSyncAllFiredPassId = _g.__gxtSyncAllInFlightPass;
+      }
+      return origTrigger.call(this, name, ...args);
+    };
+    Object.defineProperty(inst, 'trigger', {
+      value: wrapped,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+    inst.__gxtTriggerWrapped = true;
+  };
+  _g.__gxtSyncAllWrappers = function __gxtSyncAllWrappers_markFired() {
+    const __curPass = (_g.__emberRenderPassId || 0);
+    _g.__gxtSyncAllInFlightPass = __curPass;
+    // Proactively wrap trigger on all known-alive instances in all pool
+    // arrays so triggers fired during syncAll are recorded.
+    try {
+      const pools = _g.__gxtAllPoolArrays;
+      if (pools) {
+        for (const poolArr of pools) {
+          for (const entry of poolArr) {
+            wrapTrigger(entry && entry.instance);
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    try {
+      return _origSyncAll.apply(this, arguments as any);
+    } finally {
+      _g.__gxtSyncAllInFlightPass = 0;
+    }
+  };
+  _g.__gxtSyncAllWrappers.__emberMarkFired = true;
+}
+// Attempt install now (in case manager.ts already loaded), and again in a
+// microtask (in case manager.ts loads immediately after compile.ts).
+_installSyncAllFiredMarker();
+queueMicrotask(_installSyncAllFiredMarker);
+// Also install via a defineProperty trap on globalThis so any subsequent
+// assignment to __gxtSyncAllWrappers (e.g. from manager.ts) gets wrapped
+// immediately. Without this, compile.ts may load before manager.ts and
+// the initial install has nothing to wrap. The setter below re-runs the
+// installer each time the value changes.
+try {
+  const _gg = globalThis as any;
+  let _syncAllCurrent: any = _gg.__gxtSyncAllWrappers;
+  Object.defineProperty(_gg, '__gxtSyncAllWrappers', {
+    get() { return _syncAllCurrent; },
+    set(v: any) {
+      // If the new value isn't our mark-fired wrapper, wrap it inline.
+      if (v && !v.__emberMarkFired && typeof v === 'function') {
+        const _origSyncAll = v;
+        const UPDATE_HOOKS = new Set(['didUpdateAttrs', 'didReceiveAttrs', 'willUpdate', 'willRender']);
+        const wrapTrigger = (inst: any) => {
+          if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
+          const origTrigger = inst.trigger;
+          const wrapped = function(this: any, name: string, ...args: any[]) {
+            if (UPDATE_HOOKS.has(name) && _gg.__gxtSyncAllInFlightCycle) {
+              this.__gxtSyncAllFiredCycleId = _gg.__gxtSyncAllInFlightCycle;
+            }
+            return origTrigger.call(this, name, ...args);
+          };
+          Object.defineProperty(inst, 'trigger', {
+            value: wrapped,
+            writable: true,
+            configurable: true,
+            enumerable: false,
+          });
+          inst.__gxtTriggerWrapped = true;
+        };
+        const wrappedSyncAll = function() {
+          const __curCycle = (_gg.__gxtSyncCycleId || 0);
+          _gg.__gxtSyncAllInFlightCycle = __curCycle;
+          try {
+            const pools = _gg.__gxtAllPoolArrays;
+            if (pools) {
+              for (const poolArr of pools) {
+                for (const entry of poolArr) {
+                  wrapTrigger(entry && entry.instance);
+                }
+              }
+            }
+          } catch { /* ignore */ }
+          try {
+            return _origSyncAll.apply(this, arguments as any);
+          } finally {
+            _gg.__gxtSyncAllInFlightCycle = 0;
+          }
+        };
+        (wrappedSyncAll as any).__emberMarkFired = true;
+        _syncAllCurrent = wrappedSyncAll;
+      } else {
+        _syncAllCurrent = v;
+      }
+    },
+    configurable: true,
+    enumerable: true,
+  });
+} catch { /* ignore property redefinition errors */ }
+
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
 (globalThis as any).__gxtSyncDomNow = function() {
@@ -4153,6 +4330,41 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     _ubSlots.clear();
   };
 }
+
+// Runtime guard for the "resolved helper passed as a named argument" form.
+// When a template contains `<Component @name={{helperIdent}} />` (no parens),
+// Ember's strict-mode compiler throws a specific error because the syntax
+// is ambiguously pass-by-reference vs invocation. We mirror that check at
+// render time: if `name` resolves to a registered helper via owner lookup,
+// throw the same error. Otherwise this returns undefined (letting the
+// surrounding expression fall through to its original $_maybeHelper path).
+(globalThis as any).__gxtAssertNotResolvedHelperAsNamedArg = function(
+  name: string,
+  ctx: any
+): void {
+  const g = globalThis as any;
+  // Built-in keyword helpers are handled before owner lookup; they are not
+  // registered helpers, so bail out without checking.
+  const BUILTIN = g.__EMBER_BUILTIN_HELPERS__;
+  if (BUILTIN && BUILTIN[name]) return;
+  // Prefer the owner attached to the current render context; fall back to
+  // the global owner captured by the runtime.
+  const owner = (ctx && (ctx.owner || (ctx[Symbol.for('OWNER')] ?? null))) || g.owner;
+  if (!owner || typeof owner.factoryFor !== 'function') return;
+  const factory = owner.factoryFor(`helper:${name}`);
+  if (!factory) return;
+  const message =
+    `A resolved helper cannot be passed as a named argument as the syntax is ` +
+    `ambiguously a pass-by-reference or invocation. Use the ` +
+    `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
+    `invoke the helper with parens: \`{{(fooHelper)}}\`.`;
+  const err = new Error(message);
+  // Mirror what other template-level assertions do: capture for
+  // flushRenderErrors so `assert.throws()` sees it when render returns.
+  const captureFn = g.__captureRenderError;
+  if (typeof captureFn === 'function') captureFn(err);
+  throw err;
+};
 
 // Global block params stack for yielded values
 // When a slot is rendered with block params, they're pushed here
@@ -5967,10 +6179,67 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // The args getters will access block params from the stack
           // Pass the stable thunkId to enable instance caching
           _setInternalProp(args as any, '__thunkId', thunkId);
-          const handleResult = managers.component.handle(kebabName, args, fw, ctx);
-          let rendered = handleResult;
-          if (typeof rendered === 'function') {
-            rendered = rendered();
+          // Track the render path for template-only components. They don't
+          // appear in the parentView chain (no instance), so the backtracking
+          // diagnostic (`__gxtCheckBacktracking` in manager.ts) doesn't see
+          // them when building its `- While rendering:` tree. Push the
+          // kebabName before handle() runs and pop after so that the manager
+          // can augment its render tree with template-only entries via the
+          // `__gxtTemplateOnlyStack` global.
+          const _stackTO: string[] = (globalThis as any).__gxtTemplateOnlyStack ||
+            ((globalThis as any).__gxtTemplateOnlyStack = []);
+          _stackTO.push(kebabName);
+          // During a force-rerender (e.g., runTask(() => set(items, ...))),
+          // manager.ts's renderClassicComponent skips willRender/willUpdate
+          // for reused pooled instances (skipInitHooks = isReused && isForceRerender)
+          // and __gxtSyncAllWrappers is never invoked by GXT to fire the
+          // deferred hooks. Classic lifecycle contract requires `willRender`
+          // to fire on every re-render whose args changed (test #11044
+          // "component helper properly invalidates hash params inside an
+          // {{#each}}" depends on this). After handle() runs we fire the
+          // update hooks on the last-created/reused instance so that any
+          // `set()` inside willRender propagates through Ember's
+          // notifyPropertyChange → __gxtTriggerReRender → cell.update chain
+          // and the DOM is re-read in the post-runTask sync.
+          const __forceRerenderSnapshot = (globalThis as any).__gxtIsForceRerender;
+          let handleResult: any;
+          let rendered: any;
+          try {
+            handleResult = managers.component.handle(kebabName, args, fw, ctx);
+            rendered = handleResult;
+            if (typeof rendered === 'function') {
+              rendered = rendered();
+            }
+          } finally {
+            // Pop the template-only tracking stack after render (even on error).
+            if (_stackTO.length > 0 && _stackTO[_stackTO.length - 1] === kebabName) {
+              _stackTO.pop();
+            }
+          }
+          if (__forceRerenderSnapshot) {
+            const _inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+            // Fire willRender/willUpdate ONLY if __gxtSyncAllWrappers did not
+            // already fire them on this instance for the current sync cycle.
+            // syncAll is wrapped above to stamp `__gxtSyncAllFiredCycleId`
+            // on any instance whose update hooks it fires via `trigger`.
+            // This gate prevents double-firing for direct-invocation args
+            // (e.g. {{non-block prop=this.x}}) while still firing for
+            // each-iteration re-renders whose parent-getter captures an
+            // old block param and is missed by syncAll.
+            if (_inst && _inst.__gxtEverInserted && typeof _inst.trigger === 'function') {
+              const __gCycle = (globalThis as any).__gxtSyncCycleId || 0;
+              if (_inst.__gxtSyncAllFiredCycleId !== __gCycle &&
+                  _inst.__gxtWillRenderFiredCycleId !== __gCycle) {
+                _inst.__gxtWillRenderFiredCycleId = __gCycle;
+                try { _inst.trigger('didUpdateAttrs'); } catch { /* ignore */ }
+                try { _inst.trigger('didReceiveAttrs'); } catch { /* ignore */ }
+                try { _inst.trigger('willUpdate'); } catch { /* ignore */ }
+                try { _inst.trigger('willRender'); } catch { /* ignore */ }
+                // willRender may call `set()` which dirties cells. Flush so
+                // freshly-dirtied cells propagate to the DOM within this pass.
+                try { gxtSyncDom(); } catch { /* ignore */ }
+              }
+            }
           }
           // If the result is a primitive (from a helper resolved as component
           // fallback), wrap it in a text node so GXT can insert it in the DOM.
@@ -7755,6 +8024,42 @@ export function precompileTemplate(templateString: string, options?: {
       }
     }
 
+    // Post-process: detect `["@name", $_maybeHelper("ident", [], this)]` — a
+    // bare un-wrapped helper call in a component's named-arg position. In
+    // strict mode this form is ambiguously a pass-by-reference or invocation
+    // when `ident` resolves to a registered helper, and Ember throws a
+    // specific error ("A resolved helper cannot be passed as a named
+    // argument...").
+    //
+    // We rewrite the pattern to invoke a runtime guard first. The guard
+    // checks `owner.factoryFor('helper:ident')`; if it resolves, it throws
+    // the Ember-standard error. Otherwise it falls through, letting
+    // $_maybeHelper run normally (for non-helper resolutions like a `this`
+    // property fallback).
+    //
+    // Block-param and scope-bound forms compile as `["@name", () => ident()]`
+    // or `["@name", () => $_maybeHelper(ident, ...)]` (with an outer getter
+    // wrapper), so they do NOT match this un-wrapped pattern and are left
+    // alone.
+    modifiedCode = modifiedCode.replace(
+      /(\["@[A-Za-z_][A-Za-z0-9_-]*",\s*)\$_maybeHelper\(("[^"]+"),\s*\[\],\s*this\)/g,
+      (match, prefix, nameLiteral) => {
+        // Skip known built-in helper names that are safe as named args.
+        const bareName = nameLiteral.slice(1, -1);
+        // Only apply to simple identifiers (letters/digits/underscore/hyphen)
+        if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(bareName)) return match;
+        // Do not guard built-in keyword helpers — those aren't "registered
+        // helpers" from the owner registry perspective.
+        const BUILTIN = new Set([
+          'array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly',
+          'unique-id', 'unbound', 'helper', 'modifier', 'component',
+          '__mutGet',
+        ]);
+        if (BUILTIN.has(bareName)) return match;
+        return `${prefix}(globalThis.__gxtAssertNotResolvedHelperAsNamedArg(${nameLiteral}, this), $_maybeHelper(${nameLiteral}, [], this))`;
+      }
+    );
+
     // The GXT serializer wraps the top-level `{{unbound X}}` form in
     // `globalThis.__gxtUnboundEval(__ubCache, "__ubN", () => unbound(...))`,
     // but it does NOT wrap `unbound(...)` calls that appear inline in a
@@ -7958,38 +8263,48 @@ export function precompileTemplate(templateString: string, options?: {
           if (scopeKeys.has(name) || scopeKeys.has(jsName)) continue;
           // Check if the compiled code references this as a bare identifier
           // Match word boundary to avoid false positives (e.g. "getElement")
-          if (containsWord(modifiedCode, jsName)) {
-            if (name === 'unique-id') {
-              // unique-id needs per-component-instance caching so that:
-              // 1. Each {{unique-id}} invocation returns a UNIQUE value
-              // 2. The SAME invocation returns the SAME value across re-renders
-              // 3. {{#let (unique-id) as |id|}} produces a stable id
-              //
-              // GXT compiles #let block params as getters: let id = () => unique_id();
-              // Each access to `id` calls unique_id() again. To make ids stable,
-              // we count unique_id() call sites in the compiled code, pre-generate
-              // that many IDs (cached per component instance), and replace each
-              // unique_id() call with a lookup into the pre-generated array.
-              //
-              // Count unique_id() calls in modifiedCode
-              const uidCallCount = countWord(modifiedCode, 'unique_id()');
-              if (uidCallCount > 0) {
-                // Replace each unique_id() call with _uid[N] where N is the call index
-                let uidIdx = 0;
-                modifiedCode = replaceWord(modifiedCode, 'unique_id()', () => `_uid[${uidIdx++}]`);
-                // Mark that we need the _uid array in the outer scope.
-                // The array is generated ONCE when the template factory function
-                // is first evaluated, so IDs remain stable across re-renders.
-                // We set a flag here and inject the code into the outer scope
-                // of templateFnCode (before `return function()`).
-                (compilationResult as any).__uidCount = uidCallCount;
-              } else {
-                // unique_id referenced but not called — inject as plain function
-                helperInjections.push(`const unique_id = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];`);
-              }
-            } else {
-              helperInjections.push(`const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`);
+          if (name === 'unique-id') {
+            // unique-id needs per-component-instance caching so that:
+            // 1. Each {{unique-id}} invocation returns a UNIQUE value
+            // 2. The SAME invocation returns the SAME value across re-renders
+            // 3. {{#let (unique-id) as |id|}} produces a stable id
+            //
+            // The compiled code may reference unique-id in two forms
+            // depending on the compile path:
+            //   a) bare call:    unique_id()                  (scope-bound)
+            //   b) maybeHelper:  $_maybeHelper("unique-id", [], this)
+            // Form (b) appears when GXT does not recognize the binding —
+            // e.g. inside `{{#let (unique-id) as |id|}}` where the let-init
+            // is not wrapped in the builtin resolution path. We normalize
+            // (b) into (a) so both share the _uid[N] caching mechanism that
+            // keeps ids stable across re-evaluations of the same call site.
+            const mhStr = '$_maybeHelper("unique-id", [], this)';
+            if (modifiedCode.includes(mhStr)) {
+              modifiedCode = modifiedCode.split(mhStr).join('unique_id()');
             }
+            if (!containsWord(modifiedCode, jsName)) continue;
+            // GXT compiles #let block params as getters: let id = () => unique_id();
+            // Each access to `id` calls unique_id() again. To make ids stable,
+            // we count unique_id() call sites in the compiled code, pre-generate
+            // that many IDs (cached per component instance), and replace each
+            // unique_id() call with a lookup into the pre-generated array.
+            //
+            // Count unique_id() calls in modifiedCode
+            const uidCallCount = countWord(modifiedCode, 'unique_id()');
+            if (uidCallCount > 0) {
+              // Replace each unique_id() call with _uid[N] where N is the call index
+              let uidIdx = 0;
+              modifiedCode = replaceWord(modifiedCode, 'unique_id()', () => `_uid[${uidIdx++}]`);
+              // Mark that we need the _uid array in the outer scope.
+              // The array is generated ONCE when the template factory function
+              // is first evaluated, so IDs remain stable across re-renders.
+              (compilationResult as any).__uidCount = uidCallCount;
+            } else {
+              // unique_id referenced but not called — inject as plain function
+              helperInjections.push(`const unique_id = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];`);
+            }
+          } else if (containsWord(modifiedCode, jsName)) {
+            helperInjections.push(`const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`);
           }
         }
       }

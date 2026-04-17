@@ -30,7 +30,7 @@ const g = globalThis as any;
  * Helpers expect resolved values in positional/named args.
  */
 function isGxtGetter(v: any): boolean {
-  return typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell;
+  return typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell && !v.__isHelperResult;
 }
 function unwrapArgs(args: any[]): any[] {
   if (!Array.isArray(args)) return Object.freeze([]) as any[];
@@ -253,11 +253,28 @@ function createEmberMaybeHelper(original: Function) {
       // For these cases we always re-invoke. The helper is called inside a
       // reactive formula that already dedupes by tag-tracking; re-invoking
       // per formula evaluation is safe and correct.
+      // Mark user helper results that are functions so downstream
+      // unwrapArgs / unwrapHash do not treat them as GXT reactive getters
+      // and invoke them. For example, when a user function like `boundFn`
+      // is invoked via `(fn ...)` (shadowed), the returned closure must reach
+      // the outer helper (e.g. `invoke`) AS-IS rather than be eagerly called.
+      const markHelperResult = (v: any) => {
+        if (typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell && !v.__isHelperResult) {
+          try { Object.defineProperty(v, '__isHelperResult', { value: true, enumerable: false, configurable: true }); }
+          catch { /* frozen or non-extensible — skip */ }
+        }
+        return v;
+      };
+      // Skip the JSON.stringify-based result cache when any positional arg
+      // is a non-primitive object OR a plain function value. Functions
+      // serialize to null, producing false cache hits across distinct
+      // callbacks (e.g. two (fn ...) subexpressions shadowed by a user fn).
       const hasObjectArg = positional.some(
-        (a: any) => a !== null && typeof a === 'object'
+        (a: any) => (a !== null && typeof a === 'object') ||
+          (typeof a === 'function' && !a.__isFnHelper && !a.__isMutCell)
       );
       if (hasObjectArg) {
-        return hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional);
+        return markHelperResult(hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional));
       }
 
       let cached = managedHelperBucketCache.get(nameOrFn);
@@ -271,14 +288,14 @@ function createEmberMaybeHelper(original: Function) {
           return cached.lastResult;
         }
         // Args changed — re-invoke the function
-        const result = hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional);
+        const result = markHelperResult(hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional));
         cached.lastArgsSer = argsSer;
         cached.lastResult = result;
         return result;
       }
 
       // First invocation — call and cache
-      const result = hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional);
+      const result = markHelperResult(hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional));
       managedHelperBucketCache.set(nameOrFn, {
         __plainFnHelper: true,
         lastArgsSer: argsSer,
