@@ -290,8 +290,36 @@ function _destroySync(destroyable: Destroyable): void {
   meta.state = DESTROYED_STATE;
 }
 
+// Detect whether `@glimmer/global-context` has been initialized with a
+// functioning scheduleDestroy/scheduleDestroyed pair. When the context is
+// installed (as it is in any real Ember app / any test harness that boots the
+// runtime) we can route through backburner.
+function hasGlobalSchedulers(): boolean {
+  return (
+    typeof (scheduleDestroy as unknown) === 'function' &&
+    typeof (scheduleDestroyed as unknown) === 'function'
+  );
+}
+
+// A destroyable is "Ember-runtime-backed" (as opposed to a bare object being
+// exercised by the low-level Destroyable Integration / Compat tests) when
+// eager destructors have been registered against it. Ember registers
+// `ensureDestroyCalled` as an eager destructor on every EmberObject and
+// `destroyObservers` eagerly on every observer target, so the presence of an
+// eager destructor is a reliable marker that teardown has to sequence through
+// the runloop (willDestroy running against a partially-torn-down object graph
+// would break observer semantics). Plain destroyables in compat tests never
+// register eager destructors — they get synchronous teardown so
+// `destroy(obj); isDestroyed(obj) === true` remains the contract.
+function requiresDeferredDestruction<T extends Destroyable>(
+  meta: DestroyableMeta<T>
+): boolean {
+  return meta.eagerDestructors !== null;
+}
+
 export function destroy(destroyable: Destroyable): void {
   const g = globalThis as unknown as { __gxtSyncing?: boolean };
+  let meta = getDestroyableMeta(destroyable);
   if (_getCurrentRunLoop() !== null || _deferredDestroyMode) {
     // Inside a run loop OR in the canonical Destroyables test suite:
     // use deferred destruction so backburner sequences the flush.
@@ -301,9 +329,17 @@ export function destroy(destroyable: Destroyable): void {
     _backburner.join(() => {
       _destroyDeferred(destroyable);
     });
+  } else if (hasGlobalSchedulers() && requiresDeferredDestruction(meta)) {
+    // Ember-runtime-backed destroyable (has eager destructors). Defer so that
+    // when siblings are destroyed in sequence, every eager destructor (e.g.
+    // `destroyObservers`) has run before any non-eager destructor (e.g.
+    // `willDestroy`) fires. This matches classic Ember teardown and keeps
+    // observer fan-out from hitting a half-destroyed graph — see the
+    // destroy_test graph-teardown case.
+    _destroyDeferred(destroyable);
   } else {
-    // Default: synchronous destruction. Compat tests and application code
-    // expect destroy() to complete fully before returning.
+    // Default: synchronous destruction. Plain destroyables (compat /
+    // integration tests) and runtimes without a scheduler installed.
     _destroySync(destroyable);
   }
 }
