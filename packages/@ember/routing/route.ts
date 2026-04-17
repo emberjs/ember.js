@@ -938,8 +938,36 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     // skips markObjectAsDirty because isPrototypeMeta(controller) returns true —
     // causing async QP observers to never detect the dirty tag, so URL/LinkTo
     // hrefs never update when QPs change.
+    //
+    // Additionally: in some GXT paths the instance meta is created with
+    // meta.proto === controller (instead of controller.constructor.prototype),
+    // which makes `isPrototypeMeta(controller)` return true for the *instance*.
+    // That short-circuits `ComputedProperty.get` to return `undefined`,
+    // breaking every `@computed` getter on controllers. Repair it here.
     if ((globalThis as any).__GXT_MODE__) {
-      metaFor(controller);
+      let m = metaFor(controller);
+      const correctProto = Object.getPrototypeOf(controller);
+      if (correctProto && correctProto !== controller) {
+        // Pin meta.proto to the real class prototype. Without this, GXT's
+        // outlet.gts builds `renderContext = Object.create(controller)` and the
+        // first `peekMeta(renderContext)` walks up to `controller`, sees
+        // `meta.proto !== controller`, and mutates `meta.proto = controller`
+        // (meta.ts:662). That makes `isPrototypeMeta(controller)` return true,
+        // which short-circuits `ComputedProperty.get` to return `undefined` for
+        // every `@computed` getter on the controller — breaking templates that
+        // read things like `this.allSitesAllArticles`.
+        m.proto = correctProto;
+        try {
+          Object.defineProperty(m, 'proto', {
+            get() { return correctProto; },
+            set(_v) { /* ignore — see comment above */ },
+            configurable: true,
+            enumerable: false,
+          });
+        } catch {
+          /* already non-configurable — best effort */
+        }
+      }
     }
 
     controller._qpDelegate = states.allowOverrides;
