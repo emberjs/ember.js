@@ -193,13 +193,7 @@ export function updateRef(_ref: Reference, value: unknown) {
   update(value);
 }
 
-export type ChildRefTransform = (parent: object, path: string, value: unknown) => unknown;
-
-export function childRefFor(
-  _parentRef: Reference,
-  path: string,
-  transform?: ChildRefTransform
-): Reference {
+export function childRefFor(_parentRef: Reference, path: string): Reference {
   const parentRef = _parentRef as ReferenceImpl;
 
   const type = parentRef[REFERENCE];
@@ -207,14 +201,10 @@ export function childRefFor(
   let children = parentRef.children;
   let child: Reference;
 
-  // Use a distinct cache key when a transform is provided so that the same
-  // (parent, path) pair can have both a plain and a transformed child ref.
-  const cacheKey = transform ? '\0bound:' + path : path;
-
   if (children === null) {
     children = parentRef.children = new Map();
   } else {
-    const next = children.get(cacheKey);
+    const next = children.get(path);
 
     if (next) return next;
   }
@@ -223,9 +213,10 @@ export function childRefFor(
     const parent = valueForRef(parentRef);
 
     if (isDict(parent)) {
-      let value: unknown = (parent as Record<string, unknown>)[path];
-      if (transform) value = transform(parent, path, value);
-      child = createUnboundRef(value, DEBUG && `${parentRef.debugLabel}.${path}`);
+      child = createUnboundRef(
+        (parent as Record<string, unknown>)[path],
+        DEBUG && `${parentRef.debugLabel}.${path}`
+      );
     } else {
       child = UNDEFINED_REFERENCE;
     }
@@ -235,8 +226,7 @@ export function childRefFor(
         const parent = valueForRef(parentRef);
 
         if (isDict(parent)) {
-          const value = getProp(parent, path);
-          return transform ? transform(parent, path, value) : value;
+          return getProp(parent, path);
         }
       },
       (val) => {
@@ -253,9 +243,22 @@ export function childRefFor(
     }
   }
 
-  children.set(cacheKey, child);
+  children.set(path, child);
 
   return child;
+}
+
+// WeakMap used to tag a reference created by VM_GET_PROPERTY_BOUND_OP with its
+// parent reference. Consumers like `on` and `fn` check this to bind `this`
+// at invocation time, while `valueForRef` returns the original value unchanged.
+const BOUND_THIS_REFS: WeakMap<Reference, Reference> = new WeakMap();
+
+export function setBindingParentRef(ref: Reference, parentRef: Reference): void {
+  BOUND_THIS_REFS.set(ref, parentRef);
+}
+
+export function getBindingParentRef(ref: Reference): Reference | undefined {
+  return BOUND_THIS_REFS.get(ref);
 }
 
 export function childRefFromParts(root: Reference, parts: string[]): Reference {

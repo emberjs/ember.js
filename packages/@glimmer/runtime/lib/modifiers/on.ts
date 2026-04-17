@@ -17,7 +17,7 @@ import {
 import { buildUntouchableThis } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
-import { valueForRef } from '@glimmer/reference';
+import { getBindingParentRef, valueForRef } from '@glimmer/reference';
 import { createUpdatableTag } from '@glimmer/validator';
 
 import { reifyNamed } from '../vm/arguments';
@@ -183,24 +183,31 @@ export class OnModifierState {
     if (shouldUpdate) {
       let callback = userProvidedCallback;
 
-      if (DEBUG) {
+      // If the callback ref was created by VM_GET_PROPERTY_BOUND_OP (i.e. a
+      // `this.*` path read), bind the callback to the parent object so that
+      // class methods preserve their `this` context.
+      let bindingParentRef = arg1 ? getBindingParentRef(arg1) : undefined;
+      if (bindingParentRef) {
+        let parentValue = valueForRef(bindingParentRef);
+        callback = userProvidedCallback.bind(parentValue);
+      } else if (DEBUG) {
         callback = userProvidedCallback.bind(untouchableContext);
+      }
 
-        if (passive) {
-          let _callback = callback;
+      if (DEBUG && passive) {
+        let _callback = callback;
 
-          callback = (event) => {
-            event.preventDefault = () => {
-              throw new Error(
-                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
-                  userProvidedCallback.name || `{anonymous function}`
-                }`
-              );
-            };
-
-            return _callback(event);
+        callback = (event) => {
+          event.preventDefault = () => {
+            throw new Error(
+              `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
+                userProvidedCallback.name || `{anonymous function}`
+              }`
+            );
           };
-        }
+
+          return _callback(event);
+        };
       }
 
       this.listener = {

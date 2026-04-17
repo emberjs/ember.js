@@ -9,7 +9,8 @@ export {
 } from './lib/iterable';
 export {
   childRefFor,
-  type ChildRefTransform,
+  getBindingParentRef,
+  setBindingParentRef,
   childRefFromParts,
   createComputeRef,
   createConstRef,

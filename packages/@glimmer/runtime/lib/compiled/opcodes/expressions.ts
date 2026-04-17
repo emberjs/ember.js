@@ -40,16 +40,12 @@ import {
 import { debugToString, localAssert } from '@glimmer/debug-util';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { debugAssert, toBool } from '@glimmer/global-context';
-import {
-  getInternalComponentManager,
-  getInternalHelperManager,
-  getInternalModifierManager,
-} from '@glimmer/manager';
+import { getInternalHelperManager } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
-import type { ChildRefTransform } from '@glimmer/reference';
 import {
   childRefFor,
   createComputeRef,
+  setBindingParentRef,
   FALSE_REFERENCE,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
@@ -73,65 +69,6 @@ import {
   CheckScopeBlock,
   CheckUndefinedReference,
 } from './-debug-strip';
-
-// Skip binding for values with a component or modifier manager — these are
-// definition objects whose identity must be preserved for WeakMap-based manager
-// lookups. Wrapping them in a callable would break `getInternalModifierManager`
-// / `getInternalComponentManager` since the wrapper isn't in the manager WeakMap.
-// Helper managers are excluded from this check because ALL functions have a
-// default helper manager (RFC #756).
-function hasDefinitionManager(value: object): boolean {
-  return (
-    getInternalModifierManager(value, true) !== null ||
-    getInternalComponentManager(value, true) !== null
-  );
-}
-
-interface BoundCacheEntry {
-  original: unknown;
-  wrapper: CallableFunction;
-}
-
-// Per-parent cache of wrapper functions. The entry tracks the original function
-// so that when the underlying value changes (e.g. via `set()`), a new wrapper
-// is created — giving modifiers like `{{on}}` a new identity to detect.
-const BOUND_FN_CACHE: WeakMap<object, Map<string, BoundCacheEntry>> = new WeakMap();
-
-// Transform for childRefFor that wraps function values in a stable callable
-// preserving `this`. The wrapper defers the actual property lookup to
-// invocation time — `parent[path]` is evaluated when the function is called,
-// not during render.
-const bindTransform: ChildRefTransform = (parent, path, value) => {
-  if (
-    typeof value !== 'function' ||
-    hasDefinitionManager(value as object) ||
-    Object.keys(value as object).length > 0
-  ) {
-    return value;
-  }
-
-  let cache = BOUND_FN_CACHE.get(parent);
-  if (cache === undefined) {
-    cache = new Map();
-    BOUND_FN_CACHE.set(parent, cache);
-  }
-
-  let entry = cache.get(path);
-  if (entry === undefined || entry.original !== value) {
-    const capturedParent = parent;
-    entry = {
-      original: value,
-      wrapper: function (this: unknown, ...args: unknown[]): unknown {
-        const fn = (capturedParent as Record<string, unknown>)[path];
-        if (typeof fn === 'function') {
-          return Reflect.apply(fn, capturedParent, args) as unknown;
-        }
-      },
-    };
-    cache.set(path, entry);
-  }
-  return entry.wrapper;
-};
 
 APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
@@ -279,8 +216,12 @@ APPEND_OPCODES.add(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {
 
 APPEND_OPCODES.add(VM_GET_PROPERTY_BOUND_OP, (vm, { op1: _key }) => {
   let key = vm.constants.getValue<string>(_key);
-  let expr = check(vm.stack.pop(), CheckReference);
-  vm.stack.push(childRefFor(expr, key, bindTransform));
+  let parentRef = check(vm.stack.pop(), CheckReference);
+  let ref = childRefFor(parentRef, key);
+  // Tag the ref with its parent so consumers (on, fn) can bind `this`
+  // at invocation time. valueForRef still returns the original value.
+  setBindingParentRef(ref, parentRef);
+  vm.stack.push(ref);
 });
 
 APPEND_OPCODES.add(VM_GET_BLOCK_OP, (vm, { op1: _block }) => {
