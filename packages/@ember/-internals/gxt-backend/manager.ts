@@ -6770,6 +6770,27 @@ function handleStringComponent(
 // Cache for custom-managed component instances, keyed by ComponentClass -> array of pool entries
 const _customManagedPool = new Map<any, { instance: any; context: any; manager: any; claimed: boolean; lastPassId: number }[]>();
 
+// Properties added by createRenderContext that should be hidden from user code on
+// custom-managed component instances so deep-equality checks against the user's
+// original instance shape still pass.
+const _GXT_INTERNAL_CONTEXT_PROPS = ['$fw', 'attrs', 'args', '$slots', '__gxtSelfString__', '$_hasBlock', '$_hasBlockParams'];
+function hideGxtInternalPropsOn(target: any) {
+  if (!target || typeof target !== 'object') return;
+  for (const key of _GXT_INTERNAL_CONTEXT_PROPS) {
+    if (!Object.prototype.hasOwnProperty.call(target, key)) continue;
+    const desc = Object.getOwnPropertyDescriptor(target, key);
+    if (!desc || desc.enumerable === false) continue;
+    if (desc.configurable === false) continue;
+    try {
+      if ('value' in desc) {
+        Object.defineProperty(target, key, { value: desc.value, writable: desc.writable !== false, enumerable: false, configurable: true });
+      } else {
+        Object.defineProperty(target, key, { get: desc.get, set: desc.set, enumerable: false, configurable: true });
+      }
+    } catch { /* ignore */ }
+  }
+}
+
 // Clear custom managed pool between tests
 const _origClearPools = (globalThis as any).__gxtClearInstancePools;
 (globalThis as any).__gxtClearInstancePools = function() {
@@ -6810,9 +6831,12 @@ function handleCustomManagedComponent(
     if (!pool) {
       pool = [];
       _customManagedPool.set(ComponentClass, pool);
+      // Seed lastPassId so the first invocation in this pass doesn't spuriously
+      // reset claimed flags on entries that were just pushed during this same pass.
+      (pool as any).__lastPassId = currentPassId;
     }
-    // Reset claimed flags on new pass
-    if (pool.length > 0 && (pool as any).__lastPassId !== currentPassId) {
+    // Reset claimed flags only when we've actually advanced to a new render pass.
+    if ((pool as any).__lastPassId !== currentPassId) {
       (pool as any).__lastPassId = currentPassId;
       for (const entry of pool) entry.claimed = false;
     }
@@ -6890,6 +6914,14 @@ function handleCustomManagedComponent(
       Object.defineProperty(instance.args, 'named', { value: liveNamed, writable: true, enumerable: false, configurable: true });
       Object.defineProperty(instance.args, 'positional', { value: livePositional, writable: true, enumerable: false, configurable: true });
     }
+
+    // For custom-managed components: hide GXT render-internal properties on the
+    // user's instance/context so user code (e.g. updateComponent callbacks that
+    // store `component` for later deep comparison) sees a clean object.
+    // These were added by createRenderContext as enumerable by default.
+    hideGxtInternalPropsOn(renderContext);
+    if (instance && instance !== renderContext) hideGxtInternalPropsOn(instance);
+    if (context && context !== renderContext && context !== instance) hideGxtInternalPropsOn(context);
 
     renderTemplateWithParentView(resolvedTemplate, renderContext, container, context);
 
