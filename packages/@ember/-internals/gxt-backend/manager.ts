@@ -3774,7 +3774,19 @@ function createRenderContext(
         const _getter = unwrappingGetter || getter;
         const _inst = instance;
         const _key = key;
+        // Skip instance-field fallback for reserved keys that collide with
+        // classic Ember internals on the component instance itself (e.g. `attrs`,
+        // `args`). For those keys, `_inst[_key]` would read the emberAttrs hash
+        // we just installed — producing `[object Object]` rather than the arg
+        // value — so we must read directly from the args getter instead.
+        const _skipInstFallback = _key === 'attrs' || _key === 'args';
         const _readValue = () => {
+          if (_skipInstFallback) {
+            if (_getter) {
+              try { return _getter(); } catch { /* ignore */ }
+            }
+            return initialVal;
+          }
           if (_inst) {
             try { return _inst[_key]; } catch { /* ignore */ }
           }
@@ -5062,7 +5074,8 @@ const $_MANAGERS = {
       // Handle string-based component lookup
       if (typeof komp === 'string') {
         // Strip curly-c- prefix added by Vite plugin's transformCurlyComponents
-        const resolvedKomp = komp.startsWith('curly-c-') ? komp.slice(8) : komp;
+        const isCurlyInvocation = komp.startsWith('curly-c-');
+        const resolvedKomp = isCurlyInvocation ? komp.slice(8) : komp;
         const result = handleStringComponent(resolvedKomp, args, fw, ctx, owner);
         if (result !== null) return result;
 
@@ -5184,6 +5197,18 @@ const $_MANAGERS = {
 
         // Custom element fallback: names containing a dash that are not registered
         // as components or helpers should render as plain HTML custom elements.
+        // EXCEPT: explicit curly-block invocation `{{#name}}...{{/name}}` against
+        // an unresolved name must throw — classic Ember rejects this form because
+        // a block body is not meaningful for a raw custom element. Angle-bracket
+        // and inline-curly call sites still fall through to custom elements.
+        if (isCurlyInvocation && hasBlockSlot) {
+          const notFoundErr = new Error(
+            `Attempted to resolve \`${resolvedKomp}\`, which was expected to be a component, but nothing was found. ` +
+            `Could not find component named "${resolvedKomp}" (no component or template with that name was found)`
+          );
+          captureRenderError(notFoundErr);
+          throw notFoundErr;
+        }
         const kebabKomp = pascalToKebab(komp);
         if (kebabKomp.includes('-')) {
           return renderCustomElement(kebabKomp, args, fw, ctx);
@@ -6550,14 +6575,16 @@ function handleStringComponent(
     // Resolve template
     let resolvedTemplate = template;
     if (!resolvedTemplate && instance) {
-      // Check for layoutName property (looks up template by name)
-      if (instance.layoutName && owner) {
+      // Classic Ember precedence: when both `layout` and `layoutName` are set,
+      // `layout` wins. Check `layout` first so that an explicitly-assigned
+      // compiled template overrides a sibling `layoutName` lookup.
+      if (instance.layout) {
+        resolvedTemplate = instance.layout;
+      }
+      // Fall back to layoutName (looks up template by name)
+      if (!resolvedTemplate && instance.layoutName && owner) {
         resolvedTemplate = owner.lookup(`template:${instance.layoutName}`) ||
                            owner.lookup(`template:components/${instance.layoutName}`);
-      }
-      // Check for layout property (directly assigned template)
-      if (!resolvedTemplate && instance.layout) {
-        resolvedTemplate = instance.layout;
       }
       // Fallback to template registry
       if (!resolvedTemplate) {
@@ -6574,23 +6601,58 @@ function handleStringComponent(
 
     // DEBUG: log when template is missing for a component that should have one
     if (!resolvedTemplate?.render) {
-      // Component without a template - create a default template that yields block content
+      // Component without a template - synthesise a default layout that yields
+      // the block content (classic Ember's default component layout is just
+      // `{{yield}}`). Handle the full shape of slot results: Nodes,
+      // DocumentFragments, reactive node thunks, and reactive text getters.
+      const gxtEffectFn = _gxtEffect;
       resolvedTemplate = {
         __gxtCompiled: true,
         render(ctx: any, container: Element) {
-          // Render the block content (slots.default)
           const slots = ctx.$slots || ctx[Symbol.for('gxt-slots')] || {};
-          if (typeof slots.default === 'function') {
-            const result = slots.default(ctx);
-            // Append results to container
-            if (Array.isArray(result)) {
-              for (const item of result) {
-                if (item instanceof Node) {
-                  container.appendChild(item);
-                } else if (typeof item === 'string') {
-                  container.appendChild(document.createTextNode(item));
+          if (typeof slots.default !== 'function') {
+            return { nodes: [] };
+          }
+          // Slot functions are bound to the parent scope and already resolve
+          // `{{this.x}}` against the calling controller/component. Pass `null`
+          // so they don't get re-pointed at the child component's instance.
+          const result = slots.default(null);
+          const items = Array.isArray(result) ? result : (result == null ? [] : [result]);
+          for (const item of items) {
+            if (item instanceof Node) {
+              if (item.nodeType === 11) {
+                const kids = Array.from((item as DocumentFragment).childNodes);
+                for (const k of kids) container.appendChild(k);
+              } else {
+                container.appendChild(item);
+              }
+            } else if (typeof item === 'function') {
+              const fnStr = (item as Function).toString();
+              const isNodeThunk = fnStr.includes('$_tag(') ||
+                fnStr.includes('$_c(') ||
+                fnStr.includes('$_dc(') ||
+                fnStr.includes('$_eachSync(');
+              if (isNodeThunk) {
+                let evaluated: any;
+                try { evaluated = (item as Function)(); } catch { evaluated = null; }
+                if (evaluated instanceof Node) {
+                  if (evaluated.nodeType === 11) {
+                    const kids = Array.from(evaluated.childNodes);
+                    for (const k of kids) container.appendChild(k);
+                  } else {
+                    container.appendChild(evaluated);
+                  }
+                  continue;
                 }
               }
+              const textNode = document.createTextNode('');
+              gxtEffectFn(() => {
+                const val = (item as Function)();
+                textNode.textContent = val == null ? '' : String(val);
+              });
+              container.appendChild(textNode);
+            } else if (item != null) {
+              container.appendChild(document.createTextNode(String(item)));
             }
           }
           return { nodes: Array.from(container.childNodes) };
@@ -7992,14 +8054,17 @@ function handleClassicComponent(
       _resolveParentViewFromCtx(ctx);
     const instance = getCachedOrCreateInstance(factory, args, factory.class, owner, effectiveParentView);
 
-    // Resolve template with layoutName/layout support
+    // Resolve template with layoutName/layout support.
+    // Classic Ember precedence: when both `layout` and `layoutName` are
+    // assigned, `layout` wins — it is treated as the explicit compiled
+    // template and overrides any `layoutName`-driven lookup.
     let template;
-    if (instance?.layoutName && owner) {
+    if (instance?.layout) {
+      template = instance.layout;
+    }
+    if (!template && instance?.layoutName && owner) {
       template = owner.lookup(`template:${instance.layoutName}`) ||
                  owner.lookup(`template:components/${instance.layoutName}`);
-    }
-    if (!template && instance?.layout) {
-      template = instance.layout;
     }
     if (!template) {
       template = getComponentTemplate(instance) ||
