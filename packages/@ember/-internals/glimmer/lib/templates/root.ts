@@ -190,7 +190,29 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     // Check if the result has $nodes array (GXT template result)
     // GXT's $_fin stores nodes under a symbol key (RENDERED_NODES_PROPERTY),
     // also check .nodes and .$nodes for compatibility.
-    const gxtNodes = template && GXT_RENDERED_NODES ? template[GXT_RENDERED_NODES as any] : null;
+    //
+    // Module-dedup note: root.ts's `RENDERED_NODES_PROPERTY` import may be a
+    // different symbol instance than the one used by the compiled template
+    // (e.g. when build-time compiled templates bundle their own copy of the
+    // GXT dom helpers). Fall back to scanning every symbol key on `template`
+    // for an Array value so we detect the rendered nodes regardless of which
+    // module copy produced them.
+    let gxtNodes = template && GXT_RENDERED_NODES ? template[GXT_RENDERED_NODES as any] : null;
+    if (!gxtNodes && template && typeof template === 'object') {
+      for (const sym of Object.getOwnPropertySymbols(template)) {
+        const val = (template as any)[sym];
+        if (Array.isArray(val)) {
+          // Prefer arrays containing Nodes or nested arrays/primitives (the
+          // shape of GXT's root node list). Skip arrays that clearly belong
+          // to other GXT internals (e.g. destructor lists of functions).
+          if (val.length === 0 || val.some(v => v instanceof Node || typeof v === 'string' ||
+              (Array.isArray(v)) || (v && typeof v === 'object' && !((v as any) instanceof Function)))) {
+            gxtNodes = val;
+            break;
+          }
+        }
+      }
+    }
     const nodesArray = gxtNodes || template?.nodes || template?.$nodes;
     const hasNodes = nodesArray && Array.isArray(nodesArray);
     if (hasNodes) {
