@@ -3171,55 +3171,141 @@ queueMicrotask(patchGlobalEachSync);
 // `x-inner-template-only` that Glimmer VM would include.
 //
 // We track active template-only renders via `__gxtTemplateOnlyStack` (pushed
-// in the $_tag thunk below) and rewrite the assertion message when it fires
-// to inject the missing names between the deepest classic parent and the
-// `this.prop` path line. We wrap `__emberAssertFn` because that's the
-// chokepoint through which __gxtCheckBacktracking reports its assertion.
+// in the $_tag thunk below) and rewrite the backtracking assertion message
+// at report time. `__emberAssertFn` is installed on globalThis as a getter
+// (see manager.ts) that returns `getDebugFunction('assert')`; we can't
+// replace it in-place. Instead we wrap `getDebugFunction('assert')` by
+// intercepting via `setDebugFunction`, wrapping the returned function. The
+// simpler path: wrap the globalThis '__emberAssertFn' property directly
+// only if the current accessor allows overwrite.
+function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
+  const _g = globalThis as any;
+  const renderedSet = (_g.__gxtTemplateOnlyRenderedSet as Set<string>) || new Set();
+  if (renderedSet.size === 0) return msg;
+  const lines = msg.split('\n');
+  let propPathIdx = -1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const ln = lines[i] || '';
+    if (ln.startsWith('Stack trace for the update:')) continue;
+    if (ln.trim().startsWith('this.') || ln.trim().startsWith('@model.')) {
+      propPathIdx = i;
+      break;
+    }
+  }
+  if (propPathIdx <= 0) return msg;
+  const existingInTree = new Set<string>();
+  for (let i = 0; i < propPathIdx; i++) {
+    const ln = lines[i] || '';
+    const trimmed = ln.trim();
+    if (trimmed && !trimmed.startsWith('-top-level') && !trimmed.startsWith('{{outlet}}') &&
+        !trimmed.startsWith('- While rendering:') && !trimmed.startsWith('You attempted')) {
+      existingInTree.add(trimmed);
+    }
+  }
+  const missingNames: string[] = [];
+  for (const n of renderedSet) {
+    if (!existingInTree.has(n)) missingNames.push(n);
+  }
+  if (missingNames.length === 0) return msg;
+  const propLine = lines[propPathIdx] || '';
+  const propIndent = propLine.length - propLine.trimStart().length;
+  const insertedLines = missingNames.map((n) => ' '.repeat(propIndent) + n);
+  const newPropLine = ' '.repeat(propIndent + missingNames.length * 2) + propLine.trimStart();
+  const rebuilt = [
+    ...lines.slice(0, propPathIdx),
+    ...insertedLines,
+    newPropLine,
+    ...lines.slice(propPathIdx + 1),
+  ];
+  return rebuilt.join('\n');
+}
+// Wrap __gxtCheckBacktracking to rewrite the assertion message's render tree
+// and include names of rendered template-only components. Template-only
+// components don't participate in the parentView chain that the original
+// function walks; without this, the render tree emitted by the backtracking
+// diagnostic is missing entries like `x-inner-template-only`.
 function _installTemplateOnlyRenderTreeInjection() {
   const _g = globalThis as any;
-  if (_g.__emberAssertFn && !_g.__emberAssertFn.__emberTemplateOnlyInject) {
-    const _origAssertFn = _g.__emberAssertFn;
-    _g.__emberAssertFn = function __emberAssertFn_templateOnlyInject(msg: any, test: any) {
-      if (typeof msg === 'string' && msg.startsWith('You attempted to update') &&
-          msg.includes('- While rendering:')) {
-        const stack = (_g.__gxtTemplateOnlyStack as string[]) || [];
-        if (stack.length > 0) {
-          // Split the message into: prefix + render-tree-lines + suffix
-          const lines = msg.split('\n');
-          // Find the property-path line (last indented line before "Stack trace")
-          // and insert template-only lines BEFORE it at the same or deeper indent.
-          let propPathIdx = -1;
-          for (let i = lines.length - 1; i >= 0; i--) {
-            const ln = lines[i] || '';
-            if (ln.startsWith('Stack trace for the update:')) continue;
-            if (ln.trim().startsWith('this.') || ln.trim().startsWith('@model.')) {
-              propPathIdx = i;
-              break;
+  if (_g.__gxtAssertInjected) return;
+  if (!_g.__gxtCheckBacktracking) return;
+  const orig = _g.__gxtCheckBacktracking;
+  // Intercept by patching __emberAssertFn seen by __gxtCheckBacktracking
+  // via its internal read of globalThis.__emberAssertFn. We achieve this by
+  // replacing __gxtCheckBacktracking with a thin wrapper that installs a
+  // per-call override on __emberAssertFn for the duration of the call. This
+  // keeps the wrapping scoped and avoids interfering with other uses of
+  // __emberAssertFn.
+  _g.__gxtCheckBacktracking = function __gxtCheckBacktracking_wrapInject(target: any, key: string) {
+    const desc = Object.getOwnPropertyDescriptor(_g, '__emberAssertFn');
+    const origGet = desc?.get;
+    if (!origGet) {
+      return orig.call(this, target, key);
+    }
+    // Override the getter for the duration of this call to return a wrapped
+    // assert that rewrites the msg using our template-only set.
+    try {
+      Object.defineProperty(_g, '__emberAssertFn', {
+        get() {
+          const inner = origGet.call(this);
+          if (typeof inner !== 'function') return inner;
+          if ((inner as any).__gxtTemplateOnlyInjectWrapped) return inner;
+          const wrapped = function(msg: any, test: any) {
+            if (typeof msg === 'string') {
+              msg = _rebuildBacktrackingMsgWithTemplateOnly(msg);
             }
-          }
-          if (propPathIdx > 0) {
-            const propLine = lines[propPathIdx] || '';
-            const propIndent = propLine.length - propLine.trimStart().length;
-            // Insert template-only names at the prop's indent, shift prop deeper.
-            const insertedLines = stack.map((n) => ' '.repeat(propIndent) + n);
-            const newPropLine = ' '.repeat(propIndent + stack.length * 2) + propLine.trimStart();
-            const rebuilt = [
-              ...lines.slice(0, propPathIdx),
-              ...insertedLines,
-              newPropLine,
-              ...lines.slice(propPathIdx + 1),
-            ];
-            msg = rebuilt.join('\n');
-          }
-        }
-      }
-      return _origAssertFn.call(this, msg, test);
-    };
-    _g.__emberAssertFn.__emberTemplateOnlyInject = true;
-  }
+            return inner.call(this, msg, test);
+          };
+          (wrapped as any).__gxtTemplateOnlyInjectWrapped = true;
+          return wrapped;
+        },
+        configurable: true,
+      });
+    } catch { /* ignore */ }
+    try {
+      return orig.call(this, target, key);
+    } finally {
+      // Restore the original getter so that other assertion paths see the
+      // untransformed __emberAssertFn.
+      try {
+        Object.defineProperty(_g, '__emberAssertFn', {
+          get: origGet,
+          configurable: true,
+        });
+      } catch { /* ignore */ }
+    }
+  };
+  _g.__gxtAssertInjected = true;
 }
+// Retry install across microtasks and delayed timeouts until
+// __gxtCheckBacktracking is defined by manager.ts.
 _installTemplateOnlyRenderTreeInjection();
 queueMicrotask(_installTemplateOnlyRenderTreeInjection);
+setTimeout(_installTemplateOnlyRenderTreeInjection, 0);
+setTimeout(_installTemplateOnlyRenderTreeInjection, 50);
+
+// Clear the template-only rendered set at the start of each render pass so
+// the backtracking injector only sees components that rendered during the
+// current render. Otherwise previous tests leave stale entries (e.g. the
+// `foo-bar` from a prior test polluting the next test's render tree).
+function _installTemplateOnlyResetHook() {
+  const _g = globalThis as any;
+  if (!_g.__gxtBeginRenderPass || _g.__gxtBeginRenderPass.__emberTOReset) return;
+  const orig = _g.__gxtBeginRenderPass;
+  _g.__gxtBeginRenderPass = function __gxtBeginRenderPass_resetTO() {
+    try {
+      const set = _g.__gxtTemplateOnlyRenderedSet;
+      if (set && typeof set.clear === 'function') set.clear();
+      const stack = _g.__gxtTemplateOnlyStack;
+      if (stack && typeof stack.length === 'number') stack.length = 0;
+    } catch { /* ignore */ }
+    return orig.apply(this, arguments as any);
+  };
+  _g.__gxtBeginRenderPass.__emberTOReset = true;
+}
+_installTemplateOnlyResetHook();
+queueMicrotask(_installTemplateOnlyResetHook);
+setTimeout(_installTemplateOnlyResetHook, 0);
+setTimeout(_installTemplateOnlyResetHook, 50);
 
 // Wrap __gxtSyncAllWrappers so that any instance whose update hooks are
 // fired by syncAll is marked with `__gxtSyncAllFiredPassId`. The $_tag
@@ -6182,10 +6268,25 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Track the render path for template-only components. They don't
           // appear in the parentView chain (no instance), so the backtracking
           // diagnostic (`__gxtCheckBacktracking` in manager.ts) doesn't see
-          // them when building its `- While rendering:` tree. Push the
-          // kebabName before handle() runs and pop after so that the manager
-          // can augment its render tree with template-only entries via the
-          // `__gxtTemplateOnlyStack` global.
+          // them when building its `- While rendering:` tree. Snapshot the
+          // `__gxtLastCreatedEmberInstance` before handle() runs; after
+          // handle() completes, if __gxtLastCreatedEmberInstance is null
+          // (renderGlimmerComponent path) this was a template-only render
+          // — add its kebabName to a per-render set. The assertion hook
+          // above (`__gxtCheckBacktracking` wrapper) reads this set to
+          // inject template-only names into the render tree.
+          // Reset the set if the renderPassId changed since the last entry.
+          {
+            const _g = (globalThis as any);
+            const _curPass = _g.__emberRenderPassId || 0;
+            if (_g.__gxtTemplateOnlyRenderedSetPassId !== _curPass) {
+              _g.__gxtTemplateOnlyRenderedSetPassId = _curPass;
+              if (_g.__gxtTemplateOnlyRenderedSet && typeof _g.__gxtTemplateOnlyRenderedSet.clear === 'function') {
+                _g.__gxtTemplateOnlyRenderedSet.clear();
+              }
+            }
+          }
+          const _lastCreatedBefore = (globalThis as any).__gxtLastCreatedEmberInstance;
           const _stackTO: string[] = (globalThis as any).__gxtTemplateOnlyStack ||
             ((globalThis as any).__gxtTemplateOnlyStack = []);
           _stackTO.push(kebabName);
@@ -6214,6 +6315,16 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // Pop the template-only tracking stack after render (even on error).
             if (_stackTO.length > 0 && _stackTO[_stackTO.length - 1] === kebabName) {
               _stackTO.pop();
+            }
+            // Template-only components are identified by the fact that
+            // renderGlimmerComponent calls setInstanceCapture(null) — so
+            // after handle(), __gxtLastCreatedEmberInstance is null.
+            // Classic components are still captured as their instance.
+            const _lastCreatedAfter = (globalThis as any).__gxtLastCreatedEmberInstance;
+            if (_lastCreatedAfter === null) {
+              const _renderedSetTO: Set<string> = (globalThis as any).__gxtTemplateOnlyRenderedSet ||
+                ((globalThis as any).__gxtTemplateOnlyRenderedSet = new Set());
+              _renderedSetTO.add(kebabName);
             }
           }
           if (__forceRerenderSnapshot) {
