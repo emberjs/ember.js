@@ -89,6 +89,26 @@ export class CustomHelperManager {
     } else {
       delegate = this.getDelegateForOwner(owner);
     }
+    // Validate capabilities — must be from helperCapabilities()
+    // Throw if missing or if not created via the proper capability builder.
+    if (delegate && typeof delegate === 'object') {
+      const caps = delegate.capabilities;
+      if (!caps || !FROM_CAPABILITIES.has(caps)) {
+        const err = new Error(
+          "Custom helper managers must have a `capabilities` property " +
+          "that is the result of calling the `capabilities('3.23')` " +
+          "(imported via `import { capabilities } from '@ember/helper';`). " +
+          "Received: `" + (caps ? JSON.stringify(caps) : String(caps)) + "`"
+        );
+        // Capture for flushRenderErrors so assert.throws() can see it
+        // even if GXT swallows synchronous render-time exceptions.
+        const captureFn = (globalThis as any).__captureRenderError;
+        if (typeof captureFn === 'function') {
+          captureFn(err);
+        }
+        throw err;
+      }
+    }
     // Wrap delegate so getValue() runs inside a backtracking frame
     return this.wrapDelegate(delegate);
   }
