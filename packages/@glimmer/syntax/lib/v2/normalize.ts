@@ -267,10 +267,7 @@ class ExpressionNormalizer {
     let namedLoc = this.block.loc(hash.loc);
     let argsLoc = SpanList.range([paramLoc, namedLoc]);
 
-    let positional = this.block.builder.positional(
-      params.map((p) => this.normalize(p, ASTv2.STRICT_RESOLUTION)),
-      paramLoc
-    );
+    let positional = this.block.builder.positional(paramList, paramLoc);
 
     let named = this.block.builder.named(
       hash.pairs.map((p) => this.namedArgument(p)),
