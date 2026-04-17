@@ -10,7 +10,7 @@ import type {
   Template,
 } from '@glimmer/interfaces';
 import { constants } from '@glimmer/constants';
-import { expect, localAssert, unwrapTemplate } from '@glimmer/debug-util';
+import { expect, assert, unwrapTemplate } from '@glimmer/debug-util';
 import {
   capabilityFlagsFrom,
   getComponentTemplate,
@@ -120,7 +120,7 @@ export class ConstantsImpl implements ProgramConstants {
         return null;
       }
 
-      localAssert(managerOrHelper, 'BUG: expected manager or helper');
+      assert(managerOrHelper, 'BUG: expected manager or helper');
 
       let helper =
         typeof managerOrHelper === 'function'
@@ -189,7 +189,7 @@ export class ConstantsImpl implements ProgramConstants {
         return null;
       }
 
-      localAssert(manager, 'BUG: expected manager');
+      assert(manager, 'BUG: expected manager');
 
       let capabilities = capabilityFlagsFrom(manager.getCapabilities(definitionState));
 
@@ -288,7 +288,7 @@ export class ConstantsImpl implements ProgramConstants {
   }
 
   getValue<T>(index: number) {
-    localAssert(index >= 0, `cannot get value for handle: ${index}`);
+    assert(index >= 0, `cannot get value for handle: ${index}`);
 
     return this.values[index] as T;
   }

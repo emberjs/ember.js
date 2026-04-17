@@ -1,4 +1,4 @@
-import { localAssert } from '@glimmer/debug-util';
+import { assert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { assertNever } from '@glimmer/util';
 
@@ -212,7 +212,7 @@ export class SourceSpan implements SourceLocation {
   toSlice(expected?: string): SourceSlice {
     const chars = this.data.asString();
 
-    localAssert(
+    assert(
       expected === undefined || expected === chars,
       `unexpectedly found ${JSON.stringify(chars)} when slicing source, ` +
         `but expected ${JSON.stringify(expected)}`

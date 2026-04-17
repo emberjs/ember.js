@@ -21,7 +21,7 @@ import {
   recordStackSize,
   VmSnapshot,
 } from '@glimmer/debug';
-import { dev, localAssert, unwrap } from '@glimmer/debug-util';
+import { dev, assert, unwrap } from '@glimmer/debug-util';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
@@ -190,13 +190,13 @@ export class AppendOpcodes {
     let operation = unwrap(this.evaluateOpcode[type]);
 
     if (operation.syscall) {
-      localAssert(
+      assert(
         !opcode.isMachine,
         `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );
       operation.evaluate(vm, opcode);
     } else {
-      localAssert(
+      assert(
         opcode.isMachine,
         `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );

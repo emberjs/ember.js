@@ -1,5 +1,5 @@
 import type { Nullable, Optional, PresentArray } from '@glimmer/interfaces';
-import { localAssert } from '@glimmer/debug-util';
+import { assert } from '@glimmer/debug-util';
 
 import type * as ASTv1 from './api';
 
@@ -338,8 +338,8 @@ class Builders {
         return _name;
       },
       set name(value) {
-        localAssert(value[0] === '@', `call builders.at() with a string that starts with '@'`);
-        localAssert(
+        assert(value[0] === '@', `call builders.at() with a string that starts with '@'`);
+        assert(
           value.indexOf('.') === -1,
           `builder.at() should not be called with a name with dots in it`
         );
@@ -369,15 +369,15 @@ class Builders {
         return _name;
       },
       set name(value) {
-        localAssert(
+        assert(
           value !== 'this',
           `You called builders.var() with 'this'. Call builders.this instead`
         );
-        localAssert(
+        assert(
           value[0] !== '@',
           `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
         );
-        localAssert(
+        assert(
           value.indexOf('.') === -1,
           `builder.var() should not be called with a name with dots in it`
         );

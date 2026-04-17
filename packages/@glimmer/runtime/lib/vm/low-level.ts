@@ -9,7 +9,7 @@ import {
   VM_RETURN_OP,
   VM_RETURN_TO_OP,
 } from '@glimmer/constants';
-import { localAssert } from '@glimmer/debug-util';
+import { assert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
 
@@ -75,7 +75,7 @@ export class LowLevelVM {
   }
 
   setPc(pc: number): void {
-    localAssert(typeof pc === 'number' && !isNaN(pc), 'pc is set to a number');
+    assert(typeof pc === 'number' && !isNaN(pc), 'pc is set to a number');
     this.registers[$pc] = pc;
   }
 
@@ -112,7 +112,7 @@ export class LowLevelVM {
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
   call(handle: number) {
-    localAssert(handle < 0xffffffff, `Jumping to placeholder address`);
+    assert(handle < 0xffffffff, `Jumping to placeholder address`);
 
     this.registers[$ra] = this.registers[$pc];
     this.setPc(this.context.program.heap.getaddr(handle));
@@ -133,7 +133,7 @@ export class LowLevelVM {
 
     let pc = registers[$pc];
 
-    localAssert(typeof pc === 'number', 'pc is a number');
+    assert(typeof pc === 'number', 'pc is a number');
 
     if (pc === -1) {
       return null;

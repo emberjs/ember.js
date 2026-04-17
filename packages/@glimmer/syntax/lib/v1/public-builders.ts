@@ -1,5 +1,5 @@
 import type { Dict, Maybe, Nullable } from '@glimmer/interfaces';
-import { asPresentArray, deprecate, isPresentArray, localAssert } from '@glimmer/debug-util';
+import { asPresentArray, deprecate, isPresentArray, assert } from '@glimmer/debug-util';
 
 import type { SourceLocation, SourcePosition } from '../source/location';
 import type * as ASTv1 from './api';
@@ -78,7 +78,7 @@ function buildBlock(
 
   if (_elseBlock?.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
-    localAssert(_elseBlock.blockParams.length === 0, '{{else}} block cannot have block params');
+    assert(_elseBlock.blockParams.length === 0, '{{else}} block cannot have block params');
 
     elseBlock = b.blockItself({
       params: [],
@@ -212,11 +212,11 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
     }
   } else if ('type' in tag) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- supports JS users
-    localAssert(tag.type === 'PathExpression', `Invalid tag type ${tag.type}`);
+    assert(tag.type === 'PathExpression', `Invalid tag type ${tag.type}`);
     path = tag;
   } else if ('path' in tag) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- supports JS users
-    localAssert(tag.path.type === 'PathExpression', `Invalid tag type ${tag.path.type}`);
+    assert(tag.path.type === 'PathExpression', `Invalid tag type ${tag.path.type}`);
     path = tag.path;
     selfClosing = tag.selfClosing;
   } else {
@@ -225,7 +225,7 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
   }
 
   if (selfClosing) {
-    localAssert(
+    assert(
       _closeTag === null || _closeTag === undefined,
       'Cannot build a self-closing tag with a closeTag source location'
     );
@@ -341,7 +341,7 @@ function buildPath(
     if ('type' in path) {
       return path;
     } else {
-      localAssert(
+      assert(
         path.head.indexOf('.') === -1,
         `builder.path({ head, tail }) should not be called with a head with dots in it`
       );

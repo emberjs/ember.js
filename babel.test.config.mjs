@@ -27,5 +27,5 @@ export default {
     ],
   ],
 
-  plugins: [...baseConfig.plugins, buildDebugMacroPlugin(!isProduction)],
+  plugins: [...baseConfig.plugins, ...buildDebugMacroPlugin(!isProduction)],
 };

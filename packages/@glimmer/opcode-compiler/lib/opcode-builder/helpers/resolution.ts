@@ -15,7 +15,7 @@ import type {
   ResolveOptionalComponentOrHelperOp,
   SexpOpcode,
 } from '@glimmer/interfaces';
-import { debugToString, expect, localAssert, unwrap } from '@glimmer/debug-util';
+import { debugToString, expect, assert, unwrap } from '@glimmer/debug-util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
@@ -84,12 +84,12 @@ export function resolveComponent(
   meta: BlockMetadata,
   [, expr, then]: ResolveComponentOp
 ): void {
-  localAssert(isGetFreeComponent(expr), 'Attempted to resolve a component with incorrect opcode');
+  assert(isGetFreeComponent(expr), 'Attempted to resolve a component with incorrect opcode');
 
   let type = expr[0];
 
   if (DEBUG && expr[0] === SexpOpcodes.GetStrictKeyword) {
-    localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+    assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     throw new Error(
       `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${
@@ -127,10 +127,7 @@ export function resolveComponent(
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (DEBUG && (typeof definition !== 'object' || definition === null)) {
-      localAssert(
-        !meta.isStrictMode,
-        'Strict mode errors should already be handled at compile time'
-      );
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
@@ -152,7 +149,7 @@ export function resolveHelper(
   meta: BlockMetadata,
   [, expr, then]: ResolveHelperOp
 ): void {
-  localAssert(isGetFreeHelper(expr), 'Attempted to resolve a helper with incorrect opcode');
+  assert(isGetFreeHelper(expr), 'Attempted to resolve a helper with incorrect opcode');
 
   let type = expr[0];
 
@@ -177,10 +174,7 @@ export function resolveHelper(
     let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
     if (DEBUG && helper === null) {
-      localAssert(
-        !meta.isStrictMode,
-        'Strict mode errors should already be handled at compile time'
-      );
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a helper, but nothing was found.`
@@ -203,7 +197,7 @@ export function resolveModifier(
   meta: BlockMetadata,
   [, expr, then]: ResolveModifierOp
 ): void {
-  localAssert(isGetFreeModifier(expr), 'Attempted to resolve a modifier with incorrect opcode');
+  assert(isGetFreeModifier(expr), 'Attempted to resolve a modifier with incorrect opcode');
 
   let type = expr[0];
 
@@ -225,10 +219,7 @@ export function resolveModifier(
     let modifier = resolver?.lookupBuiltInModifier?.(name) ?? null;
 
     if (DEBUG && modifier === null) {
-      localAssert(
-        !meta.isStrictMode,
-        'Strict mode errors should already be handled at compile time'
-      );
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
       throw new Error(
         `Attempted to resolve a modifier in a strict mode template, but it was not in scope: ${name}`
@@ -246,10 +237,7 @@ export function resolveModifier(
     let modifier = resolver?.lookupModifier?.(name, owner) ?? null;
 
     if (DEBUG && modifier === null) {
-      localAssert(
-        !meta.isStrictMode,
-        'Strict mode errors should already be handled at compile time'
-      );
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a modifier, but nothing was found.`
@@ -270,7 +258,7 @@ export function resolveComponentOrHelper(
   meta: BlockMetadata,
   [, expr, { ifComponent, ifHelper }]: ResolveComponentOrHelperOp
 ): void {
-  localAssert(
+  assert(
     isGetFreeComponentOrHelper(expr),
     'Attempted to resolve a component or helper with incorrect opcode'
   );
@@ -302,10 +290,7 @@ export function resolveComponentOrHelper(
     let helper = constants.helper(definition as object, null, true);
 
     if (DEBUG && helper === null) {
-      localAssert(
-        !meta.isStrictMode,
-        'Strict mode errors should already be handled at compile time'
-      );
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
       throw new Error(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
@@ -341,10 +326,7 @@ export function resolveComponentOrHelper(
       let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
       if (DEBUG && helper === null) {
-        localAssert(
-          !meta.isStrictMode,
-          'Strict mode errors should already be handled at compile time'
-        );
+        assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
         throw new Error(
           `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
@@ -366,7 +348,7 @@ export function resolveOptionalComponentOrHelper(
   meta: BlockMetadata,
   [, expr, { ifComponent, ifHelper, ifValue }]: ResolveOptionalComponentOrHelperOp
 ): void {
-  localAssert(
+  assert(
     isGetFreeComponentOrHelper(expr),
     'Attempted to resolve an optional component or helper with incorrect opcode'
   );
@@ -453,7 +435,7 @@ function lookupBuiltInHelper(
   let helper = resolver?.lookupBuiltInHelper?.(name) ?? null;
 
   if (DEBUG && helper === null) {
-    localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+    assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     // Keyword helper did not exist, which means that we're attempting to use a
     // value of some kind that is not in scope

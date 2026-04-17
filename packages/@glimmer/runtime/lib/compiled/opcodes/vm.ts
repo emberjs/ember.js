@@ -41,7 +41,7 @@ import {
   CheckRegister,
   CheckSyscallRegister,
 } from '@glimmer/debug';
-import { expect, localAssert, unwrap } from '@glimmer/debug-util';
+import { expect, assert, unwrap } from '@glimmer/debug-util';
 import { toBool } from '@glimmer/global-context';
 import {
   createComputeRef,
@@ -181,7 +181,7 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
   let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
   if (table === null || handle === null) {
-    localAssert(
+    assert(
       handle === null && table === null,
       `Expected both handle and table to be null if either is null`
     );

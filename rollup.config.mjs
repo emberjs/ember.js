@@ -76,7 +76,7 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
-    buildDebugMacroPlugin(debugMacrosMode),
+    ...buildDebugMacroPlugin(debugMacrosMode),
     canaryFeatures(),
   ];
 
