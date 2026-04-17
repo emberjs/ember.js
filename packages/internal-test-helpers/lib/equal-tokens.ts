@@ -21,9 +21,12 @@ function generateTokens(containerOrHTML: string | Element) {
   if (typeof containerOrHTML === 'string') {
     let html = containerOrHTML;
     // In GXT mode, also strip empty comments from expected strings
-    // since GXT doesn't emit them the same way Glimmer VM does
+    // since GXT doesn't emit them the same way Glimmer VM does.
+    // Also collapse whitespace between tags to match stripGxtArtifacts,
+    // which performs the same collapse on the actual DOM innerHTML to
+    // clean up whitespace left by removed placeholder comments.
     if ((globalThis as any).__GXT_MODE__) {
-      html = html.replace(/<!---->/g, '');
+      html = html.replace(/<!---->/g, '').replace(/>\s+</g, '><').trim();
     }
     return {
       tokens: tokenize(html),

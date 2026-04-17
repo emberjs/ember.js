@@ -2355,6 +2355,38 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
             if (rc) {
               rc.update(newValue);
             }
+            // Also re-evaluate sibling getter cells on the same render context.
+            // When a controller's `model` is updated on the renderContext, any
+            // plain JS getter on the controller prototype that reads `this.model`
+            // (e.g. `get derived() { return this.model + 1 }`) has a cell
+            // installed on the renderContext (see root.ts prototype-getter pass),
+            // but that cell is static — it captured the initial value and has
+            // no declared dependency on `model`. Walk the renderContext's own
+            // keys and, for each key whose value comes from a prototype getter,
+            // re-read via that getter and refresh the cell so formulas tracking
+            // the getter key re-evaluate.
+            try {
+              const ownKeys = Object.getOwnPropertyNames(cellTarget);
+              for (const ownKey of ownKeys) {
+                if (ownKey === keyName) continue;
+                if (ownKey.startsWith('_') || ownKey.startsWith('$')) continue;
+                try {
+                  const ownDesc = Object.getOwnPropertyDescriptor(cellTarget, ownKey);
+                  if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
+                  let protoGetter: (() => any) | null = null;
+                  let p = Object.getPrototypeOf(cellTarget);
+                  while (p && p !== Object.prototype) {
+                    const pd = Object.getOwnPropertyDescriptor(p, ownKey);
+                    if (pd && pd.get) { protoGetter = pd.get; break; }
+                    p = Object.getPrototypeOf(p);
+                  }
+                  if (!protoGetter) continue;
+                  const freshVal = protoGetter.call(cellTarget);
+                  const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
+                  if (oc) oc.update(freshVal);
+                } catch { /* skip */ }
+              }
+            } catch { /* ignore */ }
           } catch { /* ignore */ }
         }
       }
@@ -6409,6 +6441,29 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         throw notFoundErr;
         }
       }
+    }
+
+    // Unknown curly-block component: a curly-form invocation like
+    // `{{#no-good}}...{{/no-good}}` is transformed by the AST compiler to
+    // `<curly-c-no-good>...</curly-c-no-good>`. If neither the component
+    // manager nor the helper registry can resolve the underlying name, the
+    // user wrote `{{#name}}` intending an Ember component that does not
+    // exist. Throw a helpful assertion instead of silently rendering a
+    // <curly-c-no-good> custom element.
+    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string' && resolvedTag.startsWith('curly-c-')) {
+      // Check for block marker — curly block invocation carries @__hasBlock__
+      // (or has children). Inline curly `{{name}}` also reaches here when
+      // `name` is neither a component nor a helper, which is equally broken.
+      const unresolvedName = doubleDashToSlash(pascalToKebab(resolvedTag)).slice(8);
+      console.log('[GXT-DEBUG] curly-c fallback throwing for:', resolvedTag, '→', unresolvedName);
+      const notFoundErr = new Error(
+        `Attempted to resolve \`${unresolvedName}\`, which was expected to be a component, but nothing was found.`
+      );
+      const captureErr = g.__captureRenderError;
+      if (typeof captureErr === 'function') {
+        captureErr(notFoundErr);
+      }
+      throw notFoundErr;
     }
 
     // Custom element fallback: dash-containing tags that were not resolved as
