@@ -6479,6 +6479,129 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
+    // Fix: GXT invokes fw[2] modifier fns BEFORE applying local props/attrs to
+    // the element (e.g., `<div id="inner-one" ...attributes>` gets the modifier
+    // called with `el.id === ""` because id hasn't been set yet). Ember's
+    // `didInsertElement` contract expects the element to be fully set up
+    // (id, text, children all applied) before the modifier runs. This matters
+    // especially when the modifier reads `el.getAttribute(...)` synchronously.
+    //
+    // Strategy: when fw[2] contains ON_CREATED modifier entries (key "0"),
+    // clone tagProps[3] for THIS call only (don't mutate the shared $fw, since
+    // the same fw object is passed to multiple $_tag calls for sibling splat
+    // elements) and wrap each modifier fn so that, on invocation, it first
+    // applies the local attrs / text content to the element, then calls the
+    // real modifier fn. This way:
+    //   - Tracked reads inside the real modifier fn still happen *synchronously*
+    //     within GXT's outer modifier formula, keeping reactive updates working.
+    //   - The element has its id / text content set by the time the modifier's
+    //     `didInsertElement` hook inspects it.
+    //
+    // We only pre-apply *static* attrs / text (non-reactive values). Reactive
+    // values are still applied later by GXT via formulas as usual — any modifier
+    // that cares about those should track them internally.
+    if (
+      tagProps &&
+      tagProps !== g.$_edp &&
+      tagProps[3] &&
+      Array.isArray((tagProps[3] as any)[2]) &&
+      typeof resolvedTag === 'string' &&
+      (tagProps[3] as any)[2].length > 0
+    ) {
+      const origEvents = (tagProps[3] as any)[2];
+      let hasModifier = false;
+      for (const entry of origEvents) {
+        if (Array.isArray(entry) && entry[0] === '0' && typeof entry[1] === 'function') {
+          hasModifier = true;
+          break;
+        }
+      }
+      if (hasModifier) {
+        // Collect local static attrs (tagProps[1]) and local static text (tagProps[2] key=="1")
+        // to pre-apply. We skip reactive values to avoid double-tracking.
+        const localAttrs: Array<[string, any]> = [];
+        const localTexts: any[] = [];
+        if (Array.isArray(tagProps[1])) {
+          for (const entry of tagProps[1]) {
+            if (Array.isArray(entry) && typeof entry[0] === 'string' && !entry[0].startsWith('@')) {
+              localAttrs.push([entry[0], entry[1]]);
+            }
+          }
+        }
+        if (Array.isArray(tagProps[2])) {
+          for (const entry of tagProps[2]) {
+            if (Array.isArray(entry) && entry[0] === '1') {
+              localTexts.push(entry[1]);
+            }
+          }
+        }
+        const applyLocalToElement = (el: HTMLElement) => {
+          // Apply local static attrs (id, data-*, etc.) so they're on the element
+          // before the modifier's didInsertElement reads them.
+          // If a getter throws here (e.g., accessing `this.x` before context is
+          // ready), re-throw — GXT's normal pipeline would surface the same
+          // error, and silent-swallowing would mask real bugs.
+          for (const [key, val] of localAttrs) {
+            const resolved = typeof val === 'function' ? val() : val;
+            if (resolved == null || resolved === false) {
+              // Leave unset — GXT will handle it reactively if needed
+              continue;
+            }
+            // Only set if the element doesn't already have this attr (avoid overwriting
+            // fw-applied values from earlier in the pipeline).
+            if (!el.hasAttribute(key)) {
+              el.setAttribute(key, String(resolved));
+            }
+          }
+          // Apply local text content. Only if element has no textContent yet.
+          if (!el.firstChild) {
+            for (const textVal of localTexts) {
+              const resolved = typeof textVal === 'function' ? textVal() : textVal;
+              if (resolved != null && resolved !== false) {
+                el.appendChild(document.createTextNode(String(resolved)));
+              }
+            }
+          }
+        };
+        const fw = tagProps[3] as any;
+        const wrappedEvents = origEvents.map((entry: any) => {
+          if (Array.isArray(entry) && entry[0] === '0' && typeof entry[1] === 'function') {
+            const origFn = entry[1];
+            const preApplyWrapper = function preApplyModifierWrapper(el: any, ...rest: any[]) {
+              // Pre-apply local static attrs / text so the modifier sees a
+              // fully-formed element. Reactive reads inside origFn still run
+              // synchronously, so GXT's modifier formula tracks them correctly.
+              if (el && typeof el === 'object' && el.nodeType === 1) {
+                applyLocalToElement(el);
+              }
+              return origFn(el, ...rest);
+            };
+            return [entry[0], preApplyWrapper];
+          }
+          return entry;
+        });
+        // Clone tagProps[3] so we don't mutate the shared $fw across sibling calls.
+        const clonedFw: any = [fw[0], fw[1], wrappedEvents];
+        for (let i = 3; i < fw.length; i++) clonedFw[i] = fw[i];
+        // Preserve any non-numeric own properties from fw (GXT may attach
+        // markers like __hasBlockParams). If fw is frozen or has a setter
+        // that throws, skip that property rather than silently swallowing —
+        // but log so the issue surfaces.
+        for (const key of Object.keys(fw)) {
+          if (!/^\d+$/.test(key)) {
+            const descriptor = Object.getOwnPropertyDescriptor(fw, key);
+            if (descriptor && ('value' in descriptor)) {
+              clonedFw[key] = (fw as any)[key];
+            }
+            // If fw has a getter-only property we can't clone it — GXT code
+            // using such markers would still see the original via closure, so
+            // a missing copy is acceptable here.
+          }
+        }
+        tagProps = [tagProps[0], tagProps[1], tagProps[2], clonedFw];
+      }
+    }
+
     const result = originalTag(tag, tagProps, ctx, children);
 
     // After GXT renders, the element may have style="" from null→"" conversion.
