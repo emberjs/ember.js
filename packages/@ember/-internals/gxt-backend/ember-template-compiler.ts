@@ -40,8 +40,8 @@ import { compileTemplate } from './compile';
 // component path picks it up, and we mirror the alias into scope / locals
 // so the binding resolves to the original value.
 const GXT_LOWERED_KEYWORDS_MAP: Record<string, string> = {
-  input: '__GxtShadowedInput__',
-  textarea: '__GxtShadowedTextarea__',
+  input: 'GxtShadowedInputBinding',
+  textarea: 'GxtShadowedTextareaBinding',
 };
 
 function collectTemplateBlockParamNames(template: string): Set<string> {
@@ -73,10 +73,19 @@ function rewriteShadowedBlockInvocation(
   }
   open.lastIndex = 0;
   close.lastIndex = 0;
+  // Rewrite to angle-bracket form using a PascalCase alias. GXT compiles
+  // `<Alias>body</Alias>` with the alias as a local binding to
+  // `$_c(alias, args, slots)`, which correctly threads the default block
+  // through to the invoked component's `{{yield}}`. The block-form curly
+  // invocation `{{#NAME}}body{{/NAME}}` otherwise lowers to an HTML
+  // element tag (`<input>body</input>`) that drops its children.
   let out = template.replace(open, (_match, _n: string, extra?: string) => {
-    return `{{#${alias}${extra ?? ''}}}`;
+    // `extra` captures any hash args / positional params after the name.
+    // Angle-bracket syntax uses them verbatim; GXT's hash-pair parser
+    // supports `key=value` and bare `{{value}}` in this context.
+    return `<${alias}${extra ?? ''}>`;
   });
-  out = out.replace(close, `{{/${alias}}}`);
+  out = out.replace(close, `</${alias}>`);
   return { source: out, changed: true };
 }
 
