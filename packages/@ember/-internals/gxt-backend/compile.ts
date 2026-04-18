@@ -1281,6 +1281,8 @@ const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
   'unique-id', 'unique_id', 'helper', 'modifier', 'on', '__mutGet',
   // gxtEntriesOf is injected by our each-in transform; safe in any mode.
   'gxtEntriesOf',
+  // gxtGetOutletState is injected by our -get-dynamic-var transform; safe in any mode.
+  'gxtGetOutletState',
 ]);
 (globalThis as any).__gxtMakeStrictMaybeHelper = function (): any {
   const g = globalThis as any;
@@ -5312,6 +5314,16 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   },
   // hash: Creates an object from named arguments (handled specially)
   hash: (obj: any) => obj,
+  // gxtGetOutletState: Returns the current outlet state from
+  // globalThis.__currentOutletState. Used as the fallback for
+  // `{{-get-dynamic-var "outletState"}}` when no enclosing
+  // `{{#-with-dynamic-vars outletState=...}}` has provided a scoped
+  // override. The Ember template keyword accepts only `outletState` as
+  // a key (compile-time assert rejects others) and lets descendants read
+  // the routing outlet state.
+  'gxtGetOutletState': () => {
+    return (globalThis as any).__currentOutletState;
+  },
   // gxtEntriesOf: Converts an object to [{k, v}, ...] for {{#each-in}}
   // Returns objects with .k and .v properties (not arrays) since GXT
   // doesn't support numeric property access like entry.0.
@@ -9171,6 +9183,309 @@ function transformTripleMustaches(template: string): string {
   return out;
 }
 
+/**
+ * Counter for unique `-with-dynamic-vars` scope variable names. Shared across
+ * all templates in a single process — GXT's `{{#let}}` block generates block
+ * params that are local anyway, so uniqueness is just a convenience to avoid
+ * hash collisions within a single template (nested `-with-dynamic-vars`).
+ */
+let _dynVarCounter = 0;
+
+/**
+ * Find outermost `{{#-with-dynamic-vars ...}}...{{/-with-dynamic-vars}}` block
+ * starting at `startIdx` — used to process innermost blocks first by scanning
+ * the entire template and picking the one with no nested `{{#-with-dynamic-vars`.
+ * Returns { openStart, openEnd, closeStart, closeEnd } or null.
+ */
+function _findInnermostWithDynamicVars(template: string): {
+  openStart: number; openEnd: number;
+  closeStart: number; closeEnd: number;
+} | null {
+  const openMarker = '{{#-with-dynamic-vars';
+  const closeMarker = '{{/-with-dynamic-vars}}';
+  let scan = 0;
+  while (scan < template.length) {
+    const openStart = template.indexOf(openMarker, scan);
+    if (openStart === -1) return null;
+    // Find end of opening tag
+    const openEnd = template.indexOf('}}', openStart + openMarker.length);
+    if (openEnd === -1) return null;
+    // Now find matching close — but must account for nesting
+    let depth = 1;
+    let i = openEnd + 2;
+    while (i < template.length && depth > 0) {
+      const nextOpen = template.indexOf(openMarker, i);
+      const nextClose = template.indexOf(closeMarker, i);
+      if (nextClose === -1) return null;
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth++;
+        const nextOpenEnd = template.indexOf('}}', nextOpen + openMarker.length);
+        if (nextOpenEnd === -1) return null;
+        i = nextOpenEnd + 2;
+      } else {
+        depth--;
+        if (depth === 0) {
+          // Check if this block contains any nested `{{#-with-dynamic-vars`
+          const bodyStart = openEnd + 2;
+          const bodyEnd = nextClose;
+          const body = template.slice(bodyStart, bodyEnd);
+          if (body.indexOf(openMarker) === -1) {
+            return {
+              openStart,
+              openEnd: openEnd + 2,
+              closeStart: nextClose,
+              closeEnd: nextClose + closeMarker.length,
+            };
+          }
+          // Has nested — advance scan past this outer open tag, try again
+          scan = openEnd + 2;
+          break;
+        }
+        i = nextClose + closeMarker.length;
+      }
+    }
+    if (depth > 0) return null;
+  }
+  return null;
+}
+
+/**
+ * Parse the named args out of `{{#-with-dynamic-vars KEY1=EXPR1 KEY2=EXPR2}}`.
+ * Returns a list of { key, expr } pairs in source order.
+ *
+ * The parser is deliberately lax: it treats the inside of the opening tag as
+ * whitespace-separated `KEY=VALUE` pairs where VALUE is either a quoted string,
+ * a parenthesized subexpression, or a bare token. It is NOT a general Ember
+ * template parser — it exists solely to support the stock `-with-dynamic-vars`
+ * block keyword.
+ */
+function _parseDynamicVarsArgs(openTagContent: string): Array<{ key: string; expr: string }> {
+  // Strip the leading `#-with-dynamic-vars` keyword (and any whitespace).
+  const marker = '#-with-dynamic-vars';
+  let rest = openTagContent;
+  const idx = rest.indexOf(marker);
+  if (idx !== -1) rest = rest.slice(idx + marker.length);
+  rest = rest.trim();
+  const out: Array<{ key: string; expr: string }> = [];
+  let p = 0;
+  while (p < rest.length) {
+    // Skip whitespace
+    while (p < rest.length && /\s/.test(rest[p]!)) p++;
+    if (p >= rest.length) break;
+    // Read key (identifier chars)
+    const keyStart = p;
+    while (p < rest.length && /[A-Za-z0-9_\-]/.test(rest[p]!)) p++;
+    const key = rest.slice(keyStart, p);
+    if (!key) break;
+    // Skip whitespace
+    while (p < rest.length && /\s/.test(rest[p]!)) p++;
+    // Expect `=`
+    if (rest[p] !== '=') break;
+    p++;
+    // Skip whitespace
+    while (p < rest.length && /\s/.test(rest[p]!)) p++;
+    // Read value: quoted string, parenthesized subexpr, or bare token
+    const valueStart = p;
+    if (rest[p] === '"' || rest[p] === "'") {
+      const quote = rest[p]!;
+      p++;
+      while (p < rest.length && rest[p] !== quote) {
+        if (rest[p] === '\\' && p + 1 < rest.length) p += 2;
+        else p++;
+      }
+      if (p < rest.length) p++; // consume closing quote
+    } else if (rest[p] === '(') {
+      let depth = 1;
+      p++;
+      while (p < rest.length && depth > 0) {
+        if (rest[p] === '(') depth++;
+        else if (rest[p] === ')') depth--;
+        if (depth === 0) { p++; break; }
+        p++;
+      }
+    } else {
+      // Bare token — read up to next whitespace
+      while (p < rest.length && !/\s/.test(rest[p]!)) p++;
+    }
+    const expr = rest.slice(valueStart, p).trim();
+    if (expr) out.push({ key, expr });
+  }
+  return out;
+}
+
+/**
+ * Replace all `{{-get-dynamic-var "outletState"}}` (mustache form) and
+ * `(-get-dynamic-var "outletState")` (subexpression form) inside `body`
+ * with the bare scope-var identifier `varName`. Accepts either quote flavor.
+ *
+ * This is called for each `{{#-with-dynamic-vars outletState=EXPR}}BODY{{/-with-dynamic-vars}}`
+ * block so that lookups of `outletState` inside the block body resolve to
+ * the value supplied by the `-with-dynamic-vars` keyword rather than the
+ * global `__currentOutletState` fallback.
+ */
+function _rewriteGetOutletInBody(body: string, varName: string): string {
+  // Replace mustache form: {{-get-dynamic-var "outletState"}}
+  let out = body;
+  // Handle both quote styles and any internal whitespace. We use a manual
+  // string scan to avoid regex surprises on exotic spacing.
+  const rewriteOne = (src: string, opening: string, closing: string, toMustache: boolean): string => {
+    let r = '';
+    let i = 0;
+    while (i < src.length) {
+      if (src.startsWith(opening, i)) {
+        // Tentative match: scan forward looking for `-get-dynamic-var` followed
+        // by a quoted "outletState" and the closing marker.
+        let p = i + opening.length;
+        // Skip whitespace
+        while (p < src.length && /\s/.test(src[p]!)) p++;
+        if (src.startsWith('-get-dynamic-var', p)) {
+          p += '-get-dynamic-var'.length;
+          while (p < src.length && /\s/.test(src[p]!)) p++;
+          const q = src[p];
+          if (q === '"' || q === "'") {
+            const keyEnd = src.indexOf(q, p + 1);
+            if (keyEnd !== -1) {
+              const key = src.slice(p + 1, keyEnd);
+              let after = keyEnd + 1;
+              while (after < src.length && /\s/.test(src[after]!)) after++;
+              if (src.startsWith(closing, after) && key === 'outletState') {
+                r += toMustache ? `{{${varName}}}` : varName;
+                i = after + closing.length;
+                continue;
+              }
+            }
+          }
+        }
+      }
+      r += src[i]!;
+      i++;
+    }
+    return r;
+  };
+  out = rewriteOne(out, '{{', '}}', true);
+  out = rewriteOne(out, '(', ')', false);
+  return out;
+}
+
+/**
+ * Transform `{{#-with-dynamic-vars ...}}BODY{{/-with-dynamic-vars}}` blocks and
+ * top-level `{{-get-dynamic-var "KEY"}}` / `(-get-dynamic-var "KEY")` calls.
+ *
+ * Semantics (mirrors Ember stock behavior):
+ *   - Only `outletState` is a valid key. Any other key in either form triggers
+ *     an `Ember.assert` (which expectAssertion tests rely on).
+ *   - `{{#-with-dynamic-vars outletState=EXPR}}BODY{{/-with-dynamic-vars}}`
+ *     binds `EXPR` as the dynamic outletState for the body. We lower it to a
+ *     `{{#let EXPR as |VAR|}}BODY'{{/let}}` where BODY' has all inner
+ *     `{{-get-dynamic-var "outletState"}}` replaced with `{{VAR}}`.
+ *   - Any remaining `{{-get-dynamic-var "outletState"}}` (outside a
+ *     `-with-dynamic-vars` scope) is rewritten to the `gxtGetOutletState`
+ *     built-in helper, which reads from `globalThis.__currentOutletState`
+ *     (the routing outlet state).
+ *
+ * GXT's template compiler does not implement these keywords natively
+ * (`WITH_DYNAMIC_VARS_OP` / `GET_DYNAMIC_VAR_OP` in stock Glimmer), so we
+ * lower them to constructs GXT already understands.
+ */
+function transformDynamicVars(template: string): string {
+  if (!template) return template;
+  // Quick bail if neither keyword appears
+  if (
+    template.indexOf('-with-dynamic-vars') === -1 &&
+    template.indexOf('-get-dynamic-var') === -1
+  ) {
+    return template;
+  }
+
+  let result = template;
+
+  // Phase 1: process innermost {{#-with-dynamic-vars ...}} blocks, outermost last.
+  let safety = 50;
+  while (result.indexOf('{{#-with-dynamic-vars') !== -1 && safety-- > 0) {
+    const loc = _findInnermostWithDynamicVars(result);
+    if (!loc) break;
+    const openTagContent = result.slice(loc.openStart + 2, loc.openEnd - 2);
+    const args = _parseDynamicVarsArgs(openTagContent);
+
+    // Validate keys — only `outletState` is permitted by Ember.
+    for (const { key } of args) {
+      if (key !== 'outletState') {
+        emberAssert(
+          `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
+          false
+        );
+      }
+    }
+
+    // Find outletState expression (default to undefined if missing).
+    const outletArg = args.find(a => a.key === 'outletState');
+    const body = result.slice(loc.openEnd, loc.closeStart);
+    const varName = `__gxt_dvar_outletState_${_dynVarCounter++}__`;
+    const rewrittenBody = _rewriteGetOutletInBody(body, varName);
+    let replacement: string;
+    if (outletArg) {
+      // `{{#let EXPR as |VAR|}}BODY{{/let}}` — GXT accepts this.
+      replacement = `{{#let ${outletArg.expr} as |${varName}|}}${rewrittenBody}{{/let}}`;
+    } else {
+      // No outletState provided — just emit the rewritten body directly.
+      replacement = rewrittenBody;
+    }
+    result = result.slice(0, loc.openStart) + replacement + result.slice(loc.closeEnd);
+  }
+
+  // Phase 2: remaining `{{-get-dynamic-var "KEY"}}` / `(-get-dynamic-var "KEY")`.
+  // These occur outside any `-with-dynamic-vars` block (or in the EXPR passed to
+  // one). For `outletState` we lower to a `gxtGetOutletState` helper call; for
+  // other keys we trigger an Ember.assert so `expectAssertion` tests pass.
+  //
+  // We only validate/rewrite literal-string keys. Dynamic keys (rare) are left
+  // alone — Ember's stock behavior would still assert at runtime if a non-
+  // outletState value is passed, but no GXT test currently exercises that path.
+  const processForm = (src: string, opening: string, closing: string, mustacheReplace: boolean): string => {
+    let r = '';
+    let i = 0;
+    while (i < src.length) {
+      if (src.startsWith(opening, i)) {
+        let p = i + opening.length;
+        while (p < src.length && /\s/.test(src[p]!)) p++;
+        if (src.startsWith('-get-dynamic-var', p)) {
+          const keyStart = p + '-get-dynamic-var'.length;
+          let q = keyStart;
+          while (q < src.length && /\s/.test(src[q]!)) q++;
+          const quote = src[q];
+          if (quote === '"' || quote === "'") {
+            const keyEnd = src.indexOf(quote, q + 1);
+            if (keyEnd !== -1) {
+              const key = src.slice(q + 1, keyEnd);
+              let after = keyEnd + 1;
+              while (after < src.length && /\s/.test(src[after]!)) after++;
+              if (src.startsWith(closing, after)) {
+                if (key !== 'outletState') {
+                  emberAssert(
+                    `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
+                    false
+                  );
+                }
+                // Lower to a built-in helper call.
+                r += mustacheReplace ? `{{(gxtGetOutletState)}}` : `(gxtGetOutletState)`;
+                i = after + closing.length;
+                continue;
+              }
+            }
+          }
+        }
+      }
+      r += src[i]!;
+      i++;
+    }
+    return r;
+  };
+  result = processForm(result, '{{', '}}', true);
+  result = processForm(result, '(', ')', false);
+
+  return result;
+}
+
 function transformEachInBlocks(template: string): string {
   // Quick bail if no each-in
   if (!template.includes('each-in')) return template;
@@ -9811,6 +10126,17 @@ export function precompileTemplate(templateString: string, options?: {
   // these tags in mustaches are skipped by the regex).
   transformedTemplate = transformTableTbody(transformedTemplate);
 
+  // Transform {{#-with-dynamic-vars ...}} and {{-get-dynamic-var ...}} block
+  // keywords. Stock Glimmer compiles these into WITH_DYNAMIC_VARS_OP /
+  // GET_DYNAMIC_VAR_OP, but Ember only permits `outletState` as a key. We
+  // lower `{{#-with-dynamic-vars outletState=EXPR}}BODY{{/-with-dynamic-vars}}`
+  // to `{{#let EXPR as |VAR|}}BODY'{{/let}}` where BODY' has inner
+  // `{{-get-dynamic-var "outletState"}}` rewritten to `{{VAR}}`; remaining
+  // top-level `{{-get-dynamic-var "outletState"}}` reads from the global
+  // routing outletState via the `gxtGetOutletState` built-in helper. Any
+  // non-`outletState` key triggers an Ember.assert at compile time.
+  transformedTemplate = transformDynamicVars(transformedTemplate);
+
   // Transform {{#each-in EXPR as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}
   // into {{#each (gxtEntriesOf EXPR) key="@identity" as |__ei__|}}{{#let __ei__.k __ei__.v as |KEY VALUE|}}BODY{{/let}}{{else}}ELSE{{/each}}
   // gxtEntriesOf returns [{k, v}, ...] for objects, Maps, proxies, custom iterables.
@@ -10051,6 +10377,12 @@ export function precompileTemplate(templateString: string, options?: {
   // This ensures the GXT compiler generates a direct function call instead of $_maybeHelper.
   if (containsWord(transformedTemplate, 'gxtEntriesOf')) {
     scopeBindings.add('gxtEntriesOf');
+  }
+
+  // Add gxtGetOutletState to scope bindings if referenced (from -get-dynamic-var transform).
+  // This ensures the GXT compiler generates a direct function call instead of $_maybeHelper.
+  if (containsWord(transformedTemplate, 'gxtGetOutletState')) {
+    scopeBindings.add('gxtGetOutletState');
   }
 
   // NOTE: Input and Textarea are intentionally NOT added to scopeBindings.
@@ -10487,7 +10819,7 @@ export function precompileTemplate(templateString: string, options?: {
       const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
-        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'modifier', 'gxtEntriesOf', '__mutGet', '__gxtCommentLookup'];
+        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'modifier', 'gxtEntriesOf', 'gxtGetOutletState', '__mutGet', '__gxtCommentLookup'];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
           const jsName = hyphenToUnderscore(name);
