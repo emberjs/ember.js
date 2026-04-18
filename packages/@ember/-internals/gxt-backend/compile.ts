@@ -3118,6 +3118,36 @@ function patchGlobalEachSync() {
   g.$_eachSync = function patchedEachSync(
     items: any, fn: any, key: any, ctx: any, inverseFn?: any
   ) {
+    // Capture the parent Ember component instance at the time $_eachSync is
+    // called from the template body. `ctx` is the GXT render context (which
+    // proxies the Ember component instance) — unwrap via __gxtRawTarget.
+    // This is needed because on UPDATE (items add/remove) GXT invokes `fn`
+    // and `inverseFn` OUTSIDE the render transaction — at which point the
+    // parentViewStack is empty and newly-created item components would get
+    // parentView = null.
+    const capturedParent: any = (ctx && (ctx.__gxtRawTarget || ctx)) || null;
+    const pushPV = g.__gxtPushParentView;
+    const popPV = g.__gxtPopParentView;
+    // Ember View instances have an _isView/isView flag; only push actual
+    // view-like instances. Plain objects / GXT contexts without a view
+    // identity must not be pushed or they would become bogus parents.
+    const isViewInstance = !!(
+      capturedParent &&
+      typeof capturedParent === 'object' &&
+      (capturedParent.isView === true || typeof capturedParent.trigger === 'function' || 'elementId' in capturedParent)
+    );
+    // Only wrap when we have a view instance AND the push/pop helpers exist.
+    // On initial render, the parent is already on the stack (pushed by
+    // renderTemplateWithParentView), so pushing again would merely stack —
+    // `getCurrentParentView` still returns the same top. On update, the
+    // stack is empty and this push makes the parent resolvable.
+    const canWrap = isViewInstance && typeof pushPV === 'function' && typeof popPV === 'function';
+    const withParent = (cb: any): any => {
+      if (!canWrap) return cb();
+      pushPV(capturedParent);
+      try { return cb(); } finally { popPV(); }
+    };
+
     // Wrap the callback fn to ensure `index` is always a cell-like object.
     // GXT's compiled code emits `() => index.value` for block params,
     // but in non-dev GXT builds, $SyncListComponent passes `index` as
@@ -3137,6 +3167,16 @@ function patchGlobalEachSync() {
       }
       return origFn(item, index, ctx0);
     };
+    // Wrap inverseFn so components created in the {{else}} branch (rendered
+    // when items becomes empty on update) see the captured parent — at that
+    // point the parentViewStack is empty and new instances would otherwise
+    // have parentView=null, breaking the lifecycle tests.
+    if (typeof inverseFn === 'function') {
+      const origInverseFn = inverseFn;
+      inverseFn = function wrappedInverseFn(ctx0: any) {
+        return withParent(() => origInverseFn(ctx0));
+      };
+    }
 
     // Wrap items cell/getter to normalize collection values.
     // CRITICAL: $_eachSync expects a Cell/MergedCell (with .id and .value),
