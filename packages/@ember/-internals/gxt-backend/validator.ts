@@ -234,6 +234,19 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
   // Nested caches read during fn() and their revisions at that time
   let _nestedCaches: any[] = [];
   let _nestedCacheRevisions: number[] = [];
+  // If the most recent _evaluate() call threw, store the error so that
+  // subsequent .value reads observed by validation as "still valid" can
+  // re-throw the same error rather than serving the previous successful
+  // _lastValue (which would be a stale, pre-throw value). This mirrors
+  // stock @glimmer/reference semantics where a Reference whose compute
+  // throws does NOT cache lastValue/lastRevision, so the next valueForRef
+  // recomputes (and re-throws). Cleared on the next successful _evaluate.
+  // Required by the debug-render-tree test "emberish curly components"
+  // where {{this.obj.getterWithError}} starts returning, then throws
+  // after `obj.doFail = true` — reifyArgsDebug must observe the throw to
+  // wrap arg2 with ArgumentErrorImpl.
+  let _lastError: unknown = null;
+  let _hasLastError = false;
 
   const cacheObj: any = {
     _isCacheObj: true,
@@ -245,8 +258,20 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       if (!_isValid()) {
         const wasInitialized = _initialized;
         const oldValue = _lastValue;
-        _lastValue = _evaluate();
-        _initialized = true;
+        try {
+          _lastValue = _evaluate();
+          // Successful eval clears any cached error from a prior throw.
+          _lastError = null;
+          _hasLastError = false;
+          _initialized = true;
+        } catch (err) {
+          // Cache the error so that subsequent .value reads (where
+          // validation thinks nothing changed) re-throw rather than
+          // returning a stale pre-throw _lastValue.
+          _lastError = err;
+          _hasLastError = true;
+          throw err;
+        }
         cacheObj._initializedAtLeastOnce = true;
         // A cache is const if its fn() consumed no tags and depended on
         // no nested caches during evaluation.
@@ -257,6 +282,11 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
           _revision++;
           cacheObj._revision = _revision;
         }
+      } else if (_hasLastError) {
+        // Cache validation says we're still in sync with the same consumed
+        // tags as during the throwing eval — the underlying state hasn't
+        // changed, so the same throw must be observable. Re-throw.
+        throw _lastError;
       }
       // Register in parent cache's eval stack so it knows we're a dependency
       if (_cacheEvalStack.length > 0) {
