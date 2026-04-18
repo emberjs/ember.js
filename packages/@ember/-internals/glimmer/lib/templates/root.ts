@@ -862,8 +862,57 @@ export default function createRootTemplate(_owner: any) {
       // which doesn't fire when morph updates in-place). Instead, clear the
       // parent and re-render. The <ember-outlet> elements will fire connectedCallback
       // when inserted into the live DOM and render their nested content.
+      //
+      // DOM IDENTITY PRESERVATION (scoped to anchors with ids): Tests
+      // capture LinkTo DOM element references at visit-time via
+      // `document.getElementById('a-1')` etc. and expect them to stay live
+      // across subsequent route transitions (the Query Params
+      // model-dependent state tests rely on this). A blanket innerHTML=''
+      // orphans those captured references. We narrow the preservation to
+      // `<a id="...">` elements (LinkTos), which are the cases where
+      // references are captured. Classic component wrappers, ember-outlet,
+      // and other elements fall through to normal full re-render so the
+      // pool-managed lifecycle continues to work (view-tree tests rely on
+      // the full re-render path).
+      const oldAnchorMap: Map<string, HTMLAnchorElement> = new Map();
+      if (lastRenderContext !== null) {
+        const anchors = parentElement.querySelectorAll('a[id]');
+        for (const a of Array.from(anchors)) {
+          if (a instanceof HTMLAnchorElement && a.id) {
+            oldAnchorMap.set(a.id, a);
+          }
+        }
+      }
+
       parentElement.innerHTML = '';
       renderOutletState(outletRef);
+
+      if (oldAnchorMap.size > 0) {
+        try {
+          const newAnchors = parentElement.querySelectorAll('a[id]');
+          for (const newA of Array.from(newAnchors)) {
+            if (!(newA instanceof HTMLAnchorElement) || !newA.id) continue;
+            const oldA = oldAnchorMap.get(newA.id);
+            if (!oldA || oldA === newA) continue;
+            // Copy new attrs onto old anchor (removes stale, sets new).
+            const oldAttrs = Array.from(oldA.attributes);
+            for (const a of oldAttrs) {
+              if (!newA.hasAttribute(a.name)) oldA.removeAttribute(a.name);
+            }
+            const newAttrs = Array.from(newA.attributes);
+            for (const a of newAttrs) {
+              if (oldA.getAttribute(a.name) !== a.value) {
+                oldA.setAttribute(a.name, a.value);
+              }
+            }
+            // Move children from new into old.
+            while (oldA.firstChild) oldA.removeChild(oldA.firstChild);
+            while (newA.firstChild) oldA.appendChild(newA.firstChild);
+            // Replace new with old in the parent.
+            newA.parentNode!.replaceChild(oldA, newA);
+          }
+        } catch { /* best-effort preservation */ }
+      }
     };
 
     // Register this root's rerender function, keyed by its outletRef. The
