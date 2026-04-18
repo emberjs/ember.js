@@ -8173,30 +8173,48 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       if (ns) {
         const el = document.createElementNS(ns, resolvedTag);
 
+        // Helper: apply one key/value pair to the SVG/MathML element using the
+        // correct namespace for xlink: / xmlns: keys. Shared between the
+        // "props" (position 0) and "attrs" (position 1) loops because GXT
+        // classifies `xlink:href` as a prop for `<use>` but as an attr for
+        // other tags, so both code paths need identical namespace handling.
+        const applyNsAttr = (key: string, val: any): void => {
+          if (val == null || val === false) return;
+          if (key === '' || key === 'class' || key === 'className') {
+            el.setAttribute('class', String(val));
+            return;
+          }
+          if (key.includes(':')) {
+            if (key.startsWith('xlink')) {
+              el.setAttributeNS(XLINK_NS, key, String(val));
+            } else if (key.startsWith('xmlns')) {
+              el.setAttributeNS(XMLNS_NS, key, String(val));
+            } else {
+              el.setAttributeNS(ns, key, String(val));
+            }
+            return;
+          }
+          el.setAttribute(key, String(val));
+        };
+
         // Apply attributes/props from tagProps
         if (tagProps && tagProps !== g.$_edp) {
-          // Props (position 0): class, id, etc.
+          // Props (position 0): class, id, xlink:href on <use>, etc.
           const props = tagProps[0];
           if (Array.isArray(props)) {
             for (const [key, value] of props) {
-              const propName = key === '' ? 'class' : key;
               const val = typeof value === 'function' ? value() : value;
-              if (val != null && val !== false) {
-                if (propName === 'class' || propName === 'className') {
-                  el.setAttribute('class', String(val));
-                } else {
-                  el.setAttribute(propName, String(val));
-                }
-              }
+              applyNsAttr(key, val);
               // Set up reactive updates for dynamic props
               if (typeof value === 'function') {
                 try {
                   gxtEffect(() => {
                     const v = value();
                     if (v == null || v === false) {
-                      el.removeAttribute(propName === 'className' ? 'class' : propName);
+                      const removeKey = key === '' || key === 'className' ? 'class' : key;
+                      el.removeAttribute(removeKey);
                     } else {
-                      el.setAttribute(propName === 'className' ? 'class' : propName, String(v));
+                      applyNsAttr(key, v);
                     }
                   });
                 } catch { /* ignore effect setup errors */ }
@@ -8204,26 +8222,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
           }
 
-          // Attrs (position 1): viewBox, data-*, etc.
+          // Attrs (position 1): viewBox, data-*, xlink:href, etc.
           const attrs = tagProps[1];
           if (Array.isArray(attrs)) {
             for (const [key, value] of attrs) {
               if (key.startsWith('@')) continue; // skip component args
               const val = typeof value === 'function' ? value() : value;
-              if (val != null && val !== false) {
-                if (key.includes(':')) {
-                  // Namespaced attribute (xlink:href, xmlns:*, etc.)
-                  if (key.startsWith('xlink')) {
-                    el.setAttributeNS(XLINK_NS, key, String(val));
-                  } else if (key.startsWith('xmlns')) {
-                    el.setAttributeNS(XMLNS_NS, key, String(val));
-                  } else {
-                    el.setAttributeNS(ns, key, String(val));
-                  }
-                } else {
-                  el.setAttribute(key, String(val));
-                }
-              }
+              applyNsAttr(key, val);
               // Reactive attrs
               if (typeof value === 'function') {
                 try {
@@ -8232,7 +8237,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                     if (v == null || v === false) {
                       el.removeAttribute(key);
                     } else {
-                      el.setAttribute(key, String(v));
+                      applyNsAttr(key, v);
                     }
                   });
                 } catch { /* ignore */ }
@@ -8240,12 +8245,27 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             }
           }
 
-          // Events (position 2)
-          const events = tagProps[2];
-          if (Array.isArray(events)) {
-            for (const [eventName, handler] of events) {
-              if (typeof handler === 'function') {
-                el.addEventListener(eventName, handler as EventListener);
+          // Position 2: events AND text content. Entries use the key "1" for
+          // text children, "0" for modifier bindings, and event-name keys
+          // (e.g. "click") for inline `onclick={{x}}` handlers. Skip entries
+          // that look like modifier bindings — SVG namespace elements
+          // generally don't support Ember-style modifiers in these tests.
+          const pos2 = tagProps[2];
+          if (Array.isArray(pos2)) {
+            for (const entry of pos2) {
+              if (!Array.isArray(entry) || entry.length < 2) continue;
+              const [keyStr, valOrFn] = entry;
+              if (keyStr === '1') {
+                // Text child
+                const val = typeof valOrFn === 'function' ? valOrFn() : valOrFn;
+                if (val != null && val !== false) {
+                  el.appendChild(document.createTextNode(String(val)));
+                }
+              } else if (keyStr === '0') {
+                // Modifier — skip, not supported in this lightweight path
+              } else if (typeof valOrFn === 'function') {
+                // Inline event handler (onclick etc.)
+                el.addEventListener(String(keyStr), valOrFn as EventListener);
               }
             }
           }
