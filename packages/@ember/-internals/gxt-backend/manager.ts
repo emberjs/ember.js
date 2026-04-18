@@ -84,6 +84,7 @@ function setInstanceCapture(inst: any) {
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { peekMeta } from '@ember/-internals/meta';
+import { _instrumentStart as _gxtInstrumentStart } from '@ember/instrumentation';
 export { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 // Expose PROPERTY_DID_CHANGE on globalThis so ember-gxt-wrappers.ts can install
 // change hooks on helper instances for tracked property reactivity.
@@ -2690,7 +2691,22 @@ function _installTriggerReRenderWrapper() {
       try {
         const cycle = (globalThis as any).__gxtSyncAllInFlightCycle;
         if (cycle) {
-          entry.instance.__gxtSyncAllFiredCycleId = cycle;
+          // Define non-enumerable so user code doing JSON.stringify(component)
+          // or deep-equality against a plain literal does not see this
+          // GXT-internal marker. If already defined as a non-enumerable, skip
+          // redefine (value update via property-write may promote it back to
+          // enumerable on some property-descriptor paths).
+          const prev = Object.getOwnPropertyDescriptor(entry.instance, '__gxtSyncAllFiredCycleId');
+          if (!prev || prev.enumerable !== false || prev.configurable !== false) {
+            Object.defineProperty(entry.instance, '__gxtSyncAllFiredCycleId', {
+              value: cycle,
+              writable: true,
+              enumerable: false,
+              configurable: true,
+            });
+          } else {
+            entry.instance.__gxtSyncAllFiredCycleId = cycle;
+          }
         }
       } catch { /* ignore */ }
     }
@@ -4728,6 +4744,16 @@ function argsForInternalManager(args: any, fw: any) {
 // Component Resolution
 // =============================================================================
 
+// Cache tracking which (owner, name) pairs have already fired
+// `render.getComponentDefinition` instrumentation to mirror classic Ember's
+// per-owner component-definition cache. Classic Ember only fires this event
+// on first resolution — subsequent resolves return a cached definition.
+const _componentDefinitionInstrumentedKeys = new WeakMap<object, Set<string>>();
+
+function _componentDefinitionInstrumentationPayload(name: string) {
+  return { object: `component:${name}` };
+}
+
 /**
  * Resolve a component by name from the Ember registry.
  */
@@ -4736,6 +4762,27 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
 
   // Handle namespaced components: foo::bar::baz-bing -> foo/bar/baz-bing
   const normalizedName = doubleColonToSlash(name);
+
+  // Fire `render.getComponentDefinition` instrumentation once per
+  // (owner, component name). Classic Ember's resolver fires this event the
+  // first time a component definition is looked up; re-renders hit the cache
+  // and do NOT fire again. Tests subscribe to this event and assert count.
+  let _definitionInstrumentFinalizer: (() => void) | null = null;
+  try {
+    let seen = _componentDefinitionInstrumentedKeys.get(owner);
+    if (!seen) {
+      seen = new Set<string>();
+      _componentDefinitionInstrumentedKeys.set(owner, seen);
+    }
+    if (!seen.has(normalizedName)) {
+      seen.add(normalizedName);
+      _definitionInstrumentFinalizer = _gxtInstrumentStart(
+        'render.getComponentDefinition',
+        _componentDefinitionInstrumentationPayload,
+        normalizedName
+      );
+    }
+  } catch { /* ignore — instrumentation is best-effort */ }
 
   // Try component lookup
   let factory = owner.factoryFor(`component:${normalizedName}`);
@@ -4821,9 +4868,15 @@ function resolveComponent(name: string, owner: any): { factory: any; template: a
       }
     }
 
+    if (_definitionInstrumentFinalizer) {
+      try { _definitionInstrumentFinalizer(); } catch { /* ignore */ }
+    }
     return { factory, template, manager };
   }
 
+  if (_definitionInstrumentFinalizer) {
+    try { _definitionInstrumentFinalizer(); } catch { /* ignore */ }
+  }
   return null;
 }
 
