@@ -2945,7 +2945,17 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 // keyed by (object, property). When __gxtTriggerReRender fires, call syncState
 // on the IfCondition directly.
 
-let ifWatchers = new WeakMap<object, Map<string, Set<(notifiedTarget: object) => void>>>();
+// Watcher callbacks may optionally carry a `__getNextBool` reader and a
+// `__ifCondition` ref so the flush phase can evaluate them in a parent-first
+// order (false-flips before true-flips). This avoids inner conditionals
+// rendering content during the same batch where their parent goes false —
+// regression case: shared "child conditional should not render children if
+// parent conditional becomes false".
+type IfWatcherCb = ((notifiedTarget: object) => void) & {
+  __getNextBool?: (notifiedTarget: object) => boolean;
+  __ifCondition?: any;
+};
+let ifWatchers = new WeakMap<object, Map<string, Set<IfWatcherCb>>>();
 
 // Persistent set of classic-component wrapper DOM ids that the user has
 // directly toggled to `false` via a click handler calling set()/toggleProperty.
@@ -2982,12 +2992,81 @@ function _isEmberViewWrapper(par: any): boolean {
   return /\bember-view\b/.test(cls);
 }
 
-function registerIfWatcher(rawTarget: object, key: string, callback: (notifiedTarget: object) => void) {
+function registerIfWatcher(rawTarget: object, key: string, callback: IfWatcherCb) {
   let keyMap = ifWatchers.get(rawTarget);
   if (!keyMap) { keyMap = new Map(); ifWatchers.set(rawTarget, keyMap); }
   let watchers = keyMap.get(key);
   if (!watchers) { watchers = new Set(); keyMap.set(key, watchers); }
   watchers.add(callback);
+}
+
+// Order pending watcher notifications so that watchers becoming FALSE fire
+// BEFORE watchers becoming TRUE. This guarantees a parent {{#if}} that toggles
+// to false in the same batch tears down its branch BEFORE the inner
+// {{#if}} tries to evaluate its true branch — preventing transient component
+// instantiation. Returns the ordered list of (cb, obj) tuples to invoke.
+function _orderIfWatcherFlush(
+  pending: Array<{ obj: object; keyName: string }>
+): Array<{ cb: IfWatcherCb; obj: object }> {
+  const falseFirst: Array<{ cb: IfWatcherCb; obj: object }> = [];
+  const trueLast: Array<{ cb: IfWatcherCb; obj: object }> = [];
+  const unknown: Array<{ cb: IfWatcherCb; obj: object }> = [];
+  // Track (cb, obj) we've already enqueued to avoid duplicates when a single
+  // (obj, key) appears in pending more than once.
+  const seen = new Set<string>();
+  for (const { obj, keyName } of pending) {
+    // Mirror notifyIfWatchers' candidate list: obj + its prototype + render-
+    // context proxies that wrap obj. Notification fires on each — we replicate
+    // here so ordering reflects the same set the original loop would touch.
+    const candidates: object[] = [obj];
+    try {
+      const proto = Object.getPrototypeOf(obj);
+      if (proto && proto !== Object.prototype) candidates.push(proto);
+    } catch { /* ignore */ }
+    const ctxsMap = (globalThis as any).__gxtComponentContexts;
+    if (ctxsMap) {
+      const ctxs = ctxsMap.get(obj);
+      if (ctxs) {
+        for (const ctx of ctxs) {
+          const raw = ctx?.__gxtRawTarget || ctx;
+          if (!candidates.includes(raw)) candidates.push(raw);
+        }
+      }
+    }
+    for (const target of candidates) {
+      const keyMap = ifWatchers.get(target);
+      if (!keyMap) continue;
+      const watchers = keyMap.get(keyName);
+      if (!watchers) continue;
+      for (const cb of watchers) {
+        // Stable id per (cb, obj): prefer ifCondition pointer + obj identity.
+        const ifc = cb.__ifCondition;
+        // Fallback id when ifCondition is missing — use the cb itself.
+        const idKey = ifc || cb;
+        // Keyed by both the watcher target and the notifying obj so the same
+        // watcher may fire once per distinct obj it cares about.
+        const slot = (idKey as any).__gxtFlushIdSlot ||
+          ((idKey as any).__gxtFlushIdSlot = new WeakMap<object, string>());
+        let id = slot.get(obj);
+        if (!id) {
+          id = `${(target as any) === obj ? 'd' : 'p'}-${Math.random()}`;
+          slot.set(obj, id);
+        }
+        if (seen.has(id)) continue;
+        seen.add(id);
+        let nextBool: boolean | null = null;
+        if (typeof cb.__getNextBool === 'function') {
+          try { nextBool = cb.__getNextBool(obj); } catch { nextBool = null; }
+        }
+        if (nextBool === false) falseFirst.push({ cb, obj });
+        else if (nextBool === true) trueLast.push({ cb, obj });
+        else unknown.push({ cb, obj });
+      }
+    }
+  }
+  // unknown placed between false-first and true-last so previously-untracked
+  // watchers retain their relative ordering vs. the explicit true flips.
+  return [...falseFirst, ...unknown, ...trueLast];
 }
 
 function notifyIfWatchers(obj: object, key: string) {
@@ -3046,12 +3125,53 @@ function patchGlobalIf() {
     // to fire at block-teardown time, not only on top-level render teardown.
     const trueBranchHelpers = new Set<any>();
     const falseBranchHelpers = new Set<any>();
+    // Build a parent-IfCondition link when an outer {{#if}} renders its true
+    // branch. Any nested $_if invocation inside that branch evaluation registers
+    // the new (inner) IfCondition as a child here. When the outer collapses
+    // (syncState(false)), we mark every recorded child with the current sync-
+    // cycle id so its own syncState(true) becomes a no-op for that cycle.
+    const childIfConditions = new Set<any>();
+    // We need a stable handle for the parent-If stack that wrapBranch can push
+    // even when called from `origIf`'s constructor (synchronously, BEFORE the
+    // outer `const ifCondition = origIf(...)` assignment completes). Use a
+    // mutable holder object whose identity is stable; fill in `.ifCondition`
+    // after origIf returns so descendants pushed during construction can still
+    // reach back to us once we exist.
+    const ifConditionRef: any = { ifCondition: null, childIfConditions };
     const wrapBranch = (fn: any, scope: Set<any>) => {
       if (typeof fn !== 'function') return fn;
       return function wrappedBranch(this: any, ...branchArgs: any[]) {
         const g2 = globalThis as any;
+        // Suppress branch evaluation when our parent {{#if}} collapsed earlier
+        // in the same sync cycle. GXT calls the bound original syncState from
+        // its tag-listener loop, which then calls renderState → trueBranch
+        // (= this wrappedBranch). Returning an empty render result here keeps
+        // foo-bar et al. from instantiating into a dead subtree (regression:
+        // "child conditional should not render children if parent conditional
+        // becomes false").
+        try {
+          const ifc = ifConditionRef.ifCondition;
+          const myDeadCycle = ifc && (ifc as any).__gxtParentDeadCycle;
+          const cycleId = g2.__gxtSyncCycleId || 0;
+          // Suppress only the TRUE branch (the only one that can instantiate
+          // child components in the regression scenario). The FALSE branch is
+          // typically empty content; suppressing it could leave stale DOM.
+          if (myDeadCycle === cycleId && fn === trueBranch) {
+            // Mirror what GXT's renderState assigns to prevComponent for an
+            // empty fragment: an empty array is acceptable here because the
+            // node-insertion downstream just appends the children of [].
+            return [];
+          }
+        } catch { /* ignore — fall through to normal eval */ }
         const prev = g2.__gxtCurrentHelperScope;
         g2.__gxtCurrentHelperScope = scope;
+        // Push this IfCondition (via a stable ref holder) onto the parent-If
+        // stack so nested $_if invocations during fn() can record us as their
+        // parent. Using a ref holder is required because origIf may invoke
+        // wrapBranch SYNCHRONOUSLY from its constructor (before the outer
+        // `const ifCondition` is assigned).
+        const prevParentIf = g2.__gxtCurrentParentIfRef;
+        g2.__gxtCurrentParentIfRef = ifConditionRef;
         try {
           const result = fn.apply(this, branchArgs);
           // If the branch returns a function (common pattern:
@@ -3064,10 +3184,13 @@ function patchGlobalIf() {
               const g3 = globalThis as any;
               const prev2 = g3.__gxtCurrentHelperScope;
               g3.__gxtCurrentHelperScope = scope;
+              const prev3 = g3.__gxtCurrentParentIfRef;
+              g3.__gxtCurrentParentIfRef = ifConditionRef;
               try {
                 return inner.apply(this, innerArgs);
               } finally {
                 g3.__gxtCurrentHelperScope = prev2;
+                g3.__gxtCurrentParentIfRef = prev3;
               }
             };
             return wrappedInner;
@@ -3075,6 +3198,7 @@ function patchGlobalIf() {
           return result;
         } finally {
           g2.__gxtCurrentHelperScope = prev;
+          g2.__gxtCurrentParentIfRef = prevParentIf;
         }
       };
     };
@@ -3092,6 +3216,27 @@ function patchGlobalIf() {
     }
 
     const ifCondition = origIf(normalizedCondition, wrappedTrue, wrappedFalse, ctx);
+
+    if (ifCondition) {
+      // Attach the child-conditional registry to this IfCondition AND to the
+      // stable ref holder. The ref holder may already have been pushed onto
+      // the parent-If stack by a wrapBranch invocation BEFORE we were assigned
+      // — children captured during that synchronous eval are still listed in
+      // childIfConditions (the same Set object), so they map to us correctly.
+      (ifCondition as any).__gxtChildIfConditions = childIfConditions;
+      ifConditionRef.ifCondition = ifCondition;
+      // If this $_if invocation happened inside a parent {{#if}}'s true branch
+      // evaluation, register us as a child of that parent so the parent can
+      // suppress us when it collapses in the same sync cycle.
+      const _gp = globalThis as any;
+      const parentIfRef = _gp.__gxtCurrentParentIfRef;
+      if (parentIfRef && parentIfRef !== ifConditionRef) {
+        const parentChildren = parentIfRef.childIfConditions;
+        if (parentChildren && typeof parentChildren.add === 'function') {
+          parentChildren.add(ifCondition);
+        }
+      }
+    }
 
     // Install branch-swap helper-destroy hook unconditionally. This fires
     // destroy + willDestroy on any class-based helper instance created during
@@ -3355,6 +3500,47 @@ function patchGlobalIf() {
           }
         };
         ifCondition.syncState = function(v: any) {
+          // Suppress mid-sync TRUE renders for an IfCondition whose parent
+          // {{#if}} collapsed earlier in the same sync cycle. Without this,
+          // GXT's native `dt(condition, syncState)` listener would fire from
+          // `gxtSyncDom` and execute the trueBranch — creating transient
+          // components that the parent already collapsed (regression: "child
+          // conditional should not render children if parent conditional
+          // becomes false").
+          try {
+            const _g = globalThis as any;
+            const cycleId = _g.__gxtSyncCycleId || 0;
+            const nextBoolEarly = emberToBool(v);
+            const myDeadCycle = (ifCondition as any).__gxtParentDeadCycle;
+            // Hard suppression: parent {{#if}} already collapsed this branch
+            // earlier in the same sync cycle (set in the parent's syncState
+            // wrapper when it received `false`).
+            if (nextBoolEarly === true && myDeadCycle === cycleId) {
+              return undefined;
+            }
+            // If we're transitioning to FALSE, mark every recorded child
+            // IfCondition as dead-this-cycle so a downstream gxtSyncDom pass
+            // (which fires GXT's native syncState listeners on each dirty
+            // condition cell, INCLUDING our children) becomes a no-op for them.
+            if (nextBoolEarly === false) {
+              const children = (ifCondition as any).__gxtChildIfConditions;
+              if (children && typeof children.forEach === 'function') {
+                children.forEach((child: any) => {
+                  try { child.__gxtParentDeadCycle = cycleId; } catch { /* ignore */ }
+                  // Recurse: a grandchild's parent is this child, but if this
+                  // child were already collapsed, GXT may still hold its
+                  // syncState listener on a dirty cond cell. Mark grandchildren
+                  // too so their TRUE renders are suppressed.
+                  const grand = child && child.__gxtChildIfConditions;
+                  if (grand && typeof grand.forEach === 'function') {
+                    grand.forEach((g2: any) => {
+                      try { g2.__gxtParentDeadCycle = cycleId; } catch { /* ignore */ }
+                    });
+                  }
+                });
+              }
+            }
+          } catch { /* ignore — fall through to legacy path */ }
           repairPlaceholder();
           // On branch transition, destroy helpers captured during the *outgoing*
           // branch's evaluation so their destroy/willDestroy hooks fire.
@@ -3388,7 +3574,7 @@ function patchGlobalIf() {
             }
           }
         };
-        registerIfWatcher(watchTarget, watchKey, (notifiedTarget: object) => {
+        const _ifWatchCb: IfWatcherCb = (notifiedTarget: object) => {
           try {
             const currentValue = conditionOrCell();
             const boolVal = emberToBool(currentValue);
@@ -3431,7 +3617,24 @@ function patchGlobalIf() {
 
             ifCondition.syncState(boolVal);
           } catch (e) { console.warn('[GXT] syncState error:', e); }
-        });
+        };
+        // Provide the flush phase with metadata so it can sort: parent
+        // {{#if}} flips going FALSE fire before child {{#if}} flips going
+        // TRUE. Reading the next bool prefers the notifiedTarget's own value
+        // (live source of truth) and falls back to the captured condition.
+        _ifWatchCb.__ifCondition = ifCondition;
+        _ifWatchCb.__getNextBool = (notifiedTarget: object) => {
+          try {
+            if (notifiedTarget && watchKey && notifiedTarget !== watchTarget) {
+              const v2 = (notifiedTarget as any)[watchKey];
+              return !!emberToBool(v2);
+            }
+          } catch { /* ignore */ }
+          try {
+            return !!emberToBool(conditionOrCell());
+          } catch { return false; }
+        };
+        registerIfWatcher(watchTarget, watchKey, _ifWatchCb);
       }
     }
 
@@ -4173,6 +4376,33 @@ try {
     // Start a new render pass to prevent double-firing of lifecycle hooks
     const newPass = (globalThis as any).__gxtNewRenderPass;
     if (typeof newPass === 'function') newPass();
+    // PHASE 0: Pre-flush FALSE-flip if-watchers BEFORE gxtSyncDom. This ensures
+    // any outer {{#if}} that toggles to false in the batch tears down its branch
+    // FIRST, so when GXT's native sync evaluates inner conditional formulas, the
+    // inner branches inside the dead subtree are no longer reachable. Without
+    // this pre-flush, gxtSyncDom would observe inner cond=true and synchronously
+    // invoke its trueBranch, instantiating transient components that the outer
+    // {{#if}} would only later have suppressed.
+    if (_pendingIfWatcherNotifications.length > 0) {
+      try {
+        const pending0 = _pendingIfWatcherNotifications.slice();
+        const ordered0 = _orderIfWatcherFlush(pending0);
+        const fired0 = new Set<IfWatcherCb>();
+        for (const { cb, obj } of ordered0) {
+          if (fired0.has(cb)) continue;
+          if (typeof cb.__getNextBool !== 'function') continue;
+          let next: boolean | null = null;
+          try { next = cb.__getNextBool(obj); } catch { /* ignore */ }
+          if (next !== false) continue;
+          fired0.add(cb);
+          try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher pre-flush error:', e); }
+        }
+        // Mark fired cbs so the regular Phase 1a flush below doesn't re-fire them.
+        (cb_set => {
+          (globalThis as any).__gxtPreFlushFiredFalse = cb_set;
+        })(fired0);
+      } catch { /* ignore */ }
+    }
     // Only run gxtSyncDom when a real property change triggered the sync.
     // Cell creation during initial render also sets __gxtPendingSync, but those
     // cells may have stale values (e.g., each-formula re-evaluates with [] before
@@ -4212,10 +4442,99 @@ try {
     // during __gxtTriggerReRender calls and are flushed HERE (after all gxtSyncDom
     // calls) so batched property changes are applied atomically — IfConditions see
     // the final state of all conditions, not intermediate states.
+    //
+    // Watchers are processed in PARENT-FIRST order: those whose IfCondition is
+    // about to flip to FALSE fire before those flipping to TRUE. This way, an
+    // outer {{#if}} toggling false in the same batch tears down its branch
+    // BEFORE an inner {{#if}} would otherwise render new content (and create
+    // transient components). Additionally, after all FALSE-flips have fired,
+    // any TRUE-flip whose placeholder has been disconnected from the live DOM
+    // (because a parent {{#if}} just tore it down) is SUPPRESSED — calling
+    // syncState(true) at that point would still execute the true-branch and
+    // instantiate components into a dead subtree.
     if (_pendingIfWatcherNotifications.length > 0) {
       const pending = _pendingIfWatcherNotifications.splice(0);
+      const ordered = _orderIfWatcherFlush(pending);
+      const directlyFiredCbs = new Set<IfWatcherCb>();
+      // Pull in cbs already fired in PHASE 0 (pre-flush FALSE-flip) so we don't
+      // re-invoke them here. Falls through cleanly when there were none.
+      const preFired = (globalThis as any).__gxtPreFlushFiredFalse as Set<IfWatcherCb> | undefined;
+      if (preFired && preFired.size > 0) {
+        for (const cb of preFired) directlyFiredCbs.add(cb);
+        (globalThis as any).__gxtPreFlushFiredFalse = undefined;
+      }
+      // Phase A: fire all FALSE-flips (outer parents collapse first).
+      for (const { cb, obj } of ordered) {
+        if (directlyFiredCbs.has(cb)) continue;
+        if (typeof cb.__getNextBool !== 'function') continue;
+        let next: boolean | null = null;
+        try { next = cb.__getNextBool(obj); } catch { /* ignore */ }
+        if (next !== false) continue;
+        directlyFiredCbs.add(cb);
+        try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
+      }
+      // Phase B: fire all TRUE-flips that still have a live placeholder. Skip
+      // any TRUE-flip whose IfCondition placeholder was disconnected during
+      // Phase A — that means a parent {{#if}} just unrendered its subtree and
+      // we must NOT let the inner branch instantiate transient components.
+      for (const { cb, obj } of ordered) {
+        if (directlyFiredCbs.has(cb)) continue;
+        if (typeof cb.__getNextBool !== 'function') continue;
+        let next: boolean | null = null;
+        try { next = cb.__getNextBool(obj); } catch { /* ignore */ }
+        if (next !== true) continue;
+        directlyFiredCbs.add(cb);
+        const ifc = cb.__ifCondition;
+        const ph = ifc && ifc.placeholder;
+        // If the placeholder exists but was just disconnected by a parent
+        // teardown, skip the syncState call — `repairPlaceholder` would
+        // otherwise reattach it to the body and the true-branch would render
+        // into a dead subtree, instantiating components the test never sees.
+        if (ph && (ph as any).nodeType && !(ph as any).isConnected) {
+          continue;
+        }
+        try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
+      }
+      // Phase C: fire all watchers that have no flip metadata (unknown/legacy)
+      // plus any with metadata whose nextBool came back null. Use the original
+      // notifyIfWatchers fan-out so behavior matches the historical path for
+      // these untracked watchers.
+      for (const { cb, obj } of ordered) {
+        if (directlyFiredCbs.has(cb)) continue;
+        directlyFiredCbs.add(cb);
+        try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
+      }
+      // Phase D: fan out the remaining (legacy) watchers via the proto/ctx
+      // candidate walk so any callbacks not represented in `ordered` (e.g.
+      // late-registered ones) still fire.
       for (const { obj, keyName } of pending) {
-        try { notifyIfWatchers(obj, keyName); } catch { /* ignore */ }
+        try {
+          const candidates: object[] = [obj];
+          try {
+            const proto = Object.getPrototypeOf(obj);
+            if (proto && proto !== Object.prototype) candidates.push(proto);
+          } catch { /* ignore */ }
+          const ctxsMap = (globalThis as any).__gxtComponentContexts;
+          if (ctxsMap) {
+            const ctxs = ctxsMap.get(obj);
+            if (ctxs) {
+              for (const ctx of ctxs) {
+                const raw = ctx?.__gxtRawTarget || ctx;
+                if (!candidates.includes(raw)) candidates.push(raw);
+              }
+            }
+          }
+          for (const target of candidates) {
+            const keyMap = ifWatchers.get(target);
+            if (!keyMap) continue;
+            const watchers = keyMap.get(keyName);
+            if (!watchers) continue;
+            for (const cb of watchers) {
+              if (directlyFiredCbs.has(cb)) continue;
+              try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
+            }
+          }
+        } catch { /* ignore */ }
       }
     }
     // PHASE 1b: After gxtSyncDom handled cell-based updates, mark all GXT
