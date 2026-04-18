@@ -405,6 +405,29 @@ export function getValue<T>(cache: { value: T }): T {
 // tracked getter again. Our version uses internal WeakMap storage instead.
 const trackedDataStorage = new WeakMap<object, Map<string | symbol, ReturnType<typeof createCell>>>();
 
+// Per-cell dependency tags for trackedData. The getter registers this tag
+// with the active track() frame via consumeTag() so `track(() => getter(foo))`
+// captures the dependency properly; the setter marks this tag dirty so
+// subsequent `validateTag(trackTag, snapshot)` returns false on mutation.
+// Lazily created on first getter/setter call per (obj,key). Using an object
+// tag rather than the storage cell so consumeTag can push it into the
+// tracking set (cells pass through the `value/dirty` short-circuit at the
+// top of consumeTag and don't register with the track-frame stack).
+const trackedDataTagStorage = new WeakMap<object, Map<string | symbol, any>>();
+function _trackedDataTagFor(obj: object, key: string | symbol): any {
+  let map = trackedDataTagStorage.get(obj);
+  if (!map) {
+    map = new Map();
+    trackedDataTagStorage.set(obj, map);
+  }
+  let tag = map.get(key);
+  if (!tag) {
+    tag = { _isTrackedDataTag: true };
+    map.set(key, tag);
+  }
+  return tag;
+}
+
 // Backtracking detection: track which cells have been read in the current
 // computation frame. If a cell is read and then written in the same frame,
 // that's a backtracking re-render which Ember disallows.
@@ -470,6 +493,13 @@ export function trackedData<T, K extends string | symbol>(
         );
       }
 
+      // Register this cell's tag with the active track() / createCache frame
+      // so `track(() => getter(obj))` captures the dependency. Without this,
+      // an empty frame would return CONSTANT_TAG and `validateTag(tag, snap)`
+      // would never invalidate after a setter call — regressing
+      // `@glimmer/validator: tracking :: it tracks changes to the storage cell`.
+      consumeTag(_trackedDataTagFor(obj, key));
+
       return cellForKey.value as T;
     },
     setter(obj: object, value: T): void {
@@ -533,6 +563,9 @@ export function trackedData<T, K extends string | symbol>(
       // test-only path that uses trackedData() directly.
       globalRevisionCounter++;
       try { currentTagCell.value = globalRevisionCounter; } catch { /* noop */ }
+      // Mark this cell's tag dirty so any track() frame that consumed it
+      // via the getter will see `validateTag(tag, snapshot) === false`.
+      markTagDirty(_trackedDataTagFor(obj, key));
     }
   };
 }

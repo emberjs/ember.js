@@ -11,17 +11,19 @@ declare const QUnit: any;
 QUnit.module('Compat: validator.ts', function () {
   // ------------------------------------------------------------------ track()
   QUnit.module('track()', function () {
-    QUnit.test('returns a tag object with _isTrackTag', async function (assert: any) {
-      const { track } = await import('../../../@ember/-internals/gxt-backend/validator');
+    QUnit.test('returns CONSTANT_TAG when frame consumes no tags', async function (assert: any) {
+      const { track, CONSTANT_TAG } = await import('../../../@ember/-internals/gxt-backend/validator');
       const tag = track(() => {});
-      assert.ok(tag, 'track returns a value');
-      assert.strictEqual(tag._isTrackTag, true, 'tag has _isTrackTag marker');
+      // Empty track frame returns CONSTANT_TAG (matches classic
+      // @glimmer/validator semantics): a frame that consumed no tracked
+      // state is by definition constant, and must not invalidate on any
+      // unrelated mutation.
+      assert.strictEqual(tag, CONSTANT_TAG, 'empty track returns CONSTANT_TAG');
     });
 
-    QUnit.test('tag has a numeric value property', async function (assert: any) {
-      const { track } = await import('../../../@ember/-internals/gxt-backend/validator');
-      const tag = track(() => {});
-      assert.strictEqual(typeof tag.value, 'number', 'tag.value is a number');
+    QUnit.test('CONSTANT_TAG is a numeric marker', async function (assert: any) {
+      const { CONSTANT_TAG } = await import('../../../@ember/-internals/gxt-backend/validator');
+      assert.strictEqual(typeof CONSTANT_TAG, 'number', 'CONSTANT_TAG is a number');
     });
 
     QUnit.test('captures consumed tags', async function (assert: any) {
