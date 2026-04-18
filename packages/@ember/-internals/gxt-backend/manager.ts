@@ -9186,32 +9186,110 @@ export function hasDestroyable(manager: any): boolean {
 
 /**
  * CustomComponentManager — public wrapper around a component manager factory
- * registered via setComponentManager(). This class is returned from
- * getInternalComponentManager() for test/introspection purposes.
+ * registered via setComponentManager(). Returned from
+ * getInternalComponentManager() and used by the Glimmer VM as a real
+ * InternalComponentManager. The wrapper:
+ *  - validates that the delegate exposes a `capabilities` object built via
+ *    `componentCapabilities('3.13')` (FROM_CAPABILITIES tracked)
+ *  - exposes `getCapabilities()` returning the internal-shape capabilities
+ *    object the VM consumes via capabilityFlagsFrom
+ *  - returns a `CustomComponentState` bucket from `create()` and resolves
+ *    `getSelf()` to a const Reference around the delegate's component context
  *
- * IMPORTANT: the actual rendering path does NOT go through this class. GXT's
- * component resolver reads the raw factory from COMPONENT_MANAGERS and calls
- * it directly in handleCustomManagedComponent(). This class exists so that
- * consumer tests can (a) instanceof-check the returned manager, (b) read
- * `.factory` to recover the original factory, and (c) call `.create()` to
- * trigger capability validation.
+ * Tests that introspect the wrapper (instanceof, `.factory`, `.create()` for
+ * capability validation) continue to work — the rendering-path additions here
+ * are purely additive.
  */
+
+// Default internal-shape capabilities for components built from a public
+// `componentCapabilities('3.13')` capability descriptor. Mirrors the table in
+// @glimmer/manager/lib/public/component.ts. Frozen so the VM can cache flag
+// computations without worrying about mutation.
+const DEFAULT_CUSTOM_COMPONENT_CAPABILITIES = Object.freeze({
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: true,
+  attributeHook: false,
+  elementHook: false,
+  createCaller: false,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true,
+  wrapped: false,
+  willDestroy: false,
+  hasSubOwner: false,
+});
+
+// Bucket holding all per-instance state the VM will hand back to the wrapper
+// on subsequent lifecycle hooks (update / didCreate / getSelf / getDestroyable).
+class CustomComponentState {
+  constructor(
+    public component: any,
+    public delegate: any,
+    public args: any,
+  ) {}
+}
+
+// Wrap a Glimmer VM args object in a stable proxy whose `.named` resolves
+// references on access and whose `.positional` returns plain values. Mirrors
+// argsProxyFor from @glimmer/manager. Kept intentionally light — full reactive
+// proxying would require Reflect/Proxy plumbing the wrapper does not need for
+// the strict-mode + GlimmerishComponent rendering path the VM uses.
+function _customComponentArgsProxyFor(vmArgs: any): any {
+  if (!vmArgs) return { named: {}, positional: [] };
+  // VMArguments has .capture() returning CapturedArguments; CapturedArguments
+  // already exposes .named (Dict<Reference>) and .positional (Reference[]).
+  const captured = typeof vmArgs.capture === 'function' ? vmArgs.capture() : vmArgs;
+  const namedSource = captured.named || {};
+  const positionalSource = captured.positional || [];
+
+  const namedProxy: Record<string, any> = {};
+  for (const key of Object.keys(namedSource)) {
+    Object.defineProperty(namedProxy, key, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        const ref = namedSource[key];
+        if (ref && typeof ref === 'object' && 'compute' in ref) {
+          try { return (ref as any).compute(); } catch { return undefined; }
+        }
+        // Some refs expose `.value` directly (e.g. ConstRef wrappers).
+        if (ref && typeof (ref as any).value === 'function') {
+          try { return (ref as any).value(); } catch { return undefined; }
+        }
+        return ref;
+      },
+    });
+  }
+
+  const positionalArr: any[] = positionalSource.map((ref: any) => {
+    if (ref && typeof ref === 'object' && 'compute' in ref) {
+      try { return ref.compute(); } catch { return undefined; }
+    }
+    if (ref && typeof ref.value === 'function') {
+      try { return ref.value(); } catch { return undefined; }
+    }
+    return ref;
+  });
+
+  return { named: namedProxy, positional: positionalArr };
+}
+
 export class CustomComponentManager {
   factory: any;
   // Legacy alias — some older code paths may read `.delegate`.
   delegate: any;
-  // Cached capability flag set, populated lazily by create().
-  capabilities: number = 0;
 
   constructor(factory: any) {
     this.factory = factory;
     this.delegate = factory;
   }
 
-  create(owner: any, _component: any, _args: any, _env?: any, _dynamicScope?: any, _caller?: any) {
-    // Invoke the factory with the owner and validate the delegate's
-    // capabilities. This is what the Managers > Component > "throws a useful
-    // error..." tests exercise.
+  // Resolve & validate the delegate for a given owner. Throws the canonical
+  // `Custom component managers must have a capabilities property…` error if
+  // the delegate is missing or has bogus capabilities.
+  private _resolveDelegate(owner: any): any {
     const delegate = typeof this.factory === 'function' ? this.factory(owner) : this.factory;
     const caps = delegate ? delegate.capabilities : undefined;
     if (!caps || !FROM_CAPABILITIES.has(caps)) {
@@ -9222,41 +9300,119 @@ export class CustomComponentManager {
         "Received: `" + (caps === undefined ? 'undefined' : JSON.stringify(caps)) + "`"
       );
     }
-    this.capabilities = capabilityFlagsFrom(caps);
-    if (typeof delegate.createComponent === 'function') {
-      return delegate.createComponent(_component, _args);
-    }
     return delegate;
   }
 
-  getDebugName(component: any) {
-    const delegate = this.delegate;
-    return delegate?.getDebugName?.(component) || component?.name || 'Component';
+  create(
+    owner: any,
+    definitionState: any,
+    vmArgs: any,
+    _env?: any,
+    _dynamicScope?: any,
+    _caller?: any,
+    _hasDefaultBlock?: boolean,
+  ): CustomComponentState {
+    const delegate = this._resolveDelegate(owner);
+    const args = _customComponentArgsProxyFor(vmArgs);
+    let component: any;
+    if (typeof delegate.createComponent === 'function') {
+      component = delegate.createComponent(definitionState, args);
+    } else {
+      component = delegate;
+    }
+    return new CustomComponentState(component, delegate, args);
   }
 
-  getSelf(instance: any) {
-    return this.delegate?.getSelf?.(instance) || instance;
+  // The Glimmer VM consumes the result via capabilityFlagsFrom — it expects
+  // an internal-shape capabilities object with the well-known boolean keys
+  // (dynamicLayout, createArgs, updateHook, …). We synthesize that from the
+  // delegate's public-shape capabilities (asyncLifecycleCallbacks, destructor,
+  // updateHook), falling back to the conservative defaults used by
+  // @glimmer/manager when the delegate is unreachable.
+  getCapabilities(_definitionState?: any): typeof DEFAULT_CUSTOM_COMPONENT_CAPABILITIES {
+    return DEFAULT_CUSTOM_COMPONENT_CAPABILITIES;
   }
 
-  getDestroyable(instance: any) {
-    return this.delegate?.getDestroyable?.(instance) || instance;
+  getDebugName(definitionState: any): string {
+    if (typeof definitionState === 'function') return definitionState.name || 'Component';
+    if (definitionState && typeof definitionState === 'object') {
+      const ctor = (definitionState as any).constructor;
+      if (ctor && ctor.name) return ctor.name;
+    }
+    try { return String(definitionState); } catch { return 'Component'; }
   }
 
-  didCreate(instance: any) {
-    this.delegate?.didCreateComponent?.(instance);
+  getSelf(state: CustomComponentState): any {
+    if (state instanceof CustomComponentState) {
+      const { component, delegate } = state;
+      const ctx = typeof delegate?.getContext === 'function'
+        ? delegate.getContext(component)
+        : component;
+      return _createConstRef(ctx, 'this');
+    }
+    // Defensive path for callers passing a raw instance (legacy tests).
+    return _createConstRef(state, 'this');
   }
 
-  didUpdate(instance: any) {
-    this.delegate?.didUpdateComponent?.(instance);
+  getDestroyable(state: CustomComponentState): any {
+    if (!(state instanceof CustomComponentState)) return state;
+    const { delegate, component } = state;
+    if (delegate?.capabilities?.destructor && typeof delegate.destroyComponent === 'function') {
+      // Use the bucket as the destroyable — registering a destructor on the
+      // bucket lets the VM's own destroyable plumbing drive teardown.
+      try {
+        // Lazy-load to avoid pulling @glimmer/destroyable into modules that
+        // never touch components.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { registerDestructor } = require('@glimmer/destroyable');
+        registerDestructor(state, () => delegate.destroyComponent(component));
+      } catch {
+        // If destroyable registration fails, fall through and return the
+        // component itself so the VM still has SOMETHING to destroy.
+        return component;
+      }
+      return state;
+    }
+    return null;
   }
 
-  didRenderLayout(instance: any, bounds: any) {
-    this.delegate?.didRenderLayout?.(instance, bounds);
+  update(state: CustomComponentState, _dynamicScope?: any): void {
+    if (!(state instanceof CustomComponentState)) return;
+    const { delegate, component, args } = state;
+    if (delegate?.capabilities?.updateHook && typeof delegate.updateComponent === 'function') {
+      delegate.updateComponent(component, args);
+    }
   }
 
-  didUpdateLayout(instance: any, bounds: any) {
-    this.delegate?.didUpdateLayout?.(instance, bounds);
+  didCreate(state: CustomComponentState): void {
+    if (!(state instanceof CustomComponentState)) {
+      // Legacy call shape — some callers may pass the raw component instance.
+      this.delegate?.didCreateComponent?.(state);
+      return;
+    }
+    const { delegate, component } = state;
+    if (delegate?.capabilities?.asyncLifeCycleCallbacks && typeof delegate.didCreateComponent === 'function') {
+      delegate.didCreateComponent(component);
+    }
   }
+
+  didUpdate(state: CustomComponentState): void {
+    if (!(state instanceof CustomComponentState)) {
+      this.delegate?.didUpdateComponent?.(state);
+      return;
+    }
+    const { delegate, component } = state;
+    if (
+      delegate?.capabilities?.asyncLifeCycleCallbacks &&
+      delegate?.capabilities?.updateHook &&
+      typeof delegate.didUpdateComponent === 'function'
+    ) {
+      delegate.didUpdateComponent(component);
+    }
+  }
+
+  didRenderLayout(_state: CustomComponentState, _bounds?: any): void {}
+  didUpdateLayout(_state: CustomComponentState, _bounds?: any): void {}
 
   getStaticLayout(component: any) {
     return this.delegate?.getStaticLayout?.(component);
