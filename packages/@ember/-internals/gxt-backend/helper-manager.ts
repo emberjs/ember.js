@@ -7,10 +7,99 @@
 // HelperManager delegate for a given owner.
 
 import { createCache } from './validator';
-import { createComputeRef, createConstRef, UNDEFINED_REFERENCE, REFERENCE } from './reference';
+import { createComputeRef, createConstRef, UNDEFINED_REFERENCE, REFERENCE, valueForRef } from './reference';
 
 // Shared WeakSet to track capabilities created via helperCapabilities()
 export const FROM_CAPABILITIES = new WeakSet();
+
+/**
+ * Detect whether a value is a Glimmer Reference object. References are tagged
+ * with the canonical REFERENCE symbol by the GXT reference module
+ * (see reference.ts brandRef()) so `REFERENCE in obj` is the canonical test.
+ */
+function isReference(v: any): boolean {
+  return v != null && typeof v === 'object' && REFERENCE in v;
+}
+
+/**
+ * Unwrap a Reference to its value. Pass non-references through unchanged so
+ * this function is safe to call on already-unwrapped values (e.g., the args
+ * shape produced by GXT-side _resolveEmberHelper which passes raw values).
+ */
+function unwrapValue(v: any): any {
+  return isReference(v) ? valueForRef(v) : v;
+}
+
+/**
+ * Wrap captured args so reads of `args.positional[i]` and `args.named[key]`
+ * auto-unwrap Reference values into their current value. This matches stock
+ * Glimmer's argsProxyFor() (in @glimmer/manager/lib/util/args-proxy.ts) which
+ * is required by the HelperManager spec — `FunctionalHelperManager.getValue`
+ * does `fn(...args.positional)` and expects values, not References.
+ *
+ * When called from VM_HELPER_OP via getHelper(), `capturedArgs.positional`
+ * holds References. When called from GXT-side _resolveEmberHelper, the
+ * positional/named entries are already unwrapped values — `unwrapValue`
+ * passes those through unchanged, so the proxy is a no-op for that path.
+ *
+ * Only used inside getHelper() — paths that explicitly need raw References
+ * (e.g., createHelper called directly via invokeHelper with SimpleArgsProxy)
+ * bypass this wrapper entirely.
+ */
+function argsProxyForCustom(capturedArgs: any): { positional: any; named: any } {
+  const positional = capturedArgs?.positional ?? [];
+  const named = capturedArgs?.named ?? {};
+
+  const positionalProxy: any = new Proxy(positional, {
+    get(target: any, prop: string | symbol) {
+      if (prop === 'length') return target.length;
+      if (prop === Symbol.iterator) {
+        return function* () {
+          for (let i = 0; i < target.length; i++) {
+            yield unwrapValue(target[i]);
+          }
+        };
+      }
+      if (typeof prop === 'string') {
+        const num = Number(prop);
+        if (Number.isInteger(num) && num >= 0 && num < target.length) {
+          return unwrapValue(target[num]);
+        }
+      }
+      // Fallback: pass through (e.g., toString, etc.)
+      return target[prop as any];
+    },
+    has(target: any, prop: string | symbol) {
+      if (prop === 'length' || prop === Symbol.iterator) return true;
+      if (typeof prop === 'string') {
+        const num = Number(prop);
+        if (Number.isInteger(num)) return num >= 0 && num < target.length;
+      }
+      return prop in target;
+    },
+  });
+
+  const namedProxy: any = new Proxy(named, {
+    get(target: any, prop: string | symbol) {
+      const v = (target as any)[prop];
+      return unwrapValue(v);
+    },
+    has(target: any, prop: string | symbol) {
+      return prop in target;
+    },
+    ownKeys(target: any) {
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target: any, prop: string | symbol) {
+      if (prop in target) {
+        return { enumerable: true, configurable: true };
+      }
+      return undefined;
+    },
+  });
+
+  return { positional: positionalProxy, named: namedProxy };
+}
 
 /**
  * Call delegate.getValue(bucket) inside a backtracking frame with proper
@@ -231,10 +320,26 @@ export class CustomHelperManager {
         return UNDEFINED_REFERENCE;
       }
 
-      // Build args proxy similar to the real implementation
-      const args = capturedArgs && typeof capturedArgs === 'object' && !Array.isArray(capturedArgs)
-        ? capturedArgs
-        : { positional: Array.isArray(capturedArgs) ? capturedArgs : [], named: {} };
+      // Normalize args shape: ensure { positional, named } object regardless
+      // of whether the caller passed an array (legacy GXT path) or a
+      // CapturedArguments-shaped object (VM_HELPER_OP / glimmer path).
+      const rawArgs =
+        capturedArgs && typeof capturedArgs === 'object' && !Array.isArray(capturedArgs)
+          ? capturedArgs
+          : { positional: Array.isArray(capturedArgs) ? capturedArgs : [], named: {} };
+
+      // Wrap args with an unwrap-on-read proxy so `args.positional[i]` and
+      // `args.named[key]` yield the value of the underlying Reference rather
+      // than the Reference object itself. This matches stock Glimmer's
+      // argsProxyFor() (in @glimmer/manager) and is required by the
+      // HelperManager spec — `FunctionalHelperManager.getValue` does
+      // `fn(...args.positional)` and expects values.
+      //
+      // Skip wrapping when the args object is frozen — SimpleArgsProxy from
+      // @glimmer/runtime's invokeHelper is frozen and already implements the
+      // proxy semantics (it lazily computes args, returning values not refs).
+      // Re-wrapping it would break Object.freeze semantics tests.
+      const args = Object.isFrozen(rawArgs) ? rawArgs : argsProxyForCustom(rawArgs);
 
       const bucket = manager.createHelper(helper, args);
       const debugName =
