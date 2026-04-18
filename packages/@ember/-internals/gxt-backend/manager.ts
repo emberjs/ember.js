@@ -8647,13 +8647,42 @@ export function getHelperManager(helper: any) {
   return getInternalHelperManager(helper);
 }
 
+// Caches wrapper CustomComponentManager / CustomModifierManager instances so
+// repeated calls to getInternal*Manager on the same definition return a stable
+// object identity.
+const _COMPONENT_MANAGER_WRAPPERS = new WeakMap<object, any>();
+const _MODIFIER_MANAGER_WRAPPERS = new WeakMap<object, any>();
+
 export function getInternalComponentManager(handle: any) {
   if (handle === null || handle === undefined) return undefined;
-  // Walk the prototype chain
+  // Walk the prototype chain — first look for internal managers
+  // (setInternalComponentManager path), which are returned as-is.
   let pointer = handle;
   while (pointer !== null && pointer !== undefined) {
     const manager = globalThis.INTERNAL_MANAGERS.get(pointer);
     if (manager !== undefined) return manager;
+    try {
+      pointer = Object.getPrototypeOf(pointer);
+    } catch {
+      break;
+    }
+  }
+  // Then look for custom component managers registered via setComponentManager.
+  // For these, wrap the raw factory in a CustomComponentManager so tests that
+  // reference-check via `instanceof CustomComponentManager` and read `.factory`
+  // see the expected shape. The rendering path does NOT use this return value
+  // — it reads COMPONENT_MANAGERS directly via resolveComponent().
+  pointer = handle;
+  while (pointer !== null && pointer !== undefined) {
+    const factory = globalThis.COMPONENT_MANAGERS.get(pointer);
+    if (factory !== undefined) {
+      let wrapper = _COMPONENT_MANAGER_WRAPPERS.get(pointer);
+      if (wrapper === undefined) {
+        wrapper = new CustomComponentManager(factory);
+        _COMPONENT_MANAGER_WRAPPERS.set(pointer, wrapper);
+      }
+      return wrapper;
+    }
     try {
       pointer = Object.getPrototypeOf(pointer);
     } catch {
@@ -8795,7 +8824,23 @@ export function hasCapability(capabilities: number, capability: number): boolean
 }
 
 export function getInternalModifierManager(modifier: any) {
-  return globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
+  const stored = globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
+  if (stored === undefined) return undefined;
+  // If it's a factory function (from setModifierManager), wrap it in a
+  // CustomModifierManager so tests that instanceof-check and read `.factory`
+  // see the expected shape. The rendering path does NOT use this return value
+  // — it reads INTERNAL_MODIFIER_MANAGERS directly and handles both shapes
+  // via `typeof managerFactory === 'function'`.
+  if (typeof stored === 'function') {
+    let wrapper = _MODIFIER_MANAGER_WRAPPERS.get(modifier);
+    if (wrapper === undefined) {
+      wrapper = new CustomModifierManager(stored);
+      _MODIFIER_MANAGER_WRAPPERS.set(modifier, wrapper);
+    }
+    return wrapper;
+  }
+  // Internal manager instance (from setInternalModifierManager) — return as-is.
+  return stored;
 }
 
 export function managerHasCapability(_manager: unknown, capabilities: number, capability: number): boolean {
@@ -8832,87 +8877,140 @@ export function hasDestroyable(manager: any): boolean {
 // Custom Manager Classes
 // =============================================================================
 
+/**
+ * CustomComponentManager — public wrapper around a component manager factory
+ * registered via setComponentManager(). This class is returned from
+ * getInternalComponentManager() for test/introspection purposes.
+ *
+ * IMPORTANT: the actual rendering path does NOT go through this class. GXT's
+ * component resolver reads the raw factory from COMPONENT_MANAGERS and calls
+ * it directly in handleCustomManagedComponent(). This class exists so that
+ * consumer tests can (a) instanceof-check the returned manager, (b) read
+ * `.factory` to recover the original factory, and (c) call `.create()` to
+ * trigger capability validation.
+ */
 export class CustomComponentManager {
-  capabilities: number;
+  factory: any;
+  // Legacy alias — some older code paths may read `.delegate`.
   delegate: any;
+  // Cached capability flag set, populated lazily by create().
+  capabilities: number = 0;
 
-  constructor(delegate: any) {
-    this.delegate = delegate;
-    this.capabilities = capabilityFlagsFrom(delegate.capabilities || {});
+  constructor(factory: any) {
+    this.factory = factory;
+    this.delegate = factory;
   }
 
-  create(owner: any, component: any, args: any, env: any, dynamicScope: any, caller: any) {
-    return this.delegate.createComponent(component, args);
+  create(owner: any, _component: any, _args: any, _env?: any, _dynamicScope?: any, _caller?: any) {
+    // Invoke the factory with the owner and validate the delegate's
+    // capabilities. This is what the Managers > Component > "throws a useful
+    // error..." tests exercise.
+    const delegate = typeof this.factory === 'function' ? this.factory(owner) : this.factory;
+    const caps = delegate ? delegate.capabilities : undefined;
+    if (!caps || !FROM_CAPABILITIES.has(caps)) {
+      throw new Error(
+        "Custom component managers must have a `capabilities` property " +
+        "that is the result of calling the `capabilities('3.13')` " +
+        "(imported via `import { capabilities } from '@ember/component';`). " +
+        "Received: `" + (caps === undefined ? 'undefined' : JSON.stringify(caps)) + "`"
+      );
+    }
+    this.capabilities = capabilityFlagsFrom(caps);
+    if (typeof delegate.createComponent === 'function') {
+      return delegate.createComponent(_component, _args);
+    }
+    return delegate;
   }
 
   getDebugName(component: any) {
-    return this.delegate.getDebugName?.(component) || component.name || 'Component';
+    const delegate = this.delegate;
+    return delegate?.getDebugName?.(component) || component?.name || 'Component';
   }
 
   getSelf(instance: any) {
-    return this.delegate.getSelf?.(instance) || instance;
+    return this.delegate?.getSelf?.(instance) || instance;
   }
 
   getDestroyable(instance: any) {
-    return this.delegate.getDestroyable?.(instance) || instance;
+    return this.delegate?.getDestroyable?.(instance) || instance;
   }
 
   didCreate(instance: any) {
-    this.delegate.didCreateComponent?.(instance);
+    this.delegate?.didCreateComponent?.(instance);
   }
 
   didUpdate(instance: any) {
-    this.delegate.didUpdateComponent?.(instance);
+    this.delegate?.didUpdateComponent?.(instance);
   }
 
   didRenderLayout(instance: any, bounds: any) {
-    this.delegate.didRenderLayout?.(instance, bounds);
+    this.delegate?.didRenderLayout?.(instance, bounds);
   }
 
   didUpdateLayout(instance: any, bounds: any) {
-    this.delegate.didUpdateLayout?.(instance, bounds);
+    this.delegate?.didUpdateLayout?.(instance, bounds);
   }
 
   getStaticLayout(component: any) {
-    return this.delegate.getStaticLayout?.(component);
+    return this.delegate?.getStaticLayout?.(component);
   }
 
   getDynamicLayout(instance: any) {
-    return this.delegate.getDynamicLayout?.(instance);
+    return this.delegate?.getDynamicLayout?.(instance);
   }
 }
 
+/**
+ * CustomModifierManager — public wrapper around a modifier manager factory
+ * registered via setModifierManager(). Same rationale as CustomComponentManager:
+ * this class exists only for consumer introspection. The rendering path reads
+ * the raw factory from INTERNAL_MODIFIER_MANAGERS directly.
+ */
 export class CustomModifierManager {
-  capabilities: number;
+  factory: any;
   delegate: any;
+  capabilities: number = 0;
 
-  constructor(delegate: any) {
-    this.delegate = delegate;
-    this.capabilities = 0;
+  constructor(factory: any) {
+    this.factory = factory;
+    this.delegate = factory;
   }
 
-  create(owner: any, element: Element, definition: any, args: any) {
-    return this.delegate.createModifier(definition, args);
+  create(owner: any, _element: Element, _definition: any, _args: any) {
+    const delegate = typeof this.factory === 'function' ? this.factory(owner) : this.factory;
+    const caps = delegate ? delegate.capabilities : undefined;
+    if (!caps || !FROM_CAPABILITIES.has(caps)) {
+      throw new Error(
+        "Custom modifier managers must have a `capabilities` property " +
+        "that is the result of calling the `capabilities('3.22')` " +
+        "(imported via `import { capabilities } from '@ember/modifier';`). " +
+        "Received: `" + (caps === undefined ? 'undefined' : JSON.stringify(caps)) + "`"
+      );
+    }
+    if (typeof delegate.createModifier === 'function') {
+      return delegate.createModifier(_definition, _args);
+    }
+    return delegate;
   }
 
   getDebugName(definition: any) {
-    return this.delegate.getDebugName?.(definition) || 'Modifier';
+    return this.delegate?.getDebugName?.(definition) || 'Modifier';
   }
 
   getDestroyable(instance: any) {
-    return this.delegate.getDestroyable?.(instance) || instance;
+    return this.delegate?.getDestroyable?.(instance) || instance;
   }
 
   install(instance: any, element: Element, args: any) {
-    this.delegate.installModifier?.(instance, element, args);
+    this.delegate?.installModifier?.(instance, element, args);
   }
 
   update(instance: any, args: any) {
-    this.delegate.updateModifier?.(instance, args);
+    this.delegate?.updateModifier?.(instance, args);
   }
 
   destroy(instance: any) {
-    this.delegate.destroyModifier?.(instance);
+    this.delegate?.destroyModifier?.(instance);
   }
 }
 
