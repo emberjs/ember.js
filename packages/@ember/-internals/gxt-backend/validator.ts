@@ -133,17 +133,18 @@ export function track(cb: () => void): any {
     g.__gxtTriggerReRender = savedTrigger;
   }
 
-  // If no specific tags were consumed, return a track-tag that uses the
-  // global revision counter (broad invalidation) — matches existing
-  // semantics relied on by autoComputed / alias chain tags.
+  // If no specific tags were consumed, the frame's `cb()` did not depend
+  // on any tracked state — by definition a constant. Return CONSTANT_TAG so
+  // CheckTag / validateTag treat it as never-invalidating. This matches
+  // classic @glimmer/validator semantics (track() with no consumed tags
+  // returns CONSTANT_TAG) and is essential for e.g. `updateTag(modifierTag,
+  // track(install))` in environment.ts: when a modifier's install hook
+  // reads only constant args (`{{foo "foo" bar="baz"}}`), the outer modifier
+  // tag must not invalidate on every unrelated mutation (fixes the
+  // `didUpdate is not called when params are constants` test).
   const consumedArr = Array.from(consumed);
   if (consumed.size === 0) {
-    const tag: any = {
-      _isTrackTag: true,
-      _consumed: consumedArr,
-      get value() { return globalRevisionCounter; },
-    };
-    return tag;
+    return CONSTANT_TAG;
   }
 
   // Otherwise, return a combined tag scoped to the specific consumed
