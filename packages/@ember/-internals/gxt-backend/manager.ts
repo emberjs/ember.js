@@ -9616,7 +9616,26 @@ export class CustomModifierManager {
   }
 
   getDebugName(definition: any) {
-    return this.delegate?.getDebugName?.(definition) || 'Modifier';
+    // Mirror @glimmer/manager/lib/public/modifier.ts:getDebugName — when the
+    // user delegate does not implement getDebugName, derive the name from the
+    // definition itself: function classes use `definition.name`, otherwise
+    // fall back to '<unknown>'. This matches the stock CustomModifierManager
+    // and is what the debug-render-tree test expects (e.g. 'MyCustomModifier').
+    const fromDelegate = this.delegate?.getDebugName?.(definition);
+    if (fromDelegate) return fromDelegate;
+    if (typeof definition === 'function') {
+      return definition.name || definition.toString();
+    }
+    return '<unknown>';
+  }
+
+  // Mirror @glimmer/manager/lib/public/modifier.ts: stock VM's
+  // ComponentElementOperations.addModifier calls `manager.getDebugInstance(state)`
+  // when `env.debugRenderTree !== undefined` (i.e., enableDebugTooling=true).
+  // Without this method, the VM throws `getDebugInstance is not a function` and
+  // dies before any debug-render-tree assertion can run.
+  getDebugInstance(state: ShimCustomModifierState): unknown {
+    return state?.modifier ?? null;
   }
 
   getDestroyable(state: ShimCustomModifierState): any {
