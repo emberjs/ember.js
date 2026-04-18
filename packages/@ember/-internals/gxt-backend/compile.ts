@@ -1125,6 +1125,58 @@ if (!isGlobalScopeReady()) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
+// Expose a strict-mode resolver as a global so that templates compiled with
+// `strictMode: true` can inject it as a local `$_maybeHelper` override. The
+// resolver closure captures the strict flag at template-compilation time,
+// which means any compiled getter closure that references the local
+// `$_maybeHelper` resolves against the strict-mode behavior even when the
+// getter runs asynchronously (after the outer `template.render()` call
+// returns). A plain global flag would race here: reactive getters produced
+// by a strict template are typically invoked inside a loose parent's
+// rendering context, where a global flag would have already been reset.
+//
+// Scope-bound helpers compile to a variable reference (e.g.
+// `$_maybeHelper(a_helper, ...)`) — NOT a string — so this guard only fires
+// for names that were NOT resolved at compile time, i.e. genuine strict-mode
+// free references. Built-in keyword helpers (fn, hash, array, get, concat,
+// mut, readonly, unbound, unique-id, helper, modifier, on, __mutGet) are
+// still allowed because $_maybeHelper_ember's BUILTIN_HELPERS check runs
+// inside the original delegate.
+const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
+  'array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unbound',
+  'unique-id', 'unique_id', 'helper', 'modifier', 'on', '__mutGet',
+  // gxtEntriesOf is injected by our each-in transform; safe in any mode.
+  'gxtEntriesOf',
+]);
+(globalThis as any).__gxtMakeStrictMaybeHelper = function (): any {
+  const g = globalThis as any;
+  return function $_maybeHelper_strict(
+    nameOrFn: any,
+    args: any[],
+    hashOrCtx?: any,
+    maybeCtx?: any
+  ): any {
+    if (typeof nameOrFn === 'string') {
+      if (!_GXT_STRICT_ALLOWED_NAMES.has(nameOrFn)) {
+        const BUILTIN_HELPERS = g.__EMBER_BUILTIN_HELPERS__;
+        const isBuiltin = !!(BUILTIN_HELPERS && BUILTIN_HELPERS[nameOrFn]);
+        if (!isBuiltin) {
+          throw new Error(
+            `Attempted to resolve \`${nameOrFn}\`, ` +
+            `which was expected to be a component or helper, ` +
+            `but that value was not in scope: ${nameOrFn}`
+          );
+        }
+      }
+    }
+    return g.__gxt_origMaybeHelper(nameOrFn, args, hashOrCtx, maybeCtx);
+  };
+};
+// Capture the underlying (ember-wrapped) $_maybeHelper exactly once.
+if (!(globalThis as any).__gxt_origMaybeHelper) {
+  (globalThis as any).__gxt_origMaybeHelper = (globalThis as any).$_maybeHelper;
+}
+
 // NOTE: Curried component reactive rendering is handled by itemToNode's
 // __isCurriedComponent check (see below in the compile function), not by $_TO_VALUE.
 if (false as boolean) {
@@ -8189,7 +8241,11 @@ export function precompileTemplate(templateString: string, options?: {
   // Check cache first — skip cache when scopeValues are provided (they contain unique references)
   const hasScopeValues = options?.scopeValues && Object.keys(options.scopeValues).length > 0;
   // Debug tracking removed to avoid unbounded memory growth in long test suites
-  const cacheKey = templateString + (options?.moduleName || '');
+  // Include strictMode in cache key so the same source string compiled under
+  // both modes (strict vs loose) is cached separately — otherwise a loose
+  // compile would win and mask the strict-mode "not in scope" behavior.
+  const __strictModeFlag = options?.strictMode === true;
+  const cacheKey = templateString + (options?.moduleName || '') + (__strictModeFlag ? '|strict' : '');
   if (!hasScopeValues) {
     const cached = templateCache.get(cacheKey);
     if (cached) {
@@ -8944,10 +9000,20 @@ export function precompileTemplate(templateString: string, options?: {
           `var _uid = []; for (var _uid_i = 0; _uid_i < ${uidCount}; _uid_i++) _uid.push(_uid_fn());`
         : '';
 
+      // For strict-mode templates, shadow the global $_maybeHelper with a
+      // resolver that throws "not in scope" for free identifiers instead of
+      // falling back to owner.lookup. We do this at the OUTER (factory) scope
+      // so that the shadow survives across all reactive getter closures
+      // produced by the compiled template — including closures invoked long
+      // after the enclosing template.render() call returns.
+      const strictMaybeHelperInjection = __strictModeFlag
+        ? `var $_maybeHelper = globalThis.__gxtMakeStrictMaybeHelper();`
+        : '';
       const templateFnCode = `
         "use strict";
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
         ${uidOuterScope}
+        ${strictMaybeHelperInjection}
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
           ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}
@@ -10068,7 +10134,7 @@ export function precompileTemplate(templateString: string, options?: {
 
           // Rethrow non-Error values (expectAssertion's BREAK sentinel) and
           // assertion errors so they propagate to test harnesses
-          if (_isAssertionLike(err) || (err && ((err as any).message?.includes('Could not find') || (err as any).message?.includes('Custom modifier managers must have') || (err as any).message?.includes('Custom helper managers must have')))) {
+          if (_isAssertionLike(err) || (err && ((err as any).message?.includes('Could not find') || (err as any).message?.includes('Custom modifier managers must have') || (err as any).message?.includes('Custom helper managers must have') || (err as any).message?.includes('but that value was not in scope:')))) {
             throw err;
           }
           // Swallow other render errors gracefully
@@ -10085,6 +10151,10 @@ export function precompileTemplate(templateString: string, options?: {
   (templateFactory as any).__gxtRuntimeCompiled = true;
   (templateFactory as any).moduleName = options?.moduleName || 'gxt-runtime-template';
   (templateFactory as any).id = `gxt-factory-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  // Record the strictMode flag on the factory so the render path can opt
+  // into strict-mode resolution semantics (no container.lookup fallback for
+  // free identifiers inside $_maybeHelper).
+  (templateFactory as any).__gxtStrictMode = __strictModeFlag;
 
   // Cache the result
   templateCache.set(cacheKey, templateFactory);
