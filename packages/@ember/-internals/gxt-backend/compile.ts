@@ -1658,10 +1658,34 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
       // The fn arg may be a getter (arrow fn wrapping this.X) — we wrapped it
       // in compile.ts to support reactive function swaps.
       // Partial args are also getters from GXT for reactive arg updates.
+      //
+      // STRICT MODE FIX: scope-bound functions (e.g. `fn(handleClick, 123)` in
+      // strict-mode templates where `handleClick` is a direct JS function) must
+      // NOT be called as getters. A GXT-generated getter is `() => ctx.X` — it
+      // takes 0 args AND returns the underlying value (possibly another function).
+      // A direct handler like `handleClick = (v) => {}` may also have length 0,
+      // but calling it produces a side effect and returns whatever the body
+      // returns (often undefined). Only treat a 0-arg function as a getter when
+      // calling it returns a *different* function or non-undefined value — and
+      // even then, only if the returned value is a function (the intended
+      // callable). Functions with `length >= 1` are never getters.
       const isArgGetter = (v: any) => typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell;
+      const resolveFirstArg = (v: any): any => {
+        if (!isArgGetter(v)) return v;
+        // Functions with declared parameters are never GXT-generated getters.
+        if (v.length >= 1) return v;
+        // 0-arg function: try calling. If it returns a function, treat it as a
+        // getter. If it returns undefined/non-function, treat as a direct
+        // handler and return the function itself (side effects are unfortunate
+        // but consistent with prior behavior when the template used `this.x`).
+        let produced: any;
+        try { produced = v(); } catch { return v; }
+        if (typeof produced === 'function') return produced;
+        return v;
+      };
       result = function $__fn_partial(...callArgs: any[]) {
-        // Resolve fn: if it's a getter (arrow fn), call to get the actual function
-        const resolvedFn = isArgGetter(fn) ? fn() : fn;
+        // Resolve fn: detect GXT-generated getters vs direct scope handlers.
+        const resolvedFn = resolveFirstArg(fn);
         // Resolve partial args: if they're getters (arrow fns), call them
         const resolvedPartials = partialArgs.map((a: any) => isArgGetter(a) ? a() : a);
         if (typeof resolvedFn !== 'function') {

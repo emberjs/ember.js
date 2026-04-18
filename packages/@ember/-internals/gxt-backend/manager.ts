@@ -54,6 +54,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gxtTouchClassicBridge, registerClassicReactor as _gxtRegisterClassicReactor } from '@glimmer/validator';
+import { createConstRef as _createConstRef } from '@glimmer/reference';
 // @ts-ignore - direct path to share the same module instance as compile.ts
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 import { destroy as _destroyDestroyable } from './destroyable';
@@ -5904,12 +5905,16 @@ const $_MANAGERS = {
           cached.__gxtUpdatedInSyncCycle = currentSyncCycle;
 
           if (cached.isInternal) {
-            // Internal modifier manager update path
+            // Internal modifier manager update path.
             // Use CURRENT props/hashArgs (from this handle() call), not the
             // stale closure from install time. GXT re-calls the modifier
             // function with fresh arguments on each formula re-evaluation.
+            //
+            // Build fresh Glimmer ConstRefs for positional/named args — this
+            // matches what's built at install time so OnModifierManager and
+            // friends can call `valueForRef()` on them successfully.
             const freshPositional = (props || []).map((v: any) => {
-              return { value: v, debugLabel: '' };
+              return _createConstRef(v, DEBUG ? 'modifier-arg' : false);
             });
             const rawHash = hashArgs ? (typeof hashArgs === 'function' ? hashArgs() : hashArgs) : {};
             const freshNamed: Record<string, any> = {};
@@ -5917,25 +5922,22 @@ const $_MANAGERS = {
               if (k.startsWith('$_') || k === 'hash') continue;
               const val = rawHash[k];
               const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent) ? val() : val;
-              freshNamed[k] = { value: resolved, debugLabel: k };
+              freshNamed[k] = _createConstRef(resolved, DEBUG ? k : false);
             }
 
             if (cached.instance.args) {
-              // Update positional refs in-place
-              for (let i = 0; i < freshPositional.length; i++) {
-                if (cached.instance.args.positional[i]) {
-                  cached.instance.args.positional[i].value = freshPositional[i].value;
-                } else {
-                  cached.instance.args.positional.push(freshPositional[i]);
-                }
+              // Replace positional refs with fresh ones (ConstRef.lastValue is
+              // set at construction; creating new refs is simpler than mutating).
+              cached.instance.args.positional.length = 0;
+              for (const ref of freshPositional) {
+                cached.instance.args.positional.push(ref);
               }
-              // Update named refs in-place
+              // Replace named refs with fresh ones.
+              for (const k of Object.keys(cached.instance.args.named)) {
+                if (!(k in freshNamed)) delete cached.instance.args.named[k];
+              }
               for (const k of Object.keys(freshNamed)) {
-                if (cached.instance.args.named[k]) {
-                  cached.instance.args.named[k].value = freshNamed[k].value;
-                } else {
-                  cached.instance.args.named[k] = freshNamed[k];
-                }
+                cached.instance.args.named[k] = freshNamed[k];
               }
             }
             if (cached.manager.update) {
@@ -6124,20 +6126,26 @@ const $_MANAGERS = {
         && !manager.createModifier;
 
       if (isInternalManager) {
-        // Internal modifier manager path (e.g., {{on}} modifier)
-        // Build CapturedArguments-like object with refs.
+        // Internal modifier manager path (e.g., {{on}} modifier).
+        // Build CapturedArguments-like object with proper Glimmer Reference
+        // objects so that OnModifierManager's `valueForRef()` reads work.
+        // Classic Glimmer's internal modifier managers expect positional/named
+        // args to be Reference instances (with `tag`, `lastValue`, etc.);
+        // a plain `{value, debugLabel}` object was previously passed, which
+        // caused `valueForRef()` to return undefined and drop the callback.
+        //
         // IMPORTANT: GXT compiles modifier positional args as direct values
         // (not reactive getters), so we must NOT call them.  The old heuristic
         // `typeof v === 'function' && !v.prototype` was wrong because concise
         // methods and arrow-function callbacks also lack `.prototype`.
-        // Instead, just wrap every value in a ref without unwrapping.
+        // Instead, just wrap every value in a const ref without unwrapping.
         const buildCapturedArgs = () => {
           // Positional args: GXT compiles modifier positionals as direct values
           // (e.g., "click", this.callback), NOT reactive getters. We must NOT
           // call them — concise methods and arrow callbacks lack .prototype and
           // would be incorrectly invoked by the old heuristic.
           const positional = (props || []).map((v: any) => {
-            return { value: v, debugLabel: '' };
+            return _createConstRef(v, DEBUG ? 'modifier-arg' : false);
           });
           // Named args: GXT wraps dynamic named values in () => getters
           // (e.g., once: () => this.once), but passes literals directly
@@ -6148,7 +6156,7 @@ const $_MANAGERS = {
             if (k.startsWith('$_') || k === 'hash') continue;
             const val = rawHash[k];
             const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent) ? val() : val;
-            named[k] = { value: resolved, debugLabel: k };
+            named[k] = _createConstRef(resolved, DEBUG ? k : false);
           }
           return { positional, named };
         };
