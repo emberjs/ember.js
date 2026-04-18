@@ -214,6 +214,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   private self: Nullable<Reference> = null;
   private lastSnapshot: Record<string, unknown> | null = null;
 
+  // HTML of leading children that were already present in the server-render
+  // target when `renderServerSide` began — e.g. the `<noscript>` prepended
+  // by the `rehydrates into element with pre-existing content` test. The
+  // classic delegate's counter-based walk naturally skips those; we capture
+  // them explicitly so the client-side fresh render can restore them.
+  private preExistingLeadingHTML: string = '';
+
   // Locally-registered helpers and components. Passed to the GXT compiler
   // via `scopeValues` so the template's `{{foo ...}}` / `<Foo ...>` calls
   // resolve to the test-registered values instead of falling through to
@@ -326,6 +333,11 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     element: SimpleElement | undefined = undefined
   ): string {
     const targetElement = element ?? this.serverDoc.createElement('div');
+    // Capture pre-existing children (e.g. <noscript>) before the template
+    // appends its output. These must be preserved across the fresh
+    // client-side render; the classic counter-walk preserves them by
+    // starting its cursor after them.
+    this.preExistingLeadingHTML = this.serialize(targetElement);
     this.compileAndRender(template, context, targetElement);
     try {
       takeSnapshot();
@@ -357,10 +369,22 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // by the test before `renderServerSide`) so we only replace the
     // template-owned portion of the element.
     const targetEl = element as unknown as HTMLElement;
+    const preExistingHTML = this.preExistingLeadingHTML;
     try {
       targetEl.innerHTML = '';
     } catch {
       /* non-HTML target; compileAndRender handles as-is */
+    }
+
+    // Restore pre-existing leading children (e.g. <noscript>) captured
+    // during renderServerSide so the client render shape matches the
+    // server shape exactly. Template output will be appended after.
+    if (preExistingHTML) {
+      try {
+        (targetEl as unknown as Element).insertAdjacentHTML('afterbegin', preExistingHTML);
+      } catch {
+        /* ignore */
+      }
     }
 
     this.compileAndRender(template, context, element);
@@ -398,7 +422,11 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       } catch {
         nextHTML = '';
       }
-      if (nextHTML === prevHTML) {
+      // Compare the full expected HTML (pre-existing prefix + template output)
+      // against the current DOM so a rerender that produces the same final
+      // shape leaves nodes intact.
+      const leading = self.preExistingLeadingHTML;
+      if (leading + nextHTML === prevHTML) {
         // Stable rerender: leave existing DOM intact so node-identity
         // snapshots match.
         return;
@@ -407,6 +435,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
         targetEl.innerHTML = '';
       } catch {
         /* ignore */
+      }
+      if (leading) {
+        try {
+          (targetEl as unknown as Element).insertAdjacentHTML('afterbegin', leading);
+        } catch {
+          /* ignore */
+        }
       }
       self.compileAndRender(template, context, element);
     };
