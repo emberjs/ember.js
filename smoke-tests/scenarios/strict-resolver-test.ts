@@ -17,12 +17,12 @@ strictAppScenarios
 
             modules = {
               './router': { default: Router },
-              ...import.meta.glob('./services/**/*', { eager: true }),
-              ...import.meta.glob('./controllers/**/*', { eager: true }),
-              ...import.meta.glob('./routes/**/*', { eager: true }),
-              ...import.meta.glob('./components/**/*', { eager: true }),
-              ...import.meta.glob('./helpers/**/*', { eager: true }),
-              ...import.meta.glob('./templates/**/*', { eager: true }),
+              ...import.meta.glob('./services/**/*.{js,ts}', { eager: true }),
+              ...import.meta.glob('./controllers/**/*.{js,ts}', { eager: true }),
+              ...import.meta.glob('./routes/**/*.{js,ts}', { eager: true }),
+              ...import.meta.glob('./components/**/*.{gjs,gts,js,ts}', { eager: true }),
+              ...import.meta.glob('./helpers/**/*.{js,ts}', { eager: true }),
+              ...import.meta.glob('./templates/**/*.hbs', { eager: true }),
             };
           }
         `,
@@ -92,10 +92,12 @@ strictAppScenarios
           `,
         },
         components: {
-          'site-header.hbs': `
-            <header data-test="site-header">
-              <h1>{{@title}}</h1>
-            </header>
+          'site-header.gjs': `
+            <template>
+              <header data-test="site-header">
+                <h1>{{@title}}</h1>
+              </header>
+            </template>
           `,
           'post-card.gjs': `
             import Component from '@glimmer/component';
@@ -154,7 +156,7 @@ strictAppScenarios
                 assert.dom('[data-test="app-greeting"]').hasText('Hello from strict resolver!');
               });
 
-              test('hbs component resolves from modules', async function (assert) {
+              test('template-only gjs component resolves from modules', async function (assert) {
                 await visit('/');
                 assert.dom('[data-test="site-header"]').exists();
                 assert.dom('[data-test="site-header"] h1').hasText('Strict App');
