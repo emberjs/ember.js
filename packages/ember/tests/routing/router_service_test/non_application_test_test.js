@@ -6,6 +6,7 @@ import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
 import { RouterNonApplicationTestCase, moduleFor } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Router Service - non application test',
@@ -88,12 +89,9 @@ moduleFor(
 
       this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
 
-      let self = this;
-
       let FooBar = class extends Component {
         @service('router')
         routerService;
-        layout = self.compile('foo-bar');
         init() {
           super.init(...arguments);
           componentInstance = this;
@@ -103,6 +101,7 @@ moduleFor(
           get(this, 'routerService').transitionTo('parent.sister');
         }
       };
+      setComponentTemplate(precompileTemplate('foo-bar'), FooBar);
 
       this.add('component:foo-bar', FooBar);
 

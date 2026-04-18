@@ -12,6 +12,7 @@
     "@ember/array": "workspace:*",
     "@ember/canary-features": "workspace:*",
     "@ember/component": "workspace:*",
+    "@ember/template-compiler": "workspace:*",
     "@ember/controller": "workspace:*",
     "@ember/debug": "workspace:*",
     "@ember/destroyable": "workspace:*",

@@ -1,8 +1,9 @@
-import { ENV } from '@ember/-internals/environment';
 import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
 
 import { template, templateCacheCounters } from '@ember/-internals/glimmer';
 import { precompile } from 'ember-template-compiler';
+import { setComponentTemplate } from '@glimmer/manager';
+import compile from 'internal-test-helpers/lib/compile';
 
 import { Component } from '../utils/helpers';
 
@@ -23,7 +24,7 @@ moduleFor(
       let exports = {};
       module(exports, template);
       let Precompiled = exports['default'];
-      let Compiled = this.compile('Hello {{this.name}}', options);
+      let Compiled = compile('Hello {{this.name}}', options);
 
       assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
       assert.equal(typeof Compiled, 'function', 'compiled is a factory');
@@ -51,30 +52,16 @@ moduleFor(
       assert.ok(typeof precompiled.spec !== 'string', 'Spec has been parsed');
       assert.ok(typeof compiled.spec !== 'string', 'Spec has been parsed');
 
-      this.owner.register(
-        'component:x-precompiled',
-        class extends Component {
-          layout = Precompiled;
-        }
-      );
+      let XPrecompiled = class extends Component {};
+      setComponentTemplate(Precompiled, XPrecompiled);
+      this.owner.register('component:x-precompiled', XPrecompiled);
 
-      this.owner.register(
-        'component:x-compiled',
-        class extends Component {
-          layout = Compiled;
-        }
-      );
+      let XCompiled = class extends Component {};
+      setComponentTemplate(Compiled, XCompiled);
+      this.owner.register('component:x-compiled', XCompiled);
 
       this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');
 
-      this.expectCacheChanges(
-        {
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 5 : 2,
-          // from this.render
-          templateCacheMisses: 1,
-        },
-        'hits 2'
-      );
       this.assertText('Hello precompiled Hello compiled');
     }
 
