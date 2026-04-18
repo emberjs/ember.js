@@ -1636,8 +1636,12 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
         return result;
       }
       // Also check if the first arg is a function that, when called, returns a mut cell
-      // GXT wraps helper results in getters
-      if (typeof fn === 'function' && !fn.__isMutCell) {
+      // GXT wraps helper results in getters. ONLY probe 0-arg functions — a
+      // function with declared parameters (like `handleClick = (v) => {}`) is a
+      // direct handler, NOT a GXT-generated getter; probing would fire side
+      // effects (e.g. test assertions) at install time, causing double-invoke
+      // in {{on "click" (fn handleClick 123)}}. Getters are always 0-arg arrows.
+      if (typeof fn === 'function' && !fn.__isMutCell && !fn.prototype && !fn.__isFnHelper && fn.length === 0) {
         try {
           const fnResult = fn();
           if (fnResult && fnResult.__isMutCell) {
