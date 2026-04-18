@@ -3056,7 +3056,17 @@ function patchGlobalIf() {
     const wrappedTrue = wrapBranch(trueBranch, trueBranchHelpers);
     const wrappedFalse = wrapBranch(falseBranch, falseBranchHelpers);
 
-    const ifCondition = origIf(conditionOrCell, wrappedTrue, wrappedFalse, ctx);
+    // Normalize literal `null` conditions — GXT's $_if internals call
+    // `.value` or `Symbol()` on the condition and crash when it is raw
+    // `null`. Coerce to `false` (Ember's `null` is falsy in {{#if}}).
+    // Other primitives (false, 0, '', undefined, true) are handled by
+    // the upstream path; only `null` is special-cased here.
+    let normalizedCondition = conditionOrCell;
+    if (normalizedCondition === null) {
+      normalizedCondition = false;
+    }
+
+    const ifCondition = origIf(normalizedCondition, wrappedTrue, wrappedFalse, ctx);
 
     // Install branch-swap helper-destroy hook unconditionally. This fires
     // destroy + willDestroy on any class-based helper instance created during
