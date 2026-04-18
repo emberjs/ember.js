@@ -7,6 +7,7 @@
 // HelperManager delegate for a given owner.
 
 import { createCache } from './validator';
+import { createComputeRef, createConstRef, UNDEFINED_REFERENCE, REFERENCE } from './reference';
 
 // Shared WeakSet to track capabilities created via helperCapabilities()
 export const FROM_CAPABILITIES = new WeakSet();
@@ -208,11 +209,26 @@ export class CustomHelperManager {
   }
 
   getHelper(helper: any) {
-    return (capturedArgs: any, owner: any) => {
+    // Two call conventions exist:
+    //
+    //   1) Stock Glimmer VM (@glimmer/program/lib/constants.ts → VM_HELPER_OP
+    //      + VM_DYNAMIC_HELPER_OP): expects the returned function to return a
+    //      Reference-shaped object (so valueForRef / CheckReference work).
+    //
+    //   2) GXT-side ember-gxt-wrappers/_resolveEmberHelper/curried-helper
+    //      paths inside this same backend: treat the return value as the raw
+    //      computed value.
+    //
+    // Return a Reference wrapper (createComputeRef) to satisfy (1). The GXT
+    // callers in manager.ts that use this method unwrap via `.value` /
+    // `valueForRef`, so both paths remain sound. The extra indirection is
+    // cheap and the cache semantics (via createCache inside createComputeRef)
+    // match what stock Glimmer's CustomHelperManager.getHelper produces.
+    return (capturedArgs: any, owner: any): any => {
       const manager = this.getDelegateFor(owner);
       if (!manager || typeof manager.createHelper !== 'function') {
         console.warn('[CustomHelperManager] No createHelper on manager:', manager);
-        return undefined;
+        return UNDEFINED_REFERENCE;
       }
 
       // Build args proxy similar to the real implementation
@@ -221,37 +237,59 @@ export class CustomHelperManager {
         : { positional: Array.isArray(capturedArgs) ? capturedArgs : [], named: {} };
 
       const bucket = manager.createHelper(helper, args);
+      const debugName =
+        (typeof manager.getDebugName === 'function' && manager.getDebugName(helper)) || 'Helper';
 
+      let ref: any;
       if (manager.capabilities?.hasValue) {
-        // Wrap in backtracking frame so read-then-write is detected
-        const debugName = manager.getDebugName?.(helper) || 'Helper';
+        // Wrap getValue() in a backtracking-aware compute. The compute is
+        // re-run whenever Glimmer's reference system reads `.value`, so
+        // tracked-data reads inside getValue() entangle correctly.
         const g = globalThis as any;
-        const beginFrame = g.__gxtBeginBacktrackingFrame;
-        const endFrame = g.__gxtEndBacktrackingFrame;
-        if (typeof beginFrame === 'function' && typeof endFrame === 'function') {
-          beginFrame(debugName);
-        }
-        // Intercept __emberAssertDirect to fix render tree format
-        const origAssert = g.__emberAssertDirect;
-        if (typeof origAssert === 'function') {
-          g.__emberAssertDirect = function (msg: string, test: any) {
-            if (typeof msg === 'string') {
-              msg = msg.replace(/  - top-level\n/g, '  -top-level\n');
+        ref = createComputeRef(
+          () => {
+            const beginFrame = g.__gxtBeginBacktrackingFrame;
+            const endFrame = g.__gxtEndBacktrackingFrame;
+            if (typeof beginFrame === 'function' && typeof endFrame === 'function') {
+              beginFrame(debugName);
             }
-            return origAssert(msg, test);
-          };
-        }
-        try {
-          return manager.getValue(bucket);
-        } finally {
-          g.__emberAssertDirect = origAssert;
-          if (typeof endFrame === 'function') {
-            endFrame();
-          }
-        }
+            const origAssert = g.__emberAssertDirect;
+            if (typeof origAssert === 'function') {
+              g.__emberAssertDirect = function (msg: string, test: any) {
+                if (typeof msg === 'string') {
+                  msg = msg.replace(/  - top-level\n/g, '  -top-level\n');
+                }
+                return origAssert(msg, test);
+              };
+            }
+            try {
+              return manager.getValue(bucket);
+            } finally {
+              g.__emberAssertDirect = origAssert;
+              if (typeof endFrame === 'function') endFrame();
+            }
+          },
+          null,
+          debugName
+        );
+      } else {
+        // hasDestroyable-only / hasScheduledEffect: helper returns no value
+        // but may still need destroyable association. Return a const ref
+        // carrying undefined.
+        ref = createConstRef(undefined, debugName);
       }
 
-      return undefined;
+      // Brand the returned object with the REFERENCE symbol so Glimmer VM's
+      // CheckReference.validate() (which asserts `REFERENCE in value`) accepts
+      // it. Our createComputeRef/createConstRef wrappers don't set this by
+      // default because most GXT paths consume `.value` directly without
+      // going through the VM's reference checker.
+      try {
+        (ref as any)[REFERENCE] = true;
+      } catch {
+        // frozen — ignore
+      }
+      return ref;
     };
   }
 

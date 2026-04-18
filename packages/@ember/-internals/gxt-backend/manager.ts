@@ -4700,7 +4700,14 @@ function _resolveEmberHelper(name: string, owner: any): ((positional: any[], nam
       }
       if (typeof internalManager.getHelper === 'function') {
         return (positional: any[], named: any) => {
-          return internalManager.getHelper(definition)({ positional, named: named || {} }, owner);
+          // getHelper() now returns a Reference (to match stock Glimmer VM
+          // contract). Unwrap to the raw value for GXT's helper-value call
+          // sites via `.value` (or direct return for primitives).
+          const maybeRef = internalManager.getHelper(definition)({ positional, named: named || {} }, owner);
+          if (maybeRef != null && typeof maybeRef === 'object' && 'value' in maybeRef) {
+            return (maybeRef as any).value;
+          }
+          return maybeRef;
         };
       }
     }
@@ -5490,7 +5497,13 @@ const $_MANAGERS = {
           // Fallback: use getHelper if available
           if (typeof internalManager.getHelper === 'function') {
             const resolvedFn = (positional: any[], named: any) => {
-              return internalManager.getHelper(helper)({ positional, named: named || {} }, owner);
+              // getHelper() now returns a Reference (to match stock Glimmer VM
+              // contract). Unwrap via `.value` for GXT curry-helper paths.
+              const maybeRef = internalManager.getHelper(helper)({ positional, named: named || {} }, owner);
+              if (maybeRef != null && typeof maybeRef === 'object' && 'value' in maybeRef) {
+                return (maybeRef as any).value;
+              }
+              return maybeRef;
             };
 
             const curriedPositionals = Array.isArray(params) ? params.map(unwrapVal) : [];
@@ -8666,8 +8679,16 @@ export function getHelperManager(helper: any) {
 const _COMPONENT_MANAGER_WRAPPERS = new WeakMap<object, any>();
 const _MODIFIER_MANAGER_WRAPPERS = new WeakMap<object, any>();
 
-export function getInternalComponentManager(handle: any) {
-  if (handle === null || handle === undefined) return undefined;
+export function getInternalComponentManager(handle: any, isOptional?: boolean) {
+  if (handle === null || handle === undefined) {
+    // When called from `constants.component(def, owner, true)` (optional lookup
+    // path, used by `resolveOptionalComponentOrHelper` to distinguish
+    // component-vs-helper-vs-value), we must return `null` so the caller's
+    // `if (manager === null)` branch fires and the resolver falls through to
+    // helper/value lookup. Returning `undefined` would trip the
+    // `BUG: expected manager` localAssert that follows.
+    return isOptional ? null : undefined;
+  }
   // Walk the prototype chain — first look for internal managers
   // (setInternalComponentManager path), which are returned as-is.
   let pointer = handle;
@@ -8702,7 +8723,12 @@ export function getInternalComponentManager(handle: any) {
       break;
     }
   }
-  return undefined;
+  // Nothing found. When the caller explicitly marks this as an optional lookup
+  // (e.g. `resolveOptionalComponentOrHelper` probing whether `def` is a
+  // component), return `null` so the caller can branch cleanly. When called
+  // for a required resolution return `undefined` (unchanged legacy behaviour,
+  // which triggers a useful assertion further up the stack).
+  return isOptional ? null : undefined;
 }
 
 export function getComponentTemplate(comp: any): any {
