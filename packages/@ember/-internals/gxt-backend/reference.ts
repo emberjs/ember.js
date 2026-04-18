@@ -189,8 +189,42 @@ export function childRefFor(parentRef: any, path: string): any {
     children.set(path, child);
     return child;
   }
-  const ref = _childRefFor(parentRef, path);
-  return brandRef(ref, 1 /* COMPUTE */);
+  // Unmarked parent: GXT's `_childRefFor(parentRef, path)` internally
+  // evaluates `parentRef.value` eagerly and passes the result to `I(value, path)`
+  // which reads `value.constructor.name`. If the current value is null/undefined
+  // (common for stock Glimmer JIT VM iteration refs where the item resolves
+  // to a nested hash that hasn't been materialized yet, or bare ${{get}} calls
+  // through intermediate undefined), the eager access crashes.
+  //
+  // Build a classic-style compute ref instead so evaluation is deferred and
+  // null/undefined intermediate values simply produce an `undefined` child.
+  // This matches stock `@glimmer/reference` childRefFor semantics (see
+  // `packages/@glimmer/reference/lib/references.ts::childRefFor`).
+  const childCompute = () => {
+    const p = valueForRef(parentRef);
+    if (p != null && (typeof p === 'object' || typeof p === 'function')) {
+      return getProp(p as object, path);
+    }
+    return undefined;
+  };
+  const childCache = createCache(childCompute);
+  const label = `${String((parentRef as any)?.debugLabel ?? 'ref')}.${path}`;
+  const child: any = {
+    [COMPUTED_MARKER]: true,
+    [GLIMMER_REFERENCE]: 1 /* COMPUTE */,
+    debugLabel: label,
+    get value() {
+      return childCache.value;
+    },
+    compute: childCompute,
+    update(val: any) {
+      const p = valueForRef(parentRef);
+      if (p != null && (typeof p === 'object' || typeof p === 'function')) {
+        setProp(p as object, path, val);
+      }
+    },
+  };
+  return child;
 }
 
 // Export the canonical REFERENCE symbol. Because `@glimmer/reference` is
