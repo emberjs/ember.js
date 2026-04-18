@@ -163,6 +163,19 @@ export function childRefFor(parentRef: any, path: string): any {
     if (parent != null && (typeof parent === 'object' || typeof parent === 'function')) {
       return createUnboundRef((parent as any)[path], path);
     }
+    // Allow direct property access on primitives (string/number/boolean/symbol/bigint)
+    // so that yielded literals like `{{yield "foo"}}` -> `{{yielded.length}}` work.
+    // Stock @glimmer/reference uses isDict() (non-null/undefined) here; getProp from
+    // @glimmer/global-context rejects primitives, so use direct auto-boxed access.
+    if (parent != null) {
+      let primValue: any = undefined;
+      try {
+        primValue = (parent as any)[path];
+      } catch {
+        // ignore
+      }
+      return createUnboundRef(primValue, path);
+    }
     return createUnboundRef(undefined, path);
   }
   // For computed/const/readonly/invokable refs produced by our wrappers,
@@ -195,6 +208,16 @@ export function childRefFor(parentRef: any, path: string): any {
       const p = valueForRef(parentRef);
       if (p != null && (typeof p === 'object' || typeof p === 'function')) {
         return getProp(p as object, path);
+      }
+      // Allow direct property access on primitives — auto-boxing makes
+      // `'foo'.length`, `(42).toString` etc. work. Matches isDict() semantics
+      // used by stock @glimmer/reference's childRefFor.
+      if (p != null) {
+        try {
+          return (p as any)[path];
+        } catch {
+          return undefined;
+        }
       }
       return undefined;
     };
@@ -233,6 +256,16 @@ export function childRefFor(parentRef: any, path: string): any {
     const p = valueForRef(parentRef);
     if (p != null && (typeof p === 'object' || typeof p === 'function')) {
       return getProp(p as object, path);
+    }
+    // Allow direct property access on primitives (string/number/boolean) via
+    // JavaScript auto-boxing, matching stock @glimmer/reference's isDict()
+    // gate which accepts any non-null/undefined value.
+    if (p != null) {
+      try {
+        return (p as any)[path];
+      } catch {
+        return undefined;
+      }
     }
     return undefined;
   };
