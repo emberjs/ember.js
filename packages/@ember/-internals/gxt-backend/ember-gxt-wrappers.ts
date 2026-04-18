@@ -2417,3 +2417,85 @@ const _wrappedDc = createEmberDc(gxtModule.$_dc);
 
 // Re-export with original names (using alias to avoid GXT Babel plugin duplicate)
 export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag, _wrappedDc as $_dc };
+
+// =============================================================================
+// Selective UpdatingVM.alwaysRevalidate — Dynamic Component tracked-state fix
+// =============================================================================
+//
+// Fixes the "GlimmerishComponents :: invoking dynamic component ... supports
+// args, attributes, and blocks" tests where `@tracked localProperty` set on a
+// captured instance → `this.rerender()` → template still shows old value.
+//
+// Root cause: In jit-mode tests, Glimmer VM's `UpdatingVM.execute` runs with
+// `alwaysRevalidate=false` by default. When a tracked setter fires OUTSIDE the
+// normal VM update cycle (via `instance.captured.x = 'LOCAL'; this.rerender()`),
+// the combined track-tag validation via our `validateTag`/`currentTagRevision`
+// in the gxt-backend validator appears to pass (returns "valid") for some
+// nested childRef paths, causing `valueForRef` to return a cached stale value
+// despite the outer JumpIfNotModifiedOpcode correctly signalling invalidation.
+// Forcing `alwaysRevalidate=true` causes valueForRef to recompute every
+// childRef, which produces the correct fresh value.
+//
+// Narrow fix: we only flip `alwaysRevalidate` ONCE per VM.execute call, when
+// a tracked setter has fired since the last execute. A module-scoped flag
+// (`__gxtTrackedSetSinceRerender`) is set by hooking `__gxtTriggerReRender`
+// (which is called by the tracked setter path in glimmer-tracking.ts), and is
+// consumed (cleared) on the next `UpdatingVM.execute`. The `{{#each}}` list
+// iterator and other stable-rerender paths are unaffected on rerenders where
+// no tracked set occurred, preserving DOM node identity for tests like
+// "trackedMap() (rendering) :: each: set".
+Promise.resolve().then(async () => {
+  try {
+    const rt: any = await import('@glimmer/runtime');
+    const UVM = rt.UpdatingVM;
+    if (UVM && !UVM.prototype.__gxtEmberPatchedAlwaysRevalidate) {
+      const origExecute = UVM.prototype.execute;
+      UVM.prototype.execute = function(this: any, ...args: any[]) {
+        // Only force revalidate if a tracked setter has fired since the last
+        // execute. This limits the perf cost and preserves DOM node identity
+        // for untouched subtrees.
+        if ((g as any).__gxtTrackedSetSinceRerender) {
+          (g as any).__gxtTrackedSetSinceRerender = false;
+          const prevRevalidate = this.alwaysRevalidate;
+          this.alwaysRevalidate = true;
+          try {
+            return origExecute.apply(this, args);
+          } finally {
+            this.alwaysRevalidate = prevRevalidate;
+          }
+        }
+        return origExecute.apply(this, args);
+      };
+      UVM.prototype.__gxtEmberPatchedAlwaysRevalidate = true;
+    }
+  } catch { /* runtime not reachable — noop */ }
+});
+
+// Hook __gxtTriggerReRender so we know when a tracked setter has fired
+// outside a render (indicating imminent rerender that needs fresh validation).
+// Installed lazily via a settable property, chaining any existing wrapper
+// (e.g., the one in @ember/object/core.ts's ensureTriggerReRenderWrapped).
+(function installTrackedSetDetector() {
+  const gg = globalThis as any;
+  // If __gxtTriggerReRender isn't set yet, defer via microtask until it is.
+  if (typeof gg.__gxtTriggerReRender !== 'function') {
+    if (!gg.__gxtTrackedSetDetectorScheduled) {
+      gg.__gxtTrackedSetDetectorScheduled = true;
+      queueMicrotask(() => {
+        gg.__gxtTrackedSetDetectorScheduled = false;
+        installTrackedSetDetector();
+      });
+    }
+    return;
+  }
+  if (gg.__gxtTriggerReRender.__gxtTrackedSetDetectorInstalled) return;
+  const orig = gg.__gxtTriggerReRender;
+  const wrapped = function (this: any, obj: any, keyName: string) {
+    // Mark that a tracked set (or equivalent notify) has occurred since the
+    // last VM.execute. The flag is consumed in UpdatingVM.execute above.
+    gg.__gxtTrackedSetSinceRerender = true;
+    return orig.call(this, obj, keyName);
+  };
+  wrapped.__gxtTrackedSetDetectorInstalled = true;
+  gg.__gxtTriggerReRender = wrapped;
+})();
