@@ -3667,34 +3667,6 @@ function patchGlobalEachSync() {
     if (typeof inverseFn === 'function') {
       const origInverseFn = inverseFn;
       inverseFn = function wrappedInverseFn(ctx0: any) {
-        if ((g as any).__dbgEachTrace !== false) {
-          try {
-            (g as any).__dbgEachTrace = (g as any).__dbgEachTrace || [];
-            // Track identity across phases
-            (g as any).__dbgEachParents = (g as any).__dbgEachParents || [];
-            const parentsArr = (g as any).__dbgEachParents;
-            let pIdx = parentsArr.indexOf(capturedParent);
-            if (pIdx < 0) {
-              parentsArr.push(capturedParent);
-              pIdx = parentsArr.length - 1;
-            }
-            (g as any).__dbgEachTrace.push({
-              where: 'inverseFn',
-              forceRR: !!(g as any).__gxtIsForceRerender,
-              passId: (g as any).__emberRenderPassId || 0,
-              cpId: capturedParent && (capturedParent.elementId || capturedParent.layoutName || typeof capturedParent),
-              cpIsReal: capturedParent && Object.prototype.hasOwnProperty.call(capturedParent, 'layoutName'),
-              cpIdentityIdx: pIdx,
-              ctxType: ctx?.constructor?.name || typeof ctx,
-              ctxIdentityIdx: (() => {
-                const ctxArr = (g as any).__dbgEachCtxs = (g as any).__dbgEachCtxs || [];
-                let cIdx = ctxArr.indexOf(ctx);
-                if (cIdx < 0) { ctxArr.push(ctx); cIdx = ctxArr.length - 1; }
-                return cIdx;
-              })(),
-            });
-          } catch {}
-        }
         return withParent(() => origInverseFn(ctx0));
       };
     }
@@ -7126,99 +7098,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           let handleResult: any;
           let rendered: any;
           try {
-            if ((globalThis as any).__dbgEachTrace !== false && (kebabName === 'no-items' || kebabName === 'nested-item' || kebabName === 'an-item')) {
-              (globalThis as any).__dbgEachTrace = (globalThis as any).__dbgEachTrace || [];
-              const ctxInfo: any = {
-                where: 'handle-before',
-                name: kebabName,
-                forceRR: !!__forceRerenderSnapshot,
-                passId: (globalThis as any).__emberRenderPassId || 0,
-                cycle: (globalThis as any).__gxtSyncCycleId || 0,
-              };
-              try {
-                const ctxRaw = ctx && (ctx.__gxtRawTarget || ctx);
-                ctxInfo.ctxType = ctxRaw?.constructor?.name || typeof ctxRaw;
-                ctxInfo.ctxHasLayout = ctxRaw && Object.prototype.hasOwnProperty.call(ctxRaw, 'layoutName');
-              } catch {}
-              // Dump pool state — ALL pools that may be relevant
-              try {
-                const allPools = (globalThis as any).__gxtAllPoolArrays;
-                if (allPools) {
-                  const poolSummary: any[] = [];
-                  let pIdx = 0;
-                  for (const poolArr of allPools) {
-                    pIdx++;
-                    if (poolArr.length === 0) continue;
-                    const first = poolArr[0];
-                    const name = first?.instance?.layoutName || first?.instance?._debugContainerKey ||
-                                 first?.instance?.constructor?.name;
-                    const nm = String(name || '');
-                    if (nm.includes('no-items') || nm.includes('nested-item') || nm.includes('an-item')) {
-                      poolSummary.push({
-                        pIdx, name: nm,
-                        lastPassId: (poolArr as any).__lastPassId,
-                        entries: poolArr.map((e: any) => ({
-                          id: e.instance?.elementId,
-                          claimed: e.claimed,
-                          destroyed: !!e.instance?.isDestroyed,
-                          destroying: !!e.instance?.isDestroying,
-                          parentView: e.instance?.parentView?.elementId ||
-                                      e.instance?.parentView?.layoutName ||
-                                      (e.instance?.parentView ? 'some-parent' : 'null'),
-                        })),
-                      });
-                    }
-                  }
-                  if (poolSummary.length > 0) ctxInfo.pools = poolSummary;
-                }
-              } catch {}
-              (globalThis as any).__dbgEachTrace.push(ctxInfo);
-            }
             handleResult = managers.component.handle(kebabName, args, fw, ctx);
             rendered = handleResult;
             if (typeof rendered === 'function') {
               rendered = rendered();
-            }
-            if ((globalThis as any).__dbgEachTrace !== false && (kebabName === 'no-items' || kebabName === 'nested-item' || kebabName === 'an-item')) {
-              const inst = (globalThis as any).__gxtLastCreatedEmberInstance;
-              const afterInfo: any = {
-                where: 'handle-after',
-                name: kebabName,
-                passId: (globalThis as any).__emberRenderPassId || 0,
-                instId: inst?.elementId || null,
-                everInserted: !!inst?.__gxtEverInserted,
-                reused: !!inst?.__gxtReusedFromPool,
-              };
-              try {
-                const allPools = (globalThis as any).__gxtAllPoolArrays;
-                if (allPools) {
-                  const poolSummary: any[] = [];
-                  let pIdx = 0;
-                  for (const poolArr of allPools) {
-                    pIdx++;
-                    if (poolArr.length === 0) continue;
-                    const first = poolArr[0];
-                    const name = first?.instance?.layoutName || first?.instance?._debugContainerKey ||
-                                 first?.instance?.constructor?.name;
-                    const nm = String(name || '');
-                    if (nm.includes(kebabName)) {
-                      poolSummary.push({
-                        pIdx, name: nm,
-                        lastPassId: (poolArr as any).__lastPassId,
-                        entries: poolArr.map((e: any) => ({
-                          id: e.instance?.elementId,
-                          claimed: e.claimed,
-                          parentView: e.instance?.parentView?.elementId ||
-                                      e.instance?.parentView?.layoutName ||
-                                      (e.instance?.parentView ? 'some-parent' : 'null'),
-                        })),
-                      });
-                    }
-                  }
-                  if (poolSummary.length > 0) afterInfo.pools = poolSummary;
-                }
-              } catch {}
-              (globalThis as any).__dbgEachTrace.push(afterInfo);
             }
           } finally {
             // Pop the template-only tracking stack after render (even on error).
@@ -7986,7 +7869,49 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
+    // Track which attr entries have dynamic sources that return null/undefined.
+    // After GXT renders, we'll strip those attributes from the DOM element so
+    // Ember-style "null/undefined means no attribute" semantics win.
+    const _nullishAttrsForCleanup: string[] = [];
+    if (
+      tagProps &&
+      tagProps !== g.$_edp &&
+      typeof tag === 'string' &&
+      !g.__gxtNamespace &&
+      Array.isArray(tagProps[1])
+    ) {
+      for (const entry of tagProps[1]) {
+        if (!Array.isArray(entry) || entry.length < 2) continue;
+        const key = entry[0];
+        const value = entry[1];
+        if (typeof key !== 'string' || key.startsWith('@')) continue;
+        if (typeof value === 'function') {
+          let v: unknown;
+          try {
+            v = value();
+            while (typeof v === 'function') v = (v as () => unknown)();
+          } catch {
+            v = undefined;
+          }
+          if (v == null) _nullishAttrsForCleanup.push(key);
+        }
+      }
+    }
+
     const result = originalTag(tag, tagProps, ctx, children);
+
+    if (
+      _nullishAttrsForCleanup.length > 0 &&
+      result instanceof Element
+    ) {
+      for (const key of _nullishAttrsForCleanup) {
+        try {
+          result.removeAttribute(key);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
 
     // Post-apply: GXT's originalTag only renders attributes from tagProps[1]
     // for plain HTML tags. Position 0 ("props") is used internally for
