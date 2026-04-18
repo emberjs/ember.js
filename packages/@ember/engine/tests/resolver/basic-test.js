@@ -355,4 +355,87 @@ module('strict-resolver | basic', function (hooks) {
 
     assert.strictEqual(result, 'whatever', 'super-duper-config/environment is found');
   });
+
+  test('default plural handles -s / -ss / -sh / -ch / -x / -z suffixes', function (assert) {
+    let cases = {
+      './buses/red': 'bus:red',
+      './brushes/broom': 'brush:broom',
+      './benches/park': 'bench:park',
+      './boxes/cardboard': 'box:cardboard',
+      './buzzes/loud': 'buzz:loud',
+      './classes/math': 'class:math',
+    };
+
+    for (let [modulePath, lookup] of Object.entries(cases)) {
+      let r = new StrictResolver({ [modulePath]: modulePath });
+      assert.strictEqual(r.resolve(lookup), modulePath, `${lookup} -> ${modulePath}`);
+    }
+  });
+
+  test('default plural handles consonant + y suffix (y -> ies)', function (assert) {
+    let r = new StrictResolver({ './categories/widgets': 'widgets-cat' });
+
+    assert.strictEqual(r.resolve('category:widgets'), 'widgets-cat');
+  });
+
+  test('default plural handles common irregular nouns', function (assert) {
+    let cases = {
+      './children/alice': 'child:alice',
+      './people/bob': 'person:bob',
+      './men/carl': 'man:carl',
+      './women/dana': 'woman:dana',
+      './mice/squeaky': 'mouse:squeaky',
+      './teeth/molar': 'tooth:molar',
+      './feet/left': 'foot:left',
+    };
+
+    for (let [modulePath, lookup] of Object.entries(cases)) {
+      let r = new StrictResolver({ [modulePath]: modulePath });
+      assert.strictEqual(r.resolve(lookup), modulePath, `${lookup} -> ${modulePath}`);
+    }
+  });
+
+  test('custom plural overrides irregular default', function (assert) {
+    // a user who insists on "childs" should be able to opt out of the
+    // built-in irregular plural
+    let r = new StrictResolver({ './childs/alice': 'alice' }, { child: 'childs' });
+
+    assert.strictEqual(r.resolve('child:alice'), 'alice');
+  });
+
+  test('can lookup a nested-colocation component (index file)', function (assert) {
+    let expected = { isComponentFactory: true };
+    resolver.addModules({
+      './components/my-widget/index': { default: expected },
+    });
+
+    assert.strictEqual(resolver.resolve('component:my-widget'), expected);
+  });
+
+  test('nested-colocation also works for helpers and modifiers', function (assert) {
+    let helper = {};
+    let modifier = {};
+    resolver.addModules({
+      './helpers/format-date/index': { default: helper },
+      './modifiers/on-intersect/index': { default: modifier },
+    });
+
+    assert.strictEqual(resolver.resolve('helper:format-date'), helper);
+    assert.strictEqual(resolver.resolve('modifier:on-intersect'), modifier);
+  });
+
+  test('direct module takes precedence over the nested-colocation index', function (assert) {
+    let direct = { direct: true };
+    let nested = { nested: true };
+    resolver.addModules({
+      './components/my-widget': { default: direct },
+      './components/my-widget/index': { default: nested },
+    });
+
+    assert.strictEqual(
+      resolver.resolve('component:my-widget'),
+      direct,
+      'direct match wins over the colocation fallback'
+    );
+  });
 });

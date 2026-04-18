@@ -30,13 +30,18 @@ export class StrictResolver implements Resolver {
   }
 
   #plural(s: string) {
-    return this.#plurals.get(s) ?? s + 's';
+    return this.#plurals.get(s) ?? pluralize(s);
   }
 
   resolve(fullName: string): Factory<object> | object | undefined {
     let [type, name] = fullName.split(':') as [string, string];
     name = this.#normalizeName(type, name);
-    for (let strategy of [this.#resolveSelf, this.#mainLookup, this.#defaultLookup]) {
+    for (let strategy of [
+      this.#resolveSelf,
+      this.#mainLookup,
+      this.#defaultLookup,
+      this.#nestedColocationLookup,
+    ]) {
       let result = strategy.call(this, type, name);
       if (result) {
         return this.#extractDefaultExport(result.hit);
@@ -101,6 +106,50 @@ export class StrictResolver implements Resolver {
     }
     return undefined;
   }
+
+  // Supports the nested colocation pattern where `component:my-widget`
+  // resolves to `./components/my-widget/index.{js,ts,gjs,gts}`. The index
+  // file is typically the component class, and it's commonly paired with a
+  // sibling `template.hbs` inside the same folder.
+  #nestedColocationLookup(type: string, name: string): Result {
+    let dir = this.#plural(type);
+    let target = `${dir}/${name}/index`;
+    let module = this.#modules.get(target);
+    if (module) {
+      return { hit: module };
+    }
+    return undefined;
+  }
+}
+
+// Handle the common irregular English plurals plus the standard -s / -es
+// suffix rules. Users can override any type via the `plurals` constructor
+// option (including overriding these defaults).
+const IRREGULAR_PLURALS: Record<string, string> = Object.freeze({
+  child: 'children',
+  man: 'men',
+  woman: 'women',
+  person: 'people',
+  mouse: 'mice',
+  tooth: 'teeth',
+  foot: 'feet',
+});
+
+const NEEDS_ES_SUFFIX = /(s|ss|sh|ch|x|z)$/;
+const ENDS_IN_CONSONANT_Y = /([^aeiou])y$/;
+
+function pluralize(singular: string): string {
+  let irregular = IRREGULAR_PLURALS[singular];
+  if (irregular) {
+    return irregular;
+  }
+  if (ENDS_IN_CONSONANT_Y.test(singular)) {
+    return singular.replace(ENDS_IN_CONSONANT_Y, '$1ies');
+  }
+  if (NEEDS_ES_SUFFIX.test(singular)) {
+    return singular + 'es';
+  }
+  return singular + 's';
 }
 
 const fileExtension = /\.\w{1,4}$/;
