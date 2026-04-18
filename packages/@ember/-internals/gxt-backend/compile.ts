@@ -1928,6 +1928,79 @@ setTimeout(() => {
 // This only handles null -> "" but not undefined. In Ember, when a bound attribute
 // value becomes undefined, the attribute should be REMOVED from the element.
 // Without this patch, undefined becomes the string "undefined" on the DOM.
+//
+// Additionally, sanitize dangerous `javascript:`/`vbscript:` URL values for
+// href/src/action/background attributes on A/IMG/LINK/IFRAME/BASE/FORM/BODY
+// tags (matching Glimmer's sanitizeAttributeValue contract in
+// `@glimmer/runtime/lib/dom/sanitized-values.ts`). Without this, tests that
+// expect `href="unsafe:javascript:..."` see the raw `javascript:...` instead.
+const _SANITIZE_BAD_PROTOCOLS = ['javascript:', 'vbscript:'];
+const _SANITIZE_BAD_TAGS = new Set(['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM']);
+const _SANITIZE_BAD_ATTRS = new Set(['href', 'src', 'background', 'action']);
+const _SANITIZE_DATAURI_TAGS = new Set(['EMBED']);
+const _SANITIZE_DATAURI_ATTRS = new Set(['src']);
+function _sanitizeUrlAttribute(element: any, name: string, strValue: string): string {
+  if (!element || typeof element.tagName !== 'string') return strValue;
+  const tagName = element.tagName.toUpperCase();
+  const attr = name;
+  // Skip if this element/attr combination doesn't require URI sanitization
+  const needsUri = _SANITIZE_BAD_TAGS.has(tagName) && _SANITIZE_BAD_ATTRS.has(attr);
+  const needsDataUri = _SANITIZE_DATAURI_TAGS.has(tagName) && _SANITIZE_DATAURI_ATTRS.has(attr);
+  if (!needsUri && !needsDataUri) return strValue;
+  // Extract protocol via URL parser (robust to spaces/case/encoded schemes)
+  let protocol = ':';
+  try {
+    if (typeof URL === 'function') {
+      protocol = new URL(strValue, 'http://_/').protocol.toLowerCase();
+    }
+  } catch {
+    // Malformed URL — fall back to naive split (safe for explicit javascript:foo)
+    const idx = strValue.indexOf(':');
+    if (idx > -1) protocol = strValue.slice(0, idx + 1).toLowerCase();
+  }
+  if (needsUri && _SANITIZE_BAD_PROTOCOLS.indexOf(protocol) !== -1) {
+    return `unsafe:${strValue}`;
+  }
+  if (needsDataUri) {
+    return `unsafe:${strValue}`;
+  }
+  return strValue;
+}
+// Fallback sanitization: patch Element.prototype.setAttribute too. Vite dev
+// server sometimes loads duplicate copies of the GXT dom chunk (versioned
+// URL vs unversioned), and the runtime may use the unpatched copy. A global
+// Element.prototype hook guarantees sanitization regardless of which chunk
+// provides the DOM API. The override is gated on tag/attr/protocol so it
+// never touches unrelated setAttribute calls.
+if (typeof Element !== 'undefined' && Element.prototype && (Element.prototype as any).setAttribute && !(Element.prototype as any).__gxtSanitizePatched) {
+  const _origSetAttribute = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function(name: string, value: any): void {
+    if (typeof value === 'string') {
+      const tagName = this.tagName ? this.tagName.toUpperCase() : '';
+      const needsUri = _SANITIZE_BAD_TAGS.has(tagName) && _SANITIZE_BAD_ATTRS.has(name);
+      const needsDataUri = _SANITIZE_DATAURI_TAGS.has(tagName) && _SANITIZE_DATAURI_ATTRS.has(name);
+      if (needsUri || needsDataUri) {
+        let protocol = ':';
+        try {
+          if (typeof URL === 'function') {
+            protocol = new URL(value, 'http://_/').protocol.toLowerCase();
+          }
+        } catch {
+          const idx = value.indexOf(':');
+          if (idx > -1) protocol = value.slice(0, idx + 1).toLowerCase();
+        }
+        if (needsUri && _SANITIZE_BAD_PROTOCOLS.indexOf(protocol) !== -1) {
+          return _origSetAttribute.call(this, name, `unsafe:${value}`);
+        }
+        if (needsDataUri) {
+          return _origSetAttribute.call(this, name, `unsafe:${value}`);
+        }
+      }
+    }
+    return _origSetAttribute.call(this, name, value);
+  };
+  (Element.prototype as any).__gxtSanitizePatched = true;
+}
 if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
   const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
   const _patchedAttr = function(element: any, name: string, value: any) {
@@ -1944,6 +2017,10 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
       //   Symbol(debug) -> "Symbol(debug)"
       //   Object.create(null) -> ""
       origAttr.call(this, element, name, _normalizeStringValue(value));
+    } else if (typeof value === 'string') {
+      // Skip SafeString objects (they have toHTML) — but strings are
+      // always unsafe and need URL sanitization on href/src/action/background.
+      origAttr.call(this, element, name, _sanitizeUrlAttribute(element, name, value));
     } else {
       origAttr.call(this, element, name, value);
     }
