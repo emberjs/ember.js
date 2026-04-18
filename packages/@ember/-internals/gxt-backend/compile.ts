@@ -4910,6 +4910,121 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   },
 };
 
+// ---------------------------------------------------------------------------
+// {{on}} modifier — once/capture/passive named-arg support
+// ---------------------------------------------------------------------------
+//
+// Upstream GXT's AST compiler short-circuits when it sees `{{on "event" cb ...}}`
+// as an element modifier and emits `[eventName, ($e, $n) => cb($e, $n, ...rest)]`,
+// dropping the hash pairs entirely. That loses `once=`, `capture=`, `passive=`.
+//
+// Fix strategy — rename to bypass the compiler short-circuit:
+//   * When we see `{{on "evt" cb once=X capture=Y passive=Z}}`, we rewrite
+//     the modifier path to the alias `on-ext`. Because the AST visitor
+//     branches on the literal name `"on"`, the alias flows through the
+//     *general* modifier path which fully preserves hash pairs.
+//   * We register `on-ext` in `$_MANAGERS.modifier._builtinModifiers` as an
+//     alias for the Glimmer VM `on` modifier. At handle-time, manager.ts
+//     resolves the alias to the same internal manager (`OnModifierManager`),
+//     which natively understands `once=` / `capture=` / `passive=` AND the
+//     classic rebind-on-callback-change semantics (remove + add listener)
+//     that Ember's {{on}} tests assert via counter deltas.
+//   * Even hash-less forms are routed through the alias so the
+//     OnModifierManager's rebind-on-callback-change semantics fire. GXT's
+//     own short-circuit binds a stable arrow that reads the handler
+//     reactively and never issues remove/add on change, which would skew
+//     the counter assertions.
+//
+// The alias name uses a hyphen so it can never collide with a user-defined
+// modifier (Glimmer's Handlebars parser accepts hyphenated identifiers).
+const _GXT_ON_EXT_ALIAS = 'on-ext';
+let _gxtOnExtAliasInstalled = false;
+/**
+ * Register `on-ext` as an alias for the `on` modifier inside
+ * `$_MANAGERS.modifier._builtinModifiers`. Invoked at every call to
+ * `precompileTemplate` so the alias is available as soon as the `on`
+ * modifier has been registered (via `setInternalModifierManager`).
+ * Idempotent: the alias is installed at most once per session.
+ */
+function _ensureOnExtAlias(): void {
+  if (_gxtOnExtAliasInstalled) return;
+  const mgrs = (globalThis as any).$_MANAGERS;
+  const builtins = mgrs?.modifier?._builtinModifiers;
+  if (!builtins) return;
+  const onModifier = builtins['on'];
+  if (!onModifier) return;
+  builtins[_GXT_ON_EXT_ALIAS] = onModifier;
+  _gxtOnExtAliasInstalled = true;
+}
+
+/**
+ * Pre-process template source: rewrite every `{{on ...}}` element modifier
+ * to `{{on-ext ...}}` so it flows through GXT's general modifier path
+ * (which preserves hash pairs and defers to
+ * `$_MANAGERS.modifier.handle(...)`). The alias maps to the same
+ * OnModifierManager as stock `on` via `_builtinModifiers` aliasing.
+ */
+function transformOnModifierHashArgs(template: string): string {
+  if (!template || template.indexOf('{{on ') === -1 && template.indexOf('{{on\t') === -1 && template.indexOf('{{on\n') === -1) {
+    return template;
+  }
+  const needle = '{{on';
+  let out = '';
+  let i = 0;
+  const len = template.length;
+  while (i < len) {
+    const at = template.indexOf(needle, i);
+    if (at === -1) {
+      out += template.slice(i);
+      break;
+    }
+    const afterOn = at + needle.length;
+    const ws = template[afterOn];
+    if (ws !== ' ' && ws !== '\t' && ws !== '\n' && ws !== '\r') {
+      out += template.slice(i, afterOn);
+      i = afterOn;
+      continue;
+    }
+    // Locate the matching `}}` for this mustache, respecting string/paren nesting.
+    let j = afterOn;
+    let depth = 0;
+    let closeAt = -1;
+    while (j < len) {
+      const ch = template[j]!;
+      if (ch === '"' || ch === "'") {
+        const quote = ch;
+        j++;
+        while (j < len && template[j] !== quote) {
+          if (template[j] === '\\') j++;
+          j++;
+        }
+        j++;
+        continue;
+      }
+      if (ch === '(') { depth++; j++; continue; }
+      if (ch === ')') { depth--; j++; continue; }
+      if (depth === 0 && ch === '}' && template[j + 1] === '}') {
+        closeAt = j;
+        break;
+      }
+      j++;
+    }
+    if (closeAt === -1) {
+      out += template.slice(i);
+      break;
+    }
+    const body = template.slice(afterOn, closeAt);
+    // Always route through the `on-ext` alias. Even hash-less forms benefit:
+    // the Glimmer VM `OnModifierManager` handles listener rebinding on
+    // callback reference change (remove+add), which GXT's short-circuit does
+    // not — reflecting that behaviour in the counter assertions the Ember
+    // {{on}} test suite makes.
+    out += template.slice(i, at) + '{{' + _GXT_ON_EXT_ALIAS + body + '}}';
+    i = closeAt + 2;
+  }
+  return out;
+}
+
 // Caching wrapper for {{unbound}} helper.
 // Each call site in a template gets a unique ID. The first evaluation
 // stores the result; subsequent evaluations return the cached value.
@@ -8479,6 +8594,14 @@ export function precompileTemplate(templateString: string, options?: {
   // onclick={{expr}} → {{on "click" expr}} transform is now handled at the AST level
   // in the GXT compiler (visitors/element.ts rewriteOnEventAttributes),
   // gated behind IS_GLIMMER_COMPAT_MODE.
+
+  // {{on "evt" handler once=X capture=Y passive=Z}} — rename the modifier to
+  // the `on-ext` alias so GXT's `on`-only short-circuit does not drop the hash
+  // pairs. `on-ext` resolves to the same Glimmer VM OnModifierManager via
+  // `$_MANAGERS.modifier._builtinModifiers`, which natively understands the
+  // hash args and passes them to `addEventListener` with the correct options.
+  _ensureOnExtAlias();
+  transformedTemplate = transformOnModifierHashArgs(transformedTemplate);
 
   // Check for dotted-path mustache expressions like {{foo.bar}} where foo is not in scope.
   // In Ember, these are errors because foo is a free variable path that can't be resolved.
