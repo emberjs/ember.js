@@ -12,6 +12,7 @@ import {
   extractRouteArgs,
   getActiveTargetName,
   resemblesURL,
+  stashParamNames,
 } from './lib/utils';
 import type { RouteArgs, RouteOptions } from './lib/utils';
 import type {
@@ -1110,6 +1111,24 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     _fromRouterService?: boolean
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
+    // Ensure qp.parts is populated for model-scoped query params so that the
+    // cacheKey in _hydrateUnsuppliedQueryParams matches the one used when
+    // _qpChanged stashed the sticky value. stashParamNames accesses
+    // routeInfo.route._stashNames on each routeInfo — but routeInfo.route's
+    // getter fetches (async-loads) the route if it's not yet resolved, which
+    // would break "only fetch handlers for the current route" invariants for
+    // links that point to lazy routes. Use the internal _route field to probe
+    // without triggering a fetch.
+    let allRoutesLoaded = true;
+    for (let info of state.routeInfos) {
+      if (!(info as any)._route) {
+        allRoutesLoaded = false;
+        break;
+      }
+    }
+    if (allRoutesLoaded) {
+      stashParamNames(this, state.routeInfos);
+    }
     this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
     this._serializeQueryParams(state.routeInfos, queryParams);
 
