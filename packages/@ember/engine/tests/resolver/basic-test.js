@@ -113,11 +113,7 @@ module('strict-resolver | basic', function (hooks) {
     modules['./fruits/orange'] = 'is awesome';
     resolver.addModules(modules);
 
-    assert.strictEqual(
-      resolver.resolve('fruit:orange'),
-      'is awesome',
-      'raw value was returned'
-    );
+    assert.strictEqual(resolver.resolve('fruit:orange'), 'is awesome', 'raw value was returned');
   });
 
   test("will unwrap the 'default' export automatically", function (assert) {
@@ -200,11 +196,7 @@ module('strict-resolver | basic', function (hooks) {
       './services/foo.ts': { default: 'from-ts' },
     });
 
-    assert.strictEqual(
-      resolver2.resolve('service:foo'),
-      'from-ts',
-      'file extension was stripped'
-    );
+    assert.strictEqual(resolver2.resolve('service:foo'), 'from-ts', 'file extension was stripped');
   });
 
   test('shorthand module registration (no default wrapper)', function (assert) {
@@ -224,26 +216,11 @@ module('strict-resolver | basic', function (hooks) {
   });
 
   test('normalization', function (assert) {
-    assert.strictEqual(
-      resolver.normalize('controller:posts'),
-      'controller:posts'
-    );
-    assert.strictEqual(
-      resolver.normalize('controller:postsIndex'),
-      'controller:posts-index'
-    );
-    assert.strictEqual(
-      resolver.normalize('controller:posts.index'),
-      'controller:posts/index'
-    );
-    assert.strictEqual(
-      resolver.normalize('controller:posts_index'),
-      'controller:posts-index'
-    );
-    assert.strictEqual(
-      resolver.normalize('controller:posts-index'),
-      'controller:posts-index'
-    );
+    assert.strictEqual(resolver.normalize('controller:posts'), 'controller:posts');
+    assert.strictEqual(resolver.normalize('controller:postsIndex'), 'controller:posts-index');
+    assert.strictEqual(resolver.normalize('controller:posts.index'), 'controller:posts/index');
+    assert.strictEqual(resolver.normalize('controller:posts_index'), 'controller:posts-index');
+    assert.strictEqual(resolver.normalize('controller:posts-index'), 'controller:posts-index');
     assert.strictEqual(
       resolver.normalize('controller:posts.post.index'),
       'controller:posts/post/index'
@@ -289,29 +266,14 @@ module('strict-resolver | basic', function (hooks) {
       resolver.normalize('template:blog/posts_index'),
       'template:blog/posts-index'
     );
-    assert.strictEqual(
-      resolver.normalize('service:userAuth'),
-      'service:user-auth'
-    );
+    assert.strictEqual(resolver.normalize('service:userAuth'), 'service:user-auth');
 
     // For helpers, we have special logic to avoid the situation of a template's
     // `{{someName}}` being surprisingly shadowed by a `some-name` helper
-    assert.strictEqual(
-      resolver.normalize('helper:make-fabulous'),
-      'helper:make-fabulous'
-    );
-    assert.strictEqual(
-      resolver.normalize('helper:fabulize'),
-      'helper:fabulize'
-    );
-    assert.strictEqual(
-      resolver.normalize('helper:make_fabulous'),
-      'helper:make-fabulous'
-    );
-    assert.strictEqual(
-      resolver.normalize('helper:makeFabulous'),
-      'helper:makeFabulous'
-    );
+    assert.strictEqual(resolver.normalize('helper:make-fabulous'), 'helper:make-fabulous');
+    assert.strictEqual(resolver.normalize('helper:fabulize'), 'helper:fabulize');
+    assert.strictEqual(resolver.normalize('helper:make_fabulous'), 'helper:make-fabulous');
+    assert.strictEqual(resolver.normalize('helper:makeFabulous'), 'helper:makeFabulous');
 
     // The same applies to components
     assert.strictEqual(
@@ -376,10 +338,7 @@ module('strict-resolver | basic', function (hooks) {
   });
 
   test('custom plurals are supported', function (assert) {
-    let resolver2 = new StrictResolver(
-      { './sheep/baaaaaa': 'whatever' },
-      { sheep: 'sheep' }
-    );
+    let resolver2 = new StrictResolver({ './sheep/baaaaaa': 'whatever' }, { sheep: 'sheep' });
 
     let result = resolver2.resolve('sheep:baaaaaa');
 
@@ -394,10 +353,6 @@ module('strict-resolver | basic', function (hooks) {
 
     let result = resolver2.resolve('config:environment');
 
-    assert.strictEqual(
-      result,
-      'whatever',
-      'super-duper-config/environment is found'
-    );
+    assert.strictEqual(result, 'whatever', 'super-duper-config/environment is found');
   });
 });

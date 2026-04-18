@@ -17,22 +17,17 @@ const STRING_DASHERIZE_CACHE = new Cache(1000, (key) =>
 const STRING_CLASSIFY_REGEXP_1 = /^(\-|_)+(.)?/;
 const STRING_CLASSIFY_REGEXP_2 = /(.)(\-|\_|\.|\s)+(.)?/g;
 const STRING_CLASSIFY_REGEXP_3 = /(^|\/|\.)([a-z])/g;
+const classifyReplace1 = (_match, _separator, chr) => (chr ? `_${chr.toUpperCase()}` : '');
+const classifyReplace2 = (_match, initialChar, _separator, chr) =>
+  initialChar + (chr ? chr.toUpperCase() : '');
 const CLASSIFY_CACHE = new Cache(1000, (str) => {
-  const replace1 = (_match, _separator, chr) =>
-    chr ? `_${chr.toUpperCase()}` : '';
-  const replace2 = (_match, initialChar, _separator, chr) =>
-    initialChar + (chr ? chr.toUpperCase() : '');
-  const parts = str.split('/');
+  let parts = str.split('/');
   for (let i = 0; i < parts.length; i++) {
     parts[i] = parts[i]
-      .replace(STRING_CLASSIFY_REGEXP_1, replace1)
-      .replace(STRING_CLASSIFY_REGEXP_2, replace2);
+      .replace(STRING_CLASSIFY_REGEXP_1, classifyReplace1)
+      .replace(STRING_CLASSIFY_REGEXP_2, classifyReplace2);
   }
-  return parts
-    .join('/')
-    .replace(STRING_CLASSIFY_REGEXP_3, (match /*, separator, chr */) =>
-      match.toUpperCase()
-    );
+  return parts.join('/').replace(STRING_CLASSIFY_REGEXP_3, (match) => match.toUpperCase());
 });
 const STRING_UNDERSCORE_REGEXP_1 = /([a-z\d])([A-Z]+)/g;
 const STRING_UNDERSCORE_REGEXP_2 = /\-|\s+/g;
@@ -61,7 +56,7 @@ const DECAMELIZE_CACHE = new Cache(1000, (str) =>
   @method decamelize
   @param {String} str The string to decamelize.
   @return {String} the decamelized string.
-  @public
+  @private
 */
 export function decamelize(str) {
   return DECAMELIZE_CACHE.get(str);
@@ -125,7 +120,7 @@ export function classify(str) {
   @method underscore
   @param {String} str The string to underscore.
   @return {String} the underscored string.
-  @public
+  @private
 */
 export function underscore(str) {
   return UNDERSCORE_CACHE.get(str);

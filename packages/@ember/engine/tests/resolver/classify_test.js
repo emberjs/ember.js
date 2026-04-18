@@ -1,63 +1,64 @@
-import { module } from 'qunit';
+import { module, test } from 'qunit';
 import { classify } from '@ember/engine/lib/strict-resolver/string';
-import createTestFunction from './create-test-function';
 
 module('strict-resolver | classify', function () {
-  const test = createTestFunction(classify);
+  test('classify normal string', function (assert) {
+    assert.deepEqual(classify('my favorite items'), 'MyFavoriteItems');
+  });
 
-  test('my favorite items', 'MyFavoriteItems', 'classify normal string');
-  test('css-class-name', 'CssClassName', 'classify dasherized string');
-  test('action_name', 'ActionName', 'classify underscored string');
-  test(
-    'privateDocs/ownerInvoice',
-    'PrivateDocs/OwnerInvoice',
-    'classify namespaced camelized string'
-  );
-  test(
-    'private_docs/owner_invoice',
-    'PrivateDocs/OwnerInvoice',
-    'classify namespaced underscored string'
-  );
-  test(
-    'private-docs/owner-invoice',
-    'PrivateDocs/OwnerInvoice',
-    'classify namespaced dasherized string'
-  );
-  test(
-    '-view-registry',
-    '_ViewRegistry',
-    'classify prefixed dasherized string'
-  );
-  test(
-    'components/-text-field',
-    'Components/_TextField',
-    'classify namespaced prefixed dasherized string'
-  );
-  test(
-    '_Foo_Bar',
-    '_FooBar',
-    'classify underscore-prefixed underscored string'
-  );
-  test(
-    '_Foo-Bar',
-    '_FooBar',
-    'classify underscore-prefixed dasherized string'
-  );
-  test(
-    '_foo/_bar',
-    '_Foo/_Bar',
-    'classify underscore-prefixed-namespaced underscore-prefixed string'
-  );
-  test(
-    '-foo/_bar',
-    '_Foo/_Bar',
-    'classify dash-prefixed-namespaced underscore-prefixed string'
-  );
-  test(
-    '-foo/-bar',
-    '_Foo/_Bar',
-    'classify dash-prefixed-namespaced dash-prefixed string'
-  );
-  test('InnerHTML', 'InnerHTML', 'does nothing with classified string');
-  test('_FooBar', '_FooBar', 'does nothing with classified prefixed string');
+  test('classify dasherized string', function (assert) {
+    assert.deepEqual(classify('css-class-name'), 'CssClassName');
+  });
+
+  test('classify underscored string', function (assert) {
+    assert.deepEqual(classify('action_name'), 'ActionName');
+  });
+
+  test('classify namespaced camelized string', function (assert) {
+    assert.deepEqual(classify('privateDocs/ownerInvoice'), 'PrivateDocs/OwnerInvoice');
+  });
+
+  test('classify namespaced underscored string', function (assert) {
+    assert.deepEqual(classify('private_docs/owner_invoice'), 'PrivateDocs/OwnerInvoice');
+  });
+
+  test('classify namespaced dasherized string', function (assert) {
+    assert.deepEqual(classify('private-docs/owner-invoice'), 'PrivateDocs/OwnerInvoice');
+  });
+
+  test('classify prefixed dasherized string', function (assert) {
+    assert.deepEqual(classify('-view-registry'), '_ViewRegistry');
+  });
+
+  test('classify namespaced prefixed dasherized string', function (assert) {
+    assert.deepEqual(classify('components/-text-field'), 'Components/_TextField');
+  });
+
+  test('classify underscore-prefixed underscored string', function (assert) {
+    assert.deepEqual(classify('_Foo_Bar'), '_FooBar');
+  });
+
+  test('classify underscore-prefixed dasherized string', function (assert) {
+    assert.deepEqual(classify('_Foo-Bar'), '_FooBar');
+  });
+
+  test('classify underscore-prefixed-namespaced underscore-prefixed string', function (assert) {
+    assert.deepEqual(classify('_foo/_bar'), '_Foo/_Bar');
+  });
+
+  test('classify dash-prefixed-namespaced underscore-prefixed string', function (assert) {
+    assert.deepEqual(classify('-foo/_bar'), '_Foo/_Bar');
+  });
+
+  test('classify dash-prefixed-namespaced dash-prefixed string', function (assert) {
+    assert.deepEqual(classify('-foo/-bar'), '_Foo/_Bar');
+  });
+
+  test('does nothing with classified string', function (assert) {
+    assert.deepEqual(classify('InnerHTML'), 'InnerHTML');
+  });
+
+  test('does nothing with classified prefixed string', function (assert) {
+    assert.deepEqual(classify('_FooBar'), '_FooBar');
+  });
 });
