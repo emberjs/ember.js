@@ -2674,18 +2674,38 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
   // Note: KVO array mutation tracking (pushObject/shiftObject) is handled
   // by dirtying cells on objects that reference the array. This is a best-effort
   // approach since GXT's $_eachSync may not re-render for same-reference arrays.
-  if ((keyName === '[]' || keyName === 'length') && Array.isArray(obj)) {
-    const owners = _arrayOwnerMap.get(obj);
-    if (owners) {
-      for (const { obj: ownerObj, key: ownerKey } of owners) {
-        try {
-          // Use skipDefine=true to avoid overwriting custom getters on renderContext
-          // that were set up during createRenderContext. The custom getter reads
-          // from the Ember instance via a getter function, while cellFor's default
-          // getter reads from cell._value which may be stale for same-ref arrays.
-          const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-          if (c) c.update(obj);
-        } catch { /* ignore */ }
+  if (keyName === '[]' || keyName === 'length') {
+    if (Array.isArray(obj)) {
+      const owners = _arrayOwnerMap.get(obj);
+      if (owners) {
+        for (const { obj: ownerObj, key: ownerKey } of owners) {
+          try {
+            // Use skipDefine=true to avoid overwriting custom getters on renderContext
+            // that were set up during createRenderContext. The custom getter reads
+            // from the Ember instance via a getter function, while cellFor's default
+            // getter reads from cell._value which may be stale for same-ref arrays.
+            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(obj);
+          } catch { /* ignore */ }
+        }
+      }
+    } else if (obj && typeof obj === 'object') {
+      // Non-Array iterable wrappers (ArrayDelegate / ArrayProxy / Set / etc.)
+      // — `arrayContentDidChange` notifies '[]'/'length' on the wrapper itself.
+      // Look up registered owners for the WRAPPER and dirty their cells. The
+      // owners map was populated by patchedEachSync's iterable-aware
+      // registration so that mutating the underlying array reaches the
+      // component cell, allowing the existing Xt instance's syncList listener
+      // to fire (instead of waiting for the destructive force-rerender to
+      // create a fresh keyMap-empty Xt that loses DOM stability).
+      const owners = _arrayOwnerMap.get(obj);
+      if (owners) {
+        for (const { obj: ownerObj, key: ownerKey } of owners) {
+          try {
+            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(obj);
+          } catch { /* ignore */ }
+        }
       }
     }
   }
@@ -3788,14 +3808,12 @@ function normalizeEachCollection(raw: any): any[] {
   if (typeof raw === 'object') {
     if (typeof raw.toArray === 'function') return raw.toArray();
     if (typeof raw[Symbol.iterator] === 'function') return Array.from(raw);
-    // ForEachable objects
     if (typeof raw.forEach === 'function' && typeof raw.length === 'number') {
       const arr: any[] = [];
       raw.forEach((item: any) => arr.push(item));
       return arr;
     }
   }
-  // Non-iterable truthy values (true, 'hello', 1, {}, functions) → empty for #each
   return [];
 }
 
@@ -4029,12 +4047,76 @@ function patchGlobalEachSync() {
     // NOT a plain getter function. Wrap in __gxtFormula so that
     // opcodeFor(tag, ...) can track reactivity and read .value correctly.
     const gxtFormula = g.__gxtFormula;
+    // Register the underlying array of an iterable wrapper as an "array owner"
+    // of (component, propertyName) so that '[]'/'length' KVO notifications on
+    // mutations (unshiftObject/pushObject) propagate to the component cell.
+    // Without this, mutating an Ember ArrayProxy/ArrayLike/Symbol.iterator/
+    // forEach collection would update the underlying array but never dirty
+    // the component cell — so the each's syncList listener would never fire,
+    // and only the destructive force-rerender would update the DOM, breaking
+    // DOM stability for keyed reuse (regression: "it maintains DOM stability
+    // for stable keys when list is updated" for non-Array iterables).
+    //
+    // The compiled template emits `() => this.list` (no metadata). We parse
+    // the single property name out of the function body to recover the cell
+    // identity (this.<name>), then register the iterable's backing array.
+    const _itemsPropName = (() => {
+      if (typeof items !== 'function') return null;
+      try {
+        const src = items.toString();
+        const m = src.match(/this\.([A-Za-z_$][A-Za-z0-9_$]*)/);
+        return m ? m[1] : null;
+      } catch { return null; }
+    })();
+    const _itemsOwner = ctx ? (ctx.__gxtRawTarget || ctx) : null;
+    const _registerIterableUnderlyingArray = (rawItems: any) => {
+      if (!rawItems || typeof rawItems !== 'object') return;
+      if (!_itemsOwner || !_itemsPropName) return;
+      // Register the WRAPPER itself first so that `arrayContentDidChange`
+      // notifying '[]'/'length' on the wrapper finds the owner. ArrayProxy
+      // emits notifications on itself; ArrayDelegate emits on `_target` which
+      // defaults to the delegate instance.
+      try { registerArrayOwner(rawItems, _itemsOwner, _itemsPropName); } catch { /* ignore */ }
+      // Also register backing arrays so direct array mutations propagate.
+      // Walk own + inherited enumerable properties for any value that is an
+      // array OR another iterable-like wrapper. This catches:
+      //   - ArrayProxy.content
+      //   - ArrayDelegate._array
+      //   - Custom proxies with `wrappedItems` (arrangedContent depends on
+      //     external content) where arrayContentDidChange fires on the
+      //     wrapped array, not on the proxy.
+      const visited = new Set<any>([rawItems]);
+      const queue: any[] = [rawItems];
+      let hops = 0;
+      while (queue.length > 0 && hops < 8) {
+        hops++;
+        const cur = queue.shift();
+        if (!cur || typeof cur !== 'object' || Array.isArray(cur)) continue;
+        for (const propName of ['content', '_array', 'wrappedItems', '_content', 'arrangedContent']) {
+          let val: any = undefined;
+          try { val = (cur as any)[propName]; } catch { continue; }
+          if (val == null || visited.has(val)) continue;
+          visited.add(val);
+          if (Array.isArray(val)) {
+            try { registerArrayOwner(val, _itemsOwner, _itemsPropName); } catch { /* ignore */ }
+          } else if (typeof val === 'object') {
+            try { registerArrayOwner(val, _itemsOwner, _itemsPropName); } catch { /* ignore */ }
+            queue.push(val);
+          }
+        }
+      }
+    };
     if (typeof items === 'function' && !items.prototype) {
       const origGetter = items;
       if (gxtFormula) {
         // Wrap in formula → MergedCell so $_eachSync gets a proper reactive tag
         const wrappedCell = gxtFormula(() => {
-          return normalizeEachCollection(origGetter());
+          const raw = origGetter();
+          // Register array-owner mapping on every read so that newly-set
+          // collection wrappers (post replaceList) hook their underlying
+          // arrays into KVO mutation propagation too.
+          _registerIterableUnderlyingArray(raw);
+          return normalizeEachCollection(raw);
         });
         return origEachSync(wrappedCell, fn, key, ctx, inverseFn);
       }
