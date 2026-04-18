@@ -8058,6 +8058,44 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
+    // Detect tagProps[2] text entries whose getter returns a SafeString
+    // (an object with a toHTML() method). Ember renders those as raw HTML,
+    // but GXT would coerce the object via String() to `[object Object]`
+    // and `_normalizeStringValue` strips it to ''. Capture the raw HTML
+    // from toHTML() here and inject it into the element after originalTag.
+    const _safeHtmlInjections: Array<{ html: string }> = [];
+    if (
+      tagProps &&
+      tagProps !== g.$_edp &&
+      typeof tag === 'string' &&
+      !g.__gxtNamespace &&
+      Array.isArray(tagProps[2])
+    ) {
+      for (const entry of tagProps[2]) {
+        if (!Array.isArray(entry) || entry.length < 2) continue;
+        // Only text entries — key "1" is GXT's text-child marker.
+        if (entry[0] !== '1') continue;
+        const val = entry[1];
+        if (typeof val !== 'function') continue;
+        let v: unknown;
+        try {
+          v = val();
+          while (typeof v === 'function') v = (v as () => unknown)();
+        } catch {
+          v = undefined;
+        }
+        if (v && typeof v === 'object' && typeof (v as { toHTML?: () => string }).toHTML === 'function') {
+          try {
+            _safeHtmlInjections.push({
+              html: (v as { toHTML: () => string }).toHTML() ?? '',
+            });
+          } catch {
+            /* ignore toHTML errors */
+          }
+        }
+      }
+    }
+
     const result = originalTag(tag, tagProps, ctx, children);
 
     if (
@@ -8069,6 +8107,39 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           result.removeAttribute(key);
         } catch {
           /* ignore */
+        }
+      }
+    }
+
+    // Inject SafeString HTML: replace any text node created from the
+    // `[object Object]` placeholder with the parsed HTML fragment.
+    if (_safeHtmlInjections.length > 0 && result instanceof Element) {
+      // GXT's originalTag produced text nodes for the getter's String()
+      // coercion. Those nodes have nodeValue `"[object Object]"` or an
+      // empty string; remove them and replace with parsed HTML.
+      // Walk text nodes and remove matching ones.
+      const toRemove: Node[] = [];
+      for (const child of Array.from(result.childNodes)) {
+        if (child.nodeType === 3 /* TEXT_NODE */) {
+          const nv = child.nodeValue ?? '';
+          if (nv === '' || nv === '[object Object]') {
+            toRemove.push(child);
+          }
+        }
+      }
+      for (const node of toRemove) {
+        try { result.removeChild(node); } catch { /* ignore */ }
+      }
+      // Append each SafeString's parsed HTML in order.
+      for (const inj of _safeHtmlInjections) {
+        try {
+          const tmpl = document.createElement('template');
+          tmpl.innerHTML = inj.html;
+          while (tmpl.content.firstChild) {
+            result.appendChild(tmpl.content.firstChild);
+          }
+        } catch {
+          /* fallback: append raw text */
         }
       }
     }
