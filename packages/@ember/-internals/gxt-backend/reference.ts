@@ -58,6 +58,14 @@ export function createConstRef(value: any, debugLabel?: any): any {
   const ref = _createConstRef(value, debugLabel);
   try {
     (ref as any)[CONST_MARKER] = true;
+    // GXT's createConstRef constructs a `new Dt(value)` that doesn't keep the
+    // second (debugLabel) argument. Stock Glimmer's classic Reference carries
+    // `debugLabel` so downstream consumers (e.g. fn helper's assertion message,
+    // childRefFor's label composition) can produce messages like
+    // "this.myFunc". Stamp it on so the label propagates.
+    if (debugLabel !== undefined) {
+      (ref as any).debugLabel = String(debugLabel);
+    }
   } catch {
     // ignore (frozen)
   }
@@ -69,6 +77,9 @@ export function createUnboundRef(value: any, debugLabel?: any): any {
   try {
     (ref as any)[UNBOUND_MARKER] = true;
     (ref as any).__unboundValue = value;
+    if (debugLabel !== undefined) {
+      (ref as any).debugLabel = String(debugLabel);
+    }
   } catch {
     // ignore
   }
