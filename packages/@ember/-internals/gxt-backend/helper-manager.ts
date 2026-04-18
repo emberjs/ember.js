@@ -8,6 +8,7 @@
 
 import { createCache } from './validator';
 import { createComputeRef, createConstRef, UNDEFINED_REFERENCE, REFERENCE, valueForRef } from './reference';
+import { associateDestroyableChild } from './destroyable';
 
 // Shared WeakSet to track capabilities created via helperCapabilities()
 export const FROM_CAPABILITIES = new WeakSet();
@@ -393,6 +394,24 @@ export class CustomHelperManager {
         (ref as any)[REFERENCE] = true;
       } catch {
         // frozen — ignore
+      }
+
+      // Associate the helper bucket as a destroyable child of the returned
+      // ref. When stock Glimmer VM's VM_DYNAMIC_HELPER_OP swaps the helper
+      // definition (e.g., `{{@helper}}` where @helper transitions from
+      // Helper1 to Helper2), it calls `destroy(helperRef)` on the previous
+      // ref. Propagating that to the bucket lets our destructors
+      // (registered in TestHelper's constructor via registerDestructor)
+      // fire willDestroy on the outgoing helper instance.
+      //
+      // Only associate when the delegate opted into destroyable handling.
+      if (manager.capabilities?.hasDestroyable && typeof manager.getDestroyable === 'function') {
+        try {
+          const destroyable = manager.getDestroyable(bucket);
+          if (destroyable) {
+            associateDestroyableChild(ref, destroyable);
+          }
+        } catch { /* association failures must not break rendering */ }
       }
       return ref;
     };
