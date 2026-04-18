@@ -1088,6 +1088,14 @@ const _SLOTS_SYM = Symbol.for('gxt-slots');
 /**
  * Set a GXT-internal property on an object as non-enumerable so it doesn't
  * leak into user-visible iteration (Object.keys, each-in, etc.).
+ *
+ * For the `$slots` key we also set the `Symbol.for('gxt-slots')` alias so
+ * downstream consumers that prefer the symbol lookup (e.g. the template-only
+ * component render path in manager.ts, which reads `args?.[$SLOTS]`) still
+ * find the slots. Without this, block-form scope-bound component calls like
+ * `<Foo>body</Foo>` (where `Foo` is a strict-mode scope binding returned by
+ * `template(...)`) render an empty fragment because `{{yield}}` has no slot
+ * function to invoke.
  */
 function _setInternalProp(obj: any, key: string, value: any): void {
   Object.defineProperty(obj, key, {
@@ -1096,6 +1104,17 @@ function _setInternalProp(obj: any, key: string, value: any): void {
     enumerable: false,
     configurable: true,
   });
+  if (key === '$slots') {
+    const sym = Symbol.for('gxt-slots');
+    try {
+      Object.defineProperty(obj, sym, {
+        value,
+        writable: true,
+        enumerable: false,
+        configurable: true,
+      });
+    } catch { /* ignore frozen obj */ }
+  }
 }
 
 // Ensure global scope is set up
