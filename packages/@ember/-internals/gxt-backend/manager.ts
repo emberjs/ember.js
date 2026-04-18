@@ -7588,15 +7588,28 @@ function _refreshManagedSlotArgs(slot: _ManagedSlot, args: any, fw: any): void {
   }
   // Redirect each existing named-arg ref to the freshest upstream getter.
   // Add new keys that were absent at creation; swallow frozen-named errors.
+  //
+  // When an arg that was present at creation is NOT in the new invocation's
+  // args, we must DELETE it from args.named (not just null the getter). LinkTo
+  // uses `'model' in this.args.named` to decide whether the link is model-bound.
+  // If we kept a stale 'model' key with value undefined, the LinkTo would
+  // compute `isLoading = true` (undefined model is "missing") and render with
+  // `class="loading" href="#"` — breaking navigation across templates that
+  // reuse the same managed slot with different arg shapes (e.g. /about's
+  // <LinkTo @route='item' @model={{person}}> cache-hitting /item's
+  // <LinkTo id='home-link' @route='index'>).
   const freshNamed = _collectNamedArgGetters(args);
+  const liveNamed = slot.instance?.args?.named;
   for (const key of Object.keys(slot.namedRefSlots)) {
     if (key in freshNamed) {
       slot.namedRefSlots[key].getter = freshNamed[key];
     } else {
-      // Arg missing in new invocation: make the getter report undefined so
-      // `'route' in this.args.named` style guards in LinkTo still read as
-      // "arg is present" (named object still has the key) but value is nil.
-      slot.namedRefSlots[key].getter = () => undefined;
+      // Arg missing in new invocation: drop the key so `X in args.named`
+      // guards reflect the new template's arg shape accurately.
+      delete slot.namedRefSlots[key];
+      if (liveNamed && typeof liveNamed === 'object') {
+        try { delete (liveNamed as any)[key]; } catch { /* frozen */ }
+      }
     }
   }
   for (const key of Object.keys(freshNamed)) {
