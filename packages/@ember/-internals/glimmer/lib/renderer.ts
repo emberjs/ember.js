@@ -1883,6 +1883,43 @@ function _renderComponentGxt(
       }
     };
 
+    // Register the classic-tag reactor BEFORE running template.render,
+    // but with an `initialized` guard so the callback is a no-op until
+    // initial render completes. The purpose of the early registration
+    // is to reserve this reactor's slot at the tail of _classicReactors
+    // BEFORE any nested renderComponent calls (made during initial
+    // template.render) register their own reactors. Set iteration in
+    // _fireClassicReactors preserves insertion order, so the parent's
+    // reactor fires first on classic-tag dirty — and when the parent's
+    // re-render calls renderComponent again on the same target, it
+    // destroys the nested render before the nested reactor would have
+    // had a chance to emit spurious arg-reads (see the "renderComponent
+    // is eager, so it tracks with its parent" strict-mode test).
+    //
+    // The reactor is per-call: each renderComponent registers its own
+    // callback that closes over its own (renderContext, targetElement,
+    // destroyed flag). Cleanup is via doDestroy, chained through the owner
+    // destructor so owner.destroy() unhooks all reactors. We deliberately
+    // do NOT auto-unsubscribe based on element.isConnected, because some
+    // legitimate use cases render into a deliberately-detached element
+    // (see "can render in to a detached element" test).
+    let reactorInitialized = false;
+    {
+      const fireReactor = () => {
+        if (destroyed) return;
+        try { _doRender(); } catch { /* ignore individual reactor errors */ }
+        // After re-render, flush GXT DOM so the new text content is visible
+        try {
+          const syncNow = (globalThis as any).__gxtSyncDomNow;
+          if (typeof syncNow === 'function') syncNow();
+        } catch { /* ignore */ }
+      };
+      classicReactorUnsub = registerClassicReactor(() => {
+        if (destroyed || !reactorInitialized) return;
+        fireReactor();
+      });
+    }
+
     try {
       // Render the template into the target (initial render)
       if (wasRendering) {
@@ -1894,35 +1931,12 @@ function _renderComponentGxt(
       if (typeof _setRendering === 'function' && !wasRendering) {
         _setRendering(false);
       }
-    }
-
-    // Register a classic-tag reactor that re-renders the component whenever
-    // any classic @glimmer/validator tag is dirtied (e.g. classic
-    // trackedObject mutations, @tracked field writes). This bridges the
-    // classic tag-dirty pipeline into GXT's render system for the
-    // renderComponent path, mirroring the pattern used by
-    // renderLinkToElement in gxt-backend/manager.ts. Top-level
-    // renderComponent calls (wasRendering=false) own their own render
-    // lifecycle; nested calls rely on the parent render effect so we
-    // skip reactor registration for them.
-    //
-    // The reactor is per-call: each renderComponent registers its own
-    // callback that closes over its own (renderContext, targetElement,
-    // destroyed flag). Cleanup is via doDestroy, chained through the owner
-    // destructor so owner.destroy() unhooks all reactors. We deliberately
-    // do NOT auto-unsubscribe based on element.isConnected, because some
-    // legitimate use cases render into a deliberately-detached element
-    // (see "can render in to a detached element" test).
-    {
-      classicReactorUnsub = registerClassicReactor(() => {
-        if (destroyed) return;
-        try { _doRender(); } catch { /* ignore individual reactor errors */ }
-        // After re-render, flush GXT DOM so the new text content is visible
-        try {
-          const syncNow = (globalThis as any).__gxtSyncDomNow;
-          if (typeof syncNow === 'function') syncNow();
-        } catch { /* ignore */ }
-      });
+      // Arm the reactor: from now on, classic-tag dirties will trigger
+      // _doRender. This is done in `finally` so that any tag dirties
+      // that happened DURING initial render (e.g. from component init
+      // writing @tracked fields) do not retroactively trigger a
+      // spurious re-render after the render completes.
+      reactorInitialized = true;
     }
 
     // Flush queued didInsertElement / didRender hooks
