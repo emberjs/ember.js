@@ -1061,6 +1061,47 @@ function createComponentInstance(
     }
   } catch { /* ignore — willDestroy may not be wrappable */ }
 
+  // In non-interactive (SSR-style) rendering, suppress interactive-only
+  // lifecycle hooks at the instance level. Stock Ember's InertRenderer
+  // never fires willRender/willInsertElement/didInsertElement/willUpdate/
+  // didUpdate/didRender/willDestroyElement/willClearRender/didDestroyElement.
+  // Some GXT code paths (compile.ts) call `_inst.trigger(name)` directly,
+  // bypassing `triggerLifecycleHook`'s gate. Wrapping both `_trigger` AND
+  // `trigger` here centralizes the gate. We wrap both because CoreView#init
+  // captures `trigger` from `_trigger` at init time, creating independent
+  // instance-local references — wrapping only one leaves the other live.
+  try {
+    if (!isInteractiveModeChecked()) {
+      const buildGate = (orig: Function) => {
+        if (!orig || (orig as any).__gxtNonInteractiveFiltered) return orig;
+        const wrapped = function (this: any, name: string, ...rest: any[]) {
+          if (INTERACTIVE_ONLY_HOOKS.has(name)) return undefined;
+          return orig.call(this, name, ...rest);
+        };
+        (wrapped as any).__gxtNonInteractiveFiltered = true;
+        return wrapped;
+      };
+      const origInst = instance?._trigger;
+      const origPub = instance?.trigger;
+      if (typeof origInst === 'function') {
+        Object.defineProperty(instance, '_trigger', {
+          value: buildGate(origInst),
+          writable: true,
+          configurable: true,
+          enumerable: false,
+        });
+      }
+      if (typeof origPub === 'function') {
+        Object.defineProperty(instance, 'trigger', {
+          value: buildGate(origPub),
+          writable: true,
+          configurable: true,
+          enumerable: false,
+        });
+      }
+    }
+  } catch { /* ignore */ }
+
   // GXT compat: restore user-toggled-false state for components whose
   // wrapper id is tracked in __gxtWrapperIfUserFalse. Ember's View tree
   // tests rely on x-toggle instances rendered in the persistent application
@@ -2601,6 +2642,24 @@ function _installTriggerReRenderWrapper() {
           try { entry.instance[k] = snap[k]; } catch { /* ignore */ }
         }
         entry.instance.__gxtPreHookStateSnapshot = null;
+      } catch { /* ignore */ }
+    }
+    // Stamp the instance as "syncAll-reviewed this cycle" even when neither
+    // hasChanges nor forceThis fires. compile.ts guards its force-rerender
+    // fallback on `__gxtSyncAllFiredCycleId === currentCycle`, and relies on
+    // the trigger-wrapper to set it. If we don't fire here, the stamp is
+    // never set and compile.ts spuriously fires didUpdateAttrs/didReceiveAttrs/
+    // willUpdate/willRender on the instance during a force-rerender pass.
+    // This is the root cause of "lifecycle hooks are invoked in a predictable
+    // order" where a descendant whose args didn't change (e.g. the-bottom
+    // when twitter changes on the-top) spuriously gets update hooks fired
+    // from compile.ts:7003 during the force-rerender cascade.
+    if (entry.instance && typeof entry.instance === 'object') {
+      try {
+        const cycle = (globalThis as any).__gxtSyncAllInFlightCycle;
+        if (cycle) {
+          entry.instance.__gxtSyncAllFiredCycleId = cycle;
+        }
       } catch { /* ignore */ }
     }
     // Pre-render lifecycle hooks (before DOM sync)
@@ -5760,6 +5819,15 @@ const $_MANAGERS = {
         if (pending) {
           pending.push({ modifier, element, props, hashArgs });
         }
+        return undefined;
+      }
+
+      // In non-interactive (SSR-style) rendering, modifiers — which exist to
+      // imperatively interact with DOM — must not install. Stock Ember uses
+      // an `InertRenderer` that skips modifier installation wholesale; we
+      // mirror that by short-circuiting here. Without this, the `on` modifier
+      // would still attach listeners and drift the `adds` counter.
+      if (!isInteractiveModeChecked()) {
         return undefined;
       }
 
