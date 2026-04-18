@@ -9439,6 +9439,117 @@ function _preserveHtmlComments(template: string): string {
   return out;
 }
 
+/**
+ * Insert the implicit `<tbody>` wrapper that HTML parsers auto-insert when
+ * `<tr>` appears directly inside `<table>`. The browser tokenizer fixes
+ * this up when parsing HTML strings via `innerHTML` / DOMParser, but the
+ * GXT AST compiler emits raw `$_tag('table', ..., [$_tag('tr', ...)])`.
+ * Rehydration tests compare serialized DOM against an innerHTML-parsed
+ * expected string; without the wrapper, `<table><tr>` serializes without
+ * tbody while the expected always has it.
+ *
+ * Only touch LITERAL markup (skip inside `{{ }}`). Wrap the immediate
+ * children that are `<tr>` / `<tfoot>`? No — only when `<tr>` appears as
+ * a direct child of `<table>` without `<thead>` / `<tbody>` / `<tfoot>`
+ * already present. Handles multiple `<tr>` in sequence and attributes on
+ * `<table>`.
+ */
+function transformTableTbody(code: string): string {
+  if (!code || code.indexOf('<table') === -1) return code;
+  // Quick check: is there a <table> whose first child tag (after any
+  // whitespace and comments) is a bare <tr>? If so, inject <tbody> after
+  // the <table ...> opening tag and </tbody> before the </table>.
+  //
+  // Strategy: walk the template, find each `<table [attrs...]>`, and if
+  // the content (up to `</table>`) contains `<tr` at the top level and
+  // no wrapping `<thead>`/`<tbody>`/`<tfoot>` at the top level, wrap the
+  // direct-tr children in a single `<tbody>`. Handles nested tables by
+  // scanning for the matching </table>.
+  let out = '';
+  let i = 0;
+  const len = code.length;
+  while (i < len) {
+    const tableIdx = code.indexOf('<table', i);
+    if (tableIdx === -1) {
+      out += code.slice(i);
+      break;
+    }
+    // Verify it's a tag (not `<tablex` or similar)
+    const afterChar = code[tableIdx + 6];
+    if (afterChar !== ' ' && afterChar !== '\t' && afterChar !== '\n' && afterChar !== '\r' && afterChar !== '>') {
+      out += code.slice(i, tableIdx + 6);
+      i = tableIdx + 6;
+      continue;
+    }
+    // Find end of opening tag
+    const openEnd = code.indexOf('>', tableIdx);
+    if (openEnd === -1) {
+      out += code.slice(i);
+      break;
+    }
+    // Find matching </table> — handle nesting by counting <table>/</table>.
+    let depth = 1;
+    let j = openEnd + 1;
+    let closeStart = -1;
+    while (j < len) {
+      const nextOpen = code.indexOf('<table', j);
+      const nextClose = code.indexOf('</table>', j);
+      if (nextClose === -1) break;
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth++;
+        j = nextOpen + 6;
+      } else {
+        depth--;
+        if (depth === 0) {
+          closeStart = nextClose;
+          break;
+        }
+        j = nextClose + 8;
+      }
+    }
+    if (closeStart === -1) {
+      // Malformed — copy rest as-is
+      out += code.slice(i);
+      break;
+    }
+    const inner = code.slice(openEnd + 1, closeStart);
+    // Check if inner already has a top-level thead/tbody/tfoot or is wrapped
+    // in a mustache block. Only look at characters ignoring leading whitespace
+    // and comments.
+    const trimmed = inner.replace(/^\s+/, '');
+    const firstChar = trimmed[0] || '';
+    let hasTopLevelWrapper = false;
+    if (firstChar === '<') {
+      // Check the first tag name (quick heuristic)
+      const m = /^<\s*(\w+)/.exec(trimmed);
+      if (m) {
+        const tagName = m[1]!.toLowerCase();
+        if (tagName === 'thead' || tagName === 'tbody' || tagName === 'tfoot' || tagName === 'caption' || tagName === 'colgroup') {
+          hasTopLevelWrapper = true;
+        }
+      }
+    }
+    // Also skip if the first non-whitespace char is a mustache — user is
+    // generating table contents dynamically and we can't safely guess.
+    if (trimmed.startsWith('{{')) hasTopLevelWrapper = true;
+
+    // Copy everything before <table> as-is
+    out += code.slice(i, tableIdx);
+    // Copy the opening <table ...> tag
+    out += code.slice(tableIdx, openEnd + 1);
+
+    if (!hasTopLevelWrapper && inner.includes('<tr')) {
+      // Wrap inner in <tbody>
+      out += '<tbody>' + inner + '</tbody>';
+    } else {
+      out += inner;
+    }
+    out += '</table>';
+    i = closeStart + 8;
+  }
+  return out;
+}
+
 function transformAttrQuotedHelperMustaches(code: string): string {
   if (!code || code.indexOf('{{') === -1) return code;
   const BARE_IDENT_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
@@ -9690,6 +9801,15 @@ export function precompileTemplate(templateString: string, options?: {
   // addTemplate() (index/posts/zomg routes, etc.).
   // Mirrors the build-time plugin in gxt-template-compiler-plugin.mjs.
   transformedTemplate = transformOutletMustaches(transformedTemplate);
+
+  // Transform `<table><tr>` → `<table><tbody><tr>` (and insert a closing
+  // `</tbody>` before `</table>`) so the compiled template matches the
+  // browser's HTML parsing rules. The HTML parser auto-inserts `<tbody>`
+  // when `<tr>` appears directly inside `<table>`, but GXT compiles raw
+  // tags without that fix-up — leaving the DOM missing the tbody that
+  // assertions expect. Only rewrite literal markup (templates that wrap
+  // these tags in mustaches are skipped by the regex).
+  transformedTemplate = transformTableTbody(transformedTemplate);
 
   // Transform {{#each-in EXPR as |KEY VALUE|}}BODY{{else}}ELSE{{/each-in}}
   // into {{#each (gxtEntriesOf EXPR) key="@identity" as |__ei__|}}{{#let __ei__.k __ei__.v as |KEY VALUE|}}BODY{{/let}}{{else}}ELSE{{/each}}
