@@ -265,6 +265,16 @@ function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>
   tests: ComponentTests
 ): void {
   keys(tests).forEach((type) => {
+    // Skip sub-modules with zero tests — otherwise QUnit registers an
+    // empty `[integration] X` module and the runner reports
+    // "FAIL 0/1 — global failure: No tests matched the module".
+    // This happens when a suite declares all tests with a single `kind`
+    // (e.g. TemplateOnlyComponents is all `kind: 'templateOnly'`) so the
+    // other three sub-modules end up empty.
+    if (tests[type].length === 0) {
+      return;
+    }
+
     let formattedType = upperFirst(type);
 
     QUnit.module(`[integration] ${formattedType}`, () => {
