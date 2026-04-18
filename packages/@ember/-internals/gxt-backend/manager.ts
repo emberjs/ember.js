@@ -57,7 +57,7 @@ import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gx
 import { createConstRef as _createConstRef } from '@glimmer/reference';
 // @ts-ignore - direct path to share the same module instance as compile.ts
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
-import { destroy as _destroyDestroyable } from './destroyable';
+import { destroy as _destroyDestroyable, registerDestructor as _registerDestructor } from './destroyable';
 
 // Expose destroy helpers so compile.ts can flush pending modifier destroys
 // synchronously at the end of a sync cycle.
@@ -9523,7 +9523,20 @@ export class CustomModifierManager {
     // Lazy import: the validator shim creates an updatable tag we can return
     // from getTag(). This matches @glimmer/manager's public CustomModifierManager.
     const tag = _createUpdatableTagForModifier();
-    return { tag, element, delegate, args, modifier };
+    const state: ShimCustomModifierState = { tag, element, delegate, args, modifier };
+    // Match stock @glimmer/manager/lib/public/modifier.ts: register a
+    // destructor on the state that invokes delegate.destroyModifier when the
+    // state is destroyed. This is what drives willDestroy-style callbacks on
+    // dynamic modifier swaps ({{@modifier}} where @modifier changes value) —
+    // stock VM's UpdateDynamicModifierOpcode.evaluate calls destroy() on the
+    // previous instance's destroyable, which (with the destructor registered
+    // here) fires the modifier's destructor.
+    if (typeof delegate?.destroyModifier === 'function') {
+      try {
+        _registerDestructor(state, () => delegate.destroyModifier(modifier, args));
+      } catch { /* fall through — destructor registration optional */ }
+    }
+    return state;
   }
 
   getTag(state: ShimCustomModifierState): any {
