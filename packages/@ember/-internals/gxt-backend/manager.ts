@@ -9074,43 +9074,18 @@ function __gxtInstallOnElementPatch(): void {
     }
     return (originalRemove as any).apply(this, args);
   } as any;
-  // Patch `element.remove()` (ChildNode.remove) and `parent.removeChild()`
-  // to account for listeners being implicitly detached when GXT removes an
-  // element from the DOM (rather than calling removeEventListener).
-  try {
-    const CN: any = Element.prototype;
-    const originalChildRemove = CN.remove;
-    if (typeof originalChildRemove === 'function') {
-      CN.remove = function patchedChildRemove(this: Element): any {
-        const count = __gxtCountListeners(this);
-        if (count > 0) {
-          __gxtOnCounters.removes += count;
-          __gxtOnListenerMap.delete(this);
-        }
-        return originalChildRemove.apply(this, arguments as any);
-      };
-    }
-  } catch { /* ignore */ }
-  if (typeof Node !== 'undefined' && Node.prototype) {
-    try {
-      const originalNodeRemove = Node.prototype.removeChild;
-      if (typeof originalNodeRemove === 'function') {
-        Node.prototype.removeChild = function patchedRemoveChild(
-          this: Node,
-          child: Node
-        ): Node {
-          if (child && (child as any).nodeType === 1) {
-            const count = __gxtCountListeners(child as Element);
-            if (count > 0) {
-              __gxtOnCounters.removes += count;
-              __gxtOnListenerMap.delete(child as Element);
-            }
-          }
-          return originalNodeRemove.call(this, child);
-        };
-      }
-    } catch { /* ignore */ }
-  }
+  // NOTE: we intentionally do NOT patch ChildNode.remove / Node.removeChild
+  // to bump `removes` on DOM detachment. The stock `{{on}}` modifier registers
+  // a destructor that calls `element.removeEventListener(...)` on teardown,
+  // and GXT invokes destructors before removing elements from the DOM, so the
+  // destructor path is already counted via `patchedRemove` above. Adding an
+  // extra bump on DOM removal was observed to double-count the same remove
+  // (seen in the "it removes the modifier when the element is removed" test
+  // where adds matched but removes was +1 over expected).
+  //
+  // If a code path is ever found that removes elements from the DOM without
+  // running their listeners' destructors, it should be addressed at that
+  // teardown site rather than by instrumenting DOM removal here.
   (globalThis as any).__gxtOnCounters = __gxtOnCounters;
 }
 
