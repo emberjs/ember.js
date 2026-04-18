@@ -464,6 +464,18 @@ export default function createRootTemplate(_owner: any) {
     if ((globalThis as any).__gxtIsForceRerender && (globalThis as any).__gxtRootOutletRerender) {
       return { nodes: [], ctx: context };
     }
+    // Ensure per-outlet rerender registry is set up. This supports multiple
+    // concurrent ApplicationInstances (e.g. Ember Islands-style setup) where
+    // each visit() has its own outletRef + rootElement. Using a single global
+    // function here would cause the second visit to overwrite the first, so
+    // setOutletState on either root would re-render into the wrong DOM target.
+    //
+    // Keyed by outletRef (each visit creates a fresh one). Callers in
+    // outlet.ts / renderer.ts pass the outletRef, so we dispatch to the
+    // matching closure and preserve per-root state (lastRenderContext, etc.).
+    const outletRerenderMap: Map<any, (ref: any) => void> =
+      (globalThis as any).__gxtRootOutletRerenderMap ||
+      ((globalThis as any).__gxtRootOutletRerenderMap = new Map());
     // Create component instance to access outlet state
     const args = context.rootState ? { rootState: context.rootState } : context;
     const instance = new RootTemplate(args) as any;
@@ -723,8 +735,17 @@ export default function createRootTemplate(_owner: any) {
     // `@ember/test-helpers` emulation tests).
     let lastRouteTemplate: any = null;
 
-    // Register a re-render function that setOutletState can call
-    (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
+    // Register a re-render function that setOutletState can call.
+    //
+    // We store it in two places:
+    //  1. `__gxtRootOutletRerenderMap` keyed by `instance.outletRef` so that
+    //     multiple concurrent ApplicationInstances (Ember Islands) each get
+    //     their own closure + parentElement and don't clobber each other.
+    //  2. `__gxtRootOutletRerender` as a dispatch function that looks up the
+    //     correct closure by outletRef. This keeps backwards compatibility
+    //     with callers that don't know about the map and still pass the ref
+    //     as the sole argument.
+    const rerenderForThisRoot = (outletRef: any) => {
       let mainOutlet = outletRef?.outlets?.main;
 
       // When the main outlet is a -outlet template, look at the nested route
@@ -816,6 +837,28 @@ export default function createRootTemplate(_owner: any) {
       // when inserted into the live DOM and render their nested content.
       parentElement.innerHTML = '';
       renderOutletState(outletRef);
+    };
+
+    // Register this root's rerender function, keyed by its outletRef. The
+    // dispatcher below looks up the correct closure for the incoming ref.
+    if (instance.outletRef) {
+      outletRerenderMap.set(instance.outletRef, rerenderForThisRoot);
+    }
+
+    // Install a global dispatch shim. It forwards the call to the closure
+    // registered for the outletRef being re-rendered. If the ref has no
+    // registered closure (e.g. setOutletState was called BEFORE the initial
+    // render registered this root), do nothing — the initial render will
+    // pick up the latest state. Do NOT fall back to another root's closure,
+    // because that would cause the second visit's state changes to bleed
+    // into the first visit's rootElement (the Ember Islands regression).
+    (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
+      const map: Map<any, (ref: any) => void> =
+        (globalThis as any).__gxtRootOutletRerenderMap;
+      if (map && outletRef && map.has(outletRef)) {
+        map.get(outletRef)!(outletRef);
+      }
+      // No fallback: unregistered refs are ignored.
     };
 
     // Perform initial render
