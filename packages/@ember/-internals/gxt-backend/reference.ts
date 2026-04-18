@@ -139,6 +139,24 @@ export function valueForRef(ref: any): any {
 
 export function childRefFor(parentRef: any, path: string): any {
   if (parentRef == null) return _childRefFor(parentRef, path);
+  // Honor the stock `@glimmer/reference` lazy-child contract for the hash
+  // helper: `@glimmer/runtime/lib/helpers/hash.ts` seeds `parentRef.children`
+  // with a Map of per-key original refs so childRefFor returns the per-key
+  // original ref (lazy) instead of building an eager child compute. Without
+  // this, the hash test "individual hash values are accessed lazily" fails
+  // because our generic childCompute calls `getProp(parentRef.value, path)`
+  // which forces evaluation of every keyed getter.
+  //
+  // Gate: require the parent ref's debugLabel to be 'hash' so we don't
+  // accidentally honor a stale `.children` Map set elsewhere. This is the
+  // exact label stock `hash` uses (see hash.ts line 50).
+  if (parentRef.debugLabel === 'hash') {
+    const stockChildren = parentRef.children;
+    if (stockChildren instanceof Map) {
+      const cached = stockChildren.get(path);
+      if (cached) return cached;
+    }
+  }
   // Unbound refs: snapshot the child value and return a new unbound ref.
   if (parentRef[UNBOUND_MARKER] === true) {
     const parent = valueForRef(parentRef);
