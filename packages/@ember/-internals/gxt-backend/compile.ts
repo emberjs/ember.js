@@ -3716,14 +3716,12 @@ function patchGlobalEachSync() {
               // Collect live instances whose parentView chain includes
               // capturedParent — these are the children torn down by the
               // transition to the inverse branch.
-              const oldItems: any[] = [];
+              const candidates: any[] = [];
               for (const poolArr of allPools) {
                 for (const entry of poolArr) {
                   const inst = entry && entry.instance;
                   if (!inst || inst.isDestroyed || inst.isDestroying) continue;
                   if (inst === capturedParent) continue;
-                  // Only fire for instances that have been mounted (__gxtEverInserted)
-                  // to avoid tagging phantoms created earlier in the same sync.
                   if (!inst.__gxtEverInserted) continue;
                   let pv: any = inst.parentView;
                   let guard = 0;
@@ -3734,17 +3732,36 @@ function patchGlobalEachSync() {
                   }
                   if (!underParent) continue;
                   if ((inst as any).__gxtWDEFiredCycle === currentCycle) continue;
-                  oldItems.push(inst);
+                  candidates.push(inst);
                 }
               }
-              if (oldItems.length > 0) {
+              if (candidates.length > 0) {
+                // Order: DFS from each direct child of capturedParent so the
+                // emitted hook sequence interleaves (an-item[0], nested[0],
+                // an-item[1], nested[1], ...) — matching classic render order.
+                const directChildren = candidates.filter(
+                  (c: any) => c.parentView === capturedParent
+                );
+                const ordered: any[] = [];
+                const visited = new Set<any>();
+                const visit = (inst: any) => {
+                  if (!inst || visited.has(inst)) return;
+                  visited.add(inst);
+                  ordered.push(inst);
+                  for (const c of candidates) {
+                    if (c.parentView === inst) visit(c);
+                  }
+                };
+                for (const root of directChildren) visit(root);
+                for (const c of candidates) if (!visited.has(c)) ordered.push(c);
+
                 const getViewElement = (g.__gxtViewUtilsRef && g.__gxtViewUtilsRef.getViewElement) ||
                   ((inst: any) => inst && inst.element);
                 const tempContainer = document.getElementById('qunit-fixture') || document.body;
                 const reattached: Array<{ element: Element }> = [];
                 (g as any).__gxtDestroyReattachInProgress = true;
                 try {
-                  for (const inst of oldItems) {
+                  for (const inst of ordered) {
                     try {
                       const el = getViewElement(inst);
                       if (el instanceof HTMLElement && !el.isConnected) {
@@ -3756,7 +3773,7 @@ function patchGlobalEachSync() {
                 } finally {
                   (g as any).__gxtDestroyReattachInProgress = false;
                 }
-                for (const inst of oldItems) {
+                for (const inst of ordered) {
                   try {
                     (inst as any).__gxtWDEFiredCycle = currentCycle;
                     if (inst._transitionTo && inst._state !== 'inDOM') {
@@ -3765,6 +3782,27 @@ function patchGlobalEachSync() {
                     if (typeof inst.trigger === 'function') {
                       inst.trigger('willDestroyElement');
                       inst.trigger('willClearRender');
+                    }
+                    // Install a per-instance trigger gate so that a subsequent
+                    // call from __gxtDestroyUnclaimedPoolEntries' Phase 1
+                    // (which fires willDestroyElement/willClearRender again
+                    // for instances whose element is disconnected) becomes a
+                    // no-op. Keep other hook names (didDestroyElement,
+                    // willDestroy) flowing through so Phase 2/3 still emit
+                    // their hooks in the stock sequence.
+                    if (!(inst as any).__gxtPreDestroyGateInstalled) {
+                      (inst as any).__gxtPreDestroyGateInstalled = true;
+                      const origTrigger = inst.trigger;
+                      Object.defineProperty(inst, 'trigger', {
+                        value: function(this: any, name: string, ...rest: any[]) {
+                          if ((name === 'willDestroyElement' || name === 'willClearRender') &&
+                              this.__gxtWDEFiredCycle === (g.__gxtSyncCycleId || 0)) {
+                            return undefined;
+                          }
+                          return origTrigger.call(this, name, ...rest);
+                        },
+                        writable: true, configurable: true, enumerable: false,
+                      });
                     }
                   } catch { /* user override may throw */ }
                 }
@@ -7349,19 +7387,29 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     //
     // Detection signals, any of which indicate a curly-block invocation:
     //   1. `curly-c-` prefix on the tag (legacy AST transform path)
-    //   2. `@__hasBlock__` marker in attrs (angle-bracket block form)
+    //   2. `@__hasBlock__` marker in attrs (angle-bracket block form) —
+    //      but ONLY on PascalCase tags. GXT sometimes attaches the marker
+    //      to hyphenated lowercase tags (custom elements like
+    //      `<use-the-platform></use-the-platform>`), where the author
+    //      intends a plain HTML custom element, not a component.
     //   3. PascalCase tag name with at least one child (curly-block body)
     if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
+      const firstChar = resolvedTag.charCodeAt(0);
+      const isPascalCase = firstChar >= 65 && firstChar <= 90; // A-Z
       let isCurlyBlockInvocation = resolvedTag.startsWith('curly-c-');
-      if (!isCurlyBlockInvocation && tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+      if (
+        !isCurlyBlockInvocation &&
+        isPascalCase &&
+        tagProps &&
+        tagProps !== g.$_edp &&
+        Array.isArray(tagProps[1])
+      ) {
         for (const [key] of tagProps[1]) {
           if (key === '@__hasBlock__') { isCurlyBlockInvocation = true; break; }
         }
       }
       if (!isCurlyBlockInvocation && Array.isArray(children) && children.length > 0) {
-        const firstCh = resolvedTag.charCodeAt(0);
-        const isPascal = firstCh >= 65 && firstCh <= 90; // A-Z
-        if (isPascal) isCurlyBlockInvocation = true;
+        if (isPascalCase) isCurlyBlockInvocation = true;
       }
       if (isCurlyBlockInvocation) {
         // Compute the original dashed name (e.g. `no-good` from `NoGood` or
