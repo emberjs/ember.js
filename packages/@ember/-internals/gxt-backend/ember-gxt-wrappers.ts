@@ -1722,6 +1722,17 @@ function createEmberDc(original: Function) {
         const lastNode = currentNodes.length > 0 ? currentNodes[currentNodes.length - 1] : null;
         const parent = lastNode?.parentNode;
         if (!parent) return;
+        // If the managed node has been detached from the live DOM (e.g., by a
+        // force-rerender that morphed the parent), mark this listener as
+        // orphaned and skip. A previous render-pass created this listener,
+        // but its DOM was replaced by a fresh listener during force-rerender.
+        // Without this, the old stale listener still fires performSwap and
+        // creates duplicate component instances (double init on compName
+        // changes — GH#13982).
+        if (lastNode && !(lastNode as Node).isConnected) {
+          _dcDestroyed = true;
+          return;
+        }
         const insertBefore = lastNode?.nextSibling || null;
 
         // Remove old nodes
