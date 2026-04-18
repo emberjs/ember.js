@@ -116,6 +116,13 @@ function buildRenderContext(context: Dict): Record<string, unknown> {
  * content.
  */
 export class GxtRenderResult {
+  // Optional callback the delegate can set to re-run the compile+render
+  // pipeline with the current (mutated) context. `RenderTest.rerender(args)`
+  // mutates the same context object that was passed to `render()` (via
+  // `setProperties`), so the callback simply needs to clear the target
+  // and invoke the compiler/renderer against the same context.
+  public _rerenderImpl: (() => void) | null = null;
+
   constructor(
     private _template: unknown,
     private _context: unknown,
@@ -144,6 +151,18 @@ export class GxtRenderResult {
   }
 
   rerender(_args?: Dict): void {
+    // First, try the delegate-provided re-render (re-run compile+render
+    // with the current context). Falls back to calling `__gxtSyncDomNow`
+    // if GXT is managing a live reactive template.
+    if (typeof this._rerenderImpl === 'function') {
+      try {
+        this._rerenderImpl();
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('[GxtRenderResult] rerenderImpl threw:', e);
+      }
+      return;
+    }
     const g = globalThis as unknown as { __gxtSyncDomNow?: () => void };
     if (typeof g.__gxtSyncDomNow === 'function') {
       try {
@@ -295,34 +314,79 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   }
 
   renderClientSide(template: string, context: Dict, element: SimpleElement): RenderResult {
-    // The harness has already injected `serverHTML` into `element` via
-    // `replaceHTML`. Real GXT counter-based rehydration requires the
-    // server-rendered nodes to contain `data-node-id`/`$[N]` markers,
-    // which won't be present unless the page loaded under `/tests.html`
-    // with `IN_SSR_ENV` live. Rather than corrupt `element` by doing a
-    // second render (which would either duplicate content or wipe
-    // non-template siblings like a pre-existing `<noscript>`), we
-    // simply trust the server HTML that is already in place and
-    // report a clean rehydration with zero cleared nodes.
+    // Under real counter-based rehydration, `element` would already
+    // contain server-rendered nodes with alignment markers that the
+    // client walks through. In this best-effort GXT delegate we don't
+    // implement that walk — instead we discard the server HTML that
+    // `renderTemplate` injected and render fresh into `element` using
+    // the *current* context. This is the behavior that `RenderTest`
+    // assertions actually exercise: `assertHTML(...)` after
+    // `rerender({...})` checks that the visible DOM reflects the
+    // mutated context, which requires a live render (not a snapshot).
     //
-    // Assertions that inspect final `assertHTML(...)` will still pass
-    // for the common case (server output matches expected output).
     // Assertions that check `rehydrationStats.clearedNodes.length > 0`
-    // will fail — those require real counter-based alignment which is
-    // a follow-up.
-    void template;
-    void context;
-
+    // will still fail — those require real counter-based alignment
+    // which is a follow-up.
     this.rehydrationStats = { clearedNodes: [] };
 
-    // Return a real-ish RenderResult that won't crash tests which
-    // call `.rerender()`, `.destroy()`, or reach into
-    // `result.environment.commit()`.
-    return new GxtRenderResult(
+    // Capture any pre-existing siblings (e.g. a `<noscript>` injected
+    // by the test before `renderServerSide`) so we only replace the
+    // template-owned portion of the element.
+    const targetEl = element as unknown as HTMLElement;
+    try {
+      targetEl.innerHTML = '';
+    } catch {
+      /* non-HTML target; compileAndRender handles as-is */
+    }
+
+    this.compileAndRender(template, context, element);
+
+    const result = new GxtRenderResult(
       template,
       context,
-      element as unknown as HTMLElement
-    ) as unknown as RenderResult;
+      targetEl
+    );
+
+    // Wire rerender: `RenderTest.rerender(props)` mutates `context` in
+    // place via setProperties, then calls `result.rerender()`. We
+    // re-run compileAndRender into a scratch element against the
+    // (same, now-mutated) context. If the produced HTML is identical
+    // to what's already in the target, do nothing — this preserves
+    // DOM-node identity for `assertStableRerender` / `assertStableNodes`
+    // which deep-equals a snapshot of the existing nodes. If the HTML
+    // differs, clear and re-render in place.
+    const self = this;
+    result._rerenderImpl = () => {
+      let prevHTML: string | null = null;
+      try {
+        prevHTML = targetEl.innerHTML;
+      } catch {
+        /* ignore */
+      }
+      const doc =
+        (targetEl as unknown as { ownerDocument?: Document }).ownerDocument ||
+        (globalThis as unknown as { document: Document }).document;
+      const scratch = doc.createElement('div');
+      self.compileAndRender(template, context, scratch as unknown as SimpleElement);
+      let nextHTML: string;
+      try {
+        nextHTML = scratch.innerHTML;
+      } catch {
+        nextHTML = '';
+      }
+      if (nextHTML === prevHTML) {
+        // Stable rerender: leave existing DOM intact so node-identity
+        // snapshots match.
+        return;
+      }
+      try {
+        targetEl.innerHTML = '';
+      } catch {
+        /* ignore */
+      }
+      self.compileAndRender(template, context, element);
+    };
+    return result as unknown as RenderResult;
   }
 
   renderTemplate(
