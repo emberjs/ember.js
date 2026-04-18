@@ -122,12 +122,25 @@ export class GxtRenderResult {
     private _target: HTMLElement | null
   ) {}
 
-  get environment(): { commit(): void } {
-    return {
-      commit() {
-        /* GXT commits inline */
-      },
-    };
+  // `RenderTest.rerender()` calls `result.env.begin()` / `result.env.commit()`
+  // around `result.rerender()`. GXT commits inline, so both are no-ops, but
+  // the properties must exist. Both `env` (short) and `environment` (long)
+  // are referenced by various call sites, so expose the same object on both.
+  private _envObject: { begin(): void; commit(): void } = {
+    begin() {
+      /* GXT commits inline */
+    },
+    commit() {
+      /* GXT commits inline */
+    },
+  };
+
+  get env(): { begin(): void; commit(): void } {
+    return this._envObject;
+  }
+
+  get environment(): { begin(): void; commit(): void } {
+    return this._envObject;
   }
 
   rerender(_args?: Dict): void {
