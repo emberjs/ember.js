@@ -8695,12 +8695,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // Null/undefined/false: ensure no stray attribute; leave as-is.
             continue;
           }
-          // HTML boolean attributes: when value is `true` for a known boolean
-          // attribute, write the bare form (empty-string value). Without this
-          // normalization `<option selected>` would serialize back as
-          // `<option selected="true">` because `String(true) === "true"`.
+          // HTML boolean attributes: only when the SOURCE is a literal `true`
+          // (static `<option selected>`) do we write the bare form. Dynamic
+          // bindings (`selected={{this.x}}`) keep `String(value)` so tests
+          // that compare against `selected="true"` still match — this mirrors
+          // how classic Glimmer serializes DYNAMIC boolean-true attribute
+          // bindings under rehydration mode.
+          const isLiteralTrueBoolean = value === true;
           const serialized =
-            resolved === true && typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase())
+            isLiteralTrueBoolean && typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase())
               ? ''
               : String(resolved);
           try {
@@ -8719,11 +8722,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 if (v == null || v === false) {
                   result.removeAttribute(key);
                 } else {
-                  const s =
-                    v === true && typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase())
-                      ? ''
-                      : String(v);
-                  result.setAttribute(key, s);
+                  // Dynamic path: keep String(v) so `selected={{true}}`
+                  // serializes as `selected="true"` (matches classic).
+                  result.setAttribute(key, String(v));
                 }
               });
             } catch {
