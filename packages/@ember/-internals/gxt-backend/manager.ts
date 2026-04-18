@@ -54,7 +54,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gxtTouchClassicBridge, registerClassicReactor as _gxtRegisterClassicReactor, createUpdatableTag as _gxtCreateUpdatableTag } from '@glimmer/validator';
-import { createConstRef as _createConstRef } from '@glimmer/reference';
+import { createConstRef as _createConstRef, valueForRef as _valueForRefForManager, REFERENCE as _REFERENCE_FOR_MANAGER } from '@glimmer/reference';
 // @ts-ignore - direct path to share the same module instance as compile.ts
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 import { destroy as _destroyDestroyable, registerDestructor as _registerDestructor } from './destroyable';
@@ -9247,7 +9247,29 @@ export function getInternalModifierManager(modifier: any, isOptional?: boolean) 
       `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${_managerDebugToString(modifier)}`
     );
   }
-  const stored = globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
+  // Walk the prototype chain so subclasses inherit the modifier manager set
+  // on an ancestor class (matches @glimmer/manager's getInternalModifierManager,
+  // which relies on getPrototypeOf traversal via its WeakMap lookup chain).
+  // Without this, `class Bar extends Foo` — where Foo was associated via
+  // setModifierManager — yields "no modifier manager associated" when Bar is
+  // invoked as a modifier (because Bar itself isn't in the WeakMap).
+  let stored = globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
+  if (stored === undefined) {
+    let pointer: any = modifier;
+    for (let depth = 0; depth < 20; depth++) {
+      try {
+        pointer = Object.getPrototypeOf(pointer);
+      } catch {
+        break;
+      }
+      if (pointer === null || pointer === undefined) break;
+      const candidate = globalThis.INTERNAL_MODIFIER_MANAGERS.get(pointer);
+      if (candidate !== undefined) {
+        stored = candidate;
+        break;
+      }
+    }
+  }
   if (stored === undefined) {
     if (isOptional) return null;
     throw new Error(
@@ -9568,6 +9590,92 @@ interface ShimCustomModifierState {
   modifier: any;
 }
 
+// Detect Glimmer Reference objects. References are tagged with the canonical
+// REFERENCE symbol (via reference.ts brandRef) or expose a shape compatible with
+// VM references (`compute` or `value` function). For defensive unwrapping,
+// accept either shape — VM captures from `args.capture()` always brand via
+// REFERENCE, while older GXT-native shapes may not.
+function _isGlimmerRef(v: any): boolean {
+  if (v == null) return false;
+  if (typeof v !== 'object' && typeof v !== 'function') return false;
+  if (_REFERENCE_FOR_MANAGER && _REFERENCE_FOR_MANAGER in v) return true;
+  return false;
+}
+
+function _unwrapMaybeRef(v: any): any {
+  if (_isGlimmerRef(v)) {
+    try {
+      return _valueForRefForManager(v);
+    } catch {
+      // fall through
+    }
+  }
+  return v;
+}
+
+// Wrap CapturedArguments (`{ positional: Reference[], named: Dict<Reference> }`)
+// into an Arguments-compatible proxy that unwraps References on read. This
+// mirrors @glimmer/manager's argsProxyFor(). Required by CustomModifierManager
+// so that `args.positional[0]` / `args.named.foo` expose the reified value
+// instead of the underlying Reference. The positional proxy supports .length,
+// numeric indexing, and iteration; the named proxy supports key reads and
+// `in` checks. Both trigger tag consumption (valueForRef registers reads)
+// when run inside a track() frame, which is how auto-tracking of consumed
+// args drives per-arg invalidation in the VM's commit() wrapper.
+function _modifierArgsProxyFor(capturedArgs: any): { positional: any; named: any } {
+  if (!capturedArgs) return { positional: [], named: {} };
+  const positional: any[] = capturedArgs.positional ?? [];
+  const named: Record<string, any> = capturedArgs.named ?? {};
+
+  const positionalProxy: any = new Proxy(positional, {
+    get(target: any, prop: string | symbol) {
+      if (prop === 'length') return target.length;
+      if (prop === Symbol.iterator) {
+        return function* () {
+          for (let i = 0; i < target.length; i++) {
+            yield _unwrapMaybeRef(target[i]);
+          }
+        };
+      }
+      if (typeof prop === 'string') {
+        const num = Number(prop);
+        if (Number.isInteger(num) && num >= 0 && num < target.length) {
+          return _unwrapMaybeRef(target[num]);
+        }
+      }
+      return (target as any)[prop as any];
+    },
+    has(target: any, prop: string | symbol) {
+      if (prop === 'length' || prop === Symbol.iterator) return true;
+      if (typeof prop === 'string') {
+        const num = Number(prop);
+        if (Number.isInteger(num)) return num >= 0 && num < target.length;
+      }
+      return prop in target;
+    },
+  });
+
+  const namedProxy: any = new Proxy(named, {
+    get(target: any, prop: string | symbol) {
+      return _unwrapMaybeRef((target as any)[prop]);
+    },
+    has(target: any, prop: string | symbol) {
+      return prop in target;
+    },
+    ownKeys(target: any) {
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target: any, prop: string | symbol) {
+      if (prop in target) {
+        return { enumerable: true, configurable: true };
+      }
+      return undefined;
+    },
+  });
+
+  return { positional: positionalProxy, named: namedProxy };
+}
+
 export class CustomModifierManager {
   factory: any;
   delegate: any;
@@ -9589,13 +9697,23 @@ export class CustomModifierManager {
         "Received: `" + (caps === undefined ? 'undefined' : JSON.stringify(caps)) + "`"
       );
     }
+    // Wrap captured args in a reference-unwrapping proxy. `args` from the VM is
+    // CapturedArguments-shape with Reference values — delegate hooks expect an
+    // Arguments object where `positional[i]` / `named[key]` are resolved values.
+    // If the incoming args already look proxied (no Reference entries),
+    // `_modifierArgsProxyFor` is a safe no-op: `_unwrapMaybeRef` passes non-refs
+    // through. Gate on the presence of `.positional` to preserve legacy shapes
+    // that pass pre-reified args.
+    const proxiedArgs = (args && (Array.isArray(args.positional) || args.named))
+      ? _modifierArgsProxyFor(args)
+      : args;
     const modifier = typeof delegate.createModifier === 'function'
-      ? delegate.createModifier(definition, args)
+      ? delegate.createModifier(definition, proxiedArgs)
       : delegate;
     // Lazy import: the validator shim creates an updatable tag we can return
     // from getTag(). This matches @glimmer/manager's public CustomModifierManager.
     const tag = _createUpdatableTagForModifier();
-    const state: ShimCustomModifierState = { tag, element, delegate, args, modifier };
+    const state: ShimCustomModifierState = { tag, element, delegate, args: proxiedArgs, modifier };
     // Match stock @glimmer/manager/lib/public/modifier.ts: register a
     // destructor on the state that invokes delegate.destroyModifier when the
     // state is destroyed. This is what drives willDestroy-style callbacks on
@@ -9605,7 +9723,7 @@ export class CustomModifierManager {
     // here) fires the modifier's destructor.
     if (typeof delegate?.destroyModifier === 'function') {
       try {
-        _registerDestructor(state, () => delegate.destroyModifier(modifier, args));
+        _registerDestructor(state, () => delegate.destroyModifier(modifier, proxiedArgs));
       } catch { /* fall through — destructor registration optional */ }
     }
     return state;
