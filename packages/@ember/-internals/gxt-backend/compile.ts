@@ -61,6 +61,31 @@ function _normalizeStringValue(value: unknown): string {
 // that Symbol and null-prototype object values don't throw on stringification.
 (globalThis as any).__gxtNormAttr = _normalizeStringValue;
 
+// __gxtQuotedAttr: used by the compile post-processor to render quoted
+// attribute values that contain a single interpolation (e.g.
+// `src='{{this.src}}'`). When the single input is null/undefined, Ember's
+// semantics treat the attribute as absent — we signal this by returning
+// `null` so the $_tag wrapper's "remove attribute" branch activates. For
+// any other shape (multi-segment concat, non-null values), fall back to
+// the normalize+join behavior.
+(globalThis as any).__gxtQuotedAttr = function __gxtQuotedAttr(parts: unknown[]): string | null {
+  if (!Array.isArray(parts)) return _normalizeStringValue(parts);
+  if (parts.length === 1) {
+    const v = parts[0];
+    if (v === null || v === undefined) return null;
+  }
+  // All-nullish multi-part case: treat as null too. Otherwise concat normally.
+  let allNullish = true;
+  let out = '';
+  for (const p of parts) {
+    if (p !== null && p !== undefined) {
+      allNullish = false;
+    }
+    out += _normalizeStringValue(p);
+  }
+  return allNullish ? null : out;
+};
+
 /** Replace all hyphens with underscores without regex */
 function hyphenToUnderscore(str: string): string {
   return str.split('-').join('_');
@@ -3664,9 +3689,96 @@ function patchGlobalEachSync() {
     // when items becomes empty on update) see the captured parent — at that
     // point the parentViewStack is empty and new instances would otherwise
     // have parentView=null, breaking the lifecycle tests.
+    //
+    // Additionally, when the forward branch items all disappear (items array
+    // goes from non-empty → empty), classic Ember lifecycle expects
+    // `willDestroyElement` + `willClearRender` to fire on the OLD items
+    // BEFORE the inverse-branch components are constructed. GXT's native
+    // reactivity has already torn down the old item DOM by the time our
+    // wrapped inverseFn runs, so temporarily re-attach each old element to
+    // a fixture container and fire the hooks — mirroring the mechanism in
+    // __gxtDestroyUnclaimedPoolEntries' Phase 1. Guard with
+    // `__gxtInverseDestroyFiredCycle` so Phase 1 and Phase 2b don't double-fire,
+    // and mark each instance with `__gxtWDEFiredCycle` so Phase 2c's
+    // `__gxtDestroyUnclaimedPoolEntries` skips re-firing the pre-destroy hooks.
     if (typeof inverseFn === 'function') {
       const origInverseFn = inverseFn;
       inverseFn = function wrappedInverseFn(ctx0: any) {
+        try {
+          const currentCycle = (g.__gxtSyncCycleId || 0);
+          const isSyncing = !!g.__gxtSyncing;
+          const alreadyFired = capturedParent &&
+            (capturedParent as any).__gxtInverseDestroyFiredCycle === currentCycle;
+          if (isSyncing && !alreadyFired && capturedParent) {
+            (capturedParent as any).__gxtInverseDestroyFiredCycle = currentCycle;
+            const allPools = g.__gxtAllPoolArrays;
+            if (allPools) {
+              // Collect live instances whose parentView chain includes
+              // capturedParent — these are the children torn down by the
+              // transition to the inverse branch.
+              const oldItems: any[] = [];
+              for (const poolArr of allPools) {
+                for (const entry of poolArr) {
+                  const inst = entry && entry.instance;
+                  if (!inst || inst.isDestroyed || inst.isDestroying) continue;
+                  if (inst === capturedParent) continue;
+                  // Only fire for instances that have been mounted (__gxtEverInserted)
+                  // to avoid tagging phantoms created earlier in the same sync.
+                  if (!inst.__gxtEverInserted) continue;
+                  let pv: any = inst.parentView;
+                  let guard = 0;
+                  let underParent = false;
+                  while (pv && guard++ < 6) {
+                    if (pv === capturedParent) { underParent = true; break; }
+                    pv = pv.parentView;
+                  }
+                  if (!underParent) continue;
+                  if ((inst as any).__gxtWDEFiredCycle === currentCycle) continue;
+                  oldItems.push(inst);
+                }
+              }
+              if (oldItems.length > 0) {
+                const getViewElement = (g.__gxtViewUtilsRef && g.__gxtViewUtilsRef.getViewElement) ||
+                  ((inst: any) => inst && inst.element);
+                const tempContainer = document.getElementById('qunit-fixture') || document.body;
+                const reattached: Array<{ element: Element }> = [];
+                (g as any).__gxtDestroyReattachInProgress = true;
+                try {
+                  for (const inst of oldItems) {
+                    try {
+                      const el = getViewElement(inst);
+                      if (el instanceof HTMLElement && !el.isConnected) {
+                        tempContainer.appendChild(el);
+                        reattached.push({ element: el });
+                      }
+                    } catch { /* ignore */ }
+                  }
+                } finally {
+                  (g as any).__gxtDestroyReattachInProgress = false;
+                }
+                for (const inst of oldItems) {
+                  try {
+                    (inst as any).__gxtWDEFiredCycle = currentCycle;
+                    if (inst._transitionTo && inst._state !== 'inDOM') {
+                      try { inst._transitionTo('inDOM'); } catch { /* ignore */ }
+                    }
+                    if (typeof inst.trigger === 'function') {
+                      inst.trigger('willDestroyElement');
+                      inst.trigger('willClearRender');
+                    }
+                  } catch { /* user override may throw */ }
+                }
+                // Detach reattached nodes so origInverseFn renders into a
+                // parent without leftover old items
+                for (const { element } of reattached) {
+                  try {
+                    if (element.parentNode) element.parentNode.removeChild(element);
+                  } catch { /* ignore */ }
+                }
+              }
+            }
+          }
+        } catch { /* best-effort; never block inverse render */ }
         return withParent(() => origInverseFn(ctx0));
       };
     }
@@ -9242,15 +9354,62 @@ export function precompileTemplate(templateString: string, options?: {
 
     // Post-process: GXT emits quoted attribute values as `[...expressions].join("")`.
     // This implicit string coercion throws TypeError for Symbol values and for
-    // Object.create(null). Rewrite to `[...].map(__gxtNormAttr).join("")` which
+    // Object.create(null). Rewrite to `globalThis.__gxtQuotedAttr([...])` which
     // uses explicit String() conversion with Glimmer's normalizeStringValue
-    // semantics (see _normalizeStringValue in this file).
+    // semantics AND returns `null` when the attribute value is purely
+    // null/undefined — matching Ember's "missing attribute" behavior for
+    // `<img src='{{this.src}}'>` with `src=null`.
     //
     // The pattern is very specific: `].join("")` occurs at the end of the quoted
     // attribute serialization in GXT's output. Any other `.join` call uses a
     // non-empty separator, so this replacement is safe.
     if (modifiedCode.indexOf('].join("")') !== -1) {
-      modifiedCode = modifiedCode.split('].join("")').join('].map(globalThis.__gxtNormAttr).join("")');
+      // Walk the code and wrap each matching `[...].join("")` with the
+      // __gxtQuotedAttr helper. We scan backward from each `].join("")`
+      // to find the matching `[` (handling nested brackets/strings) so we
+      // can prepend the wrapper call.
+      const target = '].join("")';
+      let buf = '';
+      let i = 0;
+      const n = modifiedCode.length;
+      while (i < n) {
+        const idx = modifiedCode.indexOf(target, i);
+        if (idx === -1) {
+          buf += modifiedCode.slice(i);
+          break;
+        }
+        // Find matching `[` for the `]` at position idx
+        let depth = 1;
+        let j = idx - 1;
+        while (j >= 0 && depth > 0) {
+          const ch = modifiedCode[j]!;
+          if (ch === ']') depth++;
+          else if (ch === '[') depth--;
+          else if (ch === '"' || ch === "'" || ch === '`') {
+            const quote = ch;
+            j--;
+            while (j >= 0 && modifiedCode[j] !== quote) {
+              if (modifiedCode[j - 1] === '\\') j--;
+              j--;
+            }
+          }
+          if (depth > 0) j--;
+        }
+        if (depth !== 0) {
+          // Couldn't find matching bracket — leave the literal as-is.
+          buf += modifiedCode.slice(i, idx + target.length);
+          i = idx + target.length;
+          continue;
+        }
+        const arrStart = j; // position of `[`
+        // Replace `[...].join("")` with `globalThis.__gxtQuotedAttr([...])`
+        buf += modifiedCode.slice(i, arrStart);
+        buf += 'globalThis.__gxtQuotedAttr(';
+        buf += modifiedCode.slice(arrStart, idx + 1); // includes `]`
+        buf += ')';
+        i = idx + target.length;
+      }
+      modifiedCode = buf;
     }
 
     // Post-process: GXT may emit `@argName` (and `@argName.path`) as literal JS
