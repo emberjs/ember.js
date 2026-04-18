@@ -2026,6 +2026,22 @@ if (typeof Element !== 'undefined' && Element.prototype && (Element.prototype as
   };
   (Element.prototype as any).__gxtSanitizePatched = true;
 }
+// HTML boolean attributes — when the template writes `<option selected>` the
+// GXT compiler emits `["selected", true]` (literal boolean). Browser DOM
+// accepts `setAttribute("selected", "true")` which serializes as
+// `selected="true"`, but tests and HTML semantics expect a bare `selected`
+// (i.e. `setAttribute("selected", "")`). Same for `checked`, `disabled`,
+// `multiple`, `readonly`, `autofocus`, etc. Normalize `value === true` to
+// empty string for known boolean attrs so the round-tripped innerHTML
+// matches Ember/Glimmer semantics.
+const _HTML_BOOLEAN_ATTRS = new Set([
+  'allowfullscreen', 'async', 'autofocus', 'autoplay',
+  'checked', 'controls', 'default', 'defer',
+  'disabled', 'formnovalidate', 'hidden', 'ismap',
+  'itemscope', 'loop', 'multiple', 'muted',
+  'nomodule', 'novalidate', 'open', 'readonly',
+  'required', 'reversed', 'selected',
+]);
 if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
   const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
   const _patchedAttr = function(element: any, name: string, value: any) {
@@ -2033,6 +2049,14 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
     // (earlier in the rendering pipeline) to avoid double warnings.
     if (value === undefined || value === false) {
       element.removeAttribute(name);
+    } else if (value === true && typeof name === 'string' && _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())) {
+      // HTML boolean attribute — write bare (empty string value) so the
+      // serialized innerHTML reads `<option selected>` instead of
+      // `<option selected="true">`. Non-boolean attrs with `true` still go
+      // through the normal path (becoming the literal string "true"), which
+      // preserves current behavior for attributes that legitimately carry
+      // stringified booleans (e.g. `aria-pressed="true"`).
+      origAttr.call(this, element, name, '');
     } else if (typeof value === 'symbol' ||
                (value !== null && typeof value === 'object' && typeof (value as any).toString !== 'function')) {
       // Symbol values throw on implicit string coercion inside setAttribute.
@@ -8580,8 +8604,16 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // Null/undefined/false: ensure no stray attribute; leave as-is.
             continue;
           }
+          // HTML boolean attributes: when value is `true` for a known boolean
+          // attribute, write the bare form (empty-string value). Without this
+          // normalization `<option selected>` would serialize back as
+          // `<option selected="true">` because `String(true) === "true"`.
+          const serialized =
+            resolved === true && typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase())
+              ? ''
+              : String(resolved);
           try {
-            result.setAttribute(key, String(resolved));
+            result.setAttribute(key, serialized);
           } catch {
             // Ignore attribute-application errors (e.g. invalid name);
             // this is a best-effort fallback, not a strict render.
@@ -8596,7 +8628,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 if (v == null || v === false) {
                   result.removeAttribute(key);
                 } else {
-                  result.setAttribute(key, String(v));
+                  const s =
+                    v === true && typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase())
+                      ? ''
+                      : String(v);
+                  result.setAttribute(key, s);
                 }
               });
             } catch {
