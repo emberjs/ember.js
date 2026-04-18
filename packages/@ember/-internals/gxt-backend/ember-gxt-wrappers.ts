@@ -2331,6 +2331,83 @@ export function installEmberWrappers() {
     g.$_modifierHelper = createEmberModifierHelper(g.$_modifierHelper);
     g.$_modifierHelper.__emberWrapped = true;
   }
+  // Patch the gxtEntriesOf helper used by the each-in transform to properly
+  // distinguish between thunks (getter functions) and value functions/classes.
+  // The original in compile.ts unconditionally invokes `obj()` when obj is a
+  // function, which (a) fails on classes (throws), and (b) for non-thunk
+  // functions returns undefined instead of enumerating own keys.
+  // Re-runs deferred in microtasks until the helpers object is created by
+  // compile.ts, since installEmberWrappers() runs before that assignment.
+  _patchGxtEntriesOf();
+}
+
+function _patchGxtEntriesOf(): void {
+  const BUILTIN = g.__EMBER_BUILTIN_HELPERS__;
+  if (!BUILTIN) {
+    // Helpers object not yet registered by compile.ts — retry via microtask
+    if (!g.__gxtEntriesOfPatchScheduled) {
+      g.__gxtEntriesOfPatchScheduled = true;
+      queueMicrotask(() => {
+        g.__gxtEntriesOfPatchScheduled = false;
+        _patchGxtEntriesOf();
+      });
+    }
+    return;
+  }
+  if (BUILTIN.__gxtEntriesOfPatched) return;
+  BUILTIN.gxtEntriesOf = function gxtEntriesOfEmber(obj: any): any[] {
+    // Thunks produced by the GXT compiler are arrow functions with no own
+    // prototype. Only invoke in that case; leave regular functions and
+    // classes (which have .prototype) untouched so we can iterate their
+    // own enumerable keys.
+    let resolved =
+      typeof obj === 'function' && !(obj as any).prototype ? (obj as any)() : obj;
+    // After the first unwrap, if we still have a function or class, treat it
+    // as a value: enumerate its own enumerable string keys.
+    if (typeof resolved === 'function') {
+      const keys = Object.keys(resolved);
+      if (keys.length === 0) return [];
+      return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
+    }
+    if (!resolved || typeof resolved !== 'object') return [];
+    // Unwrap ObjectProxy — iterate over .content, not the proxy itself.
+    if (
+      typeof (resolved as any).unknownProperty === 'function' &&
+      typeof (resolved as any).setUnknownProperty === 'function'
+    ) {
+      const content = (resolved as any).content;
+      if (!content || typeof content !== 'object') return [];
+      resolved = content;
+    }
+    // Map-like (ES6 Map): has .entries() and .forEach() and is NOT an Array.
+    if (
+      !Array.isArray(resolved) &&
+      typeof (resolved as any).entries === 'function' &&
+      typeof (resolved as any).forEach === 'function'
+    ) {
+      return Array.from((resolved as any).entries()).map(([k, v]: any) => ({ k, v }));
+    }
+    // Generic iterable (non-array, non-string) yielding [key, value] pairs.
+    if (
+      typeof (resolved as any)[Symbol.iterator] === 'function' &&
+      !Array.isArray(resolved) &&
+      typeof resolved !== 'string'
+    ) {
+      const entries: { k: any; v: any }[] = [];
+      for (const entry of resolved as any) {
+        if (Array.isArray(entry) && entry.length >= 2) {
+          entries.push({ k: entry[0], v: entry[1] });
+        }
+      }
+      return entries;
+    }
+    // Plain objects/arrays: iterate own enumerable string keys.
+    const keys = Object.keys(resolved);
+    return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
+  };
+  Object.defineProperty(BUILTIN, '__gxtEntriesOfPatched', {
+    value: true, writable: false, enumerable: false, configurable: true,
+  });
 }
 
 // Create module-level wrapped exports for ES module consumers

@@ -3586,7 +3586,37 @@ function patchGlobalEachSync() {
     // and `inverseFn` OUTSIDE the render transaction — at which point the
     // parentViewStack is empty and newly-created item components would get
     // parentView = null.
-    const capturedParent: any = (ctx && (ctx.__gxtRawTarget || ctx)) || null;
+    //
+    // During force-rerender (Phase 2b), the renderer builds a `freshContext =
+    // Object.create(component)` wrapper to avoid disturbing cell tracking.
+    // This wrapper is NOT the same object as the real component, so using it
+    // as `capturedParent` produces a DIFFERENT instance-pool key than the one
+    // Phase 1 (gxtSyncDom) used during the same sync cycle. The result:
+    // inverse-branch components ({{else}}) are created FRESH in Phase 2b,
+    // producing duplicate init/on(init)/didReceiveAttrs hooks (see the
+    // `components rendered from {{each}} have correct life-cycle hooks`
+    // lifecycle test — `reset to empty array` assertion). Walk the prototype
+    // chain to resolve to the underlying real component (nearest ancestor
+    // with own-`layoutName`) so both phases key into the SAME pool and
+    // Phase 2b reuses Phase 1's inverse-branch instances.
+    let _initialParent: any = (ctx && (ctx.__gxtRawTarget || ctx)) || null;
+    if (_initialParent && typeof _initialParent === 'object' &&
+        !Object.prototype.hasOwnProperty.call(_initialParent, 'layoutName')) {
+      // Walk prototype chain: freshContext is Object.create(component), so
+      // its direct prototype IS the real component with own `layoutName`.
+      let proto: any = Object.getPrototypeOf(_initialParent);
+      let guard = 0;
+      while (proto && guard++ < 4) {
+        if (Object.prototype.hasOwnProperty.call(proto, 'layoutName') &&
+            (proto.isView === true || typeof proto.trigger === 'function' ||
+             'elementId' in proto)) {
+          _initialParent = proto;
+          break;
+        }
+        proto = Object.getPrototypeOf(proto);
+      }
+    }
+    const capturedParent: any = _initialParent;
     const pushPV = g.__gxtPushParentView;
     const popPV = g.__gxtPopParentView;
     // Ember View instances have an _isView/isView flag; only push actual
@@ -3635,6 +3665,18 @@ function patchGlobalEachSync() {
     if (typeof inverseFn === 'function') {
       const origInverseFn = inverseFn;
       inverseFn = function wrappedInverseFn(ctx0: any) {
+        if ((g as any).__dbgEachTrace !== false) {
+          try {
+            (g as any).__dbgEachTrace = (g as any).__dbgEachTrace || [];
+            (g as any).__dbgEachTrace.push({
+              where: 'inverseFn',
+              forceRR: !!(g as any).__gxtIsForceRerender,
+              passId: (g as any).__emberRenderPassId || 0,
+              cpId: capturedParent && (capturedParent.elementId || capturedParent.layoutName || typeof capturedParent),
+              cpIsReal: capturedParent && Object.prototype.hasOwnProperty.call(capturedParent, 'layoutName'),
+            });
+          } catch {}
+        }
         return withParent(() => origInverseFn(ctx0));
       };
     }
@@ -8478,6 +8520,13 @@ function transformAttrQuotedHelperMustaches(code: string): string {
         /\{\{\s*([^}\s][^}]*?)\s*\}\}/g,
         (m, expr: string) => {
           const trimmed = expr.trim();
+          // Literal `null` / `undefined` in a quoted attribute value causes
+          // GXT to emit an empty template (return []). Ember's semantics
+          // treat these as empty strings. Replace with an empty string
+          // literal so GXT produces a proper concat-formula for the attribute.
+          if (trimmed === 'null' || trimmed === 'undefined') {
+            return `{{""}}`;
+          }
           if (!BARE_IDENT_RE.test(trimmed)) return m;
           if (BUILTINS.has(trimmed)) return m;
           return `{{(${trimmed})}}`;
@@ -9054,6 +9103,15 @@ export function precompileTemplate(templateString: string, options?: {
         modifiedCode = modifiedCode.replace(pattern, `$_maybeHelper(${jsKey},`);
         const pattern2 = new RegExp(`\\$_maybeHelper\\('${escapedKey}',`, 'g');
         modifiedCode = modifiedCode.replace(pattern2, `$_maybeHelper(${jsKey},`);
+        // Replace $_maybeHelper(kebab-name, ...) — GXT may emit the scope
+        // binding name verbatim as an unquoted identifier, which for kebab
+        // names like `say-hello` is invalid JS (parsed as `say - hello`).
+        // Only apply when the key actually contains a hyphen — hyphen-free
+        // names (including reserved words handled elsewhere) are safe.
+        if (key.indexOf('-') !== -1) {
+          const pattern3 = new RegExp(`\\$_maybeHelper\\(${escapedKey},`, 'g');
+          modifiedCode = modifiedCode.replace(pattern3, `$_maybeHelper(${jsKey},`);
+        }
       }
     }
 
