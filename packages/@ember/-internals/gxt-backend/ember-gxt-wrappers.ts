@@ -90,6 +90,91 @@ const simpleHelperResultCache = new Map<string, { argsSer: string; result: any }
 let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; reactiveArgs: { positional: any[]; named: Record<string, any> } }>();
 (g as any).__gxtClearHelperCache = () => { classHelperInstanceCache.clear(); simpleHelperResultCache.clear(); managedHelperBucketCache = new WeakMap(); };
 
+// Resolver cache counters — mirrors the Glimmer ConstantsImpl counters so the
+// `ember-glimmer runtime resolver cache` test can observe helper/component
+// definition reuse from the GXT path. The renderer's `_context` getter copies
+// these onto the live EvaluationContext.constants object in GXT mode so the
+// test's `renderer._context.constants` read sees the latest values.
+const _resolverCacheCounters = (g.__gxtResolverCacheCounters =
+  g.__gxtResolverCacheCounters || {
+    componentDefinitionCount: 0,
+    helperDefinitionCount: 0,
+    modifierDefinitionCount: 0,
+  });
+const _seenHelperDefinitions = (g.__gxtSeenHelperDefinitions =
+  g.__gxtSeenHelperDefinitions || new WeakSet<object>());
+const _seenHelperNames = (g.__gxtSeenHelperNames =
+  g.__gxtSeenHelperNames || new Set<string>());
+const _seenComponentDefinitions = (g.__gxtSeenComponentDefinitions =
+  g.__gxtSeenComponentDefinitions || new WeakSet<object>());
+const _seenComponentNames = (g.__gxtSeenComponentNames =
+  g.__gxtSeenComponentNames || new Set<string>());
+function _trackHelperDefinition(nameOrFactory: string | object | null | undefined) {
+  if (!nameOrFactory) return;
+  if (typeof nameOrFactory === 'string') {
+    if (_seenHelperNames.has(nameOrFactory)) return;
+    _seenHelperNames.add(nameOrFactory);
+    _resolverCacheCounters.helperDefinitionCount++;
+  } else {
+    if (_seenHelperDefinitions.has(nameOrFactory as object)) return;
+    _seenHelperDefinitions.add(nameOrFactory as object);
+    _resolverCacheCounters.helperDefinitionCount++;
+  }
+}
+function _trackComponentDefinition(nameOrFactory: string | object | null | undefined) {
+  if (!nameOrFactory) return;
+  if (typeof nameOrFactory === 'string') {
+    if (_seenComponentNames.has(nameOrFactory)) return;
+    _seenComponentNames.add(nameOrFactory);
+    _resolverCacheCounters.componentDefinitionCount++;
+  } else {
+    if (_seenComponentDefinitions.has(nameOrFactory as object)) return;
+    _seenComponentDefinitions.add(nameOrFactory as object);
+    _resolverCacheCounters.componentDefinitionCount++;
+  }
+}
+(g as any).__gxtTrackHelperDefinition = _trackHelperDefinition;
+(g as any).__gxtTrackComponentDefinition = _trackComponentDefinition;
+
+// Install a self-healing proxy on `globalThis.__createCurriedComponent` so
+// that named component curries — produced by `(component "x")` /
+// `{{component "x"}}` / CurriedComponent invocations — count once per unique
+// name in the resolver-cache counters. The setter intercepts assignments
+// from manager.ts (which installs the original factory on module load) and
+// wraps them; later reads always see the tracking wrapper.
+{
+  let _innerCreateCurried: any = (g as any).__createCurriedComponent;
+  if (!(g as any).__gxtCountedCurryHookInstalled) {
+    const trackingWrapper = function (nameOrComp: any, args: any, positionals: any[]) {
+      if (typeof nameOrComp === 'string') {
+        _trackComponentDefinition(nameOrComp);
+      } else if (nameOrComp && typeof (nameOrComp as any).__name === 'string') {
+        _trackComponentDefinition((nameOrComp as any).__name);
+      }
+      if (typeof _innerCreateCurried === 'function') {
+        return _innerCreateCurried(nameOrComp, args, positionals);
+      }
+      return nameOrComp;
+    };
+    (trackingWrapper as any).__gxtCountedCurry = true;
+    try {
+      Object.defineProperty(g, '__createCurriedComponent', {
+        configurable: true,
+        get() { return trackingWrapper; },
+        set(v: any) {
+          if (v && (v as any).__gxtCountedCurry) return;
+          _innerCreateCurried = v;
+        },
+      });
+      (g as any).__gxtCountedCurryHookInstalled = true;
+    } catch {
+      // Fallback: direct overwrite if defineProperty fails (e.g. the slot is
+      // non-configurable under some test harnesses).
+      (g as any).__createCurriedComponent = trackingWrapper;
+    }
+  }
+}
+
 // When a property changes on a component, invalidate managed helper caches
 // so the next render pass picks up the changes. We DON'T re-compute values
 // here to avoid double-counting (GXT's native reactivity may also trigger).
@@ -146,6 +231,16 @@ function createEmberMaybeHelper(original: Function) {
       const createCurried = g.__createCurriedComponent;
       if (!createCurried) return nameOrFn;
       const merged = createCurried(nameOrFn, namedArgs, positionals);
+
+      // Track curried component definition resolution for the runtime
+      // resolver cache counters. The string-named curried forms created via
+      // `{{component "name"}}` / `(component name ...)` map 1:1 to registry
+      // lookups, so count them here.
+      if (typeof (merged as any)?.__name === 'string') {
+        _trackComponentDefinition((merged as any).__name);
+      } else if (typeof (nameOrFn as any)?.__name === 'string') {
+        _trackComponentDefinition((nameOrFn as any).__name);
+      }
 
       // Render it through the component manager
       const managers = g.$_MANAGERS;
@@ -406,6 +501,7 @@ function createEmberMaybeHelper(original: Function) {
       const factory = owner.factoryFor(`helper:${name}`);
 
       if (factory) {
+        _trackHelperDefinition(factory.class || name);
         const positional = unwrapArgs(args || []);
         const named = unwrapHash(hash);
 
@@ -690,6 +786,7 @@ function createEmberMaybeHelper(original: Function) {
       // Also try direct lookup (for programmatically registered helpers)
       const helper = owner.lookup(`helper:${name}`);
       if (helper && !factory) {
+        _trackHelperDefinition(helper);
         const positional = unwrapArgs(args || []);
         const named = unwrapHash(hash);
 
@@ -718,6 +815,7 @@ function createEmberMaybeHelper(original: Function) {
       {
         const compFactory = owner.factoryFor(`component:${name}`);
         if (compFactory) {
+          _trackComponentDefinition(compFactory.class || name);
           const $_MANAGERS = g.$_MANAGERS;
           if ($_MANAGERS?.component?.handle) {
             const componentArgs: Record<string, any> = {};
@@ -1010,6 +1108,7 @@ function createEmberTag(original: Function) {
       }
 
       if (managers.component.canHandle(kebabName)) {
+        _trackComponentDefinition(kebabName);
         // Build args from tagProps - keep lazy
         let args: any = {};
         const domAttrs: [string, any][] = [];
@@ -1338,6 +1437,18 @@ function createEmberDc(original: Function) {
   function renderComponent(componentValue: any, gxtArgs: any, ctx: any, allowPositionalParams = false): any {
     const managers = g.$_MANAGERS;
     if (!managers?.component?.canHandle?.(componentValue)) return null;
+
+    // Track the component definition for the runtime resolver-cache counters.
+    // The dynamic-component path (`{{component this.name}}`) lands here
+    // regardless of whether the value started as a string or a curried
+    // component returned by the `component` helper.
+    if (typeof componentValue === 'string') {
+      _trackComponentDefinition(componentValue);
+    } else if (componentValue && typeof componentValue === 'object' && typeof (componentValue as any).__name === 'string') {
+      _trackComponentDefinition((componentValue as any).__name);
+    } else if (componentValue) {
+      _trackComponentDefinition(componentValue);
+    }
 
     const { mergedArgs } = extractArgsAndSlots(gxtArgs, allowPositionalParams);
     const handleResult = managers.component.handle(componentValue, mergedArgs, null, ctx);

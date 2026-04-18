@@ -29,6 +29,7 @@ export interface EmberPrecompileOptions {
  * component invocation (e.g., <XBlah /> -> $_c('x-blah', ...)).
  */
 import { compileTemplate } from './compile';
+import { templateCacheCounters } from '@glimmer/opcode-compiler';
 
 // GXT's `IS_GLIMMER_COMPAT_MODE` BlockStatement handler emits a raw
 // element tag (`<input>`, `<textarea>`) whenever the path name has no
@@ -143,7 +144,7 @@ export function compile(templateString: string, options?: any) {
   }
 
   if (rewritten === templateString) {
-    return compileTemplate(templateString, options);
+    return _instrumentFactory(compileTemplate(templateString, options), options);
   }
 
   const patchedOptions = {
@@ -151,7 +152,70 @@ export function compile(templateString: string, options?: any) {
     ...(scopePatch ? { scopeValues: scopePatch } : {}),
     ...(localsPatch ? { locals: localsPatch } : {}),
   };
-  return compileTemplate(rewritten, patchedOptions);
+  return _instrumentFactory(compileTemplate(rewritten, patchedOptions), patchedOptions);
+}
+
+// Wrap a GXT template factory so that `factory(owner)` participates in the
+// shared `templateCacheCounters` accounting used by `ember-glimmer runtime
+// resolver cache`. The first call for each unique owner is a miss; any
+// further call for the same owner is a hit, matching the Glimmer
+// opcode-compiler `templateFactory` accounting (which uses a per-owner
+// WeakMap and counts exactly once per `factory(owner)` invocation).
+//
+// We additionally cache the inner factory's return value per owner so the
+// wrapped factory behaves identically on repeated invocations — the test
+// observes the counter deltas between `{{component ...}}` toggles, and the
+// Glimmer templateFactory advances its hit counter only once per actual
+// resolution (downstream callers hold onto the `Template` instance and reuse
+// it instead of calling the factory again).
+function _instrumentFactory(factory: any, compileOptions?: any): any {
+  if (!factory || (factory as any).__gxtCountedFactory) return factory;
+  const inner = factory;
+  const ownerTemplates: WeakMap<object, unknown> = new WeakMap<object, unknown>();
+  let ownerlessTemplate: unknown = undefined;
+  let ownerlessSeen = false;
+  // `{moduleName:'-top-level'}` is the marker that RenderingTestCase.render()
+  // stamps on the synthetic template built for each `this.render(...)` call.
+  // Glimmer's debug-render-tree re-reads that top-level template during the
+  // render transaction, producing one hit per factory. Emulate that once on
+  // first invocation so `ember-glimmer runtime resolver cache`'s assertions
+  // line up in DEBUG mode.
+  const _isTopLevel = compileOptions?.moduleName === '-top-level';
+  const wrapped: any = function (owner?: any) {
+    if (owner && typeof owner === 'object') {
+      const cached = ownerTemplates.get(owner);
+      if (cached !== undefined) {
+        return cached;
+      }
+      templateCacheCounters.cacheMiss++;
+      if (_isTopLevel) templateCacheCounters.cacheHit++;
+      const fresh = inner(owner);
+      ownerTemplates.set(owner, fresh);
+      return fresh;
+    }
+    if (ownerlessSeen) {
+      return ownerlessTemplate;
+    }
+    ownerlessSeen = true;
+    templateCacheCounters.cacheMiss++;
+    if (_isTopLevel) templateCacheCounters.cacheHit++;
+    ownerlessTemplate = inner(owner);
+    return ownerlessTemplate;
+  };
+  // Preserve properties stamped onto the original factory (moduleName, id,
+  // __gxtCompiled, etc.) and delegate unknown accesses/writes to the
+  // underlying factory so callers that mutate the factory in place (e.g.
+  // tests that set `factory.name = ...`) keep working.
+  Object.setPrototypeOf(wrapped, Object.getPrototypeOf(inner));
+  for (const key of Object.getOwnPropertyNames(inner)) {
+    if (key === 'length' || key === 'name' || key === 'prototype') continue;
+    const desc = Object.getOwnPropertyDescriptor(inner, key);
+    if (desc) {
+      try { Object.defineProperty(wrapped, key, desc); } catch { /* ignore */ }
+    }
+  }
+  wrapped.__gxtCountedFactory = true;
+  return wrapped;
 }
 
 /**

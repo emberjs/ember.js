@@ -720,6 +720,12 @@ export default function createRootTemplate(_owner: any) {
       // `setOutletState(...)` with a fresh `compile()` template while
       // keeping the route name stable.
       lastRouteTemplate = routeTemplate;
+      // Snapshot the nested outlet tree at render time so the fast-path can
+      // detect structural changes when the caller mutates the outletState
+      // object in place (e.g. setting `outletState.outlets.main = nested`
+      // on the same reference). Without this, comparing the live reference
+      // against itself misses the mutation. See `outlet view` test suite.
+      lastNestedSnapshot = snapshotOutletTree(outletState);
     }
 
     // Store the top-level outlet ref for re-rendering on property changes
@@ -734,6 +740,36 @@ export default function createRootTemplate(_owner: any) {
     // route name but a freshly `compile()`d template, as used by
     // `@ember/test-helpers` emulation tests).
     let lastRouteTemplate: any = null;
+    // Structural snapshot of the nested outlet tree from the last render.
+    // Needed because outletState objects can be mutated in place (notably by
+    // the `outlet view` test suite, which reuses a single object across
+    // `setOutletState` calls), which makes live-reference comparisons unable
+    // to detect that a nested outlet was added or replaced.
+    let lastNestedSnapshot: any = null;
+
+    // Snapshot an outlet sub-tree into a lightweight structural record so we
+    // can compare it later against a freshly mutated object to detect nested
+    // outlet changes.
+    function snapshotOutletTree(node: any, depth = 0): any {
+      if (!node || depth > 10) return null;
+      const main = node.outlets?.main;
+      return {
+        template: node.render?.template ?? null,
+        name: node.render?.name ?? null,
+        nested: main ? snapshotOutletTree(main, depth + 1) : null,
+      };
+    }
+
+    function nestedTreeDiffers(snapshot: any, node: any, depth = 0): boolean {
+      if (depth > 10) return false;
+      const main = node?.outlets?.main;
+      const snapNested = snapshot?.nested;
+      if (!main && !snapNested) return false;
+      if (!!main !== !!snapNested) return true;
+      if ((snapNested?.template ?? null) !== (main?.render?.template ?? null)) return true;
+      if ((snapNested?.name ?? null) !== (main?.render?.name ?? null)) return true;
+      return nestedTreeDiffers(snapNested, main, depth + 1);
+    }
 
     // Register a re-render function that setOutletState can call.
     //
@@ -761,23 +797,14 @@ export default function createRootTemplate(_owner: any) {
       const newTemplate = effectiveOutlet?.render?.template;
 
       // Check if nested outlet structure changed at any depth (error/loading
-      // substates, engine-internal route transitions, etc.)
+      // substates, engine-internal route transitions, etc.). We compare
+      // against a structural snapshot captured at render time so callers that
+      // mutate the outletState object in place (e.g. the `outlet view` tests
+      // that reuse a single object across `setOutletState` calls) are
+      // detected correctly.
       const nestedOutletChanged = (() => {
-        if (!lastRenderContext?.outletState) return false;
-        // Walk the outlet tree comparing old vs new at each level
-        let oldLevel = lastRenderContext.outletState;
-        let newLevel = effectiveOutlet;
-        for (let depth = 0; depth < 10; depth++) {
-          const oldNested = oldLevel?.outlets?.main;
-          const newNested = newLevel?.outlets?.main;
-          if (!oldNested && !newNested) return false; // Both empty, no change
-          if (!!oldNested !== !!newNested) return true; // One exists, other doesn't
-          if (oldNested?.render?.template !== newNested?.render?.template) return true;
-          if (oldNested?.render?.name !== newNested?.render?.name) return true;
-          oldLevel = oldNested;
-          newLevel = newNested;
-        }
-        return false;
+        if (!lastRenderContext?.outletState || !lastNestedSnapshot) return false;
+        return nestedTreeDiffers(lastNestedSnapshot, effectiveOutlet);
       })();
 
       // Detect if the ROUTE TEMPLATE identity changed. This matters for
