@@ -7896,17 +7896,88 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
       }
       if (children && children.length > 0) {
-        for (const child of children) {
-          const resolved = typeof child === 'function' ? child() : child;
-          if (resolved instanceof Node) ceEl.appendChild(resolved);
-          else if (typeof resolved === 'string') ceEl.appendChild(document.createTextNode(resolved));
-          else if (Array.isArray(resolved)) {
-            for (const item of resolved) {
-              if (item instanceof Node) ceEl.appendChild(item);
-              else if (typeof item === 'string') ceEl.appendChild(document.createTextNode(item));
-            }
+        // Recursive child-flattener for the custom-element fallback. Mirrors
+        // the tree shapes itemToNode handles inside the top-level render but
+        // is duplicated here so this global $_tag override doesn't reach
+        // into precompileTemplate's closure. Handles:
+        //   - Node
+        //   - string / number / boolean
+        //   - Array (flatten)
+        //   - GXT list context with topMarker/bottomMarker (e.g. {{#if}})
+        //   - SafeString (.toHTML())
+        const appendCustomChild = (item: any): void => {
+          if (item == null || item === false) return;
+          if (item instanceof Node) { ceEl.appendChild(item); return; }
+          if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
+            ceEl.appendChild(document.createTextNode(String(item)));
+            return;
           }
-        }
+          if (typeof item === 'function') {
+            try { appendCustomChild(item()); } catch { /* ignore getter error */ }
+            return;
+          }
+          if (Array.isArray(item)) {
+            for (const sub of item) appendCustomChild(sub);
+            return;
+          }
+          if (typeof item === 'object') {
+            // SafeString ({ toHTML(): string })
+            if (typeof (item as any).toHTML === 'function') {
+              const tpl = document.createElement('template');
+              tpl.innerHTML = String((item as any).toHTML());
+              while (tpl.content.firstChild) ceEl.appendChild(tpl.content.firstChild);
+              return;
+            }
+            // GXT list context from $_if / $_each — move the markers and
+            // everything between them into the custom element.
+            if ((item as any).topMarker && (item as any).bottomMarker) {
+              const topMarker = (item as any).topMarker as Node;
+              const bottomMarker = (item as any).bottomMarker as Node;
+              let node: Node | null = topMarker;
+              while (node) {
+                const next: Node | null = node.nextSibling;
+                ceEl.appendChild(node);
+                if (node === bottomMarker) break;
+                node = next;
+              }
+              return;
+            }
+            // $nodes / nodes array on a component-ish wrapper
+            const nodesProp = (item as any).$nodes || (item as any).nodes;
+            if (Array.isArray(nodesProp)) {
+              for (const n of nodesProp) appendCustomChild(n);
+              return;
+            }
+            // GXT reactive cell w/ fn getter
+            if (typeof (item as any).fn === 'function' && 'isConst' in (item as any)) {
+              try { appendCustomChild((item as any).fn()); } catch { /* ignore */ }
+              return;
+            }
+            // GXT IfCondition / list component: node storage lives under a
+            // Symbol-keyed array. Recurse through any such array we find.
+            // The `placeholder` Comment sits inside the array when the
+            // branch is empty (false branch), so we don't need a separate
+            // placeholder fallback — the Symbol walk covers both cases.
+            const syms = Object.getOwnPropertySymbols(item);
+            let foundFromSym = false;
+            for (const sym of syms) {
+              const v = (item as any)[sym];
+              if (Array.isArray(v) && v.length > 0) {
+                const hasNodes = v.some((x: any) =>
+                  x instanceof Node || typeof x === 'string' || typeof x === 'number' || typeof x === 'function' || (x && typeof x === 'object')
+                );
+                if (hasNodes) {
+                  for (const n of v) appendCustomChild(n);
+                  foundFromSym = true;
+                }
+              }
+            }
+            if (foundFromSym) return;
+          }
+          // Fallback: stringify
+          try { ceEl.appendChild(document.createTextNode(String(item))); } catch { /* ignore */ }
+        };
+        for (const child of children) appendCustomChild(child);
       }
       return ceEl;
     }
