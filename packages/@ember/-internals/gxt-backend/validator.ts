@@ -1201,195 +1201,594 @@ export function runInTrackingTransaction<T>(fn: () => T, debuggingContext?: stri
 // Some code imports { runInTrackingTransaction } from '@glimmer/validator'
 debug.runInTrackingTransaction = runInTrackingTransaction;
 
-// Create a tracked map - wraps a Map to make its operations reactive
-export function trackedMap<K, V>(entries?: Iterable<[K, V]> | null): Map<K, V> {
-  const map = new Map(entries || undefined);
-  const tag = cell(0, 'trackedMap');
-  if (!map) {
-    return new Map() as Map<K, V>;
-  }
+// --- Tag-based tracked collections ---------------------------------------
+//
+// These implementations port the stock @glimmer/validator collection proxies
+// to our classic-tag infrastructure. Each tracked collection uses our own
+// createUpdatableTag() + consumeTag() + dirtyTag() so that reads during a
+// createCache()/createComputeRef compute register into `_cacheTagTracker`
+// and writes bump the tag's cell revision — causing the reference to be
+// observed as invalid by the Glimmer VM's CheckTag/validateTag pipeline on
+// the next rerender.
+//
+// Supports the second `options` argument with an `equals` function (defaults
+// to Object.is) so `{ equals: () => false }` always-dirty tests pass.
 
-  return new Proxy(map, {
-    get(target, prop, receiver) {
-      if (prop === 'size') {
-        tag.value;
-        return target.size;
-      }
-      const value = target[prop as keyof Map<K, V>];
-      if (typeof value === 'function') {
-        return function (...args: any[]) {
-          if (['get', 'has', 'keys', 'values', 'entries', 'forEach', Symbol.iterator].includes(prop as any)) {
-            tag.value; // track read
-          }
-          const result = (value as Function).apply(target, args);
-          if (['set', 'delete', 'clear'].includes(prop as string)) {
-            tag.value = Date.now(); // trigger update
-          }
-          return result;
-        };
-      }
-      return value;
-    },
-  }) as Map<K, V>;
+interface ReactiveOptions<V> {
+  equals: (a: V, b: V) => boolean;
+  description?: string;
 }
 
-// Create a tracked set - wraps a Set to make its operations reactive
-export function trackedSet<T>(values?: Iterable<T> | null): Set<T> {
-  const set = new Set(values);
-  const tag = cell(0, 'trackedSet');
+function resolveReactiveOptions<V>(
+  options?: { equals?: (a: V, b: V) => boolean; description?: string }
+): ReactiveOptions<V> {
+  return {
+    equals: options?.equals ?? Object.is,
+    description: options?.description,
+  };
+}
 
-  return new Proxy(set, {
-    get(target, prop, receiver) {
-      if (prop === 'size') {
-        tag.value;
-        return target.size;
+// ---- trackedArray -------------------------------------------------------
+
+const ARRAY_GETTER_METHODS = new Set<string | symbol>([
+  Symbol.iterator,
+  'concat',
+  'entries',
+  'every',
+  'filter',
+  'find',
+  'findIndex',
+  'flat',
+  'flatMap',
+  'forEach',
+  'includes',
+  'indexOf',
+  'join',
+  'keys',
+  'lastIndexOf',
+  'map',
+  'reduce',
+  'reduceRight',
+  'slice',
+  'some',
+  'values',
+]);
+
+// Methods where Array itself immediately reads `.length` after invocation.
+const ARRAY_WRITE_THEN_READ_METHODS = new Set<string | symbol>([
+  'fill',
+  'push',
+  'unshift',
+]);
+
+function convertArrayIndexKey(prop: string | symbol): number | null {
+  if (typeof prop === 'symbol') return null;
+  const num = Number(prop);
+  if (isNaN(num)) return null;
+  return num % 1 === 0 ? num : null;
+}
+
+export function trackedArray<T = unknown>(
+  data?: T[],
+  options?: { equals?: (a: T, b: T) => boolean; description?: string }
+): T[] {
+  const resolved = resolveReactiveOptions<T>(options);
+  const arr: T[] = Array.isArray(data) ? data.slice() : [];
+  const collection = createUpdatableTag();
+  const storages = new Map<number, ReturnType<typeof createUpdatableTag>>();
+  const boundFns = new Map<string | symbol, (...args: any[]) => any>();
+  let nativelyAccessingLengthFromWriteMethod = false;
+
+  const readStorageFor = (index: number) => {
+    let storage = storages.get(index);
+    if (!storage) {
+      storage = createUpdatableTag();
+      storages.set(index, storage);
+    }
+    consumeTag(storage);
+  };
+
+  const dirtyStorageFor = (index: number) => {
+    const storage = storages.get(index);
+    if (storage) dirtyTag(storage);
+  };
+
+  const dirtyCollection = () => {
+    dirtyTag(collection);
+    storages.clear();
+  };
+
+  const proxy = new Proxy(arr, {
+    get(target, prop) {
+      const index = convertArrayIndexKey(prop);
+      if (index !== null) {
+        readStorageFor(index);
+        consumeTag(collection);
+        return (target as any)[index];
       }
-      const value = target[prop as keyof Set<T>];
-      if (typeof value === 'function') {
-        return function (...args: any[]) {
-          if (['has', 'keys', 'values', 'entries', 'forEach', Symbol.iterator].includes(prop as any)) {
-            tag.value; // track read
-          }
-          const result = (value as Function).apply(target, args);
-          if (['add', 'delete', 'clear'].includes(prop as string)) {
-            tag.value = Date.now(); // trigger update
-          }
-          return result;
-        };
-      }
-      return value;
-    },
-  }) as Set<T>;
-}
 
-// Create a tracked WeakMap
-export function trackedWeakMap<K extends object, V>(entries?: Iterable<[K, V]> | null): WeakMap<K, V> {
-  const map = new WeakMap(entries as any);
-  // WeakMaps don't need reactivity in the same way since they can't be iterated
-  return map;
-}
-
-// Create a tracked WeakSet
-export function trackedWeakSet<T extends object>(values?: Iterable<T> | null): WeakSet<T> {
-  const set = new WeakSet(values as any);
-  // WeakSets don't need reactivity in the same way since they can't be iterated
-  return set;
-}
-
-// Create a tracked array - wraps an array to make its operations reactive
-export function trackedArray<T>(arr: T[] = []): T[] {
-  if (!Array.isArray(arr)) {
-    arr = [];
-  }
-  const items = cell(arr, 'trackedArray');
-
-  const proxy: T[] = new Proxy(arr, {
-    get(target, prop, receiver) {
       if (prop === 'length') {
-        // Access the cell to track
-        items.value;
-        return target.length;
+        if (nativelyAccessingLengthFromWriteMethod) {
+          nativelyAccessingLengthFromWriteMethod = false;
+        } else {
+          consumeTag(collection);
+        }
+        return (target as any).length;
       }
-      if (typeof prop === 'string' && !isNaN(Number(prop))) {
-        items.value;
-        return target[Number(prop)];
+
+      if (ARRAY_WRITE_THEN_READ_METHODS.has(prop)) {
+        nativelyAccessingLengthFromWriteMethod = true;
       }
-      const value = target[prop as keyof T[]];
-      if (typeof value === 'function') {
-        return function (...args: any[]) {
-          const result = (value as Function).apply(target, args);
-          // Mutating methods should trigger reactivity
-          if (['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse', 'copyWithin', 'fill'].includes(prop as string)) {
-            items.value = [...target];
-          }
-          // sort() and reverse() return `this` (the target), but the caller
-          // expects the proxy back so `arr.sort() === arr` holds.
-          if ((prop === 'sort' || prop === 'reverse') && result === target) {
-            return proxy;
-          }
-          return result;
-        };
+
+      if (ARRAY_GETTER_METHODS.has(prop)) {
+        let fn = boundFns.get(prop);
+        if (!fn) {
+          fn = (...args: any[]) => {
+            consumeTag(collection);
+            return (target as any)[prop](...args);
+          };
+          boundFns.set(prop, fn);
+        }
+        return fn;
       }
-      return value;
+
+      return (target as any)[prop];
     },
-    set(target, prop, value, receiver) {
-      target[prop as keyof T[]] = value;
-      items.value = [...target];
+    set(target, prop, value) {
+      const isUnchanged = resolved.equals((target as any)[prop], value);
+      if (isUnchanged) return true;
+
+      (target as any)[prop] = value;
+
+      const index = convertArrayIndexKey(prop);
+      if (index !== null) {
+        dirtyStorageFor(index);
+        dirtyCollection();
+      } else if (prop === 'length') {
+        dirtyCollection();
+      }
       return true;
     },
+    getPrototypeOf() {
+      return Array.prototype;
+    },
   });
-  return proxy;
+  return proxy as T[];
 }
+
+// ---- trackedMap ---------------------------------------------------------
+
+export function trackedMap<K = unknown, V = unknown>(
+  data?:
+    | Map<K, V>
+    | Iterable<readonly [K, V]>
+    | readonly (readonly [K, V])[]
+    | null,
+  options?: { equals?: (a: V, b: V) => boolean; description?: string }
+): Map<K, V> {
+  const resolved = resolveReactiveOptions<V>(options);
+  const vals: Map<K, V> =
+    data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
+  const collection = createUpdatableTag();
+  const storages = new Map<K, ReturnType<typeof createUpdatableTag>>();
+
+  const storageFor = (key: K) => {
+    let storage = storages.get(key);
+    if (!storage) {
+      storage = createUpdatableTag();
+      storages.set(key, storage);
+    }
+    return storage;
+  };
+  const dirtyStorageFor = (key: K) => {
+    const storage = storages.get(key);
+    if (storage) dirtyTag(storage);
+  };
+
+  class TrackedMapImpl implements Map<K, V> {
+    get(key: K): V | undefined {
+      consumeTag(storageFor(key));
+      return vals.get(key);
+    }
+    has(key: K): boolean {
+      consumeTag(storageFor(key));
+      return vals.has(key);
+    }
+    entries() {
+      consumeTag(collection);
+      return vals.entries();
+    }
+    keys() {
+      consumeTag(collection);
+      return vals.keys();
+    }
+    values() {
+      consumeTag(collection);
+      return vals.values();
+    }
+    forEach(fn: (value: V, key: K, map: Map<K, V>) => void): void {
+      consumeTag(collection);
+      vals.forEach((v, k) => fn(v, k, this));
+    }
+    get size(): number {
+      consumeTag(collection);
+      return vals.size;
+    }
+    [Symbol.iterator](): MapIterator<[K, V]> {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const self = this;
+      const keys = this.keys();
+      return {
+        next(): IteratorResult<[K, V]> {
+          const next = keys.next();
+          if (next.done) {
+            return { value: undefined as any, done: true };
+          }
+          const k = next.value as K;
+          return { value: [k, self.get(k) as V], done: false };
+        },
+        return(value?: any): IteratorResult<[K, V]> {
+          return { value, done: true };
+        },
+        throw(err?: any): IteratorResult<[K, V]> {
+          throw err;
+        },
+        [Symbol.iterator](): MapIterator<[K, V]> {
+          return this as any;
+        },
+      } as MapIterator<[K, V]>;
+    }
+    get [Symbol.toStringTag](): string {
+      return vals[Symbol.toStringTag];
+    }
+    set(key: K, value: V): this {
+      const existing = vals.get(key);
+      if (vals.has(key)) {
+        const isUnchanged = resolved.equals(existing as V, value);
+        if (isUnchanged) return this;
+      }
+      dirtyStorageFor(key);
+      if (!vals.has(key)) {
+        dirtyTag(collection);
+      }
+      vals.set(key, value);
+      return this;
+    }
+    delete(key: K): boolean {
+      if (!vals.has(key)) return true;
+      dirtyStorageFor(key);
+      dirtyTag(collection);
+      storages.delete(key);
+      return vals.delete(key);
+    }
+    clear(): void {
+      if (vals.size === 0) return;
+      storages.forEach((s) => dirtyTag(s));
+      storages.clear();
+      dirtyTag(collection);
+      vals.clear();
+    }
+  }
+
+  Object.setPrototypeOf(TrackedMapImpl.prototype, Map.prototype);
+  return new TrackedMapImpl();
+}
+
+// ---- trackedSet ---------------------------------------------------------
+
+export function trackedSet<V = unknown>(
+  data?: Set<V> | V[] | Iterable<V> | null,
+  options?: { equals?: (a: V, b: V) => boolean; description?: string }
+): Set<V> {
+  const resolved = resolveReactiveOptions<V>(options);
+  const vals: Set<V> = new Set(data ?? []);
+  const collection = createUpdatableTag();
+  const storages = new Map<V, ReturnType<typeof createUpdatableTag>>();
+
+  const storageFor = (key: V) => {
+    let storage = storages.get(key);
+    if (!storage) {
+      storage = createUpdatableTag();
+      storages.set(key, storage);
+    }
+    return storage;
+  };
+  const dirtyStorageFor = (key: V) => {
+    const storage = storages.get(key);
+    if (storage) dirtyTag(storage);
+  };
+
+  class TrackedSetImpl implements Set<V> {
+    has(value: V): boolean {
+      consumeTag(storageFor(value));
+      return vals.has(value);
+    }
+    entries() {
+      consumeTag(collection);
+      return vals.entries();
+    }
+    keys() {
+      consumeTag(collection);
+      return vals.keys();
+    }
+    values() {
+      consumeTag(collection);
+      return vals.values();
+    }
+    union<U>(other: ReadonlySetLike<U>): Set<V | U> {
+      consumeTag(collection);
+      return (vals as any).union(other);
+    }
+    intersection<U>(other: ReadonlySetLike<U>): Set<V & U> {
+      consumeTag(collection);
+      return (vals as any).intersection(other);
+    }
+    difference<U>(other: ReadonlySetLike<U>): Set<V> {
+      consumeTag(collection);
+      return (vals as any).difference(other);
+    }
+    symmetricDifference<U>(other: ReadonlySetLike<U>): Set<V | U> {
+      consumeTag(collection);
+      return (vals as any).symmetricDifference(other);
+    }
+    isSubsetOf(other: ReadonlySetLike<unknown>): boolean {
+      consumeTag(collection);
+      return (vals as any).isSubsetOf(other);
+    }
+    isSupersetOf(other: ReadonlySetLike<unknown>): boolean {
+      consumeTag(collection);
+      return (vals as any).isSupersetOf(other);
+    }
+    isDisjointFrom(other: ReadonlySetLike<unknown>): boolean {
+      consumeTag(collection);
+      return (vals as any).isDisjointFrom(other);
+    }
+    forEach(fn: (v1: V, v2: V, set: Set<V>) => void): void {
+      consumeTag(collection);
+      vals.forEach((v1, v2) => fn(v1, v2, this));
+    }
+    get size(): number {
+      consumeTag(collection);
+      return vals.size;
+    }
+    [Symbol.iterator](): SetIterator<V> {
+      consumeTag(collection);
+      return vals[Symbol.iterator]();
+    }
+    get [Symbol.toStringTag](): string {
+      return vals[Symbol.toStringTag];
+    }
+    add(value: V): this {
+      if (vals.has(value)) {
+        const isUnchanged = resolved.equals(value, value);
+        if (isUnchanged) return this;
+      } else {
+        dirtyTag(collection);
+      }
+      dirtyStorageFor(value);
+      vals.add(value);
+      return this;
+    }
+    delete(value: V): boolean {
+      if (!vals.has(value)) return true;
+      dirtyStorageFor(value);
+      dirtyTag(collection);
+      storages.delete(value);
+      return vals.delete(value);
+    }
+    clear(): void {
+      if (vals.size === 0) return;
+      storages.forEach((s) => dirtyTag(s));
+      dirtyTag(collection);
+      storages.clear();
+      vals.clear();
+    }
+  }
+
+  Object.setPrototypeOf(TrackedSetImpl.prototype, Set.prototype);
+  return new TrackedSetImpl();
+}
+
+// ---- trackedWeakMap -----------------------------------------------------
+
+export function trackedWeakMap<K extends WeakKey = object, V = unknown>(
+  data?: WeakMap<K, V> | [K, V][] | Iterable<readonly [K, V]> | null,
+  options?: { equals?: (a: V, b: V) => boolean; description?: string }
+): WeakMap<K, V> {
+  const resolved = resolveReactiveOptions<V>(options);
+  // NOTE: WeakMap is not iterable, so if we receive one we must wrap it by
+  // reference (not clone).
+  const vals: WeakMap<K, V> =
+    data instanceof WeakMap ? data : new WeakMap<K, V>(data as any);
+  const storages = new WeakMap<K, ReturnType<typeof createUpdatableTag>>();
+
+  const storageFor = (key: K) => {
+    let storage = storages.get(key);
+    if (!storage) {
+      storage = createUpdatableTag();
+      storages.set(key, storage);
+    }
+    return storage;
+  };
+  const dirtyStorageFor = (key: K) => {
+    const storage = storages.get(key);
+    if (storage) dirtyTag(storage);
+  };
+
+  class TrackedWeakMapImpl implements WeakMap<K, V> {
+    get(key: K): V | undefined {
+      consumeTag(storageFor(key));
+      return vals.get(key);
+    }
+    has(key: K): boolean {
+      consumeTag(storageFor(key));
+      return vals.has(key);
+    }
+    set(key: K, value: V): this {
+      const existing = vals.get(key);
+      if (vals.has(key)) {
+        const isUnchanged = resolved.equals(existing as V, value);
+        if (isUnchanged) return this;
+      }
+      dirtyStorageFor(key);
+      vals.set(key, value);
+      return this;
+    }
+    delete(key: K): boolean {
+      if (!vals.has(key)) return true;
+      dirtyStorageFor(key);
+      storages.delete(key);
+      return vals.delete(key);
+    }
+    get [Symbol.toStringTag](): string {
+      return vals[Symbol.toStringTag];
+    }
+  }
+
+  Object.setPrototypeOf(TrackedWeakMapImpl.prototype, WeakMap.prototype);
+  return new TrackedWeakMapImpl();
+}
+
+// ---- trackedWeakSet -----------------------------------------------------
+
+export function trackedWeakSet<V extends WeakKey = object>(
+  data?: V[] | null,
+  options?: { equals?: (a: V, b: V) => boolean; description?: string }
+): WeakSet<V> {
+  const resolved = resolveReactiveOptions<V>(options);
+  const vals: WeakSet<V> = new WeakSet<V>(data ?? []);
+  const storages = new WeakMap<V, ReturnType<typeof createUpdatableTag>>();
+
+  const storageFor = (key: V) => {
+    let storage = storages.get(key);
+    if (!storage) {
+      storage = createUpdatableTag();
+      storages.set(key, storage);
+    }
+    return storage;
+  };
+  const dirtyStorageFor = (key: V) => {
+    const storage = storages.get(key);
+    if (storage) dirtyTag(storage);
+  };
+
+  class TrackedWeakSetImpl implements WeakSet<V> {
+    has(value: V): boolean {
+      consumeTag(storageFor(value));
+      return vals.has(value);
+    }
+    add(value: V): this {
+      if (vals.has(value)) {
+        const isUnchanged = resolved.equals(value, value);
+        if (isUnchanged) return this;
+      }
+      vals.add(value);
+      dirtyStorageFor(value);
+      return this;
+    }
+    delete(value: V): boolean {
+      if (!vals.has(value)) return true;
+      dirtyStorageFor(value);
+      storages.delete(value);
+      return vals.delete(value);
+    }
+    get [Symbol.toStringTag](): string {
+      return vals[Symbol.toStringTag];
+    }
+  }
+
+  Object.setPrototypeOf(TrackedWeakSetImpl.prototype, WeakSet.prototype);
+  return new TrackedWeakSetImpl();
+}
+
+// ---- trackedObject ------------------------------------------------------
 
 // Create a tracked object - wraps an object to make all its properties reactive.
 // The proxy creates an independent shallow copy of own properties so mutations
-// do not leak back to the original object (matching classic @glimmer/tracking
-// trackedObject semantics).
-export function trackedObject<T extends object>(obj?: T): T {
+// do not leak back to the original object.
+export function trackedObject<T extends object>(
+  obj?: T,
+  options?: {
+    equals?: (a: any, b: any) => boolean;
+    description?: string;
+  }
+): T {
+  const resolved = resolveReactiveOptions<any>(options);
   if (!obj || typeof obj !== 'object') {
     obj = {} as T;
   }
-  // Shallow-copy own enumerable properties into `data`. Getters defined on the
-  // original are transferred as getter/setter descriptors so `this` inside the
-  // getter refers to the proxy (via `receiver`).
-  const data: Record<string | symbol, any> = {};
+  // Shallow-copy own enumerable properties into `data`. Getters/setters on the
+  // original are transferred as descriptors so `this` inside the getter refers
+  // to the proxy.
+  const proto = Object.getPrototypeOf(obj);
+  const data: Record<string | symbol, any> = Object.create(proto);
   const ownKeys = Reflect.ownKeys(obj);
-  const getterKeys = new Set<string | symbol>();
   for (const key of ownKeys) {
     const desc = Object.getOwnPropertyDescriptor(obj, key);
-    if (desc && (desc.get || desc.set)) {
+    if (desc) {
       Object.defineProperty(data, key, desc);
-      getterKeys.add(key);
-    } else {
-      data[key] = (obj as any)[key];
     }
   }
 
-  const tags = new Map<string | symbol, ReturnType<typeof createTrackedObjectCell>>();
+  const storages = new Map<PropertyKey, ReturnType<typeof createUpdatableTag>>();
+  const collection = createUpdatableTag();
 
-  function getOrCreateTag(prop: string | symbol, initialValue: any) {
-    let tag = tags.get(prop);
-    if (!tag) {
-      tag = createTrackedObjectCell(initialValue, `trackedObject.${String(prop)}`);
-      tags.set(prop, tag);
+  const readStorageFor = (key: PropertyKey) => {
+    let storage = storages.get(key);
+    if (!storage) {
+      storage = createUpdatableTag();
+      storages.set(key, storage);
     }
-    return tag;
-  }
+    consumeTag(storage);
+  };
+  const dirtyStorageFor = (key: PropertyKey) => {
+    const storage = storages.get(key);
+    if (storage) dirtyTag(storage);
+  };
+  const dirtyCollection = () => {
+    dirtyTag(collection);
+  };
 
   return new Proxy(data as unknown as T, {
-    get(target, prop, receiver) {
-      // For getter properties, invoke via Reflect so `this` is the proxy
-      if (getterKeys.has(prop)) {
-        const tag = getOrCreateTag(prop, undefined);
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        tag.value; // consume for tracking
-        return Reflect.get(target, prop, receiver);
-      }
-      const tag = getOrCreateTag(prop, (target as any)[prop]);
-      return tag.value;
+    get(target, prop) {
+      readStorageFor(prop);
+      return (target as any)[prop];
     },
-    set(target, prop, value, receiver) {
-      const tag = getOrCreateTag(prop, value);
-      tag.value = value;
+    has(target, prop) {
+      readStorageFor(prop);
+      return prop in target;
+    },
+    ownKeys(target) {
+      consumeTag(collection);
+      return Reflect.ownKeys(target);
+    },
+    set(target, prop, value) {
+      const isUnchanged = resolved.equals((target as any)[prop], value);
+      if (isUnchanged) return true;
       (target as any)[prop] = value;
+      dirtyStorageFor(prop);
+      dirtyCollection();
+      // Also fire classic dirtyTagFor for any legacy observers.
       try {
         dirtyTagFor(target as any, prop);
       } catch { /* noop */ }
       return true;
     },
-    ownKeys(target) {
-      return Reflect.ownKeys(target);
+    deleteProperty(target, prop) {
+      if (prop in target) {
+        delete (target as any)[prop];
+        dirtyStorageFor(prop);
+        storages.delete(prop);
+        dirtyCollection();
+      }
+      return true;
     },
     getOwnPropertyDescriptor(target, prop) {
       const desc = Reflect.getOwnPropertyDescriptor(target, prop);
       if (desc) {
-        // Make sure it's reported as enumerable+configurable so Object.keys works
         desc.configurable = true;
       }
       return desc;
-    },
-    has(target, prop) {
-      return prop in target;
     },
   });
 }
