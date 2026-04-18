@@ -214,6 +214,14 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   private self: Nullable<Reference> = null;
   private lastSnapshot: Record<string, unknown> | null = null;
 
+  // Locally-registered helpers and components. Passed to the GXT compiler
+  // via `scopeValues` so the template's `{{foo ...}}` / `<Foo ...>` calls
+  // resolve to the test-registered values instead of falling through to
+  // Ember's owner-based resolver (which has nothing registered for these
+  // ad-hoc test fixtures).
+  protected registeredHelpers: Record<string, unknown> = Object.create(null);
+  protected registeredComponents: Record<string, unknown> = Object.create(null);
+
   constructor(_options?: RenderDelegateOptions) {
     this.clientDoc = castToSimple(document);
     this.serverDoc = castToSimple(document);
@@ -260,8 +268,24 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   private compileAndRender(template: string, context: Dict, target: SimpleElement): void {
     const compile = loadGxtCompile();
     let factory: GxtTemplateFactory;
+    // Build scopeValues from registered helpers + components. scopeValues
+    // cause the compiler to resolve those names as local bindings, so
+    // `{{testing ...}}` invokes the registered helper function directly
+    // instead of falling through to Ember's owner-based resolver (which
+    // has nothing registered for these ad-hoc test fixtures).
+    const scopeValues: Record<string, unknown> = Object.create(null);
+    for (const k of Object.keys(this.registeredHelpers)) {
+      scopeValues[k] = this.registeredHelpers[k];
+    }
+    for (const k of Object.keys(this.registeredComponents)) {
+      scopeValues[k] = this.registeredComponents[k];
+    }
+    const hasScope = Object.keys(scopeValues).length > 0;
     try {
-      factory = compile(template) as GxtTemplateFactory;
+      factory = compile(
+        template,
+        hasScope ? { scopeValues } : undefined
+      ) as GxtTemplateFactory;
     } catch (e) {
       // Surface the error to the test without crashing the harness:
       // wrap it in a text node so assertion failures have something
@@ -426,25 +450,58 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   registerComponent(
     _type: ComponentKind,
     _testType: string,
-    _name: string,
-    _layout: string
+    name: string,
+    layout: string,
+    Class?: unknown
   ): void {
-    // Under GXT, components register through the gxt-backend's
-    // runtime compiler path. The integration-test-specific
-    // `TestJitRegistry` path is not applicable — the tests that
-    // register components via this hook will be classic-only.
+    // Compile the layout as a GXT template and stash its factory in
+    // scopeValues so `<Name .../>` or `{{name ...}}` references resolve
+    // to the compiled component. Class-based components are not modeled.
+    void Class;
+    try {
+      const compile = loadGxtCompile();
+      const factory = compile(layout) as GxtTemplateFactory;
+      (factory as unknown as { __gxtIsTemplate?: boolean }).__gxtIsTemplate = true;
+      this.registeredComponents[name] = factory;
+    } catch {
+      // Layout compile failure — leave the name unbound; the caller will
+      // get an empty/string fallback from GXT.
+    }
   }
 
-  registerHelper(_name: string, _helper: UserHelper): void {
-    // See registerComponent note above.
+  registerHelper(name: string, helper: UserHelper): void {
+    // Adapt the `UserHelper` shape (`(positional, named) => value`) to
+    // a plain function that GXT's `$_maybeHelper_ember` accepts for a
+    // scope-bound helper. When invoked from a compiled template, GXT
+    // spreads positional args and appends a trailing named-args object
+    // when the call site uses hash args.
+    const wrapped = (...args: unknown[]): unknown => {
+      let named: Record<string, unknown> = {};
+      let positional: unknown[] = args;
+      if (
+        args.length > 0 &&
+        typeof args[args.length - 1] === 'object' &&
+        args[args.length - 1] !== null &&
+        !Array.isArray(args[args.length - 1])
+      ) {
+        named = args[args.length - 1] as Record<string, unknown>;
+        positional = args.slice(0, -1);
+      }
+      return (helper as unknown as (p: readonly unknown[], n: Record<string, unknown>) => unknown)(
+        positional,
+        named
+      );
+    };
+    (wrapped as unknown as { __isFnHelper?: boolean }).__isFnHelper = true;
+    this.registeredHelpers[name] = wrapped;
   }
 
   registerInternalHelper(_name: string, _helper: Helper): void {
-    // See registerComponent note above.
+    // Internal (classic) helpers are not modeled; leave as no-op.
   }
 
   registerModifier(_name: string, _ModifierClass: TestModifierConstructor): void {
-    // See registerComponent note above.
+    // Modifiers are not modeled in this delegate; leave as no-op.
   }
 }
 
