@@ -9,7 +9,7 @@ import type { DeclaredComponentKind } from '../test-decorator';
 
 import { JitRenderDelegate } from '../modes/jit/delegate';
 import { NodeJitRenderDelegate } from '../modes/node/env';
-import { GxtRehydrationDelegate } from '../modes/rehydration/gxt-delegate';
+import { GxtPartialRehydrationDelegate, GxtRehydrationDelegate } from '../modes/rehydration/gxt-delegate';
 import { JitSerializationDelegate } from '../suites/custom-dom-helper';
 
 /**
@@ -27,6 +27,13 @@ import { JitSerializationDelegate } from '../suites/custom-dom-helper';
  * and lets the module at least RUN under GXT — individual test bodies
  * may still fail on assertion details, but the module is no longer
  * silently skipped.
+ *
+ * For partial-rehydration modules (which declare extra methods like
+ * `registerTemplateOnlyComponent` and `renderComponentServerSide` on
+ * top of the base rehydration delegate), we swap in the
+ * `GxtPartialRehydrationDelegate` subclass so those methods exist.
+ * Detection is via the constructor's prototype having a
+ * `registerTemplateOnlyComponent` method.
  */
 function overrideRehydrationDelegate<D extends RenderDelegate>(
   Delegate: RenderDelegateConstructor<D>
@@ -35,6 +42,13 @@ function overrideRehydrationDelegate<D extends RenderDelegate>(
   if (!gxtMode) return Delegate;
   if (Delegate.style !== 'rehydration') return Delegate;
   if ((Delegate as unknown) === GxtRehydrationDelegate) return Delegate;
+  if ((Delegate as unknown) === GxtPartialRehydrationDelegate) return Delegate;
+  // Detect partial-rehydration delegates by the extra `registerTemplateOnlyComponent`
+  // method on the prototype. The GXT equivalent ships `GxtPartialRehydrationDelegate`.
+  const proto = (Delegate as unknown as { prototype?: Record<string, unknown> }).prototype;
+  if (proto && typeof proto['registerTemplateOnlyComponent'] === 'function') {
+    return GxtPartialRehydrationDelegate as unknown as RenderDelegateConstructor<D>;
+  }
   return GxtRehydrationDelegate as unknown as RenderDelegateConstructor<D>;
 }
 
