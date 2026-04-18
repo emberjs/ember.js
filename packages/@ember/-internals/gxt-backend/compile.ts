@@ -10349,6 +10349,20 @@ export function precompileTemplate(templateString: string, options?: {
     if (item instanceof Node) {
       return item;
     }
+    // Flatten raw arrays — $_c_ember's SVG/MathML/HTMLProvider branch returns
+    // the defaultSlot's result directly, which is a plain array of Nodes like
+    // [<svg>]. Without this branch such arrays fall through to `return null`
+    // and the nested elements disappear. Wrap into a DocumentFragment so a
+    // single parent-append call captures all children.
+    if (Array.isArray(item)) {
+      if (item.length === 0) return null;
+      const frag = document.createDocumentFragment();
+      for (const child of item) {
+        const node = itemToNode(child, depth + 1);
+        if (node) frag.appendChild(node);
+      }
+      return frag.childNodes.length > 0 ? frag : null;
+    }
     // GXT returns getter functions for dynamic values like {{@greeting}}
     // Create a REACTIVE text node that updates when dependencies change
     if (typeof item === 'function') {
