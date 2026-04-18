@@ -6,6 +6,7 @@ import { A as emberA } from '@ember/array';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
+import { template as runtimeTemplate } from '@ember/template-compiler/runtime';
 
 import { Component } from '../../utils/helpers';
 
@@ -288,10 +289,12 @@ class LifeCycleHooksTest extends RenderingTestCase {
       }
     };
 
-    if (typeof template === 'string') {
-      setComponentTemplate(this.compile(template), ComponentClass);
-    }
-    this.owner.register(`component:${name}`, ComponentClass);
+    ;
+    
+    this.owner.register(
+      `component:${name}`,
+      runtimeTemplate(template, { component: ComponentClass, strictMode: false }),
+    );
   }
 
   assertHooks({ label, interactive, nonInteractive }) {
