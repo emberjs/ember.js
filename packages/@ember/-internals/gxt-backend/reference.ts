@@ -9,6 +9,13 @@ import {
   createCache,
 } from './validator';
 
+// The canonical REFERENCE symbol used by Glimmer VM's CheckReference.
+// Under GXT mode, `@glimmer/reference` is aliased to THIS module (see
+// vite.config.mjs), so consumers (e.g. `-debug-strip.ts`'s CheckReference)
+// import this exact Symbol. Objects tagged with this key pass the VM's
+// `REFERENCE in value` check.
+const GLIMMER_REFERENCE: unique symbol = Symbol('REFERENCE') as any;
+
 const _createConstRef = reference.createConstRef;
 const _createComputeRef = reference.createComputeRef;
 const _createUnboundRef = reference.createUnboundRef;
@@ -25,7 +32,27 @@ const READONLY_MARKER = Symbol('gxt:readonly');
 const COMPUTED_MARKER = Symbol('gxt:computed');
 const INVOKABLE_MARKER = Symbol('gxt:invokable');
 
-export const createPrimitiveRef = _createPrimitiveRef;
+// Helper: brand an object with the canonical REFERENCE symbol so Glimmer
+// VM's CheckReference.validate() (`REFERENCE in value`) accepts it. The
+// REFERENCE value is a "reference type" tag (0=CONSTANT, 1=COMPUTE,
+// 2=UNBOUND, 3=INVOKABLE) — matching @glimmer/reference's encoding.
+function brandRef<T>(ref: T, type: number = 1): T {
+  if (ref != null && (typeof ref === 'object' || typeof ref === 'function')) {
+    try {
+      if (!(GLIMMER_REFERENCE in (ref as any))) {
+        (ref as any)[GLIMMER_REFERENCE] = type;
+      }
+    } catch {
+      // frozen — ignore
+    }
+  }
+  return ref;
+}
+
+export function createPrimitiveRef(value: any): any {
+  const ref = _createPrimitiveRef(value);
+  return brandRef(ref, 2 /* UNBOUND */);
+}
 
 export function createConstRef(value: any, debugLabel?: any): any {
   const ref = _createConstRef(value, debugLabel);
@@ -34,7 +61,7 @@ export function createConstRef(value: any, debugLabel?: any): any {
   } catch {
     // ignore (frozen)
   }
-  return ref;
+  return brandRef(ref, 0 /* CONSTANT */);
 }
 
 export function createUnboundRef(value: any, debugLabel?: any): any {
@@ -45,7 +72,7 @@ export function createUnboundRef(value: any, debugLabel?: any): any {
   } catch {
     // ignore
   }
-  return ref;
+  return brandRef(ref, 2 /* UNBOUND */);
 }
 
 // createComputeRef: preserve existing cell/formula-backed behavior for
@@ -71,6 +98,7 @@ export function createComputeRef(
     const cache = createCache(compute);
     const ref: any = {
       [COMPUTED_MARKER]: true,
+      [GLIMMER_REFERENCE]: 1 /* COMPUTE */,
       debugLabel,
       get value() {
         return cache.value;
@@ -88,7 +116,7 @@ export function createComputeRef(
   } catch {
     // ignore
   }
-  return ref;
+  return brandRef(ref, 1 /* COMPUTE */);
 }
 
 export function valueForRef(ref: any): any {
@@ -145,6 +173,7 @@ export function childRefFor(parentRef: any, path: string): any {
     const label = `${String((parentRef as any).debugLabel ?? 'const')}.${path}`;
     const child: any = {
       [COMPUTED_MARKER]: true,
+      [GLIMMER_REFERENCE]: 1 /* COMPUTE */,
       debugLabel: label,
       get value() {
         return childCache.value;
@@ -160,17 +189,26 @@ export function childRefFor(parentRef: any, path: string): any {
     children.set(path, child);
     return child;
   }
-  return _childRefFor(parentRef, path);
+  const ref = _childRefFor(parentRef, path);
+  return brandRef(ref, 1 /* COMPUTE */);
 }
 
-// Symbol to identify reference objects
-export const REFERENCE = Symbol('REFERENCE');
+// Export the canonical REFERENCE symbol. Because `@glimmer/reference` is
+// aliased to this module in GXT mode, this IS the Symbol that Glimmer VM's
+// CheckReference.validate() uses for its `REFERENCE in value` check. Every
+// reference-returning function in this module brands its output with this
+// symbol so arguments flow through the VM's runtime checker.
+export const REFERENCE = GLIMMER_REFERENCE;
 
-// Constant reference values
-export const FALSE_REFERENCE = cell(false, 'FALSE_REFERENCE');
-export const UNDEFINED_REFERENCE = cell(undefined, 'UNDEFINED_REFERENCE');
-export const NULL_REFERENCE = cell(null, 'NULL_REFERENCE');
-export const TRUE_REFERENCE = cell(true, 'TRUE_REFERENCE');
+// Constant reference values — branded with REFERENCE so they pass
+// CheckReference when routed through the VM.
+export const FALSE_REFERENCE = brandRef(cell(false, 'FALSE_REFERENCE'), 2 /* UNBOUND */);
+export const UNDEFINED_REFERENCE = brandRef(
+  cell(undefined, 'UNDEFINED_REFERENCE'),
+  2 /* UNBOUND */
+);
+export const NULL_REFERENCE = brandRef(cell(null, 'NULL_REFERENCE'), 2 /* UNBOUND */);
+export const TRUE_REFERENCE = brandRef(cell(true, 'TRUE_REFERENCE'), 2 /* UNBOUND */);
 
 // Check if a reference is constant (never changes)
 export function isConstRef(ref: any): boolean {
@@ -266,20 +304,20 @@ export function createInvokableRef(inner: any, _debugLabel?: string) {
     if (typeof fn === 'function') return (fn as Function)(...args);
     return undefined;
   };
-  return ref;
+  return brandRef(ref, 3 /* INVOKABLE */);
 }
 
 // Create a read-only wrapper around a reference. Matches the classic
 // semantics where a non-updatable inner ref is returned as-is.
 export function createReadOnlyRef(ref: any, _debugLabel?: string) {
-  if (!isUpdatableRef(ref)) return ref;
+  if (!isUpdatableRef(ref)) return brandRef(ref, 0 /* CONSTANT */);
   const readOnly = createComputeRef(
     () => valueForRef(ref),
     null,
     (ref && ref.debugLabel) || 'readOnlyRef'
   );
   (readOnly as any)[READONLY_MARKER] = true;
-  return readOnly;
+  return brandRef(readOnly, 1 /* COMPUTE */);
 }
 
 // Create a debug alias reference (for development tools). The @glimmer
@@ -303,8 +341,9 @@ export function createDebugAliasRef(debugLabelOrInner: any, innerOrLabel: any) {
   if (inner && inner[INVOKABLE_MARKER] === true) {
     (ref as any)[INVOKABLE_MARKER] = true;
     (ref as any).isInvokable = true;
+    return brandRef(ref, 3 /* INVOKABLE */);
   }
-  return ref;
+  return brandRef(ref, 1 /* COMPUTE */);
 }
 
 // ---------------------------------------------------------------------------
@@ -512,7 +551,7 @@ function nativeToIterator(iterable: unknown): IteratorDelegate | null {
 // Create a reference for iterating over a collection.
 // Signature: createIteratorRef(listRef, key) → ComputeRef<OpaqueIterator>
 export function createIteratorRef(listRef: any, key: string = '@identity') {
-  return formula(() => {
+  const ref = formula(() => {
     const iterable = valueForRef(listRef);
     const keyFor = makeKeyFor(key);
     if (Array.isArray(iterable)) {
@@ -527,6 +566,7 @@ export function createIteratorRef(listRef: any, key: string = '@identity') {
     }
     return new IteratorWrapper(delegate, keyFor);
   }, 'iteratorRef');
+  return brandRef(ref, 1 /* COMPUTE */);
 }
 
 // Create a reference for an item in an iteration. Mirrors @glimmer/reference:
@@ -540,7 +580,7 @@ export function createIteratorItemRef(_value: unknown) {
       backing.value = newValue;
     }
   };
-  return ref;
+  return brandRef(ref, 1 /* COMPUTE */);
 }
 
 // Exported class alias for the iterable reference concept. The test module
