@@ -53,7 +53,7 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
   );
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
-import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gxtTouchClassicBridge, registerClassicReactor as _gxtRegisterClassicReactor } from '@glimmer/validator';
+import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gxtTouchClassicBridge, registerClassicReactor as _gxtRegisterClassicReactor, createUpdatableTag as _gxtCreateUpdatableTag } from '@glimmer/validator';
 import { createConstRef as _createConstRef } from '@glimmer/reference';
 // @ts-ignore - direct path to share the same module instance as compile.ts
 import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
@@ -8664,7 +8664,9 @@ export function setInternalComponentManager(manager: any, handle: any) {
 export function getInternalHelperManager(helper: any, isOptional?: boolean) {
   if (helper === null || helper === undefined) {
     if (isOptional) return null;
-    return undefined;
+    throw new Error(
+      `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${_managerDebugToString(helper)}`
+    );
   }
   // Walk the full prototype chain
   let pointer = helper;
@@ -8684,7 +8686,9 @@ export function getInternalHelperManager(helper: any, isOptional?: boolean) {
     return DEFAULT_HELPER_MANAGER;
   }
   if (isOptional) return null;
-  return undefined;
+  throw new Error(
+    `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${_managerDebugToString(helper)}`
+  );
 }
 
 export function helperCapabilities(v: string, value: any = {}) {
@@ -8794,9 +8798,29 @@ export function getInternalComponentManager(handle: any, isOptional?: boolean) {
   // Nothing found. When the caller explicitly marks this as an optional lookup
   // (e.g. `resolveOptionalComponentOrHelper` probing whether `def` is a
   // component), return `null` so the caller can branch cleanly. When called
-  // for a required resolution return `undefined` (unchanged legacy behaviour,
-  // which triggers a useful assertion further up the stack).
-  return isOptional ? null : undefined;
+  // for a required resolution, throw the same message the stock @glimmer/manager
+  // does so test assertions like `assert.throws(/Attempted to load a component/)`
+  // see the expected error instead of a downstream "BUG: expected manager".
+  if (isOptional) {
+    return null;
+  }
+  throw new Error(
+    `Attempted to load a component, but there wasn't a component manager associated with the definition. The definition was: ${_managerDebugToString(handle)}`
+  );
+}
+
+// Lightweight debug-friendly stringifier — mirrors the helper used by the real
+// @glimmer/manager. We try to pull a name from a function/class, fall back to
+// String() for other shapes.
+function _managerDebugToString(value: any): string {
+  if (value === null || value === undefined) return String(value);
+  if (typeof value === 'function') return value.name || value.toString?.() || 'function';
+  if (typeof value === 'object') {
+    const ctor = value.constructor;
+    if (ctor && ctor.name && ctor !== Object) return `[object ${ctor.name}]`;
+    try { return String(value); } catch { return '[object]'; }
+  }
+  return String(value);
 }
 
 export function getComponentTemplate(comp: any): any {
@@ -9095,9 +9119,20 @@ export function hasCapability(capabilities: number, capability: number): boolean
   return (capabilities & capability) !== 0;
 }
 
-export function getInternalModifierManager(modifier: any) {
+export function getInternalModifierManager(modifier: any, isOptional?: boolean) {
+  if (modifier === null || modifier === undefined) {
+    if (isOptional) return null;
+    throw new Error(
+      `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${_managerDebugToString(modifier)}`
+    );
+  }
   const stored = globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
-  if (stored === undefined) return undefined;
+  if (stored === undefined) {
+    if (isOptional) return null;
+    throw new Error(
+      `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${_managerDebugToString(modifier)}`
+    );
+  }
   // If it's a factory function (from setModifierManager), wrap it in a
   // CustomModifierManager so tests that instanceof-check and read `.factory`
   // see the expected shape. The rendering path does NOT use this return value
@@ -9238,6 +9273,18 @@ export class CustomComponentManager {
  * this class exists only for consumer introspection. The rendering path reads
  * the raw factory from INTERNAL_MODIFIER_MANAGERS directly.
  */
+// State shape mirrored from @glimmer/manager's public CustomModifierManager.
+// We track the delegate, args, modifier instance and an updatable tag so the
+// JIT delegate's modifier opcode (which calls `manager.getTag(state)`) sees the
+// expected shape.
+interface ShimCustomModifierState {
+  tag: any;
+  element: Element;
+  delegate: any;
+  args: any;
+  modifier: any;
+}
+
 export class CustomModifierManager {
   factory: any;
   delegate: any;
@@ -9248,7 +9295,7 @@ export class CustomModifierManager {
     this.delegate = factory;
   }
 
-  create(owner: any, _element: Element, _definition: any, _args: any) {
+  create(owner: any, element: Element, definition: any, args: any): ShimCustomModifierState {
     const delegate = typeof this.factory === 'function' ? this.factory(owner) : this.factory;
     const caps = delegate ? delegate.capabilities : undefined;
     if (!caps || !FROM_CAPABILITIES.has(caps)) {
@@ -9259,30 +9306,49 @@ export class CustomModifierManager {
         "Received: `" + (caps === undefined ? 'undefined' : JSON.stringify(caps)) + "`"
       );
     }
-    if (typeof delegate.createModifier === 'function') {
-      return delegate.createModifier(_definition, _args);
-    }
-    return delegate;
+    const modifier = typeof delegate.createModifier === 'function'
+      ? delegate.createModifier(definition, args)
+      : delegate;
+    // Lazy import: the validator shim creates an updatable tag we can return
+    // from getTag(). This matches @glimmer/manager's public CustomModifierManager.
+    const tag = _createUpdatableTagForModifier();
+    return { tag, element, delegate, args, modifier };
+  }
+
+  getTag(state: ShimCustomModifierState): any {
+    return state?.tag ?? null;
   }
 
   getDebugName(definition: any) {
     return this.delegate?.getDebugName?.(definition) || 'Modifier';
   }
 
-  getDestroyable(instance: any) {
-    return this.delegate?.getDestroyable?.(instance) || instance;
+  getDestroyable(state: ShimCustomModifierState): any {
+    const { delegate, modifier } = state;
+    return delegate?.getDestroyable?.(modifier) ?? state;
   }
 
-  install(instance: any, element: Element, args: any) {
-    this.delegate?.installModifier?.(instance, element, args);
+  install(state: ShimCustomModifierState) {
+    const { delegate, modifier, element, args } = state;
+    delegate?.installModifier?.(modifier, element, args);
   }
 
-  update(instance: any, args: any) {
-    this.delegate?.updateModifier?.(instance, args);
+  update(state: ShimCustomModifierState) {
+    const { delegate, modifier, args } = state;
+    delegate?.updateModifier?.(modifier, args);
   }
 
-  destroy(instance: any) {
-    this.delegate?.destroyModifier?.(instance);
+  destroy(state: ShimCustomModifierState) {
+    const { delegate, modifier } = state;
+    delegate?.destroyModifier?.(modifier);
+  }
+}
+
+function _createUpdatableTagForModifier(): any {
+  try {
+    return _gxtCreateUpdatableTag();
+  } catch {
+    return null;
   }
 }
 
