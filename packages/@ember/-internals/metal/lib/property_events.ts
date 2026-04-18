@@ -88,13 +88,20 @@ function notifyPropertyChange(
     }
   }
 
+  // Track whether we are currently notifying on a prototype-meta object.
+  // When true, classic Ember skips the entire notification — including
+  // `PROPERTY_DID_CHANGE`. In GXT mode we sometimes still need
+  // `markObjectAsDirty` to fire so async QP observers on controller
+  // instances (where `meta.proto === meta.source === obj` is a false
+  // positive) detect changes. However, true class prototypes should
+  // NEVER have their `PROPERTY_DID_CHANGE` hook invoked.
+  let isProtoNotify = false;
   if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
-    // GXT fix: In GXT mode, isPrototypeMeta can return a false positive for
-    // controller instances (meta.proto === meta.source === obj). We still
-    // need markObjectAsDirty to fire so async QP observers detect changes.
-    // Skip only for true initializing metas.
     if (!meta.isInitializing() && (globalThis as any).__GXT_MODE__) {
-      // Fall through — allow markObjectAsDirty for GXT prototype-meta objects
+      // Fall through — allow markObjectAsDirty for GXT prototype-meta objects,
+      // but remember we are in a prototype notification so we skip
+      // `PROPERTY_DID_CHANGE` below (matching classic behavior).
+      isProtoNotify = true;
     } else {
       return;
     }
@@ -120,7 +127,11 @@ function notifyPropertyChange(
     flushSyncObservers();
   }
 
-  if (PROPERTY_DID_CHANGE in obj) {
+  // Skip `PROPERTY_DID_CHANGE` when notifying on a prototype-meta object:
+  // classic Ember returns early before reaching this hook (see the guard
+  // above), and the `notifyPropertyChange` contract tests assert that
+  // prototypes never fire the hook.
+  if (!isProtoNotify && PROPERTY_DID_CHANGE in obj) {
     // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
     assert('property did change hook is invalid', hasPropertyDidChange(obj));
 
@@ -229,6 +240,13 @@ if (typeof (globalThis as any).__gxtTriggerReRender === 'function' || true) {
           }
         }
         if (!matches) return;
+        // Classic Ember semantics: a CP that has never been consumed
+        // (no cached revision) should NOT be eagerly evaluated here.
+        // Eager evaluation would (a) invoke user getters with side
+        // effects prematurely and (b) propagate change events to async
+        // observers that were registered on CPs the caller never read.
+        // Wait for the next lazy read to recompute through the descriptor.
+        if (meta.revisionFor(propKey) === undefined) return;
         // Recompute using the descriptor's cache-aware `get(obj, keyName)`
         // method when available. Calling `_getter` directly bypasses the CP
         // cache path, which for user-defined getters with side effects (e.g.
