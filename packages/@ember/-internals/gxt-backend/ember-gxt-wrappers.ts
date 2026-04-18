@@ -88,7 +88,61 @@ const simpleHelperResultCache = new Map<string, { argsSer: string; result: any }
 // Cache for managed helper buckets (class-based helpers with setHelperManager).
 // Keyed by the helper class/function. Stores { bucket, delegate, reactiveArgs }.
 let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; reactiveArgs: { positional: any[]; named: Record<string, any> } }>();
-(g as any).__gxtClearHelperCache = () => { classHelperInstanceCache.clear(); simpleHelperResultCache.clear(); managedHelperBucketCache = new WeakMap(); };
+(g as any).__gxtClearHelperCache = () => {
+  // Preserve the tag-dirty sentinel — it has no per-test state and re-installing
+  // it after every test teardown is unnecessary (and would race with subsequent
+  // dirtyTagFor invalidations that fire during the next test's render).
+  const sentinel = classHelperInstanceCache.get('__tagDirtySentinel__');
+  classHelperInstanceCache.clear();
+  if (sentinel) classHelperInstanceCache.set('__tagDirtySentinel__', sentinel);
+  simpleHelperResultCache.clear();
+  managedHelperBucketCache = new WeakMap();
+};
+
+// Tag-dirty bridge sentinel.
+//
+// Class-based helpers invoked WITHOUT args (e.g. `{{hello-world}}` with no
+// positional/named arguments) are routed by GXT's tag-rewrite path through
+// compile.ts's `_tagHelperInstanceCache` instead of through this file's
+// classHelperInstanceCache. compile.ts uses a JSON-stringified args+recompute
+// dedup key on the helper instance to avoid double-computing within a single
+// render — but it has no listener for tracked-property dirties on EXTERNAL
+// objects (a closure-captured @tracked instance, for example).
+//
+// validator.ts already iterates `__gxtClassHelperInstanceCache` on every
+// `dirtyTagFor` call to bump entries' `lastArgsSer` to a fresh sentinel
+// string, forcing the next render to bypass the dedup. We piggy-back on that
+// loop by inserting a synthetic entry whose `lastArgsSer` setter forwards the
+// dirty signal to every cached tag-helper instance, clearing its
+// `__gxtLastArgsSerialized` so compile.ts re-invokes compute() with fresh
+// state.
+//
+// This is the only seam available without editing compile.ts or validator.ts.
+{
+  const _tagDirtySentinel = {
+    __managerBucket: true as const,
+    _val: null as string | null,
+    get lastArgsSer() { return this._val; },
+    set lastArgsSer(v: string | null) {
+      this._val = v;
+      try {
+        const tagCache = (globalThis as any).__gxtTagHelperInstanceCache as
+          | Map<string, { instance: any }>
+          | undefined;
+        if (!tagCache || tagCache.size === 0) return;
+        for (const [, entry] of tagCache) {
+          const inst = entry?.instance;
+          if (inst) {
+            // Clearing the dedup key forces compile.ts's helperGetter to
+            // re-run compute() instead of returning the stale cached result.
+            inst.__gxtLastArgsSerialized = null;
+          }
+        }
+      } catch { /* noop — defensive */ }
+    },
+  };
+  classHelperInstanceCache.set('__tagDirtySentinel__', _tagDirtySentinel);
+}
 
 // Resolver cache counters — mirrors the Glimmer ConstantsImpl counters so the
 // `ember-glimmer runtime resolver cache` test can observe helper/component
