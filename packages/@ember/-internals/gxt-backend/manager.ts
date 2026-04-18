@@ -1042,6 +1042,9 @@ function createComponentInstance(
       }
       Object.defineProperty(instance, 'willDestroy', {
         value: function(this: any) {
+          if ((globalThis as any).__TRACE_DESTROY) {
+            console.log('[WILL-DESTROY] fired on', this?.componentName || this?.constructor?.name || 'Anon', 'everInserted=', this.__gxtEverInserted, 'elementId=', this.elementId);
+          }
           if (this.__gxtEverInserted === false || this.__gxtEverInserted === undefined) {
             // Never actually rendered — skip the user override but invoke
             // the Ember base implementation (if distinct) to keep core teardown
@@ -3062,8 +3065,22 @@ let _preRerenderSnapshot: Set<any> = new Set();
   // Phase 3: destroy (fires willDestroy)
   for (const instance of unclaimed) {
     try {
+      if ((globalThis as any).__TRACE_DESTROY) {
+        try {
+          const EmberRunloop = (globalThis as any).Ember?.run;
+          const currentRL = EmberRunloop?._getCurrentRunLoop?.();
+          console.log('[DESTROY-UNCLAIMED] phase3 destroy:',
+            instance?.componentName || instance?.constructor?.name || 'Anon',
+            'elementId=', instance?.elementId,
+            'syncing=', (globalThis as any).__gxtSyncing,
+            'currentRL=', !!currentRL);
+        } catch {}
+      }
       if (typeof instance.destroy === 'function' && !instance.isDestroyed && !instance.isDestroying) {
         instance.destroy();
+      }
+      if ((globalThis as any).__TRACE_DESTROY) {
+        console.log('[DESTROY-UNCLAIMED] phase3 done, isDestroyed=', instance?.isDestroyed, 'isDestroying=', instance?.isDestroying);
       }
     } catch { /* ignore */ }
   }
@@ -3269,6 +3286,9 @@ let _preRerenderSnapshot: Set<any> = new Set();
  */
 (globalThis as any).__gxtDestroyInstancesInNodes = function(removedNodeList: Node[]) {
   if (!removedNodeList || removedNodeList.length === 0) return;
+  if ((globalThis as any).__TRACE_DESTROY) {
+    console.log('[DESTROY-NODES] called with', removedNodeList.length, 'nodes; syncing=', (globalThis as any).__gxtSyncing, 'runLoop=', typeof (globalThis as any).Ember?.run?._getCurrentRunLoop === 'function' ? (globalThis as any).Ember.run._getCurrentRunLoop() !== null : 'unk');
+  }
 
   const removedEls = new Set<Element>();
   for (let i = 0; i < removedNodeList.length; i++) {
@@ -3334,7 +3354,15 @@ let _preRerenderSnapshot: Set<any> = new Set();
 
   for (const inst of instToDestroy) {
     try {
-      if (typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) inst.destroy();
+      if (typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
+        if ((globalThis as any).__TRACE_DESTROY) {
+          console.log('[DESTROY-NODES]   destroy():', inst?.constructor?.name || 'Anon');
+        }
+        inst.destroy();
+        if ((globalThis as any).__TRACE_DESTROY) {
+          console.log('[DESTROY-NODES]   after destroy: isDestroyed=', inst.isDestroyed, 'isDestroying=', inst.isDestroying);
+        }
+      }
     } catch { /* */ }
   }
 
@@ -8374,9 +8402,22 @@ function renderClassicComponent(
   // since the component already went through its initial render lifecycle.
   const isReused = instance && instance.__gxtReusedFromPool;
   const isForceRerender = (globalThis as any).__gxtIsForceRerender;
+  const reusedWithChanges = isReused && !!instance.__gxtPoolHasArgChanges;
   if (isReused) {
     delete instance.__gxtReusedFromPool;
     delete instance.__gxtPoolHasArgChanges;
+  }
+  // Stamp a cycle-scoped flag so the compile.ts fallback can detect that
+  // this pool reuse had real arg changes — required to fire willRender for
+  // test #11044 where syncAll's Phase 1 visited this instance with no
+  // detected changes (block-param closure held stale value), stamping
+  // __gxtSyncAllFiredCycleId and blocking the fallback. The fallback now
+  // also checks this flag to decide whether to fire willRender.
+  if (reusedWithChanges && isForceRerender && instance) {
+    try {
+      const __gCycle = (globalThis as any).__gxtSyncCycleId || 0;
+      (instance as any).__gxtPoolReuseWithChangesCycleId = __gCycle;
+    } catch { /* ignore */ }
   }
 
   // Suppress notifyPropertyChange → __gxtTriggerReRender during the FIRST

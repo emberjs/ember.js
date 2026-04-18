@@ -3909,6 +3909,12 @@ try {
           const wrapped = function(this: any, name: string, ...args: any[]) {
             if (UPDATE_HOOKS.has(name) && _gg.__gxtSyncAllInFlightCycle) {
               this.__gxtSyncAllFiredCycleId = _gg.__gxtSyncAllInFlightCycle;
+              // Also stamp a "hooks actually fired" marker — distinguishes
+              // "syncAll visited but found no changes" (unconditional stamp)
+              // from "syncAll actually fired update hooks". compile.ts's
+              // fallback uses this to decide whether pool-reuse-with-changes
+              // should still fire willRender for test #11044.
+              this.__gxtHooksFiredCycleId = _gg.__gxtSyncAllInFlightCycle;
             }
             return origTrigger.call(this, name, ...args);
           };
@@ -7074,9 +7080,32 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // old block param and is missed by syncAll.
             if (_inst && _inst.__gxtEverInserted && typeof _inst.trigger === 'function') {
               const __gCycle = (globalThis as any).__gxtSyncCycleId || 0;
-              if (_inst.__gxtSyncAllFiredCycleId !== __gCycle &&
-                  _inst.__gxtWillRenderFiredCycleId !== __gCycle) {
+              // Pool-reuse-with-changes escape hatch: when Phase-1 syncAll
+              // visited this instance (stamping __gxtSyncAllFiredCycleId) but
+              // did NOT actually fire hooks (block-param closure held stale
+              // value at Phase-1 time, so no changes detected), yet pool
+              // reuse detected real arg changes, we must STILL fire willRender.
+              // Test #11044 depends on this: willRender syncs internalName
+              // from the new `name` for items renders inside {{#each}}.
+              // __gxtHooksFiredCycleId is stamped ONLY when hooks actually
+              // fire (via wrapTrigger), distinguishing "visited no-op" from
+              // "visited and fired hooks".
+              const poolReuseWithChanges =
+                _inst.__gxtPoolReuseWithChangesCycleId === __gCycle;
+              const hooksActuallyFired =
+                _inst.__gxtHooksFiredCycleId === __gCycle;
+              const willRenderAlreadyFired =
+                _inst.__gxtWillRenderFiredCycleId === __gCycle;
+              const normalGate =
+                _inst.__gxtSyncAllFiredCycleId !== __gCycle &&
+                !willRenderAlreadyFired;
+              const poolReuseGate =
+                poolReuseWithChanges && !hooksActuallyFired && !willRenderAlreadyFired;
+              if (normalGate || poolReuseGate) {
                 _inst.__gxtWillRenderFiredCycleId = __gCycle;
+                // Clear the pool-reuse flag so subsequent invocations don't
+                // re-fire the hooks in the same cycle.
+                _inst.__gxtPoolReuseWithChangesCycleId = 0;
                 try { _inst.trigger('didUpdateAttrs'); } catch { /* ignore */ }
                 try { _inst.trigger('didReceiveAttrs'); } catch { /* ignore */ }
                 try { _inst.trigger('willUpdate'); } catch { /* ignore */ }
