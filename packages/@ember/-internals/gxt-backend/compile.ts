@@ -385,6 +385,115 @@ function _wrapComponentHelperHashGetters(code: string): string {
 }
 
 /**
+ * Rewrite bare `@identifier` / `@identifier.path` / `@identifier?.path`
+ * occurrences in GXT-emitted JS code to `$a.identifier...`. GXT generally
+ * transforms template `@arg` references correctly (emitting `$a.arg` or
+ * `() => $a.arg`), but some code paths leak raw `@foo.bar` into the first
+ * positional slot of callbacks like `$_dc(() => @model.componentName, ...)`.
+ * That is a SyntaxError in JavaScript (`@` is only valid in decorator
+ * position). This function rewrites such tokens to the `$a` alias injected
+ * at the template-function scope.
+ *
+ * Safety:
+ * - Walks string literals (", ', `) and skips their contents entirely.
+ * - Skips `@` that is preceded by a word char, digit, `$`, `_`, another `@`,
+ *   or `.` — these are not bare-arg references.
+ * - Only rewrites when `@` is followed by an identifier-start character.
+ * - Consumes the full identifier after `@`, plus any `.ident`, `?.ident`,
+ *   and `?.` chains so that `@model?.componentData.foo` becomes
+ *   `$a.model?.componentData.foo`.
+ */
+function _rewriteBareAtArgsToArgsAlias(code: string): string {
+  const out: string[] = [];
+  let i = 0;
+  const n = code.length;
+  while (i < n) {
+    const c = code[i]!;
+    // Skip string/template literals
+    if (c === '"' || c === "'" || c === '`') {
+      const quote = c;
+      out.push(c);
+      i++;
+      while (i < n) {
+        const ch = code[i]!;
+        if (ch === '\\') {
+          out.push(ch);
+          if (i + 1 < n) { out.push(code[i + 1]!); i += 2; continue; }
+          i++;
+          continue;
+        }
+        if (ch === quote) { out.push(ch); i++; break; }
+        // Template literal `${...}` — keep as-is; inner expressions are
+        // plain JS, but GXT does not emit template literals containing
+        // template args, so we leave the full template literal untouched.
+        out.push(ch);
+        i++;
+      }
+      continue;
+    }
+    // Skip single-line comments
+    if (c === '/' && i + 1 < n && code[i + 1] === '/') {
+      while (i < n && code[i] !== '\n') { out.push(code[i]!); i++; }
+      continue;
+    }
+    // Skip multi-line comments
+    if (c === '/' && i + 1 < n && code[i + 1] === '*') {
+      out.push(c); out.push(code[i + 1]!); i += 2;
+      while (i < n) {
+        if (code[i] === '*' && i + 1 < n && code[i + 1] === '/') {
+          out.push(code[i]!); out.push(code[i + 1]!); i += 2; break;
+        }
+        out.push(code[i]!);
+        i++;
+      }
+      continue;
+    }
+    // Check for bare `@identifier` — must not be preceded by word/$/._/@
+    if (c === '@') {
+      const prev = i > 0 ? code[i - 1]! : '';
+      const isBareAt = !/[A-Za-z0-9_$.@]/.test(prev);
+      // And next char must be an identifier start
+      const next = i + 1 < n ? code[i + 1]! : '';
+      if (isBareAt && /[A-Za-z_$]/.test(next)) {
+        // Consume identifier after `@`
+        let j = i + 1;
+        while (j < n && /[A-Za-z0-9_$]/.test(code[j]!)) j++;
+        const ident = code.slice(i + 1, j);
+        // Now consume trailing `.ident`, `?.ident`, `?.` chains
+        let tail = '';
+        while (j < n) {
+          if (code[j] === '.' && j + 1 < n && /[A-Za-z_$]/.test(code[j + 1]!)) {
+            const s = j;
+            j++;
+            while (j < n && /[A-Za-z0-9_$]/.test(code[j]!)) j++;
+            tail += code.slice(s, j);
+            continue;
+          }
+          if (code[j] === '?' && j + 1 < n && code[j + 1] === '.') {
+            tail += '?.';
+            j += 2;
+            // Optional identifier after ?.
+            if (j < n && /[A-Za-z_$]/.test(code[j]!)) {
+              const s = j;
+              while (j < n && /[A-Za-z0-9_$]/.test(code[j]!)) j++;
+              tail += code.slice(s, j);
+            }
+            continue;
+          }
+          break;
+        }
+        out.push(`$a.${ident}${tail}`);
+        i = j;
+        continue;
+      }
+    }
+    out.push(c);
+    i++;
+  }
+  return out.join('');
+}
+
+/**
  * Deep-snapshot a value returned from the `unbound` helper. `(unbound (hash
  * foo=this.x))` compiles to `unbound($__hash({ foo: () => this.x }))`: the
  * GXT `hash` builtin returns an object whose values are live getter
@@ -8656,6 +8765,26 @@ export function precompileTemplate(templateString: string, options?: {
     // non-empty separator, so this replacement is safe.
     if (modifiedCode.indexOf('].join("")') !== -1) {
       modifiedCode = modifiedCode.split('].join("")').join('].map(globalThis.__gxtNormAttr).join("")');
+    }
+
+    // Post-process: GXT may emit `@argName` (and `@argName.path`) as literal JS
+    // when a template arg appears in the FIRST positional slot of a helper like
+    // `{{component @model.componentName model=@model.componentData}}`. The
+    // second named-arg value is correctly rewritten as `() => $a.model.componentData`,
+    // but the first positional leaks through as `$_dc(() => @model.componentName, ...)`
+    // which is a SyntaxError (`@` is not valid JS outside decorators).
+    //
+    // Rewrite any bare `@identifier` / `@identifier.path` / `@identifier?.path`
+    // token (not inside a string literal and not following an identifier char)
+    // to `$a.identifier...`. We parse string literals properly to avoid
+    // rewriting `"@foo"` / `'@foo'` / template-literal content, and we skip
+    // `@` occurrences that look like decorators (e.g. `class X { @foo bar }`
+    // would be ` @foo ` with `@` preceded by whitespace — but GXT doesn't emit
+    // decorator syntax in templates). The stricter guard is that the `@` must
+    // be followed by an identifier start and must NOT be preceded by `@`
+    // (nested), a digit, or a word char.
+    if (modifiedCode.indexOf('@') !== -1) {
+      modifiedCode = _rewriteBareAtArgsToArgsAlias(modifiedCode);
     }
 
     // Post-process: When GXT emits $_maybeHelper("name", ...) with a string for a
