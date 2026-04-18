@@ -219,6 +219,172 @@ function _findMatchingParenUB(code: string, openIdx: number): number {
 }
 
 /**
+ * Scan the compiled code for `$_componentHelper(...)` calls and wrap any
+ * direct `this.X` / `this["X"]` values in the second-argument hash with
+ * `() =>` arrow functions. GXT's serializer emits these hash values as
+ * direct expressions when the subexpression `(component "name" key=this.x)`
+ * appears inside a `(hash ...)` passed to `{{yield}}` — but the Ember
+ * CurriedComponent manager reads the curried-arg hash as
+ * `typeof value === 'function' ? value() : value`, so a direct value is a
+ * frozen snapshot and mutations on the parent never flow through. Wrapping
+ * each bare `this` path in a getter makes the curried arg live-bound.
+ */
+function _wrapComponentHelperHashGetters(code: string): string {
+  const needle = '$_componentHelper(';
+  if (code.indexOf(needle) === -1) return code;
+
+  const out: string[] = [];
+  let i = 0;
+  while (i < code.length) {
+    const idx = code.indexOf(needle, i);
+    if (idx === -1) {
+      out.push(code.slice(i));
+      break;
+    }
+    out.push(code.slice(i, idx));
+    // Find end of `$_componentHelper(...)` by matching parens.
+    const argsStart = idx + needle.length - 1; // position of `(`
+    const argsEnd = _findMatchingParenUB(code, argsStart);
+    if (argsEnd === -1) {
+      out.push(code.slice(idx));
+      break;
+    }
+    const argsInner = code.slice(argsStart + 1, argsEnd);
+    // Split args into first (array) and rest. GXT emits
+    //   $_componentHelper([<params>], { <hash> })
+    // or                      , or `$_componentHelper([<params>], {})` with
+    // optional trailing args. We only rewrite the hash (second arg).
+    let firstCommaDepth = 0;
+    let firstCommaIdx = -1;
+    for (let j = 0; j < argsInner.length; j++) {
+      const c = argsInner[j]!;
+      if (c === '"' || c === "'" || c === '`') {
+        j = _skipStringLiteralUB(argsInner, j) - 1;
+        continue;
+      }
+      if (c === '(' || c === '[' || c === '{') firstCommaDepth++;
+      else if (c === ')' || c === ']' || c === '}') firstCommaDepth--;
+      else if (c === ',' && firstCommaDepth === 0) {
+        firstCommaIdx = j;
+        break;
+      }
+    }
+    if (firstCommaIdx === -1) {
+      // No hash arg — emit as-is.
+      out.push(code.slice(idx, argsEnd + 1));
+      i = argsEnd + 1;
+      continue;
+    }
+    const firstArg = argsInner.slice(0, firstCommaIdx);
+    const restArgs = argsInner.slice(firstCommaIdx + 1);
+    // Find the hash object: skip leading whitespace, expect `{`, find matching `}`.
+    let ws = 0;
+    while (ws < restArgs.length && /\s/.test(restArgs[ws]!)) ws++;
+    if (restArgs[ws] !== '{') {
+      out.push(code.slice(idx, argsEnd + 1));
+      i = argsEnd + 1;
+      continue;
+    }
+    // Find matching brace for the hash
+    let braceDepth = 1;
+    let hashEnd = ws + 1;
+    while (hashEnd < restArgs.length && braceDepth > 0) {
+      const c = restArgs[hashEnd]!;
+      if (c === '"' || c === "'" || c === '`') {
+        hashEnd = _skipStringLiteralUB(restArgs, hashEnd);
+        continue;
+      }
+      if (c === '{' || c === '(' || c === '[') braceDepth++;
+      else if (c === '}' || c === ')' || c === ']') braceDepth--;
+      if (braceDepth === 0) { hashEnd++; break; }
+      hashEnd++;
+    }
+    const hashContent = restArgs.slice(ws + 1, hashEnd - 1); // between braces
+    const trailingArgs = restArgs.slice(hashEnd);
+    // Walk entries in hashContent. Each entry looks like:
+    //   key: value
+    // key is: identifier | "string" | 'string'
+    // value: parse until next top-level comma
+    const rewritten: string[] = [];
+    let j = 0;
+    while (j < hashContent.length) {
+      // Skip whitespace
+      while (j < hashContent.length && /\s/.test(hashContent[j]!)) j++;
+      if (j >= hashContent.length) break;
+      // Parse key: identifier, "string", or 'string'
+      const keyStart = j;
+      const kc = hashContent[j]!;
+      if (kc === '"' || kc === "'") {
+        j = _skipStringLiteralUB(hashContent, j);
+      } else {
+        while (j < hashContent.length && /[A-Za-z0-9_$]/.test(hashContent[j]!)) j++;
+      }
+      const keyEnd = j;
+      // Skip whitespace + colon
+      while (j < hashContent.length && /\s/.test(hashContent[j]!)) j++;
+      if (hashContent[j] !== ':') {
+        // Malformed — bail out, leave entire call unmodified
+        rewritten.length = 0;
+        break;
+      }
+      const colonIdx = j;
+      j++; // consume ':'
+      // Skip whitespace
+      while (j < hashContent.length && /\s/.test(hashContent[j]!)) j++;
+      // Parse value until top-level comma
+      const valStart = j;
+      let depth = 0;
+      while (j < hashContent.length) {
+        const c = hashContent[j]!;
+        if (c === '"' || c === "'" || c === '`') {
+          j = _skipStringLiteralUB(hashContent, j);
+          continue;
+        }
+        if (c === '(' || c === '[' || c === '{') depth++;
+        else if (c === ')' || c === ']' || c === '}') depth--;
+        else if (c === ',' && depth === 0) break;
+        j++;
+      }
+      const valEnd = j;
+      const rawValue = hashContent.slice(valStart, valEnd).trimEnd();
+      // Decide whether to wrap. We wrap only if the value is a direct
+      // `this.X` / `this["X"]` path reference — not an arrow function,
+      // literal, or other call.
+      // Pattern: starts with `this.` or `this[`, does NOT start with `()`
+      // and does NOT contain a top-level call.
+      let newValue = rawValue;
+      const trimmed = rawValue.trim();
+      if (/^this(\.[\w$?]+|\[(?:"[^"]+"|'[^']+')\])(\?\.?[\w$]+|\.[\w$?]+|\[(?:"[^"]+"|'[^']+')\])*$/.test(trimmed)) {
+        newValue = `() => ${trimmed}`;
+      }
+      const prefix = hashContent.slice(keyStart, colonIdx + 1); // "key:" plus trailing space
+      rewritten.push(`${prefix} ${newValue}`);
+      // Skip comma and whitespace
+      while (j < hashContent.length && (hashContent[j] === ',' || /\s/.test(hashContent[j]!))) {
+        rewritten.push(hashContent[j]!);
+        j++;
+      }
+    }
+    if (rewritten.length === 0) {
+      // Couldn't rewrite — fall through unmodified
+      out.push(code.slice(idx, argsEnd + 1));
+    } else {
+      const newHashContent = rewritten.join('');
+      out.push('$_componentHelper(');
+      out.push(firstArg);
+      out.push(',');
+      out.push(restArgs.slice(0, ws + 1)); // whitespace + '{'
+      out.push(newHashContent);
+      out.push('}');
+      out.push(trailingArgs);
+      out.push(')');
+    }
+    i = argsEnd + 1;
+  }
+  return out.join('');
+}
+
+/**
  * Deep-snapshot a value returned from the `unbound` helper. `(unbound (hash
  * foo=this.x))` compiles to `unbound($__hash({ foo: () => this.x }))`: the
  * GXT `hash` builtin returns an object whose values are live getter
@@ -7917,6 +8083,56 @@ function transformAttrQuotedHelperMustaches(code: string): string {
 }
 
 /**
+ * Map of GXT block-keyword names that must be rewritten to a PascalCase
+ * alias when the user's strict-mode `scope` shadows them. GXT lowers the
+ * block-form curly invocation `{{#NAME ...}}BODY{{/NAME}}` into either a
+ * built-in keyword (e.g. `#each`, `#if`) or a raw HTML element tag for
+ * lowercase names, which ignores any local binding by the same name.
+ *
+ * We rewrite `{{#NAME}}BODY{{/NAME}}` to `<Alias>BODY</Alias>` so GXT
+ * treats it as a component invocation on the scope binding. The alias is
+ * mirrored into scopeValues / scopeBindings so the binding resolves to
+ * the original value.
+ *
+ * The `input` / `textarea` pair is handled by the upstream
+ * ember-template-compiler wrapper (ember-template-compiler.ts) already;
+ * we intentionally do not re-shadow them here.
+ */
+const _GXT_SHADOWABLE_BLOCK_KEYWORDS: Record<string, string> = {
+  if: 'GxtShadowedIfBinding',
+  unless: 'GxtShadowedUnlessBinding',
+  each: 'GxtShadowedEachBinding',
+  'each-in': 'GxtShadowedEachInBinding',
+  let: 'GxtShadowedLetBinding',
+  with: 'GxtShadowedWithBinding',
+};
+
+function _rewriteShadowedBlockKeyword(
+  template: string,
+  name: string,
+  alias: string
+): { source: string; changed: boolean } {
+  // Only rewrite names that can appear as bare identifiers in a block tag.
+  // `each-in` has a hyphen; we escape carefully for use in a RegExp.
+  const escapedName = name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const open = new RegExp(`\\{\\{#(${escapedName})(\\s[^}]*)?\\}\\}`, 'g');
+  const close = new RegExp(`\\{\\{/${escapedName}\\}\\}`, 'g');
+  if (!open.test(template) || !close.test(template)) {
+    return { source: template, changed: false };
+  }
+  open.lastIndex = 0;
+  close.lastIndex = 0;
+  let out = template.replace(open, (_match, _n: string, extra?: string) => {
+    // `extra` captures any hash args / positional params after the name.
+    // Angle-bracket syntax uses them verbatim; GXT's attribute parser
+    // supports `key=value` and bare `{{value}}` in this context.
+    return `<${alias}${extra ?? ''}>`;
+  });
+  out = out.replace(close, `</${alias}>`);
+  return { source: out, changed: true };
+}
+
+/**
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
  */
@@ -7926,6 +8142,31 @@ export function precompileTemplate(templateString: string, options?: {
   moduleName?: string;
   scopeValues?: Record<string, unknown>;
 }) {
+  // Pre-transform shadowed block keywords. When `scopeValues` provides a
+  // binding whose name collides with a GXT block keyword (e.g. `each`,
+  // `if`, `unless`, `let`, `with`, `each-in`), GXT's keyword path runs
+  // before scope resolution and the local binding is silently ignored.
+  // Rewrite `{{#NAME ...}}BODY{{/NAME}}` → `<Alias ...>BODY</Alias>` and
+  // mirror the alias into scopeValues so the component call resolves to
+  // the user-provided value. Skip when no scope is provided (non-strict
+  // templates cannot shadow keywords).
+  if (options?.scopeValues) {
+    let rewritten = templateString;
+    let patchedScope: Record<string, unknown> | undefined;
+    for (const [name, alias] of Object.entries(_GXT_SHADOWABLE_BLOCK_KEYWORDS)) {
+      if (!Object.prototype.hasOwnProperty.call(options.scopeValues, name)) continue;
+      const result = _rewriteShadowedBlockKeyword(rewritten, name, alias);
+      if (!result.changed) continue;
+      rewritten = result.source;
+      patchedScope = patchedScope || { ...options.scopeValues };
+      patchedScope[alias] = options.scopeValues[name];
+    }
+    if (rewritten !== templateString) {
+      templateString = rewritten;
+      options = { ...options, scopeValues: patchedScope };
+    }
+  }
+
   // Check cache first — skip cache when scopeValues are provided (they contain unique references)
   const hasScopeValues = options?.scopeValues && Object.keys(options.scopeValues).length > 0;
   // Debug tracking removed to avoid unbounded memory growth in long test suites
@@ -8442,6 +8683,22 @@ export function precompileTemplate(templateString: string, options?: {
 
     // NOTE: $_componentHelper hash getter wrapping is now handled in the GXT serializer
     // (value.ts wraps hash values in getters directly in IS_GLIMMER_COMPAT_MODE)
+    //
+    // EXCEPTION: when `(component "x" key=this.path)` appears inside a
+    // `(hash ...)` passed to `{{yield}}` (e.g. a parent component yielding a
+    // contextual component via `{{yield (hash foo=(component "nested" p=this.x))}}`),
+    // GXT emits the hash values as DIRECT expressions rather than getters:
+    //   $_componentHelper(["nested"], { p: this.x })
+    // instead of
+    //   $_componentHelper(["nested"], { p: () => this.x })
+    // The manager reads curried args through `typeof value === 'function' ? value() : value`,
+    // so a direct value is a frozen snapshot — incrementProperty on the parent
+    // (which dirties the upstream cell) never flows into the curried arg.
+    // Post-process: inside $_componentHelper(...) calls, wrap any `key: this.X`
+    // or `key: this["X"]` hash value in `() =>` so the manager sees a live getter.
+    if (modifiedCode.indexOf('$_componentHelper(') !== -1) {
+      modifiedCode = _wrapComponentHelperHashGetters(modifiedCode);
+    }
 
     // NOTE: Component children lazy wrapping ($_tag children) is now handled in the GXT
     // serializer (element.ts wraps component children in arrow functions in IS_GLIMMER_COMPAT_MODE)
@@ -8965,7 +9222,6 @@ export function precompileTemplate(templateString: string, options?: {
                     ? newResult()
                     : newResult;
                 }
-
                 // Evaluate curried arg getters to establish tracking —
                 // when a curried arg changes (e.g., this.model.expectedText),
                 // this effect must re-fire so we can update the component.
