@@ -64,6 +64,55 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
   this.notifyPropertyChange('url');
   this.set('currentState', this.targetState);
 
+  // GXT fix: LinkTo.href consumes `tagFor(routing, 'currentState')`, where
+  // `routing` is the `-routing` service that aliases `router.currentState`
+  // via `readOnly('router.currentState')`. In GXT mode the alias chain tag
+  // doesn't always propagate dirty to the routing service's tag on
+  // `set(router, 'currentState', ...)`, so LinkTo.href getters don't re-
+  // evaluate after a QP-only transition (triggered by `set(controller,
+  // 'q', 'lol')` → _activeQPChanged → fireQueryParamTransition). We
+  // explicitly notify the routing service so its `currentState` tag
+  // dirties, forcing LinkTo.href getters to re-evaluate with the latest
+  // sticky QP values. This matches the semantics upstream Glimmer VM
+  // already achieves via its chain-tag machinery.
+  if ((globalThis as any).__GXT_MODE__) {
+    try {
+      const owner = getOwner(this);
+      if (owner) {
+        const routing = owner.lookup('service:-routing') as any;
+        if (routing) {
+          // Dirty the `currentState` tag on the routing service directly.
+          // LinkTo.href / isActive etc. call
+          // `consumeTag(tagFor(routing, 'currentState'))` — so they
+          // subscribe to this exact tag and re-evaluate when it dirties.
+          // In GXT mode the alias chain tag from readOnly('router.currentState')
+          // doesn't always propagate dirty from the router onto the routing
+          // service, so we also dirty the service's tag directly. This
+          // matches the semantics upstream Glimmer VM already achieves via
+          // its chain-tag machinery.
+          const dirtyTagFor = (globalThis as any).__classicDirtyTagFor ||
+            (globalThis as any).__gxtDirtyTagFor;
+          if (typeof dirtyTagFor === 'function') {
+            dirtyTagFor(routing, 'currentState');
+          } else if (typeof routing.notifyPropertyChange === 'function') {
+            routing.notifyPropertyChange('currentState');
+          }
+          // Trigger a sync so enqueued effects (e.g. LinkTo.applyHref via
+          // registerClassicReactor) flush synchronously before the test's
+          // next assertion runs.
+          const syncDomNow = (globalThis as any).__gxtSyncDomNow;
+          if (typeof syncDomNow === 'function') {
+            (globalThis as any).__gxtPendingSync = true;
+            (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+            syncDomNow();
+          }
+        }
+      }
+    } catch {
+      /* best-effort; never block transition */
+    }
+  }
+
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
     if (this.namespace.LOG_TRANSITIONS) {

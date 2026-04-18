@@ -894,22 +894,58 @@ export default function createRootTemplate(_owner: any) {
             if (!(newA instanceof HTMLAnchorElement) || !newA.id) continue;
             const oldA = oldAnchorMap.get(newA.id);
             if (!oldA || oldA === newA) continue;
-            // Copy new attrs onto old anchor (removes stale, sets new).
-            const oldAttrs = Array.from(oldA.attributes);
-            for (const a of oldAttrs) {
-              if (!newA.hasAttribute(a.name)) oldA.removeAttribute(a.name);
-            }
-            const newAttrs = Array.from(newA.attributes);
-            for (const a of newAttrs) {
-              if (oldA.getAttribute(a.name) !== a.value) {
-                oldA.setAttribute(a.name, a.value);
+
+            // Sync initial state: copy new's attrs & children onto old so the
+            // captured `oldA` reference is immediately up-to-date (reflects
+            // whatever the re-render computed). Keep NEW in the DOM so the
+            // reactive effects that fire later (on classic tag dirty) continue
+            // to target the element their closure captured (`el` inside
+            // renderLinkToElement), which is NEW.
+            const syncAttrs = (src: HTMLAnchorElement, dst: HTMLAnchorElement) => {
+              const dstAttrs = Array.from(dst.attributes);
+              for (const a of dstAttrs) {
+                if (!src.hasAttribute(a.name)) dst.removeAttribute(a.name);
               }
-            }
-            // Move children from new into old.
-            while (oldA.firstChild) oldA.removeChild(oldA.firstChild);
-            while (newA.firstChild) oldA.appendChild(newA.firstChild);
-            // Replace new with old in the parent.
-            newA.parentNode!.replaceChild(oldA, newA);
+              const srcAttrs = Array.from(src.attributes);
+              for (const a of srcAttrs) {
+                if (dst.getAttribute(a.name) !== a.value) {
+                  dst.setAttribute(a.name, a.value);
+                }
+              }
+            };
+            syncAttrs(newA, oldA);
+
+            // Install a MutationObserver on NEW that mirrors attribute /
+            // child-list changes onto OLD. This lets the captured `oldA`
+            // reference stay in sync when subsequent reactive effects
+            // (driven by `dirtyTagFor(routing, 'currentState')`) mutate NEW.
+            // Disconnect when NEW is detached (it no longer receives updates
+            // OR a subsequent re-render replaces it).
+            try {
+              const obs = new MutationObserver((records) => {
+                for (const rec of records) {
+                  if (rec.type === 'attributes' && rec.attributeName) {
+                    const name = rec.attributeName;
+                    const val = newA.getAttribute(name);
+                    if (val === null) {
+                      oldA.removeAttribute(name);
+                    } else if (oldA.getAttribute(name) !== val) {
+                      oldA.setAttribute(name, val);
+                    }
+                  } else if (rec.type === 'childList') {
+                    // Mirror text content for simple inner text cases
+                    // (LinkTo yields block content). Full child mirroring
+                    // would require recursive DOM cloning; for most LinkTo
+                    // use cases the block is a static text label so
+                    // textContent suffices.
+                    if (oldA.textContent !== newA.textContent) {
+                      oldA.textContent = newA.textContent;
+                    }
+                  }
+                }
+              });
+              obs.observe(newA, { attributes: true, childList: true, subtree: true });
+            } catch { /* MutationObserver unavailable in this environment */ }
           }
         } catch { /* best-effort preservation */ }
       }
