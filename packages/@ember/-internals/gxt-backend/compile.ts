@@ -3600,20 +3600,21 @@ function patchGlobalEachSync() {
     // with own-`layoutName`) so both phases key into the SAME pool and
     // Phase 2b reuses Phase 1's inverse-branch instances.
     let _initialParent: any = (ctx && (ctx.__gxtRawTarget || ctx)) || null;
-    if (_initialParent && typeof _initialParent === 'object' &&
-        !Object.prototype.hasOwnProperty.call(_initialParent, 'layoutName')) {
-      // Walk prototype chain: freshContext is Object.create(component), so
-      // its direct prototype IS the real component with own `layoutName`.
-      let proto: any = Object.getPrototypeOf(_initialParent);
-      let guard = 0;
-      while (proto && guard++ < 4) {
-        if (Object.prototype.hasOwnProperty.call(proto, 'layoutName') &&
-            (proto.isView === true || typeof proto.trigger === 'function' ||
-             'elementId' in proto)) {
-          _initialParent = proto;
-          break;
-        }
-        proto = Object.getPrototypeOf(proto);
+    // Detect Phase 2b's `freshContext = Object.create(component)` wrapper:
+    // it is a PLAIN Object.create descendant (direct prototype has an own
+    // `layoutName` property — indicating the prototype IS the real component).
+    // Real components have `layoutName` as OWN property and their prototype
+    // chain is ComponentPrototype → CoreObject.prototype → ... (none of which
+    // have own-`layoutName`). Prefer the prototype in the wrapper case so both
+    // phases key into the SAME instance pool.
+    if (_initialParent && typeof _initialParent === 'object') {
+      const proto: any = Object.getPrototypeOf(_initialParent);
+      if (proto && typeof proto === 'object' &&
+          Object.prototype.hasOwnProperty.call(proto, 'layoutName') &&
+          (proto.isView === true || typeof proto.trigger === 'function' ||
+           'elementId' in proto) &&
+          !proto.isDestroyed && !proto.isDestroying) {
+        _initialParent = proto;
       }
     }
     const capturedParent: any = _initialParent;
@@ -3668,12 +3669,28 @@ function patchGlobalEachSync() {
         if ((g as any).__dbgEachTrace !== false) {
           try {
             (g as any).__dbgEachTrace = (g as any).__dbgEachTrace || [];
+            // Track identity across phases
+            (g as any).__dbgEachParents = (g as any).__dbgEachParents || [];
+            const parentsArr = (g as any).__dbgEachParents;
+            let pIdx = parentsArr.indexOf(capturedParent);
+            if (pIdx < 0) {
+              parentsArr.push(capturedParent);
+              pIdx = parentsArr.length - 1;
+            }
             (g as any).__dbgEachTrace.push({
               where: 'inverseFn',
               forceRR: !!(g as any).__gxtIsForceRerender,
               passId: (g as any).__emberRenderPassId || 0,
               cpId: capturedParent && (capturedParent.elementId || capturedParent.layoutName || typeof capturedParent),
               cpIsReal: capturedParent && Object.prototype.hasOwnProperty.call(capturedParent, 'layoutName'),
+              cpIdentityIdx: pIdx,
+              ctxType: ctx?.constructor?.name || typeof ctx,
+              ctxIdentityIdx: (() => {
+                const ctxArr = (g as any).__dbgEachCtxs = (g as any).__dbgEachCtxs || [];
+                let cIdx = ctxArr.indexOf(ctx);
+                if (cIdx < 0) { ctxArr.push(ctx); cIdx = ctxArr.length - 1; }
+                return cIdx;
+              })(),
             });
           } catch {}
         }
@@ -5042,6 +5059,15 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       return modHelper(args, {});
     }
     return undefined;
+  },
+  // __gxtCommentLookup: resolves a registry token back to the literal
+  // HTML comment source produced by `_preserveHtmlComments`. The token
+  // is a plain-ASCII identifier with no mustache characters, so it
+  // survives the GXT parser without being interpreted as a mustache.
+  __gxtCommentLookup: (token: unknown) => {
+    const g = globalThis as unknown as { __gxtCommentRegistry?: Record<string, string> };
+    const key = typeof token === 'string' ? token : String(token ?? '');
+    return (g.__gxtCommentRegistry && g.__gxtCommentRegistry[key]) || '';
   },
 };
 
@@ -7099,10 +7125,99 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           let handleResult: any;
           let rendered: any;
           try {
+            if ((globalThis as any).__dbgEachTrace !== false && (kebabName === 'no-items' || kebabName === 'nested-item' || kebabName === 'an-item')) {
+              (globalThis as any).__dbgEachTrace = (globalThis as any).__dbgEachTrace || [];
+              const ctxInfo: any = {
+                where: 'handle-before',
+                name: kebabName,
+                forceRR: !!__forceRerenderSnapshot,
+                passId: (globalThis as any).__emberRenderPassId || 0,
+                cycle: (globalThis as any).__gxtSyncCycleId || 0,
+              };
+              try {
+                const ctxRaw = ctx && (ctx.__gxtRawTarget || ctx);
+                ctxInfo.ctxType = ctxRaw?.constructor?.name || typeof ctxRaw;
+                ctxInfo.ctxHasLayout = ctxRaw && Object.prototype.hasOwnProperty.call(ctxRaw, 'layoutName');
+              } catch {}
+              // Dump pool state — ALL pools that may be relevant
+              try {
+                const allPools = (globalThis as any).__gxtAllPoolArrays;
+                if (allPools) {
+                  const poolSummary: any[] = [];
+                  let pIdx = 0;
+                  for (const poolArr of allPools) {
+                    pIdx++;
+                    if (poolArr.length === 0) continue;
+                    const first = poolArr[0];
+                    const name = first?.instance?.layoutName || first?.instance?._debugContainerKey ||
+                                 first?.instance?.constructor?.name;
+                    const nm = String(name || '');
+                    if (nm.includes('no-items') || nm.includes('nested-item') || nm.includes('an-item')) {
+                      poolSummary.push({
+                        pIdx, name: nm,
+                        lastPassId: (poolArr as any).__lastPassId,
+                        entries: poolArr.map((e: any) => ({
+                          id: e.instance?.elementId,
+                          claimed: e.claimed,
+                          destroyed: !!e.instance?.isDestroyed,
+                          destroying: !!e.instance?.isDestroying,
+                          parentView: e.instance?.parentView?.elementId ||
+                                      e.instance?.parentView?.layoutName ||
+                                      (e.instance?.parentView ? 'some-parent' : 'null'),
+                        })),
+                      });
+                    }
+                  }
+                  if (poolSummary.length > 0) ctxInfo.pools = poolSummary;
+                }
+              } catch {}
+              (globalThis as any).__dbgEachTrace.push(ctxInfo);
+            }
             handleResult = managers.component.handle(kebabName, args, fw, ctx);
             rendered = handleResult;
             if (typeof rendered === 'function') {
               rendered = rendered();
+            }
+            if ((globalThis as any).__dbgEachTrace !== false && (kebabName === 'no-items' || kebabName === 'nested-item' || kebabName === 'an-item')) {
+              const inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+              const afterInfo: any = {
+                where: 'handle-after',
+                name: kebabName,
+                passId: (globalThis as any).__emberRenderPassId || 0,
+                instId: inst?.elementId || null,
+                everInserted: !!inst?.__gxtEverInserted,
+                reused: !!inst?.__gxtReusedFromPool,
+              };
+              try {
+                const allPools = (globalThis as any).__gxtAllPoolArrays;
+                if (allPools) {
+                  const poolSummary: any[] = [];
+                  let pIdx = 0;
+                  for (const poolArr of allPools) {
+                    pIdx++;
+                    if (poolArr.length === 0) continue;
+                    const first = poolArr[0];
+                    const name = first?.instance?.layoutName || first?.instance?._debugContainerKey ||
+                                 first?.instance?.constructor?.name;
+                    const nm = String(name || '');
+                    if (nm.includes(kebabName)) {
+                      poolSummary.push({
+                        pIdx, name: nm,
+                        lastPassId: (poolArr as any).__lastPassId,
+                        entries: poolArr.map((e: any) => ({
+                          id: e.instance?.elementId,
+                          claimed: e.claimed,
+                          parentView: e.instance?.parentView?.elementId ||
+                                      e.instance?.parentView?.layoutName ||
+                                      (e.instance?.parentView ? 'some-parent' : 'null'),
+                        })),
+                      });
+                    }
+                  }
+                  if (poolSummary.length > 0) afterInfo.pools = poolSummary;
+                }
+              } catch {}
+              (globalThis as any).__dbgEachTrace.push(afterInfo);
             }
           } finally {
             // Pop the template-only tracking stack after render (even on error).
@@ -8491,6 +8606,60 @@ function transformOutletMustaches(code: string): string {
  * Rewrites are skipped for `this.xxx`, `@arg`, mustaches with arguments, and
  * known built-in keywords.
  */
+/**
+ * Preserve HTML comments. The upstream GXT compiler strips `<!-- ... -->`
+ * from the emitted template; Ember classic templates treat them as
+ * first-class DOM nodes (rehydration and `assertHTML` tests assert on
+ * them verbatim). Rewrite each comment to an `<EmberHtmlRaw @value=...>`
+ * invocation whose value is the comment source. The ember-gxt-wrappers
+ * render path parses that value and inserts the comment node; its
+ * `<!---->` / `<!--/htmlRaw-->` boundary markers are stripped by
+ * `MARKER_COMMENT_RE` in `snapshot.ts`.
+ *
+ * Handlebars comments `{{! ... }}` and `{{!-- ... --}}` are NOT HTML
+ * comments and are left alone (the GXT parser discards them, matching
+ * Ember's behavior).
+ */
+function _preserveHtmlComments(template: string): string {
+  if (!template || template.indexOf('<!--') === -1) return template;
+  // Register each comment body in a global registry keyed by a stable
+  // token. The template emits a call to a global helper that resolves
+  // the token back to the literal comment source at render time. This
+  // avoids feeding the curly-brace-containing comment text back through
+  // the GXT parser, which would otherwise interpret `{{...}}` as
+  // mustache expressions.
+  const g = globalThis as unknown as {
+    __gxtCommentRegistry?: Record<string, string>;
+    __gxtCommentCounter?: number;
+  };
+  if (!g.__gxtCommentRegistry) g.__gxtCommentRegistry = Object.create(null) as Record<string, string>;
+  if (typeof g.__gxtCommentCounter !== 'number') g.__gxtCommentCounter = 0;
+  let out = '';
+  let i = 0;
+  const n = template.length;
+  while (i < n) {
+    if (template.startsWith('<!--', i)) {
+      const end = template.indexOf('-->', i + 4);
+      if (end === -1) {
+        out += template.slice(i);
+        break;
+      }
+      const full = template.slice(i, end + 3);
+      const token = `__gxtCmt_${++g.__gxtCommentCounter!}`;
+      g.__gxtCommentRegistry![token] = full;
+      // Emit an EmberHtmlRaw invocation whose @value is a subexpression
+      // calling our built-in lookup helper with a plain-ASCII token.
+      // The GXT parser sees only alphanumeric content — no curly braces.
+      out += `<EmberHtmlRaw @value={{(__gxtCommentLookup "${token}")}} />`;
+      i = end + 3;
+      continue;
+    }
+    out += template[i]!;
+    i++;
+  }
+  return out;
+}
+
 function transformAttrQuotedHelperMustaches(code: string): string {
   if (!code || code.indexOf('{{') === -1) return code;
   const BARE_IDENT_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
@@ -8755,6 +8924,16 @@ export function precompileTemplate(templateString: string, options?: {
   // Wrapping in <EmberHtmlRaw> routes it through ember-gxt-wrappers.ts which
   // parses the value into DOM nodes and reactively updates via innerHTML.
   transformedTemplate = transformTripleMustaches(transformedTemplate);
+
+  // Preserve HTML comments <!-- ... --> — the upstream GXT compiler strips
+  // them. Ember's classic tokenizer keeps them in the DOM, so rehydration
+  // tests that assert a comment in the output expect them to survive.
+  // Rewrite each comment to an `<EmberHtmlRaw @value="<!-- text -->" />`
+  // invocation; the ember-gxt-wrappers render path parses the value and
+  // inserts the comment node. The `<!---->` / `<!--/htmlRaw-->` boundary
+  // markers are stripped by `MARKER_COMMENT_RE` in snapshot.ts, so the
+  // final tokenized output matches Ember's expected shape.
+  transformedTemplate = _preserveHtmlComments(transformedTemplate);
 
   // onclick={{expr}} → {{on "click" expr}} transform is now handled at the AST level
   // in the GXT compiler (visitors/element.ts rewriteOnEventAttributes),
@@ -9362,7 +9541,7 @@ export function precompileTemplate(templateString: string, options?: {
       const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
-        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'modifier', 'gxtEntriesOf', '__mutGet'];
+        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'modifier', 'gxtEntriesOf', '__mutGet', '__gxtCommentLookup'];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
           const jsName = hyphenToUnderscore(name);
