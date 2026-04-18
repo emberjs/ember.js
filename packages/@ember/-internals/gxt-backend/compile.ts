@@ -3601,20 +3601,21 @@ function patchGlobalEachSync() {
     // Phase 2b reuses Phase 1's inverse-branch instances.
     let _initialParent: any = (ctx && (ctx.__gxtRawTarget || ctx)) || null;
     // Detect Phase 2b's `freshContext = Object.create(component)` wrapper:
-    // it is a PLAIN Object.create descendant (direct prototype has an own
-    // `layoutName` property — indicating the prototype IS the real component).
-    // Real components have `layoutName` as OWN property and their prototype
-    // chain is ComponentPrototype → CoreObject.prototype → ... (none of which
-    // have own-`layoutName`). Prefer the prototype in the wrapper case so both
-    // phases key into the SAME instance pool.
+    // its direct prototype is the REAL component INSTANCE (an Ember View),
+    // NOT a class prototype. Class prototypes satisfy
+    // `ctor.prototype === proto`; instances do NOT. Prefer the instance-proto
+    // in the wrapper case so both phases key into the SAME instance pool.
     if (_initialParent && typeof _initialParent === 'object') {
       const proto: any = Object.getPrototypeOf(_initialParent);
-      if (proto && typeof proto === 'object' &&
-          Object.prototype.hasOwnProperty.call(proto, 'layoutName') &&
-          (proto.isView === true || typeof proto.trigger === 'function' ||
-           'elementId' in proto) &&
+      if (proto && typeof proto === 'object' && proto !== Object.prototype &&
+          typeof proto.trigger === 'function' && proto.isView === true &&
           !proto.isDestroyed && !proto.isDestroying) {
-        _initialParent = proto;
+        const ctor = proto.constructor;
+        const protoIsInstance = typeof ctor === 'function' &&
+          ctor.prototype !== undefined && ctor.prototype !== proto;
+        if (protoIsInstance) {
+          _initialParent = proto;
+        }
       }
     }
     const capturedParent: any = _initialParent;
@@ -7954,7 +7955,100 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     }
 
+    // Strip `[key, null]` / `[key, undefined]` entries from attrs before GXT's
+    // originalTag runs. GXT otherwise sets the attribute to the empty string
+    // (so `<a href={{null}}>` renders as `<a href="">` / `<a href>`), while
+    // Ember's semantics treat null/undefined as "do not render this attribute
+    // at all". Filtering here is safer than mutating the attribute after the
+    // fact — GXT's DOM code paths may dispatch on presence.
+    // Also normalise reactive getters whose current value is null/undefined
+    // to a no-op by dropping the entry for the *initial* render (the getter
+    // still gets wrapped by GXT's effect system to re-add it later; but our
+    // wrapping approach here only affects the first synchronous pass).
+    if (
+      tagProps &&
+      tagProps !== g.$_edp &&
+      typeof tag === 'string' &&
+      !g.__gxtNamespace
+    ) {
+      const filteredAttrs = Array.isArray(tagProps[1])
+        ? tagProps[1].filter((entry: [string, unknown]) => {
+            if (!Array.isArray(entry) || entry.length < 2) return true;
+            const v = entry[1];
+            // Skip only *static* null/undefined — reactive getters are
+            // left intact so they can update later.
+            if (typeof v === 'function') return true;
+            return v !== null && v !== undefined;
+          })
+        : tagProps[1];
+      if (filteredAttrs !== tagProps[1]) {
+        tagProps = [tagProps[0], filteredAttrs, tagProps[2], tagProps[3]];
+      }
+    }
+
     const result = originalTag(tag, tagProps, ctx, children);
+
+    // Post-apply: GXT's originalTag only renders attributes from tagProps[1]
+    // for plain HTML tags. Position 0 ("props") is used internally for
+    // `class` (empty-string key) and forwarded splats; any additional entries
+    // that happen to land in position 0 (e.g. dynamic `name={{...}}` paired
+    // with static `foo="bar"`, where GXT classifies them into different
+    // slots) are dropped. Apply anything that looks like a plain attribute
+    // name to the rendered element so both static and dynamic sibling
+    // attributes end up on the DOM.
+    if (
+      tagProps &&
+      tagProps !== g.$_edp &&
+      typeof tag === 'string' &&
+      !g.__gxtNamespace &&
+      result instanceof Element
+    ) {
+      const props = tagProps[0];
+      if (Array.isArray(props)) {
+        for (const entry of props) {
+          if (!Array.isArray(entry) || entry.length < 2) continue;
+          const key = entry[0];
+          const value = entry[1];
+          // Skip the class slot (empty key) — GXT already applied it; skip
+          // `id` and other reserved prop-position keys that GXT handles
+          // natively; only interfere when the entry is clearly a stray
+          // attribute that GXT's originalTag did not map to the DOM.
+          if (typeof key !== 'string' || key === '' || key === 'className') continue;
+          if (key.startsWith('@') || key.startsWith('$')) continue;
+          // Skip entries GXT may have already applied — specifically
+          // class/id/style are set via element properties by upstream code.
+          if (result.hasAttribute(key)) continue;
+          const resolved = typeof value === 'function' ? value() : value;
+          if (resolved == null || resolved === false) {
+            // Null/undefined/false: ensure no stray attribute; leave as-is.
+            continue;
+          }
+          try {
+            result.setAttribute(key, String(resolved));
+          } catch {
+            // Ignore attribute-application errors (e.g. invalid name);
+            // this is a best-effort fallback, not a strict render.
+          }
+          // Set up a reactive effect for dynamic values so the attribute
+          // updates on cell changes. Only when the source value is a
+          // function — static strings don't need re-tracking.
+          if (typeof value === 'function') {
+            try {
+              gxtEffect(() => {
+                const v = value();
+                if (v == null || v === false) {
+                  result.removeAttribute(key);
+                } else {
+                  result.setAttribute(key, String(v));
+                }
+              });
+            } catch {
+              /* effect setup may fail during shutdown */
+            }
+          }
+        }
+      }
+    }
 
     // After GXT renders, the element may have style="" from null→"" conversion.
     // GXT's prop handler does: el.style = (null === s ? "" : s)
