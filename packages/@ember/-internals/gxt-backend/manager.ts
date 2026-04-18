@@ -4775,6 +4775,58 @@ function _rerenderInstrumentationPayload(component: any) {
   return component.instrumentDetails({ initialRender: false });
 }
 
+// Install a setter interceptor on `globalThis.__gxtRootOutletRerender` that
+// wraps every assigned function with `render.outlet` instrumentation. The
+// outlet re-render function is registered by `templates/root.ts` AFTER this
+// module loads, so we intercept the assignment itself. Every route
+// transition that calls `setOutletState` invokes this function; classic
+// Ember's OutletComponentManager fires `render.outlet` for each outlet
+// re-render, and tests subscribe to `render` (which matches `render.outlet`)
+// to verify routing instrumentation.
+(function installRootOutletRerenderInstrumentation() {
+  const g = globalThis as any;
+  if (g.__gxtRootOutletRerenderInstrumentInstalled) return;
+  g.__gxtRootOutletRerenderInstrumentInstalled = true;
+
+  let current: ((ref: any) => void) | null = g.__gxtRootOutletRerender ?? null;
+
+  const wrap = (fn: any): any => {
+    if (typeof fn !== 'function') return fn;
+    if ((fn as any).__gxtInstrumented) return fn;
+    const wrapped = function (this: any, outletRef: any) {
+      let finalizer: (() => void) | null = null;
+      try {
+        finalizer = _gxtInstrumentStart(
+          'render.outlet',
+          _outletRerenderInstrumentationPayload,
+          outletRef
+        );
+      } catch { /* ignore */ }
+      try {
+        return fn.call(this, outletRef);
+      } finally {
+        if (finalizer) {
+          try { finalizer(); } catch { /* ignore */ }
+        }
+      }
+    };
+    (wrapped as any).__gxtInstrumented = true;
+    return wrapped;
+  };
+
+  try {
+    Object.defineProperty(g, '__gxtRootOutletRerender', {
+      configurable: true,
+      get: () => current ? wrap(current) : undefined,
+      set: (v: any) => { current = v; },
+    });
+  } catch { /* if property is already non-configurable, skip */ }
+})();
+
+function _outletRerenderInstrumentationPayload(_outletRef: any) {
+  return { object: 'outlet' };
+}
+
 // Pending `render.component` finalizers for instances whose update pass has
 // fired willRender but whose DOM layout update has not yet been flushed.
 // Classic Ember finalizes `_instrumentStart('render.component', ...)` in
