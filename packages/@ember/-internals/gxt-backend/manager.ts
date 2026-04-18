@@ -2727,6 +2727,11 @@ function _installTriggerReRenderWrapper() {
           triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
           triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
         }
+        // Begin `render.component` instrumentation (initialRender=false).
+        // Classic Ember starts this finalizer at the top of
+        // CurlyComponentManager.update(); the finalizer runs from
+        // `didUpdateLayout`, which maps to __gxtPostRenderHooks.
+        _fireRerenderInstrumentStart(entry.instance);
         triggerLifecycleHook(entry.instance, 'willUpdate');
         triggerLifecycleHook(entry.instance, 'willRender');
         markInstanceUpdated(entry.instance);
@@ -2737,6 +2742,7 @@ function _installTriggerReRenderWrapper() {
         // handle-time). Fire willUpdate/willRender now that arg cells have
         // been updated in the Phase-1 loop above, so user hooks read fresh
         // values.
+        _fireRerenderInstrumentStart(entry.instance);
         triggerLifecycleHook(entry.instance, 'willUpdate');
         triggerLifecycleHook(entry.instance, 'willRender');
         markInstanceRenderHookFired(entry.instance);
@@ -2752,6 +2758,7 @@ function _installTriggerReRenderWrapper() {
       try {
         const viewEl = getViewElement(entry.instance) || (entry.instance as any).element || (entry.instance as any)._element;
         if (viewEl) {
+          _fireRerenderInstrumentStart(entry.instance);
           triggerLifecycleHook(entry.instance, 'willUpdate');
           triggerLifecycleHook(entry.instance, 'willRender');
           markInstanceRenderHookFired(entry.instance);
@@ -2867,6 +2874,12 @@ const _POST_RENDER_MAX_REENTRY = 3;
     triggerLifecycleHook(inst, 'didUpdate');
     triggerLifecycleHook(inst, 'didRender');
   }
+
+  // Finalize any pending `render.component` instrumentation finalizers
+  // queued by update-path calls to `_fireRerenderInstrumentStart`. Classic
+  // Ember's `didUpdateLayout` does this after the layout is re-rendered;
+  // post-render hooks are the GXT equivalent (DOM sync is complete).
+  _drainPendingRerenderInstrumentFinalizers();
 
   // If a lifecycle hook scheduled a property change (via `this.set(...)`),
   // run another sync pass so the DOM reflects the change within this
@@ -4752,6 +4765,43 @@ const _componentDefinitionInstrumentedKeys = new WeakMap<object, Set<string>>();
 
 function _componentDefinitionInstrumentationPayload(name: string) {
   return { object: `component:${name}` };
+}
+
+function _initialRenderInstrumentationPayload(component: any) {
+  return component.instrumentDetails({ initialRender: true });
+}
+
+function _rerenderInstrumentationPayload(component: any) {
+  return component.instrumentDetails({ initialRender: false });
+}
+
+// Pending `render.component` finalizers for instances whose update pass has
+// fired willRender but whose DOM layout update has not yet been flushed.
+// Classic Ember finalizes `_instrumentStart('render.component', ...)` in
+// `didUpdateLayout`; the GXT equivalent is `__gxtPostRenderHooks` which fires
+// after the DOM sync completes. We drain this queue there.
+const _pendingRerenderInstrumentFinalizers: Array<() => void> = [];
+
+function _fireRerenderInstrumentStart(component: any): void {
+  if (!component || typeof component.instrumentDetails !== 'function') return;
+  try {
+    const finalizer = _gxtInstrumentStart(
+      'render.component',
+      _rerenderInstrumentationPayload,
+      component
+    );
+    if (finalizer) _pendingRerenderInstrumentFinalizers.push(finalizer);
+  } catch { /* ignore */ }
+}
+
+function _drainPendingRerenderInstrumentFinalizers(): void {
+  if (_pendingRerenderInstrumentFinalizers.length === 0) return;
+  // Drain before calling so any nested sync doesn't double-fire.
+  const list = _pendingRerenderInstrumentFinalizers.slice();
+  _pendingRerenderInstrumentFinalizers.length = 0;
+  for (const finalizer of list) {
+    try { finalizer(); } catch { /* ignore */ }
+  }
 }
 
 /**
@@ -8646,6 +8696,21 @@ function renderClassicComponent(
     // Normal initial render path with full lifecycle hooks
     // Lifecycle: willRender (in preRender state), then transition to hasElement, then willInsertElement
     // IMPORTANT: willRender is called while still in preRender state, with NO element
+    // Fire `render.component` instrumentation with initialRender=true payload,
+    // mirroring classic Ember's CurlyComponentManager.create() instrumentation
+    // at packages/@ember/-internals/glimmer/lib/component-managers/curly.ts:296.
+    // The finalizer runs after the template/layout has been rendered.
+    let _initialRenderInstrumentFinalizer: (() => void) | null = null;
+    if (instance && typeof (instance as any).instrumentDetails === 'function') {
+      try {
+        _initialRenderInstrumentFinalizer = _gxtInstrumentStart(
+          'render.component',
+          _initialRenderInstrumentationPayload,
+          instance
+        );
+      } catch { /* ignore */ }
+    }
+
     triggerLifecycleHook(instance, 'willRender');
 
     // Now transition to hasElement state and register the view element
@@ -8670,6 +8735,13 @@ function renderClassicComponent(
 
     // Render template into wrapper
     renderTemplateWithParentView(template, renderContext, wrapper, instance);
+
+    // Finalize the initial render instrumentation now that the layout has
+    // been rendered. Classic Ember finalizes in didRenderLayout — we match
+    // that timing here (immediately after renderTemplateWithParentView).
+    if (_initialRenderInstrumentFinalizer) {
+      try { _initialRenderInstrumentFinalizer(); } catch { /* ignore */ }
+    }
 
     // Queue didInsertElement / didRender to fire after the element is in the DOM.
     // The queue is flushed by flushAfterInsertQueue() which is called from the
