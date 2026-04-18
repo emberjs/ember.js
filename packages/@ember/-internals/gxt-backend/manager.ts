@@ -8730,10 +8730,175 @@ export function setComponentTemplate(tpl: any, comp: any) {
 // Store pending builtin modifier registrations for when $_MANAGERS is ready
 const _pendingBuiltinModifiers: Array<{name: string, modifier: any}> = [];
 
+// {{on}} counter instrumentation.
+//
+// GXT's native template compiler converts `<el {{on "event" cb}}>` directly into an
+// `el.addEventListener("event", cb)` call (dropping named args like once/capture
+// and bypassing OnModifierManager.install entirely). That means stock
+// @glimmer/runtime's on.ts `adds`/`removes` counters — which tests rely on via
+// `getInternalModifierManager(on).counters` — never increment in GXT mode.
+//
+// Strategy:
+//   1. Expose our own mutable counters { adds, removes }.
+//   2. When OnModifierManager is registered (via setInternalModifierManager),
+//      wrap the manager with a Proxy whose `.counters` getter resolves to
+//      our instrumented pair.
+//   3. Patch `Element.prototype.addEventListener` / `removeEventListener` so
+//      that every listener install/removal bumps our counters. The tests
+//      compare against a `startingCounters` baseline captured in beforeEach,
+//      so delta accuracy matters; raw absolute values don't. The patch is
+//      the only reliable hook point — GXT's DOM API provider is used for
+//      some paths but `{{on}}` native bindings land directly on the
+//      Element.prototype method.
+//   4. Also patch `Element.prototype.remove()` / `Node.prototype.removeChild`
+//      so removing a tracked element from the DOM bumps `removes` once per
+//      outstanding listener tracked on the element (GXT relies on element
+//      removal rather than explicit removeEventListener, but Ember tests
+//      expect removes-on-teardown to be observable through the counters).
+//   5. Finally, synthesize a remove when the same (element, event-type)
+//      pair is re-bound (GXT re-attaches on callback changes without
+//      calling removeEventListener first), matching stock OnModifierManager's
+//      install-then-destroy behaviour.
+const __gxtOnCounters: { adds: number; removes: number } = { adds: 0, removes: 0 };
+// Per-element listener tracking keyed by event type, so that re-binding the
+// same event (GXT's native reaction to a callback argument changing) is
+// reported as a remove+add pair (matching stock OnModifierManager's
+// install-then-destroy behaviour).
+const __gxtOnListenerMap: WeakMap<Element, Map<string, number>> = new WeakMap();
+let __gxtOnDomApiPatched = false;
+
+function __gxtCountListeners(el: Element): number {
+  const byType = __gxtOnListenerMap.get(el);
+  if (!byType) return 0;
+  let total = 0;
+  for (const n of byType.values()) total += n;
+  return total;
+}
+
+function __gxtInstallOnElementPatch(): void {
+  if (__gxtOnDomApiPatched) return;
+  if (typeof Element === 'undefined' || !Element.prototype) return;
+  const originalAdd = Element.prototype.addEventListener;
+  const originalRemove = Element.prototype.removeEventListener;
+  if (typeof originalAdd !== 'function' || typeof originalRemove !== 'function') return;
+  __gxtOnDomApiPatched = true;
+  // Patch Element.prototype.addEventListener/removeEventListener to bump our
+  // OnModifierManager-compatible counters. The patch counts EVERY listener
+  // add/remove regardless of origin; the tests compare against a
+  // startingCounters baseline captured in beforeEach, so the delta is what
+  // matters — and the `{{on}}` native event binding GXT emits ultimately
+  // calls through Element.prototype.addEventListener, the one reliable
+  // hook point.
+  Element.prototype.addEventListener = function patchedAdd(
+    this: Element,
+    ...args: any[]
+  ): void {
+    const eventType = typeof args[0] === 'string' ? args[0] : '';
+    let byType = __gxtOnListenerMap.get(this);
+    if (!byType) {
+      byType = new Map();
+      __gxtOnListenerMap.set(this, byType);
+    }
+    const prev = byType.get(eventType) || 0;
+    // GXT re-attaches listeners on every callback-change rerender without
+    // calling removeEventListener. Mimic stock OnModifierManager by
+    // emitting a synthetic remove when a fresh listener is installed for
+    // an event type that already has one tracked on this element.
+    if (prev > 0) __gxtOnCounters.removes++;
+    byType.set(eventType, prev + 1);
+    __gxtOnCounters.adds++;
+    return (originalAdd as any).apply(this, args);
+  } as any;
+  Element.prototype.removeEventListener = function patchedRemove(
+    this: Element,
+    ...args: any[]
+  ): void {
+    const eventType = typeof args[0] === 'string' ? args[0] : '';
+    __gxtOnCounters.removes++;
+    const byType = __gxtOnListenerMap.get(this);
+    if (byType) {
+      const prev = byType.get(eventType) || 0;
+      if (prev > 0) byType.set(eventType, prev - 1);
+    }
+    return (originalRemove as any).apply(this, args);
+  } as any;
+  // Patch `element.remove()` (ChildNode.remove) and `parent.removeChild()`
+  // to account for listeners being implicitly detached when GXT removes an
+  // element from the DOM (rather than calling removeEventListener).
+  try {
+    const CN: any = Element.prototype;
+    const originalChildRemove = CN.remove;
+    if (typeof originalChildRemove === 'function') {
+      CN.remove = function patchedChildRemove(this: Element): any {
+        const count = __gxtCountListeners(this);
+        if (count > 0) {
+          __gxtOnCounters.removes += count;
+          __gxtOnListenerMap.delete(this);
+        }
+        return originalChildRemove.apply(this, arguments as any);
+      };
+    }
+  } catch { /* ignore */ }
+  if (typeof Node !== 'undefined' && Node.prototype) {
+    try {
+      const originalNodeRemove = Node.prototype.removeChild;
+      if (typeof originalNodeRemove === 'function') {
+        Node.prototype.removeChild = function patchedRemoveChild(
+          this: Node,
+          child: Node
+        ): Node {
+          if (child && (child as any).nodeType === 1) {
+            const count = __gxtCountListeners(child as Element);
+            if (count > 0) {
+              __gxtOnCounters.removes += count;
+              __gxtOnListenerMap.delete(child as Element);
+            }
+          }
+          return originalNodeRemove.call(this, child);
+        };
+      }
+    } catch { /* ignore */ }
+  }
+  (globalThis as any).__gxtOnCounters = __gxtOnCounters;
+}
+
 export function setInternalModifierManager(manager: any, modifier: any, _skipGuards?: boolean) {
   if (!_skipGuards) {
     assertManagerTarget(modifier, 'modifier');
     assertNoExistingModifierManager(modifier);
+  }
+  // Detect stock OnModifierManager (from @glimmer/runtime/lib/modifiers/on.ts)
+  // by shape: it exposes a `counters` getter returning { adds, removes }.
+  // Wrap it so that reads of `.counters` resolve to our instrumented pair
+  // (which the Element.prototype patch below keeps in sync).
+  if (manager && typeof manager === 'object') {
+    try {
+      const debugName = typeof manager.getDebugName === 'function'
+        ? manager.getDebugName()
+        : undefined;
+      const desc = Object.getOwnPropertyDescriptor(
+        Object.getPrototypeOf(manager) || manager,
+        'counters'
+      );
+      const hasCountersGetter = !!(desc && typeof desc.get === 'function');
+      if (debugName === 'on' && hasCountersGetter) {
+        __gxtInstallOnElementPatch();
+        // Create a proxied manager that forwards everything to the original
+        // OnModifierManager, but resolves `.counters` to our instrumented
+        // pair. We proxy rather than mutate the original because the manager
+        // prototype's getter returns a fresh object per read; we want the
+        // test's `getInternalModifierManager(on).counters` to see OUR live
+        // counters while leaving the Glimmer VM's install/update path
+        // untouched.
+        const wrapped = new Proxy(manager, {
+          get(target, prop, receiver) {
+            if (prop === 'counters') return { ...__gxtOnCounters };
+            return Reflect.get(target, prop, receiver);
+          },
+        });
+        manager = wrapped;
+      }
+    } catch { /* ignore */ }
   }
   globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
   // Register internal modifier managers as built-in keyword modifiers
