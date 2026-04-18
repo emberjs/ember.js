@@ -1553,12 +1553,10 @@ function wasInstanceRenderHookFiredThisPass(instance: any): boolean {
 // Increment the pass ID at the start of each render cycle
 (globalThis as any).__gxtNewRenderPass = function() {
   _updateHookPassId++;
-  (globalThis as any).__dbg_newpass = ((globalThis as any).__dbg_newpass || 0) + 1;
 };
 
 function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   if (!instance || !args) return false;
-  (globalThis as any).__dbg_upd = ((globalThis as any).__dbg_upd || []).concat([{id: instance.elementId, pre_name: instance.name, argsName: args.name, wasAlreadyFired: wasInstanceUpdatedThisPass(instance), passId: _updateHookPassId}]);
 
   const argGetters = instance.__argGetters;
   const lastArgValues = instance.__lastArgValues;
@@ -2689,7 +2687,6 @@ function _installTriggerReRenderWrapper() {
     // must see the new values. Required for #11044.
     const attrsAlreadyFiredForEntry = entry.instance ? wasInstanceUpdatedThisPass(entry.instance) : false;
     const renderAlreadyFiredForEntry = entry.instance ? wasInstanceRenderHookFiredThisPass(entry.instance) : false;
-    (globalThis as any).__dbg_branch = ((globalThis as any).__dbg_branch || []).concat([{id:(entry.instance as any)?.elementId, name: (entry.instance as any)?.name, internal: (entry.instance as any)?.internalName, hasChanges, attrsAlreadyFired: attrsAlreadyFiredForEntry, renderAlreadyFired: renderAlreadyFiredForEntry, passId: _updateHookPassId}]);
     if ((hasChanges || forceThis) && entry.instance) {
       if (!attrsAlreadyFiredForEntry && !renderAlreadyFiredForEntry) {
         if (hasChanges) {
@@ -2718,7 +2715,6 @@ function _installTriggerReRenderWrapper() {
       // willUpdate/willRender still need to fire so user-defined hooks (which
       // may call `this.get('name')`) see the new arg values. This is critical
       // for #11044 where willRender syncs internal state from args.
-      (globalThis as any).__dbg_late = ((globalThis as any).__dbg_late || []).concat([{id: (entry.instance as any).elementId, name: (entry.instance as any).name, internal: (entry.instance as any).internalName}]);
       try {
         const viewEl = getViewElement(entry.instance) || (entry.instance as any).element || (entry.instance as any)._element;
         if (viewEl) {
@@ -2726,7 +2722,6 @@ function _installTriggerReRenderWrapper() {
           triggerLifecycleHook(entry.instance, 'willRender');
           markInstanceRenderHookFired(entry.instance);
           _updatedInstances.push(entry.instance);
-          (globalThis as any).__dbg_late_post = ((globalThis as any).__dbg_late_post || []).concat([{id: (entry.instance as any).elementId, name: (entry.instance as any).name, internal: (entry.instance as any).internalName}]);
         }
       } catch { /* ignore */ }
     } else if (hasNestedArgMutation && entry.instance &&
