@@ -1527,6 +1527,12 @@ function createComponentInstance(
 // to prevent double-firing from both updateInstanceWithNewArgs and __gxtSyncAllWrappers
 let _updateHookPassId = 0;
 const _instanceUpdatePassMap = new WeakMap<any, number>();
+// Separate tracking for willUpdate/willRender: these MUST fire after the arg
+// cells have been refreshed by __gxtSyncAllWrappers (so user's willRender body
+// reading `this.get('name')` sees the NEW value). didUpdateAttrs/didReceiveAttrs
+// fire earlier in updateInstanceWithNewArgs (the "attrs phase"). #11044 depends
+// on this ordering.
+const _instanceRenderHookPassMap = new WeakMap<any, number>();
 
 function markInstanceUpdated(instance: any): void {
   _instanceUpdatePassMap.set(instance, _updateHookPassId);
@@ -1536,13 +1542,23 @@ function wasInstanceUpdatedThisPass(instance: any): boolean {
   return _instanceUpdatePassMap.get(instance) === _updateHookPassId;
 }
 
+function markInstanceRenderHookFired(instance: any): void {
+  _instanceRenderHookPassMap.set(instance, _updateHookPassId);
+}
+
+function wasInstanceRenderHookFiredThisPass(instance: any): boolean {
+  return _instanceRenderHookPassMap.get(instance) === _updateHookPassId;
+}
+
 // Increment the pass ID at the start of each render cycle
 (globalThis as any).__gxtNewRenderPass = function() {
   _updateHookPassId++;
+  (globalThis as any).__dbg_newpass = ((globalThis as any).__dbg_newpass || 0) + 1;
 };
 
 function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   if (!instance || !args) return false;
+  (globalThis as any).__dbg_upd = ((globalThis as any).__dbg_upd || []).concat([{id: instance.elementId, pre_name: instance.name, argsName: args.name, wasAlreadyFired: wasInstanceUpdatedThisPass(instance), passId: _updateHookPassId}]);
 
   const argGetters = instance.__argGetters;
   const lastArgValues = instance.__lastArgValues;
@@ -2664,17 +2680,55 @@ function _installTriggerReRenderWrapper() {
     }
     // Pre-render lifecycle hooks (before DOM sync)
     // Order matches Ember's curly component manager: didUpdateAttrs, didReceiveAttrs, then willUpdate, willRender
-    // Skip if this instance already had update hooks fired this pass (from updateInstanceWithNewArgs
-    // or from a previous trackedArgCells entry for the same instance)
-    if ((hasChanges || forceThis) && entry.instance && !wasInstanceUpdatedThisPass(entry.instance)) {
-      if (hasChanges) {
-        triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
-        triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
+    // Skip attrs hooks if this instance already had them fired this pass (from
+    // updateInstanceWithNewArgs or from a previous trackedArgCells entry for the
+    // same instance). willUpdate/willRender use a SEPARATE marker so they always
+    // get a chance to fire AFTER arg cells have been refreshed in this phase —
+    // if updateInstanceWithNewArgs fires first (at handle-time), the cells may
+    // still hold stale values; this Phase-1 loop updates them, and willRender
+    // must see the new values. Required for #11044.
+    const attrsAlreadyFiredForEntry = entry.instance ? wasInstanceUpdatedThisPass(entry.instance) : false;
+    const renderAlreadyFiredForEntry = entry.instance ? wasInstanceRenderHookFiredThisPass(entry.instance) : false;
+    (globalThis as any).__dbg_branch = ((globalThis as any).__dbg_branch || []).concat([{id:(entry.instance as any)?.elementId, name: (entry.instance as any)?.name, internal: (entry.instance as any)?.internalName, hasChanges, attrsAlreadyFired: attrsAlreadyFiredForEntry, renderAlreadyFired: renderAlreadyFiredForEntry, passId: _updateHookPassId}]);
+    if ((hasChanges || forceThis) && entry.instance) {
+      if (!attrsAlreadyFiredForEntry && !renderAlreadyFiredForEntry) {
+        if (hasChanges) {
+          triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
+          triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
+        }
+        triggerLifecycleHook(entry.instance, 'willUpdate');
+        triggerLifecycleHook(entry.instance, 'willRender');
+        markInstanceUpdated(entry.instance);
+        markInstanceRenderHookFired(entry.instance);
+        _updatedInstances.push(entry.instance);
+      } else if (!renderAlreadyFiredForEntry) {
+        // Attrs phase already fired (via updateInstanceWithNewArgs at
+        // handle-time). Fire willUpdate/willRender now that arg cells have
+        // been updated in the Phase-1 loop above, so user hooks read fresh
+        // values.
+        triggerLifecycleHook(entry.instance, 'willUpdate');
+        triggerLifecycleHook(entry.instance, 'willRender');
+        markInstanceRenderHookFired(entry.instance);
+        _updatedInstances.push(entry.instance);
       }
-      triggerLifecycleHook(entry.instance, 'willUpdate');
-      triggerLifecycleHook(entry.instance, 'willRender');
-      markInstanceUpdated(entry.instance);
-      _updatedInstances.push(entry.instance);
+    } else if (entry.instance && attrsAlreadyFiredForEntry && !renderAlreadyFiredForEntry) {
+      // updateInstanceWithNewArgs already fired didUpdateAttrs/didReceiveAttrs
+      // BUT syncAll's own Phase-1 detected no changes (because the cells were
+      // already updated by the proxy setter during updateInstanceWithNewArgs).
+      // willUpdate/willRender still need to fire so user-defined hooks (which
+      // may call `this.get('name')`) see the new arg values. This is critical
+      // for #11044 where willRender syncs internal state from args.
+      (globalThis as any).__dbg_late = ((globalThis as any).__dbg_late || []).concat([{id: (entry.instance as any).elementId, name: (entry.instance as any).name, internal: (entry.instance as any).internalName}]);
+      try {
+        const viewEl = getViewElement(entry.instance) || (entry.instance as any).element || (entry.instance as any)._element;
+        if (viewEl) {
+          triggerLifecycleHook(entry.instance, 'willUpdate');
+          triggerLifecycleHook(entry.instance, 'willRender');
+          markInstanceRenderHookFired(entry.instance);
+          _updatedInstances.push(entry.instance);
+          (globalThis as any).__dbg_late_post = ((globalThis as any).__dbg_late_post || []).concat([{id: (entry.instance as any).elementId, name: (entry.instance as any).name, internal: (entry.instance as any).internalName}]);
+        }
+      } catch { /* ignore */ }
     } else if (hasNestedArgMutation && entry.instance &&
                !wasInstanceUpdatedThisPass(entry.instance)) {
       // Same-identity arg whose internals mutated — queue a post-render
@@ -9348,10 +9402,16 @@ export class CustomComponentManager {
       const ctx = typeof delegate?.getContext === 'function'
         ? delegate.getContext(component)
         : component;
-      return _createConstRef(ctx, 'this');
+      const r = _createConstRef(ctx, 'this');
+      // Ensure `debugLabel` is set so downstream `childRefFor` produces
+      // `this.Foo`-style labels for stock Glimmer VM error messages.
+      try { (r as any).debugLabel = 'this'; } catch { /* frozen */ }
+      return r;
     }
     // Defensive path for callers passing a raw instance (legacy tests).
-    return _createConstRef(state, 'this');
+    const r2 = _createConstRef(state, 'this');
+    try { (r2 as any).debugLabel = 'this'; } catch { /* frozen */ }
+    return r2;
   }
 
   getDestroyable(state: CustomComponentState): any {

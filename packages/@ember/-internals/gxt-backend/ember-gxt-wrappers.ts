@@ -2067,11 +2067,82 @@ function createEmberDc(original: Function) {
       if (managers?.component?.canHandle?.(componentValue)) {
         return renderComponent(componentValue, gxtArgs, ctx);
       }
+      // Non-component object/function (e.g., a helper or modifier function)
+      // was passed in dynamic-component position (`<this.Foo/>` / `<x.Foo/>`).
+      // Stock Ember throws here — emit the same message so `assert.throws(...)`
+      // catches it. We only throw for values that actually reached the user
+      // code (component-typeof, function without component manager), not for
+      // native GXT primitives which proceed through the fallback below.
+      const hasHelperMgr = !!findHelperManager(componentValue);
+      const hasModifierMgr = typeof componentValue === 'function' &&
+        g.INTERNAL_MODIFIER_MANAGERS && (() => {
+          let p: any = componentValue;
+          const v = new Set();
+          while (p && !v.has(p)) {
+            v.add(p);
+            if (g.INTERNAL_MODIFIER_MANAGERS.has(p)) return true;
+            try { p = Object.getPrototypeOf(p); } catch { break; }
+          }
+          return false;
+        })();
+      // Do not flag plain POJOs / arrays as errors — only functions/classes
+      // that look like helpers/modifiers, which is the stock-Ember test case.
+      if (hasHelperMgr || hasModifierMgr) {
+        const debugName = _dynamicDebugPath(componentGetter) || 'this.Foo';
+        const valLabel = _dynamicDebugValueLabel(componentValue);
+        const err = new Error(
+          `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${debugName}>\` or \`{{${debugName}}}\`, and the incorrect definition is the value at the path \`${debugName}\`, which was: ${valLabel}`
+        );
+        const captureFn = g.__captureRenderError;
+        if (typeof captureFn === 'function') captureFn(err);
+        throw err;
+      }
     }
 
     // Fall back to original GXT $_dc for native GXT components
     return original(componentGetter, gxtArgs, ctx);
   };
+}
+
+/**
+ * Parse `this.xxx` / `@xxx` / bare-identifier paths out of a compiled getter
+ * function for use in dynamic-invocation error messages. Returns null if the
+ * path cannot be determined.
+ *
+ * Note: under bundler-minified ESM, `this` inside a `() => this.Foo` arrow
+ * may be rewritten to a captured local (e.g. a `const _this2 = this` at the
+ * top of a class method). So when we see a bare identifier prefix followed
+ * by `.Prop`, we normalize it back to `this.Prop` rather than leaking the
+ * mangled name into user-facing errors. Paths starting with `$a.` are Ember
+ * `@arg` references — rewrite to `@arg` form.
+ */
+function _dynamicDebugPath(fn: any): string | null {
+  if (typeof fn !== 'function') return null;
+  let src: string;
+  try { src = String(fn); } catch { return null; }
+  // GXT emits `() => this.Foo` / `() => $a.helper` / `() => _this2.foo` style.
+  // Match `identifier.Path` with optional optional-chaining.
+  const m = /(?:=>|return)\s*([a-zA-Z_$][\w$]*)(\?\.|\.)((?:[\w$](?:\?\.|\.)?)+)/.exec(src);
+  if (!m) return null;
+  const head = m[1]!;
+  const tail = m[3]!.split('?.').join('.');
+  // @args form
+  if (head === '$a') return '@' + tail;
+  // `this.` form — leave as-is
+  if (head === 'this') return 'this.' + tail;
+  // Any other head (typically a minified `_this2` / `const` / `_` local) →
+  // treat as `this.` for stock-Ember error-message compatibility.
+  return 'this.' + tail;
+}
+
+function _dynamicDebugValueLabel(val: any): string {
+  if (val === null || val === undefined) return String(val);
+  if (typeof val === 'function') return val.name || '(unknown function)';
+  if (typeof val === 'object') {
+    const name = val.constructor?.name;
+    return name ? `[object ${name}]` : '[object]';
+  }
+  return String(val);
 }
 
 // =============================================================================
