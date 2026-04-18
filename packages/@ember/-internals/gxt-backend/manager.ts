@@ -831,6 +831,18 @@ function getCachedOrCreateInstance(
 
   // No matching instance - create a new one
   const instance = createComponentInstance(factory, args, currentParentView, owner);
+  // Tag the instance with the current sync cycle id when created during
+  // gxtSyncDomNow. Used by __gxtDestroyUnclaimedPoolEntries Phase 3 to
+  // decide whether to fire willDestroy synchronously — instances created
+  // within the CURRENT cycle are part of the new render (or phantoms
+  // superseded within the same cycle) and their willDestroy timing
+  // doesn't affect the user-visible test assertion that cares about
+  // destroyed-before-syncEnd ordering. Only fire sync-willDestroy for
+  // instances that existed BEFORE this sync cycle (they represent the
+  // actual each-row rows being torn down).
+  if ((globalThis as any).__gxtSyncing) {
+    instance.__gxtCreatedInSyncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+  }
 
   // Store thunkId on instance for dedup during re-evaluations
   if (thunkId) {
@@ -1042,9 +1054,12 @@ function createComponentInstance(
       }
       Object.defineProperty(instance, 'willDestroy', {
         value: function(this: any) {
-          if ((globalThis as any).__TRACE_DESTROY) {
-            console.log('[WILL-DESTROY] fired on', this?.componentName || this?.constructor?.name || 'Anon', 'everInserted=', this.__gxtEverInserted, 'elementId=', this.elementId);
-          }
+          // Idempotency: the sync willDestroy fire in Phase 3 of
+          // __gxtDestroyUnclaimedPoolEntries may beat the backburner-scheduled
+          // destructor. The guard makes the second call a no-op so user's
+          // pushHook/removeComponent doesn't double-emit.
+          if (this.__gxtWillDestroyFired) return;
+          this.__gxtWillDestroyFired = true;
           if (this.__gxtEverInserted === false || this.__gxtEverInserted === undefined) {
             // Never actually rendered — skip the user override but invoke
             // the Ember base implementation (if distinct) to keep core teardown
@@ -3063,24 +3078,40 @@ let _preRerenderSnapshot: Set<any> = new Set();
   }
 
   // Phase 3: destroy (fires willDestroy)
+  //
+  // During gxtSyncDomNow an outer Ember run loop is usually active (opened
+  // by the force-rerender path via classicRoot.render()). `instance.destroy()`
+  // schedules the willDestroy destructor onto backburner's 'actions' queue;
+  // that queue only flushes when the OUTERMOST run loop ends — which happens
+  // AFTER gxtSyncDomNow returns AND AFTER runTask's finally clauses AND AFTER
+  // the test's next synchronous `assertHooks` inspects `this.hooks`. The net
+  // effect is that each-row willDestroys land in the WRONG assertion's hook
+  // list (observed in the `components rendered from {{each}} have correct
+  // life-cycle hooks to be called` test).
+  //
+  // Fire the user's `willDestroy` synchronously here, immediately after
+  // `instance.destroy()` has transitioned the instance to DESTROYING state.
+  // The wrapper installed in createComponentInstance guards double-fire via
+  // __gxtWillDestroyFired, so the backburner-scheduled destructor call later
+  // is a safe no-op.
+  //
+  // Scope the sync-fire to instances that existed BEFORE this sync cycle
+  // (`__gxtCreatedInSyncCycle !== currentCycle`). In-cycle instances are
+  // either phantoms superseded by a force-rerender or newly-rendered
+  // inverse-branch components; their willDestroy timing should match the
+  // stock deferred flow because the test either (a) doesn't count them in
+  // the current assertion (phantoms are filtered by the everInserted gate
+  // in the wrapper) or (b) expects them to survive to the afterEach
+  // teardown where the deferred destructor fires normally.
+  const currentCycle = (globalThis as any).__gxtSyncCycleId || 0;
   for (const instance of unclaimed) {
     try {
-      if ((globalThis as any).__TRACE_DESTROY) {
-        try {
-          const EmberRunloop = (globalThis as any).Ember?.run;
-          const currentRL = EmberRunloop?._getCurrentRunLoop?.();
-          console.log('[DESTROY-UNCLAIMED] phase3 destroy:',
-            instance?.componentName || instance?.constructor?.name || 'Anon',
-            'elementId=', instance?.elementId,
-            'syncing=', (globalThis as any).__gxtSyncing,
-            'currentRL=', !!currentRL);
-        } catch {}
-      }
+      const wasInPriorCycle = instance.__gxtCreatedInSyncCycle !== currentCycle;
       if (typeof instance.destroy === 'function' && !instance.isDestroyed && !instance.isDestroying) {
         instance.destroy();
       }
-      if ((globalThis as any).__TRACE_DESTROY) {
-        console.log('[DESTROY-UNCLAIMED] phase3 done, isDestroyed=', instance?.isDestroyed, 'isDestroying=', instance?.isDestroying);
+      if (wasInPriorCycle && typeof instance.willDestroy === 'function' && !instance.__gxtWillDestroyFired) {
+        try { instance.willDestroy(); } catch { /* user override may throw; captured elsewhere */ }
       }
     } catch { /* ignore */ }
   }
