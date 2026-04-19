@@ -1481,6 +1481,9 @@ importers:
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../../@glimmer/interfaces
+      '@glimmer/syntax':
+        specifier: workspace:*
+        version: link:../../@glimmer/syntax
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util

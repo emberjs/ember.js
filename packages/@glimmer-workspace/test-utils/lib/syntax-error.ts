@@ -1,3 +1,5 @@
+import { formatSyntaxError } from '@glimmer/syntax';
+
 export function syntaxErrorFor(
   message: string,
   code: string,
@@ -5,13 +7,7 @@ export function syntaxErrorFor(
   line: number,
   column: number
 ): Error {
-  let quotedCode = code ? `\n\n|\n|  ${code.split('\n').join('\n|  ')}\n|\n\n` : '';
-
-  let error = new Error(
-    `${message}: ${quotedCode}(error occurred in '${moduleName}' @ line ${line} : column ${column})`
-  );
-
+  const error = new Error(formatSyntaxError(message, code, moduleName, line, column));
   error.name = 'SyntaxError';
-
   return error;
 }
