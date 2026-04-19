@@ -71,7 +71,7 @@ function remove<T extends object>(collection: OneOrMany<T>, item: T, message: st
     if (index !== lastIndex) {
       collection[index] = collection[lastIndex] as T;
     }
-    collection.pop();
+    collection.length = lastIndex;
     return collection;
   } else {
     return null;
