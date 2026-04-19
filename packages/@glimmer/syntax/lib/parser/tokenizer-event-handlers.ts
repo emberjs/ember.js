@@ -8,7 +8,7 @@ import type * as ASTv1 from '../v1/api';
 
 import print from '../generation/print';
 import * as src from '../source/api';
-import { generateSyntaxError } from '../syntax-error';
+import { type GlimmerSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
 import Walker from '../traversal/walker';
 import { buildLegacyPath } from '../v1/legacy-interop';
@@ -583,29 +583,56 @@ const syntax: Syntax = {
 // ============================================================================
 
 /**
- * Convert a Peggy parse error into a GlimmerSyntaxError with module name,
- * line, column, and source snippet attached via the SourceSpan.
+ * Convert a Peggy parse error into a GlimmerSyntaxError.
+ *
+ * Peggy's built-in `err.format(sources)` already produces a Rust-style
+ * diagnostic with the full source line and a caret underline, so we prefer
+ * it over re-implementing the same thing. The one requirement is that
+ * err.location.source must equal the entry in the sources array; custom
+ * `error(msg, loc)` calls in the grammar produce synthetic locations without
+ * a .source value, so we inject it here before calling format().
+ *
+ * For a tiny set of errors we want a zero-length span (attribute name
+ * errors where Peggy's span includes trailing whitespace). Those still go
+ * through generateSyntaxError so the SourceSpan is precise.
  */
 function convertParseError(e: Error, source: src.Source): Error {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const err = e as any;
   if (err.name !== 'SyntaxError' || !err.location) return e;
 
-  // A small set of grammar errors target the offending character rather than
-  // the span peggy matched (which includes trailing whitespace). Back up one
-  // char from the end and return a zero-length span at that offset.
+  // Inject the module name as the error's location source so Peggy's format()
+  // can look it up and show the full source line context.
+  if (!err.location.source) {
+    err.location.source = source.module;
+  }
+
+  // For certain errors the Peggy-matched span includes trailing whitespace;
+  // back up one char so .location points at the offending character precisely.
   const zeroLengthErrors = [
     '" is not a valid character within attribute names',
     'attribute name cannot start with equals sign',
   ];
-  if (zeroLengthErrors.includes(err.message)) {
-    const errorOffset = err.location.end.offset - 1;
-    const span = src.SourceSpan.forCharPositions(source, errorOffset, errorOffset);
-    return generateSyntaxError(err.message, span);
-  }
+  const spanOffset = zeroLengthErrors.includes(err.message) ? err.location.end.offset - 1 : null;
 
-  const span = peggySpanToSourceSpan(source, err.location);
-  return generateSyntaxError(err.message, span);
+  // Use Peggy's formatter: shows "Error: msg\n --> file:line:col\n  |\nN | full-line\n  |   ^"
+  const formatted: string = err.format
+    ? (err.format([{ source: source.module, text: source.source }]) as string)
+    : err.message;
+
+  // Strip the leading "Error: " prefix that Peggy adds so the message reads as
+  // a plain string (matching the convention for all other GlimmerSyntaxErrors).
+  const message = formatted.startsWith('Error: ') ? formatted.slice(7) : formatted;
+
+  const span =
+    spanOffset !== null
+      ? src.SourceSpan.forCharPositions(source, spanOffset, spanOffset)
+      : peggySpanToSourceSpan(source, err.location);
+  const glimmerErr = new Error(message) as GlimmerSyntaxError;
+  glimmerErr.name = 'SyntaxError';
+  glimmerErr.location = span;
+  glimmerErr.code = span.asString();
+  return glimmerErr;
 }
 
 // ============================================================================
