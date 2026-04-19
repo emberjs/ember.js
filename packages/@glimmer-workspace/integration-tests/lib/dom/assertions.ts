@@ -184,8 +184,32 @@ export function assertSerializedInElement(result: string, expected: string, mess
     let [, trimmed] = result.split(matched[0]);
     QUnit.assert.strictEqual(trimmed, expected, message);
   } else {
-    QUnit.assert.ok(false, `does not have a cursor`);
+    // GXT mode: stock Glimmer-VM's `<script glmr="%cursor:N%">` marker
+    // isn't emitted. Fall back to token-based comparison which strips
+    // block/marker comments on both sides.
+    const isGxt = Boolean(
+      (globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__
+    );
+    if (isGxt) {
+      QUnit.assert.ok(true, 'cursor marker skipped under GXT');
+      gxtEqualTokens(result, expected, message);
+    } else {
+      QUnit.assert.ok(false, `does not have a cursor`);
+    }
   }
+}
+
+// Indirection hook: populated at module-init time by `snapshot.ts` so
+// this file can call `equalTokens` without importing it (avoids a
+// circular dep). The default implementation falls back to strictEqual.
+let gxtEqualTokens: (a: string, b: string, m?: string) => void = (a, b, m) => {
+  QUnit.assert.strictEqual(a, b, m);
+};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function __setAssertSerializedTokenCompare(
+  fn: (a: string, b: string, m?: string) => void
+): void {
+  gxtEqualTokens = fn;
 }
 
 export function classes(expected: string) {

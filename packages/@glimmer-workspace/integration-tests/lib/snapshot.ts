@@ -4,6 +4,7 @@ import { COMMENT_NODE, TEXT_NODE } from '@glimmer/constants';
 import { castToSimple, unwrap } from '@glimmer/debug-util';
 import { tokenize } from 'simple-html-tokenizer';
 
+import { __setAssertSerializedTokenCompare } from './dom/assertions';
 import { replaceHTML, toInnerHTML } from './dom/simple-utils';
 
 export type IndividualSnapshot = 'up' | 'down' | SimpleNode;
@@ -288,3 +289,8 @@ class SnapshotIterator {
     return unwrap(token);
   }
 }
+
+// Install the callback `assertSerializedInElement` uses when it detects
+// GXT mode, so it can defer to our `equalTokens` (which strips block
+// markers / merges adjacent text) instead of a raw byte-exact compare.
+__setAssertSerializedTokenCompare((a, b, m) => equalTokens(a, b, m ?? null));
