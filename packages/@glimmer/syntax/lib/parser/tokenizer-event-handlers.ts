@@ -1,7 +1,7 @@
 import type { Nullable } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
+import { HTML5NamedCharRefs } from 'simple-html-tokenizer';
 import { parseTemplate } from '../hbs-parser/index.js';
-import HTML5NamedCharRefs from './html5-named-char-refs.js';
 
 import type { NodeVisitor } from '../traversal/visitor';
 import type * as ASTv1 from '../v1/api';
@@ -18,9 +18,9 @@ import publicBuilder from '../v1/public-builders';
 // Entity decoding helper
 // ============================================================================
 
-// Full HTML5 entity decoding, covering ~2200 named entities plus numeric
-// &#dd; and &#xHH; forms. The named-entity table is vendored from the HTML5
-// spec (see ./html5-named-char-refs.js).
+// Full HTML5 entity decoding: covers ~2200 named entities plus numeric
+// &#dd; and &#xHH; forms. The named-entity map comes from
+// simple-html-tokenizer, which maintains the HTML5 reference table.
 const ENTITY_RE = /&(#[xX]([0-9a-fA-F]+)|#([0-9]+)|([A-Za-z][A-Za-z0-9]*));/g;
 
 function decodeEntities(text: string): string {

@@ -23,7 +23,6 @@ const testDependencies = [
   '@simple-dom/serializer',
   '@simple-dom/void-map',
   'expect-type',
-  'simple-html-tokenizer',
 ];
 
 let configs = [
@@ -305,6 +304,7 @@ export function hiddenDependencies() {
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'
     ),
+    'simple-html-tokenizer': entrypoint(findFromProject('simple-html-tokenizer'), 'module').path,
   };
 }
 

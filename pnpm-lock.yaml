@@ -155,7 +155,7 @@ importers:
         version: 2.1.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@6.11.2(@babel/core@7.29.0)(@types/node@22.19.15))
+        version: 3.3.3(ember-cli@6.11.2(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -2156,6 +2156,9 @@ importers:
       '@glimmer/wire-format':
         specifier: workspace:*
         version: link:../wire-format
+      simple-html-tokenizer:
+        specifier: ^0.5.11
+        version: 0.5.11
     devDependencies:
       '@glimmer/debug-util':
         specifier: workspace:*
@@ -2797,7 +2800,7 @@ importers:
         version: 3.0.0
       ember-cli-dependency-checker:
         specifier: ^3.3.3
-        version: 3.3.3(ember-cli@6.11.2(@babel/core@7.29.0)(@types/node@22.19.15))
+        version: 3.3.3(ember-cli@6.11.2(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
       ember-cli-deprecation-workflow:
         specifier: ^3.4.0
         version: 3.4.0(ember-source@)
@@ -17377,7 +17380,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@6.11.2(@babel/core@7.29.0)(@types/node@22.19.15)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@6.11.2(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)):
     dependencies:
       chalk: 2.4.2
       ember-cli: 6.11.2(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
