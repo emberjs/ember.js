@@ -1361,6 +1361,46 @@ function createEmberTag(original: Function) {
     // modifier + effect gives us a place to special-case undefined/null/false
     // and call removeAttribute instead.
     let patchedTagProps = tagProps;
+
+    // Modifier vs. text-child ordering fix.
+    //
+    // GXT's events array in tagProps[2] stores modifiers (key "0") and text
+    // content children (key "1") together. GXT's native $_tag processes them
+    // in array order, but then performs a post-children-added textContent
+    // set for single-text children AFTER firing onCreated callbacks. This
+    // means a `{{(modifier "replace")}}` that sets innerHTML runs BEFORE
+    // the static text child is written, and the text-content write then
+    // clobbers the modifier's work.
+    //
+    // Ember semantics (from the `(modifier)` keyword RFC + custom modifier
+    // manager tests): modifiers observe and override the final rendered
+    // element, so they must run AFTER static children are in place. We
+    // achieve this by moving all text-child entries (key "1") BEFORE any
+    // modifier entries (non-"1") in the events array. GXT then renders text
+    // first, and modifiers see the complete element when they run. Only
+    // applies when both kinds are present, so the common case (modifiers
+    // only, or text only) is untouched.
+    if (tagProps && tagProps !== gxtModule.$_edp && Array.isArray(tagProps[2])) {
+      const events = tagProps[2];
+      let hasText = false;
+      let hasModifier = false;
+      for (const e of events) {
+        if (Array.isArray(e)) {
+          if (e[0] === '1') hasText = true;
+          else hasModifier = true;
+          if (hasText && hasModifier) break;
+        }
+      }
+      if (hasText && hasModifier) {
+        const textEntries: any[] = [];
+        const otherEntries: any[] = [];
+        for (const e of events) {
+          if (Array.isArray(e) && e[0] === '1') textEntries.push(e);
+          else otherEntries.push(e);
+        }
+        patchedTagProps = [tagProps[0], tagProps[1], [...textEntries, ...otherEntries], tagProps[3]];
+      }
+    }
     if (tagProps && tagProps !== gxtModule.$_edp && Array.isArray(tagProps[3])) {
       const parentFw = tagProps[3];
       const parentFwAttrs = parentFw[1];
@@ -1380,7 +1420,14 @@ function createEmberTag(original: Function) {
             }
           }
           if (capturedAttrs.length > 0) {
-            const localEvents = Array.isArray(tagProps[2]) ? [...tagProps[2]] : [];
+            // Start from whatever events list the earlier modifier/text
+            // reorder left us with — otherwise we'd drop that reorder.
+            const sourceEvents = Array.isArray(patchedTagProps[2])
+              ? patchedTagProps[2]
+              : Array.isArray(tagProps[2])
+                ? tagProps[2]
+                : [];
+            const localEvents = [...sourceEvents];
             const onCreated = (el: Element) => {
               for (const [aKey, aGetter] of capturedAttrs) {
                 effectFn(() => {
