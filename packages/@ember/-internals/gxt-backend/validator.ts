@@ -887,18 +887,45 @@ function currentTagRevision(tag: any, visited = new Set<any>(), stack?: Set<any>
     }
 
     // Check updateTag dependencies (e.g., autoComputed links propertyTag → trackTag)
+    // Buffered subtag semantics (classic @glimmer/validator): when updateTag
+    // was called, we captured the deps' current revision as `_subBufferRevision`.
+    // While deps stay <= buffer, they are masked and we report the tag's
+    // `_lastValue` (classic's `lastValue` on MonomorphicTagImpl). Once a dep
+    // moves past the buffer, the mask clears one-time: we bump _lastValue to
+    // the dep's revision and drop the buffer so subsequent reads don't re-mask.
     const deps = updatableTagDependencies.get(tag);
     if (deps) {
       const bufferRev = tag._subBufferRevision;
+      let hasBuffer = typeof bufferRev === 'number';
+      let depMaxOverBuffer = 0;
+      let maxDepRev = 0;
       for (const d of deps) {
         const r = currentTagRevision(d, visited, activeStack);
-        // Buffered update: any dependency revision up to and including
-        // the buffer value is masked. Only strictly newer revisions break
-        // the buffer.
-        if (typeof bufferRev === 'number' && r <= bufferRev) {
+        if (r > maxDepRev) maxDepRev = r;
+        if (hasBuffer && r <= bufferRev) {
+          // masked — dep is within buffer window, use _lastValue below
           continue;
         }
-        if (r > max) max = r;
+        if (r > depMaxOverBuffer) depMaxOverBuffer = r;
+      }
+      if (hasBuffer) {
+        if (depMaxOverBuffer > 0) {
+          // A dep broke past the buffer: classic semantics clear the buffer
+          // and raise lastValue to the new dep revision.
+          const newLast = Math.max(tag._lastValue || 0, depMaxOverBuffer);
+          tag._lastValue = newLast;
+          tag._subBufferRevision = undefined;
+          if (newLast > max) max = newLast;
+        } else {
+          // All deps masked — report the previously stored lastValue so
+          // downstream consumers (e.g. observer snapshots taken before the
+          // buffer was set up) don't see spurious bumps.
+          const lastValue = tag._lastValue || 0;
+          if (lastValue > max) max = lastValue;
+        }
+      } else {
+        // No buffer — include the raw dep max.
+        if (maxDepRev > max) max = maxDepRev;
       }
     }
 
@@ -1028,20 +1055,44 @@ export function updateTag(outer: any, inner: any) {
   // Buffered update semantics (matches classic @glimmer/validator):
   // capture the inner tag's current revision at update time, so that
   // validateTag(outer, snapshot) remains valid until inner is dirtied
-  // again AFTER the update call.
+  // again AFTER the update call. Classic buffers unconditionally; we do
+  // the same so tags returned from `tagFor()` (GXT Cells) get the same
+  // treatment as `_isUpdatable` tags from `createUpdatableTag()`.
   //
-  // We only apply buffering to tags explicitly flagged _isUpdatable so
-  // this doesn't alter invalidation semantics for tagFor-based property
-  // tags used by alias.ts / computed.ts.
-  if (outer && typeof outer === 'object' && outer._isUpdatable === true) {
-    outer._subBufferRevision = currentTagRevision(inner);
+  // This is essential for the "observers that do not consume computed
+  // properties still work" invariant: when a CP's getter is finally read
+  // and `updateTag(cpTag, chainOfDepKeys)` fires, the deps may have
+  // already been dirtied at earlier revisions. Without buffering, those
+  // older dep revisions leak through `currentTagRevision(cpTag)` and make
+  // an observer snapshot taken before any mutation look invalid.
+  //
+  // Classic also maintains a monotonically-increasing `lastValue` that
+  // records the outer's reported revision. We seed it from the current
+  // revision so downstream consumers continue to see at least what they
+  // saw before this updateTag call (avoiding "revision moves down" bugs
+  // when buffering masks a dep that previously propagated).
+  if (outer && typeof outer === 'object') {
+    const innerRev = currentTagRevision(inner);
+    const prevLast = outer._lastValue || 0;
+    // Seed lastValue to the max of its previous value and the outer's own
+    // raw dirty/constituent revision. This preserves monotonicity of
+    // `currentTagRevision(outer)` across updateTag calls.
+    const ownDirty = tagDirtyRevision.get(outer) || 0;
+    outer._lastValue = Math.max(prevLast, ownDirty);
+    outer._subBufferRevision = innerRev;
     outer._subBufferedAt = globalRevisionCounter;
   }
 
-  // If the outer tag has an update method, call it
-  if (typeof outer.update === 'function') {
-    outer.update(inner);
-  }
+  // NOTE: We intentionally do NOT call `outer.update(inner)` here, even when
+  // outer exposes an `update` method. Classic @glimmer/validator's updateTag
+  // only sets a subtag reference and a buffered revision — it does NOT bump
+  // the outer tag's own revision. GXT Cells returned from `tagFor()` DO have
+  // an `update(value)` method, but calling it writes to the cell, which
+  // bumps its revision and spuriously invalidates observers that registered
+  // on the outer tag (e.g. computed-property observers firing when only an
+  // upstream dep changed, before the CP was ever consumed). Dependency
+  // tracking below (updatableTagDependencies + buffered revision above) is
+  // sufficient to propagate real invalidations via currentTagRevision().
 
   // Store the dependency relationship for validation
   // inner can be a single tag or an array of tags (from combine())
