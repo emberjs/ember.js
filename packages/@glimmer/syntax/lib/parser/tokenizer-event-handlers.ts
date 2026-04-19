@@ -23,11 +23,13 @@ import publicBuilder from '../v1/public-builders';
 // simple-html-tokenizer, which maintains the HTML5 reference table.
 const ENTITY_RE = /&(#[xX]([0-9a-fA-F]+)|#([0-9]+)|([A-Za-z][A-Za-z0-9]*));/g;
 
+const NAMED_CHAR_REFS = HTML5NamedCharRefs as Record<string, string | undefined>;
+
 function decodeEntities(text: string): string {
   return text.replace(ENTITY_RE, (match, _body, hex, dec, name) => {
     if (hex !== undefined) return String.fromCodePoint(parseInt(hex, 16));
     if (dec !== undefined) return String.fromCodePoint(parseInt(dec, 10));
-    return HTML5NamedCharRefs[name] ?? match;
+    return NAMED_CHAR_REFS[name] ?? match;
   });
 }
 
@@ -581,69 +583,29 @@ const syntax: Syntax = {
 // ============================================================================
 
 /**
- * Convert a parse error from the Peggy grammar into a GlimmerSyntaxError
- * with the expected format (module name, line, column, code snippet).
- *
- * The Jison-compatible error path exists because Prettier's Handlebars
- * printer reads `err.hash.loc` and the `Parse error on line N:\n…\n^`
- * message shape — keep that format intact when touching this function.
+ * Convert a Peggy parse error into a GlimmerSyntaxError with module name,
+ * line, column, and source snippet attached via the SourceSpan.
  */
 function convertParseError(e: Error, source: src.Source): Error {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const err = e as any;
+  if (err.name !== 'SyntaxError' || !err.location) return e;
 
-  if (err.name === 'SyntaxError' && err.location) {
-    // Peggy reports 1-based columns in its printed message; Glimmer uses 0-based.
-    const line = err.location.start.line;
-    const column = err.location.start.column - 1;
-
-    // For certain error messages, produce a zero-length span at the offending
-    // character. Peggy's match spans whitespace, so we back up one char from
-    // the end position.
-    const zeroLengthErrors = [
-      '" is not a valid character within attribute names',
-      'attribute name cannot start with equals sign',
-    ];
-    if (zeroLengthErrors.includes(err.message)) {
-      const errorOffset = err.location.end.offset - 1;
-      const span = src.SourceSpan.forCharPositions(source, errorOffset, errorOffset);
-      return generateSyntaxError(err.message, span);
-    }
-
-    // Prettier consumes a Jison-shaped error for "Expecting ...". Preserve it.
-    if (err.message.startsWith("Expecting '")) {
-      const inputLines = source.source.split('\n');
-      const sourceLine = inputLines.slice(0, line).join('');
-      const pointer =
-        '-'.repeat(sourceLine.length - (inputLines[line - 1] || '').length + column) + '^';
-      const fullMsg = `Parse error on line ${line}:\n${sourceLine}\n${pointer}\n${err.message}`;
-      const jisonError = new Error(fullMsg);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (jisonError as any).hash = {
-        text: '',
-        line: line - 1,
-        loc: { first_line: line, last_line: line, first_column: column, last_column: column },
-      };
-      return jisonError;
-    }
-
-    const span = peggySpanToSourceSpan(source, err.location);
+  // A small set of grammar errors target the offending character rather than
+  // the span peggy matched (which includes trailing whitespace). Back up one
+  // char from the end and return a zero-length span at that offset.
+  const zeroLengthErrors = [
+    '" is not a valid character within attribute names',
+    'attribute name cannot start with equals sign',
+  ];
+  if (zeroLengthErrors.includes(err.message)) {
+    const errorOffset = err.location.end.offset - 1;
+    const span = src.SourceSpan.forCharPositions(source, errorOffset, errorOffset);
     return generateSyntaxError(err.message, span);
   }
 
-  // Errors already reshaped to Jison form (see above) — unwrap the message.
-  if (err.hash && err.hash.loc) {
-    const startOffset =
-      source.offsetFor(err.hash.loc.first_line, err.hash.loc.first_column).offset ?? 0;
-    const span = src.SourceSpan.forCharPositions(source, startOffset, startOffset);
-
-    // Extract the core message from "Parse error on line N:\nMESSAGE"
-    const match = err.message.match(/^Parse error on line \d+:\n([\s\S]*)$/);
-    const message = match ? match[1] : err.message;
-    return generateSyntaxError(message, span);
-  }
-
-  return e;
+  const span = peggySpanToSourceSpan(source, err.location);
+  return generateSyntaxError(err.message, span);
 }
 
 // ============================================================================

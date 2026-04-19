@@ -378,17 +378,13 @@ MustacheStmt
 // which Prettier's getErrorMessage uses to strip the (error occurred ...) suffix.
 EmptyMustacheError
   = startPos:Pos "{{" StripFlag errPos:Pos "~"* "}}" endPos:Pos {
-      let errStart = { line: errPos.start.line, column: errPos.start.column };
-      let errEnd = { line: endPos.start.line, column: endPos.start.column };
-      error("Expecting 'OPEN_SEXPR', 'ID', 'OPEN_ARRAY', 'STRING', 'NUMBER', 'BOOLEAN', 'UNDEFINED', 'NULL', 'DATA', got 'CLOSE'", { start: errStart, end: errEnd });
+      error("Empty mustache {{}} is not valid; mustaches must contain an expression", { start: errPos.start, end: endPos.start });
     }
 
 // Error: mustache with expression but invalid close (single brace instead of double)
 InvalidMustacheCloseError
   = startPos:Pos "{{" StripFlag _ Expression Params HashOpt _ errPos:Pos "}" endPos:Pos !"}" {
-      let errStart = { line: errPos.start.line, column: errPos.start.column };
-      let errEnd = { line: endPos.start.line, column: endPos.start.column };
-      error("Expecting 'CLOSE_RAW_BLOCK', 'CLOSE', 'CLOSE_UNESCAPED', 'OPEN_SEXPR', 'CLOSE_SEXPR', 'ID', 'OPEN_ARRAY', 'CLOSE_ARRAY', 'OPEN_BLOCK_PARAMS', 'STRING', 'NUMBER', 'BOOLEAN', 'UNDEFINED', 'NULL', 'DATA', 'SEP', 'PRIVATE_SEP', got 'INVALID'", { start: errStart, end: errEnd });
+      error("Mustache was not properly closed; expected double closing brace", { start: errPos.start, end: endPos.start });
     }
 
 // Partials: {{> foo}} — not supported in Glimmer
@@ -1410,7 +1406,7 @@ DataName
       return buildPath(true, segments, location());
     }
   / "@" {
-      error("Expecting 'ID'");
+      error("Expected a name after @ (e.g. @foo)");
     }
 
 Path
