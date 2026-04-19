@@ -11,7 +11,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
 import type { NTuple } from '@glimmer-workspace/test-utils';
-import { expect, isPresent, localAssert, unwrap } from '@glimmer/debug-util';
+import { expect, isPresent, assert, unwrap } from '@glimmer/debug-util';
 import { destroy } from '@glimmer/destroyable';
 import { inTransaction } from '@glimmer/runtime';
 import { clearElement, dict } from '@glimmer/util';
@@ -401,7 +401,7 @@ export class RenderTest implements IRenderTest {
       // couldn't stringify, possibly has a circular dependency
     }
 
-    localAssert(
+    assert(
       !!this.delegate.renderComponent,
       'Attempted to render a component, but the delegate did not implement renderComponent'
     );

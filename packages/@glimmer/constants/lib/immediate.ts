@@ -1,4 +1,4 @@
-import { localAssert } from '@glimmer/debug-util';
+import { assert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 /*
@@ -71,7 +71,7 @@ export function isSmallInt(value: number) {
 
 export function encodeNegative(num: number) {
   if (LOCAL_DEBUG) {
-    localAssert(num % 1 === 0 && num >= MIN_INT && num < 0, `Could not encode negative: ${num}`);
+    assert(num % 1 === 0 && num >= MIN_INT && num < 0, `Could not encode negative: ${num}`);
   }
 
   return num & SIGN_BIT;
@@ -79,10 +79,7 @@ export function encodeNegative(num: number) {
 
 export function decodeNegative(num: number) {
   if (LOCAL_DEBUG) {
-    localAssert(
-      num % 1 === 0 && num < ~MAX_INT && num >= MIN_SMI,
-      `Could not decode negative: ${num}`
-    );
+    assert(num % 1 === 0 && num < ~MAX_INT && num >= MIN_SMI, `Could not decode negative: ${num}`);
   }
 
   return num | ~SIGN_BIT;
@@ -90,7 +87,7 @@ export function decodeNegative(num: number) {
 
 export function encodePositive(num: number) {
   if (LOCAL_DEBUG) {
-    localAssert(num % 1 === 0 && num >= 0 && num <= MAX_INT, `Could not encode positive: ${num}`);
+    assert(num % 1 === 0 && num >= 0 && num <= MAX_INT, `Could not encode positive: ${num}`);
   }
 
   return ~num;
@@ -98,7 +95,7 @@ export function encodePositive(num: number) {
 
 export function decodePositive(num: number) {
   if (LOCAL_DEBUG) {
-    localAssert(num % 1 === 0 && num <= 0 && num >= ~MAX_INT, `Could not decode positive: ${num}`);
+    assert(num % 1 === 0 && num <= 0 && num >= ~MAX_INT, `Could not decode positive: ${num}`);
   }
 
   return ~num;
@@ -106,7 +103,7 @@ export function decodePositive(num: number) {
 
 export function encodeHandle(num: number) {
   if (LOCAL_DEBUG) {
-    localAssert(num % 1 === 0 && num >= 0 && num <= MAX_SMI, `Could not encode handle: ${num}`);
+    assert(num % 1 === 0 && num >= 0 && num <= MAX_SMI, `Could not encode handle: ${num}`);
   }
 
   return num;
@@ -114,7 +111,7 @@ export function encodeHandle(num: number) {
 
 export function decodeHandle(num: number) {
   if (LOCAL_DEBUG) {
-    localAssert(num % 1 === 0 && num <= MAX_SMI && num >= 0, `Could not decode handle: ${num}`);
+    assert(num % 1 === 0 && num <= MAX_SMI && num >= 0, `Could not decode handle: ${num}`);
   }
 
   return num;

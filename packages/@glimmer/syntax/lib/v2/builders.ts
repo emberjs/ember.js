@@ -1,5 +1,5 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { assertPresentArray, localAssert } from '@glimmer/debug-util';
+import { assertPresentArray, assert } from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
 
 import type { SourceSpan } from '../source/span';
@@ -165,7 +165,7 @@ export class Builder {
 
   at(name: string, symbol: number, loc: SourceSpan): ASTv2.VariableReference {
     // the `@` should be included so we have a complete source range
-    localAssert(name[0] === '@', `call builders.at() with a string that starts with '@'`);
+    assert(name[0] === '@', `call builders.at() with a string that starts with '@'`);
 
     return new ASTv2.ArgReference({
       loc,
@@ -185,11 +185,11 @@ export class Builder {
     symbol: number;
     loc: SourceSpan;
   }): ASTv2.FreeVarReference {
-    localAssert(
+    assert(
       name !== 'this',
       `You called builders.freeVar() with 'this'. Call builders.this instead`
     );
-    localAssert(
+    assert(
       name[0] !== '@',
       `You called builders.freeVar() with '${name}'. Call builders.at('${name}') instead`
     );
@@ -208,7 +208,7 @@ export class Builder {
     isTemplateLocal: boolean,
     loc: SourceSpan
   ): ASTv2.VariableReference {
-    localAssert(
+    assert(
       name[0] !== '@',
       `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
     );

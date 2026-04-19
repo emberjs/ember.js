@@ -1,16 +1,33 @@
 module.exports = function buildDebugMacrosPlugin(isDebug) {
   return [
-    require.resolve('babel-plugin-debug-macros'),
-    {
-      debugTools: {
-        source: '@ember/debug',
-        assertPredicateIndex: 1,
-        isDebug,
+    [
+      require.resolve('babel-plugin-debug-macros'),
+      {
+        debugTools: {
+          source: '@ember/debug',
+          assertPredicateIndex: 1,
+          isDebug,
+        },
+        externalizeHelpers: {
+          module: true,
+        },
+        flags: [{ source: '@glimmer/env', flags: { DEBUG: isDebug } }],
       },
-      externalizeHelpers: {
-        module: true,
+      'ember-debug',
+    ],
+    [
+      require.resolve('babel-plugin-debug-macros'),
+      {
+        debugTools: {
+          source: '@glimmer/debug-util',
+          assertPredicateIndex: 0,
+          isDebug,
+        },
+        externalizeHelpers: {
+          module: true,
+        },
       },
-      flags: [{ source: '@glimmer/env', flags: { DEBUG: isDebug } }],
-    },
+      'glimmer-debug',
+    ],
   ];
 };

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type { Nullable, Recast } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
-import { getLast, isPresentArray, localAssert, unwrap } from '@glimmer/debug-util';
+import { getLast, isPresentArray, assert, unwrap } from '@glimmer/debug-util';
 
 import type { ParserNodeBuilder, StartTag } from '../parser';
 import type * as src from '../source/api';
@@ -38,7 +38,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   abstract override finishAttributeValue(): void;
 
   parse(program: HBS.UpstreamProgram, blockParams: string[]): ASTv1.Template {
-    localAssert(program.loc, '[BUG] Program in parser unexpectedly did not have loc');
+    assert(program.loc, '[BUG] Program in parser unexpectedly did not have loc');
 
     let node = b.template({
       body: [],
@@ -61,12 +61,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     // The abstract signature doesn't have the blockParams argument, but in
     // practice we can only come from this.BlockStatement() which adds the
     // extra argument for us
-    localAssert(
+    assert(
       Array.isArray(blockParams),
       '[BUG] Program in parser unexpectedly called without block params'
     );
 
-    localAssert(
+    assert(
       program.loc,
       '[BUG] Program in parser unexpectedly did not have loc. This should have been fixed in BlockStatement'
     );
@@ -105,8 +105,8 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       } else {
         // If the stack is not balanced, then it is likely our own bug, because
         // any unclosed Handlebars blocks should already been caught by now
-        localAssert(poppedNode !== undefined, '[BUG] empty parser elementStack');
-        localAssert(false, `[BUG] mismatched parser elementStack node: ${node.type}`);
+        assert(poppedNode !== undefined, '[BUG] empty parser elementStack');
+        assert(false, `[BUG] mismatched parser elementStack node: ${node.type}`);
       }
     }
 
@@ -115,7 +115,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
   BlockStatement(block: HBS.UpstreamBlockStatement): ASTv1.BlockStatement | void {
     if (this.tokenizer.state === 'comment') {
-      localAssert(block.loc, '[BUG] BlockStatement in parser unexpectedly did not have loc');
+      assert(block.loc, '[BUG] BlockStatement in parser unexpectedly did not have loc');
       this.appendToCommentData(this.sourceForNode(block as HBS.Node));
       return;
     }

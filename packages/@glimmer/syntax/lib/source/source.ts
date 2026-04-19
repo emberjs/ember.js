@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@glimmer/interfaces';
-import { localAssert, setLocalDebugType } from '@glimmer/debug-util';
+import { assert, setLocalDebugType } from '@glimmer/debug-util';
 
 import type { PrecompileOptions } from '../parser/tokenizer-event-handlers';
 import type { SourceLocation, SourcePosition } from './location';
@@ -64,9 +64,9 @@ export class Source {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (DEBUG) {
         const roundTrip = this.hbsPosFor(target);
-        localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
-        localAssert(roundTrip.line === line, `line round-trip mismatch`);
-        localAssert(roundTrip.column === column, `column round-trip mismatch`);
+        assert(roundTrip !== null, `the returned offset failed to round-trip`);
+        assert(roundTrip.line === line, `line round-trip mismatch`);
+        assert(roundTrip.column === column, `column round-trip mismatch`);
       }
       return target;
     }

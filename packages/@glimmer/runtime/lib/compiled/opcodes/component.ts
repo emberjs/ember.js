@@ -67,7 +67,7 @@ import {
   CheckString,
   CheckSyscallRegister,
 } from '@glimmer/debug';
-import { debugToString, expect, localAssert, unwrap, unwrapTemplate } from '@glimmer/debug-util';
+import { debugToString, expect, assert, unwrap, unwrapTemplate } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
@@ -135,7 +135,7 @@ export interface PartialComponentDefinition {
 
 APPEND_OPCODES.add(VM_PUSH_COMPONENT_DEFINITION_OP, (vm, { op1: handle }) => {
   let definition = vm.constants.getValue<ComponentDefinition>(handle);
-  localAssert(!!definition, `Missing component for ${handle}`);
+  assert(!!definition, `Missing component for ${handle}`);
 
   let { manager, capabilities } = definition;
 
@@ -288,7 +288,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
   let { definition } = instance;
 
   if (isCurriedType(definition, CURRIED_COMPONENT)) {
-    localAssert(
+    assert(
       !definition.manager,
       "If the component definition was curried, we don't yet have a manager"
     );
@@ -543,7 +543,7 @@ export class ComponentElementOperations implements ElementOperations {
       let name = definition.resolvedName ?? manager.getDebugName(definition.state);
       let instance = manager.getDebugInstance(state);
 
-      localAssert(constructing, `Expected a constructing element in addModifier`);
+      assert(constructing, `Expected a constructing element in addModifier`);
 
       let bounds = new ConcreteBounds(element, constructing, constructing);
 
@@ -668,7 +668,7 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
     let compilable: CompilableProgram | null = definition.compilable;
 
     if (compilable === null) {
-      localAssert(
+      assert(
         managerHasCapability(
           manager,
           instance.capabilities,
@@ -746,7 +746,7 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
   if (compilable === null) {
     let { capabilities } = instance;
 
-    localAssert(
+    assert(
       managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout),
       'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
     );

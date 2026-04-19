@@ -37,7 +37,7 @@ import {
   CheckNullable,
   CheckOr,
 } from '@glimmer/debug';
-import { debugToString, localAssert } from '@glimmer/debug-util';
+import { debugToString, assert } from '@glimmer/debug-util';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { debugAssert, toBool } from '@glimmer/global-context';
 import { getInternalHelperManager } from '@glimmer/manager';
@@ -154,7 +154,7 @@ function resolveHelper(definition: HelperDefinitionState, ref: Reference): Helpe
       typeof managerOrHelper === 'function'
         ? managerOrHelper
         : managerOrHelper.getHelper(definition);
-    localAssert(managerOrHelper, 'BUG: expected manager or helper');
+    assert(managerOrHelper, 'BUG: expected manager or helper');
   }
 
   debugAssert(
@@ -237,7 +237,7 @@ APPEND_OPCODES.add(VM_SPREAD_BLOCK_OP, (vm) => {
 });
 
 function isUndefinedReference(input: ScopeBlock | Reference): input is Reference {
-  localAssert(
+  assert(
     Array.isArray(input) || input === UNDEFINED_REFERENCE,
     'a reference other than UNDEFINED_REFERENCE is illegal here'
   );

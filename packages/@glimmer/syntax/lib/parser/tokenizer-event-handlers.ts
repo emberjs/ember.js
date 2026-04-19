@@ -6,7 +6,7 @@ import {
   getFirst,
   getLast,
   isPresentArray,
-  localAssert,
+  assert,
 } from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
@@ -128,7 +128,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       }
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- exhaustive
-      localAssert(tag.type === 'EndTag', `Invalid tag type ${tag.type}`);
+      assert(tag.type === 'EndTag', `Invalid tag type ${tag.type}`);
       this.finishEndTag(false);
     }
   }
@@ -137,9 +137,9 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     let { name, nameStart, nameEnd } = this.currentStartTag;
 
     // <> should probably be a syntax error, but s-h-t is currently broken for that case
-    localAssert(name !== '', 'tag name cannot be empty');
-    localAssert(nameStart !== null, 'nameStart unexpectedly null');
-    localAssert(nameEnd !== null, 'nameEnd unexpectedly null');
+    assert(name !== '', 'tag name cannot be empty');
+    assert(nameStart !== null, 'nameStart unexpectedly null');
+    assert(nameEnd !== null, 'nameEnd unexpectedly null');
 
     let nameLoc = nameStart.until(nameEnd);
     let [head, ...tail] = asPresentArray(name.split('.'));
@@ -180,7 +180,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     if (isVoid) {
       element.closeTag = null;
     } else if (element.selfClosing) {
-      localAssert(element.closeTag === null, 'element.closeTag unexpectedly present');
+      assert(element.closeTag === null, 'element.closeTag unexpectedly present');
     } else {
       element.closeTag = closeTagStart.until(this.offset());
     }
@@ -213,7 +213,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       let offset = this.offset();
 
       if (tag.nameStart === null) {
-        localAssert(tag.nameEnd === null, 'nameStart and nameEnd must both be null');
+        assert(tag.nameEnd === null, 'nameStart and nameEnd must both be null');
 
         // Note that the tokenizer already consumed the token here
         tag.nameStart = offset.move(-1);
@@ -346,7 +346,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 
     type Handler = (next: string) => void;
 
-    localAssert(this.tokenizer.state === ATTRIBUTE_NAME, 'must be in TokenizerState.attributeName');
+    assert(this.tokenizer.state === ATTRIBUTE_NAME, 'must be in TokenizerState.attributeName');
 
     const element = this.currentStartTag;
     const as = this.currentAttr;
@@ -355,7 +355,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 
     const handlers = {
       PossibleAs: (next: string) => {
-        localAssert(state.state === 'PossibleAs', 'bug in block params parser');
+        assert(state.state === 'PossibleAs', 'bug in block params parser');
 
         if (isSpace(next)) {
           // " as ..."
@@ -377,7 +377,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       BeforeStartPipe: (next: string) => {
-        localAssert(state.state === 'BeforeStartPipe', 'bug in block params parser');
+        assert(state.state === 'BeforeStartPipe', 'bug in block params parser');
 
         if (isSpace(next)) {
           this.tokenizer.consume();
@@ -393,7 +393,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       BeforeBlockParamName: (next: string) => {
-        localAssert(state.state === 'BeforeBlockParamName', 'bug in block params parser');
+        assert(state.state === 'BeforeBlockParamName', 'bug in block params parser');
 
         if (isSpace(next)) {
           this.tokenizer.consume();
@@ -443,7 +443,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       BlockParamName: (next: string) => {
-        localAssert(state.state === 'BlockParamName', 'bug in block params parser');
+        assert(state.state === 'BlockParamName', 'bug in block params parser');
 
         if (next === '') {
           // The HTML tokenizer ran out of characters, so we are either
@@ -491,7 +491,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       AfterEndPipe: (next: string) => {
-        localAssert(state.state === 'AfterEndPipe', 'bug in block params parser');
+        assert(state.state === 'AfterEndPipe', 'bug in block params parser');
 
         if (isSpace(next)) {
           this.tokenizer.consume();
@@ -530,7 +530,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       Error: (next: string) => {
-        localAssert(state.state === 'Error', 'bug in block params parser');
+        assert(state.state === 'Error', 'bug in block params parser');
 
         if (next === '' || next === '/' || next === '>' || isSpace(next)) {
           throw generateSyntaxError(state.message, state.start.until(this.offset()));
@@ -541,7 +541,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       Done: () => {
-        localAssert(false, 'This should never be called');
+        assert(false, 'This should never be called');
       },
     } as const satisfies {
       [S in keyof States]: Handler;
@@ -554,7 +554,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       handlers[state.state](next);
     } while (state.state !== 'Done' && next !== '');
 
-    localAssert(state.state === 'Done', 'bug in block params parser');
+    assert(state.state === 'Done', 'bug in block params parser');
   }
 
   reportSyntaxError(message: string): void {

@@ -38,7 +38,7 @@ import {
   SPLAT_HEAD,
   THIS_VAR,
 } from '@glimmer/constants';
-import { exhausted, expect, isPresentArray, localAssert } from '@glimmer/debug-util';
+import { exhausted, expect, isPresentArray, assert } from '@glimmer/debug-util';
 import { assertNever, dict, values } from '@glimmer/util';
 import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
 
@@ -383,7 +383,7 @@ function buildElement(
   if (attrs) {
     let { params, args } = buildElementParams(attrs, symbols);
     out.push(...params);
-    localAssert(args === null, `Can't pass args to a simple element`);
+    assert(args === null, `Can't pass args to a simple element`);
   }
   out.push([Op.FlushElement]);
 
@@ -391,7 +391,7 @@ function buildElement(
     block.forEach((s) => out.push(...buildStatement(s, symbols)));
   } else {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    localAssert(block === null, `The only remaining type of 'block' is 'null'`);
+    assert(block === null, `The only remaining type of 'block' is 'null'`);
   }
 
   out.push([Op.CloseElement]);
@@ -681,7 +681,7 @@ export function buildVar(
   if (path === undefined || path.length === 0) {
     return [op, sym];
   } else {
-    localAssert(op !== Op.GetStrictKeyword, '[BUG] keyword with a path');
+    assert(op !== Op.GetStrictKeyword, '[BUG] keyword with a path');
     return [op, sym, path];
   }
 }

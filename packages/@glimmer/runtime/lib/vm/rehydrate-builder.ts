@@ -13,7 +13,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Stack } from '@glimmer/util';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants';
-import { castToBrowser, castToSimple, expect, localAssert } from '@glimmer/debug-util';
+import { castToBrowser, castToSimple, expect, assert } from '@glimmer/debug-util';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { NewTreeBuilder, RemoteBlock } from './element-builder';
@@ -58,7 +58,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       node = node.nextSibling;
     }
 
-    localAssert(node, 'Must have opening comment for rehydration.');
+    assert(node, 'Must have opening comment for rehydration.');
     this.candidate = node;
     const startingBlockOffset = getBlockDepth(node);
     if (startingBlockOffset !== 0) {
@@ -78,7 +78,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
         closingNode = closingNode.nextSibling;
       }
 
-      localAssert(closingNode, 'Must have closing comment for starting block comment');
+      assert(closingNode, 'Must have closing comment for starting block comment');
       const newClosingBlock = this.dom.createComment(`%-b:${newBlockDepth}%`);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       node.parentNode!.insertBefore(newClosingBlock, closingNode.nextSibling);
@@ -470,7 +470,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   ): RemoteBlock {
     const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
 
-    localAssert(
+    assert(
       !marker || marker.parentNode === element,
       `expected remote element marker's parent node to match remote element`
     );
