@@ -6912,6 +6912,24 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
       }
 
+      // Probe the caller's rendering context for the enclosing parent
+      // element. When `{{{x}}}` sits directly inside a table-family tag
+      // (e.g. `<table>{{{this.title}}}</table>`), the browser's contextual
+      // HTML parser rules affect which child elements survive the parse;
+      // passing the real parent down lets us match classic Glimmer-VM's
+      // rehydration serialization. `ctx` is GXT's caller rendering context
+      // and may expose the active element via the RENDERING_CONTEXT_PROPERTY
+      // symbol.
+      let callerParent: Element | null = null;
+      try {
+        if (RENDERING_CONTEXT_PROPERTY && ctx && typeof ctx === 'object') {
+          const rc = (ctx as any)[RENDERING_CONTEXT_PROPERTY as any];
+          if (rc && rc.element && rc.element.nodeType === 1) {
+            callerParent = rc.element as Element;
+          }
+        }
+      } catch { /* ignore */ }
+
       const getHtml = () => {
         let raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
         // Unwrap cell-like wrappers and nested getter functions
@@ -6934,28 +6952,129 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       const endAnchor = document.createComment('/htmlRaw');
       const fragment = document.createDocumentFragment();
       let contentNodes: Node[] = [];
+      let lastHtml = '';
+
+      // Helper: parse rawHtml in the context of the given parent element.
+      // This mimics the browser's contextual parsing so that `<tr>` inside
+      // a `<table>` gets wrapped in `<tbody>`, a `<td>` outside of `<tr>`
+      // gets stripped (when parent is a `<div>`), etc. — matching what
+      // classic Glimmer-VM's rehydration produces. We use a scratch
+      // element of the same tagName as the parent, so its contextual
+      // HTML parser rules apply when we assign innerHTML.
+      const parseInParentContext = (rawHtml: string, parent: Element | null): Node[] => {
+        if (!rawHtml) return [];
+        // Fall back to a plain `<div>` when no parent is available yet
+        // (the template hasn't been mounted). This preserves the prior
+        // behavior for most sites; only `<table>` / `<tr>` / `<select>`
+        // contexts care about contextual parsing.
+        const contextTag = parent && parent.tagName ? parent.tagName.toLowerCase() : 'div';
+        // Only use a scratch parent for tags whose parse context affects
+        // what child elements survive. For generic containers, a plain
+        // div scratch works.
+        const needsContext =
+          contextTag === 'table' ||
+          contextTag === 'thead' ||
+          contextTag === 'tbody' ||
+          contextTag === 'tfoot' ||
+          contextTag === 'tr' ||
+          contextTag === 'colgroup' ||
+          contextTag === 'select' ||
+          contextTag === 'optgroup';
+        const scratch = document.createElement(needsContext ? contextTag : 'div');
+        try {
+          scratch.innerHTML = rawHtml;
+        } catch {
+          return [];
+        }
+        const result: Node[] = [];
+        while (scratch.firstChild) {
+          result.push(scratch.firstChild);
+          scratch.removeChild(scratch.firstChild);
+        }
+        return result;
+      };
 
       const initialHtml = getHtml();
       fragment.appendChild(startAnchor);
-      if (initialHtml) {
-        const tpl = document.createElement('template');
-        tpl.innerHTML = initialHtml;
-        while (tpl.content.firstChild) {
-          const child = tpl.content.firstChild;
-          contentNodes.push(child);
-          fragment.appendChild(child);
-        }
+      // Use the caller's rendering-context element as the contextual parse
+      // parent when available (e.g. `<table>` for
+      // `<table>{{{this.title}}}</table>`). Falls back to a div-context
+      // parse when we can't determine the parent.
+      const initialChildren = parseInParentContext(initialHtml, callerParent);
+      for (const child of initialChildren) {
+        contentNodes.push(child);
+        fragment.appendChild(child);
       }
       fragment.appendChild(endAnchor);
 
-      let lastHtml = initialHtml;
+      lastHtml = initialHtml;
+      let reparsedForParent: Element | null = null;
+
+      // Tag the anchors with the raw HTML source so an outer-tag post-
+      // process step can reparse the content in its real parent context
+      // (critical for `<table>{{{tr}}}</table>` and similar).
+      (startAnchor as any).__gxtHtmlRawStart = true;
+      (endAnchor as any).__gxtHtmlRawEnd = true;
+      (startAnchor as any).__gxtHtmlRawGetter = () => lastHtml;
+      (startAnchor as any).__gxtHtmlRawEndAnchor = endAnchor;
+      (startAnchor as any).__gxtHtmlRawContentNodes = contentNodes;
+      (startAnchor as any).__gxtHtmlRawReparse = (parent: Element) => {
+        // Remove current content between anchors
+        for (const n of contentNodes) {
+          if (n.parentNode === parent) parent.removeChild(n);
+        }
+        contentNodes.length = 0;
+        if (lastHtml) {
+          for (const child of parseInParentContext(lastHtml, parent)) {
+            contentNodes.push(child);
+            parent.insertBefore(child, endAnchor);
+          }
+        }
+      };
+
+      // Reparse contextually once the fragment lands in the DOM. If the
+      // parent is a table-family element (like `<table>` for our
+      // `<table>{{{this.title}}}</table>` test), the initial div-context
+      // parse may have stripped `<tr>`/`<td>` nodes; re-parse in the
+      // real parent tag to restore the proper structure (with `<tbody>`
+      // injected by the browser as needed).
+      const reparseIfNeeded = () => {
+        const parent = endAnchor.parentNode as Element | null;
+        if (!parent || parent === reparsedForParent) return;
+        const contextTag = (parent.tagName || '').toLowerCase();
+        const needsReparse =
+          contextTag === 'table' ||
+          contextTag === 'thead' ||
+          contextTag === 'tbody' ||
+          contextTag === 'tfoot' ||
+          contextTag === 'tr' ||
+          contextTag === 'colgroup' ||
+          contextTag === 'select' ||
+          contextTag === 'optgroup';
+        if (!needsReparse) return;
+        // Remove current content nodes, re-parse contextually, re-insert.
+        for (const n of contentNodes) {
+          if (n.parentNode === parent) parent.removeChild(n);
+        }
+        contentNodes = [];
+        if (lastHtml) {
+          for (const child of parseInParentContext(lastHtml, parent)) {
+            contentNodes.push(child);
+            parent.insertBefore(child, endAnchor);
+          }
+        }
+        reparsedForParent = parent;
+      };
 
       // Set up reactive update
       try {
         _gxtEffect(() => {
           const html = getHtml();
-          const parent = endAnchor.parentNode;
+          const parent = endAnchor.parentNode as Element | null;
           if (!parent) return;
+          // Every effect run: ensure we've reparsed for the current parent
+          // context (no-op when already done or not a table-family context).
+          reparseIfNeeded();
           if (html === lastHtml) return;
           lastHtml = html;
 
@@ -6966,16 +7085,19 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           contentNodes = [];
 
           if (html) {
-            const tpl = document.createElement('template');
-            tpl.innerHTML = html;
-            while (tpl.content.firstChild) {
-              const child = tpl.content.firstChild;
+            for (const child of parseInParentContext(html, parent)) {
               contentNodes.push(child);
               parent.insertBefore(child, endAnchor);
             }
           }
         });
       } catch {}
+
+      // Keep the post-mount reparse flag unused — the caller-context
+      // probe above usually nails the right parent for the initial parse
+      // and the effect above handles all subsequent reparses.
+      void reparsedForParent;
+      void reparseIfNeeded;
 
       return fragment;
     }
@@ -8764,6 +8886,36 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           }
         } catch {
           /* fallback: append raw text */
+        }
+      }
+    }
+
+    // EmberHtmlRaw contextual reparse: when the result element is a
+    // table-family element (table/thead/tbody/tr/select/etc.) and its
+    // children include `{{{htmlRaw}}}` markers, the initial parse (done
+    // without the parent context) may have stripped `<tr>`/`<td>` nodes.
+    // Now that the parent element is available, re-parse the raw HTML
+    // against the correct contextual parent so the proper structure
+    // (with browser-injected `<tbody>` etc.) is in place.
+    if (result instanceof Element) {
+      const tagLower = (result.tagName || '').toLowerCase();
+      const needsHtmlRawReparse =
+        tagLower === 'table' ||
+        tagLower === 'thead' ||
+        tagLower === 'tbody' ||
+        tagLower === 'tfoot' ||
+        tagLower === 'tr' ||
+        tagLower === 'colgroup' ||
+        tagLower === 'select' ||
+        tagLower === 'optgroup';
+      if (needsHtmlRawReparse) {
+        for (const child of Array.from(result.childNodes)) {
+          if (child.nodeType === 8 /* COMMENT */ && (child as any).__gxtHtmlRawStart) {
+            const reparse = (child as any).__gxtHtmlRawReparse;
+            if (typeof reparse === 'function') {
+              try { reparse(result); } catch { /* ignore reparse errors */ }
+            }
+          }
         }
       }
     }
