@@ -84,7 +84,18 @@ function notifyPropertyChange(
   if (meta === null || !meta.isInitializing()) {
     const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
     if (typeof gxtTrigger === 'function') {
-      gxtTrigger(obj, keyName);
+      // Mark the trigger scope so CP.get can preserve classic "don't eagerly
+      // evaluate never-consumed CPs during a change notification" semantics.
+      // (core.ts's lazy wrapper is only installed for proxied CoreObjects,
+      // which misses plain `class Foo { @computed ... }` cases.)
+      const gRoot: any = globalThis as any;
+      const wasInside = gRoot.__gxtInTriggerReRender;
+      gRoot.__gxtInTriggerReRender = true;
+      try {
+        gxtTrigger(obj, keyName);
+      } finally {
+        gRoot.__gxtInTriggerReRender = wasInside;
+      }
     }
   }
 

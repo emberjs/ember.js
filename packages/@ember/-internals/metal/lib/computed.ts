@@ -507,6 +507,19 @@ export class ComputedProperty extends ComputedDescriptor {
           consumeTag(propertyTag);
           return stored;
         }
+        // Classic Ember semantics: a CP that has never been consumed (no
+        // cached revision) should not be lazily evaluated during a change
+        // notification cascade (`__gxtTriggerReRender`). Eagerly evaluating
+        // here would (a) invoke user getters with side effects prematurely
+        // and (b) update the property tag's chain to include dirtied
+        // dependent keys, which causes async observers that were registered
+        // on CPs the caller never read to fire spuriously. Return the stored
+        // (or undefined) value and let the next genuine lazy read recompute.
+        if (g.__gxtInTriggerReRender === true && revision === undefined) {
+          let stored = meta.valueFor(keyName);
+          consumeTag(propertyTag);
+          return stored;
+        }
       }
       // Create a tracker that absorbs any trackable actions inside the CP
       untrack(() => {
