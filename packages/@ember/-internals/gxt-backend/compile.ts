@@ -1908,8 +1908,61 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
       }
     }
 
-    // Always append (for both append mode and replace mode — already cleared)
-    appendRef.appendChild(fragment);
+    // Self-insertion detection: when appendRef is the element currently
+    // being rendered (empty, not yet connected OR not yet flushed), the
+    // block's placeholder will be appended to `appendRef` AS PART OF the
+    // surrounding template's fragment commit. In that case, naïvely
+    // appending our content to appendRef lands it BEFORE the surrounding
+    // siblings (e.g. "Before"/"After" literal text), producing
+    // "Whoop!BeforeAfter" instead of "BeforeWhoop!After".
+    //
+    // Solution: wrap our content together with the placeholder comment in
+    // a DocumentFragment and return that fragment. GXT will insert the
+    // whole fragment wherever `{{#in-element}}` appears in the parent
+    // template, keeping the content and placeholder co-located at the
+    // block's tree position — matching Glimmer VM's "appending to the
+    // root element should not cause double clearing" semantics.
+    //
+    // We detect self-insertion heuristically: the target is empty AND we
+    // are currently inside a render pass. Standard `{{#in-element
+    // externalTarget}}` into a non-rendering target is unaffected.
+    const gxtRenderingFn = (globalThis as any).__gxtIsRendering;
+    const isSelfInsert =
+      insertBefore === null &&
+      appendRef.childNodes.length === 0 &&
+      typeof gxtRenderingFn === 'function' &&
+      gxtRenderingFn() === true;
+    if (isSelfInsert) {
+      // Return a fragment containing [content..., placeholder]. GXT's
+      // outer-template commit will insert this whole fragment at the
+      // `{{#in-element}}` position in the parent tree, landing content
+      // adjacent to the placeholder rather than at the head of appendRef.
+      const wrapperFragment = document.createDocumentFragment();
+      wrapperFragment.appendChild(fragment);
+      wrapperFragment.appendChild(placeholder);
+      _inElementRenderedNodes.set(appendRef, renderedNodes);
+      (placeholder as any).__gxtInElementNodes = renderedNodes;
+      (placeholder as any).__gxtInElementTarget = appendRef;
+      // Tag the placeholder so future `insertBefore=null` updates know where
+      // to insert — see the matching lookup in the non-self-insert path.
+      (placeholder as any).__gxtInElementMarkerFor = appendRef;
+      return wrapperFragment;
+    }
+    // For subsequent updates to a self-inserted block (same target, block
+    // placeholder already in the DOM tree), insert new content BEFORE the
+    // existing placeholder so the content lands at the block's position
+    // rather than at the end of appendRef. This preserves the semantics
+    // established by the initial self-insert path above and keeps the
+    // surrounding literal siblings (e.g. "Before"/"After") intact.
+    const placeholderInAppendRef = Array.from(appendRef.childNodes).find(
+      (n: any) => (n as any).__gxtInElementMarkerFor === appendRef
+    ) as ChildNode | undefined;
+    if (insertBefore === null && placeholderInAppendRef) {
+      appendRef.insertBefore(fragment, placeholderInAppendRef);
+    } else {
+      // Always append (for both append mode and replace mode — already cleared)
+      appendRef.appendChild(fragment);
+    }
 
     // Store rendered nodes for cleanup
     _inElementRenderedNodes.set(appendRef, renderedNodes);
