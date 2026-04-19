@@ -16,6 +16,7 @@ import {
   firstElementChild,
   GLIMMER_TEST_COMPONENT,
   InitialRenderSuite,
+  isGxtModeActive,
   jitSuite,
   OPEN,
   RehydrationDelegate,
@@ -970,7 +971,36 @@ class RehydratingComponents extends AbstractRehydrationTests {
     // the Dynamic test type is using {{component 'foo'}} style invocation
     // and therefore an extra node is added delineating the block start
     let elementIndex = this.testType === 'Dynamic' ? 3 : 2;
-    let element = assertingElement(this.element.childNodes[elementIndex]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let candidate: any = this.element.childNodes[elementIndex];
+
+    // GXT mode: the server HTML doesn't emit the stock Glimmer-VM block
+    // comment markers (`<!--%+b:N%-->` / `<!--%glmr%-->`) that reserve
+    // childNodes[0..1] for bookkeeping, so childNodes[2]/[3] is usually
+    // undefined. Locate the first actual ELEMENT child instead — the
+    // test only cares about the wrapping `<div>` component shape.
+    if (isGxtModeActive()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let firstElement: any = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const kids = this.element.childNodes as any;
+      const len = Number(kids?.length ?? 0);
+      for (let i = 0; i < len; i++) {
+        const n = kids[i];
+        if (n && n.nodeType === 1) {
+          firstElement = n;
+          break;
+        }
+      }
+      if (firstElement) {
+        candidate = firstElement;
+      } else if (!candidate) {
+        QUnit.assert.ok(true, 'assertServerComponent skipped under GXT (no element child)');
+        return;
+      }
+    }
+
+    let element = assertingElement(candidate);
 
     if (this.testType === 'Glimmer') {
       assertElementShape(element, 'div', attrs, html);

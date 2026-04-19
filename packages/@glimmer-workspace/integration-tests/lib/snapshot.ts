@@ -94,7 +94,7 @@ export function generateSnapshot(element: SimpleElement): SimpleNode[] {
 // strip both marker families from the token stream on BOTH sides of
 // `equalTokens` when GXT_MODE is active. Net effect: the structural
 // HTML shape is compared; marker bookkeeping is ignored.
-function isGxtModeActive(): boolean {
+export function isGxtModeActive(): boolean {
   return Boolean((globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__);
 }
 
