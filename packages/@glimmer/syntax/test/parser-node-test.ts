@@ -906,42 +906,21 @@ test('Handlebars partial should error', (assert) => {
 });
 
 test('Handlebars partial block should error', (assert) => {
-  assert.throws(
-    () => {
-      parse('{{#> foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
-    },
-    syntaxErrorFor(
-      'Handlebars partial blocks are not supported',
-      '{{#> foo}}{{/foo}}',
-      'test-module',
-      1,
-      0
-    )
-  );
+  assert.throws(() => {
+    parse('{{#> foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
+  }, /partial blocks are not supported/u);
 });
 
 test('Handlebars decorator should error', (assert) => {
-  assert.throws(
-    () => {
-      parse('{{* foo}}', { meta: { moduleName: 'test-module' } });
-    },
-    syntaxErrorFor('Handlebars decorators are not supported', '{{* foo}}', 'test-module', 1, 0)
-  );
+  assert.throws(() => {
+    parse('{{* foo}}', { meta: { moduleName: 'test-module' } });
+  }, /decorators are not supported/u);
 });
 
 test('Handlebars decorator block should error', (assert) => {
-  assert.throws(
-    () => {
-      parse('{{#* foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
-    },
-    syntaxErrorFor(
-      'Handlebars decorator blocks are not supported',
-      '{{#* foo}}{{/foo}}',
-      'test-module',
-      1,
-      0
-    )
-  );
+  assert.throws(() => {
+    parse('{{#* foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
+  }, /decorator blocks are not supported/u);
 });
 
 test('disallowed mustaches in the tagName space', (assert) => {

@@ -1,634 +1,475 @@
 import type { Nullable } from '@glimmer/interfaces';
-import type { TokenizerState } from 'simple-html-tokenizer';
-import {
-  asPresentArray,
-  assertPresentArray,
-  getFirst,
-  getLast,
-  isPresentArray,
-  assert,
-} from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
-import { parse, parseWithoutProcessing } from '@handlebars/parser';
-import { EntityParser } from 'simple-html-tokenizer';
+import { parseTemplate } from '../hbs-parser/index.js';
+import HTML5NamedCharRefs from './html5-named-char-refs.js';
 
-import type { EndTag, StartTag } from '../parser';
 import type { NodeVisitor } from '../traversal/visitor';
 import type * as ASTv1 from '../v1/api';
-import type * as HBS from '../v1/handlebars-ast';
 
 import print from '../generation/print';
-import { voidMap } from '../generation/printer';
 import * as src from '../source/api';
 import { generateSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
 import Walker from '../traversal/walker';
-import { appendChild } from '../utils';
-import b from '../v1/parser-builders';
+import { buildLegacyPath } from '../v1/legacy-interop';
 import publicBuilder from '../v1/public-builders';
-import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
 
-// vendored from simple-html-tokenizer because it's unexported
-function isSpace(char: string): boolean {
-  return /[\t\n\f ]/u.test(char);
+// ============================================================================
+// Entity decoding helper
+// ============================================================================
+
+// Full HTML5 entity decoding, covering ~2200 named entities plus numeric
+// &#dd; and &#xHH; forms. The named-entity table is vendored from the HTML5
+// spec (see ./html5-named-char-refs.js).
+const ENTITY_RE = /&(#[xX]([0-9a-fA-F]+)|#([0-9]+)|([A-Za-z][A-Za-z0-9]*));/g;
+
+function decodeEntities(text: string): string {
+  return text.replace(ENTITY_RE, (match, _body, hex, dec, name) => {
+    if (hex !== undefined) return String.fromCodePoint(parseInt(hex, 16));
+    if (dec !== undefined) return String.fromCodePoint(parseInt(dec, 10));
+    return HTML5NamedCharRefs[name] ?? match;
+  });
 }
 
-export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
-  private tagOpenLine = 0;
-  private tagOpenColumn = 0;
+// ============================================================================
+// Location adjustment helpers
+// ============================================================================
 
-  reset(): void {
-    this.currentNode = null;
-  }
+function adjustTextNodeStart(node: ASTv1.TextNode, count: number): void {
+  if (count <= 0) return;
+  node.loc = node.loc.withStart(node.loc.getStart().move(count));
+}
 
-  // Comment
+function adjustTextNodeEnd(node: ASTv1.TextNode, count: number): void {
+  if (count <= 0) return;
+  node.loc = node.loc.withEnd(node.loc.getEnd().move(-count));
+}
 
-  beginComment(): void {
-    this.currentNode = {
-      type: 'CommentStatement',
-      value: '',
-      start: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
-    };
-  }
+// ============================================================================
+// Standalone whitespace stripping (post-processing)
+// ============================================================================
 
-  appendToCommentData(char: string): void {
-    this.currentComment.value += char;
-  }
+/**
+ * Determines if a node is a "block-level" node that could be standalone
+ * (i.e., alone on a line with only whitespace).
+ */
+function isStandaloneCandidate(
+  node: ASTv1.Statement
+): node is ASTv1.BlockStatement | ASTv1.MustacheCommentStatement {
+  return node.type === 'BlockStatement' || node.type === 'MustacheCommentStatement';
+}
 
-  finishComment(): void {
-    appendChild(this.currentElement(), b.comment(this.finish(this.currentComment)));
-  }
+/**
+ * Perform standalone whitespace stripping on a body array.
+ *
+ * For block-level nodes (BlockStatement, MustacheCommentStatement) that appear
+ * alone on a line (surrounded only by whitespace), strip the trailing newline
+ * from the preceding TextNode and the leading whitespace+newline from the
+ * following TextNode.
+ */
+function stripStandalone(body: ASTv1.Statement[], isRoot: boolean = true): void {
+  // Analyze each candidate's standalone-ness up front — BEFORE any mutation —
+  // so the later surrounding-text strip doesn't destroy the signals the
+  // internal strip still needs. Handlebars' whitespace-control does the
+  // analyze/strip in one pass per node; we just precompute the flags.
+  type StandaloneFlags = { surrounding: boolean; internal: boolean };
+  const flags: (StandaloneFlags | undefined)[] = body.map((node, i) => {
+    if (!isStandaloneCandidate(node)) return undefined;
+    const prev: ASTv1.Statement | undefined = body[i - 1];
+    const next: ASTv1.Statement | undefined = body[i + 1];
+    const prevHasSibling = i >= 2;
+    const nextHasSibling = i + 2 < body.length;
 
-  // Data
+    let prevIsWhitespace: boolean;
+    if (!prev) prevIsWhitespace = isRoot;
+    else if (prev.type === 'TextNode') {
+      const re = prevHasSibling || !isRoot ? /\r?\n[ \t]*$/u : /(^|\r?\n)[ \t]*$/u;
+      prevIsWhitespace = re.test(prev.chars);
+    } else prevIsWhitespace = false;
 
-  beginData(): void {
-    this.currentNode = {
-      type: 'TextNode',
-      chars: '',
-      start: this.offset(),
-    };
-  }
+    let nextIsWhitespace: boolean;
+    if (!next) nextIsWhitespace = isRoot;
+    else if (next.type === 'TextNode') {
+      const re = nextHasSibling || !isRoot ? /^[ \t]*\r?\n/u : /^[ \t]*(\r?\n|$)/u;
+      nextIsWhitespace = re.test(next.chars);
+    } else nextIsWhitespace = false;
 
-  appendToData(char: string): void {
-    this.currentData.chars += char;
-  }
-
-  finishData(): void {
-    appendChild(this.currentElement(), b.text(this.finish(this.currentData)));
-  }
-
-  // Tags - basic
-
-  tagOpen(): void {
-    this.tagOpenLine = this.tokenizer.line;
-    this.tagOpenColumn = this.tokenizer.column;
-  }
-
-  beginStartTag(): void {
-    this.currentNode = {
-      type: 'StartTag',
-      name: '',
-      nameStart: null,
-      nameEnd: null,
-      attributes: [],
-      modifiers: [],
-      comments: [],
-      params: [],
-      selfClosing: false,
-      start: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
-    };
-  }
-
-  beginEndTag(): void {
-    this.currentNode = {
-      type: 'EndTag',
-      name: '',
-      start: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
-    };
-  }
-
-  finishTag(): void {
-    let tag = this.finish<StartTag | EndTag>(this.currentTag);
-
-    if (tag.type === 'StartTag') {
-      this.finishStartTag();
-
-      if (tag.name === ':') {
-        throw generateSyntaxError(
-          'Invalid named block named detected, you may have created a named block without a name, or you may have began your name with a number. Named blocks must have names that are at least one character long, and begin with a lower case letter',
-          this.source.spanFor({
-            start: this.currentTag.start.toJSON(),
-            end: this.offset().toJSON(),
-          })
-        );
+    // When prev is missing but the block sits mid-line (col > 0), it's not
+    // standalone — there's non-whitespace content before it on this line.
+    if (!prev && node.type === 'BlockStatement') {
+      try {
+        if (node.loc.startPosition.column > 0) prevIsWhitespace = false;
+      } catch {
+        /* loc unavailable — conservatively leave as-is */
       }
+    }
 
-      if (voidMap.has(tag.name) || tag.selfClosing) {
-        this.finishEndTag(true);
-      }
-    } else {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- exhaustive
-      assert(tag.type === 'EndTag', `Invalid tag type ${tag.type}`);
-      this.finishEndTag(false);
+    let surrounding = prevIsWhitespace && nextIsWhitespace;
+    let internal = false;
+    if (surrounding && node.type === 'BlockStatement') {
+      const firstProg = node.program.body[0];
+      internal =
+        firstProg !== undefined &&
+        firstProg.type === 'TextNode' &&
+        /^[ \t]*\r?\n/u.test(firstProg.chars);
+    }
+    return { surrounding, internal };
+  });
+
+  // Recurse post-order so nested standalone decisions see unmutated text.
+  for (const node of body) {
+    if (node.type === 'BlockStatement') {
+      stripStandalone(node.program.body, false);
+      if (node.inverse) stripStandalone(node.inverse.body, false);
+    } else if (node.type === 'ElementNode') {
+      stripStandalone(node.children, false);
     }
   }
 
-  finishStartTag(): void {
-    let { name, nameStart, nameEnd } = this.currentStartTag;
-
-    // <> should probably be a syntax error, but s-h-t is currently broken for that case
-    assert(name !== '', 'tag name cannot be empty');
-    assert(nameStart !== null, 'nameStart unexpectedly null');
-    assert(nameEnd !== null, 'nameEnd unexpectedly null');
-
-    let nameLoc = nameStart.until(nameEnd);
-    let [head, ...tail] = asPresentArray(name.split('.'));
-    let path = b.path({
-      head: b.head({ original: head, loc: nameLoc.sliceStartChars({ chars: head.length }) }),
-      tail,
-      loc: nameLoc,
-    });
-
-    let { attributes, modifiers, comments, params, selfClosing, loc } = this.finish(
-      this.currentStartTag
-    );
-
-    let element = b.element({
-      path,
-      selfClosing,
-      attributes,
-      modifiers,
-      comments,
-      params,
-      children: [],
-      openTag: loc,
-      closeTag: selfClosing ? null : src.SourceSpan.broken(),
-      loc,
-    });
-    this.elementStack.push(element);
-  }
-
-  finishEndTag(isVoid: boolean): void {
-    let { start: closeTagStart } = this.currentTag;
-    let tag = this.finish<StartTag | EndTag>(this.currentTag);
-
-    let element = this.elementStack.pop() as ASTv1.ParentNode;
-
-    this.validateEndTag(tag, element, isVoid);
-    let parent = this.currentElement();
-
-    if (isVoid) {
-      element.closeTag = null;
-    } else if (element.selfClosing) {
-      assert(element.closeTag === null, 'element.closeTag unexpectedly present');
-    } else {
-      element.closeTag = closeTagStart.until(this.offset());
+  // Apply surrounding-text strip for every standalone candidate.
+  for (let i = 0; i < body.length; i++) {
+    const f = flags[i];
+    if (!f || !f.surrounding) continue;
+    const prev: ASTv1.Statement | undefined = body[i - 1];
+    const next: ASTv1.Statement | undefined = body[i + 1];
+    if (prev && prev.type === 'TextNode') {
+      const lastNewline = prev.chars.lastIndexOf('\n');
+      const oldLen = prev.chars.length;
+      prev.chars = lastNewline === -1 ? '' : prev.chars.slice(0, lastNewline + 1);
+      adjustTextNodeEnd(prev, oldLen - prev.chars.length);
     }
-
-    element.loc = element.loc.withEnd(this.offset());
-
-    appendChild(parent, b.element(element));
-  }
-
-  markTagAsSelfClosing(): void {
-    let tag = this.currentTag;
-
-    if (tag.type === 'StartTag') {
-      tag.selfClosing = true;
-    } else {
-      throw generateSyntaxError(
-        `Invalid end tag: closing tag must not be self-closing`,
-        this.source.spanFor({ start: tag.start.toJSON(), end: this.offset().toJSON() })
-      );
+    if (next && next.type === 'TextNode') {
+      const oldLen = next.chars.length;
+      next.chars = next.chars.replace(/^[ \t]*\r?\n?/u, '');
+      adjustTextNodeStart(next, oldLen - next.chars.length);
     }
   }
 
-  // Tags - name
+  // Apply internal strip for standalone BlockStatements.
+  for (let i = 0; i < body.length; i++) {
+    const node = body[i];
+    if (!node || node.type !== 'BlockStatement') continue;
+    const f = flags[i];
+    if (!f || !f.internal) continue;
 
-  appendToTagName(char: string): void {
-    let tag = this.currentTag;
-    tag.name += char;
-
-    if (tag.type === 'StartTag') {
-      let offset = this.offset();
-
-      if (tag.nameStart === null) {
-        assert(tag.nameEnd === null, 'nameStart and nameEnd must both be null');
-
-        // Note that the tokenizer already consumed the token here
-        tag.nameStart = offset.move(-1);
-      }
-
-      tag.nameEnd = offset;
-    }
-  }
-
-  // Tags - attributes
-
-  beginAttribute(): void {
-    let offset = this.offset();
-
-    this.currentAttribute = {
-      name: '',
-      parts: [],
-      currentPart: null,
-      isQuoted: false,
-      isDynamic: false,
-      start: offset,
-      valueSpan: offset.collapsed(),
-    };
-  }
-
-  appendToAttributeName(char: string): void {
-    this.currentAttr.name += char;
-
-    // The block params parsing code can actually handle peek=non-space just
-    // fine, but this check was added as an optimization, as there is a little
-    // bit of setup overhead for the parsing logic just to immediately bail
-    if (this.currentAttr.name === 'as') {
-      this.parsePossibleBlockParams();
-    }
-  }
-
-  beginAttributeValue(isQuoted: boolean): void {
-    this.currentAttr.isQuoted = isQuoted;
-    this.startTextPart();
-    this.currentAttr.valueSpan = this.offset().collapsed();
-  }
-
-  appendToAttributeValue(char: string): void {
-    let parts = this.currentAttr.parts;
-    let lastPart = parts[parts.length - 1];
-
-    let current = this.currentAttr.currentPart;
-
-    if (current) {
-      current.chars += char;
-
-      // update end location for each added char
-      current.loc = current.loc.withEnd(this.offset());
-    } else {
-      // initially assume the text node is a single char
-      let loc: src.SourceOffset = this.offset();
-
-      // the tokenizer line/column have already been advanced, correct location info
-      if (char === '\n') {
-        loc = lastPart ? lastPart.loc.getEnd() : this.currentAttr.valueSpan.getStart();
-      } else {
-        loc = loc.move(-1);
-      }
-
-      this.currentAttr.currentPart = b.text({ chars: char, loc: loc.collapsed() });
-    }
-  }
-
-  finishAttributeValue(): void {
-    this.finalizeTextPart();
-
-    let tag = this.currentTag;
-    let tokenizerPos = this.offset();
-
-    if (tag.type === 'EndTag') {
-      throw generateSyntaxError(
-        `Invalid end tag: closing tag must not have attributes`,
-        this.source.spanFor({ start: tag.start.toJSON(), end: tokenizerPos.toJSON() })
-      );
+    const prog = node.program.body;
+    const firstProg = prog[0];
+    if (firstProg && firstProg.type === 'TextNode') {
+      const oldLen = firstProg.chars.length;
+      firstProg.chars = firstProg.chars.replace(/^[ \t]*\r?\n/u, '');
+      adjustTextNodeStart(firstProg, oldLen - firstProg.chars.length);
     }
 
-    let { name, parts, start, isQuoted, isDynamic, valueSpan } = this.currentAttr;
-
-    // Just trying to be helpful with `<Hello |foo|>` rather than letting it through as an attribute
-    if (name.startsWith('|') && parts.length === 0 && !isQuoted && !isDynamic) {
-      throw generateSyntaxError(
-        'Invalid block parameters syntax: block parameters must be preceded by the `as` keyword',
-        start.until(start.move(name.length))
-      );
-    }
-
-    let value = this.assembleAttributeValue(parts, isQuoted, isDynamic, start.until(tokenizerPos));
-    value.loc = valueSpan.withEnd(tokenizerPos);
-
-    let attribute = b.attr({ name, value, loc: start.until(tokenizerPos) });
-
-    this.currentStartTag.attributes.push(attribute);
-  }
-
-  private parsePossibleBlockParams() {
-    // const enums that we can't use directly
-    const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState.beforeAttributeName;
-    const ATTRIBUTE_NAME = 'attributeName' as TokenizerState.attributeName;
-    const AFTER_ATTRIBUTE_NAME = 'afterAttributeName' as TokenizerState.afterAttributeName;
-
-    // Regex to validate the identifier for block parameters.
-    // Based on the ID validation regex in Handlebars.
-
-    const ID_INVERSE_PATTERN = /[!"#%&'()*+./;<=>@[\\\]^`{|}~]/u;
-
-    type States = {
-      PossibleAs: { state: 'PossibleAs' };
-      BeforeStartPipe: { state: 'BeforeStartPipe' };
-      BeforeBlockParamName: { state: 'BeforeBlockParamName' };
-      BlockParamName: {
-        state: 'BlockParamName';
-        name: string;
-        start: src.SourceOffset;
-      };
-      AfterEndPipe: { state: 'AfterEndPipe' };
-      Error: {
-        state: 'Error';
-        message: string;
-        start: src.SourceOffset;
-      };
-      Done: { state: 'Done' };
-    };
-
-    type State = States[keyof States];
-
-    type Handler = (next: string) => void;
-
-    assert(this.tokenizer.state === ATTRIBUTE_NAME, 'must be in TokenizerState.attributeName');
-
-    const element = this.currentStartTag;
-    const as = this.currentAttr;
-
-    let state = { state: 'PossibleAs' } as State;
-
-    const handlers = {
-      PossibleAs: (next: string) => {
-        assert(state.state === 'PossibleAs', 'bug in block params parser');
-
-        if (isSpace(next)) {
-          // " as ..."
-          state = { state: 'BeforeStartPipe' };
-          this.tokenizer.transitionTo(AFTER_ATTRIBUTE_NAME);
-          this.tokenizer.consume();
-        } else if (next === '|') {
-          // " as|..."
-          // Following Handlebars and require a space between "as" and the pipe
-          throw generateSyntaxError(
-            `Invalid block parameters syntax: expecting at least one space character between "as" and "|"`,
-            as.start.until(this.offset().move(1))
-          );
-        } else {
-          // " as{{...", " async...", " as=...", " as>...", " as/>..."
-          // Don't consume, let the normal tokenizer code handle the next steps
-          state = { state: 'Done' };
-        }
-      },
-
-      BeforeStartPipe: (next: string) => {
-        assert(state.state === 'BeforeStartPipe', 'bug in block params parser');
-
-        if (isSpace(next)) {
-          this.tokenizer.consume();
-        } else if (next === '|') {
-          state = { state: 'BeforeBlockParamName' };
-          this.tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
-          this.tokenizer.consume();
-        } else {
-          // " as {{...", " as bs...", " as =...", " as ...", " as/>..."
-          // Don't consume, let the normal tokenizer code handle the next steps
-          state = { state: 'Done' };
-        }
-      },
-
-      BeforeBlockParamName: (next: string) => {
-        assert(state.state === 'BeforeBlockParamName', 'bug in block params parser');
-
-        if (isSpace(next)) {
-          this.tokenizer.consume();
-        } else if (next === '') {
-          // The HTML tokenizer ran out of characters, so we are either
-          // encountering mustache or <EOF>
-          state = { state: 'Done' };
-          this.pendingError = {
-            mustache(loc: src.SourceSpan) {
-              throw generateSyntaxError(
-                `Invalid block parameters syntax: mustaches cannot be used inside parameters list`,
-                loc
-              );
-            },
-            eof(loc: src.SourceOffset) {
-              throw generateSyntaxError(
-                `Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list`,
-                as.start.until(loc)
-              );
-            },
-          };
-        } else if (next === '|') {
-          if (element.params.length === 0) {
-            // Following Handlebars and treat empty block params a syntax error
-            throw generateSyntaxError(
-              `Invalid block parameters syntax: empty parameters list, expecting at least one identifier`,
-              as.start.until(this.offset().move(1))
-            );
-          } else {
-            state = { state: 'AfterEndPipe' };
-            this.tokenizer.consume();
-          }
-        } else if (next === '>' || next === '/') {
-          throw generateSyntaxError(
-            `Invalid block parameters syntax: incomplete parameters list, expecting "|" but the tag was closed prematurely`,
-            as.start.until(this.offset().move(1))
-          );
-        } else {
-          // slurp up anything else into the name, validate later
-          state = {
-            state: 'BlockParamName',
-            name: next,
-            start: this.offset(),
-          };
-          this.tokenizer.consume();
-        }
-      },
-
-      BlockParamName: (next: string) => {
-        assert(state.state === 'BlockParamName', 'bug in block params parser');
-
-        if (next === '') {
-          // The HTML tokenizer ran out of characters, so we are either
-          // encountering mustache or <EOF>, HBS side will attach the error
-          // to the next span
-          state = { state: 'Done' };
-          this.pendingError = {
-            mustache(loc: src.SourceSpan) {
-              throw generateSyntaxError(
-                `Invalid block parameters syntax: mustaches cannot be used inside parameters list`,
-                loc
-              );
-            },
-            eof(loc: src.SourceOffset) {
-              throw generateSyntaxError(
-                `Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list`,
-                as.start.until(loc)
-              );
-            },
-          };
-        } else if (next === '|' || isSpace(next)) {
-          let loc = state.start.until(this.offset());
-
-          if (state.name === 'this' || ID_INVERSE_PATTERN.test(state.name)) {
-            throw generateSyntaxError(
-              `Invalid block parameters syntax: invalid identifier name \`${state.name}\``,
-              loc
-            );
-          }
-
-          element.params.push(b.var({ name: state.name, loc }));
-
-          state = next === '|' ? { state: 'AfterEndPipe' } : { state: 'BeforeBlockParamName' };
-          this.tokenizer.consume();
-        } else if (next === '>' || next === '/') {
-          throw generateSyntaxError(
-            `Invalid block parameters syntax: expecting "|" but the tag was closed prematurely`,
-            as.start.until(this.offset().move(1))
-          );
-        } else {
-          // slurp up anything else into the name, validate later
-          state.name += next;
-          this.tokenizer.consume();
-        }
-      },
-
-      AfterEndPipe: (next: string) => {
-        assert(state.state === 'AfterEndPipe', 'bug in block params parser');
-
-        if (isSpace(next)) {
-          this.tokenizer.consume();
-        } else if (next === '') {
-          // The HTML tokenizer ran out of characters, so we are either
-          // encountering mustache or <EOF>, HBS side will attach the error
-          // to the next span
-          state = { state: 'Done' };
-          this.pendingError = {
-            mustache(loc: src.SourceSpan) {
-              throw generateSyntaxError(
-                `Invalid block parameters syntax: modifiers cannot follow parameters list`,
-                loc
-              );
-            },
-            eof(loc: src.SourceOffset) {
-              throw generateSyntaxError(
-                `Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list`,
-                as.start.until(loc)
-              );
-            },
-          };
-        } else if (next === '>' || next === '/') {
-          // Don't consume, let the normal tokenizer code handle the next steps
-          state = { state: 'Done' };
-        } else {
-          // Slurp up the next "token" for the error span
-          state = {
-            state: 'Error',
-            message:
-              'Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list',
-            start: this.offset(),
-          };
-          this.tokenizer.consume();
-        }
-      },
-
-      Error: (next: string) => {
-        assert(state.state === 'Error', 'bug in block params parser');
-
-        if (next === '' || next === '/' || next === '>' || isSpace(next)) {
-          throw generateSyntaxError(state.message, state.start.until(this.offset()));
-        } else {
-          // Slurp up the next "token" for the error span
-          this.tokenizer.consume();
-        }
-      },
-
-      Done: () => {
-        assert(false, 'This should never be called');
-      },
-    } as const satisfies {
-      [S in keyof States]: Handler;
-    };
-
-    let next: string;
-
-    do {
-      next = this.tokenizer.peek();
-      handlers[state.state](next);
-    } while (state.state !== 'Done' && next !== '');
-
-    assert(state.state === 'Done', 'bug in block params parser');
-  }
-
-  reportSyntaxError(message: string): void {
-    throw generateSyntaxError(message, this.offset().collapsed());
-  }
-
-  assembleConcatenatedValue(
-    parts: (ASTv1.MustacheStatement | ASTv1.TextNode)[]
-  ): ASTv1.ConcatStatement {
-    assertPresentArray(parts, `the concatenation parts of an element should not be empty`);
-
-    let first = getFirst(parts);
-    let last = getLast(parts);
-
-    return b.concat({
-      parts,
-      loc: this.source.spanFor(first.loc).extend(this.source.spanFor(last.loc)),
-    });
-  }
-
-  validateEndTag(
-    tag: StartTag | EndTag,
-    element: ASTv1.ParentNode,
-    selfClosing: boolean
-  ): asserts element is ASTv1.ElementNode {
-    if (voidMap.has(tag.name) && !selfClosing) {
-      // EngTag is also called by StartTag for void and self-closing tags (i.e.
-      // <input> or <br />, so we need to check for that here. Otherwise, we would
-      // throw an error for those cases.
-      throw generateSyntaxError(
-        `<${tag.name}> elements do not need end tags. You should remove it`,
-        tag.loc
-      );
-    } else if (element.type !== 'ElementNode') {
-      throw generateSyntaxError(`Closing tag </${tag.name}> without an open tag`, tag.loc);
-    } else if (element.tag !== tag.name) {
-      throw generateSyntaxError(
-        `Closing tag </${tag.name}> did not match last open tag <${element.tag}> (on line ${element.loc.startPosition.line})`,
-        tag.loc
-      );
-    }
-  }
-
-  assembleAttributeValue(
-    parts: ASTv1.AttrPart[],
-    isQuoted: boolean,
-    isDynamic: boolean,
-    span: src.SourceSpan
-  ): ASTv1.AttrValue {
-    if (isDynamic) {
-      if (isQuoted) {
-        return this.assembleConcatenatedValue(parts);
-      } else {
-        assertPresentArray(parts);
-
-        const [head, a] = parts;
-        if (a === undefined || (a.type === 'TextNode' && a.chars === '/')) {
-          return head;
-        } else {
-          throw generateSyntaxError(
-            `An unquoted attribute value must be a string or a mustache, ` +
-              `preceded by whitespace or a '=' character, and ` +
-              `followed by whitespace, a '>' character, or '/>'`,
-            span
-          );
+    if (node.inverse) {
+      const lastProg = prog[prog.length - 1];
+      if (lastProg && lastProg.type === 'TextNode') {
+        const text = lastProg.chars;
+        const lastNewline = text.lastIndexOf('\n');
+        if (lastNewline !== -1 && /^[ \t]*$/u.test(text.slice(lastNewline + 1))) {
+          const oldLen = lastProg.chars.length;
+          lastProg.chars = text.slice(0, lastNewline + 1);
+          adjustTextNodeEnd(lastProg, oldLen - lastProg.chars.length);
         }
       }
-    } else if (isPresentArray(parts)) {
-      return parts[0];
-    } else {
-      return b.text({ chars: '', loc: span });
+      const firstInv = node.inverse.body[0];
+      if (firstInv && firstInv.type === 'TextNode') {
+        const oldLen = firstInv.chars.length;
+        firstInv.chars = firstInv.chars.replace(/^[ \t]*\r?\n/u, '');
+        adjustTextNodeStart(firstInv, oldLen - firstInv.chars.length);
+      }
+    }
+
+    const lastBody = node.inverse ? node.inverse.body : node.program.body;
+    const lastItem = lastBody[lastBody.length - 1];
+    if (lastItem && lastItem.type === 'TextNode') {
+      const text = lastItem.chars;
+      const lastNewline = text.lastIndexOf('\n');
+      if (lastNewline !== -1 && /^[ \t]*$/u.test(text.slice(lastNewline + 1))) {
+        const oldLen = lastItem.chars.length;
+        lastItem.chars = text.slice(0, lastNewline + 1);
+        adjustTextNodeEnd(lastItem, oldLen - lastItem.chars.length);
+      }
+    }
+
+    removeEmptyTextNodes(node.program.body);
+    if (node.inverse) removeEmptyTextNodes(node.inverse.body);
+  }
+
+  removeEmptyTextNodes(body);
+}
+
+function removeEmptyTextNodes(body: ASTv1.Statement[]): void {
+  for (let i = body.length - 1; i >= 0; i--) {
+    let node = body[i];
+    if (node && node.type === 'TextNode' && node.chars === '') {
+      body.splice(i, 1);
     }
   }
 }
+
+// ============================================================================
+// Strip flags processing (post-processing)
+// ============================================================================
+
+/**
+ * Apply tilde-strip flags (~) from mustaches and blocks.
+ * {{~ strips preceding whitespace, ~}} strips following whitespace.
+ */
+function applyStripFlags(body: ASTv1.Statement[]): void {
+  for (let i = 0; i < body.length; i++) {
+    let node = body[i];
+    if (!node) continue;
+
+    let strip: { open: boolean; close: boolean } | undefined;
+
+    if (node.type === 'MustacheStatement') {
+      strip = node.strip;
+    } else if (node.type === 'MustacheCommentStatement') {
+      strip = (node as unknown as { strip: { open: boolean; close: boolean } }).strip;
+    } else if (node.type === 'BlockStatement') {
+      // For blocks: openStrip.open = leading ~, closeStrip.close = trailing ~
+      if (node.openStrip.open) {
+        stripPrecedingWhitespace(body, i);
+      }
+      if (node.closeStrip.close) {
+        stripFollowingWhitespace(body, i);
+      }
+
+      // Inner block whitespace stripping:
+      // openStrip.close ({{#foo~}}) -> strip leading whitespace in program
+      if (node.openStrip.close) {
+        stripLeadingWhitespace(node.program.body);
+      }
+      // inverseStrip.open ({{~else}}) -> strip trailing whitespace in program
+      if (node.inverseStrip.open) {
+        stripTrailingWhitespace(node.program.body);
+      }
+      // inverseStrip.close ({{else~}}) -> strip leading whitespace in inverse
+      if (node.inverse && node.inverseStrip.close) {
+        stripLeadingWhitespace(node.inverse.body);
+      }
+      // closeStrip.open ({{~/foo}}) -> strip trailing whitespace in inverse (or program)
+      if (node.closeStrip.open) {
+        if (node.inverse) {
+          stripTrailingWhitespace(node.inverse.body);
+        } else {
+          stripTrailingWhitespace(node.program.body);
+        }
+      }
+
+      // Recurse into block bodies
+      applyStripFlags(node.program.body);
+      if (node.inverse) applyStripFlags(node.inverse.body);
+      continue;
+    }
+
+    if (node.type === 'ElementNode') {
+      applyStripFlags(node.children);
+      continue;
+    }
+
+    if (!strip) continue;
+
+    if (strip.open) {
+      stripPrecedingWhitespace(body, i);
+    }
+    if (strip.close) {
+      stripFollowingWhitespace(body, i);
+    }
+  }
+
+  // Remove empty TextNodes left after stripping
+  for (let i = body.length - 1; i >= 0; i--) {
+    let node = body[i];
+    if (node && node.type === 'TextNode' && node.chars === '') {
+      body.splice(i, 1);
+    }
+  }
+}
+
+function stripPrecedingWhitespace(body: ASTv1.Statement[], index: number): void {
+  let prev = index > 0 ? body[index - 1] : null;
+  if (prev && prev.type === 'TextNode') {
+    let oldLen = prev.chars.length;
+    prev.chars = prev.chars.replace(/[ \t\r\n]+$/u, '');
+    adjustTextNodeEnd(prev, oldLen - prev.chars.length);
+  }
+}
+
+function stripFollowingWhitespace(body: ASTv1.Statement[], index: number): void {
+  let next = index < body.length - 1 ? body[index + 1] : null;
+  if (next && next.type === 'TextNode') {
+    let oldLen = next.chars.length;
+    next.chars = next.chars.replace(/^[ \t\r\n]+/u, '');
+    adjustTextNodeStart(next, oldLen - next.chars.length);
+  }
+}
+
+function stripLeadingWhitespace(body: ASTv1.Statement[]): void {
+  let first = body[0];
+  if (first && first.type === 'TextNode') {
+    let oldLen = first.chars.length;
+    first.chars = first.chars.replace(/^[ \t\r\n]+/u, '');
+    adjustTextNodeStart(first, oldLen - first.chars.length);
+  }
+}
+
+function stripTrailingWhitespace(body: ASTv1.Statement[]): void {
+  let last = body.length > 0 ? body[body.length - 1] : null;
+  if (last && last.type === 'TextNode') {
+    let oldLen = last.chars.length;
+    last.chars = last.chars.replace(/[ \t\r\n]+$/u, '');
+    adjustTextNodeEnd(last, oldLen - last.chars.length);
+  }
+}
+
+// ============================================================================
+// Comment strip cleanup (post-processing)
+// ============================================================================
+
+/**
+ * Remove the internal `strip` property from MustacheCommentStatement nodes.
+ * This property is used internally for whitespace stripping but should not
+ * appear in the final AST (it's not part of the ASTv1 interface).
+ */
+function cleanupCommentStrip(body: ASTv1.Statement[]): void {
+  for (let node of body) {
+    if (node.type === 'MustacheCommentStatement') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (node as any).strip;
+    } else if (node.type === 'BlockStatement') {
+      cleanupCommentStrip(node.program.body);
+      if (node.inverse) cleanupCommentStrip(node.inverse.body);
+    } else if (node.type === 'ElementNode') {
+      // Also clean up comments in element's comments array
+      for (let comment of node.comments) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (comment as any).strip;
+      }
+      cleanupCommentStrip(node.children);
+    }
+  }
+}
+
+// ============================================================================
+// Entity decoding pass (post-processing)
+// ============================================================================
+
+/**
+ * Walk the AST and decode HTML entities in TextNode chars and text attribute values.
+ */
+function decodeEntitiesInAST(node: ASTv1.Template): void {
+  walkNodes(node.body);
+}
+
+function walkNodes(body: ASTv1.Statement[]): void {
+  for (let node of body) {
+    switch (node.type) {
+      case 'TextNode':
+        node.chars = decodeEntities(node.chars);
+        break;
+      case 'ElementNode':
+        for (let attr of node.attributes) {
+          if (attr.value.type === 'TextNode') {
+            attr.value.chars = decodeEntities(attr.value.chars);
+          } else if (attr.value.type === 'ConcatStatement') {
+            for (let part of attr.value.parts) {
+              if (part.type === 'TextNode') {
+                part.chars = decodeEntities(part.chars);
+              }
+            }
+          }
+        }
+        walkNodes(node.children);
+        break;
+      case 'BlockStatement':
+        walkNodes(node.program.body);
+        if (node.inverse) walkNodes(node.inverse.body);
+        break;
+    }
+  }
+}
+
+// ============================================================================
+// Location conversion
+// ============================================================================
+
+// Peggy emits 1-based columns and plain {line, column} objects; Glimmer uses
+// 0-based columns and SourceSpan instances. Convert a single Peggy position
+// to a character offset into the source.
+function peggyPosToOffset(source: src.Source, pos: { line: number; column: number }): number {
+  return source.offsetFor(pos.line, pos.column - 1).offset ?? 0;
+}
+
+function peggySpanToSourceSpan(
+  source: src.Source,
+  span: { start: { line: number; column: number }; end: { line: number; column: number } }
+): src.SourceSpan {
+  return src.SourceSpan.forCharPositions(
+    source,
+    peggyPosToOffset(source, span.start),
+    peggyPosToOffset(source, span.end)
+  );
+}
+
+function isPeggySpan(
+  val: unknown
+): val is { start: { line: number; column: number }; end: { line: number; column: number } } {
+  if (!val || typeof val !== 'object') return false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const v = val as any;
+  return (
+    v.start &&
+    typeof v.start.line === 'number' &&
+    typeof v.start.column === 'number' &&
+    v.end &&
+    typeof v.end.line === 'number' &&
+    typeof v.end.column === 'number'
+  );
+}
+
+/**
+ * Recursively convert plain {start, end} location objects to SourceSpan instances.
+ * PathExpression nodes are upgraded via buildLegacyPath so that setting
+ * `node.original` propagates to `head`/`tail`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function convertLocations(node: any, source: src.Source): any {
+  if (!node || typeof node !== 'object') return node;
+
+  if (Array.isArray(node)) {
+    return node.map((item) => convertLocations(item, source));
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let result: any = {};
+
+  for (let key of Object.keys(node)) {
+    if (node.type === 'PathExpression' && key === 'original') continue;
+    let val = node[key];
+    if ((key === 'loc' || key === 'openTag' || key === 'closeTag') && isPeggySpan(val)) {
+      result[key] = peggySpanToSourceSpan(source, val);
+    } else if (key === 'closeTag' && val === undefined) {
+      result[key] = null;
+    } else {
+      result[key] = convertLocations(val, source);
+    }
+  }
+
+  if (result.type === 'PathExpression') {
+    return buildLegacyPath({
+      head: result.head,
+      tail: result.tail,
+      loc: result.loc,
+    });
+  }
+
+  return result;
+}
+
+// ============================================================================
+// Public types and interfaces
+// ============================================================================
 
 /**
   ASTPlugins can make changes to the Glimmer template AST before
@@ -732,69 +573,153 @@ const syntax: Syntax = {
   Walker,
 };
 
-class CodemodEntityParser extends EntityParser {
-  // match upstream types, but never match an entity
-  constructor() {
-    super({});
+// ============================================================================
+// Parse error conversion
+// ============================================================================
+
+/**
+ * Convert a parse error from the Peggy grammar into a GlimmerSyntaxError
+ * with the expected format (module name, line, column, code snippet).
+ *
+ * The Jison-compatible error path exists because Prettier's Handlebars
+ * printer reads `err.hash.loc` and the `Parse error on line N:\n…\n^`
+ * message shape — keep that format intact when touching this function.
+ */
+function convertParseError(e: Error, source: src.Source): Error {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const err = e as any;
+
+  if (err.name === 'SyntaxError' && err.location) {
+    // Peggy 1-based columns → 0-based (via peggyPosToOffset).
+    const line = err.location.start.line;
+    const column = err.location.start.column - 1;
+
+    // For certain error messages, produce a zero-length span at the offending
+    // character. Peggy's match spans whitespace, so we back up one char from
+    // the end position.
+    const zeroLengthErrors = [
+      '" is not a valid character within attribute names',
+      'attribute name cannot start with equals sign',
+    ];
+    if (zeroLengthErrors.includes(err.message)) {
+      const errorOffset = peggyPosToOffset(source, err.location.end) - 1;
+      const span = src.SourceSpan.forCharPositions(source, errorOffset, errorOffset);
+      return generateSyntaxError(err.message, span);
+    }
+
+    // Prettier consumes a Jison-shaped error for "Expecting ...". Preserve it.
+    if (err.message.startsWith("Expecting '")) {
+      const inputLines = source.source.split('\n');
+      const sourceLine = inputLines.slice(0, line).join('');
+      const pointer =
+        '-'.repeat(sourceLine.length - (inputLines[line - 1] || '').length + column) + '^';
+      const fullMsg = `Parse error on line ${line}:\n${sourceLine}\n${pointer}\n${err.message}`;
+      const jisonError = new Error(fullMsg);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (jisonError as any).hash = {
+        text: '',
+        line: line - 1,
+        loc: { first_line: line, last_line: line, first_column: column, last_column: column },
+      };
+      return jisonError;
+    }
+
+    const span = peggySpanToSourceSpan(source, err.location);
+    return generateSyntaxError(err.message, span);
   }
 
-  override parse(): string | undefined {
-    return undefined;
+  // Errors already reshaped to Jison form (see above) — unwrap the message.
+  if (err.hash && err.hash.loc) {
+    const startOffset =
+      source.offsetFor(err.hash.loc.first_line, err.hash.loc.first_column).offset ?? 0;
+    const span = src.SourceSpan.forCharPositions(source, startOffset, startOffset);
+
+    // Extract the core message from "Parse error on line N:\nMESSAGE"
+    const match = err.message.match(/^Parse error on line \d+:\n([\s\S]*)$/);
+    const message = match ? match[1] : err.message;
+    return generateSyntaxError(message, span);
   }
+
+  return e;
 }
 
+// ============================================================================
+// Main preprocess function (unified Peggy grammar pipeline)
+// ============================================================================
+
 export function preprocess(
-  input: string | src.Source | HBS.Program,
+  input: string | src.Source,
   options: PreprocessOptions = {}
 ): ASTv1.Template {
   let mode = options.mode || 'precompile';
-
   let source: src.Source;
-  let ast: HBS.Program;
+  let inputStr: string;
+
   if (typeof input === 'string') {
+    inputStr = input;
     source = new src.Source(input, options.meta?.moduleName);
-
-    if (mode === 'codemod') {
-      ast = parseWithoutProcessing(input, options.parseOptions) as HBS.Program;
-    } else {
-      ast = parse(input, options.parseOptions) as HBS.Program;
-    }
   } else if (input instanceof src.Source) {
+    inputStr = input.source;
     source = input;
-
-    if (mode === 'codemod') {
-      ast = parseWithoutProcessing(input.source, options.parseOptions) as HBS.Program;
-    } else {
-      ast = parse(input.source, options.parseOptions) as HBS.Program;
-    }
   } else {
-    source = new src.Source('', options.meta?.moduleName);
-    ast = input;
+    // Legacy: input could be an HBS.Program object.
+    // For backward compat, try to handle string coercion, but this path
+    // should not be hit in normal usage with the new pipeline.
+    throw new Error(
+      'preprocess() no longer accepts a pre-parsed HBS AST. Pass a string or Source object.'
+    );
   }
 
-  let entityParser = undefined;
-  if (mode === 'codemod') {
-    entityParser = new CodemodEntityParser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rawTemplate: any;
+  try {
+    rawTemplate = parseTemplate(inputStr, { srcName: options.parseOptions?.srcName });
+  } catch (e) {
+    throw convertParseError(e as Error, source);
   }
 
-  let offsets = src.SourceSpan.forCharPositions(source, 0, source.source.length);
-  ast.loc = {
-    source: '(program)',
-    start: offsets.startPosition,
-    end: offsets.endPosition,
-  };
+  // Convert plain location objects to SourceSpan instances
+  let template: ASTv1.Template = convertLocations(rawTemplate, source);
 
-  let template = new TokenizerEventHandlers(source, entityParser, mode).parse(
-    ast,
-    options.locals ?? []
-  );
+  // Post-processing: entity decoding (skip in codemod mode)
+  if (mode !== 'codemod') {
+    decodeEntitiesInAST(template);
+  }
 
+  // Post-processing: apply strip flags (~)
+  if (mode !== 'codemod') {
+    applyStripFlags(template.body);
+  }
+
+  // Clean up: remove internal strip property from MustacheCommentStatement nodes
+  cleanupCommentStrip(template.body);
+
+  // Post-processing: standalone whitespace stripping
+  if (mode !== 'codemod' && !options.parseOptions?.ignoreStandalone) {
+    stripStandalone(template.body);
+  }
+
+  // Point template.blockParams at options.locals BY REFERENCE, not by copy.
+  //
+  // babel-plugin-ember-template-compilation passes `options.locals` as a
+  // readOnlyArray proxy over its internal ScopeLocals array. As plugins run
+  // (notably `scope.crawl` from the babel plugin), they mutate that underlying
+  // array via `scope.add(name)`. Because the proxy is live, template.blockParams
+  // automatically reflects those mutations — so by the time later plugins like
+  // auto-import-builtins read `template.blockParams` in their trackLocals pass,
+  // they correctly see the lexical scope variables that were discovered by
+  // earlier plugins. If we copy here (e.g. `[...options.locals]`), we freeze
+  // the snapshot at preprocess-start time and auto-import-builtins ends up
+  // rewriting names that should have been recognized as shadowed locals.
+  if (options.locals) {
+    template.blockParams = options.locals;
+  }
+
+  // Run AST plugins
   if (options.plugins?.ast) {
     for (const transform of options.plugins.ast) {
       let env: ASTPluginEnvironment = assign({}, options, { syntax }, { plugins: undefined });
-
       let pluginResult = transform(env);
-
       traverse(template, pluginResult.visitor);
     }
   }
