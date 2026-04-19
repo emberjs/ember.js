@@ -31,7 +31,30 @@ export function tagForProperty(
 
   let tag = tagFor(obj, propertyKey, meta);
 
-  if (DEBUG && addMandatorySetter && !(globalThis as any).__GXT_MODE__) {
+  if (DEBUG && addMandatorySetter) {
+    // In GXT mode, mandatory setter interacts poorly with the backend's
+    // component rendering pipeline: the backend re-assigns reserved props
+    // (args, attrs, element) during render, and direct property writes from
+    // classic component instances (isComponent=true) flow through paths that
+    // bypass setWithMandatorySetter. Skip for those cases to avoid false
+    // positives while preserving the DEBUG checks for plain objects/observers
+    // on non-component EmberObjects (e.g. EmberObject.create, controllers).
+    if ((globalThis as any).__GXT_MODE__) {
+      if (
+        propertyKey === 'args' ||
+        propertyKey === 'attrs' ||
+        propertyKey === 'element' ||
+        propertyKey === 'elementId' ||
+        propertyKey === 'parentView' ||
+        propertyKey === 'childViews' ||
+        propertyKey === '_view'
+      ) {
+        return tag;
+      }
+      if ((obj as any).isComponent) {
+        return tag;
+      }
+    }
     setupMandatorySetter!(tag, obj, propertyKey);
   }
 
