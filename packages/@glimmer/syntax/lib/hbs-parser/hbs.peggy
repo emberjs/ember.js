@@ -92,13 +92,13 @@ function buildPath(data, segments, loc) {
   // Build the structured head object with `original` alias (required by ASTv1)
   let head;
   if (isThis) {
-    head = { type: 'ThisHead', original: 'this', loc: { start: loc.start, end: { line: loc.start.line, column: loc.start.column + 4 } } };
+    head = { type: 'ThisHead', original: 'this', loc: { start: loc.start, end: { offset: loc.start.offset + 4, line: loc.start.line, column: loc.start.column + 4 } } };
   } else if (data) {
     if (headName === undefined) {
       error("Attempted to parse a path expression, but it was not valid. Paths beginning with @ must start with a-z");
     }
     let atName = '@' + headName;
-    head = { type: 'AtHead', name: atName, original: atName, loc: headLoc ? { start: loc.start, end: { line: loc.start.line, column: loc.start.column + headName.length + 1 } } : loc };
+    head = { type: 'AtHead', name: atName, original: atName, loc: headLoc ? { start: loc.start, end: { offset: loc.start.offset + headName.length + 1, line: loc.start.line, column: loc.start.column + headName.length + 1 } } : loc };
   } else {
     if (headName === undefined) {
       error("Paths must start with a-z or A-Z");
@@ -134,7 +134,7 @@ function buildElementPath(tagName, loc) {
   if (tail.length > 0) {
     headLoc = {
       start: loc.start,
-      end: { line: loc.start.line, column: loc.start.column + headStr.length },
+      end: { offset: loc.start.offset + headStr.length, line: loc.start.line, column: loc.start.column + headStr.length },
     };
   } else {
     headLoc = loc;

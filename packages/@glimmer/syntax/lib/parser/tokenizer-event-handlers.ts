@@ -394,37 +394,28 @@ function walkNodes(body: ASTv1.Statement[]): void {
 // Location conversion
 // ============================================================================
 
-// Peggy emits 1-based columns and plain {line, column} objects; Glimmer uses
-// 0-based columns and SourceSpan instances. Convert a single Peggy position
-// to a character offset into the source.
-function peggyPosToOffset(source: src.Source, pos: { line: number; column: number }): number {
-  return source.offsetFor(pos.line, pos.column - 1).offset ?? 0;
-}
-
+// Peggy's location() returns `{ start: { offset, line, column }, end: {...} }`
+// where offset is already the 0-based character offset into the source string —
+// exactly what SourceSpan.forCharPositions needs. Use it directly instead of
+// re-deriving the offset from line/column via source.offsetFor/charPosFor.
 function peggySpanToSourceSpan(
   source: src.Source,
-  span: { start: { line: number; column: number }; end: { line: number; column: number } }
+  span: { start: { offset: number }; end: { offset: number } }
 ): src.SourceSpan {
-  return src.SourceSpan.forCharPositions(
-    source,
-    peggyPosToOffset(source, span.start),
-    peggyPosToOffset(source, span.end)
-  );
+  return src.SourceSpan.forCharPositions(source, span.start.offset, span.end.offset);
 }
 
 function isPeggySpan(
   val: unknown
-): val is { start: { line: number; column: number }; end: { line: number; column: number } } {
+): val is { start: { offset: number }; end: { offset: number } } {
   if (!val || typeof val !== 'object') return false;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const v = val as any;
   return (
     v.start &&
-    typeof v.start.line === 'number' &&
-    typeof v.start.column === 'number' &&
+    typeof v.start.offset === 'number' &&
     v.end &&
-    typeof v.end.line === 'number' &&
-    typeof v.end.column === 'number'
+    typeof v.end.offset === 'number'
   );
 }
 
@@ -609,7 +600,7 @@ function convertParseError(e: Error, source: src.Source): Error {
   const err = e as any;
 
   if (err.name === 'SyntaxError' && err.location) {
-    // Peggy 1-based columns → 0-based (via peggyPosToOffset).
+    // Peggy reports 1-based columns in its printed message; Glimmer uses 0-based.
     const line = err.location.start.line;
     const column = err.location.start.column - 1;
 
@@ -621,7 +612,7 @@ function convertParseError(e: Error, source: src.Source): Error {
       'attribute name cannot start with equals sign',
     ];
     if (zeroLengthErrors.includes(err.message)) {
-      const errorOffset = peggyPosToOffset(source, err.location.end) - 1;
+      const errorOffset = err.location.end.offset - 1;
       const span = src.SourceSpan.forCharPositions(source, errorOffset, errorOffset);
       return generateSyntaxError(err.message, span);
     }
