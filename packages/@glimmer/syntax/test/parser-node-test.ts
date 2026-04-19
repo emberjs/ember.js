@@ -1,7 +1,7 @@
 import type { Dict } from '@glimmer/interfaces';
 import type { ASTv1 } from '@glimmer/syntax';
 import { builders as b, preprocess as parse } from '@glimmer/syntax';
-import { syntaxErrorFor } from '@glimmer-workspace/test-utils';
+import { parseErrorFor } from '@glimmer-workspace/test-utils';
 
 import { astEqual } from './support';
 
@@ -46,7 +46,14 @@ test('disallowed quote in element space is rejected', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('" is not a valid character within attribute names', '', 'test-module', 1, 14)
+    parseErrorFor(
+      '" is not a valid character within attribute names',
+      '<img foo="bar"" >',
+      'test-module',
+      1,
+      14,
+      1
+    )
   );
 });
 
@@ -56,7 +63,14 @@ test('disallowed equals sign in element space is rejected', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('attribute name cannot start with equals sign', '', 'test-module', 1, 5)
+    parseErrorFor(
+      'attribute name cannot start with equals sign',
+      '<img =foo >',
+      'test-module',
+      1,
+      4,
+      2
+    )
   );
 });
 
@@ -127,12 +141,13 @@ test('attributes are not allowed as values', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       'Illegal use of ...attributes outside of an element opening tag; ...attributes is only valid inside <tag ...attributes ...>',
       '{{...attributes}}',
       'test-module',
       1,
-      0
+      0,
+      17
     )
   );
 });
@@ -143,12 +158,13 @@ test('attributes are not allowed as modifiers', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       '...attributes cannot be used as a modifier; write <tag ...attributes> instead of <tag {{...attributes}}>',
-      '{{...attributes}}',
+      '<div {{...attributes}}></div>',
       'test-module',
       1,
-      5
+      5,
+      17
     )
   );
 });
@@ -159,12 +175,13 @@ test('attributes are not allowed as attribute values', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       '...attributes cannot be used as an attribute value; write <tag ...attributes> as a standalone form in the opening tag',
-      '{{...attributes}}',
+      '<div class={{...attributes}}></div>',
       'test-module',
       1,
-      11
+      11,
+      17
     )
   );
 });
@@ -747,12 +764,13 @@ test('Awkward mustache in unquoted attribute value', (assert) => {
         meta: { moduleName: 'test-module' },
       });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'`,
-      'class=a{{foo}}',
+      '<div class=a{{foo}}></div>',
       'test-module',
       1,
-      5
+      5,
+      14
     )
   );
 
@@ -762,12 +780,13 @@ test('Awkward mustache in unquoted attribute value', (assert) => {
         meta: { moduleName: 'test-module' },
       });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'`,
-      'class=a{{foo}}b',
+      '<div class=a{{foo}}b></div>',
       'test-module',
       1,
-      5
+      5,
+      15
     )
   );
 
@@ -777,12 +796,13 @@ test('Awkward mustache in unquoted attribute value', (assert) => {
         meta: { moduleName: 'test-module' },
       });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'`,
-      'class={{foo}}b',
+      '<div class={{foo}}b></div>',
       'test-module',
       1,
-      5
+      5,
+      14
     )
   );
 });
@@ -850,12 +870,13 @@ test('a Handlebars comment in invalid element space', (assert) => {
         meta: { moduleName: 'test-module' },
       });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       'Using a Handlebars comment when in the `attributeName` state is not supported',
-      '{{! some comment }}',
+      '\nbefore <div \n  a{{! some comment }} data-foo="bar"></div> after',
       'test-module',
       3,
-      3
+      3,
+      19
     )
   );
 
@@ -865,12 +886,13 @@ test('a Handlebars comment in invalid element space', (assert) => {
         meta: { moduleName: 'test-module' },
       });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       'Using a Handlebars comment when in the `beforeAttributeValue` state is not supported',
-      '{{! some comment }}',
+      '\nbefore <div \n  a={{! some comment }} data-foo="bar"></div> after',
       'test-module',
       3,
-      4
+      4,
+      19
     )
   );
 
@@ -880,12 +902,13 @@ test('a Handlebars comment in invalid element space', (assert) => {
         meta: { moduleName: 'test-module' },
       });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       'Using a Handlebars comment when in the `attributeValueDoubleQuoted` state is not supported',
-      '{{! some comment }}',
+      '\nbefore <div \n  a="{{! some comment }}" data-foo="bar"></div> after',
       'test-module',
       3,
-      5
+      5,
+      19
     )
   );
 });
@@ -919,12 +942,13 @@ test('Handlebars partial should error', (assert) => {
     () => {
       parse('{{> foo}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       'Handlebars partials ({{> foo}}) are not supported; use a component like <Foo /> instead',
       '{{> foo}}',
       'test-module',
       1,
-      0
+      0,
+      9
     )
   );
 });
@@ -952,12 +976,13 @@ test('disallowed mustaches in the tagName space', (assert) => {
     () => {
       parse('<{{"asdf"}}></{{"asdf"}}>', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       'Cannot use mustaches in an elements tagname; for dynamic components use an angle-bracket invocation like <this.component /> or <@arg />',
-      '{{"asdf"}}',
+      '<{{"asdf"}}></{{"asdf"}}>',
       'test-module',
       1,
-      1
+      1,
+      10
     )
   );
 
@@ -965,12 +990,13 @@ test('disallowed mustaches in the tagName space', (assert) => {
     () => {
       parse('<input{{bar}}>', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       'Cannot use mustaches in an elements tagname; for dynamic components use an angle-bracket invocation like <this.component /> or <@arg />',
-      '{{bar}}',
+      '<input{{bar}}>',
       'test-module',
       1,
-      6
+      6,
+      7
     )
   );
 });
@@ -1013,12 +1039,13 @@ test('path expression with "dangling dot" throws error', (assert) => {
     () => {
       parse('{{if foo. bar baz}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       "'.' is not a supported path in Glimmer; check for a path with a trailing '.'",
-      '.',
+      '{{if foo. bar baz}}',
       'test-module',
       1,
-      8
+      8,
+      1
     )
   );
 });
@@ -1028,12 +1055,13 @@ test('string literal as path throws error', (assert) => {
     () => {
       parse('{{("foo-baz")}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `StringLiteral "foo-baz" cannot be called as a sub-expression, replace ("foo-baz") with "foo-baz"`,
-      '"foo-baz"',
+      '{{("foo-baz")}}',
       'test-module',
       1,
-      3
+      3,
+      9
     )
   );
 });
@@ -1043,12 +1071,13 @@ test('boolean literal as path throws error', (assert) => {
     () => {
       parse('{{(true)}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `BooleanLiteral "true" cannot be called as a sub-expression, replace (true) with true`,
-      'true',
+      '{{(true)}}',
       'test-module',
       1,
-      3
+      3,
+      4
     )
   );
 });
@@ -1058,12 +1087,13 @@ test('undefined literal as path throws error', (assert) => {
     () => {
       parse('{{(undefined)}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `UndefinedLiteral "undefined" cannot be called as a sub-expression, replace (undefined) with undefined`,
-      'undefined',
+      '{{(undefined)}}',
       'test-module',
       1,
-      3
+      3,
+      9
     )
   );
 });
@@ -1073,12 +1103,13 @@ test('null literal as path throws error', (assert) => {
     () => {
       parse('{{(null)}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `NullLiteral "null" cannot be called as a sub-expression, replace (null) with null`,
-      'null',
+      '{{(null)}}',
       'test-module',
       1,
-      3
+      3,
+      4
     )
   );
 });
@@ -1088,12 +1119,13 @@ test('number literal as path throws error', (assert) => {
     () => {
       parse('{{(42)}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor(
+    parseErrorFor(
       `NumberLiteral "42" cannot be called as a sub-expression, replace (42) with 42`,
-      '42',
+      '{{(42)}}',
       'test-module',
       1,
-      3
+      3,
+      2
     )
   );
 });
