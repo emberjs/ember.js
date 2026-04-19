@@ -127,7 +127,13 @@ test('attributes are not allowed as values', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('Illegal use of ...attributes', '{{...attributes}}', 'test-module', 1, 0)
+    syntaxErrorFor(
+      'Illegal use of ...attributes outside of an element opening tag; ...attributes is only valid inside <tag ...attributes ...>',
+      '{{...attributes}}',
+      'test-module',
+      1,
+      0
+    )
   );
 });
 
@@ -137,7 +143,13 @@ test('attributes are not allowed as modifiers', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('Illegal use of ...attributes', '{{...attributes}}', 'test-module', 1, 5)
+    syntaxErrorFor(
+      '...attributes cannot be used as a modifier; write <tag ...attributes> instead of <tag {{...attributes}}>',
+      '{{...attributes}}',
+      'test-module',
+      1,
+      5
+    )
   );
 });
 
@@ -147,7 +159,13 @@ test('attributes are not allowed as attribute values', (assert) => {
     () => {
       parse(t, { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('Illegal use of ...attributes', '{{...attributes}}', 'test-module', 1, 11)
+    syntaxErrorFor(
+      '...attributes cannot be used as an attribute value; write <tag ...attributes> as a standalone form in the opening tag',
+      '{{...attributes}}',
+      'test-module',
+      1,
+      11
+    )
   );
 });
 
@@ -901,26 +919,32 @@ test('Handlebars partial should error', (assert) => {
     () => {
       parse('{{> foo}}', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('Handlebars partials are not supported', '{{> foo}}', 'test-module', 1, 0)
+    syntaxErrorFor(
+      'Handlebars partials ({{> foo}}) are not supported; use a component like <Foo /> instead',
+      '{{> foo}}',
+      'test-module',
+      1,
+      0
+    )
   );
 });
 
 test('Handlebars partial block should error', (assert) => {
   assert.throws(() => {
     parse('{{#> foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
-  }, /partial blocks are not supported/u);
+  }, /partial blocks \(\{\{#> foo\}\}\.\.\.\{\{\/foo\}\}\) are not supported/u);
 });
 
 test('Handlebars decorator should error', (assert) => {
   assert.throws(() => {
     parse('{{* foo}}', { meta: { moduleName: 'test-module' } });
-  }, /decorators are not supported/u);
+  }, /decorators \(\{\{\* foo\}\}\) are not supported/u);
 });
 
 test('Handlebars decorator block should error', (assert) => {
   assert.throws(() => {
     parse('{{#* foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
-  }, /decorator blocks are not supported/u);
+  }, /decorator blocks \(\{\{#\* foo\}\}\.\.\.\{\{\/foo\}\}\) are not supported/u);
 });
 
 test('disallowed mustaches in the tagName space', (assert) => {
@@ -928,14 +952,26 @@ test('disallowed mustaches in the tagName space', (assert) => {
     () => {
       parse('<{{"asdf"}}></{{"asdf"}}>', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{"asdf"}}', 'test-module', 1, 1)
+    syntaxErrorFor(
+      'Cannot use mustaches in an elements tagname; for dynamic components use an angle-bracket invocation like <this.component /> or <@arg />',
+      '{{"asdf"}}',
+      'test-module',
+      1,
+      1
+    )
   );
 
   assert.throws(
     () => {
       parse('<input{{bar}}>', { meta: { moduleName: 'test-module' } });
     },
-    syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{bar}}', 'test-module', 1, 6)
+    syntaxErrorFor(
+      'Cannot use mustaches in an elements tagname; for dynamic components use an angle-bracket invocation like <this.component /> or <@arg />',
+      '{{bar}}',
+      'test-module',
+      1,
+      6
+    )
   );
 });
 

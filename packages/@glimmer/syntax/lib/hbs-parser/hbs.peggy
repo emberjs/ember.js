@@ -390,31 +390,31 @@ InvalidMustacheCloseError
 // Partials: {{> foo}} — not supported in Glimmer
 PartialStmt
   = "{{" _ ">" _ $([^}]+ / "}" [^}])* "}}" {
-      error("Handlebars partials are not supported");
+      error("Handlebars partials ({{> foo}}) are not supported; use a component like <Foo /> instead");
     }
 
 // Partial blocks: {{#> foo}}...{{/foo}} — not supported
 PartialBlockStmt
   = "{{" _ "#>" _ $([^}]+ / "}" [^}])* "}}" {
-      error("Handlebars partial blocks are not supported");
+      error("Handlebars partial blocks ({{#> foo}}...{{/foo}}) are not supported; use a component with yielded blocks instead");
     }
 
 // Decorator blocks: {{#* foo}}...{{/foo}} — not supported
 DecoratorBlockStmt
   = "{{" _ "#*" _ $([^}]+ / "}" [^}])* "}}" {
-      error("Handlebars decorator blocks are not supported");
+      error("Handlebars decorator blocks ({{#* foo}}...{{/foo}}) are not supported");
     }
 
 // Decorators: {{* foo}} — not supported
 DecoratorStmt
   = "{{" _ "*" _ $([^}]+ / "}" [^}])* "}}" {
-      error("Handlebars decorators are not supported");
+      error("Handlebars decorators ({{* foo}}) are not supported");
     }
 
 // {{...attributes}} outside of element space is illegal
 SplatMustacheStmt
   = "{{" _ "...attributes" _ "}}" {
-      error("Illegal use of ...attributes");
+      error("Illegal use of ...attributes outside of an element opening tag; ...attributes is only valid inside <tag ...attributes ...>");
     }
 
 TripleMustache
@@ -625,10 +625,10 @@ ClosingTagError
 // Mustache in tag name space: <{{foo}}> or <input{{bar}}>
 MustacheInTagNameError
   = "<" startPos:Pos "{{" content:$(!"}}".)*  "}}" endPos:Pos {
-      error('Cannot use mustaches in an elements tagname', { start: startPos.start, end: endPos.start });
+      error('Cannot use mustaches in an elements tagname; for dynamic components use an angle-bracket invocation like <this.component /> or <@arg />', { start: startPos.start, end: endPos.start });
     }
   / "<" TagName startPos:Pos "{{" content:$(!"}}".)*  "}}" endPos:Pos {
-      error('Cannot use mustaches in an elements tagname', { start: startPos.start, end: endPos.start });
+      error('Cannot use mustaches in an elements tagname; for dynamic components use an angle-bracket invocation like <this.component /> or <@arg />', { start: startPos.start, end: endPos.start });
     }
 
 // ============================================================================
@@ -994,7 +994,7 @@ Splattributes
 
 ElementModifier
   = "{{" _ "...attributes" _ "}}" {
-      error("Illegal use of ...attributes");
+      error("...attributes cannot be used as a modifier; write <tag ...attributes> instead of <tag {{...attributes}}>");
     }
   / "{{" _ expr:Expression params:Params hash:HashOpt _ "}}" {
       let loc = location();
@@ -1182,7 +1182,7 @@ SingleQuotedAttrValue
 
 UnquotedAttrValue
   = "{{" _ "...attributes" _ "}}" {
-      error("Illegal use of ...attributes");
+      error("...attributes cannot be used as an attribute value; write <tag ...attributes> as a standalone form in the opening tag");
     }
   / mustache:AttrTripleMustache { return mustache; }
   / mustache:DoubleMustache { return mustache; }
@@ -1264,7 +1264,7 @@ AttrEscapedMustache
 
 AttrMustache
   = "{{" _ "...attributes" _ "}}" {
-      error("Illegal use of ...attributes");
+      error("...attributes cannot be used as an attribute value; write <tag ...attributes> as a standalone form in the opening tag");
     }
   / "{{" _ expr:Expression params:Params hash:HashOpt _ "}}" {
       let loc = location();
