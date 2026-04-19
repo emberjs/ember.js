@@ -106,10 +106,19 @@ export function isGxtModeActive(): boolean {
 // `<!--htmlRaw-->` / `<!--/htmlRaw-->` boundary comments so it can
 // later replace the raw HTML span reactively. Classic Glimmer-VM tests
 // assert on the inner HTML only, so strip these boundary comments.
-const MARKER_COMMENT_RE = /^(%[-+][^%]*%|%[a-z]+%|\$\[[^\]]*\]|\/?htmlRaw|)$/u;
+// Patterns covered:
+//   `%+b:N%` / `%-b:N%`  — block open/close markers
+//   `%glmr%`            — glimmer token markers
+//   `%|%`                — separator marker
+//   `% %`                — empty text placeholder (space-only "name")
+//   `$[N]`              — GXT per-element id comment
+//   `/?htmlRaw`         — GXT htmlRaw boundary comments
+//   ``                   — empty comment (`<!---->`)
+const MARKER_COMMENT_RE =
+  /^(%[-+][^%]*%|%[a-z]+%|% %|\$\[[^\]]*\]|\/?htmlRaw|)$/u;
 
 function stripMarkers(tokens: Token[]): Token[] {
-  return tokens
+  const filtered = tokens
     .filter((token) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       if (token.type === 'Comment') {
@@ -127,6 +136,28 @@ function stripMarkers(tokens: Token[]): Token[] {
       }
       return token;
     });
+
+  // Merge adjacent `Chars` tokens. The marker-stripping above can leave
+  // what used to be `[Chars "hello", Comment "%|%", Chars " world"]` as
+  // two separate `Chars` tokens, while the corresponding GXT-rendered
+  // string is a single merged text node (tokenized as one `Chars`).
+  // Browsers auto-merge adjacent text nodes, so for structural equality
+  // we do the same on the token stream.
+  const merged: Token[] = [];
+  for (const token of filtered) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    if (token.type === 'Chars' && merged.length > 0) {
+      const prev = merged[merged.length - 1] as Token & { chars?: string };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      if (prev && prev.type === 'Chars') {
+        (prev as { chars: string }).chars =
+          (prev.chars ?? '') + ((token as unknown as { chars: string }).chars ?? '');
+        continue;
+      }
+    }
+    merged.push(token);
+  }
+  return merged;
 }
 
 function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; html: string } {
