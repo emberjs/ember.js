@@ -275,6 +275,12 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   private compileAndRender(template: string, context: Dict, target: SimpleElement): void {
     const compile = loadGxtCompile();
     let factory: GxtTemplateFactory;
+    // Signal to the GXT compiler that we're rendering under rehydration
+    // semantics. This changes a few serialization choices — most notably
+    // HTML boolean attribute values on dynamic bindings are emitted as the
+    // literal string "true" (matching classic Glimmer-VM's SSR builder)
+    // instead of the bare-attribute form.
+    (globalThis as unknown as { __gxtRehydrationMode?: boolean }).__gxtRehydrationMode = true;
     // Build scopeValues from registered helpers + components. scopeValues
     // cause the compiler to resolve those names as local bindings, so
     // `{{testing ...}}` invokes the registered helper function directly

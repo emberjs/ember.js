@@ -8416,24 +8416,60 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
         // Render children inside the SVG namespace
         if (children && children.length > 0) {
-          for (const child of children) {
-            if (child instanceof Node) {
-              el.appendChild(child);
-            } else if (typeof child === 'function') {
-              const childResult = child();
-              if (childResult instanceof Node) {
-                el.appendChild(childResult);
-              } else if (Array.isArray(childResult)) {
-                for (const item of childResult) {
-                  if (item instanceof Node) el.appendChild(item);
-                  else if (item != null) el.appendChild(document.createTextNode(String(item)));
-                }
-              } else if (childResult != null) {
-                el.appendChild(document.createTextNode(String(childResult)));
-              }
-            } else if (child != null) {
-              el.appendChild(document.createTextNode(String(child)));
+          // Helper: flatten a child value into appended DOM nodes.
+          // Handles: Node, Array, function-wrapped children, and GXT's
+          // $_if/$_each block results (which expose nodes via `nodes` or
+          // `RENDERED_NODES_PROPERTY`).
+          const appendChildValue = (v: any): void => {
+            if (v == null || v === false) return;
+            if (v instanceof Node) {
+              el.appendChild(v);
+              return;
             }
+            if (Array.isArray(v)) {
+              for (const item of v) appendChildValue(item);
+              return;
+            }
+            if (typeof v === 'function') {
+              try {
+                appendChildValue(v());
+              } catch { /* ignore errors in child evaluation */ }
+              return;
+            }
+            if (typeof v === 'object') {
+              // GXT block result: look for `nodes` array, `node` single, or
+              // the RENDERED_NODES_PROPERTY symbol. These are emitted by
+              // $_if/$_each when their branch evaluates to content.
+              const nodesArray = (v as any).nodes;
+              if (Array.isArray(nodesArray)) {
+                for (const n of nodesArray) appendChildValue(n);
+                return;
+              }
+              if (RENDERED_NODES_PROPERTY && (v as any)[RENDERED_NODES_PROPERTY as any]) {
+                const renderedNodes = (v as any)[RENDERED_NODES_PROPERTY as any];
+                if (Array.isArray(renderedNodes)) {
+                  for (const n of renderedNodes) appendChildValue(n);
+                  return;
+                }
+              }
+              // Symbol.iterator: iterate and recurse
+              if (typeof (v as any)[Symbol.iterator] === 'function') {
+                try {
+                  for (const n of (v as any)) appendChildValue(n);
+                  return;
+                } catch { /* fall through */ }
+              }
+              // Fall-through: avoid writing `[object Object]` as a text
+              // node. Prefer an empty text node so rehydration serializer
+              // produces empty content rather than junk.
+              return;
+            }
+            // Primitive (string/number/boolean): convert to text.
+            el.appendChild(document.createTextNode(String(v)));
+          };
+
+          for (const child of children) {
+            appendChildValue(child);
           }
         }
 
@@ -8774,10 +8810,32 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // how classic Glimmer serializes DYNAMIC boolean-true attribute
           // bindings under rehydration mode.
           const isLiteralTrueBoolean = value === true;
-          const serialized =
-            isLiteralTrueBoolean && typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase())
-              ? ''
-              : String(resolved);
+          const isBoolAttr = typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase());
+          const inRehydration = (globalThis as any).__gxtRehydrationMode === true;
+          const isDynamicBinding = typeof value === 'function';
+          let serialized: string;
+          if (isLiteralTrueBoolean && isBoolAttr) {
+            // Static `<option selected>` → bare attribute.
+            serialized = '';
+          } else if (
+            inRehydration &&
+            isBoolAttr &&
+            isDynamicBinding &&
+            resolved !== null &&
+            resolved !== undefined &&
+            resolved !== false
+          ) {
+            // Rehydration-mode DYNAMIC boolean attribute binding: classic
+            // Glimmer-VM serializes any truthy value as the literal "true"
+            // so `selected={{true}}` and `selected={{'is-true'}}` both
+            // produce `selected="true"` in the rehydration SSR output.
+            // Only applies to dynamic (function-valued) bindings — static
+            // string literals like `<input checked='checked'>` preserve the
+            // original string.
+            serialized = 'true';
+          } else {
+            serialized = String(resolved);
+          }
           try {
             result.setAttribute(key, serialized);
           } catch {
@@ -8787,7 +8845,17 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Set up a reactive effect for dynamic values so the attribute
           // updates on cell changes. Only when the source value is a
           // function — static strings don't need re-tracking.
-          if (typeof value === 'function') {
+          //
+          // NOTE: in rehydration mode, dynamic boolean attribute bindings are
+          // FROZEN to the server-rendered value. Classic Glimmer-VM's SSR
+          // builder emits `selected="true"` as a literal in the server HTML
+          // and the rehydration phase preserves that attribute even when the
+          // underlying DOM property flips (e.g. `element.selected = false`).
+          // Matching that semantic here: skip the reactive effect entirely
+          // for boolean HTML attrs under rehydration mode so the attribute
+          // we just set stays pinned across rerenders.
+          const isBoolAttrInRehydration = inRehydration && isBoolAttr;
+          if (typeof value === 'function' && !isBoolAttrInRehydration) {
             try {
               gxtEffect(() => {
                 const v = value();
