@@ -9414,6 +9414,45 @@ const templateCache = new Map<string, any>();
 function transformTripleMustaches(template: string): string {
   if (!template.includes('{{{')) return template;
 
+  // Rawtext elements (`<title>`, `<script>`, `<style>`, `<textarea>`)
+  // cannot contain child elements — the browser parses their content as
+  // plain text. Transforming `{{{x}}}` inside a `<title>` to
+  // `<EmberHtmlRaw @value={{x}} />` would embed the component tag as
+  // literal text, producing garbage output like
+  // `<title>...&lt;EmberHtmlRaw @value=x /&gt;...</title>`. Instead, in
+  // rawtext elements we fall back to a double-mustache `{{x}}` which GXT
+  // treats as an interpolated text expression.
+  const rawtextTags = ['title', 'script', 'style', 'textarea'];
+  const isInRawtext = (pos: number, tags: string[]): boolean => {
+    // Walk backward from `pos` to find the nearest unclosed rawtext tag
+    // opening. We only need to match a simple opening (e.g. `<title>`,
+    // `<title attr=foo>`) not self-closing (void elements don't apply
+    // here), and a matching closing `</title>` AFTER pos closes it.
+    const before = template.slice(0, pos);
+    for (const tag of tags) {
+      const openRe = new RegExp(`<${tag}(?=[\\s>])`, 'gi');
+      const closeRe = new RegExp(`</${tag}\\s*>`, 'gi');
+      let depth = 0;
+      let lastOpenStart = -1;
+      let m: RegExpExecArray | null;
+      const opens: number[] = [];
+      const closes: number[] = [];
+      while ((m = openRe.exec(before))) opens.push(m.index);
+      while ((m = closeRe.exec(before))) closes.push(m.index);
+      // Simulate nesting: rawtext tags don't really nest, but follow the
+      // same open/close balance. We're inside tag when opens > closes.
+      let o = 0, c = 0;
+      while (o < opens.length || c < closes.length) {
+        const nextO = o < opens.length ? opens[o]! : Infinity;
+        const nextC = c < closes.length ? closes[c]! : Infinity;
+        if (nextO < nextC) { depth++; lastOpenStart = nextO; o++; }
+        else { depth = Math.max(0, depth - 1); c++; }
+      }
+      if (depth > 0 && lastOpenStart !== -1) return true;
+    }
+    return false;
+  };
+
   let out = '';
   let i = 0;
   const n = template.length;
@@ -9453,7 +9492,12 @@ function transformTripleMustaches(template: string): string {
       const valueExpr = /\s/.test(inner) && !inner.startsWith('(')
         ? `(${inner})`
         : inner;
-      out += `<EmberHtmlRaw @value={{${valueExpr}}} />`;
+      if (isInRawtext(i, rawtextTags)) {
+        // Inside rawtext tag — emit as plain interpolation, not component.
+        out += `{{${valueExpr}}}`;
+      } else {
+        out += `<EmberHtmlRaw @value={{${valueExpr}}} />`;
+      }
       i = end + 3;
       continue;
     }
