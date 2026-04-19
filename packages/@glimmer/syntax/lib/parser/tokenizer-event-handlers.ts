@@ -429,42 +429,61 @@ function isPeggySpan(
 }
 
 /**
- * Recursively convert plain {start, end} location objects to SourceSpan instances.
+ * Convert plain {start, end} location objects to SourceSpan instances in place.
  * PathExpression nodes are upgraded via buildLegacyPath so that setting
  * `node.original` propagates to `head`/`tail`.
+ *
+ * The Peggy grammar produces plain objects that are safe to mutate. Mutating
+ * avoids allocating a fresh copy of the entire AST per parse — a dominant cost
+ * on large templates where the AST has thousands of nodes.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertLocations(node: any, source: src.Source): any {
   if (!node || typeof node !== 'object') return node;
 
   if (Array.isArray(node)) {
-    return node.map((item) => convertLocations(item, source));
+    for (let i = 0; i < node.length; i++) {
+      const child = node[i];
+      const converted = convertLocations(child, source);
+      if (converted !== child) node[i] = converted;
+    }
+    return node;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let result: any = {};
-
-  for (let key of Object.keys(node)) {
-    if (node.type === 'PathExpression' && key === 'original') continue;
-    let val = node[key];
-    if ((key === 'loc' || key === 'openTag' || key === 'closeTag') && isPeggySpan(val)) {
-      result[key] = peggySpanToSourceSpan(source, val);
-    } else if (key === 'closeTag' && val === undefined) {
-      result[key] = null;
-    } else {
-      result[key] = convertLocations(val, source);
+  // Convert the three known location-bearing fields in place.
+  if (isPeggySpan(node.loc)) {
+    node.loc = peggySpanToSourceSpan(source, node.loc);
+  }
+  if (isPeggySpan(node.openTag)) {
+    node.openTag = peggySpanToSourceSpan(source, node.openTag);
+  }
+  if ('closeTag' in node) {
+    if (node.closeTag === undefined) {
+      node.closeTag = null;
+    } else if (isPeggySpan(node.closeTag)) {
+      node.closeTag = peggySpanToSourceSpan(source, node.closeTag);
     }
   }
 
-  if (result.type === 'PathExpression') {
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key === 'openTag' || key === 'closeTag') continue;
+    if (node.type === 'PathExpression' && key === 'original') continue;
+    const val = node[key];
+    if (val && typeof val === 'object') {
+      const converted = convertLocations(val, source);
+      if (converted !== val) node[key] = converted;
+    }
+  }
+
+  if (node.type === 'PathExpression') {
     return buildLegacyPath({
-      head: result.head,
-      tail: result.tail,
-      loc: result.loc,
+      head: node.head,
+      tail: node.tail,
+      loc: node.loc,
     });
   }
 
-  return result;
+  return node;
 }
 
 // ============================================================================
