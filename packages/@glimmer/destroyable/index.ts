@@ -67,7 +67,12 @@ function remove<T extends object>(collection: OneOrMany<T>, item: T, message: st
 
   if (isBrandedArray(collection) && collection.length > 1) {
     let index = collection.indexOf(item);
-    collection.splice(index, 1);
+    // Swap-and-pop: O(1) removal instead of O(n) splice
+    let lastIndex = collection.length - 1;
+    if (index !== lastIndex) {
+      collection[index] = collection[lastIndex] as T;
+    }
+    collection.length = lastIndex;
     return collection;
   } else {
     return null;

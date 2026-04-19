@@ -124,45 +124,56 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   [COMPUTE](): Revision {
     let { lastChecked } = this;
 
+    // isUpdating check MUST come before lastChecked early return:
+    // during cycle detection, lastChecked is already $REVISION but
+    // isUpdating is true — we need to detect the cycle, not return cached.
     if (this.isUpdating) {
       if (DEBUG && !allowsCycles(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
 
       this.lastChecked = ++$REVISION;
-    } else if (lastChecked !== $REVISION) {
-      this.isUpdating = true;
-      this.lastChecked = $REVISION;
-
-      try {
-        let { subtag, revision } = this;
-
-        if (subtag !== null) {
-          if (Array.isArray(subtag)) {
-            for (const tag of subtag) {
-              let value = tag[COMPUTE]();
-              revision = Math.max(value, revision);
-            }
-          } else {
-            let subtagValue = subtag[COMPUTE]();
-
-            if (subtagValue === this.subtagBufferCache) {
-              revision = Math.max(revision, this.lastValue);
-            } else {
-              // Clear the temporary buffer cache
-              this.subtagBufferCache = null;
-              revision = Math.max(revision, subtagValue);
-            }
-          }
-        }
-
-        this.lastValue = revision;
-      } finally {
-        this.isUpdating = false;
-      }
+      return this.lastValue;
     }
 
-    return this.lastValue;
+    if (lastChecked === $REVISION) {
+      // Fast path: already checked this revision, return cached value.
+      return this.lastValue;
+    }
+
+    this.isUpdating = true;
+    this.lastChecked = $REVISION;
+
+    try {
+      let { subtag, revision } = this;
+
+      if (subtag !== null) {
+        if (Array.isArray(subtag)) {
+          for (let i = 0; i < subtag.length; i++) {
+            let subtagItem = subtag[i] as Tag;
+            let value = subtagItem[COMPUTE]();
+            // Use > for the common case; NaN !== NaN handles volatile tags
+            if (value > revision || value !== value) revision = value;
+          }
+        } else {
+          let subtagValue = subtag[COMPUTE]();
+
+          if (subtagValue === this.subtagBufferCache) {
+            let lv = this.lastValue;
+            if (lv > revision || lv !== lv) revision = lv;
+          } else {
+            // Clear the temporary buffer cache
+            this.subtagBufferCache = null;
+            if (subtagValue > revision || subtagValue !== subtagValue) revision = subtagValue;
+          }
+        }
+      }
+
+      this.lastValue = revision;
+      return revision;
+    } finally {
+      this.isUpdating = false;
+    }
   }
 
   static updateTag(this: void, _tag: UpdatableTag, _subtag: Tag) {

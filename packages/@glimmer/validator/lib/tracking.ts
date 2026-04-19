@@ -11,13 +11,18 @@ import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './v
  * An object that that tracks @tracked properties that were consumed.
  */
 class Tracker {
-  private tags = new Set<Tag>();
+  private tags: Tag[] = [];
+  private tagSet = new Set<Tag>();
   private last: Tag | null = null;
 
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
 
-    this.tags.add(tag);
+    // Use Set for dedup but keep array for fast combine (avoids Array.from)
+    if (!this.tagSet.has(tag)) {
+      this.tagSet.add(tag);
+      this.tags.push(tag);
+    }
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
@@ -29,15 +34,40 @@ class Tracker {
   combine(): Tag {
     let { tags } = this;
 
-    if (tags.size === 0) {
+    if (tags.length === 0) {
       return CONSTANT_TAG;
-    } else if (tags.size === 1) {
+    } else if (tags.length === 1) {
       return this.last as Tag;
     } else {
-      return combine(Array.from(this.tags));
+      // Hand off the tags array to combine() which stores it by reference.
+      // We'll allocate a fresh array in reset() instead of copying here.
+      let result = combine(tags);
+      this._handedOff = true;
+      return result;
     }
   }
+
+  private _handedOff = false;
+
+  reset() {
+    if (this._handedOff) {
+      // The tags array was handed to a combinator tag — must allocate fresh.
+      this.tags = [];
+      this._handedOff = false;
+    } else {
+      // Safe to clear in-place — no external reference.
+      this.tags.length = 0;
+    }
+    this.tagSet.clear();
+    this.last = null;
+  }
 }
+
+// Pool Tracker objects to avoid thousands of allocations per render cycle.
+// Each beginTrackFrame/endTrackFrame pair allocates a Tracker with a Set + Array.
+// For 1000 rows with ~10 track frames each, this saves 10,000 allocations.
+const TRACKER_POOL: Tracker[] = [];
+const MAX_POOL_SIZE = 100;
 
 /**
  * Whenever a tracked computed property is entered, the current tracker is
@@ -59,7 +89,7 @@ const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 export function beginTrackFrame(debuggingContext?: string | false): void {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
-  CURRENT_TRACKER = new Tracker();
+  CURRENT_TRACKER = TRACKER_POOL.pop() ?? new Tracker();
 
   if (DEBUG) {
     unwrap(debug.beginTrackingTransaction)(debuggingContext);
@@ -67,7 +97,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
 }
 
 export function endTrackFrame(): Tag {
-  let current = CURRENT_TRACKER;
+  let current = CURRENT_TRACKER as Tracker;
 
   if (DEBUG) {
     if (OPEN_TRACK_FRAMES.length === 0) {
@@ -79,7 +109,15 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine();
+  let tag = current.combine();
+
+  // Return tracker to pool for reuse
+  if (TRACKER_POOL.length < MAX_POOL_SIZE) {
+    current.reset();
+    TRACKER_POOL.push(current);
+  }
+
+  return tag;
 }
 
 export function beginUntrackFrame(): void {

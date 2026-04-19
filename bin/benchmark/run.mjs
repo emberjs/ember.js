@@ -29,7 +29,7 @@ const DEFAULT_EXPERIMENT_PORT = 4501;
 const DEFAULT_FIDELITY = process.env['RUNS'] || '20';
 const DEFAULT_THROTTLE = '1';
 const DEFAULT_REGRESSION_THRESHOLD = '25';
-const DEFAULT_SAMPLE_TIMEOUT = '60';
+const DEFAULT_SAMPLE_TIMEOUT = '240';
 const DEFAULT_MARKERS = [
   // Copied from glimmer-vm/bin/setup-bench.mts (krausest benchmark)
   'render',
