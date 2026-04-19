@@ -2466,6 +2466,51 @@ const _wrappedDc = createEmberDc(gxtModule.$_dc);
 export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag, _wrappedDc as $_dc };
 
 // =============================================================================
+// HTMLInputElement/HTMLTextAreaElement/HTMLSelectElement value — undefined coercion
+// =============================================================================
+//
+// GXT's native prop() for form elements does `t[e] = n` directly. When a
+// reactive binding for `<input value={{this.value}}>` resolves to `undefined`,
+// `input.value = undefined` coerces to the literal string "undefined" —
+// Ember's normalizeStringValue semantics expect undefined/null to clear the
+// DOM property (empty string).
+//
+// Vite dev loads 18 different `dom-*.js` chunks that each define their own
+// `HTMLBrowserDOMApi` class; patching the one we imported wouldn't intercept
+// the runtime that actually rendered the element. Instead we patch the
+// intrinsic `HTMLInputElement.prototype.value` (etc.) setter — a single
+// chokepoint shared by every chunk. The override only rewrites undefined and
+// null values; everything else passes through untouched.
+(function patchFormElementValueUndefined() {
+  if (typeof HTMLInputElement === 'undefined') return;
+  const g2: any = globalThis as any;
+  if (g2.__gxtEmberFormValueUndefinedPatched) return;
+  const protos = [
+    typeof HTMLInputElement !== 'undefined' ? HTMLInputElement.prototype : null,
+    typeof HTMLTextAreaElement !== 'undefined' ? HTMLTextAreaElement.prototype : null,
+    typeof HTMLSelectElement !== 'undefined' ? HTMLSelectElement.prototype : null,
+  ].filter(Boolean) as any[];
+  for (const proto of protos) {
+    const desc = Object.getOwnPropertyDescriptor(proto, 'value');
+    if (!desc || !desc.set || !desc.get) continue;
+    const origSet = desc.set;
+    const origGet = desc.get;
+    Object.defineProperty(proto, 'value', {
+      get: origGet,
+      set: function $_gxt_ember_value_set(v: any) {
+        if (v === undefined || v === null) {
+          return origSet.call(this, '');
+        }
+        return origSet.call(this, v);
+      },
+      enumerable: desc.enumerable,
+      configurable: true,
+    });
+  }
+  g2.__gxtEmberFormValueUndefinedPatched = true;
+})();
+
+// =============================================================================
 // Selective UpdatingVM.alwaysRevalidate — Dynamic Component tracked-state fix
 // =============================================================================
 //
