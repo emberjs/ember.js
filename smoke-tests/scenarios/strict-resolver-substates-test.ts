@@ -20,11 +20,8 @@ strictAppScenarios
         'app.js': `
           import Application from '@ember/application';
           import Router from './router';
-          import config from 'v2-app-template/config/environment';
 
           export default class App extends Application {
-            modulePrefix = config.modulePrefix;
-
             modules = {
               './router': { default: Router },
               ...import.meta.glob('./services/**/*.{js,ts}', { eager: true }),
