@@ -581,8 +581,46 @@ export default function createRootTemplate(_owner: any) {
       // transitions. With a plain property + cellFor, the formula tracks the
       // cell and re-evaluates when the cell is updated via __gxtComponentContexts
       // propagation (triggered by set(controller, 'model', newValue)).
+      //
+      // GXT fix: if the controller defines a read-only computed `model`
+      // (e.g. `@computed get model() { return [...] }`), the inherited setter
+      // on the controller throws "Cannot override the computed property".
+      // Detect that case and define `model` directly on renderContext with a
+      // data descriptor that shadows the inherited computed, so the getter
+      // still reads the computed value through prototype chain on read, but
+      // subsequent writes don't go back through the computed's setter.
       if (!componentInstance) {
-        renderContext.model = model;
+        try {
+          // Walk prototype chain looking for a `model` descriptor that is a
+          // getter-without-setter (readonly computed).
+          let proto = Object.getPrototypeOf(renderContext);
+          let foundReadOnlyModel = false;
+          while (proto && proto !== Object.prototype) {
+            const d = Object.getOwnPropertyDescriptor(proto, 'model');
+            if (d) {
+              if (d.get && !d.set) foundReadOnlyModel = true;
+              break;
+            }
+            proto = Object.getPrototypeOf(proto);
+          }
+          if (foundReadOnlyModel) {
+            // Define own data property so assignment doesn't invoke inherited
+            // computed setter. Use the controller's computed value if `model`
+            // from the outlet is undefined, so `{{this.model}}` reads the
+            // computed result through the render context.
+            Object.defineProperty(renderContext, 'model', {
+              value: model !== undefined ? model : (controller as any).model,
+              writable: true,
+              configurable: true,
+              enumerable: true,
+            });
+          } else {
+            renderContext.model = model;
+          }
+        } catch {
+          // Fall back to direct assignment if anything goes wrong.
+          try { renderContext.model = model; } catch { /* readonly computed */ }
+        }
       }
 
       // Register the renderContext in __gxtComponentContexts so that
