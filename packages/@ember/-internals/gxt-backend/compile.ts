@@ -4712,7 +4712,14 @@ try {
               if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
             }
             if (entry.destroyable) {
-              const destroyFn = (globalThis as any).__gxtDestroyFn;
+              // The destroyable returned from manager.getDestroyable(state) holds
+              // the internal manager's destructors (e.g. OnModifierManager's
+              // removeEventListener). Use the canonical destroy bridge exported
+              // from destroyable.ts (exposed on globalThis by manager.ts at
+              // import time) so that registered destructors fire synchronously
+              // when the element has been removed from the DOM.
+              const destroyFn = (globalThis as any).__gxtDestroyDestroyableFn
+                || (globalThis as any).__gxtDestroyFn;
               if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
             }
           } catch { /* ignore individual modifier destroy errors */ }
