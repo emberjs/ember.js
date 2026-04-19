@@ -405,18 +405,11 @@ function peggySpanToSourceSpan(
   return src.SourceSpan.forCharPositions(source, span.start.offset, span.end.offset);
 }
 
-function isPeggySpan(
-  val: unknown
-): val is { start: { offset: number }; end: { offset: number } } {
+function isPeggySpan(val: unknown): val is { start: { offset: number }; end: { offset: number } } {
   if (!val || typeof val !== 'object') return false;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const v = val as any;
-  return (
-    v.start &&
-    typeof v.start.offset === 'number' &&
-    v.end &&
-    typeof v.end.offset === 'number'
-  );
+  return v.start && typeof v.start.offset === 'number' && v.end && typeof v.end.offset === 'number';
 }
 
 /**

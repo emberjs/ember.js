@@ -46,8 +46,9 @@ export interface Position {
 }
 
 /**
- * `loc` may be missing on Program nodes produced by the Jison parser when the
- * program body is empty and no location info can be inferred from child nodes.
+ * `loc` is optional on Program for backwards compatibility — consumers may
+ * construct Program nodes without a location. The Peggy parser always sets
+ * one via `location()` on the `BlockBody` rule.
  */
 export interface Program extends Omit<CommonNode, 'loc'> {
   type: 'Program';
