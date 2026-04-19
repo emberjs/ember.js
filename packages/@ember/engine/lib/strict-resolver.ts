@@ -2,6 +2,12 @@ import type { Factory, Resolver } from '@ember/owner';
 import { dasherize } from './strict-resolver/string';
 
 export class StrictResolver implements Resolver {
+  // Ember's router uses this flag to decide whether to auto-generate
+  // `${name}_loading` and `${name}_error` substates for routes defined in
+  // `Router.map(...)`. Since we always resolve against an ES module registry,
+  // we unconditionally opt in.
+  moduleBasedResolver = true;
+
   #modules = new Map<string, unknown>();
   #plurals = new Map<string, string>();
   original: any;
