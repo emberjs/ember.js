@@ -12332,6 +12332,48 @@ export function precompileTemplate(templateString: string, options?: {
             gxtSetIsRendering(false);
           }
 
+          // During morph re-renders the template was rendered into a throwaway
+          // tempContainer that the renderer.ts morph code will then diff against
+          // the LIVE DOM. The live DOM had its empty placeholder comments
+          // removed by `removeGxtArtifacts` after the initial render. Without
+          // the same cleanup here, the morph diff sees "extra" empty comment
+          // nodes in tempContainer that are not in the live DOM, and treats
+          // them as new children to insert — producing spurious mutations on
+          // observed subtrees (GH #14332).
+          //
+          // Conservative: only remove empty comments that are children of an
+          // ELEMENT (i.e. inside a wrapper like <ul>) and only when the wrapper
+          // contains real visible content (other element children). This skips
+          // top-level fragment children where empty comments may be
+          // each-block topMarkers/bottomMarkers needed for re-render alignment.
+          if ((g.__gxtMorphRenderInProgress) && parentElement) {
+            try {
+              const _allElements: Element[] = [];
+              if ((parentElement as any).querySelectorAll) {
+                _allElements.push(...Array.from((parentElement as any).querySelectorAll('*')));
+              }
+              for (const _el of _allElements) {
+                // Only clean inside elements that have at least one element
+                // child (i.e. not a leaf). Leaf elements with comments may have
+                // them as part of dynamic content boundaries.
+                let _hasElementChild = false;
+                for (const _c of Array.from(_el.childNodes)) {
+                  if (_c.nodeType === 1) { _hasElementChild = true; break; }
+                }
+                if (!_hasElementChild) continue;
+                // Remove empty comments that are direct children of _el.
+                const _toRemove: Comment[] = [];
+                for (const _c of Array.from(_el.childNodes)) {
+                  if (_c.nodeType !== 8) continue;
+                  const _t = (_c as Comment).textContent || '';
+                  if (_t.includes('if-entry') || _t.includes('each-entry') || _t.includes('dc-placeholder')) continue;
+                  if (_t === '') _toRemove.push(_c as Comment);
+                }
+                for (const _c of _toRemove) _el.removeChild(_c);
+              }
+            } catch { /* ignore artifact cleanup errors */ }
+          }
+
           // Restore previous global values
           g.$slots = prevSlots;
           g.$fw = prevFw;
