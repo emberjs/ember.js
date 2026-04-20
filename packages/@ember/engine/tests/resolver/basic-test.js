@@ -360,10 +360,7 @@ module('strict-resolver | basic', function (hooks) {
     // Default pluralization is naive (type + 's'), matching ember-resolver's
     // behavior. A consumer that wants proper English irregulars registers
     // them up-front via the plurals map.
-    let r = new StrictResolver(
-      { './children/alice': 'alice' },
-      { child: 'children' }
-    );
+    let r = new StrictResolver({ './children/alice': 'alice' }, { child: 'children' });
 
     assert.strictEqual(r.resolve('child:alice'), 'alice');
   });
