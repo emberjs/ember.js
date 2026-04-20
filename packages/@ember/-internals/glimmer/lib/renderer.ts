@@ -48,6 +48,24 @@ import { dict } from '@glimmer/util';
 import { unwrapTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { isGXTDefinition, getGXTFn, renderWithGXT, GXTRenderResult } from './gxt-render-result';
+import { GXTRootOutlet, GXTOutlet, rootOutletCell, gxtFnFor } from './gxt-outlet';
+import {
+  renderComponent as gxtRenderComponent,
+  destroyElementSync as gxtDestroyElementSync,
+  $_MANAGERS,
+} from '@lifeart/gxt';
+import { setupGlobalScope as gxtSetupGlobalScope } from '@lifeart/gxt/runtime-compiler';
+
+// Register -outlet helper: {{outlet}} → {{component (-outlet)}} via ember AST transform.
+(function registerOutletHelper() {
+  const _can = $_MANAGERS.helper.canHandle.bind($_MANAGERS.helper);
+  const _handle = $_MANAGERS.helper.handle.bind($_MANAGERS.helper);
+  $_MANAGERS.helper.canHandle = (h: unknown) => h === '-outlet' || _can(h);
+  $_MANAGERS.helper.handle = (h: unknown, params: unknown[], hash: unknown) =>
+    h === '-outlet' ? GXTOutlet : _handle(h, params, hash);
+  gxtSetupGlobalScope();
+})();
+
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
@@ -147,26 +165,19 @@ class ComponentRootState {
     definition: object,
     options: { into: Cursor; args?: Record<string, unknown> }
   ) {
-    // GXT rendering path: when the component has a GXT-compiled template
-    const gxtFn = isGXTDefinition(definition) ? getGXTFn(definition) : null;
+    // GXT rendering path — all components with GXT-compiled templates
+    const gxtFn = getGXTFn(definition);
     if (gxtFn !== null) {
       const element = options.into.element as unknown as HTMLElement;
       const args = options.args ?? {};
-      const result = renderWithGXT(
-        definition,
-        gxtFn,
-        element,
-        args,
-        state.owner,
-        state.env as any
-      );
+      const result = renderWithGXT(definition, gxtFn, element, args, state.owner, state.env as any);
       this.#result = result;
       associateDestroyableChild(this, result);
-      this.#render = () => {}; // GXT handles reactivity internally
+      this.#render = () => {};
       return;
     }
 
-    // Glimmer-vm bytecode rendering path
+    // Glimmer-vm bytecode fallback (templates without gxtSource)
     this.#render = errorLoopTransaction(() => {
       let iterator = glimmerRenderComponent(
         state.context,
@@ -208,6 +219,52 @@ class ComponentRootState {
 
   get result(): GlimmerRenderResult | undefined {
     return this.#result;
+  }
+}
+
+
+/**
+ * GXT-backed root state for outlet/classic rendering.
+ * Satisfies the RootState interface expected by RendererState.renderRoot().
+ */
+class GXTClassicRootState {
+  readonly type = 'classic' as const;
+  readonly id: string;
+  readonly destroyed: boolean = false;
+  readonly result: GlimmerRenderResult | undefined;
+
+  constructor(
+    private root: OutletView | ClassicComponent,
+    private gxtInstance: object,
+    private element: HTMLElement,
+    env: Environment
+  ) {
+    this.id = guidFor(root);
+    this.result = {
+      env,
+      drop: this,
+      rerender() {},
+      parentElement: () => element as unknown as SimpleElement,
+      firstNode: () => (element.firstChild ?? element) as unknown as SimpleNode,
+      lastNode: () => (element.lastChild ?? element) as unknown as SimpleNode,
+      handleException() { throw new Error('unreachable'); },
+    } as any;
+    registerDestructor(this, () => {
+      gxtDestroyElementSync(this.gxtInstance);
+    });
+  }
+
+  isFor(possibleRoot: unknown): boolean {
+    return this.root === possibleRoot;
+  }
+
+  render(): void {
+    // GXT handles re-renders reactively via queueMicrotask.
+    // No-op here — GXT's microtask will fire before the test assertion.
+  }
+
+  destroy(): void {
+    destroy(this);
   }
 }
 
@@ -877,48 +934,31 @@ export class Renderer extends BaseRenderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
-    // TODO: This bypasses the {{outlet}} syntax so logically duplicates
-    // some of the set up code. Since this is all internal (or is it?),
-    // we can refactor this to do something more direct/less convoluted
-    // and with less setup, but get it working first
-    let outlet = createRootOutlet(view);
-    let { name, /* controller, */ template } = view.state;
-
-    let named = dict<Reference>();
-
-    named['Component'] = createConstRef(
-      makeRouteTemplate(view.owner, name, template as Template),
-      '@Component'
-    );
-
-    // TODO: is this guaranteed to be undefined? It seems to be the
-    // case in the `OutletView` class. Investigate how much that class
-    // exists as an internal implementation detail only, or if it was
-    // used outside of core. As far as I can tell, test-helpers uses
-    // it but only for `setOutletState`.
-    // named['controller'] = createConstRef(controller, '@controller');
-    // Update: at least according to the debug render tree tests, we
-    // appear to always expect this to be undefined. Not a definitive
-    // source by any means, but is useful evidence
-    named['controller'] = UNDEFINED_REFERENCE;
-    named['model'] = UNDEFINED_REFERENCE;
-
-    let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-
-    this._appendDefinition(
-      view,
-      curry(0 as CurriedComponent, outlet, view.owner, args, true),
-      target
-    );
+    // GXT replacement: render GXTRootOutlet into the target.
+    // The rootOutletCell is seeded by OutletView and updated by setOutletState().
+    const element = target as unknown as HTMLElement;
+    const gxtInstance = gxtRenderComponent(GXTRootOutlet as any, { element, args: {} });
+    const rootState = new GXTClassicRootState(view, gxtInstance, element, this.state.env);
+    this.state.renderRoot(rootState, this);
   }
 
   appendTo(view: ClassicComponent, target: SimpleElement): void {
-    let definition = new RootComponentDefinition(view);
-    this._appendDefinition(
-      view,
-      curry(0 as CurriedComponent, definition, this.state.owner, null, true),
-      target
-    );
+    const element = target as unknown as HTMLElement;
+    const klass = (view as any).constructor;
+    const gxtFn = getGXTFn(klass) ?? getGXTFn(view as any);
+    if (gxtFn) {
+      // Use GXT's renderWithGXT bridge to render the classic component
+      const result = renderWithGXT(view as any, gxtFn, element, {}, this.state.owner, this.state.env as any);
+      const rootState = new GXTClassicRootState(view, result as any, element, this.state.env);
+      this.state.renderRoot(rootState, this);
+    } else {
+      let definition = new RootComponentDefinition(view);
+      this._appendDefinition(
+        view,
+        curry(0 as CurriedComponent, definition, this.state.owner, null, true),
+        target
+      );
+    }
   }
 
   _appendDefinition(

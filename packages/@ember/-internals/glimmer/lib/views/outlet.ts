@@ -1,19 +1,14 @@
-// We use the `InternalOwner` notion here because we actually need all of its
-// API for using with renderers (normally, it will be `EngineInstance`).
-// We use `getOwner` from our internal home for it rather than the narrower
-// public API for the same reason.
 import { type InternalOwner, getOwner } from '@ember/-internals/owner';
 import type { BootOptions } from '@ember/engine/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createComputeRef, updateRef } from '@glimmer/reference';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
+import { rootOutletCell } from '../gxt-outlet';
+import { syncDom as gxtSyncDom } from '@lifeart/gxt';
 
 export interface BootEnvironment {
   hasDOM: boolean;
@@ -53,7 +48,7 @@ export default class OutletView {
     return new OutletView(_environment, owner, template, namespace);
   }
 
-  private ref: Reference;
+  // Kept for backwards compat — outlet component managers read this.
   public state: OutletDefinitionState;
 
   constructor(
@@ -62,31 +57,29 @@ export default class OutletView {
     public template: Template,
     public namespace: any
   ) {
-    let outletStateTag = createTag();
-    let outletState: OutletState = {
+    // Seed the GXT root cell with the top-level outlet state so GXTRootOutlet
+    // can read it reactively.
+    const initialState: OutletState = {
       outlets: { main: undefined },
       render: {
-        owner: owner,
+        owner,
         name: TOP_LEVEL_NAME,
         controller: undefined,
         model: undefined,
         template,
       },
     };
+    rootOutletCell.update(initialState);
 
-    let ref = (this.ref = createComputeRef(
-      () => {
-        consumeTag(outletStateTag);
-        return outletState;
-      },
-      (state: OutletState) => {
-        dirtyTag(outletStateTag);
-        outletState.outlets['main'] = state;
-      }
-    ));
-
+    // state is still used by the outlet component manager for the ref.
+    // We provide a minimal compatible object; the GXT outlet system reads
+    // directly from rootOutletCell rather than from this.state.ref.
     this.state = {
-      ref,
+      // Provide a fake ref for code that still accesses it.
+      ref: {
+        value: initialState,
+        // GXT-aware: when state changes, the cell is updated instead.
+      } as any,
       name: TOP_LEVEL_NAME,
       template,
       controller: undefined,
@@ -94,27 +87,43 @@ export default class OutletView {
   }
 
   appendTo(selector: string | SimpleElement): void {
-    let target;
+    let target: SimpleElement | null;
 
     if (this._environment.hasDOM) {
-      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
+      target =
+        typeof selector === 'string'
+          ? (document.querySelector(selector) as unknown as SimpleElement)
+          : selector;
     } else {
-      target = selector;
+      target = selector as SimpleElement;
     }
 
     let renderer = this.owner.lookup('renderer:-dom') as Renderer;
-
-    // SAFETY: It's not clear that this cast is safe.
-    // The types for appendOutletView may be incorrect or this is a potential bug.
-    schedule('render', renderer, 'appendOutletView', this, target as SimpleElement);
+    schedule('render', renderer, 'appendOutletView', this, target);
   }
 
   rerender(): void {
     /**/
   }
 
+  /**
+   * Called by the router when routes transition.  Updates the GXT cell so
+   * GXTRootOutlet / GXTOutlet re-renders automatically.
+   */
   setOutletState(state: OutletState): void {
-    updateRef(this.ref, state);
+    // Merge the new route tree into the root outlet state so the top-level
+    // render info (owner, name, template) is preserved.
+    const current = rootOutletCell.value;
+    if (current) {
+      rootOutletCell.update({ ...current, outlets: { main: state } });
+    } else {
+      rootOutletCell.update(state);
+    }
+    // Synchronously flush GXT's DOM updates so the DOM reflects the new outlet
+    // state before ember's test helpers call settled() / renderSettled().
+    // GXT normally uses queueMicrotask for reactivity but that fires after
+    // ember's timing checks.
+    gxtSyncDom();
   }
 
   destroy(): void {
