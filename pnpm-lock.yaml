@@ -102,6 +102,9 @@ importers:
       '@glimmer/component':
         specifier: workspace:*
         version: link:packages/@glimmer/component
+      '@lifeart/gxt':
+        specifier: link:../glimmer-next
+        version: link:../glimmer-next
       '@octokit/rest':
         specifier: ^20.1.2
         version: 20.1.2
@@ -2159,9 +2162,6 @@ importers:
       '@glimmer/wire-format':
         specifier: workspace:*
         version: link:../wire-format
-      simple-html-tokenizer:
-        specifier: ^0.5.11
-        version: 0.5.11
     devDependencies:
       '@glimmer/debug-util':
         specifier: workspace:*

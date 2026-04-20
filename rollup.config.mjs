@@ -298,6 +298,10 @@ export function exposedDependencies() {
 // these are dependencies that we inline into our own published code but do not
 // expose to consumers
 export function hiddenDependencies() {
+  // Resolve GXT dist files (linked from ../glimmer-next)
+  const gxtRoot = resolve(projectRoot, 'node_modules/@lifeart/gxt');
+  const gxtDist = resolve(gxtRoot, 'dist');
+
   return {
     ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(
@@ -305,6 +309,10 @@ export function hiddenDependencies() {
       'dist/runtime.js'
     ),
     'simple-html-tokenizer': entrypoint(findFromProject('simple-html-tokenizer'), 'module').path,
+    // GXT runtime (linked workspace package)
+    '@lifeart/gxt': resolve(gxtDist, 'gxt.index.es.js'),
+    '@lifeart/gxt/runtime-compiler': resolve(gxtDist, 'gxt.runtime-compiler.es.js'),
+    '@lifeart/gxt/glimmer-compatibility': resolve(gxtDist, 'gxt.glimmer-compat.es.js'),
   };
 }
 

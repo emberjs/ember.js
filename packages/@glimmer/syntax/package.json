@@ -34,8 +34,7 @@
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/wire-format": "workspace:*",
-    "simple-html-tokenizer": "^0.5.11"
+    "@glimmer/wire-format": "workspace:*"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",

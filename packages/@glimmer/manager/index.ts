@@ -18,6 +18,12 @@ export {
 } from './lib/public/helper';
 export { setComponentManager, setHelperManager, setModifierManager } from './lib/public/index';
 export { CustomModifierManager, modifierCapabilities } from './lib/public/modifier';
-export { getComponentTemplate, setComponentTemplate } from './lib/public/template';
+export {
+  getComponentTemplate,
+  setComponentTemplate,
+  getGXTTemplate,
+  setGXTTemplate,
+  type GXTTemplateFn,
+} from './lib/public/template';
 export { getCustomTagFor, setCustomTagFor } from './lib/util/args-proxy';
 export { capabilityFlagsFrom, hasCapability, managerHasCapability } from './lib/util/capabilities';

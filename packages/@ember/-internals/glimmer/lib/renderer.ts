@@ -47,6 +47,7 @@ import {
 import { dict } from '@glimmer/util';
 import { unwrapTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
+import { isGXTDefinition, getGXTFn, renderWithGXT, GXTRenderResult } from './gxt-render-result';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
@@ -146,6 +147,26 @@ class ComponentRootState {
     definition: object,
     options: { into: Cursor; args?: Record<string, unknown> }
   ) {
+    // GXT rendering path: when the component has a GXT-compiled template
+    const gxtFn = isGXTDefinition(definition) ? getGXTFn(definition) : null;
+    if (gxtFn !== null) {
+      const element = options.into.element as unknown as HTMLElement;
+      const args = options.args ?? {};
+      const result = renderWithGXT(
+        definition,
+        gxtFn,
+        element,
+        args,
+        state.owner,
+        state.env as any
+      );
+      this.#result = result;
+      associateDestroyableChild(this, result);
+      this.#render = () => {}; // GXT handles reactivity internally
+      return;
+    }
+
+    // Glimmer-vm bytecode rendering path
     this.#render = errorLoopTransaction(() => {
       let iterator = glimmerRenderComponent(
         state.context,
