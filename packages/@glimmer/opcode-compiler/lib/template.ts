@@ -78,6 +78,37 @@ export default function templateFactory({
   let ownerlessTemplate: Template | null = null;
   let templateCache = new WeakMap<object, Template>();
 
+  // Lazily-compiled GXT template function (shared across all Template instances)
+  let gxtCompiledFn: Function | null = null;
+  const getGXTFnFromFactory = gxtSource != null
+    ? () => {
+        if (gxtCompiledFn === null) {
+          const scopeValues = scope ? scope() : {};
+          gxtCompiledFn = (gxtRuntimeCompile as unknown as Function)(gxtSource, {
+            moduleName,
+            scopeValues,
+            flags: {
+              IS_GLIMMER_COMPAT_MODE: true,
+              WITH_EMBER_INTEGRATION: true,
+              WITH_HELPER_MANAGER: true,
+              WITH_MODIFIER_MANAGER: true,
+              WITH_CONTEXT_API: true,
+              TRY_CATCH_ERROR_HANDLING: true,
+            },
+          });
+        }
+        return gxtCompiledFn!;
+      }
+    : null;
+
+  function makeTemplate(parsedLayout: LayoutWithContext): TemplateImpl {
+    const t = new TemplateImpl(parsedLayout);
+    if (getGXTFnFromFactory !== null) {
+      (t as any).__gxtFn = getGXTFnFromFactory;
+    }
+    return t;
+  }
+
   let factory: TemplateFactoryWithIdAndMeta = (owner?: Owner) => {
     if (parsedBlock === undefined) {
       parsedBlock = JSON.parse(block) as SerializedTemplateBlock;
@@ -86,7 +117,7 @@ export default function templateFactory({
     if (owner === undefined) {
       if (ownerlessTemplate === null) {
         templateCacheCounters.cacheMiss++;
-        ownerlessTemplate = new TemplateImpl({
+        ownerlessTemplate = makeTemplate({
           id,
           block: parsedBlock,
           moduleName,
@@ -105,7 +136,7 @@ export default function templateFactory({
 
     if (result === undefined) {
       templateCacheCounters.cacheMiss++;
-      result = new TemplateImpl({ id, block: parsedBlock, moduleName, owner, scope, isStrictMode });
+      result = makeTemplate({ id, block: parsedBlock, moduleName, owner, scope, isStrictMode });
       templateCache.set(owner, result);
     } else {
       templateCacheCounters.cacheHit++;
@@ -117,33 +148,11 @@ export default function templateFactory({
   factory.__id = id;
   factory.__meta = { moduleName };
 
-  // GXT augmentation: when a strict-mode template also has the raw HBS source,
-  // compile a GXT version lazily and mark the factory so that the modern
-  // renderComponent API can use it.
-  if (gxtSource !== undefined && gxtSource !== null) {
-    let gxtCompiledFn: Function | null = null;
-
-    function getGXTFn(): Function {
-      if (gxtCompiledFn === null) {
-        const scopeValues = scope ? scope() : {};
-        gxtCompiledFn = (gxtRuntimeCompile as unknown as Function)(gxtSource, {
-          moduleName,
-          scopeValues,
-          flags: {
-            IS_GLIMMER_COMPAT_MODE: true,
-            WITH_EMBER_INTEGRATION: true,
-            WITH_HELPER_MANAGER: true,
-            WITH_MODIFIER_MANAGER: true,
-            WITH_CONTEXT_API: true,
-            TRY_CATCH_ERROR_HANDLING: true,
-          },
-        });
-      }
-      return gxtCompiledFn!;
-    }
-
+  // GXT augmentation: mark the factory with __gxt and attach the shared
+  // getGXTFn so that the renderer can find it via factory.__gxtFn().
+  if (getGXTFnFromFactory !== null) {
     factory.__gxt = true;
-    factory.__gxtFn = getGXTFn;
+    factory.__gxtFn = getGXTFnFromFactory;
   }
 
   return factory;
