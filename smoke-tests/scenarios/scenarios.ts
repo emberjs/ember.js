@@ -62,6 +62,7 @@ export const v2AppScenarios = Scenarios.fromProject(() =>
   })
 ).expand({
   embroiderVite,
+  strictResolver,
 });
 
 export const strictAppScenarios = Scenarios.fromProject(() =>
