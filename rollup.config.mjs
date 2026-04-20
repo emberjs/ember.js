@@ -3,7 +3,6 @@ import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
-import peggy from 'peggy';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
@@ -112,25 +111,6 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
   };
 }
 
-function peggyPlugin() {
-  const grammarPath = resolve(projectRoot, 'packages/@glimmer/syntax/lib/hbs-parser/hbs.peggy');
-  const outputPath = resolve(projectRoot, 'packages/@glimmer/syntax/lib/hbs-parser/parser.js');
-  return {
-    name: 'peggy',
-    buildStart() {
-      if (!existsSync(outputPath) || statSync(grammarPath).mtimeMs > statSync(outputPath).mtimeMs) {
-        const source = peggy.generate(readFileSync(grammarPath, 'utf8'), {
-          output: 'source',
-          format: 'es',
-          allowedStartRules: ['Template', 'ExpressionWithParamsAndHash'],
-          grammarSource: grammarPath,
-        });
-        writeFileSync(outputPath, source);
-      }
-    },
-  };
-}
-
 function glimmerSyntaxESM() {
   return {
     onLog: handleRollupWarnings,
@@ -141,7 +121,6 @@ function glimmerSyntaxESM() {
       hoistTransitiveImports: false,
     },
     plugins: [
-      peggyPlugin(),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
@@ -153,7 +132,6 @@ function glimmerSyntaxESM() {
     ],
   };
 }
-
 function glimmerSyntaxCJS() {
   return {
     onLog: handleRollupWarnings,
@@ -164,7 +142,6 @@ function glimmerSyntaxCJS() {
       hoistTransitiveImports: false,
     },
     plugins: [
-      peggyPlugin(),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
@@ -239,6 +216,9 @@ function packages() {
       // "exposedDependencies" since they used to actually be dependencies.
       '@glimmer-workspace/**',
       '@glimmer/**',
+
+      // @handlebars/parser is a hidden dependency, not an explicit entrypoint
+      '@handlebars/**',
     ],
     cwd: 'packages',
   });
@@ -303,12 +283,16 @@ export function hiddenDependencies() {
   const gxtDist = resolve(gxtRoot, 'dist');
 
   return {
+    'simple-html-tokenizer': entrypoint(
+      findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
+      'module'
+    ).path,
+    '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
     ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'
     ),
-    'simple-html-tokenizer': entrypoint(findFromProject('simple-html-tokenizer'), 'module').path,
     // GXT runtime (linked workspace package)
     '@lifeart/gxt': resolve(gxtDist, 'gxt.index.es.js'),
     '@lifeart/gxt/runtime-compiler': resolve(gxtDist, 'gxt.runtime-compiler.es.js'),
