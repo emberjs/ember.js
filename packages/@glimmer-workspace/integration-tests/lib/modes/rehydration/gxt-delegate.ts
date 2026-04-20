@@ -504,13 +504,72 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       if (v === undefined) return whole;
       return v;
     });
-    // 2) Substitute `{{yield}}` with inner block content. Most test
+    // 2) Substitute bare `@argName` references inside curly blocks
+    //    (e.g. `{{#if @show}}`, `{{#each @items ...}}`, `{{helper @x}}`).
+    //    We bind the arg by rewriting the `@name` token to the
+    //    caller-provided expression stripped of its outer mustaches.
+    //    Caller expressions are kept as mustache-wrapped values in
+    //    `argMap`; we extract the bare inner expression for in-block
+    //    substitution and leave string-literal args (no wrapper) alone.
+    expanded = this.substituteBareArgsInCurlyExpressions(expanded, argMap);
+    // 3) Substitute `{{yield}}` with inner block content. Most test
     //    layouts yield once. Leave un-yielded forms as-is.
     expanded = expanded.replace(/\{\{\s*yield\s*\}\}/g, () => inner);
-    // 3) Drop `...attributes` attribute-position references — our tests
+    // 4) Drop `...attributes` attribute-position references — our tests
     //    don't rely on class/attribute forwarding at this layer.
     expanded = expanded.replace(/\s+\.\.\.attributes/g, '');
     return expanded;
+  }
+
+  /**
+   * Rewrite bare `@argName` identifiers *inside curly blocks only*
+   * (`{{ ... }}`) with the caller-provided expression. We intentionally
+   * only touch bare `@name` tokens in expression positions — not
+   * `@name=value` attribute positions — so the caller can pass args
+   * through to `{{#if @x}}` / `{{#each @items}}` / etc. without our
+   * expansion corrupting arg-attribute syntax on inner component
+   * invocations.
+   */
+  private substituteBareArgsInCurlyExpressions(
+    source: string,
+    argMap: Record<string, string>
+  ): string {
+    if (Object.keys(argMap).length === 0) return source;
+    let out = '';
+    let i = 0;
+    while (i < source.length) {
+      // Match `{{` (but NOT `{{{`, which is a triple-mustache)
+      if (source[i] === '{' && source[i + 1] === '{' && source[i + 2] !== '{') {
+        // Find matching `}}`
+        const end = source.indexOf('}}', i + 2);
+        if (end === -1) {
+          out += source.slice(i);
+          break;
+        }
+        const inner = source.slice(i + 2, end);
+        // Substitute @name tokens in the mustache body, but only in
+        // positions that look like expressions (not as LHS of `=`).
+        const rewritten = inner.replace(
+          /(^|[\s({,])@([A-Za-z_][\w-]*)(?![\w-=])/g,
+          (whole, pre: string, name: string) => {
+            const v = argMap[name];
+            if (v === undefined) return whole;
+            // If the caller passed `{{expr}}`, strip the wrapper and
+            // inline the expr bare; otherwise use the literal string.
+            const bare = v.startsWith('{{') && v.endsWith('}}')
+              ? v.slice(2, -2).trim()
+              : JSON.stringify(v);
+            return `${pre}${bare}`;
+          }
+        );
+        out += '{{' + rewritten + '}}';
+        i = end + 2;
+      } else {
+        out += source[i];
+        i++;
+      }
+    }
+    return out;
   }
 
   private compileAndRender(template: string, context: Dict, target: SimpleElement): void {
@@ -960,6 +1019,18 @@ export class GxtPartialRehydrationDelegate extends GxtRehydrationDelegate {
 
   renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderResult {
     const template = this.buildComponentInvocation(name, args);
+    // Clear the target before the fresh client render — classic
+    // partial rehydration walks through the pre-populated server DOM
+    // using counter-based cursor alignment, but our delegate re-renders
+    // from scratch. Without clearing, we'd append the component output
+    // after the server HTML, producing duplicated content (e.g.
+    // `a bcda bcd` instead of `a bcd` for the `adjacent text nodes`
+    // partial-rehydration test).
+    try {
+      (element as unknown as Element).innerHTML = '';
+    } catch {
+      /* non-HTML target; best-effort */
+    }
     this.compileAndRenderPublic(template, args, element);
     this.rehydrationStats = { clearedNodes: [] };
     return new GxtRenderResult(
