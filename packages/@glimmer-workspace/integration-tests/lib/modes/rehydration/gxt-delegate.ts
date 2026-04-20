@@ -141,6 +141,26 @@ function buildRenderContext(context: Dict): Record<string, unknown> {
   // first `globalThis.$slots` read.
   const ctx: Record<string, unknown> = Object.assign(Object.create(null), context ?? {});
   if (!('args' in ctx)) ctx.args = {};
+  // Text-node context values (e.g. the `Node curlies` test passing
+  // `doc.createTextNode('hello')` as `this.node`) render as empty
+  // under GXT — the runtime stringifies but never appends the Node.
+  // Replace text nodes with their string value up-front so the mustache
+  // slot gets the intended text. (Element Nodes are left alone — they
+  // are handled differently, e.g. as in-element render targets.)
+  for (const key of Object.keys(ctx)) {
+    const v = ctx[key];
+    if (
+      v &&
+      typeof v === 'object' &&
+      (v as { nodeType?: unknown }).nodeType === 3
+    ) {
+      try {
+        ctx[key] = (v as { nodeValue?: string }).nodeValue ?? String(v);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
   return ctx;
 }
 
