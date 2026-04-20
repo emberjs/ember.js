@@ -30,6 +30,7 @@ export interface EmberPrecompileOptions {
  */
 import { compileTemplate } from './compile';
 import { templateCacheCounters } from '@glimmer/opcode-compiler';
+import { assert as _emberDebugAssert } from '@ember/debug';
 
 // GXT's `IS_GLIMMER_COMPAT_MODE` BlockStatement handler emits a raw
 // element tag (`<input>`, `<textarea>`) whenever the path name has no
@@ -106,7 +107,50 @@ function teeLetBlockParam(template: string, name: string, alias: string): string
   });
 }
 
+/**
+ * Scan for `{{outlet 'name'}}` or `{{outlet name}}` usages and assert when
+ * detected. Named outlets were removed in Ember 4.0. This is a lightweight
+ * GXT-mode replacement for the classic AssertAgainstNamedOutlets AST plugin,
+ * because GXT's runtime compiler does not expose a pre-parse AST plugin hook.
+ *
+ * We report location as L1:C0 (start of the mustache) since that is what the
+ * underlying Glimmer syntax parser emits for the MustacheStatement node.
+ */
+function _assertAgainstNamedOutlets(templateString: string, moduleName?: string): void {
+  // Quick filter: if the string has no "{{outlet" at all, skip.
+  if (templateString.indexOf('{{outlet') < 0) return;
+  // Match `{{outlet ARG...}}` allowing arbitrary whitespace and at least one
+  // non-whitespace argument (either a quoted string or bare path). Excludes
+  // the zero-arg form `{{outlet}}`.
+  const re = /\{\{outlet(?:\s+([^}\s]))/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(templateString)) !== null) {
+    // Compute line / column of the mustache start.
+    const idx = m.index;
+    let line = 1;
+    let col = 0;
+    for (let i = 0; i < idx; i++) {
+      if (templateString.charCodeAt(i) === 10) { line++; col = 0; }
+      else col++;
+    }
+    const modulePart = moduleName ? `'${moduleName}' @ ` : '';
+    const loc = `(${modulePart}L${line}:C${col}) `;
+    emberAssertFn(
+      `Named outlets were removed in Ember 4.0. See https://deprecations.emberjs.com/v3.x#toc_route-render-template for guidance on alternative APIs for named outlet use cases. ${loc}`
+    );
+    return; // one per compile is enough
+  }
+}
+
+function emberAssertFn(msg: string): void {
+  // Second arg `false` triggers the assertion.
+  _emberDebugAssert(msg, false);
+}
+
 export function compile(templateString: string, options?: any) {
+  // Named outlet assertion — matches classic AssertAgainstNamedOutlets plugin.
+  _assertAgainstNamedOutlets(templateString, options?.moduleName);
+
   const originalScopeValues: Record<string, unknown> | undefined =
     options?.scopeValues && typeof options.scopeValues === 'object'
       ? options.scopeValues
