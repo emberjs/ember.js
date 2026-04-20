@@ -11,6 +11,7 @@ import type {
   TemplateOk,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
+import { compile as gxtRuntimeCompile } from '@lifeart/gxt/runtime-compiler';
 
 import { compilable } from './compilable-template';
 import { WrappedBuilder } from './wrapped-component';
@@ -26,6 +27,10 @@ export let templateCacheCounters = {
 export interface TemplateFactoryWithIdAndMeta extends TemplateFactory {
   __id?: string;
   __meta?: { moduleName: string };
+  /** GXT integration: marks this factory as having a GXT-compiled version */
+  __gxt?: boolean;
+  /** GXT integration: lazily returns the GXT-compiled template function */
+  __gxtFn?: () => Function;
 }
 
 export interface TemplateWithIdAndReferrer extends TemplateOk {
@@ -36,10 +41,22 @@ export interface TemplateWithIdAndReferrer extends TemplateOk {
   };
 }
 
+// Augmented serialized format: glimmer bytecode + GXT source (for strict-mode templates)
+type AugmentedSerializedTemplate = SerializedTemplateWithLazyBlock & {
+  gxtSource?: string;
+};
+
 /**
  * Wraps a template js in a template module to change it into a factory
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
+ *
+ * When the serialized template includes a `gxtSource` field (set by our
+ * modified precompile for strict-mode templates), the factory is also
+ * marked with `__gxt = true` and `__gxtFn` so that the modern
+ * `renderComponent` API can delegate to GXT's renderer instead of the
+ * glimmer bytecode VM.  The standard `asLayout()` path continues to work
+ * for the classic ClassicRootState / routing path.
  */
 export default function templateFactory({
   id: templateId,
@@ -47,7 +64,8 @@ export default function templateFactory({
   block,
   scope,
   isStrictMode,
-}: SerializedTemplateWithLazyBlock): TemplateFactory {
+  gxtSource,
+}: AugmentedSerializedTemplate): TemplateFactory {
   // TODO(template-refactors): This should be removed in the near future, as it
   // appears that id is unused. It is currently kept for backwards compat reasons.
   let id = templateId || `client-${clientId++}`;
@@ -98,6 +116,35 @@ export default function templateFactory({
 
   factory.__id = id;
   factory.__meta = { moduleName };
+
+  // GXT augmentation: when a strict-mode template also has the raw HBS source,
+  // compile a GXT version lazily and mark the factory so that the modern
+  // renderComponent API can use it.
+  if (gxtSource !== undefined && gxtSource !== null) {
+    let gxtCompiledFn: Function | null = null;
+
+    function getGXTFn(): Function {
+      if (gxtCompiledFn === null) {
+        const scopeValues = scope ? scope() : {};
+        gxtCompiledFn = (gxtRuntimeCompile as unknown as Function)(gxtSource, {
+          moduleName,
+          scopeValues,
+          flags: {
+            IS_GLIMMER_COMPAT_MODE: true,
+            WITH_EMBER_INTEGRATION: true,
+            WITH_HELPER_MANAGER: true,
+            WITH_MODIFIER_MANAGER: true,
+            WITH_CONTEXT_API: true,
+            TRY_CATCH_ERROR_HANDLING: true,
+          },
+        });
+      }
+      return gxtCompiledFn!;
+    }
+
+    factory.__gxt = true;
+    factory.__gxtFn = getGXTFn;
+  }
 
   return factory;
 }
