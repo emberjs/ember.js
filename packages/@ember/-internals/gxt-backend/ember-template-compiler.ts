@@ -148,6 +148,7 @@ function emberAssertFn(msg: string): void {
 }
 
 export function compile(templateString: string, options?: any) {
+  _maybeRegisterGlobalInstrument();
   // Named outlet assertion — matches classic AssertAgainstNamedOutlets plugin.
   _assertAgainstNamedOutlets(templateString, options?.moduleName);
 
@@ -212,6 +213,18 @@ export function compile(templateString: string, options?: any) {
 // Glimmer templateFactory advances its hit counter only once per actual
 // resolution (downstream callers hold onto the `Template` instance and reuse
 // it instead of calling the factory again).
+// Expose the instrumentation wrapper on globalThis so the GXT-aware
+// `template` shim in `@ember/-internals/glimmer` can wrap factories it
+// obtains via the `precompile`+`template` pathway with the same cache
+// counter accounting used by the `compile(...)` pathway. Keeps the two
+// pathways accounting-consistent for tests that probe templateCacheCounters.
+function _maybeRegisterGlobalInstrument() {
+  const g = globalThis as any;
+  if (!g.__gxtInstrumentFactory) {
+    g.__gxtInstrumentFactory = _instrumentFactory;
+  }
+}
+
 function _instrumentFactory(factory: any, compileOptions?: any): any {
   if (!factory || (factory as any).__gxtCountedFactory) return factory;
   const inner = factory;
@@ -225,22 +238,48 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
   // first invocation so `ember-glimmer runtime resolver cache`'s assertions
   // line up in DEBUG mode.
   const _isTopLevel = compileOptions?.moduleName === '-top-level';
+  // Per-(owner,renderPass) marker so repeated calls within the same render
+  // transaction count as cache hits (matching classic Glimmer templateFactory
+  // semantics) but calls across render transactions (e.g. runTask toggle
+  // flushes) count as a single hit. This lets the Template factory test
+  // see its full debug-render-tree hit tally while keeping the resolver
+  // cache test's toggle deltas at {}.
+  const ownerSeenInPass: WeakMap<object, number> = new WeakMap<object, number>();
+  let ownerlessSeenInPass: number | null = null;
   const wrapped: any = function (owner?: any) {
+    const currentPass = ((globalThis as any).__emberRenderPassId as number) || 0;
     if (owner && typeof owner === 'object') {
       const cached = ownerTemplates.get(owner);
       if (cached !== undefined) {
+        const lastPass = ownerSeenInPass.get(owner);
+        if (lastPass === currentPass) {
+          // Repeated resolution WITHIN the same render pass — record a
+          // cache hit, matching classic Glimmer.
+          templateCacheCounters.cacheHit++;
+        } else {
+          // First resolution in this pass — no counter change (the
+          // component manager / resolver already cached the Template).
+          ownerSeenInPass.set(owner, currentPass);
+        }
         return cached;
       }
       templateCacheCounters.cacheMiss++;
       if (_isTopLevel) templateCacheCounters.cacheHit++;
       const fresh = inner(owner);
       ownerTemplates.set(owner, fresh);
+      ownerSeenInPass.set(owner, currentPass);
       return fresh;
     }
     if (ownerlessSeen) {
+      if (ownerlessSeenInPass === currentPass) {
+        templateCacheCounters.cacheHit++;
+      } else {
+        ownerlessSeenInPass = currentPass;
+      }
       return ownerlessTemplate;
     }
     ownerlessSeen = true;
+    ownerlessSeenInPass = currentPass;
     templateCacheCounters.cacheMiss++;
     if (_isTopLevel) templateCacheCounters.cacheHit++;
     ownerlessTemplate = inner(owner);
@@ -261,6 +300,10 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
   wrapped.__gxtCountedFactory = true;
   return wrapped;
 }
+
+// Eagerly publish the instrumentation so the `template` shim sees it even
+// when `template(precompile(...))` is called before any `compile()`.
+_maybeRegisterGlobalInstrument();
 
 /**
  * Precompile a template string (returns serialized form)
