@@ -93,9 +93,18 @@ export function equalsElement(
     });
 
     if (content !== null) {
+      const isGxt = Boolean(
+        (globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__
+      );
+      // GXT emits empty `<!---->` placeholder comments at branch
+      // boundaries (e.g. around `{{#if}}` / `{{#each}}`). Those aren't
+      // part of the expected shape under either rendering model, so
+      // strip them from the actual HTML for structural comparison.
+      // Expected text under GXT never contains these placeholders.
+      const actualForCompare = isGxt ? element.innerHTML.replace(/<!---->/g, '') : element.innerHTML;
       QUnit.assert.pushResult({
-        result: element.innerHTML === content,
-        actual: element.innerHTML,
+        result: actualForCompare === content,
+        actual: actualForCompare,
         expected: content,
         message: `${description} had '${content}' as its content`,
       });
