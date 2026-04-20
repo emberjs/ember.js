@@ -1,6 +1,5 @@
 import type { Nullable } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
-import { HTML5NamedCharRefs } from 'simple-html-tokenizer';
 import { parseTemplate } from '../hbs-parser/index.js';
 
 import type { NodeVisitor } from '../traversal/visitor';
@@ -18,18 +17,20 @@ import publicBuilder from '../v1/public-builders';
 // Entity decoding helper
 // ============================================================================
 
-// Full HTML5 entity decoding: covers ~2200 named entities plus numeric
-// &#dd; and &#xHH; forms. The named-entity map comes from
-// simple-html-tokenizer, which maintains the HTML5 reference table.
 const ENTITY_RE = /&(#[xX]([0-9a-fA-F]+)|#([0-9]+)|([A-Za-z][A-Za-z0-9]*));/g;
 
-const NAMED_CHAR_REFS = HTML5NamedCharRefs as Record<string, string | undefined>;
+// Lazily created textarea for browser-native entity decoding (works in
+// happy-dom / jsdom for SSR too). Reused across calls to avoid allocation.
+let _entityDecoder: HTMLTextAreaElement | undefined;
 
 function decodeEntities(text: string): string {
-  return text.replace(ENTITY_RE, (match, _body, hex, dec, name) => {
+  if (!text.includes('&')) return text;
+  return text.replace(ENTITY_RE, (match, _body, hex, dec, _name) => {
     if (hex !== undefined) return String.fromCodePoint(parseInt(hex, 16));
     if (dec !== undefined) return String.fromCodePoint(parseInt(dec, 10));
-    return NAMED_CHAR_REFS[name] ?? match;
+    _entityDecoder ??= document.createElement('textarea');
+    _entityDecoder.innerHTML = match;
+    return _entityDecoder.value;
   });
 }
 
