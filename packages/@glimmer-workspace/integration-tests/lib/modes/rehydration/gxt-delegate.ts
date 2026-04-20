@@ -96,6 +96,44 @@ function loadGxtCompile(): GxtCompileFn {
   return _compileTemplate;
 }
 
+/**
+ * Parse `@name={{expr}}` / `@name="literal"` attribute fragments from the
+ * opening-tag attribute slice of a component invocation. Used for
+ * template-level inline expansion of test components; it is NOT a
+ * full-fidelity parser and intentionally ignores modifiers / element
+ * attributes like `class=...`.
+ */
+function parseAngleArgs(argsPart: string): Record<string, string> {
+  const out: Record<string, string> = Object.create(null);
+  if (!argsPart) return out;
+  // Match `@name=` then either `{{expr}}` (balanced, no nesting) or
+  // a single-quoted / double-quoted literal.
+  const re = /@([A-Za-z_][\w-]*)=(\{\{[^}]*\}\}|"[^"]*"|'[^']*')/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(argsPart)) !== null) {
+    const name = m[1]!;
+    let value = m[2]!;
+    // Convert `"literal"` forms to a template that renders the same
+    // literal when substituted into the layout's `{{@name}}` slot.
+    if (value.startsWith('"') || value.startsWith("'")) {
+      // Keep as-is: `<Foo @title="hello" />` → layout `{{@title}}` →
+      // becomes the literal `hello` when the string is inserted. Drop
+      // the surrounding quotes so the resulting template uses the
+      // literal directly.
+      value = value.slice(1, -1);
+    } else {
+      // `{{expr}}` — unwrap to the inner expression since the target
+      // slot is itself a mustache.
+      value = value.slice(2, -2);
+      // Re-wrap as a mustache so it's rendered in the substituted
+      // context of the layout.
+      value = `{{${value}}}`;
+    }
+    out[name] = value;
+  }
+  return out;
+}
+
 function buildRenderContext(context: Dict): Record<string, unknown> {
   // Mirror the structure gxt-backend/compile.ts expects: a plain object
   // that exposes user properties *and* an `args` bag. We also set a
@@ -238,6 +276,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   protected registeredHelpers: Record<string, unknown> = Object.create(null);
   protected registeredComponents: Record<string, unknown> = Object.create(null);
 
+  // Raw layout source of each registered component. Used for template-level
+  // inlining of simple `<Name ...>...</Name>` / `{{#name ...}}...{{/name}}`
+  // / `<Name ... />` invocations so the GXT compiler can render them
+  // without needing to thread a full component-factory invocation through
+  // `$_c`. Scoped strictly to this test delegate.
+  protected registeredLayouts: Record<string, { layout: string; kind: ComponentKind | 'TemplateOnly' }> = Object.create(null);
+
   constructor(_options?: RenderDelegateOptions) {
     this.clientDoc = castToSimple(document);
     this.serverDoc = castToSimple(document);
@@ -281,6 +326,193 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     } as unknown as TreeBuilder;
   }
 
+  /**
+   * Inline-expand simple component invocations in the template source
+   * against the registered layouts. Handles a narrow, test-infra slice:
+   *
+   *   <Name ...args>...</Name>   — glimmer/template-only angle invocation
+   *   <Name ...args />           — self-closing form
+   *   {{#name ...args}}...{{/name}} — curly-block invocation
+   *
+   * Layouts are substituted with `{{yield}}` replaced by the inner
+   * template. `{{@arg}}` references in the layout are rewritten to
+   * reference the invocation's passed arg. Expansion is performed in a
+   * loop (up to a small fixed depth) to handle nested invocations like
+   * `<Outer><Inner>content</Inner></Outer>`. Components that don't have
+   * a registered layout (e.g. dynamically-injected ones) are left as-is
+   * so scope binding can still attempt to resolve them.
+   */
+  private expandRegisteredComponents(template: string): string {
+    if (Object.keys(this.registeredLayouts).length === 0) return template;
+    let current = template;
+    for (let pass = 0; pass < 6; pass++) {
+      const next = this.expandRegisteredComponentsOnce(current);
+      if (next === current) return current;
+      current = next;
+    }
+    return current;
+  }
+
+  private expandRegisteredComponentsOnce(template: string): string {
+    let out = template;
+    for (const name of Object.keys(this.registeredLayouts)) {
+      const entry = this.registeredLayouts[name]!;
+      // Only expand components whose layout is simple enough that a
+      // text-level substitution is safe. Anything with `{{yield ...}}`
+      // (parameterised yield — requires block-param propagation) or
+      // `{{#each}}` / `{{#if}}` referencing `@arg` bindings falls
+      // through to the scope-binding path instead.
+      if (!this.isLayoutSafeForInlineExpansion(entry.layout)) continue;
+      out = this.expandAngleBracketInvocations(out, name, entry.layout);
+      out = this.expandCurlyBlockInvocations(out, name, entry.layout);
+    }
+    return out;
+  }
+
+  private isLayoutSafeForInlineExpansion(layout: string): boolean {
+    // `{{yield someVar}}` carries a block-param argument we can't
+    // resolve at text level.
+    if (/\{\{\s*yield\s+[^}]+\}\}/.test(layout)) return false;
+    // Layouts that use `{{#each}}` with block params pose the same
+    // problem when combined with yield.
+    if (/\{\{#each\b/.test(layout) && /\{\{\s*yield/.test(layout)) return false;
+    return true;
+  }
+
+  private expandAngleBracketInvocations(
+    source: string,
+    name: string,
+    layout: string
+  ): string {
+    // Only expand exact-name angle invocations. Case-sensitive match.
+    // Self-closing form first.
+    const selfClose = new RegExp(`<${name}(\\s[^>]*)?\\s*/>`, 'g');
+    let out = source.replace(selfClose, (match, argsPart: string | undefined) => {
+      // If the invocation has block params (`as |x|`), skip — we can't
+      // introduce the binding via text substitution. Fall through to
+      // the scope path (which may or may not render correctly).
+      if (argsPart && /\sas\s*\|[^|]+\|/.test(argsPart)) return match;
+      return this.renderLayoutWithArgs(layout, argsPart ?? '', '');
+    });
+    // Paired tag form. Match `<Name attrs>...</Name>` across newlines,
+    // respecting nested occurrences of the same tag by greedy matching
+    // from the innermost `</Name>`.
+    out = this.replacePairedTag(out, name, (argsPart, inner, rawMatch) => {
+      if (/\sas\s*\|[^|]+\|/.test(argsPart)) return rawMatch;
+      return this.renderLayoutWithArgs(layout, argsPart, inner);
+    });
+    return out;
+  }
+
+  private expandCurlyBlockInvocations(
+    source: string,
+    name: string,
+    layout: string
+  ): string {
+    // Match curly block invocations: `{{#name ...}}inner{{/name}}`.
+    // The name in curly form is typically the kebab-case of the
+    // registered name. Only apply when the registered `name` exactly
+    // matches the curly block name or its kebab-case form.
+    const blockName = name; // Callers register using the exact form
+    // Escape regex metacharacters in `blockName`.
+    const escBlock = blockName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(
+      `\\{\\{#\\s*${escBlock}(\\s[^}]*)?\\}\\}([\\s\\S]*?)\\{\\{/\\s*${escBlock}\\s*\\}\\}`,
+      'g'
+    );
+    return source.replace(pattern, (_, argsPart: string | undefined, inner: string) => {
+      return this.renderLayoutWithArgs(layout, argsPart ?? '', inner);
+    });
+  }
+
+  private replacePairedTag(
+    source: string,
+    name: string,
+    replacer: (argsPart: string, inner: string, rawMatch: string) => string
+  ): string {
+    const escName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const openRe = new RegExp(`<${escName}(\\s[^>]*)?\\s*>`, 'g');
+    const closeToken = `</${name}>`;
+    let result = '';
+    let lastEnd = 0;
+    let m: RegExpExecArray | null;
+    while ((m = openRe.exec(source)) !== null) {
+      const openStart = m.index;
+      const openEnd = openRe.lastIndex;
+      // Walk forward counting balanced open/close of same name.
+      let depth = 1;
+      let i = openEnd;
+      let contentEnd = -1;
+      while (i < source.length) {
+        const nextOpen = source.indexOf(`<${name}`, i);
+        const nextClose = source.indexOf(closeToken, i);
+        if (nextClose === -1) break;
+        if (nextOpen !== -1 && nextOpen < nextClose) {
+          // Ensure it's a bare tag, not prefix of another identifier.
+          const after = source.charCodeAt(nextOpen + name.length + 1);
+          if ((after >= 65 && after <= 90) || (after >= 97 && after <= 122) || (after >= 48 && after <= 57) || after === 95 || after === 45) {
+            i = nextOpen + name.length + 1;
+            continue;
+          }
+          depth++;
+          i = nextOpen + name.length + 1;
+        } else {
+          depth--;
+          if (depth === 0) {
+            contentEnd = nextClose;
+            i = nextClose + closeToken.length;
+            break;
+          }
+          i = nextClose + closeToken.length;
+        }
+      }
+      if (contentEnd === -1) {
+        // Unbalanced; emit verbatim and continue.
+        result += source.slice(lastEnd, openEnd);
+        lastEnd = openEnd;
+        continue;
+      }
+      const argsPart = m[1] ?? '';
+      const inner = source.slice(openEnd, contentEnd);
+      const rawEnd = i; // position after `</Name>`
+      const rawMatch = source.slice(openStart, rawEnd);
+      result += source.slice(lastEnd, openStart);
+      result += replacer(argsPart, inner, rawMatch);
+      lastEnd = rawEnd;
+      openRe.lastIndex = rawEnd;
+    }
+    result += source.slice(lastEnd);
+    return result;
+  }
+
+  private renderLayoutWithArgs(
+    layout: string,
+    argsPart: string,
+    inner: string
+  ): string {
+    // Build a map of @argName → raw value-source from `argsPart` like:
+    //   ` @name={{this.foo}} @x="literal" ...attributes`
+    // For the tests we handle, angle-bracket-component args use the form
+    // `@name={{expr}}` (or `@name="literal"`). `...attributes` is
+    // passed through as no-op; `class=...` and similar HTML attrs are
+    // ignored for now.
+    const argMap = parseAngleArgs(argsPart);
+    let expanded = layout;
+    // 1) Substitute `{{@argName}}` occurrences with the provided expr.
+    expanded = expanded.replace(/\{\{@([A-Za-z_][\w-]*)\}\}/g, (whole, argName: string) => {
+      const v = argMap[argName];
+      if (v === undefined) return whole;
+      return v;
+    });
+    // 2) Substitute `{{yield}}` with inner block content. Most test
+    //    layouts yield once. Leave un-yielded forms as-is.
+    expanded = expanded.replace(/\{\{\s*yield\s*\}\}/g, () => inner);
+    // 3) Drop `...attributes` attribute-position references — our tests
+    //    don't rely on class/attribute forwarding at this layer.
+    expanded = expanded.replace(/\s+\.\.\.attributes/g, '');
+    return expanded;
+  }
+
   private compileAndRender(template: string, context: Dict, target: SimpleElement): void {
     const compile = loadGxtCompile();
     let factory: GxtTemplateFactory;
@@ -290,6 +522,15 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // literal string "true" (matching classic Glimmer-VM's SSR builder)
     // instead of the bare-attribute form.
     (globalThis as unknown as { __gxtRehydrationMode?: boolean }).__gxtRehydrationMode = true;
+    // Inline-expand simple `<Name>...</Name>` and `{{#name}}...{{/name}}`
+    // invocations of components we registered above. GXT's `$_c` doesn't
+    // recognize our template-factory shape, so without this pre-pass the
+    // invocations would produce no output. Real tests only use a handful
+    // of trivial layouts (`Hello {{yield}}`, `{{yield}}`, `<div ...attributes>{{yield}}</div>`);
+    // the expansion here only handles those shapes — anything more
+    // complex falls through to scope-binding + `$_c` (which may or may
+    // not render, but won't regress past what we already had).
+    const expandedTemplate = this.expandRegisteredComponents(template);
     // Build scopeValues from registered helpers + components. scopeValues
     // cause the compiler to resolve those names as local bindings, so
     // `{{testing ...}}` invokes the registered helper function directly
@@ -305,7 +546,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     const hasScope = Object.keys(scopeValues).length > 0;
     try {
       factory = compile(
-        template,
+        expandedTemplate,
         hasScope ? { scopeValues } : undefined
       ) as GxtTemplateFactory;
     } catch (e) {
@@ -616,7 +857,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   }
 
   registerComponent(
-    _type: ComponentKind,
+    type: ComponentKind,
     _testType: string,
     name: string,
     layout: string,
@@ -626,6 +867,12 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // scopeValues so `<Name .../>` or `{{name ...}}` references resolve
     // to the compiled component. Class-based components are not modeled.
     void Class;
+    // Remember the raw layout source so `compileAndRender` can inline
+    // simple invocations of this component at the template level. This
+    // avoids needing to thread a full component-factory through GXT's
+    // `$_c` machinery for the ad-hoc test components used by the
+    // rehydration suites.
+    this.registeredLayouts[name] = { layout, kind: type };
     try {
       const compile = loadGxtCompile();
       const factory = compile(layout) as GxtTemplateFactory;

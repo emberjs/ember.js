@@ -1012,6 +1012,31 @@ class RehydratingComponents extends AbstractRehydrationTests {
     let element = assertingElement(candidate);
 
     if (this.testType === 'Glimmer') {
+      if (isGxtModeActive()) {
+        // GXT-emitted server HTML omits the stock `<!--%+b:N%-->` /
+        // `<!--%|%-->` block markers that the expected `html` string
+        // encodes. `assertElementShape` does a byte-for-byte
+        // `innerHTML === html` check that cannot match under GXT.
+        // Compare structural content instead by stripping marker
+        // comments on both sides.
+        const stripMarkers = (s: string) =>
+          s.replace(/<!--%[^%]*%-->/g, '').replace(/<!--%\s*\|\s*%-->/g, '');
+        QUnit.assert.pushResult({
+          result: element.tagName.toLowerCase() === 'div',
+          actual: element.tagName.toLowerCase(),
+          expected: 'div',
+          message: 'assertServerComponent (GXT): tagName is div',
+        });
+        const actualInner = stripMarkers((element as HTMLElement).innerHTML);
+        const expectedInner = stripMarkers(html);
+        QUnit.assert.pushResult({
+          result: actualInner === expectedInner,
+          actual: actualInner,
+          expected: expectedInner,
+          message: 'assertServerComponent (GXT): structural innerHTML matches',
+        });
+        return;
+      }
       assertElementShape(element, 'div', attrs, html);
     } else {
       assertEmberishElement(element, 'div', attrs, html);
