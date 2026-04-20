@@ -1,5 +1,4 @@
 import type { Factory, Resolver } from '@ember/owner';
-import { dasherize } from './strict-resolver/string';
 
 export class StrictResolver implements Resolver {
   // Ember's router uses this flag to decide whether to auto-generate
@@ -130,6 +129,12 @@ export class StrictResolver implements Resolver {
 
 const fileExtension = /\.\w{1,4}$/;
 const leadingDotSlash = /^\.\//;
+const camelCaseBoundary = /([a-z\d])([A-Z])/g;
+const spacesAndUnderscores = /[ _]/g;
+
+function dasherize(str: string): string {
+  return str.replace(camelCaseBoundary, '$1_$2').toLowerCase().replace(spacesAndUnderscores, '-');
+}
 
 type Result =
   | {
