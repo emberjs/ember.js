@@ -1,5 +1,4 @@
 import type { Factory, Resolver } from '@ember/owner';
-import { dasherize } from './strict-resolver/string';
 
 export class StrictResolver implements Resolver {
   // Ember's router uses this flag to decide whether to auto-generate
@@ -36,7 +35,7 @@ export class StrictResolver implements Resolver {
   }
 
   #plural(s: string) {
-    return this.#plurals.get(s) ?? pluralize(s);
+    return this.#plurals.get(s) ?? s + 's';
   }
 
   resolve(fullName: string): Factory<object> | object | undefined {
@@ -128,38 +127,14 @@ export class StrictResolver implements Resolver {
   }
 }
 
-// Handle the common irregular English plurals plus the standard -s / -es
-// suffix rules. Users can override any type via the `plurals` constructor
-// option (including overriding these defaults).
-const IRREGULAR_PLURALS: Record<string, string> = Object.freeze({
-  child: 'children',
-  man: 'men',
-  woman: 'women',
-  person: 'people',
-  mouse: 'mice',
-  tooth: 'teeth',
-  foot: 'feet',
-});
-
-const NEEDS_ES_SUFFIX = /(s|ss|sh|ch|x|z)$/;
-const ENDS_IN_CONSONANT_Y = /([^aeiou])y$/;
-
-function pluralize(singular: string): string {
-  let irregular = IRREGULAR_PLURALS[singular];
-  if (irregular) {
-    return irregular;
-  }
-  if (ENDS_IN_CONSONANT_Y.test(singular)) {
-    return singular.replace(ENDS_IN_CONSONANT_Y, '$1ies');
-  }
-  if (NEEDS_ES_SUFFIX.test(singular)) {
-    return singular + 'es';
-  }
-  return singular + 's';
-}
-
 const fileExtension = /\.\w{1,4}$/;
 const leadingDotSlash = /^\.\//;
+const camelCaseBoundary = /([a-z\d])([A-Z])/g;
+const spacesAndUnderscores = /[ _]/g;
+
+function dasherize(str: string): string {
+  return str.replace(camelCaseBoundary, '$1_$2').toLowerCase().replace(spacesAndUnderscores, '-');
+}
 
 type Result =
   | {
