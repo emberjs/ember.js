@@ -21,6 +21,34 @@ function embroiderWebpack(project: Project) {
 
 function embroiderVite(project: Project) {}
 
+// Swap the v2-app-template's default app.js for a strict-resolver variant:
+// no ember-resolver, no compatModules, no modulePrefix — just a `modules =
+// {...import.meta.glob(...)}` literal. Making this a variant of
+// v2AppScenarios means every test that runs against v2AppScenarios also
+// runs against this configuration.
+function strictResolver(project: Project) {
+  project.mergeFiles({
+    app: {
+      'app.js': `
+        import Application from '@ember/application';
+        import Router from './router';
+
+        export default class App extends Application {
+          modules = {
+            './router': { default: Router },
+            ...import.meta.glob('./services/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./controllers/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./routes/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./components/**/*.{gjs,gts,js,ts}', { eager: true }),
+            ...import.meta.glob('./helpers/**/*.{js,ts}', { eager: true }),
+            ...import.meta.glob('./templates/**/*.{hbs,gjs,gts}', { eager: true }),
+          };
+        }
+      `,
+    },
+  });
+}
+
 export const v1AppScenarios = Scenarios.fromProject(() =>
   Project.fromDir(dirname(require.resolve('../app-template/package.json')), { linkDevDeps: true })
 ).expand({
@@ -34,9 +62,8 @@ export const v2AppScenarios = Scenarios.fromProject(() =>
   })
 ).expand({
   embroiderVite,
+  strictResolver,
 });
-
-function strictResolver(project: Project) {}
 
 export const strictAppScenarios = Scenarios.fromProject(() =>
   Project.fromDir(dirname(require.resolve('../v2-app-template/package.json')), {

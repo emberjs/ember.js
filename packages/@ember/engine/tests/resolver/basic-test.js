@@ -1,13 +1,13 @@
 import { module, test } from 'qunit';
 import { StrictResolver } from '@ember/engine/lib/strict-resolver';
-import { setupResolver } from './-setup-resolver';
 
 module('strict-resolver | basic', function (hooks) {
   let resolver;
   let modules;
 
   hooks.beforeEach(function () {
-    ({ resolver, modules } = setupResolver());
+    modules = {};
+    resolver = new StrictResolver(modules);
   });
 
   test('can lookup something', function (assert) {
@@ -356,49 +356,14 @@ module('strict-resolver | basic', function (hooks) {
     assert.strictEqual(result, 'whatever', 'super-duper-config/environment is found');
   });
 
-  test('default plural handles -s / -ss / -sh / -ch / -x / -z suffixes', function (assert) {
-    let cases = {
-      './buses/red': 'bus:red',
-      './brushes/broom': 'brush:broom',
-      './benches/park': 'bench:park',
-      './boxes/cardboard': 'box:cardboard',
-      './buzzes/loud': 'buzz:loud',
-      './classes/math': 'class:math',
-    };
-
-    for (let [modulePath, lookup] of Object.entries(cases)) {
-      let r = new StrictResolver({ [modulePath]: modulePath });
-      assert.strictEqual(r.resolve(lookup), modulePath, `${lookup} -> ${modulePath}`);
-    }
-  });
-
-  test('default plural handles consonant + y suffix (y -> ies)', function (assert) {
-    let r = new StrictResolver({ './categories/widgets': 'widgets-cat' });
-
-    assert.strictEqual(r.resolve('category:widgets'), 'widgets-cat');
-  });
-
-  test('default plural handles common irregular nouns', function (assert) {
-    let cases = {
-      './children/alice': 'child:alice',
-      './people/bob': 'person:bob',
-      './men/carl': 'man:carl',
-      './women/dana': 'woman:dana',
-      './mice/squeaky': 'mouse:squeaky',
-      './teeth/molar': 'tooth:molar',
-      './feet/left': 'foot:left',
-    };
-
-    for (let [modulePath, lookup] of Object.entries(cases)) {
-      let r = new StrictResolver({ [modulePath]: modulePath });
-      assert.strictEqual(r.resolve(lookup), modulePath, `${lookup} -> ${modulePath}`);
-    }
-  });
-
-  test('custom plural overrides irregular default', function (assert) {
-    // a user who insists on "childs" should be able to opt out of the
-    // built-in irregular plural
-    let r = new StrictResolver({ './childs/alice': 'alice' }, { child: 'childs' });
+  test('irregular plurals must be opted into via the plurals option', function (assert) {
+    // Default pluralization is naive (type + 's'), matching ember-resolver's
+    // behavior. A consumer that wants proper English irregulars registers
+    // them up-front via the plurals map.
+    let r = new StrictResolver(
+      { './children/alice': 'alice' },
+      { child: 'children' }
+    );
 
     assert.strictEqual(r.resolve('child:alice'), 'alice');
   });

@@ -36,7 +36,7 @@ export class StrictResolver implements Resolver {
   }
 
   #plural(s: string) {
-    return this.#plurals.get(s) ?? pluralize(s);
+    return this.#plurals.get(s) ?? s + 's';
   }
 
   resolve(fullName: string): Factory<object> | object | undefined {
@@ -126,36 +126,6 @@ export class StrictResolver implements Resolver {
     }
     return undefined;
   }
-}
-
-// Handle the common irregular English plurals plus the standard -s / -es
-// suffix rules. Users can override any type via the `plurals` constructor
-// option (including overriding these defaults).
-const IRREGULAR_PLURALS: Record<string, string> = Object.freeze({
-  child: 'children',
-  man: 'men',
-  woman: 'women',
-  person: 'people',
-  mouse: 'mice',
-  tooth: 'teeth',
-  foot: 'feet',
-});
-
-const NEEDS_ES_SUFFIX = /(s|ss|sh|ch|x|z)$/;
-const ENDS_IN_CONSONANT_Y = /([^aeiou])y$/;
-
-function pluralize(singular: string): string {
-  let irregular = IRREGULAR_PLURALS[singular];
-  if (irregular) {
-    return irregular;
-  }
-  if (ENDS_IN_CONSONANT_Y.test(singular)) {
-    return singular.replace(ENDS_IN_CONSONANT_Y, '$1ies');
-  }
-  if (NEEDS_ES_SUFFIX.test(singular)) {
-    return singular + 'es';
-  }
-  return singular + 's';
 }
 
 const fileExtension = /\.\w{1,4}$/;
