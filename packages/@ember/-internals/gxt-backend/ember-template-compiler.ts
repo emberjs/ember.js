@@ -147,6 +147,95 @@ function emberAssertFn(msg: string): void {
   _emberDebugAssert(msg, false);
 }
 
+/**
+ * Rewrite block-param declarations whose names are not valid JavaScript
+ * identifiers — specifically names beginning with `-` like
+ * `-with-dynamic-vars` and `-in-element`. The GXT compiler emits the
+ * block param names verbatim into a JavaScript `let` binding (e.g.
+ * `let -with-dynamic-vars = () => this.var`), which is a syntax error
+ * that prevents the template module from loading.
+ *
+ * Rename the param to a valid identifier (`__gxtBlockParam_<n>`) and
+ * rewrite all bare references inside the `{{#let ... as |NAME|}}` /
+ * `<Foo as |NAME|>` block body to the renamed identifier. Leave angle-
+ * bracket element tags and curly `{{# / /}}` structural markers alone
+ * since those are separate parser paths in GXT.
+ *
+ * This is a lightweight textual rewrite — it does not parse the whole
+ * template, it just targets the specific GXT-incompatible identifier
+ * form. Bare `{{-with-dynamic-vars}}` inside the block becomes
+ * `{{__gxtBlockParam_withDynamicVars}}`, while the keyword invocation
+ * `{{#-with-dynamic-vars outletState=...}}...{{/-with-dynamic-vars}}`
+ * is handled elsewhere (compile.ts) and untouched here.
+ */
+/**
+ * Names that the GXT compiler unconditionally refines away — `{{input}}`
+ * becomes `$_tag('Input')`, `{{component}}` / `{{mount}}` collapse to
+ * their built-in component helpers, `{{outlet}}` lowers to the outlet
+ * keyword — regardless of any enclosing block-param shadow. When a
+ * `{{#let ... as |NAME|}}` block declares one of these names as its
+ * param, the inline `{{NAME}}` references need to be routed to the
+ * block-param binding instead of the refined keyword.
+ */
+const GXT_REFINED_KEYWORDS_NEEDING_SHADOW = new Set([
+  'input',
+  'textarea',
+  'component',
+  'mount',
+  'outlet',
+  'link-to',
+]);
+
+function _validBlockParamAlias(name: string): string {
+  const clean = (name.startsWith('-') ? name.slice(1) : name).replace(/-/g, '_');
+  return `__gxtBP_${clean}`;
+}
+
+function _normalizeHyphenBlockParams(template: string): { source: string; changed: boolean } {
+  if (template.indexOf('as |') === -1) return { source: template, changed: false };
+  const asRe = /\sas\s*\|([^|]+)\|/g;
+  let changed = false;
+  let m: RegExpExecArray | null;
+  let out = template;
+  const renamings: Array<{ from: string; to: string }> = [];
+  while ((m = asRe.exec(template)) !== null) {
+    const group = m[1];
+    if (!group) continue;
+    const names = group.trim().split(/\s+/);
+    const newNames: string[] = [];
+    let groupChanged = false;
+    for (const name of names) {
+      // Rename when the identifier is either invalid JS (`-with-dynamic-vars`)
+      // or clashes with a GXT-refined keyword (`input`, `component`, ...).
+      if (name.startsWith('-') || GXT_REFINED_KEYWORDS_NEEDING_SHADOW.has(name)) {
+        const alias = _validBlockParamAlias(name);
+        newNames.push(alias);
+        renamings.push({ from: name, to: alias });
+        groupChanged = true;
+      } else {
+        newNames.push(name);
+      }
+    }
+    if (groupChanged) {
+      out = out.replace(` as |${group}|`, ` as |${newNames.join(' ')}|`);
+      changed = true;
+    }
+  }
+  if (!changed) return { source: template, changed: false };
+  // Replace bare `{{name}}` references. We also match the `{{{...}}}`
+  // triple-curly variant. Skip block openers `{{#name` and closers
+  // `{{/name}}` since those are still structural GXT keywords.
+  for (const { from, to } of renamings) {
+    const escaped = from.replace(/[-]/g, '\\-');
+    const bareRe = new RegExp(
+      `(\\{\\{\\{?)(?!#|/)(\\s*)${escaped}(\\b)`,
+      'g'
+    );
+    out = out.replace(bareRe, `$1$2${to}$3`);
+  }
+  return { source: out, changed: true };
+}
+
 export function compile(templateString: string, options?: any) {
   _maybeRegisterGlobalInstrument();
   // Named outlet assertion — matches classic AssertAgainstNamedOutlets plugin.
@@ -162,6 +251,7 @@ export function compile(templateString: string, options?: any) {
   let scopePatch: Record<string, unknown> | undefined;
   let localsPatch: string[] | undefined;
 
+  // Phase 1: legacy block-form rewrite for `{{#input}}...{{/input}}` etc.
   for (const [name, alias] of Object.entries(GXT_LOWERED_KEYWORDS_MAP)) {
     const inScopeValues = !!(
       originalScopeValues && Object.prototype.hasOwnProperty.call(originalScopeValues, name)
@@ -186,6 +276,17 @@ export function compile(templateString: string, options?: any) {
       localsPatch = localsPatch || [...(options!.locals as string[])];
       if (!localsPatch.includes(alias)) localsPatch.push(alias);
     }
+  }
+
+  // Phase 2: block-param shadow rewrite for inline `{{NAME}}` references
+  // whose name is either invalid JS (`-with-dynamic-vars`) or clashes
+  // with a GXT-refined keyword (`input`, `component`, `outlet`, ...).
+  // This runs after the legacy block-form rewrite so the `{{#NAME}}...`
+  // form has already been transformed (and therefore contains no more
+  // direct `NAME` references to rewrite).
+  const shadowFix = _normalizeHyphenBlockParams(rewritten);
+  if (shadowFix.changed) {
+    rewritten = shadowFix.source;
   }
 
   if (rewritten === templateString) {
