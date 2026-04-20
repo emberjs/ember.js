@@ -327,6 +327,37 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   }
 
   /**
+   * Rewrite `{{#component this.<key>}}...{{/component}}` and
+   * `{{component this.<key>}}` into plain curly-block / bare-name
+   * invocations of the component the context key resolves to. The
+   * `Dynamic` test type (see `buildDynamicComponent` in render-test.ts)
+   * emits these forms, and without resolution they fall through to
+   * GXT's Ember component lookup (which has no knowledge of our test
+   * registrations). We re-target them at our registered names so the
+   * downstream inline-expansion pass can handle them.
+   */
+  private resolveDynamicComponentInvocations(template: string, context: Dict): string {
+    if (Object.keys(this.registeredLayouts).length === 0) return template;
+    // Block form: `{{#component this.X ...}}inner{{/component}}`
+    const blockRe = /\{\{#\s*component\s+this\.([A-Za-z_][\w]*)\b([^}]*)\}\}([\s\S]*?)\{\{\/\s*component\s*\}\}/g;
+    let out = template.replace(blockRe, (match, key: string, argsRest: string, inner: string) => {
+      const resolved = (context as Record<string, unknown>)[key];
+      if (typeof resolved !== 'string') return match;
+      if (!(resolved in this.registeredLayouts)) return match;
+      return `{{#${resolved}${argsRest}}}${inner}{{/${resolved}}}`;
+    });
+    // Inline form: `{{component this.X ...}}`
+    const inlineRe = /\{\{\s*component\s+this\.([A-Za-z_][\w]*)\b([^}]*)\}\}/g;
+    out = out.replace(inlineRe, (match, key: string, argsRest: string) => {
+      const resolved = (context as Record<string, unknown>)[key];
+      if (typeof resolved !== 'string') return match;
+      if (!(resolved in this.registeredLayouts)) return match;
+      return `{{${resolved}${argsRest}}}`;
+    });
+    return out;
+  }
+
+  /**
    * Inline-expand simple component invocations in the template source
    * against the registered layouts. Handles a narrow, test-infra slice:
    *
@@ -581,6 +612,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // literal string "true" (matching classic Glimmer-VM's SSR builder)
     // instead of the bare-attribute form.
     (globalThis as unknown as { __gxtRehydrationMode?: boolean }).__gxtRehydrationMode = true;
+    // Resolve `{{component this.componentName ...}}`-style dynamic
+    // component invocations emitted by the RehydratingComponents
+    // `Dynamic` test type. We look up `this.<name>` in the context; if
+    // it's a string matching a registered component, we rewrite the
+    // block form to a curly-block invocation of that component so the
+    // next inline-expansion pass can resolve it.
+    const preResolved = this.resolveDynamicComponentInvocations(template, context);
     // Inline-expand simple `<Name>...</Name>` and `{{#name}}...{{/name}}`
     // invocations of components we registered above. GXT's `$_c` doesn't
     // recognize our template-factory shape, so without this pre-pass the
@@ -589,7 +627,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // the expansion here only handles those shapes — anything more
     // complex falls through to scope-binding + `$_c` (which may or may
     // not render, but won't regress past what we already had).
-    const expandedTemplate = this.expandRegisteredComponents(template);
+    const expandedTemplate = this.expandRegisteredComponents(preResolved);
     // Build scopeValues from registered helpers + components. scopeValues
     // cause the compiler to resolve those names as local bindings, so
     // `{{testing ...}}` invokes the registered helper function directly

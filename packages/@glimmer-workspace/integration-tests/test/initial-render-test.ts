@@ -1020,7 +1020,15 @@ class RehydratingComponents extends AbstractRehydrationTests {
         // Compare structural content instead by stripping marker
         // comments on both sides.
         const stripMarkers = (s: string) =>
-          s.replace(/<!--%[^%]*%-->/g, '').replace(/<!--%\s*\|\s*%-->/g, '');
+          s
+            // Stock Glimmer-VM block markers.
+            .replace(/<!--%[^%]*%-->/g, '')
+            .replace(/<!--%\s*\|\s*%-->/g, '')
+            // GXT emits empty `<!---->` comments at branch boundaries
+            // (e.g. around `{{#if}}` / `{{#each}}`). These aren't part
+            // of the expected shape under either rendering model, so
+            // drop them for structural comparison.
+            .replace(/<!---->/g, '');
         QUnit.assert.pushResult({
           result: element.tagName.toLowerCase() === 'div',
           actual: element.tagName.toLowerCase(),
