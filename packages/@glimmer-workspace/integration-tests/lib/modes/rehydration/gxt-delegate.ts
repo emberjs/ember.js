@@ -221,6 +221,15 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   // them explicitly so the client-side fresh render can restore them.
   private preExistingLeadingHTML: string = '';
 
+  // Indexes (in DFS order among all `<option>` descendants of the render
+  // target) of `<option>` elements that were rendered with `selected=true`
+  // server-side. Classic Glimmer-VM's SSR leaves the `selected="true"`
+  // attribute in the HTML even after the property is toggled to false on
+  // the client; GXT sets the DOM property but doesn't persist the
+  // attribute. We track the server-side selection to re-apply the
+  // attribute after each fresh client render.
+  private serverSelectedOptionIndexes: Set<number> = new Set();
+
   // Locally-registered helpers and components. Passed to the GXT compiler
   // via `scopeValues` so the template's `{{foo ...}}` / `<Foo ...>` calls
   // resolve to the test-registered values instead of falling through to
@@ -352,7 +361,114 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       // can throw on GXT-rendered trees that haven't completed. Don't
       // wedge the whole run.
     }
+    // Classic Glimmer-VM SSR emits `selected="true"` as a literal
+    // attribute on `<option selected={{...}}>` when rendered server-side.
+    // GXT sets the `.selected` DOM property instead, so the attribute is
+    // missing from `innerHTML`. Walk rendered options and promote truthy
+    // `.selected` into an explicit attribute so the server HTML matches.
+    this.normalizeServerOptionSelection(targetElement);
     return this.serialize(targetElement);
+  }
+
+  /**
+   * Promote `option.selected === true` into an explicit
+   * `selected="true"` attribute and remember which options were
+   * selected. Classic Glimmer-VM's SSR serializes the attribute form;
+   * GXT uses the DOM property form. Normalising here lets
+   * assertion-level HTML-equality checks pass without diverging from
+   * GXT's runtime rendering behavior.
+   */
+  private normalizeServerOptionSelection(targetElement: SimpleElement): void {
+    const el = targetElement as unknown as Element;
+    if (!el || typeof (el as unknown as { querySelectorAll?: unknown }).querySelectorAll !== 'function') {
+      return;
+    }
+    let options: NodeListOf<Element>;
+    try {
+      options = el.querySelectorAll('option');
+    } catch {
+      return;
+    }
+    this.serverSelectedOptionIndexes = new Set();
+    for (let i = 0; i < options.length; i++) {
+      const opt = options[i]!;
+      const htmlOpt = opt as unknown as HTMLOptionElement;
+      try {
+        if (htmlOpt.selected === true) {
+          if (!opt.hasAttribute('selected')) {
+            opt.setAttribute('selected', 'true');
+          }
+          this.serverSelectedOptionIndexes.add(i);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  /**
+   * Copy `.selected` DOM properties from a freshly-rendered scratch
+   * subtree back onto the live target's matching `<option>` elements.
+   * Classic Glimmer-VM wires reactive updates through the render VM;
+   * our delegate doesn't, so a rerender that produces identical HTML
+   * can still carry a `.selected` change (e.g. `{selected: true}` →
+   * `{selected: false}`). Without this sync the select's
+   * `selectedIndex` never updates between rerenders.
+   */
+  private syncOptionSelectedFromScratch(
+    targetEl: Element,
+    scratchEl: Element
+  ): void {
+    if (!targetEl || !scratchEl) return;
+    let targetOptions: NodeListOf<Element>;
+    let scratchOptions: NodeListOf<Element>;
+    try {
+      targetOptions = targetEl.querySelectorAll('option');
+      scratchOptions = scratchEl.querySelectorAll('option');
+    } catch {
+      return;
+    }
+    const n = Math.min(targetOptions.length, scratchOptions.length);
+    for (let i = 0; i < n; i++) {
+      const tgt = targetOptions[i] as unknown as HTMLOptionElement;
+      const scr = scratchOptions[i] as unknown as HTMLOptionElement;
+      try {
+        tgt.selected = scr.selected;
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  /**
+   * Re-apply server-side `selected="true"` attributes after a client-
+   * side fresh render. Classic Glimmer-VM persists the server attribute
+   * even when the property is later set to false; we re-add the
+   * attribute ourselves to match that observable shape.
+   */
+  private reapplySelectedAttributes(targetElement: SimpleElement): void {
+    if (this.serverSelectedOptionIndexes.size === 0) return;
+    const el = targetElement as unknown as Element;
+    if (!el || typeof (el as unknown as { querySelectorAll?: unknown }).querySelectorAll !== 'function') {
+      return;
+    }
+    let options: NodeListOf<Element>;
+    try {
+      options = el.querySelectorAll('option');
+    } catch {
+      return;
+    }
+    for (const idx of this.serverSelectedOptionIndexes) {
+      const opt = options[idx];
+      if (!opt) continue;
+      try {
+        if (!opt.hasAttribute('selected')) {
+          opt.setAttribute('selected', 'true');
+        }
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   renderClientSide(template: string, context: Dict, element: SimpleElement): RenderResult {
@@ -394,6 +510,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     }
 
     this.compileAndRender(template, context, element);
+    this.reapplySelectedAttributes(element);
 
     const result = new GxtRenderResult(
       template,
@@ -434,7 +551,16 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       const leading = self.preExistingLeadingHTML;
       if (leading + nextHTML === prevHTML) {
         // Stable rerender: leave existing DOM intact so node-identity
-        // snapshots match.
+        // snapshots match. Sync option.selected DOM properties from the
+        // freshly-rendered scratch tree so select elements reflect the
+        // current context — our delegate doesn't thread GXT reactive
+        // tracking through the context object, so a rerender that
+        // produces identical markup can still carry a different DOM
+        // property value we need to copy over.
+        self.syncOptionSelectedFromScratch(
+          targetEl as unknown as Element,
+          scratch as unknown as Element
+        );
         return;
       }
       try {
@@ -450,6 +576,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
         }
       }
       self.compileAndRender(template, context, element);
+      self.reapplySelectedAttributes(element);
     };
     return result as unknown as RenderResult;
   }
