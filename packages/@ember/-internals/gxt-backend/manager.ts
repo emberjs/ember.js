@@ -106,6 +106,12 @@ interface PoolEntry {
   instance: any;
   claimed: boolean;
   updatedThisPass: boolean; // Track if we've already run update hooks this pass
+  // When this entry was created inside an `{{#each}}` iteration, this holds
+  // the row's item identity (from the each block param). Allows the pool
+  // lookup to match by row rather than by sequential position, so destroying
+  // a middle item doesn't cause a position-slide that misreports IDs in
+  // `willDestroyElement` hooks.
+  eachRowKey?: any;
 }
 
 // =============================================================================
@@ -648,6 +654,62 @@ const _allPoolArrays = new Set<PoolEntry[]>();
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
 
+// ---- Each-iteration row key tracking ----
+// When rendering inside `{{#each items as |item|}}`, push the `item` identity
+// onto this stack so `getCachedOrCreateInstance` can include it in the pool
+// cache-key. This makes pooled component instances STICK TO THEIR ROW when
+// the list shrinks (instead of sliding forward, which misreports which items
+// were destroyed — see "that thing about destroying" life-cycle test).
+// Stack because `{{#each}}` blocks may nest.
+const _eachRowKeyStack: any[] = [];
+function getCurrentEachRowKey(): any | undefined {
+  return _eachRowKeyStack.length > 0 ? _eachRowKeyStack[_eachRowKeyStack.length - 1] : undefined;
+}
+// Patch `globalThis.$_eachSync` so every iteration of a {{#each}} pushes/pops
+// the current row identity onto `_eachRowKeyStack`. Idempotent — runs once and
+// layers on top of compile.ts's own patch (order-independent: we wrap whatever
+// $_eachSync currently is). Each component instance created during the
+// iteration becomes tagged with `__gxtEachRowKey = item`, and the pool lookup
+// matches by that key instead of sequential position.
+function _patchEachSyncForRowKeying(): boolean {
+  const g = globalThis as any;
+  if (!g.$_eachSync || g.$_eachSync.__emberRowKeyPatched) return false;
+  const prevEachSync = g.$_eachSync;
+  const wrappedEachSync: any = function patchedEachSyncRowKey(
+    items: any, fn: any, key: any, ctx: any, inverseFn?: any
+  ) {
+    const origFn = fn;
+    const wrappedFn = function rowKeyWrappedFn(item: any, index: any, ctx0: any) {
+      _eachRowKeyStack.push(item);
+      try {
+        return origFn(item, index, ctx0);
+      } finally {
+        // Pop defensively — if `origFn` somehow left extra entries, only pop
+        // one (our own). Mismatched pushes would be a bug elsewhere.
+        _eachRowKeyStack.pop();
+      }
+    };
+    return prevEachSync(items, wrappedFn, key, ctx, inverseFn);
+  };
+  wrappedEachSync.__emberRowKeyPatched = true;
+  wrappedEachSync.__emberPatched = true; // preserve compile.ts's marker
+  try {
+    Object.defineProperty(g, '$_eachSync', {
+      get() { return wrappedEachSync; },
+      set(_v: any) { /* keep patched */ },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch {
+    g.$_eachSync = wrappedEachSync;
+  }
+  return true;
+}
+_patchEachSyncForRowKeying();
+queueMicrotask(_patchEachSyncForRowKeying);
+// Retry once compile.ts's own patch has installed (it also uses microtask).
+setTimeout(_patchEachSyncForRowKeying, 0);
+
 // Expose a function to clear all instance pools between tests.
 // This prevents stale component instances from leaking across tests.
 (globalThis as any).__gxtClearInstancePools = function() {
@@ -743,6 +805,15 @@ function getCachedOrCreateInstance(
   // Helper: skip destroyed/destroying instances in pool lookup
   const isAlive = (e: PoolEntry) => !e.claimed && !e.instance?.isDestroyed && !e.instance?.isDestroying;
 
+  // If we're inside an {{#each}} iteration, the row's item identity is on
+  // `_eachRowKeyStack`. Prefer matching a pool entry whose `eachRowKey` equals
+  // the current row — this keeps component instances bound to their ROW even
+  // when the list shrinks (the sequential-position fallback would otherwise
+  // slide forward and misreport which items were destroyed; see life-cycle
+  // test `that thing about destroying`).
+  const currentRowKey = getCurrentEachRowKey();
+  const insideEachRow = _eachRowKeyStack.length > 0;
+
   if (requestedElementId) {
     // Explicit elementId provided - find instance with matching elementId
     // Convert to string for comparison since Ember may store elementId as string
@@ -768,10 +839,18 @@ function getCachedOrCreateInstance(
     // getRootViews/getChildViews for sibling classic components sharing a
     // pool (e.g. {{x-toggle id="root-2"}} + {{x-toggle id="root-3"}} with
     // {{#if}}-driven lifecycle). A fresh instance is created below instead.
+  } else if (insideEachRow) {
+    // Each-row path: match strictly by row identity. If no entry exists with
+    // this row key, create a NEW instance (do not fall back to positional
+    // reuse — that would re-bind a dead row's instance to a surviving row and
+    // make `willDestroyElement` report the wrong item id).
+    poolEntry = pool.find((e) => isAlive(e) && e.eachRowKey === currentRowKey);
   } else {
-    // No explicit elementId - use sequential ordering
-    // First unclaimed, non-destroyed instance gets claimed
-    poolEntry = pool.find(isAlive);
+    // No explicit elementId and not inside an each iteration - use sequential
+    // ordering. First unclaimed, non-each, non-destroyed instance gets claimed.
+    // Skip entries that were born inside an each so we don't cross-wire a
+    // pooled each-row instance with an unrelated outer component.
+    poolEntry = pool.find((e) => isAlive(e) && e.eachRowKey === undefined);
   }
 
   if (poolEntry) {
@@ -819,10 +898,17 @@ function getCachedOrCreateInstance(
   // for this template position (identified by __thunkId) in another pool.
   // This handles GXT re-evaluating formulas during the same render pass
   // with a different parentView context (e.g., after the parentView stack has been popped).
+  // When inside an each iteration, also require row-key match — otherwise a
+  // claimed entry from a SIBLING each row could be returned here (thunkId is
+  // per-template-position, not per-row).
   const thunkId = args?.__thunkId;
   if (thunkId) {
     for (const poolArr of _allPoolArrays) {
-      const existing = poolArr.find((e) => e.claimed && e.instance?.__gxtThunkId === thunkId);
+      const existing = poolArr.find((e) =>
+        e.claimed &&
+        e.instance?.__gxtThunkId === thunkId &&
+        (!insideEachRow || e.eachRowKey === currentRowKey)
+      );
       if (existing) {
         // Already created in this render pass — return the same instance
         return existing.instance;
@@ -874,7 +960,14 @@ function getCachedOrCreateInstance(
 
   // Add to pool and mark as claimed
   // updatedThisPass is false since this is initial creation, not an update
-  pool.push({ instance, claimed: true, updatedThisPass: false });
+  // Tag the entry with the current each-row key (if any) so future renders
+  // match this instance to the same row rather than to a positional slot.
+  const newEntry: PoolEntry = { instance, claimed: true, updatedThisPass: false };
+  if (insideEachRow) {
+    newEntry.eachRowKey = currentRowKey;
+    try { (instance as any).__gxtEachRowKey = currentRowKey; } catch { /* ignore */ }
+  }
+  pool.push(newEntry);
 
   return instance;
 }
