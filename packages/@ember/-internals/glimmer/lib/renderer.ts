@@ -56,8 +56,8 @@ import {
 } from '@lifeart/gxt';
 import { setupGlobalScope as gxtSetupGlobalScope } from '@lifeart/gxt/runtime-compiler';
 
-// Register -outlet helper: {{outlet}} → {{component (-outlet)}} via ember AST transform.
-(function registerOutletHelper() {
+// Register ember-specific helpers for GXT rendering.
+(function registerEmberHelpers() {
   const _can = $_MANAGERS.helper.canHandle.bind($_MANAGERS.helper);
   const _handle = $_MANAGERS.helper.handle.bind($_MANAGERS.helper);
   $_MANAGERS.helper.canHandle = (h: unknown) => h === '-outlet' || _can(h);
