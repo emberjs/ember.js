@@ -1,8 +1,8 @@
 import {
   jitSuite,
+  parseErrorFor,
   preprocess,
   RenderTest,
-  syntaxErrorFor,
   test,
 } from '@glimmer-workspace/integration-tests';
 
@@ -17,12 +17,13 @@ class CompileErrorTests extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Unclosed element `div`',
-        '<div class="my-div" \n foo={{bar}}>',
+        '\n<div class="my-div" \n foo={{bar}}>\n<span>\n</span>\n',
         'test-module',
         2,
-        0
+        0,
+        20
       )
     );
 
@@ -32,7 +33,14 @@ class CompileErrorTests extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor('Unclosed element `span`', '<span>', 'test-module', 3, 0)
+      parseErrorFor(
+        'Unclosed element `span`',
+        '\n<div class="my-div">\n<span>\n',
+        'test-module',
+        3,
+        0,
+        6
+      )
     );
   }
 
@@ -42,7 +50,7 @@ class CompileErrorTests extends RenderTest {
       () => {
         preprocess('</p>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor('Closing tag </p> without an open tag', '</p>', 'test-module', 1, 0)
+      parseErrorFor('Closing tag </p> without an open tag', '</p>', 'test-module', 1, 0, 4)
     );
 
     this.assert.throws(
@@ -51,7 +59,14 @@ class CompileErrorTests extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor('Closing tag </div> without an open tag', '</div>', 'test-module', 3, 0)
+      parseErrorFor(
+        'Closing tag </div> without an open tag',
+        '<em>{{ foo }}</em> \n {{ bar }}\n</div>',
+        'test-module',
+        3,
+        0,
+        6
+      )
     );
   }
 
@@ -61,12 +76,13 @@ class CompileErrorTests extends RenderTest {
       () => {
         preprocess('<input></input>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         '<input> elements do not need end tags. You should remove it',
-        '</input>',
+        '<input></input>',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
 
@@ -74,12 +90,13 @@ class CompileErrorTests extends RenderTest {
       () => {
         preprocess('<div>\n  <input></input>\n</div>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         '<input> elements do not need end tags. You should remove it',
-        '</input>',
+        '<div>\n  <input></input>\n</div>',
         'test-module',
         2,
-        9
+        9,
+        1
       )
     );
 
@@ -87,12 +104,13 @@ class CompileErrorTests extends RenderTest {
       () => {
         preprocess('\n\n</br>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         '<br> elements do not need end tags. You should remove it',
-        '</br>',
+        '\n\n</br>',
         'test-module',
         3,
-        0
+        0,
+        5
       )
     );
   }
@@ -103,12 +121,13 @@ class CompileErrorTests extends RenderTest {
       () => {
         preprocess('<div>\nSomething\n\n</div foo="bar">', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid end tag: closing tag must not have attributes',
-        '</div foo="bar"',
+        '<div>\nSomething\n\n</div foo="bar">',
         'test-module',
         4,
-        0
+        0,
+        15
       )
     );
   }
@@ -119,12 +138,13 @@ class CompileErrorTests extends RenderTest {
       () => {
         preprocess('<div>\n<p>\nSomething\n\n</div>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Closing tag </div> did not match last open tag <p> (on line 2)',
-        '</div>',
+        '<div>\n<p>\nSomething\n\n</div>',
         'test-module',
         5,
-        0
+        0,
+        6
       )
     );
   }
@@ -137,12 +157,13 @@ class CompileErrorTests extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Closing tag </div> did not match last open tag <p> (on line 2)',
-        '</div>',
+        '<div>\n<p>\n{{! some comment}}\n\n</div>',
         'test-module',
         5,
-        0
+        0,
+        6
       )
     );
   }
@@ -153,12 +174,13 @@ class CompileErrorTests extends RenderTest {
       () => {
         preprocess('<div>\n<p>\n{{someProp}}\n\n</div>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Closing tag </div> did not match last open tag <p> (on line 2)',
-        '</div>',
+        '<div>\n<p>\n{{someProp}}\n\n</div>',
         'test-module',
         5,
-        0
+        0,
+        6
       )
     );
   }
@@ -171,12 +193,13 @@ class CompileErrorTests extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Closing tag </div> did not match last open tag <p> (on line 2)',
-        '</div>',
+        '<div>\n<p>\n{{#some-comment}}\n{{/some-comment}}\n</div>',
         'test-module',
         5,
-        0
+        0,
+        6
       )
     );
   }
@@ -189,12 +212,13 @@ class CompileErrorTests extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Closing tag </div> did not match last open tag <p> (on line 2)',
-        '</div>',
+        '<div>\n<p>\n{{someProp~}}\n\n</div>{{some-comment}}',
         'test-module',
         5,
-        0
+        0,
+        6
       )
     );
   }
@@ -207,12 +231,13 @@ class CompileErrorTests extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Closing tag </div> did not match last open tag <p> (on line 2)',
-        '</div>',
+        '<div>\n<p>\n{{some-comment}}</div>{{some-comment}}',
         'test-module',
         3,
-        16
+        16,
+        1
       )
     );
   }
@@ -221,31 +246,32 @@ class CompileErrorTests extends RenderTest {
   'Unquoted attribute with expression throws an exception'() {
     this.assert.throws(
       () => preprocess('<img class=foo{{bar}}>', { meta: { moduleName: 'test-module' } }),
-      expectedError('class=foo{{bar}}', 1, 5)
+      expectedError('<img class=foo{{bar}}>', 1, 5, 1)
     );
     this.assert.throws(
       () => preprocess('<img class={{foo}}{{bar}}>', { meta: { moduleName: 'test-module' } }),
-      expectedError('class={{foo}}{{bar}}', 1, 5)
+      expectedError('<img class={{foo}}{{bar}}>', 1, 5, 1)
     );
     this.assert.throws(
       () => preprocess('<img \nclass={{foo}}bar>', { meta: { moduleName: 'test-module' } }),
-      expectedError('class={{foo}}bar', 2, 0)
+      expectedError('<img \nclass={{foo}}bar>', 2, 0, 16)
     );
     this.assert.throws(
       () =>
         preprocess('<div \nclass\n=\n{{foo}}&amp;bar ></div>', {
           meta: { moduleName: 'test-module' },
         }),
-      expectedError('class\n=\n{{foo}}&amp;bar', 2, 0)
+      expectedError('<div \nclass\n=\n{{foo}}&amp;bar ></div>', 2, 0, 5)
     );
 
-    function expectedError(code: string, line: number, column: number) {
-      return syntaxErrorFor(
+    function expectedError(source: string, line: number, column: number, spanLength: number) {
+      return parseErrorFor(
         `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'`,
-        code,
+        source,
         'test-module',
         line,
-        column
+        column,
+        spanLength
       );
     }
   }

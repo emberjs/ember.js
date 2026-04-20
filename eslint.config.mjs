@@ -28,8 +28,7 @@ export default [
       '**/type-tests/',
       'internal-docs/guides/**',
       'packages/@glimmer-workspace/**',
-      'packages/@handlebars/parser/lib/parser.js',
-      'packages/@handlebars/parser/src/**',
+      'packages/@glimmer/syntax/lib/hbs-parser/parser.js',
       'tracerbench-testing/',
     ],
   },
@@ -187,15 +186,6 @@ export default [
       'no-implicit-coercion': 'off',
       'no-unused-vars': 'off',
       'import/namespace': 'off',
-    },
-  },
-  {
-    files: ['packages/@handlebars/parser/spec/**/*.js'],
-
-    languageOptions: {
-      globals: {
-        ...globals.mocha,
-      },
     },
   },
   {

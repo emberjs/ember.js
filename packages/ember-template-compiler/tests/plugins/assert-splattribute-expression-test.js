@@ -1,8 +1,6 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { compile } from '../../index';
 
-const message = `Illegal use of ...attributes`;
-
 moduleFor(
   'ember-template-compiler: assert-splattribute-expression',
   class extends AbstractTestCase {
@@ -13,15 +11,24 @@ moduleFor(
     }
 
     '@test {{...attributes}} is not valid path expression'(assert) {
-      assert.throws(() => compile('<div>{{...attributes}}</div>'), message);
+      assert.throws(
+        () => compile('<div>{{...attributes}}</div>'),
+        /Illegal use of \.\.\.attributes outside of an element opening tag/u
+      );
     }
 
     '@test {{...attributes}} is not valid modifier'(assert) {
-      assert.throws(() => compile('<div {{...attributes}}>Wat</div>', message));
+      assert.throws(
+        () => compile('<div {{...attributes}}>Wat</div>'),
+        /\.\.\.attributes cannot be used as a modifier/u
+      );
     }
 
     '@test {{...attributes}} is not valid attribute'(assert) {
-      assert.throws(() => compile('<div class={{...attributes}}>Wat</div>', message));
+      assert.throws(
+        () => compile('<div class={{...attributes}}>Wat</div>'),
+        /\.\.\.attributes cannot be used as an attribute value/u
+      );
     }
   }
 );

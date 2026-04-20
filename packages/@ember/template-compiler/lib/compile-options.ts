@@ -118,7 +118,10 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   }
 
   if (options.strictMode) {
-    options.keywords = STRICT_MODE_KEYWORDS;
+    // Include fn/on as keywords for runtime compilation so the strict mode
+    // validation pass allows them. The auto-import-builtins plugin will
+    // rewrite them to __ember_keywords__.fn / __ember_keywords__.on.
+    options.keywords = [...STRICT_MODE_KEYWORDS, 'fn', 'on'];
   }
 
   return options;
