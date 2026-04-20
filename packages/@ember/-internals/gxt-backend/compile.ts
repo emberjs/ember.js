@@ -1097,6 +1097,7 @@ import {
 import {
   createRoot as gxtCreateRoot,
   setParentContext as gxtSetParentContext,
+  $_GET_ARGS as _gxtGetArgs,
   $_MANAGERS,
   RENDERED_NODES_PROPERTY,
   COMPONENT_ID_PROPERTY,
@@ -3249,7 +3250,7 @@ function patchGlobalIf() {
     // mutable holder object whose identity is stable; fill in `.ifCondition`
     // after origIf returns so descendants pushed during construction can still
     // reach back to us once we exist.
-    const ifConditionRef: any = { ifCondition: null, childIfConditions };
+    const ifConditionRef: any = { ifCondition: null, childIfConditions, lastKnownPlaceholderParent: null as Node | null };
     const wrapBranch = (fn: any, scope: Set<any>) => {
       if (typeof fn !== 'function') return fn;
       return function wrappedBranch(this: any, ...branchArgs: any[]) {
@@ -3284,6 +3285,74 @@ function patchGlobalIf() {
         // `const ifCondition` is assigned).
         const prevParentIf = g2.__gxtCurrentParentIfRef;
         g2.__gxtCurrentParentIfRef = ifConditionRef;
+        // CRITICAL: On a true→false branch toggle, GXT's internal `TREE` map may
+        // have lost the IfCondition's entry (cleared by a destroy-cascade
+        // destructor from the previous branch's teardown). Without
+        // `TREE.get(ifCondition.Z) === ifCondition`, downstream
+        // `setParentContext(ifCondition)` calls result in `getParentContext()`
+        // returning `undefined`, which crashes `$_GET_ARGS → addToTree(undefined, ...)`.
+        //
+        // Fix: re-register the IfCondition in the TREE before evaluating the new
+        // branch. Clear the IfCondition's `ADDED_TO_TREE_FLAG` and call
+        // `$_GET_ARGS` with the original `ctx` on top of the parent-context
+        // stack; that routes through `addToTree(ctx, ifCondition)` which reinstates
+        // the TREE entry.
+        const ifcRef = ifConditionRef.ifCondition;
+        if (ifcRef && ctx) {
+          try {
+            gxtSetParentContext(ifcRef as any);
+            const resolved = _gxtGetParentContext();
+            gxtSetParentContext(null);
+            if (resolved !== ifcRef) {
+              // IfCondition was unregistered — restore TREE entry.
+              const attSym = Object.getOwnPropertySymbols(ifcRef)
+                .find((s) => (ifcRef as any)[s] === false);
+              if (attSym) {
+                try { delete (ifcRef as any)[attSym]; } catch { /* ignore */ }
+              }
+              try {
+                gxtSetParentContext(ctx as any);
+                try {
+                  (_gxtGetArgs as any)(ifcRef, [] as any);
+                } catch { /* ignore */ }
+                gxtSetParentContext(null);
+              } catch { /* ignore */ }
+            }
+          } catch { /* ignore */ }
+        }
+        // CRITICAL: Re-check placeholder connectivity AFTER destroyBranchSync
+        // (which ran just before this function was invoked by renderState).
+        // The destroy cascade may have removed the placeholder from its parent
+        // when the outgoing branch's RENDERED_NODES snapshot captured the
+        // placeholder as a sibling. If the placeholder is disconnected, the
+        // downstream `renderElement` call inside renderState falls back to the
+        // IfCondition's private `target` DocumentFragment, which is NOT in the
+        // live DOM — the newly-rendered component ends up orphaned and fails
+        // the `isConnected` check in the deferred didInsertElement callback.
+        //
+        // Track the placeholder's last known live parent; when the placeholder
+        // is disconnected, reattach to that parent. We ONLY reattach when we
+        // have a previously-observed live parent — without that evidence, the
+        // placeholder may have been intentionally detached (e.g. nested
+        // IfCondition teardown under a parent collapse) and reattaching to an
+        // unrelated element would leak content into the wrong DOM subtree.
+        if (ifcRef) {
+          try {
+            const ph = (ifcRef as any).placeholder;
+            if (ph) {
+              if ((ph as any).parentNode && (ph as any).parentNode.isConnected) {
+                // Remember the current live parent for future teardown cycles.
+                ifConditionRef.lastKnownPlaceholderParent = (ph as any).parentNode;
+              } else if (!(ph as any).isConnected) {
+                // Disconnected — try to reattach to last known live parent.
+                const lkp: Node | null = ifConditionRef.lastKnownPlaceholderParent;
+                if (lkp && (lkp as any).isConnected) {
+                  try { (lkp as any).appendChild(ph); } catch { /* ignore */ }
+                }
+              }
+            }
+          } catch { /* ignore */ }
+        }
         try {
           const result = fn.apply(this, branchArgs);
           // If the branch returns a function (common pattern:
@@ -3298,9 +3367,17 @@ function patchGlobalIf() {
               g3.__gxtCurrentHelperScope = scope;
               const prev3 = g3.__gxtCurrentParentIfRef;
               g3.__gxtCurrentParentIfRef = ifConditionRef;
+              const ifcRef2 = ifConditionRef.ifCondition;
+              let pushedPc2 = false;
+              if (ifcRef2) {
+                try { gxtSetParentContext(ifcRef2 as any); pushedPc2 = true; } catch { /* ignore */ }
+              }
               try {
                 return inner.apply(this, innerArgs);
               } finally {
+                if (pushedPc2) {
+                  try { gxtSetParentContext(null); } catch { /* ignore */ }
+                }
                 g3.__gxtCurrentHelperScope = prev2;
                 g3.__gxtCurrentParentIfRef = prev3;
               }
@@ -3502,6 +3579,10 @@ function patchGlobalIf() {
         if (ph.parentNode) {
           // Currently connected — remember the parent
           lastKnownParent = ph.parentNode;
+          // Also stash on the shared ref so wrapBranch can reattach the
+          // placeholder on a true→false toggle when destroyBranchSync's
+          // RENDERED_NODES snapshot destruction detaches it as a side effect.
+          try { ifConditionRef.lastKnownPlaceholderParent = ph.parentNode; } catch { /* ignore */ }
           return;
         }
         // Disconnected — try to reattach
@@ -4803,6 +4884,17 @@ try {
     try {
       const postRender = (globalThis as any).__gxtPostRenderHooks;
       if (typeof postRender === 'function') postRender();
+    } catch { /* ignore */ }
+    // PHASE 3b: Flush pending didInsertElement / didRender callbacks for
+    // classic components that were instantiated DURING this sync cycle
+    // (e.g., via IfCondition.syncState's branch re-evaluation when a
+    // `{{#if cond}}{{my-component}}{{else}}{{other-component}}{{/if}}`
+    // toggles cond). These callbacks are pushed to _afterInsertQueue in
+    // renderClassicComponent and would otherwise never fire because the
+    // outlet-rerender / sync path doesn't call flushAfterInsertQueue().
+    try {
+      const flushDIE = (globalThis as any).__gxtFlushAfterInsertQueue;
+      if (typeof flushDIE === 'function') flushDIE();
     } catch { /* ignore */ }
     // Re-render CurriedComponent marker regions
     try {
