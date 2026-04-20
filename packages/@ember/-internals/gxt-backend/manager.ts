@@ -6760,9 +6760,53 @@ const $_MANAGERS = {
           }
         } else {
           instance = manager.createModifier(ModifierClass, trackedInstallArgs);
-          manager.installModifier(instance, element, trackedInstallArgs);
+          // Detect "dirty-during-install": classic Ember's CustomModifierManager
+          // wraps installModifier in a track() frame. If the modifier's install
+          // hook mutates its own tracked/notifiable state (e.g. `this.set('savedElement', ...)`)
+          // that was implicitly READ by the set path itself (set first reads for
+          // an equality check), classic captures this tag in the frame, and the
+          // subsequent dirty schedules an updateModifier() on the next validation
+          // tick — producing an extra `didUpdate` hook call.
+          //
+          // In GXT we mimic this by installing a per-modifier notifyPropertyChange
+          // watcher for the duration of installModifier. If any property on the
+          // instance is set during install, we fire `updateModifier` once right
+          // after install returns.
+          let _selfSetDuringInstall = false;
+          const prevInstallWatcher = (globalThis as any).__gxtModifierInstallWatchers;
+          const installWatchers: Map<object, () => void> = prevInstallWatcher instanceof Map
+            ? prevInstallWatcher
+            : new Map();
+          if (!(prevInstallWatcher instanceof Map)) {
+            (globalThis as any).__gxtModifierInstallWatchers = installWatchers;
+          }
+          if (instance) {
+            installWatchers.set(instance, () => { _selfSetDuringInstall = true; });
+          }
+          try {
+            manager.installModifier(instance, element, trackedInstallArgs);
+          } finally {
+            if (instance) installWatchers.delete(instance);
+          }
           // Store manager reference on instance for teardown cleanup
           if (instance) instance.__gxtModManager = manager;
+          // If installModifier mutated its own state (mirroring classic's
+          // backtracking-via-set pattern), schedule ONE updateModifier call.
+          // This gives user code a chance to observe the post-install state and
+          // matches classic Ember's lifecycle hook count for modifiers of this
+          // shape (tested by "can give consistent access to underlying DOM element").
+          if (_selfSetDuringInstall && instance && typeof manager.updateModifier === 'function') {
+            try {
+              const lazyArgs = buildLazyArgs(props, hashArgs);
+              manager.updateModifier(instance, lazyArgs);
+            } catch (err) {
+              // Surface the error through the render-error channel so it is
+              // visible to tests and users, but do NOT rethrow — the install
+              // path has already succeeded and the modifier is live. Rethrowing
+              // here would abort the render pipeline mid-cycle.
+              try { captureRenderError(err); } catch (_rethrowErr) { throw err; }
+            }
+          }
         }
       } finally {
         endBacktrackingFrame();

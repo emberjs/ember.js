@@ -2762,6 +2762,16 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
 (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
+  // Custom modifier manager: notify install-phase watcher if this object is a
+  // modifier instance whose installModifier is currently running. Classic Ember
+  // captures tags dirtied inside the install track frame and schedules an update.
+  // We mirror that by calling the registered watcher, which flags the instance
+  // for an additional updateModifier call after install returns.
+  const modWatchers = (globalThis as any).__gxtModifierInstallWatchers;
+  if (modWatchers instanceof Map && modWatchers.size > 0) {
+    const watcher = modWatchers.get(obj);
+    if (typeof watcher === 'function') watcher();
+  }
   // Handle KVO array mutations: when '[]' or 'length' is notified on an array,
   // dirty the cells of all component properties that reference this array.
   // Note: KVO array mutation tracking (pushObject/shiftObject) is handled
