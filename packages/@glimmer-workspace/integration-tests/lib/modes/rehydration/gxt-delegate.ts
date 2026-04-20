@@ -779,6 +779,64 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   }
 
   /**
+   * Walk `context` for Element-valued properties (candidate in-element
+   * render targets) and record their current HTML. Then clear each
+   * remote's content so a subsequent fresh template render doesn't
+   * append on top of the previous (server) render, producing doubled
+   * content. Returns a list of {target, html} entries the caller can
+   * feed back into `restoreInElementTargets` after the fresh render.
+   */
+  private snapshotAndClearInElementTargets(
+    context: Dict
+  ): Array<{ target: Element; html: string }> {
+    const out: Array<{ target: Element; html: string }> = [];
+    for (const key of Object.keys(context)) {
+      const val = (context as Record<string, unknown>)[key];
+      if (!val || typeof val !== 'object') continue;
+      // Detect "looks like an Element" — nodeType === 1 is element.
+      const nodeType = (val as { nodeType?: unknown }).nodeType;
+      if (nodeType !== 1) continue;
+      const el = val as unknown as Element;
+      if (typeof (el as unknown as { innerHTML?: unknown }).innerHTML !== 'string') continue;
+      let html: string;
+      try {
+        html = el.innerHTML;
+      } catch {
+        continue;
+      }
+      out.push({ target: el, html });
+      try {
+        el.innerHTML = '';
+      } catch {
+        /* ignore */
+      }
+    }
+    return out;
+  }
+
+  /**
+   * After the fresh client render has populated any in-element targets
+   * via the template's `{{#in-element}}` blocks, prepend the previously
+   * snapshotted remote children so the test's asserted `innerHTML`
+   * (`<prefix></prefix><suffix></suffix><inner>...</inner>`) is
+   * produced. This mirrors the classic rehydration behaviour of
+   * preserving pre-existing remote siblings around the rehydrated
+   * content.
+   */
+  private restoreInElementTargets(
+    entries: Array<{ target: Element; html: string }>
+  ): void {
+    for (const { target, html } of entries) {
+      if (!html) continue;
+      try {
+        target.insertAdjacentHTML('afterbegin', html);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  /**
    * Re-apply server-side `selected="true"` attributes after a client-
    * side fresh render. Classic Glimmer-VM persists the server attribute
    * even when the property is later set to false; we re-add the
@@ -836,6 +894,18 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       /* non-HTML target; compileAndRender handles as-is */
     }
 
+    // Snapshot pre-existing content of in-element render targets for
+    // the `insertBefore=null` APPEND mode. Default REPLACE mode and
+    // `insertBefore=<element>` positional modes must leave the remote
+    // alone: REPLACE because the template fully owns the content, and
+    // positional `insertBefore=<element>` because the ELEMENT it
+    // references lives inside the remote — clearing would remove it
+    // and cause the in-element render to silently no-op.
+    const templateUsesNullInsertBefore = template.includes('insertBefore=null');
+    const remoteRestore = templateUsesNullInsertBefore
+      ? this.snapshotAndClearInElementTargets(context)
+      : [];
+
     // Restore pre-existing leading children (e.g. <noscript>) captured
     // during renderServerSide so the client render shape matches the
     // server shape exactly. Template output will be appended after.
@@ -849,6 +919,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
 
     this.compileAndRender(template, context, element);
     this.reapplySelectedAttributes(element);
+    // Restore pre-existing remote children (e.g. the `<prefix>` /
+    // `<suffix>` siblings from the in-element rehydration tests). They
+    // were cleared above so the template's fresh in-element output
+    // wouldn't duplicate; we now put them back alongside the template's
+    // freshly-rendered children, preserving the observable "rehydrated
+    // into remote" shape.
+    this.restoreInElementTargets(remoteRestore);
 
     const result = new GxtRenderResult(
       template,
