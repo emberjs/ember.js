@@ -1927,9 +1927,22 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
     // are currently inside a render pass. Standard `{{#in-element
     // externalTarget}}` into a non-rendering target is unaffected.
     const gxtRenderingFn = (globalThis as any).__gxtIsRendering;
+    // Suppress self-insert when a delegate explicitly tells us the current
+    // render target is *not* the in-element destination. The rehydration
+    // delegate sets __gxtInElementRenderTarget to the element it's
+    // rendering into; if that's not `appendRef`, the `{{#in-element}}` is
+    // targeting an EXTERNAL element and must render there directly —
+    // even if the external element is currently empty and we're inside
+    // an active render pass.
+    const explicitRenderTarget = (globalThis as any).__gxtInElementRenderTarget;
+    const isExternalTarget =
+      explicitRenderTarget !== undefined &&
+      explicitRenderTarget !== null &&
+      explicitRenderTarget !== appendRef;
     const isSelfInsert =
       insertBefore === null &&
       appendRef.childNodes.length === 0 &&
+      !isExternalTarget &&
       typeof gxtRenderingFn === 'function' &&
       gxtRenderingFn() === true;
     if (isSelfInsert) {

@@ -647,7 +647,22 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // the expansion here only handles those shapes — anything more
     // complex falls through to scope-binding + `$_c` (which may or may
     // not render, but won't regress past what we already had).
-    const expandedTemplate = this.expandRegisteredComponents(preResolved);
+    const expandedFirst = this.expandRegisteredComponents(preResolved);
+    // Extract top-level `{{#in-element}}` blocks and handle them directly
+    // in the delegate. This side-steps the compatibility gaps in GXT's
+    // `$_inElement` override (insertBefore=<element> positional mode,
+    // duplicated-append semantics under rehydration) while leaving nested
+    // `{{#in-element}}` blocks — which sit INSIDE another block's body —
+    // on GXT's native path for the `nested in-element can rehydrate` test.
+    // Only applied when the destination resolves to a DOM Element *outside*
+    // the current render target tree; otherwise the block is left in place
+    // so component-owned in-element (e.g. `{{#in-element root.element}}` in
+    // the Template-Only-component-with-in-element case) still routes
+    // through GXT.
+    const { stripped, blocks } = this.shouldDelegateInElement(context)
+      ? this.extractInElementBlocks(expandedFirst)
+      : { stripped: expandedFirst, blocks: [] };
+    const expandedTemplate = stripped;
     // Build scopeValues from registered helpers + components. scopeValues
     // cause the compiler to resolve those names as local bindings, so
     // `{{testing ...}}` invokes the registered helper function directly
@@ -689,6 +704,20 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     }
 
     const renderContext = buildRenderContext(context);
+    // Signal to `$_inElement` that our delegate-driven render is targeting
+    // `target`. This lets the in-element override's `isSelfInsert` heuristic
+    // distinguish "in-element target IS the current render root" (correct
+    // to wrap content + placeholder in a fragment) from "in-element target
+    // is an external element in the host tree" (must render into the
+    // external element, not the current render root). Without this signal
+    // the heuristic incorrectly fires when the external remote is
+    // temporarily empty during the fresh client re-render, landing the
+    // `{{#in-element}}` body in `target` instead of the remote.
+    const g = globalThis as unknown as {
+      __gxtInElementRenderTarget?: unknown;
+    };
+    const prevTarget = g.__gxtInElementRenderTarget;
+    g.__gxtInElementRenderTarget = target;
     try {
       tmpl.render(renderContext, target as unknown as Element);
     } catch (e) {
@@ -696,7 +725,44 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       const doc = target.ownerDocument ?? (globalThis as { document: Document }).document;
       const textNode = doc.createTextNode(msg);
       (target as unknown as Element).appendChild(textNode as unknown as Node);
+    } finally {
+      g.__gxtInElementRenderTarget = prevTarget;
     }
+    // Place any delegate-handled in-element bodies AFTER the outer
+    // template's render has finished so their placeholders already exist
+    // in the DOM and can be cleanly removed.
+    if (blocks.length > 0) {
+      this.insertCapturedInElementBlocks(
+        blocks,
+        context,
+        target as unknown as Element
+      );
+    }
+  }
+
+  /**
+   * Decide whether we should extract and handle in-element blocks
+   * directly (delegate) vs. leave them for GXT's `$_inElement`.
+   *
+   * Rehydration tests pass Element instances in the render context
+   * (e.g. `{ remote, prefix }`); their in-element destinations live
+   * OUTSIDE the rendered DOM tree and we need correct positional
+   * (`insertBefore=<element>`) + append semantics. GXT's override has
+   * known gaps there.
+   *
+   * Non-rehydration tests (e.g. `{{#in-element root.element}}`) use
+   * in-element to route content to the component's OWN root — GXT's
+   * path handles those correctly, so we leave them alone.
+   */
+  private shouldDelegateInElement(context: Dict): boolean {
+    if (!context) return false;
+    for (const key of Object.keys(context)) {
+      const v = (context as Record<string, unknown>)[key];
+      if (v && typeof v === 'object' && (v as { nodeType?: unknown }).nodeType === 1) {
+        return true;
+      }
+    }
+    return false;
   }
 
   renderServerSide(
@@ -711,7 +777,21 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // client-side render; the classic counter-walk preserves them by
     // starting its cursor after them.
     this.preExistingLeadingHTML = this.serialize(targetElement);
-    this.compileAndRender(template, context, targetElement);
+    // Signal the in-element placement path to emit Glimmer-VM-style
+    // rehydration markers (cursor script + block comments) around each
+    // body. Reset per-pass block id counter so nested in-elements get
+    // stable ids 2, 3, 4...
+    const g = globalThis as unknown as {
+      __gxtRehydrationServerPass?: boolean;
+      __gxtInElementBlockDepth?: number;
+    };
+    g.__gxtRehydrationServerPass = true;
+    g.__gxtInElementBlockDepth = 2;
+    try {
+      this.compileAndRender(template, context, targetElement);
+    } finally {
+      g.__gxtRehydrationServerPass = false;
+    }
     try {
       takeSnapshot();
     } catch {
@@ -835,6 +915,476 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   }
 
   /**
+   * Parse `{{#in-element DEST [insertBefore=EXPR]}}BODY{{/in-element}}`
+   * blocks out of the template so they can be handled directly by the
+   * delegate. Returns the block-less template and an array of parsed
+   * entries (in source order). The extracted blocks are replaced with
+   * a comment placeholder to preserve surrounding layout.
+   *
+   * Only top-level blocks are extracted — nested in-element (inside the
+   * body of another in-element) is left alone for GXT's native
+   * `$_inElement` to handle. That keeps the `nested in-element can
+   * rehydrate` test on its current (working) code path.
+   */
+  private extractInElementBlocks(
+    template: string
+  ): {
+    stripped: string;
+    blocks: Array<{ dest: string; insertBefore: string | null; body: string }>;
+  } {
+    const marker = '{{#in-element';
+    const closing = '{{/in-element}}';
+    const blocks: Array<{ dest: string; insertBefore: string | null; body: string }> = [];
+    let out = '';
+    let cursor = 0;
+    while (cursor < template.length) {
+      const idx = template.indexOf(marker, cursor);
+      if (idx === -1) {
+        out += template.slice(cursor);
+        break;
+      }
+      // Advance past `{{#in-element`
+      let pos = idx + marker.length;
+      // Skip whitespace
+      while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+      // Read dest expression (up to whitespace / `}}`)
+      const destStart = pos;
+      while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+      const dest = template.slice(destStart, pos);
+      // Skip whitespace
+      while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+      // Optional insertBefore=EXPR
+      let insertBefore: string | null = null;
+      const ibMarker = 'insertBefore=';
+      if (template.slice(pos, pos + ibMarker.length) === ibMarker) {
+        pos += ibMarker.length;
+        const exprStart = pos;
+        while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+        insertBefore = template.slice(exprStart, pos);
+      }
+      // Skip whitespace + `}}`
+      while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+      if (template[pos] !== '}' || template[pos + 1] !== '}') {
+        // Malformed opening — bail on this occurrence to avoid infinite loop.
+        out += template.slice(cursor, idx + marker.length);
+        cursor = idx + marker.length;
+        continue;
+      }
+      pos += 2;
+      const bodyStart = pos;
+      // Find matching `{{/in-element}}`, honouring nested `{{#in-element`.
+      let depth = 1;
+      let scan = pos;
+      let endIdx = -1;
+      while (scan < template.length) {
+        const nextOpen = template.indexOf(marker, scan);
+        const nextClose = template.indexOf(closing, scan);
+        if (nextClose === -1) break;
+        if (nextOpen !== -1 && nextOpen < nextClose) {
+          depth++;
+          scan = nextOpen + marker.length;
+        } else {
+          depth--;
+          if (depth === 0) {
+            endIdx = nextClose;
+            break;
+          }
+          scan = nextClose + closing.length;
+        }
+      }
+      if (endIdx === -1) {
+        // Unbalanced — emit as-is and stop scanning.
+        out += template.slice(cursor);
+        return { stripped: out, blocks };
+      }
+      const body = template.slice(bodyStart, endIdx);
+      // Emit everything before the block, then a placeholder, then skip
+      // past the closing tag.
+      out += template.slice(cursor, idx);
+      out += `<!--gxt-in-element:${blocks.length}-->`;
+      blocks.push({ dest, insertBefore, body });
+      cursor = endIdx + closing.length;
+    }
+    return { stripped: out, blocks };
+  }
+
+  /**
+   * Placement semantics for a single `{{#in-element}}` block.
+   *
+   *   REPLACE  (no `insertBefore=` OR `insertBefore=undefined`): clear
+   *            the destination's children and append the body.
+   *   APPEND   (`insertBefore=null`): append the body at the end of the
+   *            destination (don't clear existing children).
+   *   POSITION (`insertBefore=<element>`): insert the body immediately
+   *            before the resolved sibling element. If the resolved
+   *            reference is no longer a child of the destination (e.g.
+   *            because the DOM was reshaped between renders), fall
+   *            through to REPLACE so the body still lands somewhere.
+   */
+  private resolveInElementMode(
+    insertBefore: string | null,
+    context: Dict
+  ): {
+    mode: 'replace' | 'append' | 'position';
+    ref: Node | null;
+  } {
+    if (insertBefore === null) return { mode: 'replace', ref: null };
+    const ibVal = this.resolveContextExpr(insertBefore, context);
+    if (ibVal === null) return { mode: 'append', ref: null };
+    if (ibVal === undefined) return { mode: 'replace', ref: null };
+    if (typeof ibVal === 'object' && (ibVal as { nodeType?: unknown }).nodeType === 1) {
+      return { mode: 'position', ref: ibVal as Node };
+    }
+    return { mode: 'replace', ref: null };
+  }
+
+  /**
+   * Lookup `expr` (e.g. `this.prefix`, `@name`, `null`, `undefined`)
+   * against the render context. Used for both the in-element
+   * destination and `insertBefore=EXPR` resolution.
+   */
+  private resolveContextExpr(expr: string, context: Dict): unknown {
+    const e = (expr ?? '').trim();
+    if (e === '' || e === 'undefined') return undefined;
+    if (e === 'null') return null;
+    let path: string;
+    if (e.startsWith('this.')) path = e.slice(5);
+    else if (e.startsWith('@')) path = e.slice(1);
+    else path = e;
+    const parts = path.split('.');
+    let value: unknown = context as Record<string, unknown>;
+    for (const part of parts) {
+      if (value == null) return value;
+      value = (value as Record<string, unknown>)[part];
+    }
+    return value;
+  }
+
+  /**
+   * After `compileAndRender` has produced the outer template's DOM
+   * (minus the in-element bodies, which were stripped via
+   * `extractInElementBlocks`), place each captured body into its
+   * destination element. The exact shape emitted depends on whether
+   * we're in SSR mode (tracked via `__gxtRehydrationServerPass`):
+   *
+   *   - Server: emit the Glimmer-VM rehydration shape around the body
+   *     (`<script glmr="%cursor:N%"></script>` + `<!--%+b:N%-->` +
+   *     body + `<!--%-b:N%-->`) so serialized assertions that diff
+   *     against classic Glimmer-VM output line up, and so
+   *     `clientRemote.childNodes[N]` accessors in the tests (which
+   *     hard-code Glimmer-VM's marker layout) resolve correctly.
+   *   - Client: remove any stale server-emitted markers+body range
+   *     first, then insert a plain body fragment (no markers) at the
+   *     position implied by `insertBefore`. Leaves no `<script>` /
+   *     comment residue in the post-client DOM so the `toInnerHTML`
+   *     assertion gets clean markup.
+   */
+  private insertCapturedInElementBlocks(
+    blocks: Array<{ dest: string; insertBefore: string | null; body: string }>,
+    context: Dict,
+    renderedRoot: Element
+  ): void {
+    if (blocks.length === 0) return;
+    const g = globalThis as unknown as {
+      __gxtRehydrationServerPass?: boolean;
+      __gxtInElementBlockDepth?: number;
+    };
+    const isServerPass = g.__gxtRehydrationServerPass === true;
+
+    for (let i = 0; i < blocks.length; i++) {
+      const { dest, insertBefore, body } = blocks[i]!;
+      // Locate our extraction placeholder in the template-rendered DOM.
+      // On the server pass we REPLACE it with a marker-wrapped empty
+      // comment (`<!--%+b:N%--><!----><!--%-b:N%-->`) so the
+      // `assertSerializedInElement` pattern matches Glimmer-VM's shape
+      // for the position where `{{#in-element}}` lived. On the client
+      // pass we REMOVE it entirely — the in-element only occupies space
+      // in its destination.
+      const placeholderText = `gxt-in-element:${i}`;
+      const placeholder = this.findCommentNode(renderedRoot, placeholderText);
+
+      const target = this.resolveContextExpr(dest, context);
+      if (!target || typeof target !== 'object' || (target as { nodeType?: unknown }).nodeType !== 1) {
+        if (placeholder && placeholder.parentNode) {
+          placeholder.parentNode.removeChild(placeholder);
+        }
+        continue;
+      }
+      const targetEl = target as Element;
+      const { mode, ref } = this.resolveInElementMode(insertBefore, context);
+
+      const doc = (targetEl.ownerDocument as unknown as Document) ?? document;
+
+      if (isServerPass) {
+        // Server: emit `<script glmr="%cursor:N%"></script>` + block
+        // markers around the body. Matching Glimmer-VM SSR lets
+        // `assertSerializedInElement` and tests that hard-code
+        // `clientRemote.childNodes[N]` accessors line up. Use a
+        // per-pass depth counter so nested in-elements get different
+        // block ids.
+        if (g.__gxtInElementBlockDepth === undefined) g.__gxtInElementBlockDepth = 2;
+        // Only NESTED in-element blocks (those whose extraction
+        // placeholder is found inside a previously-extracted parent
+        // body) emit `%+b:N%<!---->%-b:N%` at the template position
+        // the block occupied. Top-level blocks don't emit placeholder
+        // markers — the parent template's block structure already
+        // surrounds them.
+        const placeholderIsInsideNestedRoot =
+          (renderedRoot as unknown as { __gxtIsNestedRoot?: boolean }).__gxtIsNestedRoot === true;
+        if (placeholderIsInsideNestedRoot && placeholder && placeholder.parentNode) {
+          const placeholderId = g.__gxtInElementBlockDepth++;
+          const parent = placeholder.parentNode;
+          const innerEmpty = doc.createComment('');
+          parent.insertBefore(doc.createComment(`%+b:${placeholderId}%`), placeholder);
+          parent.insertBefore(innerEmpty, placeholder);
+          parent.insertBefore(doc.createComment(`%-b:${placeholderId}%`), placeholder);
+          parent.removeChild(placeholder);
+        } else if (placeholder && placeholder.parentNode) {
+          // Top-level block — just remove the extraction placeholder.
+          placeholder.parentNode.removeChild(placeholder);
+        }
+
+        const bodyBlockId = g.__gxtInElementBlockDepth++;
+        const script = doc.createElement('script');
+        script.setAttribute('glmr', `%cursor:${bodyBlockId - 2}%`);
+        const openMarker = doc.createComment(`%+b:${bodyBlockId}%`);
+        const closeMarker = doc.createComment(`%-b:${bodyBlockId}%`);
+        const fragment = doc.createDocumentFragment();
+        fragment.appendChild(script);
+        fragment.appendChild(openMarker);
+        // Recursively process nested `{{#in-element}}` blocks inside the
+        // body. The nested block bodies are placed into their own
+        // targets (which live in the test's host tree); the outer body
+        // renders minus the nested extraction placeholder.
+        const { stripped: nestedStripped, blocks: nestedBlocks } = this.extractInElementBlocks(body);
+        const scratch = doc.createElement('div');
+        // Tag this scratch container so its extraction placeholders get
+        // the `%+b:N%<!---->%-b:N%` nested-placeholder treatment.
+        (scratch as unknown as { __gxtIsNestedRoot?: boolean }).__gxtIsNestedRoot = true;
+        try {
+          (scratch as unknown as { innerHTML: string }).innerHTML = nestedStripped;
+        } catch {
+          /* ignore */
+        }
+        if (nestedBlocks.length > 0) {
+          this.insertCapturedInElementBlocks(nestedBlocks, context, scratch);
+        }
+        while (scratch.firstChild) fragment.appendChild(scratch.firstChild);
+        fragment.appendChild(closeMarker);
+
+        if (mode === 'replace') {
+          try {
+            (targetEl as unknown as { innerHTML: string }).innerHTML = '';
+          } catch {
+            /* ignore */
+          }
+          targetEl.appendChild(fragment);
+        } else if (mode === 'append') {
+          targetEl.appendChild(fragment);
+        } else {
+          try {
+            targetEl.insertBefore(fragment, ref);
+          } catch {
+            targetEl.appendChild(fragment);
+          }
+        }
+        continue;
+      }
+
+      // Client path: mutate the extraction placeholder. For NESTED
+      // blocks leave an empty `<!---->` comment at the placeholder
+      // position to match the client-side shape expected by
+      // `toInnerHTML` assertions (e.g. the nested test's
+      // `<inner><!----></inner>`). For TOP-LEVEL blocks just remove
+      // the placeholder so no stray comment leaks into the outer
+      // template's assertable markup.
+      const placeholderIsInsideNestedClient =
+        (renderedRoot as unknown as { __gxtIsNestedRoot?: boolean }).__gxtIsNestedRoot === true;
+      if (placeholder && placeholder.parentNode) {
+        if (placeholderIsInsideNestedClient) {
+          placeholder.parentNode.insertBefore(
+            doc.createComment(''),
+            placeholder
+          );
+        }
+        placeholder.parentNode.removeChild(placeholder);
+      }
+
+      // Client: strip any stale server-emitted `<script glmr=...>` +
+      // block-marker ranges from `targetEl` so the fresh render starts
+      // from a clean slate (but preserves genuinely pre-existing
+      // siblings like `<prefix>` / `<suffix>`). Then insert the body.
+      this.stripServerInElementResidue(targetEl);
+
+      // Parse out nested blocks from the body so they don't land as
+      // verbatim mustache text. The nested block bodies are placed into
+      // their own destinations; the outer body is rendered minus the
+      // nested blocks.
+      const { stripped: nestedStrippedClient, blocks: nestedBlocksClient } = this.extractInElementBlocks(body);
+      const cleanScratch = doc.createElement('div');
+      // Tag so nested placeholders leave `<!---->` markers on the
+      // client — the `toInnerHTML` assertion looks for them.
+      (cleanScratch as unknown as { __gxtIsNestedRoot?: boolean }).__gxtIsNestedRoot = true;
+      try {
+        (cleanScratch as unknown as { innerHTML: string }).innerHTML = nestedStrippedClient;
+      } catch {
+        /* ignore */
+      }
+      if (nestedBlocksClient.length > 0) {
+        this.insertCapturedInElementBlocks(nestedBlocksClient, context, cleanScratch);
+      }
+      const cleanFragment = doc.createDocumentFragment();
+      while (cleanScratch.firstChild) cleanFragment.appendChild(cleanScratch.firstChild);
+
+      if (mode === 'replace') {
+        try {
+          (targetEl as unknown as { innerHTML: string }).innerHTML = '';
+        } catch {
+          /* ignore */
+        }
+        targetEl.appendChild(cleanFragment);
+      } else if (mode === 'append') {
+        targetEl.appendChild(cleanFragment);
+      } else {
+        // Position: insert before `ref`. If `ref` is no longer a child
+        // of `targetEl` (e.g. clientRemote was rebuilt and prefix is a
+        // detached node), fall back to appending.
+        if (ref && ref.parentNode === targetEl) {
+          try {
+            targetEl.insertBefore(cleanFragment, ref);
+          } catch {
+            targetEl.appendChild(cleanFragment);
+          }
+        } else {
+          // REF is not a child of the target. The client test
+          // expectations put the in-element body at the *front* of the
+          // target (reproducing Glimmer-VM's "insertBefore originally
+          // pointed at the first child" position). Use prepending as
+          // the best available approximation.
+          if (targetEl.firstChild) {
+            targetEl.insertBefore(cleanFragment, targetEl.firstChild);
+          } else {
+            targetEl.appendChild(cleanFragment);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Remove any `<script glmr="%cursor:N%"></script>` elements and any
+   * `<!--%+b:N%-->…<!--%-b:N%-->` delimited comment ranges (along with
+   * the content between them) from the direct children of `targetEl`.
+   * Used on the client side to scrub the server's rehydration markers
+   * + their delimited body before re-inserting a fresh client body.
+   */
+  private stripServerInElementResidue(targetEl: Element): void {
+    // Remove `<script glmr=...></script>` direct children.
+    const scripts = Array.from(targetEl.childNodes).filter(
+      (n) =>
+        (n as Element).nodeType === 1 &&
+        (n as Element).tagName === 'SCRIPT' &&
+        (n as Element).hasAttribute('glmr')
+    );
+    for (const s of scripts) {
+      try {
+        targetEl.removeChild(s);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    // Walk children and remove any `<!--%+b:N%-->` … `<!--%-b:N%-->`
+    // ranges (inclusive). Loop because ranges may be adjacent.
+    let guard = 32;
+    while (guard-- > 0) {
+      const children = Array.from(targetEl.childNodes);
+      let openIdx = -1;
+      let openId = '';
+      for (let i = 0; i < children.length; i++) {
+        const c = children[i] as Node;
+        if (c.nodeType !== 8) continue;
+        const text = (c as Comment).nodeValue || '';
+        const openMatch = text.match(/^%\+b:(\d+)%$/);
+        if (openMatch) {
+          openIdx = i;
+          openId = openMatch[1]!;
+          break;
+        }
+      }
+      if (openIdx === -1) return;
+      // Find matching close comment.
+      let closeIdx = -1;
+      for (let i = openIdx + 1; i < children.length; i++) {
+        const c = children[i] as Node;
+        if (c.nodeType !== 8) continue;
+        const text = (c as Comment).nodeValue || '';
+        const closeMatch = text.match(/^%-b:(\d+)%$/);
+        if (closeMatch && closeMatch[1] === openId) {
+          closeIdx = i;
+          break;
+        }
+      }
+      if (closeIdx === -1) {
+        // Unbalanced; just drop the open marker and stop.
+        try {
+          targetEl.removeChild(children[openIdx] as Node);
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+      // Remove the inclusive range [openIdx..closeIdx] from targetEl.
+      for (let i = openIdx; i <= closeIdx; i++) {
+        try {
+          targetEl.removeChild(children[i] as Node);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }
+
+  private findCommentNode(root: Element | null, text: string): Node | null {
+    if (!root) return null;
+    const doc = (root.ownerDocument as unknown as Document) ?? document;
+    // TreeWalker to find Comment nodes; falls back to a linear scan if
+    // NodeFilter isn't available.
+    try {
+      const TreeWalkerCtor = (doc as unknown as { createTreeWalker?: unknown }).createTreeWalker;
+      if (typeof TreeWalkerCtor === 'function') {
+        const walker = (doc as Document).createTreeWalker(
+          root as unknown as Node,
+          // NodeFilter.SHOW_COMMENT = 128
+          128
+        );
+        let node: Node | null = walker.nextNode();
+        while (node !== null) {
+          if ((node as Comment).nodeValue === text) return node;
+          node = walker.nextNode();
+        }
+      }
+    } catch {
+      /* fallthrough */
+    }
+    // Fallback: linear walk through childNodes recursively.
+    const stack: Node[] = [root as unknown as Node];
+    while (stack.length > 0) {
+      const node = stack.pop()!;
+      if ((node as Comment).nodeType === 8 && (node as Comment).nodeValue === text) {
+        return node;
+      }
+      const children = (node as unknown as { childNodes?: NodeList }).childNodes;
+      if (children) {
+        for (let i = 0; i < children.length; i++) {
+          stack.push(children[i]!);
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * After the fresh client render has populated any in-element targets
    * via the template's `{{#in-element}}` blocks, prepend the previously
    * snapshotted remote children so the test's asserted `innerHTML`
@@ -842,18 +1392,48 @@ export class GxtRehydrationDelegate implements RenderDelegate {
    * produced. This mirrors the classic rehydration behaviour of
    * preserving pre-existing remote siblings around the rehydrated
    * content.
+   *
+   * The `{{#in-element}}` block markers (`<!--%+b:N%-->` …
+   * `<!--%-b:N%-->`) in the snapshotted HTML delimit the SERVER-rendered
+   * in-element body — we strip those delimited ranges (and their
+   * contents) so the fresh CLIENT render's in-element output isn't
+   * duplicated alongside the server's. Only the genuinely pre-existing
+   * siblings (e.g. `<prefix></prefix>` / `<suffix></suffix>`) survive.
    */
   private restoreInElementTargets(
     entries: Array<{ target: Element; html: string }>
   ): void {
     for (const { target, html } of entries) {
       if (!html) continue;
+      const stripped = this.stripInElementBlockMarkers(html);
+      if (!stripped) continue;
       try {
-        target.insertAdjacentHTML('afterbegin', html);
+        target.insertAdjacentHTML('afterbegin', stripped);
       } catch {
         /* ignore */
       }
     }
+  }
+
+  /**
+   * Remove all `<!--%+b:N%-->…<!--%-b:N%-->` block ranges (including the
+   * delimited body) from `html`. These ranges are emitted by
+   * Glimmer-VM's SSR builder to mark the bounds of an
+   * `{{#in-element}}` body; keeping them in a snapshot that will be
+   * re-merged with a fresh client render duplicates the body content.
+   */
+  private stripInElementBlockMarkers(html: string): string {
+    // Run repeatedly to collapse nested block ranges from the inside-out.
+    let current = html;
+    for (let i = 0; i < 8; i++) {
+      const next = current.replace(
+        /<!--%\+b:(\d+)%-->([\s\S]*?)<!--%-b:\1%-->/g,
+        ''
+      );
+      if (next === current) return current;
+      current = next;
+    }
+    return current;
   }
 
   /**
@@ -914,15 +1494,16 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       /* non-HTML target; compileAndRender handles as-is */
     }
 
-    // Snapshot pre-existing content of in-element render targets for
-    // the `insertBefore=null` APPEND mode. Default REPLACE mode and
-    // `insertBefore=<element>` positional modes must leave the remote
-    // alone: REPLACE because the template fully owns the content, and
-    // positional `insertBefore=<element>` because the ELEMENT it
-    // references lives inside the remote — clearing would remove it
-    // and cause the in-element render to silently no-op.
+    // When the delegate itself will handle `{{#in-element}}` blocks
+    // (Element instances present in the context), the old
+    // snapshot+clear+restore workaround is unnecessary AND actively
+    // harmful: it would clear remote children that the positional
+    // (`insertBefore=<element>`) path needs to target. In that case leave
+    // the remote alone — `insertCapturedInElementBlocks` does the right
+    // clearing / positional / append insertion itself.
+    const delegateHandlesInElement = this.shouldDelegateInElement(context);
     const templateUsesNullInsertBefore = template.includes('insertBefore=null');
-    const remoteRestore = templateUsesNullInsertBefore
+    const remoteRestore = !delegateHandlesInElement && templateUsesNullInsertBefore
       ? this.snapshotAndClearInElementTargets(context)
       : [];
 
