@@ -115,8 +115,10 @@ export class StrictResolver implements Resolver {
   // Supports the nested colocation pattern where `component:my-widget`
   // resolves to `./components/my-widget/index.{js,ts,gjs,gts}`. The index
   // file is typically the component class, and it's commonly paired with a
-  // sibling `template.hbs` inside the same folder.
+  // sibling `index.hbs` inside the same folder.
   #nestedColocationLookup(type: string, name: string): Result {
+    if (type !== 'component') return undefined;
+
     let dir = this.#plural(type);
     let target = `${dir}/${name}/index`;
     let module = this.#modules.get(target);
