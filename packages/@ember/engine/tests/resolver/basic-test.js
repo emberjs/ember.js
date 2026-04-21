@@ -10,103 +10,27 @@ module('strict-resolver | basic', function (hooks) {
     resolver = new StrictResolver(modules);
   });
 
-  test('can lookup something', function (assert) {
-    let expected = {};
-    modules['./adapters/post'] = { default: expected };
-    resolver.addModules(modules);
+  test('resolves the standard ember types via default pluralization', function (assert) {
+    // All of these go through the same `type + 's' -> dir` path. One table-
+    // driven test keeps the coverage without nine copies of the same setup.
+    let cases = [
+      { fullName: 'adapter:post', key: './adapters/post' },
+      { fullName: 'service:session', key: './services/session' },
+      { fullName: 'helper:reverse-list', key: './helpers/reverse-list' },
+      { fullName: 'component:my-widget', key: './components/my-widget' },
+      { fullName: 'modifier:auto-focus', key: './modifiers/auto-focus' },
+      { fullName: 'template:application', key: './templates/application' },
+      { fullName: 'view:queue-list', key: './views/queue-list' },
+      { fullName: 'route:index', key: './routes/index' },
+      { fullName: 'controller:application', key: './controllers/application' },
+    ];
 
-    let adapter = resolver.resolve('adapter:post');
+    for (let { fullName, key } of cases) {
+      let expected = { fullName };
+      let r = new StrictResolver({ [key]: { default: expected } });
 
-    assert.ok(adapter, 'adapter was returned');
-    assert.strictEqual(adapter, expected, 'default export was returned');
-  });
-
-  test('can lookup a service', function (assert) {
-    let expected = {};
-    modules['./services/session'] = { default: expected };
-    resolver.addModules(modules);
-
-    let service = resolver.resolve('service:session');
-
-    assert.ok(service, 'service was returned');
-    assert.strictEqual(service, expected, 'default export was returned');
-  });
-
-  test('can lookup a helper', function (assert) {
-    let expected = { isHelperInstance: true };
-    modules['./helpers/reverse-list'] = { default: expected };
-    resolver.addModules(modules);
-
-    let helper = resolver.resolve('helper:reverse-list');
-
-    assert.ok(helper, 'helper was returned');
-    assert.strictEqual(helper, expected, 'default export was returned');
-  });
-
-  test('can lookup a component', function (assert) {
-    let expected = { isComponentFactory: true };
-    modules['./components/my-widget'] = { default: expected };
-    resolver.addModules(modules);
-
-    let component = resolver.resolve('component:my-widget');
-
-    assert.ok(component, 'component was returned');
-    assert.strictEqual(component, expected, 'default export was returned');
-  });
-
-  test('can lookup a modifier', function (assert) {
-    let expected = { isModifier: true };
-    modules['./modifiers/auto-focus'] = { default: expected };
-    resolver.addModules(modules);
-
-    let modifier = resolver.resolve('modifier:auto-focus');
-
-    assert.ok(modifier, 'modifier was returned');
-    assert.strictEqual(modifier, expected, 'default export was returned');
-  });
-
-  test('can lookup a template', function (assert) {
-    let expected = { isTemplate: true };
-    modules['./templates/application'] = { default: expected };
-    resolver.addModules(modules);
-
-    let template = resolver.resolve('template:application');
-
-    assert.ok(template, 'template was returned');
-    assert.strictEqual(template, expected, 'default export was returned');
-  });
-
-  test('can lookup a view', function (assert) {
-    let expected = { isViewFactory: true };
-    modules['./views/queue-list'] = { default: expected };
-    resolver.addModules(modules);
-
-    let view = resolver.resolve('view:queue-list');
-
-    assert.ok(view, 'view was returned');
-    assert.strictEqual(view, expected, 'default export was returned');
-  });
-
-  test('can lookup a route', function (assert) {
-    let expected = { isRouteFactory: true };
-    modules['./routes/index'] = { default: expected };
-    resolver.addModules(modules);
-
-    let route = resolver.resolve('route:index');
-
-    assert.ok(route, 'route was returned');
-    assert.strictEqual(route, expected, 'default export was returned');
-  });
-
-  test('can lookup a controller', function (assert) {
-    let expected = { isController: true };
-    modules['./controllers/application'] = { default: expected };
-    resolver.addModules(modules);
-
-    let controller = resolver.resolve('controller:application');
-
-    assert.ok(controller, 'controller was returned');
-    assert.strictEqual(controller, expected, 'default export was returned');
+      assert.strictEqual(r.resolve(fullName), expected, `${fullName} -> ${key}`);
+    }
   });
 
   test("will return the raw value if no 'default' is available", function (assert) {
@@ -127,31 +51,16 @@ module('strict-resolver | basic', function (hooks) {
     );
   });
 
-  test('router:main is looked up as just "router" key', function (assert) {
-    modules['./router'] = 'the-router';
-    resolver.addModules(modules);
+  test('`type:main` resolves to the unpluralized `type` module key', function (assert) {
+    // The mainLookup strategy short-circuits pluralization: for any type
+    // `type:main` reads the module at the type's bare name.
+    resolver.addModules({
+      './router': 'the-router',
+      './store': 'the-store',
+    });
 
-    let result = resolver.resolve('router:main');
-
-    assert.strictEqual(result, 'the-router', 'router:main was looked up');
-  });
-
-  test('store:main is looked up as just "store" key', function (assert) {
-    modules['./store'] = 'the-store';
-    resolver.addModules(modules);
-
-    let result = resolver.resolve('store:main');
-
-    assert.strictEqual(result, 'the-store', 'store:main was looked up');
-  });
-
-  test('store:post is looked up as stores/post', function (assert) {
-    modules['./stores/post'] = 'whatever';
-    resolver.addModules(modules);
-
-    let result = resolver.resolve('store:post');
-
-    assert.strictEqual(result, 'whatever', 'store:post was looked up');
+    assert.strictEqual(resolver.resolve('router:main'), 'the-router');
+    assert.strictEqual(resolver.resolve('store:main'), 'the-store');
   });
 
   test('returns undefined for missing modules', function (assert) {
@@ -197,22 +106,6 @@ module('strict-resolver | basic', function (hooks) {
     });
 
     assert.strictEqual(resolver2.resolve('service:foo'), 'from-ts', 'file extension was stripped');
-  });
-
-  test('shorthand module registration (no default wrapper)', function (assert) {
-    let MyService = {
-      create() {
-        return this;
-      },
-    };
-
-    let resolver2 = new StrictResolver({
-      './services/my-thing': MyService,
-    });
-
-    let result = resolver2.resolve('service:my-thing');
-
-    assert.strictEqual(result, MyService, 'shorthand module was resolved');
   });
 
   test("shorthand value with a truthy 'default' property has 'default' unwrapped", function (assert) {
@@ -442,23 +335,17 @@ module('strict-resolver | basic', function (hooks) {
     assert.strictEqual(r.resolve('child:alice'), 'alice');
   });
 
-  test('can lookup a nested-colocation component (index file)', function (assert) {
-    let expected = { isComponentFactory: true };
+  test('nested-colocation: `type:name` falls back to `types/name/index`', function (assert) {
+    let component = { component: true };
+    let helper = { helper: true };
+    let modifier = { modifier: true };
     resolver.addModules({
-      './components/my-widget/index': { default: expected },
-    });
-
-    assert.strictEqual(resolver.resolve('component:my-widget'), expected);
-  });
-
-  test('nested-colocation also works for helpers and modifiers', function (assert) {
-    let helper = {};
-    let modifier = {};
-    resolver.addModules({
+      './components/my-widget/index': { default: component },
       './helpers/format-date/index': { default: helper },
       './modifiers/on-intersect/index': { default: modifier },
     });
 
+    assert.strictEqual(resolver.resolve('component:my-widget'), component);
     assert.strictEqual(resolver.resolve('helper:format-date'), helper);
     assert.strictEqual(resolver.resolve('modifier:on-intersect'), modifier);
   });
