@@ -17,6 +17,8 @@ import {
   RENDERED_NODES_PROPERTY,
   $_fin,
 } from '@lifeart/gxt';
+// @ts-expect-error -- @lifeart/gxt/runtime-compiler types not in npm v0.0.59
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { setupGlobalScope as gxtSetupGlobalScope } from '@lifeart/gxt/runtime-compiler';
 
 let globalScopeReady = false;
@@ -55,7 +57,7 @@ export class GXTRenderResult implements GlimmerRenderResult {
     this.env = env;
     this.drop = this;
     registerDestructor(this, () => {
-      gxtDestroyElementSync(gxtInstance);
+      gxtDestroyElementSync(gxtInstance as any);
     });
   }
 
@@ -127,6 +129,7 @@ function createGXTBridgeClass(
      * For properties like `this.someGetter` in the template to work for
      * class-based components, we delegate those through the ember instance.
      */
+    // @ts-expect-error -- GXT Component.template type mismatch
     template = function (this: GXTEmberBridge, args: unknown): GXTEmberBridge {
       // Bind to the ember instance if available, otherwise use this bridge.
       const ctx = this._emberInstance ?? this;
@@ -148,7 +151,7 @@ function createGXTBridgeClass(
     };
   }
 
-  return GXTEmberBridge;
+  return GXTEmberBridge as any;
 }
 
 /**
@@ -166,7 +169,7 @@ export function renderWithGXT(
 
   const GXTBridge = createGXTBridgeClass(gxtFn, definition, owner);
 
-  const gxtInstance = gxtRenderComponent(GXTBridge as any, {
+  const gxtInstance = (gxtRenderComponent as any)(GXTBridge, {
     element,
     args,
   }) as object;

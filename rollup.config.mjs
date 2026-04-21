@@ -278,9 +278,10 @@ export function exposedDependencies() {
 // these are dependencies that we inline into our own published code but do not
 // expose to consumers
 export function hiddenDependencies() {
-  // Resolve GXT dist files (linked from ../glimmer-next)
-  const gxtRoot = resolve(projectRoot, 'node_modules/@lifeart/gxt');
-  const gxtDist = resolve(gxtRoot, 'dist');
+  // GXT dist files are vendored in vendor/gxt/ for CI reproducibility.
+  // The npm package (0.0.59) lacks gxt.runtime-compiler.es.js, so we vendor
+  // the full dist locally-built set.
+  const gxtDist = resolve(projectRoot, 'vendor/gxt');
 
   return {
     'simple-html-tokenizer': entrypoint(

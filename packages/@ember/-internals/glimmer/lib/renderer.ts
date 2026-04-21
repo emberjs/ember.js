@@ -54,6 +54,8 @@ import {
   destroyElementSync as gxtDestroyElementSync,
   $_MANAGERS,
 } from '@lifeart/gxt';
+// @ts-expect-error -- @lifeart/gxt/runtime-compiler types not in npm v0.0.59
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { setupGlobalScope as gxtSetupGlobalScope } from '@lifeart/gxt/runtime-compiler';
 
 // Register ember-specific helpers for GXT rendering.
@@ -152,7 +154,7 @@ function errorLoopTransaction(fn: () => void) {
   }
 }
 
-type RootState = ClassicRootState | ComponentRootState;
+type RootState = ClassicRootState | ComponentRootState | GXTClassicRootState;
 
 class ComponentRootState {
   readonly type = 'component';
@@ -250,7 +252,7 @@ class GXTClassicRootState {
       handleException() { throw new Error('unreachable'); },
     } as any;
     registerDestructor(this, () => {
-      gxtDestroyElementSync(this.gxtInstance);
+      gxtDestroyElementSync(this.gxtInstance as any);
     });
   }
 
@@ -937,7 +939,7 @@ export class Renderer extends BaseRenderer {
     // GXT replacement: render GXTRootOutlet into the target.
     // The rootOutletCell is seeded by OutletView and updated by setOutletState().
     const element = target as unknown as HTMLElement;
-    const gxtInstance = gxtRenderComponent(GXTRootOutlet as any, { element, args: {} });
+    const gxtInstance = gxtRenderComponent(GXTRootOutlet as any, { element, args: {} } as any);
     const rootState = new GXTClassicRootState(view, gxtInstance, element, this.state.env);
     this.state.renderRoot(rootState, this);
   }

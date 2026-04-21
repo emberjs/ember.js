@@ -11,6 +11,8 @@ import type {
   TemplateOk,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
+// @ts-expect-error -- @lifeart/gxt/runtime-compiler types not in npm v0.0.59
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { compile as gxtRuntimeCompile } from '@lifeart/gxt/runtime-compiler';
 
 import { compilable } from './compilable-template';

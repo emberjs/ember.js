@@ -1,0 +1,1 @@
+function o(o,n){const a=t(o,r,!1);a?.start();const m=n.finally(()=>a?.end());return s(o,()=>m.catch(()=>{})),m}import{P as t}from"./dom-BDI1RUEp.js";import{r as s}from"./vm-zg2nB9at.js";const r=/* @__PURE__ */Symbol();export{r as S,o as f};

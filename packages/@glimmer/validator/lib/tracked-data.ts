@@ -29,7 +29,7 @@ let _scheduleRevalidate: (() => void) | null = null;
 
 function getCell<T>(
   initialValue: T,
-  debugName?: string
+  _debugName?: string
 ): GXTCell<T> {
   if (_CellClass !== null) {
     return new _CellClass<T>(initialValue);

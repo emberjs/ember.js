@@ -76,7 +76,7 @@ function createRouteBridge(
   routeTemplateFn: Function,
   controller: unknown,
   childOutletStateCell: Cell<OutletState | undefined> | MergedCell
-): typeof GXTComponent {
+): any {
   class GXTRouteBridge extends GXTComponent<any> {
     constructor(args: Record<string, unknown>, fw?: unknown) {
       super(args, fw);
@@ -84,7 +84,8 @@ function createRouteBridge(
       provideContext(this, GXT_OUTLET_CTX, childOutletStateCell);
     }
 
-    template = function (this: GXTRouteBridge): ComponentReturnType {
+    // @ts-expect-error -- GXT Component.template type mismatch
+  template = function (this: GXTRouteBridge): ComponentReturnType {
       let result: unknown;
       try {
         result = routeTemplateFn.call(this);
@@ -185,7 +186,8 @@ export class GXTRootOutlet extends GXTComponent<any> {
     provideContext(this, GXT_OUTLET_CTX, this._childFormula as unknown as Cell<OutletState | undefined>);
   }
 
-  template = function (this: GXTRootOutlet): ComponentReturnType {
+  // @ts-expect-error -- GXT Component.template type is Component<any> but we use a function
+    template = function (this: GXTRootOutlet): ComponentReturnType {
     const self = this;
 
     // Pass `self` as the ctx (4th arg) so $_if can call initDOM(ctx)
@@ -195,7 +197,7 @@ export class GXTRootOutlet extends GXTComponent<any> {
         self._appFormula,
         () => {
           const appState = self._appFormula.value;
-          return renderOutletState(appState, self._childFormula as unknown as Cell<OutletState | undefined>, self);
+          return renderOutletState(appState, self._childFormula as unknown as Cell<OutletState | undefined>, self as any);
         },
         () => [],
         self,  // ctx — required by GXT's ifCond
@@ -213,7 +215,8 @@ export class GXTRootOutlet extends GXTComponent<any> {
  * context provided by the parent outlet/bridge, making it fully reactive.
  */
 export class GXTOutlet extends GXTComponent<any> {
-  template = function (this: GXTOutlet): ComponentReturnType {
+  // @ts-expect-error -- GXT Component.template type is Component<any> but we use a function
+    template = function (this: GXTOutlet): ComponentReturnType {
     const self = this;
 
     const stateCell = getContext<Cell<OutletState | undefined>>(this, GXT_OUTLET_CTX);
@@ -229,7 +232,7 @@ export class GXTOutlet extends GXTComponent<any> {
         stateCell,
         () => {
           const state = (stateCell as any).value;
-          return renderOutletState(state, childFormula as unknown as Cell<OutletState | undefined>, self);
+          return renderOutletState(state, childFormula as unknown as Cell<OutletState | undefined>, self as any);
         },
         () => [],
         self,  // ctx — required by GXT's ifCond
