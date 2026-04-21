@@ -1,9 +1,6 @@
-import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler';
-import { fn, hash } from '@ember/helper';
-import { on } from '@ember/modifier';
 
 class KeywordHash extends RenderTest {
   static suiteName = 'keyword helper: hash';
@@ -17,29 +14,42 @@ class KeywordHash extends RenderTest {
       assert.step('captured');
     };
 
-    const compiled = template(
-      '<button {{on "click" (fn capture (hash greeting="hello" farewell="goodbye"))}}>Click</button>',
-      {
-        strictMode: true,
-        scope: () => ({
-          capture,
-          fn,
-          hash,
-          on,
-        }),
-      }
-    );
+    const compiled = template('{{capture (hash greeting="hello" farewell="goodbye")}}', {
+      strictMode: true,
+      scope: () => ({
+        capture,
+      }),
+    });
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.strictEqual(receivedData?.['greeting'], 'hello');
     assert.strictEqual(receivedData?.['farewell'], 'goodbye');
   }
 
   @test
-  'it works with the runtime compiler'(assert: Assert) {
+  'it can be shadowed'(assert: Assert) {
+    let receivedData: string | undefined;
+
+    let hash = (data: string) => {
+      receivedData = data;
+    };
+
+    hide(hash);
+
+    const compiled = template('{{hash "hello"}}', {
+      strictMode: true,
+      scope: () => ({ hash }),
+    });
+
+    this.renderComponent(compiled);
+
+    assert.strictEqual(receivedData, 'hello');
+  }
+
+  @test
+  'it works with implicit scope form'(assert: Assert) {
     let receivedData: Record<string, unknown> | undefined;
 
     let capture = (data: Record<string, unknown>) => {
@@ -49,19 +59,15 @@ class KeywordHash extends RenderTest {
 
     hide(capture);
 
-    const compiled = template(
-      '<button {{on "click" (fn capture (hash greeting="hello"))}}>Click</button>',
-      {
-        strictMode: true,
-        eval() {
-          return eval(arguments[0]);
-        },
-      }
-    );
+    const compiled = template('{{capture (hash greeting="hello")}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.strictEqual(receivedData?.['greeting'], 'hello');
   }
@@ -75,22 +81,20 @@ class KeywordHash extends RenderTest {
       assert.step('captured');
     };
 
-    const Child = template('<button {{on "click" (fn capture @data)}}>Click</button>', {
+    const Child = template('{{capture @data}}', {
       strictMode: true,
-      scope: () => ({ on, fn, capture }),
+      scope: () => ({ capture }),
     });
 
     const compiled = template('<Child @data={{hash greeting="hello"}} />', {
       strictMode: true,
       scope: () => ({
-        hash,
         Child,
       }),
     });
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.strictEqual(receivedData?.['greeting'], 'hello');
   }

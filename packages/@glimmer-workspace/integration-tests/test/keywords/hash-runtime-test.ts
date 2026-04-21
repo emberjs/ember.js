@@ -20,21 +20,18 @@ class KeywordHashRuntime extends RenderTest {
       assert.step('captured');
     };
 
-    const compiled = template(
-      '<button {{on "click" (fn capture (hash greeting="hello"))}}>Click</button>',
-      {
-        strictMode: true,
-        scope: () => ({
-          capture,
-        }),
-      }
-    );
+    const compiled = template('{{capture (hash greeting="hello" farewell="goodbye")}}', {
+      strictMode: true,
+      scope: () => ({
+        capture,
+      }),
+    });
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.strictEqual(receivedData?.['greeting'], 'hello');
+    assert.strictEqual(receivedData?.['farewell'], 'goodbye');
   }
 
   @test
@@ -48,19 +45,15 @@ class KeywordHashRuntime extends RenderTest {
 
     hide(capture);
 
-    const compiled = template(
-      '<button {{on "click" (fn capture (hash greeting="hello"))}}>Click</button>',
-      {
-        strictMode: true,
-        eval() {
-          return eval(arguments[0]);
-        },
-      }
-    );
+    const compiled = template('{{capture (hash greeting="hello")}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.strictEqual(receivedData?.['greeting'], 'hello');
   }
@@ -96,7 +89,7 @@ class KeywordHashRuntime extends RenderTest {
       assert.step('captured');
     };
 
-    const Child = template('<button {{on "click" (fn capture @data)}}>Click</button>', {
+    const Child = template('{{capture @data}}', {
       strictMode: true,
       scope: () => ({ capture }),
     });
@@ -110,7 +103,6 @@ class KeywordHashRuntime extends RenderTest {
 
     this.renderComponent(compiled);
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
     assert.verifySteps(['captured']);
     assert.strictEqual(receivedData?.['greeting'], 'hello');
   }
