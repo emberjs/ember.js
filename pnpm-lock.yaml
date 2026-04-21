@@ -102,6 +102,9 @@ importers:
       '@glimmer/component':
         specifier: workspace:*
         version: link:packages/@glimmer/component
+      '@lifeart/gxt':
+        specifier: link:../glimmer-next
+        version: link:../glimmer-next
       '@octokit/rest':
         specifier: ^20.1.2
         version: 20.1.2
