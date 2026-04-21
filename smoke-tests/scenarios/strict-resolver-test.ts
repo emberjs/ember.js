@@ -162,21 +162,19 @@ strictAppScenarios
                 assert.dom('[data-test="site-header"] h1').hasText('Strict App');
               });
 
-              test('sub-route with nested model', async function (assert) {
+              test('sub-route with nested model renders a gjs component per item', async function (assert) {
                 await visit('/posts');
                 assert.strictEqual(currentURL(), '/posts');
                 assert.dom('[data-test="post-card"]').exists({ count: 2 });
+                assert.dom('[data-test="post-card"] h2').exists(
+                  'PostCard gjs template renders inside the nested route'
+                );
               });
 
               test('dynamic segment sub-route', async function (assert) {
                 await visit('/posts/42');
                 assert.strictEqual(currentURL(), '/posts/42');
                 assert.dom('[data-test="post-detail"]').hasText('Post 42');
-              });
-
-              test('gjs component resolves from modules', async function (assert) {
-                await visit('/posts');
-                assert.dom('[data-test="post-card"] h2').exists();
               });
             });
           `,
