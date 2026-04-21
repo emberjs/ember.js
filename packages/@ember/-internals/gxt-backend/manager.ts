@@ -143,6 +143,23 @@ function _isGxtInternalArgKey(key: string): boolean {
 // Auto-incrementing ID for wrapper elements
 let emberViewIdCounter = 0;
 
+// WeakMap-backed storage for render-context arg local-override state.
+// Keyed by instance, then by property key. Stored fields:
+//   localVal: current local value after incrementProperty / this.set(...)
+//   useLocal: whether to return localVal vs. the arg getter
+// This survives createRenderContext re-invocations even when the descriptor
+// is replaced by cellFor(obj, key, false) or other reactive reinstallers.
+const _rcArgState = new WeakMap<object, Map<string, { localVal: any; useLocal: boolean }>>();
+function _getRcArgState(instance: object, key: string): { localVal: any; useLocal: boolean } | undefined {
+  const m = _rcArgState.get(instance);
+  return m ? m.get(key) : undefined;
+}
+function _setRcArgState(instance: object, key: string, state: { localVal: any; useLocal: boolean }): void {
+  let m = _rcArgState.get(instance);
+  if (!m) { m = new Map(); _rcArgState.set(instance, m); }
+  m.set(key, state);
+}
+
 // =============================================================================
 // CurriedComponent — represents a component + pre-bound (curried) arguments
 // =============================================================================
@@ -1729,9 +1746,20 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
       // instance's reactive getter would read from the stale old closure.
       if (newGetter && argGetters && key !== 'elementId' && key !== 'id') {
         argGetters[key] = newGetter;
+        // Check if there's already a render-context-installed descriptor with
+        // local-override state (from a previous createRenderContext call). If
+        // so, skip reinstalling to preserve the local override (e.g., after
+        // incrementProperty, we must not reset useLocal=false and clobber the
+        // local value). The render-context's own effect/closure already handles
+        // arg-getter propagation — we only need to update argGetters[key] above.
+        const existingDesc_u = Object.getOwnPropertyDescriptor(instance, key);
+        const hasPreservedDesc = !!(existingDesc_u && (existingDesc_u.get as any)?.__gxtRenderCtxArgGetter);
         // Reinstall the reactive property descriptor with the new getter,
         // preserving the useLocal/dispatching semantics from createComponentInstance.
         try {
+          if (hasPreservedDesc) {
+            // Render-context descriptor already holds local-override state; leave it untouched.
+          } else {
           let localValue = newValue;
           const getter = newGetter;
           let useLocal = false;
@@ -1766,6 +1794,7 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
             configurable: true,
             enumerable: true,
           });
+          }
           // Install a gxt effect to dirty the classic tag when the upstream
           // arg cell invalidates (same rationale as the createComponentInstance
           // install site above).
@@ -4237,6 +4266,26 @@ function createRenderContext(
         instance.__gxtInitOverrides[key] = true;
       }
 
+      // Guard against clobbering local-override state on re-renders:
+      // createRenderContext is invoked every render pass. When a component
+      // set its own arg (e.g., via `this.incrementProperty('myProp')`), the
+      // local override state lives in closure variables of the descriptor we
+      // installed previously. Re-installing the descriptor here would reset
+      // those closures to their initial values and lose the local override.
+      // Skip install when we've already installed our marker-tagged descriptor
+      // AND just update the backing cell. The existing descriptor's closure
+      // already reads the latest value through its own getter path.
+      if (instance) {
+        const _crcExistingDesc = Object.getOwnPropertyDescriptor(renderContext, key);
+        const _crcAlreadyInstalled = !!(_crcExistingDesc && (_crcExistingDesc.get as any)?.__gxtRenderCtxArgGetter);
+        if (_crcAlreadyInstalled) {
+          try {
+            const cell = cellForFn2(renderContext, key, /* skipDefine */ true);
+            renderCtxArgCells[key] = { cell, getter, lastArgValue: argVal, ...(overriddenInInit ? { initOverridden: true } : {}) };
+          } catch { /* ignore */ }
+          continue;
+        }
+      }
       if (overriddenInInit) {
         // Instance overrode this property in init() — use a getter that
         // returns the instance value but can be updated by arg changes.
@@ -4253,12 +4302,13 @@ function createRenderContext(
           // __gxtSyncAllWrappers will skip the cell update and instead check the getter
           // to see if the arg value actually changed from the parent's perspective.
           renderCtxArgCells[key] = { cell, getter, initOverridden: true };
+          const rcInitGet: any = function () {
+            if (cell) try { cell.value; } catch { /* ignore */ }
+            return useLocal ? localVal : getter();
+          };
+          rcInitGet.__gxtRenderCtxArgGetter = true;
           Object.defineProperty(renderContext, key, {
-            get() {
-              // Read cell.value to register GXT formula tracking dependency
-              if (cell) try { cell.value; } catch { /* ignore */ }
-              return useLocal ? localVal : getter();
-            },
+            get: rcInitGet,
             set(v: any) {
               // When __gxtDispatchingArgs is true, this is an arg update from parent,
               // not an explicit set from component code. Switch to arg-driven mode.
@@ -4295,7 +4345,6 @@ function createRenderContext(
             proto = Object.getPrototypeOf(proto);
           }
         }
-
         if (hasComputedGetter) {
           // Property has a computed getter — use cellFor with skipDefine=false
           // to preserve the existing computed property behavior
@@ -4375,47 +4424,48 @@ function createRenderContext(
             const initialVal = argVal;
             cell.update(initialVal);
             renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
-            // Install custom getter/setter that reads from cell (for GXT tracking)
-            // but also tracks local overrides
-            let _localVal = initialVal;
-            let _useLocal = false;
-            Object.defineProperty(renderContext, key, {
-              get() {
-                // Read cell.value to register GXT formula tracking dependency
-                try { cell.value; } catch { /* ignore */ }
-                // Also consume the classic @glimmer/validator tag so that
-                // createCache / invokeHelper consumers capture this property
-                // as a dependency.
-                try {
-                  const consume = (globalThis as any).__classicConsumeTag;
-                  const tagFn = (globalThis as any).__classicTagFor;
-                  if (consume && tagFn) consume(tagFn(renderContext, key));
-                } catch { /* noop */ }
-                return _useLocal ? _localVal : (getter ? getter() : _localVal);
-              },
-              set(v: any) {
-                if ((instance as any).__gxtDispatchingArgs) {
-                  _localVal = v;
-                  _useLocal = false;
-                  cell.update(v);
-                  // Clear local override when arg update comes from parent
-                  if (instance?.__gxtLocalOverrides) instance.__gxtLocalOverrides.delete(key);
-                } else {
-                  _localVal = v;
-                  _useLocal = true;
-                  cell.update(v);
-                  // Track local override
-                  if (instance) {
-                    if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
-                    instance.__gxtLocalOverrides.add(key);
-                  }
+            // Preserve local-override state across createRenderContext re-invocations
+            // by storing it in a WeakMap keyed by instance+key. Earlier revisions
+            // stored state in closure variables, but those are lost when the
+            // descriptor is replaced (e.g. by cellFor(obj, key, false) called
+            // elsewhere during the same render pass). The WeakMap survives.
+            const existingState = instance ? _getRcArgState(instance, key) : undefined;
+            const state = existingState || { localVal: initialVal, useLocal: false };
+            if (!existingState && instance) _setRcArgState(instance, key, state);
+            const rcGet: any = function () {
+              try { cell.value; } catch { /* ignore */ }
+              try {
+                const consume = (globalThis as any).__classicConsumeTag;
+                const tagFn = (globalThis as any).__classicTagFor;
+                if (consume && tagFn) consume(tagFn(renderContext, key));
+              } catch { /* noop */ }
+              return state.useLocal ? state.localVal : (getter ? getter() : state.localVal);
+            };
+            rcGet.__gxtRenderCtxArgGetter = true;
+            const rcSet = function (v: any) {
+              if ((instance as any).__gxtDispatchingArgs) {
+                state.localVal = v;
+                state.useLocal = false;
+                cell.update(v);
+                if (instance?.__gxtLocalOverrides) instance.__gxtLocalOverrides.delete(key);
+              } else {
+                state.localVal = v;
+                state.useLocal = true;
+                cell.update(v);
+                if (instance) {
+                  if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
+                  instance.__gxtLocalOverrides.add(key);
                 }
-                // Dirty the classic tag to invalidate downstream caches.
-                try {
-                  const dirty = (globalThis as any).__classicDirtyTagFor;
-                  if (dirty) dirty(renderContext, key);
-                } catch { /* noop */ }
-              },
+              }
+              try {
+                const dirty = (globalThis as any).__classicDirtyTagFor;
+                if (dirty) dirty(renderContext, key);
+              } catch { /* noop */ }
+            };
+            (rcSet as any).__gxtRenderCtxArgSetter = true;
+            Object.defineProperty(renderContext, key, {
+              get: rcGet,
+              set: rcSet,
               enumerable: true,
               configurable: true,
             });
