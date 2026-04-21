@@ -906,6 +906,43 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @public
    */
   refresh(): Transition {
+    // GXT fix (Issue #13263): When a route template is rendered, GXT creates
+    // a `renderContext = Object.create(controller)` and binds `{{on "click"
+    // this.action}}` handlers to that renderContext. If the action mutates a
+    // QP via `set(this, 'foo', v)` or `incrementProperty('foo')`, the write
+    // hits the renderContext's *own* property and shadows the controller —
+    // leaving `controller.foo` stale, so the QP observer never fires and the
+    // URL never updates on subsequent refreshes. Before refreshing, walk any
+    // live renderContexts for this route's controller and mirror their own QP
+    // values back to the controller so subsequent QP observers see the new
+    // value (so `_qpChanged` → `_activeQPChanged` → URL update fires).
+    if ((globalThis as any).__GXT_MODE__) {
+      try {
+        let controller = this.controller;
+        let ctxsMap = (globalThis as any).__gxtComponentContexts;
+        if (controller && ctxsMap && ctxsMap.has(controller)) {
+          // SAFETY: Since `_qp` is protected we can't infer the type
+          let queryParams = get(this, '_qp') as Route<Model>['_qp'];
+          let qpNames = queryParams.propertyNames;
+          if (qpNames.length > 0) {
+            let contexts: Set<object> = ctxsMap.get(controller);
+            contexts.forEach((renderContext: any) => {
+              for (let prop of qpNames) {
+                if (Object.prototype.hasOwnProperty.call(renderContext, prop)) {
+                  let rcValue = renderContext[prop];
+                  let ctrlValue = (controller as any)[prop];
+                  if (rcValue !== ctrlValue) {
+                    set(controller, prop, rcValue);
+                  }
+                }
+              }
+            });
+          }
+        }
+      } catch {
+        /* best-effort — do not break refresh on sync errors */
+      }
+    }
     return this._router._routerMicrolib.refresh(this);
   }
 
