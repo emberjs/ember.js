@@ -1,7 +1,7 @@
 import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
-import { template } from '@ember/template-compiler/runtime';
+import { template } from '@ember/template-compiler';
 import { fn, hash } from '@ember/helper';
 import { on } from '@ember/modifier';
 

@@ -66,6 +66,28 @@ class KeywordHashRuntime extends RenderTest {
   }
 
   @test
+  'implicit scope (shadowing)'(assert: Assert) {
+    let receivedData: string | undefined;
+
+    const hash = (data: string) => {
+      receivedData = data;
+    };
+
+    hide(hash);
+
+    const compiled = template('{{hash "hello"}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
+
+    this.renderComponent(compiled);
+
+    assert.strictEqual(receivedData, 'hello');
+  }
+
+  @test
   'MustacheStatement with explicit scope'(assert: Assert) {
     let receivedData: Record<string, unknown> | undefined;
 
