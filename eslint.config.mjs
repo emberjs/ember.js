@@ -8,6 +8,10 @@ import nodePlugin from 'eslint-plugin-n';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pluginJs from '@eslint/js';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const noBarrelImports = require('./eslint/rules/no-barrel-imports.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +45,11 @@ export default [
     plugins: {
       'ember-internal': emberInternal,
       'disable-features': disableFeatures,
+      local: {
+        rules: {
+          'no-barrel-imports': noBarrelImports,
+        },
+      },
     },
 
     linterOptions: {
@@ -78,6 +87,11 @@ export default [
       'disable-features/disable-generator-functions': 'error',
       // Doesn't work with package.json#exports
       'import/no-unresolved': 'off',
+
+      // Prevent importing from barrel/entrypoint files in internal packages.
+      // Source files should import directly from the specific lib/ file to
+      // enable proper tree-shaking.
+      'local/no-barrel-imports': 'error',
     },
   },
   ...tseslint.configs.recommended.map((config) => ({
