@@ -8,11 +8,12 @@ const { module: Qmodule, test } = QUnit;
 // Ember's auto-generated loading/error substates through real route
 // transitions. Covers:
 //
-//   - visiting /                       (plain route + template)
-//   - visiting /slow                   (async model -> loading substate)
-//   - visiting /broken                 (rejected model -> error substate)
-//   - visiting a nested dynamic route  (posts/:post_id) to prove the
-//     resolver handles sub-route templates via default lookup
+//   - visiting /         (plain route + template — sanity)
+//   - visiting /slow     (async model -> loading substate)
+//   - visiting /broken   (rejected model -> error substate)
+//
+// Nested/dynamic route coverage lives in strict-resolver-test.ts so we
+// don't pay to rebuild it here.
 strictAppScenarios
   .map('strict-resolver-substates', (project) => {
     project.mergeFiles({
@@ -43,9 +44,6 @@ strictAppScenarios
           Router.map(function () {
             this.route('slow');
             this.route('broken');
-            this.route('posts', function () {
-              this.route('show', { path: '/:post_id' });
-            });
           });
         `,
         services: {
@@ -103,27 +101,6 @@ strictAppScenarios
               }
             }
           `,
-          'posts.js': `
-            import Route from '@ember/routing/route';
-            export default class extends Route {
-              model() {
-                return [
-                  { id: 1, title: 'First Post' },
-                  { id: 2, title: 'Second Post' },
-                ];
-              }
-            }
-          `,
-          'posts': {
-            'show.js': `
-              import Route from '@ember/routing/route';
-              export default class extends Route {
-                model(params) {
-                  return { id: params.post_id, title: 'Post ' + params.post_id };
-                }
-              }
-            `,
-          },
         },
         templates: {
           'application.hbs': `
@@ -148,19 +125,6 @@ strictAppScenarios
           'broken-error.hbs': `
             <div data-test="broken-error">Caught error: {{@model.message}}</div>
           `,
-          'posts.hbs': `
-            <div data-test="posts-list">
-              {{#each @model as |post|}}
-                <div data-test="post-card">{{post.title}}</div>
-              {{/each}}
-            </div>
-            {{outlet}}
-          `,
-          'posts': {
-            'show.hbs': `
-              <div data-test="post-detail">{{@model.title}}</div>
-            `,
-          },
         },
       },
       tests: {
@@ -225,19 +189,6 @@ strictAppScenarios
                 assert.dom('[data-test="broken-error"]').hasText(
                   'Caught error: intentional model failure'
                 );
-              });
-
-              test('visiting /posts renders the list', async function (assert) {
-                await visit('/posts');
-                assert.strictEqual(currentURL(), '/posts');
-                assert.dom('[data-test="posts-list"]').exists();
-                assert.dom('[data-test="post-card"]').exists({ count: 2 });
-              });
-
-              test('visiting a nested dynamic sub-route renders the detail template', async function (assert) {
-                await visit('/posts/42');
-                assert.strictEqual(currentURL(), '/posts/42');
-                assert.dom('[data-test="post-detail"]').hasText('Post 42');
               });
             });
           `,

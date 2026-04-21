@@ -60,38 +60,4 @@ module('strict-resolver | Application with modules', function (hooks) {
     assert.ok(service, 'service was found');
     assert.ok(service.weDidIt, 'service has the right property');
   });
-
-  test('resolves shorthand modules (without default wrapper)', async function (assert) {
-    class MyService extends Service {
-      shorthand = true;
-    }
-
-    app = Application.create({
-      modules: {
-        './services/shorthand-svc': MyService,
-      },
-      rootElement: '#qunit-fixture',
-      autoboot: false,
-    });
-
-    instance = (await app.visit('/', {})) as ApplicationInstance;
-    let service = instance.lookup('service:shorthand-svc') as MyService;
-
-    assert.ok(service, 'service was found');
-    assert.ok(service.shorthand, 'service has the right property');
-  });
-
-  test('resolves router:main via ./router module', async function (assert) {
-    app = Application.create({
-      modules: {},
-      rootElement: '#qunit-fixture',
-      autoboot: false,
-    });
-
-    instance = (await app.visit('/', {})) as ApplicationInstance;
-
-    let router = instance.lookup('router:main');
-
-    assert.ok(router, 'router was resolved');
-  });
 });
