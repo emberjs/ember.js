@@ -375,10 +375,14 @@ export class CurriedComponent {
           // Force a full re-render so the formula that reads the helper's
           // cell value picks up the new computed result. Without this, the
           // cache is invalidated but nothing triggers formula re-evaluation.
-          // Mark a pending sync so force-rerender actually runs (it skips
-          // when the root GXT tag is clean).
+          // Mark a pending sync AND a nested-object change so force-rerender
+          // actually runs (it now skips full-tree rerenders when only a
+          // tracked property on a component mutates — but helper recompute()
+          // always needs to traverse the full tree to let the formula
+          // reading the helper cell re-evaluate).
           try {
             (globalThis as any).__gxtHadPendingSync = true;
+            (globalThis as any).__gxtHadNestedObjectChange = true;
             const force = (globalThis as any).__gxtForceEmberRerender;
             if (typeof force === 'function') force();
           } catch { /* ignore */ }

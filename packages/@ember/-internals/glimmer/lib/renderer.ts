@@ -1231,63 +1231,117 @@ if (!(globalThis as any).__GXT_MODE__) {
   if ((globalThis as any).__gxtForceRerenderInProgress) return;
   (globalThis as any).__gxtForceRerenderInProgress = true;
   try {
+  const hadPendingSync = !!(globalThis as any).__gxtHadPendingSync;
+  const hadNestedObjectChange = !!(globalThis as any).__gxtHadNestedObjectChange;
+  // Collect roots whose own tag moved RIGHT NOW (after Phase 1a of
+  // __gxtSyncDomNow, before Phase 1b updateRootTagValues was called).
+  // If __gxtUpdateRootTagValues was already called earlier in this sync,
+  // it stashed the dirty list on globalThis.__gxtDirtyRootsAtSync — use that.
+  const dirtyRootsFromSync = (globalThis as any).__gxtDirtyRootsAtSync as any[] | undefined;
+  const dirtyRoots: any[] = [];
+  const allGxtRoots: any[] = [];
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
     if (!state) continue;
-    const roots = (state as any).__roots || (state as any)['#roots'];
-    // Access private #roots via the debug getter
     const debugRoots = state.debug?.roots;
     if (!debugRoots) continue;
     for (const root of debugRoots) {
       const classicRoot = root as any;
       if (classicRoot.isGxt && (classicRoot.gxtComponentTag || classicRoot.isOutletView)) {
+        allGxtRoots.push(classicRoot);
         const currentTagValue = classicRoot.gxtComponentTag ? valueForTag(classicRoot.gxtComponentTag) : 0;
-        // Also trigger for pending syncs from property changes — nested object
-        // property changes (e.g., set(m, 'message', ...)) dirty m's tag but
-        // not the component's SELF_TAG. The force-rerender is needed to
-        // re-evaluate computed properties like {{this.m.formattedMessage}}.
-        const hadPendingSync = !!(globalThis as any).__gxtHadPendingSync;
-        if (currentTagValue !== classicRoot.gxtLastTagValue || hadPendingSync) {
-          // Tag is dirty — force re-render. Increment the render pass ID
-          // so the instance pool resets claimed flags and REUSES existing
-          // instances instead of creating new ones (which would fire
-          // spurious init/render lifecycle hooks).
-          (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
-          (globalThis as any).__gxtIsForceRerender = true;
-          // Track which root components were re-rendered so
-          // __gxtDestroyUnclaimedPoolEntries can find their children.
-          const rerenderedRoots = (globalThis as any).__gxtRerenderedRoots || ((globalThis as any).__gxtRerenderedRoots = []);
-          if (classicRoot.root) rerenderedRoots.push(classicRoot.root);
-          try {
-            classicRoot.render();
-          } catch (renderErr) {
-            // Store render error so it can propagate to assert.throws
-            if (!classicRoot.__gxtDeferredError) {
-              classicRoot.__gxtDeferredError = renderErr;
-            }
-          }
-          finally { (globalThis as any).__gxtIsForceRerender = false; }
-          // Re-throw deferred errors (from lifecycle hooks like destroy)
-          if (classicRoot.__gxtDeferredError) {
-            const err = classicRoot.__gxtDeferredError;
-            classicRoot.__gxtDeferredError = null;
-            throw err;
-          }
+        if (currentTagValue !== classicRoot.gxtLastTagValue) {
+          dirtyRoots.push(classicRoot);
         }
       }
+    }
+  }
+  // Use the pre-sync dirty set (captured before updateRootTagValues cleaned
+  // them), falling back to live comparison for call-sites that don't go
+  // through the sync pipeline.
+  const effectiveDirtyRoots =
+    dirtyRootsFromSync && dirtyRootsFromSync.length > 0
+      ? dirtyRootsFromSync.filter((r) => allGxtRoots.includes(r))
+      : dirtyRoots;
+  // Choose which roots to force-render:
+  //   - If any root's own tag moved in this sync, render only those (scoped).
+  //     This is the common case: a component mutates its own @tracked state.
+  //   - Otherwise, fall back to force-render-all only when hadPendingSync AND
+  //     hadNestedObjectChange — i.e., a nested-object property change that
+  //     doesn't dirty any component's SELF_TAG (e.g., set(m, 'message', ...)).
+  //     This preserves cross-root propagation for nested object mutations
+  //     while avoiding spurious full re-renders when a @tracked mutation on
+  //     a CHILD component doesn't change any root's tag (child is reactive
+  //     via its own cell-tracked getters).
+  const rootsToRender =
+    effectiveDirtyRoots.length > 0
+      ? effectiveDirtyRoots
+      : hadPendingSync && hadNestedObjectChange
+      ? allGxtRoots
+      : [];
+  for (const classicRoot of rootsToRender) {
+    // Tag is dirty — force re-render. Increment the render pass ID
+    // so the instance pool resets claimed flags and REUSES existing
+    // instances instead of creating new ones (which would fire
+    // spurious init/render lifecycle hooks).
+    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+    (globalThis as any).__gxtIsForceRerender = true;
+    // Track which root components were re-rendered so
+    // __gxtDestroyUnclaimedPoolEntries can find their children.
+    const rerenderedRoots = (globalThis as any).__gxtRerenderedRoots || ((globalThis as any).__gxtRerenderedRoots = []);
+    if (classicRoot.root) rerenderedRoots.push(classicRoot.root);
+    try {
+      classicRoot.render();
+    } catch (renderErr) {
+      // Store render error so it can propagate to assert.throws
+      if (!classicRoot.__gxtDeferredError) {
+        classicRoot.__gxtDeferredError = renderErr;
+      }
+    }
+    finally { (globalThis as any).__gxtIsForceRerender = false; }
+    // Re-throw deferred errors (from lifecycle hooks like destroy)
+    if (classicRoot.__gxtDeferredError) {
+      const err = classicRoot.__gxtDeferredError;
+      classicRoot.__gxtDeferredError = null;
+      throw err;
     }
   }
   } finally {
     (globalThis as any).__gxtForceRerenderInProgress = false;
     (globalThis as any).__gxtHadPendingSync = false;
+    (globalThis as any).__gxtHadNestedObjectChange = false;
+    (globalThis as any).__gxtDirtyRootsAtSync = undefined;
   }
+};
+
+// Check if the given object is a GXT root-component's `root` (i.e., a
+// component that owns a top-level renderer state). Used by compile.ts's
+// __gxtTriggerReRender to distinguish own-SELF_TAG changes (which the
+// cell-based sync pipeline handles) from nested-object changes (which need
+// a force-rerender fallback).
+(globalThis as any).__gxtIsRootComponent = function(obj: any): boolean {
+  if (!obj || typeof obj !== 'object') return false;
+  for (const renderer of renderers) {
+    const state = (renderer as any).state as RendererState;
+    if (!state) continue;
+    const debugRoots = state.debug?.roots;
+    if (!debugRoots) continue;
+    for (const root of debugRoots) {
+      if ((root as any).root === obj) return true;
+    }
+  }
+  return false;
 };
 
 // Update gxtLastTagValue on all GXT roots to mark them clean.
 // Called from __gxtTriggerReRender after cell-based sync succeeds,
 // so __gxtForceEmberRerender sees them as up-to-date and skips
 // the destructive innerHTML='' + full rebuild.
+// ALSO records which roots WERE dirty (on globalThis.__gxtDirtyRootsAtSync)
+// so __gxtForceEmberRerender can scope its rerender to just those roots,
+// avoiding a full-tree force-render when only some components mutated.
 (globalThis as any).__gxtUpdateRootTagValues = function() {
+  const dirtyRoots: any[] = [];
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
     if (!state) continue;
@@ -1296,10 +1350,15 @@ if (!(globalThis as any).__GXT_MODE__) {
     for (const root of debugRoots) {
       const classicRoot = root as any;
       if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
-        classicRoot.gxtLastTagValue = valueForTag(classicRoot.gxtComponentTag);
+        const currentTagValue = valueForTag(classicRoot.gxtComponentTag);
+        if (currentTagValue !== classicRoot.gxtLastTagValue) {
+          dirtyRoots.push(classicRoot);
+        }
+        classicRoot.gxtLastTagValue = currentTagValue;
       }
     }
   }
+  (globalThis as any).__gxtDirtyRootsAtSync = dirtyRoots;
 };
 
 // Check if all GXT root tag values are current (meaning cell-based updates

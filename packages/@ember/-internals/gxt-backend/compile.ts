@@ -3038,12 +3038,64 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
   // The cells are already dirtied (via cell.update above), and the
   // __gxtSyncDomNow call from runTask will process them correctly.
   // Signal to __gxtForceEmberRerender that nested object changes occurred.
-  // When a property changes on a nested object (e.g., set(m, 'message', ...)),
-  // the component's SELF_TAG is NOT dirtied by Ember (only m's tag is).
-  // Setting __gxtHadNestedObjectChange allows the force-rerender to fire
-  // and re-evaluate computed properties like {{this.m.formattedMessage}}.
+  // When a property changes on a nested object (e.g., set(m, 'message', ...)
+  // or foo.set('text', ...)), the component's SELF_TAG is NOT dirtied by
+  // Ember (only the object's tag is). Setting __gxtHadNestedObjectChange
+  // allows the force-rerender to fall back to force-rendering all roots so
+  // computed properties like {{this.m.formattedMessage}} re-evaluate.
+  //
+  // Case 1: tag dirtying was reverse-looked-up via _objectValueCellMap
+  // (explicit cell registration) — use the pre-computed _deferredTagDirties.
+  // Case 2: the mutated object is NOT itself a root component — treat it as
+  // a nested object too. This catches external EmberObjects / plain classes
+  // passed as @args whose property mutations don't trigger SELF_TAG changes
+  // on any component.
   if (_deferredTagDirties && _deferredTagDirties.length > 0) {
     (globalThis as any).__gxtHadNestedObjectChange = true;
+  } else if (obj && typeof obj === 'object') {
+    // If `obj` is NOT a CUSTOM-managed component instance (root OR child),
+    // treat it as a nested-object mutation that needs cross-root propagation
+    // via the force-rerender fallback.
+    //
+    // Custom-managed components (those registered via setComponentManager
+    // → COMPONENT_MANAGERS) use their own dependency-tracking semantics
+    // (args proxy + explicit @tracked), and their @tracked state changes
+    // are handled by the cell-based sync pipeline (Phase 1) without needing
+    // the force-all morph.
+    //
+    // We deliberately do NOT treat classic Ember Components (registered via
+    // setInternalComponentManager → INTERNAL_MANAGERS) the same way —
+    // classic components' set() goes through notifyPropertyChange and
+    // depends on the force-rerender to pick up alias / computed property
+    // changes reliably.
+    try {
+      let isCustomManagedComponent = false;
+      const isRoot = (globalThis as any).__gxtIsRootComponent;
+      if (typeof isRoot === 'function' && isRoot(obj)) {
+        isCustomManagedComponent = true;
+      } else {
+        const compMgrs = (globalThis as any).COMPONENT_MANAGERS;
+        if (compMgrs && typeof compMgrs.has === 'function') {
+          let proto: any = Object.getPrototypeOf(obj);
+          let depth = 0;
+          while (proto && proto !== Object.prototype && depth < 8) {
+            const ctor = proto.constructor;
+            if (compMgrs.has(ctor) || compMgrs.has(proto)) {
+              isCustomManagedComponent = true;
+              break;
+            }
+            proto = Object.getPrototypeOf(proto);
+            depth++;
+          }
+        }
+      }
+      if (!isCustomManagedComponent) {
+        (globalThis as any).__gxtHadNestedObjectChange = true;
+      }
+    } catch {
+      // If the check fails, be conservative and treat as nested-object.
+      (globalThis as any).__gxtHadNestedObjectChange = true;
+    }
   }
   // Defer if-watcher notifications to __gxtSyncDomNow so batched property
   // changes are applied atomically. Firing syncState here would process
