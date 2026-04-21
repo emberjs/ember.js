@@ -1283,6 +1283,35 @@ function createComponentInstance(
     instance.__mutArgSources = args.__mutArgSources;
   }
 
+  // Helper: detect a classic Ember @computed descriptor (with an independent
+  // setter) on the prototype chain for this instance+key. When present, the
+  // shadow descriptor we install on the instance must still invoke the CP's
+  // `_setter` so its side effects (e.g. `this.set('height', w/2)` inside a
+  // `set width(w)` body) run on arg-dispatch writes. Without this, installing
+  // an own-property reactive getter/setter shadows the CP and breaks
+  // @computed properties that declare both `get` and `set` — see
+  // GH#19028-style "mutable bindings of CP with setter" behavior.
+  const _findCpWithSetter = (inst: any, k: string): any => {
+    try {
+      const m = peekMeta(inst) as any;
+      let desc: any = null;
+      try { desc = m?.peekDescriptors?.(k); } catch { /* ignore */ }
+      if (!desc) {
+        let proto = Object.getPrototypeOf(inst);
+        while (proto && proto !== Object.prototype && !desc) {
+          try {
+            const pmeta = peekMeta(proto) as any;
+            if (pmeta) desc = pmeta.peekDescriptors?.(k);
+          } catch { /* ignore */ }
+          proto = Object.getPrototypeOf(proto);
+        }
+      }
+      // Ensure the CP has an independent setter (not a plain getter-only CP)
+      if (desc && desc._setter && desc._setter !== desc._getter) return desc;
+    } catch { /* ignore */ }
+    return null;
+  };
+
   // Install reactive getters for args that have closures.
   // This ensures instance.foo always returns the current arg value,
   // even when GXT doesn't re-invoke the component function on re-render.
@@ -1294,6 +1323,10 @@ function createComponentInstance(
       const argValue = getter();
       // If instance value differs from arg value, the component overrode it in init()
       let useLocal = localValue !== argValue;
+      // Detect @computed CP with a setter on the prototype chain so the
+      // shadow setter below can still invoke the CP's `_setter` body for
+      // its side effects (e.g. {mut, set}-triggered writes into other deps).
+      const cpWithSetter = _findCpWithSetter(instance, key);
       // Install a gxt effect that dirties the classic validator tag for
       // (instance, key) whenever the upstream arg cell invalidates. This
       // lets createCache / invokeHelper consumers — which captured the
@@ -1346,6 +1379,24 @@ function createComponentInstance(
             // Track local override so __gxtSyncAllWrappers skips this key
             if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
             instance.__gxtLocalOverrides.add(key);
+          }
+          // If this arg is backed by a classic @computed property with an
+          // independent setter, invoke the CP's setter for its side effects
+          // (e.g. `set width(w) { this.set('height', w/2) }`). Without this
+          // call, our shadow descriptor silently eats the write and the CP
+          // setter never runs — breaking mutable bindings of CP-with-setter.
+          if (cpWithSetter && !(instance as any).__gxtInvokingCpSetter) {
+            // Record the dispatched value so PDC can detect stale re-reads
+            // from deferred observer flushes (see PDC override guard).
+            if ((instance as any).__gxtDispatchingArgs) {
+              if (!(instance as any).__gxtCpArgDispatched) (instance as any).__gxtCpArgDispatched = {};
+              (instance as any).__gxtCpArgDispatched[key] = v;
+            }
+            try {
+              (instance as any).__gxtInvokingCpSetter = true;
+              cpWithSetter.set(instance, key, v);
+            } catch { /* ignore CP setter failures */ }
+            finally { (instance as any).__gxtInvokingCpSetter = false; }
           }
           // Dirty the classic tag so any createCache (invokeHelper) or
           // observer watching `key` on this instance is invalidated.
@@ -1606,6 +1657,19 @@ function createComponentInstance(
       if (binding) {
         const { sourceCtx, sourceKey } = binding;
         if (sourceCtx && sourceKey) {
+          // Guard: skip stale CP re-reads triggered by deferred observer flushes
+          // (see pv.set branch below for rationale).
+          try {
+            const dispatched: Record<string, unknown> | undefined = (instance as any).__gxtCpArgDispatched;
+            if (dispatched && key in dispatched) {
+              const lastDisp = dispatched[key];
+              // resolvedValue matches a prior dispatched value AND parent has
+              // moved past it — the PDC re-read is stale; skip.
+              if (resolvedValue === lastDisp && sourceCtx[sourceKey] !== lastDisp) {
+                return;
+              }
+            }
+          } catch { /* ignore */ }
           // Use set() if available to trigger PROPERTY_DID_CHANGE chain on the source
           const sourceInstance = sourceCtx.__gxtRawTarget || sourceCtx;
           if (typeof sourceInstance.set === 'function') {
@@ -1621,6 +1685,21 @@ function createComponentInstance(
       // Fallback: propagate to parentView if it exists and has the same property
       const pv = instance.parentView;
       if (pv && key in pv) {
+        // Guard: skip stale CP re-reads triggered by deferred observer flushes
+        // after a CP-with-setter arg dispatch. When the resolvedValue matches
+        // a prior dispatched value AND the parent has moved past that value
+        // (i.e. already newer upstream), this PDC is a stale re-read firing
+        // from a deferred observer — skip to avoid clobbering the newer
+        // upstream state.
+        try {
+          const dispatched: Record<string, unknown> | undefined = (instance as any).__gxtCpArgDispatched;
+          if (dispatched && key in dispatched) {
+            const lastDisp = dispatched[key];
+            if (resolvedValue === lastDisp && pv[key] !== lastDisp) {
+              return;
+            }
+          }
+        } catch { /* ignore */ }
         try {
           if (typeof pv.set === 'function') {
             pv.set(key, resolvedValue);
@@ -1763,6 +1842,27 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
           let localValue = newValue;
           const getter = newGetter;
           let useLocal = false;
+          // Detect classic @computed CP with a setter on the prototype chain.
+          // See createComponentInstance (_findCpWithSetter) for rationale —
+          // without invoking the CP's `_setter`, the shadow descriptor below
+          // swallows arg-dispatch writes and breaks CP-with-setter semantics.
+          let cpWithSetter_u: any = null;
+          try {
+            const m_u = peekMeta(instance) as any;
+            let desc_u: any = null;
+            try { desc_u = m_u?.peekDescriptors?.(key); } catch { /* ignore */ }
+            if (!desc_u) {
+              let proto_u = Object.getPrototypeOf(instance);
+              while (proto_u && proto_u !== Object.prototype && !desc_u) {
+                try {
+                  const pmeta_u = peekMeta(proto_u) as any;
+                  if (pmeta_u) desc_u = pmeta_u.peekDescriptors?.(key);
+                } catch { /* ignore */ }
+                proto_u = Object.getPrototypeOf(proto_u);
+              }
+            }
+            if (desc_u && desc_u._setter && desc_u._setter !== desc_u._getter) cpWithSetter_u = desc_u;
+          } catch { /* ignore */ }
           Object.defineProperty(instance, key, {
             get() {
               // Route through classic @glimmer/validator tag system so
@@ -1785,6 +1885,18 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
                 useLocal = true;
                 if (!instance.__gxtLocalOverrides) instance.__gxtLocalOverrides = new Set();
                 instance.__gxtLocalOverrides.add(key);
+              }
+              // Invoke CP setter for its side effects (see createComponentInstance).
+              if (cpWithSetter_u && !(instance as any).__gxtInvokingCpSetter) {
+                if ((instance as any).__gxtDispatchingArgs) {
+                  if (!(instance as any).__gxtCpArgDispatched) (instance as any).__gxtCpArgDispatched = {};
+                  (instance as any).__gxtCpArgDispatched[key] = v;
+                }
+                try {
+                  (instance as any).__gxtInvokingCpSetter = true;
+                  cpWithSetter_u.set(instance, key, v);
+                } catch { /* ignore CP setter failures */ }
+                finally { (instance as any).__gxtInvokingCpSetter = false; }
               }
               try {
                 const dirty = (globalThis as any).__classicDirtyTagFor;
@@ -4357,6 +4469,23 @@ function createRenderContext(
             if (_regArrOwner && Array.isArray(initialVal)) {
               _regArrOwner(initialVal, renderContext, key);
             }
+            // Detect classic @computed CP with a setter on the prototype chain.
+            // When present, the wrapper setter below must also invoke the CP's
+            // `_setter` for its side effects (e.g. `set width(w) { this.set('height', w/2) }`);
+            // otherwise the cell-backed descriptor silently eats the write and
+            // breaks mutable bindings of CP-with-setter.
+            let cpWithSetter_rc: any = null;
+            try {
+              let proto_rc = Object.getPrototypeOf(instance!);
+              while (proto_rc && proto_rc !== Object.prototype) {
+                const pmeta_rc: any = peekMeta(proto_rc);
+                if (pmeta_rc) {
+                  const d = pmeta_rc.peekDescriptors?.(key);
+                  if (d && d._setter && d._setter !== d._getter) { cpWithSetter_rc = d; break; }
+                }
+                proto_rc = Object.getPrototypeOf(proto_rc);
+              }
+            } catch { /* ignore */ }
             // After cellFor(skipDefine=false), gxt installed its own
             // accessor descriptor on the instance that reads cell.value.
             // Wrap it so createCache / invokeHelper consumers also capture
@@ -4379,6 +4508,18 @@ function createRenderContext(
                   },
                   set(v: any) {
                     innerSet.call(this, v);
+                    // Invoke CP setter for its side effects (see createComponentInstance).
+                    if (cpWithSetter_rc && !(instance as any).__gxtInvokingCpSetter) {
+                      if ((instance as any).__gxtDispatchingArgs) {
+                        if (!(instance as any).__gxtCpArgDispatched) (instance as any).__gxtCpArgDispatched = {};
+                        (instance as any).__gxtCpArgDispatched[key] = v;
+                      }
+                      try {
+                        (instance as any).__gxtInvokingCpSetter = true;
+                        cpWithSetter_rc.set(instance, key, v);
+                      } catch { /* ignore CP setter failures */ }
+                      finally { (instance as any).__gxtInvokingCpSetter = false; }
+                    }
                     try {
                       const dirty = (globalThis as any).__classicDirtyTagFor;
                       if (dirty) dirty(renderContext, key);

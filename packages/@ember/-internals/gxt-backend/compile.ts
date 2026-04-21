@@ -5428,6 +5428,27 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       if (capturedCtx) {
         if (typeof capturedCtx.set === 'function') {
           capturedCtx.set(propName, newValue);
+          // Ember's set() can fail to persist on GXT cell-backed descriptors
+          // when mandatory-setter-style interception short-circuits the write.
+          // Fall back to direct assignment (invokes the descriptor's setter)
+          // and then to manual setter invocation if even that doesn't take.
+          if (capturedCtx[propName] !== newValue) {
+            try { capturedCtx[propName] = newValue; } catch { /* ignore */ }
+            if (capturedCtx[propName] !== newValue) {
+              try {
+                const ownDesc = Object.getOwnPropertyDescriptor(capturedCtx, propName);
+                const setter = ownDesc?.set;
+                if (setter) setter.call(capturedCtx, newValue);
+              } catch { /* ignore */ }
+            }
+            // Fire a re-render trigger so GXT's trackedArgCells sync runs
+            // for dependent children (important when the fallback path
+            // bypassed Ember's set() and its notifyPropertyChange chain).
+            const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+            if (triggerReRender) {
+              try { triggerReRender(capturedCtx, propName); } catch { /* ignore */ }
+            }
+          }
         } else {
           capturedCtx[propName] = newValue;
         }
