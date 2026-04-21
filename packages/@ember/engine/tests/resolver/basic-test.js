@@ -215,6 +215,83 @@ module('strict-resolver | basic', function (hooks) {
     assert.strictEqual(result, MyService, 'shorthand module was resolved');
   });
 
+  test("shorthand value with a truthy 'default' property has 'default' unwrapped", function (assert) {
+    // This is the gotcha of the shorthand form: the resolver's selection
+    // logic is "use the `default` property if it exists, else use the whole
+    // value". A shorthand value that happens to carry its own `default`
+    // property will therefore be unwrapped just like a proper ES module
+    // namespace object — usually not what the author meant.
+    let unwrapped = { iAmDefault: true };
+    let RegisteredValue = {
+      default: unwrapped,
+      iAmTheWholeThing: true,
+    };
+
+    let resolver2 = new StrictResolver({
+      './services/surprise': RegisteredValue,
+    });
+
+    assert.strictEqual(
+      resolver2.resolve('service:surprise'),
+      unwrapped,
+      '`default` wins over the containing object'
+    );
+  });
+
+  test('shorthand class with a falsy or missing `default` falls back to the class itself', function (assert) {
+    // `.default` being falsy (undefined / null / 0 / '') means the shorthand
+    // value is used directly — matching the "if there's a default use it,
+    // else use the value" rule from the other direction.
+    class ClassWithUndefinedDefault {
+      static default = undefined;
+      static create() {
+        return new this();
+      }
+    }
+
+    class ClassWithoutDefault {
+      static create() {
+        return new this();
+      }
+    }
+
+    let r = new StrictResolver({
+      './services/with-undefined-default': ClassWithUndefinedDefault,
+      './services/without-default': ClassWithoutDefault,
+    });
+
+    assert.strictEqual(
+      r.resolve('service:with-undefined-default'),
+      ClassWithUndefinedDefault,
+      'undefined `.default` is treated as "no default", class is used'
+    );
+    assert.strictEqual(
+      r.resolve('service:without-default'),
+      ClassWithoutDefault,
+      'class without a `default` property is used as-is'
+    );
+  });
+
+  test('ES-module-shaped module with extra named exports still unwraps to `default`', function (assert) {
+    // A normal `import * as mod from './...'` yields an object whose
+    // `default` is the default export plus any named exports. The resolver
+    // returns the default; everything else on the namespace object is
+    // ignored. Documenting this so authors know the named exports don't
+    // leak through.
+    let defaultExport = { isDefault: true };
+    let registered = {
+      default: defaultExport,
+      named: 'not used',
+      another: 42,
+    };
+
+    let resolver2 = new StrictResolver({
+      './services/extras': registered,
+    });
+
+    assert.strictEqual(resolver2.resolve('service:extras'), defaultExport);
+  });
+
   test('normalization', function (assert) {
     assert.strictEqual(resolver.normalize('controller:posts'), 'controller:posts');
     assert.strictEqual(resolver.normalize('controller:postsIndex'), 'controller:posts-index');
