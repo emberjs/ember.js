@@ -2831,7 +2831,7 @@ function _installTriggerReRenderWrapper() {
 
           if (argChanged) {
             cell.update(newValue);
-            if (entry.instance && key !== 'class' && key !== 'classNames') {
+            if (entry.instance && key !== 'class' && key !== 'classNames' && !cellEntry.skipInstanceAssign) {
               try {
                 entry.instance.__gxtDispatchingArgs = true;
                 entry.instance[key] = newValue;
@@ -2863,7 +2863,7 @@ function _installTriggerReRenderWrapper() {
             // Local override is in effect and arg hasn't changed (or getter returned stale undefined) — skip
           } else if (cell.__value !== newValue || (argActuallyChanged && isLocallyOverridden)) {
             cell.update(newValue);
-            if (entry.instance && key !== 'class' && key !== 'classNames') {
+            if (entry.instance && key !== 'class' && key !== 'classNames' && !cellEntry.skipInstanceAssign) {
               // Set dispatching flag so the setter knows this is an arg update
               // (not an explicit set from component code) and should clear useLocal
               try {
@@ -4359,7 +4359,82 @@ function createRenderContext(
       }
     }
 
+    // Skip installing the arg cell if the instance already has a @tracked
+    // property with the same name. The @tracked manages its own state (via
+    // trackedData storage), and installing a cell-backed descriptor on the
+    // instance would shadow the tracked getter/setter, breaking `this.key`
+    // reads and writes. The arg is still accessible via `this.args.key`.
+    // See "Component Tracked Properties w/ Args Proxy" test.
+    //
+    // Detection sources (in order):
+    //  1) Ember `@tracked` stores a TrackedDescriptor in meta.peekDescriptors
+    //     (see metal/lib/tracked.ts writeDescriptors()).
+    //  2) Our local glimmer-tracking marks the getter with __isTrackedGetter.
+    if (instance && getter) {
+      let hasTrackedDescriptor = false;
+      // Check meta for TrackedDescriptor walking up the prototype chain.
+      try {
+        const m = peekMeta(instance) as any;
+        let d = m?.peekDescriptors?.(key);
+        if (!d) {
+          let p = Object.getPrototypeOf(instance);
+          while (p && p !== Object.prototype && !d) {
+            const pm = peekMeta(p) as any;
+            if (pm) d = pm.peekDescriptors?.(key);
+            p = Object.getPrototypeOf(p);
+          }
+        }
+        if (d && d.constructor && d.constructor.name === 'TrackedDescriptor') {
+          hasTrackedDescriptor = true;
+        }
+      } catch { /* ignore */ }
+      // Also check own/proto descriptor for our local marker flag.
+      if (!hasTrackedDescriptor) {
+        let proto = Object.getPrototypeOf(instance);
+        while (proto && proto !== Object.prototype) {
+          const desc = Object.getOwnPropertyDescriptor(proto, key);
+          if (desc) {
+            if (
+              (desc.get as any)?.__isTrackedGetter ||
+              (desc.set as any)?.__isTrackedSetter
+            ) {
+              hasTrackedDescriptor = true;
+            }
+            break;
+          }
+          proto = Object.getPrototypeOf(proto);
+        }
+      }
+      if (hasTrackedDescriptor) {
+        // @tracked owns this key on the instance. Don't install an arg
+        // cell that would shadow it. `this.args.key` remains available.
+        continue;
+      }
+    }
+
     if (cellForFn2 && getter) {
+      // Fast path: if we already installed our marker-tagged descriptor
+      // on renderContext[key] during a previous createRenderContext pass,
+      // just refresh the arg cell mapping and continue. Reading the
+      // existing getter would invoke the user's prototype getter a second
+      // time (cellFor with skipDefine=false reads the current value).
+      if (instance) {
+        const _crcExistingDesc = Object.getOwnPropertyDescriptor(renderContext, key);
+        const _crcAlreadyInstalled = !!(_crcExistingDesc && (_crcExistingDesc.get as any)?.__gxtRenderCtxArgGetter);
+        if (_crcAlreadyInstalled) {
+          try {
+            const cell = cellForFn2(renderContext, key, /* skipDefine */ true);
+            const _savedOverride = instance?.__gxtInitOverrides?.[key];
+            renderCtxArgCells[key] = {
+              cell,
+              getter,
+              lastArgValue: getter(),
+              ...(_savedOverride ? { initOverridden: true } : {}),
+            };
+          } catch { /* ignore */ }
+          continue;
+        }
+      }
       // Check if the instance overrode this property in init()
       // If so, we should use the init-set value, not the arg value.
       // Also check __gxtInitOverrides which persists across re-renders.
@@ -4376,27 +4451,6 @@ function createRenderContext(
       if (freshOverride && instance) {
         if (!instance.__gxtInitOverrides) instance.__gxtInitOverrides = {};
         instance.__gxtInitOverrides[key] = true;
-      }
-
-      // Guard against clobbering local-override state on re-renders:
-      // createRenderContext is invoked every render pass. When a component
-      // set its own arg (e.g., via `this.incrementProperty('myProp')`), the
-      // local override state lives in closure variables of the descriptor we
-      // installed previously. Re-installing the descriptor here would reset
-      // those closures to their initial values and lose the local override.
-      // Skip install when we've already installed our marker-tagged descriptor
-      // AND just update the backing cell. The existing descriptor's closure
-      // already reads the latest value through its own getter path.
-      if (instance) {
-        const _crcExistingDesc = Object.getOwnPropertyDescriptor(renderContext, key);
-        const _crcAlreadyInstalled = !!(_crcExistingDesc && (_crcExistingDesc.get as any)?.__gxtRenderCtxArgGetter);
-        if (_crcAlreadyInstalled) {
-          try {
-            const cell = cellForFn2(renderContext, key, /* skipDefine */ true);
-            renderCtxArgCells[key] = { cell, getter, lastArgValue: argVal, ...(overriddenInInit ? { initOverridden: true } : {}) };
-          } catch { /* ignore */ }
-          continue;
-        }
       }
       if (overriddenInInit) {
         // Instance overrode this property in init() — use a getter that
@@ -4458,11 +4512,31 @@ function createRenderContext(
           }
         }
         if (hasComputedGetter) {
-          // Property has a computed getter — use cellFor with skipDefine=false
-          // to preserve the existing computed property behavior
+          // Property has a computed getter — install a cell-backed
+          // descriptor manually. We used to call cellFor(skipDefine=false)
+          // here, but that reads `renderContext[key]` to prime the cell,
+          // which invokes the user's prototype getter an extra time and
+          // shadows the prototype descriptor with a cell-backed one.
+          //
+          // IMPORTANT: install an own data descriptor for `key` BEFORE
+          // calling cellFor. GXT's cellFor eagerly reads the current value
+          // (even with skipDefine=true) when the object has no own
+          // descriptor for the key yet — and for our case `renderContext`
+          // inherits a prototype getter that would invoke the user's
+          // `get count()` a second time just to prime the cell. Pre-
+          // installing a data descriptor with the value we already have
+          // avoids that extra invocation.
           try {
-            const cell = cellForFn2(renderContext, key, /* skipDefine */ false);
             const initialVal = argVal;
+            try {
+              Object.defineProperty(renderContext, key, {
+                value: initialVal,
+                writable: true,
+                enumerable: true,
+                configurable: true,
+              });
+            } catch { /* ignore — fall through to cellFor */ }
+            const cell = cellForFn2(renderContext, key, /* skipDefine */ true);
             cell.update(initialVal);
             renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
             const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
@@ -4486,49 +4560,50 @@ function createRenderContext(
                 proto_rc = Object.getPrototypeOf(proto_rc);
               }
             } catch { /* ignore */ }
-            // After cellFor(skipDefine=false), gxt installed its own
-            // accessor descriptor on the instance that reads cell.value.
-            // Wrap it so createCache / invokeHelper consumers also capture
-            // the classic @glimmer/validator tag for this property, and
-            // so that parent-driven arg mutations dirty that tag via a
-            // gxt effect.
+            // Install a cell-backed descriptor manually. We previously
+            // relied on cellFor(skipDefine=false) to install the descriptor
+            // for us (and wrapped it here), but that path invokes the
+            // user's prototype getter a second time to prime the cell.
+            // We've already computed argVal above and initialized the
+            // cell with it, so we install our own descriptor.
             try {
-              const curDesc = Object.getOwnPropertyDescriptor(renderContext, key);
-              if (curDesc?.get && curDesc?.set && curDesc.configurable) {
-                const innerGet = curDesc.get;
-                const innerSet = curDesc.set;
-                Object.defineProperty(renderContext, key, {
-                  get() {
-                    try {
-                      const consume = (globalThis as any).__classicConsumeTag;
-                      const tagFn = (globalThis as any).__classicTagFor;
-                      if (consume && tagFn) consume(tagFn(renderContext, key));
-                    } catch { /* noop */ }
-                    return innerGet.call(this);
-                  },
-                  set(v: any) {
-                    innerSet.call(this, v);
-                    // Invoke CP setter for its side effects (see createComponentInstance).
-                    if (cpWithSetter_rc && !(instance as any).__gxtInvokingCpSetter) {
-                      if ((instance as any).__gxtDispatchingArgs) {
-                        if (!(instance as any).__gxtCpArgDispatched) (instance as any).__gxtCpArgDispatched = {};
-                        (instance as any).__gxtCpArgDispatched[key] = v;
-                      }
-                      try {
-                        (instance as any).__gxtInvokingCpSetter = true;
-                        cpWithSetter_rc.set(instance, key, v);
-                      } catch { /* ignore CP setter failures */ }
-                      finally { (instance as any).__gxtInvokingCpSetter = false; }
+              const rcHasCompGet: any = function() {
+                try {
+                  const consume = (globalThis as any).__classicConsumeTag;
+                  const tagFn = (globalThis as any).__classicTagFor;
+                  if (consume && tagFn) consume(tagFn(renderContext, key));
+                } catch { /* noop */ }
+                return cell.value;
+              };
+              // Mark so re-entrant createRenderContext can detect and skip
+              // the redundant cellFor, which would trigger the user's
+              // prototype getter a second time just to read the current
+              // value. The installed getter already handles reads.
+              rcHasCompGet.__gxtRenderCtxArgGetter = true;
+              Object.defineProperty(renderContext, key, {
+                get: rcHasCompGet,
+                set(v: any) {
+                  cell.update(v);
+                  // Invoke CP setter for its side effects (see createComponentInstance).
+                  if (cpWithSetter_rc && !(instance as any).__gxtInvokingCpSetter) {
+                    if ((instance as any).__gxtDispatchingArgs) {
+                      if (!(instance as any).__gxtCpArgDispatched) (instance as any).__gxtCpArgDispatched = {};
+                      (instance as any).__gxtCpArgDispatched[key] = v;
                     }
                     try {
-                      const dirty = (globalThis as any).__classicDirtyTagFor;
-                      if (dirty) dirty(renderContext, key);
-                    } catch { /* noop */ }
-                  },
-                  enumerable: true,
-                  configurable: true,
-                });
-              }
+                      (instance as any).__gxtInvokingCpSetter = true;
+                      cpWithSetter_rc.set(instance, key, v);
+                    } catch { /* ignore CP setter failures */ }
+                    finally { (instance as any).__gxtInvokingCpSetter = false; }
+                  }
+                  try {
+                    const dirty = (globalThis as any).__classicDirtyTagFor;
+                    if (dirty) dirty(renderContext, key);
+                  } catch { /* noop */ }
+                },
+                enumerable: true,
+                configurable: true,
+              });
               // Install a gxt effect that dirties the classic tag whenever
               // the upstream arg cell invalidates — handles parent mutations
               // that don't route through the instance's setter.
@@ -4674,8 +4749,43 @@ function createRenderContext(
     }
     mergedArgCells[key] = entry;
   }
+  // Detect @tracked properties on the instance so sync doesn't overwrite
+  // user state by assigning the arg value back to instance[key]. When a
+  // component has `@tracked foo = 0` AND receives an `@foo` arg with the
+  // same name, `this.foo` is the tracked state and `this.args.foo` is the
+  // arg — two different namespaces. The sync loop must only refresh the
+  // attrsProxy cell for such keys, never touch `instance.foo`.
+  const _isTrackedKey = (inst: any, k: string): boolean => {
+    if (!inst) return false;
+    try {
+      const m = peekMeta(inst) as any;
+      let d = m?.peekDescriptors?.(k);
+      if (!d) {
+        let p = Object.getPrototypeOf(inst);
+        while (p && p !== Object.prototype && !d) {
+          const pm = peekMeta(p) as any;
+          if (pm) d = pm.peekDescriptors?.(k);
+          p = Object.getPrototypeOf(p);
+        }
+      }
+      if (d && d.constructor && d.constructor.name === 'TrackedDescriptor') return true;
+    } catch { /* ignore */ }
+    try {
+      let p = Object.getPrototypeOf(inst);
+      while (p && p !== Object.prototype) {
+        const desc = Object.getOwnPropertyDescriptor(p, k);
+        if (desc) {
+          if ((desc.get as any)?.__isTrackedGetter || (desc.set as any)?.__isTrackedSetter) return true;
+          return false;
+        }
+        p = Object.getPrototypeOf(p);
+      }
+    } catch { /* ignore */ }
+    return false;
+  };
   // Merge attrsProxy cells as secondary cells that also need updating
   for (const key of Object.keys(argCells)) {
+    const instanceIsTracked = _isTrackedKey(instance, key);
     if (mergedArgCells[key]) {
       // Store the attrsProxy cell alongside the renderCtx cell.
       // Preserve initOverridden and lastArgValue flags for init-overridden properties.
@@ -4686,9 +4796,15 @@ function createRenderContext(
         extraCell: argCells[key].cell, // attrsProxy cell for @arg tracking
         initOverridden: existing.initOverridden,
         lastArgValue: existing.lastArgValue !== undefined ? existing.lastArgValue : (existing.initOverridden ? existing.getter() : undefined),
+        skipInstanceAssign: instanceIsTracked ? true : undefined,
       };
     } else {
-      mergedArgCells[key] = argCells[key];
+      // No renderCtx arg cell (e.g., skipped because key collides with an
+      // @tracked property on the instance). Register the attrsProxy cell
+      // with a flag so sync doesn't assign to `instance[key]`.
+      mergedArgCells[key] = instanceIsTracked
+        ? { ...argCells[key], skipInstanceAssign: true }
+        : argCells[key];
     }
   }
 
