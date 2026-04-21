@@ -488,6 +488,21 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'hash-as-keyword-shadowed-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{hash}} as keyword', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  const hash = (data) => data;
+                  await render(<template>{{hash "hello"}}</template>);
+                  assert.dom().hasText('hello');
+                });
+              });
+            `,
           },
         },
       });
