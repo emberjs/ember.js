@@ -37,7 +37,9 @@ strictAppScenarios
 
           Router.map(function () {
             this.route('posts', function () {
-              this.route('show', { path: '/:post_id' });
+              this.route('show', { path: '/:post_id' }, function () {
+                this.route('comments');
+              });
             });
           });
         `,
@@ -79,6 +81,16 @@ strictAppScenarios
                 }
               }
             `,
+            'show': {
+              'comments.js': `
+                import Route from '@ember/routing/route';
+                export default class extends Route {
+                  model() {
+                    return ['great post!', 'meh'];
+                  }
+                }
+              `,
+            },
           },
         },
         controllers: {
@@ -129,9 +141,20 @@ strictAppScenarios
             {{outlet}}
           `,
           'posts': {
+            'index.hbs': `
+              <div data-test="posts-index">posts index page</div>
+            `,
             'show.hbs': `
               <div data-test="post-detail">{{@model.title}}</div>
+              {{outlet}}
             `,
+            'show': {
+              'comments.hbs': `
+                <ul data-test="post-comments">
+                  {{#each @model as |c|}}<li>{{c}}</li>{{/each}}
+                </ul>
+              `,
+            },
           },
         },
       },
@@ -162,19 +185,50 @@ strictAppScenarios
                 assert.dom('[data-test="site-header"] h1').hasText('Strict App');
               });
 
-              test('sub-route with nested model renders a gjs component per item', async function (assert) {
+              test('parent route with auto-generated index renders both templates', async function (assert) {
+                // Visiting /posts activates posts + posts.index. Both
+                // templates must resolve: posts.hbs (with {{outlet}}) and
+                // posts/index.hbs (nested under a folder). Proves the
+                // strict resolver handles both the parent and the nested
+                // \`type:name.index\` -> \`type/name/index\` path.
                 await visit('/posts');
                 assert.strictEqual(currentURL(), '/posts');
+                assert.dom('[data-test="posts"]').exists('parent template rendered');
                 assert.dom('[data-test="post-card"]').exists({ count: 2 });
                 assert.dom('[data-test="post-card"] h2').exists(
                   'PostCard gjs template renders inside the nested route'
                 );
+                assert.dom('[data-test="posts-index"]').exists(
+                  'posts.index template rendered inside the parent outlet'
+                );
               });
 
-              test('dynamic segment sub-route', async function (assert) {
+              test('dynamic nested child renders alongside its parent template', async function (assert) {
+                // /posts/42 activates both posts (parent) and posts.show
+                // (child). The parent template must still be present —
+                // the child renders into its {{outlet}}.
                 await visit('/posts/42');
                 assert.strictEqual(currentURL(), '/posts/42');
+                assert.dom('[data-test="posts"]').exists('parent template still rendered');
+                assert.dom('[data-test="post-card"]').exists({ count: 2 });
                 assert.dom('[data-test="post-detail"]').hasText('Post 42');
+              });
+
+              test('three-level nested route resolves every level', async function (assert) {
+                // /posts/42/comments activates posts -> posts.show ->
+                // posts.show.comments. Every template in the chain must
+                // resolve, and the strict resolver must walk
+                // template:posts.show.comments -> templates/posts/show/comments.
+                await visit('/posts/42/comments');
+                assert.strictEqual(currentURL(), '/posts/42/comments');
+                assert.dom('[data-test="posts"]').exists('level 1: posts.hbs');
+                assert.dom('[data-test="post-detail"]').hasText(
+                  'Post 42',
+                  'level 2: posts/show.hbs'
+                );
+                assert.dom('[data-test="post-comments"] li').exists({ count: 2 },
+                  'level 3: posts/show/comments.hbs'
+                );
               });
             });
           `,
