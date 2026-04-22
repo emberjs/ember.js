@@ -1,4 +1,4 @@
-import { fn } from '@ember/helper';
+import { fn, hash } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
@@ -26,6 +26,7 @@ export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 
 export const keywords: Record<string, unknown> = {
   fn,
+  hash,
   on,
 };
 
