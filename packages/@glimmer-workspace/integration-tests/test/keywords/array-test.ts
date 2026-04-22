@@ -1,97 +1,31 @@
-import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
-import { template } from '@ember/template-compiler/runtime';
-import { array, fn } from '@ember/helper';
-import { on } from '@ember/modifier';
+import { template } from '@ember/template-compiler';
 
 class KeywordArray extends RenderTest {
   static suiteName = 'keyword helper: array';
 
   @test
-  'it works'(assert: Assert) {
-    let receivedData: unknown[] | undefined;
-
-    let capture = (data: unknown[]) => {
-      receivedData = data;
-      assert.step('captured');
-    };
-
-    const compiled = template(
-      '<button {{on "click" (fn capture (array "hello" "goodbye"))}}>Click</button>',
-      {
-        strictMode: true,
-        scope: () => ({
-          capture,
-          fn,
-          array,
-          on,
-        }),
-      }
-    );
-
-    this.renderComponent(compiled);
-
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
-    assert.verifySteps(['captured']);
-    assert.deepEqual(receivedData, ['hello', 'goodbye']);
-  }
-
-  @test
-  'it works with the runtime compiler'(assert: Assert) {
-    let receivedData: unknown[] | undefined;
-
-    let capture = (data: unknown[]) => {
-      receivedData = data;
-      assert.step('captured');
-    };
-
-    hide(capture);
-
-    const compiled = template(
-      '<button {{on "click" (fn capture (array "hello" "goodbye"))}}>Click</button>',
-      {
-        strictMode: true,
-        eval() {
-          return eval(arguments[0]);
-        },
-      }
-    );
-
-    this.renderComponent(compiled);
-
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
-    assert.verifySteps(['captured']);
-    assert.deepEqual(receivedData, ['hello', 'goodbye']);
-  }
-
-  @test
-  'it works as a MustacheStatement'(assert: Assert) {
-    let receivedData: unknown[] | undefined;
-
-    let capture = (data: unknown[]) => {
-      receivedData = data;
-      assert.step('captured');
-    };
-
-    const Child = template('<button {{on "click" (fn capture @items)}}>Click</button>', {
+  'it works'() {
+    const compiled = template('{{JSON.stringify (array "hello" "goodbye")}}', {
       strictMode: true,
-      scope: () => ({ on, fn, capture }),
-    });
-
-    const compiled = template('<Child @items={{array "hello" "goodbye"}} />', {
-      strictMode: true,
-      scope: () => ({
-        array,
-        Child,
-      }),
+      scope: () => ({ JSON }),
     });
 
     this.renderComponent(compiled);
+    this.assertHTML('["hello","goodbye"]');
+  }
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
-    assert.verifySteps(['captured']);
-    assert.deepEqual(receivedData, ['hello', 'goodbye']);
+  @test
+  'it works (shadowed)'() {
+    const array = (x: string) => x.toUpperCase();
+    const compiled = template('{{array "hello"}}', {
+      strictMode: true,
+      scope: () => ({ JSON, array }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('HELLO');
   }
 }
 

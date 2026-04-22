@@ -12,85 +12,56 @@ class KeywordArrayRuntime extends RenderTest {
   static suiteName = 'keyword helper: array (runtime)';
 
   @test
-  'explicit scope'(assert: Assert) {
-    let receivedData: unknown[] | undefined;
-
-    let capture = (data: unknown[]) => {
-      receivedData = data;
-      assert.step('captured');
-    };
-
-    const compiled = template(
-      '<button {{on "click" (fn capture (array "hello" "goodbye"))}}>Click</button>',
-      {
-        strictMode: true,
-        scope: () => ({
-          capture,
-        }),
-      }
-    );
-
-    this.renderComponent(compiled);
-
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
-    assert.verifySteps(['captured']);
-    assert.deepEqual(receivedData, ['hello', 'goodbye']);
-  }
-
-  @test
-  'implicit scope'(assert: Assert) {
-    let receivedData: unknown[] | undefined;
-
-    let capture = (data: unknown[]) => {
-      receivedData = data;
-      assert.step('captured');
-    };
-
-    hide(capture);
-
-    const compiled = template(
-      '<button {{on "click" (fn capture (array "hello" "goodbye"))}}>Click</button>',
-      {
-        strictMode: true,
-        eval() {
-          return eval(arguments[0]);
-        },
-      }
-    );
-
-    this.renderComponent(compiled);
-
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
-    assert.verifySteps(['captured']);
-    assert.deepEqual(receivedData, ['hello', 'goodbye']);
-  }
-
-  @test
-  'MustacheStatement with explicit scope'(assert: Assert) {
-    let receivedData: unknown[] | undefined;
-
-    let capture = (data: unknown[]) => {
-      receivedData = data;
-      assert.step('captured');
-    };
-
-    const Child = template('<button {{on "click" (fn capture @items)}}>Click</button>', {
+  'it works'() {
+    const compiled = template('{{JSON.stringify (array "hello" "goodbye")}}', {
       strictMode: true,
-      scope: () => ({ capture }),
-    });
-
-    const compiled = template('<Child @items={{array "hello" "goodbye"}} />', {
-      strictMode: true,
-      scope: () => ({
-        Child,
-      }),
+      scope: () => ({ JSON }),
     });
 
     this.renderComponent(compiled);
+    this.assertHTML('["hello","goodbye"]');
+  }
 
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
-    assert.verifySteps(['captured']);
-    assert.deepEqual(receivedData, ['hello', 'goodbye']);
+  @test
+  'it works (shadowed)'() {
+    const array = (x: string) => x.toUpperCase();
+    const compiled = template('{{array "hello"}}', {
+      strictMode: true,
+      scope: () => ({ JSON, array }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('HELLO');
+  }
+
+  @test
+  'implicit scope'() {
+    const compiled = template('{{JSON.stringify (array "hello" "goodbye")}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('["hello","goodbye"]');
+  }
+
+  @test
+  'implicit scope (shadowed)'() {
+    const array = (...data: string[]) => data.reverse();
+
+    hide(array);
+
+    const compiled = template('{{JSON.stringify (array "hello" "goodbye")}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('["goodbye","hello"]');
   }
 
   @test
