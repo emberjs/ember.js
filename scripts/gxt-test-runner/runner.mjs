@@ -180,12 +180,20 @@ async function discoverModules(browser, url) {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   try {
+    // Append `?filter=__gxt_discover_nothing__` so QUnit's autostart matches
+    // zero tests. Modules still register at module-init time (which is what
+    // discovery cares about), but the renderer doesn't burn minutes running
+    // every test in the suite while we're trying to count them. Without this
+    // filter, the renderer stays so busy executing tests that
+    // `page.evaluate` calls never get a JS slot and discovery times out.
+    const sep = url.includes('?') ? '&' : '?';
+    const discoverUrl = url + sep + 'filter=__gxt_discover_nothing__';
+    let lastErr = null;
     // Retry the goto+wait up to 3 times to absorb cold-start flakiness
     // (first Vite request may return before all modules have registered).
-    let lastErr = null;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        await page.goto(url, { timeout: 180_000, waitUntil: 'load' });
+        await page.goto(discoverUrl, { timeout: 180_000, waitUntil: 'load' });
         await page.waitForFunction(
           () => typeof QUnit !== 'undefined' && QUnit.config.modules?.length > 50,
           { timeout: 120_000 },

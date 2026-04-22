@@ -554,7 +554,14 @@ export function resolvePackages(deps, params) {
         }
 
         let candidateStem = resolve(projectRoot, 'packages', source);
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+        // Include '/src/index.ts' / '/src/index.js' so packages whose
+        // authored source lives under a `src/` subdir (e.g. `@glimmer/component`
+        // — a published v2 addon whose repo layout has no root index.ts) are
+        // resolvable here. The classic rollup build doesn't hit this path for
+        // `@glimmer/component` because it's excluded from `packages()` and
+        // built by its own `glimmerComponent()` config; the lookup matters
+        // only for the vite dev server used by the GXT test harness.
+        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js', '/src/index.ts', '/src/index.js']) {
           let candidate = candidateStem + suffix;
           if (existsSync(candidate) && statSync(candidate).isFile()) {
             return candidate;
@@ -593,7 +600,10 @@ export function externalizePackages(deps) {
         }
 
         let candidateStem = resolve(projectRoot, 'packages', source);
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+        // Keep in sync with resolvePackages() above — we also accept
+        // `/src/index.{ts,js}` so packages whose authored source lives under
+        // a `src/` subdir are recognized.
+        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js', '/src/index.ts', '/src/index.js']) {
           let candidate = candidateStem + suffix;
           if (existsSync(candidate) && statSync(candidate).isFile()) {
             return { external: true, id: source };
