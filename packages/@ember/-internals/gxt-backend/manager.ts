@@ -56,7 +56,7 @@ import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from '.
 import { beginBacktrackingFrame, endBacktrackingFrame, touchClassicBridge as _gxtTouchClassicBridge, registerClassicReactor as _gxtRegisterClassicReactor, createUpdatableTag as _gxtCreateUpdatableTag } from '@glimmer/validator';
 import { createConstRef as _createConstRef, valueForRef as _valueForRefForManager, REFERENCE as _REFERENCE_FOR_MANAGER } from '@glimmer/reference';
 // @ts-ignore - direct path to share the same module instance as compile.ts
-import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+import { runDestructors as _gxtRunDestructors, formula as _gxtFormula, effect as _gxtEffect, cellFor as _gxtCellFor, setTracker as _gxtSetTracker, getTracker as _gxtGetTracker, cached as _gxtCached } from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
 import { destroy as _destroyDestroyable, registerDestructor as _registerDestructor } from './destroyable';
 
 // Expose destroy helpers so compile.ts can flush pending modifier destroys
@@ -443,6 +443,12 @@ globalThis.COMPONENT_MANAGERS = globalThis.COMPONENT_MANAGERS || new WeakMap();
 globalThis.INTERNAL_MANAGERS = globalThis.INTERNAL_MANAGERS || new WeakMap();
 globalThis.INTERNAL_HELPER_MANAGERS = globalThis.INTERNAL_HELPER_MANAGERS || new WeakMap();
 globalThis.INTERNAL_MODIFIER_MANAGERS = globalThis.INTERNAL_MODIFIER_MANAGERS || new WeakMap();
+
+// Per-instance memo cache for GXT `cached()` wrappers around pure Ember
+// getters. Survives across createRenderContext() re-invocations so repeated
+// reads of the same pure getter across render passes reuse the cached
+// wrapper's memoized value when deps haven't bumped.
+const __gxtPureGetterCache: WeakMap<object, Map<string, any>> = new WeakMap();
 // Expose FROM_CAPABILITIES on globalThis so ember-gxt-wrappers.ts can validate capabilities
 (globalThis as any).FROM_CAPABILITIES = FROM_CAPABILITIES;
 
@@ -4879,6 +4885,21 @@ function createRenderContext(
     }
   }
 
+  // Per-instance cache of GXT `cached()` wrappers for pure (non-Ember-tracked)
+  // getters. Without this, every proxy read of a pure getter (e.g., a user
+  // `get combinedCounts()` that does `return this.args.x + this.y`) re-invokes
+  // the getter — GXT's VM primes each text expression 3× per render, so an
+  // Ember counter inside the getter runs 3× too. Wrapping in `cached()` lets
+  // GXT memoize on dep-revision snapshots while preserving dep tracking.
+  // Keyed on the instance via module-level WeakMap so the cache survives
+  // createRenderContext re-invocations across render passes.
+  let gxtGetterCache = instance ? __gxtPureGetterCache.get(instance) : undefined;
+  if (!gxtGetterCache && instance) {
+    gxtGetterCache = new Map<string, any>();
+    __gxtPureGetterCache.set(instance, gxtGetterCache);
+  }
+  if (!gxtGetterCache) gxtGetterCache = new Map<string, any>();
+
   const proxy = new Proxy(renderContext, {
     get(target, prop, _receiver) {
       // Allow raw target access for cellFor
@@ -4901,17 +4922,53 @@ function createRenderContext(
       // Check if the property already has a cell getter (pre-installed)
       // by checking the property descriptor chain
       let hasGetter = false;
+      let foundDesc: PropertyDescriptor | undefined;
       let obj: any = target;
       while (obj) {
         const desc = Object.getOwnPropertyDescriptor(obj, prop);
         if (desc) {
           hasGetter = !!desc.get;
+          foundDesc = desc;
           break;
         }
         obj = Object.getPrototypeOf(obj);
       }
 
       if (hasGetter) {
+        // For PURE getters (no setter, not a tracked/cellFor-installed getter),
+        // memoize through GXT's `cached()` primitive so the body runs at most
+        // once per revision-batch. This fixes Tracked-Props counter assertions
+        // where GXT's VM primes the same text expression multiple times per
+        // render. `cached()` preserves dep tracking (it re-injects known deps
+        // into the ambient tracker) and re-executes fn() on any dep revision
+        // bump, so invalidation is unaffected.
+        const getterFn = foundDesc?.get as any;
+        const setterFn = foundDesc?.set as any;
+        const isTrackedGetter = !!(getterFn?.__isTrackedGetter);
+        const isTrackedSetter = !!(setterFn?.__isTrackedSetter);
+        if (
+          _gxtCached &&
+          getterFn &&
+          !setterFn &&
+          !isTrackedGetter &&
+          !isTrackedSetter
+        ) {
+          let wrapper = gxtGetterCache.get(prop);
+          if (!wrapper) {
+            wrapper = _gxtCached(() => getterFn.call(target), 'ember-getter:' + prop);
+            gxtGetterCache.set(prop, wrapper);
+          }
+          try {
+            const val = wrapper.value;
+            if (val !== null && typeof val === 'object' && !(val instanceof Node)) {
+              return wrapNestedObjectForTracking(val);
+            }
+            return val;
+          } catch {
+            // fall through to the legacy path on any failure
+          }
+        }
+
         const val = Reflect.get(target, prop, target);
 
         // Wrap nested Ember objects so sub-property reads are tracked
