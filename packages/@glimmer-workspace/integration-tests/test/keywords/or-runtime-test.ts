@@ -6,7 +6,7 @@ class KeywordOrRuntime extends RenderTest {
   static suiteName = 'keyword helper: or (runtime)';
 
   @test
-  'explicit scope without import'() {
+  'explicit scope'() {
     const compiled = template('{{if (or a b) "yes" "no"}}', {
       strictMode: true,
       scope: () => ({ a: false, b: true }),
@@ -14,6 +14,17 @@ class KeywordOrRuntime extends RenderTest {
 
     this.renderComponent(compiled);
     this.assertHTML('yes');
+  }
+
+  @test
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (or a b) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ or: () => false, a: true, b: true }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('no');
   }
 
   @test
