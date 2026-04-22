@@ -137,7 +137,7 @@ export function getChildViews(view: View): View[] {
   return collectChildViews(view, registry);
 }
 
-function initChildViews(view: View): Set<string> {
+export function initChildViews(view: View): Set<string> {
   let childViews: Set<string> = new Set();
   CHILD_VIEW_IDS.set(view, childViews);
   return childViews;
@@ -152,7 +152,7 @@ export function addChildView(parent: View, child: View): void {
   childViews.add(getViewId(child));
 }
 
-function collectChildViews(view: View, registry: Dict<View>): View[] {
+export function collectChildViews(view: View, registry: Dict<View>): View[] {
   let views: View[] = [];
   let childViews = CHILD_VIEW_IDS.get(view);
 
