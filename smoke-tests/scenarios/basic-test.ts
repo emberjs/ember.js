@@ -540,7 +540,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
                       {{JSON.stringify (array "hello" "goodbye")}}
                     </template>
                   );
-                  assert.dom().hasText('["hello", "goodbye"]');
+                  assert.dom().hasText('["hello","goodbye"]');
                 });
               });
             `,
