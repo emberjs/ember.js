@@ -6,7 +6,7 @@ class KeywordAndRuntime extends RenderTest {
   static suiteName = 'keyword helper: and (runtime)';
 
   @test
-  'explicit scope without import'() {
+  'explicit scope'() {
     const compiled = template('{{if (and a b) "yes" "no"}}', {
       strictMode: true,
       scope: () => ({ a: true, b: true }),
@@ -14,6 +14,17 @@ class KeywordAndRuntime extends RenderTest {
 
     this.renderComponent(compiled);
     this.assertHTML('yes');
+  }
+
+  @test
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (and a b) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ and: () => false, a: true, b: true }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('no');
   }
 
   @test
