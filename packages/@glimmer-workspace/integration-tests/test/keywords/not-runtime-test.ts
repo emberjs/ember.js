@@ -6,7 +6,7 @@ class KeywordNotRuntime extends RenderTest {
   static suiteName = 'keyword helper: not (runtime)';
 
   @test
-  'explicit scope without import'() {
+  'explicit scope'() {
     const compiled = template('{{if (not a) "yes" "no"}}', {
       strictMode: true,
       scope: () => ({ a: false }),
@@ -14,6 +14,17 @@ class KeywordNotRuntime extends RenderTest {
 
     this.renderComponent(compiled);
     this.assertHTML('yes');
+  }
+
+  @test
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (not a) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ not: () => false, a: false }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('no');
   }
 
   @test

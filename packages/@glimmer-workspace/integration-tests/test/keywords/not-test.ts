@@ -2,17 +2,59 @@ import { DEBUG } from '@glimmer/env';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler';
-import { not } from '@ember/helper';
 
 class KeywordNot extends RenderTest {
   static suiteName = 'keyword helper: not';
+
+  @test
+  'explicit scope'() {
+    let a = false;
+
+    const compiled = template('{{not a}}', {
+      strictMode: true,
+      scope: () => ({ a }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('true');
+  }
+
+  @test
+  'explicit scope (shadowed)'() {
+    let a = false;
+    let not = () => 'surprise';
+    const compiled = template('{{not a}}', {
+      strictMode: true,
+      scope: () => ({ not, a }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('surprise');
+  }
+
+  @test
+  'implicit scope (eval)'() {
+    let a = false;
+
+    hide(a);
+
+    const compiled = template('{{if (not a) "yes" "no"}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('yes');
+  }
 
   @test
   'returns true for falsy value'() {
     let a = false;
     const compiled = template('{{if (not a) "yes" "no"}}', {
       strictMode: true,
-      scope: () => ({ not, a }),
+      scope: () => ({ a }),
     });
 
     this.renderComponent(compiled);
@@ -24,23 +66,11 @@ class KeywordNot extends RenderTest {
     let a = true;
     const compiled = template('{{if (not a) "yes" "no"}}', {
       strictMode: true,
-      scope: () => ({ not, a }),
+      scope: () => ({ a }),
     });
 
     this.renderComponent(compiled);
     this.assertHTML('no');
-  }
-
-  @test
-  'works with MustacheStatement'() {
-    let a = false;
-    const compiled = template('{{not a}}', {
-      strictMode: true,
-      scope: () => ({ not, a }),
-    });
-
-    this.renderComponent(compiled);
-    this.assertHTML('true');
   }
 
   @test({ skip: !DEBUG })
@@ -49,7 +79,7 @@ class KeywordNot extends RenderTest {
     let b = false;
     const compiled = template('{{not a b}}', {
       strictMode: true,
-      scope: () => ({ not, a, b }),
+      scope: () => ({ a, b }),
     });
 
     assert.throws(() => {
@@ -59,3 +89,7 @@ class KeywordNot extends RenderTest {
 }
 
 jitSuite(KeywordNot);
+
+const hide = (variable: unknown) => {
+  new Function(`return (${JSON.stringify(variable)});`);
+};
