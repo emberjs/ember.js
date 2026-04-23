@@ -56,6 +56,18 @@ export const ENV = {
   */
   LOG_VERSION: true,
 
+  /**
+    The `LOG_INSPECTOR_HINT` property, when true, tells Ember to log a hint
+    suggesting the Ember Inspector browser extension when it is not detected.
+
+    @property LOG_INSPECTOR_HINT
+    @type Boolean
+    @default true
+    @for EmberENV
+    @public
+  */
+  LOG_INSPECTOR_HINT: true,
+
   RAISE_ON_DEPRECATION: false,
 
   STRUCTURED_PROFILE: false,
