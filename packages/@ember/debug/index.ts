@@ -1,4 +1,5 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
+import { ENV } from '@ember/-internals/environment';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import { DEBUG } from '@glimmer/env';
 import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
@@ -273,7 +274,7 @@ if (DEBUG) {
 
 let _warnIfUsingStrippedFeatureFlags;
 
-if (DEBUG && !isTesting()) {
+if (DEBUG && !isTesting() && ENV.LOG_INSPECTOR_HINT) {
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener(
       'load',

@@ -4,6 +4,7 @@ module.exports = {
     'EXTEND_PROTOTYPES',
     'GUID_KEY',
     'GUID_PREFIX',
+    'LOG_INSPECTOR_HINT',
     'LOG_STACKTRACE_ON_DEPRECATION',
     'LOG_VERSION',
     '[]',
