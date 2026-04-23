@@ -34,6 +34,14 @@ interface Transaction {
 if (DEBUG) {
   let CONSUMED_TAGS: WeakMap<Tag, Transaction> | null = null;
 
+  // Tracks tags that were dirtied after being consumed within the same tracking frame.
+  // If a tag is re-consumed before the frame ends, it's removed (get/set/get is OK).
+  // Any remaining entries at end-of-frame trigger the backtracking assertion.
+  let PENDING_SAME_FRAME_ASSERTIONS: Map<
+    Tag,
+    { obj?: unknown; keyName?: PropertyKey; transaction: Transaction }
+  > | null = null;
+
   const TRANSACTION_STACK: Transaction[] = [];
 
   /////////
@@ -81,10 +89,29 @@ if (DEBUG) {
       throw new Error('attempted to close a tracking transaction, but one was not open');
     }
 
-    TRANSACTION_STACK.pop();
+    let closingTransaction = TRANSACTION_STACK.pop();
+
+    // Check for any same-frame get/set that was never followed by a re-get.
+    // This catches patterns like `get → set` (without a second get) which can
+    // cause infinite revalidation loops.
+    if (PENDING_SAME_FRAME_ASSERTIONS !== null && closingTransaction !== undefined) {
+      for (let [, pending] of PENDING_SAME_FRAME_ASSERTIONS) {
+        if (pending.transaction === closingTransaction) {
+          // This tag was dirtied after being consumed but never re-consumed
+          // before the frame ended — this is likely a bug, not lazy init.
+          let message = TRANSACTION_ENV.debugMessage(
+            pending.obj,
+            pending.keyName != null ? String(pending.keyName) : undefined
+          );
+          PENDING_SAME_FRAME_ASSERTIONS = null;
+          assert(false, message);
+        }
+      }
+    }
 
     if (TRANSACTION_STACK.length === 0) {
       CONSUMED_TAGS = null;
+      PENDING_SAME_FRAME_ASSERTIONS = null;
     }
   };
 
@@ -97,6 +124,7 @@ if (DEBUG) {
 
     TRANSACTION_STACK.splice(0, TRANSACTION_STACK.length);
     CONSUMED_TAGS = null;
+    PENDING_SAME_FRAME_ASSERTIONS = null;
 
     return stack;
   };
@@ -178,7 +206,15 @@ if (DEBUG) {
   };
 
   debug.markTagAsConsumed = (_tag: Tag) => {
-    if (!CONSUMED_TAGS || CONSUMED_TAGS.has(_tag)) return;
+    if (!CONSUMED_TAGS) return;
+
+    // If this tag has a pending same-frame assertion, the re-consume (second get)
+    // resolves it — this is the valid get/set/get (lazy initialization) pattern.
+    if (PENDING_SAME_FRAME_ASSERTIONS !== null && PENDING_SAME_FRAME_ASSERTIONS.has(_tag)) {
+      PENDING_SAME_FRAME_ASSERTIONS.delete(_tag);
+    }
+
+    if (CONSUMED_TAGS.has(_tag)) return;
 
     CONSUMED_TAGS.set(_tag, getLast(asPresentArray(TRANSACTION_STACK)));
 
@@ -202,6 +238,20 @@ if (DEBUG) {
     let transaction = CONSUMED_TAGS.get(tag);
 
     if (!transaction) return;
+
+    // Allow get/set/get (lazy initialization) within the same tracking frame.
+    // Instead of throwing immediately, defer the assertion to end-of-frame.
+    // If the tag is re-consumed (second get) before the frame ends, the pending
+    // assertion is cleared. Otherwise it fires at endTrackingTransaction.
+    let currentTransaction = TRANSACTION_STACK[TRANSACTION_STACK.length - 1];
+    if (transaction === currentTransaction) {
+      if (PENDING_SAME_FRAME_ASSERTIONS === null) {
+        PENDING_SAME_FRAME_ASSERTIONS = new Map();
+      }
+      PENDING_SAME_FRAME_ASSERTIONS.set(tag, { obj, keyName, transaction });
+      CONSUMED_TAGS.delete(tag);
+      return;
+    }
 
     // This hack makes the assertion message nicer, we can cut off the first
     // few lines of the stack trace and let users know where the actual error

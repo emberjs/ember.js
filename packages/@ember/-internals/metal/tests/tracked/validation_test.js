@@ -363,7 +363,24 @@ moduleFor(
       );
     }
 
-    ['@test gives helpful assertion when a tracked property is mutated after access in with an autotracking transaction']() {
+    ['@test allows get/set/get (lazy initialization) within the same tracking frame'](assert) {
+      class MyObject {
+        @tracked value;
+        toString() {
+          return 'MyObject';
+        }
+      }
+
+      let obj = new MyObject();
+
+      track(() => {
+        obj.value;
+        obj.value = 123;
+        assert.strictEqual(obj.value, 123, 'get after set returns the updated value');
+      });
+    }
+
+    ['@test gives helpful assertion when a tracked property is mutated after access without re-read']() {
       class MyObject {
         @tracked value;
         toString() {
