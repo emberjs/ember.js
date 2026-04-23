@@ -4,6 +4,8 @@
 import { DEBUG } from '@glimmer/env';
 import { createCache, getValue } from '@glimmer/validator';
 
+export const CACHED_GETTER_SYMBOL = Symbol('CACHED_GETTER');
+
 /**
  * @decorator
  *
@@ -114,13 +116,17 @@ export const cached: MethodDecorator = (...args: any[]) => {
   const caches = new WeakMap();
   const getter = descriptor.get;
 
-  descriptor.get = function (): unknown {
+  const cachedGetter = function (this: any): unknown {
     if (!caches.has(this)) {
       caches.set(this, createCache(getter.bind(this)));
     }
 
     return getValue(caches.get(this));
   };
+
+  (cachedGetter as any)[CACHED_GETTER_SYMBOL] = true;
+
+  descriptor.get = cachedGetter;
 };
 
 function throwCachedExtraneousParens(): never {

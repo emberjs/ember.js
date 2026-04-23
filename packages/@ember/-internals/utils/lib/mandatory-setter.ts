@@ -3,6 +3,8 @@ import { DEBUG } from '@glimmer/env';
 import type { Tag } from '@glimmer/validator';
 import lookupDescriptor from './lookup-descriptor';
 
+export const MANDATORY_SETTER_SYMBOL = Symbol('MANDATORY_SETTER');
+
 export let setupMandatorySetter:
   | ((tag: Tag, obj: object, keyName: string | symbol) => void)
   | undefined;
@@ -71,6 +73,16 @@ if (DEBUG) {
 
     setters[keyName] = desc;
 
+    const mandatorySetter = function (this: any, value: any) {
+      assert(
+        `You attempted to update ${this}.${String(keyName)} to "${String(
+          value
+        )}", but it is being tracked by a tracking context, such as a template, computed property, or observer. In order to make sure the context updates properly, you must invalidate the property when updating it. You can mark the property as \`@tracked\`, or use \`@ember/object#set\` to do this.`
+      );
+    };
+
+    (mandatorySetter as any)[MANDATORY_SETTER_SYMBOL] = true;
+
     Object.defineProperty(obj, keyName, {
       configurable: true,
       enumerable: propertyIsEnumerable(obj, keyName),
@@ -83,13 +95,7 @@ if (DEBUG) {
         }
       },
 
-      set(value: any) {
-        assert(
-          `You attempted to update ${this}.${String(keyName)} to "${String(
-            value
-          )}", but it is being tracked by a tracking context, such as a template, computed property, or observer. In order to make sure the context updates properly, you must invalidate the property when updating it. You can mark the property as \`@tracked\`, or use \`@ember/object#set\` to do this.`
-        );
-      },
+      set: mandatorySetter,
     });
   };
 
