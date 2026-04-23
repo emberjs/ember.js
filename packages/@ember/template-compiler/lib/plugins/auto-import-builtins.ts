@@ -36,6 +36,15 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         if (isHash(node, hasLocal)) {
           rewriteKeyword(env, node, 'hash', '@ember/helper');
         }
+        if (isAnd(node, hasLocal)) {
+          rewriteKeyword(env, node, 'and', '@ember/helper');
+        }
+        if (isOr(node, hasLocal)) {
+          rewriteKeyword(env, node, 'or', '@ember/helper');
+        }
+        if (isNot(node, hasLocal)) {
+          rewriteKeyword(env, node, 'not', '@ember/helper');
+        }
       },
       MustacheStatement(node: AST.MustacheStatement) {
         if (isArray(node, hasLocal)) {
@@ -46,6 +55,15 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         }
         if (isHash(node, hasLocal)) {
           rewriteKeyword(env, node, 'hash', '@ember/helper');
+        }
+        if (isAnd(node, hasLocal)) {
+          rewriteKeyword(env, node, 'and', '@ember/helper');
+        }
+        if (isOr(node, hasLocal)) {
+          rewriteKeyword(env, node, 'or', '@ember/helper');
+        }
+        if (isNot(node, hasLocal)) {
+          rewriteKeyword(env, node, 'not', '@ember/helper');
         }
       },
     },
@@ -93,4 +111,25 @@ function isHash(
   hasLocal: (k: string) => boolean
 ): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
   return isPath(node.path) && node.path.original === 'hash' && !hasLocal('hash');
+}
+
+function isAnd(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'and' && !hasLocal('and');
+}
+
+function isOr(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'or' && !hasLocal('or');
+}
+
+function isNot(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'not' && !hasLocal('not');
 }
