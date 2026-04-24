@@ -12439,6 +12439,19 @@ export function precompileTemplate(templateString: string, options?: {
                 if (desc && !desc.get && !desc.set && desc.configurable &&
                     typeof desc.value !== 'function') {
                   try {
+                    // Guard against installing a recursive cell-backed getter (GH#18417):
+                    // if a formula (Yt) cell already exists for (cellTarget, key)
+                    // whose __fn reads cellTarget[key], installing a getter that
+                    // returns cell.value will loop — cell.value → __fn() →
+                    // cellTarget[key] → getter → cell.value. Skip installation
+                    // to keep the raw data property in place; the formula still
+                    // reads the correct value through the data descriptor.
+                    try {
+                      const _existing = cellFor(cellTarget, key as any, /* skipDefine */ true);
+                      if (_existing && typeof (_existing as any).__fn === 'function') {
+                        continue;
+                      }
+                    } catch { /* ignore probe failure */ }
                     // Install cell on the raw target (not the proxy)
                     // This ensures the same cell is used for reads and writes
                     cellFor(cellTarget, key as any, /* skipDefine */ false);

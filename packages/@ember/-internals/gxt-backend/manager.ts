@@ -5007,6 +5007,19 @@ function createRenderContext(
         if (desc && !desc.get && !desc.set && desc.configurable !== false && typeof desc.value !== 'function') {
 
           try {
+            // Guard against recursive cell-backed getters (GH#18417):
+            // If GXT's template machinery has already registered a lazy formula
+            // cell (Yt with __fn) for (instance, key), calling cellFor with
+            // skipDefine=false would install a getter `() => cell.value`. The
+            // cell's __fn reads `instance[key]` — which now routes through the
+            // newly installed getter — producing infinite recursion (StackOverflow).
+            // Probe with skipDefine=true first; if the cell already exists and
+            // is formula-backed, leave the raw data property in place so the
+            // formula's __fn reads the data directly.
+            const _existing = _cellFor(instance, key, /* skipDefine */ true);
+            if (_existing && typeof (_existing as any).__fn === 'function') {
+              continue;
+            }
             const _c = _cellFor(instance, key, /* skipDefine */ false);
             // Reconcile: cellFor(skipDefine=false) may install a fresh getter/setter
             // backed by a cell that doesn't know the current data value (it was set
