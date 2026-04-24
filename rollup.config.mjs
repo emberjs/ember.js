@@ -22,6 +22,12 @@ const testDependencies = [
   '@simple-dom/serializer',
   '@simple-dom/void-map',
   'expect-type',
+  // Packages imported by compiled test source (GJS) or their helpers that
+  // should fall through to vite's native node_modules resolution during
+  // the GXT test harness. The classic rollup build never hits this path
+  // because it doesn't bundle tests.
+  'decorator-transforms',
+  '@lifeart/gxt',
 ];
 
 // Phase 0.9 POC: resolver-alias strategy for GXT dual-backend.
@@ -386,6 +392,13 @@ export function hiddenDependencies() {
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'
     ),
+    // Root entry needed for GXT-compiled test modules that import the
+    // bare `decorator-transforms` package (e.g. via compiled GJS test
+    // helpers). Classic rollup build doesn't hit this.
+    'decorator-transforms': resolve(
+      findFromProject('decorator-transforms').root,
+      'dist/index.js'
+    ),
   };
 }
 
@@ -483,6 +496,12 @@ function resolveTS() {
 export function resolvePackages(deps, params) {
   const isExternal = params?.isExternal;
   const enableLocalDebug = params?.enableLocalDebug ?? false;
+  // When true (vite dev server), skip the `external: true` returns for
+  // runtime-loaded packages (@lifeart/gxt, decorator-transforms). Vite
+  // serves those through its native node_modules resolver instead.
+  // Without this, vite tries to serve `/@id/@lifeart/gxt` with no handler
+  // and returns 404, causing test modules to fail to load.
+  const viteDevFallthrough = params?.viteDevFallthrough ?? false;
 
   return {
     enforce: 'pre',
@@ -542,6 +561,10 @@ export function resolvePackages(deps, params) {
         // @lifeart/gxt/glimmer-compatibility. Treating it as external keeps
         // the classic rollup build able to run at all.
         if (GXT_EXTERNAL_PACKAGES.has(source) || pkgName === '@lifeart/gxt') {
+          if (viteDevFallthrough) {
+            // Let vite resolve via node_modules natively.
+            return;
+          }
           return { external: true, id: source };
         }
 

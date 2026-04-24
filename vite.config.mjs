@@ -78,13 +78,17 @@ export default defineConfig(({ mode }) => {
           // GXT subpath exports need explicit entries for resolvePackages
           '@lifeart/gxt/glimmer-compatibility': '@lifeart/gxt',
           '@lifeart/gxt/runtime-compiler': '@lifeart/gxt',
-          'decorator-transforms/runtime': 'decorator-transforms',
+          // Previously mapped to bare 'decorator-transforms' (a string, not a
+          // path) which caused vite to 404 on /@id/decorator-transforms and
+          // the test file failed to load, producing "No tests matched the
+          // module" false-hangs. Now both /runtime and the bare root resolve
+          // to real file paths from hiddenDependencies.
           // GXT compile chunk externals — only used at build time by the compiler plugin
           '@babel/core': '@lifeart/gxt',
           'typescript': '@lifeart/gxt',
           'content-tag': '@lifeart/gxt',
         },
-        { enableLocalDebug: true }
+        { enableLocalDebug: true, viteDevFallthrough: true }
       ),
       viteResolverBug(),
       version(),
