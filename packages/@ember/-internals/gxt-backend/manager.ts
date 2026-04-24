@@ -2944,7 +2944,7 @@ function _installTriggerReRenderWrapper() {
             hasChanges = true;
           }
           // Also update extra cell if arg changed
-          if (argChanged && extraCell && extraCell.__value !== newValue) {
+          if (argChanged && extraCell) {
             extraCell.update(newValue);
           }
         } else {
@@ -2964,7 +2964,15 @@ function _installTriggerReRenderWrapper() {
           // with undefined, cascading incorrect values to child components.
           if (isLocallyOverridden && (!argActuallyChanged || (newValue === undefined && lastKnownArg !== undefined))) {
             // Local override is in effect and arg hasn't changed (or getter returned stale undefined) — skip
-          } else if (cell.__value !== newValue || (argActuallyChanged && isLocallyOverridden)) {
+          } else if (argActuallyChanged) {
+            // Gate cell updates on whether the ARG value actually changed
+            // (tracked via cellEntry.lastArgValue), not on `cell.__value`.
+            // LazyCell stores its value in `__lazyValue` (not `__value`), so
+            // the latter is perpetually `undefined` for lazy-backed arg cells
+            // — causing every sync cycle to flip `hasChanges` to true on
+            // every #each row even when the arg is stable, which spuriously
+            // fires `didUpdate` on siblings in tests like "updating and
+            // setting within #each".
             cell.update(newValue);
             if (entry.instance && key !== 'class' && key !== 'classNames' && !cellEntry.skipInstanceAssign) {
               // Set dispatching flag so the setter knows this is an arg update
@@ -2999,7 +3007,8 @@ function _installTriggerReRenderWrapper() {
             hasChanges = true;
           }
           // Also update the attrsProxy cell (used by GXT effects tracking @arg)
-          if (extraCell && extraCell.__value !== newValue) {
+          // Gate on argActuallyChanged for the same LazyCell __value reason.
+          if (extraCell && argActuallyChanged) {
             extraCell.update(newValue);
             hasChanges = true;
           }
