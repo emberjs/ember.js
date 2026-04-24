@@ -652,20 +652,29 @@ export function dirtyTagFor(obj: any, key: any) {
   // Mark GXT sync as pending so __gxtSyncDomNow processes the force-rerender.
   // Without this, set() on components dirtied Glimmer tags but __gxtPendingSync
   // stayed false, causing __gxtSyncDomNow to be a no-op.
-  const schedule = (globalThis as any).__gxtExternalSchedule;
-  if (typeof schedule === 'function') {
-    schedule();
-  }
+  //
+  // Skip scheduling (but preserve dirty-tag semantics above) during Phase 1
+  // rcSet internal arg write-backs. Those writes fire rcSet → dirtyTagFor;
+  // rescheduling another sync triggers a backburner re-entry loop on curly
+  // tests. We still need the tag marked dirty and the global revision bumped
+  // so within-sync template re-reads see the new value.
+  const gSched = globalThis as any;
+  if (!gSched.__gxtSuppressDirtyInRcSet) {
+    const schedule = gSched.__gxtExternalSchedule;
+    if (typeof schedule === 'function') {
+      schedule();
+    }
 
-  // Notify the scheduler (typically _backburner.ensureInstance()) so that the
-  // backburner run loop drains and flushAsyncObservers fires. Without this,
-  // @tracked setter → dirtyTagFor outside an explicit run() never starts a
-  // run loop, so async observers watching dependentKeyCompat getters never
-  // get flushed.
-  try {
-    const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
-    if (typeof sr === 'function') sr();
-  } catch { /* noop */ }
+    // Notify the scheduler (typically _backburner.ensureInstance()) so that the
+    // backburner run loop drains and flushAsyncObservers fires. Without this,
+    // @tracked setter → dirtyTagFor outside an explicit run() never starts a
+    // run loop, so async observers watching dependentKeyCompat getters never
+    // get flushed.
+    try {
+      const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
+      if (typeof sr === 'function') sr();
+    } catch { /* noop */ }
+  }
 
   // Then call the original dirtyTagFor with the safe key
   let result: any;

@@ -534,20 +534,18 @@ let _rebuildInProgress = false;
 // validator.ts installs the original as globalThis.__classicDirtyTagFor; we
 // intercept here. Idempotent — re-running this module won't double-wrap.
 //
-// Also suppress during __gxtSyncDomNow (__gxtSyncing flag). Phase 1 of sync
-// iterates live instances and writes args via rcSet (render-context setter).
-// Each write triggers __classicDirtyTagFor → scheduleRevalidate, which
-// schedules ANOTHER __gxtSyncDomNow. Backburner then re-enters sync endlessly
-// on curly-component tests. The cell value is still updated by the underlying
-// writer — we just skip the scheduling side-effect, since the current sync
-// will observe the new values via its own Phase 1/2 re-read paths.
+// Only hard-suppress during __gxtRebuildViewTreeFromDom (via
+// __gxtSuppressDirtyTagForDuringRebuild). For Phase 1 arg write-backs, we
+// do NOT suppress here — instead we let dirtyTagFor mark the tag dirty and
+// bump the global revision (needed for within-sync template re-reads), and
+// the rescheduling-only suppression lives in validator.ts, keyed off
+// __gxtSuppressDirtyInRcSet.
 (function installClassicDirtyTagForRebuildGuard() {
   const g = globalThis as any;
   const orig = g.__classicDirtyTagFor;
   if (typeof orig !== 'function' || orig.__gxtRebuildGuarded) return;
   const wrapped = function classicDirtyTagForGuarded(obj: any, key: any) {
     if (g.__gxtSuppressDirtyTagForDuringRebuild) return;
-    if (g.__gxtSyncing) return;
     return orig(obj, key);
   };
   (wrapped as any).__gxtRebuildGuarded = true;
@@ -2021,12 +2019,18 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
       if (newValue !== oldValue) {
         // Update the instance property (but not elementId - it's frozen)
         if (key !== 'elementId') {
-          // Set dispatching flag so setters know this is an arg update from parent
+          // Set dispatching flag so setters know this is an arg update from parent.
+          // Also set __gxtSuppressDirtyInRcSet so classicDirtyTagForGuarded no-ops
+          // during this internal write-back — prevents re-scheduling another sync.
+          const g = globalThis as any;
+          const prevSuppress = g.__gxtSuppressDirtyInRcSet;
           try {
             instance.__gxtDispatchingArgs = true;
+            g.__gxtSuppressDirtyInRcSet = true;
             instance[key] = newValue;
           } finally {
             instance.__gxtDispatchingArgs = false;
+            g.__gxtSuppressDirtyInRcSet = prevSuppress;
           }
         }
         lastArgValues[key] = newValue;
@@ -2045,11 +2049,15 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
     for (const key of Object.keys(lastArgValues)) {
       if (key === 'elementId' || key === 'id') continue;
       if (!newKeySet.has(key) && lastArgValues[key] !== undefined) {
+        const g = globalThis as any;
+        const prevSuppress = g.__gxtSuppressDirtyInRcSet;
         try {
           instance.__gxtDispatchingArgs = true;
+          g.__gxtSuppressDirtyInRcSet = true;
           instance[key] = undefined;
         } finally {
           instance.__gxtDispatchingArgs = false;
+          g.__gxtSuppressDirtyInRcSet = prevSuppress;
         }
         // If the property has a cell-backed getter from createRenderContext,
         // the setter may have set _useLocal=false but the getter still calls
@@ -2921,11 +2929,17 @@ function _installTriggerReRenderWrapper() {
           if (argChanged) {
             cell.update(newValue);
             if (entry.instance && key !== 'class' && key !== 'classNames' && !cellEntry.skipInstanceAssign) {
+              const g = globalThis as any;
+              const prevSuppress = g.__gxtSuppressDirtyInRcSet;
               try {
                 entry.instance.__gxtDispatchingArgs = true;
+                g.__gxtSuppressDirtyInRcSet = true;
                 entry.instance[key] = newValue;
               } catch { /* ignore */ }
-              finally { entry.instance.__gxtDispatchingArgs = false; }
+              finally {
+                entry.instance.__gxtDispatchingArgs = false;
+                g.__gxtSuppressDirtyInRcSet = prevSuppress;
+              }
             }
             hasChanges = true;
           }
@@ -2954,12 +2968,20 @@ function _installTriggerReRenderWrapper() {
             cell.update(newValue);
             if (entry.instance && key !== 'class' && key !== 'classNames' && !cellEntry.skipInstanceAssign) {
               // Set dispatching flag so the setter knows this is an arg update
-              // (not an explicit set from component code) and should clear useLocal
+              // (not an explicit set from component code) and should clear useLocal.
+              // Also set __gxtSuppressDirtyInRcSet so classicDirtyTagForGuarded
+              // no-ops during this write-back — prevents scheduling another sync.
+              const g = globalThis as any;
+              const prevSuppress = g.__gxtSuppressDirtyInRcSet;
               try {
                 entry.instance.__gxtDispatchingArgs = true;
+                g.__gxtSuppressDirtyInRcSet = true;
                 entry.instance[key] = newValue;
               } catch { /* ignore */ }
-              finally { entry.instance.__gxtDispatchingArgs = false; }
+              finally {
+                entry.instance.__gxtDispatchingArgs = false;
+                g.__gxtSuppressDirtyInRcSet = prevSuppress;
+              }
               // When there are active $_dc dynamic component listeners,
               // call notifyPropertyChange to dirty Ember tags for @computed
               // properties that depend on this arg. Without this, computed
