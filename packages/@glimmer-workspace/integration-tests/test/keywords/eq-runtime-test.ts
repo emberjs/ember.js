@@ -21,7 +21,17 @@ class KeywordEqRuntime extends RenderTest {
   }
 
   @test
-  'implicit scope'() {
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (eq a b) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ eq: () => false, a: 1, b: 1 }),
+    });
+    this.renderComponent(compiled);
+    this.assertHTML('no');
+  }
+
+  @test
+  'implicit scope (eval)'() {
     let a = 1;
     let b = 1;
     hide(a);

@@ -21,7 +21,17 @@ class KeywordNeqRuntime extends RenderTest {
   }
 
   @test
-  'implicit scope'() {
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (neq a b) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ neq: () => false, a: 1, b: 2 }),
+    });
+    this.renderComponent(compiled);
+    this.assertHTML('no');
+  }
+
+  @test
+  'implicit scope (eval)'() {
     let a = 1;
     let b = 2;
     hide(a);
