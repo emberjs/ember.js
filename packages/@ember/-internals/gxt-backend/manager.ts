@@ -520,8 +520,35 @@ function getCurrentParentView(): any | null {
  * (the force-rerender path bypasses patchedIf's syncState wrap that pushes the
  * parent). Walks each live view's DOM ancestry to find the nearest ancestor
  * element registered as another view, and wires parentView + _addChildView.
+ *
+ * Re-entrancy guard: During the rebuild, reading/writing view fields may hit
+ * render-context setters that call __classicDirtyTagFor → scheduleRevalidate
+ * → __gxtSyncDomNow → __gxtFlushAfterInsertQueue → rebuildViewTreeFromDom.
+ * That infinite scheduling loop hangs curly-components tests. Guard with a
+ * boolean flag, and also short-circuit __classicDirtyTagFor while a rebuild
+ * is in progress so no fresh revalidates get scheduled from within.
  */
+let _rebuildInProgress = false;
+
+// Wrap __classicDirtyTagFor once so it can no-op during a view-tree rebuild.
+// validator.ts installs the original as globalThis.__classicDirtyTagFor; we
+// intercept here. Idempotent — re-running this module won't double-wrap.
+(function installClassicDirtyTagForRebuildGuard() {
+  const g = globalThis as any;
+  const orig = g.__classicDirtyTagFor;
+  if (typeof orig !== 'function' || orig.__gxtRebuildGuarded) return;
+  const wrapped = function classicDirtyTagForGuarded(obj: any, key: any) {
+    if (g.__gxtSuppressDirtyTagForDuringRebuild) return;
+    return orig(obj, key);
+  };
+  (wrapped as any).__gxtRebuildGuarded = true;
+  g.__classicDirtyTagFor = wrapped;
+})();
+
 if (DEBUG) (globalThis as any).__gxtRebuildViewTreeFromDom = function rebuildViewTreeFromDom(explicitRegistry?: any): void {
+  if (_rebuildInProgress) return;
+  _rebuildInProgress = true;
+  (globalThis as any).__gxtSuppressDirtyTagForDuringRebuild = true;
   try {
     const owner = (globalThis as any).owner;
     // Collect registries from all live pool instances (they know their owner),
@@ -636,6 +663,10 @@ if (DEBUG) (globalThis as any).__gxtRebuildViewTreeFromDom = function rebuildVie
       }
     }
   } catch { /* ignore — best effort fixup */ }
+  finally {
+    _rebuildInProgress = false;
+    (globalThis as any).__gxtSuppressDirtyTagForDuringRebuild = false;
+  }
 };
 
 /**
