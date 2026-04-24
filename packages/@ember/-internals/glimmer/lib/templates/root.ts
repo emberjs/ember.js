@@ -438,6 +438,32 @@ export default function createRootTemplate(_owner: any) {
                 // getter/setter), renderer.ts's earlier pass has handled it.
                 const existing = Object.getOwnPropertyDescriptor(renderContext, key);
                 if (existing) continue;
+                // Walk the prototype chain of the COMPONENT to detect
+                // mixin-installed accessors (computed properties like
+                // `actionContextObject` from TargetActionSupport). If any
+                // ancestor has an accessor descriptor (get OR set) for this
+                // key, skip cellFor install — otherwise `_cellFor(..., false)`
+                // would install a cell-backed own getter whose `__fn = () =>
+                // component[key]` would re-read the CP's getter through the
+                // prototype chain, producing unbounded recursion in GXT's
+                // cached Yt (`cell.value → __fn() → component[key] →
+                // cell.value → ...`). Matches the fix in renderer.ts:672
+                // (commit 2146839701) and the gap the PrototypeMixin.properties
+                // walk leaves: `collected` contains the key but the raw value
+                // stored in `properties[key]` is the ComputedProperty meta
+                // object, not a marker we can use here. The proto descriptor
+                // is the authoritative signal.
+                let hasAccessor = false;
+                let proto: any = Object.getPrototypeOf(component);
+                while (proto && proto !== Object.prototype) {
+                  const protoDesc = Object.getOwnPropertyDescriptor(proto, key);
+                  if (protoDesc) {
+                    if (protoDesc.get || protoDesc.set) hasAccessor = true;
+                    break;
+                  }
+                  proto = Object.getPrototypeOf(proto);
+                }
+                if (hasAccessor) continue;
                 try {
                   // `cellFor(..., skipDefine=false)` creates a cell and
                   // installs a tracked getter/setter for the key, even if
