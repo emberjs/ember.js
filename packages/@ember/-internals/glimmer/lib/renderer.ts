@@ -672,8 +672,24 @@ class ClassicRootState {
               for (const key in component) {
                 if (typeof key !== 'string' || key.startsWith('_') || skipProps.has(key)) continue;
                 try {
-                  const desc = Object.getOwnPropertyDescriptor(component, key);
-                  if (desc && desc.get) continue;
+                  // Walk the prototype chain to find the descriptor. `for...in`
+                  // iterates inherited enumerable keys too, but
+                  // `Object.getOwnPropertyDescriptor(component, key)` returns
+                  // `undefined` for inherited props. Without walking, we fail
+                  // to detect mixin-installed computed-property getter/setter
+                  // pairs (e.g., `actionContextObject` from TargetActionSupport)
+                  // and install a cellFor that captures the CP's getter into a
+                  // GXT cached `Yt` via gxt's `jt` WeakMap. Subsequent reads
+                  // cycle: `Object.defineProperty(comp, key, { get: () => yt.value })`
+                  // -> yt.value -> yt.__fn() -> comp[key] -> yt.value ...
+                  let desc: PropertyDescriptor | undefined;
+                  let obj: any = component;
+                  while (obj && obj !== Object.prototype) {
+                    desc = Object.getOwnPropertyDescriptor(obj, key);
+                    if (desc) break;
+                    obj = Object.getPrototypeOf(obj);
+                  }
+                  if (desc && (desc.get || desc.set)) continue;
                   if (desc && desc.configurable === false) continue;
                   const value = component[key];
                   if (typeof value === 'function') continue;
