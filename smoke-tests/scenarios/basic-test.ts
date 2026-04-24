@@ -378,28 +378,39 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { setupRenderingTest } from 'ember-qunit';
               import { render } from '@ember/test-helpers';
 
-              import Component from '@glimmer/component';
-
-              class EqDemo extends Component {
-                <template>
-                  <span data-test="eq">{{if (eq @a @b) "yes" "no"}}</span>
-                  <span data-test="neq">{{if (neq @a @b) "yes" "no"}}</span>
-                </template>
-              }
-
               module('{{eq}} / {{neq}} as keywords', function(hooks) {
                 setupRenderingTest(hooks);
 
-                test('eq returns true for equal values', async function(assert) {
-                  await render(<template><EqDemo @a={{1}} @b={{1}} /></template>);
+                test('it works', async function(assert) {
+                  let a = 1;
+                  let b = 1;
+
+                  await render(
+                    <template>
+                      <span data-test="eq">{{if (eq a b) "yes" "no"}}</span>
+                      <span data-test="neq">{{if (neq a b) "yes" "no"}}</span>
+                    </template>
+                  );
+
                   assert.dom('[data-test="eq"]').hasText('yes');
                   assert.dom('[data-test="neq"]').hasText('no');
                 });
 
-                test('eq returns false for unequal values', async function(assert) {
-                  await render(<template><EqDemo @a={{1}} @b={{2}} /></template>);
-                  assert.dom('[data-test="eq"]').hasText('no');
-                  assert.dom('[data-test="neq"]').hasText('yes');
+                test('can be shadowed', async function (assert) {
+                  let a = 1;
+                  let b = 1;
+                  let eq = () => 'surprise:eq';
+                  let neq = () => 'surprise:neq';
+
+                  await render(
+                    <template>
+                      <span data-test="eq">{{if (eq a b) "yes" "no"}}</span>
+                      <span data-test="neq">{{if (neq a b) "yes" "no"}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-test="eq"]').hasText('surprise:eq');
+                  assert.dom('[data-test="neq"]').hasText('surprise:neq');
                 });
               });
             `,
