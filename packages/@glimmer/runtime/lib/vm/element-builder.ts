@@ -61,7 +61,7 @@ export class Fragment implements Bounds {
     this.bounds = bounds;
   }
 
-  parentElement(): SimpleElement {
+  parentElement(): SimpleNode {
     return this.bounds.parentElement();
   }
 
@@ -96,7 +96,12 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   static resume(env: Environment, block: ResettableBlock): NewTreeBuilder {
-    let parentNode = block.parentElement();
+    // Capture the live parent before resetting, because the bounds may have been
+    // rendered into a DocumentFragment that was subsequently appended to a real
+    // DOM container. In that case firstNode().parentNode is the container while
+    // parentElement() still returns the original (now-empty) fragment.
+    let parentNode =
+      (block.firstNode().parentNode as SimpleElement | null) ?? block.parentElement();
     let nextSibling = block.reset(env);
 
     let stack = new this(env, parentNode, nextSibling).initialize();
@@ -105,7 +110,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
+  constructor(env: Environment, parentNode: SimpleNode, nextSibling: Nullable<SimpleNode>) {
     this.pushElement(parentNode, nextSibling);
     this.env = env;
     this.dom = env.getAppendOperations();
@@ -129,7 +134,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return this.blockStack.toArray();
   }
 
-  get element(): SimpleElement {
+  get element(): SimpleNode {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     return this.cursors.current!.element;
   }
@@ -216,7 +221,7 @@ export class NewTreeBuilder implements TreeBuilder {
     this.didOpenElement(element);
   }
 
-  __flushElement(parent: SimpleElement, constructing: SimpleElement) {
+  __flushElement(parent: SimpleNode, constructing: SimpleElement) {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
   }
 
@@ -227,7 +232,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleNode,
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
@@ -235,7 +240,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleNode,
     _guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
@@ -259,7 +264,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return block;
   }
 
-  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
+  protected pushElement(element: SimpleNode, nextSibling: Maybe<SimpleNode> = null): void {
     this.cursors.push(new CursorImpl(element, nextSibling));
   }
 
@@ -400,7 +405,7 @@ export class AppendingBlockImpl implements AppendingBlock {
   protected last: Nullable<LastNode> = null;
   protected nesting = 0;
 
-  constructor(private parent: SimpleElement) {
+  constructor(private parent: SimpleNode) {
     setLocalDebugType('block:simple', this);
 
     if (LOCAL_DEBUG) {
@@ -470,7 +475,7 @@ export class AppendingBlockImpl implements AppendingBlock {
 }
 
 export class RemoteBlock extends AppendingBlockImpl {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleNode) {
     super(parent);
 
     setLocalDebugType('block:remote', this);
@@ -500,7 +505,12 @@ export class RemoteBlock extends AppendingBlockImpl {
       // and avoid clearing the node if it was. In most cases this shouldn't happen,
       // so this might hide bugs where the code clears nested nodes unnecessarily,
       // so we should eventually try to do the correct fix.
-      if (this.parentElement() === this.firstNode().parentNode) {
+      //
+      // Note: we check firstNode().parentNode !== null (node still has a parent)
+      // rather than === parentElement() (node is in the original parent), so that
+      // {{#in-element}} into a DocumentFragment still clears correctly after the
+      // fragment's children are moved to a real DOM container via appendChild().
+      if (this.firstNode().parentNode !== null) {
         clear(this);
       }
     });
@@ -508,7 +518,7 @@ export class RemoteBlock extends AppendingBlockImpl {
 }
 
 export class ResettableBlockImpl extends AppendingBlockImpl implements ResettableBlock {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleNode) {
     super(parent);
     setLocalDebugType('block:resettable', this);
   }
@@ -528,7 +538,7 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
 // FIXME: All the noops in here indicate a modelling problem
 export class AppendingBlockList implements AppendingBlock {
   constructor(
-    private readonly parent: SimpleElement,
+    private readonly parent: SimpleNode,
     public boundList: AppendingBlock[]
   ) {
     this.parent = parent;

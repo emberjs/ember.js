@@ -196,15 +196,18 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const { candidate } = currentCursor;
     if (candidate === null) return;
 
-    const { tagName } = currentCursor.element;
-
     if (
       isOpenBlock(candidate) &&
       getBlockDepthWithOffset(candidate, this.startingBlockOffset) === blockDepth
     ) {
       this.candidate = this.remove(candidate);
       currentCursor.openBlockDepth = blockDepth;
-    } else if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
+    } else if (
+      'tagName' in currentCursor.element &&
+      currentCursor.element.tagName !== 'TITLE' &&
+      currentCursor.element.tagName !== 'SCRIPT' &&
+      currentCursor.element.tagName !== 'STYLE'
+    ) {
       this.clearMismatch(candidate);
     }
   }
