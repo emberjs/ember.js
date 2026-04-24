@@ -1752,6 +1752,45 @@ const _instanceUpdatePassMap = new WeakMap<any, number>();
 // on this ordering.
 const _instanceRenderHookPassMap = new WeakMap<any, number>();
 
+// Snapshot of arg values at the moment attrs-hooks (didUpdateAttrs /
+// didReceiveAttrs) last fired for an instance. Used to suppress redundant
+// re-fires in subsequent sync cycles triggered by side-effects of the hook
+// itself (e.g., `this.set('barCopy', ...)` inside didReceiveAttrs schedules
+// an observer that flushes another backburner tick → runloop `onEnd` calls
+// `__gxtSyncDomNow` → `__gxtSyncAllWrappers` iterates the same instance.
+// Without this snapshot, the passId-based guard resets across sync cycles
+// and hooks refire indefinitely as long as the hook keeps dirtying state).
+const _instanceLastAttrsFiredArgs = new WeakMap<any, Record<string, unknown>>();
+
+function snapshotArgsForInstance(cells: Record<string, any>): Record<string, unknown> {
+  const snap: Record<string, unknown> = {};
+  for (const key of Object.keys(cells)) {
+    try {
+      const getter = cells[key]?.getter;
+      snap[key] = typeof getter === 'function' ? getter() : undefined;
+    } catch { /* getter may throw — omit key */ }
+  }
+  return snap;
+}
+
+function argsEqualToSnapshot(
+  cells: Record<string, any>,
+  snap: Record<string, unknown> | undefined
+): boolean {
+  if (!snap) return false;
+  const keys = Object.keys(cells);
+  if (keys.length !== Object.keys(snap).length) return false;
+  for (const key of keys) {
+    if (!(key in snap)) return false;
+    try {
+      const getter = cells[key]?.getter;
+      const v = typeof getter === 'function' ? getter() : undefined;
+      if (v !== snap[key]) return false;
+    } catch { return false; }
+  }
+  return true;
+}
+
 function markInstanceUpdated(instance: any): void {
   _instanceUpdatePassMap.set(instance, _updateHookPassId);
 }
@@ -2965,11 +3004,29 @@ function _installTriggerReRenderWrapper() {
     // must see the new values. Required for #11044.
     const attrsAlreadyFiredForEntry = entry.instance ? wasInstanceUpdatedThisPass(entry.instance) : false;
     const renderAlreadyFiredForEntry = entry.instance ? wasInstanceRenderHookFiredThisPass(entry.instance) : false;
-    if ((hasChanges || forceThis) && entry.instance) {
+    // Cross-sync-cycle re-entrancy guard: if a previous sync fired the attrs
+    // hooks for this instance and the arg values are IDENTICAL now AND this
+    // is not an explicit force-rerender, suppress the re-fire. This breaks
+    // the infinite flush loop that occurs when the user's didReceiveAttrs
+    // body calls `this.set(localProp, ...)` → observer schedules → backburner
+    // flushes → `onEnd` calls `__gxtSyncDomNow` again → this loop iterates
+    // the same instance → without this snapshot check, hooks keep firing
+    // even though no arg changed since the previous fire. `forceThis` (from
+    // explicit .rerender() calls) still fires hooks.
+    const argSnapshotMatches = entry.instance && !forceThis
+      ? argsEqualToSnapshot(entry.cells, _instanceLastAttrsFiredArgs.get(entry.instance))
+      : false;
+    if ((hasChanges || forceThis) && entry.instance && !argSnapshotMatches) {
       if (!attrsAlreadyFiredForEntry && !renderAlreadyFiredForEntry) {
         if (hasChanges) {
           triggerLifecycleHook(entry.instance, 'didUpdateAttrs');
           triggerLifecycleHook(entry.instance, 'didReceiveAttrs');
+          // Snapshot arg values AFTER the hook fired so a subsequent sync
+          // cycle triggered by the hook's side-effects (e.g., this.set)
+          // can detect "args unchanged since last fire" and skip re-firing.
+          try {
+            _instanceLastAttrsFiredArgs.set(entry.instance, snapshotArgsForInstance(entry.cells));
+          } catch { /* ignore */ }
         }
         // Begin `render.component` instrumentation (initialRender=false).
         // Classic Ember starts this finalizer at the top of
