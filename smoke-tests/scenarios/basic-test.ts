@@ -387,13 +387,13 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
                   await render(
                     <template>
-                      <span data-test="eq">{{if (eq a b) "yes" "no"}}</span>
-                      <span data-test="neq">{{if (neq a b) "yes" "no"}}</span>
+                      <span data-eq>{{eq a b}}</span>
+                      <span data-neq>{{neq a b}}</span>
                     </template>
                   );
 
-                  assert.dom('[data-test="eq"]').hasText('yes');
-                  assert.dom('[data-test="neq"]').hasText('no');
+                  assert.dom('[data-eq]').hasText('true');
+                  assert.dom('[data-neq]').hasText('false');
                 });
 
                 test('can be shadowed', async function (assert) {
@@ -404,13 +404,13 @@ function basicTest(scenarios: Scenarios, appName: string) {
 
                   await render(
                     <template>
-                      <span data-test="eq">{{if (eq a b) "yes" "no"}}</span>
-                      <span data-test="neq">{{if (neq a b) "yes" "no"}}</span>
+                      <span data-eq>{{eq a b}}</span>
+                      <span data-neq>{{neq a b}}</span>
                     </template>
                   );
 
-                  assert.dom('[data-test="eq"]').hasText('surprise:eq');
-                  assert.dom('[data-test="neq"]').hasText('surprise:neq');
+                  assert.dom('[data-eq]').hasText('surprise:eq');
+                  assert.dom('[data-neq]').hasText('surprise:neq');
                 });
               });
             `,
