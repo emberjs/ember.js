@@ -4855,6 +4855,26 @@ function createRenderContext(
         if (seen.has(key) || SKIP_CELL_PROPS.has(key) || key.startsWith('_')) continue;
         seen.add(key);
         const desc = Object.getOwnPropertyDescriptor(obj, key);
+        // Walk the WHOLE prototype chain above `obj` for this key and check
+        // if ANY ancestor installed an accessor descriptor (get/set). CPs
+        // from Ember mixins (e.g., TargetActionSupport's `actionContextObject`)
+        // often live on a prototype ABOVE the current depth but the data
+        // descriptor we're holding here might be a subclass shadow. If we
+        // install a cellFor backed by `component[key]`, the cell's __fn
+        // closes over the instance and the re-read loops through the
+        // ancestor accessor — producing unbounded recursion through gxt's
+        // vm.  Treat any inherited accessor as a "do not install" signal.
+        let hasInheritedAccessor = false;
+        let ancestor = Object.getPrototypeOf(obj);
+        while (ancestor && ancestor !== Object.prototype) {
+          const aDesc = Object.getOwnPropertyDescriptor(ancestor, key);
+          if (aDesc) {
+            if (aDesc.get || aDesc.set) hasInheritedAccessor = true;
+            break;
+          }
+          ancestor = Object.getPrototypeOf(ancestor);
+        }
+        if (hasInheritedAccessor) continue;
         // Only install cells for configurable data properties (not getters or frozen props)
         if (desc && !desc.get && !desc.set && desc.configurable !== false && typeof desc.value !== 'function') {
 
