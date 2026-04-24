@@ -533,12 +533,21 @@ let _rebuildInProgress = false;
 // Wrap __classicDirtyTagFor once so it can no-op during a view-tree rebuild.
 // validator.ts installs the original as globalThis.__classicDirtyTagFor; we
 // intercept here. Idempotent — re-running this module won't double-wrap.
+//
+// Also suppress during __gxtSyncDomNow (__gxtSyncing flag). Phase 1 of sync
+// iterates live instances and writes args via rcSet (render-context setter).
+// Each write triggers __classicDirtyTagFor → scheduleRevalidate, which
+// schedules ANOTHER __gxtSyncDomNow. Backburner then re-enters sync endlessly
+// on curly-component tests. The cell value is still updated by the underlying
+// writer — we just skip the scheduling side-effect, since the current sync
+// will observe the new values via its own Phase 1/2 re-read paths.
 (function installClassicDirtyTagForRebuildGuard() {
   const g = globalThis as any;
   const orig = g.__classicDirtyTagFor;
   if (typeof orig !== 'function' || orig.__gxtRebuildGuarded) return;
   const wrapped = function classicDirtyTagForGuarded(obj: any, key: any) {
     if (g.__gxtSuppressDirtyTagForDuringRebuild) return;
+    if (g.__gxtSyncing) return;
     return orig(obj, key);
   };
   (wrapped as any).__gxtRebuildGuarded = true;
