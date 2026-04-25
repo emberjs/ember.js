@@ -17,9 +17,7 @@ export default class ClickTracker extends Modifier {
   }
 
   handler = (e: Event) => {
-    const place = this.element.contains(e.target as Element)
-      ? 'inside'
-      : 'outside';
+    const place = this.element.contains(e.target as Element) ? 'inside' : 'outside';
 
     console.log(`Click ${place} ${this.element}`);
   };

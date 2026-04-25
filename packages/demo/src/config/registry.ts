@@ -7,7 +7,6 @@ import MainTemplate from '@/components/Main';
 
 import ProfileRoute from '@/routes/profile';
 
-
 /* imported controllers */
 import { ApplicationController } from '@/controllers/application';
 import { ProfileController } from '@/controllers/profile';
@@ -30,7 +29,6 @@ const InitialRegistry = {
   'template:main': asTemplate(MainTemplate),
   'template:application': asTemplate(ApplicationTemplate),
   'template:profile': asTemplate(ProfileTemplate),
-
 };
 
 function registry(): IRegistry {

@@ -9,7 +9,10 @@ import type { DeclaredComponentKind } from '../test-decorator';
 
 import { JitRenderDelegate } from '../modes/jit/delegate';
 import { NodeJitRenderDelegate } from '../modes/node/env';
-import { GxtPartialRehydrationDelegate, GxtRehydrationDelegate } from '../modes/rehydration/gxt-delegate';
+import {
+  GxtPartialRehydrationDelegate,
+  GxtRehydrationDelegate,
+} from '../modes/rehydration/gxt-delegate';
 import { JitSerializationDelegate } from '../suites/custom-dom-helper';
 
 /**

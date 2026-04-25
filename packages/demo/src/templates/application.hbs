@@ -1,25 +1,29 @@
 <Header @session={{this.session}} />
 <EmberNotify />
 {{#if this.showModal}}
-<ModalDialog>
-  <div data-test-id="modal-dialog-message">
-    Ember Modal Dialog test <Button {{on 'click' (stop-propagation this.closeModal)}} data-test-id="close-modal-dialog">Close</Button>
-  </div>
-</ModalDialog>
+  <ModalDialog>
+    <div data-test-id='modal-dialog-message'>
+      Ember Modal Dialog test
+      <Button
+        {{on 'click' (stop-propagation this.closeModal)}}
+        data-test-id='close-modal-dialog'
+      >Close</Button>
+    </div>
+  </ModalDialog>
 {{/if}}
 
 <div class='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8'>
   <div class='mx-auto max-w-3xl'>
 
-  {{#if (media 'isDesktop')}}
-    looks like you on Desktop
-  {{else if (media 'isTablet')}}
-    looks like you on Tablet
-  {{else if (media 'isMobile')}}
-    looks like you on Mobile
-  {{else}}
-    wow
-  {{/if}}
+    {{#if (media 'isDesktop')}}
+      looks like you on Desktop
+    {{else if (media 'isTablet')}}
+      looks like you on Tablet
+    {{else if (media 'isMobile')}}
+      looks like you on Mobile
+    {{else}}
+      wow
+    {{/if}}
 
     {{outlet}}
 

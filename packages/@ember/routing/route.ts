@@ -996,8 +996,12 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
         m.proto = correctProto;
         try {
           Object.defineProperty(m, 'proto', {
-            get() { return correctProto; },
-            set(_v) { /* ignore — see comment above */ },
+            get() {
+              return correctProto;
+            },
+            set(_v) {
+              /* ignore — see comment above */
+            },
             configurable: true,
             enumerable: false,
           });

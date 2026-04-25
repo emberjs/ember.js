@@ -97,6 +97,7 @@ All 11 dual-backend integration tasks have landed on branch
 `glimmer-next-fresh`. The tree today reflects the following confirmed state:
 
 **Builds**
+
 - Both `EMBER_RENDER_BACKEND=classic` (default) and `EMBER_RENDER_BACKEND=gxt`
   produce valid bundles via the `rollup.config.mjs` backend gate introduced in
   Phase 0.9 (`ec230044fe`).
@@ -104,37 +105,38 @@ All 11 dual-backend integration tasks have landed on branch
   smoke-targeted modules. No regressions introduced on the classic path.
 
 **Test suite**
+
 - Full baseline committed to `test-results/gxt-baseline.json` (Phase 0,
   `b1b7637725`): **5,327/5,938 (89.7%)** tests passing on the GXT backend.
 - Smoke suite across the 14 session-targeted modules: **333/333 (100%)**.
 - The 611 remaining failures are triaged into five buckets (rehydration/SSR,
   Glimmer JIT internals, Ember Inspector, engine/route edge cases,
-  miscellaneous) — see `GXT_PHASE_SUMMARY.md` Phase 0 entry.
+  miscellaneous); the categorized entries live in `test-results/gxt-baseline.json`.
 
 **Dual-build CI workflow**
+
 - `.github/workflows/gxt-dual-build.yml` runs both backend builds and the
   smoke suite on every PR. Bundle-size budget check (`scripts/bundle-size-check.mjs`)
-  and 12 API-surface contract tests (`scripts/contract-tests.mjs`) are
+  and API-surface contract tests (`scripts/gxt-test-runner/contract-tests.mjs`) are
   included in the CI gate (Phase 3, `10f62465ce`).
 
 **Install UX**
+
 - `scripts/ember-cli-gxt.mjs` provides `ember-cli-gxt enable`,
   `ember-cli-gxt disable`, and `ember-cli-gxt status` subcommands. This is the
   consumer-facing interface for switching backends without editing
   `rollup.config.mjs` directly (Phase 3, `10f62465ce`).
 
 **GxtRehydrationDelegate**
-- Implemented at
-  `packages/@ember/-internals/gxt-backend/rehydration-delegate.ts` and
-  exported from `gxt-backend` as an opt-in escape hatch (Phase 4,
-  `a2d839e248`).
-- **Not wired in as the default SSR path.** Two architectural blockers prevent
-  it from replacing the classic rehydration path: root-context isolation in
-  `gxt-backend/compile.ts` (Phase 4.1 follow-up) and lossy translation of
-  nested-engine outlet cursor IDs (Phase 4.2 follow-up). See
-  `GXT_PHASE_SUMMARY.md` Phase 4 entry for the full analysis.
+
+- A GXT-flavored rehydration delegate for the integration-test harness is an
+  unfinished follow-up, tracked under "Concrete action items for Phase 4"
+  below. The two known architectural blockers — root-context isolation in
+  `gxt-backend/compile.ts` and lossy translation of nested-engine outlet
+  cursor IDs — remain open before a default SSR wiring is possible.
 
 **Bundle-size observation**
+
 - Measured at Phase 3: GXT prod bundle is **3,482,502 bytes raw** vs classic's
   **2,045,674 bytes raw** — approximately **70% larger** raw, **68% larger**
   gzip.
@@ -145,6 +147,7 @@ All 11 dual-backend integration tasks have landed on branch
   audit lands, treat the 70% premium as a worst-case upper bound.
 
 **Compat layer location**
+
 - Canonical location: `packages/@ember/-internals/gxt-backend/` (Phase 1,
   `9f86bc2276`).
 - Old location `packages/demo/compat/` is preserved during the transition and
@@ -194,29 +197,29 @@ This is the authoritative status as of the Phase 0 spike. Each row is
 backed by the session's 14-module test result, the compat layer in
 `packages/demo/compat/`, or an explicit untested/unvalidated flag.
 
-| Feature | Status | Notes |
-|---|---|---|
-| Classic curly components | PASS | Session-verified against curly-component modules. |
-| Glimmer / Octane class components | PASS | Session-verified. Depends on `@glimmer/component` shim — see §7. |
-| Template-only components | PASS | Session-verified. |
-| Tracked properties & reactivity | PASS | Session-verified. Compat layer re-exports `@glimmer/validator` surface; 19 files in `-internals/metal` route through the seam (`/tmp/gxt-plan-review-bundling.md` §3). |
-| `{{#each}}` | PASS | Session-verified. |
-| `{{#if}}` | PASS | Session-verified. |
-| `{{#let}}` | PASS | Session-verified. |
-| `{{outlet}}` | PARTIAL | Single-outlet application shell works. Lazy/nested outlets exercised on a limited set; engine outlets **not yet validated**. Recent stabilization commit `14cd323211`. |
-| `Router`, `LinkTo`, `router-service` | PARTIAL | Basic routing works in the spike. `@linkPath`/`@linkRoutes` edge cases and `router-service` RSVP timing are not in the 14-module set. `packages/@ember/-internals/routing` was not explicitly covered. |
-| `{{mount}}` / Engines | UNTESTED | Engine mounting, lazy engines, bundle-split asset maps — none exercised. Must be validated before preview. |
-| `{{component}}` curried with dynamic positional + named args | PARTIAL | Contextual components pass after commits `5176f4b229`, `9005f9892b`. Dynamic-type swap edge cases (`{{component someComponentOrOther}}` where the value transitions from `undefined` to a value) received a fix this week and need broader coverage. |
-| Modifiers (`{{on}}`, custom modifiers, `ember-render-modifiers`) | PASS | Modifier manager shimmed through compat layer; session-verified. |
-| Helpers (classic `compute`, class-based, Octane function-based) | PASS | Helper manager shimmed; session-verified. |
-| Ember Data reactivity | UNTESTED | Ember Data's tracked/computed usage is not in the spike. `@ember-data/debug` imports from `@glimmer/interfaces` and needs verification (`/tmp/gxt-plan-review-domain.md` §2.7). |
-| FastBoot / SSR rehydration | PARTIAL | GXT has a **complete** native SSR + rehydration subsystem (~1000 lines of runtime, 52 tests — see `/tmp/gxt-ssr-exploration.md` §2-§3). The gap is the **FastBoot bridge**: SimpleDOM vs happy-dom, opcode markers vs counter markers. Size: 2-4 weeks, not multi-month. See §8 below. |
-| Ember Inspector integration | UNSUPPORTED | No GXT-native component-tree adapter exists. Needs its own plan and owner; see §9. |
-| Strict mode templates / v2 addons | UNVALIDATED | Embroider strict mode resolves imports statically and will not obey arbitrary `vite.config.mjs` aliases. `/tmp/gxt-plan-review-domain.md` §2.6 flags this as a blocker for modern apps. Phase 2 must produce a built `ember-source-gxt` package. |
-| Dynamic `mut` / two-way bindings through computed properties | PASS | Session fix landed; verified. |
-| Observers / `didUpdate` lifecycle | PASS | Session fix landed; verified. |
-| `(hash)` / `(array)` helper identity across renders | UNVALIDATED | GXT closure evaluation may produce fresh objects where Glimmer reused references; anything relying on `===` in `didUpdateAttrs` or modifier arg comparison could silently over-invalidate. Flagged in domain review §2.3. Needs explicit test coverage before preview exits. |
-| Named blocks, `has-block`, `has-block-params` | UNVALIDATED | Not in the 14-module set. |
+| Feature                                                          | Status      | Notes                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Classic curly components                                         | PASS        | Session-verified against curly-component modules.                                                                                                                                                                                                                                      |
+| Glimmer / Octane class components                                | PASS        | Session-verified. Depends on `@glimmer/component` shim — see §7.                                                                                                                                                                                                                       |
+| Template-only components                                         | PASS        | Session-verified.                                                                                                                                                                                                                                                                      |
+| Tracked properties & reactivity                                  | PASS        | Session-verified. Compat layer re-exports `@glimmer/validator` surface; 19 files in `-internals/metal` route through the seam (`/tmp/gxt-plan-review-bundling.md` §3).                                                                                                                 |
+| `{{#each}}`                                                      | PASS        | Session-verified.                                                                                                                                                                                                                                                                      |
+| `{{#if}}`                                                        | PASS        | Session-verified.                                                                                                                                                                                                                                                                      |
+| `{{#let}}`                                                       | PASS        | Session-verified.                                                                                                                                                                                                                                                                      |
+| `{{outlet}}`                                                     | PARTIAL     | Single-outlet application shell works. Lazy/nested outlets exercised on a limited set; engine outlets **not yet validated**. Recent stabilization commit `14cd323211`.                                                                                                                 |
+| `Router`, `LinkTo`, `router-service`                             | PARTIAL     | Basic routing works in the spike. `@linkPath`/`@linkRoutes` edge cases and `router-service` RSVP timing are not in the 14-module set. `packages/@ember/-internals/routing` was not explicitly covered.                                                                                 |
+| `{{mount}}` / Engines                                            | UNTESTED    | Engine mounting, lazy engines, bundle-split asset maps — none exercised. Must be validated before preview.                                                                                                                                                                             |
+| `{{component}}` curried with dynamic positional + named args     | PARTIAL     | Contextual components pass after commits `5176f4b229`, `9005f9892b`. Dynamic-type swap edge cases (`{{component someComponentOrOther}}` where the value transitions from `undefined` to a value) received a fix this week and need broader coverage.                                   |
+| Modifiers (`{{on}}`, custom modifiers, `ember-render-modifiers`) | PASS        | Modifier manager shimmed through compat layer; session-verified.                                                                                                                                                                                                                       |
+| Helpers (classic `compute`, class-based, Octane function-based)  | PASS        | Helper manager shimmed; session-verified.                                                                                                                                                                                                                                              |
+| Ember Data reactivity                                            | UNTESTED    | Ember Data's tracked/computed usage is not in the spike. `@ember-data/debug` imports from `@glimmer/interfaces` and needs verification (`/tmp/gxt-plan-review-domain.md` §2.7).                                                                                                        |
+| FastBoot / SSR rehydration                                       | PARTIAL     | GXT has a **complete** native SSR + rehydration subsystem (~1000 lines of runtime, 52 tests — see `/tmp/gxt-ssr-exploration.md` §2-§3). The gap is the **FastBoot bridge**: SimpleDOM vs happy-dom, opcode markers vs counter markers. Size: 2-4 weeks, not multi-month. See §8 below. |
+| Ember Inspector integration                                      | UNSUPPORTED | No GXT-native component-tree adapter exists. Needs its own plan and owner; see §9.                                                                                                                                                                                                     |
+| Strict mode templates / v2 addons                                | UNVALIDATED | Embroider strict mode resolves imports statically and will not obey arbitrary `vite.config.mjs` aliases. `/tmp/gxt-plan-review-domain.md` §2.6 flags this as a blocker for modern apps. Phase 2 must produce a built `ember-source-gxt` package.                                       |
+| Dynamic `mut` / two-way bindings through computed properties     | PASS        | Session fix landed; verified.                                                                                                                                                                                                                                                          |
+| Observers / `didUpdate` lifecycle                                | PASS        | Session fix landed; verified.                                                                                                                                                                                                                                                          |
+| `(hash)` / `(array)` helper identity across renders              | UNVALIDATED | GXT closure evaluation may produce fresh objects where Glimmer reused references; anything relying on `===` in `didUpdateAttrs` or modifier arg comparison could silently over-invalidate. Flagged in domain review §2.3. Needs explicit test coverage before preview exits.           |
+| Named blocks, `has-block`, `has-block-params`                    | UNVALIDATED | Not in the 14-module set.                                                                                                                                                                                                                                                              |
 
 Rows marked `UNTESTED` or `UNVALIDATED` must each be accompanied by a
 tracking issue and a validated status before the preview-to-stable
@@ -665,7 +668,7 @@ for this RFC.
 
 ---
 
-*References cited from the review reports:*
+_References cited from the review reports:_
 
 - `/tmp/gxt-plan-review-domain.md` — SemVer, addon contract, build
   toolchain, `@glimmer/component`, governance
@@ -677,7 +680,7 @@ for this RFC.
 - `/tmp/gxt-ssr-exploration.md` — GXT native SSR reality, FastBoot
   bridge, 393 rehydration test failures root cause
 
-*Engineering spike references:*
+_Engineering spike references:_
 
 - `vite.config.mjs:98-188` — current GXT_MODE alias list (transition
   artifact only)

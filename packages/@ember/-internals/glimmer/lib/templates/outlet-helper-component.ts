@@ -1,16 +1,5 @@
 // @ts-ignore
-import { Component, cell, $_tag, $_fin, $_if, $_c } from '@lifeart/gxt';
-
-interface State {
-  outlets: {
-    main: State | undefined,
-  },
-  render: {
-    template():  () => unknown,
-    controller: unknown,
-    name: string,
-  }
-}
+import { Component, cell, $_fin, $_if, $_c } from '@lifeart/gxt';
 
 export default class OutletHelper extends Component {
   get state() {
@@ -23,7 +12,7 @@ export default class OutletHelper extends Component {
   get nextState() {
     return () => {
       return this.hasNext;
-    }
+    };
   }
   get hasNext() {
     return this.state.outlets.main;
@@ -43,8 +32,8 @@ export default class OutletHelper extends Component {
     const args = {
       get model() {
         return renderCell.value;
-      }
-    }
+      },
+    };
 
     render.controller['args'] = args;
     const tplComponentInstance = new tpl(args);
@@ -73,7 +62,7 @@ export default class OutletHelper extends Component {
       () => {
         const ifRoots: Array<Node | null | Node[]> = [];
         // Render MyComponent with model
-        const componentResult = $_c(
+        $_c(
           parentEl,
           ifRoots,
           0,

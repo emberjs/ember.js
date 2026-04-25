@@ -26,10 +26,7 @@ class Router extends EmberRouter {
   // Unfortunately the stock query parameter behavior pulls on routes just to
   // check what their previous QP values were.
   _getQPMeta(handlerInfo: { name: string }, ...rest: unknown[]) {
-    if (
-      handlerInfo.name in Router.lazyRoutes &&
-      !this.loadedRoutes.has(handlerInfo.name)
-    ) {
+    if (handlerInfo.name in Router.lazyRoutes && !this.loadedRoutes.has(handlerInfo.name)) {
       return undefined;
     }
     // @ts-expect-error extending private method

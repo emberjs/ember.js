@@ -12,7 +12,9 @@ QUnit.module('Compat: validator.ts', function () {
   // ------------------------------------------------------------------ track()
   QUnit.module('track()', function () {
     QUnit.test('returns CONSTANT_TAG when frame consumes no tags', async function (assert: any) {
-      const { track, CONSTANT_TAG } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { track, CONSTANT_TAG } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = track(() => {});
       // Empty track frame returns CONSTANT_TAG (matches classic
       // @glimmer/validator semantics): a frame that consumed no tracked
@@ -27,7 +29,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('captures consumed tags', async function (assert: any) {
-      const { track, consumeTag, createUpdatableTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { track, consumeTag, createUpdatableTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const updatable = createUpdatableTag();
       const tag = track(() => {
         consumeTag(updatable);
@@ -45,7 +49,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('returns true inside track()', async function (assert: any) {
-      const { isTracking, track } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { isTracking, track } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       let insideValue = false;
       track(() => {
         insideValue = isTracking();
@@ -91,7 +97,9 @@ QUnit.module('Compat: validator.ts', function () {
   // ------------------------------------------------------------ dirtyTagFor()
   QUnit.module('dirtyTagFor()', function () {
     QUnit.test('marks a tag as dirty (invalidates validation)', async function (assert: any) {
-      const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const obj = { v: 0 };
       const tag = tagFor(obj, 'v');
       const rev = valueForTag(tag);
@@ -101,7 +109,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('handles Symbol keys', async function (assert: any) {
-      const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const sym = Symbol('s');
       const obj = {};
       const tag = tagFor(obj, sym);
@@ -121,7 +131,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('registers tag consumption during track()', async function (assert: any) {
-      const { consumeTag, track, createUpdatableTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { consumeTag, track, createUpdatableTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const updatable = createUpdatableTag();
       const tag = track(() => {
         consumeTag(updatable);
@@ -133,7 +145,9 @@ QUnit.module('Compat: validator.ts', function () {
   // ---------------------------------------------------------- validateTag()
   QUnit.module('validateTag()', function () {
     QUnit.test('returns true when no revision provided', async function (assert: any) {
-      const { validateTag, tagFor } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { validateTag, tagFor } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const obj = {};
       const tag = tagFor(obj, 'k');
       assert.ok(validateTag(tag, undefined), 'always valid when revision is undefined');
@@ -145,7 +159,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('returns true before dirty, false after', async function (assert: any) {
-      const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const obj = { k: 1 };
       const tag = tagFor(obj, 'k');
       const rev = valueForTag(tag);
@@ -158,7 +174,9 @@ QUnit.module('Compat: validator.ts', function () {
   // ---------------------------------------------------------- valueForTag()
   QUnit.module('valueForTag()', function () {
     QUnit.test('returns a number for a regular tag', async function (assert: any) {
-      const { tagFor, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { tagFor, valueForTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const obj = {};
       const tag = tagFor(obj, 'a');
       assert.strictEqual(typeof valueForTag(tag), 'number', 'revision is a number');
@@ -176,7 +194,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('revision increases after dirty', async function (assert: any) {
-      const { tagFor, dirtyTagFor, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { tagFor, dirtyTagFor, valueForTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const obj = { z: 0 };
       const tag = tagFor(obj, 'z');
       const rev1 = valueForTag(tag);
@@ -189,14 +209,18 @@ QUnit.module('Compat: validator.ts', function () {
   // ------------------------------------------------------- createUpdatableTag()
   QUnit.module('createUpdatableTag()', function () {
     QUnit.test('creates a tag with value and dirty()', async function (assert: any) {
-      const { createUpdatableTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createUpdatableTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = createUpdatableTag();
       assert.strictEqual(typeof tag.value, 'number', 'has numeric value');
       assert.strictEqual(typeof tag.dirty, 'function', 'has dirty()');
     });
 
     QUnit.test('dirty() bumps the value', async function (assert: any) {
-      const { createUpdatableTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createUpdatableTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = createUpdatableTag();
       const v1 = tag.value;
       tag.dirty();
@@ -205,7 +229,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('each dirty() produces a new value', async function (assert: any) {
-      const { createUpdatableTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createUpdatableTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = createUpdatableTag();
       const values = new Set<number>();
       values.add(tag.value);
@@ -220,7 +246,9 @@ QUnit.module('Compat: validator.ts', function () {
   // ------------------------------------------------------------ createCache()
   QUnit.module('createCache()', function () {
     QUnit.test('lazily evaluates the function', async function (assert: any) {
-      const { createCache, getValue } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createCache, getValue } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       let called = false;
       const cache = createCache(() => {
         called = true;
@@ -233,7 +261,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('caches the result on repeated reads', async function (assert: any) {
-      const { createCache, getValue } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createCache, getValue } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       let count = 0;
       const cache = createCache(() => ++count);
       getValue(cache);
@@ -243,7 +273,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('re-evaluates when a consumed tag is dirtied', async function (assert: any) {
-      const { createCache, getValue, consumeTag, createUpdatableTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createCache, getValue, consumeTag, createUpdatableTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = createUpdatableTag();
       let count = 0;
       const cache = createCache(() => {
@@ -259,14 +291,20 @@ QUnit.module('Compat: validator.ts', function () {
   // -------------------------------------------------------------- getValue()
   QUnit.module('getValue()', function () {
     QUnit.test('retrieves value from cache object', async function (assert: any) {
-      const { createCache, getValue } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createCache, getValue } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const cache = createCache(() => 'hello');
       assert.strictEqual(getValue(cache), 'hello', 'value retrieved');
     });
 
     QUnit.test('works on any object with a .value getter', async function (assert: any) {
       const { getValue } = await import('../../../@ember/-internals/gxt-backend/validator');
-      const fakeCache = { get value() { return 99; } };
+      const fakeCache = {
+        get value() {
+          return 99;
+        },
+      };
       assert.strictEqual(getValue(fakeCache), 99, 'reads .value');
     });
   });
@@ -274,7 +312,9 @@ QUnit.module('Compat: validator.ts', function () {
   // ---------------------------------------------------------------- isConst()
   QUnit.module('isConst()', function () {
     QUnit.test('returns true for CONSTANT_TAG', async function (assert: any) {
-      const { isConst, CONSTANT_TAG } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { isConst, CONSTANT_TAG } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       assert.ok(isConst(CONSTANT_TAG), 'CONSTANT_TAG is const');
     });
 
@@ -284,7 +324,9 @@ QUnit.module('Compat: validator.ts', function () {
     });
 
     QUnit.test('returns false for regular tags', async function (assert: any) {
-      const { isConst, createUpdatableTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { isConst, createUpdatableTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = createUpdatableTag();
       assert.notOk(isConst(tag), 'updatable tag is not const');
     });
@@ -358,39 +400,51 @@ QUnit.module('Compat: validator.ts', function () {
       assert.strictEqual(result, 42, 'returns fn result');
     });
 
-    QUnit.test('isTracking is false inside untrack even when inside track', async function (assert: any) {
-      const { untrack, track, isTracking } = await import('../../../@ember/-internals/gxt-backend/validator');
-      let innerTracking = true;
-      track(() => {
-        untrack(() => {
-          innerTracking = isTracking();
+    QUnit.test(
+      'isTracking is false inside untrack even when inside track',
+      async function (assert: any) {
+        const { untrack, track, isTracking } = await import(
+          '../../../@ember/-internals/gxt-backend/validator'
+        );
+        let innerTracking = true;
+        track(() => {
+          untrack(() => {
+            innerTracking = isTracking();
+          });
         });
-      });
-      assert.strictEqual(innerTracking, false, 'not tracking inside untrack');
-    });
+        assert.strictEqual(innerTracking, false, 'not tracking inside untrack');
+      }
+    );
   });
 
   // ------------------------------------------------ combine() and updateTag()
   QUnit.module('combine() and updateTag()', function () {
     QUnit.test('combine returns CONSTANT_TAG for empty array', async function (assert: any) {
-      const { combine, CONSTANT_TAG } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { combine, CONSTANT_TAG } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = combine([]);
       assert.strictEqual(tag, CONSTANT_TAG, 'empty combine is CONSTANT_TAG');
     });
 
-    QUnit.test('updateTag links outer to inner — outer invalidates when inner does', async function (assert: any) {
-      const { tagFor, updateTag, dirtyTagFor, validateTag, valueForTag, combine } = await import('../../../@ember/-internals/gxt-backend/validator');
-      const obj = { a: 1, b: 2 };
-      const outer = tagFor(obj, 'computed');
-      const inner = combine([tagFor(obj, 'a'), tagFor(obj, 'b')]);
-      updateTag(outer, inner);
+    QUnit.test(
+      'updateTag links outer to inner — outer invalidates when inner does',
+      async function (assert: any) {
+        const { tagFor, updateTag, dirtyTagFor, validateTag, valueForTag, combine } = await import(
+          '../../../@ember/-internals/gxt-backend/validator'
+        );
+        const obj = { a: 1, b: 2 };
+        const outer = tagFor(obj, 'computed');
+        const inner = combine([tagFor(obj, 'a'), tagFor(obj, 'b')]);
+        updateTag(outer, inner);
 
-      const rev = valueForTag(outer);
-      assert.ok(validateTag(outer, rev), 'valid before dirty');
+        const rev = valueForTag(outer);
+        assert.ok(validateTag(outer, rev), 'valid before dirty');
 
-      dirtyTagFor(obj, 'a');
-      assert.notOk(validateTag(outer, rev), 'invalid after dependency dirtied');
-    });
+        dirtyTagFor(obj, 'a');
+        assert.notOk(validateTag(outer, rev), 'invalid after dependency dirtied');
+      }
+    );
   });
 
   // ------------------------------------------------------------ createTag()
@@ -406,7 +460,9 @@ QUnit.module('Compat: validator.ts', function () {
   // ------------------------------------------------------------ dirtyTag()
   QUnit.module('dirtyTag()', function () {
     QUnit.test('marks an updatable tag as dirty', async function (assert: any) {
-      const { createUpdatableTag, dirtyTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { createUpdatableTag, dirtyTag } = await import(
+        '../../../@ember/-internals/gxt-backend/validator'
+      );
       const tag = createUpdatableTag();
       const v1 = tag.value;
       dirtyTag(tag);

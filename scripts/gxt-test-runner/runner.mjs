@@ -22,12 +22,7 @@
  */
 
 import { chromium } from 'playwright';
-import {
-  writeFileSync,
-  mkdirSync,
-  readFileSync,
-  existsSync,
-} from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { spawn, execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -62,9 +57,15 @@ function parseArgs(argv) {
     const a = argv[i];
     const next = () => argv[++i];
     switch (a) {
-      case '--smoke': args.smoke = true; break;
-      case '--full': args.full = true; break;
-      case '--filter': args.filter = next(); break;
+      case '--smoke':
+        args.smoke = true;
+        break;
+      case '--full':
+        args.full = true;
+        break;
+      case '--filter':
+        args.filter = next();
+        break;
       case '--shard': {
         const v = next();
         const m = /^(\d+)\/(\d+)$/.exec(v);
@@ -75,19 +76,40 @@ function parseArgs(argv) {
         }
         break;
       }
-      case '--baseline': args.baseline = next(); break;
-      case '--out-dir': args.outDir = next(); break;
-      case '--module-timeout': args.moduleTimeout = Number(next()); break;
-      case '--test-timeout': args.testTimeout = Number(next()); break;
-      case '--retries': args.retries = Number(next()); break;
-      case '--url': args.url = next(); break;
-      case '--auto-serve': args.autoServe = true; break;
-      case '--headful': args.headful = true; break;
-      case '--verbose': args.verbose = true; break;
-      case '--list': args.list = true; break;
+      case '--baseline':
+        args.baseline = next();
+        break;
+      case '--out-dir':
+        args.outDir = next();
+        break;
+      case '--module-timeout':
+        args.moduleTimeout = Number(next());
+        break;
+      case '--test-timeout':
+        args.testTimeout = Number(next());
+        break;
+      case '--retries':
+        args.retries = Number(next());
+        break;
+      case '--url':
+        args.url = next();
+        break;
+      case '--auto-serve':
+        args.autoServe = true;
+        break;
+      case '--headful':
+        args.headful = true;
+        break;
+      case '--verbose':
+        args.verbose = true;
+        break;
+      case '--list':
+        args.list = true;
+        break;
       case '--help':
       case '-h':
-        printHelp(); process.exit(0);
+        printHelp();
+        process.exit(0);
       default:
         throw new Error(`Unknown argument: ${a}`);
     }
@@ -196,13 +218,13 @@ async function discoverModules(browser, url) {
         await page.goto(discoverUrl, { timeout: 180_000, waitUntil: 'load' });
         await page.waitForFunction(
           () => typeof QUnit !== 'undefined' && QUnit.config.modules?.length > 50,
-          { timeout: 120_000 },
+          { timeout: 120_000 }
         );
         // Give late-registered modules a moment.
         await delay(3000);
-        const modules = await page.evaluate(() =>
-          [...new Set((QUnit.config.modules || []).map((m) => m.name).filter(Boolean))],
-        );
+        const modules = await page.evaluate(() => [
+          ...new Set((QUnit.config.modules || []).map((m) => m.name).filter(Boolean)),
+        ]);
         if (modules.length > 50) {
           return modules.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
         }
@@ -301,7 +323,8 @@ async function runModule(browser, url, moduleName, opts) {
               if (!anyFail) continue; // clean pass
               let status;
               if (allFail) status = 'fail';
-              else if (allPass) status = 'pass'; // impossible branch
+              else if (allPass)
+                status = 'pass'; // impossible branch
               else status = 'quarantined'; // mixed
               failing.push({
                 module: rec.module,
@@ -318,28 +341,38 @@ async function runModule(browser, url, moduleName, opts) {
 
           if (typeof QUnit.on === 'function') {
             QUnit.on('runEnd', (runEnd) => {
-              try { finalize(runEnd); } catch (e) { console.error(e); }
+              try {
+                finalize(runEnd);
+              } catch (e) {
+                console.error(e);
+              }
             });
           }
           // Belt-and-suspenders: also listen on QUnit.done for older APIs.
           QUnit.done((summary) => {
-            try { if (!window.__gxtCollector.done) finalize(summary); } catch (e) { console.error(e); }
+            try {
+              if (!window.__gxtCollector.done) finalize(summary);
+            } catch (e) {
+              console.error(e);
+            }
           });
         };
         function safeStringify(v) {
-          try { return typeof v === 'string' ? v.slice(0, 400) : JSON.stringify(v)?.slice(0, 400); }
-          catch { return String(v).slice(0, 400); }
+          try {
+            return typeof v === 'string' ? v.slice(0, 400) : JSON.stringify(v)?.slice(0, 400);
+          } catch {
+            return String(v).slice(0, 400);
+          }
         }
         install();
       },
-      { testTimeout: opts.testTimeout, retries: opts.retries },
+      { testTimeout: opts.testTimeout, retries: opts.retries }
     );
 
     await page.goto(target, { timeout: 60_000, waitUntil: 'commit' });
-    await page.waitForFunction(
-      () => typeof QUnit !== 'undefined' && !!window.__gxtCollector,
-      { timeout: 60_000 },
-    );
+    await page.waitForFunction(() => typeof QUnit !== 'undefined' && !!window.__gxtCollector, {
+      timeout: 60_000,
+    });
 
     // Wait strictly for collector.done.  No stuck-detection fallback.
     const deadline = started + opts.moduleTimeout;
@@ -445,8 +478,13 @@ function compareAgainstBaseline(baseline, current) {
 
 async function main() {
   let args;
-  try { args = parseArgs(process.argv); }
-  catch (e) { process.stderr.write(`error: ${e.message}\n`); printHelp(); process.exit(3); }
+  try {
+    args = parseArgs(process.argv);
+  } catch (e) {
+    process.stderr.write(`error: ${e.message}\n`);
+    printHelp();
+    process.exit(3);
+  }
 
   // Load smoke list if needed
   let explicitModules = null;
@@ -466,8 +504,8 @@ async function main() {
       } else {
         process.stderr.write(
           `[runner] dev server not reachable at ${args.url}. ` +
-          `Start it with: GXT_MODE=true pnpm vite --port 5180   ` +
-          `(or pass --auto-serve)\n`,
+            `Start it with: GXT_MODE=true pnpm vite --port 5180   ` +
+            `(or pass --auto-serve)\n`
         );
         process.exit(3);
       }
@@ -491,7 +529,8 @@ async function main() {
       if (missing.length) {
         process.stderr.write(
           `[runner] smoke modules not found on server:\n` +
-          missing.map((m) => `  - ${m}`).join('\n') + '\n',
+            missing.map((m) => `  - ${m}`).join('\n') +
+            '\n'
         );
         process.exit(3);
       }
@@ -510,8 +549,8 @@ async function main() {
 
     process.stdout.write(
       `[runner] running ${modules.length} module(s)` +
-      (args.shard ? ` [shard ${args.shard.index}/${args.shard.total}]` : '') +
-      `\n`,
+        (args.shard ? ` [shard ${args.shard.index}/${args.shard.total}]` : '') +
+        `\n`
     );
 
     const summary = {
@@ -558,12 +597,12 @@ async function main() {
         };
         summary.meta.totalTests += r.total;
         summary.meta.totalAssertions = (summary.meta.totalAssertions || 0) + r.assertionsTotal;
-        summary.meta.totalAssertionsPassing = (summary.meta.totalAssertionsPassing || 0) + (r.assertionsTotal - r.assertionsFailing);
+        summary.meta.totalAssertionsPassing =
+          (summary.meta.totalAssertionsPassing || 0) + (r.assertionsTotal - r.assertionsFailing);
         summary.meta.totalModules += 1;
         summary.meta.quarantinedTests += r.quarantined;
         for (const ft of failingTestEntries) {
-          summary.categories[ft.category] =
-            (summary.categories[ft.category] || 0) + 1;
+          summary.categories[ft.category] = (summary.categories[ft.category] || 0) + 1;
         }
         lastRun.failingTests.push(
           ...r.failingTests.map((t) => ({
@@ -572,15 +611,15 @@ async function main() {
             status: t.status,
             outcomes: t.outcomes,
             assertions: t.assertions,
-          })),
+          }))
         );
         const symbol = r.failing === 0 && r.quarantined === 0 ? 'PASS' : 'FAIL';
         if (r.failing > 0) sawHardFail = true;
         process.stdout.write(
           `[${String(i + 1).padStart(4)}/${modules.length}] ${symbol} ` +
-          `${r.passing}/${r.total}` +
-          (r.quarantined ? ` (q=${r.quarantined})` : '') +
-          ` ${secs}s  ${name}\n`,
+            `${r.passing}/${r.total}` +
+            (r.quarantined ? ` (q=${r.quarantined})` : '') +
+            ` ${secs}s  ${name}\n`
         );
       } else if (r.status === 'timeout') {
         sawTimeout = true;
@@ -592,12 +631,12 @@ async function main() {
         });
         process.stdout.write(
           `[${String(i + 1).padStart(4)}/${modules.length}] TIMEOUT ` +
-          `(partial ${r.partialPassing}/${r.partialTotal}) ${secs}s  ${name}\n`,
+            `(partial ${r.partialPassing}/${r.partialTotal}) ${secs}s  ${name}\n`
         );
       } else {
         lastRun.harnessErrors.push({ module: name, error: r.error });
         process.stdout.write(
-          `[${String(i + 1).padStart(4)}/${modules.length}] HARNESS-ERROR ${secs}s  ${name}\n  ${String(r.error).split('\n')[0]}\n`,
+          `[${String(i + 1).padStart(4)}/${modules.length}] HARNESS-ERROR ${secs}s  ${name}\n  ${String(r.error).split('\n')[0]}\n`
         );
         sawHardFail = true;
       }
@@ -605,23 +644,23 @@ async function main() {
 
     const totalSecs = ((Date.now() - t0) / 1000).toFixed(1);
     const totalFailing = Object.values(summary.modules).reduce(
-      (a, m) => a + m.failingTests.length, 0);
-    const totalPassing = Object.values(summary.modules).reduce(
-      (a, m) => a + m.passing, 0);
-    const totalTests = Object.values(summary.modules).reduce(
-      (a, m) => a + m.total, 0);
+      (a, m) => a + m.failingTests.length,
+      0
+    );
+    const totalPassing = Object.values(summary.modules).reduce((a, m) => a + m.passing, 0);
+    const totalTests = Object.values(summary.modules).reduce((a, m) => a + m.total, 0);
 
     const totalAssertions = summary.meta.totalAssertions || 0;
     const totalAssertionsPassing = summary.meta.totalAssertionsPassing || 0;
     process.stdout.write(
       `\n[runner] done in ${totalSecs}s — ` +
-      `tests: ${totalPassing}/${totalTests}, ` +
-      `assertions: ${totalAssertionsPassing}/${totalAssertions} ` +
-      `across ${summary.meta.totalModules} module(s)` +
-      (summary.meta.quarantinedTests ? `, quarantined=${summary.meta.quarantinedTests}` : '') +
-      (lastRun.timeouts.length ? `, timeouts=${lastRun.timeouts.length}` : '') +
-      (lastRun.harnessErrors.length ? `, harness-errors=${lastRun.harnessErrors.length}` : '') +
-      `\n`,
+        `tests: ${totalPassing}/${totalTests}, ` +
+        `assertions: ${totalAssertionsPassing}/${totalAssertions} ` +
+        `across ${summary.meta.totalModules} module(s)` +
+        (summary.meta.quarantinedTests ? `, quarantined=${summary.meta.quarantinedTests}` : '') +
+        (lastRun.timeouts.length ? `, timeouts=${lastRun.timeouts.length}` : '') +
+        (lastRun.harnessErrors.length ? `, harness-errors=${lastRun.harnessErrors.length}` : '') +
+        `\n`
     );
 
     // Write outputs
@@ -638,7 +677,7 @@ async function main() {
       const regressions = compareAgainstBaseline(baseline, summary);
       if (regressions.length) {
         process.stdout.write(
-          `[runner] BASELINE REGRESSION: ${regressions.length} newly failing test(s)\n`,
+          `[runner] BASELINE REGRESSION: ${regressions.length} newly failing test(s)\n`
         );
         for (const r of regressions.slice(0, 50)) {
           process.stdout.write(`  - ${r.module} :: ${r.name}\n`);
@@ -665,15 +704,18 @@ async function main() {
 
 function readGxtVersion() {
   try {
-    const pkg = JSON.parse(
-      readFileSync(resolve(REPO_ROOT, 'packages/demo/package.json'), 'utf8'));
+    const pkg = JSON.parse(readFileSync(resolve(REPO_ROOT, 'packages/demo/package.json'), 'utf8'));
     return pkg.dependencies?.['@lifeart/gxt'] || 'unknown';
-  } catch { return 'unknown'; }
+  } catch {
+    return 'unknown';
+  }
 }
 function readEmberCommit() {
   try {
     return execSync('git rev-parse --short HEAD', { cwd: REPO_ROOT }).toString().trim();
-  } catch { return 'unknown'; }
+  } catch {
+    return 'unknown';
+  }
 }
 
 main().catch((e) => {

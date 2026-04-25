@@ -11,7 +11,15 @@ export function pascalToKebab(str: string): string {
     if (ch >= 'A' && ch <= 'Z') {
       if (i > 0 && str[i - 1]! >= 'a' && str[i - 1]! <= 'z') result += '-';
       if (i > 0 && str[i - 1]! >= '0' && str[i - 1]! <= '9') result += '-';
-      if (i > 0 && str[i - 1]! >= 'A' && str[i - 1]! <= 'Z' && i + 1 < str.length && str[i + 1]! >= 'a' && str[i + 1]! <= 'z') result += '-';
+      if (
+        i > 0 &&
+        str[i - 1]! >= 'A' &&
+        str[i - 1]! <= 'Z' &&
+        i + 1 < str.length &&
+        str[i + 1]! >= 'a' &&
+        str[i + 1]! <= 'z'
+      )
+        result += '-';
       result += ch.toLowerCase();
     } else {
       result += ch;

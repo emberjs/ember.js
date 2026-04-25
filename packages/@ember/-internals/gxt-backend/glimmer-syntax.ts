@@ -29,7 +29,7 @@ export function node(name?: string) {
           Object.assign(this, fields);
         }
       };
-    }
+    },
   };
 }
 
@@ -43,12 +43,19 @@ export const AST = {};
 
 // Source span types
 export class SourceSpan {
-  constructor(public source: any, public startPosition: any, public endPosition: any) {}
+  constructor(
+    public source: any,
+    public startPosition: any,
+    public endPosition: any
+  ) {}
 }
 
 // Syntax error class
 export class GlimmerSyntaxError extends Error {
-  constructor(message: string, public location: any) {
+  constructor(
+    message: string,
+    public location: any
+  ) {
     super(message);
     this.name = 'GlimmerSyntaxError';
   }

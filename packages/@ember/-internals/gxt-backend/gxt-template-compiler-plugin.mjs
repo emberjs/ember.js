@@ -16,20 +16,28 @@ const DEBUG_PLUGIN = process.env.GXT_PLUGIN_DEBUG === 'true';
 
 // --- Character classification helpers ---
 
-function isWS(ch) { return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r'; }
+function isWS(ch) {
+  return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r';
+}
 function isIdent(ch) {
   if (!ch) return false;
   const c = ch.charCodeAt(0);
-  return (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c === 95 || c === 36;
+  return (
+    (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c === 95 || c === 36
+  );
 }
-function skipWS(code, i) { while (i < code.length && isWS(code[i])) i++; return i; }
+function skipWS(code, i) {
+  while (i < code.length && isWS(code[i])) i++;
+  return i;
+}
 
 // --- String extraction ---
 
 /** Extract a quoted string at `pos` (opening quote). Returns { value, end } or null. */
 function extractStr(code, pos) {
   const q = code[pos];
-  let val = '', i = pos + 1;
+  let val = '',
+    i = pos + 1;
   while (i < code.length) {
     if (code[i] === '\\' && i + 1 < code.length) {
       const n = code[i + 1];
@@ -38,12 +46,15 @@ function extractStr(code, pos) {
       continue;
     }
     if (code[i] === q) return { value: val, end: i + 1 };
-    val += code[i]; i++;
+    val += code[i];
+    i++;
   }
   return null;
 }
 
-function isQuote(ch) { return ch === "'" || ch === '"' || ch === '`'; }
+function isQuote(ch) {
+  return ch === "'" || ch === '"' || ch === '`';
+}
 
 /** Escape string for backtick template literal. */
 function escBT(s) {
@@ -57,8 +68,13 @@ function escBT(s) {
 // --- Brace matching ---
 
 function findClosingBrace(code, openIdx) {
-  let d = 1, i = openIdx + 1;
-  while (i < code.length && d > 0) { if (code[i] === '{') d++; else if (code[i] === '}') d--; i++; }
+  let d = 1,
+    i = openIdx + 1;
+  while (i < code.length && d > 0) {
+    if (code[i] === '{') d++;
+    else if (code[i] === '}') d--;
+    i++;
+  }
   return d === 0 ? i - 1 : -1;
 }
 
@@ -69,7 +85,10 @@ function findWord(code, word, from) {
   while (true) {
     i = code.indexOf(word, i);
     if (i === -1) return -1;
-    if (i > 0 && isIdent(code[i - 1])) { i += word.length; continue; }
+    if (i > 0 && isIdent(code[i - 1])) {
+      i += word.length;
+      continue;
+    }
     return i;
   }
 }
@@ -78,16 +97,22 @@ function findWord(code, word, from) {
 
 /** Transform {{outlet}} to <ember-outlet /> (string scan, no regex). */
 function transformOutlet(code) {
-  let r = '', i = 0;
+  let r = '',
+    i = 0;
   while (i < code.length) {
     if (code[i] === '{' && code[i + 1] === '{') {
       let j = skipWS(code, i + 2);
       if (code.startsWith('outlet', j)) {
         let k = skipWS(code, j + 6);
-        if (code[k] === '}' && code[k + 1] === '}') { r += '<ember-outlet />'; i = k + 2; continue; }
+        if (code[k] === '}' && code[k + 1] === '}') {
+          r += '<ember-outlet />';
+          i = k + 2;
+          continue;
+        }
       }
     }
-    r += code[i]; i++;
+    r += code[i];
+    i++;
   }
   return r;
 }
@@ -122,9 +147,11 @@ function hasDt7948Ref(code) {
 }
 
 function hasDt7948Import(code) {
-  return code.includes('from "decorator-transforms/runtime"') ||
-         code.includes("from 'decorator-transforms/runtime'") ||
-         (code.includes('import') && code.includes('as dt7948') && code.includes('decorator-transforms'));
+  return (
+    code.includes('from "decorator-transforms/runtime"') ||
+    code.includes("from 'decorator-transforms/runtime'") ||
+    (code.includes('import') && code.includes('as dt7948') && code.includes('decorator-transforms'))
+  );
 }
 
 // --- Post-process GXT output ---
@@ -139,12 +166,15 @@ function postProcess(code) {
 
   // 2. Wrap __gxt_template_N__ declarations in createTemplateFactory()
   const reps = [];
-  scanTemplateDecls(r, true, reps);   // arrow IIFEs
-  scanTemplateDecls(r, false, reps);  // plain functions
+  scanTemplateDecls(r, true, reps); // arrow IIFEs
+  scanTemplateDecls(r, false, reps); // plain functions
 
   for (let i = reps.length - 1; i >= 0; i--) {
     const { start, end, varName, body } = reps[i];
-    r = r.slice(0, start) + `const ${varName} = createTemplateFactory(function() {${body}}, '${varName}');` + r.slice(end);
+    r =
+      r.slice(0, start) +
+      `const ${varName} = createTemplateFactory(function() {${body}}, '${varName}');` +
+      r.slice(end);
   }
 
   if (reps.length > 0) {
@@ -153,7 +183,9 @@ function postProcess(code) {
 
   // 3. Add GXT context imports if needed
   if (r.includes('__gxtCreateRoot') && !r.includes('createRoot as __gxtCreateRoot')) {
-    r = 'import { createRoot as __gxtCreateRoot, setParentContext as __gxtSetParentContext } from "@lifeart/gxt";\n' + r;
+    r =
+      'import { createRoot as __gxtCreateRoot, setParentContext as __gxtSetParentContext } from "@lifeart/gxt";\n' +
+      r;
   }
 
   // 4. Rewrite direct GXT dist imports to @lifeart/gxt alias
@@ -173,34 +205,82 @@ function scanTemplateDecls(code, isArrow, reps) {
     if (ci === -1) break;
 
     const eq = code.indexOf('=', ci + 6);
-    if (eq === -1) { from = ci + 1; continue; }
+    if (eq === -1) {
+      from = ci + 1;
+      continue;
+    }
     const vn = code.slice(ci + 6, eq).trim();
-    if (!vn.startsWith('__gxt_template_') || !vn.endsWith('__')) { from = ci + 1; continue; }
+    if (!vn.startsWith('__gxt_template_') || !vn.endsWith('__')) {
+      from = ci + 1;
+      continue;
+    }
 
     let p = skipWS(code, eq + 1);
 
     if (isArrow) {
-      if (!code.startsWith('(() =>', p)) { from = ci + 1; continue; }
+      if (!code.startsWith('(() =>', p)) {
+        from = ci + 1;
+        continue;
+      }
       p = skipWS(code, p + 6);
-      if (code[p] !== '{') { from = ci + 1; continue; }
+      if (code[p] !== '{') {
+        from = ci + 1;
+        continue;
+      }
       const bodyEnd = findClosingBrace(code, p);
-      if (bodyEnd === -1) { from = ci + 1; continue; }
+      if (bodyEnd === -1) {
+        from = ci + 1;
+        continue;
+      }
       // Expect: })();
       let s = skipWS(code, bodyEnd + 1);
-      if (code[s] !== ')') { from = ci + 1; continue; } s = skipWS(code, s + 1);
-      if (code[s] !== '(') { from = ci + 1; continue; } s = skipWS(code, s + 1);
-      if (code[s] !== ')') { from = ci + 1; continue; } s = skipWS(code, s + 1);
-      if (code[s] !== ';') { from = ci + 1; continue; } s++;
+      if (code[s] !== ')') {
+        from = ci + 1;
+        continue;
+      }
+      s = skipWS(code, s + 1);
+      if (code[s] !== '(') {
+        from = ci + 1;
+        continue;
+      }
+      s = skipWS(code, s + 1);
+      if (code[s] !== ')') {
+        from = ci + 1;
+        continue;
+      }
+      s = skipWS(code, s + 1);
+      if (code[s] !== ';') {
+        from = ci + 1;
+        continue;
+      }
+      s++;
       reps.push({ start: ci, end: s, varName: vn, body: code.slice(p + 1, bodyEnd) });
       from = s;
     } else {
-      if (!code.startsWith('function', p)) { from = ci + 1; continue; }
+      if (!code.startsWith('function', p)) {
+        from = ci + 1;
+        continue;
+      }
       let f = skipWS(code, p + 8);
-      if (code[f] !== '(') { from = ci + 1; continue; } f = skipWS(code, f + 1);
-      if (code[f] !== ')') { from = ci + 1; continue; } f = skipWS(code, f + 1);
-      if (code[f] !== '{') { from = ci + 1; continue; }
+      if (code[f] !== '(') {
+        from = ci + 1;
+        continue;
+      }
+      f = skipWS(code, f + 1);
+      if (code[f] !== ')') {
+        from = ci + 1;
+        continue;
+      }
+      f = skipWS(code, f + 1);
+      if (code[f] !== '{') {
+        from = ci + 1;
+        continue;
+      }
       const bodyEnd = findClosingBrace(code, f);
-      if (bodyEnd === -1) { from = ci + 1; continue; }
+      if (bodyEnd === -1) {
+        from = ci + 1;
+        continue;
+      }
       let s = skipWS(code, bodyEnd + 1);
       if (code[s] === ';') s++;
       reps.push({ start: ci, end: s, varName: vn, body: code.slice(f + 1, bodyEnd) });
@@ -212,7 +292,8 @@ function scanTemplateDecls(code, isArrow, reps) {
 /** Rewrite imports from GXT dist path to @lifeart/gxt alias. */
 function rewriteGxtImports(code) {
   const marker = 'gxt.index.es.js';
-  let r = '', i = 0;
+  let r = '',
+    i = 0;
   while (i < code.length) {
     if (code.startsWith('from ', i)) {
       let q = skipWS(code, i + 5);
@@ -229,7 +310,8 @@ function rewriteGxtImports(code) {
         }
       }
     }
-    r += code[i]; i++;
+    r += code[i];
+    i++;
   }
   return r;
 }
@@ -244,19 +326,34 @@ function findFuncCalls(code, funcName) {
     i = findWord(code, funcName, i);
     if (i === -1) break;
     let j = skipWS(code, i + funcName.length);
-    if (code[j] !== '(') { i = j; continue; }
+    if (code[j] !== '(') {
+      i = j;
+      continue;
+    }
     j = skipWS(code, j + 1);
-    if (!isQuote(code[j])) { i = j; continue; }
+    if (!isQuote(code[j])) {
+      i = j;
+      continue;
+    }
     const sr = extractStr(code, j);
-    if (!sr) { i = j + 1; continue; }
+    if (!sr) {
+      i = j + 1;
+      continue;
+    }
     let k = skipWS(code, sr.end);
     // Skip optional comma + options object (for compile())
     if (code[k] === ',') {
       k = skipWS(code, k + 1);
-      if (code[k] === '{') { const be = findClosingBrace(code, k); if (be !== -1) k = be + 1; }
+      if (code[k] === '{') {
+        const be = findClosingBrace(code, k);
+        if (be !== -1) k = be + 1;
+      }
       k = skipWS(code, k);
     }
-    if (code[k] !== ')') { i = k; continue; }
+    if (code[k] !== ')') {
+      i = k;
+      continue;
+    }
     k++;
     results.push({ start: i, end: k, templateString: sr.value });
     i = k;
@@ -272,31 +369,64 @@ function findAddTemplateCalls(code) {
     i = findWord(code, 'addTemplate', i);
     if (i === -1) break;
     let j = skipWS(code, i + 11);
-    if (code[j] !== '(') { i = j; continue; }
+    if (code[j] !== '(') {
+      i = j;
+      continue;
+    }
     j = skipWS(code, j + 1);
     // First arg: name string
-    if (!isQuote(code[j])) { i = j; continue; }
+    if (!isQuote(code[j])) {
+      i = j;
+      continue;
+    }
     const nameR = extractStr(code, j);
-    if (!nameR) { i = j + 1; continue; }
+    if (!nameR) {
+      i = j + 1;
+      continue;
+    }
     let k = skipWS(code, nameR.end);
-    if (code[k] !== ',') { i = k; continue; }
+    if (code[k] !== ',') {
+      i = k;
+      continue;
+    }
     k = skipWS(code, k + 1);
     // Second arg: string or strip`string`
     let tpl, tplEnd;
     if (code.startsWith('strip', k)) {
       let s = skipWS(code, k + 5);
-      if (code[s] === '`') { const r = extractStr(code, s); if (r) { tpl = r.value; tplEnd = r.end; } }
+      if (code[s] === '`') {
+        const r = extractStr(code, s);
+        if (r) {
+          tpl = r.value;
+          tplEnd = r.end;
+        }
+      }
     }
     if (tpl === undefined) {
-      if (!isQuote(code[k])) { i = k; continue; }
+      if (!isQuote(code[k])) {
+        i = k;
+        continue;
+      }
       const r = extractStr(code, k);
-      if (!r) { i = k + 1; continue; }
-      tpl = r.value; tplEnd = r.end;
+      if (!r) {
+        i = k + 1;
+        continue;
+      }
+      tpl = r.value;
+      tplEnd = r.end;
     }
     let m = skipWS(code, tplEnd);
-    if (code[m] !== ')') { i = m; continue; }
+    if (code[m] !== ')') {
+      i = m;
+      continue;
+    }
     m++;
-    results.push({ start: i, end: m, prefix: code.slice(i, nameR.end) + ', ', templateString: tpl });
+    results.push({
+      start: i,
+      end: m,
+      prefix: code.slice(i, nameR.end) + ', ',
+      templateString: tpl,
+    });
     i = m;
   }
   return results;
@@ -310,11 +440,20 @@ function findObjTemplates(code) {
     i = findWord(code, 'template', i);
     if (i === -1) break;
     let j = skipWS(code, i + 8);
-    if (code[j] !== ':') { i = j; continue; }
+    if (code[j] !== ':') {
+      i = j;
+      continue;
+    }
     j = skipWS(code, j + 1);
-    if (!isQuote(code[j])) { i = j; continue; }
+    if (!isQuote(code[j])) {
+      i = j;
+      continue;
+    }
     const sr = extractStr(code, j);
-    if (!sr) { i = j + 1; continue; }
+    if (!sr) {
+      i = j + 1;
+      continue;
+    }
     results.push({ start: i, end: sr.end, templateString: sr.value });
     i = sr.end;
   }
@@ -323,7 +462,9 @@ function findObjTemplates(code) {
 
 // --- Detection helpers (quick checks before parsing) ---
 
-function hasCall(code, name) { return findWord(code, name, 0) !== -1 && code.includes(name + '(') || hasCallSlow(code, name); }
+function hasCall(code, name) {
+  return (findWord(code, name, 0) !== -1 && code.includes(name + '(')) || hasCallSlow(code, name);
+}
 function hasCallSlow(code, name) {
   let i = 0;
   while (true) {
@@ -352,7 +493,10 @@ function hasObjTemplate(code) {
     i = findWord(code, 'template', i);
     if (i === -1) return false;
     let j = skipWS(code, i + 8);
-    if (code[j] === ':') { j = skipWS(code, j + 1); if (isQuote(code[j])) return true; }
+    if (code[j] === ':') {
+      j = skipWS(code, j + 1);
+      if (isQuote(code[j])) return true;
+    }
     i = j;
   }
 }
@@ -362,7 +506,10 @@ function hasHbs(code) {
   while (true) {
     i = code.indexOf('hbs', i);
     if (i === -1) return false;
-    if (i > 0 && (code[i - 1] === '.' || isIdent(code[i - 1]))) { i += 3; continue; }
+    if (i > 0 && (code[i - 1] === '.' || isIdent(code[i - 1]))) {
+      i += 3;
+      continue;
+    }
     const a = code[i + 3];
     if (a === '`' || a === '(') return true;
     i += 3;
@@ -372,7 +519,9 @@ function hasHbs(code) {
 // --- Import insertion helper ---
 
 function findLastImportEnd(code) {
-  let last = 0, inML = false, pos = 0;
+  let last = 0,
+    inML = false,
+    pos = 0;
   const lines = code.split('\n');
   for (const line of lines) {
     const t = line.trim();
@@ -380,7 +529,10 @@ function findLastImportEnd(code) {
       inML = !t.endsWith(';');
       if (t.endsWith(';')) last = pos + line.length;
     } else if (inML) {
-      if (t.endsWith(';')) { last = pos + line.length; inML = false; }
+      if (t.endsWith(';')) {
+        last = pos + line.length;
+        inML = false;
+      }
     } else if (t.length > 0 && !t.startsWith('//') && !t.startsWith('/*') && !t.startsWith('*')) {
       break;
     }
@@ -401,7 +553,9 @@ function toGtsExt(id) {
 // --- Unique template ID ---
 
 let _tid = 0;
-function nextTid() { return `__gxt_template_${_tid++}__`; }
+function nextTid() {
+  return `__gxt_template_${_tid++}__`;
+}
 
 // ============================================================================
 // Main Vite plugin
@@ -410,9 +564,12 @@ function nextTid() { return `__gxt_template_${_tid++}__`; }
 export function gxtTemplateCompilerPlugin(mode, gxtOptions = {}) {
   const gxt = gxtCompiler(mode, {
     flags: {
-      IS_GLIMMER_COMPAT_MODE: true, WITH_EMBER_INTEGRATION: true,
-      WITH_HELPER_MANAGER: true, WITH_MODIFIER_MANAGER: true,
-      WITH_CONTEXT_API: true, TRY_CATCH_ERROR_HANDLING: false,
+      IS_GLIMMER_COMPAT_MODE: true,
+      WITH_EMBER_INTEGRATION: true,
+      WITH_HELPER_MANAGER: true,
+      WITH_MODIFIER_MANAGER: true,
+      WITH_CONTEXT_API: true,
+      TRY_CATCH_ERROR_HANDLING: false,
       ...gxtOptions.flags,
     },
     ...gxtOptions,
@@ -428,7 +585,13 @@ export function gxtTemplateCompilerPlugin(mode, gxtOptions = {}) {
     config(config, env) {
       const gc = gxt.config ? gxt.config(config, env) : {};
       if (DEBUG_PLUGIN) console.log('[gxt-plugin] config hook called, mode:', env.mode);
-      return { ...gc, resolve: { ...gc.resolve, extensions: ['.mjs','.js','.mts','.ts','.jsx','.tsx','.json','.gts','.gjs'] } };
+      return {
+        ...gc,
+        resolve: {
+          ...gc.resolve,
+          extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json', '.gts', '.gjs'],
+        },
+      };
     },
 
     resolveId(id) {
@@ -452,12 +615,19 @@ export function gxtTemplateCompilerPlugin(mode, gxtOptions = {}) {
       // Skip node_modules (except @lifeart/gxt), but fix dt7948 if needed
       if (id.includes('node_modules') && !id.includes('@lifeart/gxt')) {
         if (hasDt7948Ref(code) && !hasDt7948Import(code))
-          return { code: 'import * as dt7948 from "decorator-transforms/runtime";\n' + code, map: null };
+          return {
+            code: 'import * as dt7948 from "decorator-transforms/runtime";\n' + code,
+            map: null,
+          };
         return null;
       }
 
       // Skip certain test/problem directories
-      if (id.includes('ember-template-compiler/tests') || id.includes('runtime-template-compiler') || id.includes('rendering-test.js'))
+      if (
+        id.includes('ember-template-compiler/tests') ||
+        id.includes('runtime-template-compiler') ||
+        id.includes('rendering-test.js')
+      )
         return null;
 
       // --- .gts/.gjs: delegate to GXT, then post-process ---
@@ -466,19 +636,30 @@ export function gxtTemplateCompilerPlugin(mode, gxtOptions = {}) {
         const transformed = maybeTransformOutlet(code);
         try {
           const result = await gxt.transform(transformed, id);
-          if (result && result.code) { result.code = postProcess(result.code); return result; }
-          if (!result || !result.code) { if (DEBUG_PLUGIN) console.log('[gxt-plugin] GXT returned no code'); return null; }
+          if (result && result.code) {
+            result.code = postProcess(result.code);
+            return result;
+          }
+          if (!result || !result.code) {
+            if (DEBUG_PLUGIN) console.log('[gxt-plugin] GXT returned no code');
+            return null;
+          }
           return result;
         } catch (err) {
           console.error('[gxt-plugin] .gts transform error:', err.message);
-          if (DEBUG_PLUGIN) { console.error('[gxt-plugin] File:', id); console.error('[gxt-plugin] Preview:', transformed.slice(0, 500)); }
+          if (DEBUG_PLUGIN) {
+            console.error('[gxt-plugin] File:', id);
+            console.error('[gxt-plugin] Preview:', transformed.slice(0, 500));
+          }
           throw err;
         }
       }
 
       // --- .ts/.js: check for template patterns ---
-      const hC = hasCall(code, 'compile'), hAT = hasCall(code, 'addTemplate');
-      const hTS = hasTemplateStr(code), hOT = hasObjTemplate(code);
+      const hC = hasCall(code, 'compile'),
+        hAT = hasCall(code, 'addTemplate');
+      const hTS = hasTemplateStr(code),
+        hOT = hasObjTemplate(code);
 
       if (!hC && !hAT && !hTS && !hOT) {
         // Still check for hbs tagged templates
@@ -511,7 +692,7 @@ export function gxtTemplateCompilerPlugin(mode, gxtOptions = {}) {
         addTemplate(c.templateString, c.start, c.end, null);
 
       for (const c of findAddTemplateCalls(code))
-        addTemplate(c.templateString, c.start, c.end, vn => `${c.prefix}${vn})`);
+        addTemplate(c.templateString, c.start, c.end, (vn) => `${c.prefix}${vn})`);
 
       for (const c of findFuncCalls(code, 'template'))
         addTemplate(c.templateString, c.start, c.end, null);
@@ -519,16 +700,17 @@ export function gxtTemplateCompilerPlugin(mode, gxtOptions = {}) {
       const isTestFile = id.includes('/tests/');
       if (!isTestFile)
         for (const c of findObjTemplates(code))
-          addTemplate(c.templateString, c.start, c.end, vn => `template: ${vn}`);
+          addTemplate(c.templateString, c.start, c.end, (vn) => `template: ${vn}`);
 
       if (!changed) return null;
 
       // Insert imports after existing imports
-      const iStmts = Array.from(imports).filter(x => x.startsWith('import'));
-      const tDefs = Array.from(imports).filter(x => x.startsWith('const'));
+      const iStmts = Array.from(imports).filter((x) => x.startsWith('import'));
+      const tDefs = Array.from(imports).filter((x) => x.startsWith('const'));
       const iPos = findLastImportEnd(code);
       const ins = '\n' + iStmts.join('\n') + '\n' + tDefs.join('');
-      if (iPos > 0) s.appendLeft(iPos, ins); else s.prepend(iStmts.join('\n') + '\n' + tDefs.join(''));
+      if (iPos > 0) s.appendLeft(iPos, ins);
+      else s.prepend(iStmts.join('\n') + '\n' + tDefs.join(''));
 
       const intermediate = s.toString();
 
@@ -548,11 +730,14 @@ export function gxtTemplateCompilerPlugin(mode, gxtOptions = {}) {
 
       if (result) {
         if (typeof result === 'string') return { code: postProcess(result), map: null };
-        if (result.code) { result.code = postProcess(result.code); return result; }
+        if (result.code) {
+          result.code = postProcess(result.code);
+          return result;
+        }
         return result;
       }
       return { code: intermediate, map: s.generateMap({ hires: true }) };
-    }
+    },
   };
 }
 
@@ -565,10 +750,14 @@ function hasProblematicTemplate(code) {
     i = findWord(code, 'template', i);
     if (i === -1) return false;
     let j = skipWS(code, i + 8);
-    if (code[j] !== '(') { i = j; continue; }
+    if (code[j] !== '(') {
+      i = j;
+      continue;
+    }
     j = skipWS(code, j + 1);
     if (isIdent(code[j]) && !code.startsWith('__gxt_template_', j)) {
-      let k = j; while (k < code.length && isIdent(code[k])) k++;
+      let k = j;
+      while (k < code.length && isIdent(code[k])) k++;
       k = skipWS(code, k);
       if (code[k] === ')') return true;
     }
@@ -587,8 +776,11 @@ export function decoratorTransformsFixPlugin() {
     transform(code, id) {
       if (id.includes('node_modules')) return null;
       if (hasDt7948Ref(code) && !hasDt7948Import(code))
-        return { code: 'import * as dt7948 from "decorator-transforms/runtime";\n' + code, map: null };
+        return {
+          code: 'import * as dt7948 from "decorator-transforms/runtime";\n' + code,
+          map: null,
+        };
       return null;
-    }
+    },
   };
 }

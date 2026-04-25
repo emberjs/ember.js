@@ -6,9 +6,7 @@ describe('compileTemplate', () => {
     const result = compileTemplate('<div>hello</div>');
     expect(result).toBeTruthy();
     // GXT-compiled templates are functions or objects with __gxtCompiled marker
-    expect(
-      typeof result === 'function' || result.__gxtCompiled === true
-    ).toBe(true);
+    expect(typeof result === 'function' || result.__gxtCompiled === true).toBe(true);
   });
 
   it('compiles plain text', () => {
@@ -19,9 +17,7 @@ describe('compileTemplate', () => {
   it('compiles component invocation (PascalCase)', () => {
     const result = compileTemplate('<MyComponent />');
     expect(result).toBeTruthy();
-    expect(
-      typeof result === 'function' || result.__gxtCompiled === true
-    ).toBe(true);
+    expect(typeof result === 'function' || result.__gxtCompiled === true).toBe(true);
   });
 
   it('compiles inline if helper', () => {
@@ -30,9 +26,7 @@ describe('compileTemplate', () => {
   });
 
   it('compiles each block', () => {
-    const result = compileTemplate(
-      '{{#each this.items as |item|}}{{item}}{{/each}}'
-    );
+    const result = compileTemplate('{{#each this.items as |item|}}{{item}}{{/each}}');
     expect(result).toBeTruthy();
   });
 
@@ -52,16 +46,12 @@ describe('compileTemplate', () => {
   });
 
   it('compiles let block', () => {
-    const result = compileTemplate(
-      '{{#let "hello" as |greeting|}}{{greeting}}{{/let}}'
-    );
+    const result = compileTemplate('{{#let "hello" as |greeting|}}{{greeting}}{{/let}}');
     expect(result).toBeTruthy();
   });
 
   it('compiles component with block', () => {
-    const result = compileTemplate(
-      '<MyComponent as |val|>{{val}}</MyComponent>'
-    );
+    const result = compileTemplate('<MyComponent as |val|>{{val}}</MyComponent>');
     expect(result).toBeTruthy();
   });
 
@@ -92,9 +82,7 @@ describe('compileTemplate', () => {
   });
 
   it('compiles component helper syntax', () => {
-    const result = compileTemplate(
-      '{{#let (component "my-component") as |Comp|}}<Comp />{{/let}}'
-    );
+    const result = compileTemplate('{{#let (component "my-component") as |Comp|}}<Comp />{{/let}}');
     expect(result).toBeTruthy();
   });
 });

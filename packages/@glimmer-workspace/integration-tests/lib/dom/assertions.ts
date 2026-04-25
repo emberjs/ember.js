@@ -93,15 +93,15 @@ export function equalsElement(
     });
 
     if (content !== null) {
-      const isGxt = Boolean(
-        (globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__
-      );
+      const isGxt = Boolean((globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__);
       // GXT emits empty `<!---->` placeholder comments at branch
       // boundaries (e.g. around `{{#if}}` / `{{#each}}`). Those aren't
       // part of the expected shape under either rendering model, so
       // strip them from the actual HTML for structural comparison.
       // Expected text under GXT never contains these placeholders.
-      const actualForCompare = isGxt ? element.innerHTML.replace(/<!---->/g, '') : element.innerHTML;
+      const actualForCompare = isGxt
+        ? element.innerHTML.replace(/<!---->/g, '')
+        : element.innerHTML;
       QUnit.assert.pushResult({
         result: actualForCompare === content,
         actual: actualForCompare,
@@ -196,9 +196,7 @@ export function assertSerializedInElement(result: string, expected: string, mess
     // GXT mode: stock Glimmer-VM's `<script glmr="%cursor:N%">` marker
     // isn't emitted. Fall back to token-based comparison which strips
     // block/marker comments on both sides.
-    const isGxt = Boolean(
-      (globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__
-    );
+    const isGxt = Boolean((globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__);
     if (isGxt) {
       QUnit.assert.ok(true, 'cursor marker skipped under GXT');
       // Stock Glimmer-VM splits `result` at the `<script glmr='%cursor:N%'>`
@@ -221,10 +219,7 @@ export function assertSerializedInElement(result: string, expected: string, mess
         actualStripped.endsWith(expectedStripped) ||
         actualStripped.includes(expectedStripped);
       if (matches) {
-        QUnit.assert.ok(
-          true,
-          `serialized remote (GXT): contains ${expectedStripped}`
-        );
+        QUnit.assert.ok(true, `serialized remote (GXT): contains ${expectedStripped}`);
       } else {
         gxtEqualTokens(result, expected, message);
       }

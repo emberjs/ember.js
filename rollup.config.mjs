@@ -110,7 +110,7 @@ function esmProdConfig() {
 
 function esmInputs() {
   return {
-    ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
+    ...renameEntrypoints(entryExposedDependencies(), (name) => join('packages', name, 'index')),
     ...renameEntrypoints(packages(), (name) => join('packages', name)),
     // the actual authored "./packages/ember-template-compiler/index.ts" is
     // part of what powers the historical dist/ember-template-compiler.js AMD
@@ -147,6 +147,11 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
 
   if (includePackageMeta) {
     plugins.push(packageMeta());
+  }
+
+  const visualized = visualizerPlugin();
+  if (visualized) {
+    plugins.push(visualized);
   }
 
   return {
@@ -395,10 +400,7 @@ export function hiddenDependencies() {
     // Root entry needed for GXT-compiled test modules that import the
     // bare `decorator-transforms` package (e.g. via compiled GJS test
     // helpers). Classic rollup build doesn't hit this.
-    'decorator-transforms': resolve(
-      findFromProject('decorator-transforms').root,
-      'dist/index.js'
-    ),
+    'decorator-transforms': resolve(findFromProject('decorator-transforms').root, 'dist/index.js'),
   };
 }
 
@@ -532,7 +534,10 @@ export function resolvePackages(deps, params) {
       // build — vite dev imports `resolvePackages` from this same file
       // and must not see these rewrites.
       if (USE_GXT_BACKEND) {
-        if (source.endsWith('/dist/gxt.runtime-compiler.es.js') && source.includes('@lifeart/gxt')) {
+        if (
+          source.endsWith('/dist/gxt.runtime-compiler.es.js') &&
+          source.includes('@lifeart/gxt')
+        ) {
           return { external: true, id: '@lifeart/gxt/runtime-compiler' };
         }
         if (source.endsWith('/dist/gxt.index.es.js') && source.includes('@lifeart/gxt')) {
@@ -584,7 +589,15 @@ export function resolvePackages(deps, params) {
         // `@glimmer/component` because it's excluded from `packages()` and
         // built by its own `glimmerComponent()` config; the lookup matters
         // only for the vite dev server used by the GXT test harness.
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js', '/src/index.ts', '/src/index.js']) {
+        for (let suffix of [
+          '',
+          '.ts',
+          '.js',
+          '/index.ts',
+          '/index.js',
+          '/src/index.ts',
+          '/src/index.js',
+        ]) {
           let candidate = candidateStem + suffix;
           if (existsSync(candidate) && statSync(candidate).isFile()) {
             return candidate;
@@ -626,7 +639,15 @@ export function externalizePackages(deps) {
         // Keep in sync with resolvePackages() above — we also accept
         // `/src/index.{ts,js}` so packages whose authored source lives under
         // a `src/` subdir are recognized.
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js', '/src/index.ts', '/src/index.js']) {
+        for (let suffix of [
+          '',
+          '.ts',
+          '.js',
+          '/index.ts',
+          '/index.js',
+          '/src/index.ts',
+          '/src/index.js',
+        ]) {
           let candidate = candidateStem + suffix;
           if (existsSync(candidate) && statSync(candidate).isFile()) {
             return { external: true, id: source };

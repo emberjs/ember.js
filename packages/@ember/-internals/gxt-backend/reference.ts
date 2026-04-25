@@ -1,13 +1,7 @@
 import { cell, formula } from '@lifeart/gxt';
 import { reference } from '@lifeart/gxt/glimmer-compatibility';
 import { getProp, setProp } from '@glimmer/global-context';
-import {
-  track,
-  validateTag,
-  valueForTag,
-  consumeTag,
-  createCache,
-} from './validator';
+import { track, validateTag, valueForTag, consumeTag, createCache } from './validator';
 
 // The canonical REFERENCE symbol used by Glimmer VM's CheckReference.
 // Under GXT mode, `@glimmer/reference` is aliased to THIS module (see
@@ -312,8 +306,12 @@ export function isConstRef(ref: any): boolean {
   if (ref[CONST_MARKER] === true) return true;
   if (ref[UNBOUND_MARKER] === true) return true;
   // A const ref has no setter and is not computed
-  if (ref === FALSE_REFERENCE || ref === TRUE_REFERENCE ||
-      ref === NULL_REFERENCE || ref === UNDEFINED_REFERENCE) {
+  if (
+    ref === FALSE_REFERENCE ||
+    ref === TRUE_REFERENCE ||
+    ref === NULL_REFERENCE ||
+    ref === UNDEFINED_REFERENCE
+  ) {
     return true;
   }
   // Check for isConst flag
@@ -377,9 +375,7 @@ export function childRefFromParts(parentRef: any, parts: string[]) {
 export function isInvokableRef(ref: any): boolean {
   if (!ref) return false;
   return (
-    ref[INVOKABLE_MARKER] === true ||
-    typeof ref.invoke === 'function' ||
-    ref.isInvokable === true
+    ref[INVOKABLE_MARKER] === true || typeof ref.invoke === 'function' || ref.isInvokable === true
   );
 }
 
@@ -428,9 +424,7 @@ export function createDebugAliasRef(debugLabelOrInner: any, innerOrLabel: any) {
     inner = debugLabelOrInner;
     debugLabel = innerOrLabel;
   }
-  const update = isUpdatableRef(inner)
-    ? (value: any) => updateRef(inner, value)
-    : null;
+  const update = isUpdatableRef(inner) ? (value: any) => updateRef(inner, value) : null;
   const ref = createComputeRef(() => valueForRef(inner), update, debugLabel);
   (ref as any).debugLabel = debugLabel;
   (ref as any).inner = inner;
@@ -531,9 +525,7 @@ function makeKeyFor(key: string): KeyFor {
       return uniqueKeyFor(IDENTITY_KEY);
     default:
       if (key[0] === '@') {
-        throw new Error(
-          `invalid keypath: '${key}', valid keys: @index, @identity, or a path`
-        );
+        throw new Error(`invalid keypath: '${key}', valid keys: @index, @identity, or a path`);
       }
       return uniqueKeyFor((item) => getPath(item as object, key));
   }
@@ -551,10 +543,7 @@ export interface OpaqueIterator {
 }
 
 class ArrayIterator implements OpaqueIterator {
-  private current:
-    | { kind: 'empty' }
-    | { kind: 'first'; value: unknown }
-    | { kind: 'progress' };
+  private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
   private pos = 0;
 
   constructor(

@@ -48,41 +48,41 @@ import {
 // Setup QUnit
 declare const QUnit: any;
 
-QUnit.module('GXT Integration', function(hooks: any) {
+QUnit.module('GXT Integration', function (hooks: any) {
   let fixture: HTMLElement;
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     fixture = document.getElementById('qunit-fixture')!;
     fixture.innerHTML = '';
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     fixture.innerHTML = '';
   });
 
-  QUnit.test('basic template compilation', function(assert: any) {
+  QUnit.test('basic template compilation', function (assert: any) {
     const template = compile('hello world');
     assert.ok(template, 'template compiles successfully');
     // GXT-compiled templates are functions that return template structures
     assert.ok(
       typeof template === 'function' ||
-      typeof template.render === 'function' ||
-      template.__gxtCompiled,
+        typeof template.render === 'function' ||
+        template.__gxtCompiled,
       'template is a function (GXT) or has render method/gxt marker'
     );
   });
 
-  QUnit.test('template with expression compiles', function(assert: any) {
+  QUnit.test('template with expression compiles', function (assert: any) {
     const template = compile('hello {{this.name}}');
     assert.ok(template, 'template with expression compiles');
   });
 
-  QUnit.test('component template compilation', function(assert: any) {
+  QUnit.test('component template compilation', function (assert: any) {
     const template = compile('<XBlah />');
     assert.ok(template, 'angle bracket component syntax compiles');
   });
 
-  QUnit.test('runloop begin/end hooks are registered', function(assert: any) {
+  QUnit.test('runloop begin/end hooks are registered', function (assert: any) {
     // Check that backburner has our hooks
     const listeners = (_backburner as any)._eventCallbacks || (_backburner as any).options;
     assert.ok(_backburner, 'backburner exists');
@@ -95,13 +95,16 @@ QUnit.module('GXT Integration', function(hooks: any) {
     assert.ok(taskRan, 'runloop executes tasks');
   });
 
-  QUnit.test('renderSettled returns a promise', function(assert: any) {
+  QUnit.test('renderSettled returns a promise', function (assert: any) {
     const promise = renderSettled();
     // renderSettled returns an RSVP promise which may not be instanceof native Promise
-    assert.ok(promise && typeof promise.then === 'function', 'renderSettled returns a thenable/promise');
+    assert.ok(
+      promise && typeof promise.then === 'function',
+      'renderSettled returns a thenable/promise'
+    );
   });
 
-  QUnit.test('runloop integration - renderSettled resolves', async function(assert: any) {
+  QUnit.test('runloop integration - renderSettled resolves', async function (assert: any) {
     const done = assert.async();
 
     // Trigger a runloop
@@ -120,7 +123,7 @@ QUnit.module('GXT Integration', function(hooks: any) {
     done();
   });
 
-  QUnit.test('template renders to DOM', function(assert: any) {
+  QUnit.test('template renders to DOM', function (assert: any) {
     const template = compile('hello');
 
     if (typeof template.render === 'function') {
@@ -128,23 +131,27 @@ QUnit.module('GXT Integration', function(hooks: any) {
       template.render(context, fixture);
 
       // Check that something was rendered
-      const hasContent = fixture.textContent?.includes('hello') || fixture.innerHTML.includes('hello');
+      const hasContent =
+        fixture.textContent?.includes('hello') || fixture.innerHTML.includes('hello');
       assert.ok(hasContent, 'template content rendered to DOM');
     } else {
-      assert.ok(true, 'template does not have direct render method (may use different rendering path)');
+      assert.ok(
+        true,
+        'template does not have direct render method (may use different rendering path)'
+      );
     }
   });
 });
 
-QUnit.module('Component Rendering', function(hooks: any) {
+QUnit.module('Component Rendering', function (hooks: any) {
   let fixture: HTMLElement;
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     fixture = document.getElementById('qunit-fixture')!;
     fixture.innerHTML = '';
   });
 
-  QUnit.test('simple component template renders', function(assert: any) {
+  QUnit.test('simple component template renders', function (assert: any) {
     // Compile a simple template
     const template = compile('hello from component');
 
@@ -159,7 +166,7 @@ QUnit.module('Component Rendering', function(hooks: any) {
     }
   });
 
-  QUnit.test('XBlah resolves to x-blah component name', function(assert: any) {
+  QUnit.test('XBlah resolves to x-blah component name', function (assert: any) {
     // This tests the PascalCase to kebab-case conversion
     // The conversion should turn XBlah into x-blah
 
@@ -172,7 +179,7 @@ QUnit.module('Component Rendering', function(hooks: any) {
     assert.ok(true, 'PascalCase component syntax accepted');
   });
 
-  QUnit.test('component transformation creates binding identifiers', function(assert: any) {
+  QUnit.test('component transformation creates binding identifiers', function (assert: any) {
     // Compile templates with component invocations
     const template1 = compile('<FooBar />');
     const template2 = compile('<my-component />');
@@ -183,48 +190,57 @@ QUnit.module('Component Rendering', function(hooks: any) {
     assert.ok(template3, 'component with block params compiles');
 
     // All should be GXT-compiled templates
-    assert.ok(template1.__gxtCompiled || typeof template1 === 'function', 'template1 is GXT compiled');
-    assert.ok(template2.__gxtCompiled || typeof template2 === 'function', 'template2 is GXT compiled');
-    assert.ok(template3.__gxtCompiled || typeof template3 === 'function', 'template3 is GXT compiled');
+    assert.ok(
+      template1.__gxtCompiled || typeof template1 === 'function',
+      'template1 is GXT compiled'
+    );
+    assert.ok(
+      template2.__gxtCompiled || typeof template2 === 'function',
+      'template2 is GXT compiled'
+    );
+    assert.ok(
+      template3.__gxtCompiled || typeof template3 === 'function',
+      'template3 is GXT compiled'
+    );
   });
 
-  QUnit.test('nested component invocation compiles', function(assert: any) {
+  QUnit.test('nested component invocation compiles', function (assert: any) {
     const template = compile('<Outer><Inner /></Outer>');
     assert.ok(template, 'nested component invocation compiles');
     assert.ok(template.__gxtCompiled || typeof template === 'function', 'template is GXT compiled');
   });
 
-  QUnit.test('component helper compiles', function(assert: any) {
+  QUnit.test('component helper compiles', function (assert: any) {
     // Test the (component ...) helper syntax
     const template = compile('{{#let (component "my-component") as |Comp|}}<Comp />{{/let}}');
     assert.ok(template, 'component helper syntax compiles');
     assert.ok(template.__gxtCompiled || typeof template === 'function', 'template is GXT compiled');
   });
 
-  QUnit.test('component with block params compiles', function(assert: any) {
+  QUnit.test('component with block params compiles', function (assert: any) {
     const template = compile('<FooBar as |foo bar|>{{foo}} {{bar}}</FooBar>');
     assert.ok(template, 'component with block params compiles');
     assert.ok(template.__gxtCompiled || typeof template === 'function', 'template is GXT compiled');
   });
 });
 
-QUnit.module('Observer Integration', function(hooks: any) {
-  QUnit.test('addObserver function exists', function(assert: any) {
+QUnit.module('Observer Integration', function (hooks: any) {
+  QUnit.test('addObserver function exists', function (assert: any) {
     assert.ok(typeof addObserver === 'function', 'addObserver is a function');
     assert.ok(typeof removeObserver === 'function', 'removeObserver is a function');
   });
 
-  QUnit.test('can add observer to EmberObject', function(assert: any) {
+  QUnit.test('can add observer to EmberObject', function (assert: any) {
     const done = assert.async();
 
     const obj = EmberObject.create({
-      name: 'initial'
+      name: 'initial',
     });
 
     let observerCalled = false;
     let observedValue: any = null;
 
-    const observer = function(this: any, sender: any, key: string) {
+    const observer = function (this: any, sender: any, key: string) {
       observerCalled = true;
       observedValue = get(sender, key);
     };
@@ -247,16 +263,16 @@ QUnit.module('Observer Integration', function(hooks: any) {
     }, 50);
   });
 
-  QUnit.test('observer is not called after removal', function(assert: any) {
+  QUnit.test('observer is not called after removal', function (assert: any) {
     const done = assert.async();
 
     const obj = EmberObject.create({
-      count: 0
+      count: 0,
     });
 
     let callCount = 0;
 
-    const observer = function() {
+    const observer = function () {
       callCount++;
     };
 
@@ -286,18 +302,18 @@ QUnit.module('Observer Integration', function(hooks: any) {
     }, 50);
   });
 
-  QUnit.test('observer on nested path', function(assert: any) {
+  QUnit.test('observer on nested path', function (assert: any) {
     const done = assert.async();
 
     const obj = EmberObject.create({
       person: EmberObject.create({
-        name: 'John'
-      })
+        name: 'John',
+      }),
     });
 
     let observerCalled = false;
 
-    const observer = function() {
+    const observer = function () {
       observerCalled = true;
     };
 
@@ -318,16 +334,19 @@ QUnit.module('Observer Integration', function(hooks: any) {
   });
 });
 
-QUnit.module('Destroyable Integration', function(hooks: any) {
-  QUnit.test('destroyable functions exist', function(assert: any) {
+QUnit.module('Destroyable Integration', function (hooks: any) {
+  QUnit.test('destroyable functions exist', function (assert: any) {
     assert.ok(typeof registerDestructor === 'function', 'registerDestructor is a function');
     assert.ok(typeof destroy === 'function', 'destroy is a function');
     assert.ok(typeof isDestroyed === 'function', 'isDestroyed is a function');
     assert.ok(typeof isDestroying === 'function', 'isDestroying is a function');
-    assert.ok(typeof associateDestroyableChild === 'function', 'associateDestroyableChild is a function');
+    assert.ok(
+      typeof associateDestroyableChild === 'function',
+      'associateDestroyableChild is a function'
+    );
   });
 
-  QUnit.test('registerDestructor and destroy work', function(assert: any) {
+  QUnit.test('registerDestructor and destroy work', function (assert: any) {
     let destructorCalled = false;
     const obj = {};
 
@@ -344,7 +363,7 @@ QUnit.module('Destroyable Integration', function(hooks: any) {
     assert.ok(isDestroyed(obj), 'object is destroyed after destroy()');
   });
 
-  QUnit.test('multiple destructors run in reverse order', function(assert: any) {
+  QUnit.test('multiple destructors run in reverse order', function (assert: any) {
     const order: number[] = [];
     const obj = {};
 
@@ -357,7 +376,7 @@ QUnit.module('Destroyable Integration', function(hooks: any) {
     assert.deepEqual(order, [3, 2, 1], 'destructors run in reverse registration order');
   });
 
-  QUnit.test('destroy is idempotent', function(assert: any) {
+  QUnit.test('destroy is idempotent', function (assert: any) {
     let callCount = 0;
     const obj = {};
 
@@ -370,7 +389,7 @@ QUnit.module('Destroyable Integration', function(hooks: any) {
     assert.equal(callCount, 1, 'destructor only called once even with multiple destroy() calls');
   });
 
-  QUnit.test('child destroyables are destroyed with parent', function(assert: any) {
+  QUnit.test('child destroyables are destroyed with parent', function (assert: any) {
     let parentDestroyed = false;
     let childDestroyed = false;
 
@@ -379,8 +398,12 @@ QUnit.module('Destroyable Integration', function(hooks: any) {
 
     associateDestroyableChild(parent, child);
 
-    registerDestructor(parent, () => { parentDestroyed = true; });
-    registerDestructor(child, () => { childDestroyed = true; });
+    registerDestructor(parent, () => {
+      parentDestroyed = true;
+    });
+    registerDestructor(child, () => {
+      childDestroyed = true;
+    });
 
     destroy(parent);
 
@@ -389,8 +412,8 @@ QUnit.module('Destroyable Integration', function(hooks: any) {
   });
 });
 
-QUnit.module('Tracked Properties', function(hooks: any) {
-  QUnit.test('@tracked decorator works', function(assert: any) {
+QUnit.module('Tracked Properties', function (hooks: any) {
+  QUnit.test('@tracked decorator works', function (assert: any) {
     class Counter {
       @tracked count = 0;
 
@@ -409,7 +432,7 @@ QUnit.module('Tracked Properties', function(hooks: any) {
     assert.equal(counter.count, 10, 'value can be set directly');
   });
 
-  QUnit.test('@tracked triggers observer', function(assert: any) {
+  QUnit.test('@tracked triggers observer', function (assert: any) {
     const done = assert.async();
 
     class Person extends EmberObject {
@@ -436,27 +459,27 @@ QUnit.module('Tracked Properties', function(hooks: any) {
   });
 });
 
-QUnit.module('Computed Properties', function(hooks: any) {
-  QUnit.test('computed property getter works', function(assert: any) {
+QUnit.module('Computed Properties', function (hooks: any) {
+  QUnit.test('computed property getter works', function (assert: any) {
     const Person = EmberObject.extend({
       firstName: 'John',
       lastName: 'Doe',
-      fullName: computed('firstName', 'lastName', function() {
+      fullName: computed('firstName', 'lastName', function () {
         return `${this.firstName} ${this.lastName}`;
-      })
+      }),
     });
 
     const person = Person.create();
     assert.equal(get(person, 'fullName'), 'John Doe', 'computed property returns correct value');
   });
 
-  QUnit.test('computed property updates when dependencies change', function(assert: any) {
+  QUnit.test('computed property updates when dependencies change', function (assert: any) {
     const Person = EmberObject.extend({
       firstName: 'John',
       lastName: 'Doe',
-      fullName: computed('firstName', 'lastName', function() {
+      fullName: computed('firstName', 'lastName', function () {
         return `${this.firstName} ${this.lastName}`;
-      })
+      }),
     });
 
     const person = Person.create();
@@ -466,18 +489,22 @@ QUnit.module('Computed Properties', function(hooks: any) {
       set(person, 'firstName', 'Jane');
     });
 
-    assert.equal(get(person, 'fullName'), 'Jane Doe', 'computed property updated after dependency change');
+    assert.equal(
+      get(person, 'fullName'),
+      'Jane Doe',
+      'computed property updated after dependency change'
+    );
   });
 
-  QUnit.test('computed property is cached', function(assert: any) {
+  QUnit.test('computed property is cached', function (assert: any) {
     let computeCount = 0;
 
     const Counter = EmberObject.extend({
       value: 1,
-      doubled: computed('value', function() {
+      doubled: computed('value', function () {
         computeCount++;
         return this.value * 2;
-      })
+      }),
     });
 
     const counter = Counter.create();
@@ -490,15 +517,15 @@ QUnit.module('Computed Properties', function(hooks: any) {
     assert.equal(computeCount, 1, 'computed property only calculated once (cached)');
   });
 
-  QUnit.test('computed property recalculates after invalidation', function(assert: any) {
+  QUnit.test('computed property recalculates after invalidation', function (assert: any) {
     let computeCount = 0;
 
     const Counter = EmberObject.extend({
       value: 1,
-      doubled: computed('value', function() {
+      doubled: computed('value', function () {
         computeCount++;
         return this.value * 2;
-      })
+      }),
     });
 
     const counter = Counter.create();
@@ -515,8 +542,8 @@ QUnit.module('Computed Properties', function(hooks: any) {
   });
 });
 
-QUnit.module('Runloop Scheduling', function(hooks: any) {
-  QUnit.test('schedule runs callback in specified queue', function(assert: any) {
+QUnit.module('Runloop Scheduling', function (hooks: any) {
+  QUnit.test('schedule runs callback in specified queue', function (assert: any) {
     const done = assert.async();
     let callbackRan = false;
 
@@ -532,7 +559,7 @@ QUnit.module('Runloop Scheduling', function(hooks: any) {
     }, 50);
   });
 
-  QUnit.test('schedule order respects queue priority', function(assert: any) {
+  QUnit.test('schedule order respects queue priority', function (assert: any) {
     const done = assert.async();
     const order: string[] = [];
 
@@ -552,9 +579,11 @@ QUnit.module('Runloop Scheduling', function(hooks: any) {
   });
 });
 
-QUnit.module('Reference System', function(hooks: any) {
-  QUnit.test('createConstRef creates reference with correct value', async function(assert: any) {
-    const { createConstRef, valueForRef } = await import('../../../@ember/-internals/gxt-backend/reference');
+QUnit.module('Reference System', function (hooks: any) {
+  QUnit.test('createConstRef creates reference with correct value', async function (assert: any) {
+    const { createConstRef, valueForRef } = await import(
+      '../../../@ember/-internals/gxt-backend/reference'
+    );
 
     const ref = createConstRef(42, 'test');
     assert.equal(valueForRef(ref), 42, 'reference has correct value');
@@ -563,8 +592,10 @@ QUnit.module('Reference System', function(hooks: any) {
     assert.equal(valueForRef(ref), 42, 'reference value is stable');
   });
 
-  QUnit.test('createComputeRef creates computed reference', async function(assert: any) {
-    const { createComputeRef, valueForRef } = await import('../../../@ember/-internals/gxt-backend/reference');
+  QUnit.test('createComputeRef creates computed reference', async function (assert: any) {
+    const { createComputeRef, valueForRef } = await import(
+      '../../../@ember/-internals/gxt-backend/reference'
+    );
 
     let count = 0;
     const ref = createComputeRef(() => ++count, 'counter');
@@ -576,8 +607,9 @@ QUnit.module('Reference System', function(hooks: any) {
     assert.ok(val2 >= 1, 'second value is computed');
   });
 
-  QUnit.test('isConstRef detects predefined constant refs', async function(assert: any) {
-    const { FALSE_REFERENCE, TRUE_REFERENCE, NULL_REFERENCE, UNDEFINED_REFERENCE, isConstRef } = await import('../../../@ember/-internals/gxt-backend/reference');
+  QUnit.test('isConstRef detects predefined constant refs', async function (assert: any) {
+    const { FALSE_REFERENCE, TRUE_REFERENCE, NULL_REFERENCE, UNDEFINED_REFERENCE, isConstRef } =
+      await import('../../../@ember/-internals/gxt-backend/reference');
 
     assert.ok(isConstRef(FALSE_REFERENCE), 'FALSE_REFERENCE is constant');
     assert.ok(isConstRef(TRUE_REFERENCE), 'TRUE_REFERENCE is constant');
@@ -586,9 +618,11 @@ QUnit.module('Reference System', function(hooks: any) {
   });
 });
 
-QUnit.module('Validator System', function(hooks: any) {
-  QUnit.test('tagFor creates tag for object property', async function(assert: any) {
-    const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+QUnit.module('Validator System', function (hooks: any) {
+  QUnit.test('tagFor creates tag for object property', async function (assert: any) {
+    const { tagFor, dirtyTagFor, validateTag, valueForTag } = await import(
+      '../../../@ember/-internals/gxt-backend/validator'
+    );
 
     const obj = { name: 'test' };
     const tag = tagFor(obj, 'name');
@@ -608,8 +642,10 @@ QUnit.module('Validator System', function(hooks: any) {
     assert.notOk(validateTag(tag, revision), 'tag is invalid after dirty');
   });
 
-  QUnit.test('combine creates combined tag', async function(assert: any) {
-    const { tagFor, combine, dirtyTagFor, validateTag, valueForTag } = await import('../../../@ember/-internals/gxt-backend/validator');
+  QUnit.test('combine creates combined tag', async function (assert: any) {
+    const { tagFor, combine, dirtyTagFor, validateTag, valueForTag } = await import(
+      '../../../@ember/-internals/gxt-backend/validator'
+    );
 
     const obj = { a: 1, b: 2 };
     const tagA = tagFor(obj, 'a');
@@ -625,11 +661,16 @@ QUnit.module('Validator System', function(hooks: any) {
     dirtyTagFor(obj, 'a');
 
     // Combined tag should now be invalid
-    assert.notOk(validateTag(combined, revision), 'combined tag is invalid after one constituent is dirtied');
+    assert.notOk(
+      validateTag(combined, revision),
+      'combined tag is invalid after one constituent is dirtied'
+    );
   });
 
-  QUnit.test('updateTag links tags for computed properties', async function(assert: any) {
-    const { tagFor, updateTag, dirtyTagFor, validateTag, valueForTag, combine } = await import('../../../@ember/-internals/gxt-backend/validator');
+  QUnit.test('updateTag links tags for computed properties', async function (assert: any) {
+    const { tagFor, updateTag, dirtyTagFor, validateTag, valueForTag, combine } = await import(
+      '../../../@ember/-internals/gxt-backend/validator'
+    );
 
     const obj = { firstName: 'John', lastName: 'Doe' };
 
@@ -647,41 +688,44 @@ QUnit.module('Validator System', function(hooks: any) {
     dirtyTagFor(obj, 'firstName');
 
     // Computed tag should now be invalid
-    assert.notOk(validateTag(computedTag, revision), 'computed tag is invalid after dependency is dirtied');
+    assert.notOk(
+      validateTag(computedTag, revision),
+      'computed tag is invalid after dependency is dirtied'
+    );
   });
 });
 
 // Force register a simple test to verify QUnit is working
-QUnit.test('simple sanity check', function(assert: any) {
+QUnit.test('simple sanity check', function (assert: any) {
   assert.ok(true, 'sanity check passed');
 });
 
-QUnit.module('Outlet Integration', function(hooks: any) {
+QUnit.module('Outlet Integration', function (hooks: any) {
   let fixture: HTMLElement;
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     fixture = document.getElementById('qunit-fixture')!;
     fixture.innerHTML = '';
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     fixture.innerHTML = '';
     // Clean up global outlet state
     (globalThis as any).__currentOutletState = undefined;
   });
 
-  QUnit.test('{{outlet}} transforms to <ember-outlet />', function(assert: any) {
+  QUnit.test('{{outlet}} transforms to <ember-outlet />', function (assert: any) {
     const template = compile('Hello {{outlet}} World');
     assert.ok(template, 'template with outlet compiles');
   });
 
-  QUnit.test('ember-outlet custom element is registered', function(assert: any) {
+  QUnit.test('ember-outlet custom element is registered', function (assert: any) {
     // Import the outlet module to ensure custom element is registered
     const customElement = customElements.get('ember-outlet');
     assert.ok(customElement, 'ember-outlet custom element is registered');
   });
 
-  QUnit.test('ember-outlet renders when outlet state is set', function(assert: any) {
+  QUnit.test('ember-outlet renders when outlet state is set', function (assert: any) {
     // Set up a mock outlet state
     const mockTemplate = compile('<p>Nested Content</p>');
 
@@ -716,9 +760,13 @@ QUnit.module('Outlet Integration', function(hooks: any) {
     // Note: timing may vary, so we check after a microtask
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        const hasContent = fixture.innerHTML.includes('Nested Content') ||
-                          fixture.querySelector('ember-outlet')!.innerHTML.includes('Nested Content');
-        assert.ok(true, 'ember-outlet element was created (rendering may depend on template format)');
+        const hasContent =
+          fixture.innerHTML.includes('Nested Content') ||
+          fixture.querySelector('ember-outlet')!.innerHTML.includes('Nested Content');
+        assert.ok(
+          true,
+          'ember-outlet element was created (rendering may depend on template format)'
+        );
         resolve();
       }, 50);
     });

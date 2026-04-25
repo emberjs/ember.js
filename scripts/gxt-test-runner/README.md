@@ -118,11 +118,11 @@ git add test-results/gxt-baseline.json
 
 ## Exit codes
 
-| code | meaning                                         |
-|------|-------------------------------------------------|
-| 0    | clean run (no regressions if baseline)          |
+| code | meaning                                           |
+| ---- | ------------------------------------------------- |
+| 0    | clean run (no regressions if baseline)            |
 | 1    | at least one hard failure / green->red regression |
-| 2    | at least one module timed out                   |
+| 2    | at least one module timed out                     |
 | 3    | harness error (server down, browser launch, etc.) |
 
 ## Schema

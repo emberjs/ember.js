@@ -17,10 +17,12 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
   const descAny = desc as any;
   const initializer = descAny?.initializer
     ? () => descAny.initializer.call(undefined)
-    : (desc && 'value' in desc ? () => desc.value : undefined);
+    : desc && 'value' in desc
+      ? () => desc.value
+      : undefined;
   const { getter, setter } = trackedData<any, string>(key, initializer);
 
-  const trackedGet: any = function(this: object) {
+  const trackedGet: any = function (this: object) {
     const value = getter(this);
     // Consume the property tag so createCache tracking captures this
     // dependency. Without this, @cached getters that read @tracked
@@ -33,7 +35,7 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
   // shadow them (see tracked-args-proxy test).
   trackedGet.__isTrackedGetter = true;
 
-  const trackedSet: any = function(this: object, value: any) {
+  const trackedSet: any = function (this: object, value: any) {
     // GXT backtracking detection for @tracked properties
     const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
     if (typeof checkBacktracking === 'function') {

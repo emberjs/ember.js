@@ -98,10 +98,7 @@ function rewriteShadowedBlockInvocation(
  * NAME; multi-param forms are left alone.
  */
 function teeLetBlockParam(template: string, name: string, alias: string): string {
-  const re = new RegExp(
-    `\\{\\{#let\\s+([^}]*?)\\s+as\\s*\\|\\s*${name}\\s*\\|\\}\\}`,
-    'g'
-  );
+  const re = new RegExp(`\\{\\{#let\\s+([^}]*?)\\s+as\\s*\\|\\s*${name}\\s*\\|\\}\\}`, 'g');
   return template.replace(re, (_m, prefix: string) => {
     return `{{#let ${prefix} ${prefix} as |${name} ${alias}|}}`;
   });
@@ -130,8 +127,10 @@ function _assertAgainstNamedOutlets(templateString: string, moduleName?: string)
     let line = 1;
     let col = 0;
     for (let i = 0; i < idx; i++) {
-      if (templateString.charCodeAt(i) === 10) { line++; col = 0; }
-      else col++;
+      if (templateString.charCodeAt(i) === 10) {
+        line++;
+        col = 0;
+      } else col++;
     }
     const modulePart = moduleName ? `'${moduleName}' @ ` : '';
     const loc = `(${modulePart}L${line}:C${col}) `;
@@ -227,10 +226,7 @@ function _normalizeHyphenBlockParams(template: string): { source: string; change
   // `{{/name}}` since those are still structural GXT keywords.
   for (const { from, to } of renamings) {
     const escaped = from.replace(/[-]/g, '\\-');
-    const bareRe = new RegExp(
-      `(\\{\\{\\{?)(?!#|/)(\\s*)${escaped}(\\b)`,
-      'g'
-    );
+    const bareRe = new RegExp(`(\\{\\{\\{?)(?!#|/)(\\s*)${escaped}(\\b)`, 'g');
     out = out.replace(bareRe, `$1$2${to}$3`);
   }
   return { source: out, changed: true };
@@ -256,8 +252,7 @@ export function compile(templateString: string, options?: any) {
     const inScopeValues = !!(
       originalScopeValues && Object.prototype.hasOwnProperty.call(originalScopeValues, name)
     );
-    const inLocals =
-      Array.isArray(options?.locals) && (options.locals as string[]).includes(name);
+    const inLocals = Array.isArray(options?.locals) && (options.locals as string[]).includes(name);
     const inBlockParams = templateBlockParams.has(name);
     if (!inScopeValues && !inLocals && !inBlockParams) continue;
 
@@ -395,7 +390,11 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
     if (key === 'length' || key === 'name' || key === 'prototype') continue;
     const desc = Object.getOwnPropertyDescriptor(inner, key);
     if (desc) {
-      try { Object.defineProperty(wrapped, key, desc); } catch { /* ignore */ }
+      try {
+        Object.defineProperty(wrapped, key, desc);
+      } catch {
+        /* ignore */
+      }
     }
   }
   wrapped.__gxtCountedFactory = true;

@@ -7,7 +7,6 @@ export default class LogoutRoute extends Route {
   @service router!: RouterService;
 
   async beforeModel(transition: Transition) {
-
     this.router.transitionTo('main');
   }
 }

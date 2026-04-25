@@ -136,19 +136,13 @@ function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableM
 // Bridge: ensure that whenever GXT destroys `destroyable` as part of its own
 // graph traversal (e.g. when a parent template branch is torn down), we run
 // our Ember-style destroy() so registered destructors fire via the runloop.
-function ensureGxtBridge(
-  _destroyable: Destroyable,
-  _meta: DestroyableMeta<Destroyable>
-): void {
+function ensureGxtBridge(_destroyable: Destroyable, _meta: DestroyableMeta<Destroyable>): void {
   // Bridging temporarily disabled to isolate regressions; our state machine
   // handles the Ember-visible semantics independently of GXT's internal graph.
   return;
 }
 
-export function associateDestroyableChild<T extends Destroyable>(
-  parent: Destroyable,
-  child: T
-): T {
+export function associateDestroyableChild<T extends Destroyable>(parent: Destroyable, child: T): T {
   if (DEBUG && isDestroying(parent)) {
     throw new Error(
       'Attempted to associate a destroyable child with an object that is already destroying or destroyed'
@@ -311,9 +305,7 @@ function hasGlobalSchedulers(): boolean {
 // would break observer semantics). Plain destroyables in compat tests never
 // register eager destructors — they get synchronous teardown so
 // `destroy(obj); isDestroyed(obj) === true` remains the contract.
-function requiresDeferredDestruction<T extends Destroyable>(
-  meta: DestroyableMeta<T>
-): boolean {
+function requiresDeferredDestruction<T extends Destroyable>(meta: DestroyableMeta<T>): boolean {
   return meta.eagerDestructors !== null;
 }
 

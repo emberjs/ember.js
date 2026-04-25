@@ -90,8 +90,8 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
           // service, so we also dirty the service's tag directly. This
           // matches the semantics upstream Glimmer VM already achieves via
           // its chain-tag machinery.
-          const dirtyTagFor = (globalThis as any).__classicDirtyTagFor ||
-            (globalThis as any).__gxtDirtyTagFor;
+          const dirtyTagFor =
+            (globalThis as any).__classicDirtyTagFor || (globalThis as any).__gxtDirtyTagFor;
           if (typeof dirtyTagFor === 'function') {
             dirtyTagFor(routing, 'currentState');
           } else if (typeof routing.notifyPropertyChange === 'function') {

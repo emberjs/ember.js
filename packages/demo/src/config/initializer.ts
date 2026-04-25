@@ -3,10 +3,7 @@ import registry from './registry';
 import type ApplicationClass from '@ember/application';
 import type RouteClass from './router';
 
-export function init(
-  Application: typeof ApplicationClass,
-  Router: typeof RouteClass
-) {
+export function init(Application: typeof ApplicationClass, Router: typeof RouteClass) {
   // Init initializers
   // Application.initializer(initializer);
 

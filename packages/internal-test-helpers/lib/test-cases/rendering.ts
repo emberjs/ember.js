@@ -108,19 +108,27 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
           // parallel cache entries. Only the last one is "active".
           const instances = [...modMgr._updatedInstances];
           const lastInst = instances[instances.length - 1];
-          if (lastInst?.__gxtModManager?.destroyModifier && !lastInst.__gxtTeardownDestroyed && !lastInst.__gxtModDestroyed) {
+          if (
+            lastInst?.__gxtModManager?.destroyModifier &&
+            !lastInst.__gxtTeardownDestroyed &&
+            !lastInst.__gxtModDestroyed
+          ) {
             try {
               lastInst.__gxtModManager.destroyModifier(lastInst);
               lastInst.__gxtTeardownDestroyed = true;
               lastInst.__gxtModDestroyed = true;
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
           modMgr._updatedInstances.clear();
         }
         // Clear pending destroys without processing (already handled above)
         const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
         if (pendingDestroys) pendingDestroys.length = 0;
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
       if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {

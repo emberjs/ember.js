@@ -68,7 +68,9 @@ export function set<T>(obj: object, keyName: string | number, value: T, tolerant
     return value;
   }
 
-  const result = isPath(keyName) ? _setPath(obj, keyName, value, tolerant) : _setProp(obj, keyName, value);
+  const result = isPath(keyName)
+    ? _setPath(obj, keyName, value, tolerant)
+    : _setProp(obj, keyName, value);
 
   // GXT backtracking detection: check AFTER set so toString() reflects the new value.
   if (DEBUG) {

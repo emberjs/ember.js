@@ -24,7 +24,7 @@ export function runAppend(view: any): void {
   // flag to its previous "init artifacts don't trigger a full sync" behavior
   // so tests like Textarea (which set internal bindings during init) don't
   // regress.
-  const afterRenderChanged = !!(globalThis as any).__gxtAfterRenderPropertyChange;
+  const afterRenderChanged = Boolean((globalThis as any).__gxtAfterRenderPropertyChange);
   (globalThis as any).__gxtAfterRenderPropertyChange = false;
   if (!afterRenderChanged) {
     (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
@@ -70,7 +70,9 @@ export function runDestroy(toDestroy: any): void {
           if (typeof inst.destroy === 'function' && !inst.isDestroyed && !inst.isDestroying) {
             inst.destroy();
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
       helperInstances.length = 0;
     }

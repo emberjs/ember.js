@@ -8,7 +8,12 @@ import { DEBUG } from '@glimmer/env';
 // same named exports, so a namespace import yields a `validator` object with
 // the same surface as @lifeart/gxt/glimmer-compatibility's `validator`.
 import * as validator from '@glimmer/validator';
-import { dirtyTagFor, consumeTag as compatConsumeTag, tagFor as compatTagFor, trackedData as compatTrackedData } from '@glimmer/validator';
+import {
+  dirtyTagFor,
+  consumeTag as compatConsumeTag,
+  tagFor as compatTagFor,
+  trackedData as compatTrackedData,
+} from '@glimmer/validator';
 
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
@@ -17,7 +22,9 @@ import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './de
 import { SELF_TAG } from './tags';
 
 const {
-  consumeTag: _nativeConsumeTag, tagFor: _nativeTagFor, trackedData: _nativeTrackedData
+  consumeTag: _nativeConsumeTag,
+  tagFor: _nativeTagFor,
+  trackedData: _nativeTrackedData,
 } = validator;
 
 // Use compat trackedData for backtracking detection support.
@@ -27,7 +34,6 @@ const trackedData = compatTrackedData;
 // Use compat versions that integrate with createCache tracking
 const consumeTag = compatConsumeTag;
 const tagFor = compatTagFor;
-
 
 /**
   @decorator
@@ -215,7 +221,9 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             cell.value;
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
 
@@ -248,7 +256,9 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
         try {
           const cell = _cellFor(this, key, /* skipDefine */ true);
           if (cell) cell.update(newValue);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
     dirtyTagFor(this, SELF_TAG);

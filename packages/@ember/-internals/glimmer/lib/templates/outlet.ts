@@ -27,7 +27,10 @@ class EmberOutletElement extends HTMLElement {
     this._outletState = (globalThis as any).__currentOutletState;
 
     if ((globalThis as any).__DEBUG_GXT_RENDER) {
-      console.log('[ember-outlet] connectedCallback, outletState:', this._outletState ? 'exists' : 'null');
+      console.log(
+        '[ember-outlet] connectedCallback, outletState:',
+        this._outletState ? 'exists' : 'null'
+      );
     }
 
     this.renderOutlet();
@@ -80,9 +83,14 @@ class EmberOutletElement extends HTMLElement {
     const newTemplate = leafOutlet?.render?.template ?? nestedOutlet?.render?.template;
 
     if ((globalThis as any).__DEBUG_GXT_RENDER) {
-      console.log('[ember-outlet] updateOutletState: newTemplate=', newTemplate?.moduleName || typeof newTemplate,
-        'lastRendered=', this._lastRenderedTemplate?.moduleName || typeof this._lastRenderedTemplate,
-        'changed=', newTemplate !== this._lastRenderedTemplate);
+      console.log(
+        '[ember-outlet] updateOutletState: newTemplate=',
+        newTemplate?.moduleName || typeof newTemplate,
+        'lastRendered=',
+        this._lastRenderedTemplate?.moduleName || typeof this._lastRenderedTemplate,
+        'changed=',
+        newTemplate !== this._lastRenderedTemplate
+      );
     }
 
     if (newTemplate !== this._lastRenderedTemplate) {
@@ -159,8 +167,16 @@ class EmberOutletElement extends HTMLElement {
       if (_cellFor) {
         try {
           const skipKeys = new Set([
-            'args', 'owner', 'outletState', 'model', 'constructor',
-            'init', 'willDestroy', 'toString', 'isDestroying', 'isDestroyed',
+            'args',
+            'owner',
+            'outletState',
+            'model',
+            'constructor',
+            'init',
+            'willDestroy',
+            'toString',
+            'isDestroying',
+            'isDestroyed',
           ]);
           const visited = new Set<string>();
           let proto = Object.getPrototypeOf(controller);
@@ -179,11 +195,15 @@ class EmberOutletElement extends HTMLElement {
                 _cellFor(nestedContext, key, /* skipDefine */ false);
                 const cell = _cellFor(nestedContext, key, /* skipDefine */ true);
                 if (cell) cell.update(actualValue);
-              } catch { /* ignore */ }
+              } catch {
+                /* ignore */
+              }
             }
             proto = Object.getPrototypeOf(proto);
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
 
@@ -226,7 +246,9 @@ class EmberOutletElement extends HTMLElement {
           }
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     try {
       if (typeof tpl?.render === 'function') {
@@ -245,7 +267,9 @@ class EmberOutletElement extends HTMLElement {
         try {
           const popParentFn = (globalThis as any).__gxtPopParentView;
           if (popParentFn) popParentFn();
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
   }
@@ -291,7 +315,10 @@ export default function createOutletTemplate(_owner: any) {
 
     if ((globalThis as any).__DEBUG_GXT_RENDER) {
       console.log('[outlet.ts] render called');
-      console.log('[outlet.ts] context keys:', context ? Object.keys(context).slice(0, 8).join(',') : 'null');
+      console.log(
+        '[outlet.ts] context keys:',
+        context ? Object.keys(context).slice(0, 8).join(',') : 'null'
+      );
       console.log('[outlet.ts] outletState:', outletState ? 'exists' : 'null');
     }
 
@@ -303,7 +330,12 @@ export default function createOutletTemplate(_owner: any) {
 
     if ((globalThis as any).__DEBUG_GXT_RENDER) {
       console.log('[outlet.ts] nestedOutlet:', nestedOutlet ? 'exists' : 'null');
-      console.log('[outlet.ts] nestedTemplate:', nestedTemplate ? 'exists' : 'null', 'type:', typeof nestedTemplate);
+      console.log(
+        '[outlet.ts] nestedTemplate:',
+        nestedTemplate ? 'exists' : 'null',
+        'type:',
+        typeof nestedTemplate
+      );
     }
 
     // The factory render path is used for `{{outlet}}` invocations that
@@ -343,7 +375,9 @@ export default function createOutletTemplate(_owner: any) {
           node = node.parentElement;
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     try {
       if (nestedTemplate && typeof nestedTemplate.render === 'function') {
@@ -380,12 +414,14 @@ export default function createOutletTemplate(_owner: any) {
         try {
           const popParentFn = (globalThis as any).__gxtPopParentView;
           if (popParentFn) popParentFn();
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
     // If no nested template, just return empty - outlet has nothing to show
     return { nodes: [], ctx: context };
-    };
+  };
 
   return factory;
 }

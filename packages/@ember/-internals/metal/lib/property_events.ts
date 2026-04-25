@@ -76,90 +76,86 @@ function notifyPropertyChange(
   if (!wasPresent) perObj.add(keyName);
 
   try {
-
-  // GXT integration: Trigger synchronous re-render to keep GXT components updated.
-  // Skip during initialization — reading properties at this stage can trigger
-  // computed-property getters whose cache revision hasn't been set yet (e.g. PromiseProxy).
-  // Still fire for prototype meta objects so GXT stays in sync.
-  if (meta === null || !meta.isInitializing()) {
-    const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
-    if (typeof gxtTrigger === 'function') {
-      // Mark the trigger scope so CP.get can preserve classic "don't eagerly
-      // evaluate never-consumed CPs during a change notification" semantics.
-      // (core.ts's lazy wrapper is only installed for proxied CoreObjects,
-      // which misses plain `class Foo { @computed ... }` cases.)
-      const gRoot: any = globalThis as any;
-      const wasInside = gRoot.__gxtInTriggerReRender;
-      gRoot.__gxtInTriggerReRender = true;
-      try {
-        gxtTrigger(obj, keyName);
-      } finally {
-        gRoot.__gxtInTriggerReRender = wasInside;
+    // GXT integration: Trigger synchronous re-render to keep GXT components updated.
+    // Skip during initialization — reading properties at this stage can trigger
+    // computed-property getters whose cache revision hasn't been set yet (e.g. PromiseProxy).
+    // Still fire for prototype meta objects so GXT stays in sync.
+    if (meta === null || !meta.isInitializing()) {
+      const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
+      if (typeof gxtTrigger === 'function') {
+        // Mark the trigger scope so CP.get can preserve classic "don't eagerly
+        // evaluate never-consumed CPs during a change notification" semantics.
+        // (core.ts's lazy wrapper is only installed for proxied CoreObjects,
+        // which misses plain `class Foo { @computed ... }` cases.)
+        const gRoot: any = globalThis as any;
+        const wasInside = gRoot.__gxtInTriggerReRender;
+        gRoot.__gxtInTriggerReRender = true;
+        try {
+          gxtTrigger(obj, keyName);
+        } finally {
+          gRoot.__gxtInTriggerReRender = wasInside;
+        }
       }
     }
-  }
 
-  // Track whether we are currently notifying on a prototype-meta object.
-  // When true, classic Ember skips the entire notification — including
-  // `PROPERTY_DID_CHANGE`. In GXT mode we sometimes still need
-  // `markObjectAsDirty` to fire so async QP observers on controller
-  // instances (where `meta.proto === meta.source === obj` is a false
-  // positive) detect changes. However, true class prototypes should
-  // NEVER have their `PROPERTY_DID_CHANGE` hook invoked.
-  let isProtoNotify = false;
-  if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
-    if (!meta.isInitializing() && (globalThis as any).__GXT_MODE__) {
-      // Fall through — allow markObjectAsDirty for GXT prototype-meta objects,
-      // but remember we are in a prototype notification so we skip
-      // `PROPERTY_DID_CHANGE` below (matching classic behavior).
-      isProtoNotify = true;
-    } else {
+    // Track whether we are currently notifying on a prototype-meta object.
+    // When true, classic Ember skips the entire notification — including
+    // `PROPERTY_DID_CHANGE`. In GXT mode we sometimes still need
+    // `markObjectAsDirty` to fire so async QP observers on controller
+    // instances (where `meta.proto === meta.source === obj` is a false
+    // positive) detect changes. However, true class prototypes should
+    // NEVER have their `PROPERTY_DID_CHANGE` hook invoked.
+    let isProtoNotify = false;
+    if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
+      if (!meta.isInitializing() && (globalThis as any).__GXT_MODE__) {
+        // Fall through — allow markObjectAsDirty for GXT prototype-meta objects,
+        // but remember we are in a prototype notification so we skip
+        // `PROPERTY_DID_CHANGE` below (matching classic behavior).
+        isProtoNotify = true;
+      } else {
+        return;
+      }
+    }
+
+    // Guard against infinite re-entrant notifyPropertyChange calls
+    // This can happen when GXT rendering triggers property changes that
+    // trigger more rendering in a cycle
+    if (_notifyDepth >= MAX_NOTIFY_DEPTH) {
       return;
     }
-  }
+    _notifyDepth++;
 
-  // Guard against infinite re-entrant notifyPropertyChange calls
-  // This can happen when GXT rendering triggers property changes that
-  // trigger more rendering in a cycle
-  if (_notifyDepth >= MAX_NOTIFY_DEPTH) {
-    return;
-  }
-  _notifyDepth++;
-
-  // GXT infinite loop detection
-  if (typeof (globalThis as any).__gxtOpCheck === 'function') {
-    (globalThis as any).__gxtOpCheck();
-  }
-  try {
-
-  markObjectAsDirty(obj, keyName);
-
-  if (deferred <= 0) {
-    flushSyncObservers();
-  }
-
-  // Skip `PROPERTY_DID_CHANGE` when notifying on a prototype-meta object:
-  // classic Ember returns early before reaching this hook (see the guard
-  // above), and the `notifyPropertyChange` contract tests assert that
-  // prototypes never fire the hook.
-  if (!isProtoNotify && PROPERTY_DID_CHANGE in obj) {
-    // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
-    assert('property did change hook is invalid', hasPropertyDidChange(obj));
-
-    // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
-    // that checks its arguments length, so we have to explicitly not call this with `value`
-    // if it is not passed to `notifyPropertyChange`
-    if (arguments.length === 4) {
-      obj[PROPERTY_DID_CHANGE](keyName, value);
-    } else {
-      obj[PROPERTY_DID_CHANGE](keyName);
+    // GXT infinite loop detection
+    if (typeof (globalThis as any).__gxtOpCheck === 'function') {
+      (globalThis as any).__gxtOpCheck();
     }
-  }
+    try {
+      markObjectAsDirty(obj, keyName);
 
-  } finally {
-    _notifyDepth--;
-  }
+      if (deferred <= 0) {
+        flushSyncObservers();
+      }
 
+      // Skip `PROPERTY_DID_CHANGE` when notifying on a prototype-meta object:
+      // classic Ember returns early before reaching this hook (see the guard
+      // above), and the `notifyPropertyChange` contract tests assert that
+      // prototypes never fire the hook.
+      if (!isProtoNotify && PROPERTY_DID_CHANGE in obj) {
+        // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
+        assert('property did change hook is invalid', hasPropertyDidChange(obj));
+
+        // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
+        // that checks its arguments length, so we have to explicitly not call this with `value`
+        // if it is not passed to `notifyPropertyChange`
+        if (arguments.length === 4) {
+          obj[PROPERTY_DID_CHANGE](keyName, value);
+        } else {
+          obj[PROPERTY_DID_CHANGE](keyName);
+        }
+      }
+    } finally {
+      _notifyDepth--;
+    }
   } finally {
     // Clear the narrow CP invalidation marker only if we added it here.
     if (!wasPresent) {
@@ -224,8 +220,11 @@ function changeProperties(callback: () => void): void {
 // { key, value } pairs for each recomputed property.
 // This is called from compile.ts __gxtTriggerReRender after the primary
 // cell is updated, so that derived computed properties are also refreshed.
-if (typeof (globalThis as any).__gxtTriggerReRender === 'function' || true) {
-  (globalThis as any).__gxtRecomputeDependents = function(obj: object, changedKey: string): Array<{ key: string; value: unknown }> {
+{
+  (globalThis as any).__gxtRecomputeDependents = function (
+    obj: object,
+    changedKey: string
+  ): Array<{ key: string; value: unknown }> {
     const results: Array<{ key: string; value: unknown }> = [];
     // Inside a `beginPropertyChanges`/`endPropertyChanges` batch, classic
     // Ember never evaluates dependent computed properties — it defers all
@@ -276,9 +275,13 @@ if (typeof (globalThis as any).__gxtTriggerReRender === 'function' || true) {
             newValue = descriptor.get(obj, propKey);
           }
           results.push({ key: propKey, value: newValue });
-        } catch { /* skip if getter throws */ }
+        } catch {
+          /* skip if getter throws */
+        }
       });
-    } catch { /* skip if meta access fails */ }
+    } catch {
+      /* skip if meta access fails */
+    }
     return results;
   };
 }

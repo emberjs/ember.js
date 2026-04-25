@@ -15,7 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
@@ -31,7 +33,7 @@ jobs:
             --baseline test-results/gxt-baseline.json
       - name: Upload run artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: gxt-full-run
           path: |
@@ -40,14 +42,14 @@ jobs:
           if-no-files-found: ignore
       - name: Upload candidate baseline
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: gxt-candidate-baseline
           path: test-results/gxt-summary.json
           if-no-files-found: ignore
       - name: File regression issue
         if: failure() && steps.gxt-run.outcome == 'failure'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const title = `GXT nightly regression on ${context.sha.substring(0,7)}`;

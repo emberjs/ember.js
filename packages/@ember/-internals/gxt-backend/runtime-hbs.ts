@@ -43,8 +43,7 @@ const templateCache = new Map<string, any>();
  * does (see packages/demo/compat/gxt-template-compiler-plugin.mjs).
  */
 function transformOutletInSource(code: string): string {
-  const isIdent = (ch: string | undefined) =>
-    !!ch && /[A-Za-z0-9_$]/.test(ch);
+  const isIdent = (ch: string | undefined) => !!ch && /[A-Za-z0-9_$]/.test(ch);
   const skipWS = (c: string, i: number) => {
     while (i < c.length && (c[i] === ' ' || c[i] === '\t' || c[i] === '\n' || c[i] === '\r')) i++;
     return i;
@@ -118,7 +117,8 @@ export function hbs(strings: TemplateStringsArray, ...values: any[]): any {
   const itemToNode = (item: any): Node | null => {
     if (item instanceof Node) return item;
     if (typeof item === 'string') return document.createTextNode(item);
-    if (typeof item === 'number' || typeof item === 'boolean') return document.createTextNode(String(item));
+    if (typeof item === 'number' || typeof item === 'boolean')
+      return document.createTextNode(String(item));
     if (item && typeof item === 'object' && '$nodes' in item) {
       const frag = document.createDocumentFragment();
       for (const n of (item as any).$nodes || []) {
@@ -187,10 +187,17 @@ export function hbs(strings: TemplateStringsArray, ...values: any[]): any {
         return { nodes, ctx: context };
       } catch (err: any) {
         // Rethrow assertion/validation errors so they propagate to test harnesses
-        if (err && (err.message?.includes('Assertion Failed') || err.message?.includes('Custom modifier managers must have'))) {
+        if (
+          err &&
+          (err.message?.includes('Assertion Failed') ||
+            err.message?.includes('Custom modifier managers must have'))
+        ) {
           throw err;
         }
-        console.error('[runtime-hbs] Render error:', err instanceof Error ? err.message : String(err));
+        console.error(
+          '[runtime-hbs] Render error:',
+          err instanceof Error ? err.message : String(err)
+        );
         return { nodes: [], ctx: context };
       }
     },

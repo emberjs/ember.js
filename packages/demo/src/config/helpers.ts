@@ -12,9 +12,7 @@ class CustomComponentManager {
   }
   capabilities = capabilities('3.13');
 
-  createComponent(
-    ...args: Parameters<EmberGlimmerComponentManager['createComponent']>
-  ) {
+  createComponent(...args: Parameters<EmberGlimmerComponentManager['createComponent']>) {
     const component = super.createComponent(...args);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     setOwner(component, getOwner(this)!);

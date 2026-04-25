@@ -1,10 +1,8 @@
-/* global process */
-
 import { defineConfig } from 'vite';
 import { babel } from '@rollup/plugin-babel';
 import { resolve, dirname, join } from 'node:path';
 import { realpathSync, statSync, readFileSync, readdirSync, existsSync } from 'node:fs';
-import { fileURLToPath, URL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { compiler } from '@lifeart/gxt/compiler';
@@ -17,13 +15,17 @@ import {
 } from './rollup.config.mjs';
 import { templateTag } from '@embroider/vite';
 
-const require = createRequire(import.meta.url);
+const localRequire = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
-const { packageName: getPackageName, PackageCache } = require('@embroider/shared-internals');
+const { packageName: getPackageName, PackageCache } = localRequire('@embroider/shared-internals');
 // Helper to resolve symlinks for GXT dist files so aliases match the dedup plugin's output
 function resolveGxtPath(relativePath) {
   const symlinkPath = fileURLToPath(new URL(relativePath, import.meta.url));
-  try { return realpathSync(symlinkPath); } catch { return symlinkPath; }
+  try {
+    return realpathSync(symlinkPath);
+  } catch {
+    return symlinkPath;
+  }
 }
 const owerrideRoot = import.meta.url;
 export default defineConfig(({ mode }) => {
@@ -85,7 +87,7 @@ export default defineConfig(({ mode }) => {
           // to real file paths from hiddenDependencies.
           // GXT compile chunk externals — only used at build time by the compiler plugin
           '@babel/core': '@lifeart/gxt',
-          'typescript': '@lifeart/gxt',
+          typescript: '@lifeart/gxt',
           'content-tag': '@lifeart/gxt',
         },
         { enableLocalDebug: true, viteDevFallthrough: true }
@@ -133,7 +135,10 @@ export default defineConfig(({ mode }) => {
             {
               find: 'ember-template-compiler',
               replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/ember-template-compiler`, owerrideRoot)
+                new URL(
+                  `./packages/@ember/-internals/gxt-backend/ember-template-compiler`,
+                  owerrideRoot
+                )
               ),
             },
             // Alias internal-test-helpers compile to use gxt compilation
@@ -145,16 +150,23 @@ export default defineConfig(({ mode }) => {
             },
             {
               find: '@ember/template-compilation',
-              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/compile`, owerrideRoot)),
+              replacement: fileURLToPath(
+                new URL(`./packages/@ember/-internals/gxt-backend/compile`, owerrideRoot)
+              ),
             },
             {
               find: '@ember/-internals/deprecations',
-              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/deprecate`, owerrideRoot)),
+              replacement: fileURLToPath(
+                new URL(`./packages/@ember/-internals/gxt-backend/deprecate`, owerrideRoot)
+              ),
             },
             {
               find: '@glimmer/application',
               replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-application`, owerrideRoot)
+                new URL(
+                  `./packages/@ember/-internals/gxt-backend/glimmer-application`,
+                  owerrideRoot
+                )
               ),
             },
             {
@@ -165,19 +177,27 @@ export default defineConfig(({ mode }) => {
             },
             {
               find: '@glimmer/manager',
-              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/manager`, owerrideRoot)),
+              replacement: fileURLToPath(
+                new URL(`./packages/@ember/-internals/gxt-backend/manager`, owerrideRoot)
+              ),
             },
             {
               find: '@glimmer/tracking/primitives/cache',
-              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)),
+              replacement: fileURLToPath(
+                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)
+              ),
             },
             {
               find: '@glimmer/tracking',
-              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)),
+              replacement: fileURLToPath(
+                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)
+              ),
             },
             {
               find: '@glimmer/validator',
-              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/validator`, owerrideRoot)),
+              replacement: fileURLToPath(
+                new URL(`./packages/@ember/-internals/gxt-backend/validator`, owerrideRoot)
+              ),
             },
             {
               find: '@glimmer/destroyable',
@@ -187,7 +207,9 @@ export default defineConfig(({ mode }) => {
             },
             {
               find: '@glimmer/reference',
-              replacement: fileURLToPath(new URL(`./packages/@ember/-internals/gxt-backend/reference`, owerrideRoot)),
+              replacement: fileURLToPath(
+                new URL(`./packages/@ember/-internals/gxt-backend/reference`, owerrideRoot)
+              ),
             },
             {
               find: '@lifeart/gxt/runtime-compiler',
@@ -198,10 +220,7 @@ export default defineConfig(({ mode }) => {
             {
               find: 'decorator-transforms/runtime',
               replacement: fileURLToPath(
-                new URL(
-                  `./node_modules/decorator-transforms/dist/runtime.js`,
-                  owerrideRoot
-                )
+                new URL(`./node_modules/decorator-transforms/dist/runtime.js`, owerrideRoot)
               ),
             },
             {
@@ -233,14 +252,16 @@ function gxtEmberWrapperRedirect() {
   const REDIRECT_SYMBOLS = new Set(['$_tag', '$_maybeHelper', '$_dc']);
   const WRAPPER_MODULE = '@ember/-internals/gxt-backend/ember-gxt-wrappers';
   // Match import { ... } from "@lifeart/gxt" or from GXT dist paths
-  const importRe = /import\s*\{([^}]+)\}\s*from\s*["'](@lifeart\/gxt|[^"']*gxt\.index\.es\.js[^"']*)["']/g;
+  const importRe =
+    /import\s*\{([^}]+)\}\s*from\s*["'](@lifeart\/gxt|[^"']*gxt\.index\.es\.js[^"']*)["']/g;
 
   return {
     name: 'gxt-ember-wrapper-redirect',
     // No enforce — runs in normal phase, after GXT compiler (which is enforce: 'pre')
     transform(code, id) {
       // Only process files that import GXT primitives
-      if (!code.includes('$_tag') && !code.includes('$_maybeHelper') && !code.includes('$_dc')) return null;
+      if (!code.includes('$_tag') && !code.includes('$_maybeHelper') && !code.includes('$_dc'))
+        return null;
       // Skip node_modules
       if (id.includes('node_modules')) return null;
 
@@ -251,7 +272,12 @@ function gxtEmberWrapperRedirect() {
       importRe.lastIndex = 0;
       let match;
       while ((match = importRe.exec(code)) !== null) {
-        matches.push({ index: match.index, length: match[0].length, specifiers: match[1], source: match[2] });
+        matches.push({
+          index: match.index,
+          length: match[0].length,
+          specifiers: match[1],
+          source: match[2],
+        });
       }
 
       if (matches.length === 0) return null;
@@ -259,7 +285,10 @@ function gxtEmberWrapperRedirect() {
       // Process from last to first to preserve offsets
       for (let i = matches.length - 1; i >= 0; i--) {
         const m = matches[i];
-        const specifiers = m.specifiers.split(',').map(s => s.trim()).filter(Boolean);
+        const specifiers = m.specifiers
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
         const toRedirect = [];
         const toKeep = [];
 
@@ -302,7 +331,11 @@ function gxtModuleDedup() {
   // symlink resolution doesn't happen automatically.
   const gxtDistDir = resolve(projectRoot, 'packages/demo/node_modules/@lifeart/gxt/dist');
   let gxtRealDistDir;
-  try { gxtRealDistDir = realpathSync(gxtDistDir); } catch { gxtRealDistDir = gxtDistDir; }
+  try {
+    gxtRealDistDir = realpathSync(gxtDistDir);
+  } catch {
+    gxtRealDistDir = gxtDistDir;
+  }
   // If dist dir and real dir are the same, no symlinks to resolve
   const isSymlinked = gxtDistDir !== gxtRealDistDir;
   return {
@@ -310,16 +343,28 @@ function gxtModuleDedup() {
     enforce: 'pre',
     resolveId(source, importer) {
       if (!isSymlinked) return; // No-op when not symlinked
-      if (!importer || !source.startsWith('./') && !source.startsWith('../')) return;
+      if (!importer || (!source.startsWith('./') && !source.startsWith('../'))) return;
       if (importer.startsWith('\0')) return;
       const importerPath = importer.split('?')[0].split('#')[0];
       let importerReal;
-      try { importerReal = realpathSync(importerPath); } catch { importerReal = importerPath; }
+      try {
+        importerReal = realpathSync(importerPath);
+      } catch {
+        importerReal = importerPath;
+      }
       const resolvedPath = resolve(dirname(importerReal), source);
       let resolvedReal;
-      try { resolvedReal = realpathSync(resolvedPath); } catch { resolvedReal = resolvedPath; }
+      try {
+        resolvedReal = realpathSync(resolvedPath);
+      } catch {
+        resolvedReal = resolvedPath;
+      }
       if (!resolvedReal.startsWith(gxtRealDistDir)) return;
-      try { statSync(resolvedReal); } catch { return; }
+      try {
+        statSync(resolvedReal);
+      } catch {
+        return;
+      }
       return resolvedReal;
     },
   };
@@ -336,7 +381,11 @@ function gxtModuleDedup() {
 function gxtPatchVmMemoryLeaks() {
   const gxtDistDir = resolve(projectRoot, 'packages/demo/node_modules/@lifeart/gxt/dist');
   let gxtRealDistDir;
-  try { gxtRealDistDir = realpathSync(gxtDistDir); } catch { gxtRealDistDir = gxtDistDir; }
+  try {
+    gxtRealDistDir = realpathSync(gxtDistDir);
+  } catch {
+    gxtRealDistDir = gxtDistDir;
+  }
   return {
     name: 'gxt-patch-vm-memory-leaks',
     enforce: 'pre',
@@ -380,7 +429,11 @@ function gxtStalenessCheck() {
   const GXT_SOURCE_ROOT = '/Users/lifeart/Repos/glimmer-next';
   const gxtDistDir = resolve(projectRoot, 'packages/demo/node_modules/@lifeart/gxt/dist');
   let realDistDir;
-  try { realDistDir = realpathSync(gxtDistDir); } catch { realDistDir = gxtDistDir; }
+  try {
+    realDistDir = realpathSync(gxtDistDir);
+  } catch {
+    realDistDir = gxtDistDir;
+  }
 
   function collectFiles(dir, extensions) {
     const results = [];
@@ -389,13 +442,21 @@ function gxtStalenessCheck() {
       for (const entry of entries) {
         const full = join(dir, entry.name);
         if (entry.isDirectory()) {
-          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === '__tests__' || entry.name === '__test-utils__') continue;
+          if (
+            entry.name.startsWith('.') ||
+            entry.name === 'node_modules' ||
+            entry.name === '__tests__' ||
+            entry.name === '__test-utils__'
+          )
+            continue;
           results.push(...collectFiles(full, extensions));
-        } else if (extensions.some(ext => entry.name.endsWith(ext))) {
+        } else if (extensions.some((ext) => entry.name.endsWith(ext))) {
           results.push(full);
         }
       }
-    } catch {}
+    } catch {
+      // fs probing: missing/unreadable entries are expected
+    }
     return results;
   }
 
@@ -406,7 +467,9 @@ function gxtStalenessCheck() {
         const rel = f.slice(rootDir.length);
         hash.update(rel + '\n');
         hash.update(readFileSync(f));
-      } catch {}
+      } catch {
+        // fs probing: missing/unreadable entries are expected
+      }
     }
     return hash.digest('hex');
   }
@@ -442,8 +505,17 @@ function gxtStalenessCheck() {
             console.error('  The GXT source at /Users/lifeart/Repos/glimmer-next/ has changed');
             console.error('  since the dist was last built and copied.');
             console.error('');
-            console.error('  Built:   ' + meta.buildTime + ' (git: ' + meta.gitHash + (meta.gitDirty ? ' dirty' : '') + ')');
-            console.error('  Sources: ' + srcFiles.length + ' files, hash: ' + currentHash.slice(0, 12));
+            console.error(
+              '  Built:   ' +
+                meta.buildTime +
+                ' (git: ' +
+                meta.gitHash +
+                (meta.gitDirty ? ' dirty' : '') +
+                ')'
+            );
+            console.error(
+              '  Sources: ' + srcFiles.length + ' files, hash: ' + currentHash.slice(0, 12)
+            );
             console.error('  Dist:    hash: ' + meta.sourceHash.slice(0, 12));
             console.error('');
             console.error('  To fix, run in /Users/lifeart/Repos/glimmer-next/:');
@@ -453,7 +525,9 @@ function gxtStalenessCheck() {
             console.error(`  (staleness check took ${elapsed}ms)`);
             console.error('');
           } else {
-            console.log(`\x1b[32m[gxt] Dist is up-to-date (git: ${meta.gitHash}${meta.gitDirty ? ' dirty' : ''}, check took ${elapsed}ms)\x1b[0m`);
+            console.log(
+              `\x1b[32m[gxt] Dist is up-to-date (git: ${meta.gitHash}${meta.gitDirty ? ' dirty' : ''}, check took ${elapsed}ms)\x1b[0m`
+            );
           }
           return;
         } catch {
@@ -462,20 +536,42 @@ function gxtStalenessCheck() {
       }
 
       // Method 2: Timestamp comparison fallback (when no .build-meta.json)
-      const srcFiles = collectFiles(resolve(GXT_SOURCE_ROOT, 'src'), ['.ts', '.js', '.gts', '.gjs'])
-        .concat(collectFiles(resolve(GXT_SOURCE_ROOT, 'plugins'), ['.ts', '.js']));
+      const srcFiles = collectFiles(resolve(GXT_SOURCE_ROOT, 'src'), [
+        '.ts',
+        '.js',
+        '.gts',
+        '.gjs',
+      ]).concat(collectFiles(resolve(GXT_SOURCE_ROOT, 'plugins'), ['.ts', '.js']));
       if (srcFiles.length === 0) return;
 
       const distFiles = collectFiles(realDistDir, ['.js']);
       if (distFiles.length === 0) return;
 
-      let newestSrcMtime = 0, newestSrcPath = '';
+      let newestSrcMtime = 0,
+        newestSrcPath = '';
       for (const f of srcFiles) {
-        try { const mt = statSync(f).mtimeMs; if (mt > newestSrcMtime) { newestSrcMtime = mt; newestSrcPath = f; } } catch {}
+        try {
+          const mt = statSync(f).mtimeMs;
+          if (mt > newestSrcMtime) {
+            newestSrcMtime = mt;
+            newestSrcPath = f;
+          }
+        } catch {
+          /* stale mtime probe */
+        }
       }
-      let newestDistMtime = 0, newestDistPath = '';
+      let newestDistMtime = 0,
+        newestDistPath = '';
       for (const f of distFiles) {
-        try { const mt = statSync(f).mtimeMs; if (mt > newestDistMtime) { newestDistMtime = mt; newestDistPath = f; } } catch {}
+        try {
+          const mt = statSync(f).mtimeMs;
+          if (mt > newestDistMtime) {
+            newestDistMtime = mt;
+            newestDistPath = f;
+          }
+        } catch {
+          /* stale mtime probe */
+        }
       }
 
       const elapsed = (performance.now() - start).toFixed(1);
@@ -496,10 +592,14 @@ function gxtStalenessCheck() {
         console.error('    \x1b[1;33mnpm run build-lib\x1b[0m');
         console.error('');
         console.error('\x1b[1;31m' + '='.repeat(70) + '\x1b[0m');
-        console.error(`  (staleness check took ${elapsed}ms, no .build-meta.json — using mtime fallback)`);
+        console.error(
+          `  (staleness check took ${elapsed}ms, no .build-meta.json — using mtime fallback)`
+        );
         console.error('');
       } else {
-        console.log(`\x1b[32m[gxt] Dist appears up-to-date by mtime (check took ${elapsed}ms, consider running build-lib to generate .build-meta.json)\x1b[0m`);
+        console.log(
+          `\x1b[32m[gxt] Dist appears up-to-date by mtime (check took ${elapsed}ms, consider running build-lib to generate .build-meta.json)\x1b[0m`
+        );
       }
     },
   };

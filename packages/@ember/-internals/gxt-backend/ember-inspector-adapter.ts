@@ -94,10 +94,7 @@ function buildNode(view: ViewLike): InspectorNode | null {
     `gxt-view-${Math.random().toString(36).slice(2, 10)}`;
 
   const name =
-    view._gxtComponentName ??
-    view._debugName ??
-    view.constructor?.name ??
-    'UnknownComponent';
+    view._gxtComponentName ?? view._debugName ?? view.constructor?.name ?? 'UnknownComponent';
 
   const args = {
     positional: view._gxtArgs?.positional ?? [],

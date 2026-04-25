@@ -93,9 +93,8 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
  * }
  * ```
  */
-export interface ExplicitClassOptions<
-  C extends ComponentClass,
-> extends BaseClassTemplateOptions<C> {
+export interface ExplicitClassOptions<C extends ComponentClass>
+  extends BaseClassTemplateOptions<C> {
   scope(instance?: InstanceType<C>): Record<string, unknown>;
 }
 
@@ -301,17 +300,67 @@ function _extractScopeFromEval(
     }
   }
 
-  return Object.keys(scope).length > 0 ? scope : undefined as any;
+  return Object.keys(scope).length > 0 ? scope : (undefined as any);
 }
 
 // HBS syntax words that should not be treated as variable references
 const _HBS_SYNTAX_WORDS = new Set([
-  'as', 'div', 'span', 'button', 'input', 'textarea', 'form', 'a', 'p', 'ul', 'li',
-  'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr', 'td', 'th', 'thead',
-  'tbody', 'img', 'br', 'hr', 'nav', 'section', 'article', 'header', 'footer',
-  'main', 'aside', 'label', 'select', 'option', 'pre', 'code', 'em', 'strong',
-  'class', 'id', 'type', 'name', 'value', 'checked', 'disabled', 'href', 'src',
-  'click', 'true', 'false', 'null', 'undefined', 'this',
+  'as',
+  'div',
+  'span',
+  'button',
+  'input',
+  'textarea',
+  'form',
+  'a',
+  'p',
+  'ul',
+  'li',
+  'ol',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'table',
+  'tr',
+  'td',
+  'th',
+  'thead',
+  'tbody',
+  'img',
+  'br',
+  'hr',
+  'nav',
+  'section',
+  'article',
+  'header',
+  'footer',
+  'main',
+  'aside',
+  'label',
+  'select',
+  'option',
+  'pre',
+  'code',
+  'em',
+  'strong',
+  'class',
+  'id',
+  'type',
+  'name',
+  'value',
+  'checked',
+  'disabled',
+  'href',
+  'src',
+  'click',
+  'true',
+  'false',
+  'null',
+  'undefined',
+  'this',
 ]);
 
 export function template(

@@ -59,7 +59,7 @@
       // They ensure GXT state is clean at the start of each test and cleaned up
       // after each test, preventing phantom failures from leaked state.
 
-      QUnit.testStart(function() {
+      QUnit.testStart(function () {
         // Signal that we're no longer in a test transition
         globalThis.__gxtTestTransition = false;
         // Reset the operation counter so each test gets a fresh budget
@@ -73,7 +73,11 @@
         // failed or didn't fully clean up, this ensures a clean slate.
         var cleanup = globalThis.__gxtCleanupActiveComponents;
         if (typeof cleanup === 'function') {
-          try { cleanup(); } catch(e) { /* ignore cleanup errors */ }
+          try {
+            cleanup();
+          } catch (e) {
+            /* ignore cleanup errors */
+          }
         }
         // Reset sync flags that the cleanup might not cover
         globalThis.__gxtPendingSync = false;
@@ -86,7 +90,7 @@
         }
       });
 
-      QUnit.testDone(function() {
+      QUnit.testDone(function () {
         // Signal that we're between tests — interval timer should not fire
         globalThis.__gxtTestTransition = true;
         // Safety net: reset syncing flag after each test in case it got stuck
@@ -112,7 +116,7 @@
       // we throw to break out of the loop.
       globalThis.__gxtOpCount = 0;
       globalThis.__gxtOpLimit = 500000; // 500K operations before we break
-      globalThis.__gxtOpCheck = function() {
+      globalThis.__gxtOpCheck = function () {
         if (++globalThis.__gxtOpCount > globalThis.__gxtOpLimit) {
           globalThis.__gxtOpCount = 0;
           throw new Error('[GXT] Operation limit exceeded - breaking infinite loop');

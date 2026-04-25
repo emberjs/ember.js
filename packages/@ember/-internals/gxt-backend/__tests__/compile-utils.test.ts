@@ -340,7 +340,10 @@ describe('findDottedTags', () => {
 
   it('finds multiple dotted tags', () => {
     const results = t.findDottedTags('<card.Header > <card.Body >');
-    expect(results).toEqual([['card', 'Header'], ['card', 'Body']]);
+    expect(results).toEqual([
+      ['card', 'Header'],
+      ['card', 'Body'],
+    ]);
   });
 
   it('requires lowercase start for head', () => {
@@ -375,7 +378,10 @@ describe('findDottedMustaches', () => {
 
   it('finds multiple dotted mustaches', () => {
     const results = t.findDottedMustaches('{{a.b}} and {{c.d}}');
-    expect(results).toEqual([{ head: 'a', tail: 'b' }, { head: 'c', tail: 'd' }]);
+    expect(results).toEqual([
+      { head: 'a', tail: 'b' },
+      { head: 'c', tail: 'd' },
+    ]);
   });
 
   it('requires lowercase head start', () => {

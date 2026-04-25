@@ -183,10 +183,8 @@ export interface WithPrepareArgs<
   prepareArgs(state: ComponentDefinitionState, args: VMArguments): Nullable<PreparedArguments>;
 }
 
-export interface WithSubOwner<
-  ComponentInstanceState = unknown,
-  ComponentDefinitionState = unknown,
-> extends InternalComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+export interface WithSubOwner<ComponentInstanceState = unknown, ComponentDefinitionState = unknown>
+  extends InternalComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   getOwner(state: ComponentInstanceState): Owner;
 }
 
@@ -229,9 +227,8 @@ export interface WithCreateInstance<
   didUpdate(state: ComponentInstanceState): void;
 }
 
-export interface WithUpdateHook<
-  ComponentInstanceState = unknown,
-> extends InternalComponentManager<ComponentInstanceState> {
+export interface WithUpdateHook<ComponentInstanceState = unknown>
+  extends InternalComponentManager<ComponentInstanceState> {
   // When the component's tag has invalidated, the manager's `update` hook is
   // called.
   update(state: ComponentInstanceState, dynamicScope: Nullable<DynamicScope>): void;
@@ -248,17 +245,15 @@ export interface WithDynamicLayout<
   getDynamicLayout(component: I, resolver: R): CompilableProgram | null;
 }
 
-export interface WithDynamicTagName<
-  ComponentInstanceState,
-> extends InternalComponentManager<ComponentInstanceState> {
+export interface WithDynamicTagName<ComponentInstanceState>
+  extends InternalComponentManager<ComponentInstanceState> {
   // If the component asks for the dynamic tag name capability, ask for
   // the tag name to use. (Only used in the "WrappedBuilder".)
   getTagName(component: ComponentInstanceState): Nullable<string>;
 }
 
-export interface WithAttributeHook<
-  ComponentInstanceState,
-> extends InternalComponentManager<ComponentInstanceState> {
+export interface WithAttributeHook<ComponentInstanceState>
+  extends InternalComponentManager<ComponentInstanceState> {
   didSplatAttributes(
     component: ComponentInstanceState,
     element: ComponentInstanceState,
@@ -266,9 +261,8 @@ export interface WithAttributeHook<
   ): void;
 }
 
-export interface WithElementHook<
-  ComponentInstanceState,
-> extends InternalComponentManager<ComponentInstanceState> {
+export interface WithElementHook<ComponentInstanceState>
+  extends InternalComponentManager<ComponentInstanceState> {
   // The `didCreateElement` hook is run for non-tagless components after the
   // element as been created, but before it has been appended ("flushed") to
   // the DOM. This hook allows the manager to save off the element, as well as

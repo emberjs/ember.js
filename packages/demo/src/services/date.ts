@@ -23,7 +23,7 @@ export default class DateService extends Service {
 
   @cached
   get date() {
-    console.log('ama cached getter, recalculating only on value change')
+    console.log('ama cached getter, recalculating only on value change');
     return this._date.toLocaleTimeString();
   }
 }

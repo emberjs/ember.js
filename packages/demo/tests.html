@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GXT Integration Tests</title>
-    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.20.0.css">
+    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.20.0.css" />
   </head>
   <body>
     <script>
@@ -13,50 +13,234 @@
       globalThis.__EMBER_USE_STRING_SYMBOLS__ = true;
 
       // Closure Component System - supports (component "name" ...args) sub-expressions
-      (function() {
-        var g = globalThis, MK = '__isClosureComponent__';
-        function isCC(v) { return v != null && typeof v === 'object' && v[MK] === true; }
+      (function () {
+        var g = globalThis,
+          MK = '__isClosureComponent__';
+        function isCC(v) {
+          return v != null && typeof v === 'object' && v[MK] === true;
+        }
         function makeCC(n, p, d) {
-          if (isCC(n)) { var m = n.__curriedPositional__.slice(); for (var i = 0; i < p.length; i++) if (i >= m.length) m.push(p[i]); return { __isClosureComponent__: true, __componentName__: n.__componentName__, __curriedPositional__: m, __curriedNamed__: Object.assign({}, n.__curriedNamed__, d) }; }
+          if (isCC(n)) {
+            var m = n.__curriedPositional__.slice();
+            for (var i = 0; i < p.length; i++) if (i >= m.length) m.push(p[i]);
+            return {
+              __isClosureComponent__: true,
+              __componentName__: n.__componentName__,
+              __curriedPositional__: m,
+              __curriedNamed__: Object.assign({}, n.__curriedNamed__, d),
+            };
+          }
           var r = typeof n === 'function' ? n() : n;
-          return { __isClosureComponent__: true, __componentName__: r == null ? '' : String(r), __curriedPositional__: p, __curriedNamed__: d };
+          return {
+            __isClosureComponent__: true,
+            __componentName__: r == null ? '' : String(r),
+            __curriedPositional__: p,
+            __curriedNamed__: d,
+          };
         }
         function ch() {
-          var a = arguments; if (a.length === 0) return undefined;
-          var first = a[0]; if (typeof first === 'function' && !first.prototype) first = first();
-          var pos = [], named = {};
-          for (var i = 1; i < a.length; i++) { var x = a[i]; if (x && typeof x === 'object' && !Array.isArray(x) && !isCC(x) && !(x instanceof Node)) { var entries = Object.entries(x); for (var j = 0; j < entries.length; j++) { var k = entries[j][0], v = entries[j][1]; if (k.indexOf('$_') !== 0 && k !== 'hash') named[k] = typeof v === 'function' && !v.prototype ? v() : v; } } else { pos.push(typeof x === 'function' && !x.prototype ? x() : x); } }
+          var a = arguments;
+          if (a.length === 0) return undefined;
+          var first = a[0];
+          if (typeof first === 'function' && !first.prototype) first = first();
+          var pos = [],
+            named = {};
+          for (var i = 1; i < a.length; i++) {
+            var x = a[i];
+            if (
+              x &&
+              typeof x === 'object' &&
+              !Array.isArray(x) &&
+              !isCC(x) &&
+              !(x instanceof Node)
+            ) {
+              var entries = Object.entries(x);
+              for (var j = 0; j < entries.length; j++) {
+                var k = entries[j][0],
+                  v = entries[j][1];
+                if (k.indexOf('$_') !== 0 && k !== 'hash')
+                  named[k] = typeof v === 'function' && !v.prototype ? v() : v;
+              }
+            } else {
+              pos.push(typeof x === 'function' && !x.prototype ? x() : x);
+            }
+          }
           return makeCC(first, pos, named);
         }
         function hCC(cc, args, fw, ctx, hFn) {
           if (!cc.__componentName__) return document.createComment('empty-cc');
-          var m = {}; if (cc.__curriedNamed__) { var e = Object.entries(cc.__curriedNamed__); for (var i = 0; i < e.length; i++) m[e[i][0]] = e[i][1]; }
-          if (args && typeof args === 'object') { var keys = Object.keys(args); for (var i = 0; i < keys.length; i++) { var key = keys[i]; if (key.indexOf('$') !== 0 && key !== 'hash') { var d = Object.getOwnPropertyDescriptor(args, key); if (d && d.get) Object.defineProperty(m, key, { get: d.get, enumerable: true, configurable: true }); else m[key] = args[key]; } } }
-          if (cc.__curriedPositional__ && cc.__curriedPositional__.length > 0) { var epc = m.__posCount__ != null ? (typeof m.__posCount__ === 'function' ? m.__posCount__() : m.__posCount__) : 0; if (epc === 0) { for (var i = 0; i < cc.__curriedPositional__.length; i++) { var pk = '__pos' + i + '__'; if (!(pk in m)) m[pk] = cc.__curriedPositional__[i]; } m.__posCount__ = cc.__curriedPositional__.length; } }
+          var m = {};
+          if (cc.__curriedNamed__) {
+            var e = Object.entries(cc.__curriedNamed__);
+            for (var i = 0; i < e.length; i++) m[e[i][0]] = e[i][1];
+          }
+          if (args && typeof args === 'object') {
+            var keys = Object.keys(args);
+            for (var i = 0; i < keys.length; i++) {
+              var key = keys[i];
+              if (key.indexOf('$') !== 0 && key !== 'hash') {
+                var d = Object.getOwnPropertyDescriptor(args, key);
+                if (d && d.get)
+                  Object.defineProperty(m, key, {
+                    get: d.get,
+                    enumerable: true,
+                    configurable: true,
+                  });
+                else m[key] = args[key];
+              }
+            }
+          }
+          if (cc.__curriedPositional__ && cc.__curriedPositional__.length > 0) {
+            var epc =
+              m.__posCount__ != null
+                ? typeof m.__posCount__ === 'function'
+                  ? m.__posCount__()
+                  : m.__posCount__
+                : 0;
+            if (epc === 0) {
+              for (var i = 0; i < cc.__curriedPositional__.length; i++) {
+                var pk = '__pos' + i + '__';
+                if (!(pk in m)) m[pk] = cc.__curriedPositional__[i];
+              }
+              m.__posCount__ = cc.__curriedPositional__.length;
+            }
+          }
           if (args && args.$slots) m.$slots = args.$slots;
           return hFn(cc.__componentName__, m, fw, ctx);
         }
         function rCC(cc) {
-          var mgrs = g.$_MANAGERS; if (!mgrs || !mgrs.component || !mgrs.component.canHandle(cc)) return document.createComment('no-cc');
-          var fn = mgrs.component.handle(cc, {}, [[], [], []], null); if (typeof fn !== 'function') return document.createComment('cc-nofn');
-          var r = fn(); if (r instanceof Node) return r;
-          if (Array.isArray(r)) { var f = document.createDocumentFragment(); for (var i = 0; i < r.length; i++) { if (r[i] instanceof Node) f.appendChild(r[i]); else if (r[i] != null) f.appendChild(document.createTextNode(String(r[i]))); } return f; }
-          if (r && typeof r === 'object') { var ss = Object.getOwnPropertySymbols(r); for (var i = 0; i < ss.length; i++) { if (Array.isArray(r[ss[i]])) { var f = document.createDocumentFragment(); for (var j = 0; j < r[ss[i]].length; j++) if (r[ss[i]][j] instanceof Node) f.appendChild(r[ss[i]][j]); return f; } } }
+          var mgrs = g.$_MANAGERS;
+          if (!mgrs || !mgrs.component || !mgrs.component.canHandle(cc))
+            return document.createComment('no-cc');
+          var fn = mgrs.component.handle(cc, {}, [[], [], []], null);
+          if (typeof fn !== 'function') return document.createComment('cc-nofn');
+          var r = fn();
+          if (r instanceof Node) return r;
+          if (Array.isArray(r)) {
+            var f = document.createDocumentFragment();
+            for (var i = 0; i < r.length; i++) {
+              if (r[i] instanceof Node) f.appendChild(r[i]);
+              else if (r[i] != null) f.appendChild(document.createTextNode(String(r[i])));
+            }
+            return f;
+          }
+          if (r && typeof r === 'object') {
+            var ss = Object.getOwnPropertySymbols(r);
+            for (var i = 0; i < ss.length; i++) {
+              if (Array.isArray(r[ss[i]])) {
+                var f = document.createDocumentFragment();
+                for (var j = 0; j < r[ss[i]].length; j++)
+                  if (r[ss[i]][j] instanceof Node) f.appendChild(r[ss[i]][j]);
+                return f;
+              }
+            }
+          }
           return document.createComment('cc-done');
         }
-        g.__isClosureComponent = isCC; g.__createClosureComponent = makeCC;
-        g.__handleClosureComponent = hCC; g.__renderClosureComponent = rCC; g.__componentHelper = ch;
-        g.__gxtTemplateTransform = function(t) { return t.replace(/\(component\s+/g, '($_cc ').replace(/\{\{component\s+(?!["'])/g, '{{$_cc '); };
+        g.__isClosureComponent = isCC;
+        g.__createClosureComponent = makeCC;
+        g.__handleClosureComponent = hCC;
+        g.__renderClosureComponent = rCC;
+        g.__componentHelper = ch;
+        g.__gxtTemplateTransform = function (t) {
+          return t
+            .replace(/\(component\s+/g, '($_cc ')
+            .replace(/\{\{component\s+(?!["'])/g, '{{$_cc ');
+        };
 
         // Deferred patches via property interceptors
-        function patchH() { var h = g.__EMBER_BUILTIN_HELPERS__; if (h && !h.component) { h.component = ch; h.$_cc = ch; } }
-        function patchM() { var m = g.$_MANAGERS; if (!m || !m.component || m.component.canHandle.__ccP) return; var oCH = m.component.canHandle, oH = m.component.handle; m.component.canHandle = function(k) { if (isCC(k)) return true; return oCH.call(this, k); }; m.component.canHandle.__ccP = true; m.component.handle = function(k, a, f, c) { if (isCC(k)) return hCC(k, a, f, c, oH.bind(this)); return oH.call(this, k, a, f, c); }; }
-        function patchMH() { var mh = g.$_maybeHelper; if (!mh || mh.__ccP) return; var orig = mh; var p = function(name, args, hoc, mc) { if (typeof name === 'string' && (name === 'component' || name === '$_cc')) { var h = g.__EMBER_BUILTIN_HELPERS__; if (h && h.component) { var uw = function(v) { return typeof v === 'function' && !v.prototype ? v() : v; }; var ua = Array.isArray(args) ? args.map(uw) : []; var iC = !mc && hoc && typeof hoc === 'object' && (hoc.hasOwnProperty && hoc.hasOwnProperty('$_eval') || hoc[Symbol.for('gxt-props')] !== undefined); var hash = mc ? hoc : (iC ? {} : (hoc || {})); var na = {}; if (hash && typeof hash === 'object') { var e = Object.entries(hash); for (var i = 0; i < e.length; i++) { if (e[i][0].indexOf('$_') !== 0 && e[i][0] !== 'hash') na[e[i][0]] = typeof e[i][1] === 'function' ? e[i][1]() : e[i][1]; } } var ccResult = Object.keys(na).length > 0 ? h.component.apply(null, ua.concat([na])) : h.component.apply(null, ua); if (ccResult && isCC(ccResult) && ccResult.__componentName__) { return rCC(ccResult); } return ccResult; } } return orig.call(this, name, args, hoc, mc); }; p.__ccP = true; if (orig.__emberWrapped) { p.__emberWrapped = true; p.__emberAware = true; } g.$_maybeHelper = p; }
-        patchH(); patchM(); patchMH();
+        function patchH() {
+          var h = g.__EMBER_BUILTIN_HELPERS__;
+          if (h && !h.component) {
+            h.component = ch;
+            h.$_cc = ch;
+          }
+        }
+        function patchM() {
+          var m = g.$_MANAGERS;
+          if (!m || !m.component || m.component.canHandle.__ccP) return;
+          var oCH = m.component.canHandle,
+            oH = m.component.handle;
+          m.component.canHandle = function (k) {
+            if (isCC(k)) return true;
+            return oCH.call(this, k);
+          };
+          m.component.canHandle.__ccP = true;
+          m.component.handle = function (k, a, f, c) {
+            if (isCC(k)) return hCC(k, a, f, c, oH.bind(this));
+            return oH.call(this, k, a, f, c);
+          };
+        }
+        function patchMH() {
+          var mh = g.$_maybeHelper;
+          if (!mh || mh.__ccP) return;
+          var orig = mh;
+          var p = function (name, args, hoc, mc) {
+            if (typeof name === 'string' && (name === 'component' || name === '$_cc')) {
+              var h = g.__EMBER_BUILTIN_HELPERS__;
+              if (h && h.component) {
+                var uw = function (v) {
+                  return typeof v === 'function' && !v.prototype ? v() : v;
+                };
+                var ua = Array.isArray(args) ? args.map(uw) : [];
+                var iC =
+                  !mc &&
+                  hoc &&
+                  typeof hoc === 'object' &&
+                  ((hoc.hasOwnProperty && hoc.hasOwnProperty('$_eval')) ||
+                    hoc[Symbol.for('gxt-props')] !== undefined);
+                var hash = mc ? hoc : iC ? {} : hoc || {};
+                var na = {};
+                if (hash && typeof hash === 'object') {
+                  var e = Object.entries(hash);
+                  for (var i = 0; i < e.length; i++) {
+                    if (e[i][0].indexOf('$_') !== 0 && e[i][0] !== 'hash')
+                      na[e[i][0]] = typeof e[i][1] === 'function' ? e[i][1]() : e[i][1];
+                  }
+                }
+                var ccResult =
+                  Object.keys(na).length > 0
+                    ? h.component.apply(null, ua.concat([na]))
+                    : h.component.apply(null, ua);
+                if (ccResult && isCC(ccResult) && ccResult.__componentName__) {
+                  return rCC(ccResult);
+                }
+                return ccResult;
+              }
+            }
+            return orig.call(this, name, args, hoc, mc);
+          };
+          p.__ccP = true;
+          if (orig.__emberWrapped) {
+            p.__emberWrapped = true;
+            p.__emberAware = true;
+          }
+          g.$_maybeHelper = p;
+        }
+        patchH();
+        patchM();
+        patchMH();
         // Watch for late assignments
         var props = ['__EMBER_BUILTIN_HELPERS__', '$_MANAGERS', '$_maybeHelper'];
         var patchers = [patchH, patchM, patchMH];
-        for (var i = 0; i < props.length; i++) { (function(prop, patcher) { var val = g[prop]; try { Object.defineProperty(g, prop, { get: function() { return val; }, set: function(v) { val = v; setTimeout(patcher, 0); }, configurable: true, enumerable: true }); } catch(e) {} })(props[i], patchers[i]); }
+        for (var i = 0; i < props.length; i++) {
+          (function (prop, patcher) {
+            var val = g[prop];
+            try {
+              Object.defineProperty(g, prop, {
+                get: function () {
+                  return val;
+                },
+                set: function (v) {
+                  val = v;
+                  setTimeout(patcher, 0);
+                },
+                configurable: true,
+                enumerable: true,
+              });
+            } catch (e) {}
+          })(props[i], patchers[i]);
+        }
       })();
 
       // Ember ENV setup
@@ -89,7 +273,7 @@
         done: false,
       };
 
-      QUnit.done(function(details) {
+      QUnit.done(function (details) {
         window.__qunitResults.passed = details.passed;
         window.__qunitResults.failed = details.failed;
         window.__qunitResults.total = details.total;
@@ -99,13 +283,17 @@
       });
 
       // --- GXT global test hooks ---
-      QUnit.testStart(function() {
+      QUnit.testStart(function () {
         globalThis.__gxtTestTransition = false;
         if (globalThis.__gxtOpCount !== undefined) globalThis.__gxtOpCount = 0;
         globalThis.__gxtSyncing = false;
         var cleanup = globalThis.__gxtCleanupActiveComponents;
         if (typeof cleanup === 'function') {
-          try { cleanup(); } catch(e) { /* ignore */ }
+          try {
+            cleanup();
+          } catch (e) {
+            /* ignore */
+          }
         }
         globalThis.__gxtPendingSync = false;
         globalThis.__gxtPendingSyncFromPropertyChange = false;
@@ -116,7 +304,7 @@
         }
       });
 
-      QUnit.testDone(function(details) {
+      QUnit.testDone(function (details) {
         // Reset GXT state between tests
         globalThis.__gxtTestTransition = true;
         globalThis.__gxtSyncing = false;
@@ -138,9 +326,10 @@
         }
       });
 
-      QUnit.log(function(details) {
+      QUnit.log(function (details) {
         if (!details.result && window.__qunitResults.failures.length > 0) {
-          var lastFailure = window.__qunitResults.failures[window.__qunitResults.failures.length - 1];
+          var lastFailure =
+            window.__qunitResults.failures[window.__qunitResults.failures.length - 1];
           if (lastFailure && lastFailure.assertions.length < 5) {
             lastFailure.assertions.push({
               message: details.message || '',

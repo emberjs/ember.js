@@ -8,7 +8,14 @@ import { getViewElement, getViewId, setViewElement } from '@ember/-internals/vie
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
 (globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
 
-import { pushParentView, popParentView, flushAfterInsertQueue, flushRenderErrors, beginRenderPass, endRenderPass } from '@glimmer/manager';
+import {
+  pushParentView,
+  popParentView,
+  flushAfterInsertQueue,
+  flushRenderErrors,
+  beginRenderPass,
+  endRenderPass,
+} from '@glimmer/manager';
 // @ts-ignore
 import {
   destroyElementSync as _destroyElementSync,
@@ -19,7 +26,7 @@ import {
   provideContext as gxtProvideContext,
   RENDERING_CONTEXT as GXT_RENDERING_CONTEXT,
   HTMLBrowserDOMApi as GxtHTMLBrowserDOMApi,
-// @ts-ignore
+  // @ts-ignore
 } from '@lifeart/gxt';
 
 // Cached GXT DOM API for destroyElementSync
@@ -100,20 +107,20 @@ import {
   runtimeOptions,
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import { unwrapTemplate, GXT_TEMPLATE_HANDLE, isGxtTemplate } from './component-managers/unwrap-template';
+import { unwrapTemplate, isGxtTemplate } from './component-managers/unwrap-template';
 import * as _glimmerValidator from '@glimmer/validator';
 import { CURRENT_TAG, validateTag, valueForTag, type Tag } from '@glimmer/validator';
 // touchClassicBridge / registerClassicReactor exist only in the GXT-aliased
 // validator; fall back to no-ops in classic builds so these imports never
 // break the classic bundle.
 const touchClassicBridge: () => void =
-  (typeof (_glimmerValidator as any).touchClassicBridge === 'function'
+  typeof (_glimmerValidator as any).touchClassicBridge === 'function'
     ? (_glimmerValidator as any).touchClassicBridge
-    : () => {});
+    : () => {};
 const registerClassicReactor: (cb: () => void) => () => void =
-  (typeof (_glimmerValidator as any).registerClassicReactor === 'function'
+  typeof (_glimmerValidator as any).registerClassicReactor === 'function'
     ? (_glimmerValidator as any).registerClassicReactor
-    : (_: () => void) => () => {});
+    : (_: () => void) => () => {};
 import { tagForObject } from '@ember/-internals/metal';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -320,7 +327,11 @@ function ensureLifecycleErrorCapture(): void {
   const captureErr = (e: unknown): void => {
     const fn = (globalThis as any).__captureRenderError;
     if (typeof fn === 'function' && e instanceof Error) {
-      try { fn(e); } catch { /* ignore capture failures */ }
+      try {
+        fn(e);
+      } catch {
+        /* ignore capture failures */
+      }
     }
   };
 
@@ -373,9 +384,13 @@ function ensureLifecycleErrorCapture(): void {
           // prototype-level behavior.
           try {
             this.destroy = wrappedDestroy;
-          } catch { /* property not writable */ }
+          } catch {
+            /* property not writable */
+          }
         }
-      } catch { /* never block init on our instrumentation */ }
+      } catch {
+        /* never block init on our instrumentation */
+      }
       return result;
     };
     (wrappedInit as any).__gxtCaptureWrapped = true;
@@ -399,7 +414,6 @@ function errorLoopTransaction(fn: () => void) {
           // Noop the function so that we won't keep calling it and causing
           // infinite looping failures;
           fn = () => {
-            // eslint-disable-next-line no-console
             console.warn(
               'Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.'
             );
@@ -487,7 +501,9 @@ function _registerArrayProxyOwner(proxy: any, ownerObj: object, ownerKey: string
       _proxyContentOwners.set(content, owners);
     }
     owners.add({ proxy, obj: ownerObj, key: ownerKey });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 // Wrap __gxtTriggerReRender once to also handle ArrayProxy content arrays.
@@ -499,7 +515,7 @@ function _ensureTriggerReRenderPatched() {
   if (!origTrigger) return;
   const _cellFor = (globalThis as any).__gxtCellFor;
   if (!_cellFor) return;
-  (globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
+  (globalThis as any).__gxtTriggerReRender = function (obj: object, keyName: string) {
     // Call original first
     origTrigger(obj, keyName);
     // If this is a '[]' or 'length' notification on a native array that is
@@ -511,7 +527,9 @@ function _ensureTriggerReRenderPatched() {
           try {
             const c = _cellFor(ownerObj, ownerKey, /* skipDefine */ true);
             if (c) c.update(proxy); // Update with proxy, not content array
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
       }
     }
@@ -566,535 +584,593 @@ class ClassicRootState {
       }
       (globalThis as any).__gxtRenderDepth = depth + 1;
       try {
-      // Set globalThis.owner for GXT manager system to access
-      (globalThis as any).owner = owner;
+        // Set globalThis.owner for GXT manager system to access
+        (globalThis as any).owner = owner;
 
-      // Check if this is a gxt template BEFORE unwrapping
-      const templateIsGxt = isGxtTemplate(template);
+        // Check if this is a gxt template BEFORE unwrapping
+        const templateIsGxt = isGxtTemplate(template);
 
-      let layout = unwrapTemplate(template).asLayout();
+        let layout = unwrapTemplate(template).asLayout();
 
-      if (templateIsGxt) {
-        // Mark this root as using GXT templates (for forced re-render)
-        this.isGxt = true;
+        if (templateIsGxt) {
+          // Mark this root as using GXT templates (for forced re-render)
+          this.isGxt = true;
 
-        // CRITICAL: Ensure GXT context is set up before any GXT rendering
-        // This provides the parent context chain that GXT's $_if, $_c, etc. need
-        ensureGxtContext();
+          // CRITICAL: Ensure GXT context is set up before any GXT rendering
+          // This provides the parent context chain that GXT's $_if, $_c, etc. need
+          ensureGxtContext();
 
-        // Use gxt rendering for gxt templates
-        // Get the component context from self reference
-        const componentContext = valueForRef(self);
+          // Use gxt rendering for gxt templates
+          // Get the component context from self reference
+          const componentContext = valueForRef(self);
 
-        // Create a minimal result object for compatibility
-        const gxtResult = {
-          rerender: () => {
-            // gxt handles re-rendering internally via reactivity
-          },
-          destroy: () => {
-            // Cleanup handled by gxt's destroyable system
-            destroyElementSync(parentElement);
-          },
-        };
+          // Create a minimal result object for compatibility
+          const gxtResult = {
+            rerender: () => {
+              // gxt handles re-rendering internally via reactivity
+            },
+            destroy: () => {
+              // Cleanup handled by gxt's destroyable system
+              destroyElementSync(parentElement);
+            },
+          };
 
-        this.result = gxtResult as any;
-        associateDestroyableChild(owner, gxtResult as any);
+          this.result = gxtResult as any;
+          associateDestroyableChild(owner, gxtResult as any);
 
-        // Track the actual render target (may be a wrapper element for classic components)
-        let actualRenderTarget: SimpleElement = parentElement;
+          // Track the actual render target (may be a wrapper element for classic components)
+          let actualRenderTarget: SimpleElement = parentElement;
 
-        // Check if template has a render method (runtime-compiled gxt template)
-        if (typeof (template as any).render === 'function') {
-          // For gxt templates, use the root view directly (e.g., OutletView)
-          // The root parameter has the state we need
-          let renderContext;
+          // Check if template has a render method (runtime-compiled gxt template)
+          if (typeof (template as any).render === 'function') {
+            // For gxt templates, use the root view directly (e.g., OutletView)
+            // The root parameter has the state we need
+            let renderContext;
 
-          // Debug: log what root looks like
-          if ((globalThis as any).__DEBUG_GXT_RENDER) {
-            console.log('[ClassicRootState] root type:', root?.constructor?.name || typeof root);
-            console.log('[ClassicRootState] root instanceof OutletView:', root instanceof OutletView);
-            console.log('[ClassicRootState] has state:', 'state' in (root || {}));
-            console.log('[ClassicRootState] has ref:', 'ref' in (root || {}));
-            console.log('[ClassicRootState] has layoutName:', 'layoutName' in (root || {}));
-            console.log('[ClassicRootState] layoutName value:', (root as any)?.layoutName);
-            console.log('[ClassicRootState] root keys:', root ? Object.keys(root).slice(0, 10).join(',') : 'null');
-          }
-
-          if (root && 'state' in root && 'ref' in root) {
-            // This is an OutletView - transform to expected format
-            this.isOutletView = true;
-            const outletView = root as any;
-            renderContext = {
-              rootState: {
-                root: {
-                  ref: outletView.ref,
-                  template: outletView.state?.template || outletView.template,
-                },
-                render: {
-                  owner: outletView.owner,
-                },
-              },
-            };
-          } else if (root && 'layoutName' in root) {
-            // This is a ClassicComponent (from RenderingTestCase)
-            // Use Object.create to preserve the prototype chain so methods are accessible
-            // via this.methodName() in templates
-            const component = root as any;
-
-            // Use the component directly as render context (not Object.create).
-            // Install cell getter/setters directly on the component so GXT's
-            // native tracking ($_if, $_each, etc.) works properly.
-            renderContext = component;
-
-            // Add GXT-required symbols for template rendering
-            const $ARGS_SYMBOL = Symbol.for('gxt-args');
-            const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
-
-            renderContext[$ARGS_SYMBOL] = component.args || {};
-            renderContext[$SLOTS_SYMBOL] = {};
-            renderContext.$fw = [[], [], []];
-            renderContext.owner = owner;
-
-            // Install cell-backed getter/setters on the component for ALL
-            // data properties. Use skipDefine=false so GXT's native formula
-            // tracking (in $_if, $_each, etc.) picks up cell.value reads.
-            const _cellFor = (globalThis as any).__gxtCellFor;
-            const _registerArrayOwner = (globalThis as any).__gxtRegisterArrayOwner;
-            _ensureTriggerReRenderPatched();
-            if (_cellFor) {
-              const skipProps = new Set(['args', 'constructor', 'element', 'tagName',
-                'layoutName', 'layout', 'elementId', 'isView', 'isComponent',
-                'concatenatedProperties', 'mergedProperties', 'classNames',
-                'classNameBindings', 'attributeBindings', 'positionalParams',
-                '_states', 'renderer', '__dispatcher', 'parentView',
-                '_state', '_currentState', 'target', '_debugContainerKey']);
-              let cellCount = 0;
-              for (const key in component) {
-                if (typeof key !== 'string' || key.startsWith('_') || skipProps.has(key)) continue;
-                try {
-                  // Walk the prototype chain to find the descriptor. `for...in`
-                  // iterates inherited enumerable keys too, but
-                  // `Object.getOwnPropertyDescriptor(component, key)` returns
-                  // `undefined` for inherited props. Without walking, we fail
-                  // to detect mixin-installed computed-property getter/setter
-                  // pairs (e.g., `actionContextObject` from TargetActionSupport)
-                  // and install a cellFor that captures the CP's getter into a
-                  // GXT cached `Yt` via gxt's `jt` WeakMap. Subsequent reads
-                  // cycle: `Object.defineProperty(comp, key, { get: () => yt.value })`
-                  // -> yt.value -> yt.__fn() -> comp[key] -> yt.value ...
-                  let desc: PropertyDescriptor | undefined;
-                  let obj: any = component;
-                  while (obj && obj !== Object.prototype) {
-                    desc = Object.getOwnPropertyDescriptor(obj, key);
-                    if (desc) break;
-                    obj = Object.getPrototypeOf(obj);
-                  }
-                  if (desc && (desc.get || desc.set)) continue;
-                  if (desc && desc.configurable === false) continue;
-                  const value = component[key];
-                  if (typeof value === 'function') continue;
-                  _cellFor(component, key, /* skipDefine */ false);
-                  // Register array owner for KVO array mutation tracking
-                  if (_registerArrayOwner && Array.isArray(value)) {
-                    _registerArrayOwner(value, component, key);
-                  }
-                  // For ArrayProxy values, register the proxy in a separate map
-                  // so that when its content array fires notifyPropertyChange,
-                  // we can dirty the component cell with the proxy (not the content).
-                  if (_registerArrayOwner && value && typeof value === 'object' &&
-                      typeof value.objectAt === 'function' && !Array.isArray(value)) {
-                    _registerArrayProxyOwner(value, component, key);
-                  }
-                  cellCount++;
-                } catch { /* ignore */ }
-              }
-              if (cellCount > 0 && (globalThis as any).__DEBUG_GXT_RENDER) {
-                console.log('[RENDERER-CELL] Installed', cellCount, 'cells');
-              }
+            // Debug: log what root looks like
+            if ((globalThis as any).__DEBUG_GXT_RENDER) {
+              console.log('[ClassicRootState] root type:', root?.constructor?.name || typeof root);
+              console.log(
+                '[ClassicRootState] root instanceof OutletView:',
+                root instanceof OutletView
+              );
+              console.log('[ClassicRootState] has state:', 'state' in (root || {}));
+              console.log('[ClassicRootState] has ref:', 'ref' in (root || {}));
+              console.log('[ClassicRootState] has layoutName:', 'layoutName' in (root || {}));
+              console.log('[ClassicRootState] layoutName value:', (root as any)?.layoutName);
+              console.log(
+                '[ClassicRootState] root keys:',
+                root ? Object.keys(root).slice(0, 10).join(',') : 'null'
+              );
             }
 
-          } else {
-            // Fallback to the component context
-            renderContext = componentContext;
-          }
+            if (root && 'state' in root && 'ref' in root) {
+              // This is an OutletView - transform to expected format
+              this.isOutletView = true;
+              const outletView = root as any;
+              renderContext = {
+                rootState: {
+                  root: {
+                    ref: outletView.ref,
+                    template: outletView.state?.template || outletView.template,
+                  },
+                  render: {
+                    owner: outletView.owner,
+                  },
+                },
+              };
+            } else if (root && 'layoutName' in root) {
+              // This is a ClassicComponent (from RenderingTestCase)
+              // Use Object.create to preserve the prototype chain so methods are accessible
+              // via this.methodName() in templates
+              const component = root as any;
 
-          // For classic components with a wrapper element (tagName !== ''),
-          // create the wrapper with Ember-specific attributes before GXT renders
-          if (root && 'tagName' in root) {
-            const component = root as any;
-            const tagName = component.tagName;
+              // Use the component directly as render context (not Object.create).
+              // Install cell getter/setters directly on the component so GXT's
+              // native tracking ($_if, $_each, etc.) works properly.
+              renderContext = component;
 
-            // Only create wrapper if tagName is truthy (non-empty string)
-            // tagless components have tagName set to '' or are null/undefined
-            if (tagName && tagName !== '') {
-              console.log('[ClassicRootState] Creating wrapper for tagName:', tagName);
-              const wrapperTag = tagName; // Already checked it's truthy
-              const wrapper = document.createElement(wrapperTag);
+              // Add GXT-required symbols for template rendering
+              const $ARGS_SYMBOL = Symbol.for('gxt-args');
+              const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
 
-              // Set the Ember-specific id attribute
-              const elementId = component.elementId || guidFor(component);
-              wrapper.id = elementId;
+              renderContext[$ARGS_SYMBOL] = component.args || {};
+              renderContext[$SLOTS_SYMBOL] = {};
+              renderContext.$fw = [[], [], []];
+              renderContext.owner = owner;
 
-              // Build class list starting with ember-view
-              const classList: string[] = ['ember-view'];
-
-              // Add classNames if present
-              if (component.classNames && Array.isArray(component.classNames)) {
-                classList.push(...component.classNames);
-              }
-
-              // Add classNameBindings values if present
-              if (component.classNameBindings && Array.isArray(component.classNameBindings)) {
-                for (const binding of component.classNameBindings) {
-                  // Parse simple bindings like 'isEnabled:enabled:disabled' or 'propertyName'
-                  const parts = binding.split(':');
-                  const propName = parts[0];
-                  const propValue = component[propName];
-
-                  if (parts.length === 1) {
-                    // Just property name - add as class if truthy
-                    if (propValue) {
-                      const className = typeof propValue === 'string' ? propValue : propName.replace(/([A-Z])/g, '-$1').toLowerCase();
-                      classList.push(className);
+              // Install cell-backed getter/setters on the component for ALL
+              // data properties. Use skipDefine=false so GXT's native formula
+              // tracking (in $_if, $_each, etc.) picks up cell.value reads.
+              const _cellFor = (globalThis as any).__gxtCellFor;
+              const _registerArrayOwner = (globalThis as any).__gxtRegisterArrayOwner;
+              _ensureTriggerReRenderPatched();
+              if (_cellFor) {
+                const skipProps = new Set([
+                  'args',
+                  'constructor',
+                  'element',
+                  'tagName',
+                  'layoutName',
+                  'layout',
+                  'elementId',
+                  'isView',
+                  'isComponent',
+                  'concatenatedProperties',
+                  'mergedProperties',
+                  'classNames',
+                  'classNameBindings',
+                  'attributeBindings',
+                  'positionalParams',
+                  '_states',
+                  'renderer',
+                  '__dispatcher',
+                  'parentView',
+                  '_state',
+                  '_currentState',
+                  'target',
+                  '_debugContainerKey',
+                ]);
+                let cellCount = 0;
+                for (const key in component) {
+                  if (typeof key !== 'string' || key.startsWith('_') || skipProps.has(key))
+                    continue;
+                  try {
+                    // Walk the prototype chain to find the descriptor. `for...in`
+                    // iterates inherited enumerable keys too, but
+                    // `Object.getOwnPropertyDescriptor(component, key)` returns
+                    // `undefined` for inherited props. Without walking, we fail
+                    // to detect mixin-installed computed-property getter/setter
+                    // pairs (e.g., `actionContextObject` from TargetActionSupport)
+                    // and install a cellFor that captures the CP's getter into a
+                    // GXT cached `Yt` via gxt's `jt` WeakMap. Subsequent reads
+                    // cycle: `Object.defineProperty(comp, key, { get: () => yt.value })`
+                    // -> yt.value -> yt.__fn() -> comp[key] -> yt.value ...
+                    let desc: PropertyDescriptor | undefined;
+                    let obj: any = component;
+                    while (obj && obj !== Object.prototype) {
+                      desc = Object.getOwnPropertyDescriptor(obj, key);
+                      if (desc) break;
+                      obj = Object.getPrototypeOf(obj);
                     }
-                  } else if (parts.length >= 2) {
-                    // property:trueClass or property:trueClass:falseClass
-                    if (propValue && parts[1]) {
-                      classList.push(parts[1]);
-                    } else if (!propValue && parts[2]) {
-                      classList.push(parts[2]);
+                    if (desc && (desc.get || desc.set)) continue;
+                    if (desc && desc.configurable === false) continue;
+                    const value = component[key];
+                    if (typeof value === 'function') continue;
+                    _cellFor(component, key, /* skipDefine */ false);
+                    // Register array owner for KVO array mutation tracking
+                    if (_registerArrayOwner && Array.isArray(value)) {
+                      _registerArrayOwner(value, component, key);
                     }
+                    // For ArrayProxy values, register the proxy in a separate map
+                    // so that when its content array fires notifyPropertyChange,
+                    // we can dirty the component cell with the proxy (not the content).
+                    if (
+                      _registerArrayOwner &&
+                      value &&
+                      typeof value === 'object' &&
+                      typeof value.objectAt === 'function' &&
+                      !Array.isArray(value)
+                    ) {
+                      _registerArrayProxyOwner(value, component, key);
+                    }
+                    cellCount++;
+                  } catch {
+                    /* ignore */
                   }
                 }
-              }
-
-              wrapper.className = classList.join(' ');
-
-              // Add ariaRole if present
-              if (component.ariaRole) {
-                wrapper.setAttribute('role', component.ariaRole);
-              }
-
-              // Apply attributeBindings if present
-              if (component.attributeBindings && Array.isArray(component.attributeBindings)) {
-                for (const binding of component.attributeBindings) {
-                  const [propName, attrName] = binding.includes(':')
-                    ? binding.split(':')
-                    : [binding, binding];
-                  const value = component[propName];
-                  if (value !== undefined && value !== null && attrName !== 'id' && attrName !== 'class') {
-                    // For 'value' on input/textarea/select, use DOM property (not HTML attribute)
-                    const isPropertyOnly = attrName === 'value' && (
-                      wrapper.tagName === 'INPUT' || wrapper.tagName === 'TEXTAREA' || wrapper.tagName === 'SELECT'
-                    );
-                    if (isPropertyOnly) {
-                      (wrapper as any)[attrName] = String(value);
-                    } else if (typeof value === 'boolean') {
-                      if (value) {
-                        wrapper.setAttribute(attrName, '');
-                      }
-                    } else {
-                      wrapper.setAttribute(attrName, String(value));
-                    }
-                  }
+                if (cellCount > 0 && (globalThis as any).__DEBUG_GXT_RENDER) {
+                  console.log('[RENDERER-CELL] Installed', cellCount, 'cells');
                 }
               }
-
-              // Append wrapper to parent and render GXT into wrapper
-              parentElement.appendChild(wrapper);
-              actualRenderTarget = wrapper as unknown as SimpleElement;
-
-              // Store wrapper reference for component.element access
-              // This uses Ember's view element tracking
-              if (typeof setViewElement === 'function') {
-                setViewElement(component, wrapper);
-              }
-            }
-          }
-
-          // Reset render error count before rendering so we can distinguish
-          // render-phase errors from lifecycle-phase errors.
-          (globalThis as any).__gxtRenderErrorCount = 0;
-
-          // Begin render pass for backtracking detection
-          beginRenderPass();
-
-          // Push root component onto parentView stack before rendering
-          if (root && 'layoutName' in root) {
-            pushParentView(root);
-          }
-          try {
-            (template as any).render(renderContext, actualRenderTarget);
-          } finally {
-            // Pop from parentView stack after rendering
-            if (root && 'layoutName' in root) {
-              popParentView();
-            }
-            // End render pass in the finally block so it's cleaned up even when
-            // BREAK or other sentinels propagate (e.g., from expectAssertion).
-            endRenderPass();
-          }
-        } else if ('$nodes' in template) {
-          // Build-time compiled gxt template with $nodes
-          gxtRenderComponent(template as any, parentElement, owner);
-        } else {
-          console.warn('GXT template detected but cannot render:', template);
-        }
-
-        // Check if any errors were captured during the template render phase
-        // (e.g., init() errors). If so, clear the DOM before re-throwing because
-        // the render did not complete successfully (matching Glimmer VM behavior).
-        const hadRenderPhaseErrors = (globalThis as any).__gxtRenderErrorCount > 0;
-
-        // End render pass moved to finally block above (handles BREAK propagation)
-
-        // Flush queued didInsertElement / didRender hooks now that all DOM
-        // has been inserted into the live document by GXT.
-        flushAfterInsertQueue();
-
-        // Re-throw any errors captured during rendering (init, didInsertElement, etc.)
-        // so they propagate through assert.throws in tests and Ember's error recovery.
-        // IMPORTANT: For lifecycle errors (didInsertElement), we must NOT let the error
-        // propagate through errorLoopTransaction, as that would permanently disable
-        // re-rendering. Instead, we defer the throw until after the render function
-        // has been set up for future re-renders.
-        try {
-          flushRenderErrors();
-        } catch (renderError) {
-          // Only clear DOM for render-phase errors (init failures).
-          // Lifecycle errors (didInsertElement) should leave DOM intact.
-          if (hadRenderPhaseErrors) {
-            (parentElement as unknown as Element).innerHTML = '';
-            throw renderError;
-          }
-          // Lifecycle error — defer it to the root state so it can be
-          // re-thrown OUTSIDE errorLoopTransaction (preserving re-renderability)
-          (this as any).__gxtDeferredError = renderError;
-        }
-
-        // Store references for re-rendering
-        const gxtTemplate = template;
-        const gxtRoot = root;
-        const gxtOwner = owner;
-        // Use actualRenderTarget (the wrapper element if created) for re-rendering
-        const gxtRenderTarget = actualRenderTarget;
-        const gxtRootState = this;
-
-        // Capture the component's self tag for reactivity tracking
-        // This allows us to detect when Ember's set() changes properties
-        // set() calls markObjectAsDirty which dirties the SELF_TAG via tagForObject
-        if (gxtRoot && 'layoutName' in gxtRoot) {
-          const component = gxtRoot as any;
-          const componentTag = tagForObject(component);
-          this.gxtComponentTag = componentTag;
-          this.gxtLastTagValue = valueForTag(componentTag);
-        }
-
-        // Wrap the re-render in a deferred-error mechanism so that lifecycle
-        // errors (destroy, didInsertElement during re-render) don't permanently
-        // disable re-rendering via errorLoopTransaction. The error is stored on
-        // the root state and re-thrown by renderRoots after the render completes.
-        this.render = errorLoopTransaction(() => {
-          // Re-render GXT template with fresh context from the component
-          // This is needed because GXT doesn't automatically track Ember's set() changes
-          if (gxtRoot && 'layoutName' in gxtRoot) {
-            const component = gxtRoot as any;
-
-            // Use Object.create to preserve prototype chain for method access
-            const freshContext = Object.create(component);
-
-            // Add GXT-required symbols
-            const $ARGS_SYMBOL = Symbol.for('gxt-args');
-            const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
-
-            freshContext[$ARGS_SYMBOL] = component.args || {};
-            freshContext[$SLOTS_SYMBOL] = {};
-            freshContext.$fw = [[], [], []];
-            freshContext.owner = gxtOwner;
-
-            // Copy enumerable properties as live getters that read CURRENT values
-            // from the component. The morph re-render is a one-shot DOM diff —
-            // it doesn't need reactive cell tracking, it just needs correct values.
-            // Reading from cells can return stale values for nested objects whose
-            // getter-based cells weren't updated (e.g., counter.countAlias when
-            // counter.count changed).
-            for (const key in component) {
-              if (key === 'args' || key === 'constructor') continue;
-              const value = component[key];
-              if (typeof value === 'function' && key !== 'element') continue;
-              if (Object.prototype.hasOwnProperty.call(freshContext, key)) continue;
-
-              const propKey = key;
-              const comp = component;
-              try {
-                Object.defineProperty(freshContext, propKey, {
-                  get() { return comp[propKey]; },
-                  set(v: any) { comp[propKey] = v; },
-                  enumerable: true,
-                  configurable: true,
-                });
-              } catch {
-                freshContext[key] = value;
-              }
-            }
-
-            // Render into a temporary container, then morph the existing DOM
-            // to match. This preserves DOM node references (identity) for
-            // elements and text nodes, only updating changed attributes/content.
-            // Guard against excessive re-renders with a per-root counter.
-            const rerenderCount = (gxtRootState as any).__gxtRerenderCount || 0;
-            if (rerenderCount > 100) {
-              console.warn('[gxt] Max re-render count exceeded for root, skipping');
             } else {
-              (gxtRootState as any).__gxtRerenderCount = rerenderCount + 1;
-              const tempContainer = document.createDocumentFragment();
-              pushParentView(component);
-              // Collect modifier invocations during the temp-container render
-              // so we can replay them as updates on real DOM elements after
-              // morphing.  Modifier installation on temp elements is suppressed
-              // to avoid drifting add/remove counters.
-              const morphModInvocations: any[] = [];
-              (globalThis as any).__gxtMorphModifierInvocations = morphModInvocations;
-              (globalThis as any).__gxtMorphRenderInProgress = true;
-              try {
-                (gxtTemplate as any).render(freshContext, tempContainer);
-              } finally {
-                (globalThis as any).__gxtMorphRenderInProgress = false;
-                (globalThis as any).__gxtMorphModifierInvocations = null;
+              // Fallback to the component context
+              renderContext = componentContext;
+            }
+
+            // For classic components with a wrapper element (tagName !== ''),
+            // create the wrapper with Ember-specific attributes before GXT renders
+            if (root && 'tagName' in root) {
+              const component = root as any;
+              const tagName = component.tagName;
+
+              // Only create wrapper if tagName is truthy (non-empty string)
+              // tagless components have tagName set to '' or are null/undefined
+              if (tagName && tagName !== '') {
+                const wrapperTag = tagName; // Already checked it's truthy
+                const wrapper = document.createElement(wrapperTag);
+
+                // Set the Ember-specific id attribute
+                const elementId = component.elementId || guidFor(component);
+                wrapper.id = elementId;
+
+                // Build class list starting with ember-view
+                const classList: string[] = ['ember-view'];
+
+                // Add classNames if present
+                if (component.classNames && Array.isArray(component.classNames)) {
+                  classList.push(...component.classNames);
+                }
+
+                // Add classNameBindings values if present
+                if (component.classNameBindings && Array.isArray(component.classNameBindings)) {
+                  for (const binding of component.classNameBindings) {
+                    // Parse simple bindings like 'isEnabled:enabled:disabled' or 'propertyName'
+                    const parts = binding.split(':');
+                    const propName = parts[0];
+                    const propValue = component[propName];
+
+                    if (parts.length === 1) {
+                      // Just property name - add as class if truthy
+                      if (propValue) {
+                        const className =
+                          typeof propValue === 'string'
+                            ? propValue
+                            : propName.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        classList.push(className);
+                      }
+                    } else if (parts.length >= 2) {
+                      // property:trueClass or property:trueClass:falseClass
+                      if (propValue && parts[1]) {
+                        classList.push(parts[1]);
+                      } else if (!propValue && parts[2]) {
+                        classList.push(parts[2]);
+                      }
+                    }
+                  }
+                }
+
+                wrapper.className = classList.join(' ');
+
+                // Add ariaRole if present
+                if (component.ariaRole) {
+                  wrapper.setAttribute('role', component.ariaRole);
+                }
+
+                // Apply attributeBindings if present
+                if (component.attributeBindings && Array.isArray(component.attributeBindings)) {
+                  for (const binding of component.attributeBindings) {
+                    const [propName, attrName] = binding.includes(':')
+                      ? binding.split(':')
+                      : [binding, binding];
+                    const value = component[propName];
+                    if (
+                      value !== undefined &&
+                      value !== null &&
+                      attrName !== 'id' &&
+                      attrName !== 'class'
+                    ) {
+                      // For 'value' on input/textarea/select, use DOM property (not HTML attribute)
+                      const isPropertyOnly =
+                        attrName === 'value' &&
+                        (wrapper.tagName === 'INPUT' ||
+                          wrapper.tagName === 'TEXTAREA' ||
+                          wrapper.tagName === 'SELECT');
+                      if (isPropertyOnly) {
+                        (wrapper as any)[attrName] = String(value);
+                      } else if (typeof value === 'boolean') {
+                        if (value) {
+                          wrapper.setAttribute(attrName, '');
+                        }
+                      } else {
+                        wrapper.setAttribute(attrName, String(value));
+                      }
+                    }
+                  }
+                }
+
+                // Append wrapper to parent and render GXT into wrapper
+                parentElement.appendChild(wrapper);
+                actualRenderTarget = wrapper as unknown as SimpleElement;
+
+                // Store wrapper reference for component.element access
+                // This uses Ember's view element tracking
+                if (typeof setViewElement === 'function') {
+                  setViewElement(component, wrapper);
+                }
+              }
+            }
+
+            // Reset render error count before rendering so we can distinguish
+            // render-phase errors from lifecycle-phase errors.
+            (globalThis as any).__gxtRenderErrorCount = 0;
+
+            // Begin render pass for backtracking detection
+            beginRenderPass();
+
+            // Push root component onto parentView stack before rendering
+            if (root && 'layoutName' in root) {
+              pushParentView(root);
+            }
+            try {
+              (template as any).render(renderContext, actualRenderTarget);
+            } finally {
+              // Pop from parentView stack after rendering
+              if (root && 'layoutName' in root) {
                 popParentView();
               }
-              // Morph: update existing DOM nodes in-place where possible
-              try {
-                morphChildren(gxtRenderTarget, tempContainer);
-              } catch (morphErr) {
-                // Lifecycle errors during morphing (e.g., destroy throws)
-                // should not disable future re-renders. Defer the error.
-                (gxtRootState as any).__gxtDeferredError = morphErr;
-              }
-              // Replay collected modifier invocations as updates on real DOM
-              // elements ONLY if an actual property change triggered this sync.
-              // Stable rerenders (rerender() without set()) should not trigger
-              // modifier updates.
-              const hadPropertyChange = !!(globalThis as any).__gxtHadPendingSync;
-              if (hadPropertyChange && morphModInvocations.length > 0) {
-                const realEls: Element[] = [];
-                const walk = (n: Node) => {
-                  if (n.nodeType === 1) realEls.push(n as Element);
-                  let c = n.firstChild;
-                  while (c) { walk(c); c = c.nextSibling; }
-                };
-                walk(gxtRenderTarget as unknown as Node);
+              // End render pass in the finally block so it's cleaned up even when
+              // BREAK or other sentinels propagate (e.g., from expectAssertion).
+              endRenderPass();
+            }
+          } else if ('$nodes' in template) {
+            // Build-time compiled gxt template with $nodes
+            gxtRenderComponent(template as any, parentElement, owner);
+          } else {
+            console.warn('GXT template detected but cannot render:', template);
+          }
 
-                // Match temp elements to real elements by tag in order
-                let ri = 0;
-                const modMgr = (globalThis as any).$_MANAGERS?.modifier;
-                for (const inv of morphModInvocations) {
-                  const tag = inv.element.tagName;
-                  let realEl: HTMLElement | null = null;
-                  for (let j = ri; j < realEls.length; j++) {
-                    if (realEls[j]!.tagName === tag) {
-                      realEl = realEls[j] as HTMLElement;
-                      ri = j + 1;
-                      break;
+          // Check if any errors were captured during the template render phase
+          // (e.g., init() errors). If so, clear the DOM before re-throwing because
+          // the render did not complete successfully (matching Glimmer VM behavior).
+          const hadRenderPhaseErrors = (globalThis as any).__gxtRenderErrorCount > 0;
+
+          // End render pass moved to finally block above (handles BREAK propagation)
+
+          // Flush queued didInsertElement / didRender hooks now that all DOM
+          // has been inserted into the live document by GXT.
+          flushAfterInsertQueue();
+
+          // Re-throw any errors captured during rendering (init, didInsertElement, etc.)
+          // so they propagate through assert.throws in tests and Ember's error recovery.
+          // IMPORTANT: For lifecycle errors (didInsertElement), we must NOT let the error
+          // propagate through errorLoopTransaction, as that would permanently disable
+          // re-rendering. Instead, we defer the throw until after the render function
+          // has been set up for future re-renders.
+          try {
+            flushRenderErrors();
+          } catch (renderError) {
+            // Only clear DOM for render-phase errors (init failures).
+            // Lifecycle errors (didInsertElement) should leave DOM intact.
+            if (hadRenderPhaseErrors) {
+              (parentElement as unknown as Element).innerHTML = '';
+              throw renderError;
+            }
+            // Lifecycle error — defer it to the root state so it can be
+            // re-thrown OUTSIDE errorLoopTransaction (preserving re-renderability)
+            (this as any).__gxtDeferredError = renderError;
+          }
+
+          // Store references for re-rendering
+          const gxtTemplate = template;
+          const gxtRoot = root;
+          const gxtOwner = owner;
+          // Use actualRenderTarget (the wrapper element if created) for re-rendering
+          const gxtRenderTarget = actualRenderTarget;
+          const gxtRootState = this;
+
+          // Capture the component's self tag for reactivity tracking
+          // This allows us to detect when Ember's set() changes properties
+          // set() calls markObjectAsDirty which dirties the SELF_TAG via tagForObject
+          if (gxtRoot && 'layoutName' in gxtRoot) {
+            const component = gxtRoot as any;
+            const componentTag = tagForObject(component);
+            this.gxtComponentTag = componentTag;
+            this.gxtLastTagValue = valueForTag(componentTag);
+          }
+
+          // Wrap the re-render in a deferred-error mechanism so that lifecycle
+          // errors (destroy, didInsertElement during re-render) don't permanently
+          // disable re-rendering via errorLoopTransaction. The error is stored on
+          // the root state and re-thrown by renderRoots after the render completes.
+          this.render = errorLoopTransaction(() => {
+            // Re-render GXT template with fresh context from the component
+            // This is needed because GXT doesn't automatically track Ember's set() changes
+            if (gxtRoot && 'layoutName' in gxtRoot) {
+              const component = gxtRoot as any;
+
+              // Use Object.create to preserve prototype chain for method access
+              const freshContext = Object.create(component);
+
+              // Add GXT-required symbols
+              const $ARGS_SYMBOL = Symbol.for('gxt-args');
+              const $SLOTS_SYMBOL = Symbol.for('gxt-slots');
+
+              freshContext[$ARGS_SYMBOL] = component.args || {};
+              freshContext[$SLOTS_SYMBOL] = {};
+              freshContext.$fw = [[], [], []];
+              freshContext.owner = gxtOwner;
+
+              // Copy enumerable properties as live getters that read CURRENT values
+              // from the component. The morph re-render is a one-shot DOM diff —
+              // it doesn't need reactive cell tracking, it just needs correct values.
+              // Reading from cells can return stale values for nested objects whose
+              // getter-based cells weren't updated (e.g., counter.countAlias when
+              // counter.count changed).
+              for (const key in component) {
+                if (key === 'args' || key === 'constructor') continue;
+                const value = component[key];
+                if (typeof value === 'function' && key !== 'element') continue;
+                if (Object.prototype.hasOwnProperty.call(freshContext, key)) continue;
+
+                const propKey = key;
+                const comp = component;
+                try {
+                  Object.defineProperty(freshContext, propKey, {
+                    get() {
+                      return comp[propKey];
+                    },
+                    set(v: any) {
+                      comp[propKey] = v;
+                    },
+                    enumerable: true,
+                    configurable: true,
+                  });
+                } catch {
+                  freshContext[key] = value;
+                }
+              }
+
+              // Render into a temporary container, then morph the existing DOM
+              // to match. This preserves DOM node references (identity) for
+              // elements and text nodes, only updating changed attributes/content.
+              // Guard against excessive re-renders with a per-root counter.
+              const rerenderCount = (gxtRootState as any).__gxtRerenderCount || 0;
+              if (rerenderCount > 100) {
+                console.warn('[gxt] Max re-render count exceeded for root, skipping');
+              } else {
+                (gxtRootState as any).__gxtRerenderCount = rerenderCount + 1;
+                const tempContainer = document.createDocumentFragment();
+                pushParentView(component);
+                // Collect modifier invocations during the temp-container render
+                // so we can replay them as updates on real DOM elements after
+                // morphing.  Modifier installation on temp elements is suppressed
+                // to avoid drifting add/remove counters.
+                const morphModInvocations: any[] = [];
+                (globalThis as any).__gxtMorphModifierInvocations = morphModInvocations;
+                (globalThis as any).__gxtMorphRenderInProgress = true;
+                try {
+                  (gxtTemplate as any).render(freshContext, tempContainer);
+                } finally {
+                  (globalThis as any).__gxtMorphRenderInProgress = false;
+                  (globalThis as any).__gxtMorphModifierInvocations = null;
+                  popParentView();
+                }
+                // Morph: update existing DOM nodes in-place where possible
+                try {
+                  morphChildren(gxtRenderTarget, tempContainer);
+                } catch (morphErr) {
+                  // Lifecycle errors during morphing (e.g., destroy throws)
+                  // should not disable future re-renders. Defer the error.
+                  (gxtRootState as any).__gxtDeferredError = morphErr;
+                }
+                // Replay collected modifier invocations as updates on real DOM
+                // elements ONLY if an actual property change triggered this sync.
+                // Stable rerenders (rerender() without set()) should not trigger
+                // modifier updates.
+                const hadPropertyChange = !!(globalThis as any).__gxtHadPendingSync;
+                if (hadPropertyChange && morphModInvocations.length > 0) {
+                  const realEls: Element[] = [];
+                  const walk = (n: Node) => {
+                    if (n.nodeType === 1) realEls.push(n as Element);
+                    let c = n.firstChild;
+                    while (c) {
+                      walk(c);
+                      c = c.nextSibling;
                     }
-                  }
-                  if (realEl && modMgr) {
-                    // Check if this modifier has a cached entry on the real element
-                    const cache = modMgr._cache.get(realEl);
-                    if (cache) {
-                      const baseName = typeof inv.modifier === 'string'
-                        ? inv.modifier
-                        : (inv.modifier?.name || String(inv.modifier));
-                      // Only include firstArg for the "on" modifier
-                      // to match the modKey logic in handle()
-                      let firstArg = '';
-                      if (inv.modifier === 'on') {
-                        firstArg = inv.props && inv.props.length > 0
-                          ? String(typeof inv.props[0] === 'function' && !inv.props[0].prototype ? inv.props[0]() : inv.props[0])
-                          : '';
+                  };
+                  walk(gxtRenderTarget as unknown as Node);
+
+                  // Match temp elements to real elements by tag in order
+                  let ri = 0;
+                  const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+                  for (const inv of morphModInvocations) {
+                    const tag = inv.element.tagName;
+                    let realEl: HTMLElement | null = null;
+                    for (let j = ri; j < realEls.length; j++) {
+                      if (realEls[j]!.tagName === tag) {
+                        realEl = realEls[j] as HTMLElement;
+                        ri = j + 1;
+                        break;
                       }
-                      const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
-                      const cached = cache.get(modKey);
-                      if (cached && !cached.pendingDestroy) {
-                        // Check if already updated by Phase 1 (gxtSyncDom)
-                        const syncCycle = (globalThis as any).__gxtSyncCycleId || 0;
-                        if (cached.__gxtUpdatedInSyncCycle === syncCycle) {
-                          continue; // Phase 1 already handled this
+                    }
+                    if (realEl && modMgr) {
+                      // Check if this modifier has a cached entry on the real element
+                      const cache = modMgr._cache.get(realEl);
+                      if (cache) {
+                        const baseName =
+                          typeof inv.modifier === 'string'
+                            ? inv.modifier
+                            : inv.modifier?.name || String(inv.modifier);
+                        // Only include firstArg for the "on" modifier
+                        // to match the modKey logic in handle()
+                        let firstArg = '';
+                        if (inv.modifier === 'on') {
+                          firstArg =
+                            inv.props && inv.props.length > 0
+                              ? String(
+                                  typeof inv.props[0] === 'function' && !inv.props[0].prototype
+                                    ? inv.props[0]()
+                                    : inv.props[0]
+                                )
+                              : '';
                         }
-                        // Only replay for internal modifiers ({{on}}, etc.).
-                        // Custom modifier managers handle updates via autotracking
-                        // and formula reactivity; replaying would cause spurious
-                        // didUpdate calls.
-                        if (!cached.isInternal) {
-                          continue;
+                        const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
+                        const cached = cache.get(modKey);
+                        if (cached && !cached.pendingDestroy) {
+                          // Check if already updated by Phase 1 (gxtSyncDom)
+                          const syncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+                          if (cached.__gxtUpdatedInSyncCycle === syncCycle) {
+                            continue; // Phase 1 already handled this
+                          }
+                          // Only replay for internal modifiers ({{on}}, etc.).
+                          // Custom modifier managers handle updates via autotracking
+                          // and formula reactivity; replaying would cause spurious
+                          // didUpdate calls.
+                          if (!cached.isInternal) {
+                            continue;
+                          }
+                          // Trigger the update path: mark as pending destroy,
+                          // then call handle() which will take the update branch.
+                          cached.pendingDestroy = true;
+                          modMgr.handle(inv.modifier, realEl, inv.props, inv.hashArgs);
                         }
-                        // Trigger the update path: mark as pending destroy,
-                        // then call handle() which will take the update branch.
-                        cached.pendingDestroy = true;
-                        modMgr.handle(inv.modifier, realEl, inv.props, inv.hashArgs);
                       }
                     }
                   }
                 }
               }
-            }
 
-            // Flush any lifecycle hooks queued during re-render
-            try {
-              flushAfterInsertQueue();
-            } catch (lifecycleErr) {
-              (gxtRootState as any).__gxtDeferredError = (gxtRootState as any).__gxtDeferredError || lifecycleErr;
-            }
-            try {
-              flushRenderErrors();
-            } catch (renderErr) {
-              (gxtRootState as any).__gxtDeferredError = (gxtRootState as any).__gxtDeferredError || renderErr;
-            }
+              // Flush any lifecycle hooks queued during re-render
+              try {
+                flushAfterInsertQueue();
+              } catch (lifecycleErr) {
+                (gxtRootState as any).__gxtDeferredError =
+                  (gxtRootState as any).__gxtDeferredError || lifecycleErr;
+              }
+              try {
+                flushRenderErrors();
+              } catch (renderErr) {
+                (gxtRootState as any).__gxtDeferredError =
+                  (gxtRootState as any).__gxtDeferredError || renderErr;
+              }
 
-            // Update the tag value after successful render
-            // This ensures we only re-render once per property change
-            if (gxtRootState.gxtComponentTag) {
-              gxtRootState.gxtLastTagValue = valueForTag(gxtRootState.gxtComponentTag);
-            }
-          } else if (gxtRoot && 'state' in gxtRoot && 'ref' in gxtRoot) {
-            // OutletView re-render: call the root outlet re-render function
-            // which clears innerHTML and re-renders the outlet state.
-            const outletRerender = (globalThis as any).__gxtRootOutletRerender;
-            if (typeof outletRerender === 'function') {
-              const outletRef = (gxtRoot as any).ref || (globalThis as any).__gxtTopOutletRef;
-              if (outletRef) {
-                outletRerender(outletRef);
+              // Update the tag value after successful render
+              // This ensures we only re-render once per property change
+              if (gxtRootState.gxtComponentTag) {
+                gxtRootState.gxtLastTagValue = valueForTag(gxtRootState.gxtComponentTag);
+              }
+            } else if (gxtRoot && 'state' in gxtRoot && 'ref' in gxtRoot) {
+              // OutletView re-render: call the root outlet re-render function
+              // which clears innerHTML and re-renders the outlet state.
+              const outletRerender = (globalThis as any).__gxtRootOutletRerender;
+              if (typeof outletRerender === 'function') {
+                const outletRef = (gxtRoot as any).ref || (globalThis as any).__gxtTopOutletRef;
+                if (outletRef) {
+                  outletRerender(outletRef);
+                }
               }
             }
-          }
-        });
-
-        // Deferred lifecycle errors are stored on __gxtDeferredError and
-        // re-thrown by renderRoots (outside errorLoopTransaction).
-      } else {
-        // Use standard glimmer rendering
-        let iterator = renderMain(
-          context,
-          owner,
-          self,
-          builder(context.env, { element: parentElement, nextSibling: null }),
-          layout,
-          dynamicScope
-        );
-
-        let result = (this.result = iterator.sync());
-
-        associateDestroyableChild(owner, result);
-
-        this.render = errorLoopTransaction(() => {
-          if (isDestroying(result) || isDestroyed(result)) return;
-
-          return result.rerender({
-            alwaysRevalidate: false,
           });
-        });
+
+          // Deferred lifecycle errors are stored on __gxtDeferredError and
+          // re-thrown by renderRoots (outside errorLoopTransaction).
+        } else {
+          // Use standard glimmer rendering
+          let iterator = renderMain(
+            context,
+            owner,
+            self,
+            builder(context.env, { element: parentElement, nextSibling: null }),
+            layout,
+            dynamicScope
+          );
+
+          let result = (this.result = iterator.sync());
+
+          associateDestroyableChild(owner, result);
+
+          this.render = errorLoopTransaction(() => {
+            if (isDestroying(result) || isDestroyed(result)) return;
+
+            return result.rerender({
+              alwaysRevalidate: false,
+            });
+          });
+        }
+      } finally {
+        (globalThis as any).__gxtRenderDepth = depth;
       }
-      } finally { (globalThis as any).__gxtRenderDepth = depth; }
     });
   }
 
@@ -1124,9 +1200,7 @@ class ClassicRootState {
        */
 
       inTransaction(env, () => {
-        // @ts-expect-error foo-bar
-        destroyElementSync(result);
-        // runDestructors(result.ctx);
+        destroyElementSync(result!);
         destroy(result!);
       });
     }
@@ -1231,7 +1305,11 @@ if (!(globalThis as any).__GXT_MODE__) {
     ) {
       const syncNow = (globalThis as any).__gxtSyncDomNow;
       if (typeof syncNow === 'function') {
-        try { syncNow(); } catch { /* errors handled inside sync */ }
+        try {
+          syncNow();
+        } catch {
+          /* errors handled inside sync */
+        }
       }
     }
     resolveRenderPromise();
@@ -1241,87 +1319,91 @@ if (!(globalThis as any).__GXT_MODE__) {
 // Expose a function to force re-render all GXT roots.
 // Called from __gxtSyncDomNow when GXT's cell tracking misses changes
 // made through Ember's set() / notifyPropertyChange.
-(globalThis as any).__gxtForceEmberRerender = function() {
+(globalThis as any).__gxtForceEmberRerender = function () {
   // Re-entrancy guard: prevent infinite loops when morphing triggers
   // cell updates that schedule additional force-rerenders
   if ((globalThis as any).__gxtForceRerenderInProgress) return;
   (globalThis as any).__gxtForceRerenderInProgress = true;
   try {
-  const hadPendingSync = !!(globalThis as any).__gxtHadPendingSync;
-  const hadNestedObjectChange = !!(globalThis as any).__gxtHadNestedObjectChange;
-  // Collect roots whose own tag moved RIGHT NOW (after Phase 1a of
-  // __gxtSyncDomNow, before Phase 1b updateRootTagValues was called).
-  // If __gxtUpdateRootTagValues was already called earlier in this sync,
-  // it stashed the dirty list on globalThis.__gxtDirtyRootsAtSync — use that.
-  const dirtyRootsFromSync = (globalThis as any).__gxtDirtyRootsAtSync as any[] | undefined;
-  const dirtyRoots: any[] = [];
-  const allGxtRoots: any[] = [];
-  for (const renderer of renderers) {
-    const state = (renderer as any).state as RendererState;
-    if (!state) continue;
-    const debugRoots = state.debug?.roots;
-    if (!debugRoots) continue;
-    for (const root of debugRoots) {
-      const classicRoot = root as any;
-      if (classicRoot.isGxt && (classicRoot.gxtComponentTag || classicRoot.isOutletView)) {
-        allGxtRoots.push(classicRoot);
-        const currentTagValue = classicRoot.gxtComponentTag ? valueForTag(classicRoot.gxtComponentTag) : 0;
-        if (currentTagValue !== classicRoot.gxtLastTagValue) {
-          dirtyRoots.push(classicRoot);
+    const hadPendingSync = !!(globalThis as any).__gxtHadPendingSync;
+    const hadNestedObjectChange = !!(globalThis as any).__gxtHadNestedObjectChange;
+    // Collect roots whose own tag moved RIGHT NOW (after Phase 1a of
+    // __gxtSyncDomNow, before Phase 1b updateRootTagValues was called).
+    // If __gxtUpdateRootTagValues was already called earlier in this sync,
+    // it stashed the dirty list on globalThis.__gxtDirtyRootsAtSync — use that.
+    const dirtyRootsFromSync = (globalThis as any).__gxtDirtyRootsAtSync as any[] | undefined;
+    const dirtyRoots: any[] = [];
+    const allGxtRoots: any[] = [];
+    for (const renderer of renderers) {
+      const state = (renderer as any).state as RendererState;
+      if (!state) continue;
+      const debugRoots = state.debug?.roots;
+      if (!debugRoots) continue;
+      for (const root of debugRoots) {
+        const classicRoot = root as any;
+        if (classicRoot.isGxt && (classicRoot.gxtComponentTag || classicRoot.isOutletView)) {
+          allGxtRoots.push(classicRoot);
+          const currentTagValue = classicRoot.gxtComponentTag
+            ? valueForTag(classicRoot.gxtComponentTag)
+            : 0;
+          if (currentTagValue !== classicRoot.gxtLastTagValue) {
+            dirtyRoots.push(classicRoot);
+          }
         }
       }
     }
-  }
-  // Use the pre-sync dirty set (captured before updateRootTagValues cleaned
-  // them), falling back to live comparison for call-sites that don't go
-  // through the sync pipeline.
-  const effectiveDirtyRoots =
-    dirtyRootsFromSync && dirtyRootsFromSync.length > 0
-      ? dirtyRootsFromSync.filter((r) => allGxtRoots.includes(r))
-      : dirtyRoots;
-  // Choose which roots to force-render:
-  //   - If any root's own tag moved in this sync, render only those (scoped).
-  //     This is the common case: a component mutates its own @tracked state.
-  //   - Otherwise, fall back to force-render-all only when hadPendingSync AND
-  //     hadNestedObjectChange — i.e., a nested-object property change that
-  //     doesn't dirty any component's SELF_TAG (e.g., set(m, 'message', ...)).
-  //     This preserves cross-root propagation for nested object mutations
-  //     while avoiding spurious full re-renders when a @tracked mutation on
-  //     a CHILD component doesn't change any root's tag (child is reactive
-  //     via its own cell-tracked getters).
-  const rootsToRender =
-    effectiveDirtyRoots.length > 0
-      ? effectiveDirtyRoots
-      : hadPendingSync && hadNestedObjectChange
-      ? allGxtRoots
-      : [];
-  for (const classicRoot of rootsToRender) {
-    // Tag is dirty — force re-render. Increment the render pass ID
-    // so the instance pool resets claimed flags and REUSES existing
-    // instances instead of creating new ones (which would fire
-    // spurious init/render lifecycle hooks).
-    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
-    (globalThis as any).__gxtIsForceRerender = true;
-    // Track which root components were re-rendered so
-    // __gxtDestroyUnclaimedPoolEntries can find their children.
-    const rerenderedRoots = (globalThis as any).__gxtRerenderedRoots || ((globalThis as any).__gxtRerenderedRoots = []);
-    if (classicRoot.root) rerenderedRoots.push(classicRoot.root);
-    try {
-      classicRoot.render();
-    } catch (renderErr) {
-      // Store render error so it can propagate to assert.throws
-      if (!classicRoot.__gxtDeferredError) {
-        classicRoot.__gxtDeferredError = renderErr;
+    // Use the pre-sync dirty set (captured before updateRootTagValues cleaned
+    // them), falling back to live comparison for call-sites that don't go
+    // through the sync pipeline.
+    const effectiveDirtyRoots =
+      dirtyRootsFromSync && dirtyRootsFromSync.length > 0
+        ? dirtyRootsFromSync.filter((r) => allGxtRoots.includes(r))
+        : dirtyRoots;
+    // Choose which roots to force-render:
+    //   - If any root's own tag moved in this sync, render only those (scoped).
+    //     This is the common case: a component mutates its own @tracked state.
+    //   - Otherwise, fall back to force-render-all only when hadPendingSync AND
+    //     hadNestedObjectChange — i.e., a nested-object property change that
+    //     doesn't dirty any component's SELF_TAG (e.g., set(m, 'message', ...)).
+    //     This preserves cross-root propagation for nested object mutations
+    //     while avoiding spurious full re-renders when a @tracked mutation on
+    //     a CHILD component doesn't change any root's tag (child is reactive
+    //     via its own cell-tracked getters).
+    const rootsToRender =
+      effectiveDirtyRoots.length > 0
+        ? effectiveDirtyRoots
+        : hadPendingSync && hadNestedObjectChange
+          ? allGxtRoots
+          : [];
+    for (const classicRoot of rootsToRender) {
+      // Tag is dirty — force re-render. Increment the render pass ID
+      // so the instance pool resets claimed flags and REUSES existing
+      // instances instead of creating new ones (which would fire
+      // spurious init/render lifecycle hooks).
+      (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+      (globalThis as any).__gxtIsForceRerender = true;
+      // Track which root components were re-rendered so
+      // __gxtDestroyUnclaimedPoolEntries can find their children.
+      const rerenderedRoots =
+        (globalThis as any).__gxtRerenderedRoots || ((globalThis as any).__gxtRerenderedRoots = []);
+      if (classicRoot.root) rerenderedRoots.push(classicRoot.root);
+      try {
+        classicRoot.render();
+      } catch (renderErr) {
+        // Store render error so it can propagate to assert.throws
+        if (!classicRoot.__gxtDeferredError) {
+          classicRoot.__gxtDeferredError = renderErr;
+        }
+      } finally {
+        (globalThis as any).__gxtIsForceRerender = false;
+      }
+      // Re-throw deferred errors (from lifecycle hooks like destroy)
+      if (classicRoot.__gxtDeferredError) {
+        const err = classicRoot.__gxtDeferredError;
+        classicRoot.__gxtDeferredError = null;
+        throw err;
       }
     }
-    finally { (globalThis as any).__gxtIsForceRerender = false; }
-    // Re-throw deferred errors (from lifecycle hooks like destroy)
-    if (classicRoot.__gxtDeferredError) {
-      const err = classicRoot.__gxtDeferredError;
-      classicRoot.__gxtDeferredError = null;
-      throw err;
-    }
-  }
   } finally {
     (globalThis as any).__gxtForceRerenderInProgress = false;
     (globalThis as any).__gxtHadPendingSync = false;
@@ -1335,7 +1417,7 @@ if (!(globalThis as any).__GXT_MODE__) {
 // __gxtTriggerReRender to distinguish own-SELF_TAG changes (which the
 // cell-based sync pipeline handles) from nested-object changes (which need
 // a force-rerender fallback).
-(globalThis as any).__gxtIsRootComponent = function(obj: any): boolean {
+(globalThis as any).__gxtIsRootComponent = function (obj: any): boolean {
   if (!obj || typeof obj !== 'object') return false;
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
@@ -1356,7 +1438,7 @@ if (!(globalThis as any).__GXT_MODE__) {
 // ALSO records which roots WERE dirty (on globalThis.__gxtDirtyRootsAtSync)
 // so __gxtForceEmberRerender can scope its rerender to just those roots,
 // avoiding a full-tree force-render when only some components mutated.
-(globalThis as any).__gxtUpdateRootTagValues = function() {
+(globalThis as any).__gxtUpdateRootTagValues = function () {
   const dirtyRoots: any[] = [];
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
@@ -1379,7 +1461,7 @@ if (!(globalThis as any).__GXT_MODE__) {
 
 // Check if all GXT root tag values are current (meaning cell-based updates
 // already brought the DOM up to date). Used to skip redundant morph renders.
-(globalThis as any).__gxtCheckAllTagsCurrent = function(): boolean {
+(globalThis as any).__gxtCheckAllTagsCurrent = function (): boolean {
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
     if (!state) continue;
@@ -1592,7 +1674,9 @@ class RendererState {
       }
     }
 
-    return this.#destroyed || this.#roots.length === 0 || validateTag(CURRENT_TAG, this.#lastRevision);
+    return (
+      this.#destroyed || this.#roots.length === 0 || validateTag(CURRENT_TAG, this.#lastRevision)
+    );
   }
 
   revalidate(renderer: BaseRenderer): void {
@@ -1675,7 +1759,8 @@ function _renderComponentGxt(
   existing?.destroy();
 
   // Get the target element
-  const targetElement = into instanceof Element ? into : ('element' in into ? (into as any).element : into);
+  const targetElement =
+    into instanceof Element ? into : 'element' in into ? (into as any).element : into;
 
   // Clear the target on first render
   if (!existing && targetElement instanceof Element) {
@@ -1696,7 +1781,11 @@ function _renderComponentGxt(
     if (destroyed) return;
     destroyed = true;
     if (classicReactorUnsub) {
-      try { classicReactorUnsub(); } catch { /* ignore */ }
+      try {
+        classicReactorUnsub();
+      } catch {
+        /* ignore */
+      }
       classicReactorUnsub = null;
     }
     if (targetElement instanceof Element) {
@@ -1710,9 +1799,10 @@ function _renderComponentGxt(
 
     // Walk prototype chain if not found directly (for class-based components)
     if (!template && component) {
-      let proto = typeof component === 'function'
-        ? Object.getPrototypeOf(component)
-        : Object.getPrototypeOf(component);
+      let proto =
+        typeof component === 'function'
+          ? Object.getPrototypeOf(component)
+          : Object.getPrototypeOf(component);
       while (proto && proto !== Function.prototype && proto !== Object.prototype) {
         template = globalTemplates?.get(proto);
         if (template) break;
@@ -1737,13 +1827,19 @@ function _renderComponentGxt(
             const innerGet = desc?.get;
             if (innerGet) {
               Object.defineProperty(gxtArgs, key, {
-                get: function () { touchClassicBridge(); return innerGet.call(this); },
+                get: function () {
+                  touchClassicBridge();
+                  return innerGet.call(this);
+                },
                 enumerable: true,
                 configurable: true,
               });
             } else {
               Object.defineProperty(gxtArgs, key, {
-                get: () => { touchClassicBridge(); return (args as any)[key]; },
+                get: () => {
+                  touchClassicBridge();
+                  return (args as any)[key];
+                },
                 enumerable: true,
                 configurable: true,
               });
@@ -1777,7 +1873,9 @@ function _renderComponentGxt(
 
     // Determine if the component is a class (needs instantiation) or template-only
     const isClass = typeof component === 'function' && component.prototype;
-    const isTemplateOnly = !isClass || (component as any).__templateOnly === true ||
+    const isTemplateOnly =
+      !isClass ||
+      (component as any).__templateOnly === true ||
       (component as any).constructor?.name === 'TemplateOnlyComponentDefinition' ||
       (globalThis as any).INTERNAL_MANAGERS?.has?.(component);
 
@@ -1825,9 +1923,7 @@ function _renderComponentGxt(
 
       if (!instance) {
         if (typeof ComponentClass.create === 'function') {
-          instance = ComponentClass.create(
-            Object.assign({}, args || {}, { owner })
-          );
+          instance = ComponentClass.create(Object.assign({}, args || {}, { owner }));
         } else {
           try {
             instance = new ComponentClass(owner, args || {});
@@ -1850,13 +1946,19 @@ function _renderComponentGxt(
           const innerGet = desc?.get;
           if (innerGet) {
             Object.defineProperty(instance.args, key, {
-              get: function () { touchClassicBridge(); return innerGet.call(this); },
+              get: function () {
+                touchClassicBridge();
+                return innerGet.call(this);
+              },
               enumerable: true,
               configurable: true,
             });
           } else {
             Object.defineProperty(instance.args, key, {
-              get: () => { touchClassicBridge(); return (args as any)[key]; },
+              get: () => {
+                touchClassicBridge();
+                return (args as any)[key];
+              },
               enumerable: true,
               configurable: true,
             });
@@ -1872,7 +1974,10 @@ function _renderComponentGxt(
       if (!instance) {
         for (const key of Object.keys(args)) {
           Object.defineProperty(renderContext, key, {
-            get: () => { touchClassicBridge(); return (args as any)[key]; },
+            get: () => {
+              touchClassicBridge();
+              return (args as any)[key];
+            },
             enumerable: true,
             configurable: true,
           });
@@ -1887,7 +1992,10 @@ function _renderComponentGxt(
       const argsObj: any = {};
       for (const key of Object.keys(args)) {
         Object.defineProperty(argsObj, key, {
-          get: () => { touchClassicBridge(); return (args as any)[key]; },
+          get: () => {
+            touchClassicBridge();
+            return (args as any)[key];
+          },
           enumerable: true,
           configurable: true,
         });
@@ -1932,7 +2040,10 @@ function _renderComponentGxt(
     let _rendering = false;
     const _doRender = () => {
       if (destroyed || _rendering) return;
-      if (!(targetElement instanceof Element) || !targetElement.isConnected && classicReactorUnsub) {
+      if (
+        !(targetElement instanceof Element) ||
+        (!targetElement.isConnected && classicReactorUnsub)
+      ) {
         // Target detached — leave DOM alone until reattached. We still keep
         // the reactor so the first reattachment triggers a fresh render.
       }
@@ -1982,12 +2093,18 @@ function _renderComponentGxt(
     {
       const fireReactor = () => {
         if (destroyed) return;
-        try { _doRender(); } catch { /* ignore individual reactor errors */ }
+        try {
+          _doRender();
+        } catch {
+          /* ignore individual reactor errors */
+        }
         // After re-render, flush GXT DOM so the new text content is visible
         try {
           const syncNow = (globalThis as any).__gxtSyncDomNow;
           if (typeof syncNow === 'function') syncNow();
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       };
       classicReactorUnsub = registerClassicReactor(() => {
         if (destroyed || !reactorInitialized) return;
@@ -2020,13 +2137,7 @@ function _renderComponentGxt(
     } catch {
       // Ignore flush errors in renderComponent context
     }
-    try {
-      flushRenderErrors();
-    } catch (e) {
-      // Re-throw render errors
-      throw e;
-    }
-
+    flushRenderErrors();
   } finally {
     (globalThis as any).owner = prevOwner;
   }
@@ -2378,8 +2489,16 @@ export class Renderer extends BaseRenderer {
   appendTo(view: ClassicComponent, target: SimpleElement): void {
     // Debug: log that appendTo was called
     if ((globalThis as any).__DEBUG_GXT_RENDER) {
-      console.log('[Renderer.appendTo] called with view type:', view?.constructor?.name || typeof view);
-      console.log('[Renderer.appendTo] view has layoutName:', 'layoutName' in (view || {}), 'value:', (view as any)?.layoutName);
+      console.log(
+        '[Renderer.appendTo] called with view type:',
+        view?.constructor?.name || typeof view
+      );
+      console.log(
+        '[Renderer.appendTo] view has layoutName:',
+        'layoutName' in (view || {}),
+        'value:',
+        (view as any)?.layoutName
+      );
     }
 
     // NOTE: _tryGxtRender is disabled because the GXT runtime compiler generates
@@ -2445,10 +2564,16 @@ export class Renderer extends BaseRenderer {
       id: view.elementId || `gxt-root-${Math.random().toString(36).slice(2)}`,
       destroyed: false,
       result: {
-        rerender: () => { /* GXT handles reactivity */ },
-        destroy: () => { target.innerHTML = ''; },
+        rerender: () => {
+          /* GXT handles reactivity */
+        },
+        destroy: () => {
+          target.innerHTML = '';
+        },
       },
-      render: () => { /* Already rendered */ },
+      render: () => {
+        /* Already rendered */
+      },
       isFor: (c: unknown) => c === view,
       destroy: () => {
         target.innerHTML = '';

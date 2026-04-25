@@ -7,12 +7,23 @@ import { fileURLToPath, URL } from 'node:url';
 (globalThis as any).IS_GLIMMER_COMPAT_MODE ??= true;
 (globalThis as any).WITH_EMBER_INTEGRATION ??= true;
 (globalThis as any).location ??= { pathname: '', search: '', hash: '', href: '' };
-(globalThis as any).document ??= { createElement: () => ({ style: {} }), createTextNode: () => ({}), createComment: () => ({}), querySelector: () => null, querySelectorAll: () => [], head: { appendChild: () => {} }, body: { appendChild: () => {} }, addEventListener: () => {} };
+(globalThis as any).document ??= {
+  createElement: () => ({ style: {} }),
+  createTextNode: () => ({}),
+  createComment: () => ({}),
+  querySelector: () => null,
+  querySelectorAll: () => [],
+  head: { appendChild: () => {} },
+  body: { appendChild: () => {} },
+  addEventListener: () => {},
+};
 (globalThis as any).window ??= globalThis;
 (globalThis as any).requestAnimationFrame ??= (cb: any) => setTimeout(cb, 0);
 
 const { compiler } = await import('@lifeart/gxt/compiler');
-const { default: esbuildDecoratorsPlugin } = await import('./compat/esbuild-decorators-plugin.mjs');
+const { default: esbuildDecoratorsPlugin } = await import(
+  '../@ember/-internals/gxt-backend/esbuild-decorators-plugin.mjs'
+);
 
 const projectRoot = import.meta.url;
 
@@ -45,13 +56,16 @@ function esbuildStubPlugin() {
   return {
     name: 'stub-gxt-build-deps',
     setup(build: any) {
-      const filter = new RegExp('^(' + buildOnlyDeps.map(d => d.replace('/', '\\/')).join('|') + ')$');
+      const filter = new RegExp(
+        '^(' + buildOnlyDeps.map((d) => d.replace('/', '\\/')).join('|') + ')$'
+      );
       build.onResolve({ filter }, (args: any) => ({
         path: args.path,
         namespace: 'stub-build-dep',
       }));
       build.onLoad({ filter: /.*/, namespace: 'stub-build-dep' }, () => ({
-        contents: 'export default {}; export const Preprocessor = class {}; export const transformAsync = () => {}; export const transformSync = () => {};',
+        contents:
+          'export default {}; export const Preprocessor = class {}; export const transformAsync = () => {}; export const transformSync = () => {};',
         loader: 'js',
       }));
     },
@@ -78,7 +92,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    exclude: ['@glimmer/syntax', '@glimmer/compiler', '@lifeart/gxt', '@lifeart/gxt/glimmer-compatibility'],
+    exclude: [
+      '@glimmer/syntax',
+      '@glimmer/compiler',
+      '@lifeart/gxt',
+      '@lifeart/gxt/glimmer-compatibility',
+    ],
     esbuildOptions: {
       plugins: [esbuildStubPlugin()],
     },
@@ -89,43 +108,63 @@ export default defineConfig(({ mode }) => ({
       { find: /^@\/(.+)/, replacement: '/src/$1' },
       {
         find: '@ember/template-compilation',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/compile`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/compile`, projectRoot)
+        ),
       },
       {
         find: '@ember/-internals/deprecations',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/deprecate`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/deprecate`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/application',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-application`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/glimmer-application`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/utils',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-util`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/glimmer-util`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/manager',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/manager`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/manager`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/validator',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/validator`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/validator`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/destroyable',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/destroyable`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/destroyable`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/reference',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/reference`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/reference`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/env',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-env`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/glimmer-env`, projectRoot)
+        ),
       },
       {
         find: '@glimmer/syntax',
-        replacement: fileURLToPath(new URL(`../@ember/-internals/gxt-backend/glimmer-syntax`, projectRoot)),
+        replacement: fileURLToPath(
+          new URL(`../@ember/-internals/gxt-backend/glimmer-syntax`, projectRoot)
+        ),
       },
     ],
   },

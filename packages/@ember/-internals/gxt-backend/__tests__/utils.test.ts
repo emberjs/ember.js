@@ -161,7 +161,7 @@ describe('splitWhitespace', () => {
   });
 
   it('handles tabs and newlines', () => {
-    expect(splitWhitespace("a\tb\nc")).toEqual(['a', 'b', 'c']);
+    expect(splitWhitespace('a\tb\nc')).toEqual(['a', 'b', 'c']);
   });
 
   it('handles single word', () => {

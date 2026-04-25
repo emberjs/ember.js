@@ -21,8 +21,8 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
     if (text === '') return true;
     // GXT internal placeholder comments
     if (
-      (globalThis as any).__GXT_MODE__ && (
-        text.includes('placeholder') ||
+      (globalThis as any).__GXT_MODE__ &&
+      (text.includes('placeholder') ||
         text.includes('if-entry') ||
         text.includes('each-entry') ||
         text.includes('list-target') ||
@@ -30,8 +30,7 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
         text.includes('list bottom marker') ||
         text.includes('curried-start') ||
         text.includes('curried-end') ||
-        text === '/htmlRaw'
-      )
+        text === '/htmlRaw')
     ) {
       return true;
     }
@@ -82,7 +81,11 @@ export abstract class AbstractStrictTestCase {
           for (const entry of toFlush) {
             if (!entry.cached.pendingDestroy) continue;
             try {
-              if (entry.isCustom && entry.cached.manager?.destroyModifier && !entry.cached.instance?.__gxtModDestroyed) {
+              if (
+                entry.isCustom &&
+                entry.cached.manager?.destroyModifier &&
+                !entry.cached.instance?.__gxtModDestroyed
+              ) {
                 entry.cached.manager.destroyModifier(entry.cached.instance);
                 if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
               }
@@ -90,7 +93,9 @@ export abstract class AbstractStrictTestCase {
                 const destroyFn = (globalThis as any).__gxtDestroyFn;
                 if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
               }
-            } catch { /* ignore individual modifier destroy errors */ }
+            } catch {
+              /* ignore individual modifier destroy errors */
+            }
             const elCache = entry.cache?.get(entry.element);
             if (elCache) {
               elCache.delete(entry.modKey);
@@ -111,11 +116,15 @@ export abstract class AbstractStrictTestCase {
                 inst.__gxtModManager.destroyModifier(inst);
                 inst.__gxtModDestroyed = true;
               }
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
           modMgr._updatedInstances.clear();
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
       if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
@@ -320,7 +329,8 @@ export default abstract class AbstractTestCase {
         // An htmlRaw placeholder is an empty comment immediately followed by
         // a /htmlRaw anchor comment (used for triple-stache reactive updates).
         const next = node.nextSibling;
-        const isHtmlRawPlaceholder = next instanceof Comment && (next.textContent || '') === '/htmlRaw';
+        const isHtmlRawPlaceholder =
+          next instanceof Comment && (next.textContent || '') === '/htmlRaw';
         if (!isHtmlRawPlaceholder) {
           toRemove.push(node);
         }

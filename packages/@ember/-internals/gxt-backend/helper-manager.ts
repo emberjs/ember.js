@@ -7,7 +7,13 @@
 // HelperManager delegate for a given owner.
 
 import { createCache } from './validator';
-import { createComputeRef, createConstRef, UNDEFINED_REFERENCE, REFERENCE, valueForRef } from './reference';
+import {
+  createComputeRef,
+  createConstRef,
+  UNDEFINED_REFERENCE,
+  REFERENCE,
+  valueForRef,
+} from './reference';
 import { associateDestroyableChild } from './destroyable';
 
 // Shared WeakSet to track capabilities created via helperCapabilities()
@@ -118,7 +124,11 @@ function _callGetValueWithBacktracking(
   let debugName = 'Helper';
   if (typeof delegate.getDebugName === 'function') {
     const definition = self._getDefinitionForBucket(bucket);
-    try { debugName = delegate.getDebugName(definition || bucket) || 'Helper'; } catch { /* fallback */ }
+    try {
+      debugName = delegate.getDebugName(definition || bucket) || 'Helper';
+    } catch {
+      /* fallback */
+    }
   }
   if (typeof beginFrame === 'function' && typeof endFrame === 'function') {
     beginFrame(debugName);
@@ -186,10 +196,12 @@ export class CustomHelperManager {
       const caps = delegate.capabilities;
       if (!caps || !FROM_CAPABILITIES.has(caps)) {
         const err = new Error(
-          "Custom helper managers must have a `capabilities` property " +
-          "that is the result of calling the `capabilities('3.23')` " +
-          "(imported via `import { capabilities } from '@ember/helper';`). " +
-          "Received: `" + (caps ? JSON.stringify(caps) : String(caps)) + "`"
+          'Custom helper managers must have a `capabilities` property ' +
+            "that is the result of calling the `capabilities('3.23')` " +
+            "(imported via `import { capabilities } from '@ember/helper';`). " +
+            'Received: `' +
+            (caps ? JSON.stringify(caps) : String(caps)) +
+            '`'
         );
         // Capture for flushRenderErrors so assert.throws() can see it
         // even if GXT swallows synchronous render-time exceptions.
@@ -245,24 +257,40 @@ export class CustomHelperManager {
             try {
               Object.defineProperty(args, 'positional', {
                 get() {
-                  try { _consumeTag(_tagFor(argsTag, 'positional')); } catch { /* noop */ }
+                  try {
+                    _consumeTag(_tagFor(argsTag, 'positional'));
+                  } catch {
+                    /* noop */
+                  }
                   return _positional;
                 },
                 set(v) {
                   _positional = v;
-                  try { _dirtyTagFor(argsTag, 'positional'); } catch { /* noop */ }
+                  try {
+                    _dirtyTagFor(argsTag, 'positional');
+                  } catch {
+                    /* noop */
+                  }
                 },
                 configurable: true,
                 enumerable: true,
               });
               Object.defineProperty(args, 'named', {
                 get() {
-                  try { _consumeTag(_tagFor(argsTag, 'named')); } catch { /* noop */ }
+                  try {
+                    _consumeTag(_tagFor(argsTag, 'named'));
+                  } catch {
+                    /* noop */
+                  }
                   return _named;
                 },
                 set(v) {
                   _named = v;
-                  try { _dirtyTagFor(argsTag, 'named'); } catch { /* noop */ }
+                  try {
+                    _dirtyTagFor(argsTag, 'named');
+                  } catch {
+                    /* noop */
+                  }
                 },
                 configurable: true,
                 enumerable: true,
@@ -411,7 +439,9 @@ export class CustomHelperManager {
           if (destroyable) {
             associateDestroyableChild(ref, destroyable);
           }
-        } catch { /* association failures must not break rendering */ }
+        } catch {
+          /* association failures must not break rendering */
+        }
       }
       return ref;
     };
@@ -437,7 +467,8 @@ export class CustomHelperManager {
     const owner = (globalThis as any).owner;
     const manager = this.getDelegateFor(owner);
     // Wrap in backtracking frame so read-then-write is detected with debug name
-    const debugName = definition && manager?.getDebugName ? manager.getDebugName(definition) : 'Helper';
+    const debugName =
+      definition && manager?.getDebugName ? manager.getDebugName(definition) : 'Helper';
     const g = globalThis as any;
     const beginFrame = g.__gxtBeginBacktrackingFrame;
     const endFrame = g.__gxtEndBacktrackingFrame;
@@ -465,7 +496,13 @@ export class CustomHelperManager {
     const owner = (globalThis as any).owner;
     try {
       const manager = this.getDelegateFor(owner);
-      return manager?.capabilities || { hasValue: false, hasDestroyable: false, hasScheduledEffect: false };
+      return (
+        manager?.capabilities || {
+          hasValue: false,
+          hasDestroyable: false,
+          hasScheduledEffect: false,
+        }
+      );
     } catch {
       return { hasValue: false, hasDestroyable: false, hasScheduledEffect: false };
     }

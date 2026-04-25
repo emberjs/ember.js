@@ -53,7 +53,7 @@ export function extendRegistry(registry) {
   Object.keys(registry).forEach((key) => {
     try {
       window[env.APP.globalName].register(key, registry[key]);
-    } catch(e) {
+    } catch (e) {
       // hot-reload case
       window[env.APP.globalName].unregister(key);
       window[env.APP.globalName].register(key, registry[key]);

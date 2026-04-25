@@ -154,11 +154,21 @@ function withGxtContext(
 ): unknown {
   const domApi = {
     doc: document,
-    parent(node: Node) { return node.parentNode; },
-    isNode(item: unknown) { return item && typeof item === 'object' && 'nodeType' in (item as object); },
-    destroy(node: Node | null) { node && (node as Element).remove(); },
-    clearChildren(el: Element) { el.innerHTML = ''; },
-    toString() { return 'html:dom-api'; },
+    parent(node: Node) {
+      return node.parentNode;
+    },
+    isNode(item: unknown) {
+      return item && typeof item === 'object' && 'nodeType' in (item as object);
+    },
+    destroy(node: Node | null) {
+      node && (node as Element).remove();
+    },
+    clearChildren(el: Element) {
+      el.innerHTML = '';
+    },
+    toString() {
+      return 'html:dom-api';
+    },
     addEventListener(el: Element, event: string, handler: EventListener) {
       el.addEventListener(event, handler);
       return () => el.removeEventListener(event, handler);
@@ -189,14 +199,24 @@ function withGxtContext(
       el[name] = value;
       return value;
     },
-    comment(str = '') { return document.createComment(str); },
-    text(str = '') { return document.createTextNode(str); },
-    textContent(node: Node, text: string) { node.textContent = text; },
-    fragment() { return document.createDocumentFragment(); },
-    element(tag = '') { return document.createElement(tag); },
+    comment(str = '') {
+      return document.createComment(str);
+    },
+    text(str = '') {
+      return document.createTextNode(str);
+    },
+    textContent(node: Node, text: string) {
+      node.textContent = text;
+    },
+    fragment() {
+      return document.createDocumentFragment();
+    },
+    element(tag = '') {
+      return document.createElement(tag);
+    },
     insert(parent: Node | null, node: Node, before?: Node | null) {
       parent && parent.insertBefore(node, before || null);
-    }
+    },
   };
 
   const gxtRoot = createRoot(document) as Record<string | symbol, unknown>;
@@ -279,9 +299,7 @@ export function createTemplateFactory(
     if (!gxtCtx.args) gxtCtx.args = {};
 
     try {
-      const result = withGxtContext(gxtCtx, parentEl, () =>
-        templateFn.call(gxtCtx, gxtCtx.args)
-      );
+      const result = withGxtContext(gxtCtx, parentEl, () => templateFn.call(gxtCtx, gxtCtx.args));
       const nodes = processNodes(result, parentEl);
       return { nodes, ctx: gxtCtx as Record<string, unknown> };
     } catch (e) {
@@ -310,7 +328,9 @@ export function createTemplateFactory(
       moduleName,
       symbolTable: { hasEval: false, symbols: [], upvars: [] },
       meta: { moduleName, size: 0 },
-      compile() { return 999999; },
+      compile() {
+        return 999999;
+      },
     };
   };
   factory.asWrappedLayout = factory.asLayout;

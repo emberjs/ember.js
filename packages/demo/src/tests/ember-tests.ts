@@ -153,7 +153,7 @@ moduleFor(
 
     '@test it renders named blocks'() {
       this.registerComponent('foo-bar', {
-        template: '<header>{{yield to="header"}}</header><main>{{yield}}</main>'
+        template: '<header>{{yield to="header"}}</header><main>{{yield}}</main>',
       });
 
       this.render(`
@@ -168,7 +168,7 @@ moduleFor(
 
     '@test it can use hasBlock'() {
       this.registerComponent('foo-bar', {
-        template: '{{#if (has-block)}}has block{{else}}no block{{/if}}'
+        template: '{{#if (has-block)}}has block{{else}}no block{{/if}}',
       });
 
       this.render('<FooBar>content</FooBar>');

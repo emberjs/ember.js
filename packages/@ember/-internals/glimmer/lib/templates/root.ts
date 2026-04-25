@@ -9,7 +9,7 @@ import {
   HTMLBrowserDOMApi as GxtHTMLBrowserDOMApi,
   renderComponent as gxtRenderComponent,
   Component as GxtComponent,
-// @ts-ignore
+  // @ts-ignore
 } from '@lifeart/gxt';
 
 // Ensure GXT context is initialized for the document
@@ -109,11 +109,30 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
   }
 
   if (DEBUG_TEMPLATE_LOOKUP) {
-    const tplName = tpl?.moduleName || tpl?.id || tpl?.name || (tpl?.constructor?.name !== 'Function' ? tpl?.constructor?.name : null);
+    const tplName =
+      tpl?.moduleName ||
+      tpl?.id ||
+      tpl?.name ||
+      (tpl?.constructor?.name !== 'Function' ? tpl?.constructor?.name : null);
     const tplKeys = tpl ? Object.keys(tpl).slice(0, 5).join(',') : 'null';
     const hasGxtCompiled = !!tpl?.__gxtCompiled;
     const hasGxtFactory = !!tpl?.__gxtFactory;
-    console.log('[root.ts] renderTemplateWithContext depth:', depth, 'type:', typeof tpl, 'hasRender:', typeof tpl?.render, 'name:', tplName, 'gxt:', hasGxtCompiled, 'factory:', hasGxtFactory, 'keys:', tplKeys);
+    console.log(
+      '[root.ts] renderTemplateWithContext depth:',
+      depth,
+      'type:',
+      typeof tpl,
+      'hasRender:',
+      typeof tpl?.render,
+      'name:',
+      tplName,
+      'gxt:',
+      hasGxtCompiled,
+      'factory:',
+      hasGxtFactory,
+      'keys:',
+      tplKeys
+    );
   }
 
   // PRIORITY 1: If it has a render method, use it directly
@@ -122,11 +141,18 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     try {
       tpl.render(ctx, target);
     } catch (err: any) {
-      if (DEBUG_TEMPLATE_LOOKUP) console.error('[root.ts] render error:', err?.message || err, 'for template:', tpl?.moduleName || tpl?.name);
+      if (DEBUG_TEMPLATE_LOOKUP)
+        console.error(
+          '[root.ts] render error:',
+          err?.message || err,
+          'for template:',
+          tpl?.moduleName || tpl?.name
+        );
       // Only rethrow assertion errors
       if (err?.message?.includes('Assertion Failed')) throw err;
     }
-    if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] After render, target innerHTML length:', target.innerHTML?.length);
+    if (DEBUG_TEMPLATE_LOOKUP)
+      console.log('[root.ts] After render, target innerHTML length:', target.innerHTML?.length);
   }
   // PRIORITY 2: If it's a function without render, call it as factory
   else if (typeof tpl === 'function') {
@@ -142,14 +168,16 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
       if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Function is a class, using new');
       try {
         // Check if it's a GXT Component class (has $template symbol or extends GxtComponent)
-        const isGxtComponent = tpl.prototype instanceof GxtComponent ||
+        const isGxtComponent =
+          tpl.prototype instanceof GxtComponent ||
           tpl.prototype?.constructor?.name === 'Component' ||
           tpl.prototype?.$template ||
           typeof tpl.prototype?.template === 'function';
 
         if (isGxtComponent) {
           // Use GXT's proper rendering flow for GXT components
-          if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Using gxtRenderComponent for GXT component');
+          if (DEBUG_TEMPLATE_LOOKUP)
+            console.log('[root.ts] Using gxtRenderComponent for GXT component');
           gxtRenderComponent(tpl, {
             element: target,
             args: ctx?.args || {},
@@ -165,7 +193,8 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
         // The function must be called with the component instance as `this`
         const templateProp = componentInstance.template || componentInstance['template'];
         if (typeof templateProp === 'function') {
-          if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Calling component.template() as method');
+          if (DEBUG_TEMPLATE_LOOKUP)
+            console.log('[root.ts] Calling component.template() as method');
           // Call the template function bound to the component instance
           template = templateProp.call(componentInstance);
         } else {
@@ -173,7 +202,8 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
           template = componentInstance;
         }
       } catch (e: any) {
-        if (DEBUG_TEMPLATE_LOOKUP) console.warn('[root.ts] Failed to instantiate class:', e?.message);
+        if (DEBUG_TEMPLATE_LOOKUP)
+          console.warn('[root.ts] Failed to instantiate class:', e?.message);
         return;
       }
     } else {
@@ -184,7 +214,16 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     }
 
     if (DEBUG_TEMPLATE_LOOKUP) {
-      console.log('[root.ts] Factory result:', template ? 'exists' : 'null', 'type:', typeof template, 'hasRender:', typeof template?.render, 'same:', template === tpl);
+      console.log(
+        '[root.ts] Factory result:',
+        template ? 'exists' : 'null',
+        'type:',
+        typeof template,
+        'hasRender:',
+        typeof template?.render,
+        'same:',
+        template === tpl
+      );
     }
 
     // Check if the result has $nodes array (GXT template result)
@@ -205,8 +244,16 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
           // Prefer arrays containing Nodes or nested arrays/primitives (the
           // shape of GXT's root node list). Skip arrays that clearly belong
           // to other GXT internals (e.g. destructor lists of functions).
-          if (val.length === 0 || val.some(v => v instanceof Node || typeof v === 'string' ||
-              (Array.isArray(v)) || (v && typeof v === 'object' && !((v as any) instanceof Function)))) {
+          if (
+            val.length === 0 ||
+            val.some(
+              (v) =>
+                v instanceof Node ||
+                typeof v === 'string' ||
+                Array.isArray(v) ||
+                (v && typeof v === 'object' && !((v as any) instanceof Function))
+            )
+          ) {
             gxtNodes = val;
             break;
           }
@@ -232,7 +279,8 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
       template.render(ctx, target);
     } else if (template && typeof template.render === 'function') {
       // Template has render even if it's same as factory
-      if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Calling template.render from factory result');
+      if (DEBUG_TEMPLATE_LOOKUP)
+        console.log('[root.ts] Calling template.render from factory result');
       template.render(ctx, target);
     }
   }
@@ -251,7 +299,8 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
   }
   // PRIORITY 5: If it has __wire__, it's a Glimmer compiled template - try to use ember-template-compiler
   else if (tpl && typeof tpl === 'object') {
-    if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Object without render - trying runtime compilation');
+    if (DEBUG_TEMPLATE_LOOKUP)
+      console.log('[root.ts] Object without render - trying runtime compilation');
     // Try to get the template source if available and compile at runtime
     // For now, just log that we can't render this
     if (DEBUG_TEMPLATE_LOOKUP) console.warn('[root.ts] Cannot render template:', tpl);
@@ -270,7 +319,10 @@ function getTemplateForComponent(component: any, owner: any): any {
     console.log('[root.ts]   layoutName:', component?.layoutName);
     console.log('[root.ts]   hasLayout:', !!component?.layout);
     console.log('[root.ts]   hasOwner:', !!owner);
-    console.log('[root.ts]   componentKeys:', component ? Object.keys(component).slice(0, 8).join(',') : 'null');
+    console.log(
+      '[root.ts]   componentKeys:',
+      component ? Object.keys(component).slice(0, 8).join(',') : 'null'
+    );
   }
 
   // Try getComponentTemplate from @glimmer/manager
@@ -305,11 +357,19 @@ function getTemplateForComponent(component: any, owner: any): any {
     if (tpl) {
       if (DEBUG_TEMPLATE_LOOKUP) {
         console.log('[root.ts] Found via layoutName lookup:', component.layoutName);
-        console.log('[root.ts] Template from lookup has render:', typeof tpl?.render, 'gxt:', !!tpl?.__gxtCompiled, 'keys:', tpl ? Object.keys(tpl).slice(0, 5).join(',') : 'null');
+        console.log(
+          '[root.ts] Template from lookup has render:',
+          typeof tpl?.render,
+          'gxt:',
+          !!tpl?.__gxtCompiled,
+          'keys:',
+          tpl ? Object.keys(tpl).slice(0, 5).join(',') : 'null'
+        );
       }
       return tpl;
     } else {
-      if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] layoutName lookup failed:', component.layoutName);
+      if (DEBUG_TEMPLATE_LOOKUP)
+        console.log('[root.ts] layoutName lookup failed:', component.layoutName);
     }
   }
 
@@ -318,7 +378,8 @@ function getTemplateForComponent(component: any, owner: any): any {
   if (componentName && owner) {
     const tpl = owner.lookup(`template:components/${componentName}`);
     if (tpl) {
-      if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Found via component name lookup:', componentName);
+      if (DEBUG_TEMPLATE_LOOKUP)
+        console.log('[root.ts] Found via component name lookup:', componentName);
       return tpl;
     }
   }
@@ -353,16 +414,21 @@ export default function createRootTemplate(_owner: any) {
   // Add render method for runtime gxt rendering
   (factory as any).render = (context: any, parentElement: Element) => {
     if (DEBUG_TEMPLATE_LOOKUP) {
-      console.log('[root.ts] render called, context keys:', context ? Object.keys(context).slice(0, 8).join(',') : 'null');
+      console.log(
+        '[root.ts] render called, context keys:',
+        context ? Object.keys(context).slice(0, 8).join(',') : 'null'
+      );
       console.log('[root.ts] hasLayoutName:', 'layoutName' in (context || {}));
       console.log('[root.ts] hasDebugContainerKey:', !!context?._debugContainerKey);
     }
     // CASE 1: ClassicComponent rendering (from RenderingTestCase.appendTo)
     // Detect by checking for layoutName property (ClassicComponent indicator)
-    if (context && ('layoutName' in context || context._debugContainerKey?.startsWith('component:'))) {
+    if (
+      context &&
+      ('layoutName' in context || context._debugContainerKey?.startsWith('component:'))
+    ) {
       const component = context;
       const owner = context.owner || _owner;
-
 
       // Get the component's template
       const componentTemplate = getTemplateForComponent(component, owner);
@@ -407,13 +473,32 @@ export default function createRootTemplate(_owner: any) {
         const _cellFor = (globalThis as any).__gxtCellFor;
         if (_cellFor) {
           const skipKeys = new Set([
-            'args', 'owner', 'outletState', '$fw', '$slots',
-            'constructor', 'init', 'willDestroy', 'toString',
-            'isDestroying', 'isDestroyed',
-            'tagName', 'layoutName', 'layout', 'renderer', 'element',
-            '_debugContainerKey', '_target', '_viewRegistry', 'ownerView',
-            'parentView', 'attributeBindings', 'classNameBindings',
-            'classNames', 'concatenatedProperties', 'mergedProperties',
+            'args',
+            'owner',
+            'outletState',
+            '$fw',
+            '$slots',
+            'constructor',
+            'init',
+            'willDestroy',
+            'toString',
+            'isDestroying',
+            'isDestroyed',
+            'tagName',
+            'layoutName',
+            'layout',
+            'renderer',
+            'element',
+            '_debugContainerKey',
+            '_target',
+            '_viewRegistry',
+            'ownerView',
+            'parentView',
+            'attributeBindings',
+            'classNameBindings',
+            'classNames',
+            'concatenatedProperties',
+            'mergedProperties',
             'elementId',
           ]);
           try {
@@ -469,10 +554,14 @@ export default function createRootTemplate(_owner: any) {
                   // installs a tracked getter/setter for the key, even if
                   // the property did not previously exist on the object.
                   _cellFor(renderContext, key, /* skipDefine */ false);
-                } catch { /* ignore non-configurable properties */ }
+                } catch {
+                  /* ignore non-configurable properties */
+                }
               }
             }
-          } catch { /* ignore PrototypeMixin walk errors */ }
+          } catch {
+            /* ignore PrototypeMixin walk errors */
+          }
         }
 
         renderTemplateWithContext(componentTemplate, parentElement, renderContext, owner);
@@ -527,7 +616,10 @@ export default function createRootTemplate(_owner: any) {
       let outletOwner = mainOutlet.render.owner || instance.owner;
 
       // If the route template is the outlet template itself, skip it and render nested directly
-      if (routeTemplate?.moduleName === 'template:-outlet' && mainOutlet?.outlets?.main?.render?.template) {
+      if (
+        routeTemplate?.moduleName === 'template:-outlet' &&
+        mainOutlet?.outlets?.main?.render?.template
+      ) {
         if (DEBUG_TEMPLATE_LOOKUP) {
           console.log('[root.ts] Route template is outlet, rendering nested template directly');
         }
@@ -545,7 +637,8 @@ export default function createRootTemplate(_owner: any) {
       // set via setComponentTemplate which we can retrieve.
       let componentInstance: any = null;
       if (routeTemplate && typeof routeTemplate?.render !== 'function') {
-        const componentTpl = getComponentTemplate(routeTemplate) ||
+        const componentTpl =
+          getComponentTemplate(routeTemplate) ||
           getComponentTemplate(routeTemplate?.constructor) ||
           (typeof routeTemplate === 'function' && getComponentTemplate(routeTemplate.prototype));
         if (componentTpl) {
@@ -553,16 +646,18 @@ export default function createRootTemplate(_owner: any) {
           // `this.message` in the template reads from the component, not the
           // controller. Pass @model and @controller through args.
           try {
-            const ComponentClass = typeof routeTemplate === 'function'
-              ? routeTemplate
-              : routeTemplate?.constructor;
+            const ComponentClass =
+              typeof routeTemplate === 'function' ? routeTemplate : routeTemplate?.constructor;
             if (ComponentClass && typeof ComponentClass === 'function') {
               componentInstance = new ComponentClass();
             }
-          } catch { /* ignore instantiation errors */ }
+          } catch {
+            /* ignore instantiation errors */
+          }
 
           // Instantiate the template factory with the owner
-          const resolvedTemplate = typeof componentTpl === 'function' ? componentTpl(outletOwner) : componentTpl;
+          const resolvedTemplate =
+            typeof componentTpl === 'function' ? componentTpl(outletOwner) : componentTpl;
           if (resolvedTemplate) {
             routeTemplate = resolvedTemplate;
           }
@@ -645,7 +740,11 @@ export default function createRootTemplate(_owner: any) {
           }
         } catch {
           // Fall back to direct assignment if anything goes wrong.
-          try { renderContext.model = model; } catch { /* readonly computed */ }
+          try {
+            renderContext.model = model;
+          } catch {
+            /* readonly computed */
+          }
         }
       }
 
@@ -671,15 +770,28 @@ export default function createRootTemplate(_owner: any) {
       if (_cellFor) {
         try {
           const skipKeys = new Set([
-            'args', 'owner', 'outletState', '$fw', '$slots',
-            'constructor', 'init', 'willDestroy', 'toString',
-            'isDestroying', 'isDestroyed',
+            'args',
+            'owner',
+            'outletState',
+            '$fw',
+            '$slots',
+            'constructor',
+            'init',
+            'willDestroy',
+            'toString',
+            'isDestroying',
+            'isDestroyed',
           ]);
           for (const key of Object.getOwnPropertyNames(renderContext)) {
             if (key.startsWith('_') || key.startsWith('$') || skipKeys.has(key)) continue;
             const desc = Object.getOwnPropertyDescriptor(renderContext, key);
-            if (desc && !desc.get && !desc.set && desc.configurable &&
-                typeof desc.value !== 'function') {
+            if (
+              desc &&
+              !desc.get &&
+              !desc.set &&
+              desc.configurable &&
+              typeof desc.value !== 'function'
+            ) {
               try {
                 _cellFor(renderContext, key, false);
                 // Register reverse mapping so nested object mutations
@@ -687,23 +799,34 @@ export default function createRootTemplate(_owner: any) {
                 if (desc.value && typeof desc.value === 'object' && _registerOwner) {
                   _registerOwner(desc.value, renderContext, key);
                 }
-              } catch { /* ignore non-configurable properties */ }
+              } catch {
+                /* ignore non-configurable properties */
+              }
             }
           }
           // Also install cells on argsObj for @model etc.
           for (const key of ['model', 'controller']) {
             const desc = Object.getOwnPropertyDescriptor(argsObj, key);
-            if (desc && !desc.get && !desc.set && desc.configurable &&
-                typeof desc.value !== 'function') {
+            if (
+              desc &&
+              !desc.get &&
+              !desc.set &&
+              desc.configurable &&
+              typeof desc.value !== 'function'
+            ) {
               try {
                 _cellFor(argsObj, key, false);
                 if (desc.value && typeof desc.value === 'object' && _registerOwner) {
                   _registerOwner(desc.value, argsObj, key);
                 }
-              } catch { /* ignore */ }
+              } catch {
+                /* ignore */
+              }
             }
           }
-        } catch { /* ignore cell installation errors */ }
+        } catch {
+          /* ignore cell installation errors */
+        }
       }
 
       // Fix for @tracked properties on controller prototype:
@@ -741,11 +864,15 @@ export default function createRootTemplate(_owner: any) {
                 // Update the cell to the actual current value from the controller
                 const cell = _cellFor(renderContext, key, /* skipDefine */ true);
                 if (cell) cell.update(actualValue);
-              } catch { /* ignore */ }
+              } catch {
+                /* ignore */
+              }
             }
             proto = Object.getPrototypeOf(proto);
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
 
       // Set global outlet state for nested <ember-outlet> elements
@@ -766,7 +893,12 @@ export default function createRootTemplate(_owner: any) {
       }
       (globalThis as any).__gxtInOutletRender = true;
       try {
-        renderTemplateWithContext(routeTemplate, targetElement || parentElement, renderContext, outletOwner);
+        renderTemplateWithContext(
+          routeTemplate,
+          targetElement || parentElement,
+          renderContext,
+          outletOwner
+        );
       } finally {
         (globalThis as any).__gxtInOutletRender = false;
         if (typeof _endRenderPass === 'function') _endRenderPass();
@@ -851,8 +983,10 @@ export default function createRootTemplate(_owner: any) {
       // When the main outlet is a -outlet template, look at the nested route
       // (same skip logic as renderOutletState uses for the initial render).
       let effectiveOutlet = mainOutlet;
-      if (mainOutlet?.render?.template?.moduleName === 'template:-outlet' &&
-          mainOutlet?.outlets?.main?.render?.template) {
+      if (
+        mainOutlet?.render?.template?.moduleName === 'template:-outlet' &&
+        mainOutlet?.outlets?.main?.render?.template
+      ) {
         effectiveOutlet = mainOutlet.outlets.main;
       }
 
@@ -881,7 +1015,15 @@ export default function createRootTemplate(_owner: any) {
 
       // If same route template AND nested outlets haven't changed, try to
       // update existing cells in-place to preserve DOM node identity.
-      if (lastRenderContext && lastArgsObj && newRouteName && newRouteName === lastRouteName && newTemplate && !nestedOutletChanged && !routeTemplateChanged) {
+      if (
+        lastRenderContext &&
+        lastArgsObj &&
+        newRouteName &&
+        newRouteName === lastRouteName &&
+        newTemplate &&
+        !nestedOutletChanged &&
+        !routeTemplateChanged
+      ) {
         const _cellFor = (globalThis as any).__gxtCellFor;
         if (_cellFor) {
           try {
@@ -916,7 +1058,9 @@ export default function createRootTemplate(_owner: any) {
               syncDomNow();
             }
             return;
-          } catch { /* fall through to full re-render */ }
+          } catch {
+            /* fall through to full re-render */
+          }
         }
       }
 
@@ -1009,9 +1153,13 @@ export default function createRootTemplate(_owner: any) {
                 }
               });
               obs.observe(newA, { attributes: true, childList: true, subtree: true });
-            } catch { /* MutationObserver unavailable in this environment */ }
+            } catch {
+              /* MutationObserver unavailable in this environment */
+            }
           }
-        } catch { /* best-effort preservation */ }
+        } catch {
+          /* best-effort preservation */
+        }
       }
     };
 
@@ -1029,8 +1177,7 @@ export default function createRootTemplate(_owner: any) {
     // because that would cause the second visit's state changes to bleed
     // into the first visit's rootElement (the Ember Islands regression).
     (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
-      const map: Map<any, (ref: any) => void> =
-        (globalThis as any).__gxtRootOutletRerenderMap;
+      const map: Map<any, (ref: any) => void> = (globalThis as any).__gxtRootOutletRerenderMap;
       if (map && outletRef && map.has(outletRef)) {
         map.get(outletRef)!(outletRef);
       }

@@ -3,7 +3,6 @@ import { tracked } from '@glimmer/tracking';
 import type RouterService from '@ember/routing/router-service';
 import { service } from '@ember/service';
 
-
 export class ProfileController extends Controller {
   queryParams: readonly ControllerQueryParam[] = ['q'];
   @tracked

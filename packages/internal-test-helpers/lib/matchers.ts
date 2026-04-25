@@ -168,7 +168,10 @@ export function equalsElement(
       // Strip GXT internal comments (if-entry placeholders, each-entry markers)
       // from innerHTML before comparison. These are used by GXT's control flow
       // for DOM manipulation and should not affect content assertions.
-      const actualContent = element.innerHTML.replace(/<!--[^>]*?(?:if-entry|each-entry|ember-if)[^>]*?-->/g, '');
+      const actualContent = element.innerHTML.replace(
+        /<!--[^>]*?(?:if-entry|each-entry|ember-if)[^>]*?-->/g,
+        ''
+      );
       assert.pushResult({
         result: actualContent === content,
         actual: actualContent,

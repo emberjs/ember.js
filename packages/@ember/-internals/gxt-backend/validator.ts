@@ -14,8 +14,12 @@ import { cell as _gxtNativeCell } from '@lifeart/gxt';
 const createCell = (initialValue: any, name?: string) => {
   const s = storage.createStorage(initialValue, Object.is);
   return {
-    get value() { return storage.getValue(s); },
-    set value(v: any) { storage.setValue(s, v); },
+    get value() {
+      return storage.getValue(s);
+    },
+    set value(v: any) {
+      storage.setValue(s, v);
+    },
   };
 };
 const cell = createCell;
@@ -29,8 +33,12 @@ const cell = createCell;
 const createTrackedObjectCell = (initialValue: any, name?: string) => {
   const c = _gxtNativeCell(initialValue, name || 'trackedObject');
   return {
-    get value() { return c.value; },
-    set value(v: any) { c.update(v); },
+    get value() {
+      return c.value;
+    },
+    set value(v: any) {
+      c.update(v);
+    },
   };
 };
 
@@ -38,7 +46,9 @@ const createTrackedObjectCell = (initialValue: any, name?: string) => {
 const formula = <T>(fn: () => T, name?: string) => {
   const cache = caching.createCache(fn);
   return {
-    get value() { return caching.getValue(cache); },
+    get value() {
+      return caching.getValue(cache);
+    },
   };
 };
 
@@ -152,7 +162,9 @@ export function track(cb: () => void): any {
   // tags don't invalidate a frame that didn't actually read them.
   const tag: any = { _isCombinedTag: true, _consumed: consumedArr };
   Object.defineProperty(tag, 'value', {
-    get() { return currentTagRevision(tag); },
+    get() {
+      return currentTagRevision(tag);
+    },
   });
   combinedTagConstituents.set(tag, consumedArr);
   return tag;
@@ -178,7 +190,7 @@ const _manualTrackFrameStack: Set<any>[] = [];
 export function tagFor(obj: object, key?: string | symbol, meta?: any) {
   try {
     // Convert symbol keys to their description or a string representation
-    const safeKey = typeof key === 'symbol' ? (key.description || String(key)) : key;
+    const safeKey = typeof key === 'symbol' ? key.description || String(key) : key;
     // Ensure obj has a constructor property to prevent "Cannot read properties
     // of undefined (reading 'name')" in GXT's cellFor debug label generation.
     if (obj && typeof obj === 'object' && !obj.constructor) {
@@ -191,7 +203,11 @@ export function tagFor(obj: object, key?: string | symbol, meta?: any) {
     }
     return gxtTagFor(obj, safeKey, meta);
   } catch (err: any) {
-    if (err?.message?.includes('Symbol') || err?.message?.includes('name') || err?.message?.includes('undefined')) {
+    if (
+      err?.message?.includes('Symbol') ||
+      err?.message?.includes('name') ||
+      err?.message?.includes('undefined')
+    ) {
       // Return a minimal tag to avoid breaking the system
       return { value: 0 };
     }
@@ -276,8 +292,7 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
         cacheObj._initializedAtLeastOnce = true;
         // A cache is const if its fn() consumed no tags and depended on
         // no nested caches during evaluation.
-        cacheObj._isCacheConst =
-          _consumedTags.length === 0 && _nestedCaches.length === 0;
+        cacheObj._isCacheConst = _consumedTags.length === 0 && _nestedCaches.length === 0;
         // Bump our revision if the value changed (or first eval)
         if (!wasInitialized || oldValue !== _lastValue) {
           _revision++;
@@ -310,7 +325,9 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
               // consumeTag() pushes into the top cache-tag tracker AND also
               // forwards to gxt's validator.consumeTag() for the gxt frame.
               consumeTag(tag);
-            } catch { /* noop */ }
+            } catch {
+              /* noop */
+            }
           }
         }
       }
@@ -345,12 +362,16 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       // we use our own dirty-revision bookkeeping as the source of truth
       // for cache invalidation.
       _consumedTags = Array.from(consumed);
-      _consumedTagSnapshots = _consumedTags.map(t => {
-        try { return currentTagRevision(t); } catch { return 0; }
+      _consumedTagSnapshots = _consumedTags.map((t) => {
+        try {
+          return currentTagRevision(t);
+        } catch {
+          return 0;
+        }
       });
       // Store nested caches
       _nestedCaches = Array.from(nested);
-      _nestedCacheRevisions = _nestedCaches.map(c => c._revision || 0);
+      _nestedCacheRevisions = _nestedCaches.map((c) => c._revision || 0);
       // If fn() consumed no tags and no nested caches, it's constant.
     }
   }
@@ -403,7 +424,10 @@ export function getValue<T>(cache: { value: T }): T {
 // Custom trackedData implementation that avoids infinite loops
 // The GXT version creates a formula that reads obj[key], which triggers the
 // tracked getter again. Our version uses internal WeakMap storage instead.
-const trackedDataStorage = new WeakMap<object, Map<string | symbol, ReturnType<typeof createCell>>>();
+const trackedDataStorage = new WeakMap<
+  object,
+  Map<string | symbol, ReturnType<typeof createCell>>
+>();
 
 // Per-cell dependency tags for trackedData. The getter registers this tag
 // with the active track() frame via consumeTag() so `track(() => getter(foo))`
@@ -520,9 +544,12 @@ export function trackedData<T, K extends string | symbol>(
           const info = _backtrackingFrame.get(cellForKey)!;
           // Try to get a useful name: class name, toString, or fallback
           const rawObj = info.obj as any;
-          const objName = rawObj?.constructor?.name && rawObj.constructor.name !== 'Object'
-            ? rawObj.constructor.name
-            : (rawObj?.toString?.() !== '[object Object]' ? rawObj?.toString?.() : '<unknown>');
+          const objName =
+            rawObj?.constructor?.name && rawObj.constructor.name !== 'Object'
+              ? rawObj.constructor.name
+              : rawObj?.toString?.() !== '[object Object]'
+                ? rawObj?.toString?.()
+                : '<unknown>';
           // Clear the frame before calling assert to prevent recursion
           _backtrackingFrame = null;
           const renderTree = _backtrackingDebugName
@@ -541,10 +568,7 @@ export function trackedData<T, K extends string | symbol>(
         // the current runInTrackingTransaction frame or track() frame,
         // surface the Ember-style assertion matching classic @glimmer/validator
         // behavior. Uses __emberAssertDirect so expectAssertion() can catch it.
-        if (
-          _debugTransactionConsumed !== null &&
-          _debugTransactionConsumed.has(cellForKey)
-        ) {
+        if (_debugTransactionConsumed !== null && _debugTransactionConsumed.has(cellForKey)) {
           const label = _debugTransactionLabelForTag?.get(cellForKey);
           const msg = `You attempted to update \`${label}\`, but it had already been used previously in the same computation`;
           const assertDirect = (globalThis as any).__emberAssertDirect;
@@ -562,11 +586,15 @@ export function trackedData<T, K extends string | symbol>(
       // through dirtyTagFor which handles this — this covers the
       // test-only path that uses trackedData() directly.
       globalRevisionCounter++;
-      try { currentTagCell.value = globalRevisionCounter; } catch { /* noop */ }
+      try {
+        currentTagCell.value = globalRevisionCounter;
+      } catch {
+        /* noop */
+      }
       // Mark this cell's tag dirty so any track() frame that consumed it
       // via the getter will see `validateTag(tag, snapshot) === false`.
       markTagDirty(_trackedDataTagFor(obj, key));
-    }
+    },
   };
 }
 
@@ -596,7 +624,11 @@ export const CLASSIC_TAG_BRIDGE = _classicBridgeCell;
 let _classicBridgeCounter = 0;
 function _bumpClassicBridge() {
   _classicBridgeCounter++;
-  try { _classicBridgeCell.update(_classicBridgeCounter); } catch { /* noop */ }
+  try {
+    _classicBridgeCell.update(_classicBridgeCounter);
+  } catch {
+    /* noop */
+  }
 }
 // Touch from inside an effect to subscribe: read .value.
 // Export a helper so manager.ts can call it without caring about Cell shape.
@@ -604,7 +636,9 @@ export function touchClassicBridge(): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     _classicBridgeCell.value;
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 // Side-channel registry for effects that must re-fire on ANY classic tag
@@ -617,14 +651,20 @@ export function touchClassicBridge(): void {
 const _classicReactors = new Set<() => void>();
 export function registerClassicReactor(cb: () => void): () => void {
   _classicReactors.add(cb);
-  return () => { _classicReactors.delete(cb); };
+  return () => {
+    _classicReactors.delete(cb);
+  };
 }
 function _fireClassicReactors() {
   if (_classicReactors.size === 0) return;
   // Copy to avoid mutation during iteration
   const snapshot = Array.from(_classicReactors);
   for (const cb of snapshot) {
-    try { cb(); } catch { /* ignore individual reactor errors */ }
+    try {
+      cb();
+    } catch {
+      /* ignore individual reactor errors */
+    }
   }
 }
 
@@ -633,7 +673,7 @@ const gxtDirtyTagFor = validator.dirtyTagFor;
 
 export function dirtyTagFor(obj: any, key: any) {
   // Convert Symbol keys to safe string representation
-  const safeKey = typeof key === 'symbol' ? (key.description || String(key)) : key;
+  const safeKey = typeof key === 'symbol' ? key.description || String(key) : key;
 
   // Bump global revision first
   globalRevisionCounter++;
@@ -641,7 +681,6 @@ export function dirtyTagFor(obj: any, key: any) {
   // Also bump the classic-tag bridge cell so GXT effects that subscribed via
   // touchClassicBridge() will be re-scheduled on any classic tag mutation.
   _bumpClassicBridge();
-
 
   // Get the tag for this property and mark it as dirty
   const tag = tagFor(obj, safeKey);
@@ -673,7 +712,9 @@ export function dirtyTagFor(obj: any, key: any) {
     try {
       const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
       if (typeof sr === 'function') sr();
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }
 
   // Then call the original dirtyTagFor with the safe key
@@ -682,7 +723,10 @@ export function dirtyTagFor(obj: any, key: any) {
     // Ensure obj has a constructor for GXT's debug label
     if (obj && typeof obj === 'object' && !obj.constructor) {
       Object.defineProperty(obj, 'constructor', {
-        value: Object, writable: true, configurable: true, enumerable: false,
+        value: Object,
+        writable: true,
+        configurable: true,
+        enumerable: false,
       });
     }
     result = gxtDirtyTagFor(obj, safeKey);
@@ -721,7 +765,9 @@ export function dirtyTagFor(obj: any, key: any) {
         cached.lastArgsSer = '__classic_tag_dirty__' + globalRevisionCounter;
       }
     }
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
   return result;
 }
 
@@ -774,7 +820,9 @@ export const VOLATILE_TAG: any = {
   _isVolatile: true,
   _isNonDirtyable: true,
   _isNonUpdatable: true,
-  get value() { return Date.now() + Math.random(); },
+  get value() {
+    return Date.now() + Math.random();
+  },
 };
 
 // Revision counter for tag invalidation
@@ -811,7 +859,9 @@ export function combine(tags: any[]) {
   }
   const combinedTag: any = { _isCombinedTag: true };
   Object.defineProperty(combinedTag, 'value', {
-    get() { return currentTagRevision(combinedTag); },
+    get() {
+      return currentTagRevision(combinedTag);
+    },
   });
   combinedTagConstituents.set(combinedTag, tags);
   return combinedTag;
@@ -1050,7 +1100,8 @@ export function updateTag(outer: any, inner: any) {
   // CURRENT_TAG, combined tags, and dirtyable-only tags from createTag().
   if (
     typeof outer === 'number' ||
-    (outer && typeof outer === 'object' &&
+    (outer &&
+      typeof outer === 'object' &&
       (outer._isNonUpdatable === true ||
         outer._isCombinedTag === true ||
         outer._isVolatile === true ||
@@ -1177,14 +1228,22 @@ export function beginTrackFrame() {
   // Also keep gxt's frame stack in sync for any gxt callers.
   if (!_trackingTagStack) _trackingTagStack = [];
   _trackingTagStack.push(_manualTrackFrameStack[_manualTrackFrameStack.length - 1]!);
-  try { gxtBeginTrackFrame(); } catch { /* noop */ }
+  try {
+    gxtBeginTrackFrame();
+  } catch {
+    /* noop */
+  }
 }
 
 export function endTrackFrame() {
   if (_manualTrackFrameStack.length === 0) {
     throw new Error('attempted to close a tracking frame, but one was not open');
   }
-  try { gxtEndTrackFrame(); } catch { /* noop */ }
+  try {
+    gxtEndTrackFrame();
+  } catch {
+    /* noop */
+  }
   const consumed = _manualTrackFrameStack.pop()!;
   // Also pop from the tracking tag stack
   if (_trackingTagStack && _trackingTagStack.length > 0) _trackingTagStack.pop();
@@ -1195,7 +1254,9 @@ export function endTrackFrame() {
   const deps = Array.from(consumed);
   const tag: any = { _isCombinedTag: true };
   Object.defineProperty(tag, 'value', {
-    get() { return currentTagRevision(tag); },
+    get() {
+      return currentTagRevision(tag);
+    },
   });
   combinedTagConstituents.set(tag, deps);
   return tag;
@@ -1224,10 +1285,9 @@ export function dirtyTag(tag: any) {
   // throwing here doesn't break downstream code.
   if (
     typeof tag === 'number' ||
-    (tag && typeof tag === 'object' &&
-      (tag._isNonDirtyable === true ||
-        tag._isCombinedTag === true ||
-        tag._isVolatile === true))
+    (tag &&
+      typeof tag === 'object' &&
+      (tag._isNonDirtyable === true || tag._isCombinedTag === true || tag._isVolatile === true))
   ) {
     throw new Error('Attempted to dirty a tag that was not dirtyable');
   }
@@ -1247,13 +1307,19 @@ export function dirtyTag(tag: any) {
     globalRevisionCounter++;
     // Keep CURRENT_TAG's cell in sync so renderer/observer observing it
     // via valueForTag/validateTag see the bump.
-    try { currentTagCell.value = globalRevisionCounter; } catch { /* noop */ }
+    try {
+      currentTagCell.value = globalRevisionCounter;
+    } catch {
+      /* noop */
+    }
     _bumpClassicBridge();
     // Notify any scheduler registered via @glimmer/global-context
     try {
       const sr = (_glimmerGlobalContext as any).scheduleRevalidate;
       if (typeof sr === 'function') sr();
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     // Flush GXT DOM sync so the updated value is visible immediately
     const syncNow = (globalThis as any).__gxtSyncDomNow;
     if (typeof syncNow === 'function') {
@@ -1261,7 +1327,6 @@ export function dirtyTag(tag: any) {
     }
   }
 }
-
 
 // Debug utility for tags
 export function debug(tag: any, label?: string) {
@@ -1313,9 +1378,10 @@ interface ReactiveOptions<V> {
   description?: string;
 }
 
-function resolveReactiveOptions<V>(
-  options?: { equals?: (a: V, b: V) => boolean; description?: string }
-): ReactiveOptions<V> {
+function resolveReactiveOptions<V>(options?: {
+  equals?: (a: V, b: V) => boolean;
+  description?: string;
+}): ReactiveOptions<V> {
   return {
     equals: options?.equals ?? Object.is,
     description: options?.description,
@@ -1349,11 +1415,7 @@ const ARRAY_GETTER_METHODS = new Set<string | symbol>([
 ]);
 
 // Methods where Array itself immediately reads `.length` after invocation.
-const ARRAY_WRITE_THEN_READ_METHODS = new Set<string | symbol>([
-  'fill',
-  'push',
-  'unshift',
-]);
+const ARRAY_WRITE_THEN_READ_METHODS = new Set<string | symbol>(['fill', 'push', 'unshift']);
 
 function convertArrayIndexKey(prop: string | symbol): number | null {
   if (typeof prop === 'symbol') return null;
@@ -1453,16 +1515,11 @@ export function trackedArray<T = unknown>(
 // ---- trackedMap ---------------------------------------------------------
 
 export function trackedMap<K = unknown, V = unknown>(
-  data?:
-    | Map<K, V>
-    | Iterable<readonly [K, V]>
-    | readonly (readonly [K, V])[]
-    | null,
+  data?: Map<K, V> | Iterable<readonly [K, V]> | readonly (readonly [K, V])[] | null,
   options?: { equals?: (a: V, b: V) => boolean; description?: string }
 ): Map<K, V> {
   const resolved = resolveReactiveOptions<V>(options);
-  const vals: Map<K, V> =
-    data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
+  const vals: Map<K, V> = data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
   const collection = createUpdatableTag();
   const storages = new Map<K, ReturnType<typeof createUpdatableTag>>();
 
@@ -1692,8 +1749,7 @@ export function trackedWeakMap<K extends WeakKey = object, V = unknown>(
   const resolved = resolveReactiveOptions<V>(options);
   // NOTE: WeakMap is not iterable, so if we receive one we must wrap it by
   // reference (not clone).
-  const vals: WeakMap<K, V> =
-    data instanceof WeakMap ? data : new WeakMap<K, V>(data as any);
+  const vals: WeakMap<K, V> = data instanceof WeakMap ? data : new WeakMap<K, V>(data as any);
   const storages = new WeakMap<K, ReturnType<typeof createUpdatableTag>>();
 
   const storageFor = (key: K) => {
@@ -1865,7 +1921,9 @@ export function trackedObject<T extends object>(
       // Also fire classic dirtyTagFor for any legacy observers.
       try {
         dirtyTagFor(target as any, prop);
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
       return true;
     },
     deleteProperty(target, prop) {

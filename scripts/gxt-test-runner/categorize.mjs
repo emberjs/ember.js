@@ -37,17 +37,25 @@ function parseArgs(argv) {
     if (a === '--auto-category') args.autoCategory = argv[++i];
     else if (a === '--pattern') args.pattern = argv[++i];
     else if (a === '--module-pattern') args.moduleRegex = argv[++i];
-    else if (a === '--help' || a === '-h') { usage(); process.exit(0); }
-    else if (!args.file) args.file = a;
-    else { process.stderr.write(`unknown arg: ${a}\n`); process.exit(3); }
+    else if (a === '--help' || a === '-h') {
+      usage();
+      process.exit(0);
+    } else if (!args.file) args.file = a;
+    else {
+      process.stderr.write(`unknown arg: ${a}\n`);
+      process.exit(3);
+    }
   }
-  if (!args.file) { usage(); process.exit(3); }
+  if (!args.file) {
+    usage();
+    process.exit(3);
+  }
   return args;
 }
 
 function usage() {
   process.stderr.write(
-    'Usage: categorize.mjs <summary.json> [--auto-category CAT --pattern REGEX] [--module-pattern REGEX]\n',
+    'Usage: categorize.mjs <summary.json> [--auto-category CAT --pattern REGEX] [--module-pattern REGEX]\n'
   );
 }
 
@@ -58,7 +66,9 @@ async function interactive(summary) {
     for (const [modName, mod] of Object.entries(summary.modules)) {
       for (const t of mod.failingTests || []) {
         if (t.category && t.category !== 'gxt:triage') continue;
-        process.stdout.write(`\n${modName}\n  ${t.name}  (current: ${t.category || 'gxt:triage'})\n`);
+        process.stdout.write(
+          `\n${modName}\n  ${t.name}  (current: ${t.category || 'gxt:triage'})\n`
+        );
         process.stdout.write(`  categories: ${KNOWN_CATEGORIES.join(', ')}\n`);
         const ans = (await rl.question('  assign (enter to skip, q to quit): ')).trim();
         if (ans === 'q') return modified;

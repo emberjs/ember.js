@@ -1,14 +1,13 @@
 export function unwrapTemplate(tpl) {
   return {
-    asLayout(){
+    asLayout() {
       return {
         compile() {
           // debugger;
           console.log('as-layout compile', ...arguments);
-            return tpl;
-        }
+          return tpl;
+        },
       };
-    }
+    },
   };
-};
-
+}

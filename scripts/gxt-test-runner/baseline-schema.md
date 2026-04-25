@@ -57,27 +57,27 @@ Only `gxt-summary.json` is checked into baselines and compared by `diff.mjs`.
 
 ### `meta`
 
-| field             | type     | notes                                                   |
-|-------------------|----------|---------------------------------------------------------|
-| `runner`          | string   | runner identity + version tag                          |
-| `capturedAt`      | string   | ISO-8601 timestamp                                      |
-| `gxtVersion`      | string   | `@lifeart/gxt` version pulled from `packages/demo`      |
-| `emberCommit`     | string   | short git SHA of ember.js at capture time               |
-| `totalTests`      | integer  | sum of `modules.*.total`                                |
-| `totalModules`    | integer  | count of modules that completed                         |
-| `quarantinedTests`| integer  | count of tests with mixed retry outcomes               |
+| field              | type    | notes                                              |
+| ------------------ | ------- | -------------------------------------------------- |
+| `runner`           | string  | runner identity + version tag                      |
+| `capturedAt`       | string  | ISO-8601 timestamp                                 |
+| `gxtVersion`       | string  | `@lifeart/gxt` version pulled from `packages/demo` |
+| `emberCommit`      | string  | short git SHA of ember.js at capture time          |
+| `totalTests`       | integer | sum of `modules.*.total`                           |
+| `totalModules`     | integer | count of modules that completed                    |
+| `quarantinedTests` | integer | count of tests with mixed retry outcomes           |
 
 ### `modules`
 
 Keys are QUnit module names (from `QUnit.config.modules[].name`). Values:
 
-| field               | type    | notes                                                       |
-|---------------------|---------|-------------------------------------------------------------|
-| `total`             | integer | number of tests emitted by the module (post-retry dedup)    |
-| `passing`           | integer | `total - failingTests.length` (quarantined counts as fail)  |
-| `assertionsTotal`   | integer | QUnit `stats.all` (cumulative across retries)               |
-| `assertionsPassing` | integer | `assertionsTotal - stats.bad`                               |
-| `failingTests`      | array   | one entry per **final-failing** test (see below)            |
+| field               | type    | notes                                                      |
+| ------------------- | ------- | ---------------------------------------------------------- |
+| `total`             | integer | number of tests emitted by the module (post-retry dedup)   |
+| `passing`           | integer | `total - failingTests.length` (quarantined counts as fail) |
+| `assertionsTotal`   | integer | QUnit `stats.all` (cumulative across retries)              |
+| `assertionsPassing` | integer | `assertionsTotal - stats.bad`                              |
+| `failingTests`      | array   | one entry per **final-failing** test (see below)           |
 
 Passing modules have `failingTests: []`.
 
@@ -85,10 +85,10 @@ Passing modules have `failingTests: []`.
 
 Per-test record for failing tests only. Deliberately minimal:
 
-| field     | type   | notes                                                    |
-|-----------|--------|----------------------------------------------------------|
-| `name`    | string | `QUnit.testDone` test name (not prefixed with module)    |
-| `category`| string | triage bucket (default `gxt:triage`, see categorize.mjs) |
+| field      | type   | notes                                                    |
+| ---------- | ------ | -------------------------------------------------------- |
+| `name`     | string | `QUnit.testDone` test name (not prefixed with module)    |
+| `category` | string | triage bucket (default `gxt:triage`, see categorize.mjs) |
 
 No error messages, no stack traces, no source links — that keeps the baseline
 small (roughly 3k failing entries fit in ~200 KB). Detail goes to

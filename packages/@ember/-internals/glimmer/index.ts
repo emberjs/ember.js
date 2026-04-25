@@ -444,7 +444,10 @@
   @public
  */
 
-import { templateFactory as _templateFactory, templateCacheCounters } from '@glimmer/opcode-compiler';
+import {
+  templateFactory as _templateFactory,
+  templateCacheCounters,
+} from '@glimmer/opcode-compiler';
 export { templateCacheCounters };
 
 // GXT-aware `template` shim. In GXT mode, the ember-template-compiler's
@@ -466,9 +469,7 @@ function template(spec: unknown): ReturnType<typeof _templateFactory> {
       const moduleName = anySpec['moduleName'];
       if (typeof gxtCompile === 'function' && typeof source === 'string') {
         const factory = gxtCompile(source, { moduleName });
-        return typeof instrument === 'function'
-          ? instrument(factory, { moduleName })
-          : factory;
+        return typeof instrument === 'function' ? instrument(factory, { moduleName }) : factory;
       }
     }
   }

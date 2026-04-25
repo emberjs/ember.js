@@ -158,7 +158,9 @@ function $__fn_ember(fn: any, ...partialArgs: any[]): any {
         (result as any).__isFnHelper = true;
         return result;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   // Default: delegate to original $__fn but mark result
   const result = $__fn_original(fn, ...partialArgs);
@@ -195,10 +197,9 @@ export { $_maybeHelper, $_tag, $_dc } from './ember-gxt-wrappers';
 function $_helperHelper_ember(positional: any[], named: any): any {
   const unwrapVal = (v: any) =>
     typeof v === 'function' && !v.prototype && v.length === 0 ? v() : v;
-  const head = Array.isArray(positional) && positional.length > 0
-    ? unwrapVal(positional[0]) : undefined;
-  const rest = Array.isArray(positional) && positional.length > 1
-    ? positional.slice(1) : [];
+  const head =
+    Array.isArray(positional) && positional.length > 0 ? unwrapVal(positional[0]) : undefined;
+  const rest = Array.isArray(positional) && positional.length > 1 ? positional.slice(1) : [];
   const managers = (globalThis as any).$_MANAGERS;
   if (managers?.helper?.handle) {
     return managers.helper.handle(head, rest, named || {});
@@ -207,7 +208,6 @@ function $_helperHelper_ember(positional: any[], named: any): any {
   return undefined;
 }
 export { $_helperHelper_ember as $_helperHelper };
-
 
 // Default export with overrides
 // @ts-ignore - direct path import (avoid circular alias: @lifeart/gxt → this file)

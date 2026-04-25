@@ -115,8 +115,7 @@ export function isGxtModeActive(): boolean {
 //   `$[N]`              — GXT per-element id comment
 //   `/?htmlRaw`         — GXT htmlRaw boundary comments
 //   ``                   — empty comment (`<!---->`)
-const MARKER_COMMENT_RE =
-  /^(%[-+][^%]*%|%[a-z]+%|%\|%|% %|\$\[[^\]]*\]|\/?htmlRaw|)$/u;
+const MARKER_COMMENT_RE = /^(%[-+][^%]*%|%[a-z]+%|%\|%|% %|\$\[[^\]]*\]|\/?htmlRaw|)$/u;
 
 function stripMarkers(tokens: Token[]): Token[] {
   const filtered = tokens

@@ -1,7 +1,6 @@
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 

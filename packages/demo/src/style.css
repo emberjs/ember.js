@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 a.active {
-    text-decoration: underline;
-    text-decoration-color: rgb(218, 118, 118);
+  text-decoration: underline;
+  text-decoration-color: rgb(218, 118, 118);
 }
 
 code {
-    color: green;
+  color: green;
 }

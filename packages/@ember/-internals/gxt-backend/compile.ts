@@ -11,7 +11,11 @@ import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
 import { pascalToKebab, isAllDigits } from './utils';
-import { initChildViews as _emberInitChildViews, getElementView as _emberGetElementView, collectChildViews as _emberCollectChildViews } from '@ember/-internals/views/lib/system/utils';
+import {
+  initChildViews as _emberInitChildViews,
+  getElementView as _emberGetElementView,
+  collectChildViews as _emberCollectChildViews,
+} from '@ember/-internals/views/lib/system/utils';
 
 // Helper to detect assertion-related throws that must escape catch blocks.
 // The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
@@ -149,7 +153,9 @@ function _rewriteInlineUnbound(code: string): string {
         (prev >= 'a' && prev <= 'z') ||
         (prev >= 'A' && prev <= 'Z') ||
         (prev >= '0' && prev <= '9') ||
-        prev === '_' || prev === '$' || prev === '.';
+        prev === '_' ||
+        prev === '$' ||
+        prev === '.';
       if (!isIdentCont) {
         const argsStart = i + needle.length;
         const argsEnd = _findMatchingParenUB(code, argsStart - 1);
@@ -162,8 +168,9 @@ function _rewriteInlineUnbound(code: string): string {
           // inside a `__gxtUnboundEval(__ubCache` call.
           const lookbackStart = Math.max(0, i - 80);
           const lookback = code.slice(lookbackStart, i);
-          const hasWrapper = lookback.indexOf('__gxtUnboundEval(__ubCache') !== -1
-            && lookback.lastIndexOf('=>') > lookback.lastIndexOf('unbound(');
+          const hasWrapper =
+            lookback.indexOf('__gxtUnboundEval(__ubCache') !== -1 &&
+            lookback.lastIndexOf('=>') > lookback.lastIndexOf('unbound(');
           if (hasWrapper) {
             out.push(code.slice(i, argsEnd + 1));
             i = argsEnd + 1;
@@ -191,7 +198,10 @@ function _skipStringLiteralUB(code: string, start: number): number {
   let i = start + 1;
   while (i < code.length) {
     const c = code[i]!;
-    if (c === '\\') { i += 2; continue; }
+    if (c === '\\') {
+      i += 2;
+      continue;
+    }
     if (c === quote) return i + 1;
     if (quote === '`' && c === '$' && code[i + 1] === '{') {
       let depth = 1;
@@ -321,7 +331,10 @@ function _wrapComponentHelperHashGetters(code: string): string {
       }
       if (c === '{' || c === '(' || c === '[') braceDepth++;
       else if (c === '}' || c === ')' || c === ']') braceDepth--;
-      if (braceDepth === 0) { hashEnd++; break; }
+      if (braceDepth === 0) {
+        hashEnd++;
+        break;
+      }
       hashEnd++;
     }
     const hashContent = restArgs.slice(ws + 1, hashEnd - 1); // between braces
@@ -379,7 +392,11 @@ function _wrapComponentHelperHashGetters(code: string): string {
       // and does NOT contain a top-level call.
       let newValue = rawValue;
       const trimmed = rawValue.trim();
-      if (/^this(\.[\w$?]+|\[(?:"[^"]+"|'[^']+')\])(\?\.?[\w$]+|\.[\w$?]+|\[(?:"[^"]+"|'[^']+')\])*$/.test(trimmed)) {
+      if (
+        /^this(\.[\w$?]+|\[(?:"[^"]+"|'[^']+')\])(\?\.?[\w$]+|\.[\w$?]+|\[(?:"[^"]+"|'[^']+')\])*$/.test(
+          trimmed
+        )
+      ) {
         newValue = `() => ${trimmed}`;
       }
       const prefix = hashContent.slice(keyStart, colonIdx + 1); // "key:" plus trailing space
@@ -443,11 +460,19 @@ function _rewriteBareAtArgsToArgsAlias(code: string): string {
         const ch = code[i]!;
         if (ch === '\\') {
           out.push(ch);
-          if (i + 1 < n) { out.push(code[i + 1]!); i += 2; continue; }
+          if (i + 1 < n) {
+            out.push(code[i + 1]!);
+            i += 2;
+            continue;
+          }
           i++;
           continue;
         }
-        if (ch === quote) { out.push(ch); i++; break; }
+        if (ch === quote) {
+          out.push(ch);
+          i++;
+          break;
+        }
         // Template literal `${...}` — keep as-is; inner expressions are
         // plain JS, but GXT does not emit template literals containing
         // template args, so we leave the full template literal untouched.
@@ -458,15 +483,23 @@ function _rewriteBareAtArgsToArgsAlias(code: string): string {
     }
     // Skip single-line comments
     if (c === '/' && i + 1 < n && code[i + 1] === '/') {
-      while (i < n && code[i] !== '\n') { out.push(code[i]!); i++; }
+      while (i < n && code[i] !== '\n') {
+        out.push(code[i]!);
+        i++;
+      }
       continue;
     }
     // Skip multi-line comments
     if (c === '/' && i + 1 < n && code[i + 1] === '*') {
-      out.push(c); out.push(code[i + 1]!); i += 2;
+      out.push(c);
+      out.push(code[i + 1]!);
+      i += 2;
       while (i < n) {
         if (code[i] === '*' && i + 1 < n && code[i + 1] === '/') {
-          out.push(code[i]!); out.push(code[i + 1]!); i += 2; break;
+          out.push(code[i]!);
+          out.push(code[i + 1]!);
+          i += 2;
+          break;
         }
         out.push(code[i]!);
         i++;
@@ -543,8 +576,11 @@ function _unboundSnapshot(value: any): any {
     // user callbacks must not be invoked — GXT getters are arrow-style
     // (no prototype) and are what `$__hash` emits for bindings.
     if (typeof v === 'function' && !(v as any).prototype) {
-      try { out[key] = _unboundSnapshot((v as any)()); }
-      catch { out[key] = v; }
+      try {
+        out[key] = _unboundSnapshot((v as any)());
+      } catch {
+        out[key] = v;
+      }
     } else {
       out[key] = _unboundSnapshot(v);
     }
@@ -588,7 +624,6 @@ function hasBlockParamRef(str: string): boolean {
   return false;
 }
 
-
 /** Check if a string contains a word (surrounded by non-word-char boundaries) without regex */
 function containsWord(text: string, word: string): boolean {
   let idx = 0;
@@ -597,8 +632,16 @@ function containsWord(text: string, word: string): boolean {
     if (found === -1) return false;
     const before = found > 0 ? text[found - 1]! : ' ';
     const after = found + word.length < text.length ? text[found + word.length]! : ' ';
-    const isWordCharBefore = (before >= 'a' && before <= 'z') || (before >= 'A' && before <= 'Z') || (before >= '0' && before <= '9') || before === '_';
-    const isWordCharAfter = (after >= 'a' && after <= 'z') || (after >= 'A' && after <= 'Z') || (after >= '0' && after <= '9') || after === '_';
+    const isWordCharBefore =
+      (before >= 'a' && before <= 'z') ||
+      (before >= 'A' && before <= 'Z') ||
+      (before >= '0' && before <= '9') ||
+      before === '_';
+    const isWordCharAfter =
+      (after >= 'a' && after <= 'z') ||
+      (after >= 'A' && after <= 'Z') ||
+      (after >= '0' && after <= '9') ||
+      after === '_';
     if (!isWordCharBefore && !isWordCharAfter) return true;
     idx = found + 1;
   }
@@ -614,8 +657,16 @@ function countWord(text: string, word: string): number {
     if (found === -1) break;
     const before = found > 0 ? text[found - 1]! : ' ';
     const after = found + word.length < text.length ? text[found + word.length]! : ' ';
-    const isWordCharBefore = (before >= 'a' && before <= 'z') || (before >= 'A' && before <= 'Z') || (before >= '0' && before <= '9') || before === '_';
-    const isWordCharAfter = (after >= 'a' && after <= 'z') || (after >= 'A' && after <= 'Z') || (after >= '0' && after <= '9') || after === '_';
+    const isWordCharBefore =
+      (before >= 'a' && before <= 'z') ||
+      (before >= 'A' && before <= 'Z') ||
+      (before >= '0' && before <= '9') ||
+      before === '_';
+    const isWordCharAfter =
+      (after >= 'a' && after <= 'z') ||
+      (after >= 'A' && after <= 'Z') ||
+      (after >= '0' && after <= '9') ||
+      after === '_';
     if (!isWordCharBefore && !isWordCharAfter) count++;
     idx = found + 1;
   }
@@ -631,8 +682,16 @@ function replaceWord(text: string, word: string, replacer: () => string): string
     if (found === -1) break;
     const before = found > 0 ? text[found - 1]! : ' ';
     const after = found + word.length < text.length ? text[found + word.length]! : ' ';
-    const isWordCharBefore = (before >= 'a' && before <= 'z') || (before >= 'A' && before <= 'Z') || (before >= '0' && before <= '9') || before === '_';
-    const isWordCharAfter = (after >= 'a' && after <= 'z') || (after >= 'A' && after <= 'Z') || (after >= '0' && after <= '9') || after === '_';
+    const isWordCharBefore =
+      (before >= 'a' && before <= 'z') ||
+      (before >= 'A' && before <= 'Z') ||
+      (before >= '0' && before <= '9') ||
+      before === '_';
+    const isWordCharAfter =
+      (after >= 'a' && after <= 'z') ||
+      (after >= 'A' && after <= 'Z') ||
+      (after >= '0' && after <= '9') ||
+      after === '_';
     if (!isWordCharBefore && !isWordCharAfter) {
       result += text.slice(idx, found) + replacer();
       idx = found + word.length;
@@ -676,7 +735,15 @@ function extractThisPath(getterStr: string): string | null {
   // Scan valid identifier chars: a-zA-Z0-9_$?.
   while (end < getterStr.length) {
     const c = getterStr[end]!;
-    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '_' || c === '$' || c === '?' || c === '.') {
+    if (
+      (c >= 'a' && c <= 'z') ||
+      (c >= 'A' && c <= 'Z') ||
+      (c >= '0' && c <= '9') ||
+      c === '_' ||
+      c === '$' ||
+      c === '?' ||
+      c === '.'
+    ) {
       end++;
     } else {
       break;
@@ -706,7 +773,11 @@ function findBlockParamNames(str: string): Set<string> {
     }
     // Skip whitespace after 'as'
     let pos = asIdx + 2;
-    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')) pos++;
+    while (
+      pos < str.length &&
+      (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')
+    )
+      pos++;
     if (pos >= str.length || str[pos] !== '|') {
       idx = asIdx + 2;
       continue;
@@ -764,11 +835,13 @@ function findDottedTags(str: string): Array<[string, string]> {
     }
     // Read head identifier: [a-zA-Z0-9]*
     const headStart = pos;
-    while (pos < str.length && (
-      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-      (str[pos]! >= '0' && str[pos]! <= '9')
-    )) pos++;
+    while (
+      pos < str.length &&
+      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9'))
+    )
+      pos++;
     const head = str.slice(headStart, pos);
     // Next must be '.'
     if (pos >= str.length || str[pos] !== '.') {
@@ -777,19 +850,27 @@ function findDottedTags(str: string): Array<[string, string]> {
     }
     pos++; // skip dot
     // Next must start with [a-zA-Z]
-    if (pos >= str.length || !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))) {
+    if (
+      pos >= str.length ||
+      !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))
+    ) {
       idx = ltIdx + 1;
       continue;
     }
     const tailStart = pos;
-    while (pos < str.length && (
-      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-      (str[pos]! >= '0' && str[pos]! <= '9')
-    )) pos++;
+    while (
+      pos < str.length &&
+      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9'))
+    )
+      pos++;
     const tail = str.slice(tailStart, pos);
     // Must be followed by whitespace
-    if (pos < str.length && (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')) {
+    if (
+      pos < str.length &&
+      (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')
+    ) {
       results.push([head, tail]);
     }
     idx = pos;
@@ -811,12 +892,14 @@ function findAttrsPatterns(str: string): Array<{ propName: string; index: number
     if (found === -1) break;
     let pos = found + marker.length;
     const nameStart = pos;
-    while (pos < str.length && (
-      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-      (str[pos]! >= '0' && str[pos]! <= '9') ||
-      str[pos] === '_'
-    )) pos++;
+    while (
+      pos < str.length &&
+      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9') ||
+        str[pos] === '_')
+    )
+      pos++;
     if (pos > nameStart) {
       results.push({ propName: str.slice(nameStart, pos), index: found });
     }
@@ -839,12 +922,14 @@ function findThisAttrsPatterns(str: string): Array<{ propName: string; index: nu
     if (found === -1) break;
     let pos = found + marker.length;
     const nameStart = pos;
-    while (pos < str.length && (
-      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-      (str[pos]! >= '0' && str[pos]! <= '9') ||
-      str[pos] === '_'
-    )) pos++;
+    while (
+      pos < str.length &&
+      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9') ||
+        str[pos] === '_')
+    )
+      pos++;
     if (pos > nameStart) {
       results.push({ propName: str.slice(nameStart, pos), index: found });
     }
@@ -871,11 +956,13 @@ function findDottedMustaches(str: string): Array<{ head: string; tail: string }>
       continue;
     }
     const headStart = pos;
-    while (pos < str.length && (
-      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-      (str[pos]! >= '0' && str[pos]! <= '9')
-    )) pos++;
+    while (
+      pos < str.length &&
+      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9'))
+    )
+      pos++;
     const head = str.slice(headStart, pos);
     // Must be followed by '.'
     if (pos >= str.length || str[pos] !== '.') {
@@ -884,17 +971,22 @@ function findDottedMustaches(str: string): Array<{ head: string; tail: string }>
     }
     pos++; // skip dot
     // Tail must start with [a-zA-Z]
-    if (pos >= str.length || !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))) {
+    if (
+      pos >= str.length ||
+      !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))
+    ) {
       idx = found + 2;
       continue;
     }
     const tailStart = pos;
-    while (pos < str.length && (
-      (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-      (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-      (str[pos]! >= '0' && str[pos]! <= '9') ||
-      str[pos] === '.'
-    )) pos++;
+    while (
+      pos < str.length &&
+      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+        (str[pos]! >= '0' && str[pos]! <= '9') ||
+        str[pos] === '.')
+    )
+      pos++;
     const tail = str.slice(tailStart, pos);
     // Must be followed by '}}'
     if (pos + 1 < str.length && str[pos] === '}' && str[pos + 1] === '}') {
@@ -917,7 +1009,11 @@ function hasAttrsInBlockParams(str: string): boolean {
     // 'as' can be preceded by any char (the regex has no lookbehind requirement except implicitly)
     let pos = asIdx + 2;
     // Skip optional whitespace
-    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')) pos++;
+    while (
+      pos < str.length &&
+      (str[pos] === ' ' || str[pos] === '\t' || str[pos] === '\n' || str[pos] === '\r')
+    )
+      pos++;
     if (pos >= str.length || str[pos] !== '|') {
       idx = asIdx + 2;
       continue;
@@ -937,7 +1033,10 @@ function hasAttrsInBlockParams(str: string): boolean {
  * Parse {{#in-element dest insertBefore=expr}} and replace with {{#in-element dest}}.
  * Returns { result: string, insertBefore: string | null }.
  */
-function parseInElementInsertBefore(template: string): { result: string; insertBefore: string | null } {
+function parseInElementInsertBefore(template: string): {
+  result: string;
+  insertBefore: string | null;
+} {
   const marker = '{{#in-element';
   let insertBefore: string | null = null;
   let idx = template.indexOf(marker);
@@ -951,16 +1050,31 @@ function parseInElementInsertBefore(template: string): { result: string; insertB
     while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
     // Read dest (non-whitespace, non-})
     const destStart = pos;
-    while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+    while (
+      pos < template.length &&
+      template[pos] !== ' ' &&
+      template[pos] !== '\t' &&
+      template[pos] !== '}'
+    )
+      pos++;
     const dest = template.slice(destStart, pos);
     // Skip whitespace
     while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
     // Check for insertBefore=
     const ibMarker = 'insertBefore=';
-    if (pos + ibMarker.length <= template.length && template.slice(pos, pos + ibMarker.length) === ibMarker) {
+    if (
+      pos + ibMarker.length <= template.length &&
+      template.slice(pos, pos + ibMarker.length) === ibMarker
+    ) {
       pos += ibMarker.length;
       const exprStart = pos;
-      while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+      while (
+        pos < template.length &&
+        template[pos] !== ' ' &&
+        template[pos] !== '\t' &&
+        template[pos] !== '}'
+      )
+        pos++;
       insertBefore = template.slice(exprStart, pos);
       // Skip whitespace
       while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
@@ -998,12 +1112,16 @@ function hasDynamicHelper(str: string): boolean {
     if (pos < str.length && (str.slice(pos, pos + 5) === 'this.' || str[pos] === '@')) {
       // Read identifier chars
       const start = pos;
-      while (pos < str.length && (
-        (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9') ||
-        str[pos] === '_' || str[pos] === '.' || str[pos] === '@'
-      )) pos++;
+      while (
+        pos < str.length &&
+        ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+          (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+          (str[pos]! >= '0' && str[pos]! <= '9') ||
+          str[pos] === '_' ||
+          str[pos] === '.' ||
+          str[pos] === '@')
+      )
+        pos++;
       if (pos > start) {
         // Skip optional whitespace then check for }}
         while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
@@ -1031,12 +1149,16 @@ function hasDynamicModifier(str: string): boolean {
     // Check for this. or @
     if (pos < str.length && (str.slice(pos, pos + 5) === 'this.' || str[pos] === '@')) {
       const start = pos;
-      while (pos < str.length && (
-        (str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9') ||
-        str[pos] === '_' || str[pos] === '.' || str[pos] === '@'
-      )) pos++;
+      while (
+        pos < str.length &&
+        ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
+          (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
+          (str[pos]! >= '0' && str[pos]! <= '9') ||
+          str[pos] === '_' ||
+          str[pos] === '.' ||
+          str[pos] === '@')
+      )
+        pos++;
       if (pos > start) {
         while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
         if (pos < str.length && str[pos] === ')') {
@@ -1248,7 +1370,9 @@ function _setInternalProp(obj: any, key: string, value: any): void {
         enumerable: false,
         configurable: true,
       });
-    } catch { /* ignore frozen obj */ }
+    } catch {
+      /* ignore frozen obj */
+    }
   }
 }
 
@@ -1278,8 +1402,20 @@ installEmberWrappers();
 // still allowed because $_maybeHelper_ember's BUILTIN_HELPERS check runs
 // inside the original delegate.
 const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
-  'array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unbound',
-  'unique-id', 'unique_id', 'helper', 'modifier', 'on', '__mutGet',
+  'array',
+  'hash',
+  'concat',
+  'fn',
+  'get',
+  'mut',
+  'readonly',
+  'unbound',
+  'unique-id',
+  'unique_id',
+  'helper',
+  'modifier',
+  'on',
+  '__mutGet',
   // gxtEntriesOf is injected by our each-in transform; safe in any mode.
   'gxtEntriesOf',
   // gxtGetOutletState is injected by our -get-dynamic-var transform; safe in any mode.
@@ -1300,8 +1436,8 @@ const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
         if (!isBuiltin) {
           throw new Error(
             `Attempted to resolve \`${nameOrFn}\`, ` +
-            `which was expected to be a component or helper, ` +
-            `but that value was not in scope: ${nameOrFn}`
+              `which was expected to be a component or helper, ` +
+              `but that value was not in scope: ${nameOrFn}`
           );
         }
       }
@@ -1402,16 +1538,27 @@ if (false as boolean) {
       const cArgs = curried?.__curriedArgs || {};
       const resolved: Record<string, any> = {};
       for (const [key, value] of Object.entries(cArgs)) {
-        resolved[key] = (typeof value === 'function' && !(value as any).__isCurriedComponent && !(value as any).prototype)
-          ? (value as any)() : value;
+        resolved[key] =
+          typeof value === 'function' &&
+          !(value as any).__isCurriedComponent &&
+          !(value as any).prototype
+            ? (value as any)()
+            : value;
       }
       const cPos = curried?.__curriedPositionals || [];
       const resolvedPos: any[] = [];
       for (const val of cPos) {
-        resolvedPos.push((typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
-          ? val() : val);
+        resolvedPos.push(
+          typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype
+            ? val()
+            : val
+        );
       }
-      renderInfo.__lastSnapshot = { name: curried?.__name, args: resolved, positionals: resolvedPos };
+      renderInfo.__lastSnapshot = {
+        name: curried?.__name,
+        args: resolved,
+        positionals: resolvedPos,
+      };
     };
     const argsChanged = (curried: any): boolean => {
       const last = renderInfo.__lastSnapshot;
@@ -1423,15 +1570,19 @@ if (false as boolean) {
       if (Object.keys(last.args).length !== currentKeys.length) return true;
       for (const key of currentKeys) {
         const val = cArgs[key];
-        const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
-          ? val() : val;
+        const resolved =
+          typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype
+            ? val()
+            : val;
         if (last.args[key] !== resolved) return true;
       }
       if (last.positionals.length !== cPos.length) return true;
       for (let i = 0; i < cPos.length; i++) {
         const val = cPos[i];
-        const resolved = (typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
-          ? val() : val;
+        const resolved =
+          typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype
+            ? val()
+            : val;
         if (last.positionals[i] !== resolved) return true;
       }
       return false;
@@ -1445,23 +1596,45 @@ if (false as boolean) {
         let newResult: any;
         try {
           newResult = (reference as Function)();
-          while (typeof newResult === 'function' && !newResult.__isCurriedComponent && !newResult.prototype) {
+          while (
+            typeof newResult === 'function' &&
+            !newResult.__isCurriedComponent &&
+            !newResult.prototype
+          ) {
             newResult = newResult();
           }
-        } catch { return; }
+        } catch {
+          return;
+        }
 
         // Touch curried arg getters to establish tracking
         if (newResult && newResult.__isCurriedComponent && newResult.__curriedArgs) {
           for (const val of Object.values(newResult.__curriedArgs)) {
-            if (typeof val === 'function' && !(val as any).prototype && !(val as any).__isCurriedComponent) {
-              try { (val as any)(); } catch { /* ignore */ }
+            if (
+              typeof val === 'function' &&
+              !(val as any).prototype &&
+              !(val as any).__isCurriedComponent
+            ) {
+              try {
+                (val as any)();
+              } catch {
+                /* ignore */
+              }
             }
           }
         }
         if (newResult && newResult.__isCurriedComponent && newResult.__curriedPositionals) {
           for (const val of newResult.__curriedPositionals) {
-            if (typeof val === 'function' && !(val as any).prototype && !(val as any).__isCurriedComponent) {
-              try { val(); } catch { /* ignore */ }
+            if (
+              typeof val === 'function' &&
+              !(val as any).prototype &&
+              !(val as any).__isCurriedComponent
+            ) {
+              try {
+                val();
+              } catch {
+                /* ignore */
+              }
             }
           }
         }
@@ -1470,15 +1643,20 @@ if (false as boolean) {
         if (!parent) return;
 
         // Skip if nothing changed (preserves DOM stability)
-        if (newResult && newResult.__isCurriedComponent &&
-            startMarker.nextSibling !== endMarker &&
-            !argsChanged(newResult)) {
+        if (
+          newResult &&
+          newResult.__isCurriedComponent &&
+          startMarker.nextSibling !== endMarker &&
+          !argsChanged(newResult)
+        ) {
           return;
         }
 
         // Determine if component type changed
-        const componentSwapped = !newResult || !newResult.__isCurriedComponent ||
-          (newResult.__name !== renderInfo.lastRenderedName);
+        const componentSwapped =
+          !newResult ||
+          !newResult.__isCurriedComponent ||
+          newResult.__name !== renderInfo.lastRenderedName;
 
         // Remove existing content between markers
         const removedNodes: Node[] = [];
@@ -1499,7 +1677,11 @@ if (false as boolean) {
         }
 
         // Insert new content
-        if (newResult && newResult.__isCurriedComponent && managers.component.canHandle(newResult)) {
+        if (
+          newResult &&
+          newResult.__isCurriedComponent &&
+          managers.component.canHandle(newResult)
+        ) {
           const newNode = renderCurried(newResult);
           if (newNode) {
             parent.insertBefore(newNode, endMarker);
@@ -1512,7 +1694,9 @@ if (false as boolean) {
           renderInfo.__lastSnapshot = null;
         }
       });
-    } catch { /* effect setup may fail */ }
+    } catch {
+      /* effect setup may fail */
+    }
 
     return fragment;
   };
@@ -1521,12 +1705,18 @@ if (false as boolean) {
   try {
     const _ember_TO_VALUE = g.$_TO_VALUE;
     Object.defineProperty(g, '$_TO_VALUE', {
-      get() { return _ember_TO_VALUE; },
-      set(v: any) { /* ignore GXT's attempt to overwrite */ },
+      get() {
+        return _ember_TO_VALUE;
+      },
+      set(v: any) {
+        /* ignore GXT's attempt to overwrite */
+      },
       configurable: true,
       enumerable: true,
     });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 // Install a render-pass flag so $_inElement below can distinguish
@@ -1541,7 +1731,7 @@ if (false as boolean) {
 // renderer.ts code path.
 if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
   let _renderPassDepth = 0;
-  (globalThis as any).__gxtSetIsRendering = function(on: boolean) {
+  (globalThis as any).__gxtSetIsRendering = function (on: boolean) {
     if (on) _renderPassDepth++;
     else if (_renderPassDepth > 0) {
       _renderPassDepth--;
@@ -1556,11 +1746,13 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
         try {
           const drain = (globalThis as any).__gxtInElementDrainDeferred;
           if (typeof drain === 'function') drain();
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
   };
-  (globalThis as any).__gxtIsRendering = function() {
+  (globalThis as any).__gxtIsRendering = function () {
     return _renderPassDepth > 0;
   };
 }
@@ -1580,14 +1772,16 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
   const _drainInElementDeferQueue = () => {
     while (_inElementDeferQueue.length > 0) {
       const cb = _inElementDeferQueue.shift()!;
-      try { cb(); } catch (e) {
+      try {
+        cb();
+      } catch (e) {
         const capture = (globalThis as any).__gxtCaptureRenderError;
         if (typeof capture === 'function') capture(e);
         else throw e;
       }
     }
   };
-  (globalThis as any).__gxtInElementDeferredRender = function(cb: () => void) {
+  (globalThis as any).__gxtInElementDeferredRender = function (cb: () => void) {
     _inElementDeferQueue.push(cb);
   };
   (globalThis as any).__gxtInElementDrainDeferred = _drainInElementDeferQueue;
@@ -1595,7 +1789,7 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
   // Wrap globalThis.__gxtFlushAfterInsertQueue so callers going through
   // it (demo path, ember-gxt-wrappers, etc.) also drain the queue.
   const _origFlush = (globalThis as any).__gxtFlushAfterInsertQueue;
-  (globalThis as any).__gxtFlushAfterInsertQueue = function() {
+  (globalThis as any).__gxtFlushAfterInsertQueue = function () {
     try {
       if (typeof _origFlush === 'function') _origFlush();
     } finally {
@@ -1675,10 +1869,7 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
     if ((globalThis as any).__gxtInElementInsertBeforeValue !== undefined) {
       const ibv = (globalThis as any).__gxtInElementInsertBeforeValue;
       delete (globalThis as any).__gxtInElementInsertBeforeValue;
-      emberAssert(
-        `Can only pass null to insertBefore in in-element, received: ${ibv}`,
-        false
-      );
+      emberAssert(`Can only pass null to insertBefore in in-element, received: ${ibv}`, false);
     }
 
     if ((globalThis as any).__gxtInElementAppendMode) {
@@ -1700,7 +1891,11 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
         } else {
           insertBefore = ibVal;
         }
-      } else if (insertBeforeRef && typeof insertBeforeRef === 'object' && 'value' in insertBeforeRef) {
+      } else if (
+        insertBeforeRef &&
+        typeof insertBeforeRef === 'object' &&
+        'value' in insertBeforeRef
+      ) {
         insertBefore = insertBeforeRef.value;
       } else {
         insertBefore = insertBeforeRef;
@@ -1722,7 +1917,8 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
     // tests that pass `this.someElement = null`), fall through to the
     // synchronous assertion so expectAssertion() still catches the throw.
     const _gxtIsRenderingFn = (globalThis as any).__gxtIsRendering;
-    const _insideRenderPass = typeof _gxtIsRenderingFn === 'function' && _gxtIsRenderingFn() === true;
+    const _insideRenderPass =
+      typeof _gxtIsRenderingFn === 'function' && _gxtIsRenderingFn() === true;
     // Only defer if we have a compile-time literal id fallback to
     // re-resolve with. Without one, we cannot distinguish "render-order
     // timing bug" from "user actually passed null" — and deferring
@@ -1749,7 +1945,11 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
       // may be torn down by the time the deferred queue drains, so we
       // materialize the DOM synchronously and just re-parent it later.
       let _eagerNodes: any[] = [];
-      try { _eagerNodes = roots(ctx); } catch { /* fall through */ }
+      try {
+        _eagerNodes = roots(ctx);
+      } catch {
+        /* fall through */
+      }
       const _deferredRender = () => {
         // Re-resolve the destination. Prefer the compile-time literal id
         // (a direct document.getElementById lookup) since the reactive
@@ -1775,7 +1975,11 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
         const prevNodes = _inElementRenderedNodes.get(retryRef);
         if (prevNodes) {
           for (const n of prevNodes) {
-            try { if (n.parentNode) n.parentNode.removeChild(n); } catch { /* ignore */ }
+            try {
+              if (n.parentNode) n.parentNode.removeChild(n);
+            } catch {
+              /* ignore */
+            }
           }
           _inElementRenderedNodes.delete(retryRef);
         }
@@ -1793,7 +1997,11 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
         // _deferredRoots now.
         let deferredNodes: any[] = _eagerNodes;
         if (!deferredNodes || deferredNodes.length === 0) {
-          try { deferredNodes = _deferredRoots(_deferredCtx); } catch { /* ignore */ }
+          try {
+            deferredNodes = _deferredRoots(_deferredCtx);
+          } catch {
+            /* ignore */
+          }
         }
         const deferredFragment = document.createDocumentFragment();
         for (const node of deferredNodes) {
@@ -1812,7 +2020,9 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
               gxtEffect(() => {
                 textNode.textContent = getValue();
               });
-            } catch { /* effect setup may fail */ }
+            } catch {
+              /* effect setup may fail */
+            }
             deferredRenderedNodes.push(textNode);
             deferredFragment.appendChild(textNode);
           } else if (typeof node === 'string') {
@@ -1856,7 +2066,11 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
     const prevNodes = _inElementRenderedNodes.get(appendRef);
     if (prevNodes) {
       for (const node of prevNodes) {
-        try { if (node.parentNode) node.parentNode.removeChild(node); } catch { /* ignore */ }
+        try {
+          if (node.parentNode) node.parentNode.removeChild(node);
+        } catch {
+          /* ignore */
+        }
       }
       _inElementRenderedNodes.delete(appendRef);
     }
@@ -1895,7 +2109,9 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
           gxtEffect(() => {
             textNode.textContent = getValue();
           });
-        } catch { /* effect setup may fail */ }
+        } catch {
+          /* effect setup may fail */
+        }
         renderedNodes.push(textNode);
         fragment.appendChild(textNode);
       } else if (typeof node === 'string') {
@@ -1988,8 +2204,12 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
   const _emberInElement = (globalThis as any).$_inElement;
   // Protect from setupGlobalScope overwrite using a non-writable getter
   Object.defineProperty(globalThis, '$_inElement', {
-    get() { return _emberInElement; },
-    set(_v: any) { /* ignore GXT overwrite */ },
+    get() {
+      return _emberInElement;
+    },
+    set(_v: any) {
+      /* ignore GXT overwrite */
+    },
     configurable: false,
     enumerable: true,
   });
@@ -2003,17 +2223,19 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
 setTimeout(() => {
   try {
     // Use dynamic import to avoid circular dependency during static init
-    import('@ember/-internals/glimmer/lib/utils/string').then(mod => {
-      const SafeString = mod.SafeString;
-      if (SafeString?.prototype?.toString) {
-        const origToString = SafeString.prototype.toString;
-        SafeString.prototype.toString = function() {
-          const result = origToString.call(this);
-          (globalThis as any).__gxtLastSafeStringResult = result;
-          return result;
-        };
-      }
-    }).catch(() => {});
+    import('@ember/-internals/glimmer/lib/utils/string')
+      .then((mod) => {
+        const SafeString = mod.SafeString;
+        if (SafeString?.prototype?.toString) {
+          const origToString = SafeString.prototype.toString;
+          SafeString.prototype.toString = function () {
+            const result = origToString.call(this);
+            (globalThis as any).__gxtLastSafeStringResult = result;
+            return result;
+          };
+        }
+      })
+      .catch(() => {});
   } catch {}
 }, 0);
 
@@ -2066,9 +2288,14 @@ function _sanitizeUrlAttribute(element: any, name: string, strValue: string): st
 // Element.prototype hook guarantees sanitization regardless of which chunk
 // provides the DOM API. The override is gated on tag/attr/protocol so it
 // never touches unrelated setAttribute calls.
-if (typeof Element !== 'undefined' && Element.prototype && (Element.prototype as any).setAttribute && !(Element.prototype as any).__gxtSanitizePatched) {
+if (
+  typeof Element !== 'undefined' &&
+  Element.prototype &&
+  (Element.prototype as any).setAttribute &&
+  !(Element.prototype as any).__gxtSanitizePatched
+) {
   const _origSetAttribute = Element.prototype.setAttribute;
-  Element.prototype.setAttribute = function(name: string, value: any): void {
+  Element.prototype.setAttribute = function (name: string, value: any): void {
     if (typeof value === 'string') {
       const tagName = this.tagName ? this.tagName.toUpperCase() : '';
       const needsUri = _SANITIZE_BAD_TAGS.has(tagName) && _SANITIZE_BAD_ATTRS.has(name);
@@ -2104,21 +2331,42 @@ if (typeof Element !== 'undefined' && Element.prototype && (Element.prototype as
 // empty string for known boolean attrs so the round-tripped innerHTML
 // matches Ember/Glimmer semantics.
 const _HTML_BOOLEAN_ATTRS = new Set([
-  'allowfullscreen', 'async', 'autofocus', 'autoplay',
-  'checked', 'controls', 'default', 'defer',
-  'disabled', 'formnovalidate', 'hidden', 'ismap',
-  'itemscope', 'loop', 'multiple', 'muted',
-  'nomodule', 'novalidate', 'open', 'readonly',
-  'required', 'reversed', 'selected',
+  'allowfullscreen',
+  'async',
+  'autofocus',
+  'autoplay',
+  'checked',
+  'controls',
+  'default',
+  'defer',
+  'disabled',
+  'formnovalidate',
+  'hidden',
+  'ismap',
+  'itemscope',
+  'loop',
+  'multiple',
+  'muted',
+  'nomodule',
+  'novalidate',
+  'open',
+  'readonly',
+  'required',
+  'reversed',
+  'selected',
 ]);
 if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
   const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
-  const _patchedAttr = function(element: any, name: string, value: any) {
+  const _patchedAttr = function (element: any, name: string, value: any) {
     // Style warning is now emitted from _styleEmptyGuard in the $_tag_ember wrapper
     // (earlier in the rendering pipeline) to avoid double warnings.
     if (value === undefined || value === false) {
       element.removeAttribute(name);
-    } else if (value === true && typeof name === 'string' && _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())) {
+    } else if (
+      value === true &&
+      typeof name === 'string' &&
+      _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())
+    ) {
       // HTML boolean attribute — write bare (empty string value) so the
       // serialized innerHTML reads `<option selected>` instead of
       // `<option selected="true">`. Non-boolean attrs with `true` still go
@@ -2126,8 +2374,10 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
       // preserves current behavior for attributes that legitimately carry
       // stringified booleans (e.g. `aria-pressed="true"`).
       origAttr.call(this, element, name, '');
-    } else if (typeof value === 'symbol' ||
-               (value !== null && typeof value === 'object' && typeof (value as any).toString !== 'function')) {
+    } else if (
+      typeof value === 'symbol' ||
+      (value !== null && typeof value === 'object' && typeof (value as any).toString !== 'function')
+    ) {
       // Symbol values throw on implicit string coercion inside setAttribute.
       // Objects with no toString method (e.g. Object.create(null)) likewise
       // throw "Cannot convert object to primitive value". Normalize these
@@ -2149,7 +2399,7 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
   // Patch prop() — style warning is now emitted from _styleEmptyGuard in the
   // $_tag_ember wrapper (earlier in the pipeline) to avoid double warnings.
   const origProp = _GXT_HTMLBrowserDOMApi.prototype.prop;
-  _GXT_HTMLBrowserDOMApi.prototype.prop = function(element: any, name: string, value: any) {
+  _GXT_HTMLBrowserDOMApi.prototype.prop = function (element: any, name: string, value: any) {
     return origProp.call(this, element, name, value);
   };
 }
@@ -2182,7 +2432,13 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
       // direct handler, NOT a GXT-generated getter; probing would fire side
       // effects (e.g. test assertions) at install time, causing double-invoke
       // in {{on "click" (fn handleClick 123)}}. Getters are always 0-arg arrows.
-      if (typeof fn === 'function' && !fn.__isMutCell && !fn.prototype && !fn.__isFnHelper && fn.length === 0) {
+      if (
+        typeof fn === 'function' &&
+        !fn.__isMutCell &&
+        !fn.prototype &&
+        !fn.__isFnHelper &&
+        fn.length === 0
+      ) {
         try {
           const fnResult = fn();
           if (fnResult && fnResult.__isMutCell) {
@@ -2197,7 +2453,9 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
             result.__isFnHelper = true;
             return result;
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
       // Create a partially-applied function that resolves all getters at call time.
       // The fn arg may be a getter (arrow fn wrapping this.X) — we wrapped it
@@ -2214,7 +2472,8 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
       // calling it returns a *different* function or non-undefined value — and
       // even then, only if the returned value is a function (the intended
       // callable). Functions with `length >= 1` are never getters.
-      const isArgGetter = (v: any) => typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell;
+      const isArgGetter = (v: any) =>
+        typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell;
       const resolveFirstArg = (v: any): any => {
         if (!isArgGetter(v)) return v;
         // Functions with declared parameters are never GXT-generated getters.
@@ -2224,7 +2483,11 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
         // handler and return the function itself (side effects are unfortunate
         // but consistent with prior behavior when the template used `this.x`).
         let produced: any;
-        try { produced = v(); } catch { return v; }
+        try {
+          produced = v();
+        } catch {
+          return v;
+        }
         if (typeof produced === 'function') return produced;
         return v;
       };
@@ -2232,7 +2495,7 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
         // Resolve fn: detect GXT-generated getters vs direct scope handlers.
         const resolvedFn = resolveFirstArg(fn);
         // Resolve partial args: if they're getters (arrow fns), call them
-        const resolvedPartials = partialArgs.map((a: any) => isArgGetter(a) ? a() : a);
+        const resolvedPartials = partialArgs.map((a: any) => (isArgGetter(a) ? a() : a));
         if (typeof resolvedFn !== 'function') {
           return resolvedFn;
         }
@@ -2251,18 +2514,29 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
 // This affects tests like "yield to inverse", "isStream", etc.
 
 // Helper: resolve all curried arg values (evaluating getters) into a snapshot.
-function _resolveCurriedArgs(curried: any): { name: any; args: Record<string, any>; positionals: any[] } {
+function _resolveCurriedArgs(curried: any): {
+  name: any;
+  args: Record<string, any>;
+  positionals: any[];
+} {
   const cArgs = curried.__curriedArgs || {};
   const resolved: Record<string, any> = {};
   for (const [key, value] of Object.entries(cArgs)) {
-    resolved[key] = (typeof value === 'function' && !(value as any).__isCurriedComponent && !(value as any).prototype)
-      ? (value as any)() : value;
+    resolved[key] =
+      typeof value === 'function' &&
+      !(value as any).__isCurriedComponent &&
+      !(value as any).prototype
+        ? (value as any)()
+        : value;
   }
   const cPos = curried.__curriedPositionals || [];
   const resolvedPos: any[] = [];
   for (const val of cPos) {
-    resolvedPos.push((typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype)
-      ? val() : val);
+    resolvedPos.push(
+      typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype
+        ? val()
+        : val
+    );
   }
   return { name: curried.__name, args: resolved, positionals: resolvedPos };
 }
@@ -2320,7 +2594,11 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // Resolve GXT getters in args
       const resolved = actualArgs.map((a: any) => {
         if (typeof a === 'function' && !a.prototype) {
-          try { return a(); } catch { return a; }
+          try {
+            return a();
+          } catch {
+            return a;
+          }
         }
         return a;
       });
@@ -2333,7 +2611,10 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         _loggedSites.add(siteId);
         // Clear tracked sites after the current sync frame
         if (!_logClearTimer) {
-          _logClearTimer = setTimeout(() => { _loggedSites.clear(); _logClearTimer = null; }, 0);
+          _logClearTimer = setTimeout(() => {
+            _loggedSites.clear();
+            _logClearTimer = null;
+          }, 0);
         }
       }
 
@@ -2345,12 +2626,18 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     try {
       let _currentLog = g.$__log;
       Object.defineProperty(g, '$__log', {
-        get() { return _currentLog; },
-        set(v: any) { _currentLog = g.$__log; },
+        get() {
+          return _currentLog;
+        },
+        set(v: any) {
+          _currentLog = g.$__log;
+        },
         configurable: true,
         enumerable: true,
       });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -2379,7 +2666,12 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         const wrappedObj: Record<string, any> = {};
         for (const key of Object.keys(inputObj)) {
           const val = inputObj[key];
-          if (typeof val === 'function' && !val.prototype && !val.__isCurriedComponent && !(val as any).__emberHashGetterWrapped) {
+          if (
+            typeof val === 'function' &&
+            !val.prototype &&
+            !val.__isCurriedComponent &&
+            !(val as any).__emberHashGetterWrapped
+          ) {
             const wrappedGetter = function (this: any) {
               const prev = g.__hashGetterCtx;
               g.__hashGetterCtx = ctxAtConstruction;
@@ -2412,7 +2704,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   const g = globalThis as any;
 
   if (g.$_componentHelper) {
-    const unwrapArg = (v: any) => typeof v === 'function' && !v.prototype ? v() : v;
+    const unwrapArg = (v: any) => (typeof v === 'function' && !v.prototype ? v() : v);
     // Cache the last known owner so re-evaluations during reactive updates
     // (when globalThis.owner may be null) can still resolve components.
     let _cachedOwner: any = null;
@@ -2428,7 +2720,10 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     // destroyed owners.
     const _seenNames = new Set<string>();
 
-    g.$_componentHelper = function $_componentHelper_ember(params: any[], hash: Record<string, any>) {
+    g.$_componentHelper = function $_componentHelper_ember(
+      params: any[],
+      hash: Record<string, any>
+    ) {
       const createCurried = g.__createCurriedComponent;
       if (!createCurried) {
         // Fallback: no createCurriedComponent available yet, return the original behavior
@@ -2466,7 +2761,8 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       if (_cachedOwner && (_cachedOwner.isDestroyed || _cachedOwner.isDestroying)) {
         _cachedOwner = null;
       }
-      const sharedOwner = typeof g.__getOwnerWithFallback === 'function' ? g.__getOwnerWithFallback() : null;
+      const sharedOwner =
+        typeof g.__getOwnerWithFallback === 'function' ? g.__getOwnerWithFallback() : null;
       const owner = currentOwner || _cachedOwner || sharedOwner;
 
       // Capture the parent render context for two-way binding via mut.
@@ -2493,7 +2789,11 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
           }
           // Touch the value to track the cell dependency
           if (typeof val === 'function' && !val.prototype) {
-            try { val(); } catch { /* ignore */ }
+            try {
+              val();
+            } catch {
+              /* ignore */
+            }
           }
         }
       }
@@ -2510,7 +2810,11 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         positionals.push(p);
         // Touch positional values to track cell dependencies
         if (typeof p === 'function' && !p.prototype) {
-          try { p(); } catch { /* ignore */ }
+          try {
+            p();
+          } catch {
+            /* ignore */
+          }
         }
       }
 
@@ -2554,7 +2858,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 
             const err = new Error(
               `Attempted to resolve \`${first}\`, which was expected to be a component, but nothing was found. ` +
-              `Could not find component named "${first}" (no component or template with that name was found)`
+                `Could not find component named "${first}" (no component or template with that name was found)`
             );
             // Capture the error so flushRenderErrors() can re-throw it
             // (GXT may catch the thrown error during formula evaluation)
@@ -2609,12 +2913,15 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         if (!v || typeof v !== 'object') return false;
         // Check Ember's proxy marker (setProxy adds to WeakSet)
         // Also fall back to duck-typing: ObjectProxy has unknownProperty
-        if (typeof v.unknownProperty === 'function' && typeof v.setUnknownProperty === 'function') return true;
+        if (typeof v.unknownProperty === 'function' && typeof v.setUnknownProperty === 'function')
+          return true;
         // Check _content property existence (ObjectProxy stores content internally)
         if ('_content' in v || 'content' in v) return true;
         return false;
       };
-    } catch { return (v: any) => false; }
+    } catch {
+      return (v: any) => false;
+    }
   })();
 
   function emberToBool(predicate: unknown): boolean {
@@ -2673,8 +2980,15 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 
   // Replace $__if on globalThis with Ember-aware version.
   // Use a persistent property trap so GXT's setupGlobalScope cannot overwrite.
-  const _ember$__if = function $__if_ember(condition: unknown, ifTrue: unknown, ifFalse: unknown = '') {
-    const rawCond = typeof condition === 'function' && !(condition as any).prototype ? (condition as any)() : condition;
+  const _ember$__if = function $__if_ember(
+    condition: unknown,
+    ifTrue: unknown,
+    ifFalse: unknown = ''
+  ) {
+    const rawCond =
+      typeof condition === 'function' && !(condition as any).prototype
+        ? (condition as any)()
+        : condition;
     const cond = emberToBool(rawCond);
     const result = cond ? ifTrue : ifFalse;
     return typeof result === 'function' && !(result as any).prototype ? (result as any)() : result;
@@ -2687,7 +3001,9 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   try {
     let _currentIf = _ember$__if;
     Object.defineProperty(g, '$__if', {
-      get() { return _currentIf; },
+      get() {
+        return _currentIf;
+      },
       set(v: any) {
         // Allow GXT to "set" it, but immediately restore Ember version
         _currentIf = _ember$__if;
@@ -2695,7 +3011,9 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       configurable: true,
       enumerable: true,
     });
-  } catch { /* ignore if defineProperty fails */ }
+  } catch {
+    /* ignore if defineProperty fails */
+  }
 }
 
 // GXT external schedule hook: GXT's cell.update() calls scheduleRevalidate()
@@ -2704,7 +3022,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 // control when gxtSyncDom() is called (after runTask, or via setTimeout fallback).
 (globalThis as any).__gxtPendingSync = false;
 (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
-(globalThis as any).__gxtExternalSchedule = function() {
+(globalThis as any).__gxtExternalSchedule = function () {
   (globalThis as any).__gxtPendingSync = true;
   // Note: this is from cell/effect scheduling, NOT from a property change.
   // __gxtPendingSyncFromPropertyChange is set separately by _notifyPropertiesChanged.
@@ -2761,7 +3079,7 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 // GXT re-render trigger hook - called by Ember's notifyPropertyChange.
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
-(globalThis as any).__gxtTriggerReRender = function(obj: object, keyName: string) {
+(globalThis as any).__gxtTriggerReRender = function (obj: object, keyName: string) {
   // Custom modifier manager: notify install-phase watcher if this object is a
   // modifier instance whose installModifier is currently running. Classic Ember
   // captures tags dirtied inside the install track frame and schedules an update.
@@ -2789,7 +3107,9 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
             // getter reads from cell._value which may be stale for same-ref arrays.
             const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
             if (c) c.update(obj);
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
       }
     } else if (obj && typeof obj === 'object') {
@@ -2807,7 +3127,9 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
           try {
             const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
             if (c) c.update(obj);
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
       }
     }
@@ -2826,7 +3148,9 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
     try {
       const c = cellFor(obj, keyName, /* skipDefine */ true);
       if (c) c.update(newValue);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   // Re-evaluate cells for OTHER properties on the same object that have
   // cellFor-installed getters. Native getters (e.g., get countAlias() { return this.count; })
@@ -2860,9 +3184,13 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
             if (oc) oc.update(freshVal);
           }
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // Dirty cells that hold `obj` as their VALUE (reverse lookup).
   // This handles the case where a template reads {{this.m.formattedMessage}} —
   // the formula tracks cell(renderContext, 'm'), and when m.message changes,
@@ -2878,13 +3206,17 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
         try {
           const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
           if (oc) oc.update(obj);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         // Defer markObjectAsDirty to after gxtSyncDom + updateRootTagValues
         if (!_deferredTagDirties) _deferredTagDirties = [];
         _deferredTagDirties.push({ obj: ownerObj, key: ownerKey });
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // Recompute computed properties that depend on the changed key.
   // Ember computed properties (e.g., @computed('message') get formattedMessage())
   // are replaced by cell-backed getters when cellFor is called. When the underlying
@@ -2897,10 +3229,14 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
         try {
           const dc = cellFor(obj, key, /* skipDefine */ true);
           if (dc) dc.update(value);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // Also update cells on the prototype chain.
   // cellFor creates cells keyed by object identity. If a cell-backed getter
   // was installed on a prototype (e.g., via Component.extend({foo: true})),
@@ -2918,7 +3254,9 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
       }
       proto = Object.getPrototypeOf(proto);
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // Also dirty cells on ALL render contexts derived from this component.
   // GXT's $_if formula tracks cells on Object.create(component) wrappers.
   // The contexts map is keyed by prototype, so we check both obj and its prototype.
@@ -2930,7 +3268,9 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
       try {
         const proto = Object.getPrototypeOf(obj);
         if (proto && proto !== Object.prototype) candidates.push(proto);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       for (const candidate of candidates) {
         const ctxs = ctxsMap.get(candidate);
@@ -2976,21 +3316,32 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
                   let p = Object.getPrototypeOf(cellTarget);
                   while (p && p !== Object.prototype) {
                     const pd = Object.getOwnPropertyDescriptor(p, ownKey);
-                    if (pd && pd.get) { protoGetter = pd.get; break; }
+                    if (pd && pd.get) {
+                      protoGetter = pd.get;
+                      break;
+                    }
                     p = Object.getPrototypeOf(p);
                   }
                   if (!protoGetter) continue;
                   const freshVal = protoGetter.call(cellTarget);
                   const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
                   if (oc) oc.update(freshVal);
-                } catch { /* skip */ }
+                } catch {
+                  /* skip */
+                }
               }
-            } catch { /* ignore */ }
-          } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
+          } catch {
+            /* ignore */
+          }
         }
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // For nested paths like 'colors.apple', also dirty the root property cell.
   // Templates read `this.colors` which creates a cell for 'colors'. When
   // set(obj, 'colors.apple', val) fires, we need to dirty 'colors' too
@@ -3000,13 +3351,17 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
     try {
       const rootCell = cellFor(obj, rootKey, /* skipDefine */ true);
       if (rootCell) rootCell.update((obj as any)[rootKey]);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   // Sync wrapper element if the object has attribute/class bindings
   try {
     const syncWrapper = (globalThis as any).__gxtSyncWrapper;
     if (syncWrapper) syncWrapper(obj, keyName);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   (globalThis as any).__gxtPendingSync = true;
   (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
@@ -3151,7 +3506,7 @@ type _IfCondEntry = { condFn: () => any; placeholder: any; ifCondition: any };
 const _wrapperIfCondLookup = new Map<string, Set<_IfCondEntry>>();
 
 // Allow clearing ifWatchers between tests to prevent stale callbacks
-(globalThis as any).__gxtClearIfWatchers = function() {
+(globalThis as any).__gxtClearIfWatchers = function () {
   ifWatchers = new WeakMap();
   _wrapperIfUserFalse.clear();
   _wrapperIfCondLookup.clear();
@@ -3169,9 +3524,15 @@ function _isEmberViewWrapper(par: any): boolean {
 
 function registerIfWatcher(rawTarget: object, key: string, callback: IfWatcherCb) {
   let keyMap = ifWatchers.get(rawTarget);
-  if (!keyMap) { keyMap = new Map(); ifWatchers.set(rawTarget, keyMap); }
+  if (!keyMap) {
+    keyMap = new Map();
+    ifWatchers.set(rawTarget, keyMap);
+  }
   let watchers = keyMap.get(key);
-  if (!watchers) { watchers = new Set(); keyMap.set(key, watchers); }
+  if (!watchers) {
+    watchers = new Set();
+    keyMap.set(key, watchers);
+  }
   watchers.add(callback);
 }
 
@@ -3197,7 +3558,9 @@ function _orderIfWatcherFlush(
     try {
       const proto = Object.getPrototypeOf(obj);
       if (proto && proto !== Object.prototype) candidates.push(proto);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     const ctxsMap = (globalThis as any).__gxtComponentContexts;
     if (ctxsMap) {
       const ctxs = ctxsMap.get(obj);
@@ -3220,7 +3583,8 @@ function _orderIfWatcherFlush(
         const idKey = ifc || cb;
         // Keyed by both the watcher target and the notifying obj so the same
         // watcher may fire once per distinct obj it cares about.
-        const slot = (idKey as any).__gxtFlushIdSlot ||
+        const slot =
+          (idKey as any).__gxtFlushIdSlot ||
           ((idKey as any).__gxtFlushIdSlot = new WeakMap<object, string>());
         let id = slot.get(obj);
         if (!id) {
@@ -3231,7 +3595,11 @@ function _orderIfWatcherFlush(
         seen.add(id);
         let nextBool: boolean | null = null;
         if (typeof cb.__getNextBool === 'function') {
-          try { nextBool = cb.__getNextBool(obj); } catch { nextBool = null; }
+          try {
+            nextBool = cb.__getNextBool(obj);
+          } catch {
+            nextBool = null;
+          }
         }
         if (nextBool === false) falseFirst.push({ cb, obj });
         else if (nextBool === true) trueLast.push({ cb, obj });
@@ -3249,7 +3617,9 @@ function notifyIfWatchers(obj: object, key: string) {
   try {
     const proto = Object.getPrototypeOf(obj);
     if (proto && proto !== Object.prototype) candidates.push(proto);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   // Walk component-context mappings to also notify watchers on render-
   // context proxies that wrap this instance. CRITICAL: only expand
   // candidates from ctxsMap entries keyed by `obj` directly — not from
@@ -3274,7 +3644,11 @@ function notifyIfWatchers(obj: object, key: string) {
     const watchers = keyMap.get(key);
     if (!watchers) continue;
     for (const cb of watchers) {
-      try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
+      try {
+        cb(obj);
+      } catch (e) {
+        console.warn('[GXT] ifWatcher error:', e);
+      }
     }
   }
 }
@@ -3284,12 +3658,7 @@ function patchGlobalIf() {
   const g = globalThis as any;
   if (!g.$_if || g.$_if.__emberPatched) return false;
   const origIf = g.$_if;
-  g.$_if = function patchedIf(
-    conditionOrCell: any,
-    trueBranch: any,
-    falseBranch: any,
-    ctx: any
-  ) {
+  g.$_if = function patchedIf(conditionOrCell: any, trueBranch: any, falseBranch: any, ctx: any) {
     const watchTarget = conditionOrCell?.__gxtWatchTarget;
     const watchKey = conditionOrCell?.__gxtWatchKey;
 
@@ -3312,7 +3681,11 @@ function patchGlobalIf() {
     // mutable holder object whose identity is stable; fill in `.ifCondition`
     // after origIf returns so descendants pushed during construction can still
     // reach back to us once we exist.
-    const ifConditionRef: any = { ifCondition: null, childIfConditions, lastKnownPlaceholderParent: null as Node | null };
+    const ifConditionRef: any = {
+      ifCondition: null,
+      childIfConditions,
+      lastKnownPlaceholderParent: null as Node | null,
+    };
     const wrapBranch = (fn: any, scope: Set<any>) => {
       if (typeof fn !== 'function') return fn;
       return function wrappedBranch(this: any, ...branchArgs: any[]) {
@@ -3337,7 +3710,9 @@ function patchGlobalIf() {
             // node-insertion downstream just appends the children of [].
             return [];
           }
-        } catch { /* ignore — fall through to normal eval */ }
+        } catch {
+          /* ignore — fall through to normal eval */
+        }
         const prev = g2.__gxtCurrentHelperScope;
         g2.__gxtCurrentHelperScope = scope;
         // Push this IfCondition (via a stable ref holder) onto the parent-If
@@ -3367,20 +3742,31 @@ function patchGlobalIf() {
             gxtSetParentContext(null);
             if (resolved !== ifcRef) {
               // IfCondition was unregistered — restore TREE entry.
-              const attSym = Object.getOwnPropertySymbols(ifcRef)
-                .find((s) => (ifcRef as any)[s] === false);
+              const attSym = Object.getOwnPropertySymbols(ifcRef).find(
+                (s) => (ifcRef as any)[s] === false
+              );
               if (attSym) {
-                try { delete (ifcRef as any)[attSym]; } catch { /* ignore */ }
+                try {
+                  delete (ifcRef as any)[attSym];
+                } catch {
+                  /* ignore */
+                }
               }
               try {
                 gxtSetParentContext(ctx as any);
                 try {
                   (_gxtGetArgs as any)(ifcRef, [] as any);
-                } catch { /* ignore */ }
+                } catch {
+                  /* ignore */
+                }
                 gxtSetParentContext(null);
-              } catch { /* ignore */ }
+              } catch {
+                /* ignore */
+              }
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
         // CRITICAL: Re-check placeholder connectivity AFTER destroyBranchSync
         // (which ran just before this function was invoked by renderState).
@@ -3409,11 +3795,17 @@ function patchGlobalIf() {
                 // Disconnected — try to reattach to last known live parent.
                 const lkp: Node | null = ifConditionRef.lastKnownPlaceholderParent;
                 if (lkp && (lkp as any).isConnected) {
-                  try { (lkp as any).appendChild(ph); } catch { /* ignore */ }
+                  try {
+                    (lkp as any).appendChild(ph);
+                  } catch {
+                    /* ignore */
+                  }
                 }
               }
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
         try {
           const result = fn.apply(this, branchArgs);
@@ -3432,13 +3824,22 @@ function patchGlobalIf() {
               const ifcRef2 = ifConditionRef.ifCondition;
               let pushedPc2 = false;
               if (ifcRef2) {
-                try { gxtSetParentContext(ifcRef2 as any); pushedPc2 = true; } catch { /* ignore */ }
+                try {
+                  gxtSetParentContext(ifcRef2 as any);
+                  pushedPc2 = true;
+                } catch {
+                  /* ignore */
+                }
               }
               try {
                 return inner.apply(this, innerArgs);
               } finally {
                 if (pushedPc2) {
-                  try { gxtSetParentContext(null); } catch { /* ignore */ }
+                  try {
+                    gxtSetParentContext(null);
+                  } catch {
+                    /* ignore */
+                  }
                 }
                 g3.__gxtCurrentHelperScope = prev2;
                 g3.__gxtCurrentParentIfRef = prev3;
@@ -3494,8 +3895,11 @@ function patchGlobalIf() {
     // the outgoing branch's evaluation whenever the branch toggles, so that
     // tests like `class-based helper lifecycle` (where `{{#if this.show}}` is
     // flipped to `false`) see the full Ember Helper lifecycle.
-    if (ifCondition && typeof ifCondition.syncState === 'function' &&
-        !(ifCondition as any).__emberHelperCleanupInstalled) {
+    if (
+      ifCondition &&
+      typeof ifCondition.syncState === 'function' &&
+      !(ifCondition as any).__emberHelperCleanupInstalled
+    ) {
       (ifCondition as any).__emberHelperCleanupInstalled = true;
       const _g = globalThis as any;
       const emberToBool = _g.__gxtToBool || Boolean;
@@ -3523,25 +3927,34 @@ function patchGlobalIf() {
               });
               for (const k of toDelete) cache.delete(k);
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         };
         evictFromCache(_g.__gxtClassHelperInstanceCache);
         evictFromCache(_g.__gxtTagHelperInstanceCache);
         for (const inst of copy) {
           try {
-            if (inst && typeof inst.destroy === 'function' &&
-                !inst.isDestroyed && !inst.isDestroying) {
+            if (
+              inst &&
+              typeof inst.destroy === 'function' &&
+              !inst.isDestroyed &&
+              !inst.isDestroying
+            ) {
               inst.destroy();
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
       };
       // Initialise prevBool from the condition's current value.
       try {
-        const initV = typeof conditionOrCell === 'function'
-          ? conditionOrCell() : conditionOrCell;
+        const initV = typeof conditionOrCell === 'function' ? conditionOrCell() : conditionOrCell;
         prevBool = emberToBool(initV);
-      } catch { prevBool = null; }
+      } catch {
+        prevBool = null;
+      }
       // Fallback: if we couldn't populate the scope because helper creation
       // happens inside a deferred formula (outside our wrapBranch's dynamic
       // scope), snapshot the set of live class-helper instances BEFORE the
@@ -3555,7 +3968,9 @@ function patchGlobalIf() {
             cache.forEach((_v: any, k: string) => s.add(k));
             return s;
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         return new Set<string>();
       };
       const destroyNewCacheEntriesSince = (prev: Set<string> | null) => {
@@ -3572,21 +3987,30 @@ function patchGlobalIf() {
             // Resolve the helper instance from the cache entry (manager-path
             // wraps it in { bucket: { instance } }; direct path stores the
             // instance directly).
-            const inst = entry && entry.__managerBucket
-              ? entry.bucket?.instance : entry;
-            if (inst && typeof inst.destroy === 'function' &&
-                !inst.isDestroyed && !inst.isDestroying) {
-              try { inst.destroy(); } catch { /* ignore */ }
+            const inst = entry && entry.__managerBucket ? entry.bucket?.instance : entry;
+            if (
+              inst &&
+              typeof inst.destroy === 'function' &&
+              !inst.isDestroyed &&
+              !inst.isDestroying
+            ) {
+              try {
+                inst.destroy();
+              } catch {
+                /* ignore */
+              }
             }
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       };
 
       // Capture the pre-branch snapshot at install time (just before the
       // first syncState runs).
       preBranchCacheKeys = snapshotCacheKeys();
 
-      ifCondition.syncState = function(v: any) {
+      ifCondition.syncState = function (v: any) {
         try {
           const nextBool = emberToBool(v);
           if (prevBool !== null && prevBool !== nextBool) {
@@ -3600,7 +4024,9 @@ function patchGlobalIf() {
             preBranchCacheKeys = snapshotCacheKeys();
           }
           prevBool = nextBool;
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         return origSS(v);
       };
     }
@@ -3644,7 +4070,11 @@ function patchGlobalIf() {
           // Also stash on the shared ref so wrapBranch can reattach the
           // placeholder on a true→false toggle when destroyBranchSync's
           // RENDERED_NODES snapshot destruction detaches it as a side effect.
-          try { ifConditionRef.lastKnownPlaceholderParent = ph.parentNode; } catch { /* ignore */ }
+          try {
+            ifConditionRef.lastKnownPlaceholderParent = ph.parentNode;
+          } catch {
+            /* ignore */
+          }
           return;
         }
         // Disconnected — try to reattach
@@ -3657,7 +4087,10 @@ function patchGlobalIf() {
           if (prev) {
             const arr = Array.isArray(prev) ? prev : [prev];
             for (const item of arr) {
-              const node = item && (item as any).nodeType ? item : (item && (item as any)[RENDERED_NODES_PROPERTY!]?.[0]);
+              const node =
+                item && (item as any).nodeType
+                  ? item
+                  : item && (item as any)[RENDERED_NODES_PROPERTY!]?.[0];
               if (node && node.parentNode && node.parentNode.isConnected) {
                 parent = node.parentNode;
                 break;
@@ -3675,7 +4108,12 @@ function patchGlobalIf() {
           const rendered = renderedKey ? (ifCondition as any)[renderedKey] : null;
           if (rendered && Array.isArray(rendered)) {
             for (const node of rendered) {
-              if (node && (node as any).nodeType && (node as any).parentNode && (node as any).parentNode.isConnected) {
+              if (
+                node &&
+                (node as any).nodeType &&
+                (node as any).parentNode &&
+                (node as any).parentNode.isConnected
+              ) {
                 parent = (node as any).parentNode;
                 break;
               }
@@ -3690,13 +4128,17 @@ function patchGlobalIf() {
             if (ctxElem && ctxElem.isConnected) {
               parent = ctxElem;
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
         if (parent) {
           try {
             parent.appendChild(ph);
             lastKnownParent = parent;
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
       };
 
@@ -3719,7 +4161,9 @@ function patchGlobalIf() {
           if (raw && (raw.isView || raw.elementId || raw.id)) {
             return raw;
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         return null;
       })();
 
@@ -3744,17 +4188,25 @@ function patchGlobalIf() {
               });
               for (const k of toDelete) cache.delete(k);
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           for (const inst of copy) {
             try {
-              if (inst && typeof inst.destroy === 'function' &&
-                  !inst.isDestroyed && !inst.isDestroying) {
+              if (
+                inst &&
+                typeof inst.destroy === 'function' &&
+                !inst.isDestroyed &&
+                !inst.isDestroying
+              ) {
                 inst.destroy();
               }
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
         };
-        ifCondition.syncState = function(v: any) {
+        ifCondition.syncState = function (v: any) {
           // Suppress mid-sync TRUE renders for an IfCondition whose parent
           // {{#if}} collapsed earlier in the same sync cycle. Without this,
           // GXT's native `dt(condition, syncState)` listener would fire from
@@ -3781,7 +4233,11 @@ function patchGlobalIf() {
               const children = (ifCondition as any).__gxtChildIfConditions;
               if (children && typeof children.forEach === 'function') {
                 children.forEach((child: any) => {
-                  try { child.__gxtParentDeadCycle = cycleId; } catch { /* ignore */ }
+                  try {
+                    child.__gxtParentDeadCycle = cycleId;
+                  } catch {
+                    /* ignore */
+                  }
                   // Recurse: a grandchild's parent is this child, but if this
                   // child were already collapsed, GXT may still hold its
                   // syncState listener on a dirty cond cell. Mark grandchildren
@@ -3789,13 +4245,19 @@ function patchGlobalIf() {
                   const grand = child && child.__gxtChildIfConditions;
                   if (grand && typeof grand.forEach === 'function') {
                     grand.forEach((g2: any) => {
-                      try { g2.__gxtParentDeadCycle = cycleId; } catch { /* ignore */ }
+                      try {
+                        g2.__gxtParentDeadCycle = cycleId;
+                      } catch {
+                        /* ignore */
+                      }
                     });
                   }
                 });
               }
             }
-          } catch { /* ignore — fall through to legacy path */ }
+          } catch {
+            /* ignore — fall through to legacy path */
+          }
           repairPlaceholder();
           // On branch transition, destroy helpers captured during the *outgoing*
           // branch's evaluation so their destroy/willDestroy hooks fire.
@@ -3806,7 +4268,9 @@ function patchGlobalIf() {
               else destroyHelpersIn(falseBranchHelpers);
             }
             prevBoolState = nextBool;
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           // Push the owner view so any components created by syncState's
           // re-render of the trueBranch (typically {{yield}} block content)
           // are registered as children of the correct view via the parentView
@@ -3819,13 +4283,22 @@ function patchGlobalIf() {
           const popPV = (globalThis as any).__gxtPopParentView;
           let pushed = false;
           if (ifOwnerView && typeof pushPV === 'function') {
-            try { pushPV(ifOwnerView); pushed = true; } catch { /* ignore */ }
+            try {
+              pushPV(ifOwnerView);
+              pushed = true;
+            } catch {
+              /* ignore */
+            }
           }
           try {
             return origSyncState(v);
           } finally {
             if (pushed && typeof popPV === 'function') {
-              try { popPV(); } catch { /* ignore */ }
+              try {
+                popPV();
+              } catch {
+                /* ignore */
+              }
             }
           }
         };
@@ -3855,14 +4328,19 @@ function patchGlobalIf() {
                 const v2 = (notifiedTarget as any)[watchKey];
                 freshBoolVal = emberToBool(v2);
               }
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
             const ph = ifCondition.placeholder;
             const par: any = ph && (ph as any).parentNode;
             if (par && _isEmberViewWrapper(par) && par.id) {
               if (notifiedTarget === watchTarget && boolVal === false) {
                 _wrapperIfUserFalse.add(par.id);
                 let s = _wrapperIfCondLookup.get(par.id);
-                if (!s) { s = new Set(); _wrapperIfCondLookup.set(par.id, s); }
+                if (!s) {
+                  s = new Set();
+                  _wrapperIfCondLookup.set(par.id, s);
+                }
                 s.add({ condFn: conditionOrCell, placeholder: ph, ifCondition });
               } else if (boolVal === true || freshBoolVal === true) {
                 _wrapperIfUserFalse.delete(par.id);
@@ -3871,7 +4349,9 @@ function patchGlobalIf() {
             }
 
             ifCondition.syncState(boolVal);
-          } catch (e) { console.warn('[GXT] syncState error:', e); }
+          } catch (e) {
+            console.warn('[GXT] syncState error:', e);
+          }
         };
         // Provide the flush phase with metadata so it can sort: parent
         // {{#if}} flips going FALSE fire before child {{#if}} flips going
@@ -3884,10 +4364,14 @@ function patchGlobalIf() {
               const v2 = (notifiedTarget as any)[watchKey];
               return !!emberToBool(v2);
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           try {
             return !!emberToBool(conditionOrCell());
-          } catch { return false; }
+          } catch {
+            return false;
+          }
         };
         registerIfWatcher(watchTarget, watchKey, _ifWatchCb);
       }
@@ -3901,12 +4385,18 @@ function patchGlobalIf() {
   const _patchedIf = g.$_if;
   try {
     Object.defineProperty(g, '$_if', {
-      get() { return _patchedIf; },
-      set(_v: any) { /* keep patched version */ },
+      get() {
+        return _patchedIf;
+      },
+      set(_v: any) {
+        /* keep patched version */
+      },
       configurable: true,
       enumerable: true,
     });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   return true;
 }
@@ -3926,7 +4416,7 @@ function _wrapGxtRebuildViewTree() {
   const g = globalThis as any;
   const orig = g.__gxtRebuildViewTreeFromDom;
   if (!orig || (orig as any).__emberIfRebuildPatched) return;
-  const wrapped = function(this: any, ...args: any[]) {
+  const wrapped = function (this: any, ...args: any[]) {
     const result = orig.apply(this, args);
     try {
       if (_wrapperIfUserFalse.size > 0) {
@@ -3938,7 +4428,9 @@ function _wrapGxtRebuildViewTree() {
           const go: any = (globalThis as any).owner;
           const reg2 = go && go.lookup && go.lookup('-view-registry:main');
           if (reg2 && !registries.includes(reg2)) registries.push(reg2);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         const g2: any = globalThis as any;
         const toBool = g2.__gxtToBool || Boolean;
         const staleIds: string[] = [];
@@ -3960,7 +4452,8 @@ function _wrapGxtRebuildViewTree() {
           // descendants.
           const entries = _wrapperIfCondLookup.get(wrapperId);
           if (entries && entries.size > 0) {
-            const liveEl: any = typeof document !== 'undefined' && document.getElementById(wrapperId);
+            const liveEl: any =
+              typeof document !== 'undefined' && document.getElementById(wrapperId);
             let anyExpanded = false;
             for (const e of entries) {
               const ph = e.placeholder;
@@ -3971,7 +4464,10 @@ function _wrapGxtRebuildViewTree() {
               // Non-empty prevComponent => branch currently rendered (true state).
               const pc = ic && (ic.prevComponent ?? ic._prevComponent);
               const pcHasContent = Array.isArray(pc) ? pc.length > 0 : !!pc;
-              if (pcHasContent) { anyExpanded = true; break; }
+              if (pcHasContent) {
+                anyExpanded = true;
+                break;
+              }
             }
             if (anyExpanded) {
               staleIds.push(wrapperId);
@@ -3991,14 +4487,22 @@ function _wrapGxtRebuildViewTree() {
               const v2 = _emberGetElementView(el);
               if (v2 && !v2.isDestroyed && !v2.isDestroying) views.add(v2);
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           for (const v of views) {
-            try { _emberInitChildViews(v); } catch { /* ignore */ }
+            try {
+              _emberInitChildViews(v);
+            } catch {
+              /* ignore */
+            }
           }
         }
         for (const id of staleIds) _wrapperIfUserFalse.delete(id);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     // Drain the in-element deferred-render queue now. By the time the
     // manager's flushAfterInsertQueue has processed all didInsertElement
     // hooks and called __gxtRebuildViewTreeFromDom, the parent fragment
@@ -4010,7 +4514,9 @@ function _wrapGxtRebuildViewTree() {
     try {
       const drain = (globalThis as any).__gxtInElementDrainDeferred;
       if (typeof drain === 'function') drain();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return result;
   };
   (wrapped as any).__emberIfRebuildPatched = true;
@@ -4058,7 +4564,11 @@ function patchGlobalEachSync() {
   const origEachSync = g.$_eachSync;
 
   g.$_eachSync = function patchedEachSync(
-    items: any, fn: any, key: any, ctx: any, inverseFn?: any
+    items: any,
+    fn: any,
+    key: any,
+    ctx: any,
+    inverseFn?: any
   ) {
     // Capture the parent Ember component instance at the time $_eachSync is
     // called from the template body. `ctx` is the GXT render context (which
@@ -4088,12 +4598,18 @@ function patchGlobalEachSync() {
     // in the wrapper case so both phases key into the SAME instance pool.
     if (_initialParent && typeof _initialParent === 'object') {
       const proto: any = Object.getPrototypeOf(_initialParent);
-      if (proto && typeof proto === 'object' && proto !== Object.prototype &&
-          typeof proto.trigger === 'function' && proto.isView === true &&
-          !proto.isDestroyed && !proto.isDestroying) {
+      if (
+        proto &&
+        typeof proto === 'object' &&
+        proto !== Object.prototype &&
+        typeof proto.trigger === 'function' &&
+        proto.isView === true &&
+        !proto.isDestroyed &&
+        !proto.isDestroying
+      ) {
         const ctor = proto.constructor;
-        const protoIsInstance = typeof ctor === 'function' &&
-          ctor.prototype !== undefined && ctor.prototype !== proto;
+        const protoIsInstance =
+          typeof ctor === 'function' && ctor.prototype !== undefined && ctor.prototype !== proto;
         if (protoIsInstance) {
           _initialParent = proto;
         }
@@ -4108,7 +4624,9 @@ function patchGlobalEachSync() {
     const isViewInstance = !!(
       capturedParent &&
       typeof capturedParent === 'object' &&
-      (capturedParent.isView === true || typeof capturedParent.trigger === 'function' || 'elementId' in capturedParent)
+      (capturedParent.isView === true ||
+        typeof capturedParent.trigger === 'function' ||
+        'elementId' in capturedParent)
     );
     // Only wrap when we have a view instance AND the push/pop helpers exist.
     // On initial render, the parent is already on the stack (pushed by
@@ -4119,7 +4637,11 @@ function patchGlobalEachSync() {
     const withParent = (cb: any): any => {
       if (!canWrap) return cb();
       pushPV(capturedParent);
-      try { return cb(); } finally { popPV(); }
+      try {
+        return cb();
+      } finally {
+        popPV();
+      }
     };
 
     // Wrap the callback fn to ensure `index` is always a cell-like object.
@@ -4133,7 +4655,9 @@ function patchGlobalEachSync() {
       if (typeof index === 'number') {
         const cellLike: any = { id: index };
         Object.defineProperty(cellLike, 'value', {
-          get() { return index; },
+          get() {
+            return index;
+          },
           enumerable: true,
           configurable: true,
         });
@@ -4161,9 +4685,10 @@ function patchGlobalEachSync() {
       const origInverseFn = inverseFn;
       inverseFn = function wrappedInverseFn(ctx0: any) {
         try {
-          const currentCycle = (g.__gxtSyncCycleId || 0);
+          const currentCycle = g.__gxtSyncCycleId || 0;
           const isSyncing = !!g.__gxtSyncing;
-          const alreadyFired = capturedParent &&
+          const alreadyFired =
+            capturedParent &&
             (capturedParent as any).__gxtInverseDestroyFiredCycle === currentCycle;
           if (isSyncing && !alreadyFired && capturedParent) {
             (capturedParent as any).__gxtInverseDestroyFiredCycle = currentCycle;
@@ -4183,7 +4708,10 @@ function patchGlobalEachSync() {
                   let guard = 0;
                   let underParent = false;
                   while (pv && guard++ < 6) {
-                    if (pv === capturedParent) { underParent = true; break; }
+                    if (pv === capturedParent) {
+                      underParent = true;
+                      break;
+                    }
                     pv = pv.parentView;
                   }
                   if (!underParent) continue;
@@ -4211,7 +4739,8 @@ function patchGlobalEachSync() {
                 for (const root of directChildren) visit(root);
                 for (const c of candidates) if (!visited.has(c)) ordered.push(c);
 
-                const getViewElement = (g.__gxtViewUtilsRef && g.__gxtViewUtilsRef.getViewElement) ||
+                const getViewElement =
+                  (g.__gxtViewUtilsRef && g.__gxtViewUtilsRef.getViewElement) ||
                   ((inst: any) => inst && inst.element);
                 const tempContainer = document.getElementById('qunit-fixture') || document.body;
                 const reattached: Array<{ element: Element }> = [];
@@ -4224,7 +4753,9 @@ function patchGlobalEachSync() {
                         tempContainer.appendChild(el);
                         reattached.push({ element: el });
                       }
-                    } catch { /* ignore */ }
+                    } catch {
+                      /* ignore */
+                    }
                   }
                 } finally {
                   (g as any).__gxtDestroyReattachInProgress = false;
@@ -4233,7 +4764,11 @@ function patchGlobalEachSync() {
                   try {
                     (inst as any).__gxtWDEFiredCycle = currentCycle;
                     if (inst._transitionTo && inst._state !== 'inDOM') {
-                      try { inst._transitionTo('inDOM'); } catch { /* ignore */ }
+                      try {
+                        inst._transitionTo('inDOM');
+                      } catch {
+                        /* ignore */
+                      }
                     }
                     if (typeof inst.trigger === 'function') {
                       inst.trigger('willDestroyElement');
@@ -4250,29 +4785,39 @@ function patchGlobalEachSync() {
                       (inst as any).__gxtPreDestroyGateInstalled = true;
                       const origTrigger = inst.trigger;
                       Object.defineProperty(inst, 'trigger', {
-                        value: function(this: any, name: string, ...rest: any[]) {
-                          if ((name === 'willDestroyElement' || name === 'willClearRender') &&
-                              this.__gxtWDEFiredCycle === (g.__gxtSyncCycleId || 0)) {
+                        value: function (this: any, name: string, ...rest: any[]) {
+                          if (
+                            (name === 'willDestroyElement' || name === 'willClearRender') &&
+                            this.__gxtWDEFiredCycle === (g.__gxtSyncCycleId || 0)
+                          ) {
                             return undefined;
                           }
                           return origTrigger.call(this, name, ...rest);
                         },
-                        writable: true, configurable: true, enumerable: false,
+                        writable: true,
+                        configurable: true,
+                        enumerable: false,
                       });
                     }
-                  } catch { /* user override may throw */ }
+                  } catch {
+                    /* user override may throw */
+                  }
                 }
                 // Detach reattached nodes so origInverseFn renders into a
                 // parent without leftover old items
                 for (const { element } of reattached) {
                   try {
                     if (element.parentNode) element.parentNode.removeChild(element);
-                  } catch { /* ignore */ }
+                  } catch {
+                    /* ignore */
+                  }
                 }
               }
             }
           }
-        } catch { /* best-effort; never block inverse render */ }
+        } catch {
+          /* best-effort; never block inverse render */
+        }
         return withParent(() => origInverseFn(ctx0));
       };
     }
@@ -4301,9 +4846,11 @@ function patchGlobalEachSync() {
         const src = items.toString();
         const m = src.match(/this\.([A-Za-z_$][A-Za-z0-9_$]*)/);
         return m ? m[1] : null;
-      } catch { return null; }
+      } catch {
+        return null;
+      }
     })();
-    const _itemsOwner = ctx ? (ctx.__gxtRawTarget || ctx) : null;
+    const _itemsOwner = ctx ? ctx.__gxtRawTarget || ctx : null;
     const _registerIterableUnderlyingArray = (rawItems: any) => {
       if (!rawItems || typeof rawItems !== 'object') return;
       if (!_itemsOwner || !_itemsPropName) return;
@@ -4311,7 +4858,11 @@ function patchGlobalEachSync() {
       // notifying '[]'/'length' on the wrapper finds the owner. ArrayProxy
       // emits notifications on itself; ArrayDelegate emits on `_target` which
       // defaults to the delegate instance.
-      try { registerArrayOwner(rawItems, _itemsOwner, _itemsPropName); } catch { /* ignore */ }
+      try {
+        registerArrayOwner(rawItems, _itemsOwner, _itemsPropName);
+      } catch {
+        /* ignore */
+      }
       // Also register backing arrays so direct array mutations propagate.
       // Walk own + inherited enumerable properties for any value that is an
       // array OR another iterable-like wrapper. This catches:
@@ -4327,15 +4878,33 @@ function patchGlobalEachSync() {
         hops++;
         const cur = queue.shift();
         if (!cur || typeof cur !== 'object' || Array.isArray(cur)) continue;
-        for (const propName of ['content', '_array', 'wrappedItems', '_content', 'arrangedContent']) {
+        for (const propName of [
+          'content',
+          '_array',
+          'wrappedItems',
+          '_content',
+          'arrangedContent',
+        ]) {
           let val: any = undefined;
-          try { val = (cur as any)[propName]; } catch { continue; }
+          try {
+            val = (cur as any)[propName];
+          } catch {
+            continue;
+          }
           if (val == null || visited.has(val)) continue;
           visited.add(val);
           if (Array.isArray(val)) {
-            try { registerArrayOwner(val, _itemsOwner, _itemsPropName); } catch { /* ignore */ }
+            try {
+              registerArrayOwner(val, _itemsOwner, _itemsPropName);
+            } catch {
+              /* ignore */
+            }
           } else if (typeof val === 'object') {
-            try { registerArrayOwner(val, _itemsOwner, _itemsPropName); } catch { /* ignore */ }
+            try {
+              registerArrayOwner(val, _itemsOwner, _itemsPropName);
+            } catch {
+              /* ignore */
+            }
             queue.push(val);
           }
         }
@@ -4356,7 +4925,9 @@ function patchGlobalEachSync() {
         return origEachSync(wrappedCell, fn, key, ctx, inverseFn);
       }
       // Fallback: pass function directly (legacy behavior)
-      const wrappedGetter: any = function() { return normalizeEachCollection(origGetter()); };
+      const wrappedGetter: any = function () {
+        return normalizeEachCollection(origGetter());
+      };
       if (origGetter.__gxtWatchTarget) wrappedGetter.__gxtWatchTarget = origGetter.__gxtWatchTarget;
       if (origGetter.__gxtWatchKey) wrappedGetter.__gxtWatchKey = origGetter.__gxtWatchKey;
       return origEachSync(wrappedGetter, fn, key, ctx, inverseFn);
@@ -4364,8 +4935,11 @@ function patchGlobalEachSync() {
       const origCell = items;
       const wrappedCell = Object.create(origCell);
       Object.defineProperty(wrappedCell, 'value', {
-        get() { return normalizeEachCollection(origCell.value); },
-        enumerable: true, configurable: true,
+        get() {
+          return normalizeEachCollection(origCell.value);
+        },
+        enumerable: true,
+        configurable: true,
       });
       if (origCell.id !== undefined) wrappedCell.id = origCell.id;
       return origEachSync(wrappedCell, fn, key, ctx, inverseFn);
@@ -4378,22 +4952,34 @@ function patchGlobalEachSync() {
   const _patchedEach = g.$_eachSync;
   try {
     Object.defineProperty(g, '$_eachSync', {
-      get() { return _patchedEach; },
-      set(_v: any) { /* keep patched version */ },
+      get() {
+        return _patchedEach;
+      },
+      set(_v: any) {
+        /* keep patched version */
+      },
       configurable: true,
       enumerable: true,
     });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return true;
 }
 patchGlobalEachSync();
 queueMicrotask(patchGlobalEachSync);
 
 // Get a getter function for a property on the render context.
-(globalThis as any).__gxtGetCellOrFormula = function(obj: any, key: string) {
+(globalThis as any).__gxtGetCellOrFormula = function (obj: any, key: string) {
   const raw = obj?.__gxtRawTarget || obj;
-  try { cellFor(raw, key, /* skipDefine */ false); } catch { /* ignore */ }
-  const getter: any = function() { return obj[key]; };
+  try {
+    cellFor(raw, key, /* skipDefine */ false);
+  } catch {
+    /* ignore */
+  }
+  const getter: any = function () {
+    return obj[key];
+  };
   getter.__gxtWatchTarget = raw;
   getter.__gxtWatchKey = key;
   return getter;
@@ -4432,8 +5018,13 @@ function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
   for (let i = 0; i < propPathIdx; i++) {
     const ln = lines[i] || '';
     const trimmed = ln.trim();
-    if (trimmed && !trimmed.startsWith('-top-level') && !trimmed.startsWith('{{outlet}}') &&
-        !trimmed.startsWith('- While rendering:') && !trimmed.startsWith('You attempted')) {
+    if (
+      trimmed &&
+      !trimmed.startsWith('-top-level') &&
+      !trimmed.startsWith('{{outlet}}') &&
+      !trimmed.startsWith('- While rendering:') &&
+      !trimmed.startsWith('You attempted')
+    ) {
       existingInTree.add(trimmed);
     }
   }
@@ -4484,7 +5075,7 @@ function _installTemplateOnlyRenderTreeInjection() {
           const inner = origGet.call(this);
           if (typeof inner !== 'function') return inner;
           if ((inner as any).__gxtTemplateOnlyInjectWrapped) return inner;
-          const wrapped = function(msg: any, test: any) {
+          const wrapped = function (msg: any, test: any) {
             if (typeof msg === 'string') {
               msg = _rebuildBacktrackingMsgWithTemplateOnly(msg);
             }
@@ -4495,7 +5086,9 @@ function _installTemplateOnlyRenderTreeInjection() {
         },
         configurable: true,
       });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     try {
       return orig.call(this, target, key);
     } finally {
@@ -4506,7 +5099,9 @@ function _installTemplateOnlyRenderTreeInjection() {
           get: origGet,
           configurable: true,
         });
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   };
   _g.__gxtAssertInjected = true;
@@ -4532,7 +5127,9 @@ function _installTemplateOnlyResetHook() {
       if (set && typeof set.clear === 'function') set.clear();
       const stack = _g.__gxtTemplateOnlyStack;
       if (stack && typeof stack.length === 'number') stack.length = 0;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return orig.apply(this, arguments as any);
   };
   _g.__gxtBeginRenderPass.__emberTOReset = true;
@@ -4559,7 +5156,7 @@ function _installSyncAllFiredMarker() {
   const wrapTrigger = (inst: any) => {
     if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
     const origTrigger = inst.trigger;
-    const wrapped = function(this: any, name: string, ...args: any[]) {
+    const wrapped = function (this: any, name: string, ...args: any[]) {
       if (UPDATE_HOOKS.has(name) && _g.__gxtSyncAllInFlightPass) {
         this.__gxtSyncAllFiredPassId = _g.__gxtSyncAllInFlightPass;
       }
@@ -4574,7 +5171,7 @@ function _installSyncAllFiredMarker() {
     inst.__gxtTriggerWrapped = true;
   };
   _g.__gxtSyncAllWrappers = function __gxtSyncAllWrappers_markFired() {
-    const __curPass = (_g.__emberRenderPassId || 0);
+    const __curPass = _g.__emberRenderPassId || 0;
     _g.__gxtSyncAllInFlightPass = __curPass;
     // Proactively wrap trigger on all known-alive instances in all pool
     // arrays so triggers fired during syncAll are recorded.
@@ -4587,7 +5184,9 @@ function _installSyncAllFiredMarker() {
           }
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     try {
       return _origSyncAll.apply(this, arguments as any);
     } finally {
@@ -4609,16 +5208,23 @@ try {
   const _gg = globalThis as any;
   let _syncAllCurrent: any = _gg.__gxtSyncAllWrappers;
   Object.defineProperty(_gg, '__gxtSyncAllWrappers', {
-    get() { return _syncAllCurrent; },
+    get() {
+      return _syncAllCurrent;
+    },
     set(v: any) {
       // If the new value isn't our mark-fired wrapper, wrap it inline.
       if (v && !v.__emberMarkFired && typeof v === 'function') {
         const _origSyncAll = v;
-        const UPDATE_HOOKS = new Set(['didUpdateAttrs', 'didReceiveAttrs', 'willUpdate', 'willRender']);
+        const UPDATE_HOOKS = new Set([
+          'didUpdateAttrs',
+          'didReceiveAttrs',
+          'willUpdate',
+          'willRender',
+        ]);
         const wrapTrigger = (inst: any) => {
           if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
           const origTrigger = inst.trigger;
-          const wrapped = function(this: any, name: string, ...args: any[]) {
+          const wrapped = function (this: any, name: string, ...args: any[]) {
             if (UPDATE_HOOKS.has(name) && _gg.__gxtSyncAllInFlightCycle) {
               this.__gxtSyncAllFiredCycleId = _gg.__gxtSyncAllInFlightCycle;
               // Also stamp a "hooks actually fired" marker — distinguishes
@@ -4638,8 +5244,8 @@ try {
           });
           inst.__gxtTriggerWrapped = true;
         };
-        const wrappedSyncAll = function() {
-          const __curCycle = (_gg.__gxtSyncCycleId || 0);
+        const wrappedSyncAll = function () {
+          const __curCycle = _gg.__gxtSyncCycleId || 0;
           _gg.__gxtSyncAllInFlightCycle = __curCycle;
           try {
             const pools = _gg.__gxtAllPoolArrays;
@@ -4650,7 +5256,9 @@ try {
                 }
               }
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           try {
             return _origSyncAll.apply(this, arguments as any);
           } finally {
@@ -4666,11 +5274,13 @@ try {
     configurable: true,
     enumerable: true,
   });
-} catch { /* ignore property redefinition errors */ }
+} catch {
+  /* ignore property redefinition errors */
+}
 
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
-(globalThis as any).__gxtSyncDomNow = function() {
+(globalThis as any).__gxtSyncDomNow = function () {
   // Re-entrancy guard: prevent infinite sync loops when force-rerender
   // triggers cell updates that schedule additional syncs
   if ((globalThis as any).__gxtSyncing) return;
@@ -4679,7 +5289,8 @@ try {
     // Only signal "had pending sync" to the force-rerender if an actual property
     // change triggered the sync. Cell creation during initial render also sets
     // __gxtPendingSync, but that should NOT force a full re-render.
-    (globalThis as any).__gxtHadPendingSync = !!(globalThis as any).__gxtPendingSyncFromPropertyChange;
+    (globalThis as any).__gxtHadPendingSync = !!(globalThis as any)
+      .__gxtPendingSyncFromPropertyChange;
     (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
     (globalThis as any).__gxtSyncing = true;
     // Increment sync cycle ID so modifier update dedup works correctly.
@@ -4690,335 +5301,423 @@ try {
     // Wrap ALL phases in try/finally so __gxtSyncing is ALWAYS reset,
     // even if an unexpected error escapes a catch block.
     try {
-    // Start a new render pass to prevent double-firing of lifecycle hooks
-    const newPass = (globalThis as any).__gxtNewRenderPass;
-    if (typeof newPass === 'function') newPass();
-    // PHASE 0: Pre-flush FALSE-flip if-watchers BEFORE gxtSyncDom. This ensures
-    // any outer {{#if}} that toggles to false in the batch tears down its branch
-    // FIRST, so when GXT's native sync evaluates inner conditional formulas, the
-    // inner branches inside the dead subtree are no longer reachable. Without
-    // this pre-flush, gxtSyncDom would observe inner cond=true and synchronously
-    // invoke its trueBranch, instantiating transient components that the outer
-    // {{#if}} would only later have suppressed.
-    if (_pendingIfWatcherNotifications.length > 0) {
+      // Start a new render pass to prevent double-firing of lifecycle hooks
+      const newPass = (globalThis as any).__gxtNewRenderPass;
+      if (typeof newPass === 'function') newPass();
+      // PHASE 0: Pre-flush FALSE-flip if-watchers BEFORE gxtSyncDom. This ensures
+      // any outer {{#if}} that toggles to false in the batch tears down its branch
+      // FIRST, so when GXT's native sync evaluates inner conditional formulas, the
+      // inner branches inside the dead subtree are no longer reachable. Without
+      // this pre-flush, gxtSyncDom would observe inner cond=true and synchronously
+      // invoke its trueBranch, instantiating transient components that the outer
+      // {{#if}} would only later have suppressed.
+      if (_pendingIfWatcherNotifications.length > 0) {
+        try {
+          const pending0 = _pendingIfWatcherNotifications.slice();
+          const ordered0 = _orderIfWatcherFlush(pending0);
+          const fired0 = new Set<IfWatcherCb>();
+          for (const { cb, obj } of ordered0) {
+            if (fired0.has(cb)) continue;
+            if (typeof cb.__getNextBool !== 'function') continue;
+            let next: boolean | null = null;
+            try {
+              next = cb.__getNextBool(obj);
+            } catch {
+              /* ignore */
+            }
+            if (next !== false) continue;
+            fired0.add(cb);
+            try {
+              cb(obj);
+            } catch (e) {
+              console.warn('[GXT] ifWatcher pre-flush error:', e);
+            }
+          }
+          // Mark fired cbs so the regular Phase 1a flush below doesn't re-fire them.
+          ((cb_set) => {
+            (globalThis as any).__gxtPreFlushFiredFalse = cb_set;
+          })(fired0);
+        } catch {
+          /* ignore */
+        }
+      }
+      // Only run gxtSyncDom when a real property change triggered the sync.
+      // Cell creation during initial render also sets __gxtPendingSync, but those
+      // cells may have stale values (e.g., each-formula re-evaluates with [] before
+      // the correct value propagates). Skipping gxtSyncDom for non-property-change
+      // syncs prevents spurious #each inverse rendering on first render.
+      if ((globalThis as any).__gxtHadPendingSync) {
+        try {
+          gxtSyncDom();
+        } catch {
+          /* ignore */
+        }
+      } else {
+        // Clear tagsToRevalidate to prevent stale formulas from re-evaluating
+        // on the next gxtSyncDom call. These tags were dirtied during component
+        // initialization (not from user property changes) and their formulas
+        // may produce incorrect values (e.g., each-formula returning []).
+        const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
+        if (typeof clearTags === 'function') clearTags();
+      }
+      // PHASE 1: Update arg cells and fire pre-render lifecycle hooks BEFORE
+      // the force-rerender. The force-rerender (innerHTML='' + rebuild) resets
+      // arg cells to current values, so changes must be detected first.
       try {
-        const pending0 = _pendingIfWatcherNotifications.slice();
-        const ordered0 = _orderIfWatcherFlush(pending0);
-        const fired0 = new Set<IfWatcherCb>();
-        for (const { cb, obj } of ordered0) {
-          if (fired0.has(cb)) continue;
+        const syncAll = (globalThis as any).__gxtSyncAllWrappers;
+        if (typeof syncAll === 'function') {
+          syncAll(); // Pre-render hooks + arg cell updates
+          if ((globalThis as any).__gxtHadPendingSync) {
+            try {
+              gxtSyncDom();
+            } catch {
+              /* ignore */
+            }
+          }
+          // When STRING-path $_dc change listeners are active (using GXT cells),
+          // the second gxtSyncDom pass may have handled dynamic component swaps
+          // via cell tracking. Skip the force-rerender morph (Phase 2b) only when
+          // cell-based listeners exist. CurriedComponent listeners use manual DOM
+          // swap and need the morph for other property changes to propagate.
+          if ((globalThis as any).__dcStringListenerCount > 0) {
+            (globalThis as any).__gxtHadPendingSync = false;
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      // PHASE 1a: Flush deferred if-watcher notifications. These were accumulated
+      // during __gxtTriggerReRender calls and are flushed HERE (after all gxtSyncDom
+      // calls) so batched property changes are applied atomically — IfConditions see
+      // the final state of all conditions, not intermediate states.
+      //
+      // Watchers are processed in PARENT-FIRST order: those whose IfCondition is
+      // about to flip to FALSE fire before those flipping to TRUE. This way, an
+      // outer {{#if}} toggling false in the same batch tears down its branch
+      // BEFORE an inner {{#if}} would otherwise render new content (and create
+      // transient components). Additionally, after all FALSE-flips have fired,
+      // any TRUE-flip whose placeholder has been disconnected from the live DOM
+      // (because a parent {{#if}} just tore it down) is SUPPRESSED — calling
+      // syncState(true) at that point would still execute the true-branch and
+      // instantiate components into a dead subtree.
+      if (_pendingIfWatcherNotifications.length > 0) {
+        const pending = _pendingIfWatcherNotifications.splice(0);
+        const ordered = _orderIfWatcherFlush(pending);
+        const directlyFiredCbs = new Set<IfWatcherCb>();
+        // Pull in cbs already fired in PHASE 0 (pre-flush FALSE-flip) so we don't
+        // re-invoke them here. Falls through cleanly when there were none.
+        const preFired = (globalThis as any).__gxtPreFlushFiredFalse as
+          | Set<IfWatcherCb>
+          | undefined;
+        if (preFired && preFired.size > 0) {
+          for (const cb of preFired) directlyFiredCbs.add(cb);
+          (globalThis as any).__gxtPreFlushFiredFalse = undefined;
+        }
+        // Phase A: fire all FALSE-flips (outer parents collapse first).
+        for (const { cb, obj } of ordered) {
+          if (directlyFiredCbs.has(cb)) continue;
           if (typeof cb.__getNextBool !== 'function') continue;
           let next: boolean | null = null;
-          try { next = cb.__getNextBool(obj); } catch { /* ignore */ }
+          try {
+            next = cb.__getNextBool(obj);
+          } catch {
+            /* ignore */
+          }
           if (next !== false) continue;
-          fired0.add(cb);
-          try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher pre-flush error:', e); }
-        }
-        // Mark fired cbs so the regular Phase 1a flush below doesn't re-fire them.
-        (cb_set => {
-          (globalThis as any).__gxtPreFlushFiredFalse = cb_set;
-        })(fired0);
-      } catch { /* ignore */ }
-    }
-    // Only run gxtSyncDom when a real property change triggered the sync.
-    // Cell creation during initial render also sets __gxtPendingSync, but those
-    // cells may have stale values (e.g., each-formula re-evaluates with [] before
-    // the correct value propagates). Skipping gxtSyncDom for non-property-change
-    // syncs prevents spurious #each inverse rendering on first render.
-    if ((globalThis as any).__gxtHadPendingSync) {
-      try { gxtSyncDom(); } catch { /* ignore */ }
-    } else {
-      // Clear tagsToRevalidate to prevent stale formulas from re-evaluating
-      // on the next gxtSyncDom call. These tags were dirtied during component
-      // initialization (not from user property changes) and their formulas
-      // may produce incorrect values (e.g., each-formula returning []).
-      const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
-      if (typeof clearTags === 'function') clearTags();
-    }
-    // PHASE 1: Update arg cells and fire pre-render lifecycle hooks BEFORE
-    // the force-rerender. The force-rerender (innerHTML='' + rebuild) resets
-    // arg cells to current values, so changes must be detected first.
-    try {
-      const syncAll = (globalThis as any).__gxtSyncAllWrappers;
-      if (typeof syncAll === 'function') {
-        syncAll(); // Pre-render hooks + arg cell updates
-        if ((globalThis as any).__gxtHadPendingSync) {
-          try { gxtSyncDom(); } catch { /* ignore */ }
-        }
-        // When STRING-path $_dc change listeners are active (using GXT cells),
-        // the second gxtSyncDom pass may have handled dynamic component swaps
-        // via cell tracking. Skip the force-rerender morph (Phase 2b) only when
-        // cell-based listeners exist. CurriedComponent listeners use manual DOM
-        // swap and need the morph for other property changes to propagate.
-        if ((globalThis as any).__dcStringListenerCount > 0) {
-          (globalThis as any).__gxtHadPendingSync = false;
-        }
-      }
-    } catch { /* ignore */ }
-    // PHASE 1a: Flush deferred if-watcher notifications. These were accumulated
-    // during __gxtTriggerReRender calls and are flushed HERE (after all gxtSyncDom
-    // calls) so batched property changes are applied atomically — IfConditions see
-    // the final state of all conditions, not intermediate states.
-    //
-    // Watchers are processed in PARENT-FIRST order: those whose IfCondition is
-    // about to flip to FALSE fire before those flipping to TRUE. This way, an
-    // outer {{#if}} toggling false in the same batch tears down its branch
-    // BEFORE an inner {{#if}} would otherwise render new content (and create
-    // transient components). Additionally, after all FALSE-flips have fired,
-    // any TRUE-flip whose placeholder has been disconnected from the live DOM
-    // (because a parent {{#if}} just tore it down) is SUPPRESSED — calling
-    // syncState(true) at that point would still execute the true-branch and
-    // instantiate components into a dead subtree.
-    if (_pendingIfWatcherNotifications.length > 0) {
-      const pending = _pendingIfWatcherNotifications.splice(0);
-      const ordered = _orderIfWatcherFlush(pending);
-      const directlyFiredCbs = new Set<IfWatcherCb>();
-      // Pull in cbs already fired in PHASE 0 (pre-flush FALSE-flip) so we don't
-      // re-invoke them here. Falls through cleanly when there were none.
-      const preFired = (globalThis as any).__gxtPreFlushFiredFalse as Set<IfWatcherCb> | undefined;
-      if (preFired && preFired.size > 0) {
-        for (const cb of preFired) directlyFiredCbs.add(cb);
-        (globalThis as any).__gxtPreFlushFiredFalse = undefined;
-      }
-      // Phase A: fire all FALSE-flips (outer parents collapse first).
-      for (const { cb, obj } of ordered) {
-        if (directlyFiredCbs.has(cb)) continue;
-        if (typeof cb.__getNextBool !== 'function') continue;
-        let next: boolean | null = null;
-        try { next = cb.__getNextBool(obj); } catch { /* ignore */ }
-        if (next !== false) continue;
-        directlyFiredCbs.add(cb);
-        try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
-      }
-      // Phase B: fire all TRUE-flips that still have a live placeholder. Skip
-      // any TRUE-flip whose IfCondition placeholder was disconnected during
-      // Phase A — that means a parent {{#if}} just unrendered its subtree and
-      // we must NOT let the inner branch instantiate transient components.
-      for (const { cb, obj } of ordered) {
-        if (directlyFiredCbs.has(cb)) continue;
-        if (typeof cb.__getNextBool !== 'function') continue;
-        let next: boolean | null = null;
-        try { next = cb.__getNextBool(obj); } catch { /* ignore */ }
-        if (next !== true) continue;
-        directlyFiredCbs.add(cb);
-        const ifc = cb.__ifCondition;
-        const ph = ifc && ifc.placeholder;
-        // If the placeholder exists but was just disconnected by a parent
-        // teardown, skip the syncState call — `repairPlaceholder` would
-        // otherwise reattach it to the body and the true-branch would render
-        // into a dead subtree, instantiating components the test never sees.
-        if (ph && (ph as any).nodeType && !(ph as any).isConnected) {
-          continue;
-        }
-        try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
-      }
-      // Phase C: fire all watchers that have no flip metadata (unknown/legacy)
-      // plus any with metadata whose nextBool came back null. Use the original
-      // notifyIfWatchers fan-out so behavior matches the historical path for
-      // these untracked watchers.
-      for (const { cb, obj } of ordered) {
-        if (directlyFiredCbs.has(cb)) continue;
-        directlyFiredCbs.add(cb);
-        try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
-      }
-      // Phase D: fan out the remaining (legacy) watchers via the proto/ctx
-      // candidate walk so any callbacks not represented in `ordered` (e.g.
-      // late-registered ones) still fire.
-      for (const { obj, keyName } of pending) {
-        try {
-          const candidates: object[] = [obj];
+          directlyFiredCbs.add(cb);
           try {
-            const proto = Object.getPrototypeOf(obj);
-            if (proto && proto !== Object.prototype) candidates.push(proto);
-          } catch { /* ignore */ }
-          const ctxsMap = (globalThis as any).__gxtComponentContexts;
-          if (ctxsMap) {
-            const ctxs = ctxsMap.get(obj);
-            if (ctxs) {
-              for (const ctx of ctxs) {
-                const raw = ctx?.__gxtRawTarget || ctx;
-                if (!candidates.includes(raw)) candidates.push(raw);
-              }
-            }
-          }
-          for (const target of candidates) {
-            const keyMap = ifWatchers.get(target);
-            if (!keyMap) continue;
-            const watchers = keyMap.get(keyName);
-            if (!watchers) continue;
-            for (const cb of watchers) {
-              if (directlyFiredCbs.has(cb)) continue;
-              try { cb(obj); } catch (e) { console.warn('[GXT] ifWatcher error:', e); }
-            }
-          }
-        } catch { /* ignore */ }
-      }
-    }
-    // PHASE 1b: After gxtSyncDom handled cell-based updates, mark all GXT
-    // roots as clean so the force-rerender morph (Phase 2b) is skipped when
-    // GXT already applied the DOM changes. Without this, gxtLastTagValue is
-    // stale and the morph ALWAYS fires, creating duplicate components/modifiers
-    // on temporary elements. Only update root tag values (NOT hadPendingSync)
-    // so that property-change-driven syncs still trigger the morph when needed.
-    try {
-      const updateRootTags = (globalThis as any).__gxtUpdateRootTagValues;
-      if (typeof updateRootTags === 'function') updateRootTags();
-    } catch { /* ignore */ }
-    // NOTE: Previously this block used __gxtCheckAllTagsCurrent to skip the morph
-    // when root tags appeared current. However, __gxtUpdateRootTagValues (Phase 1b
-    // above) already updates tags to match current values, so checkAllTagsCurrent
-    // always returned true — incorrectly skipping the morph for cases where
-    // gxtSyncDom didn't handle the update (e.g., inline $__if with function values,
-    // undefined → truthy transitions). The morph must always run when hadPendingSync
-    // is true from a property change to ensure correctness.
-    (globalThis as any).__gxtHadNestedPropertyChange = false;
-    // PHASE 2a: Snapshot live instances before force-rerender
-    try {
-      const snapshot = (globalThis as any).__gxtSnapshotLiveInstances;
-      if (typeof snapshot === 'function') snapshot();
-    } catch { /* ignore */ }
-    // PHASE 2b: With gxtModuleDedup, GXT's native cell tracking handles
-    // most DOM updates via gxtSyncDom() in Phase 1. The force-rerender
-    // (morph) is kept as fallback for cases where cell tracking doesn't
-    // cover the change (computed properties, prototype chain changes).
-    // The morph preserves DOM node stability.
-    try {
-      const forceRerender = (globalThis as any).__gxtForceEmberRerender;
-      if (typeof forceRerender === 'function') forceRerender();
-    } catch (rerenderErr) {
-      // Store the error so it can be re-thrown after sync completes
-      (globalThis as any).__gxtDeferredSyncError = (globalThis as any).__gxtDeferredSyncError || rerenderErr;
-    }
-    // PHASE 2c: Destroy unclaimed instances — components that were in
-    // the old render but not in the new one (e.g., {{each}} items removed).
-    try {
-      const destroyUnclaimed = (globalThis as any).__gxtDestroyUnclaimedPoolEntries;
-      if (typeof destroyUnclaimed === 'function') destroyUnclaimed();
-    } catch (destroyErr) {
-      // Store destroy errors for propagation to assert.throws
-      (globalThis as any).__gxtDeferredSyncError = (globalThis as any).__gxtDeferredSyncError || destroyErr;
-    }
-    // PHASE 2c2: Rebuild view-tree parent/child relationships from DOM ancestry.
-    try {
-      const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
-      if (typeof rebuild === 'function') rebuild();
-    } catch { /* ignore */ }
-    // PHASE 2d: Flush pending modifier destroys — call destroyModifier on
-    // custom modifier managers whose elements were removed (e.g., by #if toggle).
-    // This must happen BEFORE post-render hooks so willDestroyElement fires
-    // before didInsertElement of the replacement element.
-    try {
-      const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
-      if (pendingDestroys && pendingDestroys.length > 0) {
-        const toFlush = pendingDestroys.splice(0);
-        for (const entry of toFlush) {
-          if (!entry.cached.pendingDestroy) continue; // Already reclaimed by update path
-          // Only destroy if the element is actually disconnected from the DOM.
-          if (entry.element && entry.element.isConnected) continue;
-          try {
-            if (entry.isCustom && entry.cached.manager?.destroyModifier && !entry.cached.instance?.__gxtModDestroyed) {
-              entry.cached.manager.destroyModifier(entry.cached.instance);
-              if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
-            }
-            if (entry.destroyable) {
-              // The destroyable returned from manager.getDestroyable(state) holds
-              // the internal manager's destructors (e.g. OnModifierManager's
-              // removeEventListener). Use the canonical destroy bridge exported
-              // from destroyable.ts (exposed on globalThis by manager.ts at
-              // import time) so that registered destructors fire synchronously
-              // when the element has been removed from the DOM.
-              const destroyFn = (globalThis as any).__gxtDestroyDestroyableFn
-                || (globalThis as any).__gxtDestroyFn;
-              if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
-            }
-          } catch { /* ignore individual modifier destroy errors */ }
-          // Remove from cache
-          const elCache = entry.cache?.get(entry.element);
-          if (elCache) {
-            elCache.delete(entry.modKey);
-            if (elCache.size === 0) entry.cache.delete(entry.element);
+            cb(obj);
+          } catch (e) {
+            console.warn('[GXT] ifWatcher error:', e);
           }
         }
-      }
-    } catch { /* ignore */ }
-    // PHASE 3: Post-render hooks (didUpdate, didRender) — fire after DOM
-    // is fully updated by the force-rerender.
-    try {
-      const postRender = (globalThis as any).__gxtPostRenderHooks;
-      if (typeof postRender === 'function') postRender();
-    } catch { /* ignore */ }
-    // PHASE 3b: Flush pending didInsertElement / didRender callbacks for
-    // classic components that were instantiated DURING this sync cycle
-    // (e.g., via IfCondition.syncState's branch re-evaluation when a
-    // `{{#if cond}}{{my-component}}{{else}}{{other-component}}{{/if}}`
-    // toggles cond). These callbacks are pushed to _afterInsertQueue in
-    // renderClassicComponent and would otherwise never fire because the
-    // outlet-rerender / sync path doesn't call flushAfterInsertQueue().
-    try {
-      const flushDIE = (globalThis as any).__gxtFlushAfterInsertQueue;
-      if (typeof flushDIE === 'function') flushDIE();
-    } catch { /* ignore */ }
-    // Re-render CurriedComponent marker regions
-    try {
-      const infos = (globalThis as any).__curriedRenderInfos;
-      if (infos) {
-        for (const info of infos) {
-          const { item: getter, startMarker: sm, endMarker: em, renderCurriedComponent: render, managers: mgrs } = info;
-          const parent = sm.parentNode;
-          if (!parent) continue;
+        // Phase B: fire all TRUE-flips that still have a live placeholder. Skip
+        // any TRUE-flip whose IfCondition placeholder was disconnected during
+        // Phase A — that means a parent {{#if}} just unrendered its subtree and
+        // we must NOT let the inner branch instantiate transient components.
+        for (const { cb, obj } of ordered) {
+          if (directlyFiredCbs.has(cb)) continue;
+          if (typeof cb.__getNextBool !== 'function') continue;
+          let next: boolean | null = null;
           try {
-            // Curried-node path: re-invoke item() to get a fresh Node
-            if (info.__isCurriedNodePath) {
-              const newNode = render();
-              if (newNode) {
-                let node = sm.nextSibling;
-                while (node && node !== em) {
-                  const next = node.nextSibling;
-                  parent.removeChild(node);
-                  node = next;
+            next = cb.__getNextBool(obj);
+          } catch {
+            /* ignore */
+          }
+          if (next !== true) continue;
+          directlyFiredCbs.add(cb);
+          const ifc = cb.__ifCondition;
+          const ph = ifc && ifc.placeholder;
+          // If the placeholder exists but was just disconnected by a parent
+          // teardown, skip the syncState call — `repairPlaceholder` would
+          // otherwise reattach it to the body and the true-branch would render
+          // into a dead subtree, instantiating components the test never sees.
+          if (ph && (ph as any).nodeType && !(ph as any).isConnected) {
+            continue;
+          }
+          try {
+            cb(obj);
+          } catch (e) {
+            console.warn('[GXT] ifWatcher error:', e);
+          }
+        }
+        // Phase C: fire all watchers that have no flip metadata (unknown/legacy)
+        // plus any with metadata whose nextBool came back null. Use the original
+        // notifyIfWatchers fan-out so behavior matches the historical path for
+        // these untracked watchers.
+        for (const { cb, obj } of ordered) {
+          if (directlyFiredCbs.has(cb)) continue;
+          directlyFiredCbs.add(cb);
+          try {
+            cb(obj);
+          } catch (e) {
+            console.warn('[GXT] ifWatcher error:', e);
+          }
+        }
+        // Phase D: fan out the remaining (legacy) watchers via the proto/ctx
+        // candidate walk so any callbacks not represented in `ordered` (e.g.
+        // late-registered ones) still fire.
+        for (const { obj, keyName } of pending) {
+          try {
+            const candidates: object[] = [obj];
+            try {
+              const proto = Object.getPrototypeOf(obj);
+              if (proto && proto !== Object.prototype) candidates.push(proto);
+            } catch {
+              /* ignore */
+            }
+            const ctxsMap = (globalThis as any).__gxtComponentContexts;
+            if (ctxsMap) {
+              const ctxs = ctxsMap.get(obj);
+              if (ctxs) {
+                for (const ctx of ctxs) {
+                  const raw = ctx?.__gxtRawTarget || ctx;
+                  if (!candidates.includes(raw)) candidates.push(raw);
                 }
-                parent.insertBefore(newNode, em);
-              }
-              continue;
-            }
-
-            const newResult = getter();
-            const newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
-              ? newResult() : newResult;
-
-            // Skip teardown if same component with unchanged args (preserves DOM stability)
-            if (newFinal && newFinal.__isCurriedComponent &&
-                sm.nextSibling !== em &&
-                !_curriedComponentChanged(info, newFinal)) {
-              continue;
-            }
-
-            const _swapped2 = !newFinal || !newFinal.__isCurriedComponent ||
-              (newFinal.__name !== info.lastRenderedName);
-            const _rem2: Node[] = [];
-            let node = sm.nextSibling;
-            while (node && node !== em) {
-              const next = node.nextSibling;
-              _rem2.push(node);
-              parent.removeChild(node);
-              node = next;
-            }
-            if (_swapped2) {
-              const _dFn2 = (globalThis as any).__gxtDestroyInstancesInNodes;
-              if (typeof _dFn2 === 'function' && _rem2.length > 0) {
-                _dFn2(_rem2);
               }
             }
-
-            if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
-              const newNode = render(newFinal);
-              if (newNode) parent.insertBefore(newNode, em);
-              _snapshotCurriedArgs(info, newFinal);
+            for (const target of candidates) {
+              const keyMap = ifWatchers.get(target);
+              if (!keyMap) continue;
+              const watchers = keyMap.get(keyName);
+              if (!watchers) continue;
+              for (const cb of watchers) {
+                if (directlyFiredCbs.has(cb)) continue;
+                try {
+                  cb(obj);
+                } catch (e) {
+                  console.warn('[GXT] ifWatcher error:', e);
+                }
+              }
             }
-          } catch { /* ignore render errors */ }
+          } catch {
+            /* ignore */
+          }
         }
       }
-    } catch { /* ignore */ }
+      // PHASE 1b: After gxtSyncDom handled cell-based updates, mark all GXT
+      // roots as clean so the force-rerender morph (Phase 2b) is skipped when
+      // GXT already applied the DOM changes. Without this, gxtLastTagValue is
+      // stale and the morph ALWAYS fires, creating duplicate components/modifiers
+      // on temporary elements. Only update root tag values (NOT hadPendingSync)
+      // so that property-change-driven syncs still trigger the morph when needed.
+      try {
+        const updateRootTags = (globalThis as any).__gxtUpdateRootTagValues;
+        if (typeof updateRootTags === 'function') updateRootTags();
+      } catch {
+        /* ignore */
+      }
+      // NOTE: Previously this block used __gxtCheckAllTagsCurrent to skip the morph
+      // when root tags appeared current. However, __gxtUpdateRootTagValues (Phase 1b
+      // above) already updates tags to match current values, so checkAllTagsCurrent
+      // always returned true — incorrectly skipping the morph for cases where
+      // gxtSyncDom didn't handle the update (e.g., inline $__if with function values,
+      // undefined → truthy transitions). The morph must always run when hadPendingSync
+      // is true from a property change to ensure correctness.
+      (globalThis as any).__gxtHadNestedPropertyChange = false;
+      // PHASE 2a: Snapshot live instances before force-rerender
+      try {
+        const snapshot = (globalThis as any).__gxtSnapshotLiveInstances;
+        if (typeof snapshot === 'function') snapshot();
+      } catch {
+        /* ignore */
+      }
+      // PHASE 2b: With gxtModuleDedup, GXT's native cell tracking handles
+      // most DOM updates via gxtSyncDom() in Phase 1. The force-rerender
+      // (morph) is kept as fallback for cases where cell tracking doesn't
+      // cover the change (computed properties, prototype chain changes).
+      // The morph preserves DOM node stability.
+      try {
+        const forceRerender = (globalThis as any).__gxtForceEmberRerender;
+        if (typeof forceRerender === 'function') forceRerender();
+      } catch (rerenderErr) {
+        // Store the error so it can be re-thrown after sync completes
+        (globalThis as any).__gxtDeferredSyncError =
+          (globalThis as any).__gxtDeferredSyncError || rerenderErr;
+      }
+      // PHASE 2c: Destroy unclaimed instances — components that were in
+      // the old render but not in the new one (e.g., {{each}} items removed).
+      try {
+        const destroyUnclaimed = (globalThis as any).__gxtDestroyUnclaimedPoolEntries;
+        if (typeof destroyUnclaimed === 'function') destroyUnclaimed();
+      } catch (destroyErr) {
+        // Store destroy errors for propagation to assert.throws
+        (globalThis as any).__gxtDeferredSyncError =
+          (globalThis as any).__gxtDeferredSyncError || destroyErr;
+      }
+      // PHASE 2c2: Rebuild view-tree parent/child relationships from DOM ancestry.
+      try {
+        const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
+        if (typeof rebuild === 'function') rebuild();
+      } catch {
+        /* ignore */
+      }
+      // PHASE 2d: Flush pending modifier destroys — call destroyModifier on
+      // custom modifier managers whose elements were removed (e.g., by #if toggle).
+      // This must happen BEFORE post-render hooks so willDestroyElement fires
+      // before didInsertElement of the replacement element.
+      try {
+        const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        if (pendingDestroys && pendingDestroys.length > 0) {
+          const toFlush = pendingDestroys.splice(0);
+          for (const entry of toFlush) {
+            if (!entry.cached.pendingDestroy) continue; // Already reclaimed by update path
+            // Only destroy if the element is actually disconnected from the DOM.
+            if (entry.element && entry.element.isConnected) continue;
+            try {
+              if (
+                entry.isCustom &&
+                entry.cached.manager?.destroyModifier &&
+                !entry.cached.instance?.__gxtModDestroyed
+              ) {
+                entry.cached.manager.destroyModifier(entry.cached.instance);
+                if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
+              }
+              if (entry.destroyable) {
+                // The destroyable returned from manager.getDestroyable(state) holds
+                // the internal manager's destructors (e.g. OnModifierManager's
+                // removeEventListener). Use the canonical destroy bridge exported
+                // from destroyable.ts (exposed on globalThis by manager.ts at
+                // import time) so that registered destructors fire synchronously
+                // when the element has been removed from the DOM.
+                const destroyFn =
+                  (globalThis as any).__gxtDestroyDestroyableFn ||
+                  (globalThis as any).__gxtDestroyFn;
+                if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
+              }
+            } catch {
+              /* ignore individual modifier destroy errors */
+            }
+            // Remove from cache
+            const elCache = entry.cache?.get(entry.element);
+            if (elCache) {
+              elCache.delete(entry.modKey);
+              if (elCache.size === 0) entry.cache.delete(entry.element);
+            }
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      // PHASE 3: Post-render hooks (didUpdate, didRender) — fire after DOM
+      // is fully updated by the force-rerender.
+      try {
+        const postRender = (globalThis as any).__gxtPostRenderHooks;
+        if (typeof postRender === 'function') postRender();
+      } catch {
+        /* ignore */
+      }
+      // PHASE 3b: Flush pending didInsertElement / didRender callbacks for
+      // classic components that were instantiated DURING this sync cycle
+      // (e.g., via IfCondition.syncState's branch re-evaluation when a
+      // `{{#if cond}}{{my-component}}{{else}}{{other-component}}{{/if}}`
+      // toggles cond). These callbacks are pushed to _afterInsertQueue in
+      // renderClassicComponent and would otherwise never fire because the
+      // outlet-rerender / sync path doesn't call flushAfterInsertQueue().
+      try {
+        const flushDIE = (globalThis as any).__gxtFlushAfterInsertQueue;
+        if (typeof flushDIE === 'function') flushDIE();
+      } catch {
+        /* ignore */
+      }
+      // Re-render CurriedComponent marker regions
+      try {
+        const infos = (globalThis as any).__curriedRenderInfos;
+        if (infos) {
+          for (const info of infos) {
+            const {
+              item: getter,
+              startMarker: sm,
+              endMarker: em,
+              renderCurriedComponent: render,
+              managers: mgrs,
+            } = info;
+            const parent = sm.parentNode;
+            if (!parent) continue;
+            try {
+              // Curried-node path: re-invoke item() to get a fresh Node
+              if (info.__isCurriedNodePath) {
+                const newNode = render();
+                if (newNode) {
+                  let node = sm.nextSibling;
+                  while (node && node !== em) {
+                    const next = node.nextSibling;
+                    parent.removeChild(node);
+                    node = next;
+                  }
+                  parent.insertBefore(newNode, em);
+                }
+                continue;
+              }
+
+              const newResult = getter();
+              const newFinal =
+                typeof newResult === 'function' && !newResult?.__isCurriedComponent
+                  ? newResult()
+                  : newResult;
+
+              // Skip teardown if same component with unchanged args (preserves DOM stability)
+              if (
+                newFinal &&
+                newFinal.__isCurriedComponent &&
+                sm.nextSibling !== em &&
+                !_curriedComponentChanged(info, newFinal)
+              ) {
+                continue;
+              }
+
+              const _swapped2 =
+                !newFinal ||
+                !newFinal.__isCurriedComponent ||
+                newFinal.__name !== info.lastRenderedName;
+              const _rem2: Node[] = [];
+              let node = sm.nextSibling;
+              while (node && node !== em) {
+                const next = node.nextSibling;
+                _rem2.push(node);
+                parent.removeChild(node);
+                node = next;
+              }
+              if (_swapped2) {
+                const _dFn2 = (globalThis as any).__gxtDestroyInstancesInNodes;
+                if (typeof _dFn2 === 'function' && _rem2.length > 0) {
+                  _dFn2(_rem2);
+                }
+              }
+
+              if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
+                const newNode = render(newFinal);
+                if (newNode) parent.insertBefore(newNode, em);
+                _snapshotCurriedArgs(info, newFinal);
+              }
+            } catch {
+              /* ignore render errors */
+            }
+          }
+        }
+      } catch {
+        /* ignore */
+      }
     } finally {
       // CRITICAL: Always reset __gxtSyncing even if an error escapes.
       // Without this, the flag stays true forever and __gxtSyncDomNow
@@ -5044,7 +5743,9 @@ try {
 //    runTask-triggered sync in between. Prevents the interval from driving
 //    an infinite re-render loop when tests produce continuous dirty state.
 let _intervalSyncBudget = 3;
-(globalThis as any).__gxtResetIntervalBudget = function() { _intervalSyncBudget = 3; };
+(globalThis as any).__gxtResetIntervalBudget = function () {
+  _intervalSyncBudget = 3;
+};
 setInterval(() => {
   if ((globalThis as any).__gxtPendingSync) {
     // Don't fire during test transitions
@@ -5056,7 +5757,9 @@ setInterval(() => {
     _intervalSyncBudget--;
     try {
       (globalThis as any).__gxtSyncDomNow();
-    } catch { /* ignore - errors will be caught by QUnit */ }
+    } catch {
+      /* ignore - errors will be caught by QUnit */
+    }
   } else {
     // No pending sync — reset budget for next burst
     _intervalSyncBudget = 3;
@@ -5064,7 +5767,7 @@ setInterval(() => {
 }, 16); // ~60fps
 
 // Cleanup function to reset GXT state between tests
-(globalThis as any).__gxtCleanupActiveComponents = function() {
+(globalThis as any).__gxtCleanupActiveComponents = function () {
   // Destroy all tracked component instances first (fires willDestroy hooks)
   const destroyTracked = (globalThis as any).__gxtDestroyTrackedInstances;
   if (typeof destroyTracked === 'function') {
@@ -5115,13 +5818,25 @@ setInterval(() => {
       try {
         // Destroy the original engine class instance (its init added it to NAMESPACES)
         const origEngine = engineInst?.__gxtOriginalEngine;
-        if (origEngine && typeof origEngine.destroy === 'function' && !origEngine.isDestroyed && !origEngine.isDestroying) {
+        if (
+          origEngine &&
+          typeof origEngine.destroy === 'function' &&
+          !origEngine.isDestroyed &&
+          !origEngine.isDestroying
+        ) {
           origEngine.destroy();
         }
-        if (engineInst && typeof engineInst.destroy === 'function' && !engineInst.isDestroyed && !engineInst.isDestroying) {
+        if (
+          engineInst &&
+          typeof engineInst.destroy === 'function' &&
+          !engineInst.isDestroyed &&
+          !engineInst.isDestroying
+        ) {
           engineInst.destroy();
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     (globalThis as any).__gxtEngineInstances.clear();
   }
@@ -5171,11 +5886,14 @@ setInterval(() => {
       const vm = (globalThis as any).getVM();
       if (vm) {
         if (vm.relatedTags && typeof vm.relatedTags.clear === 'function') vm.relatedTags.clear();
-        if (vm.tagsToRevalidate && typeof vm.tagsToRevalidate.clear === 'function') vm.tagsToRevalidate.clear();
+        if (vm.tagsToRevalidate && typeof vm.tagsToRevalidate.clear === 'function')
+          vm.tagsToRevalidate.clear();
         if (vm.opsForTag && typeof vm.opsForTag.clear === 'function') vm.opsForTag.clear();
       }
     }
-  } catch { /* ignore - VM internals may not be available */ }
+  } catch {
+    /* ignore - VM internals may not be available */
+  }
 };
 
 // Set GXT mode flag
@@ -5311,7 +6029,12 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 {
   const origMaybeModifier = (globalThis as any).$_maybeModifier;
   if (origMaybeModifier) {
-    const emberMaybeModifier = function(modifier: any, element: HTMLElement, props: any[], hashArgs: any) {
+    const emberMaybeModifier = function (
+      modifier: any,
+      element: HTMLElement,
+      props: any[],
+      hashArgs: any
+    ) {
       // Always try our manager first
       const mgrs = (globalThis as any).$_MANAGERS;
       if (mgrs?.modifier?.canHandle?.(modifier)) {
@@ -5322,8 +6045,12 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     };
     try {
       Object.defineProperty(globalThis, '$_maybeModifier', {
-        get() { return emberMaybeModifier; },
-        set(_v: any) { /* protect from setupGlobalScope overwrite */ },
+        get() {
+          return emberMaybeModifier;
+        },
+        set(_v: any) {
+          /* protect from setupGlobalScope overwrite */
+        },
         configurable: true,
         enumerable: true,
       });
@@ -5343,13 +6070,12 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 // by the enclosing formula / text serialiser).
 {
   const _g = globalThis as any;
-  const emberHelperHelper = function(positional: any[], named: any): any {
+  const emberHelperHelper = function (positional: any[], named: any): any {
     const unwrapVal = (v: any) =>
       typeof v === 'function' && !v.prototype && v.length === 0 ? v() : v;
-    const head = Array.isArray(positional) && positional.length > 0
-      ? unwrapVal(positional[0]) : undefined;
-    const rest = Array.isArray(positional) && positional.length > 1
-      ? positional.slice(1) : [];
+    const head =
+      Array.isArray(positional) && positional.length > 0 ? unwrapVal(positional[0]) : undefined;
+    const rest = Array.isArray(positional) && positional.length > 1 ? positional.slice(1) : [];
     const managers = _g.$_MANAGERS;
     if (managers?.helper?.handle) {
       return managers.helper.handle(head, rest, named || {});
@@ -5358,8 +6084,12 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   };
   try {
     Object.defineProperty(globalThis, '$_helperHelper', {
-      get() { return emberHelperHelper; },
-      set(_v: any) { /* protect from setupGlobalScope overwrite */ },
+      get() {
+        return emberHelperHelper;
+      },
+      set(_v: any) {
+        /* protect from setupGlobalScope overwrite */
+      },
       configurable: true,
       enumerable: true,
     });
@@ -5378,7 +6108,14 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     const resolved = typeof value === 'function' ? value() : value;
     // If value is already a mut cell, wrap its value (strips mutability)
     const unwrapped = resolved && resolved.__isMutCell ? resolved.value : resolved;
-    return { __isReadonly: true, __readonlyValue: unwrapped, get value() { const v = typeof value === 'function' ? value() : value; return v && v.__isMutCell ? v.value : v; } };
+    return {
+      __isReadonly: true,
+      __readonlyValue: unwrapped,
+      get value() {
+        const v = typeof value === 'function' ? value() : value;
+        return v && v.__isMutCell ? v.value : v;
+      },
+    };
   },
   // mut: Returns a setter function for two-way binding.
   // When used with (fn (mut this.val) newValue), the returned function
@@ -5400,7 +6137,11 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       return typeof value === 'function' ? value() : value;
     }
     // Determine the property name from the path
-    const propName = path.startsWith('this.') ? path.slice(5) : (path.startsWith('@') ? path.slice(1) : path);
+    const propName = path.startsWith('this.')
+      ? path.slice(5)
+      : path.startsWith('@')
+        ? path.slice(1)
+        : path;
     // Look up the source getter for two-way binding (from curried component positional args)
     const sourceGetter = capturedCtx?.__mutArgSources?.[propName];
     // Create a "mut cell" function: calling it with a value sets the property
@@ -5459,7 +6200,11 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
               // This is needed when the property path isn't cell-tracked
               // (e.g., model is a plain prototype property from Component.extend).
               if (typeof parentCtx.rerender === 'function') {
-                try { parentCtx.rerender(); } catch { /* ignore */ }
+                try {
+                  parentCtx.rerender();
+                } catch {
+                  /* ignore */
+                }
               } else if (typeof parentCtx.notifyPropertyChange === 'function') {
                 parentCtx.notifyPropertyChange(parts[0]!);
               }
@@ -5485,20 +6230,30 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
           // Fall back to direct assignment (invokes the descriptor's setter)
           // and then to manual setter invocation if even that doesn't take.
           if (capturedCtx[propName] !== newValue) {
-            try { capturedCtx[propName] = newValue; } catch { /* ignore */ }
+            try {
+              capturedCtx[propName] = newValue;
+            } catch {
+              /* ignore */
+            }
             if (capturedCtx[propName] !== newValue) {
               try {
                 const ownDesc = Object.getOwnPropertyDescriptor(capturedCtx, propName);
                 const setter = ownDesc?.set;
                 if (setter) setter.call(capturedCtx, newValue);
-              } catch { /* ignore */ }
+              } catch {
+                /* ignore */
+              }
             }
             // Fire a re-render trigger so GXT's trackedArgCells sync runs
             // for dependent children (important when the fallback path
             // bypassed Ember's set() and its notifyPropertyChange chain).
             const triggerReRender = (globalThis as any).__gxtTriggerReRender;
             if (triggerReRender) {
-              try { triggerReRender(capturedCtx, propName); } catch { /* ignore */ }
+              try {
+                triggerReRender(capturedCtx, propName);
+              } catch {
+                /* ignore */
+              }
             }
           }
         } else {
@@ -5512,15 +6267,17 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     // Ember's mut cell API: .value returns current value, .update(newValue) sets it.
     // These are used by tests via component.attrs.propName.value and .update().
     Object.defineProperty(mutCell, 'value', {
-      get() { return typeof value === 'function' ? value() : value; },
+      get() {
+        return typeof value === 'function' ? value() : value;
+      },
       enumerable: true,
     });
-    (mutCell as any).update = function(newValue: any) {
+    (mutCell as any).update = function (newValue: any) {
       return mutCell(newValue);
     };
     // valueOf returns current value for template rendering
     mutCell.toString = () => String(typeof value === 'function' ? value() : value);
-    mutCell.valueOf = () => typeof value === 'function' ? value() : value;
+    mutCell.valueOf = () => (typeof value === 'function' ? value() : value);
     return mutCell;
   },
   // unbound: Returns the value without tracking.
@@ -5535,10 +6292,11 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   // `{{value.foo}}` reads the frozen value.
   unbound: (...args: any[]) => {
     const _assert = getDebugFunction('assert');
-    if (_assert) _assert(
-      'unbound helper cannot be called with multiple params or hash params',
-      args.length <= 1
-    );
+    if (_assert)
+      _assert(
+        'unbound helper cannot be called with multiple params or hash params',
+        args.length <= 1
+      );
     const value = args[0];
     const resolved = typeof value === 'function' ? value() : value;
     return _unboundSnapshot(resolved);
@@ -5551,14 +6309,14 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   concat: (...args: any[]) => {
     let out = '';
     for (const a of args) {
-      const v = (typeof a === 'function' && !a.prototype) ? a() : a;
+      const v = typeof a === 'function' && !a.prototype ? a() : a;
       out += _normalizeStringValue(v);
     }
     return out;
   },
   // array: Creates an array from arguments
   array: (...args: any[]) => {
-    return args.map(a => (typeof a === 'function' && !a.prototype) ? a() : a);
+    return args.map((a) => (typeof a === 'function' && !a.prototype ? a() : a));
   },
   // hash: Creates an object from named arguments (handled specially)
   hash: (obj: any) => obj,
@@ -5569,13 +6327,13 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   // override. The Ember template keyword accepts only `outletState` as
   // a key (compile-time assert rejects others) and lets descendants read
   // the routing outlet state.
-  'gxtGetOutletState': () => {
+  gxtGetOutletState: () => {
     return (globalThis as any).__currentOutletState;
   },
   // gxtEntriesOf: Converts an object to [{k, v}, ...] for {{#each-in}}
   // Returns objects with .k and .v properties (not arrays) since GXT
   // doesn't support numeric property access like entry.0.
-  'gxtEntriesOf': (obj: any) => {
+  gxtEntriesOf: (obj: any) => {
     let resolved = typeof obj === 'function' ? obj() : obj;
     // Functions can have own properties (e.g., function Foo() {}; Foo.bar = 1).
     // In each-in, these should be iterable. However, we must distinguish between
@@ -5586,14 +6344,17 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     if (typeof resolved === 'function') {
       const keys = Object.keys(resolved);
       if (keys.length > 0) {
-        return keys.map(key => ({ k: key, v: (resolved as any)[key] }));
+        return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
       }
       return [];
     }
     if (!resolved || typeof resolved !== 'object') return [];
     // Unwrap ObjectProxy — iterate over .content, not the proxy itself.
     // ObjectProxy has unknownProperty/setUnknownProperty and stores data in .content
-    if (typeof resolved.unknownProperty === 'function' && typeof resolved.setUnknownProperty === 'function') {
+    if (
+      typeof resolved.unknownProperty === 'function' &&
+      typeof resolved.setUnknownProperty === 'function'
+    ) {
       const content = resolved.content;
       if (!content || typeof content !== 'object') return [];
       resolved = content;
@@ -5602,11 +6363,19 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     // Arrays have both .entries() and .forEach(), but should use Object.keys()
     // to iterate like `for (key in obj)` — including non-numeric own properties
     // and skipping sparse holes.
-    if (!Array.isArray(resolved) && typeof resolved.entries === 'function' && typeof resolved.forEach === 'function') {
+    if (
+      !Array.isArray(resolved) &&
+      typeof resolved.entries === 'function' &&
+      typeof resolved.forEach === 'function'
+    ) {
       return Array.from(resolved.entries()).map(([k, v]: any) => ({ k, v }));
     }
     // Support custom iterables with Symbol.iterator (but not arrays or strings)
-    if (typeof resolved[Symbol.iterator] === 'function' && !Array.isArray(resolved) && typeof resolved !== 'string') {
+    if (
+      typeof resolved[Symbol.iterator] === 'function' &&
+      !Array.isArray(resolved) &&
+      typeof resolved !== 'string'
+    ) {
       const entries: { k: any; v: any }[] = [];
       for (const entry of resolved) {
         if (Array.isArray(entry) && entry.length >= 2) {
@@ -5622,7 +6391,7 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     // - Arrays: numeric indices + custom properties like arr.foo = 'bar'
     // - Sparse arrays: only defined indices (skips holes)
     const keys = Object.keys(resolved);
-    return keys.map(key => ({ k: key, v: (resolved as any)[key] }));
+    return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
   },
   // get: Dynamic property lookup — supports dot-path keys like 'foo.bar'
   get: (obj: any, key: any) => {
@@ -5643,10 +6412,10 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   // Creates a mut cell that reads from obj[key] and writes to obj[key].
   // This is used when the template transform converts (mut (get obj key))
   // into (__mutGet obj key).
-  '__mutGet': (obj: any, key: any) => {
+  __mutGet: (obj: any, key: any) => {
     const capturedCtx = (globalThis as any).__gxtMutContext;
-    const resolveObj = () => typeof obj === 'function' ? obj() : obj;
-    const resolveKey = () => typeof key === 'function' ? key() : key;
+    const resolveObj = () => (typeof obj === 'function' ? obj() : obj);
+    const resolveKey = () => (typeof key === 'function' ? key() : key);
     const getValue = () => {
       const o = resolveObj();
       const k = resolveKey();
@@ -5703,10 +6472,12 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
     };
     (mutCell as any).__isMutCell = true;
     Object.defineProperty(mutCell, 'value', {
-      get() { return getValue(); },
+      get() {
+        return getValue();
+      },
       enumerable: true,
     });
-    (mutCell as any).update = function(newValue: any) {
+    (mutCell as any).update = function (newValue: any) {
       return mutCell(newValue);
     };
     mutCell.toString = () => String(getValue());
@@ -5745,11 +6516,19 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       while (ptr) {
         mgr = managers.get(ptr);
         if (mgr) break;
-        try { ptr = Object.getPrototypeOf(ptr); } catch { break; }
+        try {
+          ptr = Object.getPrototypeOf(ptr);
+        } catch {
+          break;
+        }
       }
       if (mgr && typeof mgr.getDelegateFor === 'function') {
         const delegate = mgr.getDelegateFor(g.owner);
-        if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+        if (
+          delegate &&
+          typeof delegate.createHelper === 'function' &&
+          delegate.capabilities?.hasValue
+        ) {
           const args = { positional, named: {} };
           const bucket = delegate.createHelper(helperFn, args);
           return delegate.getValue(bucket);
@@ -5760,12 +6539,14 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 
     // Resolve the first argument (unwrap GXT getters but preserve curried refs and managed helpers)
     const raw = helperNameOrRef;
-    const resolved = (typeof raw === 'function' && !raw.__isCurriedHelper && !raw.__isManagedHelper)
-      ? raw() : raw;
+    const resolved =
+      typeof raw === 'function' && !raw.__isCurriedHelper && !raw.__isManagedHelper ? raw() : raw;
 
     // If it's already a curried helper reference, merge extra args and invoke
     if (resolved && resolved.__isCurriedHelper) {
-      const resolvedExtras = extraArgs.map((a: any) => typeof a === 'function' && !a.prototype ? a() : a);
+      const resolvedExtras = extraArgs.map((a: any) =>
+        typeof a === 'function' && !a.prototype ? a() : a
+      );
       const merged = [...(resolved.__positionalArgs || []), ...resolvedExtras];
       if (resolved.__helperName) {
         return invokeByName(resolved.__helperName, merged);
@@ -5778,7 +6559,9 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 
     // String — resolve helper by name
     if (typeof resolved === 'string') {
-      const resolvedExtras = extraArgs.map((a: any) => typeof a === 'function' && !a.prototype ? a() : a);
+      const resolvedExtras = extraArgs.map((a: any) =>
+        typeof a === 'function' && !a.prototype ? a() : a
+      );
       if (extraArgs.length === 0) {
         // No extra args — return a curried reference.
         // In content position {{helper "name"}}, GXT renders the return value.
@@ -5801,12 +6584,21 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       if (managers) {
         let ptr = resolved;
         while (ptr) {
-          if (managers.has(ptr)) { hasManager = true; break; }
-          try { ptr = Object.getPrototypeOf(ptr); } catch { break; }
+          if (managers.has(ptr)) {
+            hasManager = true;
+            break;
+          }
+          try {
+            ptr = Object.getPrototypeOf(ptr);
+          } catch {
+            break;
+          }
         }
       }
       if (hasManager) {
-        const resolvedExtras = extraArgs.map((a: any) => typeof a === 'function' && !a.prototype ? a() : a);
+        const resolvedExtras = extraArgs.map((a: any) =>
+          typeof a === 'function' && !a.prototype ? a() : a
+        );
         if (extraArgs.length === 0) {
           const ref: any = {};
           ref.__isCurriedHelper = true;
@@ -5828,7 +6620,10 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
   mount: (engineName: string) => {
     // Create the custom element dynamically
     const el = document.createElement('ember-mount');
-    el.setAttribute('data-engine', typeof engineName === 'function' ? (engineName as any)() : engineName);
+    el.setAttribute(
+      'data-engine',
+      typeof engineName === 'function' ? (engineName as any)() : engineName
+    );
     return el;
   },
   // unique-id: Returns a unique identifier string that always starts with a letter
@@ -5843,15 +6638,25 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
       let resolvedFn = func;
       // Unwrap nested getters until we get the actual function or value
       // But don't unwrap mut cells — they are callable setter functions
-      while (typeof resolvedFn === 'function' && resolvedFn.length === 0 && !resolvedFn.__isMutCell) {
+      while (
+        typeof resolvedFn === 'function' &&
+        resolvedFn.length === 0 &&
+        !resolvedFn.__isMutCell
+      ) {
         const inner = resolvedFn();
         if (inner === resolvedFn) break; // prevent infinite loop
         // If inner is a mut cell, use it directly
-        if (typeof inner === 'function' && inner.__isMutCell) { resolvedFn = inner; break; }
-        if (typeof inner !== 'function') { resolvedFn = inner; break; }
+        if (typeof inner === 'function' && inner.__isMutCell) {
+          resolvedFn = inner;
+          break;
+        }
+        if (typeof inner !== 'function') {
+          resolvedFn = inner;
+          break;
+        }
         resolvedFn = inner;
       }
-      const resolvedArgs = args.map(a => typeof a === 'function' && !a.__isMutCell ? a() : a);
+      const resolvedArgs = args.map((a) => (typeof a === 'function' && !a.__isMutCell ? a() : a));
       if (typeof resolvedFn === 'function') {
         return resolvedFn(...resolvedArgs, ...callArgs);
       }
@@ -5934,7 +6739,12 @@ function _ensureOnExtAlias(): void {
  * OnModifierManager as stock `on` via `_builtinModifiers` aliasing.
  */
 function transformOnModifierHashArgs(template: string): string {
-  if (!template || template.indexOf('{{on ') === -1 && template.indexOf('{{on\t') === -1 && template.indexOf('{{on\n') === -1) {
+  if (
+    !template ||
+    (template.indexOf('{{on ') === -1 &&
+      template.indexOf('{{on\t') === -1 &&
+      template.indexOf('{{on\n') === -1)
+  ) {
     return template;
   }
   const needle = '{{on';
@@ -5970,8 +6780,16 @@ function transformOnModifierHashArgs(template: string): string {
         j++;
         continue;
       }
-      if (ch === '(') { depth++; j++; continue; }
-      if (ch === ')') { depth--; j++; continue; }
+      if (ch === '(') {
+        depth++;
+        j++;
+        continue;
+      }
+      if (ch === ')') {
+        depth--;
+        j++;
+        continue;
+      }
       if (depth === 0 && ch === '}' && template[j + 1] === '}') {
         closeAt = j;
         break;
@@ -6017,7 +6835,7 @@ function transformOnModifierHashArgs(template: string): string {
   // A per-id counter tracks which "slot" the current call should use.
   const _ubSlots = new Map<string, number>(); // id → next slot index
   const _ubSlotMax = new Map<string, number>(); // id → max slots (set after first full pass)
-  (globalThis as any).__gxtUnboundEval = function(cacheObj: any, id: string, valueFn: any) {
+  (globalThis as any).__gxtUnboundEval = function (cacheObj: any, id: string, valueFn: any) {
     // Determine slot for this call (handles #each where same id is called N times)
     let slot = _ubSlots.get(id) || 0;
     const key = `${id}:${slot}`;
@@ -6039,7 +6857,7 @@ function transformOnModifierHashArgs(template: string): string {
   };
   // Reset slot counters at the start of each render cycle
   // Called from the template function before returning the template body.
-  (globalThis as any).__gxtUnboundResetSlots = function() {
+  (globalThis as any).__gxtUnboundResetSlots = function () {
     _ubSlots.clear();
   };
 }
@@ -6051,7 +6869,7 @@ function transformOnModifierHashArgs(template: string): string {
 // render time: if `name` resolves to a registered helper via owner lookup,
 // throw the same error. Otherwise this returns undefined (letting the
 // surrounding expression fall through to its original $_maybeHelper path).
-(globalThis as any).__gxtAssertNotResolvedHelperAsNamedArg = function(
+(globalThis as any).__gxtAssertNotResolvedHelperAsNamedArg = function (
   name: string,
   ctx: any
 ): void {
@@ -6099,7 +6917,7 @@ let currentSlotParams: any[] | null = null;
 
 // Helper function to get a block param by index
 // This is called by compiled templates that use {{($_blockParam N)}}
-(globalThis as any).$_blockParam = function(index: number) {
+(globalThis as any).$_blockParam = function (index: number) {
   const currentParams = blockParamsStack[blockParamsStack.length - 1];
   const rawValue = currentParams ? currentParams[index] : undefined;
   // Unwrap reactive value to get current value
@@ -6223,12 +7041,12 @@ function _resolveHasBlockArgs(arg1: any, arg2: any): { slots: any; name: string 
   return { slots, name };
 }
 
-(globalThis as any).$_hasBlock = function(arg1?: any, arg2?: any) {
+(globalThis as any).$_hasBlock = function (arg1?: any, arg2?: any) {
   const { slots, name } = _resolveHasBlockArgs(arg1, arg2);
   return _lookupSlot(slots, name) !== undefined;
 };
 
-(globalThis as any).$_hasBlockParams = function(arg1?: any, arg2?: any) {
+(globalThis as any).$_hasBlockParams = function (arg1?: any, arg2?: any) {
   const { slots, name } = _resolveHasBlockArgs(arg1, arg2);
   const slotFn = _lookupSlot(slots, name);
   if (!slotFn) return false;
@@ -6295,8 +7113,17 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         let componentValue = ctxArgs[argName];
         // Resolve getter functions
         let guard = 5;
-        while (typeof componentValue === 'function' && !componentValue.prototype && !componentValue.__isCurriedComponent && guard-- > 0) {
-          try { componentValue = componentValue(); } catch { break; }
+        while (
+          typeof componentValue === 'function' &&
+          !componentValue.prototype &&
+          !componentValue.__isCurriedComponent &&
+          guard-- > 0
+        ) {
+          try {
+            componentValue = componentValue();
+          } catch {
+            break;
+          }
         }
         if (componentValue && componentValue.__isCurriedComponent) {
           const managers = g.$_MANAGERS;
@@ -6362,7 +7189,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           // Check if args is an array (tagProps format from $_dc)
           if (Array.isArray(args) && args.length >= 2 && Array.isArray(args[1])) {
             // tagProps format: extract named args from attrs array (index 1)
-            fw = args;  // The whole tagProps array is the fw
+            fw = args; // The whole tagProps array is the fw
             const attrs = args[1];
             for (const entry of attrs) {
               if (Array.isArray(entry) && entry.length >= 2) {
@@ -6487,7 +7314,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         const compName = comp.__stringComponentName;
         const notFoundErr = new Error(
           `Attempted to resolve \`${compName}\`, which was expected to be a component, but nothing was found. ` +
-          `Could not find component named "${compName}" (no component or template with that name was found)`
+            `Could not find component named "${compName}" (no component or template with that name was found)`
         );
         const captureErr = g.__captureRenderError;
         if (typeof captureErr === 'function') {
@@ -6524,8 +7351,16 @@ if (g.$_c && !g.$_c.__emberWrapped) {
               const unwrapCurriedHelper = (v: any): any => {
                 let out = v;
                 let guard = 8;
-                while (typeof out === 'function' && (out as any).__isEmberCurriedHelper && guard-- > 0) {
-                  try { out = (out as any)(); } catch { break; }
+                while (
+                  typeof out === 'function' &&
+                  (out as any).__isEmberCurriedHelper &&
+                  guard-- > 0
+                ) {
+                  try {
+                    out = (out as any)();
+                  } catch {
+                    break;
+                  }
                 }
                 return out;
               };
@@ -6538,13 +7373,19 @@ if (g.$_c && !g.$_c.__emberWrapped) {
                     // Stop at non-functions, curried components, and
                     // fn helpers/mut cells (those must reach the manager
                     // untouched).
-                    while (typeof v === 'function'
-                      && !(v as any).__isEmberCurriedHelper
-                      && !(v as any).__isCurriedComponent
-                      && !(v as any).__isFnHelper
-                      && !(v as any).__isMutCell
-                      && !(v as any).prototype) {
-                      try { v = (v as any)(); } catch { break; }
+                    while (
+                      typeof v === 'function' &&
+                      !(v as any).__isEmberCurriedHelper &&
+                      !(v as any).__isCurriedComponent &&
+                      !(v as any).__isFnHelper &&
+                      !(v as any).__isMutCell &&
+                      !(v as any).prototype
+                    ) {
+                      try {
+                        v = (v as any)();
+                      } catch {
+                        break;
+                      }
                     }
                     return unwrapCurriedHelper(v);
                   },
@@ -6555,23 +7396,31 @@ if (g.$_c && !g.$_c.__emberWrapped) {
                 let v = desc.value;
                 // For plain-value descriptors that hold a getter function
                 // returning a curried helper, wrap as a lazy getter too.
-                if (typeof v === 'function'
-                  && !(v as any).__isEmberCurriedHelper
-                  && !(v as any).__isCurriedComponent
-                  && !(v as any).__isFnHelper
-                  && !(v as any).__isMutCell
-                  && !(v as any).prototype) {
+                if (
+                  typeof v === 'function' &&
+                  !(v as any).__isEmberCurriedHelper &&
+                  !(v as any).__isCurriedComponent &&
+                  !(v as any).__isFnHelper &&
+                  !(v as any).__isMutCell &&
+                  !(v as any).prototype
+                ) {
                   const vGet = v;
                   Object.defineProperty(namedArgs, key, {
                     get() {
                       let r: any = vGet;
-                      while (typeof r === 'function'
-                        && !(r as any).__isEmberCurriedHelper
-                        && !(r as any).__isCurriedComponent
-                        && !(r as any).__isFnHelper
-                        && !(r as any).__isMutCell
-                        && !(r as any).prototype) {
-                        try { r = (r as any)(); } catch { break; }
+                      while (
+                        typeof r === 'function' &&
+                        !(r as any).__isEmberCurriedHelper &&
+                        !(r as any).__isCurriedComponent &&
+                        !(r as any).__isFnHelper &&
+                        !(r as any).__isMutCell &&
+                        !(r as any).prototype
+                      ) {
+                        try {
+                          r = (r as any)();
+                        } catch {
+                          break;
+                        }
                       }
                       return unwrapCurriedHelper(r);
                     },
@@ -6627,7 +7476,11 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           let out = v;
           let guard = 8;
           while (typeof out === 'function' && (out as any).__isEmberCurriedHelper && guard-- > 0) {
-            try { out = (out as any)(); } catch { break; }
+            try {
+              out = (out as any)();
+            } catch {
+              break;
+            }
           }
           return out;
         };
@@ -6641,13 +7494,19 @@ if (g.$_c && !g.$_c.__emberWrapped) {
                 Object.defineProperty(namedArgs, key, {
                   get() {
                     let v = origGet.call(args);
-                    while (typeof v === 'function'
-                      && !(v as any).__isEmberCurriedHelper
-                      && !(v as any).__isCurriedComponent
-                      && !(v as any).__isFnHelper
-                      && !(v as any).__isMutCell
-                      && !(v as any).prototype) {
-                      try { v = (v as any)(); } catch { break; }
+                    while (
+                      typeof v === 'function' &&
+                      !(v as any).__isEmberCurriedHelper &&
+                      !(v as any).__isCurriedComponent &&
+                      !(v as any).__isFnHelper &&
+                      !(v as any).__isMutCell &&
+                      !(v as any).prototype
+                    ) {
+                      try {
+                        v = (v as any)();
+                      } catch {
+                        break;
+                      }
                     }
                     return unwrapCurriedHelper2(v);
                   },
@@ -6686,11 +7545,25 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     // Handle getter functions that resolve to a CurriedComponent.
     // This occurs with {{#@inner}}content{{/@inner}} where @inner is a named arg
     // holding a curried component. The GXT compiler emits $_c(() => ctx.args.inner, args, ctx).
-    if (typeof comp === 'function' && !comp.prototype && !comp.__isCurriedComponent && !comp.__stringComponentName) {
+    if (
+      typeof comp === 'function' &&
+      !comp.prototype &&
+      !comp.__isCurriedComponent &&
+      !comp.__stringComponentName
+    ) {
       let resolved = comp;
       let guard = 5;
-      while (typeof resolved === 'function' && !resolved.prototype && !resolved.__isCurriedComponent && guard-- > 0) {
-        try { resolved = resolved(); } catch { break; }
+      while (
+        typeof resolved === 'function' &&
+        !resolved.prototype &&
+        !resolved.__isCurriedComponent &&
+        guard-- > 0
+      ) {
+        try {
+          resolved = resolved();
+        } catch {
+          break;
+        }
       }
       if (resolved && resolved.__isCurriedComponent) {
         const managers = g.$_MANAGERS;
@@ -6740,8 +7613,12 @@ if (g.$_c && !g.$_c.__emberWrapped) {
   // $_c_ember wrapper with the raw GXT $_c function.
   const _protectedC = g.$_c;
   Object.defineProperty(g, '$_c', {
-    get() { return _protectedC; },
-    set() { /* ignore setupGlobalScope overwrites */ },
+    get() {
+      return _protectedC;
+    },
+    set() {
+      /* ignore setupGlobalScope overwrites */
+    },
     configurable: true,
   });
 }
@@ -6781,7 +7658,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 const key = entry[0] === '' ? 'class' : entry[0];
                 if (key === 'class') {
                   const val = entry[1];
-                  fwProps.push([entry[0], typeof val === 'function' ? () => { const v = val(); return (v == null || v === false) ? '' : v; } : val]);
+                  fwProps.push([
+                    entry[0],
+                    typeof val === 'function'
+                      ? () => {
+                          const v = val();
+                          return v == null || v === false ? '' : v;
+                        }
+                      : val,
+                  ]);
                 } else {
                   fwProps.push(entry);
                 }
@@ -6792,8 +7677,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 if (key.startsWith('@')) {
                   const argName = key.slice(1);
                   Object.defineProperty(namedArgs, argName, {
-                    get: () => typeof value === 'function' ? value() : value,
-                    enumerable: true, configurable: true,
+                    get: () => (typeof value === 'function' ? value() : value),
+                    enumerable: true,
+                    configurable: true,
                   });
                 } else {
                   fwAttrs.push([key, value]);
@@ -6815,7 +7701,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Extract slots from children
           if (children && children.length > 0) {
             const defaultSlotFn = (slotCtx: any, ...params: any[]) => {
-              return children.map((child: any) => typeof child === 'function' ? child() : child);
+              return children.map((child: any) => (typeof child === 'function' ? child() : child));
             };
             _setInternalProp(namedArgs, '$slots', { default: defaultSlotFn });
           }
@@ -6838,7 +7724,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       if (rootId !== undefined && rootId !== null) {
         try {
           ctx[COMPONENT_ID_PROPERTY as any] = rootId;
-        } catch { /* frozen, ignore */ }
+        } catch {
+          /* frozen, ignore */
+        }
       } else if (!ctx[COMPONENT_ID_PROPERTY as any]) {
         ctx[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
       }
@@ -6864,7 +7752,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 if (key.startsWith('@')) {
                   const dynArgName = key.slice(1);
                   Object.defineProperty(dynArgs, dynArgName, {
-                    get: () => typeof value === 'function' ? value() : value,
+                    get: () => (typeof value === 'function' ? value() : value),
                     enumerable: true,
                     configurable: true,
                   });
@@ -6967,7 +7855,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 if (key.startsWith('@')) {
                   const argName = key.slice(1);
                   Object.defineProperty(dynArgs, argName, {
-                    get: () => typeof value === 'function' ? value() : value,
+                    get: () => (typeof value === 'function' ? value() : value),
                     enumerable: true,
                     configurable: true,
                   });
@@ -7116,7 +8004,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             callerParent = rc.element as Element;
           }
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       const getHtml = () => {
         let raw = typeof valueGetter === 'function' ? valueGetter() : valueGetter;
@@ -7124,7 +8014,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         while (typeof raw === 'function') {
           raw = raw();
         }
-        if (raw && typeof raw === 'object' && typeof (raw as any).value !== 'undefined' && (raw as any).__isCell) {
+        if (
+          raw &&
+          typeof raw === 'object' &&
+          typeof (raw as any).value !== 'undefined' &&
+          (raw as any).__isCell
+        ) {
           raw = (raw as any).value;
         }
         if (raw === null || raw === undefined) return '';
@@ -7291,7 +8186,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     }
 
     // Check if this looks like a component name (PascalCase or contains hyphen)
-    const mightBeComponent = resolvedTag &&
+    const mightBeComponent =
+      resolvedTag &&
       typeof resolvedTag === 'string' &&
       (resolvedTag[0] === resolvedTag[0].toUpperCase() || resolvedTag.includes('-'));
 
@@ -7304,1067 +8200,1249 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     let _eoPrev: any;
     if (mightBeComponent) {
       const _eoCtx = ctx?.owner;
-      _eoSwap = !!(_eoCtx && typeof _eoCtx === 'object'
-        && typeof _eoCtx.factoryFor === 'function'
-        && !_eoCtx.isDestroyed && !_eoCtx.isDestroying
-        && _eoCtx !== g.owner);
-      if (_eoSwap) { _eoPrev = g.owner; g.owner = _eoCtx; }
+      _eoSwap = !!(
+        _eoCtx &&
+        typeof _eoCtx === 'object' &&
+        typeof _eoCtx.factoryFor === 'function' &&
+        !_eoCtx.isDestroyed &&
+        !_eoCtx.isDestroying &&
+        _eoCtx !== g.owner
+      );
+      if (_eoSwap) {
+        _eoPrev = g.owner;
+        g.owner = _eoCtx;
+      }
     }
 
-    try { // Engine owner swap try block
+    try {
+      // Engine owner swap try block
 
-    if (mightBeComponent && managers?.component?.canHandle) {
-      // Convert PascalCase to kebab-case for Ember component lookup
-      // Also convert -- (namespace separator from ::) to /
-      let kebabName = doubleDashToSlash(pascalToKebab(resolvedTag));
+      if (mightBeComponent && managers?.component?.canHandle) {
+        // Convert PascalCase to kebab-case for Ember component lookup
+        // Also convert -- (namespace separator from ::) to /
+        let kebabName = doubleDashToSlash(pascalToKebab(resolvedTag));
 
-      // Strip the curly-c- prefix added by the Vite plugin's transformCurlyComponents.
-      // The plugin converts {{foo-bar}} to <curly-c-foo-bar /> so GXT compiles it as
-      // a tag (not a variable), but the actual component/helper name is just "foo-bar".
-      if (kebabName.startsWith('curly-c-')) {
-        kebabName = kebabName.slice(8); // 8 = 'curly-c-'.length
-      }
+        // Strip the curly-c- prefix added by the Vite plugin's transformCurlyComponents.
+        // The plugin converts {{foo-bar}} to <curly-c-foo-bar /> so GXT compiles it as
+        // a tag (not a variable), but the actual component/helper name is just "foo-bar".
+        if (kebabName.startsWith('curly-c-')) {
+          kebabName = kebabName.slice(8); // 8 = 'curly-c-'.length
+        }
 
-      // Check for HELPER first — inline curlies like {{to-js "foo"}} get transformed
-      // to <ToJs @__pos0__="foo" /> by transformCurlyBlockComponents. These should be
-      // handled as helpers, not components.
-      const owner = g.owner;
-      if (owner) {
-        const helperFactory = owner.factoryFor?.(`helper:${kebabName}`);
-        const helperLookup = !helperFactory ? owner.lookup?.(`helper:${kebabName}`) : null;
+        // Check for HELPER first — inline curlies like {{to-js "foo"}} get transformed
+        // to <ToJs @__pos0__="foo" /> by transformCurlyBlockComponents. These should be
+        // handled as helpers, not components.
+        const owner = g.owner;
+        if (owner) {
+          const helperFactory = owner.factoryFor?.(`helper:${kebabName}`);
+          const helperLookup = !helperFactory ? owner.lookup?.(`helper:${kebabName}`) : null;
 
-        // Check if the user is trying to override a built-in helper.
-        // Built-in helpers (array, hash, concat, fn, etc.) cannot be overridden.
-        if (helperFactory || helperLookup) {
-          const BUILTIN_HELPERS = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound', '__mutGet'];
-          if (BUILTIN_HELPERS.includes(kebabName)) {
-            emberAssert(
-              `You attempted to overwrite the built-in helper "${kebabName}" which is not allowed. Please rename the helper.`,
-              false
-            );
+          // Check if the user is trying to override a built-in helper.
+          // Built-in helpers (array, hash, concat, fn, etc.) cannot be overridden.
+          if (helperFactory || helperLookup) {
+            const BUILTIN_HELPERS = [
+              'array',
+              'hash',
+              'concat',
+              'fn',
+              'get',
+              'mut',
+              'readonly',
+              'unique-id',
+              'unbound',
+              '__mutGet',
+            ];
+            if (BUILTIN_HELPERS.includes(kebabName)) {
+              emberAssert(
+                `You attempted to overwrite the built-in helper "${kebabName}" which is not allowed. Please rename the helper.`,
+                false
+              );
+            }
+          }
+
+          // If the helper was invoked as a block (has children or __hasBlock__ marker),
+          // it's not a valid usage. Helpers cannot be used with blocks — only components can.
+          // {{#some-helper}}{{/some-helper}} → <SomeHelper @__hasBlock__="default"></SomeHelper>
+          if (helperFactory || helperLookup) {
+            const hasChildren = children && children.length > 0;
+            // Check for __hasBlock__ marker in attrs (from empty curly block invocation)
+            let hasBlockMarker = false;
+            if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+              for (const [key] of tagProps[1]) {
+                if (key === '@__hasBlock__') {
+                  hasBlockMarker = true;
+                  break;
+                }
+              }
+            }
+            if (hasChildren || hasBlockMarker) {
+              const err = new Error(
+                `Attempted to resolve \`${kebabName}\`, which was expected to be a component, but nothing was found.`
+              );
+              const capture = (globalThis as any).__captureRenderError;
+              if (typeof capture === 'function') {
+                capture(err);
+                return document.createComment('helper-as-block-error');
+              }
+              throw err;
+            }
+          }
+          if (helperFactory || helperLookup) {
+            // Collect raw attr getters (keep them lazy for reactivity)
+            const rawAttrs: Array<[string, any]> = [];
+            if (tagProps && tagProps !== g.$_edp) {
+              const attrs = tagProps[1];
+              if (Array.isArray(attrs)) {
+                rawAttrs.push(...attrs);
+              }
+            }
+
+            // Create or reuse a persistent class-based helper instance.
+            // The cache prevents re-creation when __gxtForceEmberRerender does
+            // a full innerHTML='' + rebuild, which would otherwise create a new
+            // instance and inflate createCount / computeCount.
+            let helperInstance: any = null;
+            let recomputeTag: any = null;
+
+            if (helperFactory) {
+              const factoryClass = helperFactory.class;
+              const isClassBased =
+                factoryClass &&
+                factoryClass.prototype &&
+                typeof factoryClass.prototype.compute === 'function';
+              if (isClassBased) {
+                const cached = _tagHelperInstanceCache.get(kebabName);
+                if (
+                  cached &&
+                  cached.instance &&
+                  !cached.instance.isDestroyed &&
+                  !cached.instance.isDestroying
+                ) {
+                  helperInstance = cached.instance;
+                  recomputeTag = cached.recomputeTag;
+                } else {
+                  try {
+                    helperInstance = helperFactory.create();
+                    // Find RECOMPUTE_TAG symbol on the instance
+                    const symKeys = Object.getOwnPropertySymbols(helperInstance);
+                    for (const sym of symKeys) {
+                      if (sym.toString().includes('RECOMPUTE_TAG')) {
+                        recomputeTag = helperInstance[sym];
+                        break;
+                      }
+                    }
+                    _tagHelperInstanceCache.set(kebabName, {
+                      instance: helperInstance,
+                      recomputeTag,
+                    });
+                    // Register for destruction
+                    const destroyableInstances = g.__gxtHelperInstances;
+                    if (Array.isArray(destroyableInstances)) {
+                      destroyableInstances.push(helperInstance);
+                    }
+                    // Associate with the enclosing `{{#if}}` branch (if any) so
+                    // destroy+willDestroy fire on branch teardown, matching the
+                    // classic Ember Helper lifecycle (see class-based helper
+                    // lifecycle test).
+                    const ifScopeTag = (globalThis as any).__gxtCurrentHelperScope;
+                    if (ifScopeTag && typeof ifScopeTag.add === 'function') {
+                      try {
+                        ifScopeTag.add(helperInstance);
+                      } catch {
+                        /* ignore */
+                      }
+                    }
+                  } catch (e) {
+                    if (_isAssertionLike(e)) throw e;
+                    helperInstance = null;
+                  }
+                }
+              }
+            }
+
+            // Build a getter that resolves args lazily and invokes the helper.
+            const helperGetter = () => {
+              const positional: any[] = [];
+              const named: Record<string, any> = {};
+              for (const [key, value] of rawAttrs) {
+                const resolved = typeof value === 'function' ? value() : value;
+                if (key.startsWith('@__pos') && key.endsWith('__') && key !== '@__posCount__') {
+                  const idx = parseInt(key.slice(6, -2));
+                  positional[idx] = resolved;
+                } else if (key.startsWith('@') && !key.startsWith('@__')) {
+                  named[key.slice(1)] = resolved;
+                }
+              }
+
+              // Freeze positional/named to prevent mutation (Ember semantics)
+              Object.freeze(positional);
+              Object.freeze(named);
+
+              if (helperInstance && typeof helperInstance.compute === 'function') {
+                // Deduplicate: if args haven't changed, return cached result.
+                // The force-rerender (innerHTML='' + rebuild) creates a NEW gxtEffect closure
+                // that fires immediately with the same args, causing double-computation.
+                // We store the cache on the helperInstance itself (which is shared via
+                // _tagHelperInstanceCache) so it survives across closure re-creation.
+                // Only dedup during force-rerender — during normal reactive updates,
+                // always call compute() so helpers pick up tracked property changes.
+                let argsSerialized: string | null = null;
+                // Include recompute tag value in dedup key so recompute() invalidates cache
+                const recomputeVal =
+                  recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag
+                    ? recomputeTag.value
+                    : 0;
+                try {
+                  argsSerialized = JSON.stringify({ p: positional, n: named, r: recomputeVal });
+                } catch {
+                  /* skip dedup */
+                }
+                if (
+                  argsSerialized !== null &&
+                  argsSerialized === helperInstance.__gxtLastArgsSerialized
+                ) {
+                  // recomputeTag.value already consumed above for the dedup key
+                  return helperInstance.__gxtLastResult;
+                }
+                const result = helperInstance.compute(positional, named);
+                helperInstance.__gxtLastArgsSerialized = argsSerialized;
+                helperInstance.__gxtLastResult = result;
+                // Consume RECOMPUTE_TAG cell for reactivity
+                if (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag) {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                  recomputeTag.value;
+                }
+                return result;
+              }
+
+              // Simple helper: delegate to $_maybeHelper
+              const maybeHelper = g.$_maybeHelper;
+              if (typeof maybeHelper === 'function') {
+                return maybeHelper(kebabName, positional, named, ctx);
+              }
+              return undefined;
+            };
+
+            // Create a reactive text node. The gxtEffect tracks cell reads
+            // inside helperGetter and updates the text node when deps change.
+            // We must avoid double-calling compute: the effect fires immediately
+            // on creation (first evaluation), so we let it set the initial value.
+            const textNode = document.createTextNode('');
+            try {
+              gxtEffect(() => {
+                const v = helperGetter();
+                textNode.textContent = v == null ? '' : String(v);
+              });
+            } catch (e) {
+              if (_isAssertionLike(e)) throw e; /* effect setup may fail */
+            }
+            return textNode;
           }
         }
 
-        // If the helper was invoked as a block (has children or __hasBlock__ marker),
-        // it's not a valid usage. Helpers cannot be used with blocks — only components can.
-        // {{#some-helper}}{{/some-helper}} → <SomeHelper @__hasBlock__="default"></SomeHelper>
-        if (helperFactory || helperLookup) {
-          const hasChildren = children && children.length > 0;
-          // Check for __hasBlock__ marker in attrs (from empty curly block invocation)
-          let hasBlockMarker = false;
-          if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
-            for (const [key] of tagProps[1]) {
-              if (key === '@__hasBlock__') { hasBlockMarker = true; break; }
-            }
-          }
-          if (hasChildren || hasBlockMarker) {
-            const err = new Error(
-              `Attempted to resolve \`${kebabName}\`, which was expected to be a component, but nothing was found.`
-            );
-            const capture = (globalThis as any).__captureRenderError;
-            if (typeof capture === 'function') {
-              capture(err);
-              return document.createComment('helper-as-block-error');
-            }
-            throw err;
-          }
+        // Check if the component manager can handle this
+        // Also try with a leading dash — GXT's PascalCase conversion strips
+        // leading dashes from component names like `-inner-component`
+        if (
+          !managers.component.canHandle(kebabName) &&
+          managers.component.canHandle(`-${kebabName}`)
+        ) {
+          kebabName = `-${kebabName}`;
         }
-        if (helperFactory || helperLookup) {
-          // Collect raw attr getters (keep them lazy for reactivity)
-          const rawAttrs: Array<[string, any]> = [];
+        if (managers.component.canHandle(kebabName)) {
+          // Build args from tagProps - convert Props format to args object
+          // IMPORTANT: Keep args LAZY - don't evaluate functions yet!
+          // Block params from parent slots won't be available until slot.default runs
+          let args: any = {};
+          // GXT FwType is [TagProp[], TagAttr[], TagEvent[]]
+          // fwProps = position 0: HTML properties (class as ["", value], id, etc.)
+          // fwAttrs = position 1: DOM attributes (data-*, title, etc.)
+          const fwProps: [string, any][] = []; // Props to forward via ...attributes (fw[0])
+          const fwAttrs: [string, any][] = []; // Attrs to forward via ...attributes (fw[1])
+
           if (tagProps && tagProps !== g.$_edp) {
+            // tagProps is [props[], attrs[], events[], fw?]
+            // - props[0]: HTML properties including class (key "" = class, key "id" = id, etc.)
+            // - attrs[1]: Attributes with @ prefix for named args, or data-* attributes
+            // - events[2]: Event handlers
+            // - fw[3]: Forwarded props from parent (for nested components)
+
+            // Process props (index 0) - includes class and other HTML properties
+            const props = tagProps[0];
+            if (Array.isArray(props)) {
+              for (const [key, value] of props) {
+                // Empty key means class attribute in GXT's format
+                const attrKey = key === '' ? 'class' : key;
+                // Collect for forwarding via ...attributes — keep in GXT's prop format
+                // Class uses empty key "" in GXT's prop format
+                // For class values, wrap to return "" instead of undefined/null/false
+                // because GXT joins class values with " " and undefined becomes "undefined"
+                if (key === '' || attrKey === 'class') {
+                  const wrappedValue =
+                    typeof value === 'function'
+                      ? () => {
+                          const v = value();
+                          return v == null || v === false ? '' : v;
+                        }
+                      : value == null || value === false
+                        ? ''
+                        : value;
+                  fwProps.push([key, wrappedValue]);
+                } else {
+                  fwProps.push([key, value]);
+                }
+                // Also add class/classNames to args so wrapper building and sync can access them
+                if (attrKey === 'class' || attrKey === 'classNames') {
+                  Object.defineProperty(args, attrKey, {
+                    get: () => (typeof value === 'function' ? value() : value),
+                    enumerable: true,
+                    configurable: true,
+                  });
+                }
+                // HTML id prop (not @id named arg) - use special key to distinguish
+                // from @id which maps to elementId (frozen after first render)
+                if (attrKey === 'id') {
+                  Object.defineProperty(args, '__htmlId', {
+                    get: () => (typeof value === 'function' ? value() : value),
+                    enumerable: true,
+                    configurable: true,
+                  });
+                }
+              }
+            }
+
+            // Process attrs (index 1) - includes @ args and data-* attributes
             const attrs = tagProps[1];
             if (Array.isArray(attrs)) {
-              rawAttrs.push(...attrs);
+              for (const [key, value] of attrs) {
+                if (key.startsWith('@')) {
+                  // Named arg - keep as lazy getter
+                  // The value might be a function that references block params
+                  // which won't be available until we're inside a slot context
+                  const argName = key.slice(1);
+                  Object.defineProperty(args, argName, {
+                    get: () => (typeof value === 'function' ? value() : value),
+                    enumerable: true,
+                    configurable: true,
+                  });
+                } else {
+                  // HTML attribute (like data-test, title) - collect for forwarding as attrs (fw[1])
+                  fwAttrs.push([key, value]);
+                  // Also keep in args for direct access as lazy getter
+                  Object.defineProperty(args, key, {
+                    get: () => (typeof value === 'function' ? value() : value),
+                    enumerable: true,
+                    configurable: true,
+                  });
+                }
+              }
             }
-          }
 
-          // Create or reuse a persistent class-based helper instance.
-          // The cache prevents re-creation when __gxtForceEmberRerender does
-          // a full innerHTML='' + rebuild, which would otherwise create a new
-          // instance and inflate createCount / computeCount.
-          let helperInstance: any = null;
-          let recomputeTag: any = null;
+            // Merge parent fw (tagProps[3]) if present — this handles ...attributes forwarding
+            // through component chains (e.g., <XOuter data-foo> where XOuter template has
+            // <XInner ...attributes> — the data-foo must reach XInner's ...attributes)
+            //
+            // Check for __splatLocal__ marker — attrs that come AFTER ...attributes
+            // in source should override fw (local-first). Without marker, fw wins (parent first).
+            const splatLocalNames = new Set<string>();
+            // Check both fwProps and fwAttrs for __splatLocal__ marker
+            for (const arr of [fwProps, fwAttrs]) {
+              for (let i = arr.length - 1; i >= 0; i--) {
+                if (arr[i][0] === '__splatLocal__') {
+                  const names =
+                    typeof arr[i][1] === 'string'
+                      ? arr[i][1]
+                      : typeof arr[i][1] === 'function'
+                        ? arr[i][1]()
+                        : '';
+                  for (const n of names.split(',')) if (n) splatLocalNames.add(n);
+                  arr.splice(i, 1);
+                }
+              }
+            }
 
-          if (helperFactory) {
-            const factoryClass = helperFactory.class;
-            const isClassBased = factoryClass && factoryClass.prototype &&
-              typeof factoryClass.prototype.compute === 'function';
-            if (isClassBased) {
-              const cached = _tagHelperInstanceCache.get(kebabName);
-              if (cached && cached.instance && !cached.instance.isDestroyed && !cached.instance.isDestroying) {
-                helperInstance = cached.instance;
-                recomputeTag = cached.recomputeTag;
-              } else {
-                try {
-                  helperInstance = helperFactory.create();
-                  // Find RECOMPUTE_TAG symbol on the instance
-                  const symKeys = Object.getOwnPropertySymbols(helperInstance);
-                  for (const sym of symKeys) {
-                    if (sym.toString().includes('RECOMPUTE_TAG')) {
-                      recomputeTag = helperInstance[sym];
-                      break;
+            const parentFw = tagProps[3];
+            if (parentFw && Array.isArray(parentFw)) {
+              if (splatLocalNames.size > 0) {
+                // ...attributes came BEFORE local attrs: local overrides fw
+                // Put local first (already in fwProps/fwAttrs), then parent fw
+                // But filter out parent entries that conflict with splatLocal names
+                const classAfterSplat = splatLocalNames.has('__class__');
+                splatLocalNames.delete('__class__');
+
+                if (classAfterSplat) {
+                  // Class was AFTER ...attributes: fw classes first, local class second
+                  // Reorder: move local class entries to end, put parent class entries before them
+                  const localClassEntries = fwProps.filter((e) => e[0] === '' || e[0] === 'class');
+                  const localNonClassEntries = fwProps.filter(
+                    (e) => e[0] !== '' && e[0] !== 'class'
+                  );
+                  fwProps.length = 0;
+                  for (const entry of localNonClassEntries) fwProps.push(entry);
+                  // Parent props: non-class are filtered by splatLocalNames, class goes before local class
+                  if (Array.isArray(parentFw[0])) {
+                    for (const entry of parentFw[0]) {
+                      const k = entry[0] === '' ? 'class' : entry[0];
+                      if (k === 'class')
+                        fwProps.push(entry); // parent class first
+                      else if (!splatLocalNames.has(k)) fwProps.push(entry);
                     }
                   }
-                  _tagHelperInstanceCache.set(kebabName, { instance: helperInstance, recomputeTag });
-                  // Register for destruction
-                  const destroyableInstances = g.__gxtHelperInstances;
-                  if (Array.isArray(destroyableInstances)) {
-                    destroyableInstances.push(helperInstance);
+                  for (const entry of localClassEntries) fwProps.push(entry); // local class after
+                } else {
+                  // No class after splat: local entries already in fwProps, add parent non-conflicting
+                  if (Array.isArray(parentFw[0])) {
+                    for (const entry of parentFw[0]) {
+                      const k = entry[0] === '' ? 'class' : entry[0];
+                      if (!splatLocalNames.has(k)) fwProps.push(entry);
+                    }
                   }
-                  // Associate with the enclosing `{{#if}}` branch (if any) so
-                  // destroy+willDestroy fire on branch teardown, matching the
-                  // classic Ember Helper lifecycle (see class-based helper
-                  // lifecycle test).
-                  const ifScopeTag = (globalThis as any).__gxtCurrentHelperScope;
-                  if (ifScopeTag && typeof ifScopeTag.add === 'function') {
-                    try { ifScopeTag.add(helperInstance); } catch { /* ignore */ }
-                  }
-                } catch (e) {
-                  if (_isAssertionLike(e)) throw e;
-                  helperInstance = null;
                 }
+                if (Array.isArray(parentFw[1])) {
+                  for (const entry of parentFw[1]) {
+                    if (!splatLocalNames.has(entry[0])) fwAttrs.push(entry);
+                  }
+                }
+              } else {
+                // ...attributes came AFTER local attrs (or no positional info):
+                // Parent fw should override local — put parent entries FIRST
+                // EXCEPT for class (key === ''), where order is: local first, then parent
+                // (class is additive and Ember preserves definition→invocation order)
+                const localProps = [...fwProps];
+                const localAttrs = [...fwAttrs];
+                fwProps.length = 0;
+                fwAttrs.length = 0;
+                // Separate class entries from non-class entries
+                const localClassProps = localProps.filter((e) => e[0] === '' || e[0] === 'class');
+                const localNonClassProps = localProps.filter(
+                  (e) => e[0] !== '' && e[0] !== 'class'
+                );
+                const parentClassProps: any[] = [];
+                const parentNonClassProps: any[] = [];
+                if (Array.isArray(parentFw[0])) {
+                  for (const entry of parentFw[0]) {
+                    if (entry[0] === '' || entry[0] === 'class') parentClassProps.push(entry);
+                    else parentNonClassProps.push(entry);
+                  }
+                }
+                // Non-class: parent first (parent wins in GXT Set dedup)
+                for (const entry of parentNonClassProps) fwProps.push(entry);
+                for (const entry of localNonClassProps) fwProps.push(entry);
+                // Class: local first, then parent (definition→invocation order)
+                for (const entry of localClassProps) fwProps.push(entry);
+                for (const entry of parentClassProps) fwProps.push(entry);
+                // Attrs: parent first for non-class attrs
+                if (Array.isArray(parentFw[1])) {
+                  for (const entry of parentFw[1]) fwAttrs.push(entry);
+                }
+                for (const entry of localAttrs) fwAttrs.push(entry);
+              }
+              // Events from parent are always merged
+              if (Array.isArray(parentFw[2])) {
+                // Events will be merged below in the events section
               }
             }
           }
 
-          // Build a getter that resolves args lazily and invokes the helper.
-          const helperGetter = () => {
-            const positional: any[] = [];
-            const named: Record<string, any> = {};
-            for (const [key, value] of rawAttrs) {
-              const resolved = typeof value === 'function' ? value() : value;
-              if (key.startsWith('@__pos') && key.endsWith('__') && key !== '@__posCount__') {
-                const idx = parseInt(key.slice(6, -2));
-                positional[idx] = resolved;
-              } else if (key.startsWith('@') && !key.startsWith('@__')) {
-                named[key.slice(1)] = resolved;
+          // Build fw (forwarding) structure for the component manager
+          // fw[0] = props (class, id — for GXT's prop application on ...attributes elements)
+          // fw[1] = attrs (data-*, title — for GXT's attr application on ...attributes elements)
+          // fw[2] = events/modifiers (to forward to elements with ...attributes)
+          const slots: Record<string, any> = {};
+
+          // Collect events/modifiers from tagProps[2] for forwarding
+          let events: [string, any][] = [];
+          if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
+            events = [...tagProps[2]];
+            // Also merge parent events if present
+            const parentFw = tagProps[3];
+            if (parentFw && Array.isArray(parentFw) && Array.isArray(parentFw[2])) {
+              for (const entry of parentFw[2]) {
+                events.push(entry);
               }
             }
-
-            // Freeze positional/named to prevent mutation (Ember semantics)
-            Object.freeze(positional);
-            Object.freeze(named);
-
-            if (helperInstance && typeof helperInstance.compute === 'function') {
-              // Deduplicate: if args haven't changed, return cached result.
-              // The force-rerender (innerHTML='' + rebuild) creates a NEW gxtEffect closure
-              // that fires immediately with the same args, causing double-computation.
-              // We store the cache on the helperInstance itself (which is shared via
-              // _tagHelperInstanceCache) so it survives across closure re-creation.
-              // Only dedup during force-rerender — during normal reactive updates,
-              // always call compute() so helpers pick up tracked property changes.
-              let argsSerialized: string | null = null;
-              // Include recompute tag value in dedup key so recompute() invalidates cache
-              const recomputeVal = (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag)
-                ? recomputeTag.value : 0;
-              try { argsSerialized = JSON.stringify({ p: positional, n: named, r: recomputeVal }); } catch { /* skip dedup */ }
-              if (argsSerialized !== null && argsSerialized === helperInstance.__gxtLastArgsSerialized) {
-                // recomputeTag.value already consumed above for the dedup key
-                return helperInstance.__gxtLastResult;
-              }
-              const result = helperInstance.compute(positional, named);
-              helperInstance.__gxtLastArgsSerialized = argsSerialized;
-              helperInstance.__gxtLastResult = result;
-              // Consume RECOMPUTE_TAG cell for reactivity
-              if (recomputeTag && typeof recomputeTag === 'object' && 'value' in recomputeTag) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                recomputeTag.value;
-              }
-              return result;
+          } else {
+            // Even without own events, merge parent events if present
+            const parentFw = tagProps?.[3];
+            if (parentFw && Array.isArray(parentFw) && Array.isArray(parentFw[2])) {
+              events = [...parentFw[2]];
             }
-
-            // Simple helper: delegate to $_maybeHelper
-            const maybeHelper = g.$_maybeHelper;
-            if (typeof maybeHelper === 'function') {
-              return maybeHelper(kebabName, positional, named, ctx);
+          }
+          // Helper to detect if children use block params
+          // Block params are accessed via $_bp0, $_bp1 getters on Object.prototype
+          const detectBlockParams = (slotChildren: any[]): boolean => {
+            // Check if any child function references block params
+            for (const child of slotChildren) {
+              if (typeof child === 'function') {
+                const fnStr = child.toString();
+                // Look for $_bp references which indicate block params are used
+                if (hasBlockParamRef(fnStr)) {
+                  return true;
+                }
+              }
             }
-            return undefined;
+            return false;
           };
 
-          // Create a reactive text node. The gxtEffect tracks cell reads
-          // inside helperGetter and updates the text node when deps change.
-          // We must avoid double-calling compute: the effect fires immediately
-          // on creation (first evaluation), so we let it set the initial value.
-          const textNode = document.createTextNode('');
-          try {
-            gxtEffect(() => {
-              const v = helperGetter();
-              textNode.textContent = v == null ? '' : String(v);
-            });
-          } catch (e) { if (_isAssertionLike(e)) throw e; /* effect setup may fail */ }
-          return textNode;
-        }
-      }
-
-      // Check if the component manager can handle this
-      // Also try with a leading dash — GXT's PascalCase conversion strips
-      // leading dashes from component names like `-inner-component`
-      if (!managers.component.canHandle(kebabName) && managers.component.canHandle(`-${kebabName}`)) {
-        kebabName = `-${kebabName}`;
-      }
-      if (managers.component.canHandle(kebabName)) {
-        // Build args from tagProps - convert Props format to args object
-        // IMPORTANT: Keep args LAZY - don't evaluate functions yet!
-        // Block params from parent slots won't be available until slot.default runs
-        let args: any = {};
-        // GXT FwType is [TagProp[], TagAttr[], TagEvent[]]
-        // fwProps = position 0: HTML properties (class as ["", value], id, etc.)
-        // fwAttrs = position 1: DOM attributes (data-*, title, etc.)
-        const fwProps: [string, any][] = []; // Props to forward via ...attributes (fw[0])
-        const fwAttrs: [string, any][] = []; // Attrs to forward via ...attributes (fw[1])
-
-        if (tagProps && tagProps !== g.$_edp) {
-          // tagProps is [props[], attrs[], events[], fw?]
-          // - props[0]: HTML properties including class (key "" = class, key "id" = id, etc.)
-          // - attrs[1]: Attributes with @ prefix for named args, or data-* attributes
-          // - events[2]: Event handlers
-          // - fw[3]: Forwarded props from parent (for nested components)
-
-          // Process props (index 0) - includes class and other HTML properties
-          const props = tagProps[0];
-          if (Array.isArray(props)) {
-            for (const [key, value] of props) {
-              // Empty key means class attribute in GXT's format
-              const attrKey = key === '' ? 'class' : key;
-              // Collect for forwarding via ...attributes — keep in GXT's prop format
-              // Class uses empty key "" in GXT's prop format
-              // For class values, wrap to return "" instead of undefined/null/false
-              // because GXT joins class values with " " and undefined becomes "undefined"
-              if (key === '' || attrKey === 'class') {
-                const wrappedValue = typeof value === 'function'
-                  ? () => { const v = value(); return (v == null || v === false) ? '' : v; }
-                  : (value == null || value === false) ? '' : value;
-                fwProps.push([key, wrappedValue]);
-              } else {
-                fwProps.push([key, value]);
-              }
-              // Also add class/classNames to args so wrapper building and sync can access them
-              if (attrKey === 'class' || attrKey === 'classNames') {
-                Object.defineProperty(args, attrKey, {
-                  get: () => typeof value === 'function' ? value() : value,
-                  enumerable: true,
-                  configurable: true,
-                });
-              }
-              // HTML id prop (not @id named arg) - use special key to distinguish
-              // from @id which maps to elementId (frozen after first render)
-              if (attrKey === 'id') {
-                Object.defineProperty(args, '__htmlId', {
-                  get: () => typeof value === 'function' ? value() : value,
-                  enumerable: true,
-                  configurable: true,
-                });
-              }
-            }
-          }
-
-          // Process attrs (index 1) - includes @ args and data-* attributes
-          const attrs = tagProps[1];
-          if (Array.isArray(attrs)) {
-            for (const [key, value] of attrs) {
-              if (key.startsWith('@')) {
-                // Named arg - keep as lazy getter
-                // The value might be a function that references block params
-                // which won't be available until we're inside a slot context
-                const argName = key.slice(1);
-                Object.defineProperty(args, argName, {
-                  get: () => typeof value === 'function' ? value() : value,
-                  enumerable: true,
-                  configurable: true,
-                });
-              } else {
-                // HTML attribute (like data-test, title) - collect for forwarding as attrs (fw[1])
-                fwAttrs.push([key, value]);
-                // Also keep in args for direct access as lazy getter
-                Object.defineProperty(args, key, {
-                  get: () => typeof value === 'function' ? value() : value,
-                  enumerable: true,
-                  configurable: true,
-                });
-              }
-            }
-          }
-
-          // Merge parent fw (tagProps[3]) if present — this handles ...attributes forwarding
-          // through component chains (e.g., <XOuter data-foo> where XOuter template has
-          // <XInner ...attributes> — the data-foo must reach XInner's ...attributes)
-          //
-          // Check for __splatLocal__ marker — attrs that come AFTER ...attributes
-          // in source should override fw (local-first). Without marker, fw wins (parent first).
-          const splatLocalNames = new Set<string>();
-          // Check both fwProps and fwAttrs for __splatLocal__ marker
-          for (const arr of [fwProps, fwAttrs]) {
-            for (let i = arr.length - 1; i >= 0; i--) {
-              if (arr[i][0] === '__splatLocal__') {
-                const names = typeof arr[i][1] === 'string' ? arr[i][1] : (typeof arr[i][1] === 'function' ? arr[i][1]() : '');
-                for (const n of names.split(',')) if (n) splatLocalNames.add(n);
-                arr.splice(i, 1);
-              }
-            }
-          }
-
-          const parentFw = tagProps[3];
-          if (parentFw && Array.isArray(parentFw)) {
-            if (splatLocalNames.size > 0) {
-              // ...attributes came BEFORE local attrs: local overrides fw
-              // Put local first (already in fwProps/fwAttrs), then parent fw
-              // But filter out parent entries that conflict with splatLocal names
-              const classAfterSplat = splatLocalNames.has('__class__');
-              splatLocalNames.delete('__class__');
-
-              if (classAfterSplat) {
-                // Class was AFTER ...attributes: fw classes first, local class second
-                // Reorder: move local class entries to end, put parent class entries before them
-                const localClassEntries = fwProps.filter(e => e[0] === '' || e[0] === 'class');
-                const localNonClassEntries = fwProps.filter(e => e[0] !== '' && e[0] !== 'class');
-                fwProps.length = 0;
-                for (const entry of localNonClassEntries) fwProps.push(entry);
-                // Parent props: non-class are filtered by splatLocalNames, class goes before local class
-                if (Array.isArray(parentFw[0])) {
-                  for (const entry of parentFw[0]) {
-                    const k = entry[0] === '' ? 'class' : entry[0];
-                    if (k === 'class') fwProps.push(entry); // parent class first
-                    else if (!splatLocalNames.has(k)) fwProps.push(entry);
-                  }
+          // GXT puts text children in tagProps[2] (events position) for lowercase
+          // elements. Extract text entries (numeric keys like "0", "1") as children
+          // and keep only real event entries (named keys like "click").
+          let effectiveChildren = children;
+          if (
+            (!children || children.length === 0) &&
+            tagProps &&
+            tagProps !== g.$_edp &&
+            Array.isArray(tagProps[2])
+          ) {
+            const textChildren: any[] = [];
+            const realEvents: [string, any][] = [];
+            for (const entry of tagProps[2]) {
+              if (Array.isArray(entry) && entry.length === 2) {
+                const key = entry[0];
+                // Numeric keys are text children EXCEPT key "0" which is
+                // ON_CREATED (modifier events). Key "1" = TEXT_CONTENT.
+                // Modifier functions (key "0") take an element parameter and should
+                // be forwarded as events, not treated as text content.
+                if (typeof key === 'string' && isAllDigits(key) && key !== '0') {
+                  textChildren.push(entry[1]);
+                } else {
+                  realEvents.push(entry);
                 }
-                for (const entry of localClassEntries) fwProps.push(entry); // local class after
               } else {
-                // No class after splat: local entries already in fwProps, add parent non-conflicting
-                if (Array.isArray(parentFw[0])) {
-                  for (const entry of parentFw[0]) {
-                    const k = entry[0] === '' ? 'class' : entry[0];
-                    if (!splatLocalNames.has(k)) fwProps.push(entry);
+                // Non-array entries in position 2 could be children (functions)
+                textChildren.push(entry);
+              }
+            }
+            if (textChildren.length > 0) {
+              effectiveChildren = textChildren;
+              // Replace events with only real events (not text children)
+              events = realEvents;
+            }
+          }
+
+          if (effectiveChildren && effectiveChildren.length > 0) {
+            // Separate named blocks from default slot children
+            // Named blocks are marked with __isNamedBlock from :name element handling
+            const namedBlocks: Map<string, { children: any[]; hasBlockParams: boolean }> =
+              new Map();
+            const defaultChildren: any[] = [];
+
+            for (let _ci = 0; _ci < effectiveChildren.length; _ci++) {
+              let child = effectiveChildren[_ci];
+              // GXT compiles named block children as lazy functions:
+              //   () => $_tag(':header', ...) which returns a __isNamedBlock marker.
+              // Evaluate ONLY functions that look like named block factories to avoid
+              // side effects from eagerly evaluating component children.
+              if (
+                typeof child === 'function' &&
+                !child.__isCurriedComponent &&
+                !(child instanceof Node)
+              ) {
+                const fnStr = child.toString();
+                if (fnStr.includes("$_tag(':") || fnStr.includes('$_tag(":')) {
+                  try {
+                    const evaluated = child();
+                    if (evaluated && typeof evaluated === 'object' && evaluated.__isNamedBlock) {
+                      child = evaluated;
+                    }
+                  } catch {
+                    /* not a named block factory — keep as-is */
                   }
                 }
               }
-              if (Array.isArray(parentFw[1])) {
-                for (const entry of parentFw[1]) {
-                  if (!splatLocalNames.has(entry[0])) fwAttrs.push(entry);
+              // Check if it's a named block marker
+              if (child && typeof child === 'object' && child.__isNamedBlock) {
+                const slotName = child.__slotName;
+                if (!namedBlocks.has(slotName)) {
+                  namedBlocks.set(slotName, { children: [], hasBlockParams: false });
                 }
-              }
-            } else {
-              // ...attributes came AFTER local attrs (or no positional info):
-              // Parent fw should override local — put parent entries FIRST
-              // EXCEPT for class (key === ''), where order is: local first, then parent
-              // (class is additive and Ember preserves definition→invocation order)
-              const localProps = [...fwProps];
-              const localAttrs = [...fwAttrs];
-              fwProps.length = 0;
-              fwAttrs.length = 0;
-              // Separate class entries from non-class entries
-              const localClassProps = localProps.filter(e => e[0] === '' || e[0] === 'class');
-              const localNonClassProps = localProps.filter(e => e[0] !== '' && e[0] !== 'class');
-              const parentClassProps: any[] = [];
-              const parentNonClassProps: any[] = [];
-              if (Array.isArray(parentFw[0])) {
-                for (const entry of parentFw[0]) {
-                  if (entry[0] === '' || entry[0] === 'class') parentClassProps.push(entry);
-                  else parentNonClassProps.push(entry);
+                const slot = namedBlocks.get(slotName)!;
+                // Add the named block's children to its slot
+                if (child.__children) {
+                  slot.children.push(...child.__children);
                 }
-              }
-              // Non-class: parent first (parent wins in GXT Set dedup)
-              for (const entry of parentNonClassProps) fwProps.push(entry);
-              for (const entry of localNonClassProps) fwProps.push(entry);
-              // Class: local first, then parent (definition→invocation order)
-              for (const entry of localClassProps) fwProps.push(entry);
-              for (const entry of parentClassProps) fwProps.push(entry);
-              // Attrs: parent first for non-class attrs
-              if (Array.isArray(parentFw[1])) {
-                for (const entry of parentFw[1]) fwAttrs.push(entry);
-              }
-              for (const entry of localAttrs) fwAttrs.push(entry);
-            }
-            // Events from parent are always merged
-            if (Array.isArray(parentFw[2])) {
-              // Events will be merged below in the events section
-            }
-          }
-        }
-
-        // Build fw (forwarding) structure for the component manager
-        // fw[0] = props (class, id — for GXT's prop application on ...attributes elements)
-        // fw[1] = attrs (data-*, title — for GXT's attr application on ...attributes elements)
-        // fw[2] = events/modifiers (to forward to elements with ...attributes)
-        const slots: Record<string, any> = {};
-
-        // Collect events/modifiers from tagProps[2] for forwarding
-        let events: [string, any][] = [];
-        if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
-          events = [...tagProps[2]];
-          // Also merge parent events if present
-          const parentFw = tagProps[3];
-          if (parentFw && Array.isArray(parentFw) && Array.isArray(parentFw[2])) {
-            for (const entry of parentFw[2]) {
-              events.push(entry);
-            }
-          }
-        } else {
-          // Even without own events, merge parent events if present
-          const parentFw = tagProps?.[3];
-          if (parentFw && Array.isArray(parentFw) && Array.isArray(parentFw[2])) {
-            events = [...parentFw[2]];
-          }
-        }
-        // Helper to detect if children use block params
-        // Block params are accessed via $_bp0, $_bp1 getters on Object.prototype
-        const detectBlockParams = (slotChildren: any[]): boolean => {
-          // Check if any child function references block params
-          for (const child of slotChildren) {
-            if (typeof child === 'function') {
-              const fnStr = child.toString();
-              // Look for $_bp references which indicate block params are used
-              if (hasBlockParamRef(fnStr)) {
-                return true;
-              }
-            }
-          }
-          return false;
-        };
-
-        // GXT puts text children in tagProps[2] (events position) for lowercase
-        // elements. Extract text entries (numeric keys like "0", "1") as children
-        // and keep only real event entries (named keys like "click").
-        let effectiveChildren = children;
-        if ((!children || children.length === 0) && tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
-          const textChildren: any[] = [];
-          const realEvents: [string, any][] = [];
-          for (const entry of tagProps[2]) {
-            if (Array.isArray(entry) && entry.length === 2) {
-              const key = entry[0];
-              // Numeric keys are text children EXCEPT key "0" which is
-              // ON_CREATED (modifier events). Key "1" = TEXT_CONTENT.
-              // Modifier functions (key "0") take an element parameter and should
-              // be forwarded as events, not treated as text content.
-              if (typeof key === 'string' && isAllDigits(key) && key !== '0') {
-                textChildren.push(entry[1]);
+                // Copy the hasBlockParams flag from the named block marker
+                if (child.__hasBlockParams) {
+                  slot.hasBlockParams = true;
+                }
               } else {
-                realEvents.push(entry);
+                // Regular child goes to default slot
+                defaultChildren.push(child);
               }
-            } else {
-              // Non-array entries in position 2 could be children (functions)
-              textChildren.push(entry);
             }
-          }
-          if (textChildren.length > 0) {
-            effectiveChildren = textChildren;
-            // Replace events with only real events (not text children)
-            events = realEvents;
-          }
-        }
 
-        if (effectiveChildren && effectiveChildren.length > 0) {
-          // Separate named blocks from default slot children
-          // Named blocks are marked with __isNamedBlock from :name element handling
-          const namedBlocks: Map<string, { children: any[]; hasBlockParams: boolean }> = new Map();
-          const defaultChildren: any[] = [];
+            // Helper to create a slot function
+            // explicitHasBlockParams: if true/false is explicitly provided, use it
+            // otherwise detect from children
+            const createSlotFn = (slotChildren: any[], explicitHasBlockParams?: boolean) => {
+              // Use explicit flag if provided, otherwise detect from children
+              const hasBlockParams =
+                explicitHasBlockParams !== undefined
+                  ? explicitHasBlockParams
+                  : detectBlockParams(slotChildren);
 
-          for (let _ci = 0; _ci < effectiveChildren.length; _ci++) {
-            let child = effectiveChildren[_ci];
-            // GXT compiles named block children as lazy functions:
-            //   () => $_tag(':header', ...) which returns a __isNamedBlock marker.
-            // Evaluate ONLY functions that look like named block factories to avoid
-            // side effects from eagerly evaluating component children.
-            if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
-              const fnStr = child.toString();
-              if (fnStr.includes("$_tag(':") || fnStr.includes('$_tag(":')) {
+              const slotFn = (slotCtx: any, ...params: any[]) => {
+                const unwrappedParams = params.map((param) => {
+                  // Unwrap GXT reactive formulas (objects with fn/isConst)
+                  if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
+                    try {
+                      return param.fn();
+                    } catch {
+                      return param;
+                    }
+                  }
+                  // Do NOT call plain functions here — they may be user functions
+                  // yielded as block params (e.g., {{yield this.updatePerson}}).
+                  // Calling them would invoke the function instead of passing it
+                  // as a value. GXT reactive getters are formula objects (handled
+                  // above), not plain functions.
+                  return param;
+                });
+
+                // Store on slotCtx for context-based lookup
+                const contextParams = (globalThis as any).__contextBlockParams as WeakMap<
+                  object,
+                  any[]
+                >;
+                if (contextParams && slotCtx && typeof slotCtx === 'object') {
+                  contextParams.set(slotCtx, [...unwrappedParams]);
+                }
+
+                // Also store as current slot params for re-renders
+                // This persists until the next slot call, allowing reactivity
+                // to access block params even after the slot function returns
+                (globalThis as any).__currentSlotParams = unwrappedParams;
+
+                const stack = (globalThis as any).__blockParamsStack;
+                stack.push(unwrappedParams);
+
                 try {
-                  const evaluated = child();
-                  if (evaluated && typeof evaluated === 'object' && evaluated.__isNamedBlock) {
-                    child = evaluated;
-                  }
-                } catch { /* not a named block factory — keep as-is */ }
+                  // Evaluate lazy-wrapped component children (contain $_tag/$_c/$_dc)
+                  // but preserve reactive text getters as functions so GXT can track
+                  // cell dependencies and create reactive text nodes via gxtEffect.
+                  // Without this, yielded {{this.message}} becomes a static string
+                  // and won't update when the outer context changes via set().
+                  return slotChildren.map((child: any) => {
+                    if (
+                      typeof child === 'function' &&
+                      !child.__isCurriedComponent &&
+                      !(child instanceof Node)
+                    ) {
+                      const fnStr = child.toString();
+                      // Lazy-wrapped component children contain $_tag or $_c calls — evaluate them
+                      if (
+                        fnStr.includes('$_tag(') ||
+                        fnStr.includes('$_c(') ||
+                        fnStr.includes('$_dc(') ||
+                        fnStr.includes('$_eachSync(')
+                      ) {
+                        try {
+                          return child();
+                        } catch {
+                          return child;
+                        }
+                      }
+                      // Reactive text getters — return as functions for GXT reactive tracking
+                      return child;
+                    }
+                    return child;
+                  });
+                } finally {
+                  stack.pop();
+                  // NOTE: We do NOT clear __currentSlotParams here
+                  // This allows re-renders (via GXT reactivity) to access
+                  // the params even after the slot function has returned
+                }
+              };
+
+              // Mark slot with block params info for has-block-params helper
+              (slotFn as any).__hasBlockParams = hasBlockParams;
+
+              return slotFn;
+            };
+
+            // Create slot functions for named blocks
+            for (const [slotName, slotData] of namedBlocks) {
+              // Pass both children and the explicit hasBlockParams flag
+              const fn = createSlotFn(slotData.children, slotData.hasBlockParams);
+              slots[slotName] = fn;
+              // `<:inverse>` is an alias for `<:else>` (Glimmer v2 normalize rule).
+              // Register both names so that `{{yield to="else"}}` finds the block
+              // even when the invoker wrote `<:inverse>`, and vice versa.
+              if (slotName === 'else' && !slots.inverse) {
+                slots.inverse = fn;
+              } else if (slotName === 'inverse' && !slots.else) {
+                slots.else = fn;
               }
             }
-            // Check if it's a named block marker
-            if (child && typeof child === 'object' && child.__isNamedBlock) {
-              const slotName = child.__slotName;
-              if (!namedBlocks.has(slotName)) {
-                namedBlocks.set(slotName, { children: [], hasBlockParams: false });
-              }
-              const slot = namedBlocks.get(slotName)!;
-              // Add the named block's children to its slot
-              if (child.__children) {
-                slot.children.push(...child.__children);
-              }
-              // Copy the hasBlockParams flag from the named block marker
-              if (child.__hasBlockParams) {
-                slot.hasBlockParams = true;
-              }
-            } else {
-              // Regular child goes to default slot
-              defaultChildren.push(child);
+
+            // Create default slot if there are default children
+            // Check args.__hasBlockParams__ marker for explicit block params declaration
+            if (defaultChildren.length > 0) {
+              // Get the explicit hasBlockParams flag from args if present
+              const explicitHasBlockParams =
+                args.__hasBlockParams__ !== undefined
+                  ? (typeof args.__hasBlockParams__ === 'function'
+                      ? args.__hasBlockParams__()
+                      : args.__hasBlockParams__) === 'default'
+                  : undefined;
+              slots.default = createSlotFn(defaultChildren, explicitHasBlockParams);
             }
           }
 
-          // Helper to create a slot function
-          // explicitHasBlockParams: if true/false is explicitly provided, use it
-          // otherwise detect from children
-          const createSlotFn = (slotChildren: any[], explicitHasBlockParams?: boolean) => {
-            // Use explicit flag if provided, otherwise detect from children
-            const hasBlockParams = explicitHasBlockParams !== undefined
-              ? explicitHasBlockParams
-              : detectBlockParams(slotChildren);
+          // Legacy: If no slots were created but children exist, create default slot
+          // (This handles the case where there are no named blocks)
+          if (
+            effectiveChildren &&
+            effectiveChildren.length > 0 &&
+            !slots.default &&
+            Object.keys(slots).length === 0
+          ) {
+            // Check for explicit hasBlockParams marker from args
+            const explicitHasBlockParams =
+              args.__hasBlockParams__ !== undefined
+                ? (typeof args.__hasBlockParams__ === 'function'
+                    ? args.__hasBlockParams__()
+                    : args.__hasBlockParams__) === 'default'
+                : undefined;
+            // Detect from children if not explicitly set
+            const hasBlockParams =
+              explicitHasBlockParams !== undefined
+                ? explicitHasBlockParams
+                : detectBlockParams(effectiveChildren);
 
             const slotFn = (slotCtx: any, ...params: any[]) => {
-              const unwrappedParams = params.map(param => {
-                // Unwrap GXT reactive formulas (objects with fn/isConst)
-                if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
-                  try { return param.fn(); } catch { return param; }
-                }
-                // Do NOT call plain functions here — they may be user functions
-                // yielded as block params (e.g., {{yield this.updatePerson}}).
-                // Calling them would invoke the function instead of passing it
-                // as a value. GXT reactive getters are formula objects (handled
-                // above), not plain functions.
-                return param;
-              });
+              // CRITICAL: Do NOT unwrap params here - keep them as raw values (potentially reactive)
+              // The $_bp0, $_bp1, etc. getters will unwrap them when accessed
+              // This allows reactivity to work: when the component's property changes,
+              // the next access to $_bp0 will return the new value
+              const rawParams = [...params];
 
               // Store on slotCtx for context-based lookup
-              const contextParams = (globalThis as any).__contextBlockParams as WeakMap<object, any[]>;
+              const contextParams = (globalThis as any).__contextBlockParams as WeakMap<
+                object,
+                any[]
+              >;
               if (contextParams && slotCtx && typeof slotCtx === 'object') {
-                contextParams.set(slotCtx, [...unwrappedParams]);
+                contextParams.set(slotCtx, rawParams);
               }
 
               // Also store as current slot params for re-renders
               // This persists until the next slot call, allowing reactivity
               // to access block params even after the slot function returns
-              (globalThis as any).__currentSlotParams = unwrappedParams;
+              (globalThis as any).__currentSlotParams = rawParams;
 
+              // Push block params onto the global stack
+              // The $_blockParam helper reads from this stack
               const stack = (globalThis as any).__blockParamsStack;
-              stack.push(unwrappedParams);
+              stack.push(rawParams);
 
               try {
                 // Evaluate lazy-wrapped component children (contain $_tag/$_c/$_dc)
                 // but preserve reactive text getters as functions so GXT can track
                 // cell dependencies and create reactive text nodes via gxtEffect.
-                // Without this, yielded {{this.message}} becomes a static string
-                // and won't update when the outer context changes via set().
-                return slotChildren.map((child: any) => {
-                  if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
+                return effectiveChildren.map((child: any) => {
+                  if (
+                    typeof child === 'function' &&
+                    !child.__isCurriedComponent &&
+                    !(child instanceof Node)
+                  ) {
                     const fnStr = child.toString();
-                    // Lazy-wrapped component children contain $_tag or $_c calls — evaluate them
-                    if (fnStr.includes('$_tag(') || fnStr.includes('$_c(') || fnStr.includes('$_dc(') || fnStr.includes('$_eachSync(')) {
-                      try { return child(); } catch { return child; }
+                    if (
+                      fnStr.includes('$_tag(') ||
+                      fnStr.includes('$_c(') ||
+                      fnStr.includes('$_dc(') ||
+                      fnStr.includes('$_eachSync(')
+                    ) {
+                      try {
+                        return child();
+                      } catch {
+                        return child;
+                      }
                     }
-                    // Reactive text getters — return as functions for GXT reactive tracking
                     return child;
                   }
                   return child;
                 });
               } finally {
-                stack.pop();
+                // Pop block params from stack
                 // NOTE: We do NOT clear __currentSlotParams here
                 // This allows re-renders (via GXT reactivity) to access
                 // the params even after the slot function has returned
+                stack.pop();
               }
             };
 
-            // Mark slot with block params info for has-block-params helper
+            // Mark slot with block params info
             (slotFn as any).__hasBlockParams = hasBlockParams;
-
-            return slotFn;
-          };
-
-          // Create slot functions for named blocks
-          for (const [slotName, slotData] of namedBlocks) {
-            // Pass both children and the explicit hasBlockParams flag
-            const fn = createSlotFn(slotData.children, slotData.hasBlockParams);
-            slots[slotName] = fn;
-            // `<:inverse>` is an alias for `<:else>` (Glimmer v2 normalize rule).
-            // Register both names so that `{{yield to="else"}}` finds the block
-            // even when the invoker wrote `<:inverse>`, and vice versa.
-            if (slotName === 'else' && !slots.inverse) {
-              slots.inverse = fn;
-            } else if (slotName === 'inverse' && !slots.else) {
-              slots.else = fn;
-            }
+            slots.default = slotFn;
           }
 
-          // Create default slot if there are default children
-          // Check args.__hasBlockParams__ marker for explicit block params declaration
-          if (defaultChildren.length > 0) {
-            // Get the explicit hasBlockParams flag from args if present
-            const explicitHasBlockParams = args.__hasBlockParams__ !== undefined
-              ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
-              : undefined;
-            slots.default = createSlotFn(defaultChildren, explicitHasBlockParams);
+          // Check for __hasBlock__ marker - indicates curly block invocation or
+          // empty angle-bracket invocation <Component></Component>
+          // Even if children are empty, we need to create a default slot
+          // so that (has-block) returns true
+          if (args.__hasBlock__ && !slots.default) {
+            const blockName =
+              typeof args.__hasBlock__ === 'function' ? args.__hasBlock__() : args.__hasBlock__;
+            // Check if block params were declared
+            const hasBlockParams =
+              args.__hasBlockParams__ !== undefined
+                ? (typeof args.__hasBlockParams__ === 'function'
+                    ? args.__hasBlockParams__()
+                    : args.__hasBlockParams__) === 'default'
+                : false;
+            // Create an empty slot function for the specified block
+            const slotFn = (slotCtx: any, ...params: any[]) => {
+              return []; // Empty slot - just return empty array
+            };
+            // Set the hasBlockParams flag on the slot
+            (slotFn as any).__hasBlockParams = hasBlockParams;
+            slots[blockName || 'default'] = slotFn;
+            // Remove the markers from args so they're not passed to the component
+            delete args.__hasBlock__;
+            delete args.__hasBlockParams__;
           }
-        }
 
-        // Legacy: If no slots were created but children exist, create default slot
-        // (This handles the case where there are no named blocks)
-        if (effectiveChildren && effectiveChildren.length > 0 && !slots.default && Object.keys(slots).length === 0) {
-          // Check for explicit hasBlockParams marker from args
-          const explicitHasBlockParams = args.__hasBlockParams__ !== undefined
-            ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
-            : undefined;
-          // Detect from children if not explicitly set
-          const hasBlockParams = explicitHasBlockParams !== undefined
-            ? explicitHasBlockParams
-            : detectBlockParams(effectiveChildren);
+          // GXT FwType is [TagProp[], TagAttr[], TagEvent[]] - all arrays
+          // Props in position 0 (class, id), attrs in position 1 (data-*, title),
+          // events in position 2. Slots are passed separately via args.$slots.
+          const fw = [fwProps, fwAttrs, events]; // [props, attrs, events]
 
-          const slotFn = (slotCtx: any, ...params: any[]) => {
-            // CRITICAL: Do NOT unwrap params here - keep them as raw values (potentially reactive)
-            // The $_bp0, $_bp1, etc. getters will unwrap them when accessed
-            // This allows reactivity to work: when the component's property changes,
-            // the next access to $_bp0 will return the new value
-            const rawParams = [...params];
+          // Pass slots via args so manager.ts can access them.
+          // Set on both string key and Symbol key to survive GXT's slot processing.
+          _setInternalProp(args, '$slots', slots);
+          args[Symbol.for('gxt-slots')] = slots;
 
-            // Store on slotCtx for context-based lookup
-            const contextParams = (globalThis as any).__contextBlockParams as WeakMap<object, any[]>;
-            if (contextParams && slotCtx && typeof slotCtx === 'object') {
-              contextParams.set(slotCtx, rawParams);
+          // Store raw (unevaluated) children for components that need reactive
+          // slot rendering (e.g., LinkTo). The slot function eagerly resolves
+          // children, losing reactivity. Raw children preserve the getter functions.
+          if (effectiveChildren && effectiveChildren.length > 0) {
+            _setInternalProp(args, '__rawSlotChildren', effectiveChildren);
+          }
+
+          // Return a THUNK that renders the component when called
+          // This is crucial for block params: when <Outer><Inner @msg={{param}} /></Outer>
+          // is compiled, $_tag('Inner', ...) is called BEFORE $_tag('Outer', ...)
+          // (due to JavaScript array literal evaluation order)
+          // By returning a thunk, we defer the actual rendering until slot.default
+          // calls the children functions - at which point block params are set up
+
+          // Create a stable instance ID for this component position in the template
+          // This ID is preserved across re-renders of the same template position
+          const GXT_THUNK_ID = Symbol.for('gxt-thunk-id');
+          if (!args[GXT_THUNK_ID]) {
+            args[GXT_THUNK_ID] = Symbol('thunk-instance');
+          }
+          const thunkId = args[GXT_THUNK_ID];
+
+          const renderComponent = function __componentThunk() {
+            // Now evaluate args and render the component
+            // The args getters will access block params from the stack
+            // Pass the stable thunkId to enable instance caching
+            _setInternalProp(args as any, '__thunkId', thunkId);
+            // Track the render path for template-only components. They don't
+            // appear in the parentView chain (no instance), so the backtracking
+            // diagnostic (`__gxtCheckBacktracking` in manager.ts) doesn't see
+            // them when building its `- While rendering:` tree. Snapshot the
+            // `__gxtLastCreatedEmberInstance` before handle() runs; after
+            // handle() completes, if __gxtLastCreatedEmberInstance is null
+            // (renderGlimmerComponent path) this was a template-only render
+            // — add its kebabName to a per-render set. The assertion hook
+            // above (`__gxtCheckBacktracking` wrapper) reads this set to
+            // inject template-only names into the render tree.
+            // Reset the set if the renderPassId changed since the last entry.
+            {
+              const _g = globalThis as any;
+              const _curPass = _g.__emberRenderPassId || 0;
+              if (_g.__gxtTemplateOnlyRenderedSetPassId !== _curPass) {
+                _g.__gxtTemplateOnlyRenderedSetPassId = _curPass;
+                if (
+                  _g.__gxtTemplateOnlyRenderedSet &&
+                  typeof _g.__gxtTemplateOnlyRenderedSet.clear === 'function'
+                ) {
+                  _g.__gxtTemplateOnlyRenderedSet.clear();
+                }
+              }
             }
-
-            // Also store as current slot params for re-renders
-            // This persists until the next slot call, allowing reactivity
-            // to access block params even after the slot function returns
-            (globalThis as any).__currentSlotParams = rawParams;
-
-            // Push block params onto the global stack
-            // The $_blockParam helper reads from this stack
-            const stack = (globalThis as any).__blockParamsStack;
-            stack.push(rawParams);
-
+            const _lastCreatedBefore = (globalThis as any).__gxtLastCreatedEmberInstance;
+            const _stackTO: string[] =
+              (globalThis as any).__gxtTemplateOnlyStack ||
+              ((globalThis as any).__gxtTemplateOnlyStack = []);
+            _stackTO.push(kebabName);
+            // During a force-rerender (e.g., runTask(() => set(items, ...))),
+            // manager.ts's renderClassicComponent skips willRender/willUpdate
+            // for reused pooled instances (skipInitHooks = isReused && isForceRerender)
+            // and __gxtSyncAllWrappers is never invoked by GXT to fire the
+            // deferred hooks. Classic lifecycle contract requires `willRender`
+            // to fire on every re-render whose args changed (test #11044
+            // "component helper properly invalidates hash params inside an
+            // {{#each}}" depends on this). After handle() runs we fire the
+            // update hooks on the last-created/reused instance so that any
+            // `set()` inside willRender propagates through Ember's
+            // notifyPropertyChange → __gxtTriggerReRender → cell.update chain
+            // and the DOM is re-read in the post-runTask sync.
+            const __forceRerenderSnapshot = (globalThis as any).__gxtIsForceRerender;
+            let handleResult: any;
+            let rendered: any;
             try {
-              // Evaluate lazy-wrapped component children (contain $_tag/$_c/$_dc)
-              // but preserve reactive text getters as functions so GXT can track
-              // cell dependencies and create reactive text nodes via gxtEffect.
-              return effectiveChildren.map((child: any) => {
-                if (typeof child === 'function' && !child.__isCurriedComponent && !(child instanceof Node)) {
-                  const fnStr = child.toString();
-                  if (fnStr.includes('$_tag(') || fnStr.includes('$_c(') || fnStr.includes('$_dc(') || fnStr.includes('$_eachSync(')) {
-                    try { return child(); } catch { return child; }
-                  }
-                  return child;
-                }
-                return child;
-              });
+              handleResult = managers.component.handle(kebabName, args, fw, ctx);
+              rendered = handleResult;
+              if (typeof rendered === 'function') {
+                rendered = rendered();
+              }
             } finally {
-              // Pop block params from stack
-              // NOTE: We do NOT clear __currentSlotParams here
-              // This allows re-renders (via GXT reactivity) to access
-              // the params even after the slot function has returned
-              stack.pop();
-            }
-          };
-
-          // Mark slot with block params info
-          (slotFn as any).__hasBlockParams = hasBlockParams;
-          slots.default = slotFn;
-        }
-
-        // Check for __hasBlock__ marker - indicates curly block invocation or
-        // empty angle-bracket invocation <Component></Component>
-        // Even if children are empty, we need to create a default slot
-        // so that (has-block) returns true
-        if (args.__hasBlock__ && !slots.default) {
-          const blockName = typeof args.__hasBlock__ === 'function' ? args.__hasBlock__() : args.__hasBlock__;
-          // Check if block params were declared
-          const hasBlockParams = args.__hasBlockParams__ !== undefined
-            ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
-            : false;
-          // Create an empty slot function for the specified block
-          const slotFn = (slotCtx: any, ...params: any[]) => {
-            return []; // Empty slot - just return empty array
-          };
-          // Set the hasBlockParams flag on the slot
-          (slotFn as any).__hasBlockParams = hasBlockParams;
-          slots[blockName || 'default'] = slotFn;
-          // Remove the markers from args so they're not passed to the component
-          delete args.__hasBlock__;
-          delete args.__hasBlockParams__;
-        }
-
-        // GXT FwType is [TagProp[], TagAttr[], TagEvent[]] - all arrays
-        // Props in position 0 (class, id), attrs in position 1 (data-*, title),
-        // events in position 2. Slots are passed separately via args.$slots.
-        const fw = [fwProps, fwAttrs, events];  // [props, attrs, events]
-
-        // Pass slots via args so manager.ts can access them.
-        // Set on both string key and Symbol key to survive GXT's slot processing.
-        _setInternalProp(args, '$slots', slots);
-        args[Symbol.for('gxt-slots')] = slots;
-
-        // Store raw (unevaluated) children for components that need reactive
-        // slot rendering (e.g., LinkTo). The slot function eagerly resolves
-        // children, losing reactivity. Raw children preserve the getter functions.
-        if (effectiveChildren && effectiveChildren.length > 0) {
-          _setInternalProp(args, '__rawSlotChildren', effectiveChildren);
-        }
-
-        // Return a THUNK that renders the component when called
-        // This is crucial for block params: when <Outer><Inner @msg={{param}} /></Outer>
-        // is compiled, $_tag('Inner', ...) is called BEFORE $_tag('Outer', ...)
-        // (due to JavaScript array literal evaluation order)
-        // By returning a thunk, we defer the actual rendering until slot.default
-        // calls the children functions - at which point block params are set up
-
-        // Create a stable instance ID for this component position in the template
-        // This ID is preserved across re-renders of the same template position
-        const GXT_THUNK_ID = Symbol.for('gxt-thunk-id');
-        if (!args[GXT_THUNK_ID]) {
-          args[GXT_THUNK_ID] = Symbol('thunk-instance');
-        }
-        const thunkId = args[GXT_THUNK_ID];
-
-        const renderComponent = function __componentThunk() {
-          // Now evaluate args and render the component
-          // The args getters will access block params from the stack
-          // Pass the stable thunkId to enable instance caching
-          _setInternalProp(args as any, '__thunkId', thunkId);
-          // Track the render path for template-only components. They don't
-          // appear in the parentView chain (no instance), so the backtracking
-          // diagnostic (`__gxtCheckBacktracking` in manager.ts) doesn't see
-          // them when building its `- While rendering:` tree. Snapshot the
-          // `__gxtLastCreatedEmberInstance` before handle() runs; after
-          // handle() completes, if __gxtLastCreatedEmberInstance is null
-          // (renderGlimmerComponent path) this was a template-only render
-          // — add its kebabName to a per-render set. The assertion hook
-          // above (`__gxtCheckBacktracking` wrapper) reads this set to
-          // inject template-only names into the render tree.
-          // Reset the set if the renderPassId changed since the last entry.
-          {
-            const _g = (globalThis as any);
-            const _curPass = _g.__emberRenderPassId || 0;
-            if (_g.__gxtTemplateOnlyRenderedSetPassId !== _curPass) {
-              _g.__gxtTemplateOnlyRenderedSetPassId = _curPass;
-              if (_g.__gxtTemplateOnlyRenderedSet && typeof _g.__gxtTemplateOnlyRenderedSet.clear === 'function') {
-                _g.__gxtTemplateOnlyRenderedSet.clear();
+              // Pop the template-only tracking stack after render (even on error).
+              if (_stackTO.length > 0 && _stackTO[_stackTO.length - 1] === kebabName) {
+                _stackTO.pop();
+              }
+              // Template-only components are identified by the fact that
+              // renderGlimmerComponent calls setInstanceCapture(null) — so
+              // after handle(), __gxtLastCreatedEmberInstance is null.
+              // Classic components are still captured as their instance.
+              const _lastCreatedAfter = (globalThis as any).__gxtLastCreatedEmberInstance;
+              if (_lastCreatedAfter === null) {
+                const _renderedSetTO: Set<string> =
+                  (globalThis as any).__gxtTemplateOnlyRenderedSet ||
+                  ((globalThis as any).__gxtTemplateOnlyRenderedSet = new Set());
+                _renderedSetTO.add(kebabName);
               }
             }
-          }
-          const _lastCreatedBefore = (globalThis as any).__gxtLastCreatedEmberInstance;
-          const _stackTO: string[] = (globalThis as any).__gxtTemplateOnlyStack ||
-            ((globalThis as any).__gxtTemplateOnlyStack = []);
-          _stackTO.push(kebabName);
-          // During a force-rerender (e.g., runTask(() => set(items, ...))),
-          // manager.ts's renderClassicComponent skips willRender/willUpdate
-          // for reused pooled instances (skipInitHooks = isReused && isForceRerender)
-          // and __gxtSyncAllWrappers is never invoked by GXT to fire the
-          // deferred hooks. Classic lifecycle contract requires `willRender`
-          // to fire on every re-render whose args changed (test #11044
-          // "component helper properly invalidates hash params inside an
-          // {{#each}}" depends on this). After handle() runs we fire the
-          // update hooks on the last-created/reused instance so that any
-          // `set()` inside willRender propagates through Ember's
-          // notifyPropertyChange → __gxtTriggerReRender → cell.update chain
-          // and the DOM is re-read in the post-runTask sync.
-          const __forceRerenderSnapshot = (globalThis as any).__gxtIsForceRerender;
-          let handleResult: any;
-          let rendered: any;
-          try {
-            handleResult = managers.component.handle(kebabName, args, fw, ctx);
-            rendered = handleResult;
-            if (typeof rendered === 'function') {
-              rendered = rendered();
-            }
-          } finally {
-            // Pop the template-only tracking stack after render (even on error).
-            if (_stackTO.length > 0 && _stackTO[_stackTO.length - 1] === kebabName) {
-              _stackTO.pop();
-            }
-            // Template-only components are identified by the fact that
-            // renderGlimmerComponent calls setInstanceCapture(null) — so
-            // after handle(), __gxtLastCreatedEmberInstance is null.
-            // Classic components are still captured as their instance.
-            const _lastCreatedAfter = (globalThis as any).__gxtLastCreatedEmberInstance;
-            if (_lastCreatedAfter === null) {
-              const _renderedSetTO: Set<string> = (globalThis as any).__gxtTemplateOnlyRenderedSet ||
-                ((globalThis as any).__gxtTemplateOnlyRenderedSet = new Set());
-              _renderedSetTO.add(kebabName);
-            }
-          }
-          if (__forceRerenderSnapshot) {
-            const _inst = (globalThis as any).__gxtLastCreatedEmberInstance;
-            // Fire willRender/willUpdate ONLY if __gxtSyncAllWrappers did not
-            // already fire them on this instance for the current sync cycle.
-            // syncAll is wrapped above to stamp `__gxtSyncAllFiredCycleId`
-            // on any instance whose update hooks it fires via `trigger`.
-            // This gate prevents double-firing for direct-invocation args
-            // (e.g. {{non-block prop=this.x}}) while still firing for
-            // each-iteration re-renders whose parent-getter captures an
-            // old block param and is missed by syncAll.
-            if (_inst && _inst.__gxtEverInserted && typeof _inst.trigger === 'function') {
-              const __gCycle = (globalThis as any).__gxtSyncCycleId || 0;
-              // Pool-reuse-with-changes escape hatch: when Phase-1 syncAll
-              // visited this instance (stamping __gxtSyncAllFiredCycleId) but
-              // did NOT actually fire hooks (block-param closure held stale
-              // value at Phase-1 time, so no changes detected), yet pool
-              // reuse detected real arg changes, we must STILL fire willRender.
-              // Test #11044 depends on this: willRender syncs internalName
-              // from the new `name` for items renders inside {{#each}}.
-              // __gxtHooksFiredCycleId is stamped ONLY when hooks actually
-              // fire (via wrapTrigger), distinguishing "visited no-op" from
-              // "visited and fired hooks".
-              const poolReuseWithChanges =
-                _inst.__gxtPoolReuseWithChangesCycleId === __gCycle;
-              const hooksActuallyFired =
-                _inst.__gxtHooksFiredCycleId === __gCycle;
-              const willRenderAlreadyFired =
-                _inst.__gxtWillRenderFiredCycleId === __gCycle;
-              const normalGate =
-                _inst.__gxtSyncAllFiredCycleId !== __gCycle &&
-                !willRenderAlreadyFired;
-              const poolReuseGate =
-                poolReuseWithChanges && !hooksActuallyFired && !willRenderAlreadyFired;
-              if (normalGate || poolReuseGate) {
-                _inst.__gxtWillRenderFiredCycleId = __gCycle;
-                // Clear the pool-reuse flag so subsequent invocations don't
-                // re-fire the hooks in the same cycle.
-                _inst.__gxtPoolReuseWithChangesCycleId = 0;
-                try { _inst.trigger('didUpdateAttrs'); } catch { /* ignore */ }
-                try { _inst.trigger('didReceiveAttrs'); } catch { /* ignore */ }
-                try { _inst.trigger('willUpdate'); } catch { /* ignore */ }
-                try { _inst.trigger('willRender'); } catch { /* ignore */ }
-                // willRender may call `set()` which dirties cells. Flush so
-                // freshly-dirtied cells propagate to the DOM within this pass.
-                try { gxtSyncDom(); } catch { /* ignore */ }
-              }
-            }
-          }
-          // If the result is a primitive (from a helper resolved as component
-          // fallback), wrap it in a text node so GXT can insert it in the DOM.
-          if (rendered != null && typeof rendered !== 'object') {
-            return document.createTextNode(String(rendered));
-          }
-          return rendered;
-        };
-        // Mark as component thunk for debugging
-        (renderComponent as any).__isComponentThunk = true;
-        (renderComponent as any).__componentName = kebabName;
-
-        // Check if we're inside a slot context (block params active).
-        // If block params are on the stack, we must return the thunk deferred
-        // so that GXT's rendering pipeline calls it within the slot scope.
-        // Otherwise, execute immediately so GXT receives a DOM node directly.
-        const bpStack = (globalThis as any).__blockParamsStack;
-        const hasBP = bpStack && bpStack.length > 0 && bpStack[bpStack.length - 1]?.length > 0;
-        if (hasBP) {
-          return renderComponent;
-        }
-        // Execute immediately — GXT's $_tag expects a DOM node return
-        return renderComponent();
-      }
-
-    }
-
-    // Check if this tag came from {{component "name"}} helper (has @__fromComponentHelper__ marker).
-    // If so, throw an error instead of falling through to custom element rendering.
-    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
-      let hasFromComponentHelper = false;
-      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
-        for (const [key] of tagProps[1]) {
-          if (key === '@__fromComponentHelper__') {
-            hasFromComponentHelper = true;
-            break;
-          }
-        }
-      }
-      if (hasFromComponentHelper) {
-        let kebabName2 = doubleDashToSlash(pascalToKebab(resolvedTag));
-        // Before throwing, try with leading dash — GXT strips leading dashes
-        // from component names like `-inner-component` during PascalCase conversion
-        const managers2 = g.$_MANAGERS;
-        if (managers2?.component?.canHandle?.(`-${kebabName2}`)) {
-          // The component exists with a leading dash — don't throw, just skip
-        } else {
-        const notFoundErr = new Error(
-          `Attempted to resolve \`${kebabName2}\`, which was expected to be a component, but nothing was found. ` +
-          `Could not find component named "${kebabName2}" (no component or template with that name was found)`
-        );
-        const captureErr = g.__captureRenderError;
-        if (typeof captureErr === 'function') {
-          captureErr(notFoundErr);
-        }
-        throw notFoundErr;
-        }
-      }
-    }
-
-    // Unknown block-form component: a curly-block invocation like
-    // `{{#no-good}}...{{/no-good}}` is transformed by the GXT AST compiler
-    // to a PascalCase tag (`<NoGood>...</NoGood>`) with a single default-slot
-    // child for the body. When the component manager cannot resolve the name
-    // and the helper registry has no match either, the author intended an
-    // Ember component that does not exist — throw a helpful assertion
-    // instead of falling through to the HTML-element path (which would emit
-    // an unknown <NoGood> tag and silently succeed).
-    //
-    // Detection signals, any of which indicate a curly-block invocation:
-    //   1. `curly-c-` prefix on the tag (legacy AST transform path)
-    //   2. `@__hasBlock__` marker in attrs (angle-bracket block form) —
-    //      but ONLY on PascalCase tags. GXT sometimes attaches the marker
-    //      to hyphenated lowercase tags (custom elements like
-    //      `<use-the-platform></use-the-platform>`), where the author
-    //      intends a plain HTML custom element, not a component.
-    //   3. PascalCase tag name with at least one child (curly-block body)
-    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
-      const firstChar = resolvedTag.charCodeAt(0);
-      const isPascalCase = firstChar >= 65 && firstChar <= 90; // A-Z
-      let isCurlyBlockInvocation = resolvedTag.startsWith('curly-c-');
-      if (
-        !isCurlyBlockInvocation &&
-        isPascalCase &&
-        tagProps &&
-        tagProps !== g.$_edp &&
-        Array.isArray(tagProps[1])
-      ) {
-        for (const [key] of tagProps[1]) {
-          if (key === '@__hasBlock__') { isCurlyBlockInvocation = true; break; }
-        }
-      }
-      if (!isCurlyBlockInvocation && Array.isArray(children) && children.length > 0) {
-        if (isPascalCase) isCurlyBlockInvocation = true;
-      }
-      if (isCurlyBlockInvocation) {
-        // Compute the original dashed name (e.g. `no-good` from `NoGood` or
-        // `curly-c-no-good`). Strip the `curly-c-` prefix if present.
-        let rawName = doubleDashToSlash(pascalToKebab(resolvedTag));
-        if (rawName.startsWith('curly-c-')) rawName = rawName.slice(8);
-        const notFoundErr = new Error(
-          `Attempted to resolve \`${rawName}\`, which was expected to be a component, but nothing was found.`
-        );
-        const captureErr = g.__captureRenderError;
-        if (typeof captureErr === 'function') {
-          captureErr(notFoundErr);
-        }
-        throw notFoundErr;
-      }
-    }
-
-    // Custom element fallback: dash-containing tags that were not resolved as
-    // components or helpers — render as plain HTML custom elements with attrs.
-    if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string' && resolvedTag.includes('-')) {
-      const ceEl = document.createElement(resolvedTag);
-      const _gxtEff = gxtEffect;
-
-      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[0])) {
-        for (const [key, value] of tagProps[0]) {
-          const attrKey = key === '' ? 'class' : key;
-          _gxtEff(() => {
-            const resolved = typeof value === 'function' ? value() : value;
-            if (resolved !== undefined && resolved !== null && resolved !== false) {
-              ceEl.setAttribute(attrKey, String(resolved));
-            }
-          });
-        }
-      }
-      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
-        for (const [key, value] of tagProps[1]) {
-          if (key.startsWith('@')) continue;
-          _gxtEff(() => {
-            const resolved = typeof value === 'function' ? value() : value;
-            if (resolved !== undefined && resolved !== null && resolved !== false) {
-              ceEl.setAttribute(key, String(resolved));
-            } else if (resolved === false) {
-              ceEl.removeAttribute(key);
-            }
-          });
-        }
-      }
-      if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
-        for (const entry of tagProps[2]) {
-          if (Array.isArray(entry)) {
-            const [evKey, evVal] = entry;
-            if (evKey === '1' || evKey === 1) {
-              const textVal = typeof evVal === 'function' ? evVal() : evVal;
-              if (textVal != null) ceEl.appendChild(document.createTextNode(String(textVal)));
-            } else if (typeof evVal === 'function') {
-              ceEl.addEventListener(evKey, evVal);
-            }
-          }
-        }
-      }
-      if (children && children.length > 0) {
-        // Recursive child-flattener for the custom-element fallback. Mirrors
-        // the tree shapes itemToNode handles inside the top-level render but
-        // is duplicated here so this global $_tag override doesn't reach
-        // into precompileTemplate's closure. Handles:
-        //   - Node
-        //   - string / number / boolean
-        //   - Array (flatten)
-        //   - GXT list context with topMarker/bottomMarker (e.g. {{#if}})
-        //   - SafeString (.toHTML())
-        const appendCustomChild = (item: any): void => {
-          if (item == null || item === false) return;
-          if (item instanceof Node) { ceEl.appendChild(item); return; }
-          if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
-            ceEl.appendChild(document.createTextNode(String(item)));
-            return;
-          }
-          if (typeof item === 'function') {
-            try { appendCustomChild(item()); } catch { /* ignore getter error */ }
-            return;
-          }
-          if (Array.isArray(item)) {
-            for (const sub of item) appendCustomChild(sub);
-            return;
-          }
-          if (typeof item === 'object') {
-            // SafeString ({ toHTML(): string })
-            if (typeof (item as any).toHTML === 'function') {
-              const tpl = document.createElement('template');
-              tpl.innerHTML = String((item as any).toHTML());
-              while (tpl.content.firstChild) ceEl.appendChild(tpl.content.firstChild);
-              return;
-            }
-            // GXT list context from $_if / $_each — move the markers and
-            // everything between them into the custom element.
-            if ((item as any).topMarker && (item as any).bottomMarker) {
-              const topMarker = (item as any).topMarker as Node;
-              const bottomMarker = (item as any).bottomMarker as Node;
-              let node: Node | null = topMarker;
-              while (node) {
-                const next: Node | null = node.nextSibling;
-                ceEl.appendChild(node);
-                if (node === bottomMarker) break;
-                node = next;
-              }
-              return;
-            }
-            // $nodes / nodes array on a component-ish wrapper
-            const nodesProp = (item as any).$nodes || (item as any).nodes;
-            if (Array.isArray(nodesProp)) {
-              for (const n of nodesProp) appendCustomChild(n);
-              return;
-            }
-            // GXT reactive cell w/ fn getter
-            if (typeof (item as any).fn === 'function' && 'isConst' in (item as any)) {
-              try { appendCustomChild((item as any).fn()); } catch { /* ignore */ }
-              return;
-            }
-            // GXT IfCondition / list component: node storage lives under a
-            // Symbol-keyed array. Recurse through any such array we find.
-            // The `placeholder` Comment sits inside the array when the
-            // branch is empty (false branch), so we don't need a separate
-            // placeholder fallback — the Symbol walk covers both cases.
-            const syms = Object.getOwnPropertySymbols(item);
-            let foundFromSym = false;
-            for (const sym of syms) {
-              const v = (item as any)[sym];
-              if (Array.isArray(v) && v.length > 0) {
-                const hasNodes = v.some((x: any) =>
-                  x instanceof Node || typeof x === 'string' || typeof x === 'number' || typeof x === 'function' || (x && typeof x === 'object')
-                );
-                if (hasNodes) {
-                  for (const n of v) appendCustomChild(n);
-                  foundFromSym = true;
+            if (__forceRerenderSnapshot) {
+              const _inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+              // Fire willRender/willUpdate ONLY if __gxtSyncAllWrappers did not
+              // already fire them on this instance for the current sync cycle.
+              // syncAll is wrapped above to stamp `__gxtSyncAllFiredCycleId`
+              // on any instance whose update hooks it fires via `trigger`.
+              // This gate prevents double-firing for direct-invocation args
+              // (e.g. {{non-block prop=this.x}}) while still firing for
+              // each-iteration re-renders whose parent-getter captures an
+              // old block param and is missed by syncAll.
+              if (_inst && _inst.__gxtEverInserted && typeof _inst.trigger === 'function') {
+                const __gCycle = (globalThis as any).__gxtSyncCycleId || 0;
+                // Pool-reuse-with-changes escape hatch: when Phase-1 syncAll
+                // visited this instance (stamping __gxtSyncAllFiredCycleId) but
+                // did NOT actually fire hooks (block-param closure held stale
+                // value at Phase-1 time, so no changes detected), yet pool
+                // reuse detected real arg changes, we must STILL fire willRender.
+                // Test #11044 depends on this: willRender syncs internalName
+                // from the new `name` for items renders inside {{#each}}.
+                // __gxtHooksFiredCycleId is stamped ONLY when hooks actually
+                // fire (via wrapTrigger), distinguishing "visited no-op" from
+                // "visited and fired hooks".
+                const poolReuseWithChanges = _inst.__gxtPoolReuseWithChangesCycleId === __gCycle;
+                const hooksActuallyFired = _inst.__gxtHooksFiredCycleId === __gCycle;
+                const willRenderAlreadyFired = _inst.__gxtWillRenderFiredCycleId === __gCycle;
+                const normalGate =
+                  _inst.__gxtSyncAllFiredCycleId !== __gCycle && !willRenderAlreadyFired;
+                const poolReuseGate =
+                  poolReuseWithChanges && !hooksActuallyFired && !willRenderAlreadyFired;
+                if (normalGate || poolReuseGate) {
+                  _inst.__gxtWillRenderFiredCycleId = __gCycle;
+                  // Clear the pool-reuse flag so subsequent invocations don't
+                  // re-fire the hooks in the same cycle.
+                  _inst.__gxtPoolReuseWithChangesCycleId = 0;
+                  try {
+                    _inst.trigger('didUpdateAttrs');
+                  } catch {
+                    /* ignore */
+                  }
+                  try {
+                    _inst.trigger('didReceiveAttrs');
+                  } catch {
+                    /* ignore */
+                  }
+                  try {
+                    _inst.trigger('willUpdate');
+                  } catch {
+                    /* ignore */
+                  }
+                  try {
+                    _inst.trigger('willRender');
+                  } catch {
+                    /* ignore */
+                  }
+                  // willRender may call `set()` which dirties cells. Flush so
+                  // freshly-dirtied cells propagate to the DOM within this pass.
+                  try {
+                    gxtSyncDom();
+                  } catch {
+                    /* ignore */
+                  }
                 }
               }
             }
-            if (foundFromSym) return;
-          }
-          // Fallback: stringify
-          try { ceEl.appendChild(document.createTextNode(String(item))); } catch { /* ignore */ }
-        };
-        for (const child of children) appendCustomChild(child);
-      }
-      return ceEl;
-    }
+            // If the result is a primitive (from a helper resolved as component
+            // fallback), wrap it in a text node so GXT can insert it in the DOM.
+            if (rendered != null && typeof rendered !== 'object') {
+              return document.createTextNode(String(rendered));
+            }
+            return rendered;
+          };
+          // Mark as component thunk for debugging
+          (renderComponent as any).__isComponentThunk = true;
+          (renderComponent as any).__componentName = kebabName;
 
-    } finally { if (_eoSwap) { g.owner = _eoPrev; } } // Engine owner swap restore
+          // Check if we're inside a slot context (block params active).
+          // If block params are on the stack, we must return the thunk deferred
+          // so that GXT's rendering pipeline calls it within the slot scope.
+          // Otherwise, execute immediately so GXT receives a DOM node directly.
+          const bpStack = (globalThis as any).__blockParamsStack;
+          const hasBP = bpStack && bpStack.length > 0 && bpStack[bpStack.length - 1]?.length > 0;
+          if (hasBP) {
+            return renderComponent;
+          }
+          // Execute immediately — GXT's $_tag expects a DOM node return
+          return renderComponent();
+        }
+      }
+
+      // Check if this tag came from {{component "name"}} helper (has @__fromComponentHelper__ marker).
+      // If so, throw an error instead of falling through to custom element rendering.
+      if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
+        let hasFromComponentHelper = false;
+        if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+          for (const [key] of tagProps[1]) {
+            if (key === '@__fromComponentHelper__') {
+              hasFromComponentHelper = true;
+              break;
+            }
+          }
+        }
+        if (hasFromComponentHelper) {
+          let kebabName2 = doubleDashToSlash(pascalToKebab(resolvedTag));
+          // Before throwing, try with leading dash — GXT strips leading dashes
+          // from component names like `-inner-component` during PascalCase conversion
+          const managers2 = g.$_MANAGERS;
+          if (managers2?.component?.canHandle?.(`-${kebabName2}`)) {
+            // The component exists with a leading dash — don't throw, just skip
+          } else {
+            const notFoundErr = new Error(
+              `Attempted to resolve \`${kebabName2}\`, which was expected to be a component, but nothing was found. ` +
+                `Could not find component named "${kebabName2}" (no component or template with that name was found)`
+            );
+            const captureErr = g.__captureRenderError;
+            if (typeof captureErr === 'function') {
+              captureErr(notFoundErr);
+            }
+            throw notFoundErr;
+          }
+        }
+      }
+
+      // Unknown block-form component: a curly-block invocation like
+      // `{{#no-good}}...{{/no-good}}` is transformed by the GXT AST compiler
+      // to a PascalCase tag (`<NoGood>...</NoGood>`) with a single default-slot
+      // child for the body. When the component manager cannot resolve the name
+      // and the helper registry has no match either, the author intended an
+      // Ember component that does not exist — throw a helpful assertion
+      // instead of falling through to the HTML-element path (which would emit
+      // an unknown <NoGood> tag and silently succeed).
+      //
+      // Detection signals, any of which indicate a curly-block invocation:
+      //   1. `curly-c-` prefix on the tag (legacy AST transform path)
+      //   2. `@__hasBlock__` marker in attrs (angle-bracket block form) —
+      //      but ONLY on PascalCase tags. GXT sometimes attaches the marker
+      //      to hyphenated lowercase tags (custom elements like
+      //      `<use-the-platform></use-the-platform>`), where the author
+      //      intends a plain HTML custom element, not a component.
+      //   3. PascalCase tag name with at least one child (curly-block body)
+      if (mightBeComponent && resolvedTag && typeof resolvedTag === 'string') {
+        const firstChar = resolvedTag.charCodeAt(0);
+        const isPascalCase = firstChar >= 65 && firstChar <= 90; // A-Z
+        let isCurlyBlockInvocation = resolvedTag.startsWith('curly-c-');
+        if (
+          !isCurlyBlockInvocation &&
+          isPascalCase &&
+          tagProps &&
+          tagProps !== g.$_edp &&
+          Array.isArray(tagProps[1])
+        ) {
+          for (const [key] of tagProps[1]) {
+            if (key === '@__hasBlock__') {
+              isCurlyBlockInvocation = true;
+              break;
+            }
+          }
+        }
+        if (!isCurlyBlockInvocation && Array.isArray(children) && children.length > 0) {
+          if (isPascalCase) isCurlyBlockInvocation = true;
+        }
+        if (isCurlyBlockInvocation) {
+          // Compute the original dashed name (e.g. `no-good` from `NoGood` or
+          // `curly-c-no-good`). Strip the `curly-c-` prefix if present.
+          let rawName = doubleDashToSlash(pascalToKebab(resolvedTag));
+          if (rawName.startsWith('curly-c-')) rawName = rawName.slice(8);
+          const notFoundErr = new Error(
+            `Attempted to resolve \`${rawName}\`, which was expected to be a component, but nothing was found.`
+          );
+          const captureErr = g.__captureRenderError;
+          if (typeof captureErr === 'function') {
+            captureErr(notFoundErr);
+          }
+          throw notFoundErr;
+        }
+      }
+
+      // Custom element fallback: dash-containing tags that were not resolved as
+      // components or helpers — render as plain HTML custom elements with attrs.
+      if (
+        mightBeComponent &&
+        resolvedTag &&
+        typeof resolvedTag === 'string' &&
+        resolvedTag.includes('-')
+      ) {
+        const ceEl = document.createElement(resolvedTag);
+        const _gxtEff = gxtEffect;
+
+        if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[0])) {
+          for (const [key, value] of tagProps[0]) {
+            const attrKey = key === '' ? 'class' : key;
+            _gxtEff(() => {
+              const resolved = typeof value === 'function' ? value() : value;
+              if (resolved !== undefined && resolved !== null && resolved !== false) {
+                ceEl.setAttribute(attrKey, String(resolved));
+              }
+            });
+          }
+        }
+        if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[1])) {
+          for (const [key, value] of tagProps[1]) {
+            if (key.startsWith('@')) continue;
+            _gxtEff(() => {
+              const resolved = typeof value === 'function' ? value() : value;
+              if (resolved !== undefined && resolved !== null && resolved !== false) {
+                ceEl.setAttribute(key, String(resolved));
+              } else if (resolved === false) {
+                ceEl.removeAttribute(key);
+              }
+            });
+          }
+        }
+        if (tagProps && tagProps !== g.$_edp && Array.isArray(tagProps[2])) {
+          for (const entry of tagProps[2]) {
+            if (Array.isArray(entry)) {
+              const [evKey, evVal] = entry;
+              if (evKey === '1' || evKey === 1) {
+                const textVal = typeof evVal === 'function' ? evVal() : evVal;
+                if (textVal != null) ceEl.appendChild(document.createTextNode(String(textVal)));
+              } else if (typeof evVal === 'function') {
+                ceEl.addEventListener(evKey, evVal);
+              }
+            }
+          }
+        }
+        if (children && children.length > 0) {
+          // Recursive child-flattener for the custom-element fallback. Mirrors
+          // the tree shapes itemToNode handles inside the top-level render but
+          // is duplicated here so this global $_tag override doesn't reach
+          // into precompileTemplate's closure. Handles:
+          //   - Node
+          //   - string / number / boolean
+          //   - Array (flatten)
+          //   - GXT list context with topMarker/bottomMarker (e.g. {{#if}})
+          //   - SafeString (.toHTML())
+          const appendCustomChild = (item: any): void => {
+            if (item == null || item === false) return;
+            if (item instanceof Node) {
+              ceEl.appendChild(item);
+              return;
+            }
+            if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
+              ceEl.appendChild(document.createTextNode(String(item)));
+              return;
+            }
+            if (typeof item === 'function') {
+              try {
+                appendCustomChild(item());
+              } catch {
+                /* ignore getter error */
+              }
+              return;
+            }
+            if (Array.isArray(item)) {
+              for (const sub of item) appendCustomChild(sub);
+              return;
+            }
+            if (typeof item === 'object') {
+              // SafeString ({ toHTML(): string })
+              if (typeof (item as any).toHTML === 'function') {
+                const tpl = document.createElement('template');
+                tpl.innerHTML = String((item as any).toHTML());
+                while (tpl.content.firstChild) ceEl.appendChild(tpl.content.firstChild);
+                return;
+              }
+              // GXT list context from $_if / $_each — move the markers and
+              // everything between them into the custom element.
+              if ((item as any).topMarker && (item as any).bottomMarker) {
+                const topMarker = (item as any).topMarker as Node;
+                const bottomMarker = (item as any).bottomMarker as Node;
+                let node: Node | null = topMarker;
+                while (node) {
+                  const next: Node | null = node.nextSibling;
+                  ceEl.appendChild(node);
+                  if (node === bottomMarker) break;
+                  node = next;
+                }
+                return;
+              }
+              // $nodes / nodes array on a component-ish wrapper
+              const nodesProp = (item as any).$nodes || (item as any).nodes;
+              if (Array.isArray(nodesProp)) {
+                for (const n of nodesProp) appendCustomChild(n);
+                return;
+              }
+              // GXT reactive cell w/ fn getter
+              if (typeof (item as any).fn === 'function' && 'isConst' in (item as any)) {
+                try {
+                  appendCustomChild((item as any).fn());
+                } catch {
+                  /* ignore */
+                }
+                return;
+              }
+              // GXT IfCondition / list component: node storage lives under a
+              // Symbol-keyed array. Recurse through any such array we find.
+              // The `placeholder` Comment sits inside the array when the
+              // branch is empty (false branch), so we don't need a separate
+              // placeholder fallback — the Symbol walk covers both cases.
+              const syms = Object.getOwnPropertySymbols(item);
+              let foundFromSym = false;
+              for (const sym of syms) {
+                const v = (item as any)[sym];
+                if (Array.isArray(v) && v.length > 0) {
+                  const hasNodes = v.some(
+                    (x: any) =>
+                      x instanceof Node ||
+                      typeof x === 'string' ||
+                      typeof x === 'number' ||
+                      typeof x === 'function' ||
+                      (x && typeof x === 'object')
+                  );
+                  if (hasNodes) {
+                    for (const n of v) appendCustomChild(n);
+                    foundFromSym = true;
+                  }
+                }
+              }
+              if (foundFromSym) return;
+            }
+            // Fallback: stringify
+            try {
+              ceEl.appendChild(document.createTextNode(String(item)));
+            } catch {
+              /* ignore */
+            }
+          };
+          for (const child of children) appendCustomChild(child);
+        }
+        return ceEl;
+      }
+    } finally {
+      if (_eoSwap) {
+        g.owner = _eoPrev;
+      }
+    } // Engine owner swap restore
 
     // Fall back to original $_tag for regular HTML elements
     // GXT handles ...attributes internally via tagProps[3] ($fw):
@@ -8386,7 +9464,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         if (Array.isArray(tagProps[pos])) {
           for (const entry of tagProps[pos]) {
             if (entry[0] === '__splatLocal__') {
-              const names = typeof entry[1] === 'string' ? entry[1] : (typeof entry[1] === 'function' ? entry[1]() : '');
+              const names =
+                typeof entry[1] === 'string'
+                  ? entry[1]
+                  : typeof entry[1] === 'function'
+                    ? entry[1]()
+                    : '';
               for (const n of names.split(',')) if (n) splatLocalSet.add(n);
             }
           }
@@ -8431,12 +9514,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // For attrs IN splatLocal: local should override fw (remove from fw)
       if (splatLocalSet.size > 0) {
         const newFw = [
-          Array.isArray(fw[0]) ? fw[0].filter((e: any) => {
-            const k = e[0] === '' ? 'class' : e[0];
-            return !splatLocalSet.has(k);
-          }) : fw[0],
+          Array.isArray(fw[0])
+            ? fw[0].filter((e: any) => {
+                const k = e[0] === '' ? 'class' : e[0];
+                return !splatLocalSet.has(k);
+              })
+            : fw[0],
           Array.isArray(fw[1]) ? fw[1].filter((e: any) => !splatLocalSet.has(e[0])) : fw[1],
-          fw[2]
+          fw[2],
         ];
         tagProps[3] = newFw;
       }
@@ -8472,7 +9557,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           const origGetter = entry[1];
           entry[1] = function _stringifyTextContent() {
             const val = origGetter.apply(this, arguments);
-            if (val == null || typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') return val;
+            if (
+              val == null ||
+              typeof val === 'string' ||
+              typeof val === 'number' ||
+              typeof val === 'boolean'
+            )
+              return val;
             if (typeof val === 'symbol') return String(val);
             if (typeof val === 'function') return val;
             if (val instanceof Node) return val;
@@ -8481,7 +9572,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               if (Array.isArray(val)) return val;
               if (typeof val.toHTML === 'function') return val;
               if (val.__isCurriedComponent) return val;
-              try { return String(val); } catch { return ''; }
+              try {
+                return String(val);
+              } catch {
+                return '';
+              }
             }
             return val;
           };
@@ -8551,7 +9646,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               if (typeof (v as any).toHTML === 'function') return v;
               // Object with no toString (e.g. Object.create(null)) — normalize to ''.
               if (typeof (v as any).toString !== 'function') return '';
-              try { return String(v); } catch { return ''; }
+              try {
+                return String(v);
+              } catch {
+                return '';
+              }
             }
             return v;
           };
@@ -8578,7 +9677,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         if (val == null || val === false || val === '') return null;
         // Non-safe dynamic value — potentially warn for style binding XSS.
         // Do not warn during force-rerender (the initial render already warned).
-        if (!((globalThis as any).__gxtIsForceRerender)) {
+        if (!(globalThis as any).__gxtIsForceRerender) {
           const currentPassId = (globalThis as any).__emberRenderPassId || 0;
           if (_styleWarnedPassId !== currentPassId) {
             // Check if the string value came from a SafeString.toString() conversion.
@@ -8600,11 +9699,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               _styleWarnedPassId = currentPassId;
               const warnFn = getDebugFunction('warn');
               if (warnFn) {
-                warnFn(
-                  _constructStyleDeprecationMessage(String(val)),
-                  false,
-                  { id: 'ember-htmlbars.style-xss-warning' }
-                );
+                warnFn(_constructStyleDeprecationMessage(String(val)), false, {
+                  id: 'ember-htmlbars.style-xss-warning',
+                });
               }
             }
           }
@@ -8670,7 +9767,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                       applyNsAttr(key, v);
                     }
                   });
-                } catch { /* ignore effect setup errors */ }
+                } catch {
+                  /* ignore effect setup errors */
+                }
               }
             }
           }
@@ -8693,7 +9792,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                       applyNsAttr(key, v);
                     }
                   });
-                } catch { /* ignore */ }
+                } catch {
+                  /* ignore */
+                }
               }
             }
           }
@@ -8743,7 +9844,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             if (typeof v === 'function') {
               try {
                 appendChildValue(v());
-              } catch { /* ignore errors in child evaluation */ }
+              } catch {
+                /* ignore errors in child evaluation */
+              }
               return;
             }
             if (typeof v === 'object') {
@@ -8765,9 +9868,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               // Symbol.iterator: iterate and recurse
               if (typeof (v as any)[Symbol.iterator] === 'function') {
                 try {
-                  for (const n of (v as any)) appendChildValue(n);
+                  for (const n of v as any) appendChildValue(n);
                   return;
-                } catch { /* fall through */ }
+                } catch {
+                  /* fall through */
+                }
               }
               // Fall-through: avoid writing `[object Object]` as a text
               // node. Prefer an empty text node so rehydration serializer
@@ -8805,7 +9910,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           if (rootRc && rootRc.element !== null) {
             (ctx as any)[rcKey] = rootRc;
           }
-        } catch { /* ignore — let GXT raise the real error below */ }
+        } catch {
+          /* ignore — let GXT raise the real error below */
+        }
       }
     }
 
@@ -8920,7 +10027,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         for (const key of Object.keys(fw)) {
           if (!/^\d+$/.test(key)) {
             const descriptor = Object.getOwnPropertyDescriptor(fw, key);
-            if (descriptor && ('value' in descriptor)) {
+            if (descriptor && 'value' in descriptor) {
               clonedFw[key] = (fw as any)[key];
             }
             // If fw has a getter-only property we can't clone it — GXT code
@@ -8942,12 +10049,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // to a no-op by dropping the entry for the *initial* render (the getter
     // still gets wrapped by GXT's effect system to re-add it later; but our
     // wrapping approach here only affects the first synchronous pass).
-    if (
-      tagProps &&
-      tagProps !== g.$_edp &&
-      typeof tag === 'string' &&
-      !g.__gxtNamespace
-    ) {
+    if (tagProps && tagProps !== g.$_edp && typeof tag === 'string' && !g.__gxtNamespace) {
       const filteredAttrs = Array.isArray(tagProps[1])
         ? tagProps[1].filter((entry: [string, unknown]) => {
             if (!Array.isArray(entry) || entry.length < 2) return true;
@@ -9018,7 +10120,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         } catch {
           v = undefined;
         }
-        if (v && typeof v === 'object' && typeof (v as { toHTML?: () => string }).toHTML === 'function') {
+        if (
+          v &&
+          typeof v === 'object' &&
+          typeof (v as { toHTML?: () => string }).toHTML === 'function'
+        ) {
           try {
             _safeHtmlInjections.push({
               html: (v as { toHTML: () => string }).toHTML() ?? '',
@@ -9032,10 +10138,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
     const result = originalTag(tag, tagProps, ctx, children);
 
-    if (
-      _nullishAttrsForCleanup.length > 0 &&
-      result instanceof Element
-    ) {
+    if (_nullishAttrsForCleanup.length > 0 && result instanceof Element) {
       for (const key of _nullishAttrsForCleanup) {
         try {
           result.removeAttribute(key);
@@ -9062,7 +10165,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         }
       }
       for (const node of toRemove) {
-        try { result.removeChild(node); } catch { /* ignore */ }
+        try {
+          result.removeChild(node);
+        } catch {
+          /* ignore */
+        }
       }
       // Append each SafeString's parsed HTML in order.
       for (const inj of _safeHtmlInjections) {
@@ -9101,7 +10208,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           if (child.nodeType === 8 /* COMMENT */ && (child as any).__gxtHtmlRawStart) {
             const reparse = (child as any).__gxtHtmlRawReparse;
             if (typeof reparse === 'function') {
-              try { reparse(result); } catch { /* ignore reparse errors */ }
+              try {
+                reparse(result);
+              } catch {
+                /* ignore reparse errors */
+              }
             }
           }
         }
@@ -9258,10 +10369,13 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
 
   g.$_dc = function $_dc_splatfix(componentGetter: any, gxtArgs: any, ctx: any): any {
     const tagProps = gxtArgs && typeof gxtArgs === 'object' ? gxtArgs[$PROPS_SYM] : null;
-    const hasSplatProps = Array.isArray(tagProps) && (
-      (Array.isArray(tagProps[0]) && tagProps[0].length > 0) ||
-      (Array.isArray(tagProps[1]) && tagProps[1].some((e: any) => Array.isArray(e) && typeof e[0] === 'string' && !e[0].startsWith('@')))
-    );
+    const hasSplatProps =
+      Array.isArray(tagProps) &&
+      ((Array.isArray(tagProps[0]) && tagProps[0].length > 0) ||
+        (Array.isArray(tagProps[1]) &&
+          tagProps[1].some(
+            (e: any) => Array.isArray(e) && typeof e[0] === 'string' && !e[0].startsWith('@')
+          )));
     if (!hasSplatProps) {
       return __origDc.call(this, componentGetter, gxtArgs, ctx);
     }
@@ -9275,7 +10389,11 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
       return __origDc.call(this, componentGetter, gxtArgs, ctx);
     }
     let __getterSrc: string;
-    try { __getterSrc = componentGetter.toString(); } catch { __getterSrc = ''; }
+    try {
+      __getterSrc = componentGetter.toString();
+    } catch {
+      __getterSrc = '';
+    }
     if (!__getterSrc.includes('$_bp')) {
       return __origDc.call(this, componentGetter, gxtArgs, ctx);
     }
@@ -9295,9 +10413,15 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
           const key = entry[0];
           if (key === '' || key === 'class') {
             const val = entry[1];
-            const wrapped = typeof val === 'function'
-              ? () => { const v = val(); return (v == null || v === false) ? '' : v; }
-              : (val == null || val === false) ? '' : val;
+            const wrapped =
+              typeof val === 'function'
+                ? () => {
+                    const v = val();
+                    return v == null || v === false ? '' : v;
+                  }
+                : val == null || val === false
+                  ? ''
+                  : val;
             fwProps.push([key, wrapped]);
           } else {
             fwProps.push(entry);
@@ -9323,7 +10447,8 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
       if (gxtArgs && typeof gxtArgs === 'object') {
         for (const key of Object.keys(gxtArgs)) {
           if (key === 'args' || key.startsWith('$')) continue;
-          if (key.startsWith('_') && key !== '__hasBlock__' && key !== '__hasBlockParams__') continue;
+          if (key.startsWith('_') && key !== '__hasBlock__' && key !== '__hasBlockParams__')
+            continue;
           const desc = Object.getOwnPropertyDescriptor(gxtArgs, key);
           if (desc) Object.defineProperty(mergedArgs, key, { ...desc, configurable: true });
         }
@@ -9335,7 +10460,7 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
               const argName = key.slice(1);
               const val = entry[1];
               Object.defineProperty(mergedArgs, argName, {
-                get: () => typeof val === 'function' ? val() : val,
+                get: () => (typeof val === 'function' ? val() : val),
                 enumerable: true,
                 configurable: true,
               });
@@ -9371,7 +10496,9 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
         let val: any;
         try {
           val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-        } catch { return undefined; }
+        } catch {
+          return undefined;
+        }
         if (val && val.__isCurriedComponent) {
           const rendered = renderCurriedWithFw(val);
           if (rendered != null) return rendered;
@@ -9437,11 +10564,20 @@ function transformBlockParamsInTemplate(template: string): string {
   // We need to handle nesting properly, so process one level at a time
 
   // Find all opening tags with `as |...|`
-  const tagPattern = /<([A-Z][a-zA-Z0-9.-]*|[a-z][a-z0-9]*-[a-z0-9-]*)((?:\s+(?:[@a-zA-Z_][a-zA-Z0-9_-]*(?:=(?:"[^"]*"|'[^']*'|\{\{[^}]*\}\}|[^\s>]*))?))*)(\s+as\s*\|([^|]+)\|)(\s*)>/g;
+  const tagPattern =
+    /<([A-Z][a-zA-Z0-9.-]*|[a-z][a-z0-9]*-[a-z0-9-]*)((?:\s+(?:[@a-zA-Z_][a-zA-Z0-9_-]*(?:=(?:"[^"]*"|'[^']*'|\{\{[^}]*\}\}|[^\s>]*))?))*)(\s+as\s*\|([^|]+)\|)(\s*)>/g;
 
   let match;
   // Process matches from last to first to avoid index shifting
-  const matches: { index: number; fullMatch: string; tagName: string; attrs: string; asClause: string; params: string; trailingWs: string }[] = [];
+  const matches: {
+    index: number;
+    fullMatch: string;
+    tagName: string;
+    attrs: string;
+    asClause: string;
+    params: string;
+    trailingWs: string;
+  }[] = [];
 
   while ((match = tagPattern.exec(result)) !== null) {
     matches.push({
@@ -9479,7 +10615,14 @@ function transformBlockParamsInTemplate(template: string): string {
       if (nextOpen !== -1 && nextOpen < nextClose) {
         // Check it's actually an opening tag (not a substring match)
         const afterName = result[nextOpen + openPattern.length];
-        if (afterName === ' ' || afterName === '>' || afterName === '\n' || afterName === '\t' || afterName === '\r' || afterName === '/') {
+        if (
+          afterName === ' ' ||
+          afterName === '>' ||
+          afterName === '\n' ||
+          afterName === '\t' ||
+          afterName === '\r' ||
+          afterName === '/'
+        ) {
           depth++;
         }
         searchIdx = nextOpen + 1;
@@ -9629,12 +10772,19 @@ function transformTripleMustaches(template: string): string {
       while ((m = closeRe.exec(before))) closes.push(m.index);
       // Simulate nesting: rawtext tags don't really nest, but follow the
       // same open/close balance. We're inside tag when opens > closes.
-      let o = 0, c = 0;
+      let o = 0,
+        c = 0;
       while (o < opens.length || c < closes.length) {
         const nextO = o < opens.length ? opens[o]! : Infinity;
         const nextC = c < closes.length ? closes[c]! : Infinity;
-        if (nextO < nextC) { depth++; lastOpenStart = nextO; o++; }
-        else { depth = Math.max(0, depth - 1); c++; }
+        if (nextO < nextC) {
+          depth++;
+          lastOpenStart = nextO;
+          o++;
+        } else {
+          depth = Math.max(0, depth - 1);
+          c++;
+        }
       }
       if (depth > 0 && lastOpenStart !== -1) return true;
     }
@@ -9648,14 +10798,20 @@ function transformTripleMustaches(template: string): string {
     // Skip HB comments: {{!-- ... --}} or {{! ... }}
     if (template.startsWith('{{!--', i)) {
       const end = template.indexOf('--}}', i + 5);
-      if (end === -1) { out += template.slice(i); break; }
+      if (end === -1) {
+        out += template.slice(i);
+        break;
+      }
       out += template.slice(i, end + 4);
       i = end + 4;
       continue;
     }
     if (template.startsWith('{{!', i)) {
       const end = template.indexOf('}}', i + 3);
-      if (end === -1) { out += template.slice(i); break; }
+      if (end === -1) {
+        out += template.slice(i);
+        break;
+      }
       out += template.slice(i, end + 2);
       i = end + 2;
       continue;
@@ -9663,7 +10819,10 @@ function transformTripleMustaches(template: string): string {
     // Skip raw blocks {{{{ ... }}}} (four braces)
     if (template.startsWith('{{{{', i)) {
       const end = template.indexOf('}}}}', i + 4);
-      if (end === -1) { out += template.slice(i); break; }
+      if (end === -1) {
+        out += template.slice(i);
+        break;
+      }
       out += template.slice(i, end + 4);
       i = end + 4;
       continue;
@@ -9672,14 +10831,15 @@ function transformTripleMustaches(template: string): string {
     if (template.startsWith('{{{', i)) {
       // Find matching }}} that's not part of }}}} (raw close)
       const end = template.indexOf('}}}', i + 3);
-      if (end === -1) { out += template.slice(i); break; }
+      if (end === -1) {
+        out += template.slice(i);
+        break;
+      }
       const inner = template.slice(i + 3, end).trim();
       // Wrap expression in parentheses if it contains spaces (helper invocation)
       // so that {{{foo bar}}} becomes <EmberHtmlRaw @value={{(foo bar)}} />.
       // Simple paths like this.inner don't need parens.
-      const valueExpr = /\s/.test(inner) && !inner.startsWith('(')
-        ? `(${inner})`
-        : inner;
+      const valueExpr = /\s/.test(inner) && !inner.startsWith('(') ? `(${inner})` : inner;
       if (isInRawtext(i, rawtextTags)) {
         // Inside rawtext tag — emit as plain interpolation, not component.
         out += `{{${valueExpr}}}`;
@@ -9710,8 +10870,10 @@ let _dynVarCounter = 0;
  * Returns { openStart, openEnd, closeStart, closeEnd } or null.
  */
 function _findInnermostWithDynamicVars(template: string): {
-  openStart: number; openEnd: number;
-  closeStart: number; closeEnd: number;
+  openStart: number;
+  openEnd: number;
+  closeStart: number;
+  closeEnd: number;
 } | null {
   const openMarker = '{{#-with-dynamic-vars';
   const closeMarker = '{{/-with-dynamic-vars}}';
@@ -9812,7 +10974,10 @@ function _parseDynamicVarsArgs(openTagContent: string): Array<{ key: string; exp
       while (p < rest.length && depth > 0) {
         if (rest[p] === '(') depth++;
         else if (rest[p] === ')') depth--;
-        if (depth === 0) { p++; break; }
+        if (depth === 0) {
+          p++;
+          break;
+        }
         p++;
       }
     } else {
@@ -9840,7 +11005,12 @@ function _rewriteGetOutletInBody(body: string, varName: string): string {
   let out = body;
   // Handle both quote styles and any internal whitespace. We use a manual
   // string scan to avoid regex surprises on exotic spacing.
-  const rewriteOne = (src: string, opening: string, closing: string, toMustache: boolean): string => {
+  const rewriteOne = (
+    src: string,
+    opening: string,
+    closing: string,
+    toMustache: boolean
+  ): string => {
     let r = '';
     let i = 0;
     while (i < src.length) {
@@ -9930,7 +11100,7 @@ function transformDynamicVars(template: string): string {
     }
 
     // Find outletState expression (default to undefined if missing).
-    const outletArg = args.find(a => a.key === 'outletState');
+    const outletArg = args.find((a) => a.key === 'outletState');
     const body = result.slice(loc.openEnd, loc.closeStart);
     const varName = `__gxt_dvar_outletState_${_dynVarCounter++}__`;
     const rewrittenBody = _rewriteGetOutletInBody(body, varName);
@@ -9953,7 +11123,12 @@ function transformDynamicVars(template: string): string {
   // We only validate/rewrite literal-string keys. Dynamic keys (rare) are left
   // alone — Ember's stock behavior would still assert at runtime if a non-
   // outletState value is passed, but no GXT test currently exercises that path.
-  const processForm = (src: string, opening: string, closing: string, mustacheReplace: boolean): string => {
+  const processForm = (
+    src: string,
+    opening: string,
+    closing: string,
+    mustacheReplace: boolean
+  ): string => {
     let r = '';
     let i = 0;
     while (i < src.length) {
@@ -10068,7 +11243,8 @@ function transformEachInBlocks(template: string): string {
       } else {
         replacement = `{{#each (gxtEntriesOf ${expr}) key="@identity"}}${body}{{/each}}`;
       }
-      result = result.slice(0, startIdx) + replacement + result.slice(closeIdx + '{{/each-in}}'.length);
+      result =
+        result.slice(0, startIdx) + replacement + result.slice(closeIdx + '{{/each-in}}'.length);
       continue;
     }
 
@@ -10126,7 +11302,8 @@ function transformEachInBlocks(template: string): string {
       }
     }
 
-    result = result.slice(0, startIdx) + replacement + result.slice(closeIdx + '{{/each-in}}'.length);
+    result =
+      result.slice(0, startIdx) + replacement + result.slice(closeIdx + '{{/each-in}}'.length);
   }
 
   return result;
@@ -10174,8 +11351,7 @@ let _globalLogSiteCounter = 0;
  */
 function transformOutletMustaches(code: string): string {
   if (!code || code.indexOf('outlet') === -1) return code;
-  const isIdent = (ch: string | undefined) =>
-    !!ch && /[A-Za-z0-9_$]/.test(ch);
+  const isIdent = (ch: string | undefined) => !!ch && /[A-Za-z0-9_$]/.test(ch);
   const skipWS = (c: string, i: number) => {
     while (i < c.length && (c[i] === ' ' || c[i] === '\t' || c[i] === '\n' || c[i] === '\r')) i++;
     return i;
@@ -10238,7 +11414,8 @@ function _preserveHtmlComments(template: string): string {
     __gxtCommentRegistry?: Record<string, string>;
     __gxtCommentCounter?: number;
   };
-  if (!g.__gxtCommentRegistry) g.__gxtCommentRegistry = Object.create(null) as Record<string, string>;
+  if (!g.__gxtCommentRegistry)
+    g.__gxtCommentRegistry = Object.create(null) as Record<string, string>;
   if (typeof g.__gxtCommentCounter !== 'number') g.__gxtCommentCounter = 0;
   let out = '';
   let i = 0;
@@ -10303,7 +11480,13 @@ function transformTableTbody(code: string): string {
     }
     // Verify it's a tag (not `<tablex` or similar)
     const afterChar = code[tableIdx + 6];
-    if (afterChar !== ' ' && afterChar !== '\t' && afterChar !== '\n' && afterChar !== '\r' && afterChar !== '>') {
+    if (
+      afterChar !== ' ' &&
+      afterChar !== '\t' &&
+      afterChar !== '\n' &&
+      afterChar !== '\r' &&
+      afterChar !== '>'
+    ) {
       out += code.slice(i, tableIdx + 6);
       i = tableIdx + 6;
       continue;
@@ -10351,7 +11534,13 @@ function transformTableTbody(code: string): string {
       const m = /^<\s*(\w+)/.exec(trimmed);
       if (m) {
         const tagName = m[1]!.toLowerCase();
-        if (tagName === 'thead' || tagName === 'tbody' || tagName === 'tfoot' || tagName === 'caption' || tagName === 'colgroup') {
+        if (
+          tagName === 'thead' ||
+          tagName === 'tbody' ||
+          tagName === 'tfoot' ||
+          tagName === 'caption' ||
+          tagName === 'colgroup'
+        ) {
           hasTopLevelWrapper = true;
         }
       }
@@ -10381,10 +11570,35 @@ function transformAttrQuotedHelperMustaches(code: string): string {
   if (!code || code.indexOf('{{') === -1) return code;
   const BARE_IDENT_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
   const BUILTINS = new Set([
-    'this', 'else', 'if', 'unless', 'each', 'each-in', 'let', 'with', 'yield',
-    'outlet', 'component', 'helper', 'modifier', 'debugger', 'log', 'action',
-    'concat', 'hash', 'array', 'fn', 'get', 'mut', 'readonly', 'unbound',
-    'unique-id', 'in-element', 'has-block', 'has-block-params', 'on',
+    'this',
+    'else',
+    'if',
+    'unless',
+    'each',
+    'each-in',
+    'let',
+    'with',
+    'yield',
+    'outlet',
+    'component',
+    'helper',
+    'modifier',
+    'debugger',
+    'log',
+    'action',
+    'concat',
+    'hash',
+    'array',
+    'fn',
+    'get',
+    'mut',
+    'readonly',
+    'unbound',
+    'unique-id',
+    'in-element',
+    'has-block',
+    'has-block-params',
+    'on',
   ]);
   let out = '';
   let i = 0;
@@ -10402,22 +11616,19 @@ function transformAttrQuotedHelperMustaches(code: string): string {
         break;
       }
       const inner = code.slice(start, end);
-      const rewritten = inner.replace(
-        /\{\{\s*([^}\s][^}]*?)\s*\}\}/g,
-        (m, expr: string) => {
-          const trimmed = expr.trim();
-          // Literal `null` / `undefined` in a quoted attribute value causes
-          // GXT to emit an empty template (return []). Ember's semantics
-          // treat these as empty strings. Replace with an empty string
-          // literal so GXT produces a proper concat-formula for the attribute.
-          if (trimmed === 'null' || trimmed === 'undefined') {
-            return `{{""}}`;
-          }
-          if (!BARE_IDENT_RE.test(trimmed)) return m;
-          if (BUILTINS.has(trimmed)) return m;
-          return `{{(${trimmed})}}`;
+      const rewritten = inner.replace(/\{\{\s*([^}\s][^}]*?)\s*\}\}/g, (m, expr: string) => {
+        const trimmed = expr.trim();
+        // Literal `null` / `undefined` in a quoted attribute value causes
+        // GXT to emit an empty template (return []). Ember's semantics
+        // treat these as empty strings. Replace with an empty string
+        // literal so GXT produces a proper concat-formula for the attribute.
+        if (trimmed === 'null' || trimmed === 'undefined') {
+          return `{{""}}`;
         }
-      );
+        if (!BARE_IDENT_RE.test(trimmed)) return m;
+        if (BUILTINS.has(trimmed)) return m;
+        return `{{(${trimmed})}}`;
+      });
       out += '=' + quote + rewritten + quote;
       i = end + 1;
       continue;
@@ -10482,12 +11693,15 @@ function _rewriteShadowedBlockKeyword(
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
  */
-export function precompileTemplate(templateString: string, options?: {
-  strictMode?: boolean;
-  scope?: () => Record<string, unknown>;
-  moduleName?: string;
-  scopeValues?: Record<string, unknown>;
-}) {
+export function precompileTemplate(
+  templateString: string,
+  options?: {
+    strictMode?: boolean;
+    scope?: () => Record<string, unknown>;
+    moduleName?: string;
+    scopeValues?: Record<string, unknown>;
+  }
+) {
   // Pre-transform shadowed block keywords. When `scopeValues` provides a
   // binding whose name collides with a GXT block keyword (e.g. `each`,
   // `if`, `unless`, `let`, `with`, `each-in`), GXT's keyword path runs
@@ -10520,7 +11734,8 @@ export function precompileTemplate(templateString: string, options?: {
   // both modes (strict vs loose) is cached separately — otherwise a loose
   // compile would win and mask the strict-mode "not in scope" behavior.
   const __strictModeFlag = options?.strictMode === true;
-  const cacheKey = templateString + (options?.moduleName || '') + (__strictModeFlag ? '|strict' : '');
+  const cacheKey =
+    templateString + (options?.moduleName || '') + (__strictModeFlag ? '|strict' : '');
   if (!hasScopeValues) {
     const cached = templateCache.get(cacheKey);
     if (cached) {
@@ -10535,7 +11750,9 @@ export function precompileTemplate(templateString: string, options?: {
   // could bring the head into scope.
   {
     const blockParamNames = findBlockParamNames(templateString);
-    const scopeKeys = options?.scopeValues ? new Set(Object.keys(options.scopeValues)) : new Set<string>();
+    const scopeKeys = options?.scopeValues
+      ? new Set(Object.keys(options.scopeValues))
+      : new Set<string>();
     for (const [head, tail] of findDottedTags(templateString)) {
       if (head !== 'this' && !blockParamNames.has(head) && !scopeKeys.has(head)) {
         throw new Error(
@@ -10554,18 +11771,18 @@ export function precompileTemplate(templateString: string, options?: {
 
     // Check for {{attrs.X}} - this should trigger an assert (throw)
     if (!hasAttrsBlockParam) {
-    const attrsMatches = findAttrsPatterns(templateString);
-    for (const attrMatch of attrsMatches) {
-      const propName = attrMatch.propName;
-      // Calculate location: column points to 'attrs' (after '{{'), so add 2
-      const beforeMatch = templateString.slice(0, attrMatch.index);
-      const lines = beforeMatch.split('\n');
-      const line = lines.length;
-      const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
-      const locationDisplay = `(L${line}:C${col}) `;
-      const message = `Using {{attrs}} to reference named arguments is not supported. {{attrs.${propName}}} should be updated to {{@${propName}}}. ${locationDisplay}`;
-      emberAssert(message, false);
-    }
+      const attrsMatches = findAttrsPatterns(templateString);
+      for (const attrMatch of attrsMatches) {
+        const propName = attrMatch.propName;
+        // Calculate location: column points to 'attrs' (after '{{'), so add 2
+        const beforeMatch = templateString.slice(0, attrMatch.index);
+        const lines = beforeMatch.split('\n');
+        const line = lines.length;
+        const col = (lines[lines.length - 1]?.length || 0) + 2; // +2 for '{{'
+        const locationDisplay = `(L${line}:C${col}) `;
+        const message = `Using {{attrs}} to reference named arguments is not supported. {{attrs.${propName}}} should be updated to {{@${propName}}}. ${locationDisplay}`;
+        emberAssert(message, false);
+      }
     }
 
     // Check for {{this.attrs.X}} - this should trigger a deprecation
@@ -10596,10 +11813,8 @@ export function precompileTemplate(templateString: string, options?: {
   // Use getDebugFunction('assert') so expectAssertion's stub is called.
   if (hasTextAreaTag(templateString)) {
     const _assert = getDebugFunction('assert');
-    if (_assert) _assert(
-      'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
-      false
-    );
+    if (_assert)
+      _assert('Could not find component `<TextArea />` (did you mean `<Textarea />`?)', false);
   }
 
   // Transform the template
@@ -10729,7 +11944,11 @@ export function precompileTemplate(templateString: string, options?: {
         i = transformedTemplate.indexOf(marker, i);
         if (i === -1) break;
         let p = i + marker.length;
-        while (p < transformedTemplate.length && (transformedTemplate[p] === ' ' || transformedTemplate[p] === '\t')) p++;
+        while (
+          p < transformedTemplate.length &&
+          (transformedTemplate[p] === ' ' || transformedTemplate[p] === '\t')
+        )
+          p++;
         const endTag = transformedTemplate.indexOf('}}', p);
         if (endTag === -1) break;
         const destExpr = transformedTemplate.slice(p, endTag);
@@ -10776,10 +11995,7 @@ export function precompileTemplate(templateString: string, options?: {
     // where val is a defineSimpleHelper result use a different template structure
     // (they're inside component templates where this.val is set as a class property).
     if (hasDynamicHelper(transformedTemplate)) {
-      emberAssert(
-        'Passing a dynamic string to the `(helper)` keyword is disallowed.',
-        false
-      );
+      emberAssert('Passing a dynamic string to the `(helper)` keyword is disallowed.', false);
     }
   }
 
@@ -10789,10 +12005,7 @@ export function precompileTemplate(templateString: string, options?: {
   // modifier function, not a string) are valid.
   {
     if (hasDynamicModifier(transformedTemplate)) {
-      emberAssert(
-        'Passing a dynamic string to the `(modifier)` keyword is disallowed.',
-        false
-      );
+      emberAssert('Passing a dynamic string to the `(modifier)` keyword is disallowed.', false);
     }
   }
 
@@ -10881,7 +12094,10 @@ export function precompileTemplate(templateString: string, options?: {
   // The GXT compiler normalizes hyphenated names to underscores in IS_GLIMMER_COMPAT_MODE,
   // so `{{unique-id}}` resolves to the `unique_id` scope binding.
   // We inject the actual value later via helperInjections.
-  if (containsWord(transformedTemplate, 'unique-id') || containsWord(transformedTemplate, 'unique_id')) {
+  if (
+    containsWord(transformedTemplate, 'unique-id') ||
+    containsWord(transformedTemplate, 'unique_id')
+  ) {
     scopeBindings.add('unique_id');
   }
 
@@ -10938,7 +12154,6 @@ export function precompileTemplate(templateString: string, options?: {
   }
   // (debug code removed)
 
-
   // Debug: check compilation result for scope-valued templates
   if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
     const _g4 = globalThis as any;
@@ -10962,7 +12177,10 @@ export function precompileTemplate(templateString: string, options?: {
     // (value.ts emits comma expression with site ID directly in IS_GLIMMER_COMPAT_MODE)
     // Post-process: replace per-compilation __logSite:N with globally unique IDs
     // to prevent dedup collisions across different template compilations.
-    modifiedCode = modifiedCode.replace(/__logSite:\d+/g, () => `__logSite:${_globalLogSiteCounter++}`);
+    modifiedCode = modifiedCode.replace(
+      /__logSite:\d+/g,
+      () => `__logSite:${_globalLogSiteCounter++}`
+    );
 
     // Post-process: GXT emits quoted attribute values as `[...expressions].join("")`.
     // This implicit string coercion throws TypeError for Symbol values and for
@@ -11052,12 +12270,49 @@ export function precompileTemplate(templateString: string, options?: {
     // references the string "get" — this fix bridges that gap.
     if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
       const _jsReserved = new Set([
-        'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete',
-        'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
-        'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
-        'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends',
-        'import', 'super', 'implements', 'interface', 'let', 'package', 'private',
-        'protected', 'public', 'static', 'yield', 'await',
+        'break',
+        'case',
+        'catch',
+        'continue',
+        'debugger',
+        'default',
+        'delete',
+        'do',
+        'else',
+        'finally',
+        'for',
+        'function',
+        'if',
+        'in',
+        'instanceof',
+        'new',
+        'return',
+        'switch',
+        'this',
+        'throw',
+        'try',
+        'typeof',
+        'var',
+        'void',
+        'while',
+        'with',
+        'class',
+        'const',
+        'enum',
+        'export',
+        'extends',
+        'import',
+        'super',
+        'implements',
+        'interface',
+        'let',
+        'package',
+        'private',
+        'protected',
+        'public',
+        'static',
+        'yield',
+        'await',
       ]);
       const scopeKeySet = new Set(Object.keys(options.scopeValues));
       for (const key of scopeKeySet) {
@@ -11111,8 +12366,18 @@ export function precompileTemplate(templateString: string, options?: {
         // Do not guard built-in keyword helpers — those aren't "registered
         // helpers" from the owner registry perspective.
         const BUILTIN = new Set([
-          'array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly',
-          'unique-id', 'unbound', 'helper', 'modifier', 'component',
+          'array',
+          'hash',
+          'concat',
+          'fn',
+          'get',
+          'mut',
+          'readonly',
+          'unique-id',
+          'unbound',
+          'helper',
+          'modifier',
+          'component',
           '__mutGet',
         ]);
         if (BUILTIN.has(bareName)) return match;
@@ -11200,12 +12465,49 @@ export function precompileTemplate(templateString: string, options?: {
       // Inject scope values as local variables (for strict mode templates with scope)
       // JS reserved words cannot be used as variable names, so we prefix them
       const JS_RESERVED_WORDS = new Set([
-        'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete',
-        'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
-        'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
-        'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends',
-        'import', 'super', 'implements', 'interface', 'let', 'package', 'private',
-        'protected', 'public', 'static', 'yield', 'await',
+        'break',
+        'case',
+        'catch',
+        'continue',
+        'debugger',
+        'default',
+        'delete',
+        'do',
+        'else',
+        'finally',
+        'for',
+        'function',
+        'if',
+        'in',
+        'instanceof',
+        'new',
+        'return',
+        'switch',
+        'this',
+        'throw',
+        'try',
+        'typeof',
+        'var',
+        'void',
+        'while',
+        'with',
+        'class',
+        'const',
+        'enum',
+        'export',
+        'extends',
+        'import',
+        'super',
+        'implements',
+        'interface',
+        'let',
+        'package',
+        'private',
+        'protected',
+        'public',
+        'static',
+        'yield',
+        'await',
       ]);
       let scopeStoreKey = '';
       const scopeAliases = new Map<string, string>(); // original key -> JS alias
@@ -11215,11 +12517,16 @@ export function precompileTemplate(templateString: string, options?: {
         // are plain objects registered via setInternalHelperManager — they cannot
         // be called as functions. Replace them with the GXT-compatible versions.
         const BUILTINS_MAP: Record<string, string> = {
-          'hash': 'hash', 'array': 'array', 'concat': 'concat',
-          'get': 'get', 'fn': 'fn',
+          hash: 'hash',
+          array: 'array',
+          concat: 'concat',
+          get: 'get',
+          fn: 'fn',
         };
         const gxtBuiltins = g.__EMBER_BUILTIN_HELPERS__;
-        const internalHelperManagers = g.INTERNAL_HELPER_MANAGERS as WeakMap<object, any> | undefined;
+        const internalHelperManagers = g.INTERNAL_HELPER_MANAGERS as
+          | WeakMap<object, any>
+          | undefined;
         for (const key of Object.keys(scopeVals)) {
           const val = scopeVals[key];
           if (val !== null && val !== undefined && typeof val === 'object' && !Array.isArray(val)) {
@@ -11270,7 +12577,12 @@ export function precompileTemplate(templateString: string, options?: {
           // RHS to reach the scope binding via the captured alias.
           const escapedKey = key.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
           const iifeOpenPattern = /\(\(\)\s*=>\s*\{/g;
-          const shadowMatches: Array<{ start: number; bodyStart: number; bodyEnd: number; end: number }> = [];
+          const shadowMatches: Array<{
+            start: number;
+            bodyStart: number;
+            bodyEnd: number;
+            end: number;
+          }> = [];
           let mm: RegExpExecArray | null;
           while ((mm = iifeOpenPattern.exec(modifiedCode)) !== null) {
             const iifeStart = mm.index;
@@ -11331,7 +12643,23 @@ export function precompileTemplate(templateString: string, options?: {
       const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
-        const helperNames = ['get', 'unbound', 'array', 'hash', 'concat', 'fn', 'mut', 'readonly', 'unique-id', 'helper', 'modifier', 'gxtEntriesOf', 'gxtGetOutletState', '__mutGet', '__gxtCommentLookup'];
+        const helperNames = [
+          'get',
+          'unbound',
+          'array',
+          'hash',
+          'concat',
+          'fn',
+          'mut',
+          'readonly',
+          'unique-id',
+          'helper',
+          'modifier',
+          'gxtEntriesOf',
+          'gxtGetOutletState',
+          '__mutGet',
+          '__gxtCommentLookup',
+        ];
         for (const name of helperNames) {
           // Convert helper name to valid JS identifier (unique-id -> unique_id)
           const jsName = hyphenToUnderscore(name);
@@ -11377,10 +12705,14 @@ export function precompileTemplate(templateString: string, options?: {
               (compilationResult as any).__uidCount = uidCallCount;
             } else {
               // unique_id referenced but not called — inject as plain function
-              helperInjections.push(`const unique_id = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];`);
+              helperInjections.push(
+                `const unique_id = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];`
+              );
             }
           } else if (containsWord(modifiedCode, jsName)) {
-            helperInjections.push(`const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`);
+            helperInjections.push(
+              `const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`
+            );
           }
         }
       }
@@ -11390,10 +12722,11 @@ export function precompileTemplate(templateString: string, options?: {
       // This runs ONCE per template compilation (not per render), so IDs
       // remain stable across re-renders of the same component instance.
       const uidCount = (compilationResult as any).__uidCount || 0;
-      const uidOuterScope = uidCount > 0
-        ? `var _uid_fn = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];` +
-          `var _uid = []; for (var _uid_i = 0; _uid_i < ${uidCount}; _uid_i++) _uid.push(_uid_fn());`
-        : '';
+      const uidOuterScope =
+        uidCount > 0
+          ? `var _uid_fn = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];` +
+            `var _uid = []; for (var _uid_i = 0; _uid_i < ${uidCount}; _uid_i++) _uid.push(_uid_fn());`
+          : '';
 
       // For strict-mode templates, shadow the global $_maybeHelper with a
       // resolver that throws "not in scope" for free identifiers instead of
@@ -11411,7 +12744,7 @@ export function precompileTemplate(templateString: string, options?: {
         ${strictMaybeHelperInjection}
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
-          ${needsSlots ? "const $slots = globalThis.$slots || {};" : ''}
+          ${needsSlots ? 'const $slots = globalThis.$slots || {};' : ''}
           ${hasUnbound ? 'if (globalThis.__gxtUnboundResetSlots) globalThis.__gxtUnboundResetSlots();' : ''}
 
           ${scopeInjections.join('\n          ')}
@@ -11433,8 +12766,6 @@ export function precompileTemplate(templateString: string, options?: {
       console.error('[gxt-compile] Failed to recreate template function:', e);
     }
   }
-
-
 
   // Helper function to convert template results to nodes
   const itemToNode = (item: any, depth = 0): Node | null => {
@@ -11537,7 +12868,9 @@ export function precompileTemplate(templateString: string, options?: {
                 isEmpty = true;
               }
             });
-          } catch { /* effect setup may fail */ }
+          } catch {
+            /* effect setup may fail */
+          }
 
           return fragment;
         }
@@ -11585,15 +12918,31 @@ export function precompileTemplate(templateString: string, options?: {
                 const cc = _curriedItem;
                 if (cc.__curriedArgs) {
                   for (const val of Object.values(cc.__curriedArgs)) {
-                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-                      try { val(); } catch { /* ignore */ }
+                    if (
+                      typeof val === 'function' &&
+                      !val.prototype &&
+                      !(val as any).__isCurriedComponent
+                    ) {
+                      try {
+                        val();
+                      } catch {
+                        /* ignore */
+                      }
                     }
                   }
                 }
                 if (cc.__curriedPositionals) {
                   for (const val of cc.__curriedPositionals) {
-                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-                      try { val(); } catch { /* ignore */ }
+                    if (
+                      typeof val === 'function' &&
+                      !val.prototype &&
+                      !(val as any).__isCurriedComponent
+                    ) {
+                      try {
+                        val();
+                      } catch {
+                        /* ignore */
+                      }
                     }
                   }
                 }
@@ -11604,7 +12953,12 @@ export function precompileTemplate(templateString: string, options?: {
                 // Re-render: remove old, insert new
                 let _n = _csm.nextSibling;
                 const _removed: Node[] = [];
-                while (_n && _n !== _cem) { const nx = _n.nextSibling; _removed.push(_n); parent.removeChild(_n); _n = nx; }
+                while (_n && _n !== _cem) {
+                  const nx = _n.nextSibling;
+                  _removed.push(_n);
+                  parent.removeChild(_n);
+                  _n = nx;
+                }
                 const _destroyFn = (globalThis as any).__gxtDestroyInstancesInNodes;
                 if (typeof _destroyFn === 'function' && _removed.length > 0) _destroyFn(_removed);
                 const newNode = _renderCurried(cc);
@@ -11612,7 +12966,9 @@ export function precompileTemplate(templateString: string, options?: {
                 _cinfo.lastRenderedName = cc.__name;
                 _snapshotCurriedArgs(_cinfo, cc);
               });
-            } catch { /* effect setup may fail */ }
+            } catch {
+              /* effect setup may fail */
+            }
             return _cfrag;
           }
         }
@@ -11620,9 +12976,8 @@ export function precompileTemplate(templateString: string, options?: {
         const result = item();
         // If result is a function, it's a nested getter (e.g., from $__if)
         // BUT: do NOT call CurriedComponent functions — they need the reactive rendering path below
-        let finalResult = (typeof result === 'function' && !result.__isCurriedComponent)
-          ? result()
-          : result;
+        let finalResult =
+          typeof result === 'function' && !result.__isCurriedComponent ? result() : result;
 
         // Curried dynamic helper in content position: {{@value}} where
         // @value = {{helper foo "..."}}. The curried helper is a function
@@ -11712,24 +13067,41 @@ export function precompileTemplate(templateString: string, options?: {
                   newFinal = item;
                 } else {
                   const newResult = item();
-                  newFinal = (typeof newResult === 'function' && !newResult?.__isCurriedComponent)
-                    ? newResult()
-                    : newResult;
+                  newFinal =
+                    typeof newResult === 'function' && !newResult?.__isCurriedComponent
+                      ? newResult()
+                      : newResult;
                 }
                 // Evaluate curried arg getters to establish tracking —
                 // when a curried arg changes (e.g., this.model.expectedText),
                 // this effect must re-fire so we can update the component.
                 if (newFinal && newFinal.__isCurriedComponent && newFinal.__curriedArgs) {
                   for (const val of Object.values(newFinal.__curriedArgs)) {
-                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-                      try { val(); } catch { /* ignore */ }
+                    if (
+                      typeof val === 'function' &&
+                      !val.prototype &&
+                      !(val as any).__isCurriedComponent
+                    ) {
+                      try {
+                        val();
+                      } catch {
+                        /* ignore */
+                      }
                     }
                   }
                 }
                 if (newFinal && newFinal.__isCurriedComponent && newFinal.__curriedPositionals) {
                   for (const val of newFinal.__curriedPositionals) {
-                    if (typeof val === 'function' && !val.prototype && !(val as any).__isCurriedComponent) {
-                      try { val(); } catch { /* ignore */ }
+                    if (
+                      typeof val === 'function' &&
+                      !val.prototype &&
+                      !(val as any).__isCurriedComponent
+                    ) {
+                      try {
+                        val();
+                      } catch {
+                        /* ignore */
+                      }
                     }
                   }
                 }
@@ -11738,15 +13110,20 @@ export function precompileTemplate(templateString: string, options?: {
                 if (!parent) return;
 
                 // Skip teardown if same component with unchanged args (preserves DOM stability)
-                if (newFinal && newFinal.__isCurriedComponent &&
-                    startMarker.nextSibling !== endMarker &&
-                    !_curriedComponentChanged(curriedRenderInfo, newFinal)) {
+                if (
+                  newFinal &&
+                  newFinal.__isCurriedComponent &&
+                  startMarker.nextSibling !== endMarker &&
+                  !_curriedComponentChanged(curriedRenderInfo, newFinal)
+                ) {
                   return;
                 }
 
                 // Check if the component type changed (not just args)
-                const _componentSwapped = !newFinal || !newFinal.__isCurriedComponent ||
-                  (newFinal.__name !== curriedRenderInfo.lastRenderedName);
+                const _componentSwapped =
+                  !newFinal ||
+                  !newFinal.__isCurriedComponent ||
+                  newFinal.__name !== curriedRenderInfo.lastRenderedName;
                 // Collect and remove existing content between markers
                 const _removedNodes: Node[] = [];
                 let node = startMarker.nextSibling;
@@ -11765,7 +13142,11 @@ export function precompileTemplate(templateString: string, options?: {
                 }
 
                 // Insert new content if we have a valid curried component
-                if (newFinal && newFinal.__isCurriedComponent && managers.component.canHandle(newFinal)) {
+                if (
+                  newFinal &&
+                  newFinal.__isCurriedComponent &&
+                  managers.component.canHandle(newFinal)
+                ) {
                   const newNode = renderCurriedComponent(newFinal);
                   if (newNode) {
                     parent.insertBefore(newNode, endMarker);
@@ -11788,7 +13169,9 @@ export function precompileTemplate(templateString: string, options?: {
                   curriedRenderInfo.lastRenderedName = newFinal;
                 }
               });
-            } catch { /* effect setup may fail */ }
+            } catch {
+              /* effect setup may fail */
+            }
 
             return fragment;
           }
@@ -11796,7 +13179,11 @@ export function precompileTemplate(templateString: string, options?: {
 
         // Check if the result is a raw HTML value (from triple-stache {{{expr}}})
         // These have __htmlRaw or toHTML marker and need innerHTML rendering
-        if (finalResult && typeof finalResult === 'object' && (finalResult.__htmlRaw || typeof finalResult.toHTML === 'function')) {
+        if (
+          finalResult &&
+          typeof finalResult === 'object' &&
+          (finalResult.__htmlRaw || typeof finalResult.toHTML === 'function')
+        ) {
           const getHtml = () => {
             const v = item();
             const fv = typeof v === 'function' ? v() : v;
@@ -11861,7 +13248,9 @@ export function precompileTemplate(templateString: string, options?: {
                 htmlIsEmpty = true;
               }
             });
-          } catch { /* effect setup may fail */ }
+          } catch {
+            /* effect setup may fail */
+          }
           return fragment;
         }
 
@@ -11872,9 +13261,15 @@ export function precompileTemplate(templateString: string, options?: {
           const _RNPROP = RENDERED_NODES_PROPERTY;
           // Arrays: only recurse if they contain Node or function items (GXT node arrays).
           // Plain value arrays (e.g., from rest positionalParams) should be stringified.
-          const isGxtArray = Array.isArray(finalResult) && finalResult.length > 0 &&
-            finalResult.some((v: any) => v instanceof Node || typeof v === 'function' ||
-              (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date)));
+          const isGxtArray =
+            Array.isArray(finalResult) &&
+            finalResult.length > 0 &&
+            finalResult.some(
+              (v: any) =>
+                v instanceof Node ||
+                typeof v === 'function' ||
+                (v && typeof v === 'object' && !Array.isArray(v) && !(v instanceof Date))
+            );
           if (_RNPROP && _RNPROP in finalResult && !isGxtArray) {
             // Extract DOM nodes from GXT ComponentReturnType objects (e.g., from $_dc).
             // These objects have RENDERED_NODES_PROPERTY containing the actual DOM nodes.
@@ -11914,7 +13309,11 @@ export function precompileTemplate(templateString: string, options?: {
           // Ember's Glimmer VM stringifies all values in text positions.
           // Handle Object.create(null) which has no toString — render as empty.
           let textVal: string;
-          try { textVal = String(finalResult); } catch { textVal = ''; }
+          try {
+            textVal = String(finalResult);
+          } catch {
+            textVal = '';
+          }
           const objTextNode = document.createTextNode(textVal);
           try {
             gxtEffect(() => {
@@ -11922,7 +13321,9 @@ export function precompileTemplate(templateString: string, options?: {
               const fv = typeof v === 'function' ? v() : v;
               objTextNode.textContent = fv == null ? '' : String(fv);
             });
-          } catch { /* effect setup may fail */ }
+          } catch {
+            /* effect setup may fail */
+          }
           return objTextNode;
         }
 
@@ -11935,7 +13336,9 @@ export function precompileTemplate(templateString: string, options?: {
               const fv = typeof v === 'function' ? v() : v;
               symTextNode.textContent = fv == null ? '' : String(fv);
             });
-          } catch { /* effect setup may fail */ }
+          } catch {
+            /* effect setup may fail */
+          }
           return symTextNode;
         }
 
@@ -11971,7 +13374,9 @@ export function precompileTemplate(templateString: string, options?: {
                 parent.insertBefore(document.createTextNode(String(fv)), endMarker);
               }
             });
-          } catch { /* effect setup may fail */ }
+          } catch {
+            /* effect setup may fail */
+          }
           return fragment;
         }
 
@@ -12005,10 +13410,21 @@ export function precompileTemplate(templateString: string, options?: {
             const fv = typeof v === 'function' ? v() : v;
             if (typeof fv === 'string' && (fv === 'hello' || fv === 'goodbye')) {
               const parent = (textNode as Text).parentElement;
-              console.log('[DBG-MSG]', 'id=', _effectId, 'call#', _effectCallCount, 'fv=', fv,
-                'connected?', (textNode as Text).isConnected,
-                'parent=', parent?.tagName + '#' + parent?.id,
-                'innerHTML=', parent?.innerHTML?.slice(0, 100));
+              console.log(
+                '[DBG-MSG]',
+                'id=',
+                _effectId,
+                'call#',
+                _effectCallCount,
+                'fv=',
+                fv,
+                'connected?',
+                (textNode as Text).isConnected,
+                'parent=',
+                parent?.tagName + '#' + parent?.id,
+                'innerHTML=',
+                parent?.innerHTML?.slice(0, 100)
+              );
             }
 
             if (fv instanceof Node) {
@@ -12043,11 +13459,12 @@ export function precompileTemplate(templateString: string, options?: {
       } catch (e) {
         // Re-throw assertion errors (e.g., "Could not find component named ...")
         // so they propagate to the test harness
-        if (e instanceof Error && (
-          e.message.includes('Could not find component') ||
-          e.message.includes('Attempted to resolve') ||
-          e.message.includes('Assertion Failed')
-        )) {
+        if (
+          e instanceof Error &&
+          (e.message.includes('Could not find component') ||
+            e.message.includes('Attempted to resolve') ||
+            e.message.includes('Assertion Failed'))
+        ) {
           throw e;
         }
         return null;
@@ -12136,12 +13553,14 @@ export function precompileTemplate(templateString: string, options?: {
       for (const sym of symbols) {
         const val = item[sym];
         if (Array.isArray(val) && val.length > 0) {
-          const hasNodes = val.some((v: any) =>
-            v instanceof Node ||
-            typeof v === 'string' ||
-            typeof v === 'number' ||
-            typeof v === 'function' ||
-            (v && typeof v === 'object'));
+          const hasNodes = val.some(
+            (v: any) =>
+              v instanceof Node ||
+              typeof v === 'string' ||
+              typeof v === 'number' ||
+              typeof v === 'function' ||
+              (v && typeof v === 'object')
+          );
 
           if (hasNodes) {
             const frag = document.createDocumentFragment();
@@ -12158,7 +13577,7 @@ export function precompileTemplate(templateString: string, options?: {
   };
 
   // Create the template factory function (takes owner, returns template)
-  const templateFactory = function(owner?: any) {
+  const templateFactory = function (owner?: any) {
     const templateId = `gxt-template-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     // Create a template object that Ember expects
@@ -12210,7 +13629,8 @@ export function precompileTemplate(templateString: string, options?: {
         // $_inElement can detect render-order timing issues and defer
         // the body render until the parent fragment commits.
         const _setRenderPass: ((on: boolean) => void) | undefined = g.__gxtSetIsRendering;
-        const _inElemStack: string[] = (g.__gxtInElementFallbackIds = g.__gxtInElementFallbackIds || []);
+        const _inElemStack: string[] = (g.__gxtInElementFallbackIds =
+          g.__gxtInElementFallbackIds || []);
         const _inElemStackStart = _inElemStack.length;
         for (const id of _inElementLiteralIds) _inElemStack.push(id);
         if (typeof _setRenderPass === 'function') _setRenderPass(true);
@@ -12261,13 +13681,17 @@ export function precompileTemplate(templateString: string, options?: {
               if (gxtRoot && RENDERING_CONTEXT_PROPERTY) {
                 try {
                   (gxtRoot as any)[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
-                } catch { /* ignore frozen root */ }
+                } catch {
+                  /* ignore frozen root */
+                }
               }
             }
             if (rootRenderingCtx && RENDERING_CONTEXT_PROPERTY) {
               renderContext[RENDERING_CONTEXT_PROPERTY as any] = rootRenderingCtx;
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
 
           g.$slots = context.$slots || context[_SLOTS_SYM] || {};
           g.$fw = context.$fw || [[], [], []];
@@ -12276,7 +13700,8 @@ export function precompileTemplate(templateString: string, options?: {
           // During top-level component rendering (via runAppend), the owner may
           // not be set on globalThis yet. Extract it from the component context.
           if (!(globalThis as any).owner && context) {
-            const ctxOwner = context.owner || context._owner || (context.__gxtRawTarget || context)?.owner;
+            const ctxOwner =
+              context.owner || context._owner || (context.__gxtRawTarget || context)?.owner;
             if (ctxOwner && typeof ctxOwner === 'object' && typeof ctxOwner.lookup === 'function') {
               (globalThis as any).owner = ctxOwner;
             }
@@ -12291,10 +13716,25 @@ export function precompileTemplate(templateString: string, options?: {
           {
             const _owner = (globalThis as any).owner;
             if (_owner && !_owner.isDestroyed) {
-              const BUILTIN_HELPER_NAMES = ['array', 'hash', 'concat', 'fn', 'get', 'mut', 'readonly', 'unique-id', 'unbound', '__mutGet'];
+              const BUILTIN_HELPER_NAMES = [
+                'array',
+                'hash',
+                'concat',
+                'fn',
+                'get',
+                'mut',
+                'readonly',
+                'unique-id',
+                'unbound',
+                '__mutGet',
+              ];
               for (const builtinName of BUILTIN_HELPER_NAMES) {
                 let hasOverride = false;
-                try { hasOverride = !!_owner.factoryFor?.(`helper:${builtinName}`); } catch { /* ignore */ }
+                try {
+                  hasOverride = !!_owner.factoryFor?.(`helper:${builtinName}`);
+                } catch {
+                  /* ignore */
+                }
                 if (hasOverride) {
                   emberAssert(
                     `You attempted to overwrite the built-in helper "${builtinName}" which is not allowed. Please rename the helper.`,
@@ -12321,7 +13761,6 @@ export function precompileTemplate(templateString: string, options?: {
             }
           }
 
-
           // Set up the GXT context symbols using the proper exported symbols
           if (RENDERED_NODES_PROPERTY && !renderContext[RENDERED_NODES_PROPERTY as any]) {
             renderContext[RENDERED_NODES_PROPERTY as any] = [];
@@ -12346,10 +13785,13 @@ export function precompileTemplate(templateString: string, options?: {
             if (rootId !== undefined && rootId !== null) {
               try {
                 renderContext[COMPONENT_ID_PROPERTY as any] = rootId;
-              } catch { /* frozen context, ignore */ }
+              } catch {
+                /* frozen context, ignore */
+              }
             } else if (!renderContext[COMPONENT_ID_PROPERTY as any]) {
               // Fallback: mint a unique ID (old behavior) if gxtRoot has no id.
-              renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
+              renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId =
+                (g.__gxtContextId || 100) + 1;
             }
           }
 
@@ -12367,13 +13809,13 @@ export function precompileTemplate(templateString: string, options?: {
           // (_lookupSlot / _resolveHasBlockArgs defined above) so the logic
           // stays in one place.
           const currentSlots = g.$slots;
-          renderContext.$_hasBlock = function(arg1?: any, arg2?: any) {
-            const slots = (arg1 && typeof arg1 === 'object') ? arg1 : currentSlots;
+          renderContext.$_hasBlock = function (arg1?: any, arg2?: any) {
+            const slots = arg1 && typeof arg1 === 'object' ? arg1 : currentSlots;
             const name = ((arg1 && typeof arg1 === 'object' ? arg2 : arg1) as string) || 'default';
             return _lookupSlot(slots, name) !== undefined;
           };
-          renderContext.$_hasBlockParams = function(arg1?: any, arg2?: any) {
-            const slots = (arg1 && typeof arg1 === 'object') ? arg1 : currentSlots;
+          renderContext.$_hasBlockParams = function (arg1?: any, arg2?: any) {
+            const slots = arg1 && typeof arg1 === 'object' ? arg1 : currentSlots;
             const name = ((arg1 && typeof arg1 === 'object' ? arg2 : arg1) as string) || 'default';
             const slotFn = _lookupSlot(slots, name);
             if (!slotFn) return false;
@@ -12418,10 +13860,25 @@ export function precompileTemplate(templateString: string, options?: {
           let _cellInstallCount = 0;
           try {
             const internalKeys = new Set([
-              'args', 'attrs', 'element', 'parentView', 'tagName', 'layoutName',
-              'layout', 'classNames', 'classNameBindings', 'attributeBindings',
-              'concatenatedProperties', 'mergedProperties', 'isDestroying', 'isDestroyed',
-              'renderer', 'init', 'constructor', 'willDestroy', 'toString',
+              'args',
+              'attrs',
+              'element',
+              'parentView',
+              'tagName',
+              'layoutName',
+              'layout',
+              'classNames',
+              'classNameBindings',
+              'attributeBindings',
+              'concatenatedProperties',
+              'mergedProperties',
+              'isDestroying',
+              'isDestroyed',
+              'renderer',
+              'init',
+              'constructor',
+              'willDestroy',
+              'toString',
             ]);
             // Use the raw target if render context is a Proxy (so cells are keyed
             // to the same object that __gxtTriggerReRender uses).
@@ -12436,8 +13893,13 @@ export function precompileTemplate(templateString: string, options?: {
                 visited.add(key);
                 if (key.startsWith('_') || key.startsWith('$') || internalKeys.has(key)) continue;
                 const desc = Object.getOwnPropertyDescriptor(proto, key);
-                if (desc && !desc.get && !desc.set && desc.configurable &&
-                    typeof desc.value !== 'function') {
+                if (
+                  desc &&
+                  !desc.get &&
+                  !desc.set &&
+                  desc.configurable &&
+                  typeof desc.value !== 'function'
+                ) {
                   try {
                     // Guard against installing a recursive cell-backed getter (GH#18417):
                     // if a formula (Yt) cell already exists for (cellTarget, key)
@@ -12451,7 +13913,9 @@ export function precompileTemplate(templateString: string, options?: {
                       if (_existing && typeof (_existing as any).__fn === 'function') {
                         continue;
                       }
-                    } catch { /* ignore probe failure */ }
+                    } catch {
+                      /* ignore probe failure */
+                    }
                     // Install cell on the raw target (not the proxy)
                     // This ensures the same cell is used for reads and writes
                     cellFor(cellTarget, key as any, /* skipDefine */ false);
@@ -12463,14 +13927,18 @@ export function precompileTemplate(templateString: string, options?: {
                     if (cellValue && typeof cellValue === 'object') {
                       registerObjectValueOwner(cellValue, cellTarget, key);
                     }
-                  } catch { /* ignore non-configurable properties */ }
+                  } catch {
+                    /* ignore non-configurable properties */
+                  }
                 }
               }
               const nextProto = Object.getPrototypeOf(proto);
               if (!nextProto || nextProto === Object.prototype) break;
               proto = nextProto;
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           // _cellInstallCount tracked for debugging
 
           // Cell promotion handled by __gxtForceEmberRerender (full re-render)
@@ -12498,9 +13966,24 @@ export function precompileTemplate(templateString: string, options?: {
           // inside itemToNode create properly-tracked formulas.
           const nodes: Node[] = [];
           try {
-          if (Array.isArray(result)) {
-            for (const item of result) {
-              const node = itemToNode(item);
+            if (Array.isArray(result)) {
+              for (const item of result) {
+                const node = itemToNode(item);
+                if (node) {
+                  if (node instanceof DocumentFragment) {
+                    const childNodes = Array.from(node.childNodes);
+                    for (const child of childNodes) {
+                      nodes.push(child);
+                      parentElement.appendChild(child);
+                    }
+                  } else {
+                    nodes.push(node);
+                    parentElement.appendChild(node);
+                  }
+                }
+              }
+            } else {
+              const node = itemToNode(result);
               if (node) {
                 if (node instanceof DocumentFragment) {
                   const childNodes = Array.from(node.childNodes);
@@ -12514,21 +13997,6 @@ export function precompileTemplate(templateString: string, options?: {
                 }
               }
             }
-          } else {
-            const node = itemToNode(result);
-            if (node) {
-              if (node instanceof DocumentFragment) {
-                const childNodes = Array.from(node.childNodes);
-                for (const child of childNodes) {
-                  nodes.push(child);
-                  parentElement.appendChild(child);
-                }
-              } else {
-                nodes.push(node);
-                parentElement.appendChild(node);
-              }
-            }
-          }
           } finally {
             gxtSetIsRendering(false);
           }
@@ -12547,7 +14015,7 @@ export function precompileTemplate(templateString: string, options?: {
           // contains real visible content (other element children). This skips
           // top-level fragment children where empty comments may be
           // each-block topMarkers/bottomMarkers needed for re-render alignment.
-          if ((g.__gxtMorphRenderInProgress) && parentElement) {
+          if (g.__gxtMorphRenderInProgress && parentElement) {
             try {
               const _allElements: Element[] = [];
               if ((parentElement as any).querySelectorAll) {
@@ -12559,7 +14027,10 @@ export function precompileTemplate(templateString: string, options?: {
                 // them as part of dynamic content boundaries.
                 let _hasElementChild = false;
                 for (const _c of Array.from(_el.childNodes)) {
-                  if (_c.nodeType === 1) { _hasElementChild = true; break; }
+                  if (_c.nodeType === 1) {
+                    _hasElementChild = true;
+                    break;
+                  }
                 }
                 if (!_hasElementChild) continue;
                 // Remove empty comments that are direct children of _el.
@@ -12567,12 +14038,19 @@ export function precompileTemplate(templateString: string, options?: {
                 for (const _c of Array.from(_el.childNodes)) {
                   if (_c.nodeType !== 8) continue;
                   const _t = (_c as Comment).textContent || '';
-                  if (_t.includes('if-entry') || _t.includes('each-entry') || _t.includes('dc-placeholder')) continue;
+                  if (
+                    _t.includes('if-entry') ||
+                    _t.includes('each-entry') ||
+                    _t.includes('dc-placeholder')
+                  )
+                    continue;
                   if (_t === '') _toRemove.push(_c as Comment);
                 }
                 for (const _c of _toRemove) _el.removeChild(_c);
               }
-            } catch { /* ignore artifact cleanup errors */ }
+            } catch {
+              /* ignore artifact cleanup errors */
+            }
           }
 
           // Restore previous global values
@@ -12598,7 +14076,14 @@ export function precompileTemplate(templateString: string, options?: {
 
           // Rethrow non-Error values (expectAssertion's BREAK sentinel) and
           // assertion errors so they propagate to test harnesses
-          if (_isAssertionLike(err) || (err && ((err as any).message?.includes('Could not find') || (err as any).message?.includes('Custom modifier managers must have') || (err as any).message?.includes('Custom helper managers must have') || (err as any).message?.includes('but that value was not in scope:')))) {
+          if (
+            _isAssertionLike(err) ||
+            (err &&
+              ((err as any).message?.includes('Could not find') ||
+                (err as any).message?.includes('Custom modifier managers must have') ||
+                (err as any).message?.includes('Custom helper managers must have') ||
+                (err as any).message?.includes('but that value was not in scope:')))
+          ) {
             throw err;
           }
           // Swallow other render errors gracefully

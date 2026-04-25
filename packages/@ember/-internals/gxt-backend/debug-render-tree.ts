@@ -5,7 +5,13 @@
  * allowing Ember Inspector and debug tools to work with GXT.
  */
 
-export type RenderNodeType = 'outlet' | 'engine' | 'route-template' | 'component' | 'modifier' | 'keyword';
+export type RenderNodeType =
+  | 'outlet'
+  | 'engine'
+  | 'route-template'
+  | 'component'
+  | 'modifier'
+  | 'keyword';
 
 export interface RenderNode {
   type: RenderNodeType;

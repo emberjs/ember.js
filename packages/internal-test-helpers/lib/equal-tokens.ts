@@ -3,18 +3,23 @@ import { tokenize } from 'simple-html-tokenizer';
 /** Strip GXT rendering artifacts from HTML string */
 function stripGxtArtifacts(html: string): string {
   if (!(globalThis as any).__GXT_MODE__) return html;
-  return html
-    // Remove GXT placeholder comments (including if-entry)
-    .replace(/<!--(?:placeholder|if-entry|each-entry|list-target|list item|list bottom marker|list fragment target marker|sync-each-placeholder|htmlRaw|\/htmlRaw|curried-start|curried-end)[^>]*-->/g, '')
-    // Remove empty comments left by Glimmer VM (<!---->)
-    .replace(/<!---->/g, '')
-    // Remove data-node-id attributes
-    .replace(/\s*data-node-id="[^"]*"/g, '')
-    // Unwrap <ember-outlet> wrappers
-    .replace(/<\/?ember-outlet[^>]*>/g, '')
-    // Collapse multiple spaces/newlines caused by removals
-    .replace(/>\s+</g, '><')
-    .trim();
+  return (
+    html
+      // Remove GXT placeholder comments (including if-entry)
+      .replace(
+        /<!--(?:placeholder|if-entry|each-entry|list-target|list item|list bottom marker|list fragment target marker|sync-each-placeholder|htmlRaw|\/htmlRaw|curried-start|curried-end)[^>]*-->/g,
+        ''
+      )
+      // Remove empty comments left by Glimmer VM (<!---->)
+      .replace(/<!---->/g, '')
+      // Remove data-node-id attributes
+      .replace(/\s*data-node-id="[^"]*"/g, '')
+      // Unwrap <ember-outlet> wrappers
+      .replace(/<\/?ember-outlet[^>]*>/g, '')
+      // Collapse multiple spaces/newlines caused by removals
+      .replace(/>\s+</g, '><')
+      .trim()
+  );
 }
 
 function generateTokens(containerOrHTML: string | Element) {
@@ -26,7 +31,10 @@ function generateTokens(containerOrHTML: string | Element) {
     // which performs the same collapse on the actual DOM innerHTML to
     // clean up whitespace left by removed placeholder comments.
     if ((globalThis as any).__GXT_MODE__) {
-      html = html.replace(/<!---->/g, '').replace(/>\s+</g, '><').trim();
+      html = html
+        .replace(/<!---->/g, '')
+        .replace(/>\s+</g, '><')
+        .trim();
     }
     return {
       tokens: tokenize(html),

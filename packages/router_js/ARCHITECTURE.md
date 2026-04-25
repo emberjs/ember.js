@@ -62,6 +62,7 @@ intelligent defaults, rendering templates, and loading data into controllers.
    avoid re-running the hooks to load Article 123 again.
 
 3. Handle two different approaches to transitions:
+
    - URL based (where a URL is parsed into route parameters that are used to
      load all the data needed to enter a route (e.g. `{ article_id: 123 }`).
 

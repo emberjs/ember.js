@@ -21,25 +21,28 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a === '--allow') allow.add(argv[++i]);
     else if (a === '--help' || a === '-h') {
-      usage(); process.exit(0);
+      usage();
+      process.exit(0);
     } else if (a.startsWith('--')) {
       process.stderr.write(`unknown flag: ${a}\n`);
       process.exit(3);
     } else positional.push(a);
   }
-  if (positional.length !== 2) { usage(); process.exit(3); }
+  if (positional.length !== 2) {
+    usage();
+    process.exit(3);
+  }
   return { baseline: positional[0], current: positional[1], allow };
 }
 
 function usage() {
-  process.stderr.write(
-    'Usage: diff.mjs <baseline.json> <current.json> [--allow <category>]...\n',
-  );
+  process.stderr.write('Usage: diff.mjs <baseline.json> <current.json> [--allow <category>]...\n');
 }
 
 function load(file) {
   if (!existsSync(file)) {
-    process.stderr.write(`File not found: ${file}\n`); process.exit(3);
+    process.stderr.write(`File not found: ${file}\n`);
+    process.exit(3);
   }
   return JSON.parse(readFileSync(file, 'utf8'));
 }
@@ -141,7 +144,7 @@ function main() {
   const gating = greenToRed.filter((r) => !args.allow.has(r.category));
   if (gating.length) {
     process.stdout.write(
-      `\nFAIL: ${gating.length} regression(s) outside allow-list (${[...args.allow].join(', ') || 'none'})\n`,
+      `\nFAIL: ${gating.length} regression(s) outside allow-list (${[...args.allow].join(', ') || 'none'})\n`
     );
     process.exit(1);
   }

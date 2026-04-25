@@ -149,11 +149,7 @@ function buildRenderContext(context: Dict): Record<string, unknown> {
   // are handled differently, e.g. as in-element render targets.)
   for (const key of Object.keys(ctx)) {
     const v = ctx[key];
-    if (
-      v &&
-      typeof v === 'object' &&
-      (v as { nodeType?: unknown }).nodeType === 3
-    ) {
+    if (v && typeof v === 'object' && (v as { nodeType?: unknown }).nodeType === 3) {
       try {
         ctx[key] = (v as { nodeValue?: string }).nodeValue ?? String(v);
       } catch {
@@ -301,7 +297,10 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   // / `<Name ... />` invocations so the GXT compiler can render them
   // without needing to thread a full component-factory invocation through
   // `$_c`. Scoped strictly to this test delegate.
-  protected registeredLayouts: Record<string, { layout: string; kind: ComponentKind | 'TemplateOnly' }> = Object.create(null);
+  protected registeredLayouts: Record<
+    string,
+    { layout: string; kind: ComponentKind | 'TemplateOnly' }
+  > = Object.create(null);
 
   constructor(_options?: RenderDelegateOptions) {
     this.clientDoc = castToSimple(document);
@@ -359,7 +358,8 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   private resolveDynamicComponentInvocations(template: string, context: Dict): string {
     if (Object.keys(this.registeredLayouts).length === 0) return template;
     // Block form: `{{#component this.X ...}}inner{{/component}}`
-    const blockRe = /\{\{#\s*component\s+this\.([A-Za-z_][\w]*)\b([^}]*)\}\}([\s\S]*?)\{\{\/\s*component\s*\}\}/g;
+    const blockRe =
+      /\{\{#\s*component\s+this\.([A-Za-z_][\w]*)\b([^}]*)\}\}([\s\S]*?)\{\{\/\s*component\s*\}\}/g;
     let out = template.replace(blockRe, (match, key: string, argsRest: string, inner: string) => {
       const resolved = (context as Record<string, unknown>)[key];
       if (typeof resolved !== 'string') return match;
@@ -430,11 +430,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     return true;
   }
 
-  private expandAngleBracketInvocations(
-    source: string,
-    name: string,
-    layout: string
-  ): string {
+  private expandAngleBracketInvocations(source: string, name: string, layout: string): string {
     // Only expand exact-name angle invocations. Case-sensitive match.
     // Self-closing form first.
     const selfClose = new RegExp(`<${name}(\\s[^>]*)?\\s*/>`, 'g');
@@ -455,11 +451,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     return out;
   }
 
-  private expandCurlyBlockInvocations(
-    source: string,
-    name: string,
-    layout: string
-  ): string {
+  private expandCurlyBlockInvocations(source: string, name: string, layout: string): string {
     // Match curly block invocations: `{{#name ...}}inner{{/name}}`.
     // The name in curly form is typically the kebab-case of the
     // registered name. Only apply when the registered `name` exactly
@@ -501,7 +493,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
         if (nextOpen !== -1 && nextOpen < nextClose) {
           // Ensure it's a bare tag, not prefix of another identifier.
           const after = source.charCodeAt(nextOpen + name.length + 1);
-          if ((after >= 65 && after <= 90) || (after >= 97 && after <= 122) || (after >= 48 && after <= 57) || after === 95 || after === 45) {
+          if (
+            (after >= 65 && after <= 90) ||
+            (after >= 97 && after <= 122) ||
+            (after >= 48 && after <= 57) ||
+            after === 95 ||
+            after === 45
+          ) {
             i = nextOpen + name.length + 1;
             continue;
           }
@@ -536,11 +534,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     return result;
   }
 
-  private renderLayoutWithArgs(
-    layout: string,
-    argsPart: string,
-    inner: string
-  ): string {
+  private renderLayoutWithArgs(layout: string, argsPart: string, inner: string): string {
     // Build a map of @argName → raw value-source from `argsPart` like:
     //   ` @name={{this.foo}} @x="literal" ...attributes`
     // For the tests we handle, angle-bracket-component args use the form
@@ -607,9 +601,8 @@ export class GxtRehydrationDelegate implements RenderDelegate {
             if (v === undefined) return whole;
             // If the caller passed `{{expr}}`, strip the wrapper and
             // inline the expr bare; otherwise use the literal string.
-            const bare = v.startsWith('{{') && v.endsWith('}}')
-              ? v.slice(2, -2).trim()
-              : JSON.stringify(v);
+            const bare =
+              v.startsWith('{{') && v.endsWith('}}') ? v.slice(2, -2).trim() : JSON.stringify(v);
             return `${pre}${bare}`;
           }
         );
@@ -732,11 +725,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // template's render has finished so their placeholders already exist
     // in the DOM and can be cleanly removed.
     if (blocks.length > 0) {
-      this.insertCapturedInElementBlocks(
-        blocks,
-        context,
-        target as unknown as Element
-      );
+      this.insertCapturedInElementBlocks(blocks, context, target as unknown as Element);
     }
   }
 
@@ -818,7 +807,10 @@ export class GxtRehydrationDelegate implements RenderDelegate {
    */
   private normalizeServerOptionSelection(targetElement: SimpleElement): void {
     const el = targetElement as unknown as Element;
-    if (!el || typeof (el as unknown as { querySelectorAll?: unknown }).querySelectorAll !== 'function') {
+    if (
+      !el ||
+      typeof (el as unknown as { querySelectorAll?: unknown }).querySelectorAll !== 'function'
+    ) {
       return;
     }
     let options: NodeListOf<Element>;
@@ -853,10 +845,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
    * `{selected: false}`). Without this sync the select's
    * `selectedIndex` never updates between rerenders.
    */
-  private syncOptionSelectedFromScratch(
-    targetEl: Element,
-    scratchEl: Element
-  ): void {
+  private syncOptionSelectedFromScratch(targetEl: Element, scratchEl: Element): void {
     if (!targetEl || !scratchEl) return;
     let targetOptions: NodeListOf<Element>;
     let scratchOptions: NodeListOf<Element>;
@@ -926,9 +915,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
    * `$_inElement` to handle. That keeps the `nested in-element can
    * rehydrate` test on its current (working) code path.
    */
-  private extractInElementBlocks(
-    template: string
-  ): {
+  private extractInElementBlocks(template: string): {
     stripped: string;
     blocks: Array<{ dest: string; insertBefore: string | null; body: string }>;
   } {
@@ -949,7 +936,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
       // Read dest expression (up to whitespace / `}}`)
       const destStart = pos;
-      while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+      while (
+        pos < template.length &&
+        template[pos] !== ' ' &&
+        template[pos] !== '\t' &&
+        template[pos] !== '}'
+      )
+        pos++;
       const dest = template.slice(destStart, pos);
       // Skip whitespace
       while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
@@ -959,7 +952,13 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       if (template.slice(pos, pos + ibMarker.length) === ibMarker) {
         pos += ibMarker.length;
         const exprStart = pos;
-        while (pos < template.length && template[pos] !== ' ' && template[pos] !== '\t' && template[pos] !== '}') pos++;
+        while (
+          pos < template.length &&
+          template[pos] !== ' ' &&
+          template[pos] !== '\t' &&
+          template[pos] !== '}'
+        )
+          pos++;
         insertBefore = template.slice(exprStart, pos);
       }
       // Skip whitespace + `}}`
@@ -1104,7 +1103,11 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       const placeholder = this.findCommentNode(renderedRoot, placeholderText);
 
       const target = this.resolveContextExpr(dest, context);
-      if (!target || typeof target !== 'object' || (target as { nodeType?: unknown }).nodeType !== 1) {
+      if (
+        !target ||
+        typeof target !== 'object' ||
+        (target as { nodeType?: unknown }).nodeType !== 1
+      ) {
         if (placeholder && placeholder.parentNode) {
           placeholder.parentNode.removeChild(placeholder);
         }
@@ -1156,7 +1159,8 @@ export class GxtRehydrationDelegate implements RenderDelegate {
         // body. The nested block bodies are placed into their own
         // targets (which live in the test's host tree); the outer body
         // renders minus the nested extraction placeholder.
-        const { stripped: nestedStripped, blocks: nestedBlocks } = this.extractInElementBlocks(body);
+        const { stripped: nestedStripped, blocks: nestedBlocks } =
+          this.extractInElementBlocks(body);
         const scratch = doc.createElement('div');
         // Tag this scratch container so its extraction placeholders get
         // the `%+b:N%<!---->%-b:N%` nested-placeholder treatment.
@@ -1202,10 +1206,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
         (renderedRoot as unknown as { __gxtIsNestedRoot?: boolean }).__gxtIsNestedRoot === true;
       if (placeholder && placeholder.parentNode) {
         if (placeholderIsInsideNestedClient) {
-          placeholder.parentNode.insertBefore(
-            doc.createComment(''),
-            placeholder
-          );
+          placeholder.parentNode.insertBefore(doc.createComment(''), placeholder);
         }
         placeholder.parentNode.removeChild(placeholder);
       }
@@ -1220,7 +1221,8 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       // verbatim mustache text. The nested block bodies are placed into
       // their own destinations; the outer body is rendered minus the
       // nested blocks.
-      const { stripped: nestedStrippedClient, blocks: nestedBlocksClient } = this.extractInElementBlocks(body);
+      const { stripped: nestedStrippedClient, blocks: nestedBlocksClient } =
+        this.extractInElementBlocks(body);
       const cleanScratch = doc.createElement('div');
       // Tag so nested placeholders leave `<!---->` markers on the
       // client — the `toInnerHTML` assertion looks for them.
@@ -1400,9 +1402,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
    * duplicated alongside the server's. Only the genuinely pre-existing
    * siblings (e.g. `<prefix></prefix>` / `<suffix></suffix>`) survive.
    */
-  private restoreInElementTargets(
-    entries: Array<{ target: Element; html: string }>
-  ): void {
+  private restoreInElementTargets(entries: Array<{ target: Element; html: string }>): void {
     for (const { target, html } of entries) {
       if (!html) continue;
       const stripped = this.stripInElementBlockMarkers(html);
@@ -1426,10 +1426,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // Run repeatedly to collapse nested block ranges from the inside-out.
     let current = html;
     for (let i = 0; i < 8; i++) {
-      const next = current.replace(
-        /<!--%\+b:(\d+)%-->([\s\S]*?)<!--%-b:\1%-->/g,
-        ''
-      );
+      const next = current.replace(/<!--%\+b:(\d+)%-->([\s\S]*?)<!--%-b:\1%-->/g, '');
       if (next === current) return current;
       current = next;
     }
@@ -1445,7 +1442,10 @@ export class GxtRehydrationDelegate implements RenderDelegate {
   private reapplySelectedAttributes(targetElement: SimpleElement): void {
     if (this.serverSelectedOptionIndexes.size === 0) return;
     const el = targetElement as unknown as Element;
-    if (!el || typeof (el as unknown as { querySelectorAll?: unknown }).querySelectorAll !== 'function') {
+    if (
+      !el ||
+      typeof (el as unknown as { querySelectorAll?: unknown }).querySelectorAll !== 'function'
+    ) {
       return;
     }
     let options: NodeListOf<Element>;
@@ -1503,9 +1503,10 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // clearing / positional / append insertion itself.
     const delegateHandlesInElement = this.shouldDelegateInElement(context);
     const templateUsesNullInsertBefore = template.includes('insertBefore=null');
-    const remoteRestore = !delegateHandlesInElement && templateUsesNullInsertBefore
-      ? this.snapshotAndClearInElementTargets(context)
-      : [];
+    const remoteRestore =
+      !delegateHandlesInElement && templateUsesNullInsertBefore
+        ? this.snapshotAndClearInElementTargets(context)
+        : [];
 
     // Restore pre-existing leading children (e.g. <noscript>) captured
     // during renderServerSide so the client render shape matches the
@@ -1528,11 +1529,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // into remote" shape.
     this.restoreInElementTargets(remoteRestore);
 
-    const result = new GxtRenderResult(
-      template,
-      context,
-      targetEl
-    );
+    const result = new GxtRenderResult(template, context, targetEl);
 
     // Wire rerender: `RenderTest.rerender(props)` mutates `context` in
     // place via setProperties, then calls `result.rerender()`. We

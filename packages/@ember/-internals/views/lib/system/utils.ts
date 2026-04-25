@@ -46,7 +46,9 @@ export function getRootViews(owner: InternalOwner): View[] {
   try {
     const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
     if (typeof rebuild === 'function') rebuild(registry);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   let rootViews: View[] = [];
 
@@ -132,7 +134,9 @@ export function getChildViews(view: View): View[] {
   try {
     const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
     if (typeof rebuild === 'function') rebuild(registry);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   return collectChildViews(view, registry);
 }

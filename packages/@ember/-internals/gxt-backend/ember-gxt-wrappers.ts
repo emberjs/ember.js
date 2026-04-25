@@ -30,13 +30,19 @@ const g = globalThis as any;
  * Helpers expect resolved values in positional/named args.
  */
 function isGxtGetter(v: any): boolean {
-  return typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell && !v.__isHelperResult;
+  return (
+    typeof v === 'function' &&
+    !v.prototype &&
+    !v.__isFnHelper &&
+    !v.__isMutCell &&
+    !v.__isHelperResult
+  );
 }
 function unwrapArgs(args: any[]): any[] {
   if (!Array.isArray(args)) return Object.freeze([]) as any[];
   // Only unwrap GXT getters (arrow fns with no prototype).
   // Regular functions (like closures from (fn ...)) should be passed as-is.
-  const result = args.map(a => isGxtGetter(a) ? a() : a);
+  const result = args.map((a) => (isGxtGetter(a) ? a() : a));
   Object.freeze(result);
   return result;
 }
@@ -51,7 +57,7 @@ function unwrapHash(hash: Record<string, any>): Record<string, any> {
     if (GXT_INTERNAL_KEYS.has(key) || key.startsWith('$_')) continue;
     const val = hash[key];
     // Don't call CurriedComponent functions - they should be preserved as-is
-    result[key] = (typeof val === 'function' && !val.__isCurriedComponent) ? val() : val;
+    result[key] = typeof val === 'function' && !val.__isCurriedComponent ? val() : val;
   }
   Object.freeze(result);
   return result;
@@ -87,7 +93,10 @@ const classHelperInstanceCache = new Map<string, any>();
 const simpleHelperResultCache = new Map<string, { argsSer: string; result: any }>();
 // Cache for managed helper buckets (class-based helpers with setHelperManager).
 // Keyed by the helper class/function. Stores { bucket, delegate, reactiveArgs }.
-let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; reactiveArgs: { positional: any[]; named: Record<string, any> } }>();
+let managedHelperBucketCache = new WeakMap<
+  any,
+  { bucket: any; delegate: any; reactiveArgs: { positional: any[]; named: Record<string, any> } }
+>();
 (g as any).__gxtClearHelperCache = () => {
   // Preserve the tag-dirty sentinel — it has no per-test state and re-installing
   // it after every test teardown is unnecessary (and would race with subsequent
@@ -122,7 +131,9 @@ let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; re
   const _tagDirtySentinel = {
     __managerBucket: true as const,
     _val: null as string | null,
-    get lastArgsSer() { return this._val; },
+    get lastArgsSer() {
+      return this._val;
+    },
     set lastArgsSer(v: string | null) {
       this._val = v;
       try {
@@ -138,7 +149,9 @@ let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; re
             inst.__gxtLastArgsSerialized = null;
           }
         }
-      } catch { /* noop — defensive */ }
+      } catch {
+        /* noop — defensive */
+      }
     },
   };
   classHelperInstanceCache.set('__tagDirtySentinel__', _tagDirtySentinel);
@@ -149,16 +162,14 @@ let managedHelperBucketCache = new WeakMap<any, { bucket: any; delegate: any; re
 // definition reuse from the GXT path. The renderer's `_context` getter copies
 // these onto the live EvaluationContext.constants object in GXT mode so the
 // test's `renderer._context.constants` read sees the latest values.
-const _resolverCacheCounters = (g.__gxtResolverCacheCounters =
-  g.__gxtResolverCacheCounters || {
-    componentDefinitionCount: 0,
-    helperDefinitionCount: 0,
-    modifierDefinitionCount: 0,
-  });
+const _resolverCacheCounters = (g.__gxtResolverCacheCounters = g.__gxtResolverCacheCounters || {
+  componentDefinitionCount: 0,
+  helperDefinitionCount: 0,
+  modifierDefinitionCount: 0,
+});
 const _seenHelperDefinitions = (g.__gxtSeenHelperDefinitions =
   g.__gxtSeenHelperDefinitions || new WeakSet<object>());
-const _seenHelperNames = (g.__gxtSeenHelperNames =
-  g.__gxtSeenHelperNames || new Set<string>());
+const _seenHelperNames = (g.__gxtSeenHelperNames = g.__gxtSeenHelperNames || new Set<string>());
 const _seenComponentDefinitions = (g.__gxtSeenComponentDefinitions =
   g.__gxtSeenComponentDefinitions || new WeakSet<object>());
 const _seenComponentNames = (g.__gxtSeenComponentNames =
@@ -214,7 +225,9 @@ function _trackComponentDefinition(nameOrFactory: string | object | null | undef
     try {
       Object.defineProperty(g, '__createCurriedComponent', {
         configurable: true,
-        get() { return trackingWrapper; },
+        get() {
+          return trackingWrapper;
+        },
         set(v: any) {
           if (v && (v as any).__gxtCountedCurry) return;
           _innerCreateCurried = v;
@@ -232,7 +245,7 @@ function _trackComponentDefinition(nameOrFactory: string | object | null | undef
 // When a property changes on a component, invalidate managed helper caches
 // so the next render pass picks up the changes. We DON'T re-compute values
 // here to avoid double-counting (GXT's native reactivity may also trigger).
-(g as any).__gxtNotifyHelperPropertyChange = function(_obj: any, _key: string) {
+(g as any).__gxtNotifyHelperPropertyChange = function (_obj: any, _key: string) {
   for (const [, cached] of classHelperInstanceCache as Map<string, any>) {
     if (cached && cached.__managerBucket) {
       // Invalidate the args serialization so the next $_maybeHelper call
@@ -259,14 +272,17 @@ function createEmberMaybeHelper(original: Function) {
     // If only hashOrCtx and it looks like a context (has $_eval or GXT symbols), it's context.
     const $PROPS = Symbol.for('gxt-props');
     const $ARGS = Symbol.for('gxt-args');
-    const isCtx = !maybeCtx && hashOrCtx && typeof hashOrCtx === 'object' &&
-      (hashOrCtx.hasOwnProperty?.('$_eval')
-        || hashOrCtx[$PROPS] !== undefined
-        || hashOrCtx.hasOwnProperty?.($PROPS)
-        || hashOrCtx[$ARGS] !== undefined
+    const isCtx =
+      !maybeCtx &&
+      hashOrCtx &&
+      typeof hashOrCtx === 'object' &&
+      (hashOrCtx.hasOwnProperty?.('$_eval') ||
+        hashOrCtx[$PROPS] !== undefined ||
+        hashOrCtx.hasOwnProperty?.($PROPS) ||
+        hashOrCtx[$ARGS] !== undefined ||
         // Detect Ember component instances used as context (not as hash)
-        || (hashOrCtx.isView === true && hashOrCtx.isComponent === true));
-    const hash = maybeCtx ? hashOrCtx : (isCtx ? {} : (hashOrCtx ?? {}));
+        (hashOrCtx.isView === true && hashOrCtx.isComponent === true));
+    const hash = maybeCtx ? hashOrCtx : isCtx ? {} : (hashOrCtx ?? {});
 
     // Handle CurriedComponent — when a curried component is used as {{curried ...}} or {{object.comp ...}}
     if (nameOrFn && nameOrFn.__isCurriedComponent) {
@@ -324,19 +340,28 @@ function createEmberMaybeHelper(original: Function) {
           const delegate = helperMgr.getDelegateFor(g.owner);
           // Validate that capabilities were created via helperCapabilities()
           const _FROM_CAPS = g.FROM_CAPABILITIES;
-          if (delegate && delegate.capabilities && _FROM_CAPS && !_FROM_CAPS.has(delegate.capabilities)) {
+          if (
+            delegate &&
+            delegate.capabilities &&
+            _FROM_CAPS &&
+            !_FROM_CAPS.has(delegate.capabilities)
+          ) {
             const err = new Error(
               `Custom helper managers must have a \`capabilities\` property ` +
-              `that is the result of calling the \`capabilities('3.23')\` ` +
-              `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
-              `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
+                `that is the result of calling the \`capabilities('3.23')\` ` +
+                `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
+                `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
             );
             // Capture for flushRenderErrors so assert.throws() can see it
             const captureFn = g.__captureRenderError;
             if (typeof captureFn === 'function') captureFn(err);
             throw err;
           }
-          if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+          if (
+            delegate &&
+            typeof delegate.createHelper === 'function' &&
+            delegate.capabilities?.hasValue
+          ) {
             // Check cache — reuse the same bucket across re-evaluations
             let cached = managedHelperBucketCache.get(nameOrFn);
             if (!cached) {
@@ -350,7 +375,10 @@ function createEmberMaybeHelper(original: Function) {
               const bucket = delegate.createHelper(nameOrFn, reactiveArgs);
 
               // If the delegate supports destroyable, wire it up
-              if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
+              if (
+                delegate.capabilities?.hasDestroyable &&
+                typeof delegate.getDestroyable === 'function'
+              ) {
                 const destroyable = delegate.getDestroyable(bucket);
                 if (destroyable) {
                   const helperInstances = g.__gxtHelperInstances;
@@ -408,9 +436,22 @@ function createEmberMaybeHelper(original: Function) {
       // is invoked via `(fn ...)` (shadowed), the returned closure must reach
       // the outer helper (e.g. `invoke`) AS-IS rather than be eagerly called.
       const markHelperResult = (v: any) => {
-        if (typeof v === 'function' && !v.prototype && !v.__isFnHelper && !v.__isMutCell && !v.__isHelperResult) {
-          try { Object.defineProperty(v, '__isHelperResult', { value: true, enumerable: false, configurable: true }); }
-          catch { /* frozen or non-extensible — skip */ }
+        if (
+          typeof v === 'function' &&
+          !v.prototype &&
+          !v.__isFnHelper &&
+          !v.__isMutCell &&
+          !v.__isHelperResult
+        ) {
+          try {
+            Object.defineProperty(v, '__isHelperResult', {
+              value: true,
+              enumerable: false,
+              configurable: true,
+            });
+          } catch {
+            /* frozen or non-extensible — skip */
+          }
         }
         return v;
       };
@@ -419,16 +460,23 @@ function createEmberMaybeHelper(original: Function) {
       // serialize to null, producing false cache hits across distinct
       // callbacks (e.g. two (fn ...) subexpressions shadowed by a user fn).
       const hasObjectArg = positional.some(
-        (a: any) => (a !== null && typeof a === 'object') ||
+        (a: any) =>
+          (a !== null && typeof a === 'object') ||
           (typeof a === 'function' && !a.__isFnHelper && !a.__isMutCell)
       );
       if (hasObjectArg) {
-        return markHelperResult(hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional));
+        return markHelperResult(
+          hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional)
+        );
       }
 
       let cached = managedHelperBucketCache.get(nameOrFn);
       let argsSer: string | null = null;
-      try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+      try {
+        argsSer = JSON.stringify({ p: positional, n: named });
+      } catch {
+        /* skip */
+      }
 
       if (cached && cached.__plainFnHelper) {
         // Check if args actually changed
@@ -437,19 +485,25 @@ function createEmberMaybeHelper(original: Function) {
           return cached.lastResult;
         }
         // Args changed — re-invoke the function
-        const result = markHelperResult(hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional));
+        const result = markHelperResult(
+          hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional)
+        );
         cached.lastArgsSer = argsSer;
         cached.lastResult = result;
         return result;
       }
 
       // First invocation — call and cache
-      const result = markHelperResult(hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional));
+      const result = markHelperResult(
+        hasNamed ? nameOrFn(...positional, named) : nameOrFn(...positional)
+      );
       managedHelperBucketCache.set(nameOrFn, {
         __plainFnHelper: true,
         lastArgsSer: argsSer,
         lastResult: result,
-        bucket: null, delegate: null, reactiveArgs: null as any,
+        bucket: null,
+        delegate: null,
+        reactiveArgs: null as any,
       });
       return result;
     }
@@ -491,7 +545,10 @@ function createEmberMaybeHelper(original: Function) {
         const rawGetter = args[0];
         let pathArg: any =
           args.length > 1 ? (typeof args[1] === 'function' ? args[1]() : args[1]) : undefined;
-        if ((pathArg === undefined || typeof pathArg !== 'string') && typeof rawGetter === 'function') {
+        if (
+          (pathArg === undefined || typeof pathArg !== 'string') &&
+          typeof rawGetter === 'function'
+        ) {
           const getterStr = String(rawGetter);
           const scanPath = (start: number): string | null => {
             let end = start;
@@ -501,7 +558,10 @@ function createEmberMaybeHelper(original: Function) {
                 (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') ||
                 (c >= '0' && c <= '9') ||
-                c === '_' || c === '$' || c === '?' || c === '.'
+                c === '_' ||
+                c === '$' ||
+                c === '?' ||
+                c === '.'
               ) {
                 end++;
               } else {
@@ -565,7 +625,8 @@ function createEmberMaybeHelper(original: Function) {
         // This must come before isClassBased check because some helper manager
         // classes (e.g., TestHelper) also define compute() but should be handled
         // via the manager protocol, not via factory.create().
-        const manager = findHelperManager(factoryClass) || findHelperManager(factoryClass?.prototype);
+        const manager =
+          findHelperManager(factoryClass) || findHelperManager(factoryClass?.prototype);
 
         if (manager) {
           // Use the delegate protocol for proper helper lifecycle
@@ -573,33 +634,47 @@ function createEmberMaybeHelper(original: Function) {
             const delegate = manager.getDelegateFor(owner);
             // Validate capabilities were created via helperCapabilities()
             const _FROM_CAPS = g.FROM_CAPABILITIES;
-            if (delegate && delegate.capabilities && _FROM_CAPS && !_FROM_CAPS.has(delegate.capabilities)) {
+            if (
+              delegate &&
+              delegate.capabilities &&
+              _FROM_CAPS &&
+              !_FROM_CAPS.has(delegate.capabilities)
+            ) {
               const err = new Error(
                 `Custom helper managers must have a \`capabilities\` property ` +
-                `that is the result of calling the \`capabilities('3.23')\` ` +
-                `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
-                `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
+                  `that is the result of calling the \`capabilities('3.23')\` ` +
+                  `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
+                  `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
               );
               // Capture for flushRenderErrors so assert.throws() can see it
               const captureFn = g.__captureRenderError;
               if (typeof captureFn === 'function') captureFn(err);
               throw err;
             }
-            if (delegate && typeof delegate.createHelper === 'function' && delegate.capabilities?.hasValue) {
+            if (
+              delegate &&
+              typeof delegate.createHelper === 'function' &&
+              delegate.capabilities?.hasValue
+            ) {
               // Cache the helper bucket per name so re-renders don't create new instances.
               // We create a GXT cell to hold the result so GXT's formula system tracks
               // it and re-renders automatically when the cell is updated.
               let cached = classHelperInstanceCache.get(name) as any;
               const _cellFor = gxtModule.cellFor;
               if (!cached || cached.__managerBucket !== true) {
-                const reactiveArgs = { positional: Object.freeze([...positional]), named: Object.freeze({ ...named }) };
+                const reactiveArgs = {
+                  positional: Object.freeze([...positional]),
+                  named: Object.freeze({ ...named }),
+                };
                 // Wrap createHelper in backtracking frame to detect
                 // read-then-write of tracked properties in constructor.
                 // Import lazily since the validator module may not be loaded yet.
                 const _beginBT = g.__gxtBeginBacktrackingFrame;
                 const _endBT = g.__gxtEndBacktrackingFrame;
-                const debugName = typeof delegate.getDebugName === 'function'
-                  ? delegate.getDebugName(factoryClass) : undefined;
+                const debugName =
+                  typeof delegate.getDebugName === 'function'
+                    ? delegate.getDebugName(factoryClass)
+                    : undefined;
                 if (_beginBT) _beginBT(debugName);
                 let bucket: any;
                 try {
@@ -609,7 +684,10 @@ function createEmberMaybeHelper(original: Function) {
                 }
 
                 // Wire up destroyable if supported
-                if (delegate.capabilities?.hasDestroyable && typeof delegate.getDestroyable === 'function') {
+                if (
+                  delegate.capabilities?.hasDestroyable &&
+                  typeof delegate.getDestroyable === 'function'
+                ) {
                   const destroyable = delegate.getDestroyable(bucket);
                   if (destroyable) {
                     const helperInstances = g.__gxtHelperInstances;
@@ -621,7 +699,11 @@ function createEmberMaybeHelper(original: Function) {
                     // matching Ember's classic Helper lifecycle semantics.
                     const ifScope2 = g.__gxtCurrentHelperScope;
                     if (ifScope2 && typeof ifScope2.add === 'function') {
-                      try { ifScope2.add(destroyable); } catch { /* ignore */ }
+                      try {
+                        ifScope2.add(destroyable);
+                      } catch {
+                        /* ignore */
+                      }
                     }
                   }
                 }
@@ -646,9 +728,21 @@ function createEmberMaybeHelper(original: Function) {
                 }
 
                 let argsSer: string | null = null;
-                try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+                try {
+                  argsSer = JSON.stringify({ p: positional, n: named });
+                } catch {
+                  /* skip */
+                }
 
-                cached = { __managerBucket: true, bucket, delegate, reactiveArgs, lastArgsSer: argsSer, lastResult: result, helperCell } as any;
+                cached = {
+                  __managerBucket: true,
+                  bucket,
+                  delegate,
+                  reactiveArgs,
+                  lastArgsSer: argsSer,
+                  lastResult: result,
+                  helperCell,
+                } as any;
                 classHelperInstanceCache.set(name, cached);
 
                 // Install PROPERTY_DID_CHANGE hook on the helper bucket so that
@@ -659,7 +753,7 @@ function createEmberMaybeHelper(original: Function) {
                   if (PROP_CHANGE) {
                     const _cached = cached;
                     const origPropChange = bucket[PROP_CHANGE];
-                    bucket[PROP_CHANGE] = function(key: string) {
+                    bucket[PROP_CHANGE] = function (key: string) {
                       if (origPropChange) origPropChange.call(this, key);
                       // Re-compute getValue and update the cell
                       try {
@@ -675,7 +769,9 @@ function createEmberMaybeHelper(original: Function) {
                             queueMicrotask(() => syncDomNow());
                           }
                         }
-                      } catch { /* ignore errors during recompute */ }
+                      } catch {
+                        /* ignore errors during recompute */
+                      }
                     };
                   }
                 }
@@ -693,7 +789,11 @@ function createEmberMaybeHelper(original: Function) {
                 const hasFnArg = positional.some((a: any) => typeof a === 'function');
                 let argsSer: string | null = null;
                 if (!hasFnArg) {
-                  try { argsSer = JSON.stringify({ p: positional, n: named }); } catch { /* skip */ }
+                  try {
+                    argsSer = JSON.stringify({ p: positional, n: named });
+                  } catch {
+                    /* skip */
+                  }
                 }
                 if (argsSer !== null && argsSer === cached.lastArgsSer) {
                   // Read cell to maintain tracking
@@ -706,8 +806,10 @@ function createEmberMaybeHelper(original: Function) {
                 cached.reactiveArgs.named = named;
                 const _beginBT3 = g.__gxtBeginBacktrackingFrame;
                 const _endBT3 = g.__gxtEndBacktrackingFrame;
-                const cachedDebugName = typeof cached.delegate?.getDebugName === 'function'
-                  ? cached.delegate.getDebugName(factoryClass) : undefined;
+                const cachedDebugName =
+                  typeof cached.delegate?.getDebugName === 'function'
+                    ? cached.delegate.getDebugName(factoryClass)
+                    : undefined;
                 if (_beginBT3) _beginBT3(cachedDebugName);
                 let result: any;
                 try {
@@ -739,14 +841,19 @@ function createEmberMaybeHelper(original: Function) {
           }
 
           // Fallback: use createHelper/getValue directly on the manager
-          if (typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
+          if (
+            typeof manager.createHelper === 'function' &&
+            typeof manager.getValue === 'function'
+          ) {
             const state = manager.createHelper(factoryClass, { positional, named });
             return manager.getValue(state);
           }
         }
 
         // Check if this is a class-based helper (with compute on prototype and a create() method)
-        const isClassBased = factoryClass && factoryClass.prototype &&
+        const isClassBased =
+          factoryClass &&
+          factoryClass.prototype &&
           typeof factoryClass.prototype.compute === 'function' &&
           typeof factoryClass.create === 'function';
 
@@ -768,7 +875,11 @@ function createEmberMaybeHelper(original: Function) {
               // willDestroy fire on branch swap (not only on component teardown).
               const ifScope = g.__gxtCurrentHelperScope;
               if (ifScope && typeof ifScope.add === 'function') {
-                try { ifScope.add(instance); } catch { /* ignore */ }
+                try {
+                  ifScope.add(instance);
+                } catch {
+                  /* ignore */
+                }
               }
             } catch (e) {
               console.error(`[ember-gxt] Error creating class helper "${name}":`, e);
@@ -821,13 +932,13 @@ function createEmberMaybeHelper(original: Function) {
         // Plain function registered directly via owner.register('helper:name', fn).
         // Ember allows registering a bare function — treat it like a default
         // function helper (positional args spread, named args as last arg).
-        if (typeof factoryClass === 'function' &&
-            (!factoryClass.prototype || typeof factoryClass.prototype.compute !== 'function')) {
+        if (
+          typeof factoryClass === 'function' &&
+          (!factoryClass.prototype || typeof factoryClass.prototype.compute !== 'function')
+        ) {
           try {
             const hasNamed = named && Object.keys(named).length > 0;
-            return hasNamed
-              ? factoryClass(...positional, named)
-              : factoryClass(...positional);
+            return hasNamed ? factoryClass(...positional, named) : factoryClass(...positional);
           } catch (e) {
             console.error(`[ember-gxt] Error invoking plain-function helper "${name}":`, e);
           }
@@ -846,7 +957,11 @@ function createEmberMaybeHelper(original: Function) {
 
         // Check for helper manager on the instance
         const manager = findHelperManager(helper) || findHelperManager(helper?.constructor);
-        if (manager && typeof manager.createHelper === 'function' && typeof manager.getValue === 'function') {
+        if (
+          manager &&
+          typeof manager.createHelper === 'function' &&
+          typeof manager.getValue === 'function'
+        ) {
           const state = manager.createHelper(helper, { positional, named });
           const result = manager.getValue(state);
           return result;
@@ -900,10 +1015,18 @@ function createEmberMaybeHelper(original: Function) {
               for (let i = 0; i < posList.length; i++) {
                 const val = posList[i];
                 const posKey = `__pos${i}__`;
-                if (typeof val === 'function' && !(val as any).__isCurriedComponent && !(val as any).prototype) {
+                if (
+                  typeof val === 'function' &&
+                  !(val as any).__isCurriedComponent &&
+                  !(val as any).prototype
+                ) {
                   Object.defineProperty(componentArgs, posKey, {
                     get: () => {
-                      try { return (val as any)(); } catch { return val; }
+                      try {
+                        return (val as any)();
+                      } catch {
+                        return val;
+                      }
                     },
                     enumerable: true,
                     configurable: true,
@@ -947,7 +1070,13 @@ function createEmberMaybeHelper(original: Function) {
     // already checked all helper/component registrations above, if we reach
     // here with no args, the name is unresolvable. Return empty string.
     // Note: names WITH args are passed to GXT's native handler for resolution.
-    if (Array.isArray(args) && args.length === 0 && (!hash || Object.keys(hash).length === 0 || (Object.keys(hash).every(k => k.startsWith('$_') || k === 'hash')))) {
+    if (
+      Array.isArray(args) &&
+      args.length === 0 &&
+      (!hash ||
+        Object.keys(hash).length === 0 ||
+        Object.keys(hash).every((k) => k.startsWith('$_') || k === 'hash'))
+    ) {
       return '';
     }
     // Fall back to GXT's native maybeHelper for other cases
@@ -1006,7 +1135,7 @@ function createEmberTag(original: Function) {
                   if (key.startsWith('@')) {
                     const argKey = key.slice(1);
                     Object.defineProperty(invokeArgs, argKey, {
-                      get: () => typeof value === 'function' ? value() : value,
+                      get: () => (typeof value === 'function' ? value() : value),
                       enumerable: true,
                       configurable: true,
                     });
@@ -1116,7 +1245,12 @@ function createEmberTag(original: Function) {
           while (typeof actual === 'function') {
             actual = actual();
           }
-          if (actual && typeof actual === 'object' && typeof actual.value !== 'undefined' && actual.__isCell) {
+          if (
+            actual &&
+            typeof actual === 'object' &&
+            typeof actual.value !== 'undefined' &&
+            actual.__isCell
+          ) {
             actual = actual.value;
           }
           if (actual === null || actual === undefined) return '';
@@ -1128,7 +1262,8 @@ function createEmberTag(original: Function) {
     }
 
     // Check if this looks like a component name (PascalCase or contains hyphen)
-    const mightBeComponent = resolvedTag &&
+    const mightBeComponent =
+      resolvedTag &&
       typeof resolvedTag === 'string' &&
       (resolvedTag[0] === resolvedTag[0].toUpperCase() || resolvedTag.includes('-'));
 
@@ -1157,7 +1292,9 @@ function createEmberTag(original: Function) {
                 return maybeHelper(kebabName, children || [], {}, ctx);
               }
             }
-          } catch { /* ignore lookup errors */ }
+          } catch {
+            /* ignore lookup errors */
+          }
         }
       }
 
@@ -1182,14 +1319,14 @@ function createEmberTag(original: Function) {
               if (key.startsWith('@')) {
                 const argName = key.slice(1);
                 Object.defineProperty(args, argName, {
-                  get: () => typeof value === 'function' ? value() : value,
+                  get: () => (typeof value === 'function' ? value() : value),
                   enumerable: true,
                   configurable: true,
                 });
               } else {
                 domAttrs.push([key, value]);
                 Object.defineProperty(args, key, {
-                  get: () => typeof value === 'function' ? value() : value,
+                  get: () => (typeof value === 'function' ? value() : value),
                   enumerable: true,
                   configurable: true,
                 });
@@ -1234,15 +1371,20 @@ function createEmberTag(original: Function) {
           }
 
           const createSlotFn = (slotChildren: any[], explicitHasBlockParams?: boolean) => {
-            const hasBlockParams = explicitHasBlockParams !== undefined
-              ? explicitHasBlockParams
-              : detectBlockParams(slotChildren);
+            const hasBlockParams =
+              explicitHasBlockParams !== undefined
+                ? explicitHasBlockParams
+                : detectBlockParams(slotChildren);
 
             const slotFn = (slotCtx: any, ...params: any[]) => {
-              const unwrappedParams = params.map(param => {
+              const unwrappedParams = params.map((param) => {
                 // Unwrap GXT reactive formulas (objects with fn/isConst)
                 if (param && typeof param === 'object' && 'fn' in param && 'isConst' in param) {
-                  try { return param.fn(); } catch { return param; }
+                  try {
+                    return param.fn();
+                  } catch {
+                    return param;
+                  }
                 }
                 // Do NOT call plain functions — they may be user functions
                 // yielded as block params (e.g., {{yield this.updatePerson}}).
@@ -1259,10 +1401,10 @@ function createEmberTag(original: Function) {
               stack.push(unwrappedParams);
               try {
                 // Return raw children as-is. GXT's rendering pipeline
-              // (renderElement → resolveRenderable) handles functions
-              // by wrapping them in formulas that track cell dependencies.
-              // Previously we called child() eagerly which destroyed reactivity.
-              return [...slotChildren];
+                // (renderElement → resolveRenderable) handles functions
+                // by wrapping them in formulas that track cell dependencies.
+                // Previously we called child() eagerly which destroyed reactivity.
+                return [...slotChildren];
               } finally {
                 stack.pop();
               }
@@ -1276,9 +1418,12 @@ function createEmberTag(original: Function) {
           }
 
           if (defaultChildren.length > 0) {
-            const explicitHasBlockParams = args.__hasBlockParams__ !== undefined
-              ? (typeof args.__hasBlockParams__ === 'function' ? args.__hasBlockParams__() : args.__hasBlockParams__) === 'default'
-              : undefined;
+            const explicitHasBlockParams =
+              args.__hasBlockParams__ !== undefined
+                ? (typeof args.__hasBlockParams__ === 'function'
+                    ? args.__hasBlockParams__()
+                    : args.__hasBlockParams__) === 'default'
+                : undefined;
             slots.default = createSlotFn(defaultChildren, explicitHasBlockParams);
           }
         }
@@ -1398,7 +1543,12 @@ function createEmberTag(original: Function) {
           if (Array.isArray(e) && e[0] === '1') textEntries.push(e);
           else otherEntries.push(e);
         }
-        patchedTagProps = [tagProps[0], tagProps[1], [...textEntries, ...otherEntries], tagProps[3]];
+        patchedTagProps = [
+          tagProps[0],
+          tagProps[1],
+          [...textEntries, ...otherEntries],
+          tagProps[3],
+        ];
       }
     }
     if (tagProps && tagProps !== gxtModule.$_edp && Array.isArray(tagProps[3])) {
@@ -1478,17 +1628,21 @@ function createEmberDc(original: Function) {
   const $PROPS = Symbol.for('gxt-props');
   const $SLOTS_SYM = Symbol.for('gxt-slots');
 
-  function extractArgsAndSlots(gxtArgs: any, allowPositionalParams = false): { mergedArgs: any; } {
+  function extractArgsAndSlots(gxtArgs: any, allowPositionalParams = false): { mergedArgs: any } {
     const mergedArgs: any = {};
     if (gxtArgs && typeof gxtArgs === 'object') {
       const keys = Object.keys(gxtArgs);
       for (const key of keys) {
         if (key.startsWith('$')) continue;
         // Allow __hasBlock__ and __hasBlockParams__ through always
-        if (key === '__hasBlock__' || key === '__hasBlockParams__') { /* allowed */ }
+        if (key === '__hasBlock__' || key === '__hasBlockParams__') {
+          /* allowed */
+        }
         // Allow positional param keys through only when requested (for string components
         // where the manager needs to map positional params to named args)
-        else if (allowPositionalParams && (/^__pos\d+__$/.test(key) || key === '__posCount__')) { /* allowed */ }
+        else if (allowPositionalParams && (/^__pos\d+__$/.test(key) || key === '__posCount__')) {
+          /* allowed */
+        }
         // Skip all other keys starting with _
         else if (key.startsWith('_')) continue;
         const desc = Object.getOwnPropertyDescriptor(gxtArgs, key);
@@ -1535,7 +1689,12 @@ function createEmberDc(original: Function) {
     return { mergedArgs };
   }
 
-  function renderComponent(componentValue: any, gxtArgs: any, ctx: any, allowPositionalParams = false): any {
+  function renderComponent(
+    componentValue: any,
+    gxtArgs: any,
+    ctx: any,
+    allowPositionalParams = false
+  ): any {
     const managers = g.$_MANAGERS;
     if (!managers?.component?.canHandle?.(componentValue)) return null;
 
@@ -1545,7 +1704,11 @@ function createEmberDc(original: Function) {
     // component returned by the `component` helper.
     if (typeof componentValue === 'string') {
       _trackComponentDefinition(componentValue);
-    } else if (componentValue && typeof componentValue === 'object' && typeof (componentValue as any).__name === 'string') {
+    } else if (
+      componentValue &&
+      typeof componentValue === 'object' &&
+      typeof (componentValue as any).__name === 'string'
+    ) {
       _trackComponentDefinition((componentValue as any).__name);
     } else if (componentValue) {
       _trackComponentDefinition(componentValue);
@@ -1559,11 +1722,7 @@ function createEmberDc(original: Function) {
     return handleResult;
   }
 
-  return function $_dc_ember(
-    componentGetter: () => any,
-    gxtArgs: any,
-    ctx: any
-  ): any {
+  return function $_dc_ember(componentGetter: () => any, gxtArgs: any, ctx: any): any {
     // Inject $PROPS on args so GXT's $_c (component function) can find them.
     if (gxtArgs && typeof gxtArgs === 'object' && !($PROPS in gxtArgs)) {
       try {
@@ -1573,7 +1732,9 @@ function createEmberDc(original: Function) {
           configurable: true,
           writable: true,
         });
-      } catch { /* frozen object */ }
+      } catch {
+        /* frozen object */
+      }
     }
 
     // Try to evaluate the component getter to check what kind of value it returns.
@@ -1622,9 +1783,17 @@ function createEmberDc(original: Function) {
         let newVal: any;
         try {
           newVal = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-        } catch { return; }
+        } catch {
+          return;
+        }
 
-        const newKey = !newVal ? '__empty__' : (newVal.__isCurriedComponent ? '__curried:' + (newVal.__name || '') : (typeof newVal === 'string' ? '__str:' + newVal : '__other'));
+        const newKey = !newVal
+          ? '__empty__'
+          : newVal.__isCurriedComponent
+            ? '__curried:' + (newVal.__name || '')
+            : typeof newVal === 'string'
+              ? '__str:' + newVal
+              : '__other';
         if (newKey === _nullLastKey) return;
         _nullLastKey = newKey;
 
@@ -1653,8 +1822,9 @@ function createEmberDc(original: Function) {
             } else {
               newResult = renderComponent(newVal, gxtArgs, ctx, true);
             }
-          } catch { /* ignore */ }
-          finally {
+          } catch {
+            /* ignore */
+          } finally {
             g.__dcComponentGetter = prevDcGetter;
             if (!prevOwner && g.owner === _dcCapturedOwner) {
               g.owner = prevOwner;
@@ -1682,10 +1852,14 @@ function createEmberDc(original: Function) {
         g.__dcChangeListeners = new Set();
         const origSyncAll = g.__gxtSyncAllWrappers;
         if (typeof origSyncAll === 'function') {
-          g.__gxtSyncAllWrappers = function() {
+          g.__gxtSyncAllWrappers = function () {
             origSyncAll();
             for (const listener of g.__dcChangeListeners) {
-              try { listener(); } catch { /* ignore */ }
+              try {
+                listener();
+              } catch {
+                /* ignore */
+              }
             }
           };
         }
@@ -1697,7 +1871,11 @@ function createEmberDc(original: Function) {
         g.__dcChangeListeners?.delete(_nullListener);
       };
       if (ctx && typeof gxtModule.registerDestructor === 'function') {
-        try { gxtModule.registerDestructor(ctx, _nullCleanup); } catch { /* ignore */ }
+        try {
+          gxtModule.registerDestructor(ctx, _nullCleanup);
+        } catch {
+          /* ignore */
+        }
       }
 
       return nullPlaceholder;
@@ -1845,10 +2023,14 @@ function createEmberDc(original: Function) {
         g.__dcChangeListeners = new Set();
         const origSyncAll = g.__gxtSyncAllWrappers;
         if (typeof origSyncAll === 'function') {
-          g.__gxtSyncAllWrappers = function() {
+          g.__gxtSyncAllWrappers = function () {
             origSyncAll();
             for (const listener of g.__dcChangeListeners) {
-              try { listener(); } catch { /* ignore */ }
+              try {
+                listener();
+              } catch {
+                /* ignore */
+              }
             }
           };
         }
@@ -1863,7 +2045,9 @@ function createEmberDc(original: Function) {
       if (ctx && typeof gxtModule.registerDestructor === 'function') {
         try {
           gxtModule.registerDestructor(ctx, _cleanupDcListener);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
 
       // Return the initial result exactly as the baseline did (preserving return type).
@@ -1884,10 +2068,14 @@ function createEmberDc(original: Function) {
       // Eagerly check if the component exists. If it doesn't, throw immediately
       // so assert.throws() in tests can catch it (matching Ember behavior).
       const managers = g.$_MANAGERS;
-      if (componentValue.length > 0 && managers?.component && !managers.component.canHandle(componentValue)) {
+      if (
+        componentValue.length > 0 &&
+        managers?.component &&
+        !managers.component.canHandle(componentValue)
+      ) {
         const err = new Error(
           `Attempted to resolve \`${componentValue}\`, which was expected to be a component, but nothing was found. ` +
-          `Could not find component named "${componentValue}" (no component or template with that name was found)`
+            `Could not find component named "${componentValue}" (no component or template with that name was found)`
         );
         const captureErr = g.__captureRenderError;
         if (typeof captureErr === 'function') {
@@ -1904,7 +2092,9 @@ function createEmberDc(original: Function) {
       // which is called from renderClassicComponent with the newly-created
       // instance (see manager.ts ~7254).
       let _dcEmberInstance: any = null;
-      const captureInstance = (inst: any) => { _dcEmberInstance = inst; };
+      const captureInstance = (inst: any) => {
+        _dcEmberInstance = inst;
+      };
 
       const destroyCurrentDcInstance = () => {
         if (!_dcEmberInstance) return;
@@ -1913,7 +2103,9 @@ function createEmberDc(original: Function) {
         try {
           const destroyFn = (g as any).__gxtDestroyEmberComponentInstance;
           if (typeof destroyFn === 'function') destroyFn(inst);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       };
 
       // --- Initial one-shot render ---
@@ -1958,7 +2150,9 @@ function createEmberDc(original: Function) {
           currentNodes = [initialResult];
         }
       } else if (initialResult != null && (initialResult as any)[RNODES]) {
-        currentNodes = [...((initialResult as any)[RNODES] as Node[])].filter((n: any) => n instanceof Node);
+        currentNodes = [...((initialResult as any)[RNODES] as Node[])].filter(
+          (n: any) => n instanceof Node
+        );
       }
 
       // Perform DOM swap when the component identity changes.
@@ -2055,7 +2249,9 @@ function createEmberDc(original: Function) {
           try {
             const flushFn = (g as any).__gxtFlushAfterInsertQueue;
             if (typeof flushFn === 'function') flushFn();
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
         // If newVal is null/undefined, currentNodes stays empty (component removed)
 
@@ -2083,10 +2279,14 @@ function createEmberDc(original: Function) {
         g.__dcChangeListeners = new Set();
         const origSyncAll = g.__gxtSyncAllWrappers;
         if (typeof origSyncAll === 'function') {
-          g.__gxtSyncAllWrappers = function() {
+          g.__gxtSyncAllWrappers = function () {
             origSyncAll();
             for (const listener of g.__dcChangeListeners) {
-              try { listener(); } catch { /* ignore */ }
+              try {
+                listener();
+              } catch {
+                /* ignore */
+              }
             }
           };
         }
@@ -2110,7 +2310,9 @@ function createEmberDc(original: Function) {
       if (ctx && typeof gxtModule.registerDestructor === 'function') {
         try {
           gxtModule.registerDestructor(ctx, _cleanupDcListener);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
 
       // Return the initial result exactly as the curried path does. The
@@ -2120,7 +2322,10 @@ function createEmberDc(original: Function) {
 
     // Handle component definitions (template-only, GlimmerishComponent, etc.)
     // that have a template in COMPONENT_TEMPLATES
-    if (componentValue && (typeof componentValue === 'object' || typeof componentValue === 'function')) {
+    if (
+      componentValue &&
+      (typeof componentValue === 'object' || typeof componentValue === 'function')
+    ) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(componentValue)) {
         return renderComponent(componentValue, gxtArgs, ctx);
@@ -2132,14 +2337,20 @@ function createEmberDc(original: Function) {
       // code (component-typeof, function without component manager), not for
       // native GXT primitives which proceed through the fallback below.
       const hasHelperMgr = !!findHelperManager(componentValue);
-      const hasModifierMgr = typeof componentValue === 'function' &&
-        g.INTERNAL_MODIFIER_MANAGERS && (() => {
+      const hasModifierMgr =
+        typeof componentValue === 'function' &&
+        g.INTERNAL_MODIFIER_MANAGERS &&
+        (() => {
           let p: any = componentValue;
           const v = new Set();
           while (p && !v.has(p)) {
             v.add(p);
             if (g.INTERNAL_MODIFIER_MANAGERS.has(p)) return true;
-            try { p = Object.getPrototypeOf(p); } catch { break; }
+            try {
+              p = Object.getPrototypeOf(p);
+            } catch {
+              break;
+            }
           }
           return false;
         })();
@@ -2177,7 +2388,11 @@ function createEmberDc(original: Function) {
 function _dynamicDebugPath(fn: any): string | null {
   if (typeof fn !== 'function') return null;
   let src: string;
-  try { src = String(fn); } catch { return null; }
+  try {
+    src = String(fn);
+  } catch {
+    return null;
+  }
   // GXT emits `() => this.Foo` / `() => $a.helper` / `() => _this2.foo` style.
   // Match `identifier.Path` with optional optional-chaining.
   const m = /(?:=>|return)\s*([a-zA-Z_$][\w$]*)(\?\.|\.)((?:[\w$](?:\?\.|\.)?)+)/.exec(src);
@@ -2222,9 +2437,13 @@ function createEmberModifierHelper(original: Function) {
   return function $_modifierHelper_ember(params: any[], hash: Record<string, unknown>) {
     const rawFirst = params[0];
     // Unwrap GXT getter
-    const resolved = (typeof rawFirst === 'function' && !rawFirst.prototype &&
-      !rawFirst.__isCurriedModifier && !g.INTERNAL_MODIFIER_MANAGERS?.has(rawFirst))
-      ? rawFirst() : rawFirst;
+    const resolved =
+      typeof rawFirst === 'function' &&
+      !rawFirst.prototype &&
+      !rawFirst.__isCurriedModifier &&
+      !g.INTERNAL_MODIFIER_MANAGERS?.has(rawFirst)
+        ? rawFirst()
+        : rawFirst;
     const boundParams = params.slice(1);
 
     // Dynamic string detection: if the resolved value is a dynamic binding
@@ -2255,8 +2474,8 @@ function createEmberModifierHelper(original: Function) {
       // delegates to the Ember modifier manager.
       function curriedModifier(node: HTMLElement, _params: any[], _hash: Record<string, unknown>) {
         // Merge curried params with invocation params
-        const allParams = [...boundParams, ..._params].map(
-          (a: any) => typeof a === 'function' && !a.prototype ? a() : a
+        const allParams = [...boundParams, ..._params].map((a: any) =>
+          typeof a === 'function' && !a.prototype ? a() : a
         );
         const mergedHash = { ...hash, ..._hash };
 
@@ -2274,12 +2493,20 @@ function createEmberModifierHelper(original: Function) {
         while (pointer && !visited.has(pointer)) {
           visited.add(pointer);
           const mgr = g.INTERNAL_MODIFIER_MANAGERS?.get(pointer);
-          if (mgr) { managerFactory = mgr; break; }
-          try { pointer = Object.getPrototypeOf(pointer); } catch { break; }
+          if (mgr) {
+            managerFactory = mgr;
+            break;
+          }
+          try {
+            pointer = Object.getPrototypeOf(pointer);
+          } catch {
+            break;
+          }
         }
         if (!managerFactory) return undefined;
 
-        const manager = typeof managerFactory === 'function' ? managerFactory(modOwner) : managerFactory;
+        const manager =
+          typeof managerFactory === 'function' ? managerFactory(modOwner) : managerFactory;
         if (!manager) return undefined;
 
         const args = { positional: allParams, named: mergedHash };
@@ -2319,14 +2546,25 @@ function createEmberModifierHelper(original: Function) {
         const visited = new Set();
         while (ptr && !visited.has(ptr)) {
           visited.add(ptr);
-          if (g.INTERNAL_MODIFIER_MANAGERS.has(ptr)) { hasModifierManager = true; break; }
-          try { ptr = Object.getPrototypeOf(ptr); } catch { break; }
+          if (g.INTERNAL_MODIFIER_MANAGERS.has(ptr)) {
+            hasModifierManager = true;
+            break;
+          }
+          try {
+            ptr = Object.getPrototypeOf(ptr);
+          } catch {
+            break;
+          }
         }
       }
 
       if (hasModifierManager) {
         // Create a curried modifier that wraps the modifier reference with bound args
-        function curriedManagedModifier(node: HTMLElement, _params: any[], _hash: Record<string, unknown>) {
+        function curriedManagedModifier(
+          node: HTMLElement,
+          _params: any[],
+          _hash: Record<string, unknown>
+        ) {
           const allParams = [...boundParams, ..._params];
           const mergedHash = { ...hash, ..._hash };
 
@@ -2407,8 +2645,7 @@ function _patchGxtEntriesOf(): void {
     // prototype. Only invoke in that case; leave regular functions and
     // classes (which have .prototype) untouched so we can iterate their
     // own enumerable keys.
-    let resolved =
-      typeof obj === 'function' && !(obj as any).prototype ? (obj as any)() : obj;
+    let resolved = typeof obj === 'function' && !(obj as any).prototype ? (obj as any)() : obj;
     // After the first unwrap, if we still have a function or class, treat it
     // as a value: enumerate its own enumerable string keys.
     if (typeof resolved === 'function') {
@@ -2453,7 +2690,10 @@ function _patchGxtEntriesOf(): void {
     return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
   };
   Object.defineProperty(BUILTIN, '__gxtEntriesOfPatched', {
-    value: true, writable: false, enumerable: false, configurable: true,
+    value: true,
+    writable: false,
+    enumerable: false,
+    configurable: true,
   });
 }
 
@@ -2542,7 +2782,7 @@ Promise.resolve().then(async () => {
     const UVM = rt.UpdatingVM;
     if (UVM && !UVM.prototype.__gxtEmberPatchedAlwaysRevalidate) {
       const origExecute = UVM.prototype.execute;
-      UVM.prototype.execute = function(this: any, ...args: any[]) {
+      UVM.prototype.execute = function (this: any, ...args: any[]) {
         // Only force revalidate if a tracked setter has fired since the last
         // execute. This limits the perf cost and preserves DOM node identity
         // for untouched subtrees.
@@ -2560,7 +2800,9 @@ Promise.resolve().then(async () => {
       };
       UVM.prototype.__gxtEmberPatchedAlwaysRevalidate = true;
     }
-  } catch { /* runtime not reachable — noop */ }
+  } catch {
+    /* runtime not reachable — noop */
+  }
 });
 
 // Hook __gxtTriggerReRender so we know when a tracked setter has fired

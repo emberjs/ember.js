@@ -63,7 +63,7 @@ function resolveSubpath(subpath) {
   if (!entry) {
     throw new Error(`package.json exports has no entry for ${key}`);
   }
-  const rel = typeof entry === 'string' ? entry : entry.import ?? entry.default;
+  const rel = typeof entry === 'string' ? entry : (entry.import ?? entry.default);
   if (!rel) {
     throw new Error(`exports[${key}] has no import/default branch`);
   }
@@ -95,7 +95,8 @@ function collectExports(source) {
   }
 
   // export function foo / export class Foo / export const foo / export let foo / export var foo
-  const reDirect = /export\s+(?:async\s+)?(?:function\*?|class|const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
+  const reDirect =
+    /export\s+(?:async\s+)?(?:function\*?|class|const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
   while ((m = reDirect.exec(source)) !== null) {
     exports.add(m[1]);
   }

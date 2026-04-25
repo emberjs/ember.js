@@ -161,10 +161,7 @@ class Resolver extends EmberObject {
     let normalizedModuleName = this.findModuleName(parsedName);
 
     if (normalizedModuleName) {
-      let defaultExport = this._extractDefaultExport(
-        normalizedModuleName,
-        parsedName
-      );
+      let defaultExport = this._extractDefaultExport(normalizedModuleName, parsedName);
 
       if (defaultExport === undefined) {
         throw new Error(
@@ -182,8 +179,7 @@ class Resolver extends EmberObject {
 
   normalize(fullName) {
     return (
-      this._normalizeCache[fullName] ||
-      (this._normalizeCache[fullName] = this._normalize(fullName))
+      this._normalizeCache[fullName] || (this._normalizeCache[fullName] = this._normalize(fullName))
     );
   }
 
@@ -233,9 +229,7 @@ class Resolver extends EmberObject {
   }
 
   pluralize(type) {
-    return (
-      this.pluralizedTypes[type] || (this.pluralizedTypes[type] = type + 's')
-    );
+    return this.pluralizedTypes[type] || (this.pluralizedTypes[type] = type + 's');
   }
 
   podBasedLookupWithPrefix(podPrefix, parsedName) {
@@ -249,21 +243,16 @@ class Resolver extends EmberObject {
   }
 
   podBasedModuleName(parsedName) {
-    let podPrefix =
-      this.namespace.podModulePrefix || this.namespace.modulePrefix;
+    let podPrefix = this.namespace.podModulePrefix || this.namespace.modulePrefix;
 
     return this.podBasedLookupWithPrefix(podPrefix, parsedName);
   }
 
   podBasedComponentsInSubdir(parsedName) {
-    let podPrefix =
-      this.namespace.podModulePrefix || this.namespace.modulePrefix;
+    let podPrefix = this.namespace.podModulePrefix || this.namespace.modulePrefix;
     podPrefix = podPrefix + '/components';
 
-    if (
-      parsedName.type === 'component' ||
-      /^components/.test(parsedName.fullNameWithoutType)
-    ) {
+    if (parsedName.type === 'component' || /^components/.test(parsedName.fullNameWithoutType)) {
       return this.podBasedLookupWithPrefix(podPrefix, parsedName);
     }
   }
@@ -341,11 +330,7 @@ class Resolver extends EmberObject {
     let moduleNameLookupPatterns = this.moduleNameLookupPatterns;
     let moduleName;
 
-    for (
-      let index = 0, length = moduleNameLookupPatterns.length;
-      index < length;
-      index++
-    ) {
+    for (let index = 0, length = moduleNameLookupPatterns.length; index < length; index++) {
       let item = moduleNameLookupPatterns[index];
 
       let tmpModuleName = item.call(this, parsedName);
@@ -378,9 +363,7 @@ class Resolver extends EmberObject {
       this._moduleRegistry.has(moduleName) &&
       this._moduleRegistry.has(underscoredModuleName)
     ) {
-      throw new TypeError(
-        `Ambiguous module names: '${moduleName}' and '${underscoredModuleName}'`
-      );
+      throw new TypeError(`Ambiguous module names: '${moduleName}' and '${underscoredModuleName}'`);
     }
 
     if (this._moduleRegistry.has(moduleName)) {
@@ -417,13 +400,10 @@ class Resolver extends EmberObject {
     }
 
     if (DEBUG) {
-      let isCamelCaseHelper =
-        parsedName.type === 'helper' && /[a-z]+[A-Z]+/.test(moduleName);
+      let isCamelCaseHelper = parsedName.type === 'helper' && /[a-z]+[A-Z]+/.test(moduleName);
       if (isCamelCaseHelper) {
-        this._camelCaseHelperWarnedNames =
-          this._camelCaseHelperWarnedNames || [];
-        let alreadyWarned =
-          this._camelCaseHelperWarnedNames.indexOf(parsedName.fullName) > -1;
+        this._camelCaseHelperWarnedNames = this._camelCaseHelperWarnedNames || [];
+        let alreadyWarned = this._camelCaseHelperWarnedNames.indexOf(parsedName.fullName) > -1;
         if (!alreadyWarned && this._moduleRegistry.has(dasherize(moduleName))) {
           this._camelCaseHelperWarnedNames.push(parsedName.fullName);
           warn(
@@ -521,21 +501,13 @@ class Resolver extends EmberObject {
     let pluralizedType = this.pluralize(type);
     let nonPodPrefix = prefix + '/' + pluralizedType + '/';
 
-    if (
-      moduleName.indexOf(nonPodPrefix) === 0 &&
-      moduleName.length > nonPodPrefix.length
-    ) {
+    if (moduleName.indexOf(nonPodPrefix) === 0 && moduleName.length > nonPodPrefix.length) {
       return type + ':' + moduleName.slice(nonPodPrefix.length);
     }
   }
 
   _extractDefaultExport(normalizedModuleName) {
-    let module = this._moduleRegistry.get(
-      normalizedModuleName,
-      null,
-      null,
-      true /* force sync */
-    );
+    let module = this._moduleRegistry.get(normalizedModuleName, null, null, true /* force sync */);
 
     if (module && module['default']) {
       module = module['default'];

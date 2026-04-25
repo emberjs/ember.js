@@ -1,4 +1,9 @@
-import type { Template, TemplateOk, CompilableProgram, ProgramSymbolTable } from '@glimmer/interfaces';
+import type {
+  Template,
+  TemplateOk,
+  CompilableProgram,
+  ProgramSymbolTable,
+} from '@glimmer/interfaces';
 
 // Symbol to mark gxt templates
 export const GXT_TEMPLATE_SYMBOL = Symbol('gxt-template');
@@ -10,13 +15,12 @@ export const GXT_TEMPLATE_HANDLE = 999999;
 export function isGxtTemplate(template: any): boolean {
   if (!template) return false;
   // Check for gxt template markers - use __gxtCompiled which is cross-module safe
-  const hasGxtMarkers = (
+  const hasGxtMarkers =
     template.__gxtCompiled === true ||
     GXT_TEMPLATE_SYMBOL in template ||
     '$nodes' in template ||
     'nodes' in template ||
-    typeof template.render === 'function'
-  );
+    typeof template.render === 'function';
 
   return hasGxtMarkers;
 }
@@ -59,7 +63,9 @@ function createFallbackCompilableProgram(template: any, moduleName: string): Com
     },
     compile(_context: any) {
       // Return 0 which will fail but with a clearer error
-      console.warn(`Template "${moduleName}" was not properly compiled. This may be a build configuration issue.`);
+      console.warn(
+        `Template "${moduleName}" was not properly compiled. This may be a build configuration issue.`
+      );
       return 0;
     },
   };
