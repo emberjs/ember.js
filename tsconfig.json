@@ -5,12 +5,13 @@
     "noEmit": true,
     "experimentalDecorators": true
   },
-  "include": ["packages/**/*.ts"],
+  "include": ["packages/**/*.ts", "types/gxt-ambient.d.ts"],
   "exclude": [
     "dist",
     "node_modules",
     "tmp",
-    "types",
+    "types/stable",
+    "types/preview",
     "packages/@ember/-internals/gxt-backend/**",
     "packages/demo/**"
   ]

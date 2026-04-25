@@ -84,7 +84,7 @@ import {
   setTracker as _gxtSetTracker,
   getTracker as _gxtGetTracker,
   cached as _gxtCached,
-} from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+} from '@lifeart/gxt';
 import {
   destroy as _destroyDestroyable,
   registerDestructor as _registerDestructor,

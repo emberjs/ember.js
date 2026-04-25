@@ -1,16 +1,14 @@
 import { getComponentTemplate } from '@glimmer/manager';
-import {
-  createRoot as gxtCreateRoot,
-  setParentContext as gxtSetParentContext,
-  getParentContext as gxtGetParentContext,
-  provideContext as gxtProvideContext,
-  RENDERING_CONTEXT as GXT_RENDERING_CONTEXT,
-  RENDERED_NODES_PROPERTY as GXT_RENDERED_NODES,
-  HTMLBrowserDOMApi as GxtHTMLBrowserDOMApi,
-  renderComponent as gxtRenderComponent,
-  Component as GxtComponent,
-  // @ts-ignore
-} from '@lifeart/gxt';
+import * as _gxt from '@lifeart/gxt';
+const gxtCreateRoot: any = (_gxt as any).createRoot;
+const gxtSetParentContext: any = (_gxt as any).setParentContext;
+const gxtGetParentContext: any = (_gxt as any).getParentContext;
+const gxtProvideContext: any = (_gxt as any).provideContext;
+const GXT_RENDERING_CONTEXT: any = (_gxt as any).RENDERING_CONTEXT;
+const GXT_RENDERED_NODES: any = (_gxt as any).RENDERED_NODES_PROPERTY;
+const GxtHTMLBrowserDOMApi: any = (_gxt as any).HTMLBrowserDOMApi;
+const gxtRenderComponent: any = (_gxt as any).renderComponent;
+const GxtComponent: any = (_gxt as any).Component;
 
 // Ensure GXT context is initialized for the document
 // Uses a shared root context on globalThis to avoid multiple roots

@@ -8,8 +8,8 @@ import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-// @ts-ignore
-import { cellFor } from '@lifeart/gxt';
+import * as _gxt from '@lifeart/gxt';
+const cellFor: any = (_gxt as any).cellFor;
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';

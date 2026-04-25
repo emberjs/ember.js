@@ -16,18 +16,15 @@ import {
   beginRenderPass,
   endRenderPass,
 } from '@glimmer/manager';
-// @ts-ignore
-import {
-  destroyElementSync as _destroyElementSync,
-  renderComponent as gxtRenderComponent,
-  createRoot as gxtCreateRoot,
-  setParentContext as gxtSetParentContext,
-  getParentContext as gxtGetParentContext,
-  provideContext as gxtProvideContext,
-  RENDERING_CONTEXT as GXT_RENDERING_CONTEXT,
-  HTMLBrowserDOMApi as GxtHTMLBrowserDOMApi,
-  // @ts-ignore
-} from '@lifeart/gxt';
+import * as _gxt from '@lifeart/gxt';
+const _destroyElementSync: any = (_gxt as any).destroyElementSync;
+const gxtRenderComponent: any = (_gxt as any).renderComponent;
+const gxtCreateRoot: any = (_gxt as any).createRoot;
+const gxtSetParentContext: any = (_gxt as any).setParentContext;
+const gxtGetParentContext: any = (_gxt as any).getParentContext;
+const gxtProvideContext: any = (_gxt as any).provideContext;
+const GXT_RENDERING_CONTEXT: any = (_gxt as any).RENDERING_CONTEXT;
+const GxtHTMLBrowserDOMApi: any = (_gxt as any).HTMLBrowserDOMApi;
 
 // Cached GXT DOM API for destroyElementSync
 let gxtDomApi: any = null;

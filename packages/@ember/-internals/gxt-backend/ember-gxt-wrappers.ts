@@ -10,7 +10,7 @@
 
 // Use direct path to avoid circular alias (since @lifeart/gxt is aliased to gxt-with-runtime-hbs.ts)
 // @ts-ignore - direct path import
-import * as gxtModule from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+import * as gxtModule from '@lifeart/gxt';
 
 const g = globalThis as any;
 

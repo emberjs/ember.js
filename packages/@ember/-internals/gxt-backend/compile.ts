@@ -1208,7 +1208,7 @@ import {
   compileTemplate as gxtCompileTemplate,
   setupGlobalScope,
   isGlobalScopeReady,
-} from '../node_modules/@lifeart/gxt/dist/gxt.runtime-compiler.es.js';
+} from '@lifeart/gxt/runtime-compiler';
 
 // We need access to GXT's reactive tracker (setTracker/getTracker) for {{unbound}}.
 // These are not exported from GXT's public API, so we extract them at runtime
@@ -1249,7 +1249,7 @@ import {
   getTracker as _gxtGetTracker,
   resolveRenderable as _gxtResolveRenderable,
   $_TO_VALUE as _gxtOrigToValue,
-} from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+} from '@lifeart/gxt';
 
 // Use direct imports for cellFor/effect/syncDom — the manualChunks consolidation
 // ensures all GXT internals share a single module instance (gxt.core.es.js).

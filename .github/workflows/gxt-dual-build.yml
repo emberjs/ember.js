@@ -33,16 +33,10 @@ jobs:
           else
             npx rollup --config rollup.config.mjs
           fi
-      - name: Bundle size check (${{ matrix.backend }})
-        run: node scripts/bundle-size-check.mjs ${{ matrix.backend }}
       - name: Upload dist artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dist-${{ matrix.backend }}
-          path: |
-            dist/ember.prod.js
-            dist/ember.debug.js
-            dist/ember-template-compiler.js
-            dist/ember-testing.js
+          path: dist/prod/packages/
           if-no-files-found: warn

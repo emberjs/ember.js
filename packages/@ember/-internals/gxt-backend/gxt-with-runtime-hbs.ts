@@ -125,7 +125,7 @@ export {
   $args,
   $fwProp,
   $template,
-} from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+} from '@lifeart/gxt';
 
 // Override $__fn to mark results with __isFnHelper so getArgValue doesn't unwrap them
 // GXT's original $__fn returns plain arrow functions that look like getters to the
@@ -211,7 +211,7 @@ export { $_helperHelper_ember as $_helperHelper };
 
 // Default export with overrides
 // @ts-ignore - direct path import (avoid circular alias: @lifeart/gxt → this file)
-import * as gxtModule from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+import * as gxtModule from '@lifeart/gxt';
 // Store the GXT module reference on globalThis so that manager.ts can access
 // the original $_MANAGERS object (which GXT's internal functions close over).
 // This must happen before manager.ts runs.

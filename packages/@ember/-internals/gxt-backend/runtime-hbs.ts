@@ -13,13 +13,13 @@ import {
   createTemplateFactory as gxtCreateTemplateFactory,
   setupGlobalScope,
   isGlobalScopeReady,
-} from '../node_modules/@lifeart/gxt/dist/gxt.runtime-compiler.es.js';
+} from '@lifeart/gxt/runtime-compiler';
 
 // @ts-ignore - direct path import
 import {
   createRoot as gxtCreateRoot,
   setParentContext as gxtSetParentContext,
-} from '../node_modules/@lifeart/gxt/dist/gxt.index.es.js';
+} from '@lifeart/gxt';
 
 // Install Ember wrappers on globalThis (idempotent)
 import { installEmberWrappers } from './ember-gxt-wrappers';

@@ -739,6 +739,12 @@ const allowedCycles = [
   // imports @glimmer/manager, forming a cycle that mirrors the one
   // already allowed for the vendored @glimmer/manager package.
   'packages/@ember/-internals/gxt-backend/manager',
+
+  // Same class of cycle as the @glimmer/manager one above: the destroyable
+  // shim under gxt-backend re-enters through @ember/runloop ->
+  // @ember/-internals/metal -> @ember/-internals/meta, which re-imports
+  // destroyable when the GXT resolver-alias is active.
+  'packages/@ember/-internals/gxt-backend/destroyable',
 ];
 
 function handleRollupWarnings(level, log, handler) {

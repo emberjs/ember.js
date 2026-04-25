@@ -1,5 +1,9 @@
-// @ts-ignore
-import { Component, cell, $_fin, $_if, $_c } from '@lifeart/gxt';
+import * as _gxt from '@lifeart/gxt';
+const Component: any = (_gxt as any).Component;
+const cell: any = (_gxt as any).cell;
+const $_fin: any = (_gxt as any).$_fin;
+const $_if: any = (_gxt as any).$_if;
+const $_c: any = (_gxt as any).$_c;
 
 export default class OutletHelper extends Component {
   get state() {
