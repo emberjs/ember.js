@@ -32,7 +32,6 @@ export const defaultId: TemplateIdFn = (() => {
     // @ts-expect-error using node API here, but only here
     typeof module === 'object' && typeof module.require === 'function'
       ? // @ts-expect-error using node API here, but only here
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         module.require
       : (globalThis as any).require
   ) as typeof require | undefined;

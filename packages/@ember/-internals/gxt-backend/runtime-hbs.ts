@@ -16,10 +16,7 @@ import {
 } from '@lifeart/gxt/runtime-compiler';
 
 // @ts-ignore - direct path import
-import {
-  createRoot as gxtCreateRoot,
-  setParentContext as gxtSetParentContext,
-} from '@lifeart/gxt';
+import { createRoot as gxtCreateRoot, setParentContext as gxtSetParentContext } from '@lifeart/gxt';
 
 // Install Ember wrappers on globalThis (idempotent)
 import { installEmberWrappers } from './ember-gxt-wrappers';

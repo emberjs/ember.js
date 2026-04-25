@@ -53,7 +53,6 @@ if (LOCAL_DEBUG) {
     loggedSteps[type] = [];
 
     if (Array.isArray(expectedSteps)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       getCurrent().assert.deepEqual(steps, expectedSteps, message);
     } else {
       expectedSteps(steps);
@@ -61,7 +60,6 @@ if (LOCAL_DEBUG) {
   };
 
   function getCurrent(): QUnit {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     return QUnit.config.current as QUnit;
   }
 }
