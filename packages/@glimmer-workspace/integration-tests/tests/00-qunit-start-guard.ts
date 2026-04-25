@@ -36,7 +36,7 @@
     ...args: unknown[]
   ) {
     try {
-      return originalStart(...args);
+      return (originalStart as (...a: unknown[]) => unknown)(...args);
     } catch (e) {
       const msg = (e as Error)?.message ?? '';
       if (/autostart was true|already started running/.test(msg)) {

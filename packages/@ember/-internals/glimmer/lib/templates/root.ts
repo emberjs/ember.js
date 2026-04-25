@@ -181,7 +181,7 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
           gxtRenderComponent(tpl, {
             element: target,
             args: ctx?.args || {},
-            owner: gxtRootContext,
+            owner: (globalThis as any).__gxtRootContext,
           });
           return; // gxtRenderComponent handles everything
         }

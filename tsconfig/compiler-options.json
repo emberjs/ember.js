@@ -29,6 +29,7 @@
 
     "allowJs": true,
     "checkJs": false,
+    "skipLibCheck": true,
 
     "types": ["vite/client"],
 

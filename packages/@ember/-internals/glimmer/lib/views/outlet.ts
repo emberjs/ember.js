@@ -54,7 +54,7 @@ export default class OutletView {
     return new OutletView(_environment, owner, template, namespace);
   }
 
-  private ref: Reference;
+  private ref: OutletState;
   public state: OutletDefinitionState;
 
   constructor(
@@ -81,7 +81,7 @@ export default class OutletView {
     // ref.compute();
 
     this.state = {
-      ref,
+      ref: ref as unknown as Reference<OutletState | undefined>,
       name: TOP_LEVEL_NAME,
       template,
       controller: undefined,
@@ -136,7 +136,7 @@ export default class OutletView {
         // the outlet element stays in the DOM but nested content changes).
         if (preExistingOutlets) {
           const currentOutlets = (globalThis as any).__activeOutletElements;
-          for (const outlet of preExistingOutlets) {
+          for (const outlet of preExistingOutlets as Iterable<any>) {
             // Only notify outlets that survived the root re-render (still in DOM)
             if (currentOutlets?.has(outlet) && typeof outlet.updateOutletState === 'function') {
               outlet.updateOutletState(this.ref);

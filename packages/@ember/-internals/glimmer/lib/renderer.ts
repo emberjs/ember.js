@@ -191,7 +191,7 @@ const NO_OP = () => {};
  * - Mismatched nodes: replace the old with new
  */
 function morphChildren(target: Element | SimpleElement, source: DocumentFragment): void {
-  const oldNodes = Array.from(target.childNodes);
+  const oldNodes = Array.from(target.childNodes as ArrayLike<ChildNode>);
   const newNodes = Array.from(source.childNodes);
 
   let i = 0;
@@ -201,7 +201,7 @@ function morphChildren(target: Element | SimpleElement, source: DocumentFragment
 
     if (!oldNode) {
       // More new nodes than old — append
-      target.appendChild(newNode);
+      (target as Element).appendChild(newNode);
       continue;
     }
 
@@ -267,12 +267,12 @@ function morphChildren(target: Element | SimpleElement, source: DocumentFragment
         }
       }
     }
-    target.replaceChild(newNode, oldNode);
+    (target as Element).replaceChild(newNode, oldNode);
   }
 
   // Remove extra old nodes
   for (let j = oldNodes.length - 1; j >= i; j--) {
-    target.removeChild(oldNodes[j]!);
+    (target as Element).removeChild(oldNodes[j]!);
   }
 }
 
@@ -1756,7 +1756,7 @@ function _renderComponentGxt(
 
   // Handle existing render cache (re-render into same target)
   let existing = RENDER_CACHE.get(into);
-  existing?.destroy();
+  existing?.result?.destroy();
 
   // Get the target element
   const targetElement =
@@ -1861,7 +1861,7 @@ function _renderComponentGxt(
       }
 
       const result: RenderResult = { destroy: doDestroy };
-      RENDER_CACHE.set(into, result);
+      RENDER_CACHE.set(into, { result, glimmerResult: undefined });
       // Register destructor on owner so owner.destroy() cleans up DOM
       try {
         registerDestructor(owner, doDestroy);
@@ -2143,7 +2143,7 @@ function _renderComponentGxt(
   }
 
   const result: RenderResult = { destroy: doDestroy };
-  RENDER_CACHE.set(into, result);
+  RENDER_CACHE.set(into, { result, glimmerResult: undefined });
 
   // Register destructor on owner so that destroying the owner cleans up the DOM
   try {
@@ -2658,8 +2658,8 @@ export class Renderer extends BaseRenderer {
     }
 
     // Standard properties
-    context.args = (view as any).args || {};
-    context.owner = owner;
+    context['args'] = (view as any).args || {};
+    context['owner'] = owner;
 
     return context;
   }

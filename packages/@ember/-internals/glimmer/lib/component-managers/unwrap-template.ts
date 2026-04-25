@@ -38,6 +38,9 @@ function createGxtCompilableProgram(template: any, moduleName: string): Compilab
       moduleName,
       owner: template.meta?.owner ?? null,
       size: 0,
+      symbols: { locals: [], upvars: [] },
+      scopeValues: null,
+      isStrictMode: false,
     },
     compile(_context: any) {
       // Return a special handle number that indicates a gxt template
@@ -60,6 +63,9 @@ function createFallbackCompilableProgram(template: any, moduleName: string): Com
       moduleName,
       owner: template.meta?.owner ?? null,
       size: 0,
+      symbols: { locals: [], upvars: [] },
+      scopeValues: null,
+      isStrictMode: false,
     },
     compile(_context: any) {
       // Return 0 which will fail but with a clearer error

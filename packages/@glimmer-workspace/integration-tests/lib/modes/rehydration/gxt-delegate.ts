@@ -140,7 +140,7 @@ function buildRenderContext(context: Dict): Record<string, unknown> {
   // minimal `$slots`/`$fw` so the render path doesn't throw on the
   // first `globalThis.$slots` read.
   const ctx: Record<string, unknown> = Object.assign(Object.create(null), context ?? {});
-  if (!('args' in ctx)) ctx.args = {};
+  if (!('args' in ctx)) ctx['args'] = {};
   // Text-node context values (e.g. the `Node curlies` test passing
   // `doc.createTextNode('hello')` as `this.node`) render as empty
   // under GXT — the runtime stringifies but never appends the Node.

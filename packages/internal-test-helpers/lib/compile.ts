@@ -30,7 +30,7 @@ export default function compile(
       strictMode: options.strictMode ?? false,
       ...options,
       scopeValues: Object.keys(scopeValues).length > 0 ? scopeValues : undefined,
-    });
+    } as any);
   }
 
   options.locals = options.locals ?? Object.keys(scopeValues ?? {});

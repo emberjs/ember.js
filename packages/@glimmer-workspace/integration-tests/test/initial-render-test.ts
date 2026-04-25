@@ -1043,7 +1043,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
           expected: 'div',
           message: 'assertServerComponent (GXT): tagName is div',
         });
-        const actualInner = stripMarkers((element as HTMLElement).innerHTML);
+        const actualInner = stripMarkers((element as unknown as HTMLElement).innerHTML);
         const expectedInner = stripMarkers(html);
         QUnit.assert.pushResult({
           result: actualInner === expectedInner,

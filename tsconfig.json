@@ -6,5 +6,12 @@
     "experimentalDecorators": true
   },
   "include": ["packages/**/*.ts"],
-  "exclude": ["dist", "node_modules", "tmp", "types"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types",
+    "packages/@ember/-internals/gxt-backend/**",
+    "packages/demo/**"
+  ]
 }

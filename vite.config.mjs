@@ -31,19 +31,27 @@ const owerrideRoot = import.meta.url;
 export default defineConfig(({ mode }) => {
   process.env.EMBER_ENV = mode;
 
-  const build = {
-    rollupOptions: {
-      preserveEntrySignatures: 'strict',
-      input: ['index.html'],
-      output: {
-        preserveModules: true,
-      },
-    },
-    minify: mode === 'production',
-  };
-
   // Use GXT_MODE=true to enable glimmer-next integration
   const useGxt = process.env.GXT_MODE === 'true';
+
+  // preserveModules + preserveEntrySignatures are required for the GXT test
+  // harness so test files can be served as independent modules; under the
+  // classic build those settings break vite's modulepreload-polyfill, so
+  // apply them only in GXT mode.
+  const build = useGxt
+    ? {
+        rollupOptions: {
+          preserveEntrySignatures: 'strict',
+          input: ['index.html'],
+          output: {
+            preserveModules: true,
+          },
+        },
+        minify: mode === 'production',
+      }
+    : {
+        minify: mode === 'production',
+      };
 
   return {
     plugins: [

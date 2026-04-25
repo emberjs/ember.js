@@ -24,7 +24,7 @@ import * as reference from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 
 const { createConstRef } = reference;
-function isConstRef() {
+function isConstRef(_ref: unknown) {
   return true;
 }
 function valueForRef(ref: any) {

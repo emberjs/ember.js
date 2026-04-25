@@ -399,7 +399,7 @@ export function template(
       }
 
       const gxtTemplate = gxtCompile(templateString, {
-        moduleName: gxtOptions.moduleName,
+        moduleName: (gxtOptions as any).moduleName,
         strictMode: true,
         scopeValues,
       });
