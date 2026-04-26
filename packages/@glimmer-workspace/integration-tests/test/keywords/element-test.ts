@@ -49,7 +49,7 @@ class KeywordElement extends RenderTest {
   }
 
   @test
-  'MustacheStatement'(assert: Assert) {
+  MustacheStatement(assert: Assert) {
     const Child = template('{{#let @tag as |Tag|}}<Tag>World</Tag>{{/let}}', {
       strictMode: true,
       scope: () => ({}),
