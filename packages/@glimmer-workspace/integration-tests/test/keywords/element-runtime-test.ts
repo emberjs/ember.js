@@ -8,7 +8,7 @@ import {
 
 import { template } from '@ember/template-compiler/runtime';
 
-class KeywordElement extends RenderTest {
+class KeywordElementRuntime extends RenderTest {
   static suiteName = 'keyword helper: element (runtime)';
 
   @test
@@ -26,7 +26,18 @@ class KeywordElement extends RenderTest {
   }
 
   @test
-  'implicit scope'(assert: Assert) {
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{element "h1"}}', {
+      strictMode: true,
+      scope: () => ({ element: () => 'surprise' }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('surprise');
+  }
+
+  @test
+  'implicit scope (eval)'(assert: Assert) {
     const compiled = template('{{#let (element "h1") as |Tag|}}<Tag>Hello</Tag>{{/let}}', {
       strictMode: true,
       eval() {
@@ -39,27 +50,6 @@ class KeywordElement extends RenderTest {
     let h1 = castToBrowser(this.element, 'div').querySelector('h1');
     assert.ok(h1, 'h1 element exists');
     assert.strictEqual(h1!.textContent, 'Hello');
-  }
-
-  @test
-  'MustacheStatement with explicit scope'(assert: Assert) {
-    const Child = template('{{#let @tag as |Tag|}}<Tag>World</Tag>{{/let}}', {
-      strictMode: true,
-      scope: () => ({}),
-    });
-
-    const compiled = template('<Child @tag={{element "span"}} />', {
-      strictMode: true,
-      scope: () => ({
-        Child,
-      }),
-    });
-
-    this.renderComponent(compiled);
-
-    let span = castToBrowser(this.element, 'div').querySelector('span');
-    assert.ok(span, 'span element exists');
-    assert.strictEqual(span!.textContent, 'World');
   }
 
   @test
@@ -81,4 +71,4 @@ class KeywordElement extends RenderTest {
   }
 }
 
-jitSuite(KeywordElement);
+jitSuite(KeywordElementRuntime);

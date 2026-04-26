@@ -406,22 +406,28 @@ function basicTest(scenarios: Scenarios, appName: string) {
               import { setupRenderingTest } from 'ember-qunit';
               import { render } from '@ember/test-helpers';
 
-              import Component from '@glimmer/component';
-
-              class Demo extends Component {
-                <template>
-                  {{#let (element "h1") as |Tag|}}
-                    <Tag class="greeting">Hello from element keyword</Tag>
-                  {{/let}}
-                </template>
-              }
-
               module('{{element}} as keyword', function(hooks) {
                 setupRenderingTest(hooks);
 
                 test('it works', async function(assert) {
-                  await render(Demo);
+                  await render(
+                    <template>
+                      {{#let (element "h1") as |Tag|}}
+                        <Tag class="greeting">Hello from element keyword</Tag>
+                      {{/let}}
+                    </template>
+                  );
                   assert.dom('h1.greeting').hasText('Hello from element keyword');
+                });
+
+                test('can be shadowed', async function(assert) {
+                  let element = () => 'surprise';
+                  await render(
+                    <template>
+                      <span data-test>{{element "h1"}}</span>
+                    </template>
+                  );
+                  assert.dom('[data-test]').hasText('surprise');
                 });
               });
             `,
