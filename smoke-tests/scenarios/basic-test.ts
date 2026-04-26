@@ -401,6 +401,36 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'element-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{element}} as keyword', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  await render(
+                    <template>
+                      {{#let (element "h1") as |Tag|}}
+                        <Tag class="greeting">Hello from element keyword</Tag>
+                      {{/let}}
+                    </template>
+                  );
+                  assert.dom('h1.greeting').hasText('Hello from element keyword');
+                });
+
+                test('can be shadowed', async function(assert) {
+                  let element = () => 'surprise';
+                  await render(
+                    <template>
+                      <span data-test>{{element "h1"}}</span>
+                    </template>
+                  );
+                  assert.dom('[data-test]').hasText('surprise');
+                });
+              });
+            `,
             'fn-as-keyword-but-its-shadowed-test.gjs': `
               import QUnit, { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
