@@ -21,6 +21,16 @@ class KeywordGtRuntime extends RenderTest {
   }
 
   @test
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (gt a b) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ gt: () => false, a: 3, b: 2 }),
+    });
+    this.renderComponent(compiled);
+    this.assertHTML('no');
+  }
+
+  @test
   'implicit scope (eval)'() {
     let a = 3;
     let b = 2;
@@ -39,14 +49,14 @@ class KeywordGtRuntime extends RenderTest {
   @test
   'no eval and no scope'() {
     class Foo extends GlimmerishComponent {
-      a = 3;
-      b = 2;
       static {
         template('{{if (gt this.a this.b) "yes" "no"}}', {
           strictMode: true,
           component: this,
         });
       }
+      a = 3;
+      b = 2;
     }
     this.renderComponent(Foo);
     this.assertHTML('yes');

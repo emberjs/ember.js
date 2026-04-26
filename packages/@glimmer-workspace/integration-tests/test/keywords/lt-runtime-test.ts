@@ -21,6 +21,16 @@ class KeywordLtRuntime extends RenderTest {
   }
 
   @test
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (lt a b) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ lt: () => false, a: 1, b: 2 }),
+    });
+    this.renderComponent(compiled);
+    this.assertHTML('no');
+  }
+
+  @test
   'implicit scope (eval)'() {
     let a = 1;
     let b = 2;
@@ -39,14 +49,14 @@ class KeywordLtRuntime extends RenderTest {
   @test
   'no eval and no scope'() {
     class Foo extends GlimmerishComponent {
-      a = 1;
-      b = 2;
       static {
         template('{{if (lt this.a this.b) "yes" "no"}}', {
           strictMode: true,
           component: this,
         });
       }
+      a = 1;
+      b = 2;
     }
     this.renderComponent(Foo);
     this.assertHTML('yes');

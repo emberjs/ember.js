@@ -2,10 +2,56 @@ import { DEBUG } from '@glimmer/env';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler';
-import { lt } from '@ember/helper';
 
 class KeywordLt extends RenderTest {
   static suiteName = 'keyword helper: lt';
+
+  @test
+  'explicit scope'() {
+    let a = 1;
+    let b = 2;
+
+    const compiled = template('{{lt a b}}', {
+      strictMode: true,
+      scope: () => ({ a, b }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('true');
+  }
+
+  @test
+  'explicit scope (shadowed)'() {
+    let a = 1;
+    let b = 2;
+    let lt = () => 'surprise';
+    const compiled = template('{{lt a b}}', {
+      strictMode: true,
+      scope: () => ({ lt, a, b }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('surprise');
+  }
+
+  @test
+  'implicit scope (eval)'() {
+    let a = 1;
+    let b = 2;
+
+    hide(a);
+    hide(b);
+
+    const compiled = template('{{if (lt a b) "yes" "no"}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('yes');
+  }
 
   @test
   'returns true when first arg is less'() {
@@ -13,7 +59,7 @@ class KeywordLt extends RenderTest {
     let b = 2;
     const compiled = template('{{if (lt a b) "yes" "no"}}', {
       strictMode: true,
-      scope: () => ({ lt, a, b }),
+      scope: () => ({ a, b }),
     });
     this.renderComponent(compiled);
     this.assertHTML('yes');
@@ -25,7 +71,7 @@ class KeywordLt extends RenderTest {
     let b = 2;
     const compiled = template('{{if (lt a b) "yes" "no"}}', {
       strictMode: true,
-      scope: () => ({ lt, a, b }),
+      scope: () => ({ a, b }),
     });
     this.renderComponent(compiled);
     this.assertHTML('no');
@@ -37,7 +83,7 @@ class KeywordLt extends RenderTest {
     let b = 2;
     const compiled = template('{{if (lt a b) "yes" "no"}}', {
       strictMode: true,
-      scope: () => ({ lt, a, b }),
+      scope: () => ({ a, b }),
     });
     this.renderComponent(compiled);
     this.assertHTML('no');
@@ -48,7 +94,7 @@ class KeywordLt extends RenderTest {
     let a = 1;
     const compiled = template('{{lt a}}', {
       strictMode: true,
-      scope: () => ({ lt, a }),
+      scope: () => ({ a }),
     });
 
     assert.throws(() => {
@@ -58,3 +104,7 @@ class KeywordLt extends RenderTest {
 }
 
 jitSuite(KeywordLt);
+
+const hide = (variable: unknown) => {
+  new Function(`return (${JSON.stringify(variable)});`);
+};
