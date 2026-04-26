@@ -21,16 +21,42 @@ class KeywordLteRuntime extends RenderTest {
   }
 
   @test
+  'explicit scope (shadowed)'() {
+    const compiled = template('{{if (lte a b) "yes" "no"}}', {
+      strictMode: true,
+      scope: () => ({ lte: () => false, a: 2, b: 2 }),
+    });
+    this.renderComponent(compiled);
+    this.assertHTML('no');
+  }
+
+  @test
+  'implicit scope (eval)'() {
+    let a = 2;
+    let b = 2;
+    hide(a);
+    hide(b);
+    const compiled = template('{{if (lte a b) "yes" "no"}}', {
+      strictMode: true,
+      eval() {
+        return eval(arguments[0]);
+      },
+    });
+    this.renderComponent(compiled);
+    this.assertHTML('yes');
+  }
+
+  @test
   'no eval and no scope'() {
     class Foo extends GlimmerishComponent {
-      a = 2;
-      b = 2;
       static {
         template('{{if (lte this.a this.b) "yes" "no"}}', {
           strictMode: true,
           component: this,
         });
       }
+      a = 2;
+      b = 2;
     }
     this.renderComponent(Foo);
     this.assertHTML('yes');
@@ -38,3 +64,7 @@ class KeywordLteRuntime extends RenderTest {
 }
 
 jitSuite(KeywordLteRuntime);
+
+const hide = (variable: unknown) => {
+  new Function(`return (${JSON.stringify(variable)});`);
+};
