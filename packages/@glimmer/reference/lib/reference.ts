@@ -248,6 +248,19 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
   return child;
 }
 
+// WeakMap used to tag a reference created by VM_GET_PROPERTY_BOUND_OP with its
+// parent reference. Consumers like `on` and `fn` check this to bind `this`
+// at invocation time, while `valueForRef` returns the original value unchanged.
+const BOUND_THIS_REFS: WeakMap<Reference, Reference> = new WeakMap();
+
+export function setBindingParentRef(ref: Reference, parentRef: Reference): void {
+  BOUND_THIS_REFS.set(ref, parentRef);
+}
+
+export function getBindingParentRef(ref: Reference): Reference | undefined {
+  return BOUND_THIS_REFS.get(ref);
+}
+
 export function childRefFromParts(root: Reference, parts: string[]): Reference {
   let reference = root;
 

@@ -159,10 +159,8 @@ class FnTest extends RenderTest {
     }, /You must pass a function as the `fn` helper's first argument, you passed null. While rendering:\n{2}this.myFunc/u);
   }
 
-  @test({ skip: !DEBUG })
-  'asserts if the provided function accesses `this` without being bound prior to passing to fn'(
-    assert: Assert
-  ) {
+  @test
+  'this.myFunc passed to fn preserves this context'(assert: Assert) {
     this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, {
       myFunc(arg1: string) {
         return `arg1: ${arg1}, arg2: ${this['arg2']}`;
@@ -172,24 +170,36 @@ class FnTest extends RenderTest {
       arg2: 'bar',
     });
 
-    assert.throws(() => {
-      this.stashedFn?.();
-    }, /You accessed `this.arg2` from a function passed to the `fn` helper, but the function itself was not bound to a valid `this` context. Consider updating to use a bound function./u);
+    assert.strictEqual(
+      this.stashedFn?.(),
+      'arg1: foo, arg2: bar',
+      'this.myFunc preserves this binding through fn'
+    );
   }
 
-  @test({ skip: !DEBUG })
-  'there is no `this` context within the callback'(assert: Assert) {
-    this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, {
+  @test
+  'this context is available within the callback'(assert: Assert) {
+    let seenThis: unknown;
+
+    let context = {
       myFunc() {
         assert.step('calling stashed function');
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        assert.throws(() => String(this), /not bound to a valid `this` context/u);
-        // assert.strictEqual(this, null, 'this is bound to null in production builds');
+        seenThis = this;
       },
-    });
+
+      arg1: 'foo',
+    };
+
+    this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, context);
 
     this.stashedFn?.();
     assert.verifySteps(['calling stashed function']);
+    assert.ok(seenThis !== null && seenThis !== undefined, 'this is not null/undefined');
+    assert.strictEqual(
+      (seenThis as Record<string, unknown>)['arg1'],
+      'foo',
+      'this is bound to the object myFunc is defined on'
+    );
   }
 
   @test

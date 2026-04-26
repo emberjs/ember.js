@@ -3,7 +3,13 @@ import type { AnyFn, CapturedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { check } from '@glimmer/debug';
 import { buildUntouchableThis } from '@glimmer/debug-util';
-import { createComputeRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
+import {
+  createComputeRef,
+  getBindingParentRef,
+  isInvokableRef,
+  updateRef,
+  valueForRef,
+} from '@glimmer/reference';
 
 import { reifyPositional } from '../vm/arguments';
 import { internalHelper } from './internal-helper';
@@ -88,8 +94,10 @@ export const fn = internalHelper(({ positional }: CapturedArguments) => {
           let value = args.length > 0 ? args[0] : invocationArgs[0];
           return void updateRef(callbackRef, value);
         } else {
+          let bindingParentRef = getBindingParentRef(callbackRef);
+          let thisContext = bindingParentRef ? valueForRef(bindingParentRef) : context;
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- @fixme
-          return (fn as AnyFn).call(context, ...args, ...invocationArgs);
+          return (fn as AnyFn).call(thisContext, ...args, ...invocationArgs);
         }
       };
     },
