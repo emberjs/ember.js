@@ -126,6 +126,26 @@ export default defineConfig(({ mode }) => {
         overlay: false,
       },
     },
+    // In classic mode the gxt compiler plugin doesn't run, but glimmer-next
+    // runtime code is still bundled (statically imported by
+    // @ember/-internals/glimmer). That code references build-time constants
+    // (WITH_CONTEXT_API, IS_DEV_MODE, etc.) which would otherwise survive as
+    // free identifiers and crash at runtime. Define them here so the bundled
+    // gxt code behaves correctly. In GXT mode the compiler plugin inlines
+    // these itself, so we omit `define:` to avoid double-replacement.
+    ...(useGxt
+      ? {}
+      : {
+          define: {
+            IS_GLIMMER_COMPAT_MODE: 'true',
+            WITH_EMBER_INTEGRATION: 'true',
+            WITH_HELPER_MANAGER: 'true',
+            WITH_MODIFIER_MANAGER: 'true',
+            WITH_CONTEXT_API: 'true',
+            TRY_CATCH_ERROR_HANDLING: 'false',
+            IS_DEV_MODE: mode === 'development' ? 'true' : 'false',
+          },
+        }),
     build,
     esbuild: false,
     envPrefix: 'VM_',
