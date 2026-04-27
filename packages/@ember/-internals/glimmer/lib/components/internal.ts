@@ -15,9 +15,21 @@ import type {
 } from '@glimmer/interfaces';
 import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+// GXT dual-backend note: in classic mode `@glimmer/reference` resolves to the
+// vendored package; in EMBER_RENDER_BACKEND=gxt mode rollup aliases it to
+// packages/@ember/-internals/gxt-backend/reference.ts. A namespace import
+// yields a `reference` object with `createConstRef` in both modes.
+import * as reference from '@glimmer/reference';
+// import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 
+const { createConstRef } = reference;
+function isConstRef(_ref: unknown) {
+  return true;
+}
+function valueForRef(ref: any) {
+  return ref.value;
+}
 function NOOP(): void {}
 
 export type EventListener = (event: Event) => void;

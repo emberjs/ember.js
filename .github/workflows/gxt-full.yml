@@ -1,0 +1,77 @@
+name: GXT Full (nightly)
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  gxt-full:
+    name: GXT full suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run GXT full suite vs baseline
+        id: gxt-run
+        env:
+          GXT_MODE: 'true'
+        run: |
+          node scripts/gxt-test-runner/runner.mjs \
+            --full \
+            --auto-serve \
+            --url http://localhost:5180/ \
+            --baseline test-results/gxt-baseline.json
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-full-run
+          path: |
+            test-results/gxt-summary.json
+            test-results/gxt-last-run.json
+          if-no-files-found: ignore
+      - name: Upload candidate baseline
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-candidate-baseline
+          path: test-results/gxt-summary.json
+          if-no-files-found: ignore
+      - name: File regression issue
+        if: failure() && steps.gxt-run.outcome == 'failure'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const title = `GXT nightly regression on ${context.sha.substring(0,7)}`;
+            const body = [
+              'The nightly GXT full-suite run failed against',
+              '`test-results/gxt-baseline.json`.',
+              '',
+              `- commit: ${context.sha}`,
+              `- run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              '',
+              'Download the `gxt-full-run` artifact and diff it:',
+              '',
+              '```',
+              'node scripts/gxt-test-runner/diff.mjs \\',
+              '  test-results/gxt-baseline.json \\',
+              '  gxt-summary.json',
+              '```',
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['gxt', 'regression', 'nightly'],
+            });

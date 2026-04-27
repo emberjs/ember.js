@@ -76,7 +76,7 @@ class ForkedValue implements Value {
   private local?: Value;
   private upstream: Value;
 
-  private lastUpstreamValue = UNINITIALIZED;
+  private lastUpstreamValue: unknown = UNINITIALIZED;
 
   constructor(reference: Reference<unknown>) {
     this.upstream = new UpstreamValue(reference);
@@ -97,6 +97,26 @@ class ForkedValue implements Value {
   set(value: unknown): void {
     assert('[BUG] this.local must have been initialized at this point', this.local);
     this.local.set(value);
+  }
+
+  /**
+   * Sync the local fork to the current upstream value by dirtying the
+   * tracked local-value field. This causes effects depending on get() to
+   * re-run and re-read. Used by GXT's compat layer when the parent
+   * re-invokes the component's render path — a signal that args may have
+   * been replaced from the parent side. Without this, if the replaced
+   * arg's primitive value happens to equal the previous upstream value,
+   * the identity-based check in get() wouldn't detect the change and the
+   * stale local fork would win.
+   */
+  __syncFromUpstream(): void {
+    const upstreamValue = this.upstream.get();
+    this.lastUpstreamValue = upstreamValue;
+    if (this.local) {
+      (this.local as LocalValue).set(upstreamValue);
+    } else {
+      this.local = new LocalValue(upstreamValue);
+    }
   }
 }
 

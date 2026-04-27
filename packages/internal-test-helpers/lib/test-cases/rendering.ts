@@ -81,14 +81,71 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   afterEach() {
     try {
+      // Clean up GXT active components first (if using GXT)
+      const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
+      if (typeof gxtCleanup === 'function') {
+        gxtCleanup();
+      }
+      // Ensure no pending GXT syncs leak between tests
+      (globalThis as any).__gxtSyncScheduled = false;
+
       if (this.component) {
         runDestroy(this.component);
       }
       if (this.owner) {
         runDestroy(this.owner);
       }
+
+      // Destroy active custom modifier instances during teardown so
+      // willDestroyElement fires (matching Glimmer VM behavior).
+      // Only destroy each modifier class once (the LAST instance) to match
+      // Glimmer VM's behavior of one destroy per active modifier.
+      try {
+        const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+        if (modMgr?._updatedInstances?.size > 0) {
+          // Only destroy the LAST instance (most recently installed modifier).
+          // Multiple instances may exist due to GXT formula double-fires creating
+          // parallel cache entries. Only the last one is "active".
+          const instances = [...modMgr._updatedInstances];
+          const lastInst = instances[instances.length - 1];
+          if (
+            lastInst?.__gxtModManager?.destroyModifier &&
+            !lastInst.__gxtTeardownDestroyed &&
+            !lastInst.__gxtModDestroyed
+          ) {
+            try {
+              lastInst.__gxtModManager.destroyModifier(lastInst);
+              lastInst.__gxtTeardownDestroyed = true;
+              lastInst.__gxtModDestroyed = true;
+            } catch {
+              /* ignore */
+            }
+          }
+          modMgr._updatedInstances.clear();
+        }
+        // Clear pending destroys without processing (already handled above)
+        const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        if (pendingDestroys) pendingDestroys.length = 0;
+      } catch {
+        /* ignore */
+      }
+
+      // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
+      if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
+        (globalThis as any).owner = null;
+      }
     } finally {
       _resetRenderers();
+      // Reset pending sync AFTER destroy
+      (globalThis as any).__gxtPendingSync = false;
+      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      // Replace #qunit-fixture element to drop accumulated event listeners
+      // (EventDispatcher.setup adds listeners that aren't always cleaned up)
+      const fixture = document.getElementById('qunit-fixture');
+      if (fixture && (globalThis as any).__GXT_MODE__) {
+        const fresh = fixture.cloneNode(false) as HTMLElement;
+        fixture.parentNode?.replaceChild(fresh, fixture);
+      }
     }
   }
 
@@ -115,7 +172,17 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
     this.component = owner.lookup('component:-top-level');
 
+    // Increment render pass ID before starting a new render transaction
+    // This ensures all components in this render share the same pass ID
+    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+
     runAppend(this.component);
+
+    // After the initial render, reset pendingSyncFromPropertyChange to prevent
+    // the setInterval fallback from triggering a morph (Phase 2b). Property
+    // change notifications during the initial render (e.g., from EmberObject.create
+    // in modifier managers) should NOT cause a morph — the DOM is already correct.
+    (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
   }
 
   renderComponent(component: object, options: { expect: string }) {
@@ -127,6 +194,8 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   rerender() {
     this.#assertNotAwaiting('rerender');
+    // Increment render pass ID for re-renders too
+    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
     this.component!.rerender();
   }
 

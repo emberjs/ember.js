@@ -8,12 +8,13 @@ import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import { createComputeRef, updateRef } from '@glimmer/reference';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import * as _gxt from '@lifeart/gxt';
+const cellFor: any = (_gxt as any).cellFor;
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
+// const { createComputeRef, updateRef } = reference;
 
 export interface BootEnvironment {
   hasDOM: boolean;
@@ -53,7 +54,7 @@ export default class OutletView {
     return new OutletView(_environment, owner, template, namespace);
   }
 
-  private ref: Reference;
+  private ref: OutletState;
   public state: OutletDefinitionState;
 
   constructor(
@@ -62,7 +63,6 @@ export default class OutletView {
     public template: Template,
     public namespace: any
   ) {
-    let outletStateTag = createTag();
     let outletState: OutletState = {
       outlets: { main: undefined },
       render: {
@@ -74,19 +74,14 @@ export default class OutletView {
       },
     };
 
-    let ref = (this.ref = createComputeRef(
-      () => {
-        consumeTag(outletStateTag);
-        return outletState;
-      },
-      (state: OutletState) => {
-        dirtyTag(outletStateTag);
-        outletState.outlets['main'] = state;
-      }
-    ));
+    cellFor(outletState.outlets, 'main');
+
+    let ref = (this.ref = outletState);
+
+    // ref.compute();
 
     this.state = {
-      ref,
+      ref: ref as unknown as Reference<OutletState | undefined>,
       name: TOP_LEVEL_NAME,
       template,
       controller: undefined,
@@ -114,7 +109,53 @@ export default class OutletView {
   }
 
   setOutletState(state: OutletState): void {
-    updateRef(this.ref, state);
+    // Update the outlet state
+    this.ref.outlets['main'] = state;
+
+    // Update the global outlet state so <ember-outlet> elements can access it
+    (globalThis as any).__currentOutletState = this.ref;
+
+    // In GXT mode, trigger re-render of the root outlet content first.
+    // The root render function handles the top-level route (the one that
+    // root.ts renders directly, skipping the -outlet template).
+    if ((globalThis as any).__GXT_MODE__) {
+      const rootRenderFn = (globalThis as any).__gxtRootOutletRerender;
+      if (typeof rootRenderFn === 'function') {
+        // Snapshot active outlets BEFORE the root re-render. The root re-render
+        // may create new <ember-outlet> elements (via innerHTML='' + renderOutletState).
+        // We only want to notify PRE-EXISTING outlets about the state change —
+        // newly created outlets already render via connectedCallback.
+        const preExistingOutlets = (globalThis as any).__activeOutletElements
+          ? new Set((globalThis as any).__activeOutletElements)
+          : null;
+
+        rootRenderFn(this.ref);
+
+        // After the root re-render, notify pre-existing outlet elements about
+        // nested state changes (e.g., engine-internal route transitions where
+        // the outlet element stays in the DOM but nested content changes).
+        if (preExistingOutlets) {
+          const currentOutlets = (globalThis as any).__activeOutletElements;
+          for (const outlet of preExistingOutlets as Iterable<any>) {
+            // Only notify outlets that survived the root re-render (still in DOM)
+            if (currentOutlets?.has(outlet) && typeof outlet.updateOutletState === 'function') {
+              outlet.updateOutletState(this.ref);
+            }
+          }
+        }
+        return;
+      }
+    }
+
+    // Fallback: Notify active outlet elements about the state change
+    const activeOutlets = (globalThis as any).__activeOutletElements;
+    if (activeOutlets) {
+      for (const outlet of activeOutlets) {
+        if (typeof outlet.updateOutletState === 'function') {
+          outlet.updateOutletState(this.ref);
+        }
+      }
+    }
   }
 
   destroy(): void {

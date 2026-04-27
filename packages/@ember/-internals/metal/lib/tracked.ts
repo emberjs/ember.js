@@ -2,12 +2,38 @@ import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+// GXT dual-backend note: in classic mode `@glimmer/validator` resolves to the
+// vendored package; in EMBER_RENDER_BACKEND=gxt mode rollup aliases it to
+// packages/@ember/-internals/gxt-backend/validator.ts. Both shapes expose the
+// same named exports, so a namespace import yields a `validator` object with
+// the same surface as @lifeart/gxt/glimmer-compatibility's `validator`.
+import * as validator from '@glimmer/validator';
+import {
+  dirtyTagFor,
+  consumeTag as compatConsumeTag,
+  tagFor as compatTagFor,
+  trackedData as compatTrackedData,
+} from '@glimmer/validator';
+
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
+
+const {
+  consumeTag: _nativeConsumeTag,
+  tagFor: _nativeTagFor,
+  trackedData: _nativeTrackedData,
+} = validator;
+
+// Use compat trackedData for backtracking detection support.
+// The native GXT trackedData doesn't support backtracking detection.
+const trackedData = compatTrackedData;
+
+// Use compat versions that integrate with createCache tracking
+const consumeTag = compatConsumeTag;
+const tagFor = compatTagFor;
 
 /**
   @decorator
@@ -152,10 +178,54 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
-  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
+  // Always pass a function initializer to trackedData so GXT's cellFor creates
+  // a cell with a safe getter (instead of reading back through the property
+  // descriptor, which causes infinite recursion).
+  const initializer = desc?.initializer ?? (() => undefined);
+  let { getter, setter } = trackedData<any, any>(key, initializer);
 
   function get(this: object): unknown {
     let value = getter(this);
+
+    // Consume the property tag so that createCache tracking captures this
+    // dependency. Without this, GXT cell reads from trackedData.getter are
+    // invisible to our compat createCache's tag-based invalidation system.
+    consumeTag(tagFor(this, key as string));
+
+    // In GXT mode, synchronize the cellFor cell for this property.
+    // trackedData from @lifeart/gxt/glimmer-compatibility and cellFor from
+    // @lifeart/gxt may use different internal cell instances in Vite dev mode
+    // (module duplication). GXT's $_tag formulas only track cellFor cells.
+    // By reading from cellFor here, we ensure the formula's tracker captures
+    // this cell as a dependency. The setter's cellFor.update() call ensures
+    // the cell is dirtied when the property changes.
+    if ((globalThis as any).__GXT_MODE__) {
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (typeof _cellFor === 'function') {
+        try {
+          // Use skipDefine=true to avoid replacing the tracked getter/setter.
+          // This creates the cell in cellFor's storage without installing
+          // a getter/setter on the property.
+          const cell = _cellFor(this, key, /* skipDefine */ true);
+          if (cell) {
+            // Silently sync the cell value without triggering dirty marking.
+            // We set _value directly to avoid adding to tagsToRevalidate
+            // during render, which would cause infinite re-render loops.
+            if (cell._value !== value) {
+              cell._value = value;
+            }
+            // Read cell.value to add this cell to the current GXT tracker.
+            // This is the key step: the formula's tracker now knows about
+            // this cell, so when the setter's cellFor.update() dirties it,
+            // syncDom will re-evaluate the formula.
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            cell.value;
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+    }
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
@@ -167,8 +237,58 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   }
 
   function set(this: object, newValue: unknown): void {
+    // GXT backtracking detection for @tracked properties
+    if (DEBUG) {
+      const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
+      if (typeof checkBacktracking === 'function') {
+        checkBacktracking(this, key);
+      }
+    }
     setter(this, newValue);
+    // Directly update the GXT cell for this property using cellFor.
+    // trackedData.setter (above) updates the cell via GXT's native validator,
+    // but the cell may not be in the same tracking system as the formulas
+    // created by gxtEffect in the compat layer. Using cellFor ensures the
+    // cell that GXT effects track is also dirtied.
+    if ((globalThis as any).__GXT_MODE__) {
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (typeof _cellFor === 'function') {
+        try {
+          const cell = _cellFor(this, key, /* skipDefine */ true);
+          if (cell) cell.update(newValue);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
     dirtyTagFor(this, SELF_TAG);
+    // Also dirty the property-specific tag so observers watching 'key' or
+    // 'key.[]' detect the change via getChainTagsForKey.
+    dirtyTagFor(this, key);
+    // In GXT mode, notify the Ember property system so that sync observers
+    // and tag dirtying work correctly for QP tracking.
+    if ((globalThis as any).__GXT_MODE__) {
+      const _notifyPropChange = (globalThis as any).__emberNotifyPropertyChange;
+      if (typeof _notifyPropChange === 'function') {
+        _notifyPropChange(this, key);
+      }
+    }
+    // Notify GXT for cross-object reactivity — when a tracked property changes
+    // on a non-component object (e.g., a Counter or Person class), dirty all
+    // component cells that hold a reference to this object. This ensures that
+    // GXT formulas like {{this.counter.countAlias}} re-evaluate.
+    // Skip during rendering to avoid breaking the initial render.
+    if (!(globalThis as any).__gxtCurrentlyRendering) {
+      const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+      if (typeof triggerReRender === 'function') {
+        triggerReRender(this, key);
+      }
+      // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
+      const schedule = (globalThis as any).__gxtExternalSchedule;
+      if (typeof schedule === 'function') {
+        schedule();
+      }
+    }
   }
 
   let newDesc = {

@@ -22,7 +22,59 @@ const testDependencies = [
   '@simple-dom/serializer',
   '@simple-dom/void-map',
   'expect-type',
+  // Packages imported by compiled test source (GJS) or their helpers that
+  // should fall through to vite's native node_modules resolution during
+  // the GXT test harness. The classic rollup build never hits this path
+  // because it doesn't bundle tests.
+  'decorator-transforms',
+  '@lifeart/gxt',
 ];
+
+// Phase 0.9 POC: resolver-alias strategy for GXT dual-backend.
+// When EMBER_RENDER_BACKEND=gxt, exposedDependencies() swaps a subset of
+// @glimmer/* module IDs for the compat shims under packages/@ember/-internals/gxt-backend/.
+// When unset (or "classic"), exposedDependencies() returns the exact same
+// result as before — the classic build must remain byte-identical.
+const RENDER_BACKEND = process.env.EMBER_RENDER_BACKEND || 'classic';
+const USE_GXT_BACKEND = RENDER_BACKEND === 'gxt';
+
+// Phase 2.5: bundle visualizer (gated by BUNDLE_VISUALIZER=1). Loaded here
+// via top-level await so legacyBundleConfig() can push it synchronously
+// into its plugins list. When the env var is unset, visualizerPlugin is a
+// no-op factory and rollup's plugin array is unchanged from the default.
+let visualizerPlugin = () => null;
+if (process.env.BUNDLE_VISUALIZER === '1') {
+  const { visualizer } = await import('rollup-plugin-visualizer');
+  visualizerPlugin = visualizer;
+}
+
+// Packages that the shims import and that rollup should treat as external
+// rather than trying to bundle. These are resolved at runtime by the host
+// (vite dev / the published gxt package). They are only applied when
+// USE_GXT_BACKEND is true so the classic build is unaffected.
+const GXT_EXTERNAL_PACKAGES = new Set([
+  '@lifeart/gxt',
+  '@lifeart/gxt/glimmer-compatibility',
+  '@lifeart/gxt/runtime-compiler',
+  '@lifeart/gxt/compiler',
+]);
+
+// Packages dropped from the top-level entry map in GXT mode. They remain
+// resolvable via exposedDependencies() (so stray imports still succeed),
+// but are no longer emitted as their own dist/packages/@glimmer/* chunks.
+// Anything not reachable from the remaining entry points gets tree-shaken.
+const GXT_DROPPED_ENTRIES = new Set([
+  '@glimmer/runtime',
+  '@glimmer/opcode-compiler',
+  '@glimmer/program',
+  '@glimmer/wire-format',
+  '@glimmer/encoder',
+  '@glimmer/vm',
+  '@glimmer/util',
+  '@glimmer/global-context',
+  '@glimmer/node',
+  '@glimmer/owner',
+]);
 
 let configs = [
   esmConfig(),
@@ -58,7 +110,7 @@ function esmProdConfig() {
 
 function esmInputs() {
   return {
-    ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
+    ...renameEntrypoints(entryExposedDependencies(), (name) => join('packages', name, 'index')),
     ...renameEntrypoints(packages(), (name) => join('packages', name)),
     // the actual authored "./packages/ember-template-compiler/index.ts" is
     // part of what powers the historical dist/ember-template-compiler.js AMD
@@ -95,6 +147,11 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
 
   if (includePackageMeta) {
     plugins.push(packageMeta());
+  }
+
+  const visualized = visualizerPlugin();
+  if (visualized) {
+    plugins.push(visualized);
   }
 
   return {
@@ -197,6 +254,18 @@ function packages() {
       'loader/**',
       'ember-template-compiler/**',
       'internal-test-helpers/**',
+      // Phase 0.9 POC: the demo workspace (including compat/ shims and
+      // the vite-backed demo app) is not part of the published ember-source
+      // bundle. It was accidentally pulled in because `packages()` globs
+      // every file under `packages/`. Exclude it so the classic rollup
+      // build is actually reproducible on the glimmer-next-fresh branch.
+      'demo/**',
+
+      // Phase 1: the gxt-backend package provides compat shims that are
+      // alias-injected into the graph via resolvePackages when
+      // EMBER_RENDER_BACKEND=gxt. It must not be picked up as a set of
+      // standalone entrypoints for the classic build.
+      '@ember/-internals/gxt-backend/**',
 
       // this is a real package that publishes by itself
       '@glimmer/component/**',
@@ -250,7 +319,7 @@ function rolledUpPackages() {
 // ember-source. That is, other packages could actually depend on the copies of
 // these that we publish.
 export function exposedDependencies() {
-  return {
+  const classic = {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
     rsvp: require.resolve('rsvp/lib/rsvp.js'),
     'dag-map': require.resolve('dag-map/dag-map.js'),
@@ -273,6 +342,45 @@ export function exposedDependencies() {
     ),
     '@glimmer/env': resolve(packageCache.appRoot, 'packages/@glimmer/env/index.ts'),
   };
+
+  if (!USE_GXT_BACKEND) {
+    return classic;
+  }
+
+  // GXT backend: route the @glimmer/* modules that have compat shims to
+  // packages/@ember/-internals/gxt-backend/*.ts, and drop the VM/compiler
+  // packages from the entry map entirely. The POC measures whether
+  // dropping them from the entry map is enough for rollup to eliminate
+  // them from the output.
+  const compatDir = resolve(packageCache.appRoot, 'packages/@ember/-internals/gxt-backend');
+  const gxtOverrides = {
+    '@glimmer/validator': resolve(compatDir, 'validator.ts'),
+    '@glimmer/manager': resolve(compatDir, 'manager.ts'),
+    '@glimmer/reference': resolve(compatDir, 'reference.ts'),
+    '@glimmer/destroyable': resolve(compatDir, 'destroyable.ts'),
+    '@glimmer/tracking': resolve(compatDir, 'glimmer-tracking.ts'),
+    '@glimmer/tracking/primitives/cache': resolve(compatDir, 'glimmer-tracking.ts'),
+    // ember-template-compiler is shim-replaced so @ember/template-compilation
+    // etc. don't end up pulling in @glimmer/syntax + @glimmer/compiler.
+    'ember-template-compiler': resolve(compatDir, 'ember-template-compiler.ts'),
+    '@ember/template-compilation': resolve(compatDir, 'compile.ts'),
+    '@ember/-internals/deprecations': resolve(compatDir, 'deprecate.ts'),
+    '@glimmer/application': resolve(compatDir, 'glimmer-application.ts'),
+    '@glimmer/utils': resolve(compatDir, 'glimmer-util.ts'),
+  };
+
+  return { ...classic, ...gxtOverrides };
+}
+
+// Convenience helper used by esmConfig() to build the input map. In
+// classic mode this returns exposedDependencies() verbatim. In gxt mode
+// it returns the same map minus GXT_DROPPED_ENTRIES.
+function entryExposedDependencies() {
+  const deps = exposedDependencies();
+  if (!USE_GXT_BACKEND) return deps;
+  const filtered = { ...deps };
+  for (const k of GXT_DROPPED_ENTRIES) delete filtered[k];
+  return filtered;
 }
 
 // these are dependencies that we inline into our own published code but do not
@@ -289,6 +397,10 @@ export function hiddenDependencies() {
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'
     ),
+    // Root entry needed for GXT-compiled test modules that import the
+    // bare `decorator-transforms` package (e.g. via compiled GJS test
+    // helpers). Classic rollup build doesn't hit this.
+    'decorator-transforms': resolve(findFromProject('decorator-transforms').root, 'dist/index.js'),
   };
 }
 
@@ -386,6 +498,12 @@ function resolveTS() {
 export function resolvePackages(deps, params) {
   const isExternal = params?.isExternal;
   const enableLocalDebug = params?.enableLocalDebug ?? false;
+  // When true (vite dev server), skip the `external: true` returns for
+  // runtime-loaded packages (@lifeart/gxt, decorator-transforms). Vite
+  // serves those through its native node_modules resolver instead.
+  // Without this, vite tries to serve `/@id/@lifeart/gxt` with no handler
+  // and returns 404, causing test modules to fail to load.
+  const viteDevFallthrough = params?.viteDevFallthrough ?? false;
 
   return {
     enforce: 'pre',
@@ -400,6 +518,33 @@ export function resolvePackages(deps, params) {
         return;
       }
 
+      // Phase 2.6 Fix #1: rewrite relative imports of the pre-bundled
+      // @lifeart/gxt dist files to their bare specifier forms so rollup
+      // marks them as external. Several gxt-backend shims use literal
+      // relative paths like '../node_modules/@lifeart/gxt/dist/gxt.*.es.js'
+      // to dodge vite-dev resolution subtleties (module identity via
+      // symlinks + the gxtModuleDedup plugin). Rollup, however, follows
+      // those relative paths through pnpm's symlink farm and ends up
+      // inlining @lifeart/gxt + its transitive deps (@glimmer/syntax,
+      // @handlebars/parser, simple-html-tokenizer) into ember.prod.js.
+      // Normalizing here at resolve time lets vite dev keep using the
+      // source as-is (its own gxtModuleDedup plugin handles identity),
+      // while the rollup build sees a bare specifier and externalizes.
+      // Gated on USE_GXT_BACKEND so we only fire during the GXT rollup
+      // build — vite dev imports `resolvePackages` from this same file
+      // and must not see these rewrites.
+      if (USE_GXT_BACKEND) {
+        if (
+          source.endsWith('/dist/gxt.runtime-compiler.es.js') &&
+          source.includes('@lifeart/gxt')
+        ) {
+          return { external: true, id: '@lifeart/gxt/runtime-compiler' };
+        }
+        if (source.endsWith('/dist/gxt.index.es.js') && source.includes('@lifeart/gxt')) {
+          return { external: true, id: '@lifeart/gxt' };
+        }
+      }
+
       if (source === '@glimmer/local-debug-flags' && !enableLocalDebug) {
         return resolve(projectRoot, 'packages/@glimmer/local-debug-flags/disabled.ts');
       }
@@ -412,6 +557,22 @@ export function resolvePackages(deps, params) {
           return { external: true, id: pkgName };
         }
 
+        // Phase 0.9 POC: @lifeart/gxt and its subpath exports are always
+        // external — they're resolved by the host runtime (vite alias, the
+        // published @lifeart/gxt npm package, or the demo's pnpm-managed
+        // copy). This is needed regardless of EMBER_RENDER_BACKEND because
+        // in-repo modules on the glimmer-next-fresh branch (e.g.
+        // @ember/-internals/metal/lib/tracked.ts) statically import
+        // @lifeart/gxt/glimmer-compatibility. Treating it as external keeps
+        // the classic rollup build able to run at all.
+        if (GXT_EXTERNAL_PACKAGES.has(source) || pkgName === '@lifeart/gxt') {
+          if (viteDevFallthrough) {
+            // Let vite resolve via node_modules natively.
+            return;
+          }
+          return { external: true, id: source };
+        }
+
         if (isExternal?.(source)) {
           return { external: true, id: source };
         }
@@ -421,7 +582,22 @@ export function resolvePackages(deps, params) {
         }
 
         let candidateStem = resolve(projectRoot, 'packages', source);
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+        // Include '/src/index.ts' / '/src/index.js' so packages whose
+        // authored source lives under a `src/` subdir (e.g. `@glimmer/component`
+        // — a published v2 addon whose repo layout has no root index.ts) are
+        // resolvable here. The classic rollup build doesn't hit this path for
+        // `@glimmer/component` because it's excluded from `packages()` and
+        // built by its own `glimmerComponent()` config; the lookup matters
+        // only for the vite dev server used by the GXT test harness.
+        for (let suffix of [
+          '',
+          '.ts',
+          '.js',
+          '/index.ts',
+          '/index.js',
+          '/src/index.ts',
+          '/src/index.js',
+        ]) {
           let candidate = candidateStem + suffix;
           if (existsSync(candidate) && statSync(candidate).isFile()) {
             return candidate;
@@ -460,7 +636,18 @@ export function externalizePackages(deps) {
         }
 
         let candidateStem = resolve(projectRoot, 'packages', source);
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+        // Keep in sync with resolvePackages() above — we also accept
+        // `/src/index.{ts,js}` so packages whose authored source lives under
+        // a `src/` subdir are recognized.
+        for (let suffix of [
+          '',
+          '.ts',
+          '.js',
+          '/index.ts',
+          '/index.js',
+          '/src/index.ts',
+          '/src/index.js',
+        ]) {
           let candidate = candidateStem + suffix;
           if (existsSync(candidate) && statSync(candidate).isFile()) {
             return { external: true, id: source };
@@ -545,6 +732,19 @@ const allowedCycles = [
   'packages/@glimmer/opcode-compiler',
   'packages/@glimmer/syntax',
   'packages/@glimmer/compiler',
+
+  // Phase 0.9 POC: when EMBER_RENDER_BACKEND=gxt, @glimmer/manager is
+  // aliased to packages/@ember/-internals/gxt-backend/manager.ts. That
+  // shim transitively imports @ember/-internals/metal, which itself
+  // imports @glimmer/manager, forming a cycle that mirrors the one
+  // already allowed for the vendored @glimmer/manager package.
+  'packages/@ember/-internals/gxt-backend/manager',
+
+  // Same class of cycle as the @glimmer/manager one above: the destroyable
+  // shim under gxt-backend re-enters through @ember/runloop ->
+  // @ember/-internals/metal -> @ember/-internals/meta, which re-imports
+  // destroyable when the GXT resolver-alias is active.
+  'packages/@ember/-internals/gxt-backend/destroyable',
 ];
 
 function handleRollupWarnings(level, log, handler) {

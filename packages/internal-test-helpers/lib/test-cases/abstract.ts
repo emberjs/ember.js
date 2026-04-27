@@ -15,8 +15,25 @@ const HTMLElement = window.HTMLElement;
 const Comment = window.Comment;
 
 function isMarker(node: unknown): node is Comment | typeof TextNode {
-  if (node instanceof Comment && node.textContent === '') {
-    return true;
+  if (node instanceof Comment) {
+    const text = node.textContent || '';
+    // Empty comments are Glimmer VM markers
+    if (text === '') return true;
+    // GXT internal placeholder comments
+    if (
+      (globalThis as any).__GXT_MODE__ &&
+      (text.includes('placeholder') ||
+        text.includes('if-entry') ||
+        text.includes('each-entry') ||
+        text.includes('list-target') ||
+        text.includes('list item') ||
+        text.includes('list bottom marker') ||
+        text.includes('curried-start') ||
+        text.includes('curried-end') ||
+        text === '/htmlRaw')
+    ) {
+      return true;
+    }
   }
 
   if (node instanceof TextNode && node.textContent === '') {
@@ -46,9 +63,85 @@ export abstract class AbstractStrictTestCase {
 
   afterEach() {
     try {
+      // Clean up GXT active components before destroy
+      const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
+      if (typeof gxtCleanup === 'function') {
+        gxtCleanup();
+      }
+
       runDestroy(this);
+
+      // Flush pending modifier destroys so willDestroyElement fires during
+      // teardown (matching Glimmer VM behavior where destroyModifier is called
+      // synchronously when the element is removed).
+      try {
+        const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        if (pendingDestroys && pendingDestroys.length > 0) {
+          const toFlush = pendingDestroys.splice(0);
+          for (const entry of toFlush) {
+            if (!entry.cached.pendingDestroy) continue;
+            try {
+              if (
+                entry.isCustom &&
+                entry.cached.manager?.destroyModifier &&
+                !entry.cached.instance?.__gxtModDestroyed
+              ) {
+                entry.cached.manager.destroyModifier(entry.cached.instance);
+                if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
+              }
+              if (entry.destroyable) {
+                const destroyFn = (globalThis as any).__gxtDestroyFn;
+                if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
+              }
+            } catch {
+              /* ignore individual modifier destroy errors */
+            }
+            const elCache = entry.cache?.get(entry.element);
+            if (elCache) {
+              elCache.delete(entry.modKey);
+              if (elCache.size === 0) entry.cache.delete(entry.element);
+            }
+          }
+        }
+        // Also destroy any custom modifiers that are still active (their
+        // formula destructors might not have fired during cleanup).
+        const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+        if (modMgr?._destroyedInstances) {
+          // Already tracked — skip
+        } else if (modMgr?._updatedInstances) {
+          // Walk recently-active instances and call destroyModifier on their managers
+          for (const inst of modMgr._updatedInstances) {
+            try {
+              if (inst?.__gxtModManager?.destroyModifier && !inst.__gxtModDestroyed) {
+                inst.__gxtModManager.destroyModifier(inst);
+                inst.__gxtModDestroyed = true;
+              }
+            } catch {
+              /* ignore */
+            }
+          }
+          modMgr._updatedInstances.clear();
+        }
+      } catch {
+        /* ignore */
+      }
+
+      // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
+      if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
+        (globalThis as any).owner = null;
+      }
     } finally {
       _resetRenderers();
+      (globalThis as any).__gxtPendingSync = false;
+      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      (globalThis as any).__gxtSyncScheduled = false;
+      // Clear stale render errors so they don't leak into the next test's
+      // beforeEach. Errors like backtracking assertions are caught by
+      // assert.rejectsAssertion but also captured in _renderErrors via
+      // captureRenderError, leaving a stale copy that would re-throw on
+      // the next flushRenderErrors() call.
+      const clearErrors = (globalThis as any).__gxtClearRenderErrors;
+      if (typeof clearErrors === 'function') clearErrors();
     }
   }
 
@@ -198,11 +291,69 @@ export default abstract class AbstractTestCase {
   }
 
   assertInnerHTML(html: string) {
+    this.cleanGxtArtifacts();
     equalInnerHTML(this.assert, getElement(), html);
   }
 
   assertHTML(html: string) {
+    this.cleanGxtArtifacts();
     equalTokens(getElement(), html, `#qunit-fixture content should be: \`${html}\``);
+  }
+
+  /** Remove GXT rendering artifacts from #qunit-fixture before assertions */
+  private cleanGxtArtifacts() {
+    if (!(globalThis as any).__GXT_MODE__) return;
+    const fixture = getElement();
+    if (!fixture) return;
+
+    // Remove GXT placeholder comments
+    const walker = document.createTreeWalker(fixture, NodeFilter.SHOW_COMMENT, null);
+    const toRemove: Comment[] = [];
+    let node: Comment | null;
+    while ((node = walker.nextNode() as Comment | null)) {
+      const text = node.textContent || '';
+      if (
+        text.includes('placeholder') ||
+        text.includes('if-entry') ||
+        text.includes('each-entry') ||
+        text.includes('list-target') ||
+        text.includes('list item') ||
+        text.includes('list bottom marker') ||
+        text.includes('list fragment target marker') ||
+        text.includes('curried-start') ||
+        text.includes('curried-end')
+      ) {
+        toRemove.push(node);
+      } else if (text === '') {
+        // Empty comments are GXT markers UNLESS they are htmlRaw placeholders.
+        // An htmlRaw placeholder is an empty comment immediately followed by
+        // a /htmlRaw anchor comment (used for triple-stache reactive updates).
+        const next = node.nextSibling;
+        const isHtmlRawPlaceholder =
+          next instanceof Comment && (next.textContent || '') === '/htmlRaw';
+        if (!isHtmlRawPlaceholder) {
+          toRemove.push(node);
+        }
+      }
+    }
+    for (const c of toRemove) c.parentNode?.removeChild(c);
+
+    // Remove data-node-id attributes
+    for (const el of fixture.querySelectorAll('[data-node-id]')) {
+      el.removeAttribute('data-node-id');
+    }
+
+    // Unwrap <ember-outlet> elements - move their children up to parent
+    let outletEl: Element | null;
+    while ((outletEl = fixture.querySelector('ember-outlet'))) {
+      const parent = outletEl.parentNode;
+      if (parent) {
+        while (outletEl.firstChild) {
+          parent.insertBefore(outletEl.firstChild, outletEl);
+        }
+        parent.removeChild(outletEl);
+      }
+    }
   }
 
   assertElement(

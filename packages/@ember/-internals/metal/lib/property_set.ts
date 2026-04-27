@@ -36,7 +36,7 @@ interface ExtendedObject {
   @return {Object} the passed value.
   @public
 */
-export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
+export function set<T>(obj: object, keyName: string | number, value: T, tolerant?: boolean): T {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -49,6 +49,12 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
     `The key provided to set must be a string or number, you passed ${keyName}`,
     typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
   );
+
+  // Normalize numeric keys to strings for consistent downstream handling
+  if (typeof keyName === 'number') {
+    keyName = String(keyName);
+  }
+
   assert(
     `'this' in paths is not supported`,
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
@@ -62,7 +68,19 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
     return value;
   }
 
-  return isPath(keyName) ? _setPath(obj, keyName, value, tolerant) : _setProp(obj, keyName, value);
+  const result = isPath(keyName)
+    ? _setPath(obj, keyName, value, tolerant)
+    : _setProp(obj, keyName, value);
+
+  // GXT backtracking detection: check AFTER set so toString() reflects the new value.
+  if (DEBUG) {
+    const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
+    if (typeof checkBacktracking === 'function') {
+      checkBacktracking(obj, keyName);
+    }
+  }
+
+  return result;
 }
 
 export function _setProp(obj: object, keyName: string, value: any) {
@@ -112,7 +130,16 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   let newRoot = getPath(root, parts, true);
 
   if (newRoot !== null && newRoot !== undefined) {
-    return set(newRoot, keyName, value);
+    const result = set(newRoot, keyName, value);
+    // GXT integration: also notify the root object about the full path change.
+    // When set(component, 'model.lookupComponent', val) is called, _setPath resolves
+    // to set(model, 'lookupComponent', val) which only notifies on the leaf object.
+    // But GXT templates track `this.model` (cell on the component), so we need to
+    // dirty the root property cell too.
+    if (newRoot !== root) {
+      notifyPropertyChange(root, path);
+    }
+    return result;
   } else if (!tolerant) {
     throw new Error(`Property set failed: object in path "${parts.join('.')}" could not be found.`);
   }

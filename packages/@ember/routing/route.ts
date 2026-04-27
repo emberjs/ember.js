@@ -5,6 +5,7 @@ import {
   descriptorForProperty,
   flushAsyncObservers,
 } from '@ember/-internals/metal';
+import { meta as metaFor } from '@ember/-internals/meta';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
@@ -20,7 +21,7 @@ import type { ControllerQueryParamType } from '@ember/controller';
 import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { once } from '@ember/runloop';
+import { once, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { hasInternalComponentManager } from '@glimmer/manager';
 import type { RenderState } from '@ember/-internals/glimmer';
@@ -905,6 +906,43 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @public
    */
   refresh(): Transition {
+    // GXT fix (Issue #13263): When a route template is rendered, GXT creates
+    // a `renderContext = Object.create(controller)` and binds `{{on "click"
+    // this.action}}` handlers to that renderContext. If the action mutates a
+    // QP via `set(this, 'foo', v)` or `incrementProperty('foo')`, the write
+    // hits the renderContext's *own* property and shadows the controller —
+    // leaving `controller.foo` stale, so the QP observer never fires and the
+    // URL never updates on subsequent refreshes. Before refreshing, walk any
+    // live renderContexts for this route's controller and mirror their own QP
+    // values back to the controller so subsequent QP observers see the new
+    // value (so `_qpChanged` → `_activeQPChanged` → URL update fires).
+    if ((globalThis as any).__GXT_MODE__) {
+      try {
+        let controller = this.controller;
+        let ctxsMap = (globalThis as any).__gxtComponentContexts;
+        if (controller && ctxsMap && ctxsMap.has(controller)) {
+          // SAFETY: Since `_qp` is protected we can't infer the type
+          let queryParams = get(this, '_qp') as Route<Model>['_qp'];
+          let qpNames = queryParams.propertyNames;
+          if (qpNames.length > 0) {
+            let contexts: Set<object> = ctxsMap.get(controller);
+            contexts.forEach((renderContext: any) => {
+              for (let prop of qpNames) {
+                if (Object.prototype.hasOwnProperty.call(renderContext, prop)) {
+                  let rcValue = renderContext[prop];
+                  let ctrlValue = (controller as any)[prop];
+                  if (rcValue !== ctrlValue) {
+                    set(controller, prop, rcValue);
+                  }
+                }
+              }
+            });
+          }
+        }
+      } catch {
+        /* best-effort — do not break refresh on sync errors */
+      }
+    }
     return this._router._routerMicrolib.refresh(this);
   }
 
@@ -931,6 +969,47 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     }
 
     let states = queryParams.states;
+
+    // GXT fix: Ensure the controller has a writable instance meta, not just an
+    // inherited prototype meta. Without this, notifyPropertyChange on QP values
+    // skips markObjectAsDirty because isPrototypeMeta(controller) returns true —
+    // causing async QP observers to never detect the dirty tag, so URL/LinkTo
+    // hrefs never update when QPs change.
+    //
+    // Additionally: in some GXT paths the instance meta is created with
+    // meta.proto === controller (instead of controller.constructor.prototype),
+    // which makes `isPrototypeMeta(controller)` return true for the *instance*.
+    // That short-circuits `ComputedProperty.get` to return `undefined`,
+    // breaking every `@computed` getter on controllers. Repair it here.
+    if ((globalThis as any).__GXT_MODE__) {
+      let m = metaFor(controller);
+      const correctProto = Object.getPrototypeOf(controller);
+      if (correctProto && correctProto !== controller) {
+        // Pin meta.proto to the real class prototype. Without this, GXT's
+        // outlet.gts builds `renderContext = Object.create(controller)` and the
+        // first `peekMeta(renderContext)` walks up to `controller`, sees
+        // `meta.proto !== controller`, and mutates `meta.proto = controller`
+        // (meta.ts:662). That makes `isPrototypeMeta(controller)` return true,
+        // which short-circuits `ComputedProperty.get` to return `undefined` for
+        // every `@computed` getter on the controller — breaking templates that
+        // read things like `this.allSitesAllArticles`.
+        m.proto = correctProto;
+        try {
+          Object.defineProperty(m, 'proto', {
+            get() {
+              return correctProto;
+            },
+            set(_v) {
+              /* ignore — see comment above */
+            },
+            configurable: true,
+            enumerable: false,
+          });
+        } catch {
+          /* already non-configurable — best effort */
+        }
+      }
+    }
 
     controller._qpDelegate = states.allowOverrides;
 
@@ -1469,7 +1548,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
    */
   [RENDER]() {
     this[RENDER_STATE] = buildRenderState(this);
-    once(this._router, '_setOutlets');
+    // In GXT mode, scheduling _setOutlets via once() (actions queue) from
+    // routerTransitions queue causes it to be skipped because backburner
+    // doesn't re-visit earlier queues. Use scheduleOnce('render', ...) to
+    // ensure it runs after routerTransitions in the same runloop iteration.
+    if ((globalThis as any).__GXT_MODE__) {
+      scheduleOnce('render', this._router, '_setOutlets');
+    } else {
+      once(this._router, '_setOutlets');
+    }
   }
 
   willDestroy() {
@@ -1484,7 +1571,11 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   teardownViews() {
     if (this[RENDER_STATE]) {
       this[RENDER_STATE] = undefined;
-      once(this._router, '_setOutlets');
+      if ((globalThis as any).__GXT_MODE__) {
+        scheduleOnce('render', this._router, '_setOutlets');
+      } else {
+        once(this._router, '_setOutlets');
+      }
     }
   }
 

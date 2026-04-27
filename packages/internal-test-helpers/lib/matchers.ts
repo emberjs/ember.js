@@ -153,17 +153,28 @@ export function equalsElement(
       message: 'Element must be an HTML Element, not an SVG Element',
     });
   } else {
+    // Exclude GXT internal data-node-id attribute from count comparison
+    // GXT adds this in SSR/test mode for node tracking; it's not user-visible
+    const gxtInternalAttrCount = element.hasAttribute('data-node-id') ? 1 : 0;
+    const actualAttrCount = element.attributes.length - gxtInternalAttrCount;
     assert.pushResult({
-      result: element.attributes.length === expectedCount || !attributes,
-      actual: element.attributes.length,
+      result: actualAttrCount === expectedCount || !attributes,
+      actual: actualAttrCount,
       expected: expectedCount,
       message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`,
     });
 
     if (content !== null) {
+      // Strip GXT internal comments (if-entry placeholders, each-entry markers)
+      // from innerHTML before comparison. These are used by GXT's control flow
+      // for DOM manipulation and should not affect content assertions.
+      const actualContent = element.innerHTML.replace(
+        /<!--[^>]*?(?:if-entry|each-entry|ember-if)[^>]*?-->/g,
+        ''
+      );
       assert.pushResult({
-        result: element.innerHTML === content,
-        actual: element.innerHTML,
+        result: actualContent === content,
+        actual: actualContent,
         expected: content,
         message: `The element had '${content}' as its content`,
       });

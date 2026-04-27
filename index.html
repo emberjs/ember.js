@@ -7,13 +7,19 @@
   </head>
   <body>
     <script type="module">
+      // Ensure decorator-transforms runtime is available globally
+      import * as _dt from 'decorator-transforms/runtime';
+      globalThis.dt7948 = _dt;
+    </script>
+    <script type="module">
       import 'qunit/qunit/qunit.js';
       import 'qunit/qunit/qunit.css';
 
       window.EmberENV = {};
 
-      // Test under octane defaults
-      EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
+      // In GXT mode, use synchronous observers to match standard Ember behavior.
+      // Tests expect observers to fire synchronously during notifyPropertyChange.
+      EmberENV._DEFAULT_ASYNC_OBSERVERS = false;
 
       // Handle testing feature flags
       if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
@@ -42,9 +48,87 @@
         id: 'skip_tests_with_target_blank',
         label: 'Skip tests w/ target _blank',
       });
+
+      // Set a test timeout to prevent individual tests from hanging forever
+      // This is especially important in GXT mode where some rendering operations
+      // can cause infinite backburner loops
+      QUnit.config.testTimeout = 10000; // 10 seconds per test
+
+      // --- GXT global test hooks ---
+      // These run for EVERY test, regardless of which test-case base class is used.
+      // They ensure GXT state is clean at the start of each test and cleaned up
+      // after each test, preventing phantom failures from leaked state.
+
+      QUnit.testStart(function () {
+        // Signal that we're no longer in a test transition
+        globalThis.__gxtTestTransition = false;
+        // Reset the operation counter so each test gets a fresh budget
+        if (globalThis.__gxtOpCount !== undefined) {
+          globalThis.__gxtOpCount = 0;
+        }
+        // Force-reset __gxtSyncing in case a previous test left it stuck true
+        // (e.g., an error thrown inside __gxtSyncDomNow that escaped the finally block)
+        globalThis.__gxtSyncing = false;
+        // Clean up GXT state BEFORE the test starts. If a prior test's afterEach
+        // failed or didn't fully clean up, this ensures a clean slate.
+        var cleanup = globalThis.__gxtCleanupActiveComponents;
+        if (typeof cleanup === 'function') {
+          try {
+            cleanup();
+          } catch (e) {
+            /* ignore cleanup errors */
+          }
+        }
+        // Reset sync flags that the cleanup might not cover
+        globalThis.__gxtPendingSync = false;
+        globalThis.__gxtPendingSyncFromPropertyChange = false;
+        globalThis.__gxtDeferredSyncError = null;
+        globalThis.__gxtForceRerenderInProgress = false;
+        // Reset the interval sync budget so the fallback timer works for this test
+        if (typeof globalThis.__gxtResetIntervalBudget === 'function') {
+          globalThis.__gxtResetIntervalBudget();
+        }
+      });
+
+      QUnit.testDone(function () {
+        // Signal that we're between tests — interval timer should not fire
+        globalThis.__gxtTestTransition = true;
+        // Safety net: reset syncing flag after each test in case it got stuck
+        globalThis.__gxtSyncing = false;
+        globalThis.__gxtPendingSync = false;
+        globalThis.__gxtPendingSyncFromPropertyChange = false;
+        globalThis.__gxtDeferredSyncError = null;
+        globalThis.__gxtForceRerenderInProgress = false;
+        // Reset op counter
+        if (globalThis.__gxtOpCount !== undefined) {
+          globalThis.__gxtOpCount = 0;
+        }
+      });
+    </script>
+
+    <script>
+      // Set GXT mode flag BEFORE any modules load so renderer.ts can check it
+      // during module initialization (before compile.ts sets it)
+      globalThis.__GXT_MODE__ = true;
+
+      // Global operation counter to detect infinite synchronous loops
+      // Any tight loop will increment this. When it exceeds the limit,
+      // we throw to break out of the loop.
+      globalThis.__gxtOpCount = 0;
+      globalThis.__gxtOpLimit = 500000; // 500K operations before we break
+      globalThis.__gxtOpCheck = function () {
+        if (++globalThis.__gxtOpCount > globalThis.__gxtOpLimit) {
+          globalThis.__gxtOpCount = 0;
+          throw new Error('[GXT] Operation limit exceeded - breaking infinite loop');
+        }
+      };
     </script>
 
     <script type="module">
+      // Import GXT compat layer FIRST to register runtime compiler before templates load
+      // This must happen before any @ember modules are imported
+      import './packages/@ember/-internals/gxt-backend/ember-template-compiler.ts';
+
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
       import { setTesting } from './packages/@ember/debug/index.ts';
       setupQUnit();

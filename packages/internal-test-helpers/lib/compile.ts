@@ -5,7 +5,7 @@ import { precompileJSON } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
 import { templateFactory } from '@glimmer/opcode-compiler';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compileOptions } from 'ember-template-compiler';
+import { compile as etcCompile, compileOptions } from 'ember-template-compiler';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
@@ -22,6 +22,17 @@ export default function compile(
   options: Partial<EmberPrecompileOptions> = {},
   scopeValues: Record<string, unknown> = {}
 ): TemplateFactory {
+  // In GXT mode, use GXT compilation via ember-template-compiler's compile
+  // (which is aliased to the GXT compat version)
+  if ((globalThis as any).__GXT_MODE__) {
+    return etcCompile(templateSource, {
+      moduleName: options.moduleName ?? options.meta?.moduleName ?? '(unknown template module)',
+      strictMode: options.strictMode ?? false,
+      ...options,
+      scopeValues: Object.keys(scopeValues).length > 0 ? scopeValues : undefined,
+    } as any);
+  }
+
   options.locals = options.locals ?? Object.keys(scopeValues ?? {});
   let [block, usedLocals] = precompileJSON(templateSource, compileOptions(options));
   let reifiedScope: Record<string, unknown> = {};

@@ -117,6 +117,21 @@ export function defineValue(
   enumerable = true
 ) {
   if (wasDescriptor === true || enumerable === false) {
+    // In GXT mode, check if property has a cell getter — don't overwrite it.
+    // Exception: when wasDescriptor === true we are intentionally replacing
+    // an existing computed property whose `teardown` has already run. The
+    // own-property getter/setter installed on `obj` is a stale CP descriptor
+    // — invoking its setter (via `obj[keyName] = value`) would hit the
+    // "Cannot override the computed property" assertion. Overwrite via
+    // Object.defineProperty in that case.
+    if ((globalThis as any).__GXT_MODE__ && !wasDescriptor) {
+      const existing = Object.getOwnPropertyDescriptor(obj, keyName);
+      if (existing && existing.get) {
+        // Cell getter exists — use setter to update value
+        (obj as any)[keyName] = value;
+        return value;
+      }
+    }
     Object.defineProperty(obj, keyName, {
       configurable: true,
       enumerable,

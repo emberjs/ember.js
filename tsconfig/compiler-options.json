@@ -23,10 +23,13 @@
     "noUnusedParameters": true,
     "isolatedModules": true,
 
+    "allowImportingTsExtensions": true,
+
     "newLine": "LF",
 
     "allowJs": true,
     "checkJs": false,
+    "skipLibCheck": true,
 
     "types": ["vite/client"],
 
