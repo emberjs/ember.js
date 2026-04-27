@@ -66,7 +66,7 @@
   "dependencies": {
     "@babel/core": "^7.24.4",
     "@embroider/addon-shim": "^1.10.2",
-    "@lifeart/gxt": "0.0.60",
+    "@lifeart/gxt": "0.0.61",
     "@simple-dom/interface": "^1.4.0",
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",

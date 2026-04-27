@@ -73,7 +73,7 @@
     "internal-test-helpers": "workspace:*",
     "router_js": "workspace:*",
     "rsvp": "^4.8.5",
-    "@lifeart/gxt": "0.0.60"
+    "@lifeart/gxt": "0.0.61"
   },
   "devDependencies": {
     "@ember/reactive": "workspace:*",
