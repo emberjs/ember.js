@@ -5610,7 +5610,11 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             // descriptor is replaced (e.g. by cellFor(obj, key, false) called
             // elsewhere during the same render pass). The WeakMap survives.
             const existingState = instance ? _getRcArgState(instance, key) : undefined;
-            const state = existingState || { localVal: initialVal, useLocal: false, currentGetter: getter };
+            const state = existingState || {
+              localVal: initialVal,
+              useLocal: false,
+              currentGetter: getter,
+            };
             // Always refresh the currentGetter slot so the rcGet closure reads
             // the latest arg getter (the per-row closure for #each iterations).
             // The slow path runs on first install AND when the descriptor was
