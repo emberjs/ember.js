@@ -194,18 +194,21 @@ let emberViewIdCounter = 0;
 //   useLocal: whether to return localVal vs. the arg getter
 // This survives createRenderContext re-invocations even when the descriptor
 // is replaced by cellFor(obj, key, false) or other reactive reinstallers.
-const _rcArgState = new WeakMap<object, Map<string, { localVal: any; useLocal: boolean }>>();
+const _rcArgState = new WeakMap<
+  object,
+  Map<string, { localVal: any; useLocal: boolean; currentGetter?: (() => any) | null }>
+>();
 function _getRcArgState(
   instance: object,
   key: string
-): { localVal: any; useLocal: boolean } | undefined {
+): { localVal: any; useLocal: boolean; currentGetter?: (() => any) | null } | undefined {
   const m = _rcArgState.get(instance);
   return m ? m.get(key) : undefined;
 }
 function _setRcArgState(
   instance: object,
   key: string,
-  state: { localVal: any; useLocal: boolean }
+  state: { localVal: any; useLocal: boolean; currentGetter?: (() => any) | null }
 ): void {
   let m = _rcArgState.get(instance);
   if (!m) {
@@ -2203,6 +2206,22 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
       // instance's reactive getter would read from the stale old closure.
       if (newGetter && argGetters && key !== 'elementId' && key !== 'id') {
         argGetters[key] = newGetter;
+        // Also update the createRenderContext WeakMap state's currentGetter slot
+        // so that descriptor-bound rcGet closures (which read from
+        // state.currentGetter) see the new arg getter on the next read. This
+        // is critical for force-rerender of {{#each}} block bodies where the
+        // child's instance is pool-reused; createRenderContext's fast-path may
+        // not re-enter (e.g., when an upstream cellFor removed the marker on
+        // its descriptor), but the WeakMap state survives across descriptor
+        // replacements and is what rcGet's closure references.
+        try {
+          const _stateForGetter2 = _getRcArgState(instance, key);
+          if (_stateForGetter2) {
+            _stateForGetter2.currentGetter = newGetter;
+          }
+        } catch {
+          /* ignore */
+        }
         // Check if there's already a render-context-installed descriptor with
         // local-override state (from a previous createRenderContext call). If
         // so, skip reinstalling to preserve the local override (e.g., after
@@ -5316,6 +5335,23 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               lastArgValue: getter(),
               ...(_savedOverride ? { initOverridden: true } : {}),
             };
+            // Fix: the descriptor's rcGet reads from `state.currentGetter` on
+            // the WeakMap state. Update it to the latest getter so that reads
+            // during force-rerender (which builds a fresh outer template and
+            // re-invokes each-row child components with new arg closures) see
+            // the new value. Without this, the descriptor's closure holds the
+            // original getter from the FIRST createRenderContext call, and
+            // `this.item` returns stale row data after the parent re-renders.
+            // See also: updateInstanceWithNewArgs, which performs the same
+            // refresh up-front so the fix is robust even when an upstream
+            // cellFor reinstall has stripped the __gxtRenderCtxArgGetter
+            // marker (in which case this fast path is skipped entirely).
+            if (instance) {
+              const _stateForGetter = _getRcArgState(instance, key);
+              if (_stateForGetter) {
+                _stateForGetter.currentGetter = getter;
+              }
+            }
           } catch {
             /* ignore */
           }
@@ -5574,7 +5610,14 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             // descriptor is replaced (e.g. by cellFor(obj, key, false) called
             // elsewhere during the same render pass). The WeakMap survives.
             const existingState = instance ? _getRcArgState(instance, key) : undefined;
-            const state = existingState || { localVal: initialVal, useLocal: false };
+            const state = existingState || { localVal: initialVal, useLocal: false, currentGetter: getter };
+            // Always refresh the currentGetter slot so the rcGet closure reads
+            // the latest arg getter (the per-row closure for #each iterations).
+            // The slow path runs on first install AND when the descriptor was
+            // replaced (e.g., by an upstream cellFor reinstall) — both need a
+            // fresh getter. The fast-path skip above keeps state.currentGetter
+            // in sync for subsequent createRenderContext re-invocations.
+            state.currentGetter = getter;
             if (!existingState && instance) _setRcArgState(instance, key, state);
             const rcGet: any = function () {
               try {
@@ -5589,7 +5632,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               } catch {
                 /* noop */
               }
-              return state.useLocal ? state.localVal : getter ? getter() : state.localVal;
+              if (state.useLocal) return state.localVal;
+              const g = state.currentGetter || getter;
+              return g ? g() : state.localVal;
             };
             rcGet.__gxtRenderCtxArgGetter = true;
             const rcSet = function (v: any) {
