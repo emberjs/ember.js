@@ -535,6 +535,11 @@ async function main() {
         process.exit(3);
       }
       modules = explicitModules.slice();
+      // Apply shard / filter to the smoke list too. Without this each CI
+      // shard ran the full 14-module list, multiplying compute by 4× for
+      // identical results.
+      modules = globFilter(modules, args.filter);
+      modules = shardFilter(modules, args.shard);
     } else {
       modules = globFilter(modules, args.filter);
       modules = shardFilter(modules, args.shard);
