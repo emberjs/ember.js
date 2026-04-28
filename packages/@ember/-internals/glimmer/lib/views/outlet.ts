@@ -74,7 +74,9 @@ export default class OutletView {
       },
     };
 
-    cellFor(outletState.outlets, 'main');
+    if ((globalThis as any).__GXT_MODE__) {
+      cellFor(outletState.outlets, 'main');
+    }
 
     let ref = (this.ref = outletState);
 
