@@ -36,6 +36,18 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         if (isHash(node, hasLocal)) {
           rewriteKeyword(env, node, 'hash', '@ember/helper');
         }
+        if (isGt(node, hasLocal)) {
+          rewriteKeyword(env, node, 'gt', '@ember/helper');
+        }
+        if (isGte(node, hasLocal)) {
+          rewriteKeyword(env, node, 'gte', '@ember/helper');
+        }
+        if (isLt(node, hasLocal)) {
+          rewriteKeyword(env, node, 'lt', '@ember/helper');
+        }
+        if (isLte(node, hasLocal)) {
+          rewriteKeyword(env, node, 'lte', '@ember/helper');
+        }
       },
       MustacheStatement(node: AST.MustacheStatement) {
         if (isArray(node, hasLocal)) {
@@ -46,6 +58,18 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
         }
         if (isHash(node, hasLocal)) {
           rewriteKeyword(env, node, 'hash', '@ember/helper');
+        }
+        if (isGt(node, hasLocal)) {
+          rewriteKeyword(env, node, 'gt', '@ember/helper');
+        }
+        if (isGte(node, hasLocal)) {
+          rewriteKeyword(env, node, 'gte', '@ember/helper');
+        }
+        if (isLt(node, hasLocal)) {
+          rewriteKeyword(env, node, 'lt', '@ember/helper');
+        }
+        if (isLte(node, hasLocal)) {
+          rewriteKeyword(env, node, 'lte', '@ember/helper');
         }
       },
     },
@@ -93,4 +117,32 @@ function isHash(
   hasLocal: (k: string) => boolean
 ): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
   return isPath(node.path) && node.path.original === 'hash' && !hasLocal('hash');
+}
+
+function isGt(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'gt' && !hasLocal('gt');
+}
+
+function isGte(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'gte' && !hasLocal('gte');
+}
+
+function isLt(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'lt' && !hasLocal('lt');
+}
+
+function isLte(
+  node: AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'lte' && !hasLocal('lte');
 }

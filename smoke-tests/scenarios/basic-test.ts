@@ -401,6 +401,57 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'lt-lte-gt-gte-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{lt}} / {{lte}} / {{gt}} / {{gte}} as keywords', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  let a = 1;
+                  let b = 2;
+
+                  await render(
+                    <template>
+                      <span data-lt>{{lt a b}}</span>
+                      <span data-lte>{{lte a a}}</span>
+                      <span data-gt>{{gt b a}}</span>
+                      <span data-gte>{{gte a a}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-lt]').hasText('true');
+                  assert.dom('[data-lte]').hasText('true');
+                  assert.dom('[data-gt]').hasText('true');
+                  assert.dom('[data-gte]').hasText('true');
+                });
+
+                test('can be shadowed', async function (assert) {
+                  let a = 1;
+                  let b = 2;
+                  let lt = () => 'surprise:lt';
+                  let lte = () => 'surprise:lte';
+                  let gt = () => 'surprise:gt';
+                  let gte = () => 'surprise:gte';
+
+                  await render(
+                    <template>
+                      <span data-lt>{{lt a b}}</span>
+                      <span data-lte>{{lte a b}}</span>
+                      <span data-gt>{{gt a b}}</span>
+                      <span data-gte>{{gte a b}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-lt]').hasText('surprise:lt');
+                  assert.dom('[data-lte]').hasText('surprise:lte');
+                  assert.dom('[data-gt]').hasText('surprise:gt');
+                  assert.dom('[data-gte]').hasText('surprise:gte');
+                });
+              });
+            `,
             'fn-as-keyword-but-its-shadowed-test.gjs': `
               import QUnit, { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
