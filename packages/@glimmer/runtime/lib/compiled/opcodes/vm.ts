@@ -41,8 +41,8 @@ import {
   CheckRegister,
   CheckSyscallRegister,
 } from '@glimmer/debug';
+import toBool from '@ember/-internals/glimmer/lib/utils/to-bool';
 import { expect, assert, unwrap } from '@glimmer/debug-util';
-import { toBool } from '@glimmer/global-context';
 import {
   createComputeRef,
   createConstRef,

@@ -1,5 +1,6 @@
 // import Logger from './logger';
 
+import { DEBUG } from '@glimmer/env';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 export default function assert(test: unknown, msg: string): asserts test {
@@ -7,6 +8,12 @@ export default function assert(test: unknown, msg: string): asserts test {
     if (!test) {
       throw new Error(msg || 'assertion failure');
     }
+  }
+}
+
+export function debugAssert(test: unknown, msg: string | (() => string)): asserts test {
+  if (DEBUG && !test) {
+    throw new Error(typeof msg === 'string' ? msg : msg());
   }
 }
 

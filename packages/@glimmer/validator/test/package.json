@@ -7,7 +7,6 @@
   "version": "0.92.0",
   "scripts": {},
   "dependencies": {
-    "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/validator": "workspace:*",
     "expect-type": "^1.1.0"

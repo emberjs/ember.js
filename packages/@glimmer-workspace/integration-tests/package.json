@@ -14,10 +14,10 @@
   },
   "scripts": {},
   "dependencies": {
+    "@ember/debug": "workspace:*",
     "@glimmer-workspace/test-utils": "workspace:*",
     "@glimmer/compiler": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
-    "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/node": "workspace:*",

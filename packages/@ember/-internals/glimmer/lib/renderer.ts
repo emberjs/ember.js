@@ -750,7 +750,7 @@ class BaseRenderer {
      *         But for actual ember apps, you *need* to implement everything
      *         an app needs (which will actually change and become less over time)
      */
-    let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
+    let env = new EmberEnvironmentDelegate(envOptions.isInteractive);
     let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,

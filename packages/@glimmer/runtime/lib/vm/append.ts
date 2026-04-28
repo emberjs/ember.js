@@ -24,7 +24,6 @@ import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/re
 import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm';
 import { dev, expect, unwrapHandle } from '@glimmer/debug-util';
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { LOCAL_LOGGER, reverse, Stack } from '@glimmer/util';
@@ -223,11 +222,6 @@ export class VM {
     context: EvaluationContext,
     tree: TreeBuilder
   ) {
-    if (DEBUG) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      assertGlobalContextWasSet!();
-    }
-
     let evalStack = EvaluationStackImpl.restore(stack, pc);
 
     this.#tree = tree;

@@ -10,7 +10,6 @@
     "@glimmer/constants": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
-    "@glimmer/global-context": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/opcode-compiler": "workspace:*",

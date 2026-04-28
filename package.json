@@ -319,7 +319,6 @@
       "@glimmer/destroyable/index.js": "ember-source/@glimmer/destroyable/index.js",
       "@glimmer/encoder/index.js": "ember-source/@glimmer/encoder/index.js",
       "@glimmer/env/index.js": "ember-source/@glimmer/env/index.js",
-      "@glimmer/global-context/index.js": "ember-source/@glimmer/global-context/index.js",
       "@glimmer/manager/index.js": "ember-source/@glimmer/manager/index.js",
       "@glimmer/node/index.js": "ember-source/@glimmer/node/index.js",
       "@glimmer/opcode-compiler/index.js": "ember-source/@glimmer/opcode-compiler/index.js",

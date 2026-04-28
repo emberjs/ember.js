@@ -34,7 +34,7 @@
     "test:publint": "publint"
   },
   "dependencies": {
-    "@glimmer/global-context": "workspace:*",
+    "@ember/debug": "workspace:*",
     "@glimmer/interfaces": "workspace:*"
   },
   "devDependencies": {

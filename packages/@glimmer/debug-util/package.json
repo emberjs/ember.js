@@ -8,11 +8,11 @@
   "exports": "./index.ts",
   "scripts": {},
   "dependencies": {
-    "@glimmer/interfaces": "workspace:*"
+    "@glimmer/env": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*"
   },
   "devDependencies": {
-    "@glimmer/env": "workspace:*",
-    "@glimmer/local-debug-flags": "workspace:*",
     "eslint": "^9.20.1",
     "typescript": "^5.7.3"
   }
