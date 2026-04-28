@@ -265,30 +265,7 @@ export default defineConfig(({ mode }) => {
             },
           ],
         }
-      : {
-          // Classic mode: redirect every `@lifeart/gxt` import to a no-op
-          // shim. A handful of files in @ember/-internals/glimmer/lib/
-          // statically import from `@lifeart/gxt` so they can hot-swap
-          // between classic and gxt rendering at runtime via
-          // `__GXT_MODE__`. Without this alias, classic-mode bundles pull
-          // in ~35k LOC of glimmer-next runtime that classic mode never
-          // executes — and worse, side-effecting init code from that
-          // runtime breaks classic Glimmer-VM (e.g. cellFor turning
-          // outlets.main into a cell-backed accessor). The alias keeps
-          // the imports resolvable while shipping a tiny no-op shim.
-          alias: [
-            {
-              // Anchor to exact match — without ^...$ Vite treats the find
-              // as a prefix and rewrites `@lifeart/gxt/glimmer-compatibility`
-              // and `@lifeart/gxt/runtime-compiler` too, which breaks
-              // gxt-backend modules that classic-mode tests load directly.
-              find: /^@lifeart\/gxt$/,
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/glimmer/lib/gxt-stub.ts`, owerrideRoot)
-              ),
-            },
-          ],
-        },
+      : undefined,
   };
 });
 
