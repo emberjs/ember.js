@@ -1,9 +1,14 @@
 import { DEBUG } from '@glimmer/env';
 
-export const lt = (...args: unknown[]) => {
-  if (DEBUG && args.length !== 2) {
-    throw new Error(`\`lt\` expects exactly two arguments, but received ${args.length}.`);
+/**
+ * Performs a less than comparison.
+ *
+ * left < right
+ */
+export function lt(left: unknown, right: unknown) {
+  if (DEBUG && arguments.length !== 2) {
+    throw new Error(`\`lt\` expects exactly two arguments, but received ${arguments.length}.`);
   }
 
-  return (args[0] as number) < (args[1] as number);
-};
+  return (left as number) < (right as number);
+}
