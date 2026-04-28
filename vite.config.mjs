@@ -34,24 +34,18 @@ export default defineConfig(({ mode }) => {
   // Use GXT_MODE=true to enable glimmer-next integration
   const useGxt = process.env.GXT_MODE === 'true';
 
-  // preserveModules + preserveEntrySignatures are required for the GXT test
-  // harness so test files can be served as independent modules; under the
-  // classic build those settings break vite's modulepreload-polyfill, so
-  // apply them only in GXT mode.
-  const build = useGxt
-    ? {
-        rollupOptions: {
-          preserveEntrySignatures: 'strict',
-          input: ['index.html'],
-          output: {
-            preserveModules: true,
-          },
-        },
-        minify: mode === 'production',
-      }
-    : {
-        minify: mode === 'production',
-      };
+  // preserveModules + preserveEntrySignatures previously emitted per-source
+  // chunks for the GXT smoke runner. That harness uses Vite's dev server
+  // (`pnpm vite --port 5180`) which serves modules natively, so the build-time
+  // preserveModules setting was no longer load-bearing — but it WAS load-
+  // breaking for the testem-based Basic Test job, which loads the static
+  // dist/ output: ~1000 script tags blew past testem's 120s
+  // `browser_start_timeout` waiting for them all to fetch+parse before
+  // testem.js could connect. Drop the special case so all builds emit a
+  // bundled output suitable for testem.
+  const build = {
+    minify: mode === 'production',
+  };
 
   return {
     plugins: [
