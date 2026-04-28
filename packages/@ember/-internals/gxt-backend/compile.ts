@@ -11690,6 +11690,61 @@ function _rewriteShadowedBlockKeyword(
 }
 
 /**
+ * Quick gate that decides whether a template can possibly resolve any
+ * names from a strict-mode `scope()` callback. Returns true if the
+ * template has either a PascalCase angle-bracket invocation or any
+ * mustache whose head identifier is not `this`, `@`-prefixed, or `on`.
+ *
+ * For templates that fail this gate (e.g. the internal Input / Textarea
+ * single-element template, with only `<input ...>` and `{{on "..."}}`
+ * modifiers), the scope() resolution is skipped entirely so the compile
+ * path stays byte-identical to the pre-fix behavior.
+ */
+function _templateMayNeedScopeThreading(template: string): boolean {
+  // PascalCase tag — `<Foo` or `<Foo.Bar` style. Skip closing `</…`.
+  if (/<[A-Z][A-Za-z0-9_:.-]*[\s/>]/.test(template)) return true;
+  // Free-identifier mustache that isn't `this`, `@arg`, `on`, or a
+  // GXT/Ember built-in we always want to suppress. We just need a single
+  // counter-example, so scan with a regex that captures the head and
+  // bail on the first hit.
+  const re = /\{\{(?:#|\/|!)?\s*([A-Za-z_][A-Za-z0-9_-]*)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(template))) {
+    const head = m[1];
+    if (head === 'this' || head === 'on') continue;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Returns true if `name` appears as a referenceable identifier in
+ * `template`. Used to filter out scope() entries that the template
+ * never references, so we don't bloat the binding set.
+ *
+ * The match is intentionally permissive — it accepts the name as:
+ *   * a PascalCase or kebab-case angle-bracket tag (`<Foo`, `<my-foo`)
+ *   * a path head inside a mustache (`{{name}}`, `{{name.x}}`,
+ *     `{{#name ...}}`, `{{(name ...)}}`, `{{... name=...}}` — handled
+ *     by a single word-boundary check)
+ *   * a value inside a quoted attribute (`attr="{{name}}"`)
+ *
+ * False positives are acceptable here (a stray comment match would just
+ * inject an unused binding); the only goal is to cheaply prune obvious
+ * non-references.
+ */
+function _scopeNameAppearsAsReference(template: string, name: string): boolean {
+  if (!name) return false;
+  const escaped = name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+  // Either `<Name` (component tag) or a word-boundary occurrence outside
+  // a closing `</...>`. The simple word-boundary regex below covers
+  // path heads, helper invocations, and attribute values — anything
+  // GXT could surface as a binding reference.
+  const re = new RegExp(`(<\\s*${escaped}[\\s/>])|\\b${escaped}\\b`, 'm');
+  return re.test(template);
+}
+
+/**
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
  */
@@ -11702,6 +11757,54 @@ export function precompileTemplate(
     scopeValues?: Record<string, unknown>;
   }
 ) {
+  // Strict-mode `precompileTemplate(..., { scope: () => ({ Foo, bar }) })`
+  // threading: the test-only / RFC strict-mode form passes a `scope`
+  // callback that returns the locally-visible bindings. The downstream
+  // compile pipeline only consumes `scopeValues`, so when `scope` is
+  // present we invoke it and merge any names that are actually referenced
+  // by the template into `scopeValues`.
+  //
+  // Filter rules (kept narrow on purpose to avoid touching textarea / input
+  // / classic templates that worked before the threading was added):
+  //   * Skip `on` — GXT's visitor short-circuits `{{on "evt" cb}}`
+  //     syntactically. Adding `on` as a binding causes the GXT compiler
+  //     to emit a variable reference and that breaks the textarea
+  //     `<input ... {{on "input" ...}} />` modifier path that the Ember
+  //     <Textarea> component generates internally.
+  //   * Skip names that don't actually appear as referenceable identifiers
+  //     in the template — keeps bookkeeping cheap and avoids churn for
+  //     large scope() payloads.
+  //   * Skip the whole pass for templates that have no PascalCase tags
+  //     and no non-`{this,@,on,!}` mustaches — the internal Input/Textarea
+  //     template is a single `<input ... />` with `{{on "..."}}` modifiers
+  //     and `@`-args, so `_templateMayNeedScopeThreading` returns false
+  //     for it and its compile path stays byte-identical.
+  if (typeof options?.scope === 'function') {
+    let extra: Record<string, unknown> | undefined;
+    try {
+      const scopeResult = options.scope();
+      if (scopeResult && typeof scopeResult === 'object') {
+        extra = scopeResult as Record<string, unknown>;
+      }
+    } catch {
+      /* ignore — scope thunk threw, fall back to scopeValues alone */
+    }
+    if (extra && _templateMayNeedScopeThreading(templateString)) {
+      const existing = options.scopeValues || {};
+      let mergedScope: Record<string, unknown> | undefined;
+      for (const name of Object.keys(extra)) {
+        if (name === 'on') continue;
+        if (Object.prototype.hasOwnProperty.call(existing, name)) continue;
+        if (!_scopeNameAppearsAsReference(templateString, name)) continue;
+        if (!mergedScope) mergedScope = { ...existing };
+        mergedScope[name] = extra[name];
+      }
+      if (mergedScope) {
+        options = { ...options, scopeValues: mergedScope };
+      }
+    }
+  }
+
   // Pre-transform shadowed block keywords. When `scopeValues` provides a
   // binding whose name collides with a GXT block keyword (e.g. `each`,
   // `if`, `unless`, `let`, `with`, `each-in`), GXT's keyword path runs
@@ -11901,15 +12004,18 @@ export function precompileTemplate(
 
   // Check for dotted-path mustache expressions like {{foo.bar}} where foo is not in scope.
   // In Ember, these are errors because foo is a free variable path that can't be resolved.
-  // Collect block param names first so we don't flag those.
+  // Collect block param names first so we don't flag those. Strict-mode
+  // bindings (from scope() / scopeValues) also bring the head into scope.
   {
     const blockParamNames = findBlockParamNames(transformedTemplate);
+    const scopeValueNames = options?.scopeValues ? new Set(Object.keys(options.scopeValues)) : null;
     for (const { head, tail } of findDottedMustaches(transformedTemplate)) {
-      if (head !== 'this' && !blockParamNames.has(head)) {
-        throw new Error(
-          `You attempted to render a path (\`{{${head}.${tail}}}\`), but ${head} was not in scope`
-        );
-      }
+      if (head === 'this') continue;
+      if (blockParamNames.has(head)) continue;
+      if (scopeValueNames && scopeValueNames.has(head)) continue;
+      throw new Error(
+        `You attempted to render a path (\`{{${head}.${tail}}}\`), but ${head} was not in scope`
+      );
     }
   }
 
@@ -12136,7 +12242,17 @@ export function precompileTemplate(
     },
     // Convert PascalCase component names to kebab-case for Ember registry lookup.
     // This replaces the regex-based transformCapitalizedComponents() pre-processing.
+    //
+    // Strict-mode threaded bindings (from `scope: () => ({ Foo })`) must NOT
+    // be lowered: when `Foo` is in `scopeBindings`, the GXT compiler emits
+    // `$_c(Foo, ...)` against the local variable. Lowering the name here
+    // would re-route the call through the kebab-case Ember registry lookup
+    // (`$_c('foo', ...)` → raw `<foo>` element), which is exactly the bug
+    // that breaks the Strict-Mode renderComponent cluster.
     customizeComponentName: (name: string) => {
+      if (scopeBindings.has(name)) {
+        return name;
+      }
       return pascalToKebab(name);
     },
   });
