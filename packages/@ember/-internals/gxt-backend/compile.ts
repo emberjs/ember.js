@@ -12171,8 +12171,32 @@ export function precompileTemplate(
   // 3. Inject $a alias for @named args
   if (compilationResult.code) {
     let modifiedCode = compilationResult.code;
-    // NOTE: $_each -> $_eachSync replacement is now handled in the GXT serializer
-    // (control.ts emits $_eachSync directly in IS_GLIMMER_COMPAT_MODE)
+    // Force every {{#each}} block in classic Ember templates onto the
+    // synchronous list path (`$_eachSync` / `SyncListComponent`).
+    //
+    // GXT's serializer emits async `$_each` by default — `AsyncListComponent`
+    // applies its DOM mutations on a microtask. After a runTask
+    // mutation that fires `notifyPropertyChange(arr, '[]')`, the
+    // `__gxtSyncDomNow` pipeline runs synchronously, so the async
+    // syncList opcode hasn't yet updated the live DOM by the time
+    // `__gxtForceEmberRerender`'s morph fallback fires. The morph then
+    // diffs the new full-template fragment against the *pre-mutation*
+    // live DOM (3 children) position-by-position, clobbering the
+    // existing Text nodes' content with whatever happens to land at the
+    // same index in the new fragment. That destroys the DOM-node
+    // identity that the `assertPartialInvariants` invariant in the
+    // `Syntax test: {{#each}} ... it maintains DOM stability for
+    // stable keys when list is updated` test guards. The synchronous
+    // SyncListComponent path moves item markers (and the rows behind
+    // them) BEFORE the morph runs, so morph then sees identical content
+    // on both sides and is a no-op for keyed rows — preserving identity.
+    //
+    // Async element destructors (the original reason GXT removed the
+    // forced-sync path) only matter for animations attached to
+    // `{{#each}}` rows; classic Ember templates compiled via
+    // `precompileTemplate` never set them up, so the sync path is
+    // strictly safe here.
+    modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
     // NOTE: $__log site ID wrapping is now handled in the GXT serializer
     // (value.ts emits comma expression with site ID directly in IS_GLIMMER_COMPAT_MODE)
     // Post-process: replace per-compilation __logSite:N with globally unique IDs
