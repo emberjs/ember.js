@@ -7,6 +7,40 @@ class KeywordAnd extends RenderTest {
   static suiteName = 'keyword helper: and';
 
   @test
+  'references are lazy'(assert: Assert) {
+    const obj = {
+      get a() {
+        assert.step('a');
+        return 1;
+      },
+      get b() {
+        assert.step('b');
+        return 89;
+      },
+      get c() {
+        assert.step('c');
+        return false;
+      },
+      get d() {
+        assert.step('d');
+        return 'unexpected!!!';
+      },
+    };
+
+    const compiled = template('{{and obj.a obj.b obj.c obj.d}}', {
+      strictMode: true,
+      scope: () => ({ obj }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('false');
+    assert.verifySteps(
+      ['a', 'b', 'c'],
+      'd not evaluated because obj.c was the last to be evaluated and short-circuited'
+    );
+  }
+
+  @test
   'explicit scope'() {
     let a = 'yes';
     let b = 'second';

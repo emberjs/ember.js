@@ -7,6 +7,40 @@ class KeywordOr extends RenderTest {
   static suiteName = 'keyword helper: or';
 
   @test
+  'references are lazy'(assert: Assert) {
+    const obj = {
+      get a() {
+        assert.step('a');
+        return false;
+      },
+      get b() {
+        assert.step('b');
+        return null;
+      },
+      get c() {
+        assert.step('c');
+        return 2;
+      },
+      get d() {
+        assert.step('d');
+        return 'unexpected!!!';
+      },
+    };
+
+    const compiled = template('{{or obj.a obj.b obj.c obj.d}}', {
+      strictMode: true,
+      scope: () => ({ obj }),
+    });
+
+    this.renderComponent(compiled);
+    this.assertHTML('2');
+    assert.verifySteps(
+      ['a', 'b', 'c'],
+      'd not evaluated because obj.c was the last to be evaluated and short-circuited'
+    );
+  }
+
+  @test
   'explicit scope'() {
     let a = false;
     let b = 'second';
