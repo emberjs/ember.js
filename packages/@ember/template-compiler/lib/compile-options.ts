@@ -1,4 +1,4 @@
-import { array, fn, hash } from '@ember/helper';
+import { array, eq, fn, hash, neq } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
@@ -26,8 +26,10 @@ export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 
 export const keywords: Record<string, unknown> = {
   array,
+  eq,
   fn,
   hash,
+  neq,
   on,
 };
 

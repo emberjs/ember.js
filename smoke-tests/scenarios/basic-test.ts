@@ -373,6 +373,47 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'eq-neq-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{eq}} / {{neq}} as keywords', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  let a = 1;
+                  let b = 1;
+
+                  await render(
+                    <template>
+                      <span data-eq>{{eq a b}}</span>
+                      <span data-neq>{{neq a b}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-eq]').hasText('true');
+                  assert.dom('[data-neq]').hasText('false');
+                });
+
+                test('can be shadowed', async function (assert) {
+                  let a = 1;
+                  let b = 1;
+                  let eq = () => 'surprise:eq';
+                  let neq = () => 'surprise:neq';
+
+                  await render(
+                    <template>
+                      <span data-eq>{{eq a b}}</span>
+                      <span data-neq>{{neq a b}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-eq]').hasText('surprise:eq');
+                  assert.dom('[data-neq]').hasText('surprise:neq');
+                });
+              });
+            `,
             'fn-as-keyword-test.gjs': `
               import { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';

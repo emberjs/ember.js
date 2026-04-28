@@ -33,10 +33,12 @@ export {
 } from './lib/environment';
 export { array } from './lib/helpers/array';
 export { concat } from './lib/helpers/concat';
+export { eq } from './lib/helpers/eq';
 export { fn } from './lib/helpers/fn';
 export { get } from './lib/helpers/get';
 export { hash } from './lib/helpers/hash';
 export { invokeHelper } from './lib/helpers/invoke';
+export { neq } from './lib/helpers/neq';
 export { on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
 export { DynamicScopeImpl, ScopeImpl } from './lib/scope';
