@@ -50,7 +50,6 @@ import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
-import { hasDOM } from '../../browser-environment';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
 import { createRootOutlet } from './component-managers/outlet';
@@ -389,7 +388,6 @@ class RendererState {
     return {
       roots: this.#roots,
       inRenderTransaction: this.#inRenderTransaction,
-      isInteractive: this.isInteractive,
     };
   }
 
@@ -411,10 +409,6 @@ class RendererState {
 
   get env(): Environment {
     return this.context.env;
-  }
-
-  get isInteractive(): boolean {
-    return this.#data.context.env.isInteractive;
   }
 
   renderRoot(root: RootState, renderer: BaseRenderer): RootState {
@@ -614,10 +608,6 @@ export function renderComponent(
      */
     env?: {
       /**
-       * When false, modifiers will not run.
-       */
-      isInteractive?: boolean;
-      /**
        * All other options are forwarded to the underlying renderer.
        * (its API is currently private and out of scope for this RFC,
        *  so passing additional things here is also considered private API)
@@ -647,11 +637,7 @@ export function renderComponent(
   // which can cause tracking frame conflicts
   let renderer = RENDERER_CACHE.get(owner);
   if (!renderer) {
-    renderer = BaseRenderer.strict(owner, document, {
-      ...env,
-      isInteractive: env?.isInteractive ?? true,
-      hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
-    });
+    renderer = BaseRenderer.strict(owner, document);
     RENDERER_CACHE.set(owner, renderer);
   }
 
@@ -718,14 +704,9 @@ const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
 class BaseRenderer {
-  static strict(
-    owner: object,
-    document: SimpleDocument | Document,
-    options: { isInteractive: boolean; hasDOM?: boolean }
-  ) {
+  static strict(owner: object, document: SimpleDocument | Document) {
     return new BaseRenderer(
       owner,
-      { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
       new ResolverImpl(),
       clientBuilder
@@ -734,13 +715,7 @@ class BaseRenderer {
 
   readonly state: RendererState;
 
-  constructor(
-    owner: object,
-    envOptions: { isInteractive: boolean; hasDOM: boolean },
-    document: SimpleDocument,
-    resolver: Resolver,
-    builder: IBuilder
-  ) {
+  constructor(owner: object, document: SimpleDocument, resolver: Resolver, builder: IBuilder) {
     let sharedArtifacts = artifacts();
 
     /**
@@ -750,7 +725,7 @@ class BaseRenderer {
      *         But for actual ember apps, you *need* to implement everything
      *         an app needs (which will actually change and become less over time)
      */
-    let env = new EmberEnvironmentDelegate(envOptions.isInteractive);
+    let env = new EmberEnvironmentDelegate();
     let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,
@@ -808,14 +783,9 @@ class BaseRenderer {
 }
 
 export class Renderer extends BaseRenderer {
-  static strict(
-    owner: object,
-    document: SimpleDocument | Document,
-    options: { isInteractive: boolean; hasDOM?: boolean }
-  ): BaseRenderer {
+  static strict(owner: object, document: SimpleDocument | Document): BaseRenderer {
     return new BaseRenderer(
       owner,
-      { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
       new ResolverImpl(),
       clientBuilder
@@ -830,25 +800,20 @@ export class Renderer extends BaseRenderer {
     let owner = getOwner(props);
     assert('Renderer is unexpectedly missing an owner', owner);
     let document = owner.lookup('service:-document') as SimpleDocument;
-    let env = owner.lookup('-environment:main') as {
-      isInteractive: boolean;
-      hasDOM: boolean;
-    };
     let rootTemplate = owner.lookup(P`template:-root`) as TemplateFactory;
     let builder = owner.lookup('service:-dom-builder') as IBuilder;
-    return new this(owner, document, env, rootTemplate, _viewRegistry, builder);
+    return new this(owner, document, rootTemplate, _viewRegistry, builder);
   }
 
   constructor(
     owner: InternalOwner,
     document: SimpleDocument,
-    env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     builder = clientBuilder,
     resolver = new ResolverImpl()
   ) {
-    super(owner, env, document, resolver, builder);
+    super(owner, document, resolver, builder);
     this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry || owner.lookup('-view-registry:main');
   }
@@ -946,9 +911,7 @@ export class Renderer extends BaseRenderer {
 
     this.cleanupRootFor(view);
 
-    if (this.state.isInteractive) {
-      view.trigger('didDestroyElement');
-    }
+    view.trigger('didDestroyElement');
   }
 
   get _roots() {
@@ -957,10 +920,6 @@ export class Renderer extends BaseRenderer {
 
   get _inRenderTransaction() {
     return this.state.debug.inRenderTransaction;
-  }
-
-  get _isInteractive() {
-    return this.state.debug.isInteractive;
   }
 
   get _context() {
@@ -981,13 +940,7 @@ export class Renderer extends BaseRenderer {
   }
 
   getElement(component: View): Nullable<Element> {
-    if (this._isInteractive) {
-      return getViewElement(component);
-    } else {
-      throw new Error(
-        'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
-      );
-    }
+    return getViewElement(component);
   }
 
   getBounds(component: View): {

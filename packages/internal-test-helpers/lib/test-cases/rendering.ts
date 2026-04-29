@@ -40,10 +40,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     this.element = document.querySelector('#qunit-fixture')!;
     this.component = null;
 
-    if (
-      !bootOptions ||
-      (bootOptions.isInteractive !== false && bootOptions.skipEventDispatcher !== true)
-    ) {
+    if (!bootOptions || bootOptions.skipEventDispatcher !== true) {
       (owner.lookup('event_dispatcher:main') as EventDispatcher).setup(
         this.getCustomDispatcherEvents(),
         this.element

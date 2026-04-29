@@ -27,7 +27,5 @@ if (DEBUG) {
 export class EmberEnvironmentDelegate implements EnvironmentDelegate {
   public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
 
-  constructor(public isInteractive: boolean) {}
-
   onTransactionCommit(): void {}
 }

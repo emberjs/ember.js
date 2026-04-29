@@ -5,7 +5,6 @@
 import { getOwner as actualGetOwner, setOwner as actualSetOwner } from '@ember/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
-import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { join, once, run, schedule } from '@ember/runloop';
@@ -358,11 +357,10 @@ class Application extends Engine {
     super.init(properties);
 
     this.rootElement ??= 'body';
-    this._document ??= null;
+    this._document ??= window.document;
     this.eventDispatcher ??= null;
     this.customEvents ??= null;
     this.autoboot ??= true;
-    this._document ??= hasDOM ? window.document : null;
 
     if (DEBUG) {
       if (ENV.LOG_VERSION) {

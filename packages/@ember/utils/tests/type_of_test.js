@@ -1,6 +1,5 @@
 import { typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
-import { window } from '@ember/-internals/browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

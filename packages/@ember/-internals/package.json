@@ -5,7 +5,6 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./browser-environment": "./browser-environment/index.ts",
     "./container": "./container/index.ts",
     "./deprecations": "./deprecations/index.ts",
     "./environment": "./environment/index.ts",

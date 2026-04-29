@@ -33,7 +33,7 @@ class RootComponentManager extends CurlyComponentManager {
     _owner: Owner,
     _state: unknown,
     _args: Nullable<VMArguments>,
-    { isInteractive }: Environment,
+    _env: Environment,
     dynamicScope: DynamicScope
   ) {
     let component = this.component;
@@ -46,15 +46,9 @@ class RootComponentManager extends CurlyComponentManager {
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (!hasWrappedElement) {
-      if (isInteractive) {
-        component.trigger('willRender');
-      }
-
+      component.trigger('willRender');
       component._transitionTo('hasElement');
-
-      if (isInteractive) {
-        component.trigger('willInsertElement');
-      }
+      component.trigger('willInsertElement');
     }
 
     if (DEBUG) {
@@ -66,8 +60,7 @@ class RootComponentManager extends CurlyComponentManager {
       null,
       CONSTANT_TAG,
       finalizer,
-      hasWrappedElement,
-      isInteractive
+      hasWrappedElement
     );
 
     consumeTag(component[DIRTY_TAG]);

@@ -45,7 +45,6 @@ export interface Environment {
   getDOM(): GlimmerTreeChanges;
   getAppendOperations(): GlimmerTreeConstruction;
 
-  isInteractive: boolean;
   debugRenderTree?: DebugRenderTree | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError?: ((error: any) => boolean) | undefined;

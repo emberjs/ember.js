@@ -1,11 +1,8 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
-import { getInternalModifierManager, setComponentTemplate } from '@glimmer/manager';
+import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
-import { precompileTemplate } from '@ember/template-compilation';
 
 import { DEBUG } from '@glimmer/env';
-
-import { Component } from '../../utils/helpers';
 
 moduleFor(
   '{{on}} Modifier',
@@ -272,62 +269,3 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Rendering test: non-interactive `on` modifier',
-  class extends RenderingTestCase {
-    getBootOptions() {
-      return { isInteractive: false };
-    }
-
-    beforeEach() {
-      // might error if getOnManagerInstance fails
-      this.startingCounters = this.getOnManagerInstance().counters;
-    }
-
-    getOnManagerInstance() {
-      // leveraging private APIs, this can be deleted if these APIs change
-      // but it has been useful to verify some internal details
-      return getInternalModifierManager(on);
-    }
-
-    assertCounts(expected) {
-      let { counters } = this.getOnManagerInstance();
-
-      this.assert.deepEqual(
-        counters,
-        {
-          adds: expected.adds + this.startingCounters.adds,
-          removes: expected.removes + this.startingCounters.removes,
-        },
-        `counters have incremented by ${JSON.stringify(expected)}`
-      );
-    }
-
-    [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
-      this.owner.register(
-        'component:foo-bar2',
-        setComponentTemplate(
-          precompileTemplate(`<button {{on 'click' this.fire}}>Fire!</button>`),
-          class extends Component {
-            tagName = '';
-            fire() {
-              assert.ok(false);
-            }
-          }
-        )
-      );
-
-      this.render('{{#if this.showButton}}<FooBar2 />{{/if}}', {
-        showButton: true,
-      });
-      this.assertHTML('<button>Fire!</button>');
-      this.assertCounts({ adds: 0, removes: 0 });
-
-      this.$('button').click();
-
-      runTask(() => this.context.set('showButton', false));
-
-      this.assertCounts({ adds: 0, removes: 0 });
-    }
-  }
-);
