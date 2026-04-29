@@ -290,6 +290,15 @@ function _extractScopeFromEval(
 
   // Try to resolve each identifier via eval
   for (const name of identifiers) {
+    // Skip GXT/Ember built-in keywords. These are part of the template
+    // language (resolved by the compiler/runtime), so the user must opt-in
+    // to shadowing them via the explicit `scope` form. The implicit form
+    // can accidentally pick them up via `eval()` when the surrounding
+    // bundle exposes a same-named binding (e.g. an internal `let helper`
+    // declared by a sibling Glimmer runtime module).
+    if (_GXT_KEYWORD_NAMES.has(name)) {
+      continue;
+    }
     try {
       const value = evalFn(name);
       if (value !== undefined) {
@@ -302,6 +311,18 @@ function _extractScopeFromEval(
 
   return Object.keys(scope).length > 0 ? scope : (undefined as any);
 }
+
+// GXT/Ember strict-mode keywords whose names are reserved for the curried
+// helper / modifier syntactic forms (`{{helper foo "x"}}`,
+// `{{modifier foo "x"}}`). These are never imported as bindings in
+// idiomatic Ember code — the user invokes them as keywords instead — but
+// the bundled test runtime can expose same-named module-level `let`
+// declarations (e.g. `let helper;` from the in-element-null-check helper
+// scaffolding) that direct `eval()` will resolve to. Skipping them in the
+// implicit-form scope extraction prevents the leaked binding from silently
+// shadowing the keyword. Users who genuinely want to shadow them can do so
+// via the explicit `scope: () => ({ helper: myHelper })` form.
+const _GXT_KEYWORD_NAMES = new Set<string>(['helper', 'modifier']);
 
 // HBS syntax words that should not be treated as variable references
 const _HBS_SYNTAX_WORDS = new Set([
@@ -385,10 +406,23 @@ export function template(
 
       // Extract scope values from explicit scope() or implicit eval()
       let scopeValues: Record<string, unknown> | undefined;
+      // Track whether `this` was bound by the *explicit* form. The implicit
+      // `eval()` form can also accidentally resolve `this` to the eval method's
+      // outer `this`, but in that case the user did NOT intend to override the
+      // template's rendering context — so we must not rewrite `{{this.X}}` for
+      // implicit-form templates.
+      let explicitlyProvidedThis = false;
 
       if ('scope' in gxtOptions && typeof (gxtOptions as any).scope === 'function') {
         // Explicit form: scope: () => ({ Foo, bar })
         scopeValues = ((gxtOptions as any).scope as () => Record<string, unknown>)();
+        if (
+          scopeValues &&
+          Object.prototype.hasOwnProperty.call(scopeValues, 'this') &&
+          scopeValues['this'] !== undefined
+        ) {
+          explicitlyProvidedThis = true;
+        }
       } else if ('eval' in gxtOptions && typeof (gxtOptions as any).eval === 'function') {
         // Implicit form: eval() { return eval(arguments[0]) }
         // Extract free variable names from the template and resolve them via eval
@@ -396,9 +430,44 @@ export function template(
           templateString,
           (gxtOptions as any).eval as (v: string) => unknown
         );
+        // Defensive: even if `_extractScopeFromEval` somehow returns `this`,
+        // strip it. The implicit form must never override the rendering
+        // context — see the explicit-form branch above for the intended way
+        // to shadow `this`.
+        if (scopeValues && Object.prototype.hasOwnProperty.call(scopeValues, 'this')) {
+          delete (scopeValues as Record<string, unknown>)['this'];
+        }
       }
 
-      const gxtTemplate = gxtCompile(templateString, {
+      // Strict-mode `this` shadowing: when the user explicitly provides `this`
+      // via `scope: () => ({ this: state })`, the GXT compiler would otherwise
+      // emit a literal `this.X` reference for `{{this.X}}` — which picks up
+      // the rendering context, not the user's value. Rewrite the path head to
+      // a non-`this` alias and rebind it in scopeValues so the GXT compiler
+      // emits a normal binding-path lookup.
+      let processedTemplate = templateString;
+      if (explicitlyProvidedThis && scopeValues) {
+        const explicitThisAlias = '__gxtExplicitThis';
+        // Avoid clobbering an existing alias — extremely unlikely, but guard
+        // against pathological user-supplied scopes.
+        if (!Object.prototype.hasOwnProperty.call(scopeValues, explicitThisAlias)) {
+          // Replace path heads in the template:
+          //   {{this.X}}     → {{__gxtExplicitThis.X}}
+          //   {{this}}       → {{__gxtExplicitThis}}      (rare but safe)
+          //   (this.X        → (__gxtExplicitThis.X
+          //   <this.X        → <__gxtExplicitThis.X
+          // The substitution is purely textual but only inside expression
+          // positions: a leading `{{`, `(`, or `<` must precede the `this`.
+          processedTemplate = processedTemplate.replace(
+            /(\{\{[#/!]?\s*|\(\s*|<\s*)this\b/g,
+            (_full, prefix: string) => `${prefix}${explicitThisAlias}`
+          );
+          scopeValues = { ...scopeValues, [explicitThisAlias]: scopeValues['this'] };
+          delete (scopeValues as Record<string, unknown>)['this'];
+        }
+      }
+
+      const gxtTemplate = gxtCompile(processedTemplate, {
         moduleName: (gxtOptions as any).moduleName,
         strictMode: true,
         scopeValues,
