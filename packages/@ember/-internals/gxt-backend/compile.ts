@@ -11714,6 +11714,21 @@ function _templateMayNeedScopeThreading(template: string): boolean {
     if (head === 'this' || head === 'on') continue;
     return true;
   }
+  // SubExpression `(ident ...)` syntax — e.g. `{{on "click" (fn handleClick 123)}}`.
+  // The mustache head may be `on` (skipped above) but the modifier args can
+  // reference a strict-mode scope binding via a SubExpression. Detect that
+  // pattern so the scope() callback is consulted for any free identifiers.
+  // Match `(ident` only when preceded by whitespace, `=`, `(`, `{` or `,`
+  // to avoid matching attribute literals like `style="(border)"`.
+  const subExprRe = /(?:^|[\s={(,])\(([A-Za-z_][A-Za-z0-9_-]*)/g;
+  while ((m = subExprRe.exec(template))) {
+    const head = m[1];
+    // `this` cannot appear as a SubExpression head; only `on` is worth
+    // skipping (a SubExpression `(on ...)` would reference the modifier
+    // helper, not a free user binding).
+    if (head === 'this' || head === 'on') continue;
+    return true;
+  }
   return false;
 }
 
