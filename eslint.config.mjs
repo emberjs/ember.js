@@ -1,4 +1,5 @@
 import emberInternal from 'eslint-plugin-ember-internal';
+import emberLocal from './eslint-rules/index.js';
 import importPlugin from 'eslint-plugin-import';
 import qunitPluginRecommended from 'eslint-plugin-qunit/configs/recommended';
 import disableFeatures from 'eslint-plugin-disable-features';
@@ -40,6 +41,7 @@ export default [
   {
     plugins: {
       'ember-internal': emberInternal,
+      'ember-local': emberLocal,
       'disable-features': disableFeatures,
     },
 
@@ -515,6 +517,16 @@ export default [
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
+    files: ['packages/@ember/**/*.{ts,js}', 'packages/@glimmer/**/*.{ts,js}'],
+    ignores: [
+      'packages/@ember/**/tests/**',
+      'packages/@glimmer/**/test/**',
+    ],
+    rules: {
+      'ember-local/no-barrel-imports': 'error',
     },
   },
 ];
