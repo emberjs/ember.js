@@ -212,18 +212,26 @@ function packageHasWildcardSourceExports(packageRoot) {
 function computeNewSpecifier(targetAbs, currentFile) {
   const targetInfo = getPackageInfo(targetAbs);
   if (!targetInfo) return null;
+  const tail = toPosix(path.relative(targetInfo.packageRoot, targetAbs));
+  // If the target IS the package's own index file, use just the bare specifier
+  // (any `/index` suffix is redundant and confuses TS's module resolution).
+  const isPackageIndex = /^index\.[mc]?[jt]sx?$/.test(tail);
+
   const currentInfo = getPackageInfo(currentFile);
   if (currentInfo?.bareSpec === targetInfo.bareSpec) {
     let rel = toPosix(path.relative(path.dirname(currentFile), targetAbs));
     if (!rel.startsWith('.')) rel = './' + rel;
     return { newSpec: stripExt(rel), deep: false };
   }
-  const tail = toPosix(path.relative(targetInfo.packageRoot, targetAbs));
-  const owner = findOwningPackage(targetAbs);
+
+  if (isPackageIndex) {
+    return { newSpec: targetInfo.bareSpec, deep: false };
+  }
+
   return {
     newSpec: stripExt(path.posix.join(targetInfo.bareSpec, tail)),
     deep: true,
-    owningPackageRoot: owner,
+    owningPackageRoot: findOwningPackage(targetAbs),
   };
 }
 
@@ -370,6 +378,7 @@ module.exports = {
       const isWholeTypeImport = node.importKind === 'type';
       const groups = new Map();
       const namespaceImports = [];
+      const kept = []; // specifiers that must stay with the original barrel spec
       const unresolved = [];
       let allLocal = node.specifiers.length > 0;
 
@@ -389,7 +398,10 @@ module.exports = {
         const specIsType = isWholeTypeImport || sp.importKind === 'type';
         const r = resolveSpecifier(moduleExports, importedName, barrelPath, spec);
 
-        if (r.local) continue;
+        if (r.local) {
+          kept.push({ sourceName: importedName, localName: local, isType: specIsType });
+          continue;
+        }
         allLocal = false;
         if (r.unresolved) {
           unresolved.push(importedName);
@@ -426,6 +438,10 @@ module.exports = {
         return;
       }
 
+      // Locally-defined symbols stay with the original barrel — they can't
+      // be sourced from a sub-file because they don't live in one.
+      for (const item of kept) pushGroup(groups, spec, item);
+
       const statements = namespaceImports.map((ns) => {
         const useType = isWholeTypeImport || ns.isType;
         return `import ${useType ? 'type ' : ''}* as ${ns.localName} from '${ns.newSpec}';`;
@@ -445,6 +461,7 @@ module.exports = {
       const isWholeTypeExport = node.exportKind === 'type';
       const groups = new Map();
       const namespaceExports = [];
+      const kept = [];
       const unresolved = [];
       let allLocal = node.specifiers.length > 0;
 
@@ -455,7 +472,10 @@ module.exports = {
         const specIsType = isWholeTypeExport || sp.exportKind === 'type';
         const r = resolveSpecifier(moduleExports, importedName, barrelPath, spec);
 
-        if (r.local) continue;
+        if (r.local) {
+          kept.push({ sourceName: importedName, exportedName, isType: specIsType });
+          continue;
+        }
         allLocal = false;
         if (r.unresolved) {
           unresolved.push(importedName);
@@ -491,6 +511,8 @@ module.exports = {
         reportMissingExports(node, spec, missing);
         return;
       }
+
+      for (const item of kept) pushGroup(groups, spec, item);
 
       const statements = namespaceExports.map((ns) => {
         const useType = isWholeTypeExport || ns.isType;
