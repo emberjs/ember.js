@@ -1008,8 +1008,25 @@ export default function createRootTemplate(_owner: any) {
       // ('index') but hand us a fresh `compile()` template on each render.
       // If we stayed on the fast-path in that case, we would only update
       // model cells and miss the new template's DOM content.
-      const routeTemplateChanged =
-        lastRouteTemplate !== null && newTemplate && lastRouteTemplate !== newTemplate;
+      //
+      // NOTE: GXT's runtime template factory (precompileTemplate) returns a
+      // fresh wrapper object for every `templateFactory(owner)` invocation,
+      // and `buildRenderState` calls the factory on every route render. As a
+      // result, `lastRouteTemplate !== newTemplate` is `true` even when the
+      // route renders the SAME template (the underlying `_templateFn` is the
+      // same instance). Treating that as a template swap forces a full
+      // re-render that destroys DOM node identity and breaks the "stable DOM
+      // when the model changes" invariant. Compare the underlying
+      // `_templateFn` (set on every gxt-runtime-template wrapper) so two
+      // wrappers around the same compiled function are recognized as equal.
+      const routeTemplateChanged = (() => {
+        if (lastRouteTemplate === null || !newTemplate) return false;
+        if (lastRouteTemplate === newTemplate) return false;
+        const lastFn = (lastRouteTemplate as any)?._templateFn;
+        const newFn = (newTemplate as any)?._templateFn;
+        if (lastFn && newFn && lastFn === newFn) return false;
+        return true;
+      })();
 
       // If same route template AND nested outlets haven't changed, try to
       // update existing cells in-place to preserve DOM node identity.
