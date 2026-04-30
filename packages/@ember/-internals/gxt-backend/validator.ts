@@ -655,6 +655,15 @@ export function registerClassicReactor(cb: () => void): () => void {
     _classicReactors.delete(cb);
   };
 }
+// Drain all reactors. Used by __gxtCleanupActiveComponents between tests:
+// reactors registered by _renderComponentGxt with a synthetic owner ({}) can
+// outlive their test because registerDestructor silently fails on plain
+// objects, leaving the reactor in this Set. On the next test's classic-tag
+// dirty (e.g. textarea input), the leaked reactor fires _doRender against an
+// already-detached target and clobbers shared GXT sync state.
+(globalThis as any).__gxtClearClassicReactors = function () {
+  _classicReactors.clear();
+};
 function _fireClassicReactors() {
   if (_classicReactors.size === 0) return;
   // Copy to avoid mutation during iteration
