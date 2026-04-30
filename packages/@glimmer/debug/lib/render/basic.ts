@@ -1,5 +1,5 @@
 import type { CompilableTemplate, Optional, Reference, SimpleNode } from '@glimmer/interfaces';
-import type { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants/lib/brand';
+import { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants/lib/brand';
 import { REFERENCE } from '@glimmer/reference/lib/reference';
 import { isIndexable } from '@glimmer/util/lib/collections';
 

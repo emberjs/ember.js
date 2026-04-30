@@ -8,6 +8,7 @@
     "./*": "./*.ts"
   },
   "dependencies": {
-    "@ember/-internals": "workspace:*"
+    "@ember/-internals": "workspace:*",
+    "@glimmer/validator": "workspace:*"
   }
 }

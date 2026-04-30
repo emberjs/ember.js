@@ -45,6 +45,18 @@ function resolveImportSource(spec, fromFile) {
   return null;
 }
 
+// A name may be exported both as a value and as a type with the same identifier
+// (e.g. `export const X = ...; export type X = typeof X`). When merging entries
+// for the same name, treat the export as a value if any declaration is a value.
+function setExport(exports, name, entry) {
+  const existing = exports.get(name);
+  if (existing) {
+    exports.set(name, { ...entry, isType: existing.isType && entry.isType });
+  } else {
+    exports.set(name, entry);
+  }
+}
+
 function declarationNames(decl) {
   if (!decl) return [];
   switch (decl.type) {
@@ -85,7 +97,7 @@ function getModuleExports(filepath, stack = new Set()) {
     else if (stmt.type === 'ExportAllDeclaration')
       collectStarExports(stmt, exports, filepath, stack);
     else if (stmt.type === 'ExportDefaultDeclaration') {
-      exports.set('default', {
+      setExport(exports, 'default', {
         source: filepath,
         localName: 'default',
         isType: false,
@@ -104,7 +116,7 @@ function collectNamedExports(stmt, exports, filepath, stack) {
 
   if (stmt.declaration) {
     for (const { name, isType } of declarationNames(stmt.declaration)) {
-      exports.set(name, {
+      setExport(exports, name, {
         source: filepath,
         localName: name,
         isType: isType || stmtIsType,
@@ -117,7 +129,7 @@ function collectNamedExports(stmt, exports, filepath, stack) {
   if (!stmt.source) {
     for (const spec of stmt.specifiers ?? []) {
       if (spec.type !== 'ExportSpecifier') continue;
-      exports.set(idOrStr(spec.exported), {
+      setExport(exports, idOrStr(spec.exported), {
         source: filepath,
         localName: idOrStr(spec.local),
         isType: stmtIsType || spec.exportKind === 'type',
@@ -152,7 +164,7 @@ function collectNamedExports(stmt, exports, filepath, stack) {
       }
     }
 
-    exports.set(idOrStr(spec.exported), {
+    setExport(exports, idOrStr(spec.exported), {
       source,
       bareSource,
       localName: local,
@@ -167,7 +179,7 @@ function collectStarExports(stmt, exports, filepath, stack) {
   const targetFile = resolveImportSource(stmt.source.value, filepath);
 
   if (stmt.exported) {
-    exports.set(idOrStr(stmt.exported), {
+    setExport(exports, idOrStr(stmt.exported), {
       source: targetFile,
       isType: stmtIsType,
       kind: 'namespace',
