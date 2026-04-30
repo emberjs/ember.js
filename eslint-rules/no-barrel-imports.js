@@ -11,6 +11,13 @@ const moduleCache = new Map();
 const owningPackageCache = new Map();
 const wildcardExportsCache = new Map();
 
+// Barrels we deliberately don't rewrite imports from. `@glimmer/component`
+// has its own legacy-resolution tsconfig that can't follow deep paths;
+// `@ember/version` is a one-line shim that re-exports from `ember/version`
+// (a different package), and we want to keep `@ember/version` as the canonical
+// import path for the framework version.
+const EXCLUDED_BARRELS = new Set(['@glimmer/component', '@ember/version']);
+
 const idOrStr = (n) => (n.type === 'Identifier' ? n.name : n.value);
 
 function resolveBarrelPath(specifier) {
@@ -156,9 +163,14 @@ const SCOPE_PREFIXES = [
   path.join(PACKAGES_ROOT, '@ember') + path.sep,
   path.join(PACKAGES_ROOT, '@glimmer') + path.sep,
 ];
+const EXCLUDED_FILE_PREFIXES = [
+  path.join(PACKAGES_ROOT, '@glimmer/component') + path.sep,
+];
 const TEST_DIR_RE = /[\\/](?:test|tests)[\\/]/;
 
 const isInScope = (filename) => SCOPE_PREFIXES.some((p) => filename.startsWith(p));
+const isExcludedFile = (filename) =>
+  EXCLUDED_FILE_PREFIXES.some((p) => filename.startsWith(p));
 const isInTestFile = (filename) =>
   TEST_DIR_RE.test(filename) || filename.includes(`${path.sep}internal-test-helpers${path.sep}`);
 
@@ -299,7 +311,9 @@ module.exports = {
   },
   create(context) {
     const { filename } = context;
-    if (!filename || !isInScope(filename) || isInTestFile(filename)) return {};
+    if (!filename || !isInScope(filename) || isInTestFile(filename) || isExcludedFile(filename)) {
+      return {};
+    }
 
     function resolveSpecifier(moduleExports, importedName, barrelPath, originalSpec) {
       const entry = moduleExports.get(importedName);
@@ -360,6 +374,7 @@ module.exports = {
     function check(node) {
       const spec = node.source?.value;
       if (typeof spec !== 'string') return;
+      if (EXCLUDED_BARRELS.has(spec)) return;
       const barrelPath = resolveBarrelPath(spec);
       if (!barrelPath || filename === barrelPath) return;
 
