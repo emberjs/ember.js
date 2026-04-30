@@ -250,6 +250,20 @@ class EmberOutletElement extends HTMLElement {
       /* ignore */
     }
 
+    // Engine support: when the nested outlet's render owner is an engine
+    // instance (different from the application owner), swap globalThis.owner
+    // for the duration of tpl.render so that $_maybeHelper / $_tag / component
+    // resolution find the engine's registry (e.g. engine-scoped helpers,
+    // components registered only on the engine). Without this swap a shared
+    // template registered in BOTH application and engine would resolve curly
+    // bare identifiers (`{{ambiguous-curlies}}`) against the application owner
+    // even while rendering inside the engine's outlet, leaking application
+    // refinements into the engine's render output.
+    const previousGlobalOwner = (globalThis as any).owner;
+    const ownerSwapped = owner && owner !== previousGlobalOwner;
+    if (ownerSwapped) {
+      (globalThis as any).owner = owner;
+    }
     try {
       if (typeof tpl?.render === 'function') {
         tpl.render(nestedContext, this);
@@ -262,6 +276,9 @@ class EmberOutletElement extends HTMLElement {
         }
       }
     } finally {
+      if (ownerSwapped) {
+        (globalThis as any).owner = previousGlobalOwner;
+      }
       (globalThis as any).__currentOutletState = previousOutletState;
       if (_parentViewPushed) {
         try {
