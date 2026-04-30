@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./collections": "./collections.ts"
+    "./collections": "./collections.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@glimmer/validator": "0.95.0"

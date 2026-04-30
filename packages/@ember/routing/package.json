@@ -11,7 +11,8 @@
     "./location": "./location.ts",
     "./route": "./route.ts",
     "./-internals": "./-internals.ts",
-    "./router-service": "./router-service.ts"
+    "./router-service": "./router-service.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

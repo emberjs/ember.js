@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./primitives/cache": "./primitives/cache.ts"
+    "./primitives/cache": "./primitives/cache.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*"

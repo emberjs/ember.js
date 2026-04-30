@@ -5,7 +5,8 @@
   "exports": {
     ".": "./index.ts",
     "./instance": "./instance.ts",
-    "./parent": "./parent.ts"
+    "./parent": "./parent.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
