@@ -1,7 +1,7 @@
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { getPath, setPath } from '@glimmer/global-context';
-import { createComputeRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
-import { isDict } from '@glimmer/util';
+import { createComputeRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
+import { isDict } from '@glimmer/util/lib/collections';
 
 import { internalHelper } from './internal-helper';
 

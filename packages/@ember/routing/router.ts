@@ -1,7 +1,11 @@
-import { privatize as P } from '@ember/-internals/container';
-import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals/glimmer';
-import { computed, get, set } from '@ember/object';
-import type { default as Owner, FactoryManager } from '@ember/owner';
+import { privatize as P } from '@ember/-internals/container/lib/registry';
+import type { BootEnvironment, default as OutletView } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
+import computed from '@ember/-internals/metal/lib/computed';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
+import type { FactoryManager } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { default as BucketCache } from './lib/cache';
 import { default as DSL, type DSLCallback } from './lib/dsl';
@@ -21,7 +25,7 @@ import type {
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { typeOf } from '@ember/utils';
+import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';

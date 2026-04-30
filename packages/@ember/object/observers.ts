@@ -1,1 +1,1 @@
-export { addObserver, removeObserver } from '@ember/-internals/metal';
+export { addObserver, removeObserver } from '@ember/-internals/metal/lib/observer';

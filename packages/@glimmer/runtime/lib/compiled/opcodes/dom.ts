@@ -10,38 +10,21 @@ import type {
   UpdatingOpcode,
   UpdatingVM,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import type { Revision, Tag } from '@glimmer/validator';
-import {
-  CURRIED_MODIFIER,
-  VM_CLOSE_ELEMENT_OP,
-  VM_COMMENT_OP,
-  VM_DYNAMIC_ATTR_OP,
-  VM_DYNAMIC_MODIFIER_OP,
-  VM_FLUSH_ELEMENT_OP,
-  VM_MODIFIER_OP,
-  VM_OPEN_DYNAMIC_ELEMENT_OP,
-  VM_OPEN_ELEMENT_OP,
-  VM_POP_REMOTE_ELEMENT_OP,
-  VM_PUSH_REMOTE_ELEMENT_OP,
-  VM_STATIC_ATTR_OP,
-  VM_TEXT_OP,
-} from '@glimmer/constants';
-import {
-  check,
-  CheckElement,
-  CheckMaybe,
-  CheckNode,
-  CheckNullable,
-  CheckString,
-} from '@glimmer/debug';
-import { debugToString, expect } from '@glimmer/debug-util';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import type { Revision } from '@glimmer/validator/lib/validators';
+import type { Tag } from '@glimmer/interfaces';
+import { CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
+import { VM_CLOSE_ELEMENT_OP, VM_COMMENT_OP, VM_DYNAMIC_ATTR_OP, VM_DYNAMIC_MODIFIER_OP, VM_FLUSH_ELEMENT_OP, VM_MODIFIER_OP, VM_OPEN_DYNAMIC_ELEMENT_OP, VM_OPEN_ELEMENT_OP, VM_POP_REMOTE_ELEMENT_OP, VM_PUSH_REMOTE_ELEMENT_OP, VM_STATIC_ATTR_OP, VM_TEXT_OP } from '@glimmer/constants/lib/syscall-ops';
+import { check, CheckElement, CheckMaybe, CheckNode, CheckNullable, CheckString } from '@glimmer/debug/lib/stack-check';
+import debugToString from '@glimmer/debug-util/lib/debug-to-string';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
-import { getInternalModifierManager } from '@glimmer/manager';
-import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
-import { isIndexable } from '@glimmer/util';
-import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
-import { $t0 } from '@glimmer/vm';
+import { getInternalModifierManager } from '@glimmer/manager/lib/internal/api';
+import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { isIndexable } from '@glimmer/util/lib/collections';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { $t0 } from '@glimmer/vm/lib/registers';
 
 import type { CurriedValue } from '../../curried-value';
 import type { DynamicAttribute } from '../../vm/attributes/dynamic';

@@ -1,4 +1,5 @@
-export { tracked, cached } from '@ember/-internals/metal';
+export { tracked } from '@ember/-internals/metal/lib/tracked';
+export { cached } from '@ember/-internals/metal/lib/cached';
 
 /**
   In order to tell Ember a value might change, we need to mark it as trackable.

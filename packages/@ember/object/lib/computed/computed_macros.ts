@@ -1,8 +1,13 @@
-import { computed, isElementDescriptor, alias, expandProperties } from '@ember/-internals/metal';
-import { get, set } from '@ember/object';
-import type { DeprecationOptions } from '@ember/debug';
+import computed from '@ember/-internals/metal/lib/computed';
+import { isElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import alias from '@ember/-internals/metal/lib/alias';
+import expandProperties from '@ember/-internals/metal/lib/expand_properties';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
+import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { assert, deprecate } from '@ember/debug';
-import { isEmpty, isNone } from '@ember/utils';
+import isEmpty from '@ember/utils/lib/is_empty';
+import isNone from '@ember/utils/lib/is_none';
 
 /**
 @module @ember/object

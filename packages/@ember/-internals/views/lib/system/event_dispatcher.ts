@@ -1,10 +1,11 @@
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { get, set } from '@ember/-internals/metal';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
 import EmberObject from '@ember/object';
 import { getElementView } from './utils';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
-import type Component from '@ember/component';
+import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type Component from '@ember/-internals/glimmer/lib/component';
 
 /**
 @module ember

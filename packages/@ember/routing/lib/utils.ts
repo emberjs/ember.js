@@ -1,4 +1,4 @@
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/-internals/metal/lib/property_get';
 import { getOwner } from '@ember/-internals/owner';
 import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
 import { assert } from '@ember/debug';

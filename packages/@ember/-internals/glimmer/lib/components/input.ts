@@ -1,12 +1,12 @@
 /**
 @module @ember/component
 */
-import { hasDOM } from '@ember/-internals/browser-environment';
+import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 import { type Opaque } from '@ember/-internals/utility-types';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
-import { valueForRef } from '@glimmer/reference';
-import { untrack } from '@glimmer/validator';
+import { valueForRef } from '@glimmer/reference/lib/reference';
+import { untrack } from '@glimmer/validator/lib/tracking';
 import InputTemplate from '../templates/input';
 import AbstractInput, { valueFrom } from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';

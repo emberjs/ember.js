@@ -1,21 +1,7 @@
 import type { Nullable, WireFormat } from '@glimmer/interfaces';
-import {
-  VM_CHILD_SCOPE_OP,
-  VM_COMPILE_BLOCK_OP,
-  VM_CONSTANT_OP,
-  VM_DUP_OP,
-  VM_GET_BLOCK_OP,
-  VM_INVOKE_VIRTUAL_OP,
-  VM_INVOKE_YIELD_OP,
-  VM_POP_FRAME_OP,
-  VM_POP_SCOPE_OP,
-  VM_PUSH_BLOCK_SCOPE_OP,
-  VM_PUSH_FRAME_OP,
-  VM_PUSH_SYMBOL_TABLE_OP,
-  VM_SET_VARIABLE_OP,
-  VM_SPREAD_BLOCK_OP,
-} from '@glimmer/constants';
-import { $fp } from '@glimmer/vm';
+import { VM_CHILD_SCOPE_OP, VM_COMPILE_BLOCK_OP, VM_CONSTANT_OP, VM_DUP_OP, VM_GET_BLOCK_OP, VM_INVOKE_YIELD_OP, VM_POP_SCOPE_OP, VM_PUSH_BLOCK_SCOPE_OP, VM_PUSH_SYMBOL_TABLE_OP, VM_SET_VARIABLE_OP, VM_SPREAD_BLOCK_OP } from '@glimmer/constants/lib/syscall-ops';
+import { VM_INVOKE_VIRTUAL_OP, VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
+import { $fp } from '@glimmer/vm/lib/registers';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 

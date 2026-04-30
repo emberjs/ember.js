@@ -1,4 +1,4 @@
-import type { Checker } from '@glimmer/debug';
+import type { Checker } from '@glimmer/debug/lib/stack-check';
 import type {
   CapabilityMask,
   CapturedArguments,
@@ -14,27 +14,12 @@ import type {
   Scope,
   ScopeBlock,
 } from '@glimmer/interfaces';
-import type { OpaqueIterator, Reference } from '@glimmer/reference';
-import type { Tag } from '@glimmer/validator';
-import {
-  CheckArray,
-  CheckBlockSymbolTable,
-  CheckDict,
-  CheckFunction,
-  CheckHandle,
-  CheckInstanceof,
-  CheckInterface,
-  CheckNullable,
-  CheckNumber,
-  CheckObject,
-  CheckOr,
-  CheckProgramSymbolTable,
-  CheckString,
-  CheckUnknown,
-  wrap,
-} from '@glimmer/debug';
-import { REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { COMPUTE } from '@glimmer/validator';
+import type { OpaqueIterator } from '@glimmer/reference/lib/iterable';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import type { Tag } from '@glimmer/interfaces';
+import { CheckArray, CheckBlockSymbolTable, CheckDict, CheckFunction, CheckHandle, CheckInstanceof, CheckInterface, CheckNullable, CheckNumber, CheckObject, CheckOr, CheckProgramSymbolTable, CheckString, CheckUnknown, wrap } from '@glimmer/debug/lib/stack-check';
+import { REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
+import { COMPUTE } from '@glimmer/validator/lib/validators';
 
 import { ScopeImpl } from '../../scope';
 import { VMArgumentsImpl } from '../../vm/arguments';

@@ -5,7 +5,8 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import { ConcreteBounds, DOMTreeConstruction } from '@glimmer/runtime';
+import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
+import { DOMTreeConstruction } from '@glimmer/runtime/lib/dom/api';
 import createHTMLDocument from '@simple-dom/document';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {

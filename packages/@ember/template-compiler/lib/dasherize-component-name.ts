@@ -1,4 +1,4 @@
-import { Cache } from '@ember/-internals/utils';
+import Cache from '@ember/-internals/utils/lib/cache';
 
 /*
   This diverges from `Ember.String.dasherize` so that`<XFoo />` can resolve to `x-foo`.

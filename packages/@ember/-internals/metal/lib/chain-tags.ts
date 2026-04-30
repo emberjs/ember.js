@@ -1,15 +1,11 @@
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { isObject } from '@ember/-internals/utils';
+import type { Meta } from '@ember/-internals/meta/lib/meta';
+import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
+import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
-import type { Tag, TagMeta } from '@glimmer/validator';
-import {
-  combine,
-  createUpdatableTag,
-  tagMetaFor,
-  updateTag,
-  validateTag,
-} from '@glimmer/validator';
+import type { Tag } from '@glimmer/interfaces';
+import type { TagMeta } from '@glimmer/validator/lib/meta';
+import { combine, createUpdatableTag, UPDATE_TAG as updateTag, validateTag } from '@glimmer/validator/lib/validators';
+import { tagMetaFor } from '@glimmer/validator/lib/meta';
 import { objectAt } from './object-at';
 import { tagForProperty } from './tags';
 

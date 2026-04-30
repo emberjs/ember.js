@@ -1,5 +1,5 @@
-import { setLocalDebugType } from '@glimmer/debug-util';
-import { assign } from '@glimmer/util';
+import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
+import { assign } from '@glimmer/util/lib/object-utils';
 
 import type { SourceSpan } from '../../source/span';
 

@@ -15,9 +15,9 @@ import type {
   SymbolTable,
   WireFormat,
 } from '@glimmer/interfaces';
-import { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants';
+import type { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants/lib/brand';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-import { EMPTY_ARRAY } from '@glimmer/util';
+import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { HighLevelStatementOp } from './syntax/compilers';
 

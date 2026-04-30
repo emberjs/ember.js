@@ -1,41 +1,10 @@
-import type { VariableKind } from '@glimmer/constants';
+import type { VariableKind } from '@glimmer/constants/lib/builder-constants';
 import type { Dict, DictValue, Nullable, PresentArray } from '@glimmer/interfaces';
-import {
-  APPEND_EXPR_HEAD,
-  APPEND_PATH_HEAD,
-  ARG_VAR,
-  BLOCK_HEAD,
-  BLOCK_VAR,
-  BUILDER_APPEND,
-  BUILDER_COMMENT,
-  BUILDER_CONCAT,
-  BUILDER_DYNAMIC_COMPONENT,
-  BUILDER_GET,
-  BUILDER_HAS_BLOCK,
-  BUILDER_HAS_BLOCK_PARAMS,
-  BUILDER_LITERAL,
-  BUILDER_MODIFIER,
-  CALL_EXPR,
-  CALL_HEAD,
-  COMMENT_HEAD,
-  CONCAT_EXPR,
-  DYNAMIC_COMPONENT_HEAD,
-  ELEMENT_HEAD,
-  FREE_VAR,
-  GET_PATH_EXPR,
-  GET_VAR_EXPR,
-  HAS_BLOCK_EXPR,
-  HAS_BLOCK_PARAMS_EXPR,
-  KEYWORD_HEAD,
-  LITERAL_EXPR,
-  LITERAL_HEAD,
-  LOCAL_VAR,
-  MODIFIER_HEAD,
-  SPLAT_HEAD,
-  THIS_VAR,
-} from '@glimmer/constants';
-import { expect, isPresentArray } from '@glimmer/debug-util';
-import { assertNever, dict } from '@glimmer/util';
+import { APPEND_EXPR_HEAD, APPEND_PATH_HEAD, ARG_VAR, BLOCK_HEAD, BLOCK_VAR, BUILDER_APPEND, BUILDER_COMMENT, BUILDER_CONCAT, BUILDER_DYNAMIC_COMPONENT, BUILDER_GET, BUILDER_HAS_BLOCK, BUILDER_HAS_BLOCK_PARAMS, BUILDER_LITERAL, BUILDER_MODIFIER, CALL_EXPR, CALL_HEAD, COMMENT_HEAD, CONCAT_EXPR, DYNAMIC_COMPONENT_HEAD, ELEMENT_HEAD, FREE_VAR, GET_PATH_EXPR, GET_VAR_EXPR, HAS_BLOCK_EXPR, HAS_BLOCK_PARAMS_EXPR, KEYWORD_HEAD, LITERAL_EXPR, LITERAL_HEAD, LOCAL_VAR, MODIFIER_HEAD, SPLAT_HEAD, THIS_VAR } from '@glimmer/constants/lib/builder-constants';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import { isPresentArray } from '@glimmer/debug-util/lib/present';
+import { dict } from '@glimmer/util/lib/collections';
+import { assertNever } from '@glimmer/util';
 
 export type BuilderParams = BuilderExpression[];
 export type BuilderHash = Nullable<Dict<BuilderExpression>>;

@@ -5,8 +5,8 @@ import type {
   Nullable,
   WireFormat,
 } from '@glimmer/interfaces';
-import { VM_PUSH_ARGS_OP, VM_PUSH_EMPTY_ARGS_OP } from '@glimmer/constants';
-import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util';
+import { VM_PUSH_ARGS_OP, VM_PUSH_EMPTY_ARGS_OP } from '@glimmer/constants/lib/syscall-ops';
+import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 

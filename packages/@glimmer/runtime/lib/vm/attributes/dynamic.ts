@@ -9,8 +9,8 @@ import type {
   SimpleElement,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import { NS_SVG } from '@glimmer/constants';
-import { castToBrowser } from '@glimmer/debug-util';
+import { NS_SVG } from '@glimmer/constants/lib/dom';
+import { castToBrowser } from '@glimmer/debug-util/lib/simple-cast';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 
 import type { MutableKey } from '../element-builder';

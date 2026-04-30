@@ -1,4 +1,4 @@
-import type { VariableKind } from '@glimmer/constants';
+import type { VariableKind } from '@glimmer/constants/lib/builder-constants';
 import type {
   AttrNamespace,
   Dict,
@@ -8,39 +8,16 @@ import type {
   PresentArray,
   WireFormat,
 } from '@glimmer/interfaces';
-import {
-  APPEND_EXPR_HEAD,
-  APPEND_PATH_HEAD,
-  ARG_VAR,
-  BLOCK_HEAD,
-  BLOCK_VAR,
-  BUILDER_COMMENT,
-  BUILDER_LITERAL,
-  CALL_EXPR,
-  CALL_HEAD,
-  COMMENT_HEAD,
-  CONCAT_EXPR,
-  DYNAMIC_COMPONENT_HEAD,
-  ELEMENT_HEAD,
-  FREE_VAR,
-  GET_PATH_EXPR,
-  GET_VAR_EXPR,
-  HAS_BLOCK_EXPR,
-  HAS_BLOCK_PARAMS_EXPR,
-  KEYWORD_HEAD,
-  LITERAL_EXPR,
-  LITERAL_HEAD,
-  LOCAL_VAR,
-  MODIFIER_HEAD,
-  NS_XLINK,
-  NS_XML,
-  NS_XMLNS,
-  SPLAT_HEAD,
-  THIS_VAR,
-} from '@glimmer/constants';
-import { exhausted, expect, isPresentArray, assert } from '@glimmer/debug-util';
-import { assertNever, dict, values } from '@glimmer/util';
-import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
+import { APPEND_EXPR_HEAD, APPEND_PATH_HEAD, ARG_VAR, BLOCK_HEAD, BLOCK_VAR, BUILDER_COMMENT, BUILDER_LITERAL, CALL_EXPR, CALL_HEAD, COMMENT_HEAD, CONCAT_EXPR, DYNAMIC_COMPONENT_HEAD, ELEMENT_HEAD, FREE_VAR, GET_PATH_EXPR, GET_VAR_EXPR, HAS_BLOCK_EXPR, HAS_BLOCK_PARAMS_EXPR, KEYWORD_HEAD, LITERAL_EXPR, LITERAL_HEAD, LOCAL_VAR, MODIFIER_HEAD, SPLAT_HEAD, THIS_VAR } from '@glimmer/constants/lib/builder-constants';
+import { NS_XLINK, NS_XML, NS_XMLNS } from '@glimmer/constants/lib/dom';
+import { exhausted, expect } from '@glimmer/debug-util/lib/platform-utils';
+import { isPresentArray } from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
+import { dict } from '@glimmer/util/lib/collections';
+import { values } from '@glimmer/util/lib/object-utils';
+import { assertNever } from '@glimmer/util';
+import { opcodes as Op } from '@glimmer/wire-format/lib/opcodes';
+import { resolution as VariableResolutionContext } from '@glimmer/wire-format/lib/resolution';
 
 import type {
   BuilderComment,

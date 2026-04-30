@@ -4,7 +4,7 @@
   now deprecated and to be removed.
 */
 
-import { Cache } from '@ember/-internals/utils';
+import Cache from '@ember/-internals/utils/lib/cache';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 

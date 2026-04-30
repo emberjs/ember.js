@@ -17,14 +17,16 @@ import type {
   ScopeBlock,
   VMArguments,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import type { Tag } from '@glimmer/validator';
-import { check, CheckBlockSymbolTable, CheckHandle, CheckNullable, CheckOr } from '@glimmer/debug';
-import { setLocalDebugType, unwrap } from '@glimmer/debug-util';
-import { createDebugAliasRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
-import { dict, EMPTY_STRING_ARRAY, emptyArray, enumerate } from '@glimmer/util';
-import { CONSTANT_TAG } from '@glimmer/validator';
-import { $sp } from '@glimmer/vm';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import type { Tag } from '@glimmer/interfaces';
+import { check, CheckBlockSymbolTable, CheckHandle, CheckNullable, CheckOr } from '@glimmer/debug/lib/stack-check';
+import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import { createDebugAliasRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
+import { dict } from '@glimmer/util/lib/collections';
+import { EMPTY_STRING_ARRAY, emptyArray, enumerate } from '@glimmer/util/lib/array-utils';
+import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
+import { $sp } from '@glimmer/vm/lib/registers';
 
 import type { EvaluationStack } from './stack';
 

@@ -1,6 +1,8 @@
 import type { NamedBlocks, Nullable, SerializedInlineBlock, WireFormat } from '@glimmer/interfaces';
-import { unwrap } from '@glimmer/debug-util';
-import { assign, dict, enumerate } from '@glimmer/util';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import { assign } from '@glimmer/util/lib/object-utils';
+import { dict } from '@glimmer/util/lib/collections';
+import { enumerate } from '@glimmer/util/lib/array-utils';
 
 interface NamedBlocksDict {
   [key: string]: Nullable<WireFormat.SerializedInlineBlock>;

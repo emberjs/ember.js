@@ -2,22 +2,22 @@
 @module ember
 */
 
-import { meta } from '@ember/-internals/meta';
+import { meta } from '@ember/-internals/meta/lib/meta';
 import Mixin from '@ember/object/mixin';
-import {
-  get,
-  set,
-  defineProperty,
-  tagForObject,
-  computed,
-  tagForProperty,
-} from '@ember/-internals/metal';
-import { setProxy, setupMandatorySetter, isObject, isProxy } from '@ember/-internals/utils';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
+import { tagForObject, tagForProperty } from '@ember/-internals/metal/lib/tags';
+import computed from '@ember/-internals/metal/lib/computed';
+import { setProxy, isProxy } from '@ember/-internals/utils/lib/is_proxy';
+import { setupMandatorySetter } from '@ember/-internals/utils/lib/mandatory-setter';
+import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { setCustomTagFor } from '@glimmer/manager';
-import type { UpdatableTag, Tag } from '@glimmer/validator';
-import { combine, updateTag, tagFor, tagMetaFor } from '@glimmer/validator';
+import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
+import type { UpdatableTag, Tag } from '@glimmer/interfaces';
+import { combine, UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
+import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 
 export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
   let content = get(proxy, 'content');

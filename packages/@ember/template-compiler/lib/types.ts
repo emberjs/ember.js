@@ -1,10 +1,5 @@
-import type {
-  ASTPluginBuilder,
-  ASTPluginEnvironment,
-  builders,
-  PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
-} from '@glimmer/syntax';
+import type { ASTPluginBuilder, ASTPluginEnvironment, PrecompileOptions, PrecompileOptionsWithLexicalScope } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
+import type builders from '@glimmer/syntax/lib/v1/public-builders';
 
 export type Builders = typeof builders;
 

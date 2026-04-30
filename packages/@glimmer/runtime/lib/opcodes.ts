@@ -1,4 +1,4 @@
-import type { DebugOp, SomeDisassembledOperand } from '@glimmer/debug';
+import type { DebugOp, SomeDisassembledOperand } from '@glimmer/debug/lib/debug';
 import type {
   DebugVmSnapshot,
   Dict,
@@ -10,21 +10,18 @@ import type {
   VmMachineOp,
   VmOp,
 } from '@glimmer/interfaces';
-import { VM_SYSCALL_SIZE } from '@glimmer/constants';
-import {
-  DebugLogger,
-  debugOp,
-  describeOp,
-  describeOpcode,
-  frag,
-  opcodeMetadata,
-  recordStackSize,
-  VmSnapshot,
-} from '@glimmer/debug';
-import { dev, assert, unwrap } from '@glimmer/debug-util';
+import { VM_SYSCALL_SIZE } from '@glimmer/constants/lib/syscall-ops';
+import { DebugLogger } from '@glimmer/debug/lib/render/logger';
+import { debugOp, describeOp, describeOpcode } from '@glimmer/debug/lib/debug';
+import { frag } from '@glimmer/debug/lib/render/fragment';
+import { opcodeMetadata } from '@glimmer/debug/lib/opcode-metadata';
+import { recordStackSize } from '@glimmer/debug/lib/stack-check';
+import { VmSnapshot } from '@glimmer/debug/lib/vm/snapshot';
+import { dev, unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
-import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
+import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm/lib/registers';
 
 import type { LowLevelVM, VM } from './vm';
 import type { Externs } from './vm/low-level';

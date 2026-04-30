@@ -7,18 +7,13 @@ import type {
   DynamicScope,
   Template,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import {
-  childRefFromParts,
-  createComputeRef,
-  createConstRef,
-  createDebugAliasRef,
-  valueForRef,
-} from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
-import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
-import { dict } from '@glimmer/util';
-import { hasInternalComponentManager } from '@glimmer/manager';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { childRefFromParts, createComputeRef, createConstRef, createDebugAliasRef, valueForRef } from '@glimmer/reference/lib/reference';
+import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
+import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { curry } from '@glimmer/runtime/lib/curried-value';
+import { dict } from '@glimmer/util/lib/collections';
+import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { OutletComponent, type OutletDefinitionState } from '../component-managers/outlet';
 import { makeRouteTemplate } from '../component-managers/route-template';
 import { internalHelper } from '../helpers/internal-helper';

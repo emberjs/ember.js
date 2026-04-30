@@ -2,34 +2,24 @@
 @module @ember/array/proxy
 */
 
-import {
-  objectAt,
-  alias,
-  PROPERTY_DID_CHANGE,
-  addArrayObserver,
-  removeArrayObserver,
-  replace,
-  arrayContentDidChange,
-  arrayContentWillChange,
-  tagForProperty,
-} from '@ember/-internals/metal';
-import { get } from '@ember/object';
-import type { PropertyDidChange } from '@ember/-internals/metal';
-import { isObject } from '@ember/-internals/utils';
+import { objectAt } from '@ember/-internals/metal/lib/object-at';
+import alias from '@ember/-internals/metal/lib/alias';
+import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
+import { addArrayObserver, removeArrayObserver, replace } from '@ember/-internals/metal/lib/array';
+import { arrayContentDidChange, arrayContentWillChange } from '@ember/-internals/metal/lib/array_events';
+import { tagForProperty } from '@ember/-internals/metal/lib/tags';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
+import { isObject } from '@ember/-internals/utils/lib/spec';
 import EmberObject from '@ember/object';
 import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
-import { setCustomTagFor } from '@glimmer/manager';
-import {
-  combine,
-  consumeTag,
-  validateTag,
-  valueForTag,
-  tagFor,
-  type Tag,
-  type Revision,
-} from '@glimmer/validator';
+import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
+import { combine, validateTag, valueForTag, type Revision } from '@glimmer/validator/lib/validators';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
+import type { Tag } from '@glimmer/interfaces';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';

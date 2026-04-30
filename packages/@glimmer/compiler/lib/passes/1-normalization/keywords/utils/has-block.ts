@@ -1,4 +1,6 @@
-import { ASTv2, generateSyntaxError, SourceSlice } from '@glimmer/syntax';
+import * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
+import { SourceSlice } from '@glimmer/syntax/lib/source/slice';
 
 import type { Result } from '../../../../shared/result';
 import type { NormalizationState } from '../../context';

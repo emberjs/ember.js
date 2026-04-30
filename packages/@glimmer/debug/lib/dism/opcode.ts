@@ -1,4 +1,4 @@
-import type { ClassifiedLocalDebug, ClassifiedLocalDebugFor } from '@glimmer/debug-util';
+import type { ClassifiedLocalDebug, ClassifiedLocalDebugFor } from '@glimmer/debug-util/lib/debug-brand';
 import type {
   AppendingBlock,
   BlockSymbolNames,
@@ -8,8 +8,9 @@ import type {
   PositionalArguments,
   VMArguments,
 } from '@glimmer/interfaces';
-import { dev, exhausted, getLocalDebugType } from '@glimmer/debug-util';
-import { isIndexable } from '@glimmer/util';
+import { dev, exhausted } from '@glimmer/debug-util/lib/platform-utils';
+import { getLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
+import { isIndexable } from '@glimmer/util/lib/collections';
 
 import type { DisassembledOperand } from '../debug';
 import type { ValueRefOptions } from '../render/basic';

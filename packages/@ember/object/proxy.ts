@@ -3,7 +3,7 @@
 */
 
 import { FrameworkObject } from '@ember/object/-internals';
-import { _ProxyMixin } from '@ember/-internals/runtime';
+import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
 
 /**
   `ObjectProxy` forwards all properties not defined by the proxy itself

@@ -7,10 +7,10 @@ import type {
   ScopeBlock,
   ScopeSlot,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { unwrap } from '@glimmer/debug-util';
-import { UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { assign } from '@glimmer/util';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import { UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
+import { assign } from '@glimmer/util/lib/object-utils';
 
 export class DynamicScopeImpl implements DynamicScope {
   private bucket: Dict<Reference>;

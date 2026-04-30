@@ -2,19 +2,14 @@
 @module @ember/object/observable
 */
 
-import { peekMeta } from '@ember/-internals/meta';
-import {
-  hasListeners,
-  beginPropertyChanges,
-  notifyPropertyChange,
-  endPropertyChanges,
-  addObserver,
-  removeObserver,
-  get,
-  set,
-  getProperties,
-  setProperties,
-} from '@ember/-internals/metal';
+import { peekMeta } from '@ember/-internals/meta/lib/meta';
+import { hasListeners } from '@ember/-internals/metal/lib/events';
+import { beginPropertyChanges, notifyPropertyChange, endPropertyChanges } from '@ember/-internals/metal/lib/property_events';
+import { addObserver, removeObserver } from '@ember/-internals/metal/lib/observer';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
+import getProperties from '@ember/-internals/metal/lib/get_properties';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';

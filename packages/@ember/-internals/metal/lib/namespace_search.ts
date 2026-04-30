@@ -1,5 +1,5 @@
-import { context } from '@ember/-internals/environment';
-import { getName, setName } from '@ember/-internals/utils';
+import { context } from '@ember/-internals/environment/lib/context';
+import { getName, setName } from '@ember/-internals/utils/lib/name';
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 

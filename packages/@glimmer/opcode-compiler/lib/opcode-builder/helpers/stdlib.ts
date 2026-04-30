@@ -1,18 +1,8 @@
 import type { BlockMetadata, BuilderOp, EvaluationContext, HighLevelOp } from '@glimmer/interfaces';
-import {
-  VM_APPEND_DOCUMENT_FRAGMENT_OP,
-  VM_APPEND_HTML_OP,
-  VM_APPEND_NODE_OP,
-  VM_APPEND_SAFE_HTML_OP,
-  VM_APPEND_TEXT_OP,
-  VM_ASSERT_SAME_OP,
-  VM_CONTENT_TYPE_OP,
-  VM_INVOKE_STATIC_OP,
-  VM_MAIN_OP,
-  VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
-  VM_RESOLVE_CURRIED_COMPONENT_OP,
-} from '@glimmer/constants';
-import { $s0, ContentType } from '@glimmer/vm';
+import { VM_APPEND_DOCUMENT_FRAGMENT_OP, VM_APPEND_HTML_OP, VM_APPEND_NODE_OP, VM_APPEND_SAFE_HTML_OP, VM_APPEND_TEXT_OP, VM_ASSERT_SAME_OP, VM_CONTENT_TYPE_OP, VM_MAIN_OP, VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP, VM_RESOLVE_CURRIED_COMPONENT_OP } from '@glimmer/constants/lib/syscall-ops';
+import { VM_INVOKE_STATIC_OP } from '@glimmer/constants/lib/vm-ops';
+import { $s0 } from '@glimmer/vm/lib/registers';
+import { ContentType } from '@glimmer/vm/lib/content';
 
 import type { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
 

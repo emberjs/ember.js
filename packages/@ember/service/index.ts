@@ -1,7 +1,7 @@
 import { FrameworkObject } from '@ember/object/-internals';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
-import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
-import { inject as metalInject } from '@ember/-internals/metal';
+import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import metalInject from '@ember/-internals/metal/lib/injected_property';
 
 /**
  @module @ember/service

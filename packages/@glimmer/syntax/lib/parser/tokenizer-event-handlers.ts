@@ -1,14 +1,8 @@
 import type { Nullable } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
-import {
-  asPresentArray,
-  assertPresentArray,
-  getFirst,
-  getLast,
-  isPresentArray,
-  assert,
-} from '@glimmer/debug-util';
-import { assign } from '@glimmer/util';
+import { asPresentArray, assertPresentArray, getFirst, getLast, isPresentArray } from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
+import { assign } from '@glimmer/util/lib/object-utils';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
 

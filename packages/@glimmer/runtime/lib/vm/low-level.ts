@@ -1,17 +1,9 @@
 import type { EvaluationContext, Nullable, RuntimeOp } from '@glimmer/interfaces';
-import type { MachineRegister } from '@glimmer/vm';
-import {
-  VM_INVOKE_STATIC_OP,
-  VM_INVOKE_VIRTUAL_OP,
-  VM_JUMP_OP,
-  VM_POP_FRAME_OP,
-  VM_PUSH_FRAME_OP,
-  VM_RETURN_OP,
-  VM_RETURN_TO_OP,
-} from '@glimmer/constants';
-import { assert } from '@glimmer/debug-util';
+import type { MachineRegister } from '@glimmer/vm/lib/registers';
+import { VM_INVOKE_STATIC_OP, VM_INVOKE_VIRTUAL_OP, VM_JUMP_OP, VM_POP_FRAME_OP, VM_PUSH_FRAME_OP, VM_RETURN_OP, VM_RETURN_TO_OP } from '@glimmer/constants/lib/vm-ops';
+import assert from '@glimmer/debug-util/lib/assert';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
+import { $fp, $pc, $ra, $sp } from '@glimmer/vm/lib/registers';
 
 import type { DebugState } from '../opcodes';
 import type { VM } from './append';

@@ -6,19 +6,12 @@ import type {
   SimpleElement,
   UpdatableTag,
 } from '@glimmer/interfaces';
-import {
-  check,
-  CheckBoolean,
-  CheckFunction,
-  CheckOr,
-  CheckString,
-  CheckUndefined,
-} from '@glimmer/debug';
-import { buildUntouchableThis } from '@glimmer/debug-util';
+import { check, CheckBoolean, CheckFunction, CheckOr, CheckString, CheckUndefined } from '@glimmer/debug/lib/stack-check';
+import buildUntouchableThis from '@glimmer/debug-util/lib/untouchable-this';
 import { registerDestructor } from '@glimmer/destroyable';
-import { setInternalModifierManager } from '@glimmer/manager';
-import { valueForRef } from '@glimmer/reference';
-import { createUpdatableTag } from '@glimmer/validator';
+import { setInternalModifierManager } from '@glimmer/manager/lib/internal/api';
+import { valueForRef } from '@glimmer/reference/lib/reference';
+import { createUpdatableTag } from '@glimmer/validator/lib/validators';
 
 import { reifyNamed } from '../vm/arguments';
 

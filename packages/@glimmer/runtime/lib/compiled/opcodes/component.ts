@@ -25,54 +25,22 @@ import type {
   WithElementHook,
   WithUpdateHook,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import {
-  CURRIED_COMPONENT,
-  VM_BEGIN_COMPONENT_TRANSACTION_OP,
-  VM_CAPTURE_ARGS_OP,
-  VM_COMMIT_COMPONENT_TRANSACTION_OP,
-  VM_COMPONENT_ATTR_OP,
-  VM_CREATE_COMPONENT_OP,
-  VM_DID_CREATE_ELEMENT_OP,
-  VM_DID_RENDER_LAYOUT_OP,
-  VM_GET_COMPONENT_LAYOUT_OP,
-  VM_GET_COMPONENT_SELF_OP,
-  VM_GET_COMPONENT_TAG_NAME_OP,
-  VM_INVOKE_COMPONENT_LAYOUT_OP,
-  VM_MAIN_OP,
-  VM_POPULATE_LAYOUT_OP,
-  VM_PREPARE_ARGS_OP,
-  VM_PUSH_ARGS_OP,
-  VM_PUSH_COMPONENT_DEFINITION_OP,
-  VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
-  VM_PUSH_EMPTY_ARGS_OP,
-  VM_PUT_COMPONENT_OPERATIONS_OP,
-  VM_REGISTER_COMPONENT_DESTRUCTOR_OP,
-  VM_RESOLVE_CURRIED_COMPONENT_OP,
-  VM_RESOLVE_DYNAMIC_COMPONENT_OP,
-  VM_SET_BLOCKS_OP,
-  VM_SET_NAMED_VARIABLES_OP,
-  VM_STATIC_COMPONENT_ATTR_OP,
-  VM_VIRTUAL_ROOT_SCOPE_OP,
-} from '@glimmer/constants';
-import {
-  check,
-  CheckFunction,
-  CheckHandle,
-  CheckInstanceof,
-  CheckInterface,
-  CheckOr,
-  CheckProgramSymbolTable,
-  CheckRegister,
-  CheckString,
-  CheckSyscallRegister,
-} from '@glimmer/debug';
-import { debugToString, expect, assert, unwrap, unwrapTemplate } from '@glimmer/debug-util';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { CURRIED_COMPONENT } from '@glimmer/constants/lib/curried';
+import { VM_BEGIN_COMPONENT_TRANSACTION_OP, VM_CAPTURE_ARGS_OP, VM_COMMIT_COMPONENT_TRANSACTION_OP, VM_COMPONENT_ATTR_OP, VM_CREATE_COMPONENT_OP, VM_DID_CREATE_ELEMENT_OP, VM_DID_RENDER_LAYOUT_OP, VM_GET_COMPONENT_LAYOUT_OP, VM_GET_COMPONENT_SELF_OP, VM_GET_COMPONENT_TAG_NAME_OP, VM_INVOKE_COMPONENT_LAYOUT_OP, VM_MAIN_OP, VM_POPULATE_LAYOUT_OP, VM_PREPARE_ARGS_OP, VM_PUSH_ARGS_OP, VM_PUSH_COMPONENT_DEFINITION_OP, VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP, VM_PUSH_EMPTY_ARGS_OP, VM_PUT_COMPONENT_OPERATIONS_OP, VM_REGISTER_COMPONENT_DESTRUCTOR_OP, VM_RESOLVE_CURRIED_COMPONENT_OP, VM_RESOLVE_DYNAMIC_COMPONENT_OP, VM_SET_BLOCKS_OP, VM_SET_NAMED_VARIABLES_OP, VM_STATIC_COMPONENT_ATTR_OP, VM_VIRTUAL_ROOT_SCOPE_OP } from '@glimmer/constants/lib/syscall-ops';
+import { check, CheckFunction, CheckHandle, CheckInstanceof, CheckInterface, CheckOr, CheckProgramSymbolTable, CheckRegister, CheckString, CheckSyscallRegister } from '@glimmer/debug/lib/stack-check';
+import debugToString from '@glimmer/debug-util/lib/debug-to-string';
+import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
+import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 import { registerDestructor } from '@glimmer/destroyable';
-import { managerHasCapability } from '@glimmer/manager';
-import { isConstRef, valueForRef } from '@glimmer/reference';
-import { assign, dict, EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util';
-import { $s0, $t0, $t1, InternalComponentCapabilities } from '@glimmer/vm';
+import { managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
+import { isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { assign } from '@glimmer/util/lib/object-utils';
+import { dict } from '@glimmer/util/lib/collections';
+import { EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util/lib/array-utils';
+import { $s0, $t0, $t1 } from '@glimmer/vm/lib/registers';
+import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 
 import type { CurriedValue } from '../../curried-value';
 import type { UpdatingVM } from '../../vm';

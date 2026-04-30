@@ -1,9 +1,10 @@
-import type { ComputedProperty } from '@ember/-internals/metal';
-import { toString } from '@ember/-internals/utils';
+import type { ComputedProperty } from '@ember/-internals/metal/lib/computed';
+import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type { Revision, UpdatableTag } from '@glimmer/validator';
+import type { Revision } from '@glimmer/validator/lib/validators';
+import type { UpdatableTag } from '@glimmer/interfaces';
 
 type ObjMap<T> = { [key: string]: T };
 

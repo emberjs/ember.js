@@ -13,9 +13,11 @@ import type {
   Transaction,
   TransactionSymbol,
 } from '@glimmer/interfaces';
-import { expect, assert } from '@glimmer/debug-util';
-import { ProgramImpl } from '@glimmer/program';
-import { track, updateTag } from '@glimmer/validator';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
+import { ProgramImpl } from '@glimmer/program/lib/program';
+import { track } from '@glimmer/validator/lib/tracking';
+import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
 import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
