@@ -5822,15 +5822,6 @@ setInterval(() => {
   if (typeof (globalThis as any).__gxtClearIfWatchers === 'function') {
     (globalThis as any).__gxtClearIfWatchers();
   }
-  // Drain leaked classic reactors. _renderComponentGxt registers a reactor in
-  // _classicReactors and tries to unhook it via registerDestructor(owner, …);
-  // when owner is a synthetic {} (the documented default), registerDestructor
-  // silently fails, leaving the reactor live. On the next test's classic-tag
-  // dirty (e.g. typing in a textarea) the leaked reactor fires _doRender on
-  // the prior test's detached target and clobbers shared GXT sync state.
-  if (typeof (globalThis as any).__gxtClearClassicReactors === 'function') {
-    (globalThis as any).__gxtClearClassicReactors();
-  }
   // Destroy cached engine instances from {{mount}} so Namespace.destroy()
   // removes them from NAMESPACES (prevents "Should not have any NAMESPACES" failures).
   if ((globalThis as any).__gxtEngineInstances) {
