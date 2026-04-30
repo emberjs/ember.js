@@ -2089,11 +2089,24 @@ function _renderComponentGxt(
     // The reactor is per-call: each renderComponent registers its own
     // callback that closes over its own (renderContext, targetElement,
     // destroyed flag). Cleanup is via doDestroy, chained through the owner
-    // destructor so owner.destroy() unhooks all reactors. We deliberately
-    // do NOT auto-unsubscribe based on element.isConnected, because some
-    // legitimate use cases render into a deliberately-detached element
-    // (see "can render in to a detached element" test).
+    // destructor so owner.destroy() unhooks all reactors.
+    //
+    // The reactor also self-unsubscribes once the target element has been
+    // attached to the document and then stayed detached for a few ticks.
+    // Without this, when the caller passes a synthetic owner ({} — the
+    // documented default for renderComponent), registerDestructor below
+    // silently fails on the plain object, leaving the reactor live across
+    // tests; on the next test's classic-tag dirty (e.g. typing in a
+    // textarea) the leaked reactor would fire _doRender on the prior
+    // test's detached target and clobber shared GXT sync state via
+    // __gxtSyncDomNow. The "can render in to a detached element" test
+    // creates an element that is NEVER attached during the reactor's
+    // lifetime, then attaches it later — _hasBeenConnected stays false
+    // until the attach, so we keep firing pre-connection. This mirrors
+    // the LinkTo path in gxt-backend/manager.ts.
     let reactorInitialized = false;
+    let _hasBeenConnected = false;
+    let _disconnectedTicks = 0;
     {
       const fireReactor = () => {
         if (destroyed) return;
@@ -2112,6 +2125,28 @@ function _renderComponentGxt(
       };
       classicReactorUnsub = registerClassicReactor(() => {
         if (destroyed || !reactorInitialized) return;
+        if (targetElement instanceof Element) {
+          if (targetElement.isConnected) {
+            _hasBeenConnected = true;
+            _disconnectedTicks = 0;
+          } else if (_hasBeenConnected) {
+            // Was connected, now detached: count grace ticks then bail.
+            _disconnectedTicks++;
+            if (_disconnectedTicks > 4) {
+              try {
+                classicReactorUnsub?.();
+              } catch {
+                /* ignore */
+              }
+              classicReactorUnsub = null;
+              destroyed = true;
+            }
+            // Skip rendering into a detached target either way.
+            return;
+          }
+          // else: never connected — fall through (legitimate
+          // detached-element use case).
+        }
         fireReactor();
       });
     }
