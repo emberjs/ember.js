@@ -8,6 +8,8 @@ const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 const PACKAGES_ROOT = path.join(WORKSPACE_ROOT, 'packages');
 
 const moduleCache = new Map();
+const owningPackageCache = new Map();
+const wildcardExportsCache = new Map();
 
 const idOrStr = (n) => (n.type === 'Identifier' ? n.name : n.value);
 
@@ -173,6 +175,40 @@ function getPackageInfo(absFile) {
   return { packageRoot: path.join(PACKAGES_ROOT, ...bareSpec.split('/')), bareSpec };
 }
 
+function findOwningPackage(absFile) {
+  if (owningPackageCache.has(absFile)) return owningPackageCache.get(absFile);
+  let dir = path.dirname(absFile);
+  let result = null;
+  while (dir.length >= PACKAGES_ROOT.length && dir.startsWith(PACKAGES_ROOT)) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) {
+      result = dir;
+      break;
+    }
+    dir = path.dirname(dir);
+  }
+  owningPackageCache.set(absFile, result);
+  return result;
+}
+
+function packageHasWildcardSourceExports(packageRoot) {
+  if (wildcardExportsCache.has(packageRoot)) return wildcardExportsCache.get(packageRoot);
+  let allowed = false;
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8'));
+    const wildcard = pkg.exports?.['./*'];
+    const matches = (v) => v === './*.ts';
+    allowed =
+      matches(wildcard) ||
+      (wildcard &&
+        typeof wildcard === 'object' &&
+        Object.values(wildcard).some(matches));
+  } catch {
+    /* ignore */
+  }
+  wildcardExportsCache.set(packageRoot, allowed);
+  return allowed;
+}
+
 function computeNewSpecifier(targetAbs, currentFile) {
   const targetInfo = getPackageInfo(targetAbs);
   if (!targetInfo) return null;
@@ -180,10 +216,15 @@ function computeNewSpecifier(targetAbs, currentFile) {
   if (currentInfo?.bareSpec === targetInfo.bareSpec) {
     let rel = toPosix(path.relative(path.dirname(currentFile), targetAbs));
     if (!rel.startsWith('.')) rel = './' + rel;
-    return stripExt(rel);
+    return { newSpec: stripExt(rel), deep: false };
   }
   const tail = toPosix(path.relative(targetInfo.packageRoot, targetAbs));
-  return stripExt(path.posix.join(targetInfo.bareSpec, tail));
+  const owner = findOwningPackage(targetAbs);
+  return {
+    newSpec: stripExt(path.posix.join(targetInfo.bareSpec, tail)),
+    deep: true,
+    owningPackageRoot: owner,
+  };
 }
 
 function specPart(item, statementIsType) {
@@ -244,6 +285,8 @@ module.exports = {
         'Avoid importing from the "{{spec}}" barrel; import directly from the source file ({{names}}).',
       barrelImportUnresolved:
         'Avoid importing from the "{{spec}}" barrel; import directly from the source file. Could not auto-fix: {{names}}.',
+      missingWildcardExports:
+        'Avoid importing from the "{{spec}}" barrel. Cannot auto-fix because {{packages}} {{verb}} missing `"./*": "./*.ts"` in the `exports` field — add it to enable direct imports.',
     },
   },
   create(context) {
@@ -255,8 +298,11 @@ module.exports = {
       if (!entry) return { unresolved: true };
       if (entry.source === barrelPath) return { local: true };
       let newSpec;
+      let owningPackageRoot = null;
       if (entry.source) {
-        newSpec = computeNewSpecifier(entry.source, filename);
+        const computed = computeNewSpecifier(entry.source, filename);
+        newSpec = computed?.newSpec;
+        if (computed?.deep) owningPackageRoot = computed.owningPackageRoot;
       } else if (entry.bareSource && entry.bareSource !== originalSpec) {
         newSpec = entry.bareSource;
       }
@@ -266,6 +312,7 @@ module.exports = {
         localName: entry.localName,
         isType: entry.isType,
         namespace: entry.kind === 'namespace',
+        owningPackageRoot,
       };
     }
 
@@ -275,6 +322,31 @@ module.exports = {
         messageId: 'barrelImportUnresolved',
         data: { spec, names: names.join(', ') || '(see above)' },
       });
+    }
+
+    function reportMissingExports(node, spec, packageRoots) {
+      const paths = [...packageRoots]
+        .map((root) => path.relative(WORKSPACE_ROOT, path.join(root, 'package.json')))
+        .sort();
+      context.report({
+        node,
+        messageId: 'missingWildcardExports',
+        data: {
+          spec,
+          packages: paths.join(', '),
+          verb: paths.length > 1 ? 'are' : 'is',
+        },
+      });
+    }
+
+    function collectMissingExports(items) {
+      const missing = new Set();
+      for (const item of items) {
+        if (item.owningPackageRoot && !packageHasWildcardSourceExports(item.owningPackageRoot)) {
+          missing.add(item.owningPackageRoot);
+        }
+      }
+      return missing;
     }
 
     function check(node) {
@@ -324,13 +396,19 @@ module.exports = {
           continue;
         }
         if (r.namespace) {
-          namespaceImports.push({ newSpec: r.newSpecifier, localName: local, isType: specIsType || r.isType });
+          namespaceImports.push({
+            newSpec: r.newSpecifier,
+            localName: local,
+            isType: specIsType || r.isType,
+            owningPackageRoot: r.owningPackageRoot,
+          });
           continue;
         }
         pushGroup(groups, r.newSpecifier, {
           sourceName: r.localName,
           localName: local,
           isType: specIsType || r.isType,
+          owningPackageRoot: r.owningPackageRoot,
         });
       }
 
@@ -340,6 +418,13 @@ module.exports = {
         return;
       }
       if (groups.size === 0 && namespaceImports.length === 0) return;
+
+      const allItems = [...namespaceImports, ...[...groups.values()].flat()];
+      const missing = collectMissingExports(allItems);
+      if (missing.size > 0) {
+        reportMissingExports(node, spec, missing);
+        return;
+      }
 
       const statements = namespaceImports.map((ns) => {
         const useType = isWholeTypeImport || ns.isType;
@@ -377,13 +462,19 @@ module.exports = {
           continue;
         }
         if (r.namespace) {
-          namespaceExports.push({ newSpec: r.newSpecifier, exportedName, isType: specIsType || r.isType });
+          namespaceExports.push({
+            newSpec: r.newSpecifier,
+            exportedName,
+            isType: specIsType || r.isType,
+            owningPackageRoot: r.owningPackageRoot,
+          });
           continue;
         }
         pushGroup(groups, r.newSpecifier, {
           sourceName: r.localName,
           exportedName,
           isType: specIsType || r.isType,
+          owningPackageRoot: r.owningPackageRoot,
         });
       }
 
@@ -393,6 +484,13 @@ module.exports = {
         return;
       }
       if (groups.size === 0 && namespaceExports.length === 0) return;
+
+      const allItems = [...namespaceExports, ...[...groups.values()].flat()];
+      const missing = collectMissingExports(allItems);
+      if (missing.size > 0) {
+        reportMissingExports(node, spec, missing);
+        return;
+      }
 
       const statements = namespaceExports.map((ns) => {
         const useType = isWholeTypeExport || ns.isType;
