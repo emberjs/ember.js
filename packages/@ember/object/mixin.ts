@@ -7,12 +7,25 @@ import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils/lib/super';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { ComputedDecorator, ComputedPropertyGetter, ComputedPropertyObj, ComputedPropertySetter } from '@ember/-internals/metal/lib/computed';
+import type {
+  ComputedDecorator,
+  ComputedPropertyGetter,
+  ComputedPropertyObj,
+  ComputedPropertySetter,
+} from '@ember/-internals/metal/lib/computed';
 import { type ComputedDescriptor, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { ComputedProperty } from '@ember/-internals/metal/lib/computed';
-import { descriptorForDecorator, makeComputedDecorator, nativeDescDecorator } from '@ember/-internals/metal/lib/decorator';
+import {
+  descriptorForDecorator,
+  makeComputedDecorator,
+  nativeDescDecorator,
+} from '@ember/-internals/metal/lib/decorator';
 import { setUnprocessedMixins } from '@ember/-internals/metal/lib/namespace_search';
-import { addObserver, removeObserver, revalidateObservers } from '@ember/-internals/metal/lib/observer';
+import {
+  addObserver,
+  removeObserver,
+  revalidateObservers,
+} from '@ember/-internals/metal/lib/observer';
 import { defineDecorator, defineValue } from '@ember/-internals/metal/lib/properties';
 import { addListener, removeListener } from '@ember/object/events';
 

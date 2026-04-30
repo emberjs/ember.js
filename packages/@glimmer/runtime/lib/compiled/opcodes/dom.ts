@@ -14,8 +14,28 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import type { Revision } from '@glimmer/validator/lib/validators';
 import type { Tag } from '@glimmer/interfaces';
 import { CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
-import { VM_CLOSE_ELEMENT_OP, VM_COMMENT_OP, VM_DYNAMIC_ATTR_OP, VM_DYNAMIC_MODIFIER_OP, VM_FLUSH_ELEMENT_OP, VM_MODIFIER_OP, VM_OPEN_DYNAMIC_ELEMENT_OP, VM_OPEN_ELEMENT_OP, VM_POP_REMOTE_ELEMENT_OP, VM_PUSH_REMOTE_ELEMENT_OP, VM_STATIC_ATTR_OP, VM_TEXT_OP } from '@glimmer/constants/lib/syscall-ops';
-import { check, CheckElement, CheckMaybe, CheckNode, CheckNullable, CheckString } from '@glimmer/debug/lib/stack-check';
+import {
+  VM_CLOSE_ELEMENT_OP,
+  VM_COMMENT_OP,
+  VM_DYNAMIC_ATTR_OP,
+  VM_DYNAMIC_MODIFIER_OP,
+  VM_FLUSH_ELEMENT_OP,
+  VM_MODIFIER_OP,
+  VM_OPEN_DYNAMIC_ELEMENT_OP,
+  VM_OPEN_ELEMENT_OP,
+  VM_POP_REMOTE_ELEMENT_OP,
+  VM_PUSH_REMOTE_ELEMENT_OP,
+  VM_STATIC_ATTR_OP,
+  VM_TEXT_OP,
+} from '@glimmer/constants/lib/syscall-ops';
+import {
+  check,
+  CheckElement,
+  CheckMaybe,
+  CheckNode,
+  CheckNullable,
+  CheckString,
+} from '@glimmer/debug/lib/stack-check';
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';

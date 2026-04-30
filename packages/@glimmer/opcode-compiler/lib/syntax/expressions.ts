@@ -1,5 +1,19 @@
 import type { ExpressionSexpOpcode } from '@glimmer/interfaces';
-import { VM_COMPILE_BLOCK_OP, VM_CONCAT_OP, VM_CONSTANT_REFERENCE_OP, VM_FETCH_OP, VM_GET_DYNAMIC_VAR_OP, VM_GET_PROPERTY_OP, VM_GET_VARIABLE_OP, VM_HAS_BLOCK_OP, VM_HAS_BLOCK_PARAMS_OP, VM_IF_INLINE_OP, VM_LOG_OP, VM_NOT_OP, VM_SPREAD_BLOCK_OP } from '@glimmer/constants/lib/syscall-ops';
+import {
+  VM_COMPILE_BLOCK_OP,
+  VM_CONCAT_OP,
+  VM_CONSTANT_REFERENCE_OP,
+  VM_FETCH_OP,
+  VM_GET_DYNAMIC_VAR_OP,
+  VM_GET_PROPERTY_OP,
+  VM_GET_VARIABLE_OP,
+  VM_HAS_BLOCK_OP,
+  VM_HAS_BLOCK_PARAMS_OP,
+  VM_IF_INLINE_OP,
+  VM_LOG_OP,
+  VM_NOT_OP,
+  VM_SPREAD_BLOCK_OP,
+} from '@glimmer/constants/lib/syscall-ops';
 import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
 import { $v0 } from '@glimmer/vm/lib/registers';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';

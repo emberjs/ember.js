@@ -1,4 +1,7 @@
-import type { ClassifiedLocalDebug, ClassifiedLocalDebugFor } from '@glimmer/debug-util/lib/debug-brand';
+import type {
+  ClassifiedLocalDebug,
+  ClassifiedLocalDebugFor,
+} from '@glimmer/debug-util/lib/debug-brand';
 import type {
   AppendingBlock,
   BlockSymbolNames,

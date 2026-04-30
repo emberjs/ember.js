@@ -3,7 +3,10 @@ import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { FrameworkObject } from '@ember/object/-internals';
 import metalInject from '@ember/-internals/metal/lib/injected_property';
-import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import type {
+  DecoratorPropertyDescriptor,
+  ElementDescriptor,
+} from '@ember/-internals/metal/lib/decorator';
 import Mixin from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/routing/-internals';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';

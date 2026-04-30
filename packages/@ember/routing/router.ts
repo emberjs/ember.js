@@ -1,5 +1,8 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
-import type { BootEnvironment, default as OutletView } from '@ember/-internals/glimmer/lib/views/outlet';
+import type {
+  BootEnvironment,
+  default as OutletView,
+} from '@ember/-internals/glimmer/lib/views/outlet';
 import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';

@@ -12,7 +12,11 @@ import type {
 } from '@glimmer/interfaces';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { debugAssert } from '@glimmer/global-context';
-import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
+import {
+  createComputeRef,
+  createConstRef,
+  UNDEFINED_REFERENCE,
+} from '@glimmer/reference/lib/reference';
 
 import type { ManagerFactory } from './index';
 

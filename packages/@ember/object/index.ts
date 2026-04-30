@@ -1,6 +1,9 @@
 import { assert } from '@ember/debug';
 import { ENV } from '@ember/-internals/environment/lib/env';
-import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal/lib/decorator';
+import type {
+  ElementDescriptor,
+  ExtendedMethodDecorator,
+} from '@ember/-internals/metal/lib/decorator';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import expandProperties from '@ember/-internals/metal/lib/expand_properties';
 import { getFactoryFor } from '@ember/-internals/container/lib/container';

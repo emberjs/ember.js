@@ -5,7 +5,11 @@ import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';
 import { consumeTag, untrack } from '@glimmer/validator/lib/tracking';
 import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
-import { UPDATE_TAG as updateTag, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import {
+  UPDATE_TAG as updateTag,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator/lib/validators';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import type { ExtendedMethodDecorator } from './decorator';
 import {

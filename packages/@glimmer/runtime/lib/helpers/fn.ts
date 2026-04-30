@@ -3,7 +3,12 @@ import type { AnyFn, CapturedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { check } from '@glimmer/debug/lib/stack-check';
 import buildUntouchableThis from '@glimmer/debug-util/lib/untouchable-this';
-import { createComputeRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference/lib/reference';
+import {
+  createComputeRef,
+  isInvokableRef,
+  updateRef,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
 
 import { reifyPositional } from '../vm/arguments';
 import { internalHelper } from './internal-helper';

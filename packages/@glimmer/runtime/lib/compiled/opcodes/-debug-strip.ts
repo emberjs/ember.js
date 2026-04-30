@@ -17,7 +17,23 @@ import type {
 import type { OpaqueIterator } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import type { Tag } from '@glimmer/interfaces';
-import { CheckArray, CheckBlockSymbolTable, CheckDict, CheckFunction, CheckHandle, CheckInstanceof, CheckInterface, CheckNullable, CheckNumber, CheckObject, CheckOr, CheckProgramSymbolTable, CheckString, CheckUnknown, wrap } from '@glimmer/debug/lib/stack-check';
+import {
+  CheckArray,
+  CheckBlockSymbolTable,
+  CheckDict,
+  CheckFunction,
+  CheckHandle,
+  CheckInstanceof,
+  CheckInterface,
+  CheckNullable,
+  CheckNumber,
+  CheckObject,
+  CheckOr,
+  CheckProgramSymbolTable,
+  CheckString,
+  CheckUnknown,
+  wrap,
+} from '@glimmer/debug/lib/stack-check';
 import { REFERENCE, UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
 import { COMPUTE } from '@glimmer/validator/lib/validators';
 

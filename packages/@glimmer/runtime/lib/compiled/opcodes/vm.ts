@@ -3,12 +3,57 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import type { Revision } from '@glimmer/validator/lib/validators';
 import type { Tag } from '@glimmer/interfaces';
 import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants/lib/immediate';
-import { VM_ASSERT_SAME_OP, VM_BIND_DYNAMIC_SCOPE_OP, VM_CHILD_SCOPE_OP, VM_COMPILE_BLOCK_OP, VM_CONSTANT_OP, VM_CONSTANT_REFERENCE_OP, VM_DUP_OP, VM_ENTER_OP, VM_EXIT_OP, VM_FETCH_OP, VM_INVOKE_YIELD_OP, VM_JUMP_EQ_OP, VM_JUMP_IF_OP, VM_JUMP_UNLESS_OP, VM_LOAD_OP, VM_POP_DYNAMIC_SCOPE_OP, VM_POP_OP, VM_POP_SCOPE_OP, VM_PRIMITIVE_OP, VM_PRIMITIVE_REFERENCE_OP, VM_PUSH_BLOCK_SCOPE_OP, VM_PUSH_DYNAMIC_SCOPE_OP, VM_PUSH_SYMBOL_TABLE_OP, VM_TO_BOOLEAN_OP } from '@glimmer/constants/lib/syscall-ops';
-import { check, CheckBlockSymbolTable, CheckHandle, CheckInstanceof, CheckNullable, CheckNumber, CheckPrimitive, CheckRegister, CheckSyscallRegister } from '@glimmer/debug/lib/stack-check';
+import {
+  VM_ASSERT_SAME_OP,
+  VM_BIND_DYNAMIC_SCOPE_OP,
+  VM_CHILD_SCOPE_OP,
+  VM_COMPILE_BLOCK_OP,
+  VM_CONSTANT_OP,
+  VM_CONSTANT_REFERENCE_OP,
+  VM_DUP_OP,
+  VM_ENTER_OP,
+  VM_EXIT_OP,
+  VM_FETCH_OP,
+  VM_INVOKE_YIELD_OP,
+  VM_JUMP_EQ_OP,
+  VM_JUMP_IF_OP,
+  VM_JUMP_UNLESS_OP,
+  VM_LOAD_OP,
+  VM_POP_DYNAMIC_SCOPE_OP,
+  VM_POP_OP,
+  VM_POP_SCOPE_OP,
+  VM_PRIMITIVE_OP,
+  VM_PRIMITIVE_REFERENCE_OP,
+  VM_PUSH_BLOCK_SCOPE_OP,
+  VM_PUSH_DYNAMIC_SCOPE_OP,
+  VM_PUSH_SYMBOL_TABLE_OP,
+  VM_TO_BOOLEAN_OP,
+} from '@glimmer/constants/lib/syscall-ops';
+import {
+  check,
+  CheckBlockSymbolTable,
+  CheckHandle,
+  CheckInstanceof,
+  CheckNullable,
+  CheckNumber,
+  CheckPrimitive,
+  CheckRegister,
+  CheckSyscallRegister,
+} from '@glimmer/debug/lib/stack-check';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { toBool } from '@glimmer/global-context';
-import { createComputeRef, createConstRef, createPrimitiveRef, FALSE_REFERENCE, isConstRef, NULL_REFERENCE, TRUE_REFERENCE, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
+import {
+  createComputeRef,
+  createConstRef,
+  createPrimitiveRef,
+  FALSE_REFERENCE,
+  isConstRef,
+  NULL_REFERENCE,
+  TRUE_REFERENCE,
+  UNDEFINED_REFERENCE,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
 import { beginTrackFrame, consumeTag, endTrackFrame } from '@glimmer/validator/lib/tracking';
 import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 

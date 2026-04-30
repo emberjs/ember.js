@@ -1,4 +1,8 @@
-import { CURRIED_COMPONENT, CURRIED_HELPER, CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
+import {
+  CURRIED_COMPONENT,
+  CURRIED_HELPER,
+  CURRIED_MODIFIER,
+} from '@glimmer/constants/lib/curried';
 
 import { keywords } from './impl';
 import { curryKeyword } from './utils/curry';

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 'use strict';
 
 const fs = require('node:fs');
@@ -32,7 +33,13 @@ function resolveBarrelPath(specifier) {
 function resolveImportSource(spec, fromFile) {
   if (!spec.startsWith('.')) return resolveBarrelPath(spec);
   const base = path.resolve(path.dirname(fromFile), spec);
-  for (const c of [base, base + '.ts', base + '.js', path.join(base, 'index.ts'), path.join(base, 'index.js')]) {
+  for (const c of [
+    base,
+    base + '.ts',
+    base + '.js',
+    path.join(base, 'index.ts'),
+    path.join(base, 'index.js'),
+  ]) {
     if (fs.existsSync(c)) return c;
   }
   return null;
@@ -75,9 +82,15 @@ function getModuleExports(filepath, stack = new Set()) {
   const exports = new Map();
   for (const stmt of ast.body) {
     if (stmt.type === 'ExportNamedDeclaration') collectNamedExports(stmt, exports, filepath, stack);
-    else if (stmt.type === 'ExportAllDeclaration') collectStarExports(stmt, exports, filepath, stack);
+    else if (stmt.type === 'ExportAllDeclaration')
+      collectStarExports(stmt, exports, filepath, stack);
     else if (stmt.type === 'ExportDefaultDeclaration') {
-      exports.set('default', { source: filepath, localName: 'default', isType: false, kind: 'local' });
+      exports.set('default', {
+        source: filepath,
+        localName: 'default',
+        isType: false,
+        kind: 'local',
+      });
     }
   }
 
@@ -91,7 +104,12 @@ function collectNamedExports(stmt, exports, filepath, stack) {
 
   if (stmt.declaration) {
     for (const { name, isType } of declarationNames(stmt.declaration)) {
-      exports.set(name, { source: filepath, localName: name, isType: isType || stmtIsType, kind: 'local' });
+      exports.set(name, {
+        source: filepath,
+        localName: name,
+        isType: isType || stmtIsType,
+        kind: 'local',
+      });
     }
     return;
   }
@@ -134,7 +152,13 @@ function collectNamedExports(stmt, exports, filepath, stack) {
       }
     }
 
-    exports.set(idOrStr(spec.exported), { source, bareSource, localName: local, isType, kind: 'named' });
+    exports.set(idOrStr(spec.exported), {
+      source,
+      bareSource,
+      localName: local,
+      isType,
+      kind: 'named',
+    });
   }
 }
 
@@ -163,14 +187,11 @@ const SCOPE_PREFIXES = [
   path.join(PACKAGES_ROOT, '@ember') + path.sep,
   path.join(PACKAGES_ROOT, '@glimmer') + path.sep,
 ];
-const EXCLUDED_FILE_PREFIXES = [
-  path.join(PACKAGES_ROOT, '@glimmer/component') + path.sep,
-];
+const EXCLUDED_FILE_PREFIXES = [path.join(PACKAGES_ROOT, '@glimmer/component') + path.sep];
 const TEST_DIR_RE = /[\\/](?:test|tests)[\\/]/;
 
 const isInScope = (filename) => SCOPE_PREFIXES.some((p) => filename.startsWith(p));
-const isExcludedFile = (filename) =>
-  EXCLUDED_FILE_PREFIXES.some((p) => filename.startsWith(p));
+const isExcludedFile = (filename) => EXCLUDED_FILE_PREFIXES.some((p) => filename.startsWith(p));
 const isInTestFile = (filename) =>
   TEST_DIR_RE.test(filename) || filename.includes(`${path.sep}internal-test-helpers${path.sep}`);
 
@@ -211,9 +232,7 @@ function packageHasWildcardSourceExports(packageRoot) {
     const matches = (v) => v === './*.ts';
     allowed =
       matches(wildcard) ||
-      (wildcard &&
-        typeof wildcard === 'object' &&
-        Object.values(wildcard).some(matches));
+      (wildcard && typeof wildcard === 'object' && Object.values(wildcard).some(matches));
   } catch {
     /* ignore */
   }
@@ -384,8 +403,10 @@ module.exports = {
         return;
       }
 
-      if (node.type === 'ImportDeclaration') return handleImport(node, moduleExports, spec, barrelPath);
-      if (node.type === 'ExportNamedDeclaration') return handleExportNamed(node, moduleExports, spec, barrelPath);
+      if (node.type === 'ImportDeclaration')
+        return handleImport(node, moduleExports, spec, barrelPath);
+      if (node.type === 'ExportNamedDeclaration')
+        return handleExportNamed(node, moduleExports, spec, barrelPath);
       if (node.type === 'ExportAllDeclaration') reportUnresolved(node, spec, ['*']);
     }
 
@@ -404,9 +425,11 @@ module.exports = {
           continue;
         }
         const importedName =
-          sp.type === 'ImportDefaultSpecifier' ? 'default'
-            : sp.type === 'ImportSpecifier' ? idOrStr(sp.imported)
-            : null;
+          sp.type === 'ImportDefaultSpecifier'
+            ? 'default'
+            : sp.type === 'ImportSpecifier'
+              ? idOrStr(sp.imported)
+              : null;
         if (importedName === null) continue;
 
         const local = sp.local.name;

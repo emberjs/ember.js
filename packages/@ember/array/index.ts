@@ -6,7 +6,10 @@ import { PROXY_CONTENT } from '@ember/-internals/metal/lib/property_get';
 import { objectAt } from '@ember/-internals/metal/lib/object-at';
 import { replaceInNativeArray, replace } from '@ember/-internals/metal/lib/array';
 import computed from '@ember/-internals/metal/lib/computed';
-import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal/lib/property_events';
+import {
+  beginPropertyChanges,
+  endPropertyChanges,
+} from '@ember/-internals/metal/lib/property_events';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import Mixin from '@ember/object/mixin';

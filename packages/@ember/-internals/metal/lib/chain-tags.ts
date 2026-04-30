@@ -4,7 +4,12 @@ import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
 import type { Tag } from '@glimmer/interfaces';
 import type { TagMeta } from '@glimmer/validator/lib/meta';
-import { combine, createUpdatableTag, UPDATE_TAG as updateTag, validateTag } from '@glimmer/validator/lib/validators';
+import {
+  combine,
+  createUpdatableTag,
+  UPDATE_TAG as updateTag,
+  validateTag,
+} from '@glimmer/validator/lib/validators';
 import { tagMetaFor } from '@glimmer/validator/lib/meta';
 import { objectAt } from './object-at';
 import { tagForProperty } from './tags';

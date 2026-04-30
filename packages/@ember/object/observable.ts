@@ -4,7 +4,11 @@
 
 import { peekMeta } from '@ember/-internals/meta/lib/meta';
 import { hasListeners } from '@ember/-internals/metal/lib/events';
-import { beginPropertyChanges, notifyPropertyChange, endPropertyChanges } from '@ember/-internals/metal/lib/property_events';
+import {
+  beginPropertyChanges,
+  notifyPropertyChange,
+  endPropertyChanges,
+} from '@ember/-internals/metal/lib/property_events';
 import { addObserver, removeObserver } from '@ember/-internals/metal/lib/observer';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';

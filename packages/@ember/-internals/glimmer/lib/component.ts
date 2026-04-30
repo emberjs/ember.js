@@ -7,7 +7,11 @@ import { getOwner } from '@ember/-internals/owner';
 import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
 import type ViewStates from '@ember/-internals/views/lib/views/states';
 import ActionSupport from '@ember/-internals/views/lib/mixins/action_support';
-import { addChildView, getChildViews, getViewElement } from '@ember/-internals/views/lib/system/utils';
+import {
+  addChildView,
+  getChildViews,
+  getViewElement,
+} from '@ember/-internals/views/lib/system/utils';
 import CoreView from '@ember/-internals/views/lib/views/core_view';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import { guidFor } from '@ember/-internals/utils/lib/guid';

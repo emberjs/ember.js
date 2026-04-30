@@ -5,7 +5,11 @@ import {
   setOwner,
 } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
-import { addChildView, setElementView, setViewElement } from '@ember/-internals/views/lib/system/utils';
+import {
+  addChildView,
+  setElementView,
+  setViewElement,
+} from '@ember/-internals/views/lib/system/utils';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -26,11 +30,22 @@ import type {
   WithDynamicTagName,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference/lib/reference';
+import {
+  childRefFor,
+  createComputeRef,
+  createPrimitiveRef,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
 import { reifyPositional } from '@glimmer/runtime/lib/vm/arguments';
 import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 import { unwrapTemplate } from './unwrap-template';
-import { beginTrackFrame, beginUntrackFrame, consumeTag, endTrackFrame, endUntrackFrame } from '@glimmer/validator/lib/tracking';
+import {
+  beginTrackFrame,
+  beginUntrackFrame,
+  consumeTag,
+  endTrackFrame,
+  endUntrackFrame,
+} from '@glimmer/validator/lib/tracking';
 import { validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';

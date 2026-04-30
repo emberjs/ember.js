@@ -4,7 +4,11 @@ import type {
   SerializedTemplateWithLazyBlock,
   TemplateJavascript,
 } from '@glimmer/interfaces';
-import type { PrecompileOptions, PrecompileOptionsWithLexicalScope, TemplateIdFn } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
+import type {
+  PrecompileOptions,
+  PrecompileOptionsWithLexicalScope,
+  TemplateIdFn,
+} from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import * as src from '@glimmer/syntax/lib/source/api';
 import { normalize } from '@glimmer/syntax/lib/v2/normalize';

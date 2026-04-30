@@ -1,4 +1,8 @@
-import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views/lib/system/utils';
+import {
+  clearElementView,
+  clearViewElement,
+  getViewElement,
+} from '@ember/-internals/views/lib/system/utils';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';

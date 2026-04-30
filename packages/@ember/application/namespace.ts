@@ -2,7 +2,17 @@
 @module @ember/application/namespace
 */
 
-import { NAMESPACES, NAMESPACES_BY_ID, addNamespace, findNamespace, findNamespaces, processNamespace, processAllNamespaces, removeNamespace, type Namespace as MetalNamespace } from '@ember/-internals/metal/lib/namespace_search'; // Preloaded into namespaces
+import {
+  NAMESPACES,
+  NAMESPACES_BY_ID,
+  addNamespace,
+  findNamespace,
+  findNamespaces,
+  processNamespace,
+  processAllNamespaces,
+  removeNamespace,
+  type Namespace as MetalNamespace,
+} from '@ember/-internals/metal/lib/namespace_search'; // Preloaded into namespaces
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { getName, setName } from '@ember/-internals/utils/lib/name';
 import { guidFor } from '@ember/-internals/utils/lib/guid';

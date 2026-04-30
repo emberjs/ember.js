@@ -1,6 +1,13 @@
 import type { Meta } from '@ember/-internals/meta/lib/meta';
-import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from '@ember/-internals/metal/lib/decorator';
-import { descriptorForProperty, isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal/lib/decorator';
+import type {
+  ExtendedMethodDecorator,
+  DecoratorPropertyDescriptor,
+} from '@ember/-internals/metal/lib/decorator';
+import {
+  descriptorForProperty,
+  isElementDescriptor,
+  setClassicDecorator,
+} from '@ember/-internals/metal/lib/decorator';
 import type { ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';

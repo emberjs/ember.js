@@ -521,10 +521,7 @@ export default [
   },
   {
     files: ['packages/@ember/**/*.{ts,js}', 'packages/@glimmer/**/*.{ts,js}'],
-    ignores: [
-      'packages/@ember/**/tests/**',
-      'packages/@glimmer/**/test/**',
-    ],
+    ignores: ['packages/@ember/**/tests/**', 'packages/@glimmer/**/test/**'],
     rules: {
       'ember-local/no-barrel-imports': 'error',
     },

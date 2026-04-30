@@ -1,5 +1,9 @@
 import type { CurriedType } from '@glimmer/interfaces';
-import { CURRIED_COMPONENT, CURRIED_HELPER, CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
+import {
+  CURRIED_COMPONENT,
+  CURRIED_HELPER,
+  CURRIED_MODIFIER,
+} from '@glimmer/constants/lib/curried';
 import * as ASTv2 from '@glimmer/syntax/lib/v2/api';
 import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
 

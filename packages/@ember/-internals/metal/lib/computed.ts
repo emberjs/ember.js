@@ -6,7 +6,12 @@ import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import { ALLOW_CYCLES, UPDATE_TAG as updateTag, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import {
+  ALLOW_CYCLES,
+  UPDATE_TAG as updateTag,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator/lib/validators';
 import { consumeTag, track, untrack } from '@glimmer/validator/lib/tracking';
 import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';

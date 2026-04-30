@@ -6,7 +6,10 @@ import { objectAt } from '@ember/-internals/metal/lib/object-at';
 import alias from '@ember/-internals/metal/lib/alias';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import { addArrayObserver, removeArrayObserver, replace } from '@ember/-internals/metal/lib/array';
-import { arrayContentDidChange, arrayContentWillChange } from '@ember/-internals/metal/lib/array_events';
+import {
+  arrayContentDidChange,
+  arrayContentWillChange,
+} from '@ember/-internals/metal/lib/array_events';
 import { tagForProperty } from '@ember/-internals/metal/lib/tags';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
@@ -16,7 +19,12 @@ import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
-import { combine, validateTag, valueForTag, type Revision } from '@glimmer/validator/lib/validators';
+import {
+  combine,
+  validateTag,
+  valueForTag,
+  type Revision,
+} from '@glimmer/validator/lib/validators';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type { Tag } from '@glimmer/interfaces';

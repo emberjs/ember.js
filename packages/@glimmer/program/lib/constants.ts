@@ -15,7 +15,11 @@ import assert from '@glimmer/debug-util/lib/assert';
 import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 import { capabilityFlagsFrom, managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
 import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
-import { getInternalComponentManager, getInternalHelperManager, getInternalModifierManager } from '@glimmer/manager/lib/internal/api';
+import {
+  getInternalComponentManager,
+  getInternalHelperManager,
+  getInternalModifierManager,
+} from '@glimmer/manager/lib/internal/api';
 import templateFactory from '@glimmer/opcode-compiler/lib/template';
 import { enumerate } from '@glimmer/util/lib/array-utils';
 import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';

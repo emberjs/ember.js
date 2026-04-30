@@ -1,6 +1,10 @@
 import type { CurriedType, PresentArray } from '@glimmer/interfaces';
 import type * as ASTv2 from '@glimmer/syntax/lib/v2/api';
-import type { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from '@glimmer/syntax/lib/symbol-table';
+import type {
+  BlockSymbolTable,
+  ProgramSymbolTable,
+  SymbolTable,
+} from '@glimmer/syntax/lib/symbol-table';
 import type { SourceSlice } from '@glimmer/syntax/lib/source/slice';
 import { node } from '@glimmer/syntax/lib/v2/objects/node';
 

@@ -6,7 +6,14 @@ import type {
   SimpleElement,
   UpdatableTag,
 } from '@glimmer/interfaces';
-import { check, CheckBoolean, CheckFunction, CheckOr, CheckString, CheckUndefined } from '@glimmer/debug/lib/stack-check';
+import {
+  check,
+  CheckBoolean,
+  CheckFunction,
+  CheckOr,
+  CheckString,
+  CheckUndefined,
+} from '@glimmer/debug/lib/stack-check';
 import buildUntouchableThis from '@glimmer/debug-util/lib/untouchable-this';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager/lib/internal/api';
