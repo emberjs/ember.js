@@ -1,4 +1,4 @@
-import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
+import type { Renderer, View } from '@ember/-internals/glimmer';
 import { inject } from '@ember/-internals/metal';
 import { ActionHandler } from '@ember/-internals/runtime';
 import Evented from '@ember/object/evented';

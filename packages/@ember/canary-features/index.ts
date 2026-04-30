@@ -1,4 +1,4 @@
-import { ENV } from '@ember/-internals/environment/lib/env';
+import { ENV } from '@ember/-internals/environment';
 
 /**
   Set `EmberENV.FEATURES` in your application's `config/environment.js` file

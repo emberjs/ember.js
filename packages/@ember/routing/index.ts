@@ -1,1 +1,1 @@
-export { default as LinkTo } from '@ember/-internals/glimmer/lib/components/link-to';
+export { LinkTo } from '@ember/-internals/glimmer';

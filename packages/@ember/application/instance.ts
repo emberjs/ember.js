@@ -3,13 +3,12 @@
 */
 
 import { get, set } from '@ember/object';
-import { hasDOM } from '@ember/-internals/browser-environment';
+import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
-import { renderSettled } from '@ember/-internals/glimmer/lib/renderer';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
-import type Component from '@ember/-internals/glimmer/lib/component';
+import { renderSettled } from '@ember/-internals/glimmer';
+import type { BootEnvironment, Component } from '@ember/-internals/glimmer';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
 import { EventDispatcher } from '@ember/-internals/views';
@@ -446,13 +445,13 @@ class _BootOptions {
   readonly rootElement?: string | SimpleElement;
 
   constructor(options: BootOptions = {}) {
-    this.isInteractive = Boolean(hasDOM); // This default is overridable below
+    this.isInteractive = Boolean(environment.hasDOM); // This default is overridable below
     this._renderMode = options._renderMode;
 
     if (options.isBrowser !== undefined) {
       this.isBrowser = Boolean(options.isBrowser);
     } else {
-      this.isBrowser = Boolean(hasDOM);
+      this.isBrowser = Boolean(environment.hasDOM);
     }
 
     if (!this.isBrowser) {
@@ -494,7 +493,10 @@ class _BootOptions {
   }
 
   toEnvironment(): BootEnvironment {
+    // Do we really want to assign all of this!?
     return {
+      ...environment,
+      // For compatibility with existing code
       hasDOM: this.isBrowser,
       isInteractive: this.isInteractive,
       _renderMode: this._renderMode,

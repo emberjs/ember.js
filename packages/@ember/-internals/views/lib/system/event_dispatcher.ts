@@ -3,7 +3,7 @@ import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
 import { getElementView } from './utils';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer';
 import type Component from '@ember/component';
 
 /**

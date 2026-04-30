@@ -1,4 +1,4 @@
-import type { View } from './renderer';
+import type { View } from '@ember/-internals/glimmer';
 import {
   descriptorForProperty,
   get,

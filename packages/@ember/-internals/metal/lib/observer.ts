@@ -1,4 +1,4 @@
-import { ENV } from '@ember/-internals/environment/lib/env';
+import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import type { schedule } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';

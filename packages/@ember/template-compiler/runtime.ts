@@ -1,1 +1,1 @@
-export { template, type EmberPrecompileOptions } from './lib/runtime';
+export * from './lib/runtime';
