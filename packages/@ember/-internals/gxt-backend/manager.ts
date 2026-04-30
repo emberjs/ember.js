@@ -3924,6 +3924,25 @@ let _preRerenderSnapshot: Set<any> = new Set();
 
   if (unclaimed.length === 0) return;
 
+  // When a sync was NOT driven by a real property change (e.g., it's an
+  // initial-render sync that ran __gxtSnapshotLiveInstances and now sees a
+  // newborn instance whose element is disconnected because the morph
+  // allocated a fresh wrapper), the unclaimed sweep is spurious and any
+  // user-thrown lifecycle errors must NOT be captured into _renderErrors
+  // (they would otherwise re-throw out of the next runAppend/runTask
+  // flushRenderErrors call). All Phase 1-3 local try/catches already
+  // swallow synchronous throws; this flag only gates the renderer.ts
+  // wrappedDestroy/wrappedTrigger capture path. We read
+  // __gxtSyncIsPropertyDriven (set in compile.ts at the start of
+  // __gxtSyncDomNow) instead of __gxtHadPendingSync because the latter is
+  // cleared by __gxtForceEmberRerender's finally block before this Phase
+  // runs.
+  const _outerSuppressCapture = !(globalThis as any).__gxtSyncIsPropertyDriven;
+  const _hadPriorSuppress = !!(globalThis as any).__gxtSuppressDestroyCapture;
+  if (_outerSuppressCapture && !_hadPriorSuppress) {
+    (globalThis as any).__gxtSuppressDestroyCapture = true;
+  }
+
   // Phase 1: willDestroyElement + willClearRender.
   // The elements have been detached from the DOM by innerHTML=''.
   // Temporarily re-attach them so tests that check
@@ -4075,6 +4094,11 @@ let _preRerenderSnapshot: Set<any> = new Set();
         trackedWrapperInstances.delete(entry);
       }
     }
+  }
+
+  // Restore the prior suppress-capture flag (only if we set it ourselves).
+  if (_outerSuppressCapture && !_hadPriorSuppress) {
+    (globalThis as any).__gxtSuppressDestroyCapture = false;
   }
 };
 

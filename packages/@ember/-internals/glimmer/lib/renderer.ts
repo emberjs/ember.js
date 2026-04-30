@@ -322,6 +322,13 @@ function ensureLifecycleErrorCapture(): void {
   if (!proto) return;
 
   const captureErr = (e: unknown): void => {
+    // Allow the gxt-backend to suppress error capture in code paths where
+    // a destroy/lifecycle throw should NOT propagate to assert.throws —
+    // e.g., spurious unclaimed-pool sweeps during initial render that
+    // identify newborn instances as "removed by morph" without any
+    // user-driven property change. See __gxtDestroyUnclaimedPoolEntries
+    // in gxt-backend/manager.ts (Phase 3).
+    if ((globalThis as any).__gxtSuppressDestroyCapture) return;
     const fn = (globalThis as any).__captureRenderError;
     if (typeof fn === 'function' && e instanceof Error) {
       try {

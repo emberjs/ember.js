@@ -5291,6 +5291,14 @@ try {
     // __gxtPendingSync, but that should NOT force a full re-render.
     (globalThis as any).__gxtHadPendingSync = !!(globalThis as any)
       .__gxtPendingSyncFromPropertyChange;
+    // Mirror __gxtHadPendingSync into a flag that survives __gxtForceEmberRerender's
+    // finally-block clear, so downstream phases (e.g., __gxtDestroyUnclaimedPoolEntries
+    // in manager.ts) can still tell whether this sync was driven by a real property
+    // change. Used to gate destroy-error capture: spurious unclaimed sweeps from
+    // initial-render syncs (where no property change drove the sync) should NOT
+    // route user-thrown destroy/lifecycle errors into _renderErrors.
+    (globalThis as any).__gxtSyncIsPropertyDriven = !!(globalThis as any)
+      .__gxtPendingSyncFromPropertyChange;
     (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
     (globalThis as any).__gxtSyncing = true;
     // Increment sync cycle ID so modifier update dedup works correctly.
@@ -5723,6 +5731,9 @@ try {
       // Without this, the flag stays true forever and __gxtSyncDomNow
       // becomes a permanent no-op, causing all subsequent tests to fail.
       (globalThis as any).__gxtSyncing = false;
+      // Also reset the property-driven mirror flag so a subsequent
+      // initial-render sync starts in a clean state.
+      (globalThis as any).__gxtSyncIsPropertyDriven = false;
     }
     // Re-throw any deferred errors from the force-rerender or lifecycle phases
     // so they propagate to assert.throws() in tests
