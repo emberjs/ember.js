@@ -705,12 +705,7 @@ const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
 class BaseRenderer {
   static strict(owner: object, document: SimpleDocument | Document) {
-    return new BaseRenderer(
-      owner,
-      document as SimpleDocument,
-      new ResolverImpl(),
-      clientBuilder
-    );
+    return new BaseRenderer(owner, document as SimpleDocument, new ResolverImpl(), clientBuilder);
   }
 
   readonly state: RendererState;
@@ -784,12 +779,7 @@ class BaseRenderer {
 
 export class Renderer extends BaseRenderer {
   static strict(owner: object, document: SimpleDocument | Document): BaseRenderer {
-    return new BaseRenderer(
-      owner,
-      document as SimpleDocument,
-      new ResolverImpl(),
-      clientBuilder
-    );
+    return new BaseRenderer(owner, document as SimpleDocument, new ResolverImpl(), clientBuilder);
   }
 
   private _rootTemplate: Template;

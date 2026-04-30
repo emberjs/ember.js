@@ -1,8 +1,7 @@
 declare const chrome: unknown;
 declare const opera: unknown;
 const _hasWindow = typeof window !== 'undefined';
-const isChrome =
-  _hasWindow && typeof chrome === 'object' && !(typeof opera === 'object');
+const isChrome = _hasWindow && typeof chrome === 'object' && !(typeof opera === 'object');
 const isFirefox = _hasWindow && /Firefox|FxiOS/.test(window.navigator.userAgent);
 import { ENV } from '@ember/-internals/environment';
 import type { AnyFn } from '@ember/-internals/utility-types';

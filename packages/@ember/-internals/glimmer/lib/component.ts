@@ -985,10 +985,7 @@ class Component<S = unknown>
       assert('Component is unexpectedly missing an owner', owner);
 
       let dispatcher = owner.lookup('event_dispatcher:main');
-      assert(
-        'Expected dispatcher to be an EventDispatcher',
-        dispatcher instanceof EventDispatcher
-      );
+      assert('Expected dispatcher to be an EventDispatcher', dispatcher instanceof EventDispatcher);
       this.__dispatcher = dispatcher;
     }
 
