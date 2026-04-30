@@ -10,7 +10,6 @@ if (DEBUG) {
       { document: castToSimple(document) },
       {
         onTransactionCommit() {},
-        isInteractive: true,
         enableDebugTooling: false,
       }
     );
@@ -27,7 +26,6 @@ QUnit.test('ensure commit cleans up when it can', (assert) => {
     { document: castToSimple(document) },
     {
       onTransactionCommit() {},
-      isInteractive: true,
       enableDebugTooling: false,
     }
   );

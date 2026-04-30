@@ -14,7 +14,6 @@ let instance = new EngineInstance(owner);
 expectTypeOf(instance.boot()).resolves.toEqualTypeOf<EngineInstance>();
 
 let bootOptions = {
-  isBrowser: true,
   shouldRender: false,
   document: window.document,
   rootElement: '#ember-application',
@@ -23,10 +22,6 @@ let bootOptions = {
 
 instance.boot(bootOptions);
 
-instance.boot({ isBrowser: true });
-
-// @ts-expect-error Incorrect type
-instance.boot({ isBrowser: 1 });
 // @ts-expect-error Incorrect type
 instance.boot({ shouldRender: 1 });
 // @ts-expect-error Incorrect type

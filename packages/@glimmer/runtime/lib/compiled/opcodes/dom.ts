@@ -149,9 +149,6 @@ APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
 
 APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
   let args = check(vm.stack.pop(), CheckArguments);
-  if (!vm.env.isInteractive) {
-    return;
-  }
   let owner = vm.getOwner();
   let definition = vm.constants.getValue<ModifierDefinition>(handle);
 
@@ -192,10 +189,6 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
   let { stack } = vm;
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments);
-
-  if (!vm.env.isInteractive) {
-    return;
-  }
 
   let capturedArgs = args.capture();
 

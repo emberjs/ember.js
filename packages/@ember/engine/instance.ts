@@ -18,13 +18,10 @@ import type { BootEnvironment } from '@ember/-internals/glimmer';
 import type { SimpleElement } from '@simple-dom/interface';
 
 export interface BootOptions {
-  isBrowser?: boolean;
   shouldRender?: boolean;
   document?: Document | null;
   rootElement?: string | SimpleElement | null;
   location?: string | null;
-  // Private?
-  isInteractive?: boolean;
   _renderMode?: string;
 }
 
@@ -244,11 +241,8 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
       '-view-registry:main',
       `renderer:-dom`,
       'service:-document',
+      'event_dispatcher:main',
     ];
-
-    if (env['isInteractive']) {
-      singletons.push('event_dispatcher:main');
-    }
 
     singletons.forEach((key) => {
       // SAFETY: We already expect this to be a singleton
