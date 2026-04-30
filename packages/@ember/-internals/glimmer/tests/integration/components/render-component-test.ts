@@ -61,7 +61,7 @@ class RenderComponentTestCase extends AbstractStrictTestCase {
       const result = renderComponent(component, {
         owner,
         args: 'args' in options ? options.args : {},
-        env: { document: document, isInteractive: true, hasDOM: true },
+        env: { document: document },
         into: this.element,
       });
       this.component = {

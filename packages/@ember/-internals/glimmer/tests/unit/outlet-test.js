@@ -8,7 +8,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test render in the render queue'](assert) {
       let didAppendOutletView = 0;
-      let expectedOutlet = '#foo.bar';
+      let expectedOutlet = document.createElement('div');
 
       let renderer = {
         appendOutletView(view, target) {

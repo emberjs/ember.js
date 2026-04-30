@@ -497,59 +497,6 @@ moduleFor(
       });
     }
 
-    [`@test visit() does not setup the event_dispatcher:main if isInteractive is false (with Engines) GH#15615`](
-      assert
-    ) {
-      assert.expect(3);
-
-      this.router.map(function () {
-        this.mount('blog');
-      });
-
-      this.add('template:application', precompileTemplate('<h1>Hello world</h1>{{outlet}}'));
-      this.add('event_dispatcher:main', {
-        create() {
-          throw new Error('should not happen!');
-        },
-      });
-
-      // Register engine
-      let BlogEngine = class extends Engine {
-        Resolver = ModuleBasedTestResolver;
-
-        init(...args) {
-          super.init(...args);
-          this.register('template:application', precompileTemplate('{{cache-money}}'));
-          this.register(
-            'component:cache-money',
-            setComponentTemplate(
-              precompileTemplate(`<p>Dis cache money</p>`),
-              class extends Component {}
-            )
-          );
-        }
-      };
-      this.add('engine:blog', BlogEngine);
-
-      // Register engine route map
-      let BlogMap = function () {};
-      this.add('route-map:blog', BlogMap);
-
-      this.assertEmptyFixture();
-
-      return this.visit('/blog', { isInteractive: false }).then((instance) => {
-        assert.ok(
-          instance instanceof ApplicationInstance,
-          'promise is resolved with an ApplicationInstance'
-        );
-        assert.strictEqual(
-          this.element.querySelector('p').textContent,
-          'Dis cache money',
-          'Engine component is resolved'
-        );
-      });
-    }
-
     [`@test visit() on engine resolves engine component`](assert) {
       assert.expect(2);
 

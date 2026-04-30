@@ -30,8 +30,7 @@ export default class ComponentStateBucket {
     public args: CapturedNamedArguments | null,
     public argsTag: Tag,
     public finalizer: Finalizer,
-    public hasWrappedElement: boolean,
-    public isInteractive: boolean
+    public hasWrappedElement: boolean
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : valueForTag(argsTag);
@@ -42,20 +41,18 @@ export default class ComponentStateBucket {
   }
 
   willDestroy(): void {
-    let { component, isInteractive } = this;
+    let { component } = this;
 
-    if (isInteractive) {
-      beginUntrackFrame();
-      component.trigger('willDestroyElement');
-      component.trigger('willClearRender');
-      endUntrackFrame();
+    beginUntrackFrame();
+    component.trigger('willDestroyElement');
+    component.trigger('willClearRender');
+    endUntrackFrame();
 
-      let element = getViewElement(component);
+    let element = getViewElement(component);
 
-      if (element) {
-        clearElementView(element);
-        clearViewElement(component);
-      }
+    if (element) {
+      clearElementView(element);
+      clearViewElement(component);
     }
 
     component.renderer.unregister(component);

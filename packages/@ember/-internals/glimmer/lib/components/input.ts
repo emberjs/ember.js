@@ -1,7 +1,6 @@
 /**
 @module @ember/component
 */
-import { hasDOM } from '@ember/-internals/browser-environment';
 import { type Opaque } from '@ember/-internals/utility-types';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
@@ -11,36 +10,34 @@ import InputTemplate from '../templates/input';
 import AbstractInput, { valueFrom } from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 
-let isValidInputType: (type: string) => boolean;
+const INPUT_TYPES: Record<string, boolean | undefined> = Object.create(null);
+INPUT_TYPES[''] = false;
+INPUT_TYPES['text'] = true;
+INPUT_TYPES['checkbox'] = true;
 
-if (hasDOM) {
-  const INPUT_TYPES: Record<string, boolean | undefined> = Object.create(null);
-  const INPUT_ELEMENT = document.createElement('input');
+let _inputElement: HTMLInputElement | undefined;
+function inputElement(): HTMLInputElement {
+  return (_inputElement ??= document.createElement('input'));
+}
 
-  INPUT_TYPES[''] = false;
-  INPUT_TYPES['text'] = true;
-  INPUT_TYPES['checkbox'] = true;
+function isValidInputType(type: string): boolean {
+  let isValid = INPUT_TYPES[type];
 
-  isValidInputType = (type: string) => {
-    let isValid = INPUT_TYPES[type];
-
-    if (isValid === undefined) {
-      try {
-        INPUT_ELEMENT.type = type;
-        isValid = INPUT_ELEMENT.type === type;
-      } catch (_e) {
-        isValid = false;
-      } finally {
-        INPUT_ELEMENT.type = 'text';
-      }
-
-      INPUT_TYPES[type] = isValid;
+  if (isValid === undefined) {
+    let probe = inputElement();
+    try {
+      probe.type = type;
+      isValid = probe.type === type;
+    } catch (_e) {
+      isValid = false;
+    } finally {
+      probe.type = 'text';
     }
 
-    return isValid;
-  };
-} else {
-  isValidInputType = (type: string) => type !== '';
+    INPUT_TYPES[type] = isValid;
+  }
+
+  return isValid;
 }
 
 /**
