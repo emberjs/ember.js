@@ -235,7 +235,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     });
 
     let env = parent.lookup('-environment:main') as Record<string, unknown>;
-    this.register('-environment:main', env, { instantiate: false });
+    // this.register('-environment:main', env, { instantiate: false });
 
     // The type annotation forces TS to (a) validate that these match and (b)
     // *notice* that they match, e.g. below on the `singletons.push()`.

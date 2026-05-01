@@ -4,7 +4,6 @@
 
 import { setOwner as actualSetOwner } from '@ember/-internals/owner';
 import { getOwner as actualGetOwner } from '@ember/owner';
-import dictionary from '@ember/-internals/utils/lib/dictionary';
 import { ENV } from '@ember/-internals/environment/lib/env';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 import { assert } from '@ember/debug';
@@ -13,20 +12,13 @@ import { join, once, run, schedule } from '@ember/runloop';
 import libraries from '@ember/-internals/metal/lib/libraries';
 import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
-import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
-import HashLocation from '@ember/routing/hash-location';
-import HistoryLocation from '@ember/routing/history-location';
-import NoneLocation from '@ember/routing/none-location';
-import { BucketCache } from '@ember/routing/-internals';
 import ApplicationInstance from '@ember/application/instance';
 import Engine, { buildInitializerMethod } from '@ember/engine';
 import type { BootOptions } from '@ember/engine/instance';
 import type Container from '@ember/-internals/container/lib/container';
 import type Registry from '@ember/-internals/container/lib/registry';
-import { privatize as P } from '@ember/-internals/container/lib/registry';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
-import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 
@@ -1109,28 +1101,6 @@ class Application extends Engine {
   }
 }
 
-function commonSetupRegistry(registry: Registry) {
-  registry.register('router:main', Router);
-  registry.register('-view-registry:main', {
-    create() {
-      return dictionary(null);
-    },
-  });
-
-  registry.register('route:basic', Route);
-  registry.register('event_dispatcher:main', EventDispatcher);
-
-  registry.register('location:hash', HashLocation);
-  registry.register('location:history', HistoryLocation);
-  registry.register('location:none', NoneLocation);
-
-  registry.register(P`-bucket-cache:main`, {
-    create() {
-      return new BucketCache();
-    },
-  });
-
-  registry.register('service:router', RouterService);
-}
+function commonSetupRegistry(registry: Registry) {}
 
 export { Application as default };

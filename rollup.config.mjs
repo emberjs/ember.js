@@ -238,7 +238,6 @@ function rolledUpPackages() {
   return [
     '@ember/-internals/browser-environment',
     '@ember/-internals/environment',
-    '@ember/-internals/glimmer',
     '@ember/-internals/metal',
     '@ember/-internals/utils',
     '@ember/-internals/container',

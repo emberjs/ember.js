@@ -75,7 +75,7 @@ class ApplicationInstance extends EngineInstance {
     // to notify us when it has created the root-most view. That view is then
     // appended to the rootElement, in the case of apps, to the fixture harness
     // in tests, or rendered to a string in the case of FastBoot.
-    this.register('-application-instance:main', this, { instantiate: false });
+    // this.register('-application-instance:main', this, { instantiate: false });
   }
 
   /**
@@ -300,12 +300,12 @@ class ApplicationInstance extends EngineInstance {
   static setupRegistry(registry: Registry, options: BootOptions | _BootOptions = {}) {
     let coptions = options instanceof _BootOptions ? options : new _BootOptions(options);
 
-    registry.register('-environment:main', coptions.toEnvironment(), {
-      instantiate: false,
-    });
-    registry.register('service:-document', coptions.document!, {
-      instantiate: false,
-    });
+    // registry.register('-environment:main', coptions.toEnvironment(), {
+    //   instantiate: false,
+    // });
+    // registry.register('service:-document', coptions.document!, {
+    //   instantiate: false,
+    // });
 
     super.setupRegistry(registry, coptions);
   }
