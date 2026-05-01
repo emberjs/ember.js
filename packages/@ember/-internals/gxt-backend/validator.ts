@@ -701,6 +701,17 @@ export function registerClassicReactor(cb: () => void, source?: string): () => v
   };
 }
 
+// Hard cap on per-reactor fires to break runaway loops. A leaked
+// classic-tag reactor whose self-unsub heuristic doesn't trip can
+// fire 10,000+ times across unrelated tests (diagnostic runs showed
+// a single reactor at 9,391 fires before the testem 1200s browser
+// timeout fired). The cap doesn't stop the leak — it stops the
+// runaway from saturating the runloop and hanging CI. Real-app
+// reactors fire bounded times per render path; 10,000 fires for a
+// single reactor across the lifetime of one page load is two orders
+// of magnitude above any legitimate bound.
+const REACTOR_FIRE_HARD_CAP = 10_000;
+
 function _fireClassicReactors() {
   if (_classicReactors.size === 0) return;
   // Copy to avoid mutation during iteration
@@ -708,10 +719,26 @@ function _fireClassicReactors() {
   const debug = (globalThis as any).__GXT_LEAK_DEBUG__;
   const currentTest = debug ? _currentTestName() : '';
   for (const cb of snapshot) {
-    if (debug) {
-      const meta = _reactorMeta.get(cb);
-      if (meta) {
-        meta.fireCount++;
+    const meta = _reactorMeta.get(cb);
+    if (meta) {
+      meta.fireCount++;
+      if (meta.fireCount > REACTOR_FIRE_HARD_CAP) {
+        // Self-destruct: this reactor has fired beyond any plausible
+        // bound and is almost certainly leaked. Skip the call and
+        // remove it from the registry so it stops contributing to
+        // the runloop saturation that produces the testem 1200s
+        // browser timeout.
+        if (debug) {
+          // eslint-disable-next-line no-console
+          console.log(
+            `[leak-debug] CAP reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" fires=${meta.fireCount} — unsubscribing`
+          );
+        }
+        _classicReactors.delete(cb);
+        _reactorMeta.delete(cb);
+        continue;
+      }
+      if (debug) {
         // Cross-test leak: reactor registered during a different test
         // than the one currently executing.
         if (
