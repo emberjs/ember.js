@@ -31,7 +31,7 @@ import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/va
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import type ClassicComponent from './component';
-import { BOUNDS } from './component-managers/curly';
+import { BOUNDS } from './component-managers/curly-symbols';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';

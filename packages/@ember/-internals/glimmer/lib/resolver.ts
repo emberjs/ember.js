@@ -27,8 +27,8 @@ import {
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime/lib/component/template-only';
-import { isCurlyManager } from './component-managers/curly';
-import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
+import { isCurlyManager } from './component-managers/curly-symbols';
+import { getClassicHelperManager, isClassicHelper } from './classic-helper-symbol';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -175,17 +175,29 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
     if (typeof definition === 'function' && isClassicHelper(definition)) {
       // For classic class based helpers, we need to pass the factoryFor result itself rather
       // than the raw value (`factoryFor(...).class`). This is because injections are already
-      // bound in the factoryFor result, including type-based injections
-
-      if (DEBUG) {
-        // In DEBUG we need to only set the associated value once, otherwise
-        // we'll trigger an assertion
-        if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
-          CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
-          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+      // bound in the factoryFor result, including type-based injections.
+      //
+      // The manager is registered lazily by `./helper` on import, so apps that
+      // never load classic helpers don't pull that module (and EmberObject)
+      // into the bundle. If a classic-helper definition somehow shows up
+      // without the manager being registered, that's a user error — assert in
+      // DEBUG and fall through.
+      let manager = getClassicHelperManager();
+      assert(
+        'Encountered a classic helper definition but `@ember/component/helper` was never imported, so its manager has not been registered.',
+        manager !== null
+      );
+      if (manager !== null) {
+        if (DEBUG) {
+          // In DEBUG we need to only set the associated value once, otherwise
+          // we'll trigger an assertion
+          if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
+            CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
+            setInternalHelperManager(manager, factory);
+          }
+        } else {
+          setInternalHelperManager(manager, factory);
         }
-      } else {
-        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
       }
 
       return factory;

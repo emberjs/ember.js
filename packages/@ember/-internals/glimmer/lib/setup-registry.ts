@@ -9,6 +9,10 @@ import RootTemplate from './templates/root';
 // helpers. Importing this here keeps the renderer free of routing/engine
 // dependencies so apps that only use `renderComponent` don't pay for them.
 import './syntax/register-routing-keywords';
+// Side-effect import: registers the classic-helper manager with the resolver.
+// Apps that never use classic class-based helpers don't import this and so
+// never pay for `Helper extends FrameworkObject` (and through it, EmberObject).
+import './helper';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false
