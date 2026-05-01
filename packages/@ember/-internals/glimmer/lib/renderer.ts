@@ -1747,90 +1747,6 @@ function intoTarget(into: IntoTarget): Cursor {
 }
 
 /**
- * Set of cleanup functions for active GXT renderComponent calls, drained
- * by __gxtCleanupActiveComponents (called from QUnit testStart and from
- * test-case afterEach in internal-test-helpers). Without this, reactors
- * registered by _renderComponentGxt leak across tests because the
- * synthetic `{}` owner default is not in any destroy chain — nobody
- * ever calls destroy() on a freshly-allocated plain object.
- */
-const _gxtPendingRenderCleanups = new Set<() => void>();
-(globalThis as any).__gxtDrainPendingRenderCleanups = function () {
-  if (_gxtPendingRenderCleanups.size === 0) return;
-  for (const fn of Array.from(_gxtPendingRenderCleanups)) {
-    try {
-      fn();
-    } catch {
-      /* ignore */
-    }
-  }
-  _gxtPendingRenderCleanups.clear();
-};
-
-/**
- * Wire `owner` into the destroyable chain so the registered cleanup
- * actually fires on teardown.
- *
- * The renderComponent API documents `owner = {}` as the default. That
- * synthetic plain object isn't in any destroy chain by itself — calling
- * registerDestructor on it records the destructor but it never runs,
- * because nothing ever calls destroy() on the synthetic owner.
- *
- * Three layers of cleanup, all pointing at the same cleanupFn:
- *
- * 1. Ambient parent owner via associateDestroyableChild — when the
- *    parent owner is destroyed via the standard glimmer/destroyable
- *    chain, the synthetic descends with it.
- * 2. registerDestructor on owner — covers callers that do call
- *    destroy(owner) directly.
- * 3. _gxtPendingRenderCleanups Set — eagerly drained by
- *    __gxtCleanupActiveComponents at QUnit testStart and from
- *    test-case afterEach; this is the only layer that fires
- *    synchronously regardless of the runloop, which is what
- *    actually prevents the cross-test reactor leak.
- *
- * Idempotent — safe to call from both _renderComponentGxt return paths.
- */
-function _wireOwnerDestroyChain(owner: object, parentOwner: unknown, cleanupFn: () => void): void {
-  // Wrap so each layer fires the underlying cleanup exactly once and
-  // removing from the pending Set is automatic.
-  let fired = false;
-  const oneShot = () => {
-    if (fired) return;
-    fired = true;
-    _gxtPendingRenderCleanups.delete(oneShot);
-    try {
-      cleanupFn();
-    } catch {
-      /* ignore */
-    }
-  };
-  _gxtPendingRenderCleanups.add(oneShot);
-  if (
-    parentOwner &&
-    parentOwner !== owner &&
-    typeof owner === 'object' &&
-    owner !== null &&
-    Object.getPrototypeOf(owner) === Object.prototype &&
-    !isDestroyed(parentOwner) &&
-    !isDestroying(parentOwner) &&
-    !isDestroyed(owner) &&
-    !isDestroying(owner)
-  ) {
-    try {
-      associateDestroyableChild(parentOwner as any, owner as any);
-    } catch {
-      // parent may not accept association; fall through to register
-    }
-  }
-  try {
-    registerDestructor(owner, oneShot);
-  } catch {
-    // owner may not be destroyable; nothing else to do
-  }
-}
-
-/**
  * GXT-specific renderComponent implementation.
  * Bypasses Glimmer VM bytecode compilation entirely.
  */
@@ -1863,18 +1779,11 @@ function _renderComponentGxt(
   ensureGxtContext();
 
   let destroyed = false;
-  let reactorCleanedUp = false;
   let classicReactorUnsub: (() => void) | null = null;
 
-  // Reactor-only cleanup. Fires when the owner is destroyed via the
-  // standard destroyable chain (registered below). Cleaning up the
-  // classic-tag reactor is critical to prevent cross-test leaks; the
-  // DOM is not touched here because owner destruction does not imply
-  // the caller wants the rendered nodes removed (that is what
-  // result.destroy() means, see doDestroy).
-  const cleanupReactor = () => {
-    if (reactorCleanedUp) return;
-    reactorCleanedUp = true;
+  const doDestroy = () => {
+    if (destroyed) return;
+    destroyed = true;
     if (classicReactorUnsub) {
       try {
         classicReactorUnsub();
@@ -1883,14 +1792,6 @@ function _renderComponentGxt(
       }
       classicReactorUnsub = null;
     }
-  };
-
-  // Full destroy. Returned to the caller as result.destroy(). Cleans
-  // the reactor and wipes the rendered content.
-  const doDestroy = () => {
-    if (destroyed) return;
-    destroyed = true;
-    cleanupReactor();
     if (targetElement instanceof Element) {
       targetElement.innerHTML = '';
     }
@@ -1965,7 +1866,12 @@ function _renderComponentGxt(
 
       const result: RenderResult = { destroy: doDestroy };
       RENDER_CACHE.set(into, { result, glimmerResult: undefined });
-      _wireOwnerDestroyChain(owner, prevOwner, cleanupReactor);
+      // Register destructor on owner so owner.destroy() cleans up DOM
+      try {
+        registerDestructor(owner, doDestroy);
+      } catch {
+        // owner may not be destroyable
+      }
       return result;
     }
 
@@ -2277,7 +2183,13 @@ function _renderComponentGxt(
 
   const result: RenderResult = { destroy: doDestroy };
   RENDER_CACHE.set(into, { result, glimmerResult: undefined });
-  _wireOwnerDestroyChain(owner, prevOwner, cleanupReactor);
+
+  // Register destructor on owner so that destroying the owner cleans up the DOM
+  try {
+    registerDestructor(owner, doDestroy);
+  } catch {
+    // owner may not be destroyable
+  }
 
   return result;
 }
