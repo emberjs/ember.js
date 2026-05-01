@@ -5,10 +5,13 @@ import {
   GlimmerishComponents,
   HasBlockParamsHelperSuite,
   HasBlockSuite,
+  InElementDocumentFragmentSuite,
+  InElementShadowRootSuite,
   InElementSuite,
   jitComponentSuite,
   jitSuite,
   ScopeSuite,
+  ShadowDOMSuite,
   ShadowingSuite,
   TemplateOnlyComponents,
   WithDynamicVarsSuite,
@@ -18,6 +21,9 @@ import {
 jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
+jitSuite(InElementDocumentFragmentSuite);
+jitSuite(InElementShadowRootSuite);
+jitSuite(ShadowDOMSuite);
 
 jitComponentSuite(GlimmerishComponents);
 jitComponentSuite(TemplateOnlyComponents);

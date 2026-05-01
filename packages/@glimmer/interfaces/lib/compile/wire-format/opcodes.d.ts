@@ -64,6 +64,7 @@ export type NotOpcode = 51;
 export type IfInlineOpcode = 52;
 export type GetDynamicVarOpcode = 53;
 export type LogOpcode = 54;
+export type ShadowRootOpcode = 55;
 
 export type GetStartOpcode = GetSymbolOpcode;
 export type GetEndOpcode = GetFreeAsComponentHeadOpcode;

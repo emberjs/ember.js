@@ -100,6 +100,9 @@ export default class StrictModeValidationPass {
 
       case 'InvokeComponent':
         return this.InvokeComponent(statement);
+
+      case 'DeclarativeShadowRoot':
+        return this.DeclarativeShadowRoot(statement);
     }
   }
 
@@ -266,6 +269,10 @@ export default class StrictModeValidationPass {
 
   SimpleElement(statement: mir.SimpleElement): Result<null> {
     return this.ElementParameters(statement.params).andThen(() => this.Statements(statement.body));
+  }
+
+  DeclarativeShadowRoot(statement: mir.DeclarativeShadowRoot): Result<null> {
+    return this.Statements(statement.body);
   }
 
   InvokeBlock(statement: mir.InvokeBlock): Result<null> {

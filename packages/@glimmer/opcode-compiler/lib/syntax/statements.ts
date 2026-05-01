@@ -6,6 +6,7 @@ import type {
   WireFormat,
 } from '@glimmer/interfaces';
 import {
+  VM_ATTACH_SHADOW_ROOT_OP,
   VM_CLOSE_ELEMENT_OP,
   VM_COMMENT_OP,
   VM_COMPONENT_ATTR_OP,
@@ -278,6 +279,33 @@ STATEMENTS.add(SexpOpcodes.InElement, (op, [, block, guid, destination, insertBe
       }
 
       expr(op, destination);
+      op(VM_DUP_OP, $sp, 0);
+
+      return 4;
+    },
+
+    () => {
+      op(VM_PUSH_REMOTE_ELEMENT_OP);
+      InvokeStaticBlock(op, block);
+      op(VM_POP_REMOTE_ELEMENT_OP);
+    }
+  );
+});
+
+STATEMENTS.add(SexpOpcodes.ShadowRoot, (op, [, block, guid, mode]) => {
+  // Push guid and insertBefore (always undefined for shadow roots) onto the stack,
+  // then call VM_ATTACH_SHADOW_ROOT_OP which attaches a shadow root to the current
+  // parent element and pushes a reference to it. Use ReplayableIf so that the whole
+  // sequence is re-evaluated on update and so that SSR (where attachShadow is unavailable)
+  // gracefully falls through without rendering into a shadow root.
+  ReplayableIf(
+    op,
+
+    () => {
+      expr(op, guid);
+      PushPrimitiveReference(op, undefined); // insertBefore
+      PushPrimitiveReference(op, mode); // 'open' | 'closed'
+      op(VM_ATTACH_SHADOW_ROOT_OP);
       op(VM_DUP_OP, $sp, 0);
 
       return 4;

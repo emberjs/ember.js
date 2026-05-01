@@ -69,6 +69,8 @@ export class ContentEncoder {
         return this.Component(stmt);
       case 'SimpleElement':
         return this.SimpleElement(stmt);
+      case 'DeclarativeShadowRoot':
+        return this.DeclarativeShadowRoot(stmt);
       case 'InElement':
         return this.InElement(stmt);
       case 'InvokeBlock':
@@ -135,6 +137,14 @@ export class ContentEncoder {
       ...CONTENT.list(body),
       [SexpOpcodes.CloseElement],
     ]);
+  }
+
+  DeclarativeShadowRoot({
+    guid,
+    mode,
+    body,
+  }: mir.DeclarativeShadowRoot): WireFormat.Statements.ShadowRoot {
+    return [SexpOpcodes.ShadowRoot, [CONTENT.list(body), []], guid, mode];
   }
 
   Component({ tag, params, args, blocks }: mir.Component): WireFormat.Statements.Component {

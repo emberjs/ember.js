@@ -58,6 +58,7 @@ import type {
   VmNot,
   VmOp,
   VmOpenDynamicElement,
+  VmAttachShadowRoot,
   VmOpenElement,
   VmPop,
   VmPopArgs,
@@ -187,7 +188,8 @@ export const VM_IF_INLINE_OP = 109 satisfies VmIfInline;
 export const VM_NOT_OP = 110 satisfies VmNot;
 export const VM_GET_DYNAMIC_VAR_OP = 111 satisfies VmGetDynamicVar;
 export const VM_LOG_OP = 112 satisfies VmLog;
-export const VM_SYSCALL_SIZE = 113 satisfies VmSize;
+export const VM_ATTACH_SHADOW_ROOT_OP = 113 satisfies VmAttachShadowRoot;
+export const VM_SYSCALL_SIZE = 114 satisfies VmSize;
 
 export function isOp(value: number): value is VmOp {
   return value >= 16;

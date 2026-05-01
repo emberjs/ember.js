@@ -47,6 +47,7 @@ import type {
   UndefinedOpcode,
   WithDynamicVarsOpcode,
   YieldOpcode,
+  ShadowRootOpcode,
 } from './opcodes.js';
 
 export type * from './opcodes.js';
@@ -300,6 +301,13 @@ export namespace Statements {
     blocks: Blocks | null,
   ];
 
+  export type ShadowRoot = [
+    op: ShadowRootOpcode,
+    block: SerializedInlineBlock,
+    guid: string,
+    mode: string,
+  ];
+
   /**
    * A Handlebars statement
    */
@@ -325,7 +333,8 @@ export namespace Statements {
     | Each
     | Let
     | WithDynamicVars
-    | InvokeComponent;
+    | InvokeComponent
+    | ShadowRoot;
 
   export type Attribute =
     | StaticAttr
