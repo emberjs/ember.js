@@ -9479,9 +9479,29 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
   let _hasBeenConnected = false;
   let _disconnectedTicks = 0;
   let _preConnectTicks = 0;
+  // Hard-cap on lifetime fires for this LinkTo reactor. The
+  // _disconnectedTicks heuristic doesn't trip in routing tests that
+  // reattach the same <a> element across transitions, so the reactor
+  // can leak across tests and saturate the runloop. 10,000 fires is
+  // two orders of magnitude above any plausible real-app bound and
+  // bounds the cost of leaked reactors so they can't produce the
+  // testem 1200s browser timeout. The cap fires inside the wrapped
+  // callback (before invoking cb()) to prevent the runaway from
+  // accumulating further work on the runloop.
+  let _totalFires = 0;
+  const HARD_CAP = 10_000;
   const _registerReactor = (cb: () => void) => {
     let unsub: () => void = () => {};
     const wrapped = () => {
+      _totalFires++;
+      if (_totalFires > HARD_CAP) {
+        try {
+          unsub();
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
       if (el.isConnected) {
         _hasBeenConnected = true;
         _disconnectedTicks = 0;
