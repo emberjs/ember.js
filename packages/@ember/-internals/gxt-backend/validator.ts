@@ -648,21 +648,36 @@ export function touchClassicBridge(): void {
 // invoked synchronously at the end of dirtyTagFor after the classic tag
 // has been updated but before the runloop flush. Registrants are expected
 // to be idempotent and cheap.
-// === LEAK DIAGNOSTICS ===
-// Each reactor is tagged with metadata at registration time so we can
-// detect cross-test leakage: a reactor registered during test A that
-// fires during test B is by definition a leak. Enabled via the global
-// flag `__GXT_LEAK_DEBUG__` (set in index.html or via URL param).
+// Each reactor is tagged at registration with the QUnit test it was
+// created in. When that test finishes (testDone), we drain reactors
+// with that registeredAtTest in bulk via __gxtDrainReactorsForTest.
+// This is the leak fix: it replaces a previous heuristic — a
+// "_disconnectedTicks > 4" tick counter on the target element — that
+// proved unreliable: targetElement is often the long-lived
+// #qunit-fixture (which never disconnects between tests), and routing
+// tests reattach LinkTo elements between tests, resetting the counter
+// before it can trip. Diagnostics behind `__GXT_LEAK_DEBUG__` confirmed
+// the leak path; the drain runs unconditionally. Tagging always-on but
+// cheap (one WeakMap put per registration).
+//
+// We deliberately DO NOT drop reactors at fire time, even when
+// registeredAtTest != currentTest, because Ember's classic reactivity
+// can fire reactors during transient states (afterEach destruction,
+// router setup) where QUnit.config.current is briefly inconsistent
+// with the test that owns the work — fire-time drops there caused
+// memory/stack regressions in CI when legitimate cross-test wiring
+// was wiped mid-flow. The bulk-drain at testDone is timing-safe:
+// when a test is fully torn down, no reactor of that test is needed.
 interface ReactorMeta {
   id: number;
   source: string;
   registeredAtTest: string;
-  registeredAtTime: number;
   fireCount: number;
 }
 let _reactorIdCounter = 0;
 const _reactorMeta = new WeakMap<() => void, ReactorMeta>();
 const _classicReactors = new Set<() => void>();
+const NO_TEST = '<no-test>';
 
 function _currentTestName(): string {
   try {
@@ -672,34 +687,55 @@ function _currentTestName(): string {
   } catch {
     /* ignore */
   }
-  return '<no-test>';
+  return NO_TEST;
 }
 
 export function registerClassicReactor(cb: () => void, source?: string): () => void {
   _classicReactors.add(cb);
-  if ((globalThis as any).__GXT_LEAK_DEBUG__) {
-    const id = ++_reactorIdCounter;
-    _reactorMeta.set(cb, {
-      id,
-      source: source || '<unknown>',
-      registeredAtTest: _currentTestName(),
-      registeredAtTime: Date.now(),
-      fireCount: 0,
-    });
-    if (id <= 50 || id % 100 === 0) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `[leak-debug] registerClassicReactor #${id} source=${source || '?'} test="${_currentTestName()}" total=${_classicReactors.size}`
-      );
-    }
+  const id = ++_reactorIdCounter;
+  _reactorMeta.set(cb, {
+    id,
+    source: source || '<unknown>',
+    registeredAtTest: _currentTestName(),
+    fireCount: 0,
+  });
+  if ((globalThis as any).__GXT_LEAK_DEBUG__ && (id <= 50 || id % 100 === 0)) {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[leak-debug] registerClassicReactor #${id} source=${source || '?'} test="${_currentTestName()}" total=${_classicReactors.size}`
+    );
   }
   return () => {
     _classicReactors.delete(cb);
-    if ((globalThis as any).__GXT_LEAK_DEBUG__) {
-      _reactorMeta.delete(cb);
-    }
+    _reactorMeta.delete(cb);
   };
 }
+
+// Drain reactors registered during a specific test. Called from the
+// testDone hook in index.html with the just-finished test name. After
+// this drain, that test's reactors cannot fire during subsequent tests.
+(globalThis as any).__gxtDrainReactorsForTest = function (testName: string) {
+  if (!testName || testName === NO_TEST) return;
+  const debug = (globalThis as any).__GXT_LEAK_DEBUG__;
+  let dropped = 0;
+  // Iterate snapshot — _classicReactors is a Set, deletes during
+  // iteration can be safe in modern engines but a snapshot avoids any
+  // ambiguity.
+  for (const cb of Array.from(_classicReactors)) {
+    const meta = _reactorMeta.get(cb);
+    if (meta && meta.registeredAtTest === testName) {
+      _classicReactors.delete(cb);
+      _reactorMeta.delete(cb);
+      dropped++;
+    }
+  }
+  if (debug && dropped > 0) {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[leak-debug] DRAIN test="${testName}" dropped=${dropped} remaining=${_classicReactors.size}`
+    );
+  }
+};
 
 function _fireClassicReactors() {
   if (_classicReactors.size === 0) return;
@@ -712,11 +748,9 @@ function _fireClassicReactors() {
       const meta = _reactorMeta.get(cb);
       if (meta) {
         meta.fireCount++;
-        // Cross-test leak: reactor registered during a different test
-        // than the one currently executing.
         if (
-          meta.registeredAtTest !== '<no-test>' &&
-          currentTest !== '<no-test>' &&
+          meta.registeredAtTest !== NO_TEST &&
+          currentTest !== NO_TEST &&
           meta.registeredAtTest !== currentTest
         ) {
           // eslint-disable-next-line no-console
