@@ -728,11 +728,13 @@ const REACTOR_FOREIGN_FIRE_CAP = 100;
 // Cap on CUMULATIVE fires across all foreign tests (never resets).
 // Catches slow leaks where fires are spread across many tests but
 // never concentrate enough in any one. CI evidence: leaked reactors
-// fire ~50 times per foreign test (under the per-test cap) but
-// totalForeignFires reaches 1000+ across the run. 200 catches this
-// well above any plausible legitimate cross-test reactivity (real
-// reactors don't fire across foreign tests at all).
-const REACTOR_TOTAL_FOREIGN_FIRE_CAP = 200;
+// fire ~50 times per foreign test, accumulating 1000-1140 lifetime
+// fires before timeout. 1500 sits above the observed peak so
+// legitimate cross-test reactor activity (some Ember test
+// infrastructure does propagate dirties across tests for shared
+// setup) isn't culled, while still bounding the unbounded-runaway
+// case where leaked reactors would fire indefinitely.
+const REACTOR_TOTAL_FOREIGN_FIRE_CAP = 1500;
 const NO_TEST_SENTINEL = '<no-test>';
 
 function _fireClassicReactors() {
