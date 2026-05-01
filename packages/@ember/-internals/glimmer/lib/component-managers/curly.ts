@@ -19,7 +19,6 @@ import type {
   Environment,
   InternalComponentCapabilities,
   PreparedArguments,
-  TemplateFactory,
   VMArguments,
   WithCreateInstance,
   WithDynamicLayout,
@@ -42,7 +41,7 @@ import {
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import type RuntimeResolver from '../resolver';
-import { isTemplateFactory } from '../template';
+import { getComponentTemplate } from '@glimmer/manager';
 import {
   createClassNameBindingRef,
   createSimpleClassNameBindingRef,
@@ -132,24 +131,12 @@ export default class CurlyComponentManager
     WithDynamicTagName<ComponentStateBucket>
 {
   protected templateFor(component: Component): CompilableProgram | null {
-    let { layout, layoutName } = component;
     let owner = getOwner(component);
     assert('Component is unexpectedly missing an owner', owner);
 
-    let factory: TemplateFactory;
+    let factory = getComponentTemplate(component.constructor as object);
 
-    if (layout === undefined) {
-      if (layoutName !== undefined) {
-        let _factory = owner.lookup(`template:${layoutName}`) as TemplateFactory;
-        assert(`Layout \`${layoutName}\` not found!`, _factory !== undefined);
-        factory = _factory;
-      } else {
-        return null;
-      }
-    } else if (isTemplateFactory(layout)) {
-      factory = layout;
-    } else {
-      // no layout was found, use the default layout
+    if (factory === undefined) {
       return null;
     }
 

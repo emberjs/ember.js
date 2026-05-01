@@ -285,7 +285,7 @@ class AbstractAppendTest extends RenderingTestCase {
     let componentsByName = {};
 
     // TODO: refactor/combine with other life-cycle tests
-    let registerLoggerComponent = (name, { ComponentClass, resolveableTemplate }) => {
+    let registerLoggerComponent = (name, { ComponentClass, compiledTemplate }) => {
       function pushHook(hookName) {
         hooks.push([name, hookName]);
       }
@@ -351,19 +351,17 @@ class AbstractAppendTest extends RenderingTestCase {
         }
       };
 
-      this.owner.register(`component:${name}`, ExtendedClass);
-
-      if (resolveableTemplate) {
-        this.owner.register(`template:components/${name}`, resolveableTemplate);
+      if (compiledTemplate) {
+        setComponentTemplate(compiledTemplate, ExtendedClass);
       }
+
+      this.owner.register(`component:${name}`, ExtendedClass);
     };
 
     registerLoggerComponent('x-parent', {
-      ComponentClass: class extends Component {
-        layoutName = 'components/x-parent';
-      },
+      ComponentClass: class extends Component {},
 
-      resolveableTemplate: precompileTemplate(
+      compiledTemplate: precompileTemplate(
         '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}'
       ),
     });
@@ -373,7 +371,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName = '';
       },
 
-      resolveableTemplate: precompileTemplate('[child: {{this.bar}}]{{yield}}'),
+      compiledTemplate: precompileTemplate('[child: {{this.bar}}]{{yield}}'),
     });
 
     let XParent;
@@ -530,17 +528,18 @@ class AbstractAppendTest extends RenderingTestCase {
     let willDestroyCalled = 0;
 
     let XParentClass = class extends Component {
-      layoutName = 'components/x-parent';
       willDestroyElement() {
         willDestroyCalled++;
       }
     };
 
-    this.owner.register('component:x-parent', XParentClass);
     this.owner.register(
-      'template:components/x-parent',
-      precompileTemplate(
-        '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}'
+      'component:x-parent',
+      setComponentTemplate(
+        precompileTemplate(
+          '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}'
+        ),
+        XParentClass
       )
     );
 
@@ -639,28 +638,25 @@ class AbstractAppendTest extends RenderingTestCase {
     let willDestroyCalled = 0;
 
     let XFirstClass = class extends Component {
-      layoutName = 'components/x-first';
-
       willDestroyElement() {
         willDestroyCalled++;
       }
     };
 
-    this.owner.register('component:x-first', XFirstClass);
-    this.owner.register('template:components/x-first', precompileTemplate('x-first {{this.foo}}!'));
+    this.owner.register(
+      'component:x-first',
+      setComponentTemplate(precompileTemplate('x-first {{this.foo}}!'), XFirstClass)
+    );
 
     let XSecondClass = class extends Component {
-      layoutName = 'components/x-second';
-
       willDestroyElement() {
         willDestroyCalled++;
       }
     };
 
-    this.owner.register('component:x-second', XSecondClass);
     this.owner.register(
-      'template:components/x-second',
-      precompileTemplate('x-second {{this.bar}}!')
+      'component:x-second',
+      setComponentTemplate(precompileTemplate('x-second {{this.bar}}!'), XSecondClass)
     );
 
     let First, Second;
@@ -777,31 +773,25 @@ class AbstractAppendTest extends RenderingTestCase {
     };
 
     let element1, element2;
-    this.owner.register(
-      'component:first-component',
-      class extends Component {
-        layout = precompileTemplate('component-one');
+    let FirstComponentClass = class extends Component {
+      didInsertElement() {
+        element1 = this.element;
 
-        didInsertElement() {
-          element1 = this.element;
+        let SecondComponent = owner.factoryFor('component:second-component');
 
-          let SecondComponent = owner.factoryFor('component:second-component');
-
-          append(SecondComponent.create());
-        }
+        append(SecondComponent.create());
       }
-    );
+    };
+    setComponentTemplate(precompileTemplate('component-one'), FirstComponentClass);
+    this.owner.register('component:first-component', FirstComponentClass);
 
-    this.owner.register(
-      'component:second-component',
-      class extends Component {
-        layout = precompileTemplate(`component-two`);
-
-        didInsertElement() {
-          element2 = this.element;
-        }
+    let SecondComponentClass = class extends Component {
+      didInsertElement() {
+        element2 = this.element;
       }
-    );
+    };
+    setComponentTemplate(precompileTemplate('component-two'), SecondComponentClass);
+    this.owner.register('component:second-component', SecondComponentClass);
 
     let FirstComponent = this.owner.factoryFor('component:first-component');
 
@@ -819,84 +809,75 @@ class AbstractAppendTest extends RenderingTestCase {
     };
 
     let element1, element2, element3, element4, component1, component2;
-    this.owner.register(
-      'component:foo-bar',
-      class extends Component {
-        layout = precompileTemplate('foo-bar');
-
-        init() {
-          super.init(...arguments);
-          component1 = this;
-        }
-
-        didInsertElement() {
-          element1 = this.element;
-
-          let OtherRoot = owner.factoryFor('component:other-root');
-
-          this._instance = OtherRoot.create({
-            didInsertElement() {
-              element2 = this.element;
-            },
-          });
-
-          append(this._instance);
-        }
-
-        willDestroy() {
-          this._instance.destroy();
-        }
+    let FooBarComponent = class extends Component {
+      init() {
+        super.init(...arguments);
+        component1 = this;
       }
-    );
 
-    this.owner.register(
-      'component:baz-qux',
-      class extends Component {
-        layout = precompileTemplate('baz-qux');
+      didInsertElement() {
+        element1 = this.element;
 
-        init() {
-          super.init(...arguments);
-          component2 = this;
-        }
+        let OtherRoot = owner.factoryFor('component:other-root');
 
-        didInsertElement() {
-          element3 = this.element;
+        this._instance = OtherRoot.create({
+          didInsertElement() {
+            element2 = this.element;
+          },
+        });
 
-          let OtherRoot = owner.factoryFor('component:other-root');
-
-          this._instance = OtherRoot.create({
-            didInsertElement() {
-              element4 = this.element;
-            },
-          });
-
-          append(this._instance);
-        }
-
-        willDestroy() {
-          this._instance.destroy();
-        }
+        append(this._instance);
       }
-    );
+
+      willDestroy() {
+        this._instance.destroy();
+      }
+    };
+    setComponentTemplate(precompileTemplate('foo-bar'), FooBarComponent);
+    this.owner.register('component:foo-bar', FooBarComponent);
+
+    let BazQuxComponent = class extends Component {
+      init() {
+        super.init(...arguments);
+        component2 = this;
+      }
+
+      didInsertElement() {
+        element3 = this.element;
+
+        let OtherRoot = owner.factoryFor('component:other-root');
+
+        this._instance = OtherRoot.create({
+          didInsertElement() {
+            element4 = this.element;
+          },
+        });
+
+        append(this._instance);
+      }
+
+      willDestroy() {
+        this._instance.destroy();
+      }
+    };
+    setComponentTemplate(precompileTemplate('baz-qux'), BazQuxComponent);
+    this.owner.register('component:baz-qux', BazQuxComponent);
 
     let instantiatedRoots = 0;
     let destroyedRoots = 0;
-    this.owner.register(
-      'component:other-root',
-      class extends Component {
-        layout = precompileTemplate(`fake-thing: {{this.counter}}`);
-
-        init() {
-          super.init(...arguments);
-          this.counter = instantiatedRoots++;
-        }
-
-        willDestroy() {
-          destroyedRoots++;
-          super.willDestroy(...arguments);
-        }
+    let OtherRootComponent = class extends Component {
+      init() {
+        super.init(...arguments);
+        this.counter = instantiatedRoots++;
       }
-    );
+
+      willDestroy() {
+        destroyedRoots++;
+        super.willDestroy(...arguments);
+      }
+    };
+    setComponentTemplate(precompileTemplate('fake-thing: {{this.counter}}'), OtherRootComponent);
+    this.owner.register('component:other-root', OtherRootComponent);
 
     this.render(
       strip`
@@ -954,12 +935,10 @@ moduleFor(
     }
 
     ['@test raises an assertion when the target does not exist in the DOM'](assert) {
-      let FooBarClass = class extends Component {
-        layoutName = 'components/foo-bar';
-      };
+      let FooBarClass = class extends Component {};
+      setComponentTemplate(precompileTemplate('FOO BAR!'), FooBarClass);
 
       this.owner.register('component:foo-bar', FooBarClass);
-      this.owner.register('template:components/foo-bar', precompileTemplate('FOO BAR!'));
 
       let FooBar = this.owner.factoryFor('component:foo-bar');
 

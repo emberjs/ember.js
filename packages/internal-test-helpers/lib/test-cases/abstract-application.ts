@@ -1,5 +1,3 @@
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import compile from '../compile';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';
 import type { BootOptions } from '@ember/engine/instance';
@@ -77,9 +75,5 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
 
   get router() {
     return this.application.resolveRegistration('router:main') as typeof Router;
-  }
-
-  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}) {
-    return compile(templateString, options);
   }
 }

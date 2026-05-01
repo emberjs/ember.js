@@ -2,7 +2,7 @@ import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
 import { EventDispatcher } from '@ember/-internals/views';
 import Component from '@ember/component';
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
+import { template } from '@ember/template-compiler/runtime';
 import compile from '../compile';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
@@ -51,10 +51,6 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}) {
-    return compile(templateString, options);
-  }
-
   getCustomDispatcherEvents() {
     return {};
   }
@@ -99,19 +95,12 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
   render(templateStr: string, context = {}) {
     let { owner } = this;
 
-    owner.register(
-      'template:-top-level',
-      this.compile(templateStr, {
-        moduleName: '-top-level',
-      })
-    );
-
-    let attrs = Object.assign({}, context, {
-      tagName: '',
-      layoutName: '-top-level',
+    let TopLevel = template(templateStr, {
+      component: Component.extend(Object.assign({}, context, { tagName: '' })),
+      strictMode: false,
     });
 
-    owner.register('component:-top-level', Component.extend(attrs));
+    owner.register('component:-top-level', TopLevel);
 
     this.component = owner.lookup('component:-top-level');
 
@@ -199,7 +188,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     if (typeof template === 'string') {
       owner.register(
         `template:${name}`,
-        this.compile(template, {
+        compile(template, {
           moduleName: `my-app/templates/${name}.hbs`,
         })
       );

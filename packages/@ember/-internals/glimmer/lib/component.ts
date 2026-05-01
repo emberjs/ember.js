@@ -20,7 +20,7 @@ import {
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
+import type { Environment } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
@@ -202,7 +202,6 @@ interface ComponentMethods {
     @type String
     @public
   */
-  layoutName?: string;
 }
 
 // A zero-runtime-overhead private symbol to use in branding the component to
@@ -1267,25 +1266,6 @@ class Component<S = unknown>
     @since 1.13.0
     */
   declare static positionalParams: string | string[];
-
-  /**
-    Layout can be used to wrap content in a component.
-    @property layout
-    @type Function
-    @public
-  */
-  declare layout?: TemplateFactory | Template;
-
-  /**
-    The name of the layout to lookup if no layout is provided.
-    By default `Component` will lookup a template with this name in
-    `Ember.TEMPLATES` (a shared global object).
-    @property layoutName
-    @type String
-    @default undefined
-    @private
-  */
-  declare layoutName?: string;
 
   /**
    The WAI-ARIA role of the control represented by this view. For example, a

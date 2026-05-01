@@ -301,8 +301,6 @@ module.exports = {
     'lastIndexOf',
     'lastObject',
     'later',
-    'layout',
-    'layoutName',
     'length',
     'let',
     'link-to',

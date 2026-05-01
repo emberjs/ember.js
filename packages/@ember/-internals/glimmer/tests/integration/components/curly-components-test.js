@@ -160,43 +160,23 @@ moduleFor(
       });
     }
 
-    ['@test can specify template with `layoutName` property']() {
+    ['@test can specify template with setComponentTemplate']() {
       let FooBarComponent = class extends Component {
         elementId = 'blahzorz';
-        layoutName = 'fizz-bar';
         init() {
           super.init(...arguments);
           this.local = 'hey';
         }
       };
 
-      this.registerTemplate('fizz-bar', `FIZZ BAR {{this.local}}`);
-
-      this.owner.register('component:foo-bar', FooBarComponent);
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('FIZZ BAR {{this.local}}'), FooBarComponent)
+      );
 
       this.render('{{foo-bar}}');
 
       this.assertText('FIZZ BAR hey');
-    }
-
-    ['@test layout supports computed property']() {
-      let FooBarComponent = class extends Component {
-        elementId = 'blahzorz';
-        @computed
-        get layout() {
-          return precompileTemplate('so much layout wat {{this.lulz}}');
-        }
-        init() {
-          super.init(...arguments);
-          this.lulz = 'heyo';
-        }
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render('{{foo-bar}}');
-
-      this.assertText('so much layout wat heyo');
     }
 
     ['@test passing undefined elementId results in a default elementId'](assert) {
@@ -1205,40 +1185,6 @@ moduleFor(
       runTask(() => set(component, 'output', htmlSafe(expectedHtmlBold)));
 
       equalTokens(this.firstChild, expectedHtmlBold);
-    }
-
-    ['@test late bound layouts return the same definition'](assert) {
-      let templateIds = [];
-
-      // This is testing the scenario where you import a template and
-      // set it to the layout property:
-      //
-      // import Component from '@ember/component';
-      // import layout from './template';
-      //
-      // export default Component.extend({
-      //   layout
-      // });
-      let hello = precompileTemplate('Hello');
-      let bye = precompileTemplate('Bye');
-
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
-          this.layout = this.cond ? hello : bye;
-          templateIds.push(this.layout.id);
-        }
-      };
-
-      this.owner.register('component:foo-bar', FooBarComponent);
-
-      this.render(
-        '{{foo-bar cond=true}}{{foo-bar cond=false}}{{foo-bar cond=true}}{{foo-bar cond=false}}'
-      );
-
-      let [t1, t2, t3, t4] = templateIds;
-      assert.equal(t1, t3);
-      assert.equal(t2, t4);
     }
 
     ['@test can use isStream property without conflict (#13271)']() {
