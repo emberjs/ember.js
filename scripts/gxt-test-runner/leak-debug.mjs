@@ -23,11 +23,7 @@ let leaks = 0;
 let cacheHits = 0;
 page.on('console', (msg) => {
   const text = msg.text();
-  if (
-    text.includes('[leak-debug]') ||
-    text.includes(' LEAK ') ||
-    text.includes('cacheHIT')
-  ) {
+  if (text.includes('[leak-debug]') || text.includes(' LEAK ') || text.includes('cacheHIT')) {
     if (text.includes('LEAK')) leaks++;
     if (text.includes('cacheHIT')) cacheHits++;
     lines++;
@@ -56,6 +52,8 @@ const result = await page.evaluate((timeoutMs) => {
   });
 }, TIMEOUT);
 
-process.stdout.write(`---summary--- ${JSON.stringify(result)} lines=${lines} leaks=${leaks} cacheHits=${cacheHits}\n`);
+process.stdout.write(
+  `---summary--- ${JSON.stringify(result)} lines=${lines} leaks=${leaks} cacheHits=${cacheHits}\n`
+);
 
 await browser.close();

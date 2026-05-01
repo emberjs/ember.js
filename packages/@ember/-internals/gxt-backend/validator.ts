@@ -740,9 +740,7 @@ function _fireClassicReactors() {
   const buckets = new Map<string, number>();
   for (const cb of _classicReactors) {
     const meta = _reactorMeta.get(cb);
-    const key = meta
-      ? `src=${meta.source} regAt="${meta.registeredAtTest}"`
-      : '<no-meta>';
+    const key = meta ? `src=${meta.source} regAt="${meta.registeredAtTest}"` : '<no-meta>';
     buckets.set(key, (buckets.get(key) || 0) + 1);
   }
   // eslint-disable-next-line no-console
