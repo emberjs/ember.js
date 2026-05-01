@@ -648,18 +648,84 @@ export function touchClassicBridge(): void {
 // invoked synchronously at the end of dirtyTagFor after the classic tag
 // has been updated but before the runloop flush. Registrants are expected
 // to be idempotent and cheap.
+// === LEAK DIAGNOSTICS ===
+// Each reactor is tagged with metadata at registration time so we can
+// detect cross-test leakage: a reactor registered during test A that
+// fires during test B is by definition a leak. Enabled via the global
+// flag `__GXT_LEAK_DEBUG__` (set in index.html or via URL param).
+interface ReactorMeta {
+  id: number;
+  source: string;
+  registeredAtTest: string;
+  registeredAtTime: number;
+  fireCount: number;
+}
+let _reactorIdCounter = 0;
+const _reactorMeta = new WeakMap<() => void, ReactorMeta>();
 const _classicReactors = new Set<() => void>();
-export function registerClassicReactor(cb: () => void): () => void {
+
+function _currentTestName(): string {
+  try {
+    const Q = (globalThis as any).QUnit;
+    const t = Q?.config?.current;
+    if (t) return `${t.module?.name || ''} :: ${t.testName || ''}`;
+  } catch {
+    /* ignore */
+  }
+  return '<no-test>';
+}
+
+export function registerClassicReactor(cb: () => void, source?: string): () => void {
   _classicReactors.add(cb);
+  if ((globalThis as any).__GXT_LEAK_DEBUG__) {
+    const id = ++_reactorIdCounter;
+    _reactorMeta.set(cb, {
+      id,
+      source: source || '<unknown>',
+      registeredAtTest: _currentTestName(),
+      registeredAtTime: Date.now(),
+      fireCount: 0,
+    });
+    if (id <= 50 || id % 100 === 0) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[leak-debug] registerClassicReactor #${id} source=${source || '?'} test="${_currentTestName()}" total=${_classicReactors.size}`
+      );
+    }
+  }
   return () => {
     _classicReactors.delete(cb);
+    if ((globalThis as any).__GXT_LEAK_DEBUG__) {
+      _reactorMeta.delete(cb);
+    }
   };
 }
+
 function _fireClassicReactors() {
   if (_classicReactors.size === 0) return;
   // Copy to avoid mutation during iteration
   const snapshot = Array.from(_classicReactors);
+  const debug = (globalThis as any).__GXT_LEAK_DEBUG__;
+  const currentTest = debug ? _currentTestName() : '';
   for (const cb of snapshot) {
+    if (debug) {
+      const meta = _reactorMeta.get(cb);
+      if (meta) {
+        meta.fireCount++;
+        // Cross-test leak: reactor registered during a different test
+        // than the one currently executing.
+        if (
+          meta.registeredAtTest !== '<no-test>' &&
+          currentTest !== '<no-test>' &&
+          meta.registeredAtTest !== currentTest
+        ) {
+          // eslint-disable-next-line no-console
+          console.log(
+            `[leak-debug] LEAK reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" fires=${meta.fireCount}`
+          );
+        }
+      }
+    }
     try {
       cb();
     } catch {
@@ -667,6 +733,25 @@ function _fireClassicReactors() {
     }
   }
 }
+
+// Snapshot the reactor population at a checkpoint (testStart / testDone).
+(globalThis as any).__gxtLeakSnapshot = function (label: string) {
+  if (!(globalThis as any).__GXT_LEAK_DEBUG__) return;
+  const buckets = new Map<string, number>();
+  for (const cb of _classicReactors) {
+    const meta = _reactorMeta.get(cb);
+    const key = meta
+      ? `src=${meta.source} regAt="${meta.registeredAtTest}"`
+      : '<no-meta>';
+    buckets.set(key, (buckets.get(key) || 0) + 1);
+  }
+  // eslint-disable-next-line no-console
+  console.log(`[leak-debug] === ${label} === total reactors=${_classicReactors.size}`);
+  for (const [key, count] of buckets) {
+    // eslint-disable-next-line no-console
+    console.log(`[leak-debug]   ${count}× ${key}`);
+  }
+};
 
 // Wrap dirtyTagFor to also bump the global revision AND mark the specific tag as dirty
 const gxtDirtyTagFor = validator.dirtyTagFor;

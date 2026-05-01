@@ -60,6 +60,16 @@
       // after each test, preventing phantom failures from leaked state.
 
       QUnit.testStart(function () {
+        // Leak-debug: record reactor population at start of each test
+        // so the cross-test leak signal becomes visible against a known
+        // baseline. The label includes the upcoming test's name.
+        try {
+          if (typeof globalThis.__gxtLeakSnapshot === 'function') {
+            globalThis.__gxtLeakSnapshot('testStart:' + (QUnit.config.current?.testName || ''));
+          }
+        } catch (_e) {
+          /* ignore */
+        }
         // Signal that we're no longer in a test transition
         globalThis.__gxtTestTransition = false;
         // Reset the operation counter so each test gets a fresh budget
@@ -91,6 +101,15 @@
       });
 
       QUnit.testDone(function () {
+        // Leak-debug: record reactor population at end of each test.
+        // A reactor that survives the cleanup hook is a confirmed leak.
+        try {
+          if (typeof globalThis.__gxtLeakSnapshot === 'function') {
+            globalThis.__gxtLeakSnapshot('testDone:' + (QUnit.config.current?.testName || ''));
+          }
+        } catch (_e) {
+          /* ignore */
+        }
         // Signal that we're between tests — interval timer should not fire
         globalThis.__gxtTestTransition = true;
         // Safety net: reset syncing flag after each test in case it got stuck
@@ -110,6 +129,22 @@
       // Set GXT mode flag BEFORE any modules load so renderer.ts can check it
       // during module initialization (before compile.ts sets it)
       globalThis.__GXT_MODE__ = true;
+
+      // Leak diagnostics: enable via QUnit URL param (?gxtLeakDebug=true)
+      // or by setting globalThis.__GXT_LEAK_DEBUG__ before tests start.
+      // When on, validator.ts tags every classic reactor with the test
+      // it was registered in and logs cross-test leaks at fire time.
+      try {
+        var _u = new URL(location.href);
+        if (_u.searchParams.get('gxtLeakDebug') === 'true') {
+          globalThis.__GXT_LEAK_DEBUG__ = true;
+        }
+      } catch (_e) {
+        /* ignore */
+      }
+      // TEMPORARY: force-enable leak diagnostics for CI debugging.
+      // Remove this line once the cumulative-state failures are diagnosed.
+      globalThis.__GXT_LEAK_DEBUG__ = true;
 
       // Global operation counter to detect infinite synchronous loops
       // Any tight loop will increment this. When it exceeds the limit,

@@ -9516,7 +9516,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
         }
       }
     };
-    unsub = _gxtRegisterClassicReactor(wrapped);
+    unsub = (_gxtRegisterClassicReactor as any)(wrapped, 'renderLinkToElement');
   };
 
   // id attribute (doesn't change over the element's lifetime, so no reactor)
@@ -10067,6 +10067,26 @@ function handleManagedComponent(
       // primitive value equals (a new LocalValue may have been assigned
       // and the old effect is disconnected from it).
       if (inst && inst._value && typeof inst._value.__syncFromUpstream === 'function') {
+        // Leak-debug: this is the final clobber site for typed input
+        // values. A cache HIT here on the next test (after a leaked
+        // reactor triggered re-render) wipes user input.
+        if ((globalThis as any).__GXT_LEAK_DEBUG__) {
+          try {
+            const Q = (globalThis as any).QUnit;
+            const t = Q?.config?.current;
+            const liveVal =
+              cached.liveEl && cached.liveEl.isConnected
+                ? (cached.liveEl as HTMLInputElement).value
+                : '<no-live>';
+            const upstreamVal = inst.value;
+            // eslint-disable-next-line no-console
+            console.log(
+              `[leak-debug] cacheHIT __syncFromUpstream slot=${slotKey} test="${t?.module?.name || ''}::${t?.testName || ''}" live=${JSON.stringify(liveVal)} upstream=${JSON.stringify(upstreamVal)}`
+            );
+          } catch {
+            /* ignore */
+          }
+        }
         inst._value.__syncFromUpstream();
         if (cached.liveEl && cached.liveEl.isConnected) {
           try {

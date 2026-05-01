@@ -114,10 +114,10 @@ const touchClassicBridge: () => void =
   typeof (_glimmerValidator as any).touchClassicBridge === 'function'
     ? (_glimmerValidator as any).touchClassicBridge
     : () => {};
-const registerClassicReactor: (cb: () => void) => () => void =
+const registerClassicReactor: (cb: () => void, source?: string) => () => void =
   typeof (_glimmerValidator as any).registerClassicReactor === 'function'
     ? (_glimmerValidator as any).registerClassicReactor
-    : (_: () => void) => () => {};
+    : (_: () => void, _src?: string) => () => {};
 import { tagForObject } from '@ember/-internals/metal';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -2148,7 +2148,7 @@ function _renderComponentGxt(
           // detached-element use case).
         }
         fireReactor();
-      });
+      }, '_renderComponentGxt');
     }
 
     try {
