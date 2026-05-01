@@ -648,28 +648,21 @@ export function touchClassicBridge(): void {
 // invoked synchronously at the end of dirtyTagFor after the classic tag
 // has been updated but before the runloop flush. Registrants are expected
 // to be idempotent and cheap.
-// Each reactor is tagged at registration with the QUnit test it was
-// created in. On fire, reactors registered in a different test than
-// the one currently executing are unconditionally invalid (a real-app
-// reactor could never legitimately survive the test it was created
-// for) and we self-unsubscribe before invoking them. This replaces a
-// previous heuristic — a "_disconnectedTicks > 4" tick counter on the
-// target element — that proved unreliable: targetElement is often the
-// long-lived #qunit-fixture (which never disconnects between tests),
-// and routing tests reattach LinkTo elements between tests, resetting
-// the counter before it can trip. The diagnostic that confirmed the
-// leak path lives behind `__GXT_LEAK_DEBUG__`; the fix is on by
-// default. Tagging is always-on but cheap (one WeakMap put).
+// === LEAK DIAGNOSTICS ===
+// Each reactor is tagged with metadata at registration time so we can
+// detect cross-test leakage: a reactor registered during test A that
+// fires during test B is by definition a leak. Enabled via the global
+// flag `__GXT_LEAK_DEBUG__` (set in index.html or via URL param).
 interface ReactorMeta {
   id: number;
   source: string;
   registeredAtTest: string;
+  registeredAtTime: number;
   fireCount: number;
 }
 let _reactorIdCounter = 0;
 const _reactorMeta = new WeakMap<() => void, ReactorMeta>();
 const _classicReactors = new Set<() => void>();
-const NO_TEST = '<no-test>';
 
 function _currentTestName(): string {
   try {
@@ -679,62 +672,60 @@ function _currentTestName(): string {
   } catch {
     /* ignore */
   }
-  return NO_TEST;
+  return '<no-test>';
 }
 
 export function registerClassicReactor(cb: () => void, source?: string): () => void {
   _classicReactors.add(cb);
-  const id = ++_reactorIdCounter;
-  _reactorMeta.set(cb, {
-    id,
-    source: source || '<unknown>',
-    registeredAtTest: _currentTestName(),
-    fireCount: 0,
-  });
-  if ((globalThis as any).__GXT_LEAK_DEBUG__ && (id <= 50 || id % 100 === 0)) {
-    // eslint-disable-next-line no-console
-    console.log(
-      `[leak-debug] registerClassicReactor #${id} source=${source || '?'} test="${_currentTestName()}" total=${_classicReactors.size}`
-    );
+  if ((globalThis as any).__GXT_LEAK_DEBUG__) {
+    const id = ++_reactorIdCounter;
+    _reactorMeta.set(cb, {
+      id,
+      source: source || '<unknown>',
+      registeredAtTest: _currentTestName(),
+      registeredAtTime: Date.now(),
+      fireCount: 0,
+    });
+    if (id <= 50 || id % 100 === 0) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[leak-debug] registerClassicReactor #${id} source=${source || '?'} test="${_currentTestName()}" total=${_classicReactors.size}`
+      );
+    }
   }
   return () => {
     _classicReactors.delete(cb);
-    _reactorMeta.delete(cb);
+    if ((globalThis as any).__GXT_LEAK_DEBUG__) {
+      _reactorMeta.delete(cb);
+    }
   };
 }
 
 function _fireClassicReactors() {
   if (_classicReactors.size === 0) return;
-  // Copy to avoid mutation during iteration (reactors may unsubscribe
-  // themselves below, mutating _classicReactors).
+  // Copy to avoid mutation during iteration
   const snapshot = Array.from(_classicReactors);
   const debug = (globalThis as any).__GXT_LEAK_DEBUG__;
-  const currentTest = _currentTestName();
+  const currentTest = debug ? _currentTestName() : '';
   for (const cb of snapshot) {
-    const meta = _reactorMeta.get(cb);
-    // Cross-test leak guard: reactors registered during a known test
-    // that fire during a different known test are leaks. Unsubscribe
-    // and skip the call. We only enforce this when both registration
-    // and fire happen with a known test (i.e. neither is <no-test>);
-    // module-init and pre-QUnit reactors are intentionally global.
-    if (
-      meta &&
-      meta.registeredAtTest !== NO_TEST &&
-      currentTest !== NO_TEST &&
-      meta.registeredAtTest !== currentTest
-    ) {
-      if (debug) {
+    if (debug) {
+      const meta = _reactorMeta.get(cb);
+      if (meta) {
         meta.fireCount++;
-        // eslint-disable-next-line no-console
-        console.log(
-          `[leak-debug] DROP reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" fires=${meta.fireCount}`
-        );
+        // Cross-test leak: reactor registered during a different test
+        // than the one currently executing.
+        if (
+          meta.registeredAtTest !== '<no-test>' &&
+          currentTest !== '<no-test>' &&
+          meta.registeredAtTest !== currentTest
+        ) {
+          // eslint-disable-next-line no-console
+          console.log(
+            `[leak-debug] LEAK reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" fires=${meta.fireCount}`
+          );
+        }
       }
-      _classicReactors.delete(cb);
-      _reactorMeta.delete(cb);
-      continue;
     }
-    if (debug && meta) meta.fireCount++;
     try {
       cb();
     } catch {
