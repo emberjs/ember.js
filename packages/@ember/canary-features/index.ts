@@ -13,7 +13,7 @@ import { ENV } from '@ember/-internals/environment';
 
 export const DEFAULT_FEATURES = {
   // FLAG_NAME: true/false
-  NEW_KEYWORDS_2026_05: true,
+  NEW_KEYWORDS_2026_05: false,
 };
 
 /**

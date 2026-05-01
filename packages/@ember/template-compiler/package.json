@@ -9,6 +9,7 @@
     "./types": "./lib/types.ts"
   },
   "dependencies": {
+    "@ember/canary-features": "workspace:*",
     "@ember/-internals": "workspace:*",
     "@ember/component": "workspace:*",
     "@ember/debug": "workspace:*",
