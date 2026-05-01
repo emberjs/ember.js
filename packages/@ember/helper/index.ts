@@ -473,6 +473,8 @@ export const fn = glimmerFn as FnHelper;
 export interface FnHelper extends Opaque<'helper:fn'> {}
 
 /**
+ * @private - temporarily private until broader team approval
+ *
  * The `element` helper lets you dynamically set the tag name of an element.
  *
  * ```js
@@ -514,6 +516,8 @@ export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
 
 /**
+ * @private - temporarily private until broader team approval
+ *
  * The `{{eq}}` helper returns `true` if its two arguments are strictly equal
  * (`===`). Takes exactly two arguments.
  *
@@ -538,6 +542,8 @@ export const eq = glimmerEq as unknown as EqHelper;
 export interface EqHelper extends Opaque<'helper:eq'> {}
 
 /**
+ * @private - temporarily private until broader team approval
+ *
  * The `{{neq}}` helper returns `true` if its two arguments are strictly
  * not equal (`!==`). Takes exactly two arguments.
  *
