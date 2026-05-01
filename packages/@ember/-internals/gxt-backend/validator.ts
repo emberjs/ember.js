@@ -659,6 +659,16 @@ interface ReactorMeta {
   registeredAtTest: string;
   registeredAtTime: number;
   fireCount: number;
+  // Number of fires in the CURRENT cross-test cycle (i.e., a test
+  // that differs from registeredAtTest). Reset whenever the
+  // foreign test changes. A reactor that fires this many times in
+  // a foreign test is, by definition, leaked: real-app reactors
+  // don't outlive the test that registered them.
+  foreignFires: number;
+  // The most recent foreign test name we counted fires for. When
+  // _fireClassicReactors observes a different foreign test (or
+  // returns to the registration test), foreignFires is reset.
+  foreignTest: string;
 }
 let _reactorIdCounter = 0;
 const _reactorMeta = new WeakMap<() => void, ReactorMeta>();
@@ -677,15 +687,19 @@ function _currentTestName(): string {
 
 export function registerClassicReactor(cb: () => void, source?: string): () => void {
   _classicReactors.add(cb);
+  // Always track metadata — the cross-test foreign-fire cap below is
+  // production behavior, not just diagnostic. Cheap (one WeakMap put).
+  const id = ++_reactorIdCounter;
+  _reactorMeta.set(cb, {
+    id,
+    source: source || '<unknown>',
+    registeredAtTest: _currentTestName(),
+    registeredAtTime: Date.now(),
+    fireCount: 0,
+    foreignFires: 0,
+    foreignTest: '',
+  });
   if ((globalThis as any).__GXT_LEAK_DEBUG__) {
-    const id = ++_reactorIdCounter;
-    _reactorMeta.set(cb, {
-      id,
-      source: source || '<unknown>',
-      registeredAtTest: _currentTestName(),
-      registeredAtTime: Date.now(),
-      fireCount: 0,
-    });
     if (id <= 50 || id % 100 === 0) {
       // eslint-disable-next-line no-console
       console.log(
@@ -695,39 +709,40 @@ export function registerClassicReactor(cb: () => void, source?: string): () => v
   }
   return () => {
     _classicReactors.delete(cb);
-    if ((globalThis as any).__GXT_LEAK_DEBUG__) {
-      _reactorMeta.delete(cb);
-    }
+    _reactorMeta.delete(cb);
   };
 }
 
-// Hard cap on per-reactor fires to break runaway loops. A leaked
-// classic-tag reactor whose self-unsub heuristic doesn't trip can
-// fire 10,000+ times across unrelated tests (diagnostic runs showed
-// a single reactor at 9,391 fires before the testem 1200s browser
-// timeout fired). The cap doesn't stop the leak — it stops the
-// runaway from saturating the runloop and hanging CI. Real-app
-// reactors fire bounded times per render path; 10,000 fires for a
-// single reactor across the lifetime of one page load is two orders
-// of magnitude above any legitimate bound.
-const REACTOR_FIRE_HARD_CAP = 10_000;
+// Hard cap on TOTAL fires (any test). Catches the rare case where a
+// reactor is in a tight self-fire loop within one test. 50,000 is far
+// above any plausible legitimate bound — CI evidence shows real
+// reactors fire ~1,000 times per test for renderComponent paths.
+const REACTOR_FIRE_HARD_CAP = 50_000;
+
+// Cap on fires WITHIN A SINGLE foreign test (a test other than the
+// one that registered the reactor). This is the leak signature: a
+// reactor registered in test A that fires hundreds of times in test
+// B is by definition stale — real-app reactors don't survive their
+// owning test. CI evidence (commit 70c212414a run) showed leaked
+// reactors firing 1000+ times per foreign test, with 8-10 leaked
+// reactors active simultaneously. 100 is well below 1000 so it
+// catches the leak early; it's also above the maybe-50 fires a
+// real-app reactor might do during routing-test cross-context
+// cleanup, leaving headroom.
+const REACTOR_FOREIGN_FIRE_CAP = 100;
+const NO_TEST_SENTINEL = '<no-test>';
 
 function _fireClassicReactors() {
   if (_classicReactors.size === 0) return;
   // Copy to avoid mutation during iteration
   const snapshot = Array.from(_classicReactors);
   const debug = (globalThis as any).__GXT_LEAK_DEBUG__;
-  const currentTest = debug ? _currentTestName() : '';
+  const currentTest = _currentTestName();
   for (const cb of snapshot) {
     const meta = _reactorMeta.get(cb);
     if (meta) {
       meta.fireCount++;
       if (meta.fireCount > REACTOR_FIRE_HARD_CAP) {
-        // Self-destruct: this reactor has fired beyond any plausible
-        // bound and is almost certainly leaked. Skip the call and
-        // remove it from the registry so it stops contributing to
-        // the runloop saturation that produces the testem 1200s
-        // browser timeout.
         if (debug) {
           // eslint-disable-next-line no-console
           console.log(
@@ -738,19 +753,40 @@ function _fireClassicReactors() {
         _reactorMeta.delete(cb);
         continue;
       }
-      if (debug) {
-        // Cross-test leak: reactor registered during a different test
-        // than the one currently executing.
-        if (
-          meta.registeredAtTest !== '<no-test>' &&
-          currentTest !== '<no-test>' &&
-          meta.registeredAtTest !== currentTest
-        ) {
+      // Cross-test foreign-fire cap: count fires in a foreign test
+      // (different from registeredAtTest). Reset when foreign test
+      // changes (next test, or back to registration test).
+      const isForeign =
+        meta.registeredAtTest !== NO_TEST_SENTINEL &&
+        currentTest !== NO_TEST_SENTINEL &&
+        meta.registeredAtTest !== currentTest;
+      if (isForeign) {
+        if (meta.foreignTest !== currentTest) {
+          meta.foreignTest = currentTest;
+          meta.foreignFires = 0;
+        }
+        meta.foreignFires++;
+        if (meta.foreignFires > REACTOR_FOREIGN_FIRE_CAP) {
+          if (debug) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[leak-debug] CAP_FOREIGN reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" foreignFires=${meta.foreignFires} — unsubscribing`
+            );
+          }
+          _classicReactors.delete(cb);
+          _reactorMeta.delete(cb);
+          continue;
+        }
+        if (debug) {
           // eslint-disable-next-line no-console
           console.log(
-            `[leak-debug] LEAK reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" fires=${meta.fireCount}`
+            `[leak-debug] LEAK reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" fires=${meta.fireCount} foreignFires=${meta.foreignFires}`
           );
         }
+      } else {
+        // We're in registration test (or NO_TEST). Reset foreign tracking.
+        meta.foreignTest = '';
+        meta.foreignFires = 0;
       }
     }
     try {
