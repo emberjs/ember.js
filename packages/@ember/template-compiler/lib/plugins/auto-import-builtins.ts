@@ -1,6 +1,7 @@
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import type { EmberASTPluginEnvironment } from '../types';
 import { isPath, trackLocals } from './utils';
+import { NEW_KEYWORDS_2026_05 } from '@ember/canary-features';
 
 /**
  @module ember
@@ -14,6 +15,13 @@ import { isPath, trackLocals } from './utils';
 */
 
 export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTPlugin {
+  if (!NEW_KEYWORDS_2026_05) {
+    return {
+      name: 'auto-import-built-ins-disabled',
+      visitor: {},
+    };
+  }
+
   let { hasLocal, visitor } = trackLocals(env);
 
   return {
