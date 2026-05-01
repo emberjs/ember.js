@@ -101,27 +101,8 @@
       });
 
       QUnit.testDone(function () {
-        // Drain classic reactors registered during this test. After
-        // testDone the test's components are torn down, so any reactor
-        // still alive is leaked and must not fire in later tests. The
-        // drain matches by registeredAtTest tag (set in validator.ts).
-        try {
-          var done = QUnit.config.current;
-          var doneName = done
-            ? (done.module?.name || '') + ' :: ' + (done.testName || '')
-            : '';
-          if (
-            doneName &&
-            typeof globalThis.__gxtDrainReactorsForTest === 'function'
-          ) {
-            globalThis.__gxtDrainReactorsForTest(doneName);
-          }
-        } catch (_e) {
-          /* ignore */
-        }
         // Leak-debug: record reactor population at end of each test.
-        // A reactor that survives the drain is a no-test reactor or
-        // a registration we missed.
+        // A reactor that survives the cleanup hook is a confirmed leak.
         try {
           if (typeof globalThis.__gxtLeakSnapshot === 'function') {
             globalThis.__gxtLeakSnapshot('testDone:' + (QUnit.config.current?.testName || ''));
