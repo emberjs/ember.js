@@ -5784,6 +5784,16 @@ setInterval(() => {
   if (typeof destroyTracked === 'function') {
     destroyTracked();
   }
+  // Eagerly drain any classic-tag reactor cleanups for renderComponent
+  // calls whose synthetic plain-object owner ({}) isn't otherwise in a
+  // destroy chain (the renderComponent API documents `owner = {}` as the
+  // default — see _wireOwnerDestroyChain in renderer.ts). Without this
+  // drain, those reactors leak across the QUnit testStart/testDone
+  // boundary and clobber shared GXT sync state on subsequent tests.
+  const drainPending = (globalThis as any).__gxtDrainPendingRenderCleanups;
+  if (typeof drainPending === 'function') {
+    drainPending();
+  }
   // Reset block params stack
   blockParamsStack.length = 0;
   // Reset current slot params

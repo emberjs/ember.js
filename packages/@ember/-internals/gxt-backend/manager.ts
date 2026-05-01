@@ -4134,6 +4134,26 @@ let _preRerenderSnapshot: Set<any> = new Set();
     }
   }
 
+  // Phase 0 (eager): drain any classic-tag reactor unsubs registered
+  // on instances. These unsubs (set by renderLinkToElement) need to
+  // fire SYNCHRONOUSLY here, before Ember's async runloop-based
+  // destroy chain runs — otherwise the reactor stays in
+  // _classicReactors across the testStart/testDone boundary and
+  // fires on the next test's tag dirties. The willDestroy monkey-
+  // patch in renderLinkToElement is a fallback for instances not
+  // reached by this phase.
+  for (const instance of instances) {
+    const unsub = instance && instance.__gxtClassicReactorUnsub;
+    if (typeof unsub === 'function') {
+      try {
+        unsub();
+      } catch {
+        /* ignore */
+      }
+      instance.__gxtClassicReactorUnsub = null;
+    }
+  }
+
   // Phase 1: willDestroyElement + willClearRender (top-down, element still present)
   for (const instance of instances) {
     try {
@@ -9517,6 +9537,36 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
       }
     };
     unsub = (_gxtRegisterClassicReactor as any)(wrapped, 'renderLinkToElement');
+    // Tie the reactor's lifetime to the LinkTo instance's lifetime.
+    // The element-detachment heuristic above is unreliable in routing
+    // tests that reattach the same <a> across transitions (counter
+    // resets each time); without an additional escape hatch the
+    // reactor lives forever and fires across unrelated tests.
+    //
+    // Two hooks, both pointing at the same unsub:
+    //
+    // 1. instance.__gxtClassicReactorUnsub — picked up SYNCHRONOUSLY
+    //    by Phase 0 of __gxtDestroyTrackedInstances. Ember's async
+    //    runloop-based destroy chain doesn't fire willDestroy soon
+    //    enough to prevent the reactor from leaking across the
+    //    testStart/testDone boundary, so we drain it eagerly there.
+    // 2. willDestroy override — fallback for instances not reached
+    //    by __gxtDestroyTrackedInstances (e.g. component destroyed
+    //    via a route transition rather than test teardown).
+    if (instance && typeof instance === 'object' && !instance.__gxtLinkToReactorUnsubInstalled) {
+      instance.__gxtClassicReactorUnsub = unsub;
+      const prior = instance.willDestroy;
+      const priorBound = typeof prior === 'function' ? prior.bind(instance) : null;
+      instance.willDestroy = function () {
+        try {
+          unsub();
+        } catch {
+          /* ignore */
+        }
+        if (priorBound) return priorBound();
+      };
+      instance.__gxtLinkToReactorUnsubInstalled = true;
+    }
   };
 
   // id attribute (doesn't change over the element's lifetime, so no reactor)
