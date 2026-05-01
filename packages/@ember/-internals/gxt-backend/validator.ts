@@ -671,6 +671,12 @@ interface ReactorMeta {
   // _fireClassicReactors observes a different foreign test (or
   // returns to the registration test), foreignFires is reset.
   foreignTest: string;
+  // True after the reactor has hit a foreign-fire cap. Soft-disabled
+  // reactors stay in _classicReactors (so iteration over the Set is
+  // unchanged — the classic-tag bridge mechanics that some tests
+  // rely on stay intact) but their cb is not invoked. This avoids
+  // the expensive work without disturbing the bridge.
+  disabled: boolean;
 }
 let _reactorIdCounter = 0;
 const _reactorMeta = new WeakMap<() => void, ReactorMeta>();
@@ -701,6 +707,7 @@ export function registerClassicReactor(cb: () => void, source?: string): () => v
     foreignFires: 0,
     totalForeignFires: 0,
     foreignTest: '',
+    disabled: false,
   });
   if ((globalThis as any).__GXT_LEAK_DEBUG__) {
     if (id <= 50 || id % 100 === 0) {
@@ -722,19 +729,20 @@ export function registerClassicReactor(cb: () => void, source?: string): () => v
 // reactors fire ~1,000 times per test for renderComponent paths.
 const REACTOR_FIRE_HARD_CAP = 50_000;
 
-// Cap on fires WITHIN A SINGLE foreign test (catches fast leaks
-// where one test triggers many cross-test fires).
+// Cap on fires WITHIN A SINGLE foreign test (catches fast leaks).
 const REACTOR_FOREIGN_FIRE_CAP = 100;
 // Cap on CUMULATIVE fires across all foreign tests (never resets).
-// Catches slow leaks where fires are spread across many tests but
-// never concentrate enough in any one. CI evidence: leaked reactors
-// fire ~50 times per foreign test, accumulating 1000-1140 lifetime
-// fires before timeout. 1500 sits above the observed peak so
-// legitimate cross-test reactor activity (some Ember test
-// infrastructure does propagate dirties across tests for shared
-// setup) isn't culled, while still bounding the unbounded-runaway
-// case where leaked reactors would fire indefinitely.
-const REACTOR_TOTAL_FOREIGN_FIRE_CAP = 1500;
+// CI evidence (commit a42b371d1b): cap at 200 with hard unsub fixed
+// the 41min hang BUT regressed 700+ unrelated tests because
+// removing the reactor from _classicReactors broke side-channel
+// classic-tag bridge mechanics that those tests rely on. Cap at
+// 1500 (commit bd08bd01d5) didn't catch the leak at all (hang
+// returned). The right behavior: SOFT-DISABLE — keep the reactor
+// in _classicReactors so iteration cost is paid (preserving any
+// bookkeeping the bridge does) but skip invoking cb (the actual
+// expensive work that produces the runaway). Cap stays at 200
+// since the soft disable doesn't disturb the bridge.
+const REACTOR_TOTAL_FOREIGN_FIRE_CAP = 200;
 const NO_TEST_SENTINEL = '<no-test>';
 
 function _fireClassicReactors() {
@@ -746,21 +754,21 @@ function _fireClassicReactors() {
   for (const cb of snapshot) {
     const meta = _reactorMeta.get(cb);
     if (meta) {
+      // Already soft-disabled — skip the call, leave it in the Set.
+      if (meta.disabled) {
+        continue;
+      }
       meta.fireCount++;
       if (meta.fireCount > REACTOR_FIRE_HARD_CAP) {
         if (debug) {
           // eslint-disable-next-line no-console
           console.log(
-            `[leak-debug] CAP reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" fires=${meta.fireCount} — unsubscribing`
+            `[leak-debug] CAP reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" fires=${meta.fireCount} — disabling`
           );
         }
-        _classicReactors.delete(cb);
-        _reactorMeta.delete(cb);
+        meta.disabled = true;
         continue;
       }
-      // Cross-test foreign-fire cap: count fires in a foreign test
-      // (different from registeredAtTest). Reset when foreign test
-      // changes (next test, or back to registration test).
       const isForeign =
         meta.registeredAtTest !== NO_TEST_SENTINEL &&
         currentTest !== NO_TEST_SENTINEL &&
@@ -779,11 +787,10 @@ function _fireClassicReactors() {
           if (debug) {
             // eslint-disable-next-line no-console
             console.log(
-              `[leak-debug] CAP_FOREIGN reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" foreignFires=${meta.foreignFires} totalForeignFires=${meta.totalForeignFires} — unsubscribing`
+              `[leak-debug] CAP_FOREIGN reactor #${meta.id} src=${meta.source} regAt="${meta.registeredAtTest}" firedIn="${currentTest}" foreignFires=${meta.foreignFires} totalForeignFires=${meta.totalForeignFires} — disabling`
             );
           }
-          _classicReactors.delete(cb);
-          _reactorMeta.delete(cb);
+          meta.disabled = true;
           continue;
         }
         if (debug) {
@@ -793,9 +800,6 @@ function _fireClassicReactors() {
           );
         }
       } else {
-        // We're in registration test (or NO_TEST). Reset per-foreign-test
-        // tracking but PRESERVE totalForeignFires (it accumulates across
-        // the reactor's lifetime).
         meta.foreignTest = '';
         meta.foreignFires = 0;
       }
