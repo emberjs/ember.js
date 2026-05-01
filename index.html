@@ -142,9 +142,8 @@
       } catch (_e) {
         /* ignore */
       }
-      // TEMPORARY: force-enable leak diagnostics for CI debugging.
-      // Remove this line once the cumulative-state failures are diagnosed.
-      globalThis.__GXT_LEAK_DEBUG__ = true;
+      // Leak diagnostics flag — kept off by default. Toggle via URL
+      // (?gxtLeakDebug=true) only when reproducing the cross-test leak.
 
       // Global operation counter to detect infinite synchronous loops
       // Any tight loop will increment this. When it exceeds the limit,
