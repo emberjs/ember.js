@@ -1,8 +1,3 @@
-/**
- * @deprecated use RichIteratorResult<Tick, Return> or TemplateIterator instead
- */
-import './lib/bootstrap';
-
 import type { RichIteratorResult } from '@glimmer/interfaces';
 
 export { clear, ConcreteBounds, CursorImpl } from './lib/bounds';
