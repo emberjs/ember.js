@@ -10,8 +10,8 @@ import type {
   InternalHelperManager,
   Owner,
 } from '@glimmer/interfaces';
+import { debugAssert } from '@glimmer/debug-util';
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import { debugAssert } from '@glimmer/global-context';
 import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 import type { ManagerFactory } from './index';

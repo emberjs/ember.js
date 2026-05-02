@@ -14,7 +14,10 @@ import type {
   UpdatableTag,
   VOLATILE_TAG_ID as IVOLATILE_TAG_ID,
 } from '@glimmer/interfaces';
-import { scheduleRevalidate } from '@glimmer/global-context';
+export let scheduleRevalidate: () => void = () => {};
+export function setScheduleRevalidate(fn: () => void): void {
+  scheduleRevalidate = fn;
+}
 
 import { debug } from './debug';
 import { unwrap } from './utils';

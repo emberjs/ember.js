@@ -539,6 +539,11 @@ const allowedCycles = [
   // external and not causing problems
   'node_modules/rsvp/lib/rsvp',
 
+  // @glimmer/reference imports get/set/_getProp/_setProp directly from
+  // @ember/-internals/metal, which closes the cycle metal -> @glimmer/manager
+  // -> @glimmer/reference -> metal.
+  'packages/@glimmer/reference',
+
   // TODO: these would be good to fix once they're in this repo
   'packages/@glimmer/debug',
   'packages/@glimmer/runtime',

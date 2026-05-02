@@ -10,9 +10,8 @@ import type {
   SimpleElement,
   UpdatableTag,
 } from '@glimmer/interfaces';
-import { castToBrowser } from '@glimmer/debug-util';
+import { castToBrowser, debugAssert } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
-import { debugAssert } from '@glimmer/global-context';
 import { valueForRef } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
 import { createUpdatableTag, untrack } from '@glimmer/validator';

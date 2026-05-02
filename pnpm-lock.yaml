@@ -330,9 +330,6 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../../@glimmer/global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../../@glimmer/interfaces
@@ -1312,6 +1309,9 @@ importers:
 
   packages/@glimmer-workspace/integration-tests:
     dependencies:
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../../@ember/debug
       '@glimmer-workspace/test-utils':
         specifier: workspace:*
         version: link:../test-utils
@@ -1321,9 +1321,6 @@ importers:
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../../@glimmer/destroyable
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../../@glimmer/global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../../@glimmer/interfaces
@@ -1439,9 +1436,6 @@ importers:
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../../../@glimmer/destroyable
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../../../@glimmer/global-context
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../../../@glimmer/local-debug-flags
@@ -1650,16 +1644,16 @@ importers:
 
   packages/@glimmer/debug-util:
     dependencies:
-      '@glimmer/interfaces':
-        specifier: workspace:*
-        version: link:../interfaces
-    devDependencies:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
+    devDependencies:
       eslint:
         specifier: ^9.20.1
         version: 9.39.4
@@ -1688,9 +1682,6 @@ importers:
 
   packages/@glimmer/destroyable:
     dependencies:
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
@@ -1722,9 +1713,6 @@ importers:
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:..
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../../global-context
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../util
@@ -1760,24 +1748,6 @@ importers:
 
   packages/@glimmer/env: {}
 
-  packages/@glimmer/global-context:
-    devDependencies:
-      '@glimmer/env':
-        specifier: workspace:*
-        version: link:../env
-      eslint:
-        specifier: ^9.20.1
-        version: 9.39.4
-      publint:
-        specifier: ^0.3.2
-        version: 0.3.18
-      rollup:
-        specifier: ^4.2.0
-        version: 4.60.0
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
   packages/@glimmer/interfaces:
     dependencies:
       '@simple-dom/interface':
@@ -1810,9 +1780,6 @@ importers:
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../destroyable
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
@@ -2027,9 +1994,9 @@ importers:
 
   packages/@glimmer/reference:
     dependencies:
-      '@glimmer/global-context':
+      '@ember/-internals':
         specifier: workspace:*
-        version: link:../global-context
+        version: link:../../@ember/-internals
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
@@ -2064,9 +2031,6 @@ importers:
 
   packages/@glimmer/reference/test:
     dependencies:
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../../global-context
       '@glimmer/reference':
         specifier: workspace:*
         version: link:..
@@ -2083,12 +2047,15 @@ importers:
 
   packages/@glimmer/runtime:
     dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../../@ember/-internals
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../../@ember/debug
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../destroyable
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
@@ -2246,9 +2213,9 @@ importers:
 
   packages/@glimmer/validator:
     dependencies:
-      '@glimmer/global-context':
+      '@ember/debug':
         specifier: workspace:*
-        version: link:../global-context
+        version: link:../../@ember/debug
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
@@ -2277,9 +2244,6 @@ importers:
 
   packages/@glimmer/validator/test:
     dependencies:
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../../global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../../interfaces

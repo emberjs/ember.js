@@ -4,7 +4,6 @@
   "version": "0.92.0",
   "scripts": {},
   "dependencies": {
-    "@glimmer/global-context": "workspace:*",
     "@glimmer/reference": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/validator": "workspace:*"

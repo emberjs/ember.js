@@ -8,6 +8,7 @@ import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { consumeTag } from '@glimmer/validator';
+import { EachInWrapper } from './each-in-wrapper';
 import { internalHelper } from './internal-helper';
 
 /**
@@ -163,10 +164,6 @@ import { internalHelper } from './internal-helper';
   @public
   @since 2.1.0
 */
-export class EachInWrapper {
-  constructor(public inner: unknown) {}
-}
-
 export default internalHelper(({ positional }: CapturedArguments) => {
   const inner = positional[0];
   assert('expected at least one positional arg', inner);

@@ -10,8 +10,8 @@ import type {
   UnboundReference,
 } from '@glimmer/interfaces';
 import type { Revision, Tag } from '@glimmer/validator';
+import { _getProp as getProp, _setProp as setProp } from '@ember/-internals/metal';
 import { expect } from '@glimmer/debug-util';
-import { getProp, setProp } from '@glimmer/global-context';
 import { isDict } from '@glimmer/util';
 import {
   CONSTANT_TAG,
@@ -233,7 +233,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
         const parent = valueForRef(parentRef);
 
         if (isDict(parent)) {
-          return setProp(parent, path, val);
+          setProp(parent, path, val);
         }
       }
     );

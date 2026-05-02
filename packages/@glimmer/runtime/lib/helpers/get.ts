@@ -1,5 +1,5 @@
+import { get as getPath, set as setPath } from '@ember/-internals/metal';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { getPath, setPath } from '@glimmer/global-context';
 import { createComputeRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import { isDict } from '@glimmer/util';
 

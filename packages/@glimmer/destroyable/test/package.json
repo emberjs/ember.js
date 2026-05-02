@@ -5,7 +5,6 @@
   "scripts": {},
   "dependencies": {
     "@glimmer/destroyable": "workspace:*",
-    "@glimmer/global-context": "workspace:*",
     "@glimmer/util": "workspace:*"
   },
   "devDependencies": {

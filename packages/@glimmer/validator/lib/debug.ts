@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- @fixme */
 import type { Tag } from '@glimmer/interfaces';
 import { asPresentArray, getLast } from '@glimmer/debug-util';
-import { assert } from '@glimmer/global-context';
+import { assert } from '@ember/debug';
 
 interface DebugTransaction {
   beginTrackingTransaction?:
@@ -207,7 +207,7 @@ if (DEBUG) {
     // few lines of the stack trace and let users know where the actual error
     // occurred.
     try {
-      assert(false, makeTrackingErrorMessage(transaction, obj, keyName));
+      assert(makeTrackingErrorMessage(transaction, obj, keyName), false);
     } catch (e) {
       if (hasStack(e)) {
         let updateStackBegin = e.stack.indexOf('Stack trace for the update:');

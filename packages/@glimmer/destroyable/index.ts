@@ -1,7 +1,19 @@
 import { DEBUG } from '@glimmer/env';
 import type { Destroyable, Destructor } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/debug-util';
-import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
+
+export let scheduleDestroy: <T extends Destroyable>(
+  destroyable: T,
+  destructor: Destructor<T>
+) => void = () => {};
+export let scheduleDestroyed: (finalizer: () => void) => void = () => {};
+export function setDestructionSchedulers(
+  destroy: typeof scheduleDestroy,
+  destroyed: typeof scheduleDestroyed
+): void {
+  scheduleDestroy = destroy;
+  scheduleDestroyed = destroyed;
+}
 
 const LIVE_STATE = 0;
 const DESTROYING_STATE = 1;

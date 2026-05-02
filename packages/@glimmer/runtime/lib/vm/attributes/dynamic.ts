@@ -1,3 +1,6 @@
+import { isHTMLSafe } from '@ember/-internals/glimmer/lib/utils/string';
+import { constructStyleDeprecationMessage } from '@ember/-internals/views';
+import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type {
   AttributeCursor,
@@ -11,7 +14,14 @@ import type {
 } from '@glimmer/interfaces';
 import { NS_SVG } from '@glimmer/constants';
 import { castToBrowser } from '@glimmer/debug-util';
-import { warnIfStyleNotTrusted } from '@glimmer/global-context';
+
+function warnIfStyleNotTrusted(value: unknown): void {
+  warn(
+    constructStyleDeprecationMessage(String(value)),
+    value === null || value === undefined || isHTMLSafe(value),
+    { id: 'ember-htmlbars.style-xss-warning' }
+  );
+}
 
 import type { MutableKey } from '../element-builder';
 

@@ -50,6 +50,7 @@ export {
   UPDATE_TAG as updateTag,
   validateTag,
   valueForTag,
+  setScheduleRevalidate,
   VOLATILE,
   VOLATILE_TAG,
   VolatileTag,

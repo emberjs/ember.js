@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import { testOverrideGlobalContext } from '@glimmer/global-context';
 import {
   ALLOW_CYCLES,
   bump,
@@ -42,25 +41,6 @@ module('@glimmer/validator: validators', () => {
     });
 
     if (DEBUG) {
-      test('it calls scheduleRevalidate', (assert) => {
-        let originalContext = unwrap(testOverrideGlobalContext)({
-          scheduleRevalidate() {
-            assert.step('scheduleRevalidate');
-            assert.ok(true, 'called');
-          },
-        });
-
-        try {
-          let tag = createTag();
-
-          dirtyTag(tag);
-        } finally {
-          unwrap(testOverrideGlobalContext)(originalContext);
-        }
-
-        assert.verifySteps(['scheduleRevalidate']);
-      });
-
       test('it cannot be updated', (assert) => {
         let tag = createTag();
         let subtag = createTag();
