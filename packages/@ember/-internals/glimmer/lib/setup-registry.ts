@@ -6,10 +6,14 @@ import Input from './components/input';
 import LinkTo from './components/link-to';
 import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
-import { Renderer } from './renderer';
+import { Renderer } from './classic-renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
+// Side-effect import: registers `-mount` and `-outlet` as built-in keyword
+// helpers. Importing this here keeps the renderer free of routing/engine
+// dependencies so apps that only use `renderComponent` don't pay for them.
+import './syntax/register-routing-keywords';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false

@@ -40,9 +40,6 @@ import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as uniqueId } from './helpers/unique-id';
 
-import { mountHelper } from './syntax/mount';
-import { outletHelper } from './syntax/outlet';
-
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
@@ -96,10 +93,19 @@ const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   '-normalize-class': normalizeClassHelper,
   '-resolve': resolve,
   '-track-array': trackArray,
-  '-mount': mountHelper,
-  '-outlet': outletHelper,
   '-in-el-null': inElementNullCheckHelper,
 };
+
+/**
+ * Register an additional built-in keyword helper (e.g. `{{outlet}}`,
+ * `{{mount}}`). Kept separate so the renderer doesn't statically depend on
+ * routing/engine infrastructure — callers that need those helpers must opt
+ * in by importing the registration module (`./syntax/register-routing-keywords`).
+ */
+export function registerBuiltInKeywordHelper(name: string, helper: object): void {
+  BUILTIN_KEYWORD_HELPERS[name] = helper;
+  BUILTIN_HELPERS[name] = helper;
+}
 
 const BUILTIN_HELPERS: Record<string, object> = {
   ...BUILTIN_KEYWORD_HELPERS,
