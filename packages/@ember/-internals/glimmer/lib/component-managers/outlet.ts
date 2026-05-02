@@ -2,7 +2,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { precompileTemplate } from '@ember/template-compilation';
 import type {
   CompilableProgram,
