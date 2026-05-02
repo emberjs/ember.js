@@ -68,7 +68,7 @@ class Disassembler<in out Added extends OperandType> {
   }
 }
 
-export const OPERANDS = Disassembler.build((d) => {
+export const OPERANDS = /*#__PURE__*/ Disassembler.build((d) => {
   return d
     .add(['imm/u32', 'imm/i32', 'imm/u32{todo}', 'imm/i32{todo}'], ({ value }) => ['number', value])
     .add(['const/i32[]'], ({ value, constants }) => [
