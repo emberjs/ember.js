@@ -1,7 +1,7 @@
 import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,

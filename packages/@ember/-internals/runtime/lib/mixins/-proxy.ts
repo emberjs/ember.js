@@ -15,18 +15,15 @@ import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
-import type { UpdatableTag, Tag } from '@glimmer/interfaces';
-import { combine, UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
+import type { Tag } from '@glimmer/interfaces';
+import { combine } from '@glimmer/validator/lib/validators';
 import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 
-export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
-  let content = get(proxy, 'content');
-  // SAFETY: Ideally we'd assert instead of casting, but @glimmer/validator doesn't give us
-  // sufficient public types for this. Previously this code was .js and worked correctly so
-  // hopefully this is sufficiently reliable.
-  updateTag(tagForObject(proxy) as UpdatableTag, tagForObject(content));
-  return content;
-}
+// `contentFor` was extracted to `./content-for` so the `each-in` helper
+// (reachable from the renderer) can use it without dragging in this
+// file's `Mixin.create(...)` graph. Re-exported here for back-compat.
+import { contentFor } from './content-for';
+export { contentFor };
 
 function customTagForProxy(proxy: object, key: string, addMandatorySetter?: boolean): Tag {
   assert('Expected a proxy', isProxy(proxy));

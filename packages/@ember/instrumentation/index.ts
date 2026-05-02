@@ -1,26 +1,27 @@
-/* eslint no-console:off */
-/* global console */
+import {
+  NOOP,
+  _instrumentStart,
+  resetCache,
+  subscribers,
+  type Listener,
+  type Subscriber,
+} from './lib/internal-instrument';
 
-import { ENV } from '@ember/-internals/environment/lib/env';
-import { assert } from '@ember/debug';
-
-export interface Listener<T> {
-  before: (name: string, timestamp: number, payload: object) => T;
-  after: (name: string, timestamp: number, payload: object, beforeValue: T) => void;
-}
-
-export interface Subscriber<T> {
-  pattern: string;
-  regex: RegExp;
-  object: Listener<T>;
-}
+// Re-export with `export ... from` (rather than re-binding via local
+// import + export) so the no-barrel-imports lint rule traces consumers
+// through to `./lib/internal-instrument` and rewrites their imports to
+// the deep path. That keeps the heavy `instrument` / `subscribe` /
+// `unsubscribe` machinery defined below out of bundles that only need
+// the hot path.
+export {
+  _instrumentStart,
+  flaggedInstrument,
+  subscribers,
+} from './lib/internal-instrument';
+export type { Listener, Subscriber, StructuredProfilePayload } from './lib/internal-instrument';
 
 export interface PayloadWithException {
   exception?: any;
-}
-
-export interface StructuredProfilePayload {
-  object: string | object;
 }
 
 /**
@@ -78,23 +79,6 @@ export interface StructuredProfilePayload {
   @static
   @private
 */
-export let subscribers: Subscriber<any>[] = [];
-let cache: { [key: string]: Listener<any>[] } = {};
-
-function populateListeners(name: string) {
-  let listeners: Listener<any>[] = [];
-
-  for (let subscriber of subscribers) {
-    if (subscriber.regex.test(name)) {
-      listeners.push(subscriber.object);
-    }
-  }
-
-  cache[name] = listeners;
-  return listeners;
-}
-
-const time = (): number => performance.now();
 
 type InstrumentCallback<Binding, Result> = (this: Binding) => Result;
 
@@ -172,14 +156,6 @@ export function instrument<Binding, Result>(
   }
 }
 
-export function flaggedInstrument<Result>(
-  _name: string,
-  _payload: object,
-  callback: () => Result
-): Result {
-  return callback();
-}
-
 function withFinalizer<Binding, Result>(
   callback: InstrumentCallback<Binding, Result>,
   finalizer: () => void,
@@ -194,67 +170,6 @@ function withFinalizer<Binding, Result>(
   } finally {
     finalizer();
   }
-}
-
-function NOOP() {}
-
-// private for now
-export function _instrumentStart(name: string, payloadFunc: () => object): () => void;
-export function _instrumentStart<Arg>(
-  name: string,
-  payloadFunc: (arg: Arg) => object,
-  payloadArg: Arg
-): () => void;
-export function _instrumentStart<Arg>(
-  name: string,
-  payloadFunc: ((arg: Arg) => object) | (() => object),
-  payloadArg?: Arg
-): () => void {
-  if (subscribers.length === 0) {
-    return NOOP;
-  }
-
-  let listeners = cache[name];
-
-  if (!listeners) {
-    listeners = populateListeners(name);
-  }
-
-  if (listeners.length === 0) {
-    return NOOP;
-  }
-
-  let payload = payloadFunc(payloadArg!);
-
-  let STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
-  let timeName: string;
-  if (STRUCTURED_PROFILE) {
-    timeName = `${name}: ${(payload as StructuredProfilePayload).object}`;
-    console.time(timeName);
-  }
-
-  let beforeValues: any[] = [];
-  let timestamp = time();
-  for (let listener of listeners) {
-    beforeValues.push(listener.before(name, timestamp, payload));
-  }
-
-  const constListeners = listeners;
-
-  return function _instrumentEnd(): void {
-    let timestamp = time();
-    for (let i = 0; i < constListeners.length; i++) {
-      let listener = constListeners[i];
-      assert('has listener', listener); // Iterating over values
-      if (typeof listener.after === 'function') {
-        listener.after(name, timestamp, payload, beforeValues[i]);
-      }
-    }
-
-    if (STRUCTURED_PROFILE) {
-      console.timeEnd(timeName);
-    }
-  };
 }
 
 /**
@@ -292,7 +207,7 @@ export function subscribe<T>(pattern: string, object: Listener<T>): Subscriber<T
   };
 
   subscribers.push(subscriber);
-  cache = {};
+  resetCache();
 
   return subscriber;
 }
@@ -317,7 +232,7 @@ export function unsubscribe(subscriber: Subscriber<any>): void {
   }
 
   subscribers.splice(index, 1);
-  cache = {};
+  resetCache();
 }
 
 /**
@@ -330,5 +245,5 @@ export function unsubscribe(subscriber: Subscriber<any>): void {
 */
 export function reset(): void {
   subscribers.length = 0;
-  cache = {};
+  resetCache();
 }

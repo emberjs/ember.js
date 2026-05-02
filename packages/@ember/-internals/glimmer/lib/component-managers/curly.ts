@@ -12,7 +12,7 @@ import {
 } from '@ember/-internals/views/lib/system/utils';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
