@@ -27,7 +27,7 @@ import {
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime/lib/component/template-only';
-import { isCurlyManager } from './component-managers/curly';
+import { isCurlyManager } from './component-managers/curly-symbols';
 import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';

@@ -60,6 +60,7 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { BOUNDS, CURLY_COMPONENT_BRAND, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './curly-symbols';
 
 const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
 
@@ -69,9 +70,11 @@ export function getComponentCapturedArgs(
   return COMPONENT_ARGS_MAP.get(component);
 }
 
-export const DIRTY_TAG = Symbol('DIRTY_TAG');
-export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = Symbol('BOUNDS');
+// Re-exported from `./curly-symbols` to keep import sites unchanged.
+// The actual symbols live there so consumers that only need the symbols
+// (e.g. the renderer's resolver, classic-renderer's `getBounds`) don't
+// have to load the full curly component manager.
+export { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './curly-symbols';
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
@@ -560,7 +563,9 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
+(CURLY_COMPONENT_MANAGER as unknown as Record<symbol, boolean>)[CURLY_COMPONENT_BRAND] = true;
 
-export function isCurlyManager(manager: object): boolean {
-  return manager === CURLY_COMPONENT_MANAGER;
-}
+// Re-exported for back-compat — `isCurlyManager` and the symbols now live
+// in `./curly-symbols` so that consumers who only need the brand check
+// don't pull in the rest of this module.
+export { CURLY_COMPONENT_BRAND, isCurlyManager } from './curly-symbols';

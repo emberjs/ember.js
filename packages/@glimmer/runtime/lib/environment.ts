@@ -2,6 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,
   ComponentInstanceWithCreate,
+  DebugRenderTree,
   Environment,
   EnvironmentOptions,
   GlimmerTreeChanges,
@@ -19,9 +20,20 @@ import { ProgramImpl } from '@glimmer/program/lib/program';
 import { track } from '@glimmer/validator/lib/tracking';
 import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
-import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { isArgumentError } from './vm/arguments';
+
+// Lazy registration: the DebugRenderTree implementation registers itself
+// here on import (`./debug-render-tree-register`). Apps that don't need
+// render-tree introspection (anything not running the Ember Inspector)
+// won't pull `./debug-render-tree` into the bundle, since this module no
+// longer references it statically.
+type DebugRenderTreeFactory = () => DebugRenderTree;
+let debugRenderTreeFactory: DebugRenderTreeFactory | null = null;
+
+export function registerDebugRenderTreeFactory(factory: DebugRenderTreeFactory): void {
+  debugRenderTreeFactory = factory;
+}
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
 
@@ -107,14 +119,17 @@ export class EnvironmentImpl implements Environment {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError: ((error: any) => boolean) | undefined;
-  debugRenderTree: DebugRenderTree<object> | undefined;
+  debugRenderTree: DebugRenderTree | undefined;
 
   constructor(
     options: EnvironmentOptions,
     private delegate: EnvironmentDelegate
   ) {
     this.isInteractive = delegate.isInteractive;
-    this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
+    this.debugRenderTree =
+      this.delegate.enableDebugTooling && debugRenderTreeFactory
+        ? debugRenderTreeFactory()
+        : undefined;
     this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
     if (options.appendOperations) {
       this.appendOperations = options.appendOperations;

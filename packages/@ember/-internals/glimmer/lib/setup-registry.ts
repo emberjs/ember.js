@@ -10,10 +10,22 @@ import { Renderer } from './classic-renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
-// Side-effect import: registers `-mount` and `-outlet` as built-in keyword
-// helpers. Importing this here keeps the renderer free of routing/engine
-// dependencies so apps that only use `renderComponent` don't pay for them.
+// Side-effect imports. Each keeps classic-only infrastructure off the
+// `renderComponent`-only path:
+//
+// - `register-routing-keywords` registers `-mount` and `-outlet` as
+//   built-in keyword helpers (pulls in routing/engine).
+// - `@glimmer/runtime/.../debug-render-tree-register` registers the
+//   `DebugRenderTreeImpl` factory so `delegate.enableDebugTooling: true`
+//   actually produces a render tree (used by Ember Inspector). Without
+//   this import, `env.debugRenderTree` stays `undefined`.
+// - `register-curly-component` registers the classic component manager
+//   for the `Component` base class and seeds `positionalParams`. Without
+//   this import the classic `Component` class is dead code as far as
+//   `setComponentManager`/`capabilities` consumers are concerned.
 import './syntax/register-routing-keywords';
+import '@glimmer/runtime/lib/debug-render-tree-register';
+import './register-curly-component';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false
