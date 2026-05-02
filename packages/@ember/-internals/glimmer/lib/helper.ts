@@ -16,11 +16,25 @@ import { setHelperManager } from '@glimmer/manager/lib/public/api';
 import type { DirtyableTag } from '@glimmer/interfaces';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
+import {
+  IS_CLASSIC_HELPER,
+  isClassicHelper,
+  registerClassicHelperManager,
+} from './classic-helper-symbol';
+
+export { isClassicHelper };
 
 const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 
 // Signature type utilities
 type GetOr<T, K, Else> = K extends keyof T ? T[K] : Else;
+
+// `IS_CLASSIC_HELPER` was historically declared here; it's now defined in
+// `./classic-helper-symbol` so the resolver can check the brand without
+// pulling this whole module (and through it, EmberObject) into the renderer
+// chunk. We keep the class-side brand assignment below to preserve runtime
+// identity — `isClassicHelper(SomeHelperClass) === true` for `Helper`
+// subclasses, exactly as before.
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type Args<S> = GetOr<S, 'Args', {}>;
@@ -43,8 +57,6 @@ export interface HelperInstance<S> {
   destroy(): void;
   [RECOMPUTE_TAG]: DirtyableTag;
 }
-
-const IS_CLASSIC_HELPER: unique symbol = Symbol('IS_CLASSIC_HELPER');
 
 export interface SimpleHelper<S> {
   compute: (positional: Positional<S>, named: Named<S>) => Return<S>;
@@ -181,10 +193,6 @@ export default class Helper<S = unknown> extends FrameworkObject {
 }
 /* eslint-enable import/export */
 
-export function isClassicHelper(obj: object): boolean {
-  return (obj as any)[IS_CLASSIC_HELPER] === true;
-}
-
 interface ClassicHelperStateBucket {
   instance: HelperInstance<unknown>;
   args: Arguments;
@@ -262,6 +270,10 @@ setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
 }, Helper);
 
 export const CLASSIC_HELPER_MANAGER = getInternalHelperManager(Helper);
+
+// Register with the leaf-level lookup so the resolver can find the classic
+// helper manager without statically importing this module.
+registerClassicHelperManager(CLASSIC_HELPER_MANAGER as object);
 
 ///////////
 

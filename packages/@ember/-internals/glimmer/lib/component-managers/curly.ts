@@ -60,6 +60,15 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import {
+  BOUNDS,
+  DIRTY_TAG,
+  IS_CURLY_MANAGER,
+  IS_DISPATCHING_ATTRS,
+  isCurlyManager,
+} from './curly-symbols';
+
+export { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS, isCurlyManager };
 
 const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
 
@@ -68,10 +77,6 @@ export function getComponentCapturedArgs(
 ): CapturedArguments['named'] | undefined {
   return COMPONENT_ARGS_MAP.get(component);
 }
-
-export const DIRTY_TAG = Symbol('DIRTY_TAG');
-export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = Symbol('BOUNDS');
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
@@ -139,6 +144,10 @@ export default class CurlyComponentManager
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket>
 {
+  // marker so `isCurlyManager` can identify this manager without needing
+  // a reference to the singleton (which would re-pull this whole module).
+  [IS_CURLY_MANAGER] = true as const;
+
   protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
@@ -560,7 +569,3 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
-
-export function isCurlyManager(manager: object): boolean {
-  return manager === CURLY_COMPONENT_MANAGER;
-}

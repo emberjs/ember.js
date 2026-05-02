@@ -315,7 +315,7 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
     registry.set = set;
 
-    registry.register('application:main', namespace, { instantiate: false });
+    // registry.register('application:main', namespace, { instantiate: false });
 
     commonSetupRegistry(registry);
     setupEngineRegistry(registry);
@@ -505,23 +505,6 @@ export function buildInitializerMethod<
   };
 }
 
-function commonSetupRegistry(registry: Registry) {
-  registry.optionsForType('component', { singleton: false });
-  registry.optionsForType('view', { singleton: false });
-
-  registry.register('controller:basic', Controller, { instantiate: false });
-
-  // Register the routing service...
-  registry.register('service:-routing', RoutingService);
-
-  // DEBUGGING
-  registry.register('resolver-for-debugging:main', registry.resolver!, {
-    instantiate: false,
-  });
-
-  registry.register('container-debug-adapter:main', ContainerDebugAdapter);
-
-  registry.register('component-lookup:main', ComponentLookup);
-}
+function commonSetupRegistry(registry: Registry) {}
 
 export default Engine;

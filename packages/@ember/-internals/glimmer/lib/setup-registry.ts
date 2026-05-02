@@ -2,14 +2,17 @@ import type Registry from '@ember/-internals/container/lib/registry';
 import { privatize as P } from '@ember/-internals/container/lib/registry';
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import Input from './components/input';
-import LinkTo from './components/link-to';
-import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import { Renderer } from './renderer';
-import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
-import OutletView from './views/outlet';
+// Side-effect import: registers `-mount` and `-outlet` as built-in keyword
+// helpers. Importing this here keeps the renderer free of routing/engine
+// dependencies so apps that only use `renderComponent` don't pay for them.
+import './syntax/register-routing-keywords';
+// Side-effect import: registers the classic-helper manager with the resolver.
+// Apps that never use classic class-based helpers don't import this and so
+// never pay for `Helper extends FrameworkObject` (and through it, EmberObject).
+import './helper';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false
@@ -40,15 +43,15 @@ export function setupApplicationRegistry(registry: Registry): void {
 }
 
 export function setupEngineRegistry(registry: Registry): void {
-  registry.optionsForType('template', { instantiate: false });
-
-  registry.register('view:-outlet', OutletView);
-  registry.register('template:-outlet', OutletTemplate as any);
-
-  registry.optionsForType('helper', { instantiate: false });
-
-  registry.register('component:input', Input);
-
-  registry.register('component:link-to', LinkTo);
-  registry.register('component:textarea', Textarea);
+  // registry.optionsForType('template', { instantiate: false });
+  //
+  // registry.register('view:-outlet', OutletView);
+  // registry.register('template:-outlet', OutletTemplate as any);
+  //
+  // registry.optionsForType('helper', { instantiate: false });
+  //
+  // registry.register('component:input', Input);
+  //
+  // registry.register('component:link-to', LinkTo);
+  // registry.register('component:textarea', Textarea);
 }
