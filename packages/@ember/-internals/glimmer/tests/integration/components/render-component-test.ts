@@ -186,6 +186,56 @@ moduleFor(
       assertHTML('');
       this.assertStableRerender();
     }
+
+    '@test renderComponent does not depend on a global Element constructor'(
+      assert: Assert
+    ) {
+      // Stash and unset `globalThis.Element` so the previous
+      // `into instanceof Element` check would crash with
+      // `ReferenceError: Element is not defined`. After the structural-
+      // check fix, `renderComponent` should still resolve the parent
+      // element and render without consulting any global. This matters
+      // for non-browser hosts (Node / Bun servers, edge workers) that
+      // don't ship a DOM Element constructor by default — only the
+      // simple-dom node types they were given via `env.document`.
+      let saved = (globalThis as { Element?: unknown }).Element;
+      (globalThis as { Element?: unknown }).Element = undefined;
+
+      try {
+        let Foo = setComponentTemplate(
+          precompileTemplate('Hello, world!'),
+          templateOnly()
+        );
+
+        let owner = buildOwner({});
+        let manualDestroy: () => void;
+
+        run(() => {
+          let result = renderComponent(Foo, {
+            owner,
+            into: this.element,
+          });
+          manualDestroy = result.destroy;
+          this.component = {
+            ...result,
+            rerender() {
+              // unused, but asserted against
+            },
+          };
+        });
+
+        assertHTML('Hello, world!');
+        assert.ok(
+          true,
+          'renderComponent ran to completion with `globalThis.Element` undefined'
+        );
+
+        run(() => manualDestroy());
+        run(() => destroy(owner));
+      } finally {
+        (globalThis as { Element?: unknown }).Element = saved;
+      }
+    }
   }
 );
 

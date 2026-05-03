@@ -670,9 +670,19 @@ export function renderComponent(
    * We can only replace the inner HTML the first time.
    * Because destruction is async, it won't be safe to
    * do this again, and we'll have to rely on the above destroy.
+   *
+   * Use a structural check instead of `into instanceof Element` so the
+   * renderer doesn't depend on the `Element` constructor being a
+   * global. Browsers always have it; Node / Bun servers running with a
+   * bare simple-dom Document do not, and would otherwise hit
+   * `ReferenceError: Element is not defined` here. The `'element' in
+   * into` test matches the existing `intoTarget()` helper above:
+   * `Cursor` has `element`; `Element` / `SimpleElement` do not. The
+   * `'innerHTML' in into` follow-up keeps the clearing scoped to the
+   * real-Element case (`SimpleElement` has no `innerHTML` setter).
    */
-  if (!existing && into instanceof Element) {
-    into.innerHTML = '';
+  if (!existing && !('element' in into) && 'innerHTML' in into) {
+    (into as Element).innerHTML = '';
   }
 
   /**
@@ -689,8 +699,11 @@ export function renderComponent(
    */
   let renderTarget: IntoTarget = into;
   if (existing?.glimmerResult) {
-    let parentElement =
-      into instanceof Element ? (into as unknown as SimpleElement) : (into as Cursor).element;
+    // Reuse the same `intoTarget()` shape used by the lower-level
+    // `BaseRenderer#render` path so all code that needs a parent
+    // Element from an `IntoTarget` agrees on the discriminator. As a
+    // bonus, this avoids the `globalThis.Element` dependency above.
+    let parentElement = intoTarget(into).element;
     let firstNode = existing.glimmerResult.firstNode();
     renderTarget = { element: parentElement, nextSibling: firstNode };
   }
