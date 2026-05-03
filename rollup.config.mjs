@@ -100,6 +100,9 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
   return {
     onLog: handleRollupWarnings,
     input,
+    treeshake: {
+      moduleSideEffects: moduleHasSideEffects,
+    },
     output: {
       format: 'es',
       dir: outputDir,
@@ -109,6 +112,26 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
     },
     plugins,
   };
+}
+
+// Tell rollup which source files actually have top-level side effects.
+// Anything not on this list is treated as side-effect-free, so unused
+// imports of it can be elided rather than carried into a downstream
+// shared chunk. By default rollup is conservative (`true`) — most
+// internal files don't have a `sideEffects: false` package.json visible
+// at the right boundary.
+function moduleHasSideEffects(id) {
+  // External (node_modules) — leave default behavior.
+  if (!id.includes('/packages/')) return true;
+  // Files under `@glimmer/debug` are pure debug helpers; the package
+  // itself declares `sideEffects: false`, but that gets lost when files
+  // are bundled into shared chunks across packages. Force-mark them as
+  // pure here so unused imports are dropped at the chunk boundary.
+  if (id.includes('/packages/@glimmer/debug/')) return false;
+  if (id.includes('/packages/@glimmer/debug-util/')) return false;
+  if (id.includes('/packages/@glimmer/local-debug-flags/')) return false;
+  // Default: assume internal files may have side effects.
+  return true;
 }
 
 function glimmerSyntaxESM() {
