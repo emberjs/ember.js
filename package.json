@@ -16,7 +16,31 @@
     },
     "./package.json": "./package.json"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/dev/**",
+    "**/setup-registry*",
+    "**/register-routing-keywords*",
+    "**/register-curly-component*",
+    "**/debug-render-tree-register*",
+    "**/-internals/glimmer/lib/environment*",
+    "**/runtime/lib/environment*",
+    "**/-internals/runtime/lib/ext/rsvp*",
+    "**/runtime/lib/component/template-only*",
+    "**/runtime/lib/vm/low-level*",
+    "**/runtime/lib/compiled/opcodes/**",
+    "**/runtime/lib/helpers/**",
+    "**/runtime/lib/modifiers/**",
+    "**/-internals/glimmer/lib/components/**",
+    "**/-internals/views/lib/system/event_dispatcher*",
+    "**/runloop/index*",
+    "**/runloop/-private/**",
+    "**/manager/**",
+    "**/validator/**",
+    "**/global-context/**",
+    "**/destroyable/**",
+    "**/canary-features/**",
+    "**/-internals/environment/**"
+  ],
   "homepage": "https://emberjs.com/",
   "bugs": {
     "url": "https://github.com/emberjs/ember.js/issues"
