@@ -268,6 +268,45 @@ export class Meta {
   }
 
   /** @internal */
+  addMixin(mixin: any) {
+    assert(
+      isDestroyed(this.source)
+        ? `Cannot add mixins of \`${toString(mixin)}\` on \`${toString(
+            this.source
+          )}\` call addMixin after it has been destroyed.`
+        : '',
+      !isDestroyed(this.source)
+    );
+    let set = this._getOrCreateOwnSet('_mixins');
+    set.add(mixin);
+  }
+
+  /** @internal */
+  hasMixin(mixin: any) {
+    return this._hasInInheritedSet('_mixins', mixin);
+  }
+
+  /** @internal */
+  forEachMixins(fn: Function) {
+    let pointer: Meta | null = this;
+    let seen: Set<any> | undefined;
+    while (pointer !== null) {
+      let set = pointer._mixins;
+      if (set !== undefined) {
+        seen = seen === undefined ? new Set() : seen;
+        // TODO cleanup typing here
+        set.forEach((mixin: any) => {
+          if (!seen!.has(mixin)) {
+            seen!.add(mixin);
+            fn(mixin);
+          }
+        });
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  /** @internal */
   writeDescriptors(subkey: string, value: any) {
     assert(
       isDestroyed(this.source)
