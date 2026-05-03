@@ -11,10 +11,10 @@
   </head>
   <body>
   <script type="module">
-    import { runBenchmark } from './app/run-benchmark.js';
+    import { runBenchmark } from './src/run-benchmark.js';
     import { renderComponent } from '@ember/renderer';
 
-    import Application from './app/templates/applicatiton.gjs';
+    import Application from './src/app.gjs';
 
     runBenchmark();
     renderComponent(Application);

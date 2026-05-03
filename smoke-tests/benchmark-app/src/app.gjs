@@ -1,5 +1,5 @@
-import { TheTable } from './the-table.gjs';
-import { Jumbotron } from './jumbotron.gjs';
+import { TheTable } from './jsfb/the-table.gjs';
+import { Jumbotron } from './jsfb/jumbotron.gjs';
 
 <template>
   <div id="main">
