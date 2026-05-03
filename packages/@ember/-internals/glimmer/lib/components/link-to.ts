@@ -6,7 +6,7 @@ import { assert, debugFreeze, warn } from '@ember/debug';
 import { getEngineParent } from '@ember/engine/parent';
 import type EngineInstance from '@ember/engine/instance';
 import { flaggedInstrument } from '@ember/instrumentation/lib/internal-instrument';
-import { action } from '@ember/object';
+import { action } from '@ember/object/action';
 import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import type { Maybe } from '@glimmer/interfaces';

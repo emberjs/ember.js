@@ -267,6 +267,7 @@
       "@ember/modifier/index.js": "ember-source/@ember/modifier/index.js",
       "@ember/modifier/on.js": "ember-source/@ember/modifier/on.js",
       "@ember/object/-internals.js": "ember-source/@ember/object/-internals.js",
+      "@ember/object/action.js": "ember-source/@ember/object/action.js",
       "@ember/object/compat.js": "ember-source/@ember/object/compat.js",
       "@ember/object/computed.js": "ember-source/@ember/object/computed.js",
       "@ember/object/core.js": "ember-source/@ember/object/core.js",
