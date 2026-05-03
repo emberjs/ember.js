@@ -1,13 +1,13 @@
 /**
 @module ember
 */
-import { tagForObject } from '@ember/-internals/metal';
-import { _contentFor } from '@ember/-internals/runtime';
-import { isProxy } from '@ember/-internals/utils';
+import { tagForObject } from '@ember/-internals/metal/lib/tags';
+import { contentFor as _contentFor } from '@ember/-internals/runtime/lib/mixins/content-for';
+import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { consumeTag } from '@glimmer/validator';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
 
 /**

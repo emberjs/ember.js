@@ -8,7 +8,7 @@ import { guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
@@ -52,6 +52,7 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { BOUNDS, CURLY_COMPONENT_BRAND, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './curly-symbols';
 
 const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
 
@@ -61,9 +62,7 @@ export function getComponentCapturedArgs(
   return COMPONENT_ARGS_MAP.get(component);
 }
 
-export const DIRTY_TAG = Symbol('DIRTY_TAG');
-export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = Symbol('BOUNDS');
+export { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './curly-symbols';
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
@@ -552,7 +551,6 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
+(CURLY_COMPONENT_MANAGER as unknown as Record<symbol, boolean>)[CURLY_COMPONENT_BRAND] = true;
 
-export function isCurlyManager(manager: object): boolean {
-  return manager === CURLY_COMPONENT_MANAGER;
-}
+export { CURLY_COMPONENT_BRAND, isCurlyManager } from './curly-symbols';

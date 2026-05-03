@@ -1,5 +1,5 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import type {
   CapturedArguments,
   CompilableProgram,
