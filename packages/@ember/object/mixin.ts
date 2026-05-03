@@ -7,12 +7,6 @@ import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { isDestroyed } from '@glimmer/destroyable';
 import toString from '@ember/-internals/utils/lib/to-string';
 
-// Mixin-tracking helpers — moved out of `Meta` so the renderer-only
-// path (which reaches `Meta` through the tag/property graph) doesn't
-// pull a reference to `Mixin` into the bundle. They poke at `Meta`'s
-// public `_mixins` / `parent` fields directly.
-
- 
 function metaAddMixin(meta: Meta, mixin: any): void {
   assert(
     isDestroyed(meta.source as object)

@@ -96,12 +96,6 @@ const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   '-in-el-null': inElementNullCheckHelper,
 };
 
-/**
- * Register an additional built-in keyword helper (e.g. `{{outlet}}`,
- * `{{mount}}`). Kept separate so the renderer doesn't statically depend on
- * routing/engine infrastructure — callers that need those helpers must opt
- * in by importing the registration module (`./syntax/register-routing-keywords`).
- */
 export function registerBuiltInKeywordHelper(name: string, helper: object): void {
   BUILTIN_KEYWORD_HELPERS[name] = helper;
   BUILTIN_HELPERS[name] = helper;

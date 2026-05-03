@@ -1680,13 +1680,4 @@ class Component<S = unknown>
   }
 }
 
-// `Component.reopenClass({ positionalParams: [] })` and the curly component
-// manager registration that used to live here now happen in
-// `./register-curly-component`, imported as a side effect by classic-app
-// setup (`./setup-registry`). Splitting the side effect out lets bundlers
-// tree-shake the classic `Component` class out of bundles that don't
-// otherwise need it — e.g. the hello-world app that only uses
-// `setComponentManager` / `capabilities` from `@ember/component` via
-// `@glimmer/component`.
-
 export default Component;

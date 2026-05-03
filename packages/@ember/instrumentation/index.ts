@@ -7,12 +7,6 @@ import {
   type Subscriber,
 } from './lib/internal-instrument';
 
-// Re-export with `export ... from` (rather than re-binding via local
-// import + export) so the no-barrel-imports lint rule traces consumers
-// through to `./lib/internal-instrument` and rewrites their imports to
-// the deep path. That keeps the heavy `instrument` / `subscribe` /
-// `unsubscribe` machinery defined below out of bundles that only need
-// the hot path.
 export {
   _instrumentStart,
   flaggedInstrument,

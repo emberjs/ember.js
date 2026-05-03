@@ -19,9 +19,6 @@ import type { Tag } from '@glimmer/interfaces';
 import { combine } from '@glimmer/validator/lib/validators';
 import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 
-// `contentFor` was extracted to `./content-for` so the `each-in` helper
-// (reachable from the renderer) can use it without dragging in this
-// file's `Mixin.create(...)` graph. Re-exported here for back-compat.
 import { contentFor } from './content-for';
 export { contentFor };
 

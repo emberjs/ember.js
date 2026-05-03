@@ -267,15 +267,6 @@ export class Meta {
     return undefined;
   }
 
-  // The mixin-tracking helpers (`addMixin` / `hasMixin` / `forEachMixins`)
-  // moved to `@ember/object/mixin` as standalone functions
-  // (`metaAddMixin` / `metaHasMixin` / `metaForEachMixins`). They poke
-  // directly at the public `_mixins` / `parent` fields here. Splitting
-  // them out keeps the `Meta` class — which is reachable from the
-  // renderer via the property accessor + tag chain — free of references
-  // to the classic `Mixin` machinery, so bundles that don't actually use
-  // mixins can tree-shake `@ember/object/mixin` away.
-
   /** @internal */
   writeDescriptors(subkey: string, value: any) {
     assert(

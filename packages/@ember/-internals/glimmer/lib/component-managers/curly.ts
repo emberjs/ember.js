@@ -70,10 +70,6 @@ export function getComponentCapturedArgs(
   return COMPONENT_ARGS_MAP.get(component);
 }
 
-// Re-exported from `./curly-symbols` to keep import sites unchanged.
-// The actual symbols live there so consumers that only need the symbols
-// (e.g. the renderer's resolver, classic-renderer's `getBounds`) don't
-// have to load the full curly component manager.
 export { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './curly-symbols';
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
@@ -565,7 +561,4 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
 (CURLY_COMPONENT_MANAGER as unknown as Record<symbol, boolean>)[CURLY_COMPONENT_BRAND] = true;
 
-// Re-exported for back-compat — `isCurlyManager` and the symbols now live
-// in `./curly-symbols` so that consumers who only need the brand check
-// don't pull in the rest of this module.
 export { CURLY_COMPONENT_BRAND, isCurlyManager } from './curly-symbols';

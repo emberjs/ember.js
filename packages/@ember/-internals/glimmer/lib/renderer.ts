@@ -34,12 +34,6 @@ import ResolverImpl from './resolver';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 
-/**
- * Common shape of root states tracked by `RendererState`. Both
- * `ComponentRootState` (defined here) and `ClassicRootState` (defined in
- * `./classic-renderer`) implement this so the renderer state can manage
- * either kind without statically depending on classic-only code.
- */
 export interface RootState {
   readonly type: 'classic' | 'component';
   readonly destroyed: boolean;
@@ -670,7 +664,4 @@ export class BaseRenderer {
   }
 }
 
-// Re-export classic-only types so existing import sites that did
-// `import { Renderer, DynamicScope, View } from '.../renderer'` keep working.
-// New code should import these directly from `./classic-renderer`.
 export type { DynamicScope, Renderer, View } from './classic-renderer';
