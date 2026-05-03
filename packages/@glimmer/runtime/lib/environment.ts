@@ -23,11 +23,6 @@ import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { isArgumentError } from './vm/arguments';
 
-// Lazy registration: the DebugRenderTree implementation registers itself
-// here on import (`./debug-render-tree-register`). Apps that don't need
-// render-tree introspection (anything not running the Ember Inspector)
-// won't pull `./debug-render-tree` into the bundle, since this module no
-// longer references it statically.
 type DebugRenderTreeFactory = () => DebugRenderTree;
 let debugRenderTreeFactory: DebugRenderTreeFactory | null = null;
 

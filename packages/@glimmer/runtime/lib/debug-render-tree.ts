@@ -197,7 +197,4 @@ export default class DebugRenderTreeImpl<
   }
 }
 
-// `getDebugName` now lives in `./get-debug-name` so opcodes can pull it
-// in without dragging in the full `DebugRenderTreeImpl` class. Re-export
-// for back-compat with any external consumers.
 export { getDebugName } from './get-debug-name';

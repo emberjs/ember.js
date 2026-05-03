@@ -5,11 +5,6 @@ import { isEmberArray } from '@ember/array/-internals';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 
-// Lightweight array predicate — covers native arrays plus anything branded
-// via `setEmberArray` (which is what `EmberArray.init` does, so any
-// instance of an EmberArray-mixed class is branded). Avoids the full
-// `@ember/array/index` graph (Mixin, Enumerable, Observable, computed)
-// just to test array-ness for `{{#if}}`.
 function isArrayLike(obj: unknown): obj is ArrayLike<unknown> {
   return Array.isArray(obj) || isEmberArray(obj);
 }

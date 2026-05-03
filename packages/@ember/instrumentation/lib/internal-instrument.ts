@@ -1,12 +1,3 @@
-// Hot-path bits of `@ember/instrumentation`, factored out so internal
-// callers (the resolver, the curly component manager, view states) can
-// import `_instrumentStart` without dragging in the full subscribe /
-// unsubscribe / instrument machinery — most of which is dead code unless
-// something actually subscribes (e.g. Ember Inspector).
-//
-// `subscribers` and `cache` live here; `index.ts` imports and mutates
-// them via `subscribe` / `unsubscribe` / `reset`.
-
 import { ENV } from '@ember/-internals/environment/lib/env';
 import { assert } from '@ember/debug';
 
@@ -56,9 +47,7 @@ const time = (): number => performance.now();
 export const NOOP = (): void => {};
 
 // `flaggedInstrument` historically wrapped a callback in conditionally-
-// enabled instrumentation; today it's a thin pass-through. Lives here so
-// hot-path callers (the views state machine) can deep-import it without
-// pulling in the rest of `index.ts`.
+// enabled instrumentation; today it's a thin pass-through.
 export function flaggedInstrument<Result>(
   _name: string,
   _payload: object,
