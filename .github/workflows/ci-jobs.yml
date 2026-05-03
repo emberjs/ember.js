@@ -74,6 +74,8 @@ jobs:
       - name: build
         run: pnpm build
       - uses: wyvox/action-no-git-diff@6d1f5759a221e2ea447974af795e395672e33328 # v1.0.1
+      - name: check tree-shaking
+        run: pnpm test:tree-shake
 
   basic-test:
     name: Basic Test

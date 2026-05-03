@@ -54,6 +54,7 @@
     "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
+    "test:tree-shake": "node bin/check-tree-shake.mjs",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
@@ -99,6 +100,7 @@
     "@tsconfig/ember": "3.0.8",
     "@types/qunit": "^2.19.4",
     "@types/rsvp": "^4.0.4",
+    "agadoo": "^3.0.0",
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
     "babel-plugin-debug-macros": "1.0.0",
@@ -158,7 +160,8 @@
       "esbuild"
     ],
     "patchedDependencies": {
-      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch"
+      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
+      "agadoo": "patches/agadoo.patch"
     }
   },
   "peerDependencies": {
