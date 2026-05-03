@@ -13,10 +13,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
-import {
-  getInternalComponentManager,
-  setInternalHelperManager,
-} from '@glimmer/manager/lib/internal/api';
+import { getInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { array } from '@glimmer/runtime/lib/helpers/array';
 import { concat } from '@glimmer/runtime/lib/helpers/concat';
 import { fn } from '@glimmer/runtime/lib/helpers/fn';
@@ -28,7 +25,6 @@ import {
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime/lib/component/template-only';
 import { isCurlyManager } from './component-managers/curly-symbols';
-import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -134,7 +130,17 @@ const BUILTIN_MODIFIERS: Record<string, object> = {
   on,
 };
 
-const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
+type ClassicHelperHandler = (
+  definition: object,
+
+  factory: any
+) => HelperDefinitionState | null;
+
+let classicHelperHandler: ClassicHelperHandler | null = null;
+
+export function registerClassicHelperHandler(handler: ClassicHelperHandler): void {
+  classicHelperHandler = handler;
+}
 
 export default class ResolverImpl implements ClassicResolver<InternalOwner> {
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
@@ -166,23 +172,11 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       return null;
     }
 
-    if (typeof definition === 'function' && isClassicHelper(definition)) {
-      // For classic class based helpers, we need to pass the factoryFor result itself rather
-      // than the raw value (`factoryFor(...).class`). This is because injections are already
-      // bound in the factoryFor result, including type-based injections
-
-      if (DEBUG) {
-        // In DEBUG we need to only set the associated value once, otherwise
-        // we'll trigger an assertion
-        if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
-          CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
-          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
-        }
-      } else {
-        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+    if (typeof definition === 'function' && classicHelperHandler !== null) {
+      let result = classicHelperHandler(definition, factory);
+      if (result !== null) {
+        return result;
       }
-
-      return factory;
     }
 
     return definition;
