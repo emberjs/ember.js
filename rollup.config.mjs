@@ -114,26 +114,17 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
   };
 }
 
-// Tell rollup which source files actually have top-level side effects.
-// Anything matched by `pure` is treated as side-effect-free: unused
-// imports of it can be dropped rather than carried into a downstream
-// shared chunk. The packages here are either explicitly
-// `sideEffects: false` in their own package.json (which gets lost once
-// files are co-bundled into shared chunks across packages) or are pure
-// utility / data-shape packages with no top-level mutation.
+// `@glimmer/debug` declares `sideEffects: false` in its own package.json,
+// but rolldown loses that signal when files from it get co-bundled into
+// shared chunks alongside non-pure code. Re-asserting purity at the
+// chunk-level callback recovers ~8 KB raw on the hello-world bundle by
+// letting unused imports of `@glimmer/debug` content drop out of those
+// chunks. Add other packages here only after measuring an actual
+// reduction.
 function moduleHasSideEffects(id) {
-  if (!id.includes('/packages/')) return true;
-  for (const pkg of PURE_INTERNAL_PACKAGES) {
-    if (id.includes(`/packages/${pkg}/`)) return false;
-  }
+  if (id.includes('/packages/@glimmer/debug/')) return false;
   return true;
 }
-
-const PURE_INTERNAL_PACKAGES = [
-  '@glimmer/debug',
-  '@glimmer/debug-util',
-  '@glimmer/local-debug-flags',
-];
 
 function glimmerSyntaxESM() {
   return {
