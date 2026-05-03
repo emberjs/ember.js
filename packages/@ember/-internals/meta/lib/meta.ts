@@ -267,44 +267,14 @@ export class Meta {
     return undefined;
   }
 
-  /** @internal */
-  addMixin(mixin: any) {
-    assert(
-      isDestroyed(this.source)
-        ? `Cannot add mixins of \`${toString(mixin)}\` on \`${toString(
-            this.source
-          )}\` call addMixin after it has been destroyed.`
-        : '',
-      !isDestroyed(this.source)
-    );
-    let set = this._getOrCreateOwnSet('_mixins');
-    set.add(mixin);
-  }
-
-  /** @internal */
-  hasMixin(mixin: any) {
-    return this._hasInInheritedSet('_mixins', mixin);
-  }
-
-  /** @internal */
-  forEachMixins(fn: Function) {
-    let pointer: Meta | null = this;
-    let seen: Set<any> | undefined;
-    while (pointer !== null) {
-      let set = pointer._mixins;
-      if (set !== undefined) {
-        seen = seen === undefined ? new Set() : seen;
-        // TODO cleanup typing here
-        set.forEach((mixin: any) => {
-          if (!seen!.has(mixin)) {
-            seen!.add(mixin);
-            fn(mixin);
-          }
-        });
-      }
-      pointer = pointer.parent;
-    }
-  }
+  // The mixin-tracking helpers (`addMixin` / `hasMixin` / `forEachMixins`)
+  // moved to `@ember/object/mixin` as standalone functions
+  // (`metaAddMixin` / `metaHasMixin` / `metaForEachMixins`). They poke
+  // directly at the public `_mixins` / `parent` fields here. Splitting
+  // them out keeps the `Meta` class — which is reachable from the
+  // renderer via the property accessor + tag chain — free of references
+  // to the classic `Mixin` machinery, so bundles that don't actually use
+  // mixins can tree-shake `@ember/object/mixin` away.
 
   /** @internal */
   writeDescriptors(subkey: string, value: any) {

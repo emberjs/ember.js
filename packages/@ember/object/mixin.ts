@@ -4,6 +4,61 @@
 import { INIT_FACTORY } from '@ember/-internals/container/lib/container';
 import type { Meta } from '@ember/-internals/meta/lib/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
+import { isDestroyed } from '@glimmer/destroyable';
+import toString from '@ember/-internals/utils/lib/to-string';
+
+// Mixin-tracking helpers — moved out of `Meta` so the renderer-only
+// path (which reaches `Meta` through the tag/property graph) doesn't
+// pull a reference to `Mixin` into the bundle. They poke at `Meta`'s
+// public `_mixins` / `parent` fields directly.
+
+ 
+function metaAddMixin(meta: Meta, mixin: any): void {
+  assert(
+    isDestroyed(meta.source as object)
+      ? `Cannot add mixins of \`${toString(mixin)}\` on \`${toString(
+          meta.source
+        )}\` call addMixin after it has been destroyed.`
+      : '',
+    !isDestroyed(meta.source as object)
+  );
+  let set = meta._mixins ?? (meta._mixins = new Set());
+  set.add(mixin);
+}
+
+ 
+function metaHasMixin(meta: Meta, mixin: any): boolean {
+  let pointer: Meta | null = meta;
+  while (pointer !== null) {
+    let set = pointer._mixins;
+    if (set !== undefined && set.has(mixin)) {
+      return true;
+    }
+    pointer = pointer.parent;
+  }
+  return false;
+}
+
+ 
+function metaForEachMixins(meta: Meta, fn: (mixin: any) => void): void {
+  let pointer: Meta | null = meta;
+   
+  let seen: Set<any> | undefined;
+  while (pointer !== null) {
+    let set = pointer._mixins;
+    if (set !== undefined) {
+      seen = seen === undefined ? new Set() : seen;
+       
+      set.forEach((mixin: any) => {
+        if (!seen!.has(mixin)) {
+          seen!.add(mixin);
+          fn(mixin);
+        }
+      });
+    }
+    pointer = pointer.parent;
+  }
+}
 import { observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils/lib/super';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -247,10 +302,10 @@ function mergeMixins(
     );
 
     if (MIXINS.has(currentMixin)) {
-      if (meta.hasMixin(currentMixin)) {
+      if (metaHasMixin(meta, currentMixin)) {
         continue;
       }
-      meta.addMixin(currentMixin);
+      metaAddMixin(meta, currentMixin);
 
       let { properties, mixins } = currentMixin;
 
@@ -592,7 +647,7 @@ export default class Mixin {
       return ret;
     }
 
-    meta.forEachMixins((currentMixin: Mixin) => {
+    metaForEachMixins(meta, (currentMixin: Mixin) => {
       // skip primitive mixins since these are always anonymous
       if (!currentMixin.properties) {
         ret.push(currentMixin);
@@ -664,7 +719,7 @@ export default class Mixin {
     if (meta === null) {
       return false;
     }
-    return meta.hasMixin(this);
+    return metaHasMixin(meta, this);
   }
 
   /** @internal */
