@@ -13,6 +13,7 @@ import OutletView from './views/outlet';
 import './syntax/register-routing-keywords';
 import '@glimmer/runtime/lib/debug-render-tree-register';
 import './register-curly-component';
+import './register-classic-helper';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false
