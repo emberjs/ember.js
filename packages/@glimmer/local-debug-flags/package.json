@@ -5,7 +5,10 @@
   "description": "Helpers for debugging during local development. These get stripped from published builds. This package should not be published.",
   "type": "module",
   "private": true,
-  "exports": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts"
+  },
   "scripts": {},
   "devDependencies": {
     "eslint": "^9.20.1"
