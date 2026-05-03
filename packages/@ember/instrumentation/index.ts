@@ -7,11 +7,7 @@ import {
   type Subscriber,
 } from './lib/internal-instrument';
 
-export {
-  _instrumentStart,
-  flaggedInstrument,
-  subscribers,
-} from './lib/internal-instrument';
+export { _instrumentStart, flaggedInstrument, subscribers } from './lib/internal-instrument';
 export type { Listener, Subscriber, StructuredProfilePayload } from './lib/internal-instrument';
 
 export interface PayloadWithException {

@@ -16,9 +16,8 @@ export interface StructuredProfilePayload {
   object: string | object;
 }
 
- 
 export const subscribers: Subscriber<any>[] = [];
- 
+
 export const cache: { [key: string]: Listener<any>[] } = {};
 
 export function resetCache(): void {
@@ -27,9 +26,7 @@ export function resetCache(): void {
   }
 }
 
- 
 function populateListeners(name: string): Listener<any>[] {
-   
   let listeners: Listener<any>[] = [];
 
   for (let subscriber of subscribers) {
@@ -91,7 +88,6 @@ export function _instrumentStart<Arg>(
     console.time(timeName);
   }
 
-   
   let beforeValues: any[] = [];
   let timestamp = time();
   for (let listener of listeners) {

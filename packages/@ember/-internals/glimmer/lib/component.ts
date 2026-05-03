@@ -24,11 +24,7 @@ import type { DirtyableTag } from '@glimmer/interfaces';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
 import { getComponentCapturedArgs } from './component-managers/curly';
-import {
-  BOUNDS,
-  DIRTY_TAG,
-  IS_DISPATCHING_ATTRS,
-} from './component-managers/curly-symbols';
+import { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './component-managers/curly-symbols';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 
 // Keep track of which component classes have already been processed for lazy event setup.

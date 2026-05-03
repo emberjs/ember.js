@@ -40,12 +40,7 @@ import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import { makeRouteTemplate } from './component-managers/route-template';
 import { unwrapTemplate } from './component-managers/unwrap-template';
-import {
-  BaseRenderer,
-  errorLoopTransaction,
-  type IBuilder,
-  type RootState,
-} from './renderer';
+import { BaseRenderer, errorLoopTransaction, type IBuilder, type RootState } from './renderer';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';

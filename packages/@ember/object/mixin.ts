@@ -20,7 +20,6 @@ function metaAddMixin(meta: Meta, mixin: any): void {
   set.add(mixin);
 }
 
- 
 function metaHasMixin(meta: Meta, mixin: any): boolean {
   let pointer: Meta | null = meta;
   while (pointer !== null) {
@@ -33,16 +32,15 @@ function metaHasMixin(meta: Meta, mixin: any): boolean {
   return false;
 }
 
- 
 function metaForEachMixins(meta: Meta, fn: (mixin: any) => void): void {
   let pointer: Meta | null = meta;
-   
+
   let seen: Set<any> | undefined;
   while (pointer !== null) {
     let set = pointer._mixins;
     if (set !== undefined) {
       seen = seen === undefined ? new Set() : seen;
-       
+
       set.forEach((mixin: any) => {
         if (!seen!.has(mixin)) {
           seen!.add(mixin);
