@@ -16,6 +16,7 @@
     },
     "./package.json": "./package.json"
   },
+  "sideEffects": false,
   "homepage": "https://emberjs.com/",
   "bugs": {
     "url": "https://github.com/emberjs/ember.js/issues"
