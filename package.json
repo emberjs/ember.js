@@ -29,6 +29,8 @@
     "**/@ember/-internals/glimmer/lib/components/textarea.js",
     "**/@ember/-internals/glimmer/lib/components/link-to.js",
     "**/@ember/-internals/runtime/lib/ext/rsvp.js",
+    "**/@ember/-internals/metal/lib/observer.js",
+    "**/@ember/-internals/metal/lib/decorator.js",
     "**/@glimmer/runtime/lib/debug-render-tree-register.js",
     "**/@glimmer/runtime/lib/component/template-only.js",
     "**/@glimmer/runtime/lib/compiled/opcodes/expressions.js",
