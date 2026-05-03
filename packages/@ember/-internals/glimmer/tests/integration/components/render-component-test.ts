@@ -187,9 +187,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@test renderComponent does not depend on a global Element constructor'(
-      assert: Assert
-    ) {
+    '@test renderComponent does not depend on a global Element constructor'(assert: Assert) {
       // Stash and unset `globalThis.Element` so the previous
       // `into instanceof Element` check would crash with
       // `ReferenceError: Element is not defined`. After the structural-
@@ -202,10 +200,7 @@ moduleFor(
       (globalThis as { Element?: unknown }).Element = undefined;
 
       try {
-        let Foo = setComponentTemplate(
-          precompileTemplate('Hello, world!'),
-          templateOnly()
-        );
+        let Foo = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
 
         let owner = buildOwner({});
         let manualDestroy: () => void;
@@ -225,10 +220,7 @@ moduleFor(
         });
 
         assertHTML('Hello, world!');
-        assert.ok(
-          true,
-          'renderComponent ran to completion with `globalThis.Element` undefined'
-        );
+        assert.ok(true, 'renderComponent ran to completion with `globalThis.Element` undefined');
 
         run(() => manualDestroy());
         run(() => destroy(owner));
