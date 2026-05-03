@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment/lib/env';
 import { peekMeta } from '@ember/-internals/meta/lib/meta';
-import type { schedule } from '@ember/runloop';
+import { registerAsyncObserverFlush, type schedule } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { Tag } from '@glimmer/interfaces';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
@@ -8,6 +8,7 @@ import { tagMetaFor } from '@glimmer/validator/lib/meta';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
+import { registerObserverDeactivationHooks, registerObserverFlushSync } from './property_events';
 
 interface ActiveObserver {
   tag: Tag;
@@ -270,3 +271,7 @@ function destroyObservers(target: object) {
   if (SYNC_OBSERVERS.size > 0) SYNC_OBSERVERS.delete(target);
   if (ASYNC_OBSERVERS.size > 0) ASYNC_OBSERVERS.delete(target);
 }
+
+registerObserverFlushSync(flushSyncObservers);
+registerObserverDeactivationHooks(suspendedObserverDeactivation, resumeObserverDeactivation);
+registerAsyncObserverFlush(flushAsyncObservers);

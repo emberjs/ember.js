@@ -1,6 +1,6 @@
 import { tracked } from '@ember/-internals/metal/lib/tracked';
 import { assert } from '@ember/debug';
-import { action } from '@ember/object';
+import { action } from '@ember/object/action';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
   isConstRef,
