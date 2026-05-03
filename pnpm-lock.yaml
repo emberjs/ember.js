@@ -15,6 +15,9 @@ patchedDependencies:
   '@tracerbench/core@8.0.1':
     hash: 5e48bdb11a088927d3415cc5430bb6c37d5ce66ed2dab1327914b55e4fd5cd13
     path: patches/@tracerbench__core@8.0.1.patch
+  agadoo:
+    hash: c1058fc9952e79cd32c4681e029134a3dce79fd43dcd50a3dde1cda5d7e0e802
+    path: patches/agadoo.patch
 
 importers:
 
@@ -126,6 +129,9 @@ importers:
       '@types/rsvp':
         specifier: ^4.0.4
         version: 4.0.9
+      agadoo:
+        specifier: ^3.0.0
+        version: 3.0.0(patch_hash=c1058fc9952e79cd32c4681e029134a3dce79fd43dcd50a3dde1cda5d7e0e802)
       ast-types:
         specifier: ^0.14.2
         version: 0.14.2
@@ -5113,6 +5119,15 @@ packages:
       rollup:
         optional: true
 
+  '@rollup/plugin-virtual@3.0.2':
+    resolution: {integrity: sha512-10monEYsBp3scM4/ND4LNH5Rxvh3e/cVeL3jWTgZ2SrQ+BmUoQcopVQvnaMcOnykb1VkxUFuDAN+0FnpTFRy2A==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^4.2.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
   '@rollup/pluginutils@5.3.0':
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
@@ -6070,6 +6085,10 @@ packages:
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
+    hasBin: true
+
+  agadoo@3.0.0:
+    resolution: {integrity: sha512-gq+fjT3Ilrhb88Jf+vYMjdO/+3znYfa7vJ4IMLPFsBPUxglnr40Ed3yCLrW6IABdJAedB94b2BkqR6I04lh3dg==}
     hasBin: true
 
   agent-base@4.3.0:
@@ -14977,6 +14996,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@rollup/plugin-virtual@3.0.2(rollup@4.60.1)':
+    optionalDependencies:
+      rollup: 4.60.1
+
   '@rollup/pluginutils@5.3.0(rollup@4.60.0)':
     dependencies:
       '@types/estree': 1.0.8
@@ -16025,6 +16048,12 @@ snapshots:
       acorn: 8.16.0
 
   acorn@8.16.0: {}
+
+  agadoo@3.0.0(patch_hash=c1058fc9952e79cd32c4681e029134a3dce79fd43dcd50a3dde1cda5d7e0e802):
+    dependencies:
+      '@rollup/plugin-virtual': 3.0.2(rollup@4.60.1)
+      acorn: 8.16.0
+      rollup: 4.60.1
 
   agent-base@4.3.0:
     dependencies:
