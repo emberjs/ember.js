@@ -1,13 +1,13 @@
 import Component from '@glimmer/component';
 import { fn } from '@ember/helper';
-import { service } from '@ember/service';
+import { State } from './state.js';
 
 export class TheTable extends Component {
-  @service state;
+  state = new State();
 
 /**
  * We currently don't have a way to emit HTML with no invisible characters
- * and have the template look nice. 
+ * and have the template look nice.
  */
   <template>
     <table class="table table-hover table-striped test-data">

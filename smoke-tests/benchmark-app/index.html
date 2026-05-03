@@ -6,18 +6,18 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="/bootstrap.min.css">  
+    <link rel="stylesheet" href="/bootstrap.min.css">
     <link rel="stylesheet" href="/main.css">
-</head>
+  </head>
   <body>
   <script type="module">
-     import { runBenchmark } from './app/run-benchmark.js';
+    import { runBenchmark } from './app/run-benchmark.js';
+    import { renderComponent } from '@ember/renderer';
 
-      import Application from './app/app';
-      import environment from './app/config/environment';
+    import Application from './app/templates/applicatiton.gjs';
 
-      runBenchmark();
-      Application.create(environment.APP);
+    runBenchmark();
+    renderComponent(Application);
     </script>
  </body>
 </html>

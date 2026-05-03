@@ -1,10 +1,9 @@
-import Service from '@ember/service';
 import { tracked } from '@glimmer/tracking';
 import { trackedArray } from '@ember/reactive/collections';
 
-import { run, runLots, add, update, swapRows, deleteRow } from './utils.js';
+import { run, runLots, add, update, swapRows } from './utils.js';
 
-export default class State extends Service {
+export class State {
   data = new trackedArray();
   id = 1;
   @tracked selected;

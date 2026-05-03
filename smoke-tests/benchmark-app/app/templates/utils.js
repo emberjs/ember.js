@@ -120,8 +120,3 @@ export const swapRows = (data) => {
   }
 };
 
-export const deleteRow = (data, id) => {
-  return data.filter((d) => {
-    return d.id !== id;
-  });
-};
