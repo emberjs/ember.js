@@ -41,6 +41,7 @@ import {
   VM_GET_COMPONENT_LAYOUT_OP,
   VM_GET_COMPONENT_SELF_OP,
   VM_GET_COMPONENT_TAG_NAME_OP,
+  VM_GET_PROPERTY_BOUND_OP,
   VM_GET_PROPERTY_OP,
   VM_GET_VARIABLE_OP,
   VM_HAS_BLOCK_OP,
@@ -216,6 +217,13 @@ if (LOCAL_DEBUG) {
   METADATA[VM_GET_PROPERTY_OP] = {
     name: 'GetProperty',
     mnemonic: 'getprop',
+    stackChange: 0,
+    ops: ['property:const/str'],
+  };
+
+  METADATA[VM_GET_PROPERTY_BOUND_OP] = {
+    name: 'GetPropertyBound',
+    mnemonic: 'getpropbound',
     stackChange: 0,
     ops: ['property:const/str'],
   };

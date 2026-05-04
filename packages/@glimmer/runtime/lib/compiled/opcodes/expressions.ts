@@ -7,7 +7,6 @@ import type {
   Initializable,
   ScopeBlock,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
 import {
   CURRIED_HELPER,
   decodeHandle,
@@ -16,6 +15,7 @@ import {
   VM_DYNAMIC_HELPER_OP,
   VM_GET_BLOCK_OP,
   VM_GET_DYNAMIC_VAR_OP,
+  VM_GET_PROPERTY_BOUND_OP,
   VM_GET_PROPERTY_OP,
   VM_GET_VARIABLE_OP,
   VM_HAS_BLOCK_OP,
@@ -41,10 +41,12 @@ import { debugToString, assert } from '@glimmer/debug-util';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { debugAssert, toBool } from '@glimmer/global-context';
 import { getInternalHelperManager } from '@glimmer/manager';
+import type { Reference } from '@glimmer/reference';
 import {
   childRefFor,
   createComputeRef,
   FALSE_REFERENCE,
+  setBindingParentRef,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
@@ -210,6 +212,16 @@ APPEND_OPCODES.add(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {
   let key = vm.constants.getValue<string>(_key);
   let expr = check(vm.stack.pop(), CheckReference);
   vm.stack.push(childRefFor(expr, key));
+});
+
+APPEND_OPCODES.add(VM_GET_PROPERTY_BOUND_OP, (vm, { op1: _key }) => {
+  let key = vm.constants.getValue<string>(_key);
+  let parentRef = check(vm.stack.pop(), CheckReference);
+  let ref = childRefFor(parentRef, key);
+  // Tag the ref with its parent so consumers (on, fn) can bind `this`
+  // at invocation time. valueForRef still returns the original value.
+  setBindingParentRef(ref, parentRef);
+  vm.stack.push(ref);
 });
 
 APPEND_OPCODES.add(VM_GET_BLOCK_OP, (vm, { op1: _block }) => {

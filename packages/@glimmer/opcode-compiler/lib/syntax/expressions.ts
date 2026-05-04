@@ -5,6 +5,7 @@ import {
   VM_CONSTANT_REFERENCE_OP,
   VM_FETCH_OP,
   VM_GET_DYNAMIC_VAR_OP,
+  VM_GET_PROPERTY_BOUND_OP,
   VM_GET_PROPERTY_OP,
   VM_GET_VARIABLE_OP,
   VM_HAS_BLOCK_OP,
@@ -84,9 +85,13 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHead, (op, expr) => {
 function withPath(op: PushExpressionOp, path?: string[]) {
   if (path === undefined || path.length === 0) return;
 
-  for (let i = 0; i < path.length; i++) {
+  for (let i = 0; i < path.length - 1; i++) {
     op(VM_GET_PROPERTY_OP, path[i]);
   }
+
+  // The last segment uses GetPropertyBound to tag the ref with its parent,
+  // so that consumers (on, fn) can bind `this` at invocation time.
+  op(VM_GET_PROPERTY_BOUND_OP, path[path.length - 1]);
 }
 
 EXPRESSIONS.add(SexpOpcodes.Undefined, (op) => PushPrimitiveReference(op, undefined));
