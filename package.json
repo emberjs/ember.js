@@ -171,7 +171,6 @@
     "type": "addon",
     "version": 2,
     "renamed-modules": {
-      "@ember/-internals/browser-environment/index.js": "ember-source/@ember/-internals/browser-environment/index.js",
       "@ember/-internals/container/index.js": "ember-source/@ember/-internals/container/index.js",
       "@ember/-internals/deprecations/index.js": "ember-source/@ember/-internals/deprecations/index.js",
       "@ember/-internals/environment/index.js": "ember-source/@ember/-internals/environment/index.js",

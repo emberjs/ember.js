@@ -251,7 +251,7 @@ export default class CurlyComponentManager
     owner: Owner,
     ComponentClass: ComponentFactory,
     args: VMArguments,
-    { isInteractive }: Environment,
+    _env: Environment,
     dynamicScope: DynamicScope,
     callerSelfRef: Reference
   ): ComponentStateBucket {
@@ -313,15 +313,9 @@ export default class CurlyComponentManager
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (!hasWrappedElement) {
-      if (isInteractive) {
-        component.trigger('willRender');
-      }
-
+      component.trigger('willRender');
       component._transitionTo('hasElement');
-
-      if (isInteractive) {
-        component.trigger('willInsertElement');
-      }
+      component.trigger('willInsertElement');
     }
 
     // Track additional lifecycle metadata about this component in a state bucket.
@@ -331,8 +325,7 @@ export default class CurlyComponentManager
       capturedArgs,
       argsTag,
       finalizer,
-      hasWrappedElement,
-      isInteractive
+      hasWrappedElement
     );
 
     if (args.named.has('class')) {
@@ -343,7 +336,7 @@ export default class CurlyComponentManager
       processComponentInitializationAssertions(component, props);
     }
 
-    if (isInteractive && hasWrappedElement) {
+    if (hasWrappedElement) {
       component.trigger('willRender');
     }
 
@@ -367,7 +360,7 @@ export default class CurlyComponentManager
   }
 
   didCreateElement(
-    { component, classRef, isInteractive, rootRef }: ComponentStateBucket,
+    { component, classRef, rootRef }: ComponentStateBucket,
     element: Element,
     operations: ElementOperations
   ): void {
@@ -407,11 +400,9 @@ export default class CurlyComponentManager
 
     component._transitionTo('hasElement');
 
-    if (isInteractive) {
-      beginUntrackFrame();
-      component.trigger('willInsertElement');
-      endUntrackFrame();
-    }
+    beginUntrackFrame();
+    component.trigger('willInsertElement');
+    endUntrackFrame();
   }
 
   didRenderLayout(bucket: ComponentStateBucket, bounds: Bounds): void {
@@ -419,16 +410,14 @@ export default class CurlyComponentManager
     bucket.finalize();
   }
 
-  didCreate({ component, isInteractive }: ComponentStateBucket): void {
-    if (isInteractive) {
-      component._transitionTo('inDOM');
-      component.trigger('didInsertElement');
-      component.trigger('didRender');
-    }
+  didCreate({ component }: ComponentStateBucket): void {
+    component._transitionTo('inDOM');
+    component.trigger('didInsertElement');
+    component.trigger('didRender');
   }
 
   update(bucket: ComponentStateBucket): void {
-    let { component, args, argsTag, argsRevision, isInteractive } = bucket;
+    let { component, args, argsTag, argsRevision } = bucket;
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
@@ -449,10 +438,8 @@ export default class CurlyComponentManager
       component.trigger('didReceiveAttrs');
     }
 
-    if (isInteractive) {
-      component.trigger('willUpdate');
-      component.trigger('willRender');
-    }
+    component.trigger('willUpdate');
+    component.trigger('willRender');
 
     endUntrackFrame();
 
@@ -464,11 +451,9 @@ export default class CurlyComponentManager
     bucket.finalize();
   }
 
-  didUpdate({ component, isInteractive }: ComponentStateBucket): void {
-    if (isInteractive) {
-      component.trigger('didUpdate');
-      component.trigger('didRender');
-    }
+  didUpdate({ component }: ComponentStateBucket): void {
+    component.trigger('didUpdate');
+    component.trigger('didRender');
   }
 
   getDestroyable(bucket: ComponentStateBucket): Nullable<Destroyable> {

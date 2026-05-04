@@ -18,8 +18,6 @@ export function scheduleDidDestroy(fn: () => void) {
 }
 
 export const BaseEnv: EnvironmentDelegate = {
-  isInteractive: true,
-
   enableDebugTooling: false,
 
   onTransactionCommit() {

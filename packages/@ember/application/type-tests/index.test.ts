@@ -32,7 +32,6 @@ expectTypeOf(app.ready()).toEqualTypeOf<App>();
 expectTypeOf(app.reset()).toEqualTypeOf<void>();
 
 let bootOptions = {
-  isBrowser: true,
   shouldRender: false,
   document: window.document,
   rootElement: '#ember-application',
@@ -41,10 +40,6 @@ let bootOptions = {
 
 app.visit('/my-app', bootOptions);
 
-app.visit('/my-app', { isBrowser: true });
-
-// @ts-expect-error Incorrect type
-app.visit('/my-app', { isBrowser: 1 });
 // @ts-expect-error Incorrect type
 app.visit('/my-app', { shouldRender: 1 });
 // @ts-expect-error Incorrect type

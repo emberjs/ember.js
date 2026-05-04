@@ -1,6 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
 import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
-import type { InternalOwner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { assert, deprecate, warn } from '@ember/debug';
@@ -126,11 +125,6 @@ const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
 
 export class EmberEnvironmentDelegate implements EnvironmentDelegate {
   public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
-
-  constructor(
-    public owner: InternalOwner,
-    public isInteractive: boolean
-  ) {}
 
   onTransactionCommit(): void {}
 }

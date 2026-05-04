@@ -1,6 +1,9 @@
-import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import { checkHasSuper } from '..';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+
+const ua = window.navigator.userAgent;
+const isChrome = typeof chrome === 'object' && !(typeof opera === 'object');
+const isFirefox = /Firefox|FxiOS/.test(ua);
 
 // Only run this test on browsers that we are certain should have function
 // source available.  This allows the test suite to continue to pass on other

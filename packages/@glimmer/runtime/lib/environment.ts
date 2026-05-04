@@ -100,9 +100,6 @@ export class EnvironmentImpl implements Environment {
   declare protected appendOperations: GlimmerTreeConstruction;
   protected updateOperations?: GlimmerTreeChanges | undefined;
 
-  // Delegate methods and values
-  public isInteractive: boolean;
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError: ((error: any) => boolean) | undefined;
   debugRenderTree: DebugRenderTree<object> | undefined;
@@ -111,7 +108,6 @@ export class EnvironmentImpl implements Environment {
     options: EnvironmentOptions,
     private delegate: EnvironmentDelegate
   ) {
-    this.isInteractive = delegate.isInteractive;
     this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
     this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
     if (options.appendOperations) {
@@ -160,15 +156,11 @@ export class EnvironmentImpl implements Environment {
   }
 
   scheduleInstallModifier(modifier: ModifierInstance) {
-    if (this.isInteractive) {
-      this.transaction.scheduleInstallModifier(modifier);
-    }
+    this.transaction.scheduleInstallModifier(modifier);
   }
 
   scheduleUpdateModifier(modifier: ModifierInstance) {
-    if (this.isInteractive) {
-      this.transaction.scheduleUpdateModifier(modifier);
-    }
+    this.transaction.scheduleUpdateModifier(modifier);
   }
 
   commit() {
@@ -183,12 +175,6 @@ export class EnvironmentImpl implements Environment {
 }
 
 export interface EnvironmentDelegate {
-  /**
-   * Used to determine the the environment is interactive (e.g. SSR is not
-   * interactive). Interactive environments schedule modifiers, among other things.
-   */
-  isInteractive: boolean;
-
   /**
    * Used to enable debug tooling
    */

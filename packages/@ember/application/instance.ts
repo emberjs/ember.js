@@ -3,7 +3,6 @@
 */
 
 import { get, set } from '@ember/object';
-import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
@@ -110,9 +109,7 @@ class ApplicationInstance extends EngineInstance {
 
     this.application.runInstanceInitializers(this);
 
-    if (options.isInteractive) {
-      this.setupEventDispatcher();
-    }
+    this.setupEventDispatcher();
 
     this._booted = true;
 
@@ -332,49 +329,12 @@ class ApplicationInstance extends EngineInstance {
 */
 class _BootOptions {
   /**
-    Interactive mode: whether we need to set up event delegation and invoke
-    lifecycle callbacks on Components.
-
-    @property isInteractive
-    @type boolean
-    @default auto-detected
-    @private
-  */
-  readonly isInteractive: boolean;
-
-  /**
     @property _renderMode
     @type string
     @default undefined
     @private
   */
   readonly _renderMode?: string;
-
-  /**
-    Run in a full browser environment.
-
-    When this flag is set to `false`, it will disable most browser-specific
-    and interactive features. Specifically:
-
-    * It does not use `jQuery` to append the root view; the `rootElement`
-      (either specified as a subsequent option or on the application itself)
-      must already be an `Element` in the given `document` (as opposed to a
-      string selector).
-
-    * It does not set up an `EventDispatcher`.
-
-    * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
-
-    * It sets the `location` option to `"none"`. (If you would like to use
-      the location adapter specified in the app's router instead, you can also
-      specify `{ location: null }` to specifically opt-out.)
-
-    @property isBrowser
-    @type boolean
-    @default auto-detected
-    @public
-  */
-  readonly isBrowser: boolean;
 
   /**
     If present, overrides the router's `location` property with this
@@ -406,33 +366,17 @@ class _BootOptions {
     If present, render into the given `Document` object instead of the
     global `window.document` object.
 
-    In practice, this is only useful in non-browser environment or in
-    non-interactive mode, because Ember's `jQuery` dependency is
-    implicitly bound to the current document, causing event delegation
-    to not work properly when the app is rendered into a foreign
-    document object (such as an iframe's `contentDocument`).
-
-    In non-browser mode, this could be a "`Document`-like" object as
-    Ember only interact with a small subset of the DOM API in non-
-    interactive mode. While the exact requirements have not yet been
-    formalized, the `SimpleDOM` library's implementation is known to
-    work.
-
     @property document
     @type Document
     @default the global `document` object
     @public
   */
-  readonly document: Document | null;
+  readonly document: Document;
 
   /**
     If present, overrides the application's `rootElement` property on
     the instance. This is useful for testing environment, where you
     might want to append the root view to a fixture area.
-
-    In non-browser mode, because Ember does not have access to jQuery,
-    this options must be specified as a DOM `Element` object instead of
-    a selector string.
 
     See the documentation on `Application`'s `rootElement` for
     details.
@@ -445,60 +389,21 @@ class _BootOptions {
   readonly rootElement?: string | SimpleElement;
 
   constructor(options: BootOptions = {}) {
-    this.isInteractive = Boolean(environment.hasDOM); // This default is overridable below
     this._renderMode = options._renderMode;
-
-    if (options.isBrowser !== undefined) {
-      this.isBrowser = Boolean(options.isBrowser);
-    } else {
-      this.isBrowser = Boolean(environment.hasDOM);
-    }
-
-    if (!this.isBrowser) {
-      this.isInteractive = false;
-      this.location = 'none';
-    }
-
-    if (options.shouldRender !== undefined) {
-      this.shouldRender = Boolean(options.shouldRender);
-    } else {
-      this.shouldRender = true;
-    }
-
-    if (!this.shouldRender) {
-      this.isInteractive = false;
-    }
-
-    if (options.document) {
-      this.document = options.document;
-    } else {
-      this.document = typeof document !== 'undefined' ? document : null;
-    }
+    this.shouldRender = options.shouldRender !== undefined ? Boolean(options.shouldRender) : true;
+    this.document = options.document ?? document;
 
     if (options.rootElement) {
       this.rootElement = options.rootElement;
     }
 
-    // Set these options last to give the user a chance to override the
-    // defaults from the "combo" options like `isBrowser` (although in
-    // practice, the resulting combination is probably invalid)
-
-    if (options.location !== undefined) {
+    if (options.location !== undefined && options.location !== null) {
       this.location = options.location;
-    }
-
-    if (options.isInteractive !== undefined) {
-      this.isInteractive = Boolean(options.isInteractive);
     }
   }
 
   toEnvironment(): BootEnvironment {
-    // Do we really want to assign all of this!?
     return {
-      ...environment,
-      // For compatibility with existing code
-      hasDOM: this.isBrowser,
-      isInteractive: this.isInteractive,
       _renderMode: this._renderMode,
       options: this,
     };

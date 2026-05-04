@@ -20,7 +20,7 @@ import {
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
+import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
@@ -34,27 +34,14 @@ import {
   IS_DISPATCHING_ATTRS,
   getComponentCapturedArgs,
 } from './component-managers/curly';
-import { hasDOM } from '@ember/-internals/browser-environment';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
 const EMPTY_ARRAY = Object.freeze([]);
 
-/**
-  Determines if the element matches the specified selector.
-
-  @private
-  @method matches
-  @param {DOMElement} el
-  @param {String} selector
-*/
-const elMatches: typeof Element.prototype.matches | undefined =
-  typeof Element !== 'undefined' ? Element.prototype.matches : undefined;
-
 function matches(el: Element, selector: string): boolean {
-  assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
-  return elMatches.call(el, selector);
+  return Element.prototype.matches.call(el, selector);
 }
 
 /**
@@ -939,7 +926,7 @@ class Component<S = unknown>
       }
     }
 
-    if (DEBUG && eventDispatcher && this.renderer._isInteractive && this.tagName === '') {
+    if (DEBUG && eventDispatcher && this.tagName === '') {
       let eventNames = [];
       let events = eventDispatcher.finalEventNameMapping;
 
@@ -997,17 +984,9 @@ class Component<S = unknown>
       let owner = getOwner(this);
       assert('Component is unexpectedly missing an owner', owner);
 
-      if ((owner.lookup('-environment:main') as Environment)!.isInteractive) {
-        let dispatcher = owner.lookup('event_dispatcher:main');
-        assert(
-          'Expected dispatcher to be an EventDispatcher',
-          dispatcher instanceof EventDispatcher
-        );
-        this.__dispatcher = dispatcher;
-      } else {
-        // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
-        this.__dispatcher = null;
-      }
+      let dispatcher = owner.lookup('event_dispatcher:main');
+      assert('Expected dispatcher to be an EventDispatcher', dispatcher instanceof EventDispatcher);
+      this.__dispatcher = dispatcher;
     }
 
     return this.__dispatcher;
@@ -1445,45 +1424,30 @@ class Component<S = unknown>
    @private
    */
   appendTo(selector: string | Element | SimpleElement) {
-    let target;
+    assert(
+      `Expected a selector or instance of Element`,
+      typeof selector === 'string' || selector instanceof Element
+    );
 
-    if (hasDOM) {
-      assert(
-        `Expected a selector or instance of Element`,
-        typeof selector === 'string' || selector instanceof Element
-      );
+    let target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
-      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
-
-      assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
-      assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
-      assert(
-        'You cannot append to an existing Ember.View.',
-        (() => {
-          let node = target.parentNode;
-          while (node instanceof Element) {
-            if (matches(node, '.ember-view')) {
-              return false;
-            }
-
-            node = node.parentNode;
+    assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
+    assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
+    assert(
+      'You cannot append to an existing Ember.View.',
+      (() => {
+        let node = target.parentNode;
+        while (node instanceof Element) {
+          if (matches(node, '.ember-view')) {
+            return false;
           }
 
-          return true;
-        })()
-      );
-    } else {
-      target = selector;
+          node = node.parentNode;
+        }
 
-      assert(
-        `You tried to append to a selector string (${selector}) in an environment without a DOM`,
-        typeof target !== 'string'
-      );
-      assert(
-        `You tried to append to a non-Element (${selector}) in an environment without a DOM`,
-        typeof target.appendChild === 'function'
-      );
-    }
+        return true;
+      })()
+    );
 
     // SAFETY: SimpleElement is supposed to be a subset of Element so this _should_ be safe.
     // However, the types are more specific in some places which necessitates the `as`.

@@ -1,9 +1,7 @@
-import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
 import { getElementView } from './utils';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
 import type Component from '@ember/component';
 
 /**
@@ -121,19 +119,6 @@ export default class EventDispatcher extends EmberObject {
     @param addedEvents {Object}
   */
   setup(addedEvents: Record<string, string | null>, _rootElement: string | Element | null): void {
-    assert(
-      'EventDispatcher should never be setup in fastboot mode. Please report this as an Ember bug.',
-      (() => {
-        let owner = getOwner(this);
-        assert('[BUG] Missing owner', owner);
-
-        // SAFETY: This is not guaranteed to be safe, but this is what we expect to be returned.
-        let environment = owner.lookup('-environment:main') as BootEnvironment;
-
-        return environment.isInteractive;
-      })()
-    );
-
     let events: Record<string, string | null> = (this.finalEventNameMapping = {
       ...get(this, 'events'),
       ...addedEvents,

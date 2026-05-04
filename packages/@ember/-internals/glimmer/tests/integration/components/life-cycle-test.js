@@ -27,16 +27,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
     }
   }
 
-  get isInteractive() {
-    return true;
-  }
-
-  getBootOptions() {
-    return {
-      isInteractive: this.isInteractive,
-    };
-  }
-
   /* abstract */
   get ComponentClass() {
     throw new Error('Not implemented: `ComponentClass`');
@@ -66,13 +56,8 @@ class LifeCycleHooksTest extends RenderingTestCase {
       .sort()
       .filter((id) => id !== topLevelId);
 
-    if (this.isInteractive) {
-      let expected = this.componentRegistry.sort();
-
-      this.assert.deepEqual(actual, expected, 'registered views - ' + label);
-    } else {
-      this.assert.deepEqual(actual, [], 'no views should be registered for non-interactive mode');
-    }
+    let expected = this.componentRegistry.sort();
+    this.assert.deepEqual(actual, expected, 'registered views - ' + label);
   }
 
   registerComponent(name, { template = null }) {
@@ -113,24 +98,17 @@ class LifeCycleHooksTest extends RenderingTestCase {
         `element should be present on ${instance} during ${hookName}`
       );
 
-      if (this.isInteractive) {
-        this.assert.ok(
-          instance.element,
-          `this.element should be present on ${instance} during ${hookName}`
-        );
-        this.assert.equal(
-          document.body.contains(instance.element),
-          inDOM,
-          `element for ${instance} ${
-            inDOM ? 'should' : 'should not'
-          } be in the DOM during ${hookName}`
-        );
-      } else {
-        this.assert.throws(
-          () => instance.element,
-          /Accessing `this.element` is not allowed in non-interactive environments/
-        );
-      }
+      this.assert.ok(
+        instance.element,
+        `this.element should be present on ${instance} during ${hookName}`
+      );
+      this.assert.equal(
+        document.body.contains(instance.element),
+        inDOM,
+        `element for ${instance} ${
+          inDOM ? 'should' : 'should not'
+        } be in the DOM during ${hookName}`
+      );
     };
 
     let assertNoElement = (hookName, instance) => {
@@ -140,18 +118,11 @@ class LifeCycleHooksTest extends RenderingTestCase {
         `element should not be present in ${hookName}`
       );
 
-      if (this.isInteractive) {
-        this.assert.strictEqual(
-          instance.element,
-          null,
-          `this.element should not be present in ${hookName}`
-        );
-      } else {
-        this.assert.throws(
-          () => instance.element,
-          /Accessing `this.element` is not allowed in non-interactive environments/
-        );
-      }
+      this.assert.strictEqual(
+        instance.element,
+        null,
+        `this.element should not be present in ${hookName}`
+      );
     };
 
     let assertState = (hookName, expectedState, instance) => {
@@ -161,8 +132,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
         `within ${hookName} the expected _state is ${expectedState}`
       );
     };
-
-    let { isInteractive } = this;
 
     let ComponentClass = class extends this.ComponentClass {
       init() {
@@ -192,12 +161,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
           assertState('didReceiveAttrs', 'preRender', this);
         } else {
           assertElement('didReceiveAttrs', this);
-
-          if (isInteractive) {
-            assertState('didReceiveAttrs', 'inDOM', this);
-          } else {
-            assertState('didReceiveAttrs', 'hasElement', this);
-          }
+          assertState('didReceiveAttrs', 'inDOM', this);
         }
       }
 
@@ -238,12 +202,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       didUpdateAttrs(options) {
         pushHook('didUpdateAttrs', options);
         assertParentView('didUpdateAttrs', this);
-
-        if (isInteractive) {
-          assertState('didUpdateAttrs', 'inDOM', this);
-        } else {
-          assertState('didUpdateAttrs', 'hasElement', this);
-        }
+        assertState('didUpdateAttrs', 'inDOM', this);
       }
 
       willUpdate(options) {
@@ -294,9 +253,8 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.owner.register(`component:${name}`, ComponentClass);
   }
 
-  assertHooks({ label, interactive, nonInteractive }) {
-    let rawHooks = this.isInteractive ? interactive : nonInteractive;
-    let hooks = rawHooks.map((raw) => hook(...raw));
+  assertHooks({ label, interactive }) {
+    let hooks = interactive.map((raw) => hook(...raw));
     this.assert.deepEqual(json(this.hooks), json(hooks), label);
     this.hooks = [];
   }
@@ -1073,38 +1031,25 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.assertText('Item: 1Item: 2Item: 3Item: 4Item: 5');
     this.assertRegisteredViews('intial render');
 
-    let initialHooks = () => {
-      let ret = [
-        ['an-item', 'init'],
-        ['an-item', 'on(init)'],
-        ['an-item', 'didReceiveAttrs'],
-      ];
-      if (this.isInteractive) {
-        ret.push(['an-item', 'willRender'], ['an-item', 'willInsertElement']);
-      }
-      ret.push(
-        ['nested-item', 'init'],
-        ['nested-item', 'on(init)'],
-        ['nested-item', 'didReceiveAttrs']
-      );
-      if (this.isInteractive) {
-        ret.push(['nested-item', 'willRender'], ['nested-item', 'willInsertElement']);
-      }
-      return ret;
-    };
+    let initialHooks = () => [
+      ['an-item', 'init'],
+      ['an-item', 'on(init)'],
+      ['an-item', 'didReceiveAttrs'],
+      ['an-item', 'willRender'],
+      ['an-item', 'willInsertElement'],
+      ['nested-item', 'init'],
+      ['nested-item', 'on(init)'],
+      ['nested-item', 'didReceiveAttrs'],
+      ['nested-item', 'willRender'],
+      ['nested-item', 'willInsertElement'],
+    ];
 
-    let initialAfterRenderHooks = () => {
-      if (this.isInteractive) {
-        return [
-          ['nested-item', 'didInsertElement'],
-          ['nested-item', 'didRender'],
-          ['an-item', 'didInsertElement'],
-          ['an-item', 'didRender'],
-        ];
-      } else {
-        return [];
-      }
-    };
+    let initialAfterRenderHooks = () => [
+      ['nested-item', 'didInsertElement'],
+      ['nested-item', 'didRender'],
+      ['an-item', 'didInsertElement'],
+      ['an-item', 'didRender'],
+    ];
 
     this.assertHooks({
       label: 'after initial render',
@@ -1142,17 +1087,11 @@ class LifeCycleHooksTest extends RenderingTestCase {
       ],
     });
 
-    // TODO: Is this correct? Should childViews be populated in non-interactive mode?
-    if (this.isInteractive) {
-      this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
-    }
+    this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
 
     runTask(() => set(this.context, 'items', []));
 
-    // TODO: Is this correct? Should childViews be populated in non-interactive mode?
-    if (this.isInteractive) {
-      this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
-    }
+    this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
 
     this.assertText('Nothing to see here');
 
@@ -1299,50 +1238,15 @@ class CurlyComponentsTest extends LifeCycleHooksTest {
   }
 }
 
-moduleFor(
-  'Components test: interactive lifecycle hooks (curly components)',
-  class extends CurlyComponentsTest {
-    get isInteractive() {
-      return true;
-    }
-  }
-);
+moduleFor('Components test: lifecycle hooks (curly components)', CurlyComponentsTest);
 
 moduleFor(
-  'Components test: non-interactive lifecycle hooks (curly components)',
-  class extends CurlyComponentsTest {
-    get isInteractive() {
-      return false;
-    }
-  }
-);
-
-moduleFor(
-  'Components test: interactive lifecycle hooks (tagless curly components)',
+  'Components test: lifecycle hooks (tagless curly components)',
   class extends CurlyComponentsTest {
     get ComponentClass() {
       return class extends Component {
         tagName = '';
       };
-    }
-
-    get isInteractive() {
-      return true;
-    }
-  }
-);
-
-moduleFor(
-  'Components test: non-interactive lifecycle hooks (tagless curly components)',
-  class extends CurlyComponentsTest {
-    get ComponentClass() {
-      return class extends Component {
-        tagName = '';
-      };
-    }
-
-    get isInteractive() {
-      return false;
     }
   }
 );

@@ -16,8 +16,6 @@ import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
 
 export interface BootEnvironment {
-  hasDOM: boolean;
-  isInteractive: boolean;
   _renderMode?: string;
   options: BootOptions;
 }
@@ -94,13 +92,7 @@ export default class OutletView {
   }
 
   appendTo(selector: string | SimpleElement): void {
-    let target;
-
-    if (this._environment.hasDOM) {
-      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
-    } else {
-      target = selector;
-    }
+    let target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
     let renderer = this.owner.lookup('renderer:-dom') as Renderer;
 
