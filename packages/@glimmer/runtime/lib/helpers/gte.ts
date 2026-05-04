@@ -5,7 +5,7 @@ import { DEBUG } from '@glimmer/env';
  *
  * left >= right
  */
-export function gte(left: unknown, right: unknown) {
+export function gte<T>(left: T, right: T) {
   if (DEBUG && arguments.length !== 2) {
     throw new Error(`\`gte\` expects exactly two arguments, but received ${arguments.length}.`);
   }

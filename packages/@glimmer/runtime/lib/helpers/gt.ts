@@ -5,7 +5,7 @@ import { DEBUG } from '@glimmer/env';
  *
  * left > right
  */
-export function gt(left: unknown, right: unknown) {
+export function gt<T>(left: T, right: T) {
   if (DEBUG && arguments.length !== 2) {
     throw new Error(`\`gt\` expects exactly two arguments, but received ${arguments.length}.`);
   }
