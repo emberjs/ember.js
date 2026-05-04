@@ -532,7 +532,7 @@ export type UniqueIdHelper = typeof uniqueId;
  * @param {unknown} left
  * @param {unknown} right
  * @return {boolean}
- * @public
+ * @private
  */
 export const eq = glimmerEq as unknown as EqHelper;
 export interface EqHelper extends Opaque<'helper:eq'> {}
@@ -556,7 +556,7 @@ export interface EqHelper extends Opaque<'helper:eq'> {}
  * @param {unknown} left
  * @param {unknown} right
  * @return {boolean}
- * @public
+ * @private
  */
 export const neq = glimmerNeq as unknown as NeqHelper;
 export interface NeqHelper extends Opaque<'helper:neq'> {}
