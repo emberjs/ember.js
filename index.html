@@ -134,6 +134,11 @@
       // or by setting globalThis.__GXT_LEAK_DEBUG__ before tests start.
       // When on, validator.ts tags every classic reactor with the test
       // it was registered in and logs cross-test leaks at fire time.
+      // NOTE: leak diagnostics are EXPENSIVE — every classic-reactor fire
+      // produces a console.log per leaked reactor. With 18+ leaked reactors
+      // and thousands of dirtyTagFor calls per test, this floods testem's
+      // websocket and triggers a 41min hang in CI as the browser saturates
+      // the channel with diagnostic output. Keep it OPT-IN via URL param.
       try {
         var _u = new URL(location.href);
         if (_u.searchParams.get('gxtLeakDebug') === 'true') {
@@ -142,9 +147,6 @@
       } catch (_e) {
         /* ignore */
       }
-      // TEMPORARY: force-enable leak diagnostics for CI debugging.
-      // Remove this line once the cumulative-state failures are diagnosed.
-      globalThis.__GXT_LEAK_DEBUG__ = true;
 
       // Global operation counter to detect infinite synchronous loops
       // Any tight loop will increment this. When it exceeds the limit,
