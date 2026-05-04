@@ -2,8 +2,7 @@ import { castToBrowser } from '@glimmer/debug-util';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 
-import { template } from '@ember/template-compiler/runtime';
-import { on } from '@ember/modifier';
+import { template } from '@ember/template-compiler';
 
 class KeywordOn extends RenderTest {
   static suiteName = 'keyword modifier: on';
@@ -25,7 +24,6 @@ class KeywordOn extends RenderTest {
       strictMode: true,
       scope: () => ({
         handleClick,
-        on,
       }),
     });
 
@@ -36,7 +34,7 @@ class KeywordOn extends RenderTest {
   }
 
   @test
-  'it works with the runtime compiler'(assert: Assert) {
+  'works with eval'(assert: Assert) {
     let handleClick = () => {
       assert.step('success');
     };
@@ -49,6 +47,26 @@ class KeywordOn extends RenderTest {
         return eval(arguments[0]);
       },
     });
+
+    this.renderComponent(compiled);
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+    assert.verifySteps(['success']);
+  }
+
+  @test
+  'can be curried'(assert: Assert) {
+    let handleClick = () => {
+      assert.step('success');
+    };
+
+    const compiled = template(
+      '<button {{ (if true (modifier on "click" handleClick) )}}>Click</button>',
+      {
+        strictMode: true,
+        scope: () => ({ handleClick }),
+      }
+    );
 
     this.renderComponent(compiled);
 
