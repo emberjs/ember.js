@@ -495,7 +495,7 @@ export interface FnHelper extends Opaque<'helper:fn'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @public
+ * @private
  */
 export const gt = glimmerGt as unknown as GtHelper;
 export interface GtHelper extends Opaque<'helper:gt'> {}
@@ -519,7 +519,7 @@ export interface GtHelper extends Opaque<'helper:gt'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @public
+ * @private
  */
 export const gte = glimmerGte as unknown as GteHelper;
 export interface GteHelper extends Opaque<'helper:gte'> {}
@@ -543,7 +543,7 @@ export interface GteHelper extends Opaque<'helper:gte'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @public
+ * @private
  */
 export const lt = glimmerLt as unknown as LtHelper;
 export interface LtHelper extends Opaque<'helper:lt'> {}
@@ -567,7 +567,7 @@ export interface LtHelper extends Opaque<'helper:lt'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @public
+ * @private
  */
 export const lte = glimmerLte as unknown as LteHelper;
 export interface LteHelper extends Opaque<'helper:lte'> {}
