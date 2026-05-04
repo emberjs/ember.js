@@ -14,6 +14,22 @@ export function runAppend(view: any): void {
   (globalThis as any).__gxtRunTaskActive = true;
   try {
     run(view, 'appendTo', document.getElementById('qunit-fixture'));
+  } catch (e) {
+    // The run() threw — this means a render error escaped without being
+    // consumed by flushRenderErrors() at the end of this function. The
+    // gxt-backend catch path (manager.ts:8993, captureRenderError + rethrow)
+    // captures a duplicate copy into _renderErrors before the error bubbles
+    // out. That stale copy would otherwise re-throw during the NEXT
+    // runTask()/runAppend() flushRenderErrors call, breaking error-recovery
+    // tests like `Errors thrown during render: it can recover resets the
+    // transaction when an error is thrown during initial render` whose
+    // sequence is:
+    //   1. assert.throws(() => render(...))   // user observes the throw
+    //   2. runTask(() => set(switch, false))  // BUG: re-throws stale copy
+    // Clear the queue so the user-observed error is the only one surfaced.
+    const clearErrors = (globalThis as any).__gxtClearRenderErrors;
+    if (typeof clearErrors === 'function') clearErrors();
+    throw e;
   } finally {
     (globalThis as any).__gxtRunTaskActive = false;
   }
@@ -91,6 +107,14 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   let result: ReturnType<F>;
   try {
     result = run(callback);
+  } catch (e) {
+    // run() threw — same race as runAppend (see comment above): the
+    // captured duplicate in _renderErrors would re-throw on the next
+    // runTask() call. The user-visible throw is already escaping; clear
+    // the duplicate so error-recovery tests can proceed cleanly.
+    const clearErrors = (globalThis as any).__gxtClearRenderErrors;
+    if (typeof clearErrors === 'function') clearErrors();
+    throw e;
   } finally {
     (globalThis as any).__gxtRunTaskActive = false;
   }
