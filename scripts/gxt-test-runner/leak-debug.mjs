@@ -1,6 +1,7 @@
 // Open the local vite dev server in a single browser context, let QUnit run
 // all tests naturally, and capture browser console output to stdout. The
-// __GXT_LEAK_DEBUG__ flag in index.html turns on the instrumentation in
+// __GXT_LEAK_DEBUG__ flag in index.html (set when ?gxtLeakDebug=true is
+// in the URL) turns on the instrumentation in
 // validator.ts/manager.ts/renderer.ts.
 //
 // Usage:
@@ -11,7 +12,7 @@
 
 import { chromium } from 'playwright';
 
-const URL = process.env.GXT_URL || 'http://localhost:5180/';
+const URL = process.env.GXT_URL || 'http://localhost:5180/?gxtLeakDebug=true';
 const TIMEOUT = Number(process.env.GXT_LEAK_TIMEOUT_MS || 1_800_000);
 
 const browser = await chromium.launch({ headless: true });
