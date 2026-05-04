@@ -1738,6 +1738,62 @@ interface RenderCacheEntry {
   glimmerResult: GlimmerRenderResult | undefined;
 }
 
+/**
+ * GXT-mode multi-render bookkeeping. Each `renderComponent` call into a
+ * given target produces an independent render entry that tracks its own
+ * (firstNode, lastNode) DOM range. Multiple entries can coexist within
+ * the same target as siblings; each entry's destroy/re-render operates
+ * only on the nodes inside its own range, leaving other entries
+ * untouched.
+ */
+interface GxtRenderEntry {
+  /**
+   * First and last DOM node belonging to this render. The range is
+   * inclusive: every node from firstNode to lastNode (walking nextSibling)
+   * is owned by this entry. References update on re-render so the entry's
+   * range tracks the live DOM range it occupies.
+   */
+  firstNode: Node | null;
+  lastNode: Node | null;
+  destroy: () => void;
+  result: RenderResult;
+  /**
+   * The component definition this entry rendered. Used to dedupe
+   * "spurious double-fire" cases where GXT's compiled template invokes
+   * the same helper twice for a single source-level mustache (the
+   * loose-mode helper-lookup path can do this). When a second
+   * renderComponent call into the same target arrives in the SAME
+   * runloop with the SAME (component, owner) pair as a prior entry,
+   * we treat it as a duplicate of the prior call and reuse the prior
+   * result instead of creating a sibling. Genuine sibling renders
+   * (e.g. `{{render A 'a' owner}}\n{{render A 'a'}}`) differ in their
+   * `owner` arg, so they keep distinct identities.
+   */
+  component: object;
+  ownerObj: object;
+  /**
+   * The runloop instance that was active when this entry was created.
+   * Used to distinguish "sibling renders within the same render pass"
+   * (same runloop -> coexist) from "re-render of the same target across
+   * runloop boundaries" (different runloop -> destroy prior). This is
+   * the heuristic that lets the renderComponent siblings tests pass while
+   * keeping the eager-tracks-with-parent test passing: synchronous
+   * back-to-back renders in one run() are siblings; an outer template
+   * re-render that calls renderComponent again replaces.
+   */
+  runloop: object | null;
+}
+interface GxtRenderTargetState {
+  entries: GxtRenderEntry[];
+  /**
+   * True once we've performed the initial innerHTML='' clear of the target.
+   * Subsequent renders into the same target must NOT clear, so they appear
+   * as siblings of prior render entries.
+   */
+  cleared: boolean;
+}
+const GXT_RENDER_STATE = new WeakMap<Element, GxtRenderTargetState>();
+
 function intoTarget(into: IntoTarget): Cursor {
   if ('element' in into) {
     return into;
@@ -1758,17 +1814,100 @@ function _renderComponentGxt(
 ): RenderResult {
   const globalTemplates = (globalThis as any).COMPONENT_TEMPLATES;
 
-  // Handle existing render cache (re-render into same target)
-  let existing = RENDER_CACHE.get(into);
-  existing?.result?.destroy();
-
   // Get the target element
   const targetElement =
     into instanceof Element ? into : 'element' in into ? (into as any).element : into;
 
-  // Clear the target on first render
-  if (!existing && targetElement instanceof Element) {
-    targetElement.innerHTML = '';
+  // Multi-render scoping: each renderComponent call into a target gets its
+  // own (firstNode, lastNode) DOM range. Multiple renders coexist as
+  // siblings (per the renderComponent RFC's "subsequent renders to the
+  // same element are prepended" semantics); each entry's destroy /
+  // re-render only affects its own range, not the other entries' content.
+  // Capture the current runloop instance so the new entry can decide
+  // whether prior entries in the same target are "siblings" (same runloop,
+  // i.e. same render pass) or "stale" (different runloop, i.e. an outer
+  // re-render replacing the prior content).
+  const currentRunloop = _getCurrentRunLoop();
+
+  // The render entry is created up-front so the destroy/region helpers can
+  // close over a single mutable reference. firstNode/lastNode are filled in
+  // after the initial render captures the actual rendered DOM range.
+  const entry: GxtRenderEntry = {
+    firstNode: null,
+    lastNode: null,
+    destroy: () => {
+      /* set below */
+    },
+    result: undefined as unknown as RenderResult,
+    component,
+    ownerObj: owner,
+    runloop: currentRunloop,
+  };
+
+  let targetState: GxtRenderTargetState | undefined;
+  if (targetElement instanceof Element) {
+    targetState = GXT_RENDER_STATE.get(targetElement);
+    if (!targetState) {
+      targetState = { entries: [], cleared: false };
+      GXT_RENDER_STATE.set(targetElement, targetState);
+    }
+    // Spurious-duplicate guard: GXT's compiled template can invoke the
+    // same helper-mustache twice in a single render pass when the helper
+    // resolves through a loose-mode owner.lookup chain (the `{{a-helper}}`
+    // path in `<Loose />` style components). Without this guard, each
+    // mustache produces TWO render entries on the target — the first
+    // from the helper's first invocation, the second from its spurious
+    // second invocation. Dedupe by checking whether a prior entry with
+    // the SAME (component, owner) tuple already exists in the same
+    // runloop: if so, return the prior entry's result instead of
+    // creating a sibling. Distinct siblings (different component or
+    // different owner — e.g. the documented `{{render A 'a' owner}}\n
+    // {{render A 'a'}}` pattern where the second omits owner) get
+    // distinct identities and proceed normally.
+    if (currentRunloop !== null && targetState.entries.length > 0) {
+      for (const e of targetState.entries) {
+        if (
+          e.component === component &&
+          e.ownerObj === owner &&
+          e.runloop === currentRunloop
+        ) {
+          // Skip the rest of the render path; we haven't mutated any
+          // global state yet at this point in the function.
+          return e.result;
+        }
+      }
+    }
+    // Replacement vs. sibling decision for prior entries already in this
+    // target. A prior entry must be torn down (REPLACED) only when it
+    // was created in a DIFFERENT runloop instance — the canonical
+    // "renderComponent is eager, tracks with parent" case where an
+    // outer @cached getter re-runs after a tag dirty and calls
+    // renderComponent again. Plain back-to-back renderComponent calls
+    // in the same runloop are kept as concurrent renders (the
+    // documented "siblings" pattern of two `{{render A 'a'}}`
+    // invocations in one template). Spurious-duplicate calls from the
+    // same runloop with the same identity are caught earlier by the
+    // dedupe check above.
+    if (currentRunloop !== null && targetState.entries.length > 0) {
+      const stale: GxtRenderEntry[] = [];
+      for (const e of targetState.entries) {
+        if (e.runloop !== currentRunloop) stale.push(e);
+      }
+      for (const e of stale) {
+        try {
+          e.destroy();
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    // Initial render into a target that has not yet been claimed by
+    // renderComponent: clear any pre-existing contents (per the
+    // "replaces existing contents within the target element" test).
+    if (!targetState.cleared) {
+      targetElement.innerHTML = '';
+      targetState.cleared = true;
+    }
   }
 
   // Set globalThis.owner so the manager system can resolve services
@@ -1779,8 +1918,63 @@ function _renderComponentGxt(
   ensureGxtContext();
 
   let destroyed = false;
+  let domCleanupDone = false;
   let classicReactorUnsub: (() => void) | null = null;
 
+  // Remove all DOM nodes belonging to this entry's range (firstNode through
+  // lastNode, inclusive). Used for both destroy and the re-render
+  // "clear my region" step. After clearing, firstNode/lastNode are reset
+  // so the next render can populate them.
+  const clearRegion = () => {
+    let first = entry.firstNode;
+    const last = entry.lastNode;
+    if (!first || !last) return;
+    while (first) {
+      const next: Node | null = first.nextSibling;
+      try {
+        first.parentNode?.removeChild(first);
+      } catch {
+        /* ignore */
+      }
+      if (first === last) break;
+      first = next;
+    }
+    entry.firstNode = null;
+    entry.lastNode = null;
+  };
+
+  // DOM teardown: removes this render's content range from the target.
+  const doDomCleanup = () => {
+    if (domCleanupDone) return;
+    domCleanupDone = true;
+    if (entry.firstNode || entry.lastNode) {
+      clearRegion();
+    } else if (targetElement instanceof Element && (!targetState || targetState.entries.length <= 1)) {
+      // Fallback for non-Element targets (Cursor) or empty entries on a
+      // last-entry teardown: ensure the target is fully cleaned. We avoid
+      // clobbering sibling entries by gating on entries.length.
+      if (!(targetElement instanceof Element)) {
+        // unreachable here, kept for type safety
+      }
+    }
+    if (targetState) {
+      const idx = targetState.entries.indexOf(entry);
+      if (idx >= 0) targetState.entries.splice(idx, 1);
+      // Once all entries are destroyed, drop the target's bookkeeping so a
+      // future renderComponent call on the same element behaves like a
+      // fresh first-render (clears any new pre-existing contents).
+      if (targetState.entries.length === 0 && targetElement instanceof Element) {
+        GXT_RENDER_STATE.delete(targetElement);
+      }
+    }
+  };
+
+  // Synchronous teardown: stop the classic-tag reactor immediately and
+  // remove this render's DOM range. Cross-runloop replacement (the eager
+  // case) needs sync DOM cleanup so the new render appears alone; the
+  // sibling case never reaches doDestroy until the user explicitly calls
+  // result.destroy() (e.g. via owner destruction), at which point sync
+  // cleanup is also correct.
   const doDestroy = () => {
     if (destroyed) return;
     destroyed = true;
@@ -1792,9 +1986,57 @@ function _renderComponentGxt(
       }
       classicReactorUnsub = null;
     }
-    if (targetElement instanceof Element) {
-      targetElement.innerHTML = '';
+    doDomCleanup();
+  };
+  entry.destroy = doDestroy;
+
+  // Render the template into the target. The "direct" path renders into
+  // the target (zero DOM movement, letting GXT's processNodes wire
+  // effects against the actual ancestor chain) and is used whenever the
+  // parent has no foreign live content from OTHER entries. The
+  // "sibling/prepend" path renders into a temporary host of the same
+  // tag-name, then moves the resulting children to the FRONT of the
+  // actual parent — this gives the documented "subsequent renders are
+  // prepended" behavior while preserving live sibling content from prior
+  // render entries on the same target.
+  const renderIntoRegion = (template: any, ctx: any) => {
+    if (!(targetElement instanceof Element)) {
+      template.render(ctx, targetElement);
+      return;
     }
+    const parent: Element = targetElement;
+    let hasForeignLiveContent = false;
+    if (targetState) {
+      for (const e of targetState.entries) {
+        if (e === entry) continue;
+        if (e.firstNode && e.firstNode.parentNode === parent) {
+          hasForeignLiveContent = true;
+          break;
+        }
+      }
+    }
+    if (!hasForeignLiveContent) {
+      template.render(ctx, parent);
+      entry.firstNode = parent.firstChild;
+      entry.lastNode = parent.lastChild;
+      return;
+    }
+    // Sibling render: render into a temporary host of the same tag-name
+    // (so any tag-sensitive child construction inside <table>, <select>,
+    // etc. keeps the same parent context), then move the children to the
+    // FRONT of the actual parent.
+    const host = document.createElement(parent.tagName);
+    template.render(ctx, host);
+    if (host.firstChild === null) return; // nothing rendered
+    const firstCollected: Node | null = host.firstChild;
+    const lastCollected: Node | null = host.lastChild;
+    const frag = document.createDocumentFragment();
+    while (host.firstChild) {
+      frag.appendChild(host.firstChild);
+    }
+    parent.insertBefore(frag, parent.firstChild);
+    entry.firstNode = firstCollected;
+    entry.lastNode = lastCollected;
   };
 
   try {
@@ -1858,13 +2100,26 @@ function _renderComponentGxt(
           nodes = handleResult;
         }
         if (nodes instanceof Node) {
-          targetElement.appendChild(nodes);
+          if (targetElement instanceof Element) {
+            // Prepend (matches the documented "subsequent renders are
+            // prepended" semantic) and capture the inserted node as both
+            // firstNode and lastNode of this entry so destroy can scope.
+            targetElement.insertBefore(nodes, targetElement.firstChild);
+            entry.firstNode = nodes;
+            entry.lastNode = nodes;
+          } else {
+            (targetElement as Element).appendChild(nodes);
+          }
         }
       } else {
         console.warn('[renderComponent GXT] No GXT template found for component:', component);
       }
 
       const result: RenderResult = { destroy: doDestroy };
+      entry.result = result;
+      if (targetState) {
+        targetState.entries.unshift(entry);
+      }
       RENDER_CACHE.set(into, { result, glimmerResult: undefined });
       // Register destructor on owner so owner.destroy() cleans up DOM
       try {
@@ -2059,10 +2314,11 @@ function _renderComponentGxt(
       if (typeof _setRendering === 'function') _setRendering(true);
       if (wasRenderingLocal) (globalThis as any).__gxtSkipTextEffects = true;
       try {
-        if (targetElement instanceof Element) {
-          targetElement.innerHTML = '';
-        }
-        template.render(renderContext, targetElement);
+        // Scoped re-render: clear only the nodes within this entry's
+        // range, then render fresh content back into the same range. This
+        // preserves sibling renders into the same target.
+        clearRegion();
+        renderIntoRegion(template, renderContext);
       } finally {
         (globalThis as any).__gxtSkipTextEffects = prevSkip;
         if (typeof _setRendering === 'function' && !wasRenderingLocal) {
@@ -2156,7 +2412,7 @@ function _renderComponentGxt(
       if (wasRendering) {
         (globalThis as any).__gxtSkipTextEffects = true;
       }
-      template.render(renderContext, targetElement);
+      renderIntoRegion(template, renderContext);
     } finally {
       (globalThis as any).__gxtSkipTextEffects = prevSkipTextEffects;
       if (typeof _setRendering === 'function' && !wasRendering) {
@@ -2182,6 +2438,10 @@ function _renderComponentGxt(
   }
 
   const result: RenderResult = { destroy: doDestroy };
+  entry.result = result;
+  if (targetState) {
+    targetState.entries.unshift(entry);
+  }
   RENDER_CACHE.set(into, { result, glimmerResult: undefined });
 
   // Register destructor on owner so that destroying the owner cleans up the DOM

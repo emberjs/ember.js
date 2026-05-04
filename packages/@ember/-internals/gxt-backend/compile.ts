@@ -12713,13 +12713,19 @@ export function precompileTemplate(
           // GXT handles {{on}} natively, so we just need a passthrough.
           scopeVals['on'] = g.__EMBER_BUILTIN_HELPERS__?.['on'] || scopeVals['on'];
         }
-        // Deterministic key based on sorted scope key names so that
-        // templates with the same compiled code + scope shape produce
-        // identical templateFnCode strings, enabling Function() cache hits.
+        // Deterministic key based on sorted scope key names AND the
+        // template source so that distinct templates that happen to share
+        // the same scope-key SHAPE (e.g. two strict-mode templates each
+        // declaring `scope: () => ({ Child, data })` but with different
+        // `data` values) get distinct global storage slots — otherwise
+        // the second compile overwrites the first's scope values and
+        // both renders end up reading the same `data` (see the
+        // renderComponent siblings-with-reactivity test).
         const sortedKeys = Array.from(scopeKeys).sort().join(',');
+        const hashSource = sortedKeys + '' + templateString;
         let h = 0x811c9dc5; // FNV-1a 32-bit
-        for (let i = 0; i < sortedKeys.length; i++) {
-          h ^= sortedKeys.charCodeAt(i);
+        for (let i = 0; i < hashSource.length; i++) {
+          h ^= hashSource.charCodeAt(i);
           h = Math.imul(h, 0x01000193);
         }
         scopeStoreKey = `__gxtScope_${(h >>> 0).toString(36)}`;
