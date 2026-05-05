@@ -1,40 +1,31 @@
-import type { View } from '@ember/-internals/glimmer';
-import {
-  descriptorForProperty,
-  get,
-  nativeDescDecorator,
-  PROPERTY_DID_CHANGE,
-} from '@ember/-internals/metal';
-import type { PropertyDidChange } from '@ember/-internals/metal';
+import type { View } from './renderer';
+import { descriptorForProperty, nativeDescDecorator } from '@ember/-internals/metal/lib/decorator';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
+import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
-import { TargetActionSupport } from '@ember/-internals/runtime';
-import type { ViewStates } from '@ember/-internals/views';
+import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
+import type ViewStates from '@ember/-internals/views/lib/views/states';
+import ActionSupport from '@ember/-internals/views/lib/mixins/action_support';
 import {
-  ActionSupport,
   addChildView,
-  CoreView,
-  EventDispatcher,
   getChildViews,
   getViewElement,
-} from '@ember/-internals/views';
-import { guidFor } from '@ember/-internals/utils';
+} from '@ember/-internals/views/lib/system/utils';
+import CoreView from '@ember/-internals/views/lib/views/core_view';
+import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
-import { setInternalComponentManager } from '@glimmer/manager';
-import { isUpdatableRef, updateRef } from '@glimmer/reference';
-import { normalizeProperty } from '@glimmer/runtime';
-import type { DirtyableTag } from '@glimmer/validator';
-import { createTag, dirtyTag } from '@glimmer/validator';
+import { isUpdatableRef, updateRef } from '@glimmer/reference/lib/reference';
+import { normalizeProperty } from '@glimmer/runtime/lib/dom/props';
+import type { DirtyableTag } from '@glimmer/interfaces';
+import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
-import {
-  BOUNDS,
-  CURLY_COMPONENT_MANAGER,
-  DIRTY_TAG,
-  IS_DISPATCHING_ATTRS,
-  getComponentCapturedArgs,
-} from './component-managers/curly';
-import { hasDOM } from '@ember/-internals/browser-environment';
+import { getComponentCapturedArgs } from './component-managers/curly';
+import { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './component-managers/curly-symbols';
+import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -1684,12 +1675,5 @@ class Component<S = unknown>
     return '@ember/component';
   }
 }
-
-// We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
-Component.reopenClass({
-  positionalParams: [],
-});
-
-setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
 
 export default Component;

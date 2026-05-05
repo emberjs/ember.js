@@ -1,8 +1,13 @@
-import { tracked } from '@ember/-internals/metal';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
 import { assert } from '@ember/debug';
-import { action } from '@ember/object';
-import type { Reference } from '@glimmer/reference';
-import { isConstRef, isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import { action } from '@ember/object/action';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import {
+  isConstRef,
+  isUpdatableRef,
+  updateRef,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
 import type { EventListener } from './internal';
 import InternalComponent from './internal';
 

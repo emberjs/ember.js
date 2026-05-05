@@ -2,6 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,
   ComponentInstanceWithCreate,
+  DebugRenderTree,
   Environment,
   EnvironmentOptions,
   GlimmerTreeChanges,
@@ -17,9 +18,15 @@ import { expect, assert } from '@glimmer/debug-util';
 import { ProgramImpl } from '@glimmer/program';
 import { track, updateTag } from '@glimmer/validator';
 
-import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { isArgumentError } from './vm/arguments';
+
+type DebugRenderTreeFactory = () => DebugRenderTree;
+let debugRenderTreeFactory: DebugRenderTreeFactory | null = null;
+
+export function registerDebugRenderTreeFactory(factory: DebugRenderTreeFactory): void {
+  debugRenderTreeFactory = factory;
+}
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
 
@@ -105,14 +112,17 @@ export class EnvironmentImpl implements Environment {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError: ((error: any) => boolean) | undefined;
-  debugRenderTree: DebugRenderTree<object> | undefined;
+  debugRenderTree: DebugRenderTree | undefined;
 
   constructor(
     options: EnvironmentOptions,
     private delegate: EnvironmentDelegate
   ) {
     this.isInteractive = delegate.isInteractive;
-    this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
+    this.debugRenderTree =
+      this.delegate.enableDebugTooling && debugRenderTreeFactory
+        ? debugRenderTreeFactory()
+        : undefined;
     this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
     if (options.appendOperations) {
       this.appendOperations = options.appendOperations;

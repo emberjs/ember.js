@@ -2,6 +2,7 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { registerComputedSetterCheck } from './property_set';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
@@ -108,6 +109,8 @@ function DESCRIPTOR_SETTER_FUNCTION(
 }
 
 export const COMPUTED_SETTERS = new WeakSet();
+
+registerComputedSetterCheck((setter) => COMPUTED_SETTERS.has(setter));
 
 export function makeComputedDecorator(
   desc: ComputedDescriptor,

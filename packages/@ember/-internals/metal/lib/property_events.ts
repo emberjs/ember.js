@@ -1,12 +1,20 @@
 import type { Meta } from '@ember/-internals/meta';
 import { peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
-import {
-  flushSyncObservers,
-  resumeObserverDeactivation,
-  suspendedObserverDeactivation,
-} from './observer';
 import { markObjectAsDirty } from './tags';
+
+let observerFlushSync: (() => void) | null = null;
+let observerSuspendDeactivation: (() => void) | null = null;
+let observerResumeDeactivation: (() => void) | null = null;
+
+export function registerObserverFlushSync(fn: () => void): void {
+  observerFlushSync = fn;
+}
+
+export function registerObserverDeactivationHooks(suspend: () => void, resume: () => void): void {
+  observerSuspendDeactivation = suspend;
+  observerResumeDeactivation = resume;
+}
 
 /**
  @module ember
@@ -61,8 +69,8 @@ function notifyPropertyChange(
 
   markObjectAsDirty(obj, keyName);
 
-  if (deferred <= 0) {
-    flushSyncObservers();
+  if (deferred <= 0 && observerFlushSync !== null) {
+    observerFlushSync();
   }
 
   if (PROPERTY_DID_CHANGE in obj) {
@@ -87,7 +95,9 @@ function notifyPropertyChange(
 */
 function beginPropertyChanges(): void {
   deferred++;
-  suspendedObserverDeactivation();
+  if (observerSuspendDeactivation !== null) {
+    observerSuspendDeactivation();
+  }
 }
 
 /**
@@ -97,8 +107,12 @@ function beginPropertyChanges(): void {
 function endPropertyChanges(): void {
   deferred--;
   if (deferred <= 0) {
-    flushSyncObservers();
-    resumeObserverDeactivation();
+    if (observerFlushSync !== null) {
+      observerFlushSync();
+    }
+    if (observerResumeDeactivation !== null) {
+      observerResumeDeactivation();
+    }
   }
 }
 

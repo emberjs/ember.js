@@ -3,7 +3,8 @@
   "version": "2.1.1",
   "description": "Glimmer component library",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./*": "./*.ts"
   },
   "keywords": [
     "ember-addon"
