@@ -1,14 +1,13 @@
 import { get, setProperties, computed } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utility-types';
-import type RSVP from 'rsvp';
 import type CoreObject from '@ember/object/core';
 
 /**
   @module @ember/object/promise-proxy-mixin
 */
 
-function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
+function tap<T>(proxy: PromiseProxyMixin<T>, promise: Promise<T>) {
   setProperties(proxy, {
     isFulfilled: false,
     isRejected: false,
@@ -38,8 +37,7 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
         });
       }
       throw reason;
-    },
-    'Ember: PromiseProxy'
+    }
   );
 }
 
@@ -47,7 +45,6 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
   A low level mixin making ObjectProxy promise-aware.
 
   ```javascript
-  import { resolve } from 'rsvp';
   import $ from 'jquery';
   import ObjectProxy from '@ember/object/proxy';
   import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
@@ -55,7 +52,7 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
   let ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
 
   let proxy = ObjectPromiseProxy.create({
-    promise: resolve($.getJSON('/some/remote/data.json'))
+    promise: Promise.resolve($.getJSON('/some/remote/data.json'))
   });
 
   proxy.then(function(json){
@@ -78,7 +75,7 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
   When the $.getJSON completes, and the promise is fulfilled
   with json, the life cycle attributes will update accordingly.
   Note that $.getJSON doesn't return an ECMA specified promise,
-  it is useful to wrap this with an `RSVP.resolve` so that it behaves
+  it is useful to wrap this with `Promise.resolve` so that it behaves
   as a spec compliant promise.
 
   ```javascript
@@ -176,22 +173,22 @@ interface PromiseProxyMixin<T> {
   /**
     An alias to the proxied promise's `then`.
 
-    See RSVP.Promise.then.
+    See Promise.prototype.then.
 
     @method then
     @param {Function} callback
-    @return {RSVP.Promise}
+    @return {Promise}
     @public
   */
   then: this['promise']['then'];
   /**
     An alias to the proxied promise's `catch`.
 
-    See RSVP.Promise.catch.
+    See Promise.prototype.catch.
 
     @method catch
     @param {Function} callback
-    @return {RSVP.Promise}
+    @return {Promise}
     @since 1.3.0
     @public
   */
@@ -199,11 +196,11 @@ interface PromiseProxyMixin<T> {
   /**
     An alias to the proxied promise's `finally`.
 
-    See RSVP.Promise.finally.
+    See Promise.prototype.finally.
 
     @method finally
     @param {Function} callback
-    @return {RSVP.Promise}
+    @return {Promise}
     @since 1.3.0
     @public
   */
@@ -228,7 +225,7 @@ const PromiseProxyMixin = Mixin.create({
     get() {
       throw new Error("PromiseProxy's promise must be set");
     },
-    set(_key, promise: RSVP.Promise<unknown>) {
+    set(_key, promise: Promise<unknown>) {
       return tap(this, promise);
     },
   }),

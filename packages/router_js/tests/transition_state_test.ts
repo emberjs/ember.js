@@ -6,7 +6,6 @@ import {
   UnresolvedRouteInfoByParam,
 } from '../lib/route-info';
 import TransitionState, { type TransitionError } from '../lib/transition-state';
-import { Promise, resolve } from 'rsvp';
 import { createHandler, createHandlerInfo, TestRouter } from './test_helpers';
 
 QUnit.module('TransitionState');
@@ -30,14 +29,14 @@ QUnit.test("#resolve delegates to handleInfo objects' resolve()", function (asse
       resolve: function () {
         ++counter;
         assert.equal(counter, 1);
-        return resolve(resolvedHandlerInfos[0]);
+        return Promise.resolve(resolvedHandlerInfos[0]);
       },
     }),
     createHandlerInfo('two', {
       resolve: function () {
         ++counter;
         assert.equal(counter, 2);
-        return resolve(resolvedHandlerInfos[1]);
+        return Promise.resolve(resolvedHandlerInfos[1]);
       },
     }),
   ];
@@ -90,11 +89,11 @@ QUnit.test('Integration w/ HandlerInfos', function (assert) {
         model: function (params: Dict<unknown>, payload: Dict<unknown>) {
           assert.equal(payload, transition);
           assert.equal(params['foo_id'], '123', 'foo#model received expected params');
-          return resolve(fooModel);
+          return Promise.resolve(fooModel);
         },
       })
     ),
-    new UnresolvedRouteInfoByObject(router, 'bar', ['bar_id'], resolve(barModel)),
+    new UnresolvedRouteInfoByObject(router, 'bar', ['bar_id'], Promise.resolve(barModel)),
   ];
 
   state

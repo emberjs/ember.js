@@ -1,6 +1,5 @@
 import type { Route } from '../index';
 import type { Dict } from '../lib/core';
-import { Promise } from 'rsvp';
 import { createHandler, TestRouter } from './test_helpers';
 
 function map(router: TestRouter) {

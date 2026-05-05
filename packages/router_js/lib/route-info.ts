@@ -1,5 +1,4 @@
 /* eslint-disable no-prototype-builtins */
-import { Promise } from 'rsvp';
 import type { Dict, Option } from './core';
 import type { SerializerFunc } from './router';
 import type Router from './router';
@@ -234,8 +233,8 @@ export default class InternalRouteInfo<R extends Route> {
     }
   }
 
-  getModel(_transition: InternalTransition<R>) {
-    return Promise.resolve(this.context);
+  getModel(_transition: InternalTransition<R>): Promise<ModelFor<R> | undefined> {
+    return Promise.resolve<ModelFor<R> | undefined>(this.context);
   }
 
   serialize(_context?: ModelFor<R> | null): Dict<unknown> | undefined {
@@ -477,7 +476,7 @@ export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteIn
     }
   }
 
-  getModel(transition: InternalTransition<R>): Promise<ModelFor<R>> {
+  getModel(transition: InternalTransition<R>): Promise<ModelFor<R> | undefined> {
     let fullParams = this.params;
     if (transition && transition[QUERY_PARAMS_SYMBOL]) {
       fullParams = {};
@@ -506,7 +505,7 @@ export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteIn
       result = undefined;
     }
 
-    return Promise.resolve(result);
+    return Promise.resolve<ModelFor<R> | undefined>(result);
   }
 }
 

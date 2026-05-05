@@ -1,7 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import type { MatchCallback, Params, QueryParams } from 'route-recognizer';
 import RouteRecognizer from 'route-recognizer';
-import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
 import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
@@ -15,7 +14,7 @@ import URLTransitionIntent from './transition-intent/url-transition-intent';
 import type { TransitionError } from './transition-state';
 import TransitionState from './transition-state';
 import type { ChangeList, ModelsAndQueryParams } from './utils';
-import { extractQueryParams, forEach, getChangelist, log, merge, promiseLabel } from './utils';
+import { extractQueryParams, forEach, getChangelist, log, merge } from './utils';
 
 export interface SerializerFunc<T> {
   (model: T, params: string[]): Dict<unknown>;
@@ -132,9 +131,7 @@ export default abstract class Router<R extends Route> {
             this.routeDidChange(newTransition);
           }
           return result;
-        },
-        null,
-        promiseLabel('Transition complete')
+        }
       );
 
       return newTransition;
@@ -261,9 +258,7 @@ export default abstract class Router<R extends Route> {
     newTransition.promise = newTransition.promise!.then(
       (result: TransitionState<R>) => {
         return this.finalizeTransition(newTransition, result);
-      },
-      null,
-      promiseLabel('Settle transition promise when transition is finalized')
+      }
     );
 
     if (!wasTransitioning) {

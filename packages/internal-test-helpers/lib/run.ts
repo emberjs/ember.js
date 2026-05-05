@@ -1,8 +1,6 @@
 import { next, run, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 
-import { Promise } from 'rsvp';
-
 export function runAppend(view: any): void {
   run(view, 'appendTo', document.getElementById('qunit-fixture'));
 }

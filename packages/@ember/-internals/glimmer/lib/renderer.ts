@@ -48,7 +48,6 @@ import { dict } from '@glimmer/util';
 import { unwrapTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
-import RSVP from 'rsvp';
 import type Component from './component';
 import { hasDOM } from '../../browser-environment';
 import type ClassicComponent from './component';
@@ -297,7 +296,8 @@ function loopBegin(): void {
   }
 }
 
-let renderSettledDeferred: RSVP.Deferred<void> | null = null;
+let renderSettledPromise: Promise<void> | null = null;
+let renderSettledResolve: (() => void) | null = null;
 /*
   Returns a promise which will resolve when rendering has settled. Settled in
   this context is defined as when all of the tags in use are "current" (e.g.
@@ -308,8 +308,10 @@ let renderSettledDeferred: RSVP.Deferred<void> | null = null;
   @returns {Promise<void>} a promise which fulfills when rendering has settled
 */
 export function renderSettled() {
-  if (renderSettledDeferred === null) {
-    renderSettledDeferred = RSVP.defer();
+  if (renderSettledPromise === null) {
+    renderSettledPromise = new Promise<void>((resolve) => {
+      renderSettledResolve = resolve;
+    });
     // if there is no current runloop, the promise created above will not have
     // a chance to resolve (because its resolved in backburner's "end" event)
     if (!_getCurrentRunLoop()) {
@@ -318,13 +320,14 @@ export function renderSettled() {
     }
   }
 
-  return renderSettledDeferred.promise;
+  return renderSettledPromise;
 }
 
 function resolveRenderPromise() {
-  if (renderSettledDeferred !== null) {
-    let resolve = renderSettledDeferred.resolve;
-    renderSettledDeferred = null;
+  if (renderSettledResolve !== null) {
+    let resolve = renderSettledResolve;
+    renderSettledPromise = null;
+    renderSettledResolve = null;
 
     _backburner.join(null, resolve);
   }
