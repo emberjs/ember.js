@@ -65,6 +65,9 @@ importers:
       route-recognizer:
         specifier: ^0.3.4
         version: 0.3.4
+      rsvp:
+        specifier: ^4.8.5
+        version: 4.8.5
       semver:
         specifier: ^7.5.2
         version: 7.7.4
@@ -228,9 +231,6 @@ importers:
       router_js:
         specifier: workspace:*
         version: link:packages/router_js
-      rsvp:
-        specifier: ^4.8.5
-        version: 4.8.5
       terser:
         specifier: ^5.42.0
         version: 5.46.1

@@ -7,6 +7,7 @@
     "ember-addon"
   ],
   "exports": {
+    "./package.json": "./package.json",
     "./*": {
       "development": "./dist/dev/packages/*",
       "production": "./dist/prod/packages/*",
@@ -14,10 +15,7 @@
     },
     "./types": {
       "types": "./types/stable/index.d.ts"
-    },
-    "./addon-main": "./addon-main.cjs",
-    "./addon-main.cjs": "./addon-main.cjs",
-    "./package.json": "./package.json"
+    }
   },
   "homepage": "https://emberjs.com/",
   "bugs": {
@@ -29,7 +27,6 @@
     "build-metadata.json",
     "blueprints",
     "dist",
-    "addon-main.cjs",
     "docs/data.json",
     "lib",
     "types/stable"
@@ -54,7 +51,7 @@
     "lint:fix": "npm-run-all lint:*:fix",
     "lint:format": "prettier --check .",
     "lint:format:fix": "prettier --write .",
-    "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
+    "test": "testem ci -f testem.cjs --host 127.0.0.1 --port 13141",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.cjs",
@@ -81,6 +78,7 @@
     "inflection": "^2.0.1",
     "route-recognizer": "^0.3.4",
     "semver": "^7.5.2",
+    "rsvp": "^4.8.5",
     "silent-error": "^1.1.1",
     "simple-html-tokenizer": "^0.5.11"
   },
@@ -136,7 +134,6 @@
     "resolve.exports": "^2.0.3",
     "rollup": "^4.57.1",
     "router_js": "workspace:*",
-    "rsvp": "^4.8.5",
     "terser": "^5.42.0",
     "testem": "^3.20.0",
     "testem-failure-only-reporter": "^1.0.0",
@@ -173,7 +170,6 @@
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints",
     "type": "addon",
-    "main": "addon-main.cjs",
     "version": 2,
     "renamed-modules": {
       "@ember/-internals/browser-environment/index.js": "ember-source/@ember/-internals/browser-environment/index.js",
@@ -674,8 +670,7 @@
       "router_js/lib/transition-state.js": "ember-source/router_js/lib/transition-state.js",
       "router_js/lib/transition.js": "ember-source/router_js/lib/transition.js",
       "router_js/lib/unrecognized-url-error.js": "ember-source/router_js/lib/unrecognized-url-error.js",
-      "router_js/lib/utils.js": "ember-source/router_js/lib/utils.js",
-      "rsvp/index.js": "ember-source/rsvp/index.js"
+      "router_js/lib/utils.js": "ember-source/router_js/lib/utils.js"
     }
   },
   "typesVersions": {
