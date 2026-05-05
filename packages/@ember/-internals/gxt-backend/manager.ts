@@ -11036,6 +11036,19 @@ function renderGlimmerComponent(instance: any, template: any, args: any, fw: any
   // Expose the current instance via stack-based capture for $_dc_ember tracking
   setInstanceCapture(instance);
 
+  // Also fire the global capture callback if armed by $_dc_ember. The callback
+  // is otherwise only invoked from renderClassicComponent (~line 10788), so a
+  // dynamic-component swap (`{{component this.name}}`) where the resolved
+  // class is glimmerish/template-only would never capture the instance —
+  // leaving _dcEmberInstance null and skipping willDestroy on swap-out
+  // (cumulative-state failure mode for "component helper destroys underlying
+  // component when it is swapped out").
+  const _dcCap = (globalThis as any).__gxtDcCaptureCallback;
+  if (typeof _dcCap === 'function') {
+    _dcCap(instance);
+    (globalThis as any).__gxtDcCaptureCallback = null;
+  }
+
   const container = document.createDocumentFragment();
   const renderContext = createRenderContext(instance, args, fw, owner);
 
