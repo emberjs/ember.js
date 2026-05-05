@@ -251,6 +251,7 @@ export default [
   {
     files: ['lib/index.cjs'],
     rules: {
+      // Seems
       'n/no-missing-require': 'off',
     },
   },

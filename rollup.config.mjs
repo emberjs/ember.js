@@ -104,6 +104,7 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
       format: 'es',
       dir: outputDir,
       hoistTransitiveImports: false,
+      preserveModules: true,
       generatedCode: 'es2015',
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
