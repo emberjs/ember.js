@@ -22,7 +22,7 @@ export class Jumbotron extends Component {
         </div>
         <div class="col-md-6">
           <div class="row">
-            <PaddedButton id="run" onclick={{this.state.create}}>
+            <PaddedButton id="run" >
               Create 1,000 rows
             </PaddedButton>
             <PaddedButton id="runlots" onclick={{this.state.runLots}}>
