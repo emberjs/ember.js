@@ -135,7 +135,7 @@
     "router_js": "workspace:*",
     "rsvp": "^4.8.5",
     "terser": "^5.42.0",
-    "testem": "^3.10.1",
+    "testem": "^3.20.0",
     "testem-failure-only-reporter": "^1.0.0",
     "tracerbench": "^8.0.1",
     "typescript": "^5.7.3",
