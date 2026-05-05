@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "7.1.0-alpha.1.nvp-make-benchmark-focus-on-rendering-rather-than-load-whole-app+11f19594",
+  "version": "7.1.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -360,10 +360,5 @@
       ]
     }
   },
-  "packageManager": "pnpm@10.30.3",
-  "_originalVersion": "7.1.0-alpha.1",
-  "_versionPreviouslyCalculated": true,
-  "publishConfig": {
-    "tag": "old"
-  }
+  "packageManager": "pnpm@10.30.3"
 }
