@@ -1,5 +1,5 @@
 'use strict';
-const { allSupportedBrowsers, modernBrowsers } = require('./browserlists');
+const { allSupportedBrowsers, modernBrowsers } = require('./browserlists.cjs');
 
 const isProduction = process.env.EMBER_ENV === 'production';
 const browsers =

@@ -1,4 +1,4 @@
-const allSupportedBrowsers = require('../lib/browsers');
+const allSupportedBrowsers = require('../lib/browsers.cjs');
 
 const modernBrowsers = [
   'last 1 Chrome versions',
