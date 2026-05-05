@@ -255,11 +255,9 @@ export default abstract class Router<R extends Route> {
     // Transition promises by default resolve with resolved state.
     // For our purposes, swap out the promise to resolve
     // after the transition has been finalized.
-    newTransition.promise = newTransition.promise!.then(
-      (result: TransitionState<R>) => {
-        return this.finalizeTransition(newTransition, result);
-      }
-    );
+    newTransition.promise = newTransition.promise!.then((result: TransitionState<R>) => {
+      return this.finalizeTransition(newTransition, result);
+    });
 
     if (!wasTransitioning) {
       this.notifyExistingHandlers(newState, newTransition);
