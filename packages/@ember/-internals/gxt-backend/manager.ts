@@ -2054,6 +2054,28 @@ function createComponentInstance(
   // Only do this in interactive mode (non-interactive mode expects no registered views).
   registerInViewRegistry(instance);
 
+  // Defensive: ensure instance.attrs reflects the local attrs map before firing
+  // the initial didReceiveAttrs hook. `props.attrs = attrs` was applied via
+  // factory.create(props), but in cumulative-state runs (894 modules in one
+  // browser context) certain race paths can leave instance.attrs undefined or
+  // empty by the time the hook fires — causing user-land
+  // `this.attrs.<argName>.value` reads to crash with "Cannot read 'value' of
+  // undefined". The local `attrs` always carries the correct {value, update}
+  // shape for this invocation's arg keys, so assigning it here restores the
+  // contract Ember's classic curly components rely on.
+  if (
+    instance &&
+    (!instance.attrs ||
+      typeof instance.attrs !== 'object' ||
+      Object.keys(instance.attrs).length === 0)
+  ) {
+    try {
+      instance.attrs = attrs;
+    } catch {
+      /* sealed/frozen instance — nothing to do */
+    }
+  }
+
   // Trigger initial didReceiveAttrs
   triggerLifecycleHook(instance, 'didReceiveAttrs');
 
@@ -2952,6 +2974,14 @@ function triggerLifecycleHook(instance: any, hookName: string): void {
     // Use Ember's event trigger - this is the canonical way to invoke
     // lifecycle hooks in Ember components
     if (typeof instance.trigger === 'function') {
+      // [DIAG_LH] log when didReceiveAttrs is fired
+      if ((globalThis as any).__GXT_DIAG_LH && hookName === 'didReceiveAttrs') {
+        const cls = instance?.constructor?.name;
+        const dbg = instance?._debugContainerKey;
+        const hookSrc = String(instance?.didReceiveAttrs || '').slice(0, 160);
+        // eslint-disable-next-line no-console
+        console.log(`[GXT_DIAG_LH] didReceiveAttrs cls=${cls} dbg=${dbg} src=${hookSrc}`);
+      }
       instance.trigger(hookName);
     }
   } catch (e) {
