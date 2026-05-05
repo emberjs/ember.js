@@ -94,6 +94,14 @@
         globalThis.__gxtPendingSyncFromPropertyChange = false;
         globalThis.__gxtDeferredSyncError = null;
         globalThis.__gxtForceRerenderInProgress = false;
+        // Drain any render-error queue left over from a prior test. Async
+        // paths (afterInsert callbacks, deferred sync) can push into
+        // _renderErrors after runAppend's flushRenderErrors() ran, leaving
+        // a stale error that re-throws in the NEXT test's runAppend (the
+        // "Died on test #N" bleed observed in cumulative-state runs).
+        if (typeof globalThis.__gxtClearRenderErrors === 'function') {
+          globalThis.__gxtClearRenderErrors();
+        }
         // Reset the interval sync budget so the fallback timer works for this test
         if (typeof globalThis.__gxtResetIntervalBudget === 'function') {
           globalThis.__gxtResetIntervalBudget();
