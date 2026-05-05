@@ -3,7 +3,6 @@ import type RouteInfo from '@ember/routing/route-info';
 import RouterService from '@ember/routing/router-service';
 import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
-import type { Promise as RSVPPromise } from 'rsvp';
 
 declare let router: RouterService;
 
@@ -28,21 +27,21 @@ const transition = router.transitionTo('someRoute');
 
 expectTypeOf(transition.abort()).toEqualTypeOf<Transition>();
 
-expectTypeOf(transition.catch()).toEqualTypeOf<RSVPPromise<any>>();
+expectTypeOf(transition.catch()).toEqualTypeOf<Promise<any>>();
 transition.catch((err) => console.log(err), 'label');
 
-expectTypeOf(transition.finally()).toEqualTypeOf<RSVPPromise<unknown>>();
+expectTypeOf(transition.finally()).toEqualTypeOf<Promise<unknown>>();
 transition.finally(() => console.log('finally!'));
 transition.finally(() => console.log('finally!'), 'label');
 
-expectTypeOf(transition.followRedirects()).toEqualTypeOf<RSVPPromise<unknown>>();
+expectTypeOf(transition.followRedirects()).toEqualTypeOf<Promise<unknown>>();
 
 expectTypeOf(transition.method('refresh')).toEqualTypeOf<Transition>();
 transition.method('replace');
 
 expectTypeOf(transition.retry()).toEqualTypeOf<Transition>();
 
-expectTypeOf(transition.then()).toEqualTypeOf<RSVPPromise<unknown>>();
+expectTypeOf(transition.then()).toEqualTypeOf<Promise<unknown>>();
 transition.then(
   (result) => console.log(result),
   (err) => console.log(err),
@@ -59,7 +58,7 @@ expectTypeOf(transition.from).toEqualTypeOf<RouteInfoWithAttributes | null | und
 // @ts-expect-error
 transition.from = 'from';
 
-expectTypeOf(transition.promise).toEqualTypeOf<RSVPPromise<any> | undefined>();
+expectTypeOf(transition.promise).toEqualTypeOf<Promise<any> | undefined>();
 // @ts-expect-error
 transition.promise = 'promise';
 
