@@ -442,6 +442,35 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'lte-js-scope-polution-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              function localLteHelper() {
+                // this should not be define because it is not imported
+                return lte(...arguments);
+              }
+
+              module('Using {{lte}} in a template should not bleed into outer javascript scope', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works - but it should not', async function(assert) {
+                  let a = 1;
+                  let b = 2;
+
+                  await render(
+                    <template>
+                      <span data-local-lte>{{localLteHelper a b}}</span>
+                      <span data-lte>{{lte a a}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-local-lte]').hasText('true');
+                  assert.dom('[data-lte]').hasText('true');
+                });
+              });
+            `,
             'lt-lte-gt-gte-as-keyword-test.gjs': `
               import { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
