@@ -161,9 +161,9 @@ async function renderBenchmark() {
         new Promise((resolve) => {
           update();
           requestIdleCallback(resolve);
-          if (verify) verify();
         }).catch(e => console.error(e))
     );
+    verify();
   };
 }
 
