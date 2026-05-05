@@ -15,6 +15,7 @@
     "./types": {
       "types": "./types/stable/index.d.ts"
     },
+    "./addon-main": "./addon-main.cjs",
     "./package.json": "./package.json"
   },
   "homepage": "https://emberjs.com/",
@@ -45,7 +46,7 @@
     "docs": "ember ember-cli-yuidoc",
     "start": "vite dev",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
-    "lint:docs": "qunit tests/docs/coverage-test.js",
+    "lint:docs": "qunit tests/docs/coverage-test.cjs",
     "lint:eslint": "eslint --report-unused-disable-directives --cache .",
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
     "lint:fix": "npm-run-all lint:*:fix",
@@ -54,7 +55,7 @@
     "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
-    "test:browserstack": "node bin/run-browserstack-tests.js",
+    "test:browserstack": "node bin/run-browserstack-tests.cjs",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
     "type-check:handlebars": "tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
@@ -170,6 +171,7 @@
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints",
     "type": "addon",
+    "main": "addon-main.cjs",
     "version": 2,
     "renamed-modules": {
       "@ember/-internals/browser-environment/index.js": "ember-source/@ember/-internals/browser-environment/index.js",
