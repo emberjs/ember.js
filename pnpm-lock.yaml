@@ -2939,9 +2939,6 @@ importers:
       ember-source:
         specifier: workspace:*
         version: link:../..
-      ember-strict-application-resolver:
-        specifier: ^0.1.1
-        version: 0.1.1(@babel/core@7.29.0)
       vite:
         specifier: ^7.3.0
         version: 7.3.2(@types/node@22.19.15)(lightningcss@1.32.0)(terser@5.46.1)
@@ -7769,9 +7766,6 @@ packages:
   ember-router-generator@2.0.0:
     resolution: {integrity: sha512-89oVHVJwmLDvGvAUWgS87KpBoRhy3aZ6U0Ql6HOmU4TrPkyaa8pM0W81wj9cIwjYprcQtN9EwzZMHnq46+oUyw==}
     engines: {node: 8.* || 10.* || >= 12}
-
-  ember-strict-application-resolver@0.1.1:
-    resolution: {integrity: sha512-/49JZ2Yk2ggicAGIoFNWcz05llhe2i+/2dpH5Pv1KlwZOBKkqMMJpTKEB4IMg+FjKBiE0r2yxuZzo9Oly9vc1A==}
 
   ember-template-imports@3.4.2:
     resolution: {integrity: sha512-OS8TUVG2kQYYwP3netunLVfeijPoOKIs1SvPQRTNOQX4Pu8xGGBEZmrv0U1YTnQn12Eg+p6w/0UdGbUnITjyzw==}
@@ -18255,14 +18249,6 @@ snapshots:
       '@babel/traverse': 7.29.0(supports-color@8.1.1)
       recast: 0.18.10
     transitivePeerDependencies:
-      - supports-color
-
-  ember-strict-application-resolver@0.1.1(@babel/core@7.29.0):
-    dependencies:
-      '@embroider/addon-shim': 1.10.2
-      decorator-transforms: 2.3.1(@babel/core@7.29.0)
-    transitivePeerDependencies:
-      - '@babel/core'
       - supports-color
 
   ember-template-imports@3.4.2:
