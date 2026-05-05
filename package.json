@@ -1,5 +1,6 @@
 {
   "name": "ember-source",
+  "type": "module",
   "version": "7.1.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
