@@ -31,9 +31,10 @@ const DEFAULT_THROTTLE = '1';
 const DEFAULT_REGRESSION_THRESHOLD = '25';
 // Sample timeout is per-sample wall-clock budget. Upstream commit 19eb4087e6
 // doubled the bench workload (Create5000→Create10000) and added a final
-// clearItems4 phase, pushing the total bench time close to the prior 60s
-// budget. Raise to 120s to keep headroom on slower CI runners.
-const DEFAULT_SAMPLE_TIMEOUT = '120';
+// clearItems4 phase. Empirically a single sample on the GitHub Actions
+// runner takes ~107-120s on this branch; 120s was too tight (timed out
+// in CI). 240s gives 2× headroom without inflating green-path runtime.
+const DEFAULT_SAMPLE_TIMEOUT = '240';
 const DEFAULT_MARKERS = [
   // Copied from glimmer-vm/bin/setup-bench.mts (krausest benchmark)
   'render',
