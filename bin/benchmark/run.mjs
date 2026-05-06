@@ -29,7 +29,11 @@ const DEFAULT_EXPERIMENT_PORT = 4501;
 const DEFAULT_FIDELITY = process.env['RUNS'] || '20';
 const DEFAULT_THROTTLE = '1';
 const DEFAULT_REGRESSION_THRESHOLD = '25';
-const DEFAULT_SAMPLE_TIMEOUT = '60';
+// Sample timeout is per-sample wall-clock budget. Upstream commit 19eb4087e6
+// doubled the bench workload (Create5000→Create10000) and added a final
+// clearItems4 phase, pushing the total bench time close to the prior 60s
+// budget. Raise to 120s to keep headroom on slower CI runners.
+const DEFAULT_SAMPLE_TIMEOUT = '120';
 const DEFAULT_MARKERS = [
   // Copied from glimmer-vm/bin/setup-bench.mts (krausest benchmark)
   'render',
