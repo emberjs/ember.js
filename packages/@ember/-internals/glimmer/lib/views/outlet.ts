@@ -10,8 +10,6 @@ import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { createComputeRef, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
-import * as _gxt from '@lifeart/gxt';
-const cellFor: any = (_gxt as any).cellFor;
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
@@ -84,8 +82,10 @@ export default class OutletView {
     if ((globalThis as any).__GXT_MODE__) {
       // GXT mode: install a cellFor-backed reactive slot on outletState.outlets.main
       // and pass the raw outletState through as `ref` (consumers in this branch
-      // dereference it directly).
-      cellFor(outletState.outlets, 'main');
+      // dereference it directly). cellFor is read lazily from the gxt-backend's
+      // globalThis.__lifeartGxt stash so classic-mode bundles (benchmark-app)
+      // don't statically import @lifeart/gxt.
+      (globalThis as any).__lifeartGxt.cellFor(outletState.outlets, 'main');
       this.ref = outletState as unknown as Reference<OutletState | undefined>;
     } else {
       // Classic mode: restore upstream's createComputeRef + tag pattern so that

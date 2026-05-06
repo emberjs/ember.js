@@ -85,6 +85,17 @@ import {
   getTracker as _gxtGetTracker,
   cached as _gxtCached,
 } from '@lifeart/gxt';
+// Namespace import + globalThis stash so glimmer/lib/renderer.ts and
+// glimmer/lib/views/outlet.ts can pull GXT symbols without statically
+// importing @lifeart/gxt themselves. Classic-Ember consumers (e.g.,
+// benchmark-app) never load this module — gxt-backend is GXT-mode-only —
+// so the stash is undefined in classic mode and the lazy accessor in
+// renderer.ts/outlet.ts returns undefined, matching the contract that
+// classic-mode callers are gated on __GXT_MODE__ and never reach those
+// symbols. Eliminates ~50KB experiment-bundle bloat and any @lifeart/gxt
+// module-load side effects from the classic-mode hot path.
+import * as __lifeartGxtNamespace from '@lifeart/gxt';
+(globalThis as any).__lifeartGxt = __lifeartGxtNamespace;
 import {
   destroy as _destroyDestroyable,
   registerDestructor as _registerDestructor,

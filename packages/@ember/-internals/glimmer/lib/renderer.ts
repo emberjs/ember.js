@@ -16,29 +16,31 @@ import {
   beginRenderPass,
   endRenderPass,
 } from '@glimmer/manager';
-import * as _gxt from '@lifeart/gxt';
-const _destroyElementSync: any = (_gxt as any).destroyElementSync;
-const gxtRenderComponent: any = (_gxt as any).renderComponent;
-const gxtCreateRoot: any = (_gxt as any).createRoot;
-const gxtSetParentContext: any = (_gxt as any).setParentContext;
-const gxtGetParentContext: any = (_gxt as any).getParentContext;
-const gxtProvideContext: any = (_gxt as any).provideContext;
-const GXT_RENDERING_CONTEXT: any = (_gxt as any).RENDERING_CONTEXT;
-const GxtHTMLBrowserDOMApi: any = (_gxt as any).HTMLBrowserDOMApi;
+// Lazy accessor for @lifeart/gxt symbols. The gxt-backend module (only loaded
+// in __GXT_MODE__) stashes the namespace on globalThis.__lifeartGxt at its
+// own load time. In classic mode (e.g., benchmark-app, embroider builds) the
+// stash is undefined and these symbols are never accessed because every
+// callsite below is reached only through GXT-mode-gated code paths. Avoiding
+// a static `import * as _gxt from '@lifeart/gxt'` here keeps ~50KB of GXT
+// runtime out of the classic bundle and prevents any @lifeart/gxt module-load
+// side effects from running in classic-mode contexts.
+function _gxtLib(): any {
+  return (globalThis as any).__lifeartGxt;
+}
 
 // Cached GXT DOM API for destroyElementSync
 let gxtDomApi: any = null;
 
 function getGxtDomApi() {
   if (!gxtDomApi) {
-    gxtDomApi = new GxtHTMLBrowserDOMApi(document);
+    gxtDomApi = new (_gxtLib().HTMLBrowserDOMApi)(document);
   }
   return gxtDomApi;
 }
 
 // Wrapper that provides the GXT DOM API
 function destroyElementSync(component: any, skipDom = false) {
-  _destroyElementSync(component, skipDom, getGxtDomApi());
+  _gxtLib().destroyElementSync(component, skipDom, getGxtDomApi());
 }
 
 // Cached GXT root context for the document
@@ -46,20 +48,21 @@ let gxtRootContext: any = null;
 
 // Ensure GXT context is initialized before any GXT rendering
 function ensureGxtContext() {
+  const lib = _gxtLib();
   if (!gxtRootContext) {
-    gxtRootContext = gxtCreateRoot(document);
+    gxtRootContext = lib.createRoot(document);
     // CRITICAL: Provide the rendering context with DOM API
     // This sets fastRenderingContext which is checked first by initDOM
     const domApi = getGxtDomApi();
-    gxtProvideContext(gxtRootContext, GXT_RENDERING_CONTEXT, domApi);
+    lib.provideContext(gxtRootContext, lib.RENDERING_CONTEXT, domApi);
     // Expose on globalThis so compile.ts can reuse the same root context
     // instead of creating new roots that pollute the shared context chain
     (globalThis as any).__gxtRootContext = gxtRootContext;
   }
   // Always ensure context is set before rendering
-  const currentContext = gxtGetParentContext();
+  const currentContext = lib.getParentContext();
   if (!currentContext) {
-    gxtSetParentContext(gxtRootContext);
+    lib.setParentContext(gxtRootContext);
   }
   return gxtRootContext;
 }
@@ -907,7 +910,7 @@ class ClassicRootState {
             }
           } else if ('$nodes' in template) {
             // Build-time compiled gxt template with $nodes
-            gxtRenderComponent(template as any, parentElement, owner);
+            _gxtLib().renderComponent(template as any, parentElement, owner);
           } else {
             console.warn('GXT template detected but cannot render:', template);
           }
