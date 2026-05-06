@@ -190,7 +190,13 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // Consume the property tag so that createCache tracking captures this
     // dependency. Without this, GXT cell reads from trackedData.getter are
     // invisible to our compat createCache's tag-based invalidation system.
-    consumeTag(tagFor(this, key as string));
+    // Classic mode: the upstream getter() above already consumes the per-key
+    // tag via Glimmer's standard tracking — duplicating here adds noise to the
+    // autotrack frame on every @tracked read (a hot path for {{#each}} over
+    // large arrays). Gate to GXT mode only.
+    if ((globalThis as any).__GXT_MODE__) {
+      consumeTag(tagFor(this, key as string));
+    }
 
     // In GXT mode, synchronize the cellFor cell for this property.
     // trackedData from @lifeart/gxt/glimmer-compatibility and cellFor from
@@ -261,10 +267,19 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
         }
       }
     }
-    dirtyTagFor(this, SELF_TAG);
-    // Also dirty the property-specific tag so observers watching 'key' or
-    // 'key.[]' detect the change via getChainTagsForKey.
-    dirtyTagFor(this, key);
+    // Both of these are GXT-specific amplifications of the dirty signal:
+    // - SELF_TAG dirty broadens invalidation (upstream does NOT dirty SELF_TAG
+    //   on @tracked set; setter() above already dirties the per-key tag).
+    // - The duplicate key dirty ensures chain-tag identity matches across the
+    //   GXT compat-validator and native validator in dual-module setups.
+    // Both are no-ops or worse in classic mode and break upstream's narrow-
+    // invalidation contract — gate them so classic builds match upstream.
+    if ((globalThis as any).__GXT_MODE__) {
+      dirtyTagFor(this, SELF_TAG);
+      // Also dirty the property-specific tag so observers watching 'key' or
+      // 'key.[]' detect the change via getChainTagsForKey.
+      dirtyTagFor(this, key);
+    }
     // In GXT mode, notify the Ember property system so that sync observers
     // and tag dirtying work correctly for QP tracking.
     if ((globalThis as any).__GXT_MODE__) {

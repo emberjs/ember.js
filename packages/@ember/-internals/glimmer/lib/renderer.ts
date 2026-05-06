@@ -1212,7 +1212,14 @@ class ClassicRootState {
        */
 
       inTransaction(env, () => {
-        destroyElementSync(result!);
+        // GXT's destroyElementSync walks GXT-specific bookkeeping; no-op for a
+        // Glimmer VM RenderResult that was produced by the classic renderMain
+        // path, but still incurs traversal cost and may interact poorly with
+        // foreign objects. Gate on __GXT_MODE__ to keep classic-Ember teardown
+        // identical to upstream.
+        if ((globalThis as any).__GXT_MODE__) {
+          destroyElementSync(result!);
+        }
         destroy(result!);
       });
     }
