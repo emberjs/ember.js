@@ -1,5 +1,17 @@
-import { and, array, element, eq, fn, hash, neq, not, lt, lte, gt, gte, or } from '@ember/helper';
-import { on } from '@ember/modifier';
+import { and } from '@glimmer/runtime/lib/helpers/and';
+import { array } from '@glimmer/runtime/lib/helpers/array';
+import element from '@ember/-internals/glimmer/lib/helpers/element';
+import { eq } from '@glimmer/runtime/lib/helpers/eq';
+import { fn } from '@glimmer/runtime/lib/helpers/fn';
+import { hash } from '@glimmer/runtime/lib/helpers/hash';
+import { neq } from '@glimmer/runtime/lib/helpers/neq';
+import { not } from '@glimmer/runtime/lib/helpers/not';
+import { lt } from '@glimmer/runtime/lib/helpers/lt';
+import { lte } from '@glimmer/runtime/lib/helpers/lte';
+import { gt } from '@glimmer/runtime/lib/helpers/gt';
+import { gte } from '@glimmer/runtime/lib/helpers/gte';
+import { or } from '@glimmer/runtime/lib/helpers/or';
+import { on } from '@ember/modifier/on';
 import { assert } from '@ember/debug';
 import {
   RESOLUTION_MODE_TRANSFORMS,

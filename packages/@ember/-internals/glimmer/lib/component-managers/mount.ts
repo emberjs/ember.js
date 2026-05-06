@@ -18,9 +18,9 @@ import type {
   WithSubOwner,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference';
+import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { unwrapTemplate } from './unwrap-template';
 import type RuntimeResolver from '../resolver';
 

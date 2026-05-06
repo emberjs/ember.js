@@ -2,17 +2,20 @@
 @module @ember/application
 */
 
-import { get, set } from '@ember/object';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
+// eslint-disable-next-line ember-local/no-barrel-imports
 import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
-import { renderSettled } from '@ember/-internals/glimmer';
-import type { BootEnvironment, Component } from '@ember/-internals/glimmer';
+import { renderSettled } from '@ember/-internals/glimmer/lib/renderer';
+import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
-import { EventDispatcher } from '@ember/-internals/views';
-import type { Registry } from '@ember/-internals/container';
+import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
+import type Registry from '@ember/-internals/container/lib/registry';
 import type { SimpleElement } from '@simple-dom/interface';
 
 /**

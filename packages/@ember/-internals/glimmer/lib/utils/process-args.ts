@@ -1,7 +1,7 @@
-import { MUTABLE_CELL } from '@ember/-internals/views';
+import { MUTABLE_CELL } from '@ember/-internals/views/lib/compat/attrs';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { assert } from '@ember/debug';
 
 // ComponentArgs takes EvaluatedNamedArgs and converts them into the

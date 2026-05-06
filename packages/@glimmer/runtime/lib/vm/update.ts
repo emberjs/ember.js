@@ -14,13 +14,16 @@ import type {
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
-import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
-import { expect, unwrap } from '@glimmer/debug-util';
+import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { updateRef, valueForRef } from '@glimmer/reference';
-import { logStep, Stack } from '@glimmer/util';
-import { debug, resetTracking } from '@glimmer/validator';
+import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { logStep } from '@glimmer/util/lib/debug-steps';
+import { StackImpl as Stack } from '@glimmer/util/lib/collections';
+import { debug } from '@glimmer/validator/lib/debug';
+import { resetTracking } from '@glimmer/validator/lib/tracking';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';

@@ -1,4 +1,6 @@
-import { ASTv2, maybeLoc, src } from '@glimmer/syntax';
+import * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import * as src from '@glimmer/syntax/lib/source/api';
+import { maybeLoc } from '@glimmer/syntax/lib/source/span-list';
 
 import type { NormalizationState } from '../../context';
 

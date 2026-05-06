@@ -1,5 +1,5 @@
-import type { Registry } from '@ember/-internals/container';
-import { privatize as P } from '@ember/-internals/container';
+import type Registry from '@ember/-internals/container/lib/registry';
+import { privatize as P } from '@ember/-internals/container/lib/registry';
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import Input from './components/input';

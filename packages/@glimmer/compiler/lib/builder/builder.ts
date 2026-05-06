@@ -1,4 +1,4 @@
-import type { VariableKind } from '@glimmer/constants';
+import type { VariableKind } from '@glimmer/constants/lib/builder-constants';
 import type {
   AttrNamespace,
   Dict,
@@ -32,15 +32,18 @@ import {
   LITERAL_HEAD,
   LOCAL_VAR,
   MODIFIER_HEAD,
-  NS_XLINK,
-  NS_XML,
-  NS_XMLNS,
   SPLAT_HEAD,
   THIS_VAR,
-} from '@glimmer/constants';
-import { exhausted, expect, isPresentArray, assert } from '@glimmer/debug-util';
-import { assertNever, dict, values } from '@glimmer/util';
-import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
+} from '@glimmer/constants/lib/builder-constants';
+import { NS_XLINK, NS_XML, NS_XMLNS } from '@glimmer/constants/lib/dom';
+import { exhausted, expect } from '@glimmer/debug-util/lib/platform-utils';
+import { isPresentArray } from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
+import { dict } from '@glimmer/util/lib/collections';
+import { values } from '@glimmer/util/lib/object-utils';
+import { assertNever } from '@glimmer/util';
+import { opcodes as Op } from '@glimmer/wire-format/lib/opcodes';
+import { resolution as VariableResolutionContext } from '@glimmer/wire-format/lib/resolution';
 
 import type {
   BuilderComment,

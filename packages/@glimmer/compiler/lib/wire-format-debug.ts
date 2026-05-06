@@ -5,10 +5,14 @@ import type {
   SerializedTemplateBlock,
   WireFormat,
 } from '@glimmer/interfaces';
-import { CURRIED_COMPONENT, CURRIED_HELPER, CURRIED_MODIFIER } from '@glimmer/constants';
-import { exhausted } from '@glimmer/debug-util';
-import { dict } from '@glimmer/util';
-import { SexpOpcodes as Op } from '@glimmer/wire-format';
+import {
+  CURRIED_COMPONENT,
+  CURRIED_HELPER,
+  CURRIED_MODIFIER,
+} from '@glimmer/constants/lib/curried';
+import { exhausted } from '@glimmer/debug-util/lib/platform-utils';
+import { dict } from '@glimmer/util/lib/collections';
+import { opcodes as Op } from '@glimmer/wire-format/lib/opcodes';
 
 import { inflateAttrName, inflateTagName } from './utils';
 

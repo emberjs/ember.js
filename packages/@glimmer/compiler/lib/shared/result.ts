@@ -1,4 +1,4 @@
-import type { GlimmerSyntaxError } from '@glimmer/syntax';
+import type { GlimmerSyntaxError } from '@glimmer/syntax/lib/syntax-error';
 
 import type { AnyOptionalList } from './list';
 

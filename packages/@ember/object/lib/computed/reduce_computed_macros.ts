@@ -3,9 +3,11 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
-import { computed, get } from '@ember/object';
-import { compare } from '@ember/utils';
+import { autoComputed } from '@ember/-internals/metal/lib/computed';
+import { isElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import computed from '@ember/-internals/metal/lib/computed';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import compare from '@ember/utils/lib/compare';
 import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
 import type { NativeArray } from '@ember/array';
 

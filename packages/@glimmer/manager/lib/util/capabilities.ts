@@ -24,8 +24,8 @@ import type {
   WithUpdateHook,
   WrappedCapability,
 } from '@glimmer/interfaces';
-import { check, CheckNumber } from '@glimmer/debug';
-import { InternalComponentCapabilities } from '@glimmer/vm';
+import { check, CheckNumber } from '@glimmer/debug/lib/stack-check';
+import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 
 export const FROM_CAPABILITIES = DEBUG ? new WeakSet() : undefined;
 

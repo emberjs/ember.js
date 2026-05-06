@@ -15,10 +15,10 @@ import type {
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { DEBUG } from '@glimmer/env';
-import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createDebugAliasRef, valueForRef } from '@glimmer/reference';
-import { curry, type CurriedValue } from '@glimmer/runtime';
+import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { createDebugAliasRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { curry, type CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { unwrapTemplate } from './unwrap-template';
 
 interface RouteTemplateInstanceState {

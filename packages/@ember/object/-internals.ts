@@ -1,7 +1,7 @@
-export { getCachedValueFor as cacheFor } from '@ember/-internals/metal';
-export { guidFor } from '@ember/-internals/utils';
+export { getCachedValueFor as cacheFor } from '@ember/-internals/metal/lib/computed_cache';
+export { guidFor } from '@ember/-internals/utils/lib/guid';
 
-import { addListener } from '@ember/-internals/metal';
+import { addListener } from '@ember/-internals/metal/lib/events';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '.';

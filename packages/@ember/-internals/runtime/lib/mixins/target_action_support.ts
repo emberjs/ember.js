@@ -2,8 +2,9 @@
 @module ember
 */
 
-import { context } from '@ember/-internals/environment';
-import { get, computed } from '@ember/-internals/metal';
+import { context } from '@ember/-internals/environment/lib/context';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import computed from '@ember/-internals/metal/lib/computed';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';

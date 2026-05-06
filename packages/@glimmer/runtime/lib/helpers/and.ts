@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { toBool } from '@glimmer/global-context';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 
 import { internalHelper } from './internal-helper';
 

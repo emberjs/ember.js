@@ -1,7 +1,6 @@
 import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from '@glimmer/interfaces';
+import { encodeImmediate, isSmallInt } from '@glimmer/constants/lib/immediate';
 import {
-  encodeImmediate,
-  isSmallInt,
   VM_BIND_DYNAMIC_SCOPE_OP,
   VM_CAPTURE_ARGS_OP,
   VM_CURRY_OP,
@@ -10,14 +9,13 @@ import {
   VM_FETCH_OP,
   VM_HELPER_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
-  VM_POP_FRAME_OP,
   VM_POP_OP,
   VM_PRIMITIVE_OP,
   VM_PRIMITIVE_REFERENCE_OP,
   VM_PUSH_DYNAMIC_SCOPE_OP,
-  VM_PUSH_FRAME_OP,
-} from '@glimmer/constants';
-import { $fp, $v0 } from '@glimmer/vm';
+} from '@glimmer/constants/lib/syscall-ops';
+import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
+import { $fp, $v0 } from '@glimmer/vm/lib/registers';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 

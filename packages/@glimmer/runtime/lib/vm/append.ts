@@ -20,16 +20,21 @@ import type {
   TreeBuilder,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
-import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
-import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm';
-import { dev, expect, unwrapHandle } from '@glimmer/debug-util';
+import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm/lib/registers';
+import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
+import { unwrapHandle } from '@glimmer/debug-util/lib/template';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-import { createIteratorItemRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { LOCAL_LOGGER, reverse, Stack } from '@glimmer/util';
-import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
-import { $pc, isLowLevelRegister } from '@glimmer/vm';
+import { createIteratorItemRef } from '@glimmer/reference/lib/iterable';
+import { UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
+import { reverse } from '@glimmer/util/lib/array-utils';
+import { StackImpl as Stack } from '@glimmer/util/lib/collections';
+import { LOCAL_LOGGER } from '@glimmer/util';
+import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
+import { $pc, isLowLevelRegister } from '@glimmer/vm/lib/registers';
 
 import type { ScopeOptions } from '../scope';
 import type { AppendingBlockList } from './element-builder';

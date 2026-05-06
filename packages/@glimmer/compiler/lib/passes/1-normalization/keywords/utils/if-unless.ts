@@ -1,5 +1,5 @@
-import type { ASTv2 } from '@glimmer/syntax';
-import { generateSyntaxError } from '@glimmer/syntax';
+import type * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
 
 import type { NormalizationState } from '../../context';
 import type { KeywordDelegate } from '../impl';

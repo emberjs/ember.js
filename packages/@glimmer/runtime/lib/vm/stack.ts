@@ -1,6 +1,6 @@
-import { assert } from '@glimmer/debug-util';
+import assert from '@glimmer/debug-util/lib/assert';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $pc, $sp } from '@glimmer/vm';
+import { $fp, $pc, $sp } from '@glimmer/vm/lib/registers';
 
 import type { LowLevelRegisters } from './low-level';
 

@@ -1,4 +1,5 @@
-import type { AST, ASTPlugin } from '@glimmer/syntax';
+import type * as AST from '@glimmer/syntax/lib/v1/api';
+import type { ASTPlugin } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import type { EmberASTPluginEnvironment } from '../types';
 import { trackLocals } from './utils';
 

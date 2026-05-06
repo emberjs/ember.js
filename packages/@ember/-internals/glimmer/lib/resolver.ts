@@ -12,21 +12,21 @@ import type {
   TemplateFactory,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
+import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
 import {
-  getComponentTemplate,
   getInternalComponentManager,
   setInternalHelperManager,
-} from '@glimmer/manager';
+} from '@glimmer/manager/lib/internal/api';
+import { array } from '@glimmer/runtime/lib/helpers/array';
+import { concat } from '@glimmer/runtime/lib/helpers/concat';
+import { fn } from '@glimmer/runtime/lib/helpers/fn';
+import { get } from '@glimmer/runtime/lib/helpers/get';
+import { hash } from '@glimmer/runtime/lib/helpers/hash';
+import { on } from '@glimmer/runtime/lib/modifiers/on';
 import {
-  array,
-  concat,
-  fn,
-  get,
-  hash,
-  on,
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
-} from '@glimmer/runtime';
+} from '@glimmer/runtime/lib/component/template-only';
 import { isCurlyManager } from './component-managers/curly';
 import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';

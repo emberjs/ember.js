@@ -7,7 +7,7 @@ import type {
   Nullable,
   WireFormat,
 } from '@glimmer/interfaces';
-import type { SavedRegister } from '@glimmer/vm';
+import type { SavedRegister } from '@glimmer/vm/lib/registers';
 import {
   VM_BEGIN_COMPONENT_TRANSACTION_OP,
   VM_CLOSE_ELEMENT_OP,
@@ -24,12 +24,10 @@ import {
   VM_GET_COMPONENT_SELF_OP,
   VM_GET_COMPONENT_TAG_NAME_OP,
   VM_INVOKE_COMPONENT_LAYOUT_OP,
-  VM_INVOKE_VIRTUAL_OP,
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
   VM_OPEN_DYNAMIC_ELEMENT_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
-  VM_POP_FRAME_OP,
   VM_POP_OP,
   VM_POP_SCOPE_OP,
   VM_POPULATE_LAYOUT_OP,
@@ -40,7 +38,6 @@ import {
   VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
   VM_PUSH_DYNAMIC_SCOPE_OP,
   VM_PUSH_EMPTY_ARGS_OP,
-  VM_PUSH_FRAME_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
   VM_PUT_COMPONENT_OPERATIONS_OP,
   VM_REGISTER_COMPONENT_DESTRUCTOR_OP,
@@ -52,11 +49,17 @@ import {
   VM_SET_NAMED_VARIABLES_OP,
   VM_SET_VARIABLE_OP,
   VM_VIRTUAL_ROOT_SCOPE_OP,
-} from '@glimmer/constants';
-import { unwrap } from '@glimmer/debug-util';
-import { hasCapability } from '@glimmer/manager';
-import { EMPTY_STRING_ARRAY, reverse } from '@glimmer/util';
-import { $s0, $s1, $sp, InternalComponentCapabilities } from '@glimmer/vm';
+} from '@glimmer/constants/lib/syscall-ops';
+import {
+  VM_INVOKE_VIRTUAL_OP,
+  VM_POP_FRAME_OP,
+  VM_PUSH_FRAME_OP,
+} from '@glimmer/constants/lib/vm-ops';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import { hasCapability } from '@glimmer/manager/lib/util/capabilities';
+import { EMPTY_STRING_ARRAY, reverse } from '@glimmer/util/lib/array-utils';
+import { $s0, $s1, $sp } from '@glimmer/vm/lib/registers';
+import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 

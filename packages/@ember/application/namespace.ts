@@ -12,9 +12,10 @@ import {
   processAllNamespaces,
   removeNamespace,
   type Namespace as MetalNamespace,
-} from '@ember/-internals/metal'; // Preloaded into namespaces
-import { get } from '@ember/object';
-import { getName, guidFor, setName } from '@ember/-internals/utils';
+} from '@ember/-internals/metal/lib/namespace_search'; // Preloaded into namespaces
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { getName, setName } from '@ember/-internals/utils/lib/name';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
 import EmberObject from '@ember/object';
 

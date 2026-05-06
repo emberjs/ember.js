@@ -7,8 +7,9 @@ import type {
   Nullable,
   RenderNode,
 } from '@glimmer/interfaces';
-import { expect } from '@glimmer/debug-util';
-import { assign, Stack } from '@glimmer/util';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import { assign } from '@glimmer/util/lib/object-utils';
+import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
 import { reifyArgsDebug } from './vm/arguments';
 

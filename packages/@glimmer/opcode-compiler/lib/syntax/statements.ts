@@ -18,27 +18,30 @@ import {
   VM_ENTER_LIST_OP,
   VM_EXIT_LIST_OP,
   VM_FLUSH_ELEMENT_OP,
-  VM_INVOKE_STATIC_OP,
   VM_ITERATE_OP,
-  VM_JUMP_OP,
   VM_MODIFIER_OP,
   VM_OPEN_ELEMENT_OP,
-  VM_POP_FRAME_OP,
   VM_POP_OP,
   VM_POP_REMOTE_ELEMENT_OP,
   VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
-  VM_PUSH_FRAME_OP,
   VM_PUSH_REMOTE_ELEMENT_OP,
   VM_PUT_COMPONENT_OPERATIONS_OP,
   VM_RESOLVE_CURRIED_COMPONENT_OP,
-  VM_RETURN_TO_OP,
   VM_STATIC_ATTR_OP,
   VM_STATIC_COMPONENT_ATTR_OP,
   VM_TEXT_OP,
   VM_TO_BOOLEAN_OP,
-} from '@glimmer/constants';
-import { $fp, $sp, ContentType } from '@glimmer/vm';
-import { SexpOpcodes } from '@glimmer/wire-format';
+} from '@glimmer/constants/lib/syscall-ops';
+import {
+  VM_INVOKE_STATIC_OP,
+  VM_JUMP_OP,
+  VM_POP_FRAME_OP,
+  VM_PUSH_FRAME_OP,
+  VM_RETURN_TO_OP,
+} from '@glimmer/constants/lib/vm-ops';
+import { $fp, $sp } from '@glimmer/vm/lib/registers';
+import { ContentType } from '@glimmer/vm/lib/content';
+import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 import type { PushStatementOp } from './compilers';
 

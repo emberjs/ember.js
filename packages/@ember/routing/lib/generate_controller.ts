@@ -1,4 +1,4 @@
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/-internals/metal/lib/property_get';
 import type { InternalFactory, default as Owner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import { assert, info } from '@ember/debug';

@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
@@ -16,7 +17,7 @@
     "@glimmer/env": "workspace:*",
     "@glimmer/owner": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator":"workspace:*",
+    "@glimmer/validator": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"
   },

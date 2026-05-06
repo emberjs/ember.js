@@ -1,4 +1,4 @@
-import { peekMeta } from '@ember/-internals/meta';
+import { peekMeta } from '@ember/-internals/meta/lib/meta';
 import { sendEvent } from './events';
 import { notifyPropertyChange } from './property_events';
 

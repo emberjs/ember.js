@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/-internals/string';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper(({ positional }: CapturedArguments) => {

@@ -7,4 +7,4 @@ export {
   isHTMLSafe,
   type SafeString,
   type TrustedHTML,
-} from '@ember/-internals/glimmer';
+} from '@ember/-internals/glimmer/lib/utils/string';

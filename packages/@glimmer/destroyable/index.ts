@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import type { Destroyable, Destructor } from '@glimmer/interfaces';
-import { debugToString } from '@glimmer/debug-util';
+import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 
 const LIVE_STATE = 0;

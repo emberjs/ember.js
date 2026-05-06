@@ -1,5 +1,5 @@
-import { teardownMandatorySetter } from '@ember/-internals/utils';
-import type Component from '@ember/component';
+import { teardownMandatorySetter } from '@ember/-internals/utils/lib/mandatory-setter';
+import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';

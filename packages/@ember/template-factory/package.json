@@ -3,9 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
-    "@glimmer/opcode-compiler": "0.94.10"
+    "@glimmer/opcode-compiler": "workspace:*"
   }
 }

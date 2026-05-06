@@ -1,29 +1,33 @@
-import { privatize as P } from '@ember/-internals/container';
-import {
-  addObserver,
-  defineProperty,
-  descriptorForProperty,
-  flushAsyncObservers,
-} from '@ember/-internals/metal';
+import { privatize as P } from '@ember/-internals/container/lib/registry';
+import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
+import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
-import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
+import computed from '@ember/-internals/metal/lib/computed';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
+import getProperties from '@ember/-internals/metal/lib/get_properties';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
+import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
-import { ActionHandler } from '@ember/-internals/runtime';
-import { typeOf } from '@ember/utils';
-import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import typeOf from '@ember/utils/lib/type-of';
+import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
+import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
-import { assert, info, isTesting } from '@ember/debug';
+import { isTesting } from '@ember/debug/lib/testing';
+import { assert, info } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { hasInternalComponentManager } from '@glimmer/manager';
-import type { RenderState } from '@ember/-internals/glimmer';
+import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import type { RenderState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import type { TemplateFactory } from '@glimmer/interfaces';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';

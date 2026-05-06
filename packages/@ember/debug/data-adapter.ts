@@ -1,14 +1,15 @@
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { _backburner, next } from '@ember/runloop';
-import { get } from '@ember/object';
+import { get } from '@ember/-internals/metal/lib/property_get';
 import { dasherize } from '@ember/-internals/string';
 import Namespace from '@ember/application/namespace';
 import type { NativeArray } from '@ember/array';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
-import type { Cache } from '@glimmer/validator';
-import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
+import type { Cache } from '@glimmer/validator/lib/tracking';
+import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
 import type ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import { assert } from '.';
 

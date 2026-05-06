@@ -11,11 +11,12 @@ import type {
   TemplateIterator,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { dev, expect, unwrapHandle } from '@glimmer/debug-util';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
+import { unwrapHandle } from '@glimmer/debug-util/lib/template';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { childRefFor, createConstRef } from '@glimmer/reference';
-import { debug } from '@glimmer/validator';
+import { childRefFor, createConstRef } from '@glimmer/reference/lib/reference';
+import { debug } from '@glimmer/validator/lib/debug';
 
 import { inTransaction } from './environment';
 import { DynamicScopeImpl } from './scope';

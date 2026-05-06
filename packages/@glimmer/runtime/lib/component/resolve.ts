@@ -6,7 +6,7 @@ import type {
   Owner,
   ResolutionTimeConstants,
 } from '@glimmer/interfaces';
-import { expect } from '@glimmer/debug-util';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
 
 export function resolveComponent(
   resolver: Nullable<ClassicResolver>,
