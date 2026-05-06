@@ -102,6 +102,14 @@
         if (typeof globalThis.__gxtClearRenderErrors === 'function') {
           globalThis.__gxtClearRenderErrors();
         }
+        // Clear the $_dc_ember capture callback so a stale closure from a
+        // prior test (whose finally block restored a non-null _prevCapture
+        // value) doesn't intercept the new test's first dynamic-component
+        // render. A stale capture would hijack _dcEmberInstance assignment,
+        // leaving the current test's tracker null and skipping willDestroy
+        // on swap-out (cumulative-state failure mode for "component helper
+        // destroys underlying component when it is swapped out").
+        globalThis.__gxtDcCaptureCallback = null;
         // Reset the interval sync budget so the fallback timer works for this test
         if (typeof globalThis.__gxtResetIntervalBudget === 'function') {
           globalThis.__gxtResetIntervalBudget();
