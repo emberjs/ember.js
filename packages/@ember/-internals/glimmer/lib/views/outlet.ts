@@ -8,13 +8,14 @@ import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
+import { createComputeRef, updateRef } from '@glimmer/reference';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import * as _gxt from '@lifeart/gxt';
 const cellFor: any = (_gxt as any).cellFor;
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
-// const { createComputeRef, updateRef } = reference;
 
 export interface BootEnvironment {
   hasDOM: boolean;
@@ -54,7 +55,13 @@ export default class OutletView {
     return new OutletView(_environment, owner, template, namespace);
   }
 
-  private ref: OutletState;
+  // In GXT mode `ref` is the raw OutletState (used directly for cellFor-based
+  // reactivity). In classic mode `ref` is a Glimmer Reference returned by
+  // createComputeRef, with outletStateTag as the invalidation handle. Both
+  // shapes pose as Reference<OutletState | undefined> via the cast below so
+  // that `state.ref` carries the same type to consumers.
+  private ref: Reference<OutletState | undefined>;
+  private outletStateTag: ReturnType<typeof createTag> | null = null;
   public state: OutletDefinitionState;
 
   constructor(
@@ -74,14 +81,33 @@ export default class OutletView {
       },
     };
 
-    cellFor(outletState.outlets, 'main');
-
-    let ref = (this.ref = outletState);
-
-    // ref.compute();
+    if ((globalThis as any).__GXT_MODE__) {
+      // GXT mode: install a cellFor-backed reactive slot on outletState.outlets.main
+      // and pass the raw outletState through as `ref` (consumers in this branch
+      // dereference it directly).
+      cellFor(outletState.outlets, 'main');
+      this.ref = outletState as unknown as Reference<OutletState | undefined>;
+    } else {
+      // Classic mode: restore upstream's createComputeRef + tag pattern so that
+      // standard Glimmer VM revalidation drives outlet re-renders. Without this,
+      // setOutletState has no invalidation hook and the renderer hangs on
+      // subsequent revalidation cycles (observed as the bench's clearItems4
+      // hang in benchmark-app, which never sets __GXT_MODE__).
+      const tag = (this.outletStateTag = createTag());
+      this.ref = createComputeRef(
+        () => {
+          consumeTag(tag);
+          return outletState;
+        },
+        (state: OutletState) => {
+          dirtyTag(tag);
+          outletState.outlets['main'] = state;
+        }
+      );
+    }
 
     this.state = {
-      ref: ref as unknown as Reference<OutletState | undefined>,
+      ref: this.ref,
       name: TOP_LEVEL_NAME,
       template,
       controller: undefined,
@@ -109,8 +135,17 @@ export default class OutletView {
   }
 
   setOutletState(state: OutletState): void {
-    // Update the outlet state
-    this.ref.outlets['main'] = state;
+    if (!(globalThis as any).__GXT_MODE__) {
+      // Classic mode: route through the createComputeRef updater so the
+      // outletStateTag dirties and Glimmer VM revalidates on the next pass.
+      updateRef(this.ref, state);
+      return;
+    }
+
+    // GXT mode: directly mutate the raw OutletState (this.ref IS that state in
+    // GXT mode — see constructor) and drive re-render through GXT's outlet
+    // chain.
+    (this.ref as any).outlets['main'] = state;
 
     // Update the global outlet state so <ember-outlet> elements can access it
     (globalThis as any).__currentOutletState = this.ref;
@@ -118,7 +153,7 @@ export default class OutletView {
     // In GXT mode, trigger re-render of the root outlet content first.
     // The root render function handles the top-level route (the one that
     // root.ts renders directly, skipping the -outlet template).
-    if ((globalThis as any).__GXT_MODE__) {
+    {
       const rootRenderFn = (globalThis as any).__gxtRootOutletRerender;
       if (typeof rootRenderFn === 'function') {
         // Snapshot active outlets BEFORE the root re-render. The root re-render
