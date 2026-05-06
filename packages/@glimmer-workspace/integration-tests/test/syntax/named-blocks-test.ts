@@ -1,5 +1,6 @@
 import {
   jitSuite,
+  parseErrorFor,
   preprocess,
   RenderTest,
   syntaxErrorFor,
@@ -175,12 +176,13 @@ class NamedBlocksSyntaxErrors extends RenderTest {
       () => {
         preprocess('<Foo><:Bar></:Bar></Foo>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         '<:Bar> is not a valid named block, and named blocks must begin with a lowercase letter',
-        '<:Bar></:Bar>',
+        '<Foo><:Bar></:Bar></Foo>',
         'test-module',
         1,
-        5
+        5,
+        1
       )
     );
 
@@ -188,12 +190,13 @@ class NamedBlocksSyntaxErrors extends RenderTest {
       () => {
         preprocess('<Foo><:1bar><:/1bar></Foo>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid named block named detected, you may have created a named block without a name, or you may have began your name with a number. Named blocks must have names that are at least one character long, and begin with a lower case letter',
-        '<:/1bar>',
+        '<Foo><:1bar><:/1bar></Foo>',
         'test-module',
         1,
-        12
+        12,
+        1
       )
     );
   }

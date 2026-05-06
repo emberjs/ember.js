@@ -17,7 +17,6 @@ on:
       - "packages/@glimmer/interfaces/**"
       - "packages/@glimmer/util/**"
       - "packages/@glimmer/wire-format/**"
-      - "packages/@handlebars/parser/**"
   pull_request:
     paths:
       - ".github/workflows/glimmer-syntax-prettier-smoke-test.yml"
@@ -27,7 +26,6 @@ on:
       - "packages/@glimmer/interfaces/**"
       - "packages/@glimmer/util/**"
       - "packages/@glimmer/wire-format/**"
-      - "packages/@handlebars/parser/**"
   workflow_dispatch:
 
 permissions:

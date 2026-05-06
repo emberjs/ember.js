@@ -23,4 +23,4 @@ export * from './lib/test-helpers/module';
 export * from './lib/test-helpers/strings';
 export * from './lib/test-helpers/tracked';
 export * from './lib/test-helpers/tracked-object';
-export { syntaxErrorFor } from '@glimmer-workspace/test-utils';
+export { parseErrorFor, syntaxErrorFor } from '@glimmer-workspace/test-utils';

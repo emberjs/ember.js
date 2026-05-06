@@ -1,8 +1,8 @@
 import {
   jitSuite,
+  parseErrorFor,
   preprocess,
   RenderTest,
-  syntaxErrorFor,
   test,
 } from '@glimmer-workspace/integration-tests';
 
@@ -15,12 +15,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<div><p>{{../value}}</p></div>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Changing context using "../" is not supported in Glimmer',
-        '../value',
+        '<div><p>{{../value}}</p></div>',
         'test-module',
         1,
-        10
+        10,
+        1
       )
     );
   }
@@ -31,12 +32,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<div><p>{{a/b.c}}</p></div>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         "Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths",
-        'a/b.c',
+        '<div><p>{{a/b.c}}</p></div>',
         'test-module',
         1,
-        10
+        10,
+        1
       )
     );
   }
@@ -47,12 +49,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<div><p>{{./value}}</p></div>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Using "./" is not supported in Glimmer and unnecessary',
-        './value',
+        '<div><p>{{./value}}</p></div>',
         'test-module',
         1,
-        10
+        10,
+        1
       )
     );
   }
@@ -63,12 +66,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as|foo|>foo</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: expecting at least one space character between "as" and "|"',
-        'as|',
+        '<x-bar as|foo|>foo</x-bar>',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
   }
@@ -79,12 +83,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as ||>foo</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: empty parameters list, expecting at least one identifier',
-        'as ||',
+        '<x-bar as ||>foo</x-bar>',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
 
@@ -92,12 +97,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as | |>foo</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: empty parameters list, expecting at least one identifier',
-        'as | |',
+        '<x-bar as | |>foo</x-bar>',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
   }
@@ -108,12 +114,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |{{foo}}|>foo</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: mustaches cannot be used inside parameters list',
-        '{{foo}}',
+        '<x-bar as |{{foo}}|>foo</x-bar>',
         'test-module',
         1,
-        11
+        11,
+        1
       )
     );
 
@@ -121,12 +128,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |foo{{bar}}|>foo</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: mustaches cannot be used inside parameters list',
-        '{{bar}}',
+        '<x-bar as |foo{{bar}}|>foo</x-bar>',
         'test-module',
         1,
-        14
+        14,
+        1
       )
     );
 
@@ -134,12 +142,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |foo {{bar}}|>foo</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: mustaches cannot be used inside parameters list',
-        '{{bar}}',
+        '<x-bar as |foo {{bar}}|>foo</x-bar>',
         'test-module',
         1,
-        15
+        15,
+        1
       )
     );
 
@@ -147,12 +156,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |foo| {{bar}}>foo</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: modifiers cannot follow parameters list',
-        '{{bar}}',
+        '<x-bar as |foo| {{bar}}>foo</x-bar>',
         'test-module',
         1,
-        16
+        16,
+        1
       )
     );
   }
@@ -163,12 +173,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list',
-        'as |',
+        '<x-bar as |',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
 
@@ -176,12 +187,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |foo', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list',
-        'as |foo',
+        '<x-bar as |foo',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
 
@@ -189,12 +201,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |foo|', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list',
-        'as |foo|',
+        '<x-bar as |foo|',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
   }
@@ -205,12 +218,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |x y>{{x}},{{y}}</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: expecting "|" but the tag was closed prematurely',
-        'as |x y>',
+        '<x-bar as |x y>{{x}},{{y}}</x-bar>',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
 
@@ -220,12 +234,13 @@ class SyntaxErrors extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list',
-        'wat',
+        '<x-bar as |x| wat>{{x}},{{y}}</x-bar>',
         'test-module',
         1,
-        14
+        14,
+        1
       )
     );
 
@@ -233,12 +248,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |x| y|>{{x}},{{y}}</x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: expecting the tag to be closed with ">" or "/>" after parameters list',
-        'y|',
+        '<x-bar as |x| y|>{{x}},{{y}}</x-bar>',
         'test-module',
         1,
-        14
+        14,
+        1
       )
     );
   }
@@ -249,12 +265,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |x foo.bar|></x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: invalid identifier name `foo.bar`',
-        'foo.bar',
+        '<x-bar as |x foo.bar|></x-bar>',
         'test-module',
         1,
-        13
+        13,
+        1
       )
     );
 
@@ -262,12 +279,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |x "foo"|></x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: invalid identifier name `"foo"`',
-        '"foo"',
+        '<x-bar as |x "foo"|></x-bar>',
         'test-module',
         1,
-        13
+        13,
+        1
       )
     );
 
@@ -275,12 +293,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar as |foo[bar]|></x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: invalid identifier name `foo[bar]`',
-        'foo[bar]',
+        '<x-bar as |foo[bar]|></x-bar>',
         'test-module',
         1,
-        11
+        11,
+        1
       )
     );
   }
@@ -291,12 +310,13 @@ class SyntaxErrors extends RenderTest {
       () => {
         preprocess('<x-bar |x|></x-bar>', { meta: { moduleName: 'test-module' } });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: block parameters must be preceded by the `as` keyword',
-        '|x|',
+        '<x-bar |x|></x-bar>',
         'test-module',
         1,
-        7
+        7,
+        1
       )
     );
 
@@ -306,12 +326,13 @@ class SyntaxErrors extends RenderTest {
           meta: { moduleName: 'test-module' },
         });
       },
-      syntaxErrorFor(
+      parseErrorFor(
         'Invalid block parameters syntax: block parameters must be preceded by the `as` keyword',
-        '|x|',
+        '<x-bar><:baz |x|></:baz></x-bar>',
         'test-module',
         1,
-        13
+        13,
+        1
       )
     );
   }

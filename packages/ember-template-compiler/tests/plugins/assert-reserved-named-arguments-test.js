@@ -288,19 +288,19 @@ moduleFor(
         compile('{{@}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{#if @}}Yup{{/if}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{input type=(if @ "bar" "baz")}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
     }
 
     [`@test '@0' is de facto reserved (parse error)`](assert) {
@@ -308,19 +308,19 @@ moduleFor(
         compile('{{@0}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{#if @0}}Yup{{/if}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{input type=(if @0 "bar" "baz")}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
     }
 
     [`@test '@1' is de facto reserved (parse error)`](assert) {
@@ -328,19 +328,19 @@ moduleFor(
         compile('{{@1}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{#if @1}}Yup{{/if}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{input type=(if @1 "bar" "baz")}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
     }
 
     [`@test '@2' is de facto reserved (parse error)`](assert) {
@@ -348,19 +348,19 @@ moduleFor(
         compile('{{@2}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{#if @2}}Yup{{/if}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{input type=(if @2 "bar" "baz")}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
     }
 
     [`@test '@@' is de facto reserved (parse error)`](assert) {
@@ -368,19 +368,19 @@ moduleFor(
         compile('{{@@}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{#if @@}}Yup{{/if}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{input type=(if @@ "bar" "baz")}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
     }
 
     [`@test '@=' is de facto reserved (parse error)`](assert) {
@@ -388,19 +388,19 @@ moduleFor(
         compile('{{@=}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{#if @=}}Yup{{/if}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{input type=(if @= "bar" "baz")}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
     }
 
     [`@test '@!' is de facto reserved (parse error)`](assert) {
@@ -408,19 +408,19 @@ moduleFor(
         compile('{{@!}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{#if @!}}Yup{{/if}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
 
       assert.throws(() => {
         compile('{{input type=(if @! "bar" "baz")}}', {
           moduleName: 'baz/foo-bar',
         });
-      }, /Expecting 'ID'/);
+      }, /Expected a name after @/);
     }
   }
 );

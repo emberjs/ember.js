@@ -3,7 +3,6 @@ packages:
   - 'packages/@ember/*'
   - 'packages/@glimmer/*'
   - 'packages/@glimmer-workspace/*'
-  - 'packages/@handlebars/*'
   - 'packages/@types/*'
   - 'packages/*/*/test'
   - 'smoke-tests/*'

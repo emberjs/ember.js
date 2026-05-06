@@ -55,3 +55,6 @@ npm-debug.log
 # couple of the files. Once it is, we can switch this over to just ignoring
 # `types/stable` entirely.
 types/stable
+
+# Generated Peggy parser (regenerate with: pnpm build:hbs-parser)
+packages/@glimmer/syntax/lib/hbs-parser/parser.js

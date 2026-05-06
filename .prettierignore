@@ -7,10 +7,11 @@ docs/
 **/smoke-tests/
 **/types/
 **/type-tests/
-packages/@handlebars/**/*.l
-packages/@handlebars/**/*.yy
 CHANGELOG.md
 package.json
 pnpm-lock.yaml
 internal-docs/**/*.md
+packages/@glimmer/syntax/lib/hbs-parser/parser.js
+packages/@glimmer/syntax/lib/parser/html5-named-char-refs.js
+*.peggy
 tracerbench-testing/

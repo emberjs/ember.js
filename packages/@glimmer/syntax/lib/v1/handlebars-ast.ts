@@ -2,6 +2,10 @@
  * This file contains types for the raw AST returned from the Handlebars parser.
  * These types were originally imported from
  * https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/handlebars/index.d.ts.
+ *
+ * The parser is now inlined in @glimmer/syntax (lib/hbs-parser/) and these types reflect the
+ * Glimmer-specific subset of Handlebars: no partials blocks, no decorators. PartialStatement
+ * is retained because the grammar produces it inline; the Glimmer visitor rejects it.
  */
 
 import type * as ASTv1 from './api';
@@ -13,11 +17,7 @@ export interface CommonNode {
 export interface NodeMap {
   Program: { input: Program; output: ASTv1.Block };
   MustacheStatement: { input: MustacheStatement; output: ASTv1.MustacheStatement | void };
-  Decorator: { input: Decorator; output: never };
   BlockStatement: { input: BlockStatement; output: ASTv1.BlockStatement | void };
-  DecoratorBlock: { input: DecoratorBlock; output: never };
-  PartialStatement: { input: PartialStatement; output: never };
-  PartialBlockStatement: { input: PartialBlockStatement; output: never };
   ContentStatement: { input: ContentStatement; output: void };
   CommentStatement: { input: CommentStatement; output: ASTv1.MustacheCommentStatement | null };
   SubExpression: { input: SubExpression; output: ASTv1.SubExpression };
@@ -29,32 +29,8 @@ export interface NodeMap {
   NullLiteral: { input: NullLiteral; output: ASTv1.NullLiteral };
 }
 
-/**
- * `loc` is sometimes missing in the upstream Handlebars parser. This is a bug that should be
- * fixed. In addition, we should use the types from the upstream parser rather than our own types,
- * and if they're not accurate, we should fix them upstream.
- *
- * @see {https://github.com/handlebars-lang/handlebars-parser/blob/master/types/ast.d.ts}
- */
-export interface UpstreamProgram extends Omit<Program, 'loc'> {
-  loc?: SourceLocation;
-}
-
-export interface UpstreamBlockStatement extends Omit<BlockStatement, 'program' | 'inverse'> {
-  program: UpstreamProgram;
-  inverse?: UpstreamProgram;
-}
-
-export interface UpstreamNodeMap extends Omit<NodeMap, 'Program'> {
-  Program: { input: UpstreamProgram; output: ASTv1.Block };
-}
-
 export type NodeType = keyof NodeMap;
 export type Node<T extends NodeType = NodeType> = NodeMap[T]['input'];
-
-export type UpstreamNodeType = keyof UpstreamNodeMap;
-export type UpstreamNode<T extends UpstreamNodeType = UpstreamNodeType> =
-  UpstreamNodeMap[T]['input'];
 
 export type Output<T extends NodeType> = NodeMap[T]['output'];
 
@@ -69,21 +45,20 @@ export interface Position {
   column: number;
 }
 
-export interface Program extends CommonNode {
+/**
+ * `loc` is optional on Program for backwards compatibility — consumers may
+ * construct Program nodes without a location. The Peggy parser always sets
+ * one via `location()` on the `BlockBody` rule.
+ */
+export interface Program extends Omit<CommonNode, 'loc'> {
   type: 'Program';
+  loc?: SourceLocation;
   body: Statement[];
   blockParams?: string[];
   chained?: boolean;
 }
 
-export type Statement =
-  | MustacheStatement
-  | BlockStatement
-  | DecoratorBlock
-  | PartialStatement
-  | PartialBlockStatement
-  | ContentStatement
-  | CommentStatement;
+export type Statement = MustacheStatement | BlockStatement | ContentStatement | CommentStatement;
 
 export interface CommonMustache extends CommonNode {
   path: Expression;
@@ -95,10 +70,6 @@ export interface CommonMustache extends CommonNode {
 
 export interface MustacheStatement extends CommonMustache {
   type: 'MustacheStatement';
-}
-
-export interface Decorator extends CommonMustache {
-  type: 'DecoratorStatement';
 }
 
 export interface CommonBlock extends CommonNode {
@@ -117,28 +88,7 @@ export interface BlockStatement extends CommonBlock {
   type: 'BlockStatement';
 }
 
-export interface DecoratorBlock extends CommonBlock {
-  type: 'DecoratorBlock';
-}
-
-export interface PartialStatement extends CommonNode {
-  type: 'PartialStatement';
-  name: PathExpression | SubExpression;
-  params: Expression[];
-  hash: Hash;
-  indent: string;
-  strip: StripFlags;
-}
-
-export interface PartialBlockStatement extends CommonNode {
-  type: 'PartialBlockStatement';
-  name: PathExpression | SubExpression;
-  params: Expression[];
-  hash: Hash;
-  program: Program;
-  openStrip: StripFlags;
-  closeStrip: StripFlags;
-}
+// PartialStatement is rejected at parse time and never reaches the visitor.
 
 export interface ContentStatement extends CommonNode {
   type: 'ContentStatement';
@@ -161,10 +111,18 @@ export interface SubExpression extends CommonNode {
   hash: Hash;
 }
 
+export interface PathHead {
+  type: 'ThisHead' | 'AtHead' | 'VarHead';
+  name?: string;
+  loc: SourceLocation | { start: Position; end: Position };
+}
+
 export interface PathExpression extends CommonNode {
   type: 'PathExpression';
+  this: boolean;
   data: boolean;
-  depth: number;
+  head: PathHead;
+  tail: string[];
   parts: string[];
   original: string;
 }
