@@ -91,9 +91,12 @@ function getModuleExports(filepath, stack = new Set()) {
     return null;
   }
 
+  const localImports = collectLocalImports(ast.body);
+
   const exports = new Map();
   for (const stmt of ast.body) {
-    if (stmt.type === 'ExportNamedDeclaration') collectNamedExports(stmt, exports, filepath, stack);
+    if (stmt.type === 'ExportNamedDeclaration')
+      collectNamedExports(stmt, exports, filepath, stack, localImports);
     else if (stmt.type === 'ExportAllDeclaration')
       collectStarExports(stmt, exports, filepath, stack);
     else if (stmt.type === 'ExportDefaultDeclaration') {
@@ -111,10 +114,91 @@ function getModuleExports(filepath, stack = new Set()) {
   return exports;
 }
 
-function collectNamedExports(stmt, exports, filepath, stack) {
+// Collect value-level named/default imports so that `export const X = Y`
+// can be resolved as a re-export of Y's original source. We skip type-only
+// imports (they can't legally appear in a value-position initializer).
+function collectLocalImports(body) {
+  const map = new Map();
+  for (const stmt of body) {
+    if (stmt.type !== 'ImportDeclaration') continue;
+    if (stmt.importKind === 'type') continue;
+    const sourceSpec = stmt.source.value;
+    for (const spec of stmt.specifiers) {
+      if (spec.importKind === 'type') continue;
+      if (spec.type === 'ImportSpecifier') {
+        map.set(spec.local.name, { sourceSpec, importedName: idOrStr(spec.imported) });
+      } else if (spec.type === 'ImportDefaultSpecifier') {
+        map.set(spec.local.name, { sourceSpec, importedName: 'default' });
+      }
+    }
+  }
+  return map;
+}
+
+// Strip TS `as`/type-assertion wrappers from an initializer and return the
+// inner identifier name if the whole expression is just `Ident (as T)*`.
+function unwrapAliasInit(node) {
+  let cur = node;
+  while (cur && (cur.type === 'TSAsExpression' || cur.type === 'TSTypeAssertion')) {
+    cur = cur.expression;
+  }
+  return cur && cur.type === 'Identifier' ? cur.name : null;
+}
+
+function buildAliasExport(importEntry, fromFile, stack, stmtIsType) {
+  const { sourceSpec, importedName } = importEntry;
+  const targetFile = resolveImportSource(sourceSpec, fromFile);
+  const isBare = !sourceSpec.startsWith('.');
+  let source = targetFile;
+  let bareSource = !targetFile && isBare ? sourceSpec : null;
+  let local = importedName;
+
+  if (targetFile) {
+    const nested = getModuleExports(targetFile, stack);
+    const nestedEntry = nested?.get(importedName);
+    if (nestedEntry && nestedEntry.kind !== 'namespace') {
+      if (nestedEntry.source) {
+        source = nestedEntry.source;
+        bareSource = null;
+        local = nestedEntry.localName;
+      } else if (nestedEntry.bareSource) {
+        source = null;
+        bareSource = nestedEntry.bareSource;
+        local = nestedEntry.localName;
+      }
+    }
+  }
+
+  return { source, bareSource, localName: local, isType: stmtIsType, kind: 'named' };
+}
+
+function collectNamedExports(stmt, exports, filepath, stack, localImports) {
   const stmtIsType = stmt.exportKind === 'type';
 
   if (stmt.declaration) {
+    // `export const X = Y [as T]` where Y is a top-level imported binding is
+    // treated as a re-export of Y's original source. This intentionally drops
+    // any branding/cast type — internal call sites don't need it, and it lets
+    // consumers import the implementation directly for tree-shaking.
+    if (stmt.declaration.type === 'VariableDeclaration') {
+      for (const v of stmt.declaration.declarations) {
+        if (v.id?.type !== 'Identifier') continue;
+        const name = v.id.name;
+        const aliased = v.init ? unwrapAliasInit(v.init) : null;
+        const importEntry = aliased ? localImports.get(aliased) : null;
+        if (importEntry) {
+          setExport(exports, name, buildAliasExport(importEntry, filepath, stack, stmtIsType));
+        } else {
+          setExport(exports, name, {
+            source: filepath,
+            localName: name,
+            isType: stmtIsType,
+            kind: 'local',
+          });
+        }
+      }
+      return;
+    }
     for (const { name, isType } of declarationNames(stmt.declaration)) {
       setExport(exports, name, {
         source: filepath,
