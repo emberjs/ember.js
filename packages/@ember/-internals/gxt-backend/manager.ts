@@ -2487,6 +2487,8 @@ function extractArgKeys(args: any): string[] {
       !_isGxtInternalArgKey(key) &&
       key !== 'class' &&
       key !== 'classNames' && // Don't overwrite component's classNames property
+      key !== 'attrs' && // Reserved: Ember classic-component internal — never install as arg-getter
+      key !== 'args' && // Reserved: Ember component internal (createRenderContext relies on it)
       !key.startsWith('Symbol')
   );
 }
@@ -6994,12 +6996,6 @@ const $_MANAGERS = {
           (globalThis as any).owner = resolveOwner;
         }
         try {
-          // Store dcCaptureInstance globally so renderClassicComponent can call
-          // it after the instance is created (push/pop stack doesn't work with
-          // lazy closures returned by handleStringComponent).
-          if (typeof komp.__dcCaptureInstance === 'function') {
-            (globalThis as any).__gxtDcCaptureCallback = komp.__dcCaptureInstance;
-          }
           const result = this.handle(resolvedKomp, mergedArgs, fw, ctx);
           return result;
         } finally {
@@ -7042,12 +7038,6 @@ const $_MANAGERS = {
           (globalThis as any).owner = owner;
         }
         try {
-          // Set the capture callback but DON'T clear it after handle() returns —
-          // handle() returns a lazy closure that GXT calls later, and the closure
-          // calls renderClassicComponent which will invoke and clear the callback.
-          if (typeof komp.__dcCaptureInstance === 'function') {
-            (globalThis as any).__gxtDcCaptureCallback = komp.__dcCaptureInstance;
-          }
           const result = this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
           return result;
         } finally {
