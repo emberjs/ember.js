@@ -591,8 +591,16 @@ class ClassicRootState {
         // Set globalThis.owner for GXT manager system to access
         (globalThis as any).owner = owner;
 
-        // Check if this is a gxt template BEFORE unwrapping
-        const templateIsGxt = isGxtTemplate(template);
+        // Check if this is a gxt template BEFORE unwrapping.
+        // Gate on __GXT_MODE__: the root outlet template is always tagged
+        // __gxtCompiled=true (templates/root.ts) so isGxtTemplate(template)
+        // would return true even for classic-Ember apps that don't load the
+        // gxt runtime. Without GXT_MODE the GXT branch's outlet re-render
+        // (root.ts:1110 `parentElement.innerHTML = ''`) wipes the DOM and
+        // never restores it — observed as an infinite hang in benchmark-app
+        // at the clearItems4 phase. Force classic mode through standard
+        // Glimmer rendering by short-circuiting here.
+        const templateIsGxt = (globalThis as any).__GXT_MODE__ ? isGxtTemplate(template) : false;
 
         let layout = unwrapTemplate(template).asLayout();
 
