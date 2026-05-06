@@ -1715,6 +1715,19 @@ function createEmberDc(original: Function) {
     }
 
     const { mergedArgs } = extractArgsAndSlots(gxtArgs, allowPositionalParams);
+    // Propagate the per-render dc-capture callback (stashed by $_dc_ember) onto
+    // mergedArgs so renderClassicComponent / renderGlimmerComponent can fire it
+    // when the Ember instance is created. Stored as a non-enumerable own property
+    // so extractArgsAndSlots' enumerable-key copy doesn't reach it on either side.
+    const _dcCap = gxtArgs && (gxtArgs as any).__gxtDcCapture;
+    if (typeof _dcCap === 'function') {
+      Object.defineProperty(mergedArgs, '__gxtDcCapture', {
+        value: _dcCap,
+        configurable: true,
+        enumerable: false,
+        writable: true,
+      });
+    }
     const handleResult = managers.component.handle(componentValue, mergedArgs, null, ctx);
     if (typeof handleResult === 'function') {
       return handleResult();
@@ -2088,9 +2101,11 @@ function createEmberDc(original: Function) {
 
       // Track the Ember component instance created for the CURRENT dynamic
       // component slot so that we can fire willDestroy lifecycle hooks when
-      // the component is swapped out. Captured via __gxtDcCaptureCallback
-      // which is called from renderClassicComponent with the newly-created
-      // instance (see manager.ts ~7254).
+      // the component is swapped out. The callback is stashed as a non-enumerable
+      // property on the per-render args object (`__gxtDcCapture`) and fired by
+      // renderClassicComponent / renderGlimmerComponent when the instance is
+      // created — its lifetime equals the render operation that owns it, so
+      // there is no global state and no cross-test leak surface.
       let _dcEmberInstance: any = null;
       const captureInstance = (inst: any) => {
         _dcEmberInstance = inst;
@@ -2113,15 +2128,25 @@ function createEmberDc(original: Function) {
       {
         const _prevDcGetter = g.__dcComponentGetter;
         g.__dcComponentGetter = componentGetter;
-        const _prevCapture = (g as any).__gxtDcCaptureCallback;
-        (g as any).__gxtDcCaptureCallback = captureInstance;
+        // Stash the capture callback on the per-render args object. renderComponent
+        // copies it onto mergedArgs (non-enumerably) and the recursive handle()
+        // paths propagate it forward, so the consumer (renderClassicComponent /
+        // renderGlimmerComponent) can find it on the args parameter it receives.
+        Object.defineProperty(gxtArgs, '__gxtDcCapture', {
+          value: captureInstance,
+          configurable: true,
+          enumerable: false,
+          writable: true,
+        });
         try {
           initialResult = renderComponent(componentValue, gxtArgs, ctx, true);
         } finally {
           g.__dcComponentGetter = _prevDcGetter;
-          // renderClassicComponent clears the callback after calling it, but
-          // if no classic component was rendered it remains — restore either way.
-          (g as any).__gxtDcCaptureCallback = _prevCapture;
+          try {
+            delete (gxtArgs as any).__gxtDcCapture;
+          } catch {
+            /* configurable: true above ensures delete succeeds for our own writes */
+          }
         }
       }
 
@@ -2208,8 +2233,14 @@ function createEmberDc(original: Function) {
           }
           const prevDcGetter = g.__dcComponentGetter;
           g.__dcComponentGetter = componentGetter;
-          const _prevCap = (g as any).__gxtDcCaptureCallback;
-          (g as any).__gxtDcCaptureCallback = captureInstance;
+          // Re-stash the capture callback on gxtArgs for the swap render (see
+          // initial-render block above for the per-render lifetime contract).
+          Object.defineProperty(gxtArgs, '__gxtDcCapture', {
+            value: captureInstance,
+            configurable: true,
+            enumerable: false,
+            writable: true,
+          });
           let newResult: any = null;
           try {
             if (newVal.__isCurriedComponent) {
@@ -2222,7 +2253,11 @@ function createEmberDc(original: Function) {
             // Component not found or render error — leave empty
           } finally {
             g.__dcComponentGetter = prevDcGetter;
-            (g as any).__gxtDcCaptureCallback = _prevCap;
+            try {
+              delete (gxtArgs as any).__gxtDcCapture;
+            } catch {
+              /* configurable: true above ensures delete succeeds for our own writes */
+            }
             if (!prevOwner && g.owner === _dcCapturedOwner) {
               g.owner = prevOwner;
             }

@@ -6995,6 +6995,18 @@ const $_MANAGERS = {
         if (resolveOwner && resolveOwner !== prevOwner) {
           (globalThis as any).owner = resolveOwner;
         }
+        // Propagate the per-render dc-capture callback through the recursive
+        // handle() call so renderClassicComponent / renderGlimmerComponent can
+        // fire it for the underlying component instance.
+        const _outerDcCap = args && (args as any).__gxtDcCapture;
+        if (typeof _outerDcCap === 'function') {
+          Object.defineProperty(mergedArgs, '__gxtDcCapture', {
+            value: _outerDcCap,
+            configurable: true,
+            enumerable: false,
+            writable: true,
+          });
+        }
         try {
           const result = this.handle(resolvedKomp, mergedArgs, fw, ctx);
           return result;
@@ -7036,6 +7048,17 @@ const $_MANAGERS = {
         const prevOwner2 = (globalThis as any).owner;
         if (!prevOwner2 && owner) {
           (globalThis as any).owner = owner;
+        }
+        // Propagate the per-render dc-capture callback through the recursive
+        // handle() call (see CurriedComponent branch above for rationale).
+        const _outerDcCap2 = args && (args as any).__gxtDcCapture;
+        if (typeof _outerDcCap2 === 'function') {
+          Object.defineProperty(wrappedArgs, '__gxtDcCapture', {
+            value: _outerDcCap2,
+            configurable: true,
+            enumerable: false,
+            writable: true,
+          });
         }
         try {
           const result = this.handle(komp.__stringComponentName, wrappedArgs, fw, ctx);
@@ -10771,12 +10794,18 @@ function renderClassicComponent(
     // track it for destroy lifecycle when dynamic component switching occurs.
     setInstanceCapture(instance);
 
-    // Call the global $_dc capture callback if set — used by $_dc_ember to track
-    // Ember instances for willDestroy lifecycle when dynamic components are swapped.
-    const _dcCap = (globalThis as any).__gxtDcCaptureCallback;
+    // Fire the per-render dc-capture callback (stashed on args by $_dc_ember)
+    // so the swap-out path can call willDestroy on this instance later. The
+    // callback's lifetime is exactly the render that owns it — there is no
+    // cross-render leak surface because args is freshly built per renderComponent.
+    const _dcCap = args && (args as any).__gxtDcCapture;
     if (typeof _dcCap === 'function') {
       _dcCap(instance);
-      (globalThis as any).__gxtDcCaptureCallback = null;
+      try {
+        delete (args as any).__gxtDcCapture;
+      } catch {
+        /* configurable: true above ensures delete succeeds for our own writes */
+      }
     }
 
     // Track this instance for destroy detection during force-rerender
@@ -11026,17 +11055,18 @@ function renderGlimmerComponent(instance: any, template: any, args: any, fw: any
   // Expose the current instance via stack-based capture for $_dc_ember tracking
   setInstanceCapture(instance);
 
-  // Also fire the global capture callback if armed by $_dc_ember. The callback
-  // is otherwise only invoked from renderClassicComponent (~line 10788), so a
-  // dynamic-component swap (`{{component this.name}}`) where the resolved
-  // class is glimmerish/template-only would never capture the instance —
-  // leaving _dcEmberInstance null and skipping willDestroy on swap-out
-  // (cumulative-state failure mode for "component helper destroys underlying
-  // component when it is swapped out").
-  const _dcCap = (globalThis as any).__gxtDcCaptureCallback;
+  // Fire the per-render dc-capture callback (see renderClassicComponent for
+  // the lifetime contract). Both render functions consume from args so a
+  // dynamic-component swap (`{{component this.name}}`) captures the instance
+  // regardless of whether the resolved class is classic or tagless.
+  const _dcCap = args && (args as any).__gxtDcCapture;
   if (typeof _dcCap === 'function') {
     _dcCap(instance);
-    (globalThis as any).__gxtDcCaptureCallback = null;
+    try {
+      delete (args as any).__gxtDcCapture;
+    } catch {
+      /* configurable: true above ensures delete succeeds for our own writes */
+    }
   }
 
   const container = document.createDocumentFragment();
