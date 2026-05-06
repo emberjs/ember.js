@@ -1,0 +1,17 @@
+{
+  "name": "ember-test-node-vitest",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node-focused smoke test template for ember-source",
+  "scripts": {
+    "test:node": "vitest run"
+  },
+  "dependencies": {
+    "agadoo": "^3.0.0",
+    "ember-source": "workspace:*",
+    "enhanced-resolve": "^5.21.0",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
+  }
+}
