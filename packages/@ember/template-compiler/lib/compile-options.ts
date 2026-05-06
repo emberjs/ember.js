@@ -1,4 +1,4 @@
-import { array, fn, hash } from '@ember/helper';
+import { and, array, element, eq, fn, hash, neq, not, lt, lte, gt, gte, or } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { assert } from '@ember/debug';
 import {
@@ -26,9 +26,19 @@ export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 
 export const keywords: Record<string, unknown> = {
   array,
+  eq,
+  element,
+  and,
   fn,
   hash,
+  neq,
+  gt,
+  gte,
+  lt,
+  lte,
+  not,
   on,
+  or,
 };
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {

@@ -1,10 +1,31 @@
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import type { EmberASTPluginEnvironment } from '../types';
-import { isPath, trackLocals } from './utils';
+import { trackLocals } from './utils';
 
 /**
  @module ember
 */
+
+const keywordNames = new Set([
+  'array',
+  'eq',
+  'element',
+  'and',
+  'fn',
+  'hash',
+  'neq',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'not',
+  'on',
+  'or',
+]);
+
+const importSource: Record<string, string> = {
+  on: '@ember/modifier',
+};
 
 /**
   A Glimmer2 AST transformation that makes importable keywords work
@@ -21,32 +42,11 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
 
     visitor: {
       ...visitor,
-      ElementModifierStatement(node: AST.ElementModifierStatement) {
-        if (isOn(node, hasLocal)) {
-          rewriteKeyword(env, node, 'on', '@ember/modifier');
-        }
-      },
-      SubExpression(node: AST.SubExpression) {
-        if (isArray(node, hasLocal)) {
-          rewriteKeyword(env, node, 'array', '@ember/helper');
-        }
-        if (isFn(node, hasLocal)) {
-          rewriteKeyword(env, node, 'fn', '@ember/helper');
-        }
-        if (isHash(node, hasLocal)) {
-          rewriteKeyword(env, node, 'hash', '@ember/helper');
-        }
-      },
-      MustacheStatement(node: AST.MustacheStatement) {
-        if (isArray(node, hasLocal)) {
-          rewriteKeyword(env, node, 'array', '@ember/helper');
-        }
-        if (isFn(node, hasLocal)) {
-          rewriteKeyword(env, node, 'fn', '@ember/helper');
-        }
-        if (isHash(node, hasLocal)) {
-          rewriteKeyword(env, node, 'hash', '@ember/helper');
-        }
+      PathExpression(node: AST.PathExpression) {
+        if (!keywordNames.has(node.original)) return;
+        if (hasLocal(node.original)) return;
+
+        rewriteKeyword(env, node, node.original, importSource[node.original] || '@ember/helper');
       },
     },
   };
@@ -54,43 +54,15 @@ export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTP
 
 function rewriteKeyword(
   env: EmberASTPluginEnvironment,
-  node: { path: AST.PathExpression },
+  node: AST.PathExpression,
   name: string,
   moduleSpecifier: string
 ) {
   if (env.meta?.jsutils) {
-    node.path.original = env.meta.jsutils.bindImport(moduleSpecifier, name, node, {
+    node.original = env.meta.jsutils.bindImport(moduleSpecifier, name, node, {
       name,
     });
   } else if (env.meta?.emberRuntime) {
-    node.path.original = env.meta.emberRuntime.lookupKeyword(name);
+    node.original = env.meta.emberRuntime.lookupKeyword(name);
   }
-}
-
-function isOn(
-  node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression,
-  hasLocal: (k: string) => boolean
-): node is AST.ElementModifierStatement & { path: AST.PathExpression } {
-  return isPath(node.path) && node.path.original === 'on' && !hasLocal('on');
-}
-
-function isArray(
-  node: AST.MustacheStatement | AST.SubExpression,
-  hasLocal: (k: string) => boolean
-): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
-  return isPath(node.path) && node.path.original === 'array' && !hasLocal('array');
-}
-
-function isFn(
-  node: AST.MustacheStatement | AST.SubExpression,
-  hasLocal: (k: string) => boolean
-): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
-  return isPath(node.path) && node.path.original === 'fn' && !hasLocal('fn');
-}
-
-function isHash(
-  node: AST.MustacheStatement | AST.SubExpression,
-  hasLocal: (k: string) => boolean
-): node is (AST.MustacheStatement | AST.SubExpression) & { path: AST.PathExpression } {
-  return isPath(node.path) && node.path.original === 'hash' && !hasLocal('hash');
 }

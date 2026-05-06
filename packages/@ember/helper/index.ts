@@ -8,8 +8,17 @@ import {
   hash as glimmerHash,
   array as glimmerArray,
   concat as glimmerConcat,
+  eq as glimmerEq,
   get as glimmerGet,
   fn as glimmerFn,
+  neq as glimmerNeq,
+  gt as glimmerGt,
+  gte as glimmerGte,
+  lt as glimmerLt,
+  lte as glimmerLte,
+  and as glimmerAnd,
+  or as glimmerOr,
+  not as glimmerNot,
 } from '@glimmer/runtime';
 import { element as glimmerElement, uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
 import { type Opaque } from '@ember/-internals/utility-types';
@@ -471,6 +480,102 @@ export const fn = glimmerFn as FnHelper;
 export interface FnHelper extends Opaque<'helper:fn'> {}
 
 /**
+ * The `{{gt}}` helper returns `true` if the first argument is greater than
+ * the second argument.
+ *
+ * ```js
+ * import { gt } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (gt @score 100) "High score!" "Keep trying"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `gt` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method gt
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @private
+ */
+export const gt = glimmerGt as unknown as GtHelper;
+export interface GtHelper extends Opaque<'helper:gt'> {}
+
+/**
+ * The `{{gte}}` helper returns `true` if the first argument is greater than
+ * or equal to the second argument.
+ *
+ * ```js
+ * import { gte } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (gte @age 18) "Adult" "Minor"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `gte` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method gte
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @private
+ */
+export const gte = glimmerGte as unknown as GteHelper;
+export interface GteHelper extends Opaque<'helper:gte'> {}
+
+/**
+ * The `{{lt}}` helper returns `true` if the first argument is less than
+ * the second argument.
+ *
+ * ```js
+ * import { lt } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (lt @temperature 0) "Freezing" "Above zero"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `lt` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method lt
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @private
+ */
+export const lt = glimmerLt as unknown as LtHelper;
+export interface LtHelper extends Opaque<'helper:lt'> {}
+
+/**
+ * The `{{lte}}` helper returns `true` if the first argument is less than
+ * or equal to the second argument.
+ *
+ * ```js
+ * import { lte } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (lte @count 0) "Empty" "Has items"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `lte` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method lte
+ * @param {number} left
+ * @param {number} right
+ * @return {boolean}
+ * @private
+ */
+export const lte = glimmerLte as unknown as LteHelper;
+export interface LteHelper extends Opaque<'helper:lte'> {}
+
+/**
  * The `element` helper lets you dynamically set the tag name of an element.
  *
  * ```js
@@ -486,6 +591,10 @@ export interface FnHelper extends Opaque<'helper:fn'> {}
  * When `@tagName` is `"h1"`, this renders `<h1 class="my-element">Hello</h1>`.
  * When `@tagName` is an empty string, the block content is rendered without a
  * wrapping element. When `@tagName` is `null` or `undefined`, nothing is rendered.
+ *
+ * @method element
+ * @param {string} tagName
+ * @private
  */
 export const element = glimmerElement as ElementHelper;
 export interface ElementHelper extends Opaque<'helper:element'> {}
@@ -510,5 +619,124 @@ export interface ElementHelper extends Opaque<'helper:element'> {}
  */
 export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
+
+/**
+ * The `{{eq}}` helper returns `true` if its two arguments are strictly equal
+ * (`===`). Takes exactly two arguments.
+ *
+ * ```js
+ * import { eq } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (eq @status "active") "Active" "Inactive"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `eq` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method eq
+ * @param {unknown} left
+ * @param {unknown} right
+ * @return {boolean}
+ * @private
+ */
+export const eq = glimmerEq as unknown as EqHelper;
+export interface EqHelper extends Opaque<'helper:eq'> {}
+
+/**
+ * The `{{neq}}` helper returns `true` if its two arguments are strictly
+ * not equal (`!==`). Takes exactly two arguments.
+ *
+ * ```js
+ * import { neq } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (neq @status "active") "Not active" "Active"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `neq` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method neq
+ * @param {unknown} left
+ * @param {unknown} right
+ * @return {boolean}
+ * @private
+ */
+export const neq = glimmerNeq as unknown as NeqHelper;
+export interface NeqHelper extends Opaque<'helper:neq'> {}
+
+/**
+ * The `{{and}}` helper evaluates arguments left to right, returning the first
+ * falsy value (using Handlebars truthiness) or the right-most value if all
+ * are truthy. Requires at least two arguments.
+ *
+ * ```js
+ * import { and } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (and @isAdmin @isLoggedIn) "Welcome, admin!" "Access denied"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `and` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method and
+ * @param {unknown} args Two or more values to evaluate
+ * @return {unknown} The first falsy value or the last value
+ * @private
+ */
+export const and = glimmerAnd as unknown as AndHelper;
+export interface AndHelper extends Opaque<'helper:and'> {}
+
+/**
+ * The `{{or}}` helper evaluates arguments left to right, returning the first
+ * truthy value (using Handlebars truthiness) or the right-most value if all
+ * are falsy. Requires at least two arguments.
+ *
+ * ```js
+ * import { or } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (or @hasAccess @isAdmin) "Welcome!" "No access"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `or` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method or
+ * @param {unknown} args Two or more values to evaluate
+ * @return {unknown} The first truthy value or the last value
+ * @private
+ */
+export const or = glimmerOr as unknown as OrHelper;
+export interface OrHelper extends Opaque<'helper:or'> {}
+
+/**
+ * The `{{not}}` helper returns the logical negation of its argument using
+ * Handlebars truthiness. Takes exactly one argument.
+ *
+ * ```js
+ * import { not } from '@ember/helper';
+ *
+ * <template>
+ *   {{if (not @isDisabled) "Enabled" "Disabled"}}
+ * </template>
+ * ```
+ *
+ * In strict-mode (gjs/gts) templates, `not` is available as a keyword and
+ * does not need to be imported.
+ *
+ * @method not
+ * @param {unknown} value The value to negate
+ * @return {boolean}
+ * @private
+ */
+export const not = glimmerNot as unknown as NotHelper;
+export interface NotHelper extends Opaque<'helper:not'> {}
 
 /* eslint-enable @typescript-eslint/no-empty-object-type */

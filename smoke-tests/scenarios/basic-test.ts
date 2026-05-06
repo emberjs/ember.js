@@ -373,6 +373,47 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'eq-neq-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{eq}} / {{neq}} as keywords', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  let a = 1;
+                  let b = 1;
+
+                  await render(
+                    <template>
+                      <span data-eq>{{eq a b}}</span>
+                      <span data-neq>{{neq a b}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-eq]').hasText('true');
+                  assert.dom('[data-neq]').hasText('false');
+                });
+
+                test('can be shadowed', async function (assert) {
+                  let a = 1;
+                  let b = 1;
+                  let eq = () => 'surprise:eq';
+                  let neq = () => 'surprise:neq';
+
+                  await render(
+                    <template>
+                      <span data-eq>{{eq a b}}</span>
+                      <span data-neq>{{neq a b}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-eq]').hasText('surprise:eq');
+                  assert.dom('[data-neq]').hasText('surprise:neq');
+                });
+              });
+            `,
             'fn-as-keyword-test.gjs': `
               import { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';
@@ -398,6 +439,87 @@ function basicTest(scenarios: Scenarios, appName: string) {
                   assert.dom('button').hasText('hello');
                   await click('button');
                   assert.dom('button').hasText('goodbye');
+                });
+              });
+            `,
+            'lt-lte-gt-gte-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{lt}} / {{lte}} / {{gt}} / {{gte}} as keywords', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  let a = 1;
+                  let b = 2;
+
+                  await render(
+                    <template>
+                      <span data-lt>{{lt a b}}</span>
+                      <span data-lte>{{lte a a}}</span>
+                      <span data-gt>{{gt b a}}</span>
+                      <span data-gte>{{gte a a}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-lt]').hasText('true');
+                  assert.dom('[data-lte]').hasText('true');
+                  assert.dom('[data-gt]').hasText('true');
+                  assert.dom('[data-gte]').hasText('true');
+                });
+
+                test('can be shadowed', async function (assert) {
+                  let a = 1;
+                  let b = 2;
+                  let lt = () => 'surprise:lt';
+                  let lte = () => 'surprise:lte';
+                  let gt = () => 'surprise:gt';
+                  let gte = () => 'surprise:gte';
+
+                  await render(
+                    <template>
+                      <span data-lt>{{lt a b}}</span>
+                      <span data-lte>{{lte a b}}</span>
+                      <span data-gt>{{gt a b}}</span>
+                      <span data-gte>{{gte a b}}</span>
+                    </template>
+                  );
+
+                  assert.dom('[data-lt]').hasText('surprise:lt');
+                  assert.dom('[data-lte]').hasText('surprise:lte');
+                  assert.dom('[data-gt]').hasText('surprise:gt');
+                  assert.dom('[data-gte]').hasText('surprise:gte');
+                });
+              });
+            `,
+            'element-as-keyword-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+
+              module('{{element}} as keyword', function(hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function(assert) {
+                  await render(
+                    <template>
+                      {{#let (element "h1") as |Tag|}}
+                        <Tag class="greeting">Hello from element keyword</Tag>
+                      {{/let}}
+                    </template>
+                  );
+                  assert.dom('h1.greeting').hasText('Hello from element keyword');
+                });
+
+                test('can be shadowed', async function(assert) {
+                  let element = () => 'surprise';
+                  await render(
+                    <template>
+                      <span data-test>{{element "h1"}}</span>
+                    </template>
+                  );
+                  assert.dom('[data-test]').hasText('surprise');
                 });
               });
             `,

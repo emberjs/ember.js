@@ -18,10 +18,14 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - uses: wyvox/pkg-size@4c68a40496b9dd2d228575f8738cdfa4ad277754
+      - uses: wyvox/pkg-size@c8fab09d60fb237b3ddadbc8abef9d850b00a729
         with:
-          build-command: "pnpm build"
+          build-command: "./bin/build-size-comparison-dists.sh"
           display-size: uncompressed, brotli
           unchanged-files: hide
+          paths: |
+            dist/dev
+            dist/prod
+            smoke-tests/v2-app-hello-world-template/dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

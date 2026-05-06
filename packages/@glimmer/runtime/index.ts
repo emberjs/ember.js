@@ -31,12 +31,21 @@ export {
   inTransaction,
   runtimeOptions,
 } from './lib/environment';
+export { and } from './lib/helpers/and';
 export { array } from './lib/helpers/array';
 export { concat } from './lib/helpers/concat';
+export { eq } from './lib/helpers/eq';
 export { fn } from './lib/helpers/fn';
 export { get } from './lib/helpers/get';
+export { gt } from './lib/helpers/gt';
+export { gte } from './lib/helpers/gte';
 export { hash } from './lib/helpers/hash';
 export { invokeHelper } from './lib/helpers/invoke';
+export { lt } from './lib/helpers/lt';
+export { lte } from './lib/helpers/lte';
+export { neq } from './lib/helpers/neq';
+export { not } from './lib/helpers/not';
+export { or } from './lib/helpers/or';
 export { on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
 export { DynamicScopeImpl, ScopeImpl } from './lib/scope';
