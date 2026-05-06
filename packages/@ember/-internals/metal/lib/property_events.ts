@@ -47,6 +47,10 @@ let deferred = 0;
   @since 3.1.0
   @public
 */
+// Re-entrancy depth counter for notifyPropertyChange
+let _notifyDepth = 0;
+const MAX_NOTIFY_DEPTH = 10;
+
 function notifyPropertyChange(
   obj: object,
   keyName: string,
@@ -55,27 +59,112 @@ function notifyPropertyChange(
 ): void {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
-    return;
-  }
+  // GXT integration: Mark (obj, keyName) as "actively invalidating" for the
+  // entire notify lifecycle — both the `__gxtTriggerReRender` side-effect
+  // reads AND the subsequent `markObjectAsDirty → dirtyTagFor` cascade.
+  // GXT cells installed by `cellFor` for CP-backed properties re-fire
+  // their formulas synchronously during either path, which would invoke
+  // the user's getter and mimic classic behavior forbids. The narrow
+  // per-(obj, keyName) marker tells `CP.get` to short-circuit to the
+  // cached value for this exact key while the cascade is in flight, and
+  // lets unrelated CPs read normally.
+  const g: any = globalThis as any;
+  if (!g.__gxtCPInvalidationSet) g.__gxtCPInvalidationSet = new WeakMap();
+  const perObj: Set<string> = g.__gxtCPInvalidationSet.get(obj) || new Set();
+  if (!g.__gxtCPInvalidationSet.has(obj)) g.__gxtCPInvalidationSet.set(obj, perObj);
+  const wasPresent = perObj.has(keyName);
+  if (!wasPresent) perObj.add(keyName);
 
-  markObjectAsDirty(obj, keyName);
+  try {
+    // GXT integration: Trigger synchronous re-render to keep GXT components updated.
+    // Skip during initialization — reading properties at this stage can trigger
+    // computed-property getters whose cache revision hasn't been set yet (e.g. PromiseProxy).
+    // Still fire for prototype meta objects so GXT stays in sync.
+    if (meta === null || !meta.isInitializing()) {
+      const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
+      if (typeof gxtTrigger === 'function') {
+        // Mark the trigger scope so CP.get can preserve classic "don't eagerly
+        // evaluate never-consumed CPs during a change notification" semantics.
+        // (core.ts's lazy wrapper is only installed for proxied CoreObjects,
+        // which misses plain `class Foo { @computed ... }` cases.)
+        const gRoot: any = globalThis as any;
+        const wasInside = gRoot.__gxtInTriggerReRender;
+        gRoot.__gxtInTriggerReRender = true;
+        try {
+          gxtTrigger(obj, keyName);
+        } finally {
+          gRoot.__gxtInTriggerReRender = wasInside;
+        }
+      }
+    }
 
-  if (deferred <= 0) {
-    flushSyncObservers();
-  }
+    // Track whether we are currently notifying on a prototype-meta object.
+    // When true, classic Ember skips the entire notification — including
+    // `PROPERTY_DID_CHANGE`. In GXT mode we sometimes still need
+    // `markObjectAsDirty` to fire so async QP observers on controller
+    // instances (where `meta.proto === meta.source === obj` is a false
+    // positive) detect changes. However, true class prototypes should
+    // NEVER have their `PROPERTY_DID_CHANGE` hook invoked.
+    let isProtoNotify = false;
+    if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
+      if (!meta.isInitializing() && (globalThis as any).__GXT_MODE__) {
+        // Fall through — allow markObjectAsDirty for GXT prototype-meta objects,
+        // but remember we are in a prototype notification so we skip
+        // `PROPERTY_DID_CHANGE` below (matching classic behavior).
+        isProtoNotify = true;
+      } else {
+        return;
+      }
+    }
 
-  if (PROPERTY_DID_CHANGE in obj) {
-    // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
-    assert('property did change hook is invalid', hasPropertyDidChange(obj));
+    // Guard against infinite re-entrant notifyPropertyChange calls
+    // This can happen when GXT rendering triggers property changes that
+    // trigger more rendering in a cycle
+    if (_notifyDepth >= MAX_NOTIFY_DEPTH) {
+      return;
+    }
+    _notifyDepth++;
 
-    // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
-    // that checks its arguments length, so we have to explicitly not call this with `value`
-    // if it is not passed to `notifyPropertyChange`
-    if (arguments.length === 4) {
-      obj[PROPERTY_DID_CHANGE](keyName, value);
-    } else {
-      obj[PROPERTY_DID_CHANGE](keyName);
+    // GXT infinite loop detection
+    if (typeof (globalThis as any).__gxtOpCheck === 'function') {
+      (globalThis as any).__gxtOpCheck();
+    }
+    try {
+      markObjectAsDirty(obj, keyName);
+
+      if (deferred <= 0) {
+        flushSyncObservers();
+      }
+
+      // Skip `PROPERTY_DID_CHANGE` when notifying on a prototype-meta object:
+      // classic Ember returns early before reaching this hook (see the guard
+      // above), and the `notifyPropertyChange` contract tests assert that
+      // prototypes never fire the hook.
+      if (!isProtoNotify && PROPERTY_DID_CHANGE in obj) {
+        // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
+        assert('property did change hook is invalid', hasPropertyDidChange(obj));
+
+        // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
+        // that checks its arguments length, so we have to explicitly not call this with `value`
+        // if it is not passed to `notifyPropertyChange`
+        if (arguments.length === 4) {
+          obj[PROPERTY_DID_CHANGE](keyName, value);
+        } else {
+          obj[PROPERTY_DID_CHANGE](keyName);
+        }
+      }
+    } finally {
+      _notifyDepth--;
+    }
+  } finally {
+    // Clear the narrow CP invalidation marker only if we added it here.
+    if (!wasPresent) {
+      const g2: any = globalThis as any;
+      const inv: WeakMap<object, Set<string>> | undefined = g2.__gxtCPInvalidationSet;
+      if (inv) {
+        const s = inv.get(obj);
+        if (s) s.delete(keyName);
+      }
     }
   }
 }
@@ -125,5 +214,81 @@ function changeProperties(callback: () => void): void {
     endPropertyChanges();
   }
 }
+
+// GXT integration: expose a function that recomputes computed properties
+// whose dependentKeys include the changed key. Returns an array of
+// { key, value } pairs for each recomputed property.
+// This is called from compile.ts __gxtTriggerReRender after the primary
+// cell is updated, so that derived computed properties are also refreshed.
+{
+  (globalThis as any).__gxtRecomputeDependents = function (
+    obj: object,
+    changedKey: string
+  ): Array<{ key: string; value: unknown }> {
+    const results: Array<{ key: string; value: unknown }> = [];
+    // Inside a `beginPropertyChanges`/`endPropertyChanges` batch, classic
+    // Ember never evaluates dependent computed properties — it defers all
+    // re-evaluation until the batch closes and observers flush. Mirror that
+    // here: returning an empty results array tells compile.ts's
+    // __gxtTriggerReRender loop not to eagerly update the dependent CPs'
+    // cells. GXT's own cell invalidation still happens via `dirtyTagFor`,
+    // so the next genuine read (observer callback, `get()`, render) will
+    // lazily recompute through the CP descriptor with a fresh value.
+    if (deferred > 0) return results;
+    try {
+      const meta = peekMeta(obj);
+      if (!meta) return results;
+      meta.forEachDescriptors((propKey: string, descriptor: any) => {
+        if (!descriptor || !descriptor._dependentKeys) return;
+        const deps: string[] = descriptor._dependentKeys;
+        // Check if changedKey matches any dependent key (including path prefixes)
+        let matches = false;
+        for (const dep of deps) {
+          if (dep === changedKey || dep.startsWith(changedKey + '.')) {
+            matches = true;
+            break;
+          }
+        }
+        if (!matches) return;
+        // Classic Ember semantics: a CP that has never been consumed
+        // (no cached revision) should NOT be eagerly evaluated here.
+        // Eager evaluation would (a) invoke user getters with side
+        // effects prematurely and (b) propagate change events to async
+        // observers that were registered on CPs the caller never read.
+        // Wait for the next lazy read to recompute through the descriptor.
+        if (meta.revisionFor(propKey) === undefined) return;
+        // Recompute using the descriptor's cache-aware `get(obj, keyName)`
+        // method when available. Calling `_getter` directly bypasses the CP
+        // cache path, which for user-defined getters with side effects (e.g.
+        // `this.incCallCount++`) means the computed runs an extra time —
+        // once here during notifyPropertyChange, and once more when the
+        // caller later reads the property through the descriptor. Routing
+        // through `descriptor.get` updates meta.valueFor/revisionFor so the
+        // subsequent read is a cache hit with the freshly-computed value.
+        try {
+          let newValue: unknown;
+          if (typeof descriptor.get === 'function' && descriptor.get.length >= 2) {
+            newValue = descriptor.get(obj, propKey);
+          } else if (typeof descriptor._getter === 'function') {
+            newValue = descriptor._getter.call(obj, propKey);
+          } else if (typeof descriptor.get === 'function') {
+            newValue = descriptor.get(obj, propKey);
+          }
+          results.push({ key: propKey, value: newValue });
+        } catch {
+          /* skip if getter throws */
+        }
+      });
+    } catch {
+      /* skip if meta access fails */
+    }
+    return results;
+  };
+}
+
+// Expose notifyPropertyChange on globalThis so @tracked setters can call it
+// without circular imports. Always set (not gated on __GXT_MODE__) because
+// the GXT flag is set in compile.ts which loads after core modules.
+(globalThis as any).__emberNotifyPropertyChange = notifyPropertyChange;
 
 export { notifyPropertyChange, beginPropertyChanges, endPropertyChanges, changeProperties };

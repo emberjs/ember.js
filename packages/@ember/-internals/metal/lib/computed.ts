@@ -73,6 +73,31 @@ export type ComputedPropertyCallback = ComputedPropertyGetterFunction | Computed
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
 function noop(): void {}
+
+// GXT integration: track which (obj, keyName) pairs are currently mid-flight
+// inside `CP._set` so that re-entrant `CP.get` calls (originating from
+// dirtyTagFor → GXT formula re-evaluation) can short-circuit and return the
+// just-stored setter result without re-running the user getter.
+const _cpSetInFlight = new WeakMap<object, Set<string>>();
+function _beginCPSet(obj: object, keyName: string): void {
+  let set = _cpSetInFlight.get(obj);
+  if (!set) {
+    set = new Set();
+    _cpSetInFlight.set(obj, set);
+  }
+  set.add(keyName);
+}
+function _endCPSet(obj: object, keyName: string): void {
+  const set = _cpSetInFlight.get(obj);
+  if (set) {
+    set.delete(keyName);
+    if (set.size === 0) _cpSetInFlight.delete(obj);
+  }
+}
+function _inCPSetFor(obj: object, keyName: string): boolean {
+  const set = _cpSetInFlight.get(obj);
+  return set !== undefined && set.has(keyName);
+}
 /**
   `@computed` is a decorator that turns a JavaScript getter and setter into a
   computed property, which is a _cached, trackable value_. By default the getter
@@ -412,6 +437,90 @@ export class ComputedProperty extends ComputedDescriptor {
 
       let { _getter, _dependentKeys } = this;
 
+      // GXT integration: the GXT re-render trigger path may read a CP
+      // through a cell installed on the class prototype (compile.ts's
+      // __gxtTriggerReRender loops over proto chains and calls cellFor(proto,
+      // keyName)). Evaluating a user getter with `this === prototype` is
+      // meaningless — `this.someInstanceField++` mutates the prototype and
+      // produces bogus side effects that leak into every instance. Classic
+      // Ember never reads CPs off prototypes, so mirror that behavior here:
+      // for prototype meta, return `undefined` without invoking `_getter`.
+      //
+      // NOTE: `meta.isPrototypeMeta(obj)` can also flip to `true` as a side
+      // effect of `peekMeta` walking a prototype chain — when one plain
+      // object is used as another's prototype via `Object.create`, peekMeta
+      // mutates the parent's `meta.proto` to the parent object itself.
+      // In that case `obj` is still a legitimate instance being read
+      // directly (e.g. `defineProperty(objA, 'foo', computed(...))`, then
+      // `Object.create(objA)`, then `get(objA, 'foo')`). Distinguish by
+      // checking whether `meta.proto` still matches what the Meta
+      // constructor originally stored (`obj.constructor.prototype`). A
+      // genuine class prototype keeps that invariant; a mutated meta
+      // loses it, and we fall through to run the user getter as usual.
+      if (meta.isPrototypeMeta(obj)) {
+        let originalProto: unknown = undefined;
+        try {
+          const ctor = (obj as any).constructor;
+          if (ctor !== undefined) originalProto = ctor.prototype;
+        } catch {
+          /* leave originalProto undefined */
+        }
+        if (meta.proto === originalProto) {
+          consumeTag(propertyTag);
+          return undefined;
+        }
+      }
+      // GXT integration: while a CP.set is mid-flight, any re-entrant read
+      // (e.g. from a GXT formula re-evaluation triggered by dirtyTagFor) must
+      // return the setter's freshly-stored value rather than re-running the
+      // user getter. Without this, a CP with side effects in its getter (e.g.
+      // `this.callCount++`) would see an extra invocation every time a set
+      // causes a dirtyTagFor → formula re-eval pipeline.
+      if (_inCPSetFor(obj, keyName)) {
+        let stored = meta.valueFor(keyName);
+        consumeTag(propertyTag);
+        return stored;
+      }
+      // GXT integration: if we're re-entering CP.get from inside a
+      // dirtyTagFor invalidation cascade (a GXT formula tied to this CP's
+      // cell was torn and is re-evaluating synchronously), preserve classic
+      // Ember's invariant that "dirtying a tag does not itself evaluate the
+      // CP". Return the last cached value (or `undefined` for a cold cache)
+      // without invoking `_getter`. The next lazy caller — whether a
+      // template re-render, a `get()` in user code, or a finalized
+      // runloop observer flush — will recompute through this same path
+      // once the cascade has settled.
+      {
+        const g: any = globalThis as any;
+        // Narrow the re-entrance guard to the exact (obj, keyName) that is
+        // currently being invalidated. Re-entrant reads of OTHER CPs during
+        // the cascade (e.g. a template re-render reading an unrelated CP)
+        // must still be allowed to recompute normally.
+        const inv: WeakMap<object, Set<string>> | undefined = g.__gxtCPInvalidationSet;
+        let invalidatingThisKey = false;
+        if (inv) {
+          const perObj = inv.get(obj);
+          if (perObj && perObj.has(keyName)) invalidatingThisKey = true;
+        }
+        if (invalidatingThisKey) {
+          let stored = meta.valueFor(keyName);
+          consumeTag(propertyTag);
+          return stored;
+        }
+        // Classic Ember semantics: a CP that has never been consumed (no
+        // cached revision) should not be lazily evaluated during a change
+        // notification cascade (`__gxtTriggerReRender`). Eagerly evaluating
+        // here would (a) invoke user getters with side effects prematurely
+        // and (b) update the property tag's chain to include dirtied
+        // dependent keys, which causes async observers that were registered
+        // on CPs the caller never read to fire spuriously. Return the stored
+        // (or undefined) value and let the next genuine lazy read recompute.
+        if (g.__gxtInTriggerReRender === true && revision === undefined) {
+          let stored = meta.valueFor(keyName);
+          consumeTag(propertyTag);
+          return stored;
+        }
+      }
       // Create a tracker that absorbs any trackable actions inside the CP
       untrack(() => {
         ret = _getter!.call(obj, keyName);
@@ -537,7 +646,19 @@ export class ComputedProperty extends ComputedDescriptor {
 
     meta.setValueFor(keyName, ret);
 
-    notifyPropertyChange(obj, keyName, meta, value);
+    // GXT integration: mark this (obj, keyName) as "CP set in flight" so
+    // re-entrant CP.get calls triggered by the notifyPropertyChange pipeline
+    // (e.g. via dirtyTagFor → GXT formula re-evaluation or __gxtTriggerReRender
+    // reading obj[keyName]) short-circuit and return the just-stored setter
+    // result instead of re-running the user getter. Without this guard, a
+    // CP whose getter has observable side effects (`this.callCount++`) would
+    // see an extra invocation on every set, corrupting user assertions.
+    _beginCPSet(obj, keyName);
+    try {
+      notifyPropertyChange(obj, keyName, meta, value);
+    } finally {
+      _endCPSet(obj, keyName);
+    }
 
     return ret;
   }

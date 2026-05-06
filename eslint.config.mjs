@@ -31,6 +31,10 @@ export default [
       'packages/@handlebars/parser/lib/parser.js',
       'packages/@handlebars/parser/src/**',
       'tracerbench-testing/',
+      'packages/@ember/-internals/gxt-backend/**',
+      'packages/demo/**',
+      'scripts/gxt-test-runner/**',
+      'scripts/debug-artifacts/**',
     ],
   },
   pluginJs.configs.recommended,
@@ -231,6 +235,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'node-tests/**/*.js',
       'tests/node/**/*.js',
       'smoke-tests/node-template/**/*.js',
@@ -260,6 +266,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'node-tests/**/*.js',
       'tests/node/**/*.js',
       'smoke-tests/node-template/**/*.js',
@@ -291,6 +299,28 @@ export default [
       'no-throw-literal': 'error',
       'disable-features/disable-async-await': 'off',
       'disable-features/disable-generator-functions': 'off',
+    },
+  },
+  {
+    files: ['**/vite.config.mjs', 'scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
+      'n/no-process-exit': 'off',
+      'n/hashbang': 'off',
+      'n/no-unpublished-bin': 'off',
+    },
+  },
+  {
+    // GXT integration scaffolding in core glimmer files: debug logging gated
+    // behind DEBUG_TEMPLATE_LOOKUP / similar runtime flags.
+    files: [
+      'packages/@ember/-internals/glimmer/lib/templates/**/*.ts',
+      'packages/@ember/-internals/glimmer/lib/renderer.ts',
+      'packages/@ember/-internals/glimmer/lib/component-managers/unwrap-template.ts',
+    ],
+    rules: {
+      'no-console': 'off',
+      'no-implicit-coercion': 'off',
     },
   },
   {

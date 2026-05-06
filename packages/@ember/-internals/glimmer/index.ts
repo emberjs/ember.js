@@ -444,7 +444,38 @@
   @public
  */
 
-export { templateFactory as template, templateCacheCounters } from '@glimmer/opcode-compiler';
+import {
+  templateFactory as _templateFactory,
+  templateCacheCounters,
+} from '@glimmer/opcode-compiler';
+export { templateCacheCounters };
+
+// GXT-aware `template` shim. In GXT mode, the ember-template-compiler's
+// `precompile()` returns a JSON marker string containing `{__gxtTemplate,
+// source, moduleName}` rather than the classic Glimmer block-spec. Passing
+// that marker to the classic `templateFactory` crashes with "undefined is
+// not valid JSON" on first render because `block` is absent. When we
+// detect a GXT marker, delegate to the GXT runtime compiler instead so
+// the resulting factory behaves like any other GXT-compiled template, and
+// wrap it with the same cache counter instrumentation used by
+// `ember-template-compiler.ts::compile()`.
+function template(spec: unknown): ReturnType<typeof _templateFactory> {
+  if (spec && typeof spec === 'object') {
+    const anySpec = spec as Record<string, unknown>;
+    if (anySpec['__gxtTemplate'] === true) {
+      const gxtCompile = (globalThis as any).__gxtCompileTemplate;
+      const instrument = (globalThis as any).__gxtInstrumentFactory;
+      const source = anySpec['source'];
+      const moduleName = anySpec['moduleName'];
+      if (typeof gxtCompile === 'function' && typeof source === 'string') {
+        const factory = gxtCompile(source, { moduleName });
+        return typeof instrument === 'function' ? instrument(factory, { moduleName }) : factory;
+      }
+    }
+  }
+  return _templateFactory(spec as Parameters<typeof _templateFactory>[0]);
+}
+export { template };
 
 export { default as RootTemplate } from './lib/templates/root';
 export { default as Input } from './lib/components/input';

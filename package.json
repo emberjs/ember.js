@@ -22,6 +22,9 @@
   },
   "license": "MIT",
   "main": "lib/index.js",
+  "bin": {
+    "ember-cli-gxt": "./scripts/ember-cli-gxt.mjs"
+  },
   "files": [
     "build-metadata.json",
     "blueprints",
@@ -63,6 +66,7 @@
   "dependencies": {
     "@babel/core": "^7.24.4",
     "@embroider/addon-shim": "^1.10.2",
+    "@lifeart/gxt": "0.0.61",
     "@simple-dom/interface": "^1.4.0",
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
@@ -125,12 +129,15 @@
     "kill-port-process": "^3.2.1",
     "mitata": "^1.0.34",
     "mocha": "^11.0.0",
+    "node-gzip": "^1.1.2",
     "npm-run-all2": "^8.0.0",
+    "playwright": "^1.59.1",
     "prettier": "^3.5.3",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
     "resolve.exports": "^2.0.3",
-    "rollup": "^4.57.1",
+    "rollup": "^4.60.2",
+    "rollup-plugin-visualizer": "^7.0.1",
     "router_js": "workspace:*",
     "rsvp": "^4.8.5",
     "terser": "^5.42.0",

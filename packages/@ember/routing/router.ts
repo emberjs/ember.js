@@ -12,6 +12,7 @@ import {
   extractRouteArgs,
   getActiveTargetName,
   resemblesURL,
+  stashParamNames,
 } from './lib/utils';
 import type { RouteArgs, RouteOptions } from './lib/utils';
 import type {
@@ -62,6 +63,55 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
 
   this.notifyPropertyChange('url');
   this.set('currentState', this.targetState);
+
+  // GXT fix: LinkTo.href consumes `tagFor(routing, 'currentState')`, where
+  // `routing` is the `-routing` service that aliases `router.currentState`
+  // via `readOnly('router.currentState')`. In GXT mode the alias chain tag
+  // doesn't always propagate dirty to the routing service's tag on
+  // `set(router, 'currentState', ...)`, so LinkTo.href getters don't re-
+  // evaluate after a QP-only transition (triggered by `set(controller,
+  // 'q', 'lol')` → _activeQPChanged → fireQueryParamTransition). We
+  // explicitly notify the routing service so its `currentState` tag
+  // dirties, forcing LinkTo.href getters to re-evaluate with the latest
+  // sticky QP values. This matches the semantics upstream Glimmer VM
+  // already achieves via its chain-tag machinery.
+  if ((globalThis as any).__GXT_MODE__) {
+    try {
+      const owner = getOwner(this);
+      if (owner) {
+        const routing = owner.lookup('service:-routing') as any;
+        if (routing) {
+          // Dirty the `currentState` tag on the routing service directly.
+          // LinkTo.href / isActive etc. call
+          // `consumeTag(tagFor(routing, 'currentState'))` — so they
+          // subscribe to this exact tag and re-evaluate when it dirties.
+          // In GXT mode the alias chain tag from readOnly('router.currentState')
+          // doesn't always propagate dirty from the router onto the routing
+          // service, so we also dirty the service's tag directly. This
+          // matches the semantics upstream Glimmer VM already achieves via
+          // its chain-tag machinery.
+          const dirtyTagFor =
+            (globalThis as any).__classicDirtyTagFor || (globalThis as any).__gxtDirtyTagFor;
+          if (typeof dirtyTagFor === 'function') {
+            dirtyTagFor(routing, 'currentState');
+          } else if (typeof routing.notifyPropertyChange === 'function') {
+            routing.notifyPropertyChange('currentState');
+          }
+          // Trigger a sync so enqueued effects (e.g. LinkTo.applyHref via
+          // registerClassicReactor) flush synchronously before the test's
+          // next assertion runs.
+          const syncDomNow = (globalThis as any).__gxtSyncDomNow;
+          if (typeof syncDomNow === 'function') {
+            (globalThis as any).__gxtPendingSync = true;
+            (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+            syncDomNow();
+          }
+        }
+      }
+    } catch {
+      /* best-effort; never block transition */
+    }
+  }
 
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -673,6 +723,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       // not great on multiple fronts!
       instance.didCreateRootView(this._toplevelView as any);
     } else {
+      // here we need to figure out how to provide atomic reactivity per outlet level
       this._toplevelView.setOutletState(root);
     }
   }
@@ -1109,6 +1160,24 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     _fromRouterService?: boolean
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
+    // Ensure qp.parts is populated for model-scoped query params so that the
+    // cacheKey in _hydrateUnsuppliedQueryParams matches the one used when
+    // _qpChanged stashed the sticky value. stashParamNames accesses
+    // routeInfo.route._stashNames on each routeInfo — but routeInfo.route's
+    // getter fetches (async-loads) the route if it's not yet resolved, which
+    // would break "only fetch handlers for the current route" invariants for
+    // links that point to lazy routes. Use the internal _route field to probe
+    // without triggering a fetch.
+    let allRoutesLoaded = true;
+    for (let info of state.routeInfos) {
+      if (!(info as any)._route) {
+        allRoutesLoaded = false;
+        break;
+      }
+    }
+    if (allRoutesLoaded) {
+      stashParamNames(this, state.routeInfos);
+    }
     this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
     this._serializeQueryParams(state.routeInfos, queryParams);
 

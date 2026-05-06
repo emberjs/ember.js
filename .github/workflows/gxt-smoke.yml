@@ -1,0 +1,60 @@
+name: GXT Smoke
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - glimmer-next-fresh
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: GXT upstream contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Run contract tests
+        run: node scripts/gxt-test-runner/contract-tests.mjs
+
+  gxt-smoke:
+    name: GXT smoke shard ${{ matrix.shard }}/4
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run GXT smoke (shard ${{ matrix.shard }}/4)
+        env:
+          GXT_MODE: 'true'
+        run: |
+          node scripts/gxt-test-runner/runner.mjs \
+            --smoke \
+            --shard ${{ matrix.shard }}/4 \
+            --auto-serve \
+            --url http://localhost:5180/
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gxt-smoke-shard-${{ matrix.shard }}
+          path: |
+            test-results/gxt-summary.json
+            test-results/gxt-last-run.json
+          if-no-files-found: ignore

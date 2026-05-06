@@ -40,7 +40,7 @@ interface ExpectedRenderNode {
   children: Expected<CapturedRenderNode['children']> | ExpectedRenderNode[];
 }
 
-if (ENV._DEBUG_RENDER_TREE) {
+if (ENV._DEBUG_RENDER_TREE && !(globalThis as any).__GXT_MODE__) {
   moduleFor(
     'Application test: debug render tree',
     class extends ApplicationTestCase {

@@ -796,7 +796,10 @@ declare const SIGNATURE: unique symbol;
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Component<S = unknown>
-  extends CoreView, TargetActionSupport, ActionSupport, ComponentMethods {}
+  extends CoreView,
+    TargetActionSupport,
+    ActionSupport,
+    ComponentMethods {}
 
 class Component<S = unknown>
   extends CoreView.extend(
@@ -1030,6 +1033,12 @@ class Component<S = unknown>
   // Changed to `rerender` on init
   _rerender() {
     dirtyTag(this[DIRTY_TAG]);
+    // In GXT mode, mark this specific instance for forced rerender so
+    // the update lifecycle hooks fire for it and its ancestors.
+    const forceRerender = (globalThis as any).__gxtForceRerender;
+    if (typeof forceRerender === 'function') {
+      forceRerender(this);
+    }
     this._superRerender();
   }
 

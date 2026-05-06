@@ -87,7 +87,7 @@ setGlobalContext({
   },
 });
 
-if (DEBUG) {
+if (DEBUG && !(globalThis as any).__GXT_MODE__) {
   debug?.setTrackingTransactionEnv?.({
     debugMessage(obj, keyName) {
       let dirtyString = keyName

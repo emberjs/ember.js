@@ -61,6 +61,29 @@ const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
+// In DEBUG + GXT mode, the proxy trap below must NOT fire its assertion when
+// `__gxtTriggerReRender` (compile.ts) does its own `obj[keyName]` probe to
+// pull a fresh value into a cell. We mark a per-call flag via a one-time
+// wrapper installed lazily on the first proxy creation (compile.ts loads
+// after core.ts, so we cannot wrap eagerly).
+let _triggerReRenderWrapped = false;
+function ensureTriggerReRenderWrapped() {
+  if (_triggerReRenderWrapped) return;
+  const g = globalThis as any;
+  const orig = g.__gxtTriggerReRender;
+  if (typeof orig !== 'function') return;
+  _triggerReRenderWrapped = true;
+  g.__gxtTriggerReRender = function (obj: object, keyName: string) {
+    const wasInside = g.__gxtInTriggerReRender;
+    g.__gxtInTriggerReRender = true;
+    try {
+      return orig.call(this, obj, keyName);
+    } finally {
+      g.__gxtInTriggerReRender = wasInside;
+    }
+  };
+}
+
 const destroyCalled = new Set();
 
 function ensureDestroyCalled(instance: CoreObject) {
@@ -143,7 +166,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
       } else if (hasSetUnknownProperty(obj) && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
-        if (DEBUG) {
+        if (DEBUG && !(globalThis as any).__GXT_MODE__) {
           defineProperty(obj, keyName, null, value, m); // setup mandatory setter
         } else {
           (obj as any)[keyName] = value;
@@ -248,6 +271,7 @@ class CoreObject {
 
     let self;
     if (DEBUG && hasUnknownProperty(this)) {
+      ensureTriggerReRenderWrapped();
       let messageFor = (obj: unknown, property: unknown) => {
         return (
           `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
@@ -288,6 +312,27 @@ class CoreObject {
 
           let value = target.unknownProperty.call(receiver, property);
 
+          // In GXT mode, templates and internal plumbing (notifyPropertyChange →
+          // __gxtTriggerReRender, dotted-path notifications, sync passes) access
+          // proxy properties directly. Bypass the assertion when:
+          //   - we're inside a template render pass (`__gxtIsRendering()`),
+          //   - we're inside the GXT sync flush (`__gxtSyncing`),
+          //   - we're inside `__gxtTriggerReRender` itself (per-call flag), or
+          //   - the property name is a dotted path (only Ember plumbing emits
+          //     these via `notifyPropertyChange(obj, 'foo.bar')`).
+          // User code (`proxy.foo`) hits none of these, so the assertion still
+          // fires for the original use case.
+          const _g = globalThis as any;
+          const _gxtIsRendering = _g.__gxtIsRendering;
+          const _isInternalPath =
+            (typeof _gxtIsRendering === 'function' && _gxtIsRendering()) ||
+            _g.__gxtSyncing === true ||
+            _g.__gxtInTriggerReRender === true ||
+            (typeof property === 'string' && property.indexOf('.') !== -1);
+          if (_isInternalPath) {
+            return value;
+          }
+
           if (typeof value !== 'function') {
             assert(messageFor(receiver, property), value === undefined || value === null);
           }
@@ -298,7 +343,7 @@ class CoreObject {
     }
 
     const destroyable = self;
-    registerDestructor(self, ensureDestroyCalled, true);
+    registerDestructor(self, () => ensureDestroyCalled(self), true);
     registerDestructor(self, () => destroyable.willDestroy());
 
     // disable chains

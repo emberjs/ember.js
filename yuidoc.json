@@ -13,7 +13,7 @@
       "packages/@ember/-internals",
       "packages/@glimmer"
     ],
-    "exclude": "vendor",
+    "exclude": "vendor,gxt-backend",
     "outdir": "docs",
     "preprocessor": "bin/feature-flag-yuidoc-filter"
   }

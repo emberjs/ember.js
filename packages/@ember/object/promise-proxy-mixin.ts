@@ -8,11 +8,47 @@ import type CoreObject from '@ember/object/core';
   @module @ember/object/promise-proxy-mixin
 */
 
+// RSVP Promise internal state constants (see rsvp/lib/rsvp/-internal.js).
+// Exposing these as local constants avoids importing private RSVP internals
+// while still letting us synchronously fast-path already-settled promises.
+const RSVP_STATE_FULFILLED = 1;
+const RSVP_STATE_REJECTED = 2;
+
 function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
   setProperties(proxy, {
     isFulfilled: false,
     isRejected: false,
   });
+
+  // GXT fast-path: when the supplied promise is already-settled (RSVP sets
+  // `_state` synchronously for `Promise.resolve(x)` and friends), mirror the
+  // fulfillment onto the proxy immediately. In classic Ember, the backburner
+  // `actions` queue would have run the `.then` callback before the render
+  // queue flushed; under GXT we render synchronously from `runAppend`, so we
+  // must populate `content` before the first render pass rather than waiting
+  // for the microtask/backburner flush.
+  const settledPromise = promise as RSVP.Promise<T> & {
+    _state?: number;
+    _result?: unknown;
+  };
+  if (
+    settledPromise &&
+    typeof settledPromise === 'object' &&
+    !(proxy as unknown as CoreObject).isDestroyed &&
+    !(proxy as unknown as CoreObject).isDestroying
+  ) {
+    if (settledPromise._state === RSVP_STATE_FULFILLED) {
+      setProperties(proxy, {
+        content: settledPromise._result as T,
+        isFulfilled: true,
+      });
+    } else if (settledPromise._state === RSVP_STATE_REJECTED) {
+      setProperties(proxy, {
+        reason: settledPromise._result,
+        isRejected: true,
+      });
+    }
+  }
 
   return promise.then(
     (value) => {

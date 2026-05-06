@@ -2,8 +2,17 @@
   "extends": "./tsconfig/compiler-options.json",
   "compilerOptions": {
     "outDir": "dist",
-    "noEmit": true
+    "noEmit": true,
+    "experimentalDecorators": true
   },
-  "include": ["packages/**/*.ts"],
-  "exclude": ["dist", "node_modules", "tmp", "types"]
+  "include": ["packages/**/*.ts", "types/gxt-ambient.d.ts"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types/stable",
+    "types/preview",
+    "packages/@ember/-internals/gxt-backend/**",
+    "packages/demo/**"
+  ]
 }

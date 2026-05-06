@@ -19,10 +19,9 @@ export default precompileTemplate(
   {{on "cut" this.valueDidChange}}
 />`,
   {
-    moduleName: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
     strictMode: true,
-    scope() {
-      return { on };
-    },
+    scope: () => ({
+      on,
+    }),
   }
 );

@@ -1,0 +1,32 @@
+{
+  "name": "@ember/-internals/gxt-backend",
+  "private": true,
+  "type": "module",
+  "main": "./manager.ts",
+  "exports": {
+    "./manager": "./manager.ts",
+    "./compile": "./compile.ts",
+    "./validator": "./validator.ts",
+    "./reference": "./reference.ts",
+    "./destroyable": "./destroyable.ts",
+    "./glimmer-tracking": "./glimmer-tracking.ts",
+    "./glimmer-application": "./glimmer-application.ts",
+    "./glimmer-util": "./glimmer-util.ts",
+    "./glimmer-env": "./glimmer-env.ts",
+    "./glimmer-syntax": "./glimmer-syntax.ts",
+    "./ember-template-compiler": "./ember-template-compiler.ts",
+    "./deprecate": "./deprecate.ts",
+    "./outlet": "./outlet.gts",
+    "./link-to": "./link-to.gts",
+    "./ember-routing": "./ember-routing.ts",
+    "./ember-gxt-wrappers": "./ember-gxt-wrappers.ts",
+    "./helper-manager": "./helper-manager.ts",
+    "./runtime-hbs": "./runtime-hbs.ts",
+    "./gxt-with-runtime-hbs": "./gxt-with-runtime-hbs.ts",
+    "./gxt-template-factory": "./gxt-template-factory.ts",
+    "./test-compile": "./test-compile.ts",
+    "./debug": "./debug.ts",
+    "./debug-render-tree": "./debug-render-tree.ts",
+    "./utils": "./utils.ts"
+  }
+}

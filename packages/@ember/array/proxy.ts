@@ -252,7 +252,14 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
     if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
       let arrangedContent = get(this, 'arrangedContent');
       if (arrangedContent) {
-        let length = (this._objects.length = get(arrangedContent, 'length'));
+        let rawLength = get(arrangedContent, 'length');
+        // Guard against invalid array lengths (NaN, negative, non-integer)
+        // which can occur when ArrayProxy is used with PromiseProxyMixin
+        // before the promise has resolved.
+        if (typeof rawLength !== 'number' || rawLength !== rawLength || rawLength < 0) {
+          rawLength = 0;
+        }
+        let length = (this._objects.length = rawLength);
 
         for (let i = this._objectsDirtyIndex; i < length; i++) {
           // SAFETY: This is expected to only ever return an instance of T. In other words, there should
