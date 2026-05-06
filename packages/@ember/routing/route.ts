@@ -198,7 +198,6 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
     as well as any unhandled errors from child routes:
 
     ```app/routes/admin.js
-    import { reject } from 'rsvp';
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
     import { service } from '@ember/service';
@@ -207,7 +206,7 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
       @service router;
 
       beforeModel() {
-        return reject('bad things!');
+        return Promise.reject('bad things!');
       }
 
       @action

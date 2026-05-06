@@ -11,7 +11,6 @@ import {
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,
 } from '../lib/route-info';
-import { Promise } from 'rsvp';
 
 let handlers: Dict<Route>, recognizer: any;
 

@@ -4,7 +4,6 @@ import type { Route, Transition } from '../index';
 import type Router from '../index';
 import type { Dict, Maybe } from '../lib/core';
 import type RouteInfo from '../lib/route-info';
-import { Promise } from 'rsvp';
 import { createHandler, TestRouter, trigger, ignoreTransitionError } from './test_helpers';
 
 let router: Router<Route>, handlers: Dict<Route>, expectedUrl: Maybe<string>;

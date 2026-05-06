@@ -10,7 +10,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { join, once, run, schedule } from '@ember/runloop';
 import { libraries } from '@ember/-internals/metal';
-import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
@@ -681,7 +680,10 @@ class Application extends Engine {
     return this._bootPromise;
   }
 
-  _bootResolver: ReturnType<(typeof RSVP)['defer']> | null = null;
+  _bootResolver: {
+    resolve: (value: Application) => void;
+    reject: (reason?: unknown) => void;
+  } | null = null;
 
   /**
     Unfortunately, a lot of existing code assumes the booting process is
@@ -705,8 +707,11 @@ class Application extends Engine {
     // boot promise exists for book-keeping purposes: if anything went wrong in
     // the boot process, we need to store the error as a rejection on the boot
     // promise so that a future caller of `boot()` can tell what failed.
-    let defer = (this._bootResolver = RSVP.defer());
-    this._bootPromise = defer.promise as Promise<this>;
+    let resolver!: { resolve: (value: Application) => void; reject: (reason?: unknown) => void };
+    this._bootPromise = new Promise<this>((resolve, reject) => {
+      resolver = { resolve: resolve as (value: Application) => void, reject };
+    });
+    this._bootResolver = resolver;
 
     try {
       this.runInitializers();
@@ -714,7 +719,7 @@ class Application extends Engine {
       // Continues to `didBecomeReady`
     } catch (error) {
       // For the asynchronous boot path
-      defer.reject(error);
+      resolver.reject(error);
 
       // For the synchronous boot path
       throw error;

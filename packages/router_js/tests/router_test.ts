@@ -12,7 +12,6 @@ import type RouteInfo from '../lib/route-info';
 import type { SerializerFunc } from '../lib/router';
 import { logAbort, PARAMS_SYMBOL, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from '../lib/transition';
 import type { TransitionError } from '../lib/transition-state';
-import { Promise, reject } from 'rsvp';
 import {
   assertAbort,
   createHandler,
@@ -3320,7 +3319,7 @@ scenarios.forEach(function (scenario) {
 
       function redirectToAbout() {
         if (returnPromise) {
-          return reject().then(null, function () {
+          return Promise.reject().then(null, function () {
             router.transitionTo(redirectTo);
           });
         } else {
@@ -3427,7 +3426,7 @@ scenarios.forEach(function (scenario) {
     let expectedReason = { reason: 'No funciona, mon frere.' };
 
     function throwAnError() {
-      return reject(expectedReason);
+      return Promise.reject(expectedReason);
     }
 
     routes = {
@@ -3611,7 +3610,7 @@ scenarios.forEach(function (scenario) {
 
       showPost: createHandler('showPost', {
         model: function () {
-          return reject('borf!');
+          return Promise.reject('borf!');
         },
         events: {
           error: function (e: Error) {
@@ -3624,7 +3623,7 @@ scenarios.forEach(function (scenario) {
               if (errorCount === 1) {
                 // transition back here to test transitionTo error handling.
                 return router
-                  .transitionTo('showPost', reject('borf!'))
+                  .transitionTo('showPost', Promise.reject('borf!'))
                   .then(shouldNotHappen(assert), function (e: Error) {
                     assert.equal(e, 'borf!', 'got thing');
                   });
@@ -5686,7 +5685,7 @@ scenarios.forEach(function (scenario) {
         foo: createHandler('foo', {
           model: function () {
             router.intermediateTransitionTo('loading');
-            return new Promise(function (resolve) {
+            return new Promise<void>(function (resolve) {
               resolve();
             });
           },

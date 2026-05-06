@@ -9,7 +9,6 @@ import {
 } from '../lib/route-info';
 import InternalTransition from '../lib/transition';
 import URLTransitionIntent from '../lib/transition-intent/url-transition-intent';
-import { resolve } from 'rsvp';
 import { createHandler, createHandlerInfo, TestRouter } from './test_helpers';
 
 QUnit.module('RouteInfo');
@@ -122,11 +121,11 @@ QUnit.skip('RouteInfo#resolve runs afterModel hook on handler', function (assert
       afterModel(resolvedModel: Dict<unknown>, payload: Dict<unknown>) {
         assert.equal(resolvedModel, model, 'afterModel receives the value resolved by model');
         assert.equal(payload, transition);
-        return resolve(123); // 123 should get ignored
+        return Promise.resolve(123); // 123 should get ignored
       },
     }),
     getModel() {
-      return resolve(model);
+      return Promise.resolve(model);
     },
   });
 
@@ -186,7 +185,7 @@ QUnit.test('UnresolvedRouteInfoByObject does NOT get its model hook called', fun
     new TestRouter(),
     'unresolved',
     ['wat'],
-    resolve({ name: 'dorkletons' })
+    Promise.resolve({ name: 'dorkletons' })
   );
 
   routeInfo.resolve({} as Transition).then((resolvedRouteInfo) => {

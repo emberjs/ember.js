@@ -2,7 +2,6 @@
 import { isEnabled } from '@ember/canary-features';
 import { assertDestroyablesDestroyed, enableDestroyableTracking } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { all } from 'rsvp';
 import type { Generator, Mixin } from './apply-mixins';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
@@ -122,7 +121,7 @@ export function setupTestClass<T extends TestCase, G extends Generator>(
     // promise when it is not needed
     let filteredPromises = promises.filter(Boolean);
     if (filteredPromises.length > 0) {
-      return all(filteredPromises)
+      return Promise.all(filteredPromises)
         .finally(afterEachFinally)
         .then(() => {});
     }
