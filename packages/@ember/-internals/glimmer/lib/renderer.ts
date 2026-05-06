@@ -1866,11 +1866,7 @@ function _renderComponentGxt(
     // distinct identities and proceed normally.
     if (currentRunloop !== null && targetState.entries.length > 0) {
       for (const e of targetState.entries) {
-        if (
-          e.component === component &&
-          e.ownerObj === owner &&
-          e.runloop === currentRunloop
-        ) {
+        if (e.component === component && e.ownerObj === owner && e.runloop === currentRunloop) {
           // Skip the rest of the render path; we haven't mutated any
           // global state yet at this point in the function.
           return e.result;
@@ -1949,7 +1945,10 @@ function _renderComponentGxt(
     domCleanupDone = true;
     if (entry.firstNode || entry.lastNode) {
       clearRegion();
-    } else if (targetElement instanceof Element && (!targetState || targetState.entries.length <= 1)) {
+    } else if (
+      targetElement instanceof Element &&
+      (!targetState || targetState.entries.length <= 1)
+    ) {
       // Fallback for non-Element targets (Cursor) or empty entries on a
       // last-entry teardown: ensure the target is fully cleaned. We avoid
       // clobbering sibling entries by gating on entries.length.
