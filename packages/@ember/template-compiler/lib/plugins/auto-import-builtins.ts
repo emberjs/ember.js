@@ -60,7 +60,7 @@ function rewriteKeyword(
 ) {
   if (env.meta?.jsutils) {
     node.original = env.meta.jsutils.bindImport(moduleSpecifier, name, node, {
-      name,
+      nameHint: `__keyword__${name}`,
     });
   } else if (env.meta?.emberRuntime) {
     node.original = env.meta.emberRuntime.lookupKeyword(name);
