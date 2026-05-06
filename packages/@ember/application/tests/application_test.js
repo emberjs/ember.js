@@ -141,7 +141,6 @@ moduleFor(
       // DEBUGGING
       verifyRegistration(assert, application, 'resolver-for-debugging:main');
       verifyRegistration(assert, application, 'container-debug-adapter:main');
-      verifyRegistration(assert, application, 'component-lookup:main');
 
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');

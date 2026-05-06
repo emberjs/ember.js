@@ -13,7 +13,6 @@ import { set } from '@ember/-internals/metal/lib/property_set';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
-import ComponentLookup from '@ember/-internals/views/lib/component_lookup';
 import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 
@@ -520,8 +519,6 @@ function commonSetupRegistry(registry: Registry) {
   });
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
-
-  registry.register('component-lookup:main', ComponentLookup);
 }
 
 export default Engine;
