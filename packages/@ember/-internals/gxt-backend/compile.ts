@@ -3018,47 +3018,14 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 
 // GXT external schedule hook: GXT's cell.update() calls scheduleRevalidate()
 // which now checks globalThis.__gxtExternalSchedule before using queueMicrotask.
-// During runTask the test runner does its own explicit sync at the end —
-// auto-scheduling here would double-sync. Between tests the transition flag
-// gates DOM mutations. Outside both, however, a property change has no
-// natural flush trigger besides the 16ms interval fallback, which has a
-// per-test budget that can be exhausted in cumulative-state runs (894
-// modules in one browser context). Without a flush, async-driven updates
-// like the `tracked properties rerender when updated outside of a runloop`
-// test (setTimeout → @tracked.set → expect DOM update before 200ms) hang
-// because the interval never fires within the test's deadline.
-//
-// Fix: when neither the runTask owner nor a test transition is active,
-// queue a microtask that calls __gxtSyncDomNow. The microtask preserves the
-// "no double-sync inside runTask" invariant because __gxtRunTaskActive will
-// still be true by the time the microtask runs (microtasks fire before the
-// runTask's own post-task sync in run.ts, but __gxtSyncDomNow's re-entrancy
-// guard short-circuits if __gxtSyncing is set, and runTask's explicit sync
-// will set/unset that anyway). The microtask itself rechecks the guards in
-// case another path already flushed.
+// We set it to a no-op so GXT doesn't auto-schedule DOM sync — instead we
+// control when gxtSyncDom() is called (after runTask, or via setTimeout fallback).
 (globalThis as any).__gxtPendingSync = false;
 (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
 (globalThis as any).__gxtExternalSchedule = function () {
   (globalThis as any).__gxtPendingSync = true;
   // Note: this is from cell/effect scheduling, NOT from a property change.
   // __gxtPendingSyncFromPropertyChange is set separately by _notifyPropertiesChanged.
-  const g = globalThis as any;
-  if (g.__gxtRunTaskActive || g.__gxtTestTransition) return;
-  queueMicrotask(() => {
-    // Re-check guards: another path (interval, explicit syncDomNow, runTask)
-    // may have already drained the pending flag.
-    if (!g.__gxtPendingSync || g.__gxtSyncing || g.__gxtRunTaskActive || g.__gxtTestTransition) {
-      return;
-    }
-    const syncNow = g.__gxtSyncDomNow;
-    if (typeof syncNow === 'function') {
-      try {
-        syncNow();
-      } catch {
-        /* errors captured by QUnit / __captureRenderError */
-      }
-    }
-  });
 };
 
 // Reverse mapping: array/object -> Set<{ obj, key }> for dirty propagation.
