@@ -342,18 +342,23 @@ function ensureLifecycleErrorCapture(): void {
     }
   };
 
-  // Patch the lifecycle-hook dispatcher. CoreView.init swaps `this.trigger`
-  // for `this._trigger`, so the prototype method below is the one actually
-  // invoked from manager.ts's `triggerLifecycleHook` path.
+  // Lifecycle-hook dispatcher (`Component.prototype._trigger`): originally
+  // wrapped with `catch(e) { captureErr(e); throw e; }` to route lifecycle
+  // errors into the _renderErrors queue. That pattern double-fires errors
+  // that ALSO escape via the synchronous throw — the same Error instance
+  // ends up both unwound to the immediate caller (caught by assert.throws,
+  // for instance) AND queued in _renderErrors, so the next runTask's
+  // flushRenderErrors re-throws the stale copy ("Died on test #N: <msg>").
+  // Inline `captureRenderError(e)` calls at the actual swallow points in
+  // gxt-backend/manager.ts (e.g. lines 4253, 4271, 7480) handle the
+  // would-be-silently-swallowed cases. The wrapper here is now a no-op
+  // identity wrap (kept so that any code that depends on .__gxtCaptureWrapped
+  // continues to compile, and so the ensureLifecycleErrorCapture machinery
+  // can be re-targeted for a different concern later if needed).
   const origTrigger = proto._trigger;
   if (typeof origTrigger === 'function' && !(origTrigger as any).__gxtCaptureWrapped) {
     const wrappedTrigger = function (this: any, name: string, ...args: any[]) {
-      try {
-        return origTrigger.call(this, name, ...args);
-      } catch (e) {
-        captureErr(e);
-        throw e;
-      }
+      return origTrigger.call(this, name, ...args);
     };
     (wrappedTrigger as any).__gxtCaptureWrapped = true;
     proto._trigger = wrappedTrigger;
@@ -370,39 +375,26 @@ function ensureLifecycleErrorCapture(): void {
   // silently drops the error otherwise; capturing it here routes the error
   // into `_renderErrors`, which `flushRenderErrors` (called at the end of
   // `runTask`/`runAppend`) will then re-throw out to the test harness.
+  // Per-instance destroy wrapping: same fix as _trigger above. The previous
+  // `catch(e) { captureErr(e); throw e; }` double-fired thrown destroy errors
+  // (synchronously to caller AND queued in _renderErrors), tripping
+  // flushRenderErrors on the next runTask. The inline captures at the
+  // gxt-backend swallow points (manager.ts:4253, etc.) cover the cases where
+  // a downstream try{}/catch{ignore} would otherwise hide the error. Keep
+  // the init-time hook only as a no-op identity wrapper for forward
+  // compatibility with other instrumentation that may attach here.
   const origInit = proto.init;
   if (typeof origInit === 'function' && !(origInit as any).__gxtCaptureWrapped) {
     const wrappedInit = function (this: any, ...args: any[]) {
-      const result = origInit.apply(this, args);
-      try {
-        const existingDestroy = this.destroy;
-        if (typeof existingDestroy === 'function' && !existingDestroy.__gxtCaptureWrapped) {
-          const wrappedDestroy = function (this: any, ...destroyArgs: any[]) {
-            try {
-              return existingDestroy.apply(this, destroyArgs);
-            } catch (e) {
-              captureErr(e);
-              throw e;
-            }
-          };
-          (wrappedDestroy as any).__gxtCaptureWrapped = true;
-          // Only override if `destroy` is writable. Some classes may have
-          // sealed the property; in that case we silently fall back to the
-          // prototype-level behavior.
-          try {
-            this.destroy = wrappedDestroy;
-          } catch {
-            /* property not writable */
-          }
-        }
-      } catch {
-        /* never block init on our instrumentation */
-      }
-      return result;
+      return origInit.apply(this, args);
     };
     (wrappedInit as any).__gxtCaptureWrapped = true;
     proto.init = wrappedInit;
   }
+  // Avoid an unused-var warning for captureErr now that both wrappers are
+  // identity functions — kept available for any future re-introduction at a
+  // specific swallow-point.
+  void captureErr;
 }
 
 // This wrapper logic prevents us from rerendering in case of a hard failure
