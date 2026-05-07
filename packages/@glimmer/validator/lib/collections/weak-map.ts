@@ -47,7 +47,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
           const hasExisting = target.has(key);
 
           if (hasExisting) {
-            const isUnchanged = equals(target.get(key) as Value, value);
+            const isUnchanged = equals(target.get(key), value);
 
             if (isUnchanged) return proxy;
           }

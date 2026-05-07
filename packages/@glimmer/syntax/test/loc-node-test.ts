@@ -82,7 +82,7 @@ test('blocks', () => {
   locEqual(block, 2, 2, 9, 8, 'outer block');
   locEqual(nestedBlock, 3, 4, 7, 13, 'nested block');
   locEqual(nestedBlockText, 4, 0, 5, 0);
-  locEqual(nestedInverse as AST.Node, 5, 16, 7, 2);
+  locEqual(nestedInverse, 5, 16, 7, 2);
 });
 
 test('mustache', () => {

@@ -91,7 +91,7 @@ function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableM
     };
 
     if (DEBUG) {
-      meta.source = destroyable as object;
+      meta.source = destroyable;
     }
 
     DESTROYABLE_META.set(destroyable, meta);

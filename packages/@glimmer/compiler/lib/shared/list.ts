@@ -20,7 +20,7 @@ export class PresentList<T> implements OptionalList<T> {
 
   map<U>(callback: (input: T) => U): MapList<T, U, PresentList<T>> {
     let result = mapPresentArray(this.list, callback);
-    return new PresentList(result) as MapList<T, U, this>;
+    return new PresentList(result);
   }
 
   filter<S extends T>(predicate: (value: T) => value is S): AnyOptionalList<S> {
@@ -48,7 +48,7 @@ export class EmptyList<T> implements OptionalList<T> {
   readonly list: T[] = [];
 
   map<U>(_callback: (input: T) => U): MapList<T, U, EmptyList<T>> {
-    return new EmptyList() as MapList<T, U, this>;
+    return new EmptyList();
   }
 
   filter<S extends T>(_predicate: (value: T) => value is S): AnyOptionalList<S> {

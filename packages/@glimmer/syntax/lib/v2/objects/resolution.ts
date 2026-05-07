@@ -168,6 +168,6 @@ export function loadResolution(resolution: SerializedResolution): FreeVarResolut
   } else if (resolution === 'ComponentOrHelper') {
     return LooseModeResolution.append();
   } else {
-    return LooseModeResolution.namespaced(resolution as FreeVarNamespace);
+    return LooseModeResolution.namespaced(resolution);
   }
 }

@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import type { Dict, Nullable } from '@glimmer/interfaces';
+import type { Nullable } from '@glimmer/interfaces';
 import { getPath, toIterator } from '@glimmer/global-context';
 import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 import { isIndexable } from '@glimmer/util/lib/collections';
@@ -58,7 +58,7 @@ function keyForPath(path: string): KeyFor {
     if (item === null || item === undefined) {
       return item;
     }
-    return getPath(item as object, path);
+    return getPath(item, path);
   });
 }
 
@@ -258,7 +258,7 @@ class ArrayIterator implements OpaqueIterator {
 
     let { keyFor } = this;
 
-    let key = keyFor(value as Dict, this.pos);
+    let key = keyFor(value, this.pos);
     let memo = this.pos;
 
     return { key, value, memo };

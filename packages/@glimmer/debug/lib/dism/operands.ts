@@ -34,7 +34,7 @@ class Disassembler<in out Added extends OperandType> {
   static build(
     builder: (disassembler: Disassembler<never>) => Disassembler<AllOperands>
   ): Record<OperandType, OperandDisassembler> {
-    return builder(new Disassembler()).#disms as Record<OperandType, OperandDisassembler>;
+    return builder(new Disassembler()).#disms;
   }
 
   readonly #disms: Record<string, OperandDisassembler>;
