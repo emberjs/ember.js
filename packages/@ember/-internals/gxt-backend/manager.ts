@@ -99,7 +99,59 @@ import * as __lifeartGxtNamespace from '@lifeart/gxt';
 import {
   destroy as _destroyDestroyable,
   registerDestructor as _registerDestructor,
+  isDestroying as _isDestroying,
 } from './destroyable';
+
+// Diagnostic counter for in-flight gxt effects. Tooling (test runner /
+// browser console) reads `globalThis.__gxtActiveEffectCount` to detect
+// effect leaks across test boundaries — when a component is destroyed,
+// the count must net back down. Production builds compile this away
+// trivially since the counter is only read by diagnostics.
+(globalThis as any).__gxtActiveEffectCount = 0;
+
+/**
+ * Wrap a `_gxtEffect(cb)` call so that:
+ *   1. The active-effect counter is bumped on install and dropped on cleanup.
+ *   2. The effect's cleanup runs when `owner` is destroyed (via Ember's
+ *      destroyable plumbing in ./destroyable). This ties the effect's
+ *      lifetime to the owning component instance, render-context, or
+ *      element, preventing per-test formula leaks that previously caused
+ *      the cumulative-state cascade described in PR #21340.
+ *
+ * `owner` may be undefined / non-destroyable (e.g. a freshly-created HTML
+ * element) — in that case we still bump the counter but the cleanup is
+ * unreachable from the destroyable graph. Callers should pick the closest
+ * destroyable in scope (component instance / render context).
+ */
+function _gxtEffectWithOwner(owner: object | null | undefined, cb: () => void): () => void {
+  const cleanup = _gxtEffect(cb);
+  (globalThis as any).__gxtActiveEffectCount++;
+  let cleaned = false;
+  const wrapped = () => {
+    if (cleaned) return;
+    cleaned = true;
+    (globalThis as any).__gxtActiveEffectCount--;
+    try {
+      if (typeof cleanup === 'function') cleanup();
+    } catch {
+      /* swallow — destruction must continue */
+    }
+  };
+  if (owner && typeof owner === 'object') {
+    try {
+      if (!_isDestroying(owner)) {
+        _registerDestructor(owner, wrapped);
+      } else {
+        // Owner is already tearing down — run cleanup immediately so we
+        // don't leak the formula.
+        wrapped();
+      }
+    } catch {
+      /* registration may fail for non-destroyable hosts; counter still works */
+    }
+  }
+  return wrapped;
+}
 
 // Expose destroy helpers so compile.ts can flush pending modifier destroys
 // synchronously at the end of a sync cycle.
@@ -1590,7 +1642,7 @@ function createComponentInstance(
       let lastEffectValue: any = undefined;
       let effectPrimed = false;
       try {
-        _gxtEffect(() => {
+        _gxtEffectWithOwner(instance, () => {
           let v: any;
           try {
             v = getter();
@@ -2366,7 +2418,7 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
           try {
             let lastEffectValue2: any = undefined;
             let effectPrimed2 = false;
-            _gxtEffect(() => {
+            _gxtEffectWithOwner(instance, () => {
               let v: any;
               try {
                 v = getter();
@@ -5624,7 +5676,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               // that don't route through the instance's setter.
               let lastEffectValue4: any = undefined;
               let effectPrimed4 = false;
-              _gxtEffect(() => {
+              _gxtEffectWithOwner(instance || renderContext, () => {
                 let v: any;
                 try {
                   v = cell.value;
@@ -5745,7 +5797,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             try {
               let lastEffectValue3: any = undefined;
               let effectPrimed3 = false;
-              _gxtEffect(() => {
+              _gxtEffectWithOwner(instance || renderContext, () => {
                 let v: any;
                 try {
                   v = cell.value;
@@ -9464,7 +9516,10 @@ function renderCustomElement(tagName: string, args: any, fw: any, ctx: any): () 
           if (typeof handler === 'function') {
             if (eventName === '0') {
               // ON_CREATED: modifier forwarding
-              _gxtEffect(() => (handler as any)(el));
+              // No component instance owner here (renderCustomElement is for
+              // unknown HTML tag names); use the element itself as owner so the
+              // effect cleanup is at least registered in the destroyable graph.
+              _gxtEffectWithOwner(el, () => (handler as any)(el));
             } else {
               el.addEventListener(eventName, handler);
             }
@@ -9739,7 +9794,7 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
             // ON_CREATED event type: this is a modifier, not a regular event listener.
             // Use GXT's effect() to wrap the modifier invocation so dependencies are
             // tracked and the modifier re-runs reactively (matching GXT's $ev behavior).
-            _gxtEffect(() => (handler as any)(el));
+            _gxtEffectWithOwner(instance || el, () => (handler as any)(el));
           } else {
             el.addEventListener(eventName, handler);
           }
@@ -10448,7 +10503,7 @@ function handleManagedComponent(
           if (typeof handler === 'function') {
             if (eventName === '0') {
               // ON_CREATED: modifier forwarding
-              _gxtEffect(() => (handler as any)(el));
+              _gxtEffectWithOwner(instance || el, () => (handler as any)(el));
             } else {
               el.addEventListener(eventName, handler);
             }
@@ -10876,7 +10931,7 @@ function renderClassicComponent(
         if (typeof handler === 'function') {
           if (eventName === '0') {
             // ON_CREATED: modifier forwarding
-            _gxtEffect(() => (handler as any)(wrapper));
+            _gxtEffectWithOwner(instance || wrapper, () => (handler as any)(wrapper));
           } else {
             wrapper.addEventListener(eventName, handler);
           }
