@@ -196,7 +196,6 @@
       "@ember/-internals/views/index.js": "ember-source/@ember/-internals/views/index.js",
       "@ember/-internals/views/lib/compat/attrs.js": "ember-source/@ember/-internals/views/lib/compat/attrs.js",
       "@ember/-internals/views/lib/compat/fallback-view-registry.js": "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
-      "@ember/-internals/views/lib/component_lookup.js": "ember-source/@ember/-internals/views/lib/component_lookup.js",
       "@ember/-internals/views/lib/mixins/action_support.js": "ember-source/@ember/-internals/views/lib/mixins/action_support.js",
       "@ember/-internals/views/lib/system/event_dispatcher.js": "ember-source/@ember/-internals/views/lib/system/event_dispatcher.js",
       "@ember/-internals/views/lib/system/utils.js": "ember-source/@ember/-internals/views/lib/system/utils.js",
