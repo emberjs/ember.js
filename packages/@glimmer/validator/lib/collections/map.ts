@@ -50,7 +50,9 @@ export function trackedMap<Key = any, Value = any>(
           const hasExisting = target.has(key);
 
           if (hasExisting) {
-            const isUnchanged = equals(target.get(key) as Value, value);
+            // TS doesn't know about the relationship between has and get
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const isUnchanged = equals(target.get(key)!, value);
 
             if (isUnchanged) return proxy;
           }
