@@ -56,6 +56,7 @@ export function StdAppend(
 
       if (typeof nonDynamicAppend === 'number') {
         when(ContentType.Component, () => {
+          op(VM_ASSERT_SAME_OP);
           op(VM_RESOLVE_CURRIED_COMPONENT_OP);
           op(VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP);
           InvokeBareComponent(op);

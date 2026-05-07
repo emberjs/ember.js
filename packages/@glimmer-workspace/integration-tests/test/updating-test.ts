@@ -7,6 +7,7 @@ import { createComputeRef, createConstRef, createPrimitiveRef } from '@glimmer/r
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import {
   assertNodeTagName,
+  defineComponent,
   getElementByClassName,
   getElementsByTagName,
   GlimmerishComponent,
@@ -15,6 +16,7 @@ import {
   stripTight,
   test,
   tracked,
+  trackedObj,
   trimLines,
 } from '@glimmer-workspace/integration-tests';
 
@@ -794,94 +796,73 @@ class UpdatingTest extends RenderTest {
 
   @test
   'if keyword in append position with arg as condition [GH emberjs/ember.js#21042]'() {
-    this.registerComponent('TemplateOnly', 'Foo', '{{if @condition "truthy"}}');
-    this.render('<Foo @condition={{this.condition}} />', {
-      condition: true,
-    });
+    const Ok = defineComponent({}, 'ok');
+    const Ko = defineComponent({}, 'ko');
+    const Flipper = defineComponent({ Ok, Ko }, '{{if @isOk Ok Ko}}');
 
-    this.assertHTML('truthy', 'Initial render');
+    let args = trackedObj({ isOk: true });
 
-    this.rerender({ condition: false });
-    this.assertHTML('', 'If the condition is false nothing renders');
+    this.renderComponent(Flipper, args);
+    this.assertHTML('ok', 'Initial render');
 
-    this.rerender({ condition: true });
-    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
-  }
+    args['isOk'] = false;
+    this.rerender();
+    this.assertHTML('ko', 'If the condition is false, the falsy component renders');
 
-  @test
-  'if keyword in append position with arg as condition with falsy [GH emberjs/ember.js#21042]'() {
-    this.registerComponent('TemplateOnly', 'Foo', '{{if @condition "truthy" "falsy"}}');
-    this.render('<Foo @condition={{this.condition}} />', {
-      condition: true,
-    });
-
-    this.assertHTML('truthy', 'Initial render');
-
-    this.rerender({ condition: false });
-    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
-
-    this.rerender({ condition: true });
-    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+    args['isOk'] = true;
+    this.rerender();
+    this.assertHTML('ok', 'If the condition is true, the truthy component renders');
   }
 
   @test
   'unless keyword in append position with arg as condition [GH emberjs/ember.js#21042]'() {
-    this.registerComponent('TemplateOnly', 'Foo', '{{unless @condition "falsy"}}');
-    this.render('<Foo @condition={{this.condition}} />', {
-      condition: false,
-    });
+    const Ok = defineComponent({}, 'ok');
+    const Ko = defineComponent({}, 'ko');
+    const Flipper = defineComponent({ Ok, Ko }, '{{unless @isOk Ko Ok}}');
 
-    this.assertHTML('falsy', 'Initial render');
+    let args = trackedObj({ isOk: false });
 
-    this.rerender({ condition: true });
-    this.assertHTML('', 'If the condition is true nothing renders');
+    this.renderComponent(Flipper, args);
+    this.assertHTML('ko', 'Initial render');
 
-    this.rerender({ condition: false });
-    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
-  }
+    args['isOk'] = true;
+    this.rerender();
+    this.assertHTML('ok', 'If the condition is true, the truthy component renders');
 
-  @test
-  'unless keyword in append position with arg as condition with truthy [GH emberjs/ember.js#21042]'() {
-    this.registerComponent('TemplateOnly', 'Foo', '{{unless @condition "falsy" "truthy"}}');
-    this.render('<Foo @condition={{this.condition}} />', {
-      condition: false,
-    });
-
-    this.assertHTML('falsy', 'Initial render');
-
-    this.rerender({ condition: true });
-    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
-
-    this.rerender({ condition: false });
-    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+    args['isOk'] = false;
+    this.rerender();
+    this.assertHTML('ko', 'If the condition is false, the falsy component renders');
   }
 
   @test
   'if keyword in append position with @tracked arg as condition [GH emberjs/ember.js#21042]'() {
-    let parentInstance!: ParentComponent;
+    const Ok = defineComponent({}, 'ok');
+    const Ko = defineComponent({}, 'ko');
+    const Flipper = defineComponent({ Ok, Ko }, '{{if @isOk Ok Ko}}');
 
-    class ParentComponent extends GlimmerishComponent {
-      @tracked condition = true;
+    let instance!: { isOk: boolean };
 
-      constructor(owner: object, args: Record<string, unknown>) {
-        super(owner, args);
-        parentInstance = this;
-      }
-    }
+    const Demo = defineComponent({ Flipper }, '<Flipper @isOk={{this.isOk}} />', {
+      definition: class extends GlimmerishComponent {
+        @tracked isOk = true;
 
-    this.registerComponent('TemplateOnly', 'Foo', '{{if @condition "truthy" "falsy"}}');
-    this.registerComponent('Glimmer', 'Parent', '<Foo @condition={{this.condition}} />', ParentComponent);
-    this.render('<Parent />');
+        constructor(owner: object, args: Record<string, unknown>) {
+          super(owner, args);
+          instance = this;
+        }
+      },
+    });
 
-    this.assertHTML('truthy', 'Initial render');
+    this.renderComponent(Demo);
+    this.assertHTML('ok', 'Initial render');
 
-    parentInstance.condition = false;
+    instance.isOk = false;
     this.rerender();
-    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+    this.assertHTML('ko', 'If the condition is false, the falsy component renders');
 
-    parentInstance.condition = true;
+    instance.isOk = true;
     this.rerender();
-    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+    this.assertHTML('ok', 'If the condition is true, the truthy component renders');
   }
 
   @test
