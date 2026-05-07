@@ -90,6 +90,21 @@ QUnit.moduleDone(
 
 QUnit.testStart(() => {
   resetTracking();
+  // Defensive: clear any stale render errors leaked from a prior test. The
+  // gxt-backend's `_renderErrors` queue is process-global. Most paths flush
+  // or clear it (runAppend / runTask catches, flushRenderErrors), but a few
+  // silent-capture sites (e.g. flushAfterInsertQueue, __gxtDestroyUnclaimed-
+  // PoolEntries Phase 3, cumulative destroy-time captures) can enqueue an
+  // error AFTER the test that produced it has already escaped its
+  // synchronous throw via assert.throws. Without this guard, the next test
+  // sees its first runTask/flushRenderErrors re-throw the stale error,
+  // causing a "Died on test #N" cumulative-state failure that does not
+  // reproduce in module isolation. Tests like
+  // `Errors thrown during render: it can recover resets the transaction
+  // when an error is thrown during initial render` are the canonical
+  // victims of this leak.
+  const clearRenderErrs = (globalThis as any).__gxtClearRenderErrors;
+  if (typeof clearRenderErrs === 'function') clearRenderErrs();
 });
 
 const uiFlags = [
