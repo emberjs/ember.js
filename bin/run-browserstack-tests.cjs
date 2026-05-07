@@ -20,7 +20,7 @@ async function run(command, args = []) {
       await run('testem', [
         'ci',
         '-f',
-        'testem.browserstack.js',
+        'testem.browserstack.cjs',
         '--host',
         '127.0.0.1',
         '--port',

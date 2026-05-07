@@ -12,8 +12,8 @@ const require = createRequire(import.meta.url);
 const { PackageCache, packageName } = require('@embroider/shared-internals');
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
-const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin');
-const canaryFeatures = require('./broccoli/canary-features');
+const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs');
+const canaryFeatures = require('./broccoli/canary-features.cjs');
 
 const testDependencies = [
   'qunit',
@@ -104,6 +104,7 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
       format: 'es',
       dir: outputDir,
       hoistTransitiveImports: false,
+      preserveModules: true,
       generatedCode: 'es2015',
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
@@ -252,7 +253,6 @@ function rolledUpPackages() {
 export function exposedDependencies() {
   return {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
-    rsvp: require.resolve('rsvp/lib/rsvp.js'),
     'dag-map': require.resolve('dag-map/dag-map.js'),
     router_js: require.resolve('router_js'),
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
@@ -412,6 +412,10 @@ export function resolvePackages(deps, params) {
           return { external: true, id: pkgName };
         }
 
+        if (pkgName === 'rsvp') {
+          return { external: true, id: pkgName };
+        }
+
         if (isExternal?.(source)) {
           return { external: true, id: source };
         }
@@ -536,9 +540,6 @@ function packageMeta() {
 }
 
 const allowedCycles = [
-  // external and not causing problems
-  'node_modules/rsvp/lib/rsvp',
-
   // TODO: these would be good to fix once they're in this repo
   'packages/@glimmer/debug',
   'packages/@glimmer/runtime',

@@ -9,7 +9,7 @@ QUnit.module('Docs coverage', function (hooks) {
       buildDocs();
     }
     docs = require(path.join(__dirname, '../../docs/data.json'));
-    expected = require('./expected');
+    expected = require('./expected.cjs');
   });
 
   QUnit.module('classitems', function (hooks) {
