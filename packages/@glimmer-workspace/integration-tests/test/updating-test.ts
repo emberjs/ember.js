@@ -793,6 +793,98 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
+  'if keyword in append position with arg as condition [GH emberjs/ember.js#21042]'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{if @condition "truthy"}}');
+    this.render('<Foo @condition={{this.condition}} />', {
+      condition: true,
+    });
+
+    this.assertHTML('truthy', 'Initial render');
+
+    this.rerender({ condition: false });
+    this.assertHTML('', 'If the condition is false nothing renders');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+  }
+
+  @test
+  'if keyword in append position with arg as condition with falsy [GH emberjs/ember.js#21042]'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{if @condition "truthy" "falsy"}}');
+    this.render('<Foo @condition={{this.condition}} />', {
+      condition: true,
+    });
+
+    this.assertHTML('truthy', 'Initial render');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+  }
+
+  @test
+  'unless keyword in append position with arg as condition [GH emberjs/ember.js#21042]'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{unless @condition "falsy"}}');
+    this.render('<Foo @condition={{this.condition}} />', {
+      condition: false,
+    });
+
+    this.assertHTML('falsy', 'Initial render');
+
+    this.rerender({ condition: true });
+    this.assertHTML('', 'If the condition is true nothing renders');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+  }
+
+  @test
+  'unless keyword in append position with arg as condition with truthy [GH emberjs/ember.js#21042]'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{unless @condition "falsy" "truthy"}}');
+    this.render('<Foo @condition={{this.condition}} />', {
+      condition: false,
+    });
+
+    this.assertHTML('falsy', 'Initial render');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+  }
+
+  @test
+  'if keyword in append position with @tracked arg as condition [GH emberjs/ember.js#21042]'() {
+    let parentInstance!: ParentComponent;
+
+    class ParentComponent extends GlimmerishComponent {
+      @tracked condition = true;
+
+      constructor(owner: object, args: Record<string, unknown>) {
+        super(owner, args);
+        parentInstance = this;
+      }
+    }
+
+    this.registerComponent('TemplateOnly', 'Foo', '{{if @condition "truthy" "falsy"}}');
+    this.registerComponent('Glimmer', 'Parent', '<Foo @condition={{this.condition}} />', ParentComponent);
+    this.render('<Parent />');
+
+    this.assertHTML('truthy', 'Initial render');
+
+    parentInstance.condition = false;
+    this.rerender();
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+
+    parentInstance.condition = true;
+    this.rerender();
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+  }
+
+  @test
   'unless keyword in call position'() {
     this.registerComponent('TemplateOnly', 'Foo', '{{@value}}');
     this.render('<Foo @value={{unless this.condition "falsy"}}/>', {
