@@ -86,7 +86,7 @@ APPEND_OPCODES.add(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
   if (isHandle(primitive)) {
     // it is a handle which does not already exist on the stack
     let value = vm.constants.getValue(decodeHandle(primitive));
-    stack.push(value as object);
+    stack.push(value);
   } else {
     // is already an encoded immediate or primitive handle
     stack.push(decodeImmediate(primitive));

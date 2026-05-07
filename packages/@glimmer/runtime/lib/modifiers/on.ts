@@ -176,7 +176,7 @@ export class OnModifierState {
     // https://bugs.chromium.org/p/chromium/issues/detail?id=770208
     if (shouldUpdate) {
       if (once !== undefined || passive !== undefined || capture !== undefined) {
-        options = { once, passive, capture } as AddEventListenerOptions;
+        options = { once, passive, capture };
       }
     }
 

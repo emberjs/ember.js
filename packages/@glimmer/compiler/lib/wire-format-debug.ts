@@ -172,7 +172,7 @@ export default class WireFormatDebugger {
           ];
 
         case Op.Concat:
-          return ['concat', this.formatParams(opcode[1] as WireFormat.Core.Params)];
+          return ['concat', this.formatParams(opcode[1])];
 
         case Op.GetStrictKeyword:
           return ['get-strict-free', this.upvars[opcode[1]]];

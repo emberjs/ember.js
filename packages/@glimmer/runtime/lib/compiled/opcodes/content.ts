@@ -34,12 +34,9 @@ import { AssertFilter } from './vm';
 function toContentType(value: unknown) {
   if (shouldCoerce(value)) {
     return ContentType.String;
-  } else if (
-    isCurriedType(value, CURRIED_COMPONENT) ||
-    hasInternalComponentManager(value as object)
-  ) {
+  } else if (isCurriedType(value, CURRIED_COMPONENT) || hasInternalComponentManager(value)) {
     return ContentType.Component;
-  } else if (isCurriedType(value, CURRIED_HELPER) || hasInternalHelperManager(value as object)) {
+  } else if (isCurriedType(value, CURRIED_HELPER) || hasInternalHelperManager(value)) {
     return ContentType.Helper;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;

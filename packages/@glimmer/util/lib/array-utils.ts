@@ -1,4 +1,4 @@
-export const EMPTY_ARRAY: readonly unknown[] = Object.freeze([]) as readonly unknown[];
+export const EMPTY_ARRAY: readonly unknown[] = Object.freeze([]);
 
 export function emptyArray<T>(): T[] {
   return EMPTY_ARRAY as T[];
