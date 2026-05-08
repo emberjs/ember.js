@@ -470,42 +470,46 @@ export class ComputedProperty extends ComputedDescriptor {
           return undefined;
         }
       }
-      // GXT integration: while a CP.set is mid-flight, any re-entrant read
-      // (e.g. from a GXT formula re-evaluation triggered by dirtyTagFor) must
-      // return the setter's freshly-stored value rather than re-running the
-      // user getter. Without this, a CP with side effects in its getter (e.g.
-      // `this.callCount++`) would see an extra invocation every time a set
-      // causes a dirtyTagFor → formula re-eval pipeline.
-      if (_inCPSetFor(obj, keyName)) {
-        let stored = meta.valueFor(keyName);
-        consumeTag(propertyTag);
-        return stored;
-      }
-      // GXT integration: if we're re-entering CP.get from inside a
-      // dirtyTagFor invalidation cascade (a GXT formula tied to this CP's
-      // cell was torn and is re-evaluating synchronously), preserve classic
-      // Ember's invariant that "dirtying a tag does not itself evaluate the
-      // CP". Return the last cached value (or `undefined` for a cold cache)
-      // without invoking `_getter`. The next lazy caller — whether a
-      // template re-render, a `get()` in user code, or a finalized
-      // runloop observer flush — will recompute through this same path
-      // once the cascade has settled.
-      {
+      // GXT integration: classic mode never installs cells/formulas, so
+      // `_cpSetInFlight`, `__gxtCPInvalidationSet`, and `__gxtInTriggerReRender`
+      // are always empty/undefined and the three short-circuits below would
+      // never fire. Skip the lookups entirely when not in GXT mode — these
+      // run on every CP get cache miss, including the 2998-row teardown
+      // notify cascade.
+      if ((globalThis as any).__GXT_MODE__) {
+        // While a CP.set is mid-flight, any re-entrant read (e.g. from a
+        // GXT formula re-evaluation triggered by dirtyTagFor) must return
+        // the setter's freshly-stored value rather than re-running the user
+        // getter. Without this, a CP with side effects in its getter (e.g.
+        // `this.callCount++`) would see an extra invocation every time a
+        // set causes a dirtyTagFor → formula re-eval pipeline.
+        if (_inCPSetFor(obj, keyName)) {
+          let stored = meta.valueFor(keyName);
+          consumeTag(propertyTag);
+          return stored;
+        }
+        // If we're re-entering CP.get from inside a dirtyTagFor invalidation
+        // cascade (a GXT formula tied to this CP's cell was torn and is
+        // re-evaluating synchronously), preserve classic Ember's invariant
+        // that "dirtying a tag does not itself evaluate the CP". Return the
+        // last cached value (or `undefined` for a cold cache) without
+        // invoking `_getter`. The next lazy caller — whether a template
+        // re-render, a `get()` in user code, or a finalized runloop observer
+        // flush — will recompute through this same path once the cascade
+        // has settled.
         const g: any = globalThis as any;
         // Narrow the re-entrance guard to the exact (obj, keyName) that is
         // currently being invalidated. Re-entrant reads of OTHER CPs during
         // the cascade (e.g. a template re-render reading an unrelated CP)
         // must still be allowed to recompute normally.
         const inv: WeakMap<object, Set<string>> | undefined = g.__gxtCPInvalidationSet;
-        let invalidatingThisKey = false;
         if (inv) {
           const perObj = inv.get(obj);
-          if (perObj && perObj.has(keyName)) invalidatingThisKey = true;
-        }
-        if (invalidatingThisKey) {
-          let stored = meta.valueFor(keyName);
-          consumeTag(propertyTag);
-          return stored;
+          if (perObj && perObj.has(keyName)) {
+            let stored = meta.valueFor(keyName);
+            consumeTag(propertyTag);
+            return stored;
+          }
         }
         // Classic Ember semantics: a CP that has never been consumed (no
         // cached revision) should not be lazily evaluated during a change
@@ -653,11 +657,14 @@ export class ComputedProperty extends ComputedDescriptor {
     // result instead of re-running the user getter. Without this guard, a
     // CP whose getter has observable side effects (`this.callCount++`) would
     // see an extra invocation on every set, corrupting user assertions.
-    _beginCPSet(obj, keyName);
+    // Classic mode never re-enters via this path — gate to skip per-call
+    // WeakMap+Set churn on the notify cascade.
+    const _inGxt = (globalThis as any).__GXT_MODE__;
+    if (_inGxt) _beginCPSet(obj, keyName);
     try {
       notifyPropertyChange(obj, keyName, meta, value);
     } finally {
-      _endCPSet(obj, keyName);
+      if (_inGxt) _endCPSet(obj, keyName);
     }
 
     return ret;

@@ -2817,167 +2817,17 @@ export class Renderer extends BaseRenderer {
       );
     }
 
-    // NOTE: _tryGxtRender is disabled because the GXT runtime compiler generates
-    // code that expects $slots, $fw, and block params in scope, but Ember's
-    // rendering integration can't easily inject these. Let ClassicRootState
-    // handle rendering which has more complete template resolution.
-
-    // Fall back to Glimmer VM rendering (which has GXT handling in ClassicRootState)
+    // Direct GXT rendering for ClassicComponents was tried (the disabled
+    // `_tryGxtRender` triplet) but couldn't inject $slots/$fw/block params
+    // through Ember's component integration. ClassicRootState handles GXT
+    // templates in __GXT_MODE__ via templateIsGxt, so this path always falls
+    // through to Glimmer VM regardless of mode.
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(
       view,
       curry(0 as CurriedComponent, definition, this.state.owner, null, true),
       target
     );
-  }
-
-  /**
-   * Try to render using GXT directly. Returns true if successful, false to fall back to Glimmer.
-   */
-  private _tryGxtRender(view: ClassicComponent, target: Element): boolean {
-    const owner = this.state.owner;
-
-    // Set global owner for manager system
-    (globalThis as any).owner = owner;
-
-    // Get the component's template
-    const template = this._getGxtTemplate(view, owner);
-
-    if (!template) {
-      return false;
-    }
-
-    // Check if it's a GXT template
-    const isGxtTemplate =
-      template.__gxtCompiled === true ||
-      (typeof template.render === 'function' && template.render.__gxtRender === true) ||
-      template.$nodes !== undefined;
-
-    if (!isGxtTemplate) {
-      return false;
-    }
-
-    // Build render context from the component
-    const context = this._buildGxtContext(view, owner);
-
-    // Clear target
-    target.innerHTML = '';
-
-    // Render directly using GXT
-    if (typeof template.render === 'function') {
-      template.render(context, target);
-    } else if (typeof template === 'function') {
-      // Factory function
-      const resolved = template(owner);
-      if (resolved && typeof resolved.render === 'function') {
-        resolved.render(context, target);
-      }
-    }
-
-    // Create a minimal root state for tracking
-    const gxtRootState = {
-      type: 'classic' as const,
-      id: view.elementId || `gxt-root-${Math.random().toString(36).slice(2)}`,
-      destroyed: false,
-      result: {
-        rerender: () => {
-          /* GXT handles reactivity */
-        },
-        destroy: () => {
-          target.innerHTML = '';
-        },
-      },
-      render: () => {
-        /* Already rendered */
-      },
-      isFor: (c: unknown) => c === view,
-      destroy: () => {
-        target.innerHTML = '';
-        gxtRootState.destroyed = true;
-      },
-    };
-
-    // Register as a root
-    this.state.roots.push(gxtRootState as any);
-
-    return true;
-  }
-
-  /**
-   * Get a GXT template for a component
-   */
-  private _getGxtTemplate(view: ClassicComponent, owner: object): any {
-    // Try layout property first
-    if ((view as any).layout) {
-      return (view as any).layout;
-    }
-
-    // Try layoutName lookup
-    const layoutName = (view as any).layoutName;
-    if (layoutName) {
-      const template = (owner as any).lookup?.(`template:${layoutName}`);
-      if (template) return template;
-    }
-
-    // Try getComponentTemplate from manager system
-    const ComponentClass = view.constructor;
-    if (ComponentClass) {
-      // Check globalThis.COMPONENT_TEMPLATES
-      const globalTemplates = (globalThis as any).COMPONENT_TEMPLATES;
-      if (globalTemplates) {
-        const template = globalTemplates.get(ComponentClass) || globalTemplates.get(view);
-        if (template) return template;
-      }
-    }
-
-    // Try component name lookup
-    const componentName = (view as any)._debugContainerKey?.replace('component:', '');
-    if (componentName) {
-      const template = (owner as any).lookup?.(`template:components/${componentName}`);
-      if (template) return template;
-    }
-
-    return null;
-  }
-
-  /**
-   * Build a render context for GXT from a classic component
-   */
-  private _buildGxtContext(view: ClassicComponent, owner: object): Record<string, unknown> {
-    const context: Record<string, unknown> = {};
-
-    // Copy all own properties from the component
-    for (const key of Object.keys(view)) {
-      if (typeof (view as any)[key] !== 'function') {
-        context[key] = (view as any)[key];
-      }
-    }
-
-    // Copy prototype properties that might be accessed via {{this.xxx}}
-    const proto = Object.getPrototypeOf(view);
-    if (proto) {
-      for (const key of Object.getOwnPropertyNames(proto)) {
-        if (key !== 'constructor' && !(key in context)) {
-          const descriptor = Object.getOwnPropertyDescriptor(proto, key);
-          if (descriptor && (descriptor.value !== undefined || descriptor.get)) {
-            try {
-              const value = (view as any)[key];
-              if (typeof value !== 'function') {
-                context[key] = value;
-              }
-            } catch {
-              // Getter might throw
-            }
-          }
-        }
-      }
-    }
-
-    // Standard properties
-    context['args'] = (view as any).args || {};
-    context['owner'] = owner;
-
-    return context;
   }
 
   _appendDefinition(
