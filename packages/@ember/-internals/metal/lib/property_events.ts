@@ -67,13 +67,18 @@ function notifyPropertyChange(
   // the user's getter and mimic classic behavior forbids. The narrow
   // per-(obj, keyName) marker tells `CP.get` to short-circuit to the
   // cached value for this exact key while the cascade is in flight, and
-  // lets unrelated CPs read normally.
-  const g: any = globalThis as any;
-  if (!g.__gxtCPInvalidationSet) g.__gxtCPInvalidationSet = new WeakMap();
-  const perObj: Set<string> = g.__gxtCPInvalidationSet.get(obj) || new Set();
-  if (!g.__gxtCPInvalidationSet.has(obj)) g.__gxtCPInvalidationSet.set(obj, perObj);
-  const wasPresent = perObj.has(keyName);
-  if (!wasPresent) perObj.add(keyName);
+  // lets unrelated CPs read normally. Classic mode neither installs
+  // formulas nor reads this marker, so skip the per-call WeakMap/Set
+  // bookkeeping there — `clearItems4` issues thousands of notifies.
+  let wasPresent = true;
+  if ((globalThis as any).__GXT_MODE__) {
+    const g: any = globalThis as any;
+    if (!g.__gxtCPInvalidationSet) g.__gxtCPInvalidationSet = new WeakMap();
+    const perObj: Set<string> = g.__gxtCPInvalidationSet.get(obj) || new Set();
+    if (!g.__gxtCPInvalidationSet.has(obj)) g.__gxtCPInvalidationSet.set(obj, perObj);
+    wasPresent = perObj.has(keyName);
+    if (!wasPresent) perObj.add(keyName);
+  }
 
   try {
     // GXT integration: Trigger synchronous re-render to keep GXT components updated.

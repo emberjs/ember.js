@@ -1,14 +1,14 @@
 import { getComponentTemplate } from '@glimmer/manager';
-import * as _gxt from '@lifeart/gxt';
-const gxtCreateRoot: any = (_gxt as any).createRoot;
-const gxtSetParentContext: any = (_gxt as any).setParentContext;
-const gxtGetParentContext: any = (_gxt as any).getParentContext;
-const gxtProvideContext: any = (_gxt as any).provideContext;
-const GXT_RENDERING_CONTEXT: any = (_gxt as any).RENDERING_CONTEXT;
-const GXT_RENDERED_NODES: any = (_gxt as any).RENDERED_NODES_PROPERTY;
-const GxtHTMLBrowserDOMApi: any = (_gxt as any).HTMLBrowserDOMApi;
-const gxtRenderComponent: any = (_gxt as any).renderComponent;
-const GxtComponent: any = (_gxt as any).Component;
+// Lazy accessor for @lifeart/gxt symbols. The gxt-backend module (only loaded
+// in __GXT_MODE__) stashes the namespace on globalThis.__lifeartGxt at its
+// own load time. Avoiding a static `import * as _gxt from '@lifeart/gxt'`
+// here keeps the GXT runtime out of the classic bundle (benchmark-app,
+// embroider apps) — classic mode never reaches these call sites since they
+// are only invoked from the factory.render path, which itself is gated on
+// __gxtCompiled-templated rendering.
+function _gxtLib(): any {
+  return (globalThis as any).__lifeartGxt;
+}
 
 // Ensure GXT context is initialized for the document
 // Uses a shared root context on globalThis to avoid multiple roots
@@ -16,19 +16,20 @@ const GxtComponent: any = (_gxt as any).Component;
 let gxtDomApi: any = null;
 
 function ensureGxtContext() {
+  const lib = _gxtLib();
   let gxtRootContext = (globalThis as any).__gxtRootContext;
   if (!gxtRootContext) {
-    gxtRootContext = gxtCreateRoot(document);
+    gxtRootContext = lib.createRoot(document);
     // Create proper DOM API and provide it to the context
     // This sets fastRenderingContext which is checked first by initDOM
-    gxtDomApi = new GxtHTMLBrowserDOMApi(document);
-    gxtProvideContext(gxtRootContext, GXT_RENDERING_CONTEXT, gxtDomApi);
+    gxtDomApi = new lib.HTMLBrowserDOMApi(document);
+    lib.provideContext(gxtRootContext, lib.RENDERING_CONTEXT, gxtDomApi);
     (globalThis as any).__gxtRootContext = gxtRootContext;
   }
   // Always set the context before rendering
-  const currentContext = gxtGetParentContext();
+  const currentContext = lib.getParentContext();
   if (!currentContext) {
-    gxtSetParentContext(gxtRootContext);
+    lib.setParentContext(gxtRootContext);
   }
   return gxtRootContext;
 }
@@ -166,8 +167,9 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
       if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Function is a class, using new');
       try {
         // Check if it's a GXT Component class (has $template symbol or extends GxtComponent)
+        const lib = _gxtLib();
         const isGxtComponent =
-          tpl.prototype instanceof GxtComponent ||
+          (lib && tpl.prototype instanceof lib.Component) ||
           tpl.prototype?.constructor?.name === 'Component' ||
           tpl.prototype?.$template ||
           typeof tpl.prototype?.template === 'function';
@@ -176,12 +178,12 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
           // Use GXT's proper rendering flow for GXT components
           if (DEBUG_TEMPLATE_LOOKUP)
             console.log('[root.ts] Using gxtRenderComponent for GXT component');
-          gxtRenderComponent(tpl, {
+          lib.renderComponent(tpl, {
             element: target,
             args: ctx?.args || {},
             owner: (globalThis as any).__gxtRootContext,
           });
-          return; // gxtRenderComponent handles everything
+          return; // renderComponent handles everything
         }
 
         // Non-GXT class - instantiate manually
@@ -234,7 +236,8 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     // GXT dom helpers). Fall back to scanning every symbol key on `template`
     // for an Array value so we detect the rendered nodes regardless of which
     // module copy produced them.
-    let gxtNodes = template && GXT_RENDERED_NODES ? template[GXT_RENDERED_NODES as any] : null;
+    const _renderedNodesKey = _gxtLib()?.RENDERED_NODES_PROPERTY;
+    let gxtNodes = template && _renderedNodesKey ? template[_renderedNodesKey as any] : null;
     if (!gxtNodes && template && typeof template === 'object') {
       for (const sym of Object.getOwnPropertySymbols(template)) {
         const val = (template as any)[sym];
