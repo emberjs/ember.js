@@ -211,6 +211,76 @@ moduleFor(
       this.assertStableRerender();
     }
 
+    async '@test Can read a `#private` field'() {
+      await this.renderComponentModule(() => {
+        return class extends GlimmerishComponent {
+          static {
+            template('{{this.#greeting}}', {
+              component: this,
+              eval() {
+                return eval(arguments[0]);
+              },
+            });
+          }
+
+          // eslint-disable-next-line no-unused-private-class-members
+          #greeting = 'Hello, world!';
+        };
+      });
+
+      this.assertHTML('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    async '@test Can read multiple `#private` fields and pass them to a helper'() {
+      await this.renderComponentModule(() => {
+        let join = (a: string, b: string) => `${a}, ${b}!`;
+
+        hide(join);
+
+        return class extends GlimmerishComponent {
+          static {
+            template('{{join this.#hello this.#world}}', {
+              component: this,
+              eval() {
+                return eval(arguments[0]);
+              },
+            });
+          }
+
+          // eslint-disable-next-line no-unused-private-class-members
+          #hello = 'Hello';
+          // eslint-disable-next-line no-unused-private-class-members
+          #world = 'world';
+        };
+      });
+
+      this.assertHTML('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    async '@test A `#private` field on a base class is reachable from a subclass template'() {
+      await this.renderComponentModule(() => {
+        class Base extends GlimmerishComponent {
+          // eslint-disable-next-line no-unused-private-class-members
+          #greeting = 'Hello, world!';
+          static {
+            template('{{this.#greeting}}', {
+              component: this,
+              eval() {
+                return eval(arguments[0]);
+              },
+            });
+          }
+        }
+
+        return class Child extends Base {};
+      });
+
+      this.assertHTML('Hello, world!');
+      this.assertStableRerender();
+    }
+
     async '@test Can use a curried dynamic helper'() {
       await this.renderComponentModule(() => {
         let foo = (v: string) => v;

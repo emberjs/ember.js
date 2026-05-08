@@ -45,6 +45,16 @@ export interface EmberPrecompileOptions extends Omit<PrecompileOptions, 'meta'> 
     emberRuntime?: {
       lookupKeyword(name: string): string;
     };
+
+    /**
+     * Mutable bag populated by `collect-private-fields` when the host
+     * (`template()`) wires it up. Each entry is the bare field name (no
+     * leading `#`) referenced via `{{this.#field}}`-style paths anywhere in
+     * the template. The host then constructs a single per-class accessor
+     * function and registers it via `setPrivateFieldReader` so the
+     * runtime path walker can reach the private slot.
+     */
+    privateFields?: Set<string>;
   };
 
   /**

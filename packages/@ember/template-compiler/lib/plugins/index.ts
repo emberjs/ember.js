@@ -2,6 +2,7 @@ import AssertAgainstAttrs from './assert-against-attrs';
 import AssertAgainstNamedOutlets from './assert-against-named-outlets';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
+import CollectPrivateFields from './collect-private-fields';
 import TransformActionSyntax from './transform-action-syntax';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformEachTrackArray from './transform-each-track-array';
@@ -17,6 +18,7 @@ export const INTERNAL_PLUGINS = {
   AssertAgainstNamedOutlets,
   AssertInputHelperWithoutBlock,
   AssertReservedNamedArguments,
+  CollectPrivateFields,
   TransformActionSyntax,
   TransformEachInIntoEach,
   TransformEachTrackArray,
@@ -28,6 +30,7 @@ export const INTERNAL_PLUGINS = {
 
 // order of plugins is important
 export const RESOLUTION_MODE_TRANSFORMS = Object.freeze([
+  CollectPrivateFields,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
   TransformActionSyntax,
@@ -42,6 +45,7 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze([
 ]);
 
 export const STRICT_MODE_TRANSFORMS = Object.freeze([
+  CollectPrivateFields,
   AutoImportBuiltins,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,

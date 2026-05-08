@@ -8,8 +8,11 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, isTracking, tagFor, track } from '@glimmer/validator';
 import { isPath } from './path_cache';
+import { getPrivateFieldReader } from './private_field_reader';
 
 export const PROXY_CONTENT = Symbol('PROXY_CONTENT');
+
+const CHAR_HASH = 0x23; // '#'
 
 export let getPossibleMandatoryProxyValue: (obj: object, keyName: string) => any;
 
@@ -104,6 +107,21 @@ export function _getProp(obj: unknown, keyName: string) {
   let value: unknown;
 
   if (typeof obj === 'object' || typeof obj === 'function') {
+    // `instance['#foo']` doesn't reach a real private slot — private fields
+    // can only be accessed via `obj.#foo` syntax, which is bound at parse
+    // time to the lexically-enclosing class. The class registers a reader
+    // that knows how to walk into its own private slots; we delegate here.
+    if (typeof keyName === 'string' && keyName.charCodeAt(0) === CHAR_HASH) {
+      let reader = getPrivateFieldReader(obj);
+      if (reader !== undefined) {
+        value = reader(obj, keyName.slice(1));
+        if (isTracking()) {
+          consumeTag(tagFor(obj, keyName));
+        }
+        return value;
+      }
+    }
+
     if (DEBUG) {
       value = getPossibleMandatoryProxyValue(obj, keyName);
     } else {

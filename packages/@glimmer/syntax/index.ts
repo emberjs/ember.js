@@ -31,6 +31,7 @@ export { default as WalkerPath } from './lib/traversal/path';
 export { default as traverse } from './lib/traversal/traverse';
 export type { NodeVisitor } from './lib/traversal/visitor';
 export { default as Walker } from './lib/traversal/walker';
+export { isPrivateFieldSegment, privateFieldName } from './lib/utils';
 export type * as ASTv1 from './lib/v1/api';
 export { default as builders } from './lib/v1/public-builders';
 export { default as visitorKeys } from './lib/v1/visitor-keys';
