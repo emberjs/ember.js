@@ -103,6 +103,9 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
     treeshake: {
       moduleSideEffects(id) {
         if (id.includes('packages/@glimmer/debug')) return false;
+        if (id.includes('packages/@glimmer/env')) return false;
+        if (id.includes('packages/@glimmer/local-debug-flags')) return false;
+        if (!debugMacrosMode && id.includes('packages/@ember/debug')) return false;
 
         /**
          * our own side-effects are not for us to decide when to remove
