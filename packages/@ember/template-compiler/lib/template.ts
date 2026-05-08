@@ -1,4 +1,8 @@
 import templateOnly, { type TemplateOnlyComponent } from '@ember/component/template-only';
+import {
+  setPrivateFieldReader,
+  type PrivateFieldReader,
+} from '@ember/-internals/metal';
 import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -76,22 +80,14 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
  *
  * ## The Scope Function's `instance` Parameter
  *
- * However, the explicit `scope` function in a *class* also takes an `instance` option
- * that provides access to the component's instance.
+ * The explicit `scope` function in a *class* also takes an `instance`
+ * parameter that provides access to the component's instance.
  *
- * Once it's supported in Handlebars, this will make it possible to represent private
- * fields when using the explicit form.
- *
- * ```ts
- * class MyComponent extends Component {
- *   static {
- *     template('{{this.#greeting}}, {{@place}}!',
- *       { component: this },
- *       scope: (instance) => ({ '#greeting': instance.#greeting }),
- *     );
- *   }
- * }
- * ```
+ * Note that the explicit form **does not** support `{{this.#field}}`
+ * references — its scope arrow is evaluated outside the class body, so
+ * `instance.#field` won't parse against any private slots. Use the
+ * implicit (`eval`) form when you need to read private fields from a
+ * template.
  */
 export interface ExplicitClassOptions<
   C extends ComponentClass,
@@ -214,12 +210,19 @@ export type ImplicitTemplateOnlyOptions = BaseTemplateOptions & ImplicitEvalOpti
  * }
  * ```
  *
- * ## Note  on Private Fields
+ * ## Note on Private Fields
  *
- * The current implementation of `@ember/template-compiler` does not support
- * private fields, but once the Handlebars parser adds support for private field
- * syntax and it's implemented in the Glimmer compiler, the implicit form should
- * be able to support them.
+ * The implicit form supports `{{this.#field}}` references natively. At
+ * compile time `template()` builds a per-class private-field reader using
+ * the `eval` option (which sits inside the class body and so has lexical
+ * access to the private slots) and registers it via
+ * `setPrivateFieldReader`. At render time, when the property walker hits a
+ * `#`-prefixed segment it routes through that reader instead of doing a
+ * plain string property access.
+ *
+ * The explicit `scope` form does **not** support private fields, because
+ * its scope is evaluated outside the class body — there's no way to
+ * construct an accessor that reaches the private slot.
  */
 export type ImplicitClassOptions<C extends ComponentClass> = BaseClassTemplateOptions<C> &
   ImplicitEvalOption;
@@ -241,6 +244,13 @@ export function template(
 
   const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);
+  // `collect-private-fields` writes each `{{this.#field}}` segment it finds
+  // into this set. After precompile we hand the names to the user's `eval`
+  // to build a single per-class reader; `_getProp` consults it via the
+  // private-field reader registry whenever the path walker hits a `#`-key.
+  const privateFields = new Set<string>();
+  normalizedOptions.meta!.privateFields = privateFields;
+
   const component = normalizedOptions.component ?? templateOnly();
 
   const source = glimmerPrecompile(templateString, normalizedOptions);
@@ -250,7 +260,61 @@ export function template(
 
   setComponentTemplate(template, component);
 
+  if (privateFields.size > 0) {
+    registerPrivateFieldReader(component, privateFields, providedOptions);
+  }
+
   return component;
+}
+
+function registerPrivateFieldReader(
+  component: object,
+  privateFields: ReadonlySet<string>,
+  providedOptions: BaseTemplateOptions | BaseClassTemplateOptions<any> | undefined
+): void {
+  let userEval = (providedOptions as { eval?: (source: string) => unknown } | undefined)?.eval;
+  if (!userEval) {
+    let firstField = privateFields.values().next().value;
+    throw new Error(
+      `Template uses private field access (\`{{this.#${firstField}}}\`) but no \`eval\` option was provided. Private fields can only be reached when the template is compiled with the implicit (\`eval\`) form, since that is the only form whose lexical scope reaches into the class body.`
+    );
+  }
+
+  let reader = buildPrivateFieldReader(privateFields, userEval);
+  setPrivateFieldReader(component, reader);
+}
+
+const PRIVATE_FIELD_NAME = /^[A-Za-z_$][\w$]*$/;
+
+function buildPrivateFieldReader(
+  privateFields: ReadonlySet<string>,
+  userEval: (source: string) => unknown
+): PrivateFieldReader {
+  // We compile a single switch that closes over the class's private slots.
+  // Because `userEval` is invoked from inside the class's static block, the
+  // `#field` syntax inside the function body is resolved at parse time
+  // against the class's private names, and the resulting closure preserves
+  // that access for every instance handed to it later.
+  let cases: string[] = [];
+  for (let field of privateFields) {
+    if (!PRIVATE_FIELD_NAME.test(field)) {
+      throw new Error(
+        `Refusing to compile private-field reader for \`#${field}\` — name is not a valid JS identifier.`
+      );
+    }
+    cases.push(`case ${JSON.stringify(field)}:return __inst.#${field};`);
+  }
+
+  let source = `(function(__inst,__name){switch(__name){${cases.join('')}}})`;
+  let reader = userEval(source);
+
+  if (typeof reader !== 'function') {
+    throw new Error(
+      'Template private-field reader did not compile to a function. The `eval` option must do `return eval(arguments[0])` from inside the class body.'
+    );
+  }
+
+  return reader as PrivateFieldReader;
 }
 
 /**

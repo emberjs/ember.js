@@ -22,6 +22,11 @@ export {
 } from './lib/property_get';
 export { set, _setProp, trySet } from './lib/property_set';
 export {
+  type PrivateFieldReader,
+  setPrivateFieldReader,
+  getPrivateFieldReader,
+} from './lib/private_field_reader';
+export {
   objectAt,
   replace,
   replaceInNativeArray,
