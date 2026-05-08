@@ -89,7 +89,7 @@ import { ConcreteBounds } from '../../bounds';
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { resolveComponent } from '../../component/resolve';
 import { isCurriedType, isCurriedValue, resolveCurriedValue } from '../../curried-value';
-import { getDebugName } from '../../debug-render-tree';
+import { getDebugName } from '../../get-debug-name';
 import { APPEND_OPCODES } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import { EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';

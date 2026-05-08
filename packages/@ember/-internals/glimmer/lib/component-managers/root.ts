@@ -1,6 +1,6 @@
 import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { assert } from '@ember/debug';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { DEBUG } from '@glimmer/env';
 import type {
   ComponentDefinition,

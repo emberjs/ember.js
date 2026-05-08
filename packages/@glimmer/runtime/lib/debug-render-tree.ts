@@ -2,7 +2,6 @@ import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
   CapturedRenderNode,
-  ComponentDefinition,
   DebugRenderTree,
   Nullable,
   RenderNode,
@@ -198,9 +197,4 @@ export default class DebugRenderTreeImpl<
   }
 }
 
-export function getDebugName(
-  definition: ComponentDefinition,
-  manager = definition.manager
-): string {
-  return definition.resolvedName ?? definition.debugName ?? manager.getDebugName(definition.state);
-}
+export { getDebugName } from './get-debug-name';
