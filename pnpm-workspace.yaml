@@ -7,3 +7,4 @@ packages:
   - 'packages/@types/*'
   - 'packages/*/*/test'
   - 'smoke-tests/*'
+  - 'tests/*'

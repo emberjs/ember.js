@@ -53,6 +53,7 @@
     "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
+    "test:node:vitest": "pnpm --filter ember-test-node-vitest test:node",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
     "type-check:internals": "tsc --noEmit",
@@ -158,7 +159,8 @@
       "esbuild"
     ],
     "patchedDependencies": {
-      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch"
+      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
+      "agadoo": "patches/agadoo.patch"
     }
   },
   "peerDependencies": {

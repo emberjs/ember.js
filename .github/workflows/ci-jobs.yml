@@ -221,8 +221,9 @@ jobs:
         env:
           SHOULD_TRANSPILE_FOR_NODE: true
         run: pnpm build
-      - name: test
-        run: pnpm test:node && pnpm --filter "@handlebars/parser" test
+      - run: pnpm test:node
+      - run: pnpm --filter "@handlebars/parser" test
+      - run: pnpm test:node:vitest
 
   blueprint-test:
     name: Blueprint Tests
