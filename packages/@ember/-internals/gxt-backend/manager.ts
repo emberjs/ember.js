@@ -7239,7 +7239,6 @@ const $_MANAGERS = {
               const notFoundErr = new Error(
                 `Attempted to resolve \`${helperName}\`, which was expected to be a component, but nothing was found.`
               );
-              captureRenderError(notFoundErr);
               throw notFoundErr;
             }
           } catch (e) {
@@ -7318,7 +7317,6 @@ const $_MANAGERS = {
             `Attempted to resolve \`${resolvedKomp}\`, which was expected to be a component, but nothing was found. ` +
               `Could not find component named "${resolvedKomp}" (no component or template with that name was found)`
           );
-          captureRenderError(notFoundErr);
           throw notFoundErr;
         }
         const kebabKomp = pascalToKebab(komp);
@@ -7331,8 +7329,6 @@ const $_MANAGERS = {
           `Attempted to resolve \`${komp}\`, which was expected to be a component, but nothing was found. ` +
             `Could not find component named "${komp}" (no component or template with that name was found)`
         );
-        // Capture for flushRenderErrors so assert.throws() can see it
-        captureRenderError(notFoundErr);
         throw notFoundErr;
       }
 
@@ -7550,7 +7546,6 @@ const $_MANAGERS = {
                   `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
                   `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
               );
-              captureRenderError(err);
               throw err;
             }
             if (
@@ -7720,7 +7715,6 @@ const $_MANAGERS = {
                     `(imported via \`import { capabilities } from '@ember/helper';\`). ` +
                     `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
                 );
-                captureRenderError(err);
                 throw err;
               }
               if (
@@ -8473,7 +8467,6 @@ const $_MANAGERS = {
           "Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities('3.22')` (imported via `import { capabilities } from '@ember/modifier';`). Received: " +
             JSON.stringify(caps)
         );
-        captureRenderError(err);
         throw err;
       }
 
@@ -8481,7 +8474,6 @@ const $_MANAGERS = {
         const err = new Error(
           "Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities('3.22')` (imported via `import { capabilities } from '@ember/modifier';`). "
         );
-        captureRenderError(err);
         throw err;
       }
 

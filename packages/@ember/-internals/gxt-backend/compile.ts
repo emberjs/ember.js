@@ -2860,12 +2860,6 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
               `Attempted to resolve \`${first}\`, which was expected to be a component, but nothing was found. ` +
                 `Could not find component named "${first}" (no component or template with that name was found)`
             );
-            // Capture the error so flushRenderErrors() can re-throw it
-            // (GXT may catch the thrown error during formula evaluation)
-            const captureErr = g.__captureRenderError;
-            if (typeof captureErr === 'function') {
-              captureErr(err);
-            }
             throw err;
           }
           // Resolution succeeded — mark this name as seen for both the current
@@ -6901,10 +6895,6 @@ function transformOnModifierHashArgs(template: string): string {
     `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
     `invoke the helper with parens: \`{{(fooHelper)}}\`.`;
   const err = new Error(message);
-  // Mirror what other template-level assertions do: capture for
-  // flushRenderErrors so `assert.throws()` sees it when render returns.
-  const captureFn = g.__captureRenderError;
-  if (typeof captureFn === 'function') captureFn(err);
   throw err;
 };
 
@@ -7327,10 +7317,6 @@ if (g.$_c && !g.$_c.__emberWrapped) {
           `Attempted to resolve \`${compName}\`, which was expected to be a component, but nothing was found. ` +
             `Could not find component named "${compName}" (no component or template with that name was found)`
         );
-        const captureErr = g.__captureRenderError;
-        if (typeof captureErr === 'function') {
-          captureErr(notFoundErr);
-        }
         throw notFoundErr;
       }
     }
@@ -9232,10 +9218,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               `Attempted to resolve \`${kebabName2}\`, which was expected to be a component, but nothing was found. ` +
                 `Could not find component named "${kebabName2}" (no component or template with that name was found)`
             );
-            const captureErr = g.__captureRenderError;
-            if (typeof captureErr === 'function') {
-              captureErr(notFoundErr);
-            }
             throw notFoundErr;
           }
         }
@@ -9287,10 +9269,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           const notFoundErr = new Error(
             `Attempted to resolve \`${rawName}\`, which was expected to be a component, but nothing was found.`
           );
-          const captureErr = g.__captureRenderError;
-          if (typeof captureErr === 'function') {
-            captureErr(notFoundErr);
-          }
           throw notFoundErr;
         }
       }
