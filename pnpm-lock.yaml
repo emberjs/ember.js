@@ -139,8 +139,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       babel-plugin-debug-macros:
-        specifier: 1.0.0
-        version: 1.0.0(@babel/core@7.29.0)
+        specifier: 1.0.2
+        version: 1.0.2(@babel/core@7.29.0)
       babel-plugin-ember-template-compilation:
         specifier: ^4.0.0
         version: 4.0.0
@@ -6471,8 +6471,8 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0
 
-  babel-plugin-debug-macros@1.0.0:
-    resolution: {integrity: sha512-Ct2ecKpxKD49qioqSvJd5bLLCElZA8uDolePRgauTUI5ZjMdCjIg9DA/FK3sgk+nnS91oGrvNb5wRDWLs2KNtw==}
+  babel-plugin-debug-macros@1.0.2:
+    resolution: {integrity: sha512-ADkMh1LL45678c+4iGn3Fp8hdI9qvxGBkH5x9HNiIlgYJGdQWmYNcA2cS3XAr76N85kDCg4VpqsTN1hFX2jbEA==}
     engines: {node: '>=16'}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -16662,7 +16662,7 @@ snapshots:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       semver: 5.7.2
 
-  babel-plugin-debug-macros@1.0.0(@babel/core@7.29.0):
+  babel-plugin-debug-macros@1.0.2(@babel/core@7.29.0):
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
       babel-import-util: 2.1.1
