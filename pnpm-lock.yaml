@@ -2953,7 +2953,7 @@ importers:
         version: 4.0.0
       decorator-transforms:
         specifier: ^2.3.1
-        version: 2.3.1(@babel/core@7.29.0)
+        version: 2.3.2(@babel/core@7.29.0)
       ember-source:
         specifier: workspace:*
         version: link:../..
@@ -3127,7 +3127,7 @@ importers:
         version: 9.2.1
       decorator-transforms:
         specifier: ^2.3.1
-        version: 2.3.1(@babel/core@7.29.0)
+        version: 2.3.2(@babel/core@7.29.0)
       ember-cli:
         specifier: ~6.12.0
         version: 6.12.0(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
@@ -7555,9 +7555,6 @@ packages:
   decompress-response@3.3.0:
     resolution: {integrity: sha512-BzRPQuY1ip+qDonAOz42gRm/pg9F768C+npV/4JOsxRC2sq+Rlk+Q4ZCAsOhnIaMrgarILY+RMUIvMmmX1qAEA==}
     engines: {node: '>=4'}
-
-  decorator-transforms@2.3.1:
-    resolution: {integrity: sha512-PDOk74Zqqy0946Lx4ckXxbgG6uhPScOICtrxL/pXmfznxchqNee0TaJISClGJQe6FeT8ohGqsOgdjfahm4FwEw==}
 
   decorator-transforms@2.3.2:
     resolution: {integrity: sha512-XcErcjlmCzG5ODgYjt6ZTXwd6S8fPKln/sJmw15ZXkWG2JpoQNwszis+AwF6XSGlOoG7g8MCEO97g+Yw3fk5OQ==}
@@ -17950,13 +17947,6 @@ snapshots:
     dependencies:
       mimic-response: 1.0.1
 
-  decorator-transforms@2.3.1(@babel/core@7.29.0):
-    dependencies:
-      '@babel/plugin-syntax-decorators': 7.28.6(@babel/core@7.29.0)
-      babel-import-util: 3.0.1
-    transitivePeerDependencies:
-      - '@babel/core'
-
   decorator-transforms@2.3.2(@babel/core@7.29.0):
     dependencies:
       '@babel/plugin-syntax-decorators': 7.28.6(@babel/core@7.29.0)
@@ -18225,7 +18215,7 @@ snapshots:
   ember-cli-deprecation-workflow@4.0.1(@babel/core@7.29.0):
     dependencies:
       '@embroider/addon-shim': 1.10.2
-      decorator-transforms: 2.3.1(@babel/core@7.29.0)
+      decorator-transforms: 2.3.2(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
@@ -18693,7 +18683,7 @@ snapshots:
   ember-strict-application-resolver@0.1.1(@babel/core@7.29.0):
     dependencies:
       '@embroider/addon-shim': 1.10.2
-      decorator-transforms: 2.3.1(@babel/core@7.29.0)
+      decorator-transforms: 2.3.2(@babel/core@7.29.0)
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
