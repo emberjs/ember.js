@@ -9106,6 +9106,11 @@ function handleStringComponent(
       // internally. Non-Error values (like expectAssertion's BREAK sentinel)
       // must NOT be captured — they are control flow signals that need to
       // propagate directly to their catch handler.
+      // NOTE: this capture also serves as the SIGNAL that drives renderer.ts:921
+      // (`hadRenderPhaseErrors = __gxtRenderErrorCount > 0`) — which decides
+      // whether to clear the DOM after an init() throw. Cannot be deleted in
+      // isolation; needs Phase 4 Fix B (component-render reporter in GXT's
+      // render-core.ts) to provide an equivalent signal first.
       if (e instanceof Error) {
         captureRenderError(e);
       }
@@ -10800,6 +10805,8 @@ function handleClassicComponent(factory: any, args: any, fw: any, ctx: any, owne
       _cachedRenderPassId = currentRenderPassId;
       return result;
     } catch (e) {
+      // See note on the renderClassicComponent outer wrap above — same
+      // dependency on __gxtRenderErrorCount as the render-phase signal.
       if (e instanceof Error) {
         captureRenderError(e);
       }
