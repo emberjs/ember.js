@@ -84,8 +84,14 @@ import {
   setTracker as _gxtSetTracker,
   getTracker as _gxtGetTracker,
   cached as _gxtCached,
-  setOpcodeErrorReporter as _gxtSetOpcodeErrorReporter,
 } from '@lifeart/gxt';
+// Detect setOpcodeErrorReporter at runtime — it was added in a post-0.0.61
+// GXT release. Until the registry version is bumped, host code reads the
+// hook off the namespace and no-ops when undefined. Once the dep is
+// upgraded this can become a normal named import.
+import * as __lifeartGxtForOptional from '@lifeart/gxt';
+const _gxtSetOpcodeErrorReporter: ((fn: ((err: unknown, ctx?: unknown) => void) | null) => void) | undefined =
+  (__lifeartGxtForOptional as any).setOpcodeErrorReporter;
 // Namespace import + globalThis stash so glimmer/lib/renderer.ts and
 // glimmer/lib/views/outlet.ts can pull GXT symbols without statically
 // importing @lifeart/gxt themselves. Classic-Ember consumers (e.g.,
@@ -401,10 +407,14 @@ export class CurriedComponent {
 // previously the only signal was a console.error in dev. Now the host receives
 // the error too, so it can surface through assert.throws / runTask / etc.
 // alongside the lifecycle-layer captures. No new behavior when no opcode
-// errors fire — this is purely additive.
-_gxtSetOpcodeErrorReporter((err) => {
-  captureRenderError(err);
-});
+// errors fire — this is purely additive. No-op when running against a GXT
+// release that predates the hook (the registry's 0.0.61); active once the
+// linked dist or a newer publish provides setOpcodeErrorReporter.
+if (typeof _gxtSetOpcodeErrorReporter === 'function') {
+  _gxtSetOpcodeErrorReporter((err) => {
+    captureRenderError(err);
+  });
+}
 
 // =============================================================================
 // Classic Helper recompute() → GXT reactivity bridge
