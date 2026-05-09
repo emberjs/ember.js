@@ -84,6 +84,7 @@ import {
   setTracker as _gxtSetTracker,
   getTracker as _gxtGetTracker,
   cached as _gxtCached,
+  setOpcodeErrorReporter as _gxtSetOpcodeErrorReporter,
 } from '@lifeart/gxt';
 // Namespace import + globalThis stash so glimmer/lib/renderer.ts and
 // glimmer/lib/views/outlet.ts can pull GXT symbols without statically
@@ -394,6 +395,16 @@ export class CurriedComponent {
 };
 (globalThis as any).__createCurriedComponent = createCurriedComponent;
 (globalThis as any).__captureRenderError = captureRenderError;
+
+// Wire opcode-layer errors into the existing _renderErrors queue. GXT's
+// handleOpcodeError currently splices a failing opcode out of its op array;
+// previously the only signal was a console.error in dev. Now the host receives
+// the error too, so it can surface through assert.throws / runTask / etc.
+// alongside the lifecycle-layer captures. No new behavior when no opcode
+// errors fire — this is purely additive.
+_gxtSetOpcodeErrorReporter((err) => {
+  captureRenderError(err);
+});
 
 // =============================================================================
 // Classic Helper recompute() → GXT reactivity bridge
