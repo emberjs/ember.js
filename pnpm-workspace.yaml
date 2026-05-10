@@ -10,6 +10,6 @@ packages:
   - 'tests/*'
 
 allowBuilds:
-  '@swc/core': false
+  '@swc/core': true
   core-js: false
-  esbuild: false
+  esbuild: true
