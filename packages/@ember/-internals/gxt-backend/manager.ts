@@ -85,13 +85,16 @@ import {
   getTracker as _gxtGetTracker,
   cached as _gxtCached,
 } from '@lifeart/gxt';
-// Detect setOpcodeErrorReporter at runtime — it was added in a post-0.0.61
-// GXT release. Until the registry version is bumped, host code reads the
-// hook off the namespace and no-ops when undefined. Once the dep is
-// upgraded this can become a normal named import.
+// Detect setOpcodeErrorReporter and setComponentRenderErrorReporter at runtime —
+// they were added in post-0.0.61 GXT releases. Until the registry version is
+// bumped, host code reads the hooks off the namespace and no-ops when
+// undefined. Once the dep is upgraded these can become normal named imports.
 import * as __lifeartGxtForOptional from '@lifeart/gxt';
 const _gxtSetOpcodeErrorReporter: ((fn: ((err: unknown, ctx?: unknown) => void) | null) => void) | undefined =
   (__lifeartGxtForOptional as any).setOpcodeErrorReporter;
+const _gxtSetComponentRenderErrorReporter:
+  | ((fn: ((err: unknown, ctx?: unknown) => void) | null) => void)
+  | undefined = (__lifeartGxtForOptional as any).setComponentRenderErrorReporter;
 // Namespace import + globalThis stash so glimmer/lib/renderer.ts and
 // glimmer/lib/views/outlet.ts can pull GXT symbols without statically
 // importing @lifeart/gxt themselves. Classic-Ember consumers (e.g.,
@@ -413,6 +416,27 @@ export class CurriedComponent {
 if (typeof _gxtSetOpcodeErrorReporter === 'function') {
   _gxtSetOpcodeErrorReporter((err) => {
     captureRenderError(err);
+  });
+}
+
+// Wire GXT's component-construction reporter. Fires for errors thrown inside
+// `_component()` at GXT's dom.ts:1006 catch — i.e., when the throw path
+// actually reaches GXT's component() machinery. Empirically, classic-Ember
+// init-throws bypass this catch (they propagate through manager.ts's classic-
+// component closures directly), so this reporter does NOT replace the outer
+// captureRenderError wraps in renderClassicComponent / handleClassicComponent.
+// It DOES catch construction errors for GXT-native components used directly
+// in templates ($_c-resolved closures that throw inside _component) and any
+// future classic paths that route through GXT's component() catch. Reporter:
+//   1. Calls captureRenderError so the error queues for flushRenderErrors
+//      and __gxtRenderErrorCount drives renderer.ts:921 DOM-clear logic.
+//   2. Re-throws to bypass GXT's silent dev/prod recovery substitution.
+if (typeof _gxtSetComponentRenderErrorReporter === 'function') {
+  _gxtSetComponentRenderErrorReporter((err) => {
+    if (err instanceof Error) {
+      captureRenderError(err);
+    }
+    throw err;
   });
 }
 
@@ -9106,11 +9130,16 @@ function handleStringComponent(
       // internally. Non-Error values (like expectAssertion's BREAK sentinel)
       // must NOT be captured — they are control flow signals that need to
       // propagate directly to their catch handler.
-      // NOTE: this capture also serves as the SIGNAL that drives renderer.ts:921
-      // (`hadRenderPhaseErrors = __gxtRenderErrorCount > 0`) — which decides
-      // whether to clear the DOM after an init() throw. Cannot be deleted in
-      // isolation; needs Phase 4 Fix B (component-render reporter in GXT's
-      // render-core.ts) to provide an equivalent signal first.
+      // NOTE: this capture sets __gxtRenderErrorCount, which renderer.ts:921
+      // reads as `hadRenderPhaseErrors` to drive the DOM-clear path for init
+      // throws. Phase 4 Fix B's setComponentRenderErrorReporter at GXT's
+      // dom.ts:component() catch was supposed to replace this, but empirically
+      // the init-throw path bypasses dom.ts:1006 entirely (the throw goes
+      // through manager.ts's classic-component closures directly, not through
+      // GXT's component() machinery). The reporter is wired but never fires
+      // for this case. Capture must stay until the call path is unified or a
+      // different reporter (one that observes manager-side classic-component
+      // throws) is added.
       if (e instanceof Error) {
         captureRenderError(e);
       }
