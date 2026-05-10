@@ -23,7 +23,11 @@ jobs:
         working-directory: smoke-tests/scenarios
         run: |
           matrix_json=$(pnpm scenario-tester list --require @swc-node/register --files "*-test.ts" --matrix "pnpm run test --filter %s"   )
-          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+          {
+            echo "matrix<<EOF"
+            echo "$matrix_json"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
   types:
     name: Type Checking (current version)
