@@ -8,3 +8,8 @@ packages:
   - 'packages/*/*/test'
   - 'smoke-tests/*'
   - 'tests/*'
+
+allowBuilds:
+  '@swc/core': false
+  core-js: false
+  esbuild: false
