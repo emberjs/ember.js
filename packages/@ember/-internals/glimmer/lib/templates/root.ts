@@ -134,22 +134,17 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     );
   }
 
-  // PRIORITY 1: If it has a render method, use it directly
+  // PRIORITY 1: If it has a render method, use it directly.
+  // NOTE: throws from `tpl.render` (init-phase user errors, assertion
+  // failures, etc.) propagate up to `renderer.ts`'s try/catch around
+  // `template.render(...)`, which clears the partially-rendered DOM and
+  // re-throws. Do not swallow them here — the previous "only rethrow
+  // Assertion Failed" workaround was a holdover from the
+  // `captureRenderError`/`__gxtRenderErrorCount` plumbing and is no longer
+  // needed now that the manager-level outer-wrap captures have been removed.
   if (typeof tpl?.render === 'function') {
     if (DEBUG_TEMPLATE_LOOKUP) console.log('[root.ts] Calling tpl.render()');
-    try {
-      tpl.render(ctx, target);
-    } catch (err: any) {
-      if (DEBUG_TEMPLATE_LOOKUP)
-        console.error(
-          '[root.ts] render error:',
-          err?.message || err,
-          'for template:',
-          tpl?.moduleName || tpl?.name
-        );
-      // Only rethrow assertion errors
-      if (err?.message?.includes('Assertion Failed')) throw err;
-    }
+    tpl.render(ctx, target);
     if (DEBUG_TEMPLATE_LOOKUP)
       console.log('[root.ts] After render, target innerHTML length:', target.innerHTML?.length);
   }

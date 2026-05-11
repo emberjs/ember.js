@@ -8984,7 +8984,15 @@ function handleStringComponent(
       return _cachedResult;
     }
 
-    try {
+    // Init-phase throws (e.g. `init() { throw ... }` on a classic Ember
+    // component) propagate naturally up to renderer.ts's try/catch around
+    // `template.render(...)`, which performs DOM-clear + re-throw. The
+    // previous `try/catch { captureRenderError(e); throw e; }` outer wrap
+    // existed only to drive the `__gxtRenderErrorCount` signal so that
+    // renderer.ts:921 could distinguish init failures from didInsertElement
+    // failures — that signal has been deleted in favour of a direct catch
+    // at the renderer site.
+    {
       // Check if this is a template-only component (no backing class).
       // Template-only components have an internal manager set on them and
       // don't need an instance. Just render the template directly.
@@ -9124,26 +9132,6 @@ function handleStringComponent(
       _cachedResult = result;
       _cachedRenderPassId = currentRenderPassId;
       return result;
-    } catch (e) {
-      // Capture Error instances (init throws, assertion failures, etc.) so they
-      // propagate through flushRenderErrors even if GXT catches the exception
-      // internally. Non-Error values (like expectAssertion's BREAK sentinel)
-      // must NOT be captured — they are control flow signals that need to
-      // propagate directly to their catch handler.
-      // NOTE: this capture sets __gxtRenderErrorCount, which renderer.ts:921
-      // reads as `hadRenderPhaseErrors` to drive the DOM-clear path for init
-      // throws. Phase 4 Fix B's setComponentRenderErrorReporter at GXT's
-      // dom.ts:component() catch was supposed to replace this, but empirically
-      // the init-throw path bypasses dom.ts:1006 entirely (the throw goes
-      // through manager.ts's classic-component closures directly, not through
-      // GXT's component() machinery). The reporter is wired but never fires
-      // for this case. Capture must stay until the call path is unified or a
-      // different reporter (one that observes manager-side classic-component
-      // throws) is added.
-      if (e instanceof Error) {
-        captureRenderError(e);
-      }
-      throw e;
     }
   };
 }
@@ -10790,57 +10778,53 @@ function handleClassicComponent(factory: any, args: any, fw: any, ctx: any, owne
     if (_cachedResult !== undefined && _cachedRenderPassId === currentRenderPassId) {
       return _cachedResult;
     }
-    try {
-      const effectiveParentView =
-        capturedParentView || getCurrentParentView() || _resolveParentViewFromCtx(ctx);
-      const instance = getCachedOrCreateInstance(
-        factory,
-        args,
-        factory.class,
-        owner,
-        effectiveParentView
-      );
+    // Init-phase throws propagate naturally — see note on the
+    // renderClassicComponent closure above. The previous outer wrap
+    // (captureRenderError + throw) only existed to drive the
+    // `__gxtRenderErrorCount` signal, which has been replaced by a
+    // direct catch in renderer.ts around the synchronous template render.
+    const effectiveParentView =
+      capturedParentView || getCurrentParentView() || _resolveParentViewFromCtx(ctx);
+    const instance = getCachedOrCreateInstance(
+      factory,
+      args,
+      factory.class,
+      owner,
+      effectiveParentView
+    );
 
-      // Resolve template with layoutName/layout support.
-      // Classic Ember precedence: when both `layout` and `layoutName` are
-      // assigned, `layout` wins — it is treated as the explicit compiled
-      // template and overrides any `layoutName`-driven lookup.
-      let template;
-      if (instance?.layout) {
-        template = instance.layout;
-      }
-      if (!template && instance?.layoutName && owner) {
-        template =
-          owner.lookup(`template:${instance.layoutName}`) ||
-          owner.lookup(`template:components/${instance.layoutName}`);
-      }
-      if (!template) {
-        template =
-          getComponentTemplate(instance) ||
-          getComponentTemplate(instance?.constructor) ||
-          getComponentTemplate(factory.class);
-      }
-      // If template is a factory function, call it to get the actual template
-      if (typeof template === 'function' && !template.render) {
-        template = template(owner);
-      }
-
-      if (!template?.render) {
-        return null;
-      }
-
-      const result = renderClassicComponent(instance, template, args, fw, factory.class, owner);
-      _cachedResult = result;
-      _cachedRenderPassId = currentRenderPassId;
-      return result;
-    } catch (e) {
-      // See note on the renderClassicComponent outer wrap above — same
-      // dependency on __gxtRenderErrorCount as the render-phase signal.
-      if (e instanceof Error) {
-        captureRenderError(e);
-      }
-      throw e;
+    // Resolve template with layoutName/layout support.
+    // Classic Ember precedence: when both `layout` and `layoutName` are
+    // assigned, `layout` wins — it is treated as the explicit compiled
+    // template and overrides any `layoutName`-driven lookup.
+    let template;
+    if (instance?.layout) {
+      template = instance.layout;
     }
+    if (!template && instance?.layoutName && owner) {
+      template =
+        owner.lookup(`template:${instance.layoutName}`) ||
+        owner.lookup(`template:components/${instance.layoutName}`);
+    }
+    if (!template) {
+      template =
+        getComponentTemplate(instance) ||
+        getComponentTemplate(instance?.constructor) ||
+        getComponentTemplate(factory.class);
+    }
+    // If template is a factory function, call it to get the actual template
+    if (typeof template === 'function' && !template.render) {
+      template = template(owner);
+    }
+
+    if (!template?.render) {
+      return null;
+    }
+
+    const result = renderClassicComponent(instance, template, args, fw, factory.class, owner);
+    _cachedResult = result;
+    _cachedRenderPassId = currentRenderPassId;
+    return result;
   };
 }
 

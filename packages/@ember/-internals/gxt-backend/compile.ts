@@ -14224,20 +14224,17 @@ export function precompileTemplate(
             _inElemStack.length = _inElemStackStart;
           }
 
-          // Rethrow non-Error values (expectAssertion's BREAK sentinel) and
-          // assertion errors so they propagate to test harnesses
-          if (
-            _isAssertionLike(err) ||
-            (err &&
-              ((err as any).message?.includes('Could not find') ||
-                (err as any).message?.includes('Custom modifier managers must have') ||
-                (err as any).message?.includes('Custom helper managers must have') ||
-                (err as any).message?.includes('but that value was not in scope:')))
-          ) {
-            throw err;
-          }
-          // Swallow other render errors gracefully
-          console.error('Render error:', err);
+          // Re-throw ALL errors. Init-phase user errors, assertion failures,
+          // and Glimmer-compatibility "could not find / capabilities / not in
+          // scope" diagnostics all need to surface to the host renderer's
+          // try/catch (renderer.ts around `template.render(...)`), which
+          // clears the partially-rendered DOM and re-throws to
+          // `assert.throws` / Ember's error recovery. The previous "swallow
+          // unless allowlisted" branch was a holdover from the
+          // `captureRenderError`/`__gxtRenderErrorCount` plumbing — with that
+          // signal removed, any swallow here turns user-visible failures
+          // into silent successes.
+          throw err;
         }
       },
     };

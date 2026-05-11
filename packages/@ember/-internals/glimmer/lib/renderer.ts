@@ -886,8 +886,11 @@ class ClassicRootState {
               }
             }
 
-            // Reset render error count before rendering so we can distinguish
-            // render-phase errors from lifecycle-phase errors.
+            // Reset render error count before rendering. The counter is no
+            // longer read by this renderer (init-phase errors propagate
+            // directly via the try/catch below), but other consumers may
+            // still observe it. Phase 3 step 8 of the workaround-removal
+            // plan deletes the counter writes entirely.
             (globalThis as any).__gxtRenderErrorCount = 0;
 
             // Begin render pass for backtracking detection
@@ -897,8 +900,23 @@ class ClassicRootState {
             if (root && 'layoutName' in root) {
               pushParentView(root);
             }
+            // Wrap the synchronous template render so that init-phase throws
+            // (e.g., `init() { throw ... }` on a classic Ember component) can
+            // be caught directly. Previously this was handled by the
+            // `captureRenderError` queue + `__gxtRenderErrorCount` global at
+            // manager.ts:9144/10840 (gxt-backend's classic-component closure
+            // outer wraps), but those captures both swallowed information and
+            // required the `root.ts:142` swallow + `flushRenderErrors` dance to
+            // surface the throw. With manager.ts now letting init throws
+            // propagate naturally and `root.ts` no longer swallowing, the
+            // throw reaches us here and we can react locally: clear the
+            // partially-rendered DOM (matching classic Glimmer VM behaviour
+            // for init failures) and re-throw to `assert.throws` / the host.
+            let renderPhaseError: unknown = undefined;
             try {
               (template as any).render(renderContext, actualRenderTarget);
+            } catch (err) {
+              renderPhaseError = err;
             } finally {
               // Pop from parentView stack after rendering
               if (root && 'layoutName' in root) {
@@ -908,6 +926,15 @@ class ClassicRootState {
               // BREAK or other sentinels propagate (e.g., from expectAssertion).
               endRenderPass();
             }
+            if (renderPhaseError !== undefined) {
+              // Init-phase failure — DOM is partially populated. Clear it
+              // before propagating, matching Glimmer's behaviour and the
+              // expectations of the `Errors thrown during render: it can
+              // recover resets the transaction when an error is thrown during
+              // initial render` canary.
+              (parentElement as unknown as Element).innerHTML = '';
+              throw renderPhaseError;
+            }
           } else if ('$nodes' in template) {
             // Build-time compiled gxt template with $nodes
             _gxtLib().renderComponent(template as any, parentElement, owner);
@@ -915,32 +942,21 @@ class ClassicRootState {
             console.warn('GXT template detected but cannot render:', template);
           }
 
-          // Check if any errors were captured during the template render phase
-          // (e.g., init() errors). If so, clear the DOM before re-throwing because
-          // the render did not complete successfully (matching Glimmer VM behavior).
-          const hadRenderPhaseErrors = (globalThis as any).__gxtRenderErrorCount > 0;
-
-          // End render pass moved to finally block above (handles BREAK propagation)
-
           // Flush queued didInsertElement / didRender hooks now that all DOM
-          // has been inserted into the live document by GXT.
+          // has been inserted into the live document by GXT. Lifecycle errors
+          // thrown here are queued by `ensureLifecycleErrorCapture`'s
+          // `_trigger`/`destroy` wrappers (renderer.ts:319) into `_renderErrors`.
           flushAfterInsertQueue();
 
-          // Re-throw any errors captured during rendering (init, didInsertElement, etc.)
-          // so they propagate through assert.throws in tests and Ember's error recovery.
-          // IMPORTANT: For lifecycle errors (didInsertElement), we must NOT let the error
-          // propagate through errorLoopTransaction, as that would permanently disable
-          // re-rendering. Instead, we defer the throw until after the render function
-          // has been set up for future re-renders.
+          // Re-throw any lifecycle (didInsertElement / destroy) errors captured
+          // during the after-insert flush. Init-phase render errors are no
+          // longer queued — they propagate directly from `template.render()`
+          // above. The queue at this point only ever contains lifecycle errors,
+          // so we MUST NOT clear DOM here — `assertText('hello')` after a
+          // didInsertElement throw expects the rendered output to remain.
           try {
             flushRenderErrors();
           } catch (renderError) {
-            // Only clear DOM for render-phase errors (init failures).
-            // Lifecycle errors (didInsertElement) should leave DOM intact.
-            if (hadRenderPhaseErrors) {
-              (parentElement as unknown as Element).innerHTML = '';
-              throw renderError;
-            }
             // Lifecycle error — defer it to the root state so it can be
             // re-thrown OUTSIDE errorLoopTransaction (preserving re-renderability)
             (this as any).__gxtDeferredError = renderError;
