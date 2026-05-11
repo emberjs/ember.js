@@ -18,9 +18,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v3
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: npm
@@ -35,9 +35,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v3
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: npm
