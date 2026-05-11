@@ -157,8 +157,8 @@ importers:
         specifier: ^0.19.2
         version: 0.19.2
       ember-cli-browserstack:
-        specifier: ^2.0.1
-        version: 2.1.0
+        specifier: ^4.0.0
+        version: 4.0.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
         version: 3.3.3(ember-cli@6.11.2(@babel/core@7.29.0)(@types/node@22.19.15)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
@@ -7733,9 +7733,9 @@ packages:
     resolution: {integrity: sha512-otCKdGcNFK0+MkQo+LLjYbRD9EerApH6Z/odvvlL1hxrN+owHMV5E+jI2rbtdvNEH0/6w5ZqjH4kS232fvtCxQ==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  ember-cli-browserstack@2.1.0:
-    resolution: {integrity: sha512-1B8gBE1gXUAnRsUvsJJ9nHBeJRUNvVwnlpX/RIjxQ5ODeNyJFpPYJVDC4C81HFRvaR+8uGNlP16d/avNjNlkWg==}
-    engines: {node: 10.* || >= 12}
+  ember-cli-browserstack@4.0.0:
+    resolution: {integrity: sha512-IThXosV/U9j82Jj9n+24weQ+TD2Hh7l6UQP0Z/L4DAMmgOt3f9O+a9FwdhylXc6SzR6OS9Mhv2m+m9OO0KRmaw==}
+    engines: {node: '>= 20.19'}
     hasBin: true
 
   ember-cli-clean-css@3.0.0:
@@ -18173,7 +18173,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-browserstack@2.1.0:
+  ember-cli-browserstack@4.0.0:
     dependencies:
       browserstack: 1.6.1
       browserstack-local: 1.5.12

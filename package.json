@@ -108,7 +108,7 @@
     "decorator-transforms": "2.3.2",
     "ember-cli": "^6.11.1",
     "ember-cli-blueprint-test-helpers": "^0.19.2",
-    "ember-cli-browserstack": "^2.0.1",
+    "ember-cli-browserstack": "^4.0.0",
     "ember-cli-dependency-checker": "^3.3.1",
     "ember-cli-yuidoc": "^0.9.1",
     "eslint": "^9.21.0",

@@ -10,7 +10,7 @@ async function run(command, args = []) {
 }
 
 (async function () {
-  await run('ember', ['browserstack:connect']);
+  await run('./node_modules/.bin/browserstack', ['connect']);
 
   try {
     try {
@@ -31,9 +31,9 @@ async function run(command, args = []) {
       process.exit(0); // eslint-disable-line n/no-process-exit
     } finally {
       if (process.env.GITHUB_RUN_ID) {
-        await run('ember', ['browserstack:results']);
+        await run('./node_modules/.bin/browserstack', ['results']);
       }
-      await run('ember', ['browserstack:disconnect']);
+      await run('./node_modules/.bin/browserstack', ['disconnect']);
     }
   } catch (error) {
     console.log('error');
