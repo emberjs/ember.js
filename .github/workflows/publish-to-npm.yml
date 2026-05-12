@@ -18,11 +18,13 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    environment: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2 # zizmor: ignore[artipacked] creds are used for build-for-publishing.js
       - uses: ./.github/actions/setup
         with:
           node-version: 20
+          use-node-modules-cache: false
       - name: Update npm
         run: npm install -g npm@latest # npm >= 11.5.1 is needed
       - name: Build for Publish (Alpha)
