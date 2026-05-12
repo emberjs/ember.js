@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v7.0.0-beta.1 (March 31, 2026)
+## v7.0.0 (May 11, 2026)
 
 - [#21240](https://github.com/emberjs/ember.js/pull/21240) [CLEANUP] Remove deprecated amd bundles and `use-ember-modules` optional feature per [RFC #1101](https://rfcs.emberjs.com/id/1101-deprecate-ember-vendor-bundles).
 - [#21275](https://github.com/emberjs/ember.js/pull/21275) [CLEANUP] Remove ember barrel file (`import Ember from 'ember'`) per [RFC #1003](https://rfcs.emberjs.com/id/1003-deprecation-import-ember-from-ember).
