@@ -266,7 +266,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     @public
    */
   finally<T>(callback?: T | undefined, label?: string) {
-    // @ts-expect-error @types/rsvp doesn't have the correct signiture for RSVP.Promise.finally
+    // @ts-expect-error @types/rsvp doesn't have the correct signature for RSVP.Promise.finally
     return this.promise!.finally(callback, label);
   }
 
