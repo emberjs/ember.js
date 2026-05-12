@@ -62,8 +62,13 @@ export function runAppend(view: any): void {
   // Reset interval sync budget after an explicit sync
   const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
   if (typeof resetBudget === 'function') resetBudget();
-  // Re-throw any errors captured during rendering (e.g., component-not-found)
-  flushRenderErrors();
+  // Phase 3 step 7: the post-render flushRenderErrors() call was deleted.
+  // Init-phase render errors now propagate synchronously through renderer.ts's
+  // template.render() try/catch (Option C2, Phase 3 step 5). Lifecycle errors
+  // queued by flushAfterInsertQueue / triggerLifecycleHook are flushed by
+  // renderer.ts's own flushRenderErrors at line ~858 BEFORE control returns
+  // to us here. The QUnit testStart drain (setup-qunit.ts:91-108) sweeps any
+  // leftover Pattern-2 captures between tests.
 }
 
 export function runDestroy(toDestroy: any): void {
@@ -138,7 +143,17 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   // Reset interval sync budget after an explicit runTask sync
   const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
   if (typeof resetBudget === 'function') resetBudget();
-  // Re-throw any errors captured during rendering/destruction
+  // Phase 3 step 7: the runAppend flushRenderErrors() call was deleted, but
+  // THIS runTask flush stays. Empirical finding (canary 4/4 → 3/4 when
+  // deleted): destroy-during-runTask errors are captured by manager.ts's
+  // `__gxtDestroyUnclaimedPoolEntries` Phase 3 try/catch (around line 4220)
+  // via `captureRenderError` without re-throwing — and the destroy path here
+  // runs INSIDE `__gxtSyncDomNow` after the runloop body has completed, so
+  // renderer.ts's internal flushRenderErrors never sees these captures.
+  // Surfacing them requires this post-task flush. The canary's "it can
+  // recover resets the transaction when an error is thrown during destroy"
+  // subtest depends on `assert.throws(() => runTask(() => set(switch, false)))`
+  // seeing the captured destroy error.
   flushRenderErrors();
   return result;
 }
