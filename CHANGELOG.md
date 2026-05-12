@@ -1,5 +1,21 @@
 # Ember Changelog
 
+## v7.1.0-beta.1 (May 12, 2026)
+
+- [#21068](https://github.com/emberjs/ember.js/pull/21068) [FEATURE] Build in the `{{on}}` modifier as a keyword in strict-mode templates per [RFC# 997](https://rfcs.emberjs.com/id/0997-make-on-built-in).
+- [#21299](https://github.com/emberjs/ember.js/pull/21299) [FEATURE] Build in the `{{fn}}` helper as a keyword in strict-mode templates per [RFC #998](https://rfcs.emberjs.com/id/0998-make-fn-built-in).
+- [#21230](https://github.com/emberjs/ember.js/pull/21230) / [#21343](https://github.com/emberjs/ember.js/pull/21343) [FEATURE] Add a built-in `(element)`/ `{{element}}` helper for dynamic tag names in strict-mode templates per [RFC #389](https://rfcs.emberjs.com/id/0389-dynamic-tag-names).
+- [#21334](https://github.com/emberjs/ember.js/pull/21334) [FEATURE] Build in the `{{hash}}` helper as a keyword in strict-mode templates per [RFC# 999](https://rfcs.emberjs.com/id/0999-make-hash-built-in).
+- [#21336](https://github.com/emberjs/ember.js/pull/21336) [FEATURE] Build in the `{{array}}` helper as a keyword in strict-mode templates per [RFC#1000](https://rfcs.emberjs.com/id/1000-make-array-built-in).
+- [#21337](https://github.com/emberjs/ember.js/pull/21337) [FEATURE] Build in `{{and}}`, `{{or}}`, `{{not}}` helpers as keywords in strict-mode templates per [RFC #562](https://rfcs.emberjs.com/id/0562-add-logical-operators/).
+- [#21339](https://github.com/emberjs/ember.js/pull/21339) [FEATURE] Build in `{{eq}}` and `{{neq}}` helpers as keywords in strict-mode templates per [RFC #560](https://rfcs.emberjs.com/id/0560-add-equality-operators/).
+- [#21342](https://github.com/emberjs/ember.js/pull/21342) [FEATURE] Build in the `{{lt}}`, `{{lte}}`, `{{gt}}`, `{{gte}}` helpers as keywords in strict-mode templates per [RFC# 561](https://rfcs.emberjs.com/id/0561-add-numeric-comparison-operators).
+- [#21373](https://github.com/emberjs/ember.js/pull/21373) [BUGFIX] Fix newly added keywords polluting the JS namespace
+- [#21232](https://github.com/emberjs/ember.js/pull/21232) [INTERNAL] Clean up scope bag, wire format, and debug render tree
+- [#21350](https://github.com/emberjs/ember.js/pull/21350) [INTERNAL] Remove barrel file imports from internal code for better tree-shaking
+- [#21402](https://github.com/emberjs/ember.js/pull/21402) [INTERNAL] Do not use any caches on release and lock publishing of `ember-source` to `npm` to require approval from select persons.
+- [#21379](https://github.com/emberjs/ember.js/pull/21379) [CLEANUP] Remove old Component Lookup
+
 ## v7.0.0 (May 11, 2026)
 
 - [#21240](https://github.com/emberjs/ember.js/pull/21240) [CLEANUP] Remove deprecated amd bundles and `use-ember-modules` optional feature per [RFC #1101](https://rfcs.emberjs.com/id/1101-deprecate-ember-vendor-bundles).
