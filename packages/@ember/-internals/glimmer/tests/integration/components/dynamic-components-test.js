@@ -87,6 +87,19 @@ moduleFor(
       });
     }
 
+    ['@test it throws a useful assertion when dynamic component name is an object'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
+        this.render('{{component this.componentName}}', {
+          componentName: { name: 'not-a-component' },
+        });
+      }, /The `{{component}}` helper only accepts strings or components/);
+    }
+
     ['@test it has an element']() {
       let instance;
 
