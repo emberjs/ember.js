@@ -17,7 +17,7 @@ async function run(command, args = []) {
       // Calling testem directly here instead of `ember test` so that
       // we do not have to do a double build (by the time this is run
       // we have already ran `ember build`).
-      await run('testem', [
+      const testemArgs = [
         'ci',
         '-f',
         'testem.browserstack.js',
@@ -25,7 +25,16 @@ async function run(command, args = []) {
         '127.0.0.1',
         '--port',
         '7774',
-      ]);
+      ];
+
+      // Absorb flaky single-launcher BrowserStack failures so they
+      // don't fail otherwise-green CI.
+      try {
+        await run('testem', testemArgs);
+      } catch (e) {
+        console.log(chalk.yellow(`testem ci failed (${e.shortMessage}); retrying once.`));
+        await run('testem', testemArgs);
+      }
 
       console.log('success');
       process.exit(0); // eslint-disable-line n/no-process-exit
