@@ -1,5 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+import compile from 'internal-test-helpers/lib/compile';
 
 import { template, templateCacheCounters } from '@ember/-internals/glimmer';
 import { precompile } from 'ember-template-compiler';
@@ -23,7 +24,7 @@ moduleFor(
       let exports = {};
       module(exports, template);
       let Precompiled = exports['default'];
-      let Compiled = this.compile('Hello {{this.name}}', options);
+      let Compiled = compile('Hello {{this.name}}', options);
 
       assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
       assert.equal(typeof Compiled, 'function', 'compiled is a factory');

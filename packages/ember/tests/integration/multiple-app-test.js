@@ -1,4 +1,5 @@
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
+import compile from 'internal-test-helpers/lib/compile';
 import Application from '@ember/application';
 import { Component } from '@ember/-internals/glimmer';
 import { getOwner } from '@ember/-internals/owner';
@@ -66,7 +67,7 @@ moduleFor(
 
       resolver.add(
         'template:index',
-        this.compile(
+        compile(
           `
         <h1>Node 1</h1>{{special-button}}
       `
