@@ -9,11 +9,13 @@ export class StrictResolver implements Resolver {
 
   #modules = new Map<string, unknown>();
   #plurals = new Map<string, string>([
-    ['config', 'config'],
     ['component', 'components'],
-    ['model', 'models'],
+    ['config', 'config'],
+    ['controller', 'controllers'],
     ['helper', 'helpers'],
+    ['model', 'models'],
     ['modifier', 'modifiers'],
+    ['route', 'routes'],
     ['template', 'templates'],
   ]);
   original: any;
