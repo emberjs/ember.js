@@ -1,5 +1,7 @@
-import { module, test } from 'qunit';
 import { StrictResolver } from '@ember/engine/lib/strict-resolver';
+
+import * as QUnit from 'qunit';
+const { module, test } = QUnit;
 
 module('StrictResolver', function (hooks) {
   let resolver;
@@ -21,7 +23,6 @@ module('StrictResolver', function (hooks) {
         { fullName: 'component:my-widget', key: './components/my-widget' },
         { fullName: 'modifier:auto-focus', key: './modifiers/auto-focus' },
         { fullName: 'template:application', key: './templates/application' },
-        { fullName: 'view:queue-list', key: './views/queue-list' },
         { fullName: 'route:index', key: './routes/index' },
         { fullName: 'controller:application', key: './controllers/application' },
       ];

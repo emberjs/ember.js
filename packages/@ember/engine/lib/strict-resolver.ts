@@ -1,4 +1,15 @@
-import type { Factory, Resolver } from '@ember/owner';
+import type { Factory, Resolver } from '@ember/-internals/owner';
+
+const KNOWN_EASY_PLURALS = new Set([
+  'adapter',
+  'component',
+  'controller',
+  'model',
+  'modifier',
+  'route',
+  'serializer',
+  'template',
+]);
 
 export class StrictResolver implements Resolver {
   // Ember's router uses this flag to decide whether to auto-generate
@@ -8,16 +19,6 @@ export class StrictResolver implements Resolver {
   moduleBasedResolver = true;
 
   #modules = new Map<string, unknown>();
-  #plurals = new Map<string, string>([
-    ['component', 'components'],
-    ['config', 'config'],
-    ['controller', 'controllers'],
-    ['helper', 'helpers'],
-    ['model', 'models'],
-    ['modifier', 'modifiers'],
-    ['route', 'routes'],
-    ['template', 'templates'],
-  ]);
   original: any;
 
   constructor(modules: Record<string, unknown>) {
@@ -34,12 +35,12 @@ export class StrictResolver implements Resolver {
     return moduleName.replace(fileExtension, '').replace(leadingDotSlash, '');
   }
 
-  /**
-   * We only support plurals for the well known things (for historical reasons)
-   * (see the hard-coded map of plurals in #plurals)
-   */
-  #plural(s: string) {
-    return this.#plurals.get(s) ?? s;
+  #plural(word: string) {
+    if (KNOWN_EASY_PLURALS.has(word)) {
+      return word + 's';
+    }
+
+    return word;
   }
 
   resolve(fullName: string): Factory<object> | object | undefined {

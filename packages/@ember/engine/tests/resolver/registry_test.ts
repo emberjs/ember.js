@@ -1,8 +1,10 @@
-import { module, test } from 'qunit';
+import * as QUnit from 'qunit';
 import Application from '@ember/application';
 import Service from '@ember/service';
 import { run } from '@ember/runloop';
 import type ApplicationInstance from '@ember/application/instance';
+
+const { module, test } = QUnit;
 
 module('strict-resolver | Application with modules', function (hooks) {
   let app: Application | undefined;
