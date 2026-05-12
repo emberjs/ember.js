@@ -2388,7 +2388,9 @@ moduleFor(
       {{check-attr}}
       {{#check-attr}}{{/check-attr}}`);
 
-      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+      // Bare `{{false}}` removes the attribute (issue #21344). Concat form
+      // (`name="{{(has-block)}}"`) still renders the literal string.
+      equalsElement(assert, this.$('button')[0], 'button', {}, '');
       equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
       this.assertStableRerender();
@@ -2407,7 +2409,7 @@ moduleFor(
       {{#check-attr}}{{/check-attr}}
       {{#check-attr}}{{else}}{{/check-attr}}`);
 
-      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+      equalsElement(assert, this.$('button')[0], 'button', {}, '');
       equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
       this.assertStableRerender();
@@ -2426,7 +2428,7 @@ moduleFor(
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+      equalsElement(assert, this.$('button')[0], 'button', {}, '');
       equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
       this.assertStableRerender();
@@ -2445,8 +2447,8 @@ moduleFor(
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
-      equalsElement(assert, this.$('button')[1], 'button', { name: 'false' }, '');
+      equalsElement(assert, this.$('button')[0], 'button', {}, '');
+      equalsElement(assert, this.$('button')[1], 'button', {}, '');
 
       this.assertStableRerender();
     }

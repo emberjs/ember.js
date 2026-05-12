@@ -100,7 +100,11 @@ export function sanitizeAttributeValue(
   attribute: string,
   value: unknown
 ): unknown {
-  if (value === null || value === undefined) {
+  // `false` is treated as a removal sentinel (matching `null`/`undefined`)
+  // rather than being stringified to `"false"` by `normalizeStringValue` below.
+  // The downstream attribute/property classifier then omits the attribute.
+  // See https://github.com/emberjs/ember.js/issues/21344.
+  if (value === null || value === undefined || value === false) {
     return value;
   }
 

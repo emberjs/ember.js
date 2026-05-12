@@ -111,7 +111,7 @@ export class HasBlockSuite extends RenderTest {
       template: 'block here',
     });
 
-    this.assertComponent('<button name="false"></button>');
+    this.assertComponent('<button></button>');
     this.assertStableRerender();
   }
 
@@ -132,7 +132,7 @@ export class HasBlockSuite extends RenderTest {
       layout: '<button name={{has-block}}></button>',
     });
 
-    this.assertComponent('<button name="false"></button>');
+    this.assertComponent('<button></button>');
     this.assertStableRerender();
   }
 

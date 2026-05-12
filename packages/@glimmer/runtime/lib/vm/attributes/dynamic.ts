@@ -116,7 +116,7 @@ export class DefaultDynamicProperty extends DynamicAttribute {
 
   value: unknown;
   set(dom: TreeBuilder, value: unknown, _env: Environment): void {
-    if (value !== null && value !== undefined) {
+    if (!isAttrRemoval(value)) {
       this.value = value;
       dom.__setProperty(this.normalizedName, value);
     }
@@ -126,10 +126,16 @@ export class DefaultDynamicProperty extends DynamicAttribute {
     const { element } = this.attribute;
 
     if (this.value !== value) {
+      // Assign the property first so reactive properties (e.g. `input.checked`,
+      // `input.value`) are reset to the framework-supplied state before we
+      // remove the reflected attribute. For string-valued IDL attributes (e.g.
+      // `autocomplete`, `name`, `popover`), assigning `false` would coerce to
+      // the string `"false"` — `removeAttribute` below resets the property
+      // back to its default via reflection.
       (element as unknown as Element)[this.normalizedName as MutableKey<Element>] = this.value =
         value as never;
 
-      if (value === null || value === undefined) {
+      if (isAttrRemoval(value)) {
         this.removeAttribute();
       }
     }
@@ -178,12 +184,17 @@ export class SafeDynamicAttribute extends SimpleDynamicAttribute {
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   override set(dom: TreeBuilder, value: unknown) {
-    const normalized = normalizeStringValue(value);
+    // Treat `false` like `null`/`undefined` — clearing the value rather than
+    // letting `String(false)` set the input to the literal string `"false"`.
+    // See https://github.com/emberjs/ember.js/issues/21344.
+    const normalized = isAttrRemoval(value) ? '' : normalizeStringValue(value);
     dom.__setProperty('value', normalized);
 
     // GH#19219: Browsers don't reflect `input.value = ''` as a value attribute when
     // type is later changed to "radio"/"checkbox". Explicitly set the attribute for <input>.
-    // Not needed for <textarea> (no value attribute).
+    // Not needed for <textarea> (no value attribute). The attribute is only added when
+    // the user explicitly passed `''` — implicit empties (`null`, `undefined`, `false`)
+    // continue to render as `<input>` without a value attribute.
     if (value === '' && this.attribute.element.tagName === 'INPUT') {
       dom.__setAttribute('value', '', null);
     }
@@ -192,7 +203,7 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   override update(value: unknown) {
     const input = castToBrowser(this.attribute.element, ['input', 'textarea']);
     const currentValue = input.value;
-    const normalizedValue = normalizeStringValue(value);
+    const normalizedValue = isAttrRemoval(value) ? '' : normalizeStringValue(value);
     if (currentValue !== normalizedValue) {
       input.value = normalizedValue;
     }
@@ -223,6 +234,18 @@ function isOptionSelected(tagName: string, attribute: string) {
 
 function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
+}
+
+/**
+ * Returns `true` for the sentinel values that signal "this attribute is not
+ * present" in a bare attribute expression (`attr={{value}}`). Keeping these
+ * three values in lockstep across every dispatch path (plain attribute, DOM
+ * property, sanitized attribute, input value, …) is what makes
+ * `<input autocomplete={{false}}>` and `<input autocomplete={{null}}>` behave
+ * the same way. See https://github.com/emberjs/ember.js/issues/21344.
+ */
+function isAttrRemoval(value: unknown): boolean {
+  return value === null || value === undefined || value === false;
 }
 
 function normalizeValue(value: unknown): Nullable<string> {
