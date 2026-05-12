@@ -136,5 +136,29 @@ moduleFor(
           assert.deepEqual(this.state, ['/', '/child']);
         });
     }
+
+    ['@test RouterService#replaceWith with empty query params'](assert) {
+      assert.expect(1);
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.replaceWith('parent.child', { queryParams: {} });
+        })
+        .then(() => {
+          assert.deepEqual(this.state, ['/child']);
+        });
+    }
+
+    ['@test RouterService#replaceWith with `undefined` in query params'](assert) {
+      assert.expect(1);
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.replaceWith('parent.child', { queryParams: undefined });
+        })
+        .then(() => {
+          assert.deepEqual(this.state, ['/child']);
+        });
+    }
   }
 );
