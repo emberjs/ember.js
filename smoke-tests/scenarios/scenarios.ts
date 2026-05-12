@@ -32,24 +32,25 @@ function strictResolver(project: Project) {
       'app.js': `
         import Application from '@ember/application';
         import Router from './router';
-        // v2 addons don't auto-register with the strict resolver the way
-        // classic ember-resolver + compat-modules does; we have to explicitly
-        // wire each addon-provided module into \`modules\`. The
-        // v2-app-template uses \`{{pageTitle}}\` in application.gjs, which
-        // injects \`@service('page-title')\`, so we need to register it here.
-        import PageTitleService from 'ember-page-title/services/page-title';
+        import compatModules from '@embroider/virtual/compat-modules';
+        import config from './config/environment';
+
+        /**
+         * See: https://github.com/embroider-build/embroider/issues/2708
+         */
+        function fixModulePrefix(modules) {
+          let fixed = {};
+
+          for (let [key, module] of Object.entries(project)) {
+            let newName = key.replace(new RegExp(\`/\${config.modulePrefix}\//\`), './');
+            fixed[newName] = module;
+          }
+
+          return fixed;
+        }
 
         export default class App extends Application {
-          modules = {
-            './router': { default: Router },
-            './services/page-title': { default: PageTitleService },
-            ...import.meta.glob('./services/**/*.{js,ts}', { eager: true }),
-            ...import.meta.glob('./controllers/**/*.{js,ts}', { eager: true }),
-            ...import.meta.glob('./routes/**/*.{js,ts}', { eager: true }),
-            ...import.meta.glob('./components/**/*.{gjs,gts,js,ts}', { eager: true }),
-            ...import.meta.glob('./helpers/**/*.{js,ts}', { eager: true }),
-            ...import.meta.glob('./templates/**/*.{hbs,gjs,gts}', { eager: true }),
-          };
+          modules = fixModulePrefix(compatModules);
         }
       `,
     },
