@@ -498,7 +498,6 @@ export interface FnHelper extends Opaque<'helper:fn'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @private
  */
 export const gt = glimmerGt as unknown as GtHelper;
 export interface GtHelper extends Opaque<'helper:gt'> {}
@@ -522,7 +521,6 @@ export interface GtHelper extends Opaque<'helper:gt'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @private
  */
 export const gte = glimmerGte as unknown as GteHelper;
 export interface GteHelper extends Opaque<'helper:gte'> {}
@@ -546,7 +544,6 @@ export interface GteHelper extends Opaque<'helper:gte'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @private
  */
 export const lt = glimmerLt as unknown as LtHelper;
 export interface LtHelper extends Opaque<'helper:lt'> {}
@@ -570,7 +567,6 @@ export interface LtHelper extends Opaque<'helper:lt'> {}
  * @param {number} left
  * @param {number} right
  * @return {boolean}
- * @private
  */
 export const lte = glimmerLte as unknown as LteHelper;
 export interface LteHelper extends Opaque<'helper:lte'> {}
@@ -594,7 +590,6 @@ export interface LteHelper extends Opaque<'helper:lte'> {}
  *
  * @method element
  * @param {string} tagName
- * @private
  */
 export const element = glimmerElement as ElementHelper;
 export interface ElementHelper extends Opaque<'helper:element'> {}
@@ -639,7 +634,6 @@ export type UniqueIdHelper = typeof uniqueId;
  * @param {unknown} left
  * @param {unknown} right
  * @return {boolean}
- * @private
  */
 export const eq = glimmerEq as unknown as EqHelper;
 export interface EqHelper extends Opaque<'helper:eq'> {}
@@ -663,7 +657,6 @@ export interface EqHelper extends Opaque<'helper:eq'> {}
  * @param {unknown} left
  * @param {unknown} right
  * @return {boolean}
- * @private
  */
 export const neq = glimmerNeq as unknown as NeqHelper;
 export interface NeqHelper extends Opaque<'helper:neq'> {}
@@ -687,7 +680,6 @@ export interface NeqHelper extends Opaque<'helper:neq'> {}
  * @method and
  * @param {unknown} args Two or more values to evaluate
  * @return {unknown} The first falsy value or the last value
- * @private
  */
 export const and = glimmerAnd as unknown as AndHelper;
 export interface AndHelper extends Opaque<'helper:and'> {}
@@ -711,7 +703,6 @@ export interface AndHelper extends Opaque<'helper:and'> {}
  * @method or
  * @param {unknown} args Two or more values to evaluate
  * @return {unknown} The first truthy value or the last value
- * @private
  */
 export const or = glimmerOr as unknown as OrHelper;
 export interface OrHelper extends Opaque<'helper:or'> {}
@@ -734,7 +725,6 @@ export interface OrHelper extends Opaque<'helper:or'> {}
  * @method not
  * @param {unknown} value The value to negate
  * @return {boolean}
- * @private
  */
 export const not = glimmerNot as unknown as NotHelper;
 export interface NotHelper extends Opaque<'helper:not'> {}
