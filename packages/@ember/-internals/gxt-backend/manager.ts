@@ -3100,8 +3100,13 @@ function triggerLifecycleHook(instance: any, hookName: string): void {
     if (!(e instanceof Error)) {
       throw e;
     }
-    // Capture assertion/render errors so they can be re-thrown after render
-    if (e.message?.includes('Assertion Failed') || e.message?.includes('Error in')) {
+    // Capture lifecycle-hook errors (didInsertElement, willDestroyElement,
+    // didReceiveAttrs, etc.) into the render-error queue so they surface
+    // through flushRenderErrors() in the renderer. Honor
+    // __gxtSuppressDestroyCapture, which is set during spurious unclaimed-
+    // pool sweeps where a user destroy/lifecycle throw should NOT propagate
+    // to assert.throws (see __gxtDestroyUnclaimedPoolEntries Phase 1).
+    if (!(globalThis as any).__gxtSuppressDestroyCapture) {
       captureRenderError(e);
     }
   }
@@ -4203,7 +4208,18 @@ let _preRerenderSnapshot: Set<any> = new Set();
         !instance.isDestroyed &&
         !instance.isDestroying
       ) {
-        instance.destroy();
+        try {
+          instance.destroy();
+        } catch (e) {
+          // Capture user-thrown destroy errors so they surface through
+          // flushRenderErrors() in the renderer. Honor
+          // __gxtSuppressDestroyCapture, which is set during spurious
+          // unclaimed-pool sweeps (initial-render syncs not driven by a
+          // real property change).
+          if (e instanceof Error && !(globalThis as any).__gxtSuppressDestroyCapture) {
+            captureRenderError(e);
+          }
+        }
       }
       if (
         wasInPriorCycle &&
@@ -4212,12 +4228,18 @@ let _preRerenderSnapshot: Set<any> = new Set();
       ) {
         try {
           instance.willDestroy();
-        } catch {
-          /* user override may throw; captured elsewhere */
+        } catch (e) {
+          // Same capture policy as destroy() above. The previous comment
+          // claimed willDestroy errors were "captured elsewhere" — that
+          // elsewhere was renderer.ts's ensureLifecycleErrorCapture wrapper,
+          // which has been removed. Capture them here instead.
+          if (e instanceof Error && !(globalThis as any).__gxtSuppressDestroyCapture) {
+            captureRenderError(e);
+          }
         }
       }
     } catch {
-      /* ignore */
+      /* ignore unexpected non-destroy/willDestroy errors */
     }
   }
 

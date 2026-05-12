@@ -298,112 +298,18 @@ function morphAttributes(oldEl: Element, newEl: Element): void {
   }
 }
 
-// In GXT mode, the gxt-backend manager.ts wraps certain lifecycle invocations
-// in try/catch blocks that silently discard plain `Error` instances (only
-// assertion-shaped errors get captured through `captureRenderError`). That
-// swallowing breaks the `Errors thrown during render` tests: a `throw` inside
-// `didInsertElement`, `destroy`, or `willDestroy` must surface through
-// `this.render(...)` / `runTask(...)` so `assert.throws` can observe it.
-//
-// We cannot edit manager.ts from here, but we can ensure the error reaches
-// `_renderErrors` BEFORE the manager's catch block discards it. `flushRenderErrors`
-// (called at the end of `runAppend` / `runTask` and inside the GXT render path)
-// will then throw the captured error out to the test harness.
-//
-// The patch hooks `Component.prototype._trigger` (lifecycle hook dispatcher —
-// fires didInsertElement, willDestroyElement, etc.) and `Component.prototype.destroy`
-// so any Error raised inside the user code is captured before the manager swallows it.
-// We still re-throw from the patched methods so that existing synchronous control
-// flow (e.g., manager.ts's early-exit branches) is preserved.
-let _gxtLifecycleErrorPatchApplied = false;
-function ensureLifecycleErrorCapture(): void {
-  if (_gxtLifecycleErrorPatchApplied) return;
-  if (!(globalThis as any).__GXT_MODE__) return;
-  _gxtLifecycleErrorPatchApplied = true;
-
-  const proto = (Component as any)?.prototype;
-  if (!proto) return;
-
-  const captureErr = (e: unknown): void => {
-    // Allow the gxt-backend to suppress error capture in code paths where
-    // a destroy/lifecycle throw should NOT propagate to assert.throws —
-    // e.g., spurious unclaimed-pool sweeps during initial render that
-    // identify newborn instances as "removed by morph" without any
-    // user-driven property change. See __gxtDestroyUnclaimedPoolEntries
-    // in gxt-backend/manager.ts (Phase 3).
-    if ((globalThis as any).__gxtSuppressDestroyCapture) return;
-    const fn = (globalThis as any).__captureRenderError;
-    if (typeof fn === 'function' && e instanceof Error) {
-      try {
-        fn(e);
-      } catch {
-        /* ignore capture failures */
-      }
-    }
-  };
-
-  // Patch the lifecycle-hook dispatcher. CoreView.init swaps `this.trigger`
-  // for `this._trigger`, so the prototype method below is the one actually
-  // invoked from manager.ts's `triggerLifecycleHook` path.
-  const origTrigger = proto._trigger;
-  if (typeof origTrigger === 'function' && !(origTrigger as any).__gxtCaptureWrapped) {
-    const wrappedTrigger = function (this: any, name: string, ...args: any[]) {
-      try {
-        return origTrigger.call(this, name, ...args);
-      } catch (e) {
-        captureErr(e);
-        throw e;
-      }
-    };
-    (wrappedTrigger as any).__gxtCaptureWrapped = true;
-    proto._trigger = wrappedTrigger;
-  }
-
-  // Wrap each instance's `destroy` method after `init` runs. We hook `init`
-  // rather than patching `Component.prototype.destroy` because user code
-  // routinely overrides `destroy()` on subclasses — the subclass override
-  // calls `super.destroy(...arguments)` first and then throws, so any wrap
-  // applied to the base `Component.prototype.destroy` would catch nothing.
-  // Wrapping at the instance level catches the subclass' thrown error
-  // regardless of override depth. The manager's `__gxtDestroyUnclaimedPoolEntries`
-  // path uses `try { instance.destroy(); } catch { /* ignore */ }` and
-  // silently drops the error otherwise; capturing it here routes the error
-  // into `_renderErrors`, which `flushRenderErrors` (called at the end of
-  // `runTask`/`runAppend`) will then re-throw out to the test harness.
-  const origInit = proto.init;
-  if (typeof origInit === 'function' && !(origInit as any).__gxtCaptureWrapped) {
-    const wrappedInit = function (this: any, ...args: any[]) {
-      const result = origInit.apply(this, args);
-      try {
-        const existingDestroy = this.destroy;
-        if (typeof existingDestroy === 'function' && !existingDestroy.__gxtCaptureWrapped) {
-          const wrappedDestroy = function (this: any, ...destroyArgs: any[]) {
-            try {
-              return existingDestroy.apply(this, destroyArgs);
-            } catch (e) {
-              captureErr(e);
-              throw e;
-            }
-          };
-          (wrappedDestroy as any).__gxtCaptureWrapped = true;
-          // Only override if `destroy` is writable. Some classes may have
-          // sealed the property; in that case we silently fall back to the
-          // prototype-level behavior.
-          try {
-            this.destroy = wrappedDestroy;
-          } catch {
-            /* property not writable */
-          }
-        }
-      } catch {
-        /* never block init on our instrumentation */
-      }
-      return result;
-    };
-    (wrappedInit as any).__gxtCaptureWrapped = true;
-    proto.init = wrappedInit;
-  }
-}
+// Note: `ensureLifecycleErrorCapture` previously patched
+// `Component.prototype._trigger` and per-instance `destroy` to capture
+// user-thrown lifecycle errors into the GXT render-error queue before
+// manager.ts's silent try/catch blocks discarded them. As of Phase 3 step 6
+// of the GXT workaround-removal plan, those swallows in manager.ts are
+// replaced with captureRenderError() at the source:
+//   - triggerLifecycleHook (around `instance.trigger(hookName)`) captures all
+//     Error instances (was: only allowlisted "Assertion Failed" / "Error in")
+//   - __gxtDestroyUnclaimedPoolEntries Phase 3 captures destroy/willDestroy
+//     throws (was: silent /* ignore */ catch)
+// Both honor the __gxtSuppressDestroyCapture flag for spurious-sweep gating.
+// The renderer-side prototype patch is therefore no longer needed.
 
 // This wrapper logic prevents us from rerendering in case of a hard failure
 // during render. This prevents infinite revalidation type loops from occuring,
@@ -575,12 +481,6 @@ class ClassicRootState {
     this.result = undefined;
     this.destroyed = false;
     this.env = context.env;
-
-    // Install Component.prototype._trigger / destroy wrappers so that errors
-    // thrown from lifecycle hooks (didInsertElement, willDestroy, etc.) are
-    // captured into the GXT render-error queue before the manager's internal
-    // try/catch blocks can swallow them. Idempotent — runs once per process.
-    ensureLifecycleErrorCapture();
 
     this.render = errorLoopTransaction(() => {
       // Guard against infinite render depth (e.g., engine mounting loops)
