@@ -90,21 +90,24 @@ QUnit.moduleDone(
 
 QUnit.testStart(() => {
   resetTracking();
-  // Defensive: clear any stale render errors leaked from a prior test. The
-  // gxt-backend's `_renderErrors` queue is process-global. Most paths flush
-  // or clear it (runAppend / runTask catches, flushRenderErrors), but a few
-  // silent-capture sites (e.g. flushAfterInsertQueue, __gxtDestroyUnclaimed-
-  // PoolEntries Phase 3, cumulative destroy-time captures) can enqueue an
-  // error AFTER the test that produced it has already escaped its
-  // synchronous throw via assert.throws. Without this guard, the next test
-  // sees its first runTask/flushRenderErrors re-throw the stale error,
-  // causing a "Died on test #N" cumulative-state failure that does not
-  // reproduce in module isolation. Tests like
-  // `Errors thrown during render: it can recover resets the transaction
-  // when an error is thrown during initial render` are the canonical
-  // victims of this leak.
-  const clearRenderErrs = (globalThis as any).__gxtClearRenderErrors;
-  if (typeof clearRenderErrs === 'function') clearRenderErrs();
+  // Phase 3 step 9: the gxt-backend `_renderErrors` queue is now drained
+  // synchronously within the test that produces an entry:
+  //   - init-phase errors propagate via renderer.ts's template.render() try/catch (step 5)
+  //   - lifecycle errors are flushed by the renderer's internal flushRenderErrors
+  //     after flushAfterInsertQueue (renderer.ts:858 etc.) within the same render cycle
+  //   - destroy-phase errors throw first-error-wins from __gxtDestroyUnclaimedPoolEntries
+  //     (step 8a) so they surface through runTask/__gxtSyncDomNow within the same test
+  //   - Pattern-2 graceful-return captures (manager.ts:7955/7960/8811, compile.ts:8279)
+  //     are surfaced by the renderer's internal flush during the same render
+  //
+  // An empirical probe across all 6 baseline gates (smoke 333, Errors 4,
+  // Tracked 36, computed 148, Lifecycle 42, render 981 — ~1544 tests total)
+  // recorded ZERO stale-queue events at testStart. The previous defensive
+  // `__gxtClearRenderErrors()` call is therefore dead code and deleted.
+  // If a future change reintroduces cross-test queue pollution, the next
+  // test's first runTask/flushRenderErrors will re-throw the stale error
+  // with the wrong test attribution ("Died on test #N") — diagnose, then
+  // fix the upstream queue-pusher, do not re-add the drain.
 });
 
 const uiFlags = [
