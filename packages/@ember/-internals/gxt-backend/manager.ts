@@ -2960,9 +2960,6 @@ export function captureRenderError(err: unknown): void {
   } else {
     _renderErrors.push(new Error(String(err)));
   }
-  // Track error count so the renderer can distinguish render-phase errors
-  // (init failures) from lifecycle-phase errors (didInsertElement failures).
-  (globalThis as any).__gxtRenderErrorCount = _renderErrors.length;
 }
 
 /**
@@ -2970,7 +2967,6 @@ export function captureRenderError(err: unknown): void {
  * Throws the first one (so assert.throws in tests can catch it).
  */
 export function flushRenderErrors(): void {
-  (globalThis as any).__gxtRenderErrorCount = 0;
   if (_renderErrors.length > 0) {
     const err = _renderErrors.shift()!;
     _renderErrors.length = 0;
@@ -2984,7 +2980,6 @@ export function flushRenderErrors(): void {
  */
 export function clearRenderErrors(): void {
   _renderErrors.length = 0;
-  (globalThis as any).__gxtRenderErrorCount = 0;
 }
 (globalThis as any).__gxtClearRenderErrors = clearRenderErrors;
 

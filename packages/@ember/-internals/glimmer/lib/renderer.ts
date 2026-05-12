@@ -786,13 +786,6 @@ class ClassicRootState {
               }
             }
 
-            // Reset render error count before rendering. The counter is no
-            // longer read by this renderer (init-phase errors propagate
-            // directly via the try/catch below), but other consumers may
-            // still observe it. Phase 3 step 8 of the workaround-removal
-            // plan deletes the counter writes entirely.
-            (globalThis as any).__gxtRenderErrorCount = 0;
-
             // Begin render pass for backtracking detection
             beginRenderPass();
 
