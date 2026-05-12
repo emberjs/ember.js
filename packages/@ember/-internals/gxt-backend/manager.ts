@@ -4200,6 +4200,13 @@ let _preRerenderSnapshot: Set<any> = new Set();
   // in the wrapper) or (b) expects them to survive to the afterEach
   // teardown where the deferred destructor fires normally.
   const currentCycle = (globalThis as any).__gxtSyncCycleId || 0;
+  // First-error-wins for Phase 3 destroy/willDestroy throws. Loop iterates to
+  // completion so every unclaimed instance gets a destroy attempt, then we
+  // re-throw the first error at the end. The throw escapes __gxtSyncDomNow
+  // (compile.ts catches → __gxtDeferredSyncError → re-throws at line ~5737),
+  // which lets runTask propagate the error to assert.throws naturally —
+  // without needing a post-task flushRenderErrors() drain of _renderErrors.
+  let firstPhase3Error: Error | null = null;
   for (const instance of unclaimed) {
     try {
       const wasInPriorCycle = instance.__gxtCreatedInSyncCycle !== currentCycle;
@@ -4211,13 +4218,11 @@ let _preRerenderSnapshot: Set<any> = new Set();
         try {
           instance.destroy();
         } catch (e) {
-          // Capture user-thrown destroy errors so they surface through
-          // flushRenderErrors() in the renderer. Honor
-          // __gxtSuppressDestroyCapture, which is set during spurious
+          // Honor __gxtSuppressDestroyCapture, which is set during spurious
           // unclaimed-pool sweeps (initial-render syncs not driven by a
           // real property change).
           if (e instanceof Error && !(globalThis as any).__gxtSuppressDestroyCapture) {
-            captureRenderError(e);
+            if (!firstPhase3Error) firstPhase3Error = e;
           }
         }
       }
@@ -4234,7 +4239,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
           // elsewhere was renderer.ts's ensureLifecycleErrorCapture wrapper,
           // which has been removed. Capture them here instead.
           if (e instanceof Error && !(globalThis as any).__gxtSuppressDestroyCapture) {
-            captureRenderError(e);
+            if (!firstPhase3Error) firstPhase3Error = e;
           }
         }
       }
@@ -4261,6 +4266,15 @@ let _preRerenderSnapshot: Set<any> = new Set();
   // Restore the prior suppress-capture flag (only if we set it ourselves).
   if (_outerSuppressCapture && !_hadPriorSuppress) {
     (globalThis as any).__gxtSuppressDestroyCapture = false;
+  }
+
+  // Surface the first Phase 3 destroy/willDestroy error AFTER all cleanup so
+  // sibling instances complete their destroy attempts (first-error-wins).
+  // Throw rather than capture into _renderErrors so the error escapes
+  // __gxtSyncDomNow's deferred-error path and reaches runTask's caller
+  // synchronously, eliminating the dependency on a post-task flush.
+  if (firstPhase3Error) {
+    throw firstPhase3Error;
   }
 };
 

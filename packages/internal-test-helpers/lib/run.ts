@@ -1,6 +1,5 @@
 import { next, run, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
-import { flushRenderErrors } from '@glimmer/manager';
 
 import { Promise } from 'rsvp';
 
@@ -143,18 +142,13 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   // Reset interval sync budget after an explicit runTask sync
   const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
   if (typeof resetBudget === 'function') resetBudget();
-  // Phase 3 step 7: the runAppend flushRenderErrors() call was deleted, but
-  // THIS runTask flush stays. Empirical finding (canary 4/4 → 3/4 when
-  // deleted): destroy-during-runTask errors are captured by manager.ts's
-  // `__gxtDestroyUnclaimedPoolEntries` Phase 3 try/catch (around line 4220)
-  // via `captureRenderError` without re-throwing — and the destroy path here
-  // runs INSIDE `__gxtSyncDomNow` after the runloop body has completed, so
-  // renderer.ts's internal flushRenderErrors never sees these captures.
-  // Surfacing them requires this post-task flush. The canary's "it can
-  // recover resets the transaction when an error is thrown during destroy"
-  // subtest depends on `assert.throws(() => runTask(() => set(switch, false)))`
-  // seeing the captured destroy error.
-  flushRenderErrors();
+  // Phase 3 step 8: the runTask post-task flushRenderErrors() call was
+  // deleted. Destroy-during-runTask errors used to require this drain
+  // because __gxtDestroyUnclaimedPoolEntries Phase 3 captured throws into
+  // _renderErrors without re-throwing. Now Phase 3 throws the first error
+  // directly (manager.ts:~4250), which propagates through __gxtSyncDomNow's
+  // __gxtDeferredSyncError re-throw (compile.ts:~5737) and escapes the
+  // syncNow() call above naturally. No flush needed.
   return result;
 }
 
