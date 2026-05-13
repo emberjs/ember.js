@@ -3405,7 +3405,11 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
     // changes reliably.
     try {
       let isCustomManagedComponent = false;
-      const isRoot = (globalThis as any).__gxtIsRootComponent;
+      // (Cluster B slice 9) Was `(globalThis as any).__gxtIsRootComponent`.
+      // Now read via the gxt-bridge `rootComponent` namespace; the writer is
+      // `glimmer/lib/renderer.ts` (the first cross-package writer for an
+      // install-API namespace).
+      const isRoot = getGxtRenderer()?.rootComponent.isRootComponent;
       if (typeof isRoot === 'function' && isRoot(obj)) {
         isCustomManagedComponent = true;
       } else {
@@ -5514,7 +5518,10 @@ try {
       // on temporary elements. Only update root tag values (NOT hadPendingSync)
       // so that property-change-driven syncs still trigger the morph when needed.
       try {
-        const updateRootTags = (globalThis as any).__gxtUpdateRootTagValues;
+        // (Cluster B slice 9) Was `(globalThis as any).__gxtUpdateRootTagValues`.
+        // Now read via the gxt-bridge `rootComponent` namespace; the writer
+        // is `glimmer/lib/renderer.ts`.
+        const updateRootTags = getGxtRenderer()?.rootComponent.updateRootTagValues;
         if (typeof updateRootTags === 'function') updateRootTags();
       } catch {
         /* ignore */

@@ -5,7 +5,14 @@ import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId, setViewElement } from '@ember/-internals/views';
 // (Cluster B slice 6) Bridge reader for `registerArrayOwner`.
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+// (Cluster B slice 9) Bridge writer for `rootComponent.{isRootComponent,
+// updateRootTagValues}` — renderer.ts is the first non-gxt-backend file to
+// install a capabilities part. See gxt-bridge.ts `GxtRootComponentCapabilities`
+// for the namespace docs.
+import {
+  getGxtRenderer,
+  installRootComponentPart,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
 (globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
@@ -1351,7 +1358,11 @@ if (!__GXT_MODE__) {
 // __gxtTriggerReRender to distinguish own-SELF_TAG changes (which the
 // cell-based sync pipeline handles) from nested-object changes (which need
 // a force-rerender fallback).
-(globalThis as any).__gxtIsRootComponent = function (obj: any): boolean {
+//
+// (Cluster B slice 9) Was `(globalThis as any).__gxtIsRootComponent`. Now
+// installed on the gxt-bridge `rootComponent` namespace via
+// `installRootComponentPart` below.
+function _gxtIsRootComponent(obj: unknown): boolean {
   if (!obj || typeof obj !== 'object') return false;
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
@@ -1363,7 +1374,7 @@ if (!__GXT_MODE__) {
     }
   }
   return false;
-};
+}
 
 // Update gxtLastTagValue on all GXT roots to mark them clean.
 // Called from __gxtTriggerReRender after cell-based sync succeeds,
@@ -1372,7 +1383,11 @@ if (!__GXT_MODE__) {
 // ALSO records which roots WERE dirty (on globalThis.__gxtDirtyRootsAtSync)
 // so __gxtForceEmberRerender can scope its rerender to just those roots,
 // avoiding a full-tree force-render when only some components mutated.
-(globalThis as any).__gxtUpdateRootTagValues = function () {
+//
+// (Cluster B slice 9) Was `(globalThis as any).__gxtUpdateRootTagValues`. Now
+// installed on the gxt-bridge `rootComponent` namespace via
+// `installRootComponentPart` below.
+function _gxtUpdateRootTagValues(): void {
   const dirtyRoots: any[] = [];
   for (const renderer of renderers) {
     const state = (renderer as any).state as RendererState;
@@ -1391,27 +1406,27 @@ if (!__GXT_MODE__) {
     }
   }
   (globalThis as any).__gxtDirtyRootsAtSync = dirtyRoots;
-};
+}
 
-// Check if all GXT root tag values are current (meaning cell-based updates
-// already brought the DOM up to date). Used to skip redundant morph renders.
-(globalThis as any).__gxtCheckAllTagsCurrent = function (): boolean {
-  for (const renderer of renderers) {
-    const state = (renderer as any).state as RendererState;
-    if (!state) continue;
-    const debugRoots = state.debug?.roots;
-    if (!debugRoots) continue;
-    for (const root of debugRoots) {
-      const classicRoot = root as any;
-      if (classicRoot.isGxt && classicRoot.gxtComponentTag) {
-        if (valueForTag(classicRoot.gxtComponentTag) !== classicRoot.gxtLastTagValue) {
-          return false; // At least one root is stale
-        }
-      }
-    }
-  }
-  return true;
-};
+// Slice-9 (Cluster B): publish the renderer-owned root-component hooks to the
+// gxt-bridge `rootComponent` namespace. Mirrors slice 6's
+// `installCompilePipelinePart` from ember-template-compiler.ts and slice 7's
+// `installRuntimePart` from gxt-with-runtime-hbs.ts; this is the first cross-
+// package writer for an install-API namespace (renderer.ts lives in
+// `@ember/-internals/glimmer`, the bridge namespace is consumed inside
+// `@ember/-internals/gxt-backend/compile.ts`). The install is direction-
+// agnostic — see gxt-bridge.ts `GxtRootComponentCapabilities` for the design
+// note on "reverse-flow".
+installRootComponentPart({
+  isRootComponent: _gxtIsRootComponent,
+  updateRootTagValues: _gxtUpdateRootTagValues,
+});
+
+// (Cluster B slice 9 orphan cleanup) The pre-slice `(globalThis as any)
+// .__gxtCheckAllTagsCurrent` writer had ZERO live readers in source — the
+// sole reference at `compile.ts:5522` is a historical comment explaining
+// why the function is no longer used (the morph must always run when
+// hadPendingSync is true). Writer removed without bridge migration.
 
 interface ViewRegistry {
   [viewId: string]: unknown;

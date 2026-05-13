@@ -12485,4 +12485,9 @@ setGxtRenderer({
   // gxt-with-runtime-hbs.ts. Seeded empty here so `Object.assign` has a
   // target object regardless of which side loads first.
   runtime: {},
+  // Slice-9: populated entirely via `installRootComponentPart` from
+  // glimmer/lib/renderer.ts (the first cross-package writer for an install-API
+  // namespace). Seeded empty here so `Object.assign` has a target object
+  // regardless of which side loads first.
+  rootComponent: {},
 });

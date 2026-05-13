@@ -274,12 +274,13 @@ export interface GxtFormatCapabilities {
  *    in a workspace that does NOT depend on `@ember/-internals`, so cannot
  *    import the bridge. Dual exposure (bridge + globalThis) is intentional
  *    for this hook. All other slice-6 hooks remove globalThis entirely.
- *  - `__gxtIsRootComponent`, `__gxtUpdateRootTagValues` (writers in
- *    glimmer/lib/renderer.ts, readers in gxt-backend) — REVERSE-FLOW
- *    (writer outside gxt-backend, reader inside). The bridge convention has
- *    the writer inside gxt-backend (the renderer). Migrating these would
- *    invert the bridge direction and is structurally different from prior
- *    slices.
+ *  - `__gxtIsRootComponent`, `__gxtUpdateRootTagValues` — MIGRATED IN SLICE 9
+ *    to the new `rootComponent` namespace via `installRootComponentPart`.
+ *    First reverse-flow slice: writer is `glimmer/lib/renderer.ts` (outside
+ *    gxt-backend), reader is `compile.ts` (inside). The install-API pattern
+ *    proved direction-agnostic — mechanically identical to slice 6's
+ *    `ember-template-compiler.ts` contribution and slice 7's
+ *    `gxt-with-runtime-hbs.ts` contribution.
  *  - `__gxtDirectModule` (writer in gxt-with-runtime-hbs.ts, reader in
  *    manager.ts) — MIGRATED IN SLICE 7. See `GxtRuntimeCapabilities` and
  *    `installRuntimePart` below. Validates the install-API pattern with a
@@ -520,6 +521,69 @@ export interface GxtRuntimeCapabilities {
 }
 
 /**
+ * Root-component / renderer-state capabilities. Implemented by
+ * `glimmer/lib/renderer.ts` (the file that owns the `renderers` set and the
+ * per-renderer `RendererState.debug.roots` walk), consumed by
+ * `gxt-backend/compile.ts` (the file that drives `__gxtTriggerReRender` and
+ * Phase 1b of `__gxtSyncDomNow`).
+ *
+ * Slice-9 design: this is the FIRST "reverse-flow" namespace on the bridge.
+ * All prior slices had the writer inside `gxt-backend` (and readers either
+ * inside `gxt-backend` or in the small set of cross-package consumers that
+ * import the bridge). For this namespace the writer is OUTSIDE `gxt-backend`
+ * (it's `glimmer/lib/renderer.ts`, which already imports the bridge for
+ * slice-6's `compilePipeline.registerArrayOwner` reader). Mechanically the
+ * shape is identical to slice 7's `runtime` namespace and slice 6's
+ * compile-pipeline contributions from `ember-template-compiler.ts`: the
+ * non-manager.ts writer file calls `installRootComponentPart(...)` at module
+ * init; manager.ts seeds an empty `rootComponent: {}` so `Object.assign` has
+ * a target. The "reverse" framing is from the perspective of the writer
+ * location (renderer.ts publishes; compile.ts consumes), not the bridge's
+ * mechanical contract.
+ *
+ * Why split into its own namespace (rather than dropped into
+ * `compilePipeline`)? `compilePipeline` is conceptually "the compile-side
+ * surface contributed by compile.ts / ember-template-compiler.ts". Renderer-
+ * owned hooks belong on their own namespace so the surface area stays legible
+ * (`rootComponent.isRootComponent(...)` vs. `compilePipeline.isRootComponent(...)`
+ * — the former immediately tells the reader the implementation lives in the
+ * renderer file).
+ *
+ * NOT included in this slice (intentionally deferred):
+ *  - `__gxtCheckAllTagsCurrent` (glimmer/lib/renderer.ts:1398) — defined
+ *    alongside `__gxtUpdateRootTagValues` but the only reference in source is
+ *    a HISTORICAL comment at compile.ts:5522 explaining why the function is
+ *    no longer used. Zero live readers. Cleaned up as an orphan in this slice
+ *    (writer removal only — no migration to the bridge needed).
+ */
+export interface GxtRootComponentCapabilities {
+  /**
+   * Return `true` if `obj` is the `root` of one of the registered renderers'
+   * top-level GXT roots. Used by compile.ts's `__gxtTriggerReRender` path to
+   * distinguish own-SELF_TAG changes (handled by the cell-based sync
+   * pipeline) from nested-object changes (which need a force-rerender
+   * fallback). Returns `false` for non-objects, missing renderers, or any
+   * object that isn't itself a registered root.
+   *
+   * Previously: `(globalThis as any).__gxtIsRootComponent`.
+   */
+  isRootComponent?(obj: unknown): boolean;
+
+  /**
+   * Walk every registered renderer's GXT roots, recording which were dirty
+   * (their `gxtLastTagValue` differs from the current tag value) on
+   * `(globalThis as any).__gxtDirtyRootsAtSync`, then update each root's
+   * `gxtLastTagValue` to match the current value. Used by
+   * `__gxtSyncDomNow`'s Phase 1b — after cell-based updates have applied,
+   * roots are marked clean so the Phase 2b force-rerender doesn't re-fire on
+   * already-applied changes.
+   *
+   * Previously: `(globalThis as any).__gxtUpdateRootTagValues`.
+   */
+  updateRootTagValues?(): void;
+}
+
+/**
  * The aggregate GXT renderer capabilities object. Pilot exposed only the
  * destruction slice; subsequent slices added backtracking, view-utils,
  * format, compile-pipeline, and runtime. Future slices will be additional
@@ -538,6 +602,7 @@ export interface GxtRenderer {
   readonly compilePipeline: GxtCompilePipelineCapabilities;
   readonly renderPass: GxtRenderPassCapabilities;
   readonly runtime: GxtRuntimeCapabilities;
+  readonly rootComponent: GxtRootComponentCapabilities;
 }
 
 let _renderer: GxtRenderer | null = null;
@@ -569,6 +634,15 @@ let _pendingRuntimeParts: Partial<GxtRuntimeCapabilities>[] = [];
 // first; entering via the renderer loads manager.ts first. Buffer until the
 // renderer is available, then flush.
 let _pendingRenderPassParts: Partial<GxtRenderPassCapabilities>[] = [];
+
+// Slice-9 deferred-install queue. Same load-order independence pattern as
+// slices 6 / 7 / 8, but for the `rootComponent` namespace whose writer
+// (`glimmer/lib/renderer.ts`) is OUTSIDE gxt-backend. renderer.ts may load
+// BEFORE manager.ts in some entry paths (e.g., when an app boots from
+// `@ember/-internals/glimmer` and gxt-backend is pulled in lazily via the
+// compile-pipeline import edge). Buffer until the renderer is available,
+// then flush.
+let _pendingRootComponentParts: Partial<GxtRootComponentCapabilities>[] = [];
 
 /**
  * Install the renderer capabilities object. Called exactly once at
@@ -606,6 +680,12 @@ export function setGxtRenderer(renderer: GxtRenderer): void {
       Object.assign(_renderer.runtime, part);
     }
     _pendingRuntimeParts = [];
+  }
+  if (_pendingRootComponentParts.length > 0) {
+    for (const part of _pendingRootComponentParts) {
+      Object.assign(_renderer.rootComponent, part);
+    }
+    _pendingRootComponentParts = [];
   }
 }
 
@@ -676,6 +756,33 @@ export function installRenderPassPart(part: Partial<GxtRenderPassCapabilities>):
     return;
   }
   Object.assign(_renderer.renderPass, part);
+}
+
+/**
+ * Slice-9 install API. Allows `glimmer/lib/renderer.ts` to contribute methods
+ * to the `rootComponent` namespace. Mirrors `installCompilePipelinePart`
+ * (slice 6), `installRuntimePart` (slice 7), and `installRenderPassPart`
+ * (slice 8): if `setGxtRenderer` has already fired (manager.ts loaded first),
+ * the part is merged immediately via `Object.assign` into the existing
+ * `rootComponent` object. If `setGxtRenderer` has NOT yet fired, the part is
+ * buffered and flushed when `setGxtRenderer` runs.
+ *
+ * Slice-9 is the first reverse-flow install: the writer file
+ * (`glimmer/lib/renderer.ts`) lives OUTSIDE gxt-backend. Mechanically this is
+ * identical to slice 6's `ember-template-compiler.ts` writer or slice 7's
+ * `gxt-with-runtime-hbs.ts` writer — the install-API pattern is direction-
+ * agnostic and supports both intra-gxt-backend writers and external-to-
+ * gxt-backend writers without modification. See `GxtRootComponentCapabilities`
+ * for the namespace docs.
+ */
+export function installRootComponentPart(
+  part: Partial<GxtRootComponentCapabilities>
+): void {
+  if (_renderer === null) {
+    _pendingRootComponentParts.push(part);
+    return;
+  }
+  Object.assign(_renderer.rootComponent, part);
 }
 
 /**
