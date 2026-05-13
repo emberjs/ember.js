@@ -219,14 +219,18 @@ import * as gxtModule from '@lifeart/gxt';
 // has already installed the renderer, the part is merged immediately; if
 // not, it's queued and flushed on `setGxtRenderer`.
 //
-// `__gxtOriginalManagers` is NOT migrated in this slice (slice 7 scope is
-// `__gxtDirectModule` only). It has a second writer in compile.ts and a
-// deferred-retry reader in manager.ts; a follow-up slice will handle it.
+// (Cluster B slice 16) Publish the GXT-original `$_MANAGERS` reference via
+// `runtime.getOriginalManagers` on the same install call. Both writers
+// (this file AND compile.ts) contribute the same object via
+// `installRuntimePart`; last-writer-wins is benign because both reference
+// the same `@lifeart/gxt` module instance (via rollup manualChunks
+// consolidation). Replaces the prior `(globalThis as any)
+// .__gxtOriginalManagers` dual-write.
 import { installRuntimePart } from './gxt-bridge';
 installRuntimePart({
   getGxtModule: () => gxtModule,
+  getOriginalManagers: () => gxtModule.$_MANAGERS,
 });
-(globalThis as any).__gxtOriginalManagers = gxtModule.$_MANAGERS;
 import { hbs } from './runtime-hbs';
 export default {
   ...gxtModule,

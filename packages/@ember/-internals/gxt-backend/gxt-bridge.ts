@@ -835,25 +835,34 @@ export interface GxtRenderPassCapabilities {
 /**
  * Runtime / module-handoff capabilities. Implemented by
  * `gxt-with-runtime-hbs.ts` (the file that imports `* as gxtModule from
- * '@lifeart/gxt'` and re-exports the runtime-hbs-flavored namespace), consumed
- * by manager.ts to obtain the SAME `@lifeart/gxt` namespace object that GXT's
- * internal manager-handler functions close over. This is needed so manager.ts
- * can mutate the original `$_MANAGERS` object in place (GXT's `$_maybeHelper`
- * etc. capture a reference to it at module-init time; replacing the object
- * wholesale would not be observed).
+ * '@lifeart/gxt'` and re-exports the runtime-hbs-flavored namespace) AND by
+ * `compile.ts` (the file that imports `$_MANAGERS` directly from
+ * `@lifeart/gxt` for use in template-emit code). Both writers contribute the
+ * SAME `$_MANAGERS` object reference (the `manualChunks` rollup consolidation
+ * guarantees a single GXT module instance; see compile.ts:1242 note). The
+ * dual-write is for entry-point independence — either file may load alone in
+ * different bundles, so each must be able to publish the manager reference
+ * autonomously.
  *
- * Slice-7 design: a tiny one-method namespace, populated via the install-API
+ * Consumed by manager.ts to obtain the SAME `@lifeart/gxt` namespace and
+ * `$_MANAGERS` object that GXT's internal manager-handler functions close
+ * over. manager.ts must mutate the original `$_MANAGERS` object in place
+ * (GXT's `$_maybeHelper` etc. capture a reference to it at module-init time;
+ * replacing the object wholesale would not be observed).
+ *
+ * Slice-7 design (initial): `getGxtModule` populated via the install-API
  * pattern introduced in slice 6 (`installRuntimePart`). The writer file
  * (`gxt-with-runtime-hbs.ts`) does NOT live in `manager.ts`, so we use a
  * partial-install API rather than an initial `setGxtRenderer` field. This
  * also validates the pattern with a SECOND non-manager.ts writer.
  *
- * NOT included in this slice (defer to future slices):
- *  - `__gxtOriginalManagers` — also written by `gxt-with-runtime-hbs.ts:219`
- *    AND by `compile.ts:6023`. Two writers + the deferred-retry consumer in
- *    `manager.ts:12402` make this materially more complex than slice 7's
- *    one-writer/one-reader scope. Defer until a dedicated slice can handle
- *    the dual-write semantics.
+ * Slice-16 extension: `getOriginalManagers` added as the canonical bridge
+ * route for the GXT-original `$_MANAGERS` reference, replacing the prior
+ * `(globalThis as any).__gxtOriginalManagers` dual-write. Both writers
+ * contribute via `installRuntimePart`; last-writer-wins is benign because
+ * both return the same object reference. The manager.ts reader does a
+ * `queueMicrotask` deferral so contributors (which run at their own module
+ * init, after manager.ts's `setGxtRenderer`) have a chance to register.
  */
 export interface GxtRuntimeCapabilities {
   /**
@@ -869,6 +878,24 @@ export interface GxtRuntimeCapabilities {
    * Previously: `(globalThis as any).__gxtDirectModule`.
    */
   getGxtModule?(): unknown;
+
+  /**
+   * Return the GXT-original `$_MANAGERS` object — the exact reference that
+   * GXT's internal `$_maybeHelper`, `$_maybeModifier`, etc. close over at
+   * module init. Returns `undefined` if neither writer file
+   * (`gxt-with-runtime-hbs.ts` nor `compile.ts`) is in the import graph.
+   *
+   * Both `gxt-with-runtime-hbs.ts` and `compile.ts` register this method via
+   * `installRuntimePart`; the second `Object.assign` wins, but both return
+   * the same object since the rollup `manualChunks` consolidation ensures a
+   * single `@lifeart/gxt` module instance across the gxt-backend package.
+   *
+   * Used by manager.ts (in a `queueMicrotask` so contributors get a chance
+   * to register) to mutate the original managers object in place.
+   *
+   * Previously: `(globalThis as any).__gxtOriginalManagers`.
+   */
+  getOriginalManagers?(): unknown;
 }
 
 /**

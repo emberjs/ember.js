@@ -5941,10 +5941,17 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 // directly onto this object). GXT's internal functions ($_maybeModifier,
 // $_maybeHelper, etc.) close over this same object reference.
 (globalThis as any).$_MANAGERS = $_MANAGERS;
-// Also store a reference under a different key so manager.ts can find
-// the GXT-original object reliably (even after globalThis.$_MANAGERS
-// is reassigned).
-(globalThis as any).__gxtOriginalManagers = $_MANAGERS;
+// (Cluster B slice 16) Publish the GXT-original `$_MANAGERS` reference via
+// the typed gxt-bridge `runtime.getOriginalManagers` so manager.ts can find
+// the GXT-original object reliably (even after globalThis.$_MANAGERS is
+// reassigned). Both this writer AND gxt-with-runtime-hbs.ts contribute the
+// same object via `installRuntimePart`; last-writer-wins is benign because
+// both reference the same `@lifeart/gxt` module instance (via the rollup
+// `manualChunks` consolidation noted at compile.ts:1242). Replaces the
+// prior `(globalThis as any).__gxtOriginalManagers` dual-write.
+installRuntimePart({
+  getOriginalManagers: () => $_MANAGERS,
+});
 
 // Replace globalThis.$_maybeModifier with a version that delegates to our
 // Ember modifier manager. The GXT-original function closes over the module-scope
@@ -14278,6 +14285,7 @@ import {
   installRenderPassPart,
   installBacktrackingPart,
   installViewUtilsPart,
+  installRuntimePart,
 } from './gxt-bridge';
 installCompilePipelinePart({
   compileTemplate: compileTemplate,

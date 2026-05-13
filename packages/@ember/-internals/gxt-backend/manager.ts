@@ -12655,13 +12655,23 @@ function _createUpdatableTagForModifier(): any {
   }
   // Also set on globalThis
   (globalThis as any).$_MANAGERS = $_MANAGERS;
-  // Deferred retry: compile.ts may set __gxtOriginalManagers after this module runs
+  // (Cluster B slice 16) Deferred retry: contributors to `runtime` (compile.ts
+  // and/or gxt-with-runtime-hbs.ts) may install AFTER this module's
+  // synchronous init runs. Both publish the same GXT-original `$_MANAGERS`
+  // reference via `runtime.getOriginalManagers()` (was
+  // `(globalThis as any).__gxtOriginalManagers`); a microtask gives them a
+  // turn to register before we look up the reference and mutate the original
+  // object in place.
   queueMicrotask(() => {
-    const gxtMgrs = (globalThis as any).__gxtOriginalManagers;
-    if (gxtMgrs && gxtMgrs !== $_MANAGERS) {
-      gxtMgrs.component = $_MANAGERS.component;
-      gxtMgrs.helper = $_MANAGERS.helper;
-      gxtMgrs.modifier = $_MANAGERS.modifier;
+    try {
+      const gxtMgrs = getGxtRenderer()?.runtime.getOriginalManagers?.() as any;
+      if (gxtMgrs && gxtMgrs !== $_MANAGERS) {
+        gxtMgrs.component = $_MANAGERS.component;
+        gxtMgrs.helper = $_MANAGERS.helper;
+        gxtMgrs.modifier = $_MANAGERS.modifier;
+      }
+    } catch {
+      /* ignore — bridge may be uninstalled in non-GXT-mode builds */
     }
   });
 }
