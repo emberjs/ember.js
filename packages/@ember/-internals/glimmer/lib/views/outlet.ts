@@ -79,7 +79,7 @@ export default class OutletView {
       },
     };
 
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       // GXT mode: install a cellFor-backed reactive slot on outletState.outlets.main
       // and pass the raw outletState through as `ref` (consumers in this branch
       // dereference it directly). cellFor is read lazily from the gxt-backend's
@@ -135,7 +135,7 @@ export default class OutletView {
   }
 
   setOutletState(state: OutletState): void {
-    if (!(globalThis as any).__GXT_MODE__) {
+    if (!__GXT_MODE__) {
       // Classic mode: route through the createComputeRef updater so the
       // outletStateTag dirties and Glimmer VM revalidates on the next pass.
       updateRef(this.ref, state);

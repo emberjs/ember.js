@@ -503,7 +503,7 @@ class ClassicRootState {
         // never restores it — observed as an infinite hang in benchmark-app
         // at the clearItems4 phase. Force classic mode through standard
         // Glimmer rendering by short-circuiting here.
-        const templateIsGxt = (globalThis as any).__GXT_MODE__ ? isGxtTemplate(template) : false;
+        const templateIsGxt = __GXT_MODE__ ? isGxtTemplate(template) : false;
 
         let layout = unwrapTemplate(template).asLayout();
 
@@ -1129,7 +1129,7 @@ class ClassicRootState {
         // path, but still incurs traversal cost and may interact poorly with
         // foreign objects. Gate on __GXT_MODE__ to keep classic-Ember teardown
         // identical to upstream.
-        if ((globalThis as any).__GXT_MODE__) {
+        if (__GXT_MODE__) {
           destroyElementSync(result!);
         }
         destroy(result!);
@@ -1218,7 +1218,7 @@ function loopEnd() {
 // In GXT mode, don't hook into backburner's begin/end events for render
 // revalidation. GXT handles rendering via its own reactivity system.
 // Instead, use __gxtSyncDomNow (called by runTask) for synchronous updates.
-if (!(globalThis as any).__GXT_MODE__) {
+if (!__GXT_MODE__) {
   _backburner.on('begin', loopBegin);
   _backburner.on('end', loopEnd);
 } else {
@@ -1590,7 +1590,7 @@ class RendererState {
     // In GXT mode, rendering is handled by GXT's reactivity system,
     // not by the Ember renderer's revalidation loop. Always report valid
     // to prevent infinite revalidation loops in loopEnd().
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       return true;
     }
 
@@ -1614,7 +1614,7 @@ class RendererState {
     // In GXT mode, isValid() returns true to prevent infinite revalidation.
     // But explicit .rerender() calls set __gxtForceRerender on the component
     // and need a sync pass to flush the hooks.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       (globalThis as any).__gxtPendingSync = true;
       return;
     }
@@ -2445,7 +2445,7 @@ export function renderComponent(
 ): RenderResult {
   // GXT escape hatch: bypass Glimmer VM entirely for GXT mode.
   // This avoids bytecode compilation which crashes with GXT templates.
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     return _renderComponentGxt(component, into, owner, args);
   }
 
@@ -2809,7 +2809,7 @@ export class Renderer extends BaseRenderer {
     // cache test (`ember-glimmer runtime resolver cache`) reads these to
     // verify caching behaviour. Mirror the counters onto the live context
     // from the GXT-side tracker so the assertions see the same changes.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       const counters = (globalThis as any).__gxtResolverCacheCounters;
       if (counters && ctx && (ctx as any).constants) {
         const constants = (ctx as any).constants as {
@@ -2830,7 +2830,7 @@ export class Renderer extends BaseRenderer {
     // In GXT mode, view registration can conflict during force-rerender (morph)
     // or when views aren't fully cleaned up between test runs. Silently
     // overwrite the existing entry instead of asserting.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       this._viewRegistry[id] = view;
       return;
     }
@@ -2864,7 +2864,7 @@ export class Renderer extends BaseRenderer {
 
     // In GXT mode, BOUNDS may not be set on the component. Fall back to
     // synthesizing bounds from the component's element (wrapper or tagless).
-    if (!bounds && (globalThis as any).__GXT_MODE__) {
+    if (!bounds && __GXT_MODE__) {
       const element = getViewElement(component);
       if (element) {
         // Regular component with a wrapper element
