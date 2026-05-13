@@ -89,10 +89,14 @@ export abstract class AbstractStrictTestCase {
                 entry.cached.manager.destroyModifier(entry.cached.instance);
                 if (entry.cached.instance) entry.cached.instance.__gxtModDestroyed = true;
               }
-              if (entry.destroyable) {
-                const destroyFn = (globalThis as any).__gxtDestroyFn;
-                if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
-              }
+              // (Cluster B pilot, 2026-05-13) — was reading `__gxtDestroyFn`,
+              // which had no writer anywhere in the source tree (orphan from a
+              // previous refactor). The intended bridge function is now exposed
+              // via `getGxtRenderer()?.destruction.destroyDestroyable`, but the
+              // production teardown path (gxt-backend/compile.ts:5605) already
+              // covers modifier-destroyable cleanup before tests reach this
+              // helper. Removing the dead read is a no-op.
+              // if (entry.destroyable) { /* see comment above */ }
             } catch {
               /* ignore individual modifier destroy errors */
             }

@@ -12,6 +12,11 @@
 // @ts-ignore - direct path import
 import * as gxtModule from '@lifeart/gxt';
 
+// Cluster B pilot — typed bridge for destruction hooks. Populated by manager.ts
+// at its module init. Allows the $_dc_ember wrapper to destroy a component
+// instance without going through `(globalThis as any).__gxtDestroyEmberComponentInstance`.
+import { getGxtRenderer } from './gxt-bridge';
+
 const g = globalThis as any;
 
 // =============================================================================
@@ -2116,8 +2121,8 @@ function createEmberDc(original: Function) {
         const inst = _dcEmberInstance;
         _dcEmberInstance = null;
         try {
-          const destroyFn = (g as any).__gxtDestroyEmberComponentInstance;
-          if (typeof destroyFn === 'function') destroyFn(inst);
+          // (Cluster B pilot) — typed bridge call. Was __gxtDestroyEmberComponentInstance.
+          getGxtRenderer()?.destruction.destroyEmberComponentInstance(inst);
         } catch {
           /* ignore */
         }

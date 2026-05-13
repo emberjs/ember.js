@@ -1,0 +1,134 @@
+/**
+ * gxt-bridge — Cluster B pilot
+ *
+ * Typed capabilities bridge between sibling modules in `@ember/-internals/gxt-backend`
+ * (and a small number of cross-package consumers). Replaces ad-hoc
+ * `(globalThis as any).__gxt*` 1-writer/1-reader pairs.
+ *
+ * Why a separate module (rather than direct imports between sibling files)?
+ * `manager.ts` and `compile.ts` historically don't import each other — adding a
+ * direct import edge would create circular-load hazards during gxt-backend's
+ * module init (both are very large files with eagerly-evaluated top-level
+ * `(globalThis as any).__gxtFoo = ...` statements that the other side then reads
+ * at top-level too).
+ *
+ * Instead this module is a LEAF: it imports nothing from gxt-backend internals
+ * and only exposes a tiny mutable registry. The writer (manager.ts) calls
+ * `setGxtRenderer({ ... })` exactly once at module init; readers
+ * (compile.ts, ember-gxt-wrappers.ts) read through `getGxtRenderer()`.
+ *
+ * Contract:
+ *  - `setGxtRenderer` is called exactly once, at gxt-backend module init
+ *    (manager.ts top-level). Classic-Ember builds NEVER import gxt-backend, so
+ *    the registry stays `null` and every reader's `if (renderer)` guard turns
+ *    into a dead-code branch that `__GXT_MODE__` strips at bundle time.
+ *  - Capabilities are added to the interface incrementally as more globalThis
+ *    bridges are migrated. This pilot covers the "destruction" capability
+ *    cluster only (6 hooks). Future iterations will add scheduling, lifecycle,
+ *    cell-mirror, etc.
+ *  - All methods are best-effort (callers must remain defensive). The bridge
+ *    does NOT add behavior on top of the underlying call; it's a typed
+ *    indirection only.
+ *
+ * Anti-patterns this bridge AVOIDS:
+ *  - No `globalThis` writes (the whole point).
+ *  - No imports back into manager.ts / compile.ts (would re-introduce the
+ *    cycles the globalThis pattern existed to avoid).
+ *  - No `__GXT_MODE__` gating inside the bridge itself — classic builds drop
+ *    the entire import edge to gxt-backend via build-time dead-code elimination.
+ */
+
+/**
+ * Destruction capabilities. Implemented by manager.ts, consumed by compile.ts
+ * and ember-gxt-wrappers.ts (intra-package), plus a small number of test
+ * helpers.
+ *
+ * All methods are synchronous and best-effort; each implementation already
+ * wraps user-thrown destroy errors locally (see manager.ts destroy phases).
+ */
+export interface GxtDestructionCapabilities {
+  /**
+   * Destroy a single destroyable (Ember's destroyable contract). Used by
+   * compile.ts:5605 to tear down per-modifier destroyables when an element is
+   * removed from the DOM.
+   *
+   * Previously: `(globalThis as any).__gxtDestroyDestroyableFn`.
+   */
+  destroyDestroyable(destroyable: object): void;
+
+  /**
+   * Flush any custom-managed (manager.ts:_customManagedInstances) component
+   * instances whose DOM nodes are no longer connected. Invoked from
+   * `__gxtDestroyUnclaimedPoolEntries` near the start of its sweep.
+   *
+   * Previously: `(globalThis as any).__gxtDestroyCustomManagedInstances`.
+   */
+  destroyCustomManagedInstances(): void;
+
+  /**
+   * Drive the unclaimed-pool-entry destroy sweep. Called from compile.ts at
+   * the end of `__gxtSyncDomNow` Phase 2 to fire lifecycle hooks on pool
+   * entries that were in the previous render but not in the new one.
+   *
+   * Previously: `(globalThis as any).__gxtDestroyUnclaimedPoolEntries`.
+   */
+  destroyUnclaimedPoolEntries(): void;
+
+  /**
+   * Destroy any classic-component instances whose wrapper element appears in
+   * the given list of removed DOM nodes. Called from multiple compile.ts
+   * sites after morph-driven DOM mutations.
+   *
+   * Previously: `(globalThis as any).__gxtDestroyInstancesInNodes`.
+   */
+  destroyInstancesInNodes(removedNodes: ReadonlyArray<Node>): void;
+
+  /**
+   * Run the full interactive destroy lifecycle for all tracked component
+   * instances. Called from compile.ts at QUnit afterEach teardown.
+   *
+   * Previously: `(globalThis as any).__gxtDestroyTrackedInstances`.
+   */
+  destroyTrackedInstances(): void;
+
+  /**
+   * Destroy a single Ember component instance with full lifecycle hooks.
+   * Used by `$_dc_ember` (dynamic-component switch) in ember-gxt-wrappers.ts.
+   *
+   * Previously: `(globalThis as any).__gxtDestroyEmberComponentInstance`.
+   */
+  destroyEmberComponentInstance(instance: object): void;
+}
+
+/**
+ * The aggregate GXT renderer capabilities object. Pilot exposes only the
+ * destruction slice; future slices will be additional optional properties on
+ * this same interface (e.g. `schedule`, `lifecycle`, `cellMirror`, …).
+ *
+ * Why a single object rather than 30 individual exports? Easier to extend
+ * incrementally without re-wiring imports each time; readers do
+ * `getGxtRenderer()?.destruction.foo(...)` which is a single optional-chain.
+ */
+export interface GxtRenderer {
+  readonly destruction: GxtDestructionCapabilities;
+}
+
+let _renderer: GxtRenderer | null = null;
+
+/**
+ * Install the renderer capabilities object. Called exactly once at
+ * gxt-backend module init by manager.ts. Multiple calls overwrite, but this
+ * is intentional only for tooling/tests; production code calls it once.
+ */
+export function setGxtRenderer(renderer: GxtRenderer): void {
+  _renderer = renderer;
+}
+
+/**
+ * Read the renderer. Returns `null` when gxt-backend was never loaded (i.e.,
+ * classic-Ember build) — callers must guard with `if (renderer)`. Under
+ * `__GXT_MODE__ = false`, the entire calling branch DCEs away.
+ */
+export function getGxtRenderer(): GxtRenderer | null {
+  return _renderer;
+}

@@ -163,9 +163,9 @@ function _gxtEffectWithOwner(owner: object | null | undefined, cb: () => void): 
   return wrapped;
 }
 
-// Expose destroy helpers so compile.ts can flush pending modifier destroys
-// synchronously at the end of a sync cycle.
-(globalThis as any).__gxtRunDestructorsFn = _gxtRunDestructors;
+// (Cluster B pilot, 2026-05-13) — `__gxtRunDestructorsFn` had no readers in
+// the source tree after the Phase 3 step 6 cleanup landed; the assignment was
+// dead code. Removed as part of the destruction-slice bridge migration.
 
 // Stack-based instance capture for $_dc_ember lifecycle tracking.
 // Previously a single global (__gxtLastCreatedEmberInstance) was used, which
@@ -187,7 +187,9 @@ function setInstanceCapture(inst: any) {
   // Keep the global for backward compat with any other consumers
   (globalThis as any).__gxtLastCreatedEmberInstance = inst;
 }
-(globalThis as any).__gxtDestroyDestroyableFn = _destroyDestroyable;
+// (Cluster B pilot) — exposed as `destruction.destroyDestroyable` through the
+// gxt-bridge at module bottom (was `(globalThis as any).__gxtDestroyDestroyableFn`).
+const _gxtBridgeDestroyDestroyable = _destroyDestroyable;
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
@@ -660,8 +662,11 @@ const _customManagedInstances: CustomManagedEntry[] = [];
 /**
  * Destroy any custom-managed component instances whose DOM nodes are no longer connected.
  * Called during the destroy phase (e.g., after a conditional block removes content).
+ *
+ * (Cluster B pilot) Exposed via the gxt-bridge as `destruction.destroyCustomManagedInstances`.
+ * Was `(globalThis as any).__gxtDestroyCustomManagedInstances`.
  */
-(globalThis as any).__gxtDestroyCustomManagedInstances = function () {
+function _gxtDestroyCustomManagedInstances(): void {
   for (let i = _customManagedInstances.length - 1; i >= 0; i--) {
     const entry = _customManagedInstances[i]!;
     if (!entry.destroyed && !entry.node.isConnected) {
@@ -674,7 +679,7 @@ const _customManagedInstances: CustomManagedEntry[] = [];
       _customManagedInstances.splice(i, 1);
     }
   }
-};
+}
 
 // =============================================================================
 // Parent View Stack
@@ -3951,7 +3956,9 @@ let _preRerenderSnapshot: Set<any> = new Set();
 // Components that were in the old render but not in the new one need their
 // destroy lifecycle hooks fired: willDestroyElement, willClearRender,
 // didDestroyElement, willDestroy.
-(globalThis as any).__gxtDestroyUnclaimedPoolEntries = function () {
+// (Cluster B pilot) Exposed via the gxt-bridge as `destruction.destroyUnclaimedPoolEntries`.
+// Was `(globalThis as any).__gxtDestroyUnclaimedPoolEntries`.
+function _gxtDestroyUnclaimedPoolEntries(): void {
   const gOwner = (globalThis as any).owner;
   let viewRegistry: any;
   try {
@@ -4056,11 +4063,9 @@ let _preRerenderSnapshot: Set<any> = new Set();
   _preRerenderSnapshot.clear();
 
   // Also destroy custom-managed component instances whose DOM is disconnected
-  // (must run before the early return since there may be no classic unclaimed instances)
-  const destroyCustom = (globalThis as any).__gxtDestroyCustomManagedInstances;
-  if (typeof destroyCustom === 'function') {
-    destroyCustom();
-  }
+  // (must run before the early return since there may be no classic unclaimed instances).
+  // (Cluster B pilot) — direct intra-file call; was a globalThis indirection.
+  _gxtDestroyCustomManagedInstances();
 
   if (unclaimed.length === 0) return;
 
@@ -4271,7 +4276,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
   if (firstPhase3Error) {
     throw firstPhase3Error;
   }
-};
+}
 
 // Cleanup function: destroy all tracked component instances with proper lifecycle.
 // Called during test teardown (beforeEach -> afterEach) to fire the full
@@ -4279,7 +4284,9 @@ let _preRerenderSnapshot: Set<any> = new Set();
 //   Phase 1: willDestroyElement + willClearRender (top-down, element present)
 //   Phase 2: didDestroyElement (top-down, element cleared, state=destroying)
 //   Phase 3: willDestroy (via instance.destroy())
-(globalThis as any).__gxtDestroyTrackedInstances = function () {
+// (Cluster B pilot) Exposed via the gxt-bridge as `destruction.destroyTrackedInstances`.
+// Was `(globalThis as any).__gxtDestroyTrackedInstances`.
+function _gxtDestroyTrackedInstances(): void {
   const seen = new Set<any>();
   const instances: any[] = [];
   // Collect unique instances from all tracking sets
@@ -4410,14 +4417,16 @@ let _preRerenderSnapshot: Set<any> = new Set();
   _afterInsertQueue.length = 0;
   _allLiveInstances.clear();
   _preRerenderSnapshot.clear();
-};
+}
 
 /**
  * Destroy a single Ember component instance with full lifecycle hooks.
  * Used by $_dc_ember when dynamic component switching occurs.
  * Fires: willDestroyElement -> willClearRender -> didDestroyElement -> willDestroy
  */
-(globalThis as any).__gxtDestroyEmberComponentInstance = function (instance: any) {
+// (Cluster B pilot) Exposed via the gxt-bridge as `destruction.destroyEmberComponentInstance`.
+// Was `(globalThis as any).__gxtDestroyEmberComponentInstance`.
+function _gxtDestroyEmberComponentInstance(instance: any): void {
   if (!instance || instance.isDestroyed || instance.isDestroying) return;
 
   const gOwner = (globalThis as any).owner;
@@ -4508,12 +4517,14 @@ let _preRerenderSnapshot: Set<any> = new Set();
       break;
     }
   }
-};
+}
 
 /**
  * Destroy component instances whose wrapper element is in the given DOM nodes.
  */
-(globalThis as any).__gxtDestroyInstancesInNodes = function (removedNodeList: Node[]) {
+// (Cluster B pilot) Exposed via the gxt-bridge as `destruction.destroyInstancesInNodes`.
+// Was `(globalThis as any).__gxtDestroyInstancesInNodes`.
+function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void {
   if (!removedNodeList || removedNodeList.length === 0) return;
   if ((globalThis as any).__TRACE_DESTROY) {
     console.log(
@@ -4666,7 +4677,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
       }
     }
   }
-};
+}
 
 (globalThis as any).__gxtSyncWrapper = function (obj: any, keyName: string) {
   const wrapper = getViewElement(obj);
@@ -12358,3 +12369,32 @@ function _createUpdatableTagForModifier(): any {
 }
 
 export { $_MANAGERS };
+
+// =============================================================================
+// Cluster B pilot — gxt-bridge wiring
+// =============================================================================
+// Install the typed capabilities object on the leaf bridge module so sibling
+// modules (compile.ts, ember-gxt-wrappers.ts) and a small set of cross-package
+// consumers can call destruction hooks WITHOUT going through globalThis.
+//
+// Contract: this runs exactly once, at gxt-backend module init time. Classic
+// builds never import this file, so the bridge stays null and the readers'
+// `if (renderer)` guards (or build-time `__GXT_MODE__` gates upstream) DCE
+// away the entire calling branch.
+//
+// Function references below are hoisted — the `function` declarations live
+// hundreds of lines above. setGxtRenderer is a synchronous registration; no
+// queueMicrotask deferral is needed (and would in fact break compile.ts's
+// own top-level reads).
+
+import { setGxtRenderer } from './gxt-bridge';
+setGxtRenderer({
+  destruction: {
+    destroyDestroyable: _gxtBridgeDestroyDestroyable,
+    destroyCustomManagedInstances: _gxtDestroyCustomManagedInstances,
+    destroyUnclaimedPoolEntries: _gxtDestroyUnclaimedPoolEntries,
+    destroyInstancesInNodes: _gxtDestroyInstancesInNodes,
+    destroyTrackedInstances: _gxtDestroyTrackedInstances,
+    destroyEmberComponentInstance: _gxtDestroyEmberComponentInstance,
+  },
+});

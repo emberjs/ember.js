@@ -9,6 +9,7 @@
     "./validator": "./validator.ts",
     "./reference": "./reference.ts",
     "./destroyable": "./destroyable.ts",
+    "./gxt-bridge": "./gxt-bridge.ts",
     "./glimmer-tracking": "./glimmer-tracking.ts",
     "./glimmer-application": "./glimmer-application.ts",
     "./glimmer-util": "./glimmer-util.ts",

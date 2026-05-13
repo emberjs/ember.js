@@ -1340,6 +1340,11 @@ import '@glimmer/validator';
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
 import { installEmberWrappers } from './ember-gxt-wrappers';
 
+// Cluster B pilot — typed capabilities bridge for destruction hooks. Replaces
+// the historical `(globalThis as any).__gxtDestroy*` reads scattered through
+// this module. The bridge is populated by manager.ts at its module init time.
+import { getGxtRenderer } from './gxt-bridge';
+
 const _SLOTS_SYM = Symbol.for('gxt-slots');
 
 /**
@@ -1669,11 +1674,9 @@ if (false as boolean) {
         }
 
         // Destroy old instances when component TYPE changed
-        if (componentSwapped) {
-          const destroyFn = g.__gxtDestroyInstancesInNodes;
-          if (typeof destroyFn === 'function' && removedNodes.length > 0) {
-            destroyFn(removedNodes);
-          }
+        // (Cluster B pilot) — typed bridge call. Was __gxtDestroyInstancesInNodes.
+        if (componentSwapped && removedNodes.length > 0) {
+          getGxtRenderer()?.destruction.destroyInstancesInNodes(removedNodes);
         }
 
         // Insert new content
@@ -5560,8 +5563,8 @@ try {
       // PHASE 2c: Destroy unclaimed instances — components that were in
       // the old render but not in the new one (e.g., {{each}} items removed).
       try {
-        const destroyUnclaimed = (globalThis as any).__gxtDestroyUnclaimedPoolEntries;
-        if (typeof destroyUnclaimed === 'function') destroyUnclaimed();
+        // (Cluster B pilot) — typed bridge call. Was __gxtDestroyUnclaimedPoolEntries.
+        getGxtRenderer()?.destruction.destroyUnclaimedPoolEntries();
       } catch (destroyErr) {
         // Store destroy errors for propagation to assert.throws
         (globalThis as any).__gxtDeferredSyncError =
@@ -5598,14 +5601,12 @@ try {
               if (entry.destroyable) {
                 // The destroyable returned from manager.getDestroyable(state) holds
                 // the internal manager's destructors (e.g. OnModifierManager's
-                // removeEventListener). Use the canonical destroy bridge exported
-                // from destroyable.ts (exposed on globalThis by manager.ts at
-                // import time) so that registered destructors fire synchronously
-                // when the element has been removed from the DOM.
-                const destroyFn =
-                  (globalThis as any).__gxtDestroyDestroyableFn ||
-                  (globalThis as any).__gxtDestroyFn;
-                if (typeof destroyFn === 'function') destroyFn(entry.destroyable);
+                // removeEventListener). Use the canonical destroy bridge so that
+                // registered destructors fire synchronously when the element has
+                // been removed from the DOM.
+                // (Cluster B pilot) — typed bridge call. Was __gxtDestroyDestroyableFn
+                // (with a fallback to __gxtDestroyFn which had no writer in-tree).
+                getGxtRenderer()?.destruction.destroyDestroyable(entry.destroyable);
               }
             } catch {
               /* ignore individual modifier destroy errors */
@@ -5700,11 +5701,9 @@ try {
                 parent.removeChild(node);
                 node = next;
               }
-              if (_swapped2) {
-                const _dFn2 = (globalThis as any).__gxtDestroyInstancesInNodes;
-                if (typeof _dFn2 === 'function' && _rem2.length > 0) {
-                  _dFn2(_rem2);
-                }
+              // (Cluster B pilot) — typed bridge call. Was __gxtDestroyInstancesInNodes.
+              if (_swapped2 && _rem2.length > 0) {
+                getGxtRenderer()?.destruction.destroyInstancesInNodes(_rem2);
               }
 
               if (newFinal && newFinal.__isCurriedComponent && mgrs.component.canHandle(newFinal)) {
@@ -5774,10 +5773,8 @@ setInterval(() => {
 // Cleanup function to reset GXT state between tests
 (globalThis as any).__gxtCleanupActiveComponents = function () {
   // Destroy all tracked component instances first (fires willDestroy hooks)
-  const destroyTracked = (globalThis as any).__gxtDestroyTrackedInstances;
-  if (typeof destroyTracked === 'function') {
-    destroyTracked();
-  }
+  // (Cluster B pilot) — typed bridge call. Was __gxtDestroyTrackedInstances.
+  getGxtRenderer()?.destruction.destroyTrackedInstances();
   // Reset block params stack
   blockParamsStack.length = 0;
   // Reset current slot params
@@ -13109,8 +13106,10 @@ export function precompileTemplate(
                   parent.removeChild(_n);
                   _n = nx;
                 }
-                const _destroyFn = (globalThis as any).__gxtDestroyInstancesInNodes;
-                if (typeof _destroyFn === 'function' && _removed.length > 0) _destroyFn(_removed);
+                // (Cluster B pilot) — typed bridge call. Was __gxtDestroyInstancesInNodes.
+                if (_removed.length > 0) {
+                  getGxtRenderer()?.destruction.destroyInstancesInNodes(_removed);
+                }
                 const newNode = _renderCurried(cc);
                 if (newNode) parent.insertBefore(newNode, _cem);
                 _cinfo.lastRenderedName = cc.__name;
@@ -13284,11 +13283,9 @@ export function precompileTemplate(
                   node = next;
                 }
                 // Destroy old component instances when the component TYPE changed
-                if (_componentSwapped) {
-                  const _destroyFn = (globalThis as any).__gxtDestroyInstancesInNodes;
-                  if (typeof _destroyFn === 'function' && _removedNodes.length > 0) {
-                    _destroyFn(_removedNodes);
-                  }
+                // (Cluster B pilot) — typed bridge call. Was __gxtDestroyInstancesInNodes.
+                if (_componentSwapped && _removedNodes.length > 0) {
+                  getGxtRenderer()?.destruction.destroyInstancesInNodes(_removedNodes);
                 }
 
                 // Insert new content if we have a valid curried component
