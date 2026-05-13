@@ -3109,6 +3109,38 @@ function _gxtAddAfterTriggerReRender(fn: _TriggerReRenderHook): () => void {
   };
 }
 
+// Slice-18 (Cluster B): typed save-restore helper that graduates the two
+// pre-slice-18 writers of `__gxtInTriggerReRender` to a bridge method:
+//   - the in-line toggle wrapped around `_gxtTriggerReRenderBody` below
+//     (the slice-15 fold of core.ts's pre-slice-15 wrap), AND
+//   - `metal/property_events.ts:96-101` (caller-side around `gxtTrigger`).
+// Both writers used the same `wasInside`-save / set-true / restore pattern;
+// this helper encapsulates it. Re-entrancy-safe because the saved value is
+// whatever the enclosing frame wrote (nested calls stack correctly). The
+// globalThis slot is also written so the unmigrated reader at
+// `@ember/object/core.ts:325` (DEBUG proxy trap) keeps observing the same
+// value as the bridge-route readers. See `withInTriggerReRender` doc in
+// gxt-bridge.ts.
+function _gxtWithInTriggerReRender<T>(fn: () => T): T {
+  const g: any = globalThis as any;
+  const wasInside = g.__gxtInTriggerReRender;
+  g.__gxtInTriggerReRender = true;
+  try {
+    return fn();
+  } finally {
+    g.__gxtInTriggerReRender = wasInside;
+  }
+}
+
+// Slice-18 (Cluster B): read-side predicate paired with
+// `withInTriggerReRender`. Returns `true` iff the current sync stack is
+// nested inside a `withInTriggerReRender(fn)` frame (which always wraps the
+// canonical `triggerReRender` body). Used by `metal/computed.ts:522`'s
+// CP.get re-entrance guard. Hot path: one boolean compare, zero allocations.
+function _gxtIsInTriggerReRender(): boolean {
+  return (globalThis as any).__gxtInTriggerReRender === true;
+}
+
 const _gxtTriggerReRender = function (obj: object, keyName: string) {
   // Slice-15: dispatch the BEFORE-chain (empty-chain check is a
   // length-zero short-circuit so per-call overhead stays at one cmp + one
@@ -3127,13 +3159,18 @@ const _gxtTriggerReRender = function (obj: object, keyName: string) {
   // `@ember/object/core.ts:70` that wrapped the global trigger; subsuming the
   // toggle here lets us delete that wrap entirely. The save/restore is
   // re-entrancy-safe (`wasInside` preserves an enclosing toggle if any).
-  const _g_around: any = globalThis as any;
-  const _wasInside = _g_around.__gxtInTriggerReRender;
-  _g_around.__gxtInTriggerReRender = true;
+  //
+  // Slice-18 (Cluster B): the in-line save-restore is replaced with the
+  // typed `_gxtWithInTriggerReRender` helper (which is also published on
+  // the bridge as `compilePipeline.withInTriggerReRender`). The flag is
+  // restored before the AFTER-hook chain dispatches (matching the
+  // pre-slice-18 ordering — AFTER hooks run with the flag already
+  // restored).
   try {
-    _gxtTriggerReRenderBody(obj, keyName);
+    _gxtWithInTriggerReRender(() => {
+      _gxtTriggerReRenderBody(obj, keyName);
+    });
   } finally {
-    _g_around.__gxtInTriggerReRender = _wasInside;
     if (_afterTriggerReRender.length > 0) {
       for (let i = 0; i < _afterTriggerReRender.length; i++) {
         try {
@@ -14331,6 +14368,17 @@ installCompilePipelinePart({
   // { g.__gxtTriggerReRender = saved; }` dance at `validator.ts:117` and
   // `manager.ts:11219`. See `withTriggerSuppressed` doc in gxt-bridge.ts.
   withTriggerSuppressed: _gxtWithTriggerSuppressed,
+  // Slice-18 (Cluster B): typed save-restore helper for the two
+  // `__gxtInTriggerReRender` writers (this file's canonical-body fold of
+  // core.ts's pre-slice-15 wrap, and `metal/property_events.ts:96-101`'s
+  // caller-side toggle). The paired read-only predicate
+  // `isInTriggerReRender()` serves `metal/computed.ts:522`'s CP.get
+  // re-entrance guard. The globalThis writer is RETAINED post-slice-18
+  // because of the unmigrated `@ember/object/core.ts:325` DEBUG proxy-trap
+  // reader. See `withInTriggerReRender` / `isInTriggerReRender` doc in
+  // gxt-bridge.ts.
+  withInTriggerReRender: _gxtWithInTriggerReRender,
+  isInTriggerReRender: _gxtIsInTriggerReRender,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

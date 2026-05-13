@@ -40,6 +40,12 @@ import {
   notifyPropertyChange,
   PROPERTY_DID_CHANGE,
 } from './property_events';
+// Slice-18 (Cluster B): CP.get's `__gxtInTriggerReRender` re-entrance guard
+// reads through the typed `compilePipeline.isInTriggerReRender()` bridge
+// predicate. The globalThis fallback is preserved for the (rare) case where
+// the bridge hasn't been populated yet (early CP reads during module init).
+// See `isInTriggerReRender` doc in gxt-bridge.ts.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 export type ComputedPropertyGetterFunction = (this: any, key: string) => unknown;
 export type ComputedPropertySetterFunction = (
@@ -519,7 +525,18 @@ export class ComputedProperty extends ComputedDescriptor {
         // dependent keys, which causes async observers that were registered
         // on CPs the caller never read to fire spuriously. Return the stored
         // (or undefined) value and let the next genuine lazy read recompute.
-        if (g.__gxtInTriggerReRender === true && revision === undefined) {
+        //
+        // Slice-18 (Cluster B): read the flag through the typed
+        // `compilePipeline.isInTriggerReRender()` bridge predicate. Falls
+        // back to the raw `g.__gxtInTriggerReRender === true` slot read for
+        // the (rare) case where the bridge hasn't been populated yet (the
+        // bridge writer at compile.ts module-init mirrors the same slot, so
+        // the two are equivalent post-install). See `isInTriggerReRender`
+        // doc in gxt-bridge.ts.
+        const _isIn = getGxtRenderer()?.compilePipeline.isInTriggerReRender;
+        const _inTrigger =
+          typeof _isIn === 'function' ? _isIn() : g.__gxtInTriggerReRender === true;
+        if (_inTrigger && revision === undefined) {
           let stored = meta.valueFor(keyName);
           consumeTag(propertyTag);
           return stored;

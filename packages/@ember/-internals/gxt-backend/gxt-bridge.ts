@@ -786,6 +786,71 @@ export interface GxtCompilePipelineCapabilities {
    * Removing the globalThis writer is a separate (larger) migration.
    */
   withTriggerSuppressed?<T>(fn: () => T): T;
+
+  /**
+   * Run `fn` with `__gxtInTriggerReRender` set to `true` (save the prior
+   * value, set the flag, invoke `fn`, then restore the prior value via
+   * `try/finally`). Returns whatever `fn` returns. Re-entrancy-safe because
+   * an enclosing frame's value is preserved by the save-restore pattern.
+   *
+   * Slice-18 (Cluster B): graduates the two save-restore writer sites for
+   * `__gxtInTriggerReRender` to a typed bridge helper:
+   *  - `compile.ts:3130-3136` (folded inside the canonical `triggerReRender`
+   *    body — see slice-15 doc above): wraps the entire trigger body so any
+   *    nested `CP.get` short-circuit reads `true`.
+   *  - `metal/property_events.ts:96-101` (caller-side around the
+   *    `gxtTrigger(obj, keyName)` call in `notifyPropertyChange`): wraps the
+   *    trigger invocation so the call sites observe `true` for the duration
+   *    of the synchronous notify cascade (including any nested
+   *    `notifyPropertyChange` calls produced by `__gxtTriggerReRender`).
+   * Both writers used to manually inline
+   * `wasInside = g.__gxtInTriggerReRender; g.__gxtInTriggerReRender = true;
+   * try { ... } finally { g.__gxtInTriggerReRender = wasInside; }`. This
+   * helper folds that pattern into one documented bridge surface.
+   *
+   * Reader contract: the flag is consumed by:
+   *  - `metal/computed.ts:522` — `CP.get` short-circuits cache misses when
+   *    `__gxtInTriggerReRender === true && revision === undefined` (preserves
+   *    classic Ember's "don't eagerly evaluate never-consumed CPs during a
+   *    change notification" semantic). Migrated to `isInTriggerReRender()`
+   *    in slice 18 (with globalThis fallback for the bridge-not-yet-installed
+   *    edge).
+   *  - `@ember/object/core.ts:325` — DEBUG proxy trap's `_isInternalPath`
+   *    predicate. NOT migrated in slice 18 — `@ember/object/core.ts` has no
+   *    pre-existing `gxt-bridge` import edge, and the surrounding predicate
+   *    already reads other globalThis flags (`__gxtSyncing`,
+   *    `__gxtIsRendering`) raw. Migrating one flag while leaving the others
+   *    would not improve the edge count net. Slice 18 keeps this reader on
+   *    globalThis, matching slice-15/17's "RETAINED for cross-package
+   *    readers" precedent. A future cluster-D pass over the proxy trap could
+   *    migrate the whole predicate at once.
+   *
+   * The globalThis writer for `__gxtInTriggerReRender` is RETAINED post-
+   * slice-18 because of the unmigrated `@ember/object/core.ts:325` reader.
+   * Both bridge writers continue to mirror to the globalThis slot so the
+   * unmigrated reader observes the same value as the bridge-route readers.
+   * See `isInTriggerReRender()` below for the read-side surface.
+   */
+  withInTriggerReRender?<T>(fn: () => T): T;
+
+  /**
+   * Read-only predicate for `__gxtInTriggerReRender`. Returns `true` iff the
+   * current synchronous stack is nested inside a `withInTriggerReRender(fn)`
+   * frame (or inside the canonical `triggerReRender` body, which is itself
+   * wrapped by `withInTriggerReRender`).
+   *
+   * Slice-18 (Cluster B): exposes the read side of the flag as a bridge
+   * predicate so `metal/computed.ts`'s `CP.get` re-entrance guard can avoid
+   * touching `globalThis` directly. The implementation reads the same
+   * `globalThis.__gxtInTriggerReRender` slot that `withInTriggerReRender`
+   * writes, so semantics are preserved across the unmigrated
+   * `@ember/object/core.ts:325` reader.
+   *
+   * Fast-check: the implementation is `return g.__gxtInTriggerReRender ===
+   * true` — one boolean comparison; zero allocations. Suitable for the
+   * `CP.get` hot path.
+   */
+  isInTriggerReRender?(): boolean;
 }
 
 /**

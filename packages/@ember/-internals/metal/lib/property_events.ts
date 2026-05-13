@@ -1,6 +1,15 @@
 import type { Meta } from '@ember/-internals/meta';
 import { peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
+// Slice-18 (Cluster B): `notifyPropertyChange` routes its
+// `__gxtInTriggerReRender` save-restore writer through the typed
+// `compilePipeline.withInTriggerReRender(fn)` bridge helper. The inline
+// save-restore fallback is preserved for the (rare) case where the bridge
+// hasn't been populated yet — should only happen before compile.ts's
+// module-init `installCompilePipelinePart` call has fired, and
+// `notifyPropertyChange` is not reachable during that window in any known
+// entry point. See `withInTriggerReRender` doc in gxt-bridge.ts.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import {
   flushSyncObservers,
   resumeObserverDeactivation,
@@ -92,13 +101,31 @@ function notifyPropertyChange(
         // evaluate never-consumed CPs during a change notification" semantics.
         // (core.ts's lazy wrapper is only installed for proxied CoreObjects,
         // which misses plain `class Foo { @computed ... }` cases.)
-        const gRoot: any = globalThis as any;
-        const wasInside = gRoot.__gxtInTriggerReRender;
-        gRoot.__gxtInTriggerReRender = true;
-        try {
-          gxtTrigger(obj, keyName);
-        } finally {
-          gRoot.__gxtInTriggerReRender = wasInside;
+        //
+        // Slice-18 (Cluster B): the `__gxtInTriggerReRender` save-restore
+        // toggle that wraps the `gxtTrigger(obj, keyName)` call is routed
+        // through the typed `compilePipeline.withInTriggerReRender(fn)`
+        // bridge helper. The inline save-restore fallback is preserved for
+        // the (rare) case where the bridge hasn't been populated yet (the
+        // canonical body's wrap in compile.ts also sets the flag, so a
+        // dropped caller-side wrap would only matter for the
+        // `gxtTrigger === undefined`-after-suppression path which short-
+        // circuits this branch anyway). See `withInTriggerReRender` doc in
+        // gxt-bridge.ts.
+        const _withIn = getGxtRenderer()?.compilePipeline.withInTriggerReRender;
+        if (_withIn) {
+          _withIn(() => {
+            gxtTrigger(obj, keyName);
+          });
+        } else {
+          const gRoot: any = globalThis as any;
+          const wasInside = gRoot.__gxtInTriggerReRender;
+          gRoot.__gxtInTriggerReRender = true;
+          try {
+            gxtTrigger(obj, keyName);
+          } finally {
+            gRoot.__gxtInTriggerReRender = wasInside;
+          }
         }
       }
     }
