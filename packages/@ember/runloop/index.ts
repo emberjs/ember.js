@@ -52,7 +52,7 @@ const GXT_MAX_FLUSH_BUDGET = 20;
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
       _gxtFlushBudget++;
       flushAsyncObservers(schedule);
@@ -83,7 +83,7 @@ function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
 
 function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
         _gxtFlushBudget++;
         flushAsyncObservers(schedule);
@@ -485,7 +485,7 @@ export function schedule(...args: any[]): Timer {
   // run gxtSyncDom. We mark the change as "from afterRender" so runAppend
   // can distinguish it from Init-phase property changes (e.g. Textarea's
   // internal bindings during init, which should NOT survive to syncNow).
-  if ((globalThis as any).__GXT_MODE__ && args[0] === 'afterRender') {
+  if (__GXT_MODE__ && args[0] === 'afterRender') {
     const idx = args.length >= 3 && typeof args[2] === 'function' ? 2 : 1;
     const origFn = args[idx];
     if (typeof origFn === 'function') {

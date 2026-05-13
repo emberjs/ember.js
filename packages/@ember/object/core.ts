@@ -166,7 +166,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
       } else if (hasSetUnknownProperty(obj) && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
-        if (DEBUG && !(globalThis as any).__GXT_MODE__) {
+        if (DEBUG && !__GXT_MODE__) {
           defineProperty(obj, keyName, null, value, m); // setup mandatory setter
         } else {
           (obj as any)[keyName] = value;

@@ -398,7 +398,7 @@ export function template(
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
   // In GXT mode, use the GXT runtime compiler instead of Glimmer compiler
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     const gxtCompile = (globalThis as any).__gxtCompileTemplate;
     if (gxtCompile) {
       const gxtOptions = { strictMode: true, ...providedOptions };
