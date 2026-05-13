@@ -786,14 +786,25 @@ let _rebuildInProgress = false;
   g.__classicDirtyTagFor = wrapped;
 })();
 
-if (DEBUG)
-  (globalThis as any).__gxtRebuildViewTreeFromDom = function rebuildViewTreeFromDom(
-    explicitRegistry?: any
-  ): void {
-    if (_rebuildInProgress) return;
-    _rebuildInProgress = true;
-    (globalThis as any).__gxtSuppressDirtyTagForDuringRebuild = true;
-    try {
+// Slice-11 (Cluster B): the writer below is no longer assigned to
+// `(globalThis as any).__gxtRebuildViewTreeFromDom`. It's a top-level
+// function exported on the typed gxt-bridge's `viewUtils.rebuildViewTreeFromDom`
+// slot via the `setGxtRenderer` call at file EOF. The `if (DEBUG)` gate that
+// previously elided the writer in production builds is preserved by guarding
+// the bridge install (see `_gxtBridgeRebuildViewTreeFromDom` below). All three
+// readers (`views/lib/system/utils.ts` × 2 + compile.ts:5519 + manager.ts:3093)
+// have been migrated to `getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(...)`.
+// The pre-slice-11 `_wrapGxtRebuildViewTree` at compile.ts:4399 (which reassigned
+// the global to inject the `_wrapperIfUserFalse` reset + `__gxtInElementDrainDeferred`
+// drain) is replaced by the `afterRebuildViewTreeFromDom` host hook contributed
+// by compile.ts via `installViewUtilsPart`. The 4-step retry-install dance
+// (immediate + queueMicrotask + setInterval(50ms, 60 attempts)) is gone — the
+// install-API's deferred queue handles load order independently.
+function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
+  if (_rebuildInProgress) return;
+  _rebuildInProgress = true;
+  (globalThis as any).__gxtSuppressDirtyTagForDuringRebuild = true;
+  try {
       const owner = (globalThis as any).owner;
       // Collect registries from all live pool instances (they know their owner),
       // plus the current globalThis.owner and any explicit registry passed in.
@@ -963,6 +974,28 @@ if (DEBUG)
       (globalThis as any).__gxtSuppressDirtyTagForDuringRebuild = false;
     }
   };
+
+// Slice-11 bridge adapter. Wraps `_gxtRebuildViewTreeFromDom` so that AFTER
+// the main rebuild body finishes (regardless of throw / return early on the
+// re-entry guard), the `afterRebuildViewTreeFromDom` host hook contributed by
+// compile.ts via `installViewUtilsPart` runs to (a) reset stale
+// `_wrapperIfUserFalse` view-registry CHILD_VIEW_IDS for direct-click toggled
+// `{{#if}}` branches and (b) drain the in-element deferred-render queue.
+//
+// Reads the hook via `getGxtRenderer()` rather than capturing a reference at
+// adapter-creation time so contributions arriving via the deferred install
+// queue (when compile.ts loads after manager.ts) are picked up on first call.
+// Errors from the hook are swallowed, matching the pre-slice-11 wrap's
+// try/catch behavior at compile.ts:4399-4488 / 4498-4503.
+function _gxtBridgeRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
+  _gxtRebuildViewTreeFromDom(explicitRegistry);
+  try {
+    const after = getGxtRenderer()?.viewUtils.afterRebuildViewTreeFromDom;
+    if (typeof after === 'function') after(explicitRegistry);
+  } catch {
+    /* ignore — best effort, matches pre-slice-11 wrap */
+  }
+}
 
 /**
  * Add a child view to a parent's childViews array.
@@ -3089,9 +3122,14 @@ export function flushAfterInsertQueue(): void {
   // when components were created via paths that skipped patchedIf's
   // parentView stack push (e.g. outlet content, force-rerender of route
   // templates).
+  //
+  // Slice-11 (Cluster B): typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
+  // The bridge slot is the slice-11 adapter `_gxtBridgeRebuildViewTreeFromDom`
+  // which also dispatches the `afterRebuildViewTreeFromDom` host hook
+  // contributed by compile.ts via `installViewUtilsPart`. Was
+  // `(globalThis as any).__gxtRebuildViewTreeFromDom`.
   try {
-    const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
-    if (typeof rebuild === 'function') rebuild();
+    getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.();
   } catch {
     /* ignore */
   }
@@ -12496,6 +12534,16 @@ setGxtRenderer({
     popParentView: _gxtBridgePopParentView,
     getElementView: _gxtBridgeGetElementView,
     getViewElement: _gxtBridgeGetViewElement,
+    // Slice-11: `rebuildViewTreeFromDom` seeded here; the
+    // `afterRebuildViewTreeFromDom` host hook is contributed by compile.ts
+    // via `installViewUtilsPart` to reset stale `_wrapperIfUserFalse`
+    // view-registry children and drain the in-element deferred-render queue
+    // (replacing the pre-slice-11 wrap-by-reassignment at compile.ts:4399
+    // `_wrapGxtRebuildViewTree`). The wrapper here dispatches the after-hook
+    // AFTER the main body runs (mirroring slice 8's before-hook dispatch on
+    // `beginRenderPass` and slice 10's transformer dispatch on
+    // `checkBacktracking` — slice 11 is the third distinct host-hook shape).
+    rebuildViewTreeFromDom: _gxtBridgeRebuildViewTreeFromDom,
   },
   format: {
     shouldWarnStyle: _gxtBridgeShouldWarnStyle,

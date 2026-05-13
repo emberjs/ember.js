@@ -1,4 +1,5 @@
 import type { View } from '@ember/-internals/glimmer';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
@@ -43,9 +44,13 @@ export function getRootViews(owner: InternalOwner): View[] {
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
 
   // GXT compat: rebuild view-tree parent/child relationships from live DOM.
+  // Slice-11 (Cluster B) — typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
+  // Was `(globalThis as any).__gxtRebuildViewTreeFromDom`. The bridge slot
+  // dispatches the `afterRebuildViewTreeFromDom` host hook contributed by
+  // compile.ts after the main rebuild body — replacing the pre-slice-11
+  // `_wrapGxtRebuildViewTree` wrap-by-reassignment.
   try {
-    const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
-    if (typeof rebuild === 'function') rebuild(registry);
+    getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
   } catch {
     /* ignore */
   }
@@ -131,9 +136,10 @@ export function getChildViews(view: View): View[] {
   // parentView=null or CHILD_VIEW_IDS stale when a component is created while
   // the render-time parent-view stack was empty. Passing the registry tells
   // the rebuild which registry the caller will read.
+  // Slice-11 (Cluster B) — typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
+  // Was `(globalThis as any).__gxtRebuildViewTreeFromDom`.
   try {
-    const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
-    if (typeof rebuild === 'function') rebuild(registry);
+    getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
   } catch {
     /* ignore */
   }

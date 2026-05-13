@@ -4387,139 +4387,129 @@ function patchGlobalIf() {
 patchGlobalIf();
 queueMicrotask(patchGlobalIf);
 
-// Wrap __gxtRebuildViewTreeFromDom (defined in manager.ts and invoked from
-// getChildViews) so that after the rebuild repopulates CHILD_VIEW_IDS from
-// live DOM ancestry, any wrapper the user has toggled false (via direct
-// click → toggleProperty('isExpanded')) has its view-registry children
-// reset. This ensures getChildViews(rootWrapper) returns [] even though
-// GXT's destroyBranchSync is a no-op for yield-only true branches (the
-// inner DOM still contains the yielded nodes because prevComponent was
-// empty). View-registry-only cleanup — no DOM mutation, so a subsequent
-// toggle-back-to-true still surfaces the same DOM content.
-function _wrapGxtRebuildViewTree() {
-  const g = globalThis as any;
-  const orig = g.__gxtRebuildViewTreeFromDom;
-  if (!orig || (orig as any).__emberIfRebuildPatched) return;
-  const wrapped = function (this: any, ...args: any[]) {
-    const result = orig.apply(this, args);
-    try {
-      if (_wrapperIfUserFalse.size > 0) {
-        // Collect registries to search: the explicit arg (if any) and the
-        // current global owner's view registry.
-        const registries: any[] = [];
-        if (args && args[0]) registries.push(args[0]);
+// Slice-11 (Cluster B): host hook contributed via `installViewUtilsPart` (see
+// module bottom). Runs AFTER manager.ts's `_gxtRebuildViewTreeFromDom` body
+// completes, dispatched by the `_gxtBridgeRebuildViewTreeFromDom` adapter in
+// manager.ts.
+//
+// Replaces the pre-slice-11 `_wrapGxtRebuildViewTree` wrap-by-reassignment
+// installer (immediate + queueMicrotask + setInterval(50ms, 60 attempts)
+// retry-install dance) — the install-API's deferred queue handles load-order
+// independence automatically (same pattern as slice 8's
+// `_resetTemplateOnlyState` and slice 10's
+// `_rebuildBacktrackingMsgWithTemplateOnly`).
+//
+// Behavior: after the rebuild repopulates CHILD_VIEW_IDS from live DOM
+// ancestry, any wrapper the user has toggled false (via direct click →
+// toggleProperty('isExpanded')) has its view-registry children reset. This
+// ensures getChildViews(rootWrapper) returns [] even though GXT's
+// destroyBranchSync is a no-op for yield-only true branches (the inner DOM
+// still contains the yielded nodes because prevComponent was empty).
+// View-registry-only cleanup — no DOM mutation, so a subsequent toggle-back-
+// to-true still surfaces the same DOM content. Also drains the in-element
+// deferred-render queue (see `_drainInElementDeferQueue` block above) since
+// this is the earliest synchronous point where the parent fragment is
+// committed to the live document.
+function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
+  try {
+    if (_wrapperIfUserFalse.size > 0) {
+      // Collect registries to search: the explicit arg (if any) and the
+      // current global owner's view registry.
+      const registries: any[] = [];
+      if (explicitRegistry) registries.push(explicitRegistry);
+      try {
+        const go: any = (globalThis as any).owner;
+        const reg2 = go && go.lookup && go.lookup('-view-registry:main');
+        if (reg2 && !registries.includes(reg2)) registries.push(reg2);
+      } catch {
+        /* ignore */
+      }
+      const staleIds: string[] = [];
+      for (const wrapperId of _wrapperIfUserFalse) {
+        // Re-check the condition at read time. The ifWatcher may have
+        // observed a stale click-false on a pool-reused IfCondition whose
+        // closure points at a discarded controller, while the live condition
+        // for this wrapper is now true (e.g., after visit('/') recreates the
+        // route controller and a subsequent click toggles isExpanded true
+        // via a different watcher path). Trust the live condition evaluator.
+        // Check whether the branch is ACTUALLY in its "false" state right
+        // now. We recorded IfCondition instances when the user toggled
+        // false. Pool reuse can leave stale entries whose condFn closures
+        // read old controller state. The most reliable signal of the real
+        // current state is whether the live DOM between the if-placeholder
+        // and the next view element contains any rendered content. Use
+        // IfCondition.isTrue/prevComponent if present, else fall back to
+        // scanning siblings of the placeholder for non-ancestor view
+        // descendants.
+        const entries = _wrapperIfCondLookup.get(wrapperId);
+        if (entries && entries.size > 0) {
+          const liveEl: any =
+            typeof document !== 'undefined' && document.getElementById(wrapperId);
+          let anyExpanded = false;
+          for (const e of entries) {
+            const ph = e.placeholder;
+            if (!ph || !ph.parentNode) continue;
+            if (!liveEl || !liveEl.contains(ph)) continue;
+            const ic = e.ifCondition;
+            // IfCondition tracks its currently rendered branch via prevComponent.
+            // Non-empty prevComponent => branch currently rendered (true state).
+            const pc = ic && (ic.prevComponent ?? ic._prevComponent);
+            const pcHasContent = Array.isArray(pc) ? pc.length > 0 : !!pc;
+            if (pcHasContent) {
+              anyExpanded = true;
+              break;
+            }
+          }
+          if (anyExpanded) {
+            staleIds.push(wrapperId);
+            continue;
+          }
+        }
+        // Candidate views to reset: registry entries + whatever view is
+        // currently associated with the live DOM element for this id.
+        const views = new Set<any>();
+        for (const reg of registries) {
+          const v = reg && reg[wrapperId];
+          if (v && !v.isDestroyed && !v.isDestroying) views.add(v);
+        }
         try {
-          const go: any = (globalThis as any).owner;
-          const reg2 = go && go.lookup && go.lookup('-view-registry:main');
-          if (reg2 && !registries.includes(reg2)) registries.push(reg2);
+          const el = typeof document !== 'undefined' && document.getElementById(wrapperId);
+          if (el) {
+            const v2 = _emberGetElementView(el);
+            if (v2 && !v2.isDestroyed && !v2.isDestroying) views.add(v2);
+          }
         } catch {
           /* ignore */
         }
-        const g2: any = globalThis as any;
-        const toBool = g2.__gxtToBool || Boolean;
-        const staleIds: string[] = [];
-        for (const wrapperId of _wrapperIfUserFalse) {
-          // Re-check the condition at read time. The ifWatcher may have
-          // observed a stale click-false on a pool-reused IfCondition whose
-          // closure points at a discarded controller, while the live condition
-          // for this wrapper is now true (e.g., after visit('/') recreates the
-          // route controller and a subsequent click toggles isExpanded true
-          // via a different watcher path). Trust the live condition evaluator.
-          // Check whether the branch is ACTUALLY in its "false" state right
-          // now. We recorded IfCondition instances when the user toggled
-          // false. Pool reuse can leave stale entries whose condFn closures
-          // read old controller state. The most reliable signal of the real
-          // current state is whether the live DOM between the if-placeholder
-          // and the next view element contains any rendered content. Use
-          // IfCondition.isTrue/prevComponent if present, else fall back to
-          // scanning siblings of the placeholder for non-ancestor view
-          // descendants.
-          const entries = _wrapperIfCondLookup.get(wrapperId);
-          if (entries && entries.size > 0) {
-            const liveEl: any =
-              typeof document !== 'undefined' && document.getElementById(wrapperId);
-            let anyExpanded = false;
-            for (const e of entries) {
-              const ph = e.placeholder;
-              if (!ph || !ph.parentNode) continue;
-              if (!liveEl || !liveEl.contains(ph)) continue;
-              const ic = e.ifCondition;
-              // IfCondition tracks its currently rendered branch via prevComponent.
-              // Non-empty prevComponent => branch currently rendered (true state).
-              const pc = ic && (ic.prevComponent ?? ic._prevComponent);
-              const pcHasContent = Array.isArray(pc) ? pc.length > 0 : !!pc;
-              if (pcHasContent) {
-                anyExpanded = true;
-                break;
-              }
-            }
-            if (anyExpanded) {
-              staleIds.push(wrapperId);
-              continue;
-            }
-          }
-          // Candidate views to reset: registry entries + whatever view is
-          // currently associated with the live DOM element for this id.
-          const views = new Set<any>();
-          for (const reg of registries) {
-            const v = reg && reg[wrapperId];
-            if (v && !v.isDestroyed && !v.isDestroying) views.add(v);
-          }
+        for (const v of views) {
           try {
-            const el = typeof document !== 'undefined' && document.getElementById(wrapperId);
-            if (el) {
-              const v2 = _emberGetElementView(el);
-              if (v2 && !v2.isDestroyed && !v2.isDestroying) views.add(v2);
-            }
+            _emberInitChildViews(v);
           } catch {
             /* ignore */
           }
-          for (const v of views) {
-            try {
-              _emberInitChildViews(v);
-            } catch {
-              /* ignore */
-            }
-          }
         }
-        for (const id of staleIds) _wrapperIfUserFalse.delete(id);
       }
-    } catch {
-      /* ignore */
+      for (const id of staleIds) _wrapperIfUserFalse.delete(id);
     }
-    // Drain the in-element deferred-render queue now. By the time the
-    // manager's flushAfterInsertQueue has processed all didInsertElement
-    // hooks and called __gxtRebuildViewTreeFromDom, the parent fragment
-    // for the outermost render pass has been committed to the live
-    // document — so document.getElementById() can finally resolve any
-    // in-element targets whose host div was rendered in the same pass.
-    // This covers the renderComponent strict-mode path that does NOT
-    // go through globalThis.__gxtFlushAfterInsertQueue.
-    try {
-      const drain = (globalThis as any).__gxtInElementDrainDeferred;
-      if (typeof drain === 'function') drain();
-    } catch {
-      /* ignore */
-    }
-    return result;
-  };
-  (wrapped as any).__emberIfRebuildPatched = true;
-  g.__gxtRebuildViewTreeFromDom = wrapped;
-}
-_wrapGxtRebuildViewTree();
-queueMicrotask(_wrapGxtRebuildViewTree);
-// manager.ts may define __gxtRebuildViewTreeFromDom after compile.ts loads;
-// retry a few times until patched or a short window expires.
-{
-  let _wrapAttempts = 0;
-  const _wrapRebuildIv = setInterval(() => {
-    _wrapGxtRebuildViewTree();
-    _wrapAttempts++;
-    const g = globalThis as any;
-    if ((g.__gxtRebuildViewTreeFromDom as any)?.__emberIfRebuildPatched || _wrapAttempts > 60) {
-      clearInterval(_wrapRebuildIv);
-    }
-  }, 50);
+  } catch {
+    /* ignore */
+  }
+  // Drain the in-element deferred-render queue now. By the time the
+  // manager's flushAfterInsertQueue has processed all didInsertElement
+  // hooks and called rebuildViewTreeFromDom, the parent fragment
+  // for the outermost render pass has been committed to the live
+  // document — so document.getElementById() can finally resolve any
+  // in-element targets whose host div was rendered in the same pass.
+  // This covers the renderComponent strict-mode path that does NOT
+  // go through globalThis.__gxtFlushAfterInsertQueue. The drain function
+  // is exposed via globalThis because `_drainInElementDeferQueue` lives
+  // in a block scope earlier in this file (not accessible at this scope).
+  try {
+    const drain = (globalThis as any).__gxtInElementDrainDeferred;
+    if (typeof drain === 'function') drain();
+  } catch {
+    /* ignore */
+  }
 }
 
 // ---- $_eachSync: normalize Ember collections for GXT ----
@@ -5515,9 +5505,14 @@ try {
           (globalThis as any).__gxtDeferredSyncError || destroyErr;
       }
       // PHASE 2c2: Rebuild view-tree parent/child relationships from DOM ancestry.
+      // Slice-11 (Cluster B): typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
+      // The bridge slot dispatches the `afterRebuildViewTreeFromDom` host hook
+      // (contributed by this file via `installViewUtilsPart` at module bottom)
+      // AFTER manager.ts's main rebuild body — replacing the pre-slice-11
+      // `_wrapGxtRebuildViewTree` wrap-by-reassignment. Was
+      // `(globalThis as any).__gxtRebuildViewTreeFromDom`.
       try {
-        const rebuild = (globalThis as any).__gxtRebuildViewTreeFromDom;
-        if (typeof rebuild === 'function') rebuild();
+        getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.();
       } catch {
         /* ignore */
       }
@@ -14309,6 +14304,7 @@ import {
   installCompilePipelinePart,
   installRenderPassPart,
   installBacktrackingPart,
+  installViewUtilsPart,
 } from './gxt-bridge';
 installCompilePipelinePart({
   compileTemplate: compileTemplate,
@@ -14332,4 +14328,16 @@ installRenderPassPart({
 // transforming the assembled assertion message before it reaches `_assertFn`.
 installBacktrackingPart({
   transformBacktrackingMessage: _rebuildBacktrackingMsgWithTemplateOnly,
+});
+
+// Slice-11 (Cluster B): replaces the pre-slice-11 `_wrapGxtRebuildViewTree`
+// wrap-by-reassignment installer (immediate + queueMicrotask + setInterval
+// retry-install dance) — see `_afterRebuildViewTreeFromDom` definition
+// earlier in this file. The host hook runs AFTER manager.ts's
+// `rebuildViewTreeFromDom` body completes, dispatched by the
+// `_gxtBridgeRebuildViewTreeFromDom` adapter in manager.ts. This is the third
+// distinct host-hook shape on the bridge (after slice 8's before-hook and
+// slice 10's transformer-hook).
+installViewUtilsPart({
+  afterRebuildViewTreeFromDom: _afterRebuildViewTreeFromDom,
 });
