@@ -9,6 +9,10 @@ import * as _glimmerGlobalContext from '@glimmer/global-context';
 // Using the same cell factory that _gxtEffect tracks ensures reads inside an
 // effect register a subscription that will re-fire the effect on updates.
 import { cell as _gxtNativeCell } from '@lifeart/gxt';
+// Slice-17 (Cluster B): route the track() reentrancy-guard save-restore
+// through the typed bridge helper. See `withTriggerSuppressed` doc in
+// gxt-bridge.ts.
+import { getGxtRenderer } from './gxt-bridge';
 
 // Create cell-like functionality using storage primitives
 const createCell = (initialValue: any, name?: string) => {
@@ -113,9 +117,14 @@ export function track(cb: () => void): any {
   // Suppress __gxtTriggerReRender during track() to prevent infinite
   // recursion when a getter calls notifyPropertyChange (which triggers
   // __gxtTriggerReRender → re-reads getter → notifyPropertyChange → …).
-  const g = globalThis as any;
-  const savedTrigger = g.__gxtTriggerReRender;
-  g.__gxtTriggerReRender = undefined;
+  //
+  // Slice-17 (Cluster B): routed through the typed
+  // `compilePipeline.withTriggerSuppressed(fn)` helper that encapsulates the
+  // save-restore pattern. Fallback to the inline save-restore is preserved
+  // for the (rare) case where the bridge hasn't been populated yet — should
+  // only happen before compile.ts's module-init `installCompilePipelinePart`
+  // call has fired, and `track()` is not reachable during that window in
+  // any known entry point. See `withTriggerSuppressed` doc in gxt-bridge.ts.
 
   // Run the callback. The tracked getters read GXT cells, establishing
   // dependencies. We can't easily capture those cells, but we CAN detect
@@ -128,19 +137,34 @@ export function track(cb: () => void): any {
   // snapshot time vs current to detect changes.
   const revisionBefore = globalRevisionCounter;
 
-  gxtBeginTrackFrame();
-  try {
-    cb();
-  } finally {
-    gxtEndTrackFrame();
-    _trackingTagStack.pop();
-    if (_trackingTagStack.length === 0) _trackingTagStack = null;
-    _localUntrackDepth = savedUntrackDepth;
-    if (!hadOuterTransaction) {
-      _debugTransactionConsumed = prevConsumed;
-      _debugTransactionLabelForTag = prevLabels;
+  const _runTrack = () => {
+    gxtBeginTrackFrame();
+    try {
+      cb();
+    } finally {
+      gxtEndTrackFrame();
+      _trackingTagStack!.pop();
+      if (_trackingTagStack!.length === 0) _trackingTagStack = null;
+      _localUntrackDepth = savedUntrackDepth;
+      if (!hadOuterTransaction) {
+        _debugTransactionConsumed = prevConsumed;
+        _debugTransactionLabelForTag = prevLabels;
+      }
     }
-    g.__gxtTriggerReRender = savedTrigger;
+  };
+
+  const _withSuppressed = getGxtRenderer()?.compilePipeline.withTriggerSuppressed;
+  if (_withSuppressed) {
+    _withSuppressed(_runTrack);
+  } else {
+    const g = globalThis as any;
+    const savedTrigger = g.__gxtTriggerReRender;
+    g.__gxtTriggerReRender = undefined;
+    try {
+      _runTrack();
+    } finally {
+      g.__gxtTriggerReRender = savedTrigger;
+    }
   }
 
   // If no specific tags were consumed, the frame's `cb()` did not depend

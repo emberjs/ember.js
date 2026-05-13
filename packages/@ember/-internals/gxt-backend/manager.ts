@@ -1130,12 +1130,12 @@ function _gxtClearInstancePools(): void {
   _customManagedInstances.length = 0;
 }
 
-// Dual-exposure: bridge slot reference is `_gxtClearInstancePools` (preserves
-// future-slice migrations through the bridge). Global assignment is RETAINED
-// because `tests/helpers/test-helpers.js` (and historical user test code) may
-// read the function via globalThis. Future slice can remove the global once
-// all readers route through the bridge.
-(globalThis as any).__gxtClearInstancePools = _gxtClearInstancePools;
+// Slice-17 (Cluster B): dual-exposure globalThis writer DROPPED. Audit
+// confirmed zero readers exist outside the gxt-bridge path (intra-package
+// references are all comments; cross-package grep across packages/ and
+// tests/ found no consumers of `globalThis.__gxtClearInstancePools`). The
+// canonical reference lives on `compilePipeline.clearInstancePools` (see
+// the `setGxtRenderer` install below).
 
 /**
  * Remove a destroyed instance from every pool that holds it.
@@ -3754,13 +3754,13 @@ function _gxtSyncAllWrappers(): void {
   }
 }
 
-// Dual-exposure: bridge slot reference is `_gxtSyncAllWrappers` (preserves
-// future-slice migrations through the bridge). Global assignment is RETAINED
-// for now because compile.ts's pool-reuse fallback fires sync via
-// `getGxtRenderer()?.compilePipeline.syncAllWrappers?.()` already (slice 12
-// reader migration), but other callers may still use the global. Future slice
-// can remove the global once all readers route through the bridge.
-(globalThis as any).__gxtSyncAllWrappers = _gxtSyncAllWrappers;
+// Slice-17 (Cluster B): dual-exposure globalThis writer DROPPED. Audit
+// confirmed zero readers exist outside the gxt-bridge path (intra-package
+// references are all comments; cross-package grep across packages/ and
+// tests/ found no consumers of `globalThis.__gxtSyncAllWrappers`). The
+// canonical reference lives on `compilePipeline.syncAllWrappers` (see the
+// `setGxtRenderer` install below). All in-source readers (compile.ts pool-
+// reuse fallback included) already route through the bridge.
 
 function _gxtSyncAllWrappersBody(): void {
   // Slice-15: pre-slice-15 the wrap was installed lazily on first sync call
@@ -11210,13 +11210,16 @@ function renderClassicComponent(
   // For REUSED instances (pool hit), __gxtTriggerReRender must remain active
   // because the instance already has cellFor getters from a previous render
   // and cell updates are needed to propagate property changes to the DOM.
+  //
+  // Slice-17 (Cluster B): conditional dispatch through the typed
+  // `compilePipeline.withTriggerSuppressed(fn)` helper. For the non-suppress
+  // path (`isReused=true`) we call the body directly so the bridge cost is
+  // only paid when suppression is actually needed. The inline save-restore
+  // fallback is preserved for the (rare) case where the bridge slot hasn't
+  // been populated yet. See `withTriggerSuppressed` doc in gxt-bridge.ts.
   const suppressTrigger = !isReused;
-  const prevTriggerReRender = suppressTrigger ? g.__gxtTriggerReRender : null;
-  if (suppressTrigger) {
-    g.__gxtTriggerReRender = null;
-  }
 
-  try {
+  const _renderBody = (): any => {
     const skipInitHooks = isReused && isForceRerender;
 
     // Expose the current instance via stack-based capture so $_dc_ember can
@@ -11470,10 +11473,21 @@ function renderClassicComponent(
 
     // Return GXT-compatible result
     return createGxtResult(wrapper);
+  };
+
+  if (!suppressTrigger) {
+    return _renderBody();
+  }
+  const _withSuppressed = getGxtRenderer()?.compilePipeline.withTriggerSuppressed;
+  if (_withSuppressed) {
+    return _withSuppressed(_renderBody);
+  }
+  const prevTriggerReRender = g.__gxtTriggerReRender;
+  g.__gxtTriggerReRender = null;
+  try {
+    return _renderBody();
   } finally {
-    if (suppressTrigger) {
-      g.__gxtTriggerReRender = prevTriggerReRender;
-    }
+    g.__gxtTriggerReRender = prevTriggerReRender;
   }
 }
 

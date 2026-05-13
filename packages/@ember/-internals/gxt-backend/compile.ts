@@ -3147,6 +3147,25 @@ const _gxtTriggerReRender = function (obj: object, keyName: string) {
 };
 (globalThis as any).__gxtTriggerReRender = _gxtTriggerReRender;
 
+// Slice-17 (Cluster B): typed save-restore helper that graduates the two
+// pre-slice-17 suppression sites (`validator.ts:117` track() reentrancy guard
+// and `manager.ts:11219` first-render suppression for new classic components)
+// to a bridge method. Both sites previously inlined the `save = g.__gxtTriggerReRender;
+// g.__gxtTriggerReRender = null/undefined; try { ... } finally { g.__gxtTriggerReRender = save; }`
+// dance. The helper encapsulates the same pattern so the suppression contract
+// is a single documented surface. See `withTriggerSuppressed` doc in
+// gxt-bridge.ts.
+function _gxtWithTriggerSuppressed<T>(fn: () => T): T {
+  const g: any = globalThis as any;
+  const saved = g.__gxtTriggerReRender;
+  g.__gxtTriggerReRender = undefined;
+  try {
+    return fn();
+  } finally {
+    g.__gxtTriggerReRender = saved;
+  }
+}
+
 const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // Custom modifier manager: notify install-phase watcher if this object is a
   // modifier instance whose installModifier is currently running. Classic Ember
@@ -14307,6 +14326,11 @@ installCompilePipelinePart({
   triggerReRender: _gxtTriggerReRender,
   addBeforeTriggerReRender: _gxtAddBeforeTriggerReRender,
   addAfterTriggerReRender: _gxtAddAfterTriggerReRender,
+  // Slice-17 (Cluster B): typed save-restore helper for suppression sites.
+  // Replaces the inline `g.__gxtTriggerReRender = null; try {...} finally
+  // { g.__gxtTriggerReRender = saved; }` dance at `validator.ts:117` and
+  // `manager.ts:11219`. See `withTriggerSuppressed` doc in gxt-bridge.ts.
+  withTriggerSuppressed: _gxtWithTriggerSuppressed,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

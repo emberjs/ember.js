@@ -498,13 +498,13 @@ export interface GxtCompilePipelineCapabilities {
    * host-hook pattern instead because their wrap bodies closed over compile.ts
    * module-local state).
    *
-   * Previously: `(globalThis as any).__gxtSyncAllWrappers`. The globalThis
-   * writer is RETAINED for dual exposure: ember-gxt-wrappers.ts no longer
-   * needs to reassign the global (its DC-listener after-callback is folded
-   * into the canonical body), but other globalThis readers may still exist
-   * outside the source tree (the function name is a documented integration
-   * surface). A future slice can remove the dual exposure once all readers
-   * route through the bridge.
+   * Previously: `(globalThis as any).__gxtSyncAllWrappers`.
+   *
+   * Slice-17 (Cluster B): the globalThis writer at `manager.ts:3763` is
+   * DROPPED. Audit confirmed zero readers exist outside the gxt-bridge path
+   * (intra-package references are all comments; cross-package grep across
+   * packages/ and tests/ found no consumers). All callers now route through
+   * `compilePipeline.syncAllWrappers`.
    */
   syncAllWrappers(): void;
 
@@ -518,9 +518,8 @@ export interface GxtCompilePipelineCapabilities {
    *  - `_customManagedInstances`: side-array of (node, destroyFn) used by
    *    `destroyCustomManagedInstances` for disconnect-driven cleanup
    *
-   * Called from compile.ts's `__gxtSyncDomNow` Phase X (test teardown
-   * helper) and from `tests/helpers/test-helpers.js` directly via
-   * `globalThis.__gxtClearInstancePools` (dual exposure retained).
+   * Called from compile.ts's `__gxtSyncDomNow` Phase X (test teardown helper)
+   * — routes through `compilePipeline.clearInstancePools`.
    *
    * Slice-13 design: the pre-slice-13 implementation was a TWO-STAGE wrap:
    * (1) initial install at manager.ts:1109 clearing `_allPoolArrays`, then
@@ -533,11 +532,13 @@ export interface GxtCompilePipelineCapabilities {
    * through the wrap body). The two stages were collapsed into a single
    * intra-file `_gxtClearInstancePools` function.
    *
-   * Previously: `(globalThis as any).__gxtClearInstancePools`. The globalThis
-   * writer is RETAINED for dual exposure: test helpers in
-   * `tests/helpers/test-helpers.js` historically reset the pools via
-   * globalThis. A future slice can remove the dual exposure once those
-   * readers route through the bridge (or move into gxt-backend).
+   * Previously: `(globalThis as any).__gxtClearInstancePools`.
+   *
+   * Slice-17 (Cluster B): the globalThis writer at `manager.ts:1138` is
+   * DROPPED. Audit confirmed zero readers exist outside the gxt-bridge path
+   * (intra-package references are all comments; cross-package grep across
+   * packages/ and tests/ — including ember-testing — found no consumers).
+   * All callers route through `compilePipeline.clearInstancePools`.
    */
   clearInstancePools(): void;
 
@@ -709,9 +710,15 @@ export interface GxtCompilePipelineCapabilities {
    * `manager.ts:11219-11480` swap the global slot temporarily to suppress
    * triggers during specific frames; pre-slice-15 those sites observed the
    * wrapped version (so any in-flight chains keep firing through the wrap),
-   * and dual exposure preserves their semantics. A future slice can route
-   * the suppression sites through a typed `withTriggerSuppressed(...)`
-   * helper and drop the global.
+   * and dual exposure preserves their semantics.
+   *
+   * Slice-17 (Cluster B): the two save-restore sites are now routed through
+   * `withTriggerSuppressed(fn)` below. The globalThis writer is still
+   * RETAINED post-slice-17 because the many cross-package readers (metal,
+   * glimmer-tracking, manager.ts:529/544/2050/2608/5461, compile.ts:6125+)
+   * still call the function via `(globalThis as any).__gxtTriggerReRender`.
+   * Removing the global is a separate larger migration that has to route
+   * every reader through the bridge first.
    *
    * Previously: `(globalThis as any).__gxtTriggerReRender`.
    */
@@ -750,6 +757,35 @@ export interface GxtCompilePipelineCapabilities {
    * Hook errors are caught and ignored.
    */
   addAfterTriggerReRender?(fn: (obj: object, keyName: string) => void): () => void;
+
+  /**
+   * Run `fn` with `__gxtTriggerReRender` suppressed (the globalThis slot
+   * temporarily swapped to `undefined`). Returns whatever `fn` returns; the
+   * trigger is restored on completion via `try/finally` (including when `fn`
+   * throws).
+   *
+   * Slice-17 (Cluster B): graduates the two save-restore suppression sites
+   * (`validator.ts:117` — track() reentrancy guard; `manager.ts:11219` —
+   * first-render suppression for new classic components) to a typed bridge
+   * method. Pre-slice-17 both sites manually saved/restored
+   * `globalThis.__gxtTriggerReRender`; the helper encapsulates the same
+   * pattern so the suppression contract becomes a documented API surface
+   * rather than scattered swap pairs.
+   *
+   * Suppression semantics: all in-flight readers of
+   * `(globalThis as any).__gxtTriggerReRender` (across metal, glimmer,
+   * compile.ts) will observe `undefined` for the duration of `fn` and skip
+   * their dispatch. The bridge's own `triggerReRender(...)` slot is NOT
+   * cleared (it still references `_gxtTriggerReRender` directly); however no
+   * current caller uses the bridge slot — all callers route through
+   * globalThis — so the suppression contract is preserved.
+   *
+   * The `__gxtTriggerReRender` globalThis writer at `compile.ts:3148` is
+   * RETAINED post-slice-17 because the many cross-package readers (metal,
+   * glimmer-tracking, manager.ts) still consume the function via globalThis.
+   * Removing the globalThis writer is a separate (larger) migration.
+   */
+  withTriggerSuppressed?<T>(fn: () => T): T;
 }
 
 /**
