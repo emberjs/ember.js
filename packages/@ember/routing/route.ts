@@ -916,7 +916,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     // live renderContexts for this route's controller and mirror their own QP
     // values back to the controller so subsequent QP observers see the new
     // value (so `_qpChanged` → `_activeQPChanged` → URL update fires).
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       try {
         let controller = this.controller;
         let ctxsMap = (globalThis as any).__gxtComponentContexts;
@@ -981,7 +981,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     // which makes `isPrototypeMeta(controller)` return true for the *instance*.
     // That short-circuits `ComputedProperty.get` to return `undefined`,
     // breaking every `@computed` getter on controllers. Repair it here.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       let m = metaFor(controller);
       const correctProto = Object.getPrototypeOf(controller);
       if (correctProto && correctProto !== controller) {
@@ -1552,7 +1552,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     // routerTransitions queue causes it to be skipped because backburner
     // doesn't re-visit earlier queues. Use scheduleOnce('render', ...) to
     // ensure it runs after routerTransitions in the same runloop iteration.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       scheduleOnce('render', this._router, '_setOutlets');
     } else {
       once(this._router, '_setOutlets');
@@ -1571,7 +1571,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   teardownViews() {
     if (this[RENDER_STATE]) {
       this[RENDER_STATE] = undefined;
-      if ((globalThis as any).__GXT_MODE__) {
+      if (__GXT_MODE__) {
         scheduleOnce('render', this._router, '_setOutlets');
       } else {
         once(this._router, '_setOutlets');

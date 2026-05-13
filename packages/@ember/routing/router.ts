@@ -75,7 +75,7 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
   // dirties, forcing LinkTo.href getters to re-evaluate with the latest
   // sticky QP values. This matches the semantics upstream Glimmer VM
   // already achieves via its chain-tag machinery.
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     try {
       const owner = getOwner(this);
       if (owner) {
