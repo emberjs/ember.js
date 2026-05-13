@@ -673,19 +673,20 @@ function createEmberMaybeHelper(original: Function) {
                 };
                 // Wrap createHelper in backtracking frame to detect
                 // read-then-write of tracked properties in constructor.
-                // Import lazily since the validator module may not be loaded yet.
-                const _beginBT = g.__gxtBeginBacktrackingFrame;
-                const _endBT = g.__gxtEndBacktrackingFrame;
+                // Use the gxt-bridge (manager.ts installs the implementations);
+                // when classic-Ember (gxt-backend not loaded) the bridge is
+                // null and these no-op.
+                const _bt = getGxtRenderer()?.backtracking;
                 const debugName =
                   typeof delegate.getDebugName === 'function'
                     ? delegate.getDebugName(factoryClass)
                     : undefined;
-                if (_beginBT) _beginBT(debugName);
+                if (_bt) _bt.beginFrame(debugName);
                 let bucket: any;
                 try {
                   bucket = delegate.createHelper(factoryClass, reactiveArgs);
                 } finally {
-                  if (_endBT) _endBT();
+                  if (_bt) _bt.endFrame();
                 }
 
                 // Wire up destroyable if supported
@@ -714,14 +715,13 @@ function createEmberMaybeHelper(original: Function) {
                 }
 
                 // Wrap getValue in backtracking frame
-                const _beginBT2 = g.__gxtBeginBacktrackingFrame;
-                const _endBT2 = g.__gxtEndBacktrackingFrame;
-                if (_beginBT2) _beginBT2(debugName);
+                const _bt2 = getGxtRenderer()?.backtracking;
+                if (_bt2) _bt2.beginFrame(debugName);
                 let result: any;
                 try {
                   result = delegate.getValue(bucket);
                 } finally {
-                  if (_endBT2) _endBT2();
+                  if (_bt2) _bt2.endFrame();
                 }
 
                 // Create a GXT cell to hold the result. Reading cell.value inside
@@ -809,18 +809,17 @@ function createEmberMaybeHelper(original: Function) {
                 // Update args in place for the existing bucket
                 cached.reactiveArgs.positional = positional;
                 cached.reactiveArgs.named = named;
-                const _beginBT3 = g.__gxtBeginBacktrackingFrame;
-                const _endBT3 = g.__gxtEndBacktrackingFrame;
+                const _bt3 = getGxtRenderer()?.backtracking;
                 const cachedDebugName =
                   typeof cached.delegate?.getDebugName === 'function'
                     ? cached.delegate.getDebugName(factoryClass)
                     : undefined;
-                if (_beginBT3) _beginBT3(cachedDebugName);
+                if (_bt3) _bt3.beginFrame(cachedDebugName);
                 let result: any;
                 try {
                   result = cached.delegate.getValue(cached.bucket);
                 } finally {
-                  if (_endBT3) _endBT3();
+                  if (_bt3) _bt3.endFrame();
                 }
                 cached.lastArgsSer = argsSer;
                 cached.lastResult = result;

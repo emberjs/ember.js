@@ -472,9 +472,11 @@ export function isInBacktrackingFrame() {
   return _backtrackingFrame !== null;
 }
 
-// Expose on globalThis for ember-gxt-wrappers.ts (avoids circular imports)
-(globalThis as any).__gxtBeginBacktrackingFrame = beginBacktrackingFrame;
-(globalThis as any).__gxtEndBacktrackingFrame = endBacktrackingFrame;
+// (Cluster B slice 2) beginBacktrackingFrame / endBacktrackingFrame are now
+// installed on the typed gxt-bridge by manager.ts (which already imports both
+// from this file). Readers in helper-manager.ts and ember-gxt-wrappers.ts go
+// through `getGxtRenderer()?.backtracking.{begin,end}Frame` — no globalThis
+// write needed here anymore.
 
 // Expose classic tag primitives for gxt-backend/manager.ts so component-arg
 // own-property getters can participate in createCache/invokeHelper tag tracking.

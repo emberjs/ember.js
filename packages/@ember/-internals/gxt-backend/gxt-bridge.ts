@@ -101,9 +101,54 @@ export interface GxtDestructionCapabilities {
 }
 
 /**
- * The aggregate GXT renderer capabilities object. Pilot exposes only the
- * destruction slice; future slices will be additional optional properties on
- * this same interface (e.g. `schedule`, `lifecycle`, `cellMirror`, …).
+ * Backtracking capabilities. Implemented by validator.ts, consumed by
+ * helper-manager.ts and ember-gxt-wrappers.ts (both intra-package) when
+ * wrapping createHelper/getValue invocations so read-then-write inside a
+ * helper compute is detected as a backtracking re-render.
+ *
+ * Begin/end are paired in `try/finally` — every begin must have a matching
+ * end. The implementations are no-ops outside of an enclosing frame; missing
+ * a begin (frame stays null) is safe.
+ *
+ * NOT included in this slice (intentionally deferred):
+ *  - `__gxtCheckBacktracking` (manager.ts) — compile.ts's
+ *    `_installTemplateOnlyRenderTreeInjection` wraps the function by
+ *    REASSIGNING globalThis.__gxtCheckBacktracking. The bridge's single-
+ *    install setGxtRenderer pattern doesn't support that mutation model
+ *    without redesign. Cross-package readers in metal/property_set.ts,
+ *    metal/tracked.ts and glimmer-tracking.ts continue to read via
+ *    globalThis until a future slice resolves the wrap-by-reassignment.
+ *  - `__gxtAssertNotResolvedHelperAsNamedArg` (compile.ts) — referenced by
+ *    EMITTED CODE strings (`globalThis.__gxtAssertNotResolvedHelperAsNamedArg(...)`
+ *    appears in compiled template output). It's a code-generation hook, not
+ *    a runtime bridge target.
+ *  - `__gxtDebugCompile` (compile.ts reader-only) — read-only debug toggle
+ *    a developer flips manually in the browser console; no source writer.
+ */
+export interface GxtBacktrackingCapabilities {
+  /**
+   * Open a new backtracking-detection frame. `debugName` is captured for
+   * inclusion in the assertion message if a backtracking write is observed
+   * during the frame.
+   *
+   * Previously: `(globalThis as any).__gxtBeginBacktrackingFrame`.
+   */
+  beginFrame(debugName?: string): void;
+
+  /**
+   * Close the current backtracking-detection frame. Always called in a
+   * `finally` block paired with `beginFrame`.
+   *
+   * Previously: `(globalThis as any).__gxtEndBacktrackingFrame`.
+   */
+  endFrame(): void;
+}
+
+/**
+ * The aggregate GXT renderer capabilities object. Pilot exposed only the
+ * destruction slice; this iteration adds the backtracking slice. Future
+ * slices will be additional optional properties on this same interface
+ * (e.g. `schedule`, `lifecycle`, `cellMirror`, …).
  *
  * Why a single object rather than 30 individual exports? Easier to extend
  * incrementally without re-wiring imports each time; readers do
@@ -111,6 +156,7 @@ export interface GxtDestructionCapabilities {
  */
 export interface GxtRenderer {
   readonly destruction: GxtDestructionCapabilities;
+  readonly backtracking: GxtBacktrackingCapabilities;
 }
 
 let _renderer: GxtRenderer | null = null;

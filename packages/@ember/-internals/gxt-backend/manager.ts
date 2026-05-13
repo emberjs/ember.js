@@ -6381,21 +6381,9 @@ function renderTemplateWithParentView(
   }
 
   try {
-    // Debug: capture template render context state
-    if (
-      (globalThis as any).__gxtIsForceRerender &&
-      instance &&
-      typeof instance.first !== 'undefined'
-    ) {
-      const slotsObj = renderContext.$slots || renderContext[Symbol.for('gxt-slots')] || {};
-      (globalThis as any).__gxtDebugRender = {
-        instanceFirst: instance.first,
-        ctxFull: renderContext.full,
-        hasSlots: !!slotsObj.default,
-        slotsKeys: Object.keys(slotsObj),
-        type: instance.constructor?.name,
-      };
-    }
+    // (Cluster B slice 2) Removed orphan __gxtDebugRender writer — there are
+    // no readers anywhere in the source tree (was a leftover debug-capture
+    // block from an earlier force-rerender investigation).
     const result = template.render(renderContext, container);
     // Clean up GXT placeholder comments for cleaner DOM
     removeGxtArtifacts(container);
@@ -12396,5 +12384,9 @@ setGxtRenderer({
     destroyInstancesInNodes: _gxtDestroyInstancesInNodes,
     destroyTrackedInstances: _gxtDestroyTrackedInstances,
     destroyEmberComponentInstance: _gxtDestroyEmberComponentInstance,
+  },
+  backtracking: {
+    beginFrame: beginBacktrackingFrame,
+    endFrame: endBacktrackingFrame,
   },
 });

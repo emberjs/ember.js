@@ -15,6 +15,7 @@ import {
   valueForRef,
 } from './reference';
 import { associateDestroyableChild } from './destroyable';
+import { getGxtRenderer } from './gxt-bridge';
 
 // Shared WeakSet to track capabilities created via helperCapabilities()
 export const FROM_CAPABILITIES = new WeakSet();
@@ -119,8 +120,7 @@ function _callGetValueWithBacktracking(
   self: CustomHelperManager
 ): any {
   const g = globalThis as any;
-  const beginFrame = g.__gxtBeginBacktrackingFrame;
-  const endFrame = g.__gxtEndBacktrackingFrame;
+  const bt = getGxtRenderer()?.backtracking;
   let debugName = 'Helper';
   if (typeof delegate.getDebugName === 'function') {
     const definition = self._getDefinitionForBucket(bucket);
@@ -130,8 +130,8 @@ function _callGetValueWithBacktracking(
       /* fallback */
     }
   }
-  if (typeof beginFrame === 'function' && typeof endFrame === 'function') {
-    beginFrame(debugName);
+  if (bt) {
+    bt.beginFrame(debugName);
   }
   // Intercept __emberAssertDirect to fix render tree format
   // (validator.ts uses "  - top-level" but Ember tests expect "  -top-level")
@@ -148,8 +148,8 @@ function _callGetValueWithBacktracking(
     return origGetValue.call(delegate, bucket);
   } finally {
     g.__emberAssertDirect = origAssert;
-    if (typeof endFrame === 'function') {
-      endFrame();
+    if (bt) {
+      bt.endFrame();
     }
   }
 }
@@ -382,10 +382,9 @@ export class CustomHelperManager {
         const g = globalThis as any;
         ref = createComputeRef(
           () => {
-            const beginFrame = g.__gxtBeginBacktrackingFrame;
-            const endFrame = g.__gxtEndBacktrackingFrame;
-            if (typeof beginFrame === 'function' && typeof endFrame === 'function') {
-              beginFrame(debugName);
+            const bt = getGxtRenderer()?.backtracking;
+            if (bt) {
+              bt.beginFrame(debugName);
             }
             const origAssert = g.__emberAssertDirect;
             if (typeof origAssert === 'function') {
@@ -400,7 +399,7 @@ export class CustomHelperManager {
               return manager.getValue(bucket);
             } finally {
               g.__emberAssertDirect = origAssert;
-              if (typeof endFrame === 'function') endFrame();
+              if (bt) bt.endFrame();
             }
           },
           null,
@@ -469,17 +468,15 @@ export class CustomHelperManager {
     // Wrap in backtracking frame so read-then-write is detected with debug name
     const debugName =
       definition && manager?.getDebugName ? manager.getDebugName(definition) : 'Helper';
-    const g = globalThis as any;
-    const beginFrame = g.__gxtBeginBacktrackingFrame;
-    const endFrame = g.__gxtEndBacktrackingFrame;
-    if (typeof beginFrame === 'function' && typeof endFrame === 'function') {
-      beginFrame(debugName);
+    const bt = getGxtRenderer()?.backtracking;
+    if (bt) {
+      bt.beginFrame(debugName);
     }
     try {
       return manager?.getValue?.(bucket);
     } finally {
-      if (typeof endFrame === 'function') {
-        endFrame();
+      if (bt) {
+        bt.endFrame();
       }
     }
   }
