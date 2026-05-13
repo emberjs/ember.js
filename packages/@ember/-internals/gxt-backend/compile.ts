@@ -3205,6 +3205,50 @@ function _gxtIsInTriggerReRender(): boolean {
   return (globalThis as any).__gxtInTriggerReRender === true;
 }
 
+// Slice-22 (Cluster B): module-local canonical state for the
+// `__gxtCurrentlyRendering` boolean flag. Pre-slice-22 this lived purely on
+// `globalThis.__gxtCurrentlyRendering` with two writer sites (the intra-file
+// `templateFactory.render` body at L14181/L14191 and the cross-package
+// `manager.ts:10775-10780` `wrapHandler` save-restore) and two cross-package
+// readers (`metal/tracked.ts:297` and `gxt-backend/glimmer-tracking.ts:54`),
+// each gating the "cross-object reactivity" trigger fan-out so we DON'T fire
+// `__gxtTriggerReRender` from a @tracked setter while we're INSIDE a render
+// pass or a wrapped event-handler frame (otherwise the inner trigger would
+// dirty cells mid-render and break the initial render or the user-input
+// commit). Slice 22 graduates the flag's state to a module-local boolean
+// (canonical home) and exposes both writer (save-restore wrapper) and
+// reader (predicate) on the bridge as `compilePipeline.withCurrentlyRendering`
+// + `compilePipeline.isCurrentlyRendering`. The `__gxtCurrentlyRendering`
+// globalThis slot is DROPPED in slice 22 — net -1 globalThis surface.
+//
+// Pure boolean (no depth counter, no transition side-effects), so the
+// balanced "always save + always restore" wrap pattern from slice-17
+// (`withTriggerSuppressed`) and slice-18 (`withInTriggerReRender`) is the
+// correct shape — UNLIKE slice 21's `withRendering` where the depth-1→0
+// drain forced a conditional-restore variant.
+//
+// Intra-file writers (`templateFactory.render` at L14181/L14191) call
+// `_gxtSetCurrentlyRendering` directly (unconditional set-true / set-false,
+// matching the pre-slice-22 globalThis writes there). The cross-package
+// `manager.ts:10775` writer goes through `_gxtWithCurrentlyRendering` via the
+// bridge `compilePipeline.withCurrentlyRendering(fn)` helper.
+let _gxtCurrentlyRenderingFlag = false;
+function _gxtIsCurrentlyRendering(): boolean {
+  return _gxtCurrentlyRenderingFlag;
+}
+function _gxtSetCurrentlyRendering(on: boolean): void {
+  _gxtCurrentlyRenderingFlag = on;
+}
+function _gxtWithCurrentlyRendering<T>(fn: () => T): T {
+  const wasRendering = _gxtCurrentlyRenderingFlag;
+  _gxtCurrentlyRenderingFlag = true;
+  try {
+    return fn();
+  } finally {
+    _gxtCurrentlyRenderingFlag = wasRendering;
+  }
+}
+
 // Slice-20 (Cluster B): read-side predicate for the `__gxtSyncing` boolean
 // flag toggled by `__gxtSyncDomNow` (this file, body at L5270/5717) and the
 // post-render-hook re-entry save-restore in `manager.ts:4202-4215`. Returns
@@ -14178,7 +14222,16 @@ export function precompileTemplate(
           // Enable isRendering so GXT formulas track cell dependencies.
           let result;
           gxtSetIsRendering(true);
-          (globalThis as any).__gxtCurrentlyRendering = true;
+          // Slice-22 (Cluster B): intra-file write to the module-local
+          // `_gxtCurrentlyRenderingFlag` state via the canonical setter.
+          // Pre-slice-22 this was `(globalThis as any).__gxtCurrentlyRendering
+          // = true/false`. Unconditional set-true / set-false here (NOT
+          // save-restore) — the templateFactory.render body always wants the
+          // "we are inside a template render pass" signal during the
+          // template body call, regardless of nesting; the surrounding
+          // try/finally provides the cleanup pairing. See `_gxtSetCurrentlyRendering`
+          // definition above and `withCurrentlyRendering` doc in gxt-bridge.ts.
+          _gxtSetCurrentlyRendering(true);
           try {
             result = compilationResult.templateFn.call(renderContext);
           } finally {
@@ -14188,7 +14241,7 @@ export function precompileTemplate(
             // track cell dependencies and register in GXT's relatedTags map.
             // Without this, formulas created outside isRendering=true won't
             // re-evaluate when their tracked dependencies change.
-            (globalThis as any).__gxtCurrentlyRendering = false;
+            _gxtSetCurrentlyRendering(false);
             // Pop slots from stack
             slotsStack.pop();
           }
@@ -14505,6 +14558,20 @@ installCompilePipelinePart({
   // trap readers continue to read raw globalThis; the writers all remain
   // intra-file/intra-manager). See `isSyncing` doc in gxt-bridge.ts.
   isSyncing: _gxtIsSyncing,
+  // Slice-22 (Cluster B): graduates the `__gxtCurrentlyRendering` boolean
+  // flag (DIFFERENT from `__gxtIsRendering` — see slice 21's depth-counter
+  // flag) to two new bridge methods: `withCurrentlyRendering(fn): T`
+  // (save-restore wrapper around the manager.ts:10775-10780 `wrapHandler`
+  // writer) and `isCurrentlyRendering()` (predicate for the cross-package
+  // readers at `metal/tracked.ts:297` and `glimmer-tracking.ts:54`). Pure
+  // boolean (no depth counter, no transition side-effects), so the balanced
+  // "always save + always restore" wrap pattern applies. The
+  // `__gxtCurrentlyRendering` globalThis writer is DROPPED in this slice —
+  // net -1 globalThis surface. The canonical state is the module-local
+  // `_gxtCurrentlyRenderingFlag` defined above. See `withCurrentlyRendering`
+  // / `isCurrentlyRendering` doc in gxt-bridge.ts.
+  withCurrentlyRendering: _gxtWithCurrentlyRendering,
+  isCurrentlyRendering: _gxtIsCurrentlyRendering,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

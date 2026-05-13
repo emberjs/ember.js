@@ -10772,12 +10772,23 @@ function handleManagedComponent(
       // __gxtExternalSchedule which dirty cells and schedule a sync. The subsequent
       // gxtSyncDom() would re-run the gxtEffect that reads instance.value, but since
       // the ForkedValue hasn't been re-read yet, it might return the upstream value.
-      const prevRendering = (globalThis as any).__gxtCurrentlyRendering;
-      (globalThis as any).__gxtCurrentlyRendering = true;
+      //
+      // Slice-22 (Cluster B): migrated from `prevRendering = g.__gxtCurrentlyRendering;
+      // g.__gxtCurrentlyRendering = true; try { handler(e); } finally { g.__gxtCurrentlyRendering
+      // = prevRendering; ... }` to the bridge save-restore helper
+      // `compilePipeline.withCurrentlyRendering(fn)`. The `__gxtPendingSync` /
+      // `__gxtPendingSyncFromPropertyChange` cleanup is kept in a tail `finally` so
+      // it runs regardless of bridge availability. The bridge helper is optional
+      // (load-order independence — classic builds never publish it); if not yet
+      // installed we fall back to the canonical inline save-restore.
+      const wcr = getGxtRenderer()?.compilePipeline.withCurrentlyRendering;
       try {
-        handler(e);
+        if (typeof wcr === 'function') {
+          wcr(() => handler(e));
+        } else {
+          handler(e);
+        }
       } finally {
-        (globalThis as any).__gxtCurrentlyRendering = prevRendering;
         // Clear any pending sync that was scheduled during the handler
         (globalThis as any).__gxtPendingSync = false;
         (globalThis as any).__gxtPendingSyncFromPropertyChange = false;

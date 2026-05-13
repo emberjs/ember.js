@@ -294,7 +294,17 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // component cells that hold a reference to this object. This ensures that
     // GXT formulas like {{this.counter.countAlias}} re-evaluate.
     // Skip during rendering to avoid breaking the initial render.
-    if (!(globalThis as any).__gxtCurrentlyRendering) {
+    //
+    // Slice-22 (Cluster B): migrated `!g.__gxtCurrentlyRendering` raw-globalThis
+    // read to `compilePipeline.isCurrentlyRendering()` bridge predicate. The
+    // bridge method is optional (load-order independence — classic builds never
+    // publish it); when not installed (`isCR === undefined`) we treat the flag
+    // as `false` ("not rendering"), matching the pre-slice-22 truthiness check
+    // (`g.__gxtCurrentlyRendering` was `undefined` pre-install → falsy →
+    // proceed). See `isCurrentlyRendering` doc in
+    // `@ember/-internals/gxt-backend/gxt-bridge`.
+    const _isCR = getGxtRenderer()?.compilePipeline.isCurrentlyRendering;
+    if (!(typeof _isCR === 'function' ? _isCR() : false)) {
       const triggerReRender = (globalThis as any).__gxtTriggerReRender;
       if (typeof triggerReRender === 'function') {
         triggerReRender(this, key);

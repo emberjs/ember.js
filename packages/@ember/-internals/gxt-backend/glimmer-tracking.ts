@@ -51,7 +51,15 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
       schedule();
     }
     // Notify GXT for cross-object reactivity
-    if (!(globalThis as any).__gxtCurrentlyRendering) {
+    //
+    // Slice-22 (Cluster B): migrated `!g.__gxtCurrentlyRendering` raw-globalThis
+    // read to `compilePipeline.isCurrentlyRendering()` bridge predicate. The
+    // bridge method is optional (load-order independence — classic builds never
+    // publish it); when not installed we treat the flag as `false`
+    // ("not rendering"), matching the pre-slice-22 truthiness check. See
+    // `isCurrentlyRendering` doc in `./gxt-bridge`.
+    const _isCR = getGxtRenderer()?.compilePipeline.isCurrentlyRendering;
+    if (!(typeof _isCR === 'function' ? _isCR() : false)) {
       const triggerReRender = (globalThis as any).__gxtTriggerReRender;
       if (typeof triggerReRender === 'function') {
         triggerReRender(this, key);

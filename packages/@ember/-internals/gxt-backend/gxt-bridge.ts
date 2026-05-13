@@ -1067,6 +1067,107 @@ export interface GxtCompilePipelineCapabilities {
    * Matches slice-18's `isInTriggerReRender()` body shape.
    */
   isSyncing?(): boolean;
+
+  /**
+   * Run `fn` while the `__gxtCurrentlyRendering` boolean flag is set to
+   * `true` (save the prior value, set the flag, invoke `fn`, then restore
+   * the prior value via `try/finally`). Returns whatever `fn` returns.
+   * Re-entrancy-safe: an enclosing frame's value is preserved by the
+   * save-restore pattern (nested calls stack correctly).
+   *
+   * Slice-22 (Cluster B): graduates the cross-package writer site for
+   * `__gxtCurrentlyRendering` to a typed bridge helper. DISTINCT from
+   * slice-21's `withRendering` (which manages the `_renderPassDepth`
+   * counter for the `__gxtIsRendering` predicate). `__gxtCurrentlyRendering`
+   * is a SEPARATE pure-boolean flag that gates the "cross-object reactivity
+   * trigger fan-out" from @tracked setters: when a @tracked property is set
+   * DURING a render pass or DURING a wrapped user-event handler, the setter
+   * MUST NOT call `__gxtTriggerReRender` — otherwise the inner trigger would
+   * dirty cells mid-render (breaking the initial render) or mid-event-commit
+   * (clobbering the user's input via a parent-arg re-sync). The flag is
+   * narrower in scope than the depth-counter `__gxtIsRendering`: it only
+   * covers the inner-template-call body + the wrapped event handler body,
+   * not the entire renderComponent wrap.
+   *
+   * Writer audit (pre-slice-22):
+   *  - `manager.ts:10775-10780` — `wrapHandler` save-restore wrap around the
+   *    event handler call (`change`, `input`, `keyUp`, etc.). Pattern:
+   *    `prevRendering = g.__gxtCurrentlyRendering; g.__gxtCurrentlyRendering
+   *    = true; try { handler(e); } finally { g.__gxtCurrentlyRendering =
+   *    prevRendering; ... }`. Migrated to `withCurrentlyRendering(fn): T` in
+   *    slice 22 — the canonical save-restore writer.
+   *  - `compile.ts:14181/14191` — `templateFactory.render` body unconditional
+   *    `true` (before template body call) / `false` (in `finally`).
+   *    Migrated in slice 22 to direct module-local `_gxtSetCurrentlyRendering`
+   *    calls — INTRA-FILE writer, paired with `gxtSetIsRendering(true)`. The
+   *    bridge helper's save-restore semantics are NOT what this caller wants
+   *    (the templateFactory render body always wants to detect "we are inside
+   *    a template body call" regardless of nesting); the surrounding
+   *    try/finally provides the cleanup pairing.
+   *
+   * Reader contract: the flag is consumed by:
+   *  - `metal/tracked.ts:297` — `if (!g.__gxtCurrentlyRendering) {
+   *    __gxtTriggerReRender(this, key); __gxtExternalSchedule(); }` — guards
+   *    the cross-object reactivity trigger from a non-component @tracked
+   *    setter. Migrated to `isCurrentlyRendering()` in slice 22.
+   *  - `glimmer-tracking.ts:54` — same pattern, this time inside the
+   *    `tracked()` decorator's setter. Migrated to `isCurrentlyRendering()`
+   *    in slice 22.
+   *
+   * Bridge shape decision: balanced save-restore wrapper (mirroring
+   * slice-17's `withTriggerSuppressed` and slice-18's `withInTriggerReRender`
+   * — the pure-boolean variant of the "wrap synchronous body in a state-flag
+   * toggle" pattern). UNLIKE slice-21's `withRendering`, the balanced wrap
+   * works here because the flag is a pure boolean (no depth counter, no
+   * drain-on-1→0 side-effect): every save-restore pair is independent, and
+   * nested frames stack correctly via the saved-value protocol.
+   *
+   * Namespace decision: `compilePipeline`. The flag is semantically a
+   * scope-modifier on the GXT template render pipeline — its canonical state
+   * lives in `compile.ts` (the pipeline's home file), the intra-file writer
+   * is the templateFactory render body, and the cross-package writer in
+   * `manager.ts` is the event-handler wrap. Same namespace as slices
+   * 15/17/18/19/20/21.
+   *
+   * Bridge interface evolution: slice 22 — seventeenth API change.
+   * `GxtCompilePipelineCapabilities` extended with TWO new optional methods
+   * (`withCurrentlyRendering` + `isCurrentlyRendering`) — same paired shape
+   * as slice 18's `withInTriggerReRender`/`isInTriggerReRender`.
+   *
+   * After slice 22 the `__gxtCurrentlyRendering` globalThis slot is DROPPED:
+   * the canonical state is the module-local `_gxtCurrentlyRenderingFlag` in
+   * `compile.ts`, the bridge methods are the sole cross-package surface,
+   * and the intra-file writers use the module-local setter directly. Net
+   * globalThis surface delta: -1 slot (`__gxtCurrentlyRendering`).
+   */
+  withCurrentlyRendering?<T>(fn: () => T): T;
+
+  /**
+   * Read-only predicate for the `__gxtCurrentlyRendering` boolean flag (the
+   * pure-boolean version managed by `withCurrentlyRendering(fn)` and the
+   * intra-file `_gxtSetCurrentlyRendering` writer in `compile.ts`). Returns
+   * `true` iff the current synchronous stack is nested inside either:
+   *  - a `withCurrentlyRendering(fn)` frame (the event-handler wrap from
+   *    `manager.ts:10775`), OR
+   *  - the `templateFactory.render` body in `compile.ts:14181-14193` (the
+   *    inner template-function call between the `_gxtSetCurrentlyRendering(true)`
+   *    set and the `finally` `_gxtSetCurrentlyRendering(false)` reset).
+   *
+   * Slice-22 (Cluster B): exposes the read side of the flag as a bridge
+   * predicate so `metal/tracked.ts:297` and `glimmer-tracking.ts:54` can
+   * gate their `__gxtTriggerReRender` calls without touching `globalThis`
+   * directly. The implementation reads the canonical module-local
+   * `_gxtCurrentlyRenderingFlag` in `compile.ts` (not a globalThis slot —
+   * the slot is DROPPED in slice 22). Bridge-not-yet-installed edge:
+   * defaults to `false` (the safe value — the slot was `undefined` pre-
+   * install, which the pre-slice-22 `!g.__gxtCurrentlyRendering` check
+   * treated as "not rendering").
+   *
+   * Fast-check: the implementation is `return _gxtCurrentlyRenderingFlag` —
+   * one variable read; zero allocations. Suitable for the @tracked setter
+   * hot path (every @tracked write outside a render pass goes through it).
+   */
+  isCurrentlyRendering?(): boolean;
 }
 
 /**
