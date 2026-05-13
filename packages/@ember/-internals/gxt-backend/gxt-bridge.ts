@@ -285,10 +285,10 @@ export interface GxtFormatCapabilities {
  *    `installRuntimePart` below. Validates the install-API pattern with a
  *    second non-manager.ts writer file.
  *  - `__gxtMarkTemplateRendered` / `__gxtBeginRenderPass` / `__gxtEndRenderPass`
- *    — render-pass triad. `__gxtBeginRenderPass` is wrap-by-reassignment at
- *    compile.ts:5106 (same exclusion class as slice 2's `__gxtCheckBacktracking`
- *    and slice 3's `__gxtRebuildViewTreeFromDom`). The triad must move together
- *    once that wrap is resolved.
+ *    — render-pass triad. MIGRATED IN SLICE 8 to the `renderPass` namespace
+ *    via the new `installRenderPassPart` API. The pre-slice-8 wrap-by-reassignment
+ *    at compile.ts:5106 was promoted to a typed `beforeBeginRenderPass`
+ *    host hook contributed by compile.ts.
  *  - `__gxtClearIfWatchers` — intra-compile.ts read+write (writer at L3487,
  *    reader at L5798). State-flag pattern in a single file; cleaner cleanup
  *    is a module-local `const` in an intra-file refactor.
@@ -401,6 +401,86 @@ export interface GxtCompilePipelineCapabilities {
 }
 
 /**
+ * Render-pass lifecycle capabilities. Implemented by manager.ts (the canonical
+ * `beginRenderPass` / `endRenderPass` / `markTemplateRendered` definitions),
+ * with an optional `beforeBeginRenderPass` host hook contributed by compile.ts
+ * via `installRenderPassPart` (slice 8 — host-hook pattern).
+ *
+ * Consumers: glimmer/lib/templates/root.ts (cross-package — outlet rendering
+ * enables backtracking detection around the template render call) and the
+ * internal compile.ts pre-hook (intra-package).
+ *
+ * Begin/end are paired in `try/finally` — every begin must have a matching end.
+ *
+ * Slice-8 design: extends the slice-6 / slice-7 install-API pattern with a
+ * "host hook" — compile.ts contributes a `beforeBeginRenderPass` function via
+ * `installRenderPassPart` (mirroring slices 6 and 7). manager.ts's
+ * `beginRenderPass` method dispatches the registered before-hook (if any)
+ * BEFORE its main body. This replaces the pre-slice-8 runtime mutation pattern
+ * at compile.ts:5106 where `_installTemplateOnlyResetHook` reassigned
+ * `globalThis.__gxtBeginRenderPass = wrapped(...)` to clear compile.ts-local
+ * template-only render state (`__gxtTemplateOnlyRenderedSet`,
+ * `__gxtTemplateOnlyStack`) at the start of each pass. The host-hook pattern
+ * avoids runtime mutation entirely.
+ *
+ * NOT included in this slice (intentionally deferred):
+ *  - `__gxtIsInRenderPass` — boolean state flag co-written with
+ *    `_isInRenderPass` inside `beginRenderPass`/`endRenderPass`. Cross-package
+ *    readers in metal/tracked.ts treat it as a fast-check predicate. Migrating
+ *    to a method (`isInRenderPass()`) would require updating many tracked-read
+ *    hot-path call sites; the state-flag pattern is fundamentally different
+ *    from the bridge's method-call shape. Same exclusion class as the deferred
+ *    state-flag inventory (e.g. `__gxtRenderDepth`, `__gxtIsRendering`).
+ */
+export interface GxtRenderPassCapabilities {
+  /**
+   * Open a new render pass. Clears the marked-template-rendered set and sets
+   * the in-render-pass flag. Dispatches the registered `beforeBeginRenderPass`
+   * host hook FIRST so contributors (e.g. compile.ts) can clear their own
+   * pass-local state before manager.ts's bookkeeping runs.
+   *
+   * Previously: `(globalThis as any).__gxtBeginRenderPass`. Pre-slice-8 the
+   * function was wrapped at runtime by `_installTemplateOnlyResetHook` in
+   * compile.ts:5106 to clear template-only state; that wrap is now installed
+   * via `installRenderPassPart({ beforeBeginRenderPass })` and dispatched here.
+   */
+  beginRenderPass(): void;
+
+  /**
+   * Close the current render pass. Clears the marked-template-rendered set
+   * and clears the in-render-pass flag.
+   *
+   * Previously: `(globalThis as any).__gxtEndRenderPass`.
+   */
+  endRenderPass(): void;
+
+  /**
+   * Mark a template-rendered instance for backtracking detection. The
+   * implementation also walks own/prototype keys to capture nested
+   * non-component objects (so shared dependencies on `this.wrapper.content`
+   * are caught too).
+   *
+   * Previously: `(globalThis as any).__gxtMarkTemplateRendered`.
+   */
+  markTemplateRendered(instance: unknown): void;
+
+  /**
+   * Host hook contributed by compile.ts (via `installRenderPassPart`) that
+   * runs BEFORE manager.ts's `beginRenderPass` body. Used to clear
+   * compile.ts-local template-only render state
+   * (`__gxtTemplateOnlyRenderedSet`, `__gxtTemplateOnlyStack`) at the start
+   * of each render pass. Pre-slice-8 this logic lived in a wrap-by-reassignment
+   * installer at compile.ts:5106; this slice promotes it to a typed host hook.
+   *
+   * Best-effort: errors thrown from the hook are caught and ignored, matching
+   * the pre-slice-8 wrap's try/catch behavior. Only one contributor at a time
+   * is supported in this slice (compile.ts); a future slice can extend to a
+   * chain if a second contributor appears.
+   */
+  beforeBeginRenderPass?(): void;
+}
+
+/**
  * Runtime / module-handoff capabilities. Implemented by
  * `gxt-with-runtime-hbs.ts` (the file that imports `* as gxtModule from
  * '@lifeart/gxt'` and re-exports the runtime-hbs-flavored namespace), consumed
@@ -456,6 +536,7 @@ export interface GxtRenderer {
   readonly viewUtils: GxtViewUtilsCapabilities;
   readonly format: GxtFormatCapabilities;
   readonly compilePipeline: GxtCompilePipelineCapabilities;
+  readonly renderPass: GxtRenderPassCapabilities;
   readonly runtime: GxtRuntimeCapabilities;
 }
 
@@ -481,6 +562,14 @@ let _pendingCompilePipelineParts: Partial<GxtCompilePipelineCapabilities>[] = []
 // renderer. Buffer until the renderer is available, then flush.
 let _pendingRuntimeParts: Partial<GxtRuntimeCapabilities>[] = [];
 
+// Slice-8 deferred-install queue. Same load-order independence pattern as
+// slices 6 and 7, but for the `renderPass` namespace. The host-hook
+// contributor (`compile.ts`) may load before OR after manager.ts depending
+// on the entry point: entering via `@ember/template-compiler` loads compile.ts
+// first; entering via the renderer loads manager.ts first. Buffer until the
+// renderer is available, then flush.
+let _pendingRenderPassParts: Partial<GxtRenderPassCapabilities>[] = [];
+
 /**
  * Install the renderer capabilities object. Called exactly once at
  * gxt-backend module init by manager.ts. Multiple calls overwrite, but this
@@ -505,6 +594,12 @@ export function setGxtRenderer(renderer: GxtRenderer): void {
       Object.assign(_renderer.compilePipeline, part);
     }
     _pendingCompilePipelineParts = [];
+  }
+  if (_pendingRenderPassParts.length > 0) {
+    for (const part of _pendingRenderPassParts) {
+      Object.assign(_renderer.renderPass, part);
+    }
+    _pendingRenderPassParts = [];
   }
   if (_pendingRuntimeParts.length > 0) {
     for (const part of _pendingRuntimeParts) {
@@ -561,6 +656,26 @@ export function installRuntimePart(part: Partial<GxtRuntimeCapabilities>): void 
     return;
   }
   Object.assign(_renderer.runtime, part);
+}
+
+/**
+ * Slice-8 install API. Allows compile.ts to contribute the
+ * `beforeBeginRenderPass` host hook to the `renderPass` namespace. Mirrors
+ * `installCompilePipelinePart` (slice 6) and `installRuntimePart` (slice 7).
+ *
+ * The `beginRenderPass` / `endRenderPass` / `markTemplateRendered` methods
+ * are seeded by manager.ts's initial `setGxtRenderer` call; `beforeBeginRenderPass`
+ * arrives later from compile.ts (typical load order: compile.ts top-level runs
+ * the install AFTER manager.ts has already published the triad — but
+ * cross-entry import paths can flip the order, so we use the same
+ * pending-queue pattern as slices 6 and 7).
+ */
+export function installRenderPassPart(part: Partial<GxtRenderPassCapabilities>): void {
+  if (_renderer === null) {
+    _pendingRenderPassParts.push(part);
+    return;
+  }
+  Object.assign(_renderer.renderPass, part);
 }
 
 /**

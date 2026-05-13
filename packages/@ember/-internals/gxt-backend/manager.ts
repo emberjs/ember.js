@@ -2829,6 +2829,26 @@ export function markTemplateRendered(instance: any): void {
 }
 
 export function beginRenderPass(): void {
+  // Slice-8: dispatch the registered `beforeBeginRenderPass` host hook (if
+  // any) BEFORE manager.ts's bookkeeping. Pre-slice-8 this was implemented
+  // by compile.ts:5106 wrapping `globalThis.__gxtBeginRenderPass` at runtime
+  // to clear compile.ts-local template-only state (`__gxtTemplateOnlyRenderedSet`,
+  // `__gxtTemplateOnlyStack`). The bridge now exposes the same pre-hook as a
+  // typed `beforeBeginRenderPass` method on `renderPass`, contributed by
+  // compile.ts via `installRenderPassPart`. Best-effort: errors from the hook
+  // are swallowed to match the pre-slice-8 wrap's try/catch behavior.
+  //
+  // `getGxtRenderer` is imported at file bottom (ES module imports hoist, so
+  // the binding is available here; same pattern used at lines ~5722, ~5957,
+  // ~6132 by compile-pipeline hooks).
+  const _beforeHook = getGxtRenderer()?.renderPass.beforeBeginRenderPass;
+  if (_beforeHook) {
+    try {
+      _beforeHook();
+    } catch {
+      /* ignore — matches pre-slice-8 wrap behavior */
+    }
+  }
   _isInRenderPass = true;
   (globalThis as any).__gxtIsInRenderPass = true;
   _templateRenderedInstances.clear();
@@ -2839,12 +2859,6 @@ export function endRenderPass(): void {
   (globalThis as any).__gxtIsInRenderPass = false;
   _templateRenderedInstances.clear();
 }
-
-// Expose render pass functions on globalThis so outlet rendering (root.ts)
-// can enable backtracking detection without circular imports.
-(globalThis as any).__gxtBeginRenderPass = beginRenderPass;
-(globalThis as any).__gxtEndRenderPass = endRenderPass;
-(globalThis as any).__gxtMarkTemplateRendered = markTemplateRendered;
 
 /**
  * Check if setting a property on an instance constitutes backtracking.
@@ -12457,6 +12471,15 @@ setGxtRenderer({
   compilePipeline: {
     syncWrapper: _gxtSyncWrapper,
     snapshotLiveInstances: _gxtSnapshotLiveInstances,
+  },
+  renderPass: {
+    // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is
+    // contributed by compile.ts via `installRenderPassPart` to clear the
+    // template-only render state at the start of each pass (replacing the
+    // pre-slice-8 wrap-by-reassignment at compile.ts:5106).
+    beginRenderPass,
+    endRenderPass,
+    markTemplateRendered,
   },
   // Slice-7: populated entirely via `installRuntimePart` from
   // gxt-with-runtime-hbs.ts. Seeded empty here so `Object.assign` has a

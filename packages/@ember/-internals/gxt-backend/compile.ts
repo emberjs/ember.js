@@ -5101,27 +5101,27 @@ setTimeout(_installTemplateOnlyRenderTreeInjection, 50);
 // the backtracking injector only sees components that rendered during the
 // current render. Otherwise previous tests leave stale entries (e.g. the
 // `foo-bar` from a prior test polluting the next test's render tree).
-function _installTemplateOnlyResetHook() {
+//
+// Slice-8 (Cluster B): pre-slice-8 this was implemented as a runtime
+// wrap-by-reassignment of `globalThis.__gxtBeginRenderPass` with a
+// retry-install (microtask + timeout) loop to handle the case where this
+// file loaded before manager.ts published the function. The bridge migration
+// promotes this to a typed `beforeBeginRenderPass` host hook on the
+// `renderPass` namespace, contributed via `installRenderPassPart` and
+// dispatched by manager.ts's `beginRenderPass` body BEFORE its main work.
+// No runtime mutation, no retry loop — the slice 6/7 install-API pattern
+// handles load-order independence via the deferred-install queue.
+function _resetTemplateOnlyState() {
   const _g = globalThis as any;
-  if (!_g.__gxtBeginRenderPass || _g.__gxtBeginRenderPass.__emberTOReset) return;
-  const orig = _g.__gxtBeginRenderPass;
-  _g.__gxtBeginRenderPass = function __gxtBeginRenderPass_resetTO() {
-    try {
-      const set = _g.__gxtTemplateOnlyRenderedSet;
-      if (set && typeof set.clear === 'function') set.clear();
-      const stack = _g.__gxtTemplateOnlyStack;
-      if (stack && typeof stack.length === 'number') stack.length = 0;
-    } catch {
-      /* ignore */
-    }
-    return orig.apply(this, arguments as any);
-  };
-  _g.__gxtBeginRenderPass.__emberTOReset = true;
+  try {
+    const set = _g.__gxtTemplateOnlyRenderedSet;
+    if (set && typeof set.clear === 'function') set.clear();
+    const stack = _g.__gxtTemplateOnlyStack;
+    if (stack && typeof stack.length === 'number') stack.length = 0;
+  } catch {
+    /* ignore */
+  }
 }
-_installTemplateOnlyResetHook();
-queueMicrotask(_installTemplateOnlyResetHook);
-setTimeout(_installTemplateOnlyResetHook, 0);
-setTimeout(_installTemplateOnlyResetHook, 50);
 
 // Wrap __gxtSyncAllWrappers so that any instance whose update hooks are
 // fired by syncAll is marked with `__gxtSyncAllFiredPassId`. The $_tag
@@ -14348,10 +14348,18 @@ export const __test_internals = {
 // is eager and runs before this file's bottom because consumers of this
 // file's `template`/`compile` exports must already have manager.ts loaded
 // transitively for the renderer to work at all).
-import { installCompilePipelinePart } from './gxt-bridge';
+import { installCompilePipelinePart, installRenderPassPart } from './gxt-bridge';
 installCompilePipelinePart({
   compileTemplate: compileTemplate,
   resetIntervalBudget: _gxtResetIntervalBudget,
   registerArrayOwner: registerArrayOwner,
   registerObjectValueOwner: registerObjectValueOwner,
+});
+
+// Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
+// wrap-by-reassignment installer (see `_resetTemplateOnlyState` definition
+// earlier in this file). The host hook runs at the start of every
+// `beginRenderPass` call, BEFORE manager.ts clears its template-rendered set.
+installRenderPassPart({
+  beforeBeginRenderPass: _resetTemplateOnlyState,
 });

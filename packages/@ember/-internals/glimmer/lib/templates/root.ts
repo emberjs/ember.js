@@ -880,15 +880,16 @@ export default function createRootTemplate(_owner: any) {
       // Begin render pass for backtracking detection (detects mutations
       // to already-consumed values during rendering, e.g., component init
       // setting a property that was already read by the template).
-      const _beginRenderPass = (globalThis as any).__gxtBeginRenderPass;
-      const _endRenderPass = (globalThis as any).__gxtEndRenderPass;
-      const _markRendered = (globalThis as any).__gxtMarkTemplateRendered;
-      if (typeof _beginRenderPass === 'function') _beginRenderPass();
+      // Slice-8 (Cluster B): triad migrated to the typed `renderPass`
+      // namespace on the gxt-backend bridge. Optional-chain guards handle
+      // classic-Ember builds where the bridge is null.
+      const _renderPass = getGxtRenderer()?.renderPass;
+      _renderPass?.beginRenderPass();
       // Mark the render context and model as rendered so backtracking
       // detection can catch mutations during child component init().
-      if (typeof _markRendered === 'function') {
-        _markRendered(renderContext);
-        if (model && typeof model === 'object') _markRendered(model);
+      if (_renderPass) {
+        _renderPass.markTemplateRendered(renderContext);
+        if (model && typeof model === 'object') _renderPass.markTemplateRendered(model);
       }
       (globalThis as any).__gxtInOutletRender = true;
       try {
@@ -900,7 +901,7 @@ export default function createRootTemplate(_owner: any) {
         );
       } finally {
         (globalThis as any).__gxtInOutletRender = false;
-        if (typeof _endRenderPass === 'function') _endRenderPass();
+        _renderPass?.endRenderPass();
       }
 
       // Track render context for cell-based updates on re-render.
