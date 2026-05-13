@@ -3180,19 +3180,26 @@ function _gxtAddAfterTriggerReRender(fn: _TriggerReRenderHook): () => void {
 //   - `metal/property_events.ts:96-101` (caller-side around `gxtTrigger`).
 // Both writers used the same `wasInside`-save / set-true / restore pattern;
 // this helper encapsulates it. Re-entrancy-safe because the saved value is
-// whatever the enclosing frame wrote (nested calls stack correctly). The
-// globalThis slot is also written so the unmigrated reader at
-// `@ember/object/core.ts:325` (DEBUG proxy trap) keeps observing the same
-// value as the bridge-route readers. See `withInTriggerReRender` doc in
-// gxt-bridge.ts.
+// whatever the enclosing frame wrote (nested calls stack correctly).
+//
+// Slice-23 (Cluster B): graduates the canonical state to a module-local
+// boolean (`_gxtInTriggerReRenderFlag`) and drops the
+// `globalThis.__gxtInTriggerReRender` slot entirely. The cross-package
+// readers at `metal/computed.ts:538` and `@ember/object/core.ts:357-360`
+// (DEBUG proxy trap) now route through the bridge predicate
+// `compilePipeline.isInTriggerReRender()` exclusively (no globalThis
+// fallback). The cross-package writer at `metal/property_events.ts:96-101`
+// routes through `compilePipeline.withInTriggerReRender(fn)` exclusively
+// (no inline save-restore fallback). Net globalThis surface delta: -1 slot
+// (`__gxtInTriggerReRender`). Mirrors slice-22's pattern.
+let _gxtInTriggerReRenderFlag = false;
 function _gxtWithInTriggerReRender<T>(fn: () => T): T {
-  const g: any = globalThis as any;
-  const wasInside = g.__gxtInTriggerReRender;
-  g.__gxtInTriggerReRender = true;
+  const wasInside = _gxtInTriggerReRenderFlag;
+  _gxtInTriggerReRenderFlag = true;
   try {
     return fn();
   } finally {
-    g.__gxtInTriggerReRender = wasInside;
+    _gxtInTriggerReRenderFlag = wasInside;
   }
 }
 
@@ -3201,8 +3208,11 @@ function _gxtWithInTriggerReRender<T>(fn: () => T): T {
 // nested inside a `withInTriggerReRender(fn)` frame (which always wraps the
 // canonical `triggerReRender` body). Used by `metal/computed.ts:522`'s
 // CP.get re-entrance guard. Hot path: one boolean compare, zero allocations.
+//
+// Slice-23 (Cluster B): reads the module-local `_gxtInTriggerReRenderFlag`
+// (graduated from `globalThis.__gxtInTriggerReRender` in slice 23).
 function _gxtIsInTriggerReRender(): boolean {
-  return (globalThis as any).__gxtInTriggerReRender === true;
+  return _gxtInTriggerReRenderFlag;
 }
 
 // Slice-22 (Cluster B): module-local canonical state for the
@@ -3299,6 +3309,10 @@ const _gxtTriggerReRender = function (obj: object, keyName: string) {
   // restored before the AFTER-hook chain dispatches (matching the
   // pre-slice-18 ordering — AFTER hooks run with the flag already
   // restored).
+  //
+  // Slice-23 (Cluster B): `_gxtWithInTriggerReRender` now reads/writes the
+  // module-local `_gxtInTriggerReRenderFlag` (the `globalThis` slot is
+  // dropped). The wrap shape is unchanged; only the canonical state moved.
   try {
     _gxtWithInTriggerReRender(() => {
       _gxtTriggerReRenderBody(obj, keyName);
@@ -14521,9 +14535,16 @@ installCompilePipelinePart({
   // core.ts's pre-slice-15 wrap, and `metal/property_events.ts:96-101`'s
   // caller-side toggle). The paired read-only predicate
   // `isInTriggerReRender()` serves `metal/computed.ts:522`'s CP.get
-  // re-entrance guard. The globalThis writer is RETAINED post-slice-18
-  // because of the unmigrated `@ember/object/core.ts:325` DEBUG proxy-trap
-  // reader. See `withInTriggerReRender` / `isInTriggerReRender` doc in
+  // re-entrance guard.
+  //
+  // Slice-23 (Cluster B): the `__gxtInTriggerReRender` globalThis writer is
+  // DROPPED — the canonical state is now the module-local
+  // `_gxtInTriggerReRenderFlag` defined above. All reader sites
+  // (`metal/computed.ts:538` and `@ember/object/core.ts:357-360` DEBUG proxy
+  // trap) route through this bridge predicate exclusively (no globalThis
+  // fallback). The cross-package writer at `metal/property_events.ts:96-101`
+  // routes through `withInTriggerReRender(fn)` exclusively. Net -1 globalThis
+  // slot. See `withInTriggerReRender` / `isInTriggerReRender` doc in
   // gxt-bridge.ts.
   withInTriggerReRender: _gxtWithInTriggerReRender,
   isInTriggerReRender: _gxtIsInTriggerReRender,

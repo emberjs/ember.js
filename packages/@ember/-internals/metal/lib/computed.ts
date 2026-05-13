@@ -42,9 +42,17 @@ import {
 } from './property_events';
 // Slice-18 (Cluster B): CP.get's `__gxtInTriggerReRender` re-entrance guard
 // reads through the typed `compilePipeline.isInTriggerReRender()` bridge
-// predicate. The globalThis fallback is preserved for the (rare) case where
-// the bridge hasn't been populated yet (early CP reads during module init).
-// See `isInTriggerReRender` doc in gxt-bridge.ts.
+// predicate.
+//
+// Slice-23 (Cluster B): the globalThis fallback is DROPPED — the bridge is
+// the sole reader surface. If the bridge has not been installed yet (only
+// reachable before compile.ts's module-init `installCompilePipelinePart`
+// call has fired, which is unreachable from any CP.get hot path under
+// `__GXT_MODE__`), the predicate defaults to `false` ("not inside a trigger
+// scope"), which preserves classic lazy CP semantics — the next genuine
+// read will compute through the descriptor normally. Net -1 globalThis
+// slot (`__gxtInTriggerReRender`). See `isInTriggerReRender` doc in
+// gxt-bridge.ts.
 import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 export type ComputedPropertyGetterFunction = (this: any, key: string) => unknown;
@@ -527,15 +535,16 @@ export class ComputedProperty extends ComputedDescriptor {
         // (or undefined) value and let the next genuine lazy read recompute.
         //
         // Slice-18 (Cluster B): read the flag through the typed
-        // `compilePipeline.isInTriggerReRender()` bridge predicate. Falls
-        // back to the raw `g.__gxtInTriggerReRender === true` slot read for
-        // the (rare) case where the bridge hasn't been populated yet (the
-        // bridge writer at compile.ts module-init mirrors the same slot, so
-        // the two are equivalent post-install). See `isInTriggerReRender`
-        // doc in gxt-bridge.ts.
+        // `compilePipeline.isInTriggerReRender()` bridge predicate.
+        //
+        // Slice-23 (Cluster B): the globalThis fallback is DROPPED — the
+        // bridge is the sole reader surface. If the bridge is unavailable
+        // (module-init window only — unreachable from CP.get under
+        // `__GXT_MODE__`), default to `false` (preserves classic lazy CP
+        // semantics — the next genuine read computes normally). See
+        // `isInTriggerReRender` doc in gxt-bridge.ts.
         const _isIn = getGxtRenderer()?.compilePipeline.isInTriggerReRender;
-        const _inTrigger =
-          typeof _isIn === 'function' ? _isIn() : g.__gxtInTriggerReRender === true;
+        const _inTrigger = typeof _isIn === 'function' ? _isIn() : false;
         if (_inTrigger && revision === undefined) {
           let stored = meta.valueFor(keyName);
           consumeTag(propertyTag);

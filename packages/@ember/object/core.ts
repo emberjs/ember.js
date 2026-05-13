@@ -33,10 +33,13 @@ import { OWNER } from '@glimmer/owner';
 // deferred this trap because migrating one flag while leaving the others
 // raw didn't improve the import-edge count net. Slice 20 adds the missing
 // `isSyncing()` predicate (slice-19 counterpart) and migrates the entire
-// 3-flag predicate to bridge-routed calls as a unit. Falls back to raw
-// globalThis reads for the case where the bridge hasn't been populated yet
-// (the bridge predicates mirror the same globalThis slots, so the two are
-// equivalent post-install). See `isSyncing` / `isRendering` /
+// 3-flag predicate to bridge-routed calls as a unit.
+//
+// Slice-21 dropped the `__gxtIsRendering` globalThis fallback (its writer
+// was removed in the same slice). Slice-23 dropped the
+// `__gxtInTriggerReRender` globalThis fallback (its writer was removed in
+// slice 23). The `__gxtSyncing` fallback branch remains live pending its
+// own writer-drop slice. See `isSyncing` / `isRendering` /
 // `isInTriggerReRender` docs in gxt-bridge.ts.
 import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
@@ -84,14 +87,20 @@ const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug buil
 // unconditionally (without needing a wrap), so the DEBUG proxy-trap branch
 // at the call site below no longer needs an installer prelude.
 //
-// The proxy trap branch still reads `__gxtInTriggerReRender` directly at
-// L309-310 below — that reader is unchanged. The flag is now set by:
+// The proxy trap branch reads `__gxtInTriggerReRender` (via the bridge
+// `compilePipeline.isInTriggerReRender()` predicate post-slice-20). The
+// flag is set by:
 //   1. `metal/property_events.ts:96-101` (caller-side, canonical
 //      `notifyPropertyChange` entry — same as pre-slice-15).
 //   2. The canonical `triggerReRender` body in `compile.ts` (slice-15
 //      addition — replaces this file's pre-slice-15 wrap).
 // Both writers use the same `wasInside`/restore pattern, so re-entrant calls
 // remain safe.
+//
+// Slice-23 (Cluster B): the `__gxtInTriggerReRender` globalThis slot is
+// dropped. Canonical state is `_gxtInTriggerReRenderFlag` module-local in
+// `compile.ts`; the bridge predicate `compilePipeline.isInTriggerReRender()`
+// is the sole cross-package reader surface.
 
 const destroyCalled = new Set();
 
@@ -349,9 +358,16 @@ class CoreObject {
           // same slice). If the bridge has not been installed at trap-fire
           // time we default to `false` (treat as "not in a render pass"),
           // which is safe — without the GXT pipeline loaded, the trap
-          // cannot be hit. The `__gxtSyncing` / `__gxtInTriggerReRender`
-          // fallback branches are RETAINED — their globalThis writers
-          // remain live (see slices 18 and 20 deferrals).
+          // cannot be hit.
+          //
+          // Slice-23 (Cluster B): drop the `__gxtInTriggerReRender`
+          // globalThis fallback branch — the bridge `isInTriggerReRender()`
+          // predicate is the canonical source after slice 23 (the
+          // `__gxtInTriggerReRender` globalThis writer is removed in the
+          // same slice). Default to `false` when the bridge is unavailable,
+          // same rationale as slice 21. The `__gxtSyncing` fallback branch
+          // is RETAINED — its globalThis writer remains live (see slice 20
+          // deferral).
           const _g = globalThis as any;
           const _pipeline = getGxtRenderer()?.compilePipeline;
           const _isRen = _pipeline?.isRendering;
@@ -360,10 +376,7 @@ class CoreObject {
           const _renderingNow = typeof _isRen === 'function' ? _isRen() : false;
           const _syncingNow =
             typeof _isSyn === 'function' ? _isSyn() : _g.__gxtSyncing === true;
-          const _inTriggerNow =
-            typeof _isInTrig === 'function'
-              ? _isInTrig()
-              : _g.__gxtInTriggerReRender === true;
+          const _inTriggerNow = typeof _isInTrig === 'function' ? _isInTrig() : false;
           const _isInternalPath =
             _renderingNow ||
             _syncingNow ||
