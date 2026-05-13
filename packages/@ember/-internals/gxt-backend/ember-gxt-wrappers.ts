@@ -1865,21 +1865,14 @@ function createEmberDc(original: Function) {
         return true;
       };
 
+      // Slice-12 (Cluster B): the pre-slice-12 wrap-by-reassignment that
+      // installed an inline `__gxtSyncAllWrappers` wrapper to dispatch DC
+      // change listeners has been REMOVED. The canonical `_gxtSyncAllWrappers`
+      // in manager.ts now dispatches `g.__dcChangeListeners` itself in its
+      // after-body (slice-3 relocation pattern). Only the Set creation + the
+      // `add` registration remain here.
       if (!g.__dcChangeListeners) {
         g.__dcChangeListeners = new Set();
-        const origSyncAll = g.__gxtSyncAllWrappers;
-        if (typeof origSyncAll === 'function') {
-          g.__gxtSyncAllWrappers = function () {
-            origSyncAll();
-            for (const listener of g.__dcChangeListeners) {
-              try {
-                listener();
-              } catch {
-                /* ignore */
-              }
-            }
-          };
-        }
       }
       g.__dcChangeListeners.add(_nullListener);
 
@@ -2034,23 +2027,12 @@ function createEmberDc(original: Function) {
         return true;
       };
 
-      // Add listener to __dcChangeListeners (shared with the string path).
-      // Both paths use the same Set and the same __gxtSyncAllWrappers wrapper.
+      // Add listener to __dcChangeListeners (shared with null/string paths).
+      // Slice-12 (Cluster B): the pre-slice-12 wrap-by-reassignment installer
+      // has been REMOVED — `_gxtSyncAllWrappers` in manager.ts dispatches the
+      // Set itself in its after-body (slice-3 relocation pattern).
       if (!g.__dcChangeListeners) {
         g.__dcChangeListeners = new Set();
-        const origSyncAll = g.__gxtSyncAllWrappers;
-        if (typeof origSyncAll === 'function') {
-          g.__gxtSyncAllWrappers = function () {
-            origSyncAll();
-            for (const listener of g.__dcChangeListeners) {
-              try {
-                listener();
-              } catch {
-                /* ignore */
-              }
-            }
-          };
-        }
       }
       g.__dcChangeListeners.add(_dcChangeListener);
 
@@ -2314,21 +2296,11 @@ function createEmberDc(original: Function) {
       };
 
       // Add listener to __dcChangeListeners (shared with null/curried paths).
+      // Slice-12 (Cluster B): the pre-slice-12 wrap-by-reassignment installer
+      // has been REMOVED — `_gxtSyncAllWrappers` in manager.ts dispatches the
+      // Set itself in its after-body (slice-3 relocation pattern).
       if (!g.__dcChangeListeners) {
         g.__dcChangeListeners = new Set();
-        const origSyncAll = g.__gxtSyncAllWrappers;
-        if (typeof origSyncAll === 'function') {
-          g.__gxtSyncAllWrappers = function () {
-            origSyncAll();
-            for (const listener of g.__dcChangeListeners) {
-              try {
-                listener();
-              } catch {
-                /* ignore */
-              }
-            }
-          };
-        }
       }
       g.__dcChangeListeners.add(_dcChangeListener);
       // Track string-path listener count for morph skip logic in compile.ts

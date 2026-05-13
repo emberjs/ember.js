@@ -3586,7 +3586,127 @@ function _installTriggerReRenderWrapper() {
   };
 }
 
-(globalThis as any).__gxtSyncAllWrappers = function () {
+// Slice-12 (Cluster B): relocate the pre-slice-12 compile.ts wrap-by-
+// reassignment + defineProperty trap (compile.ts:5068-5206
+// `_installSyncAllFiredMarker` + setter trap) AND the three ember-gxt-wrappers.ts
+// wrap-by-reassignment sites (L1872, L2043, L2321 — DC change listener
+// dispatch) into the canonical body below. All state crossed via globalThis
+// (`__gxtAllPoolArrays`, `__gxtSyncCycleId`, `__gxtSyncAllInFlightCycle`,
+// `__dcChangeListeners`) so no closures needed to be moved.
+//
+// AROUND-shape relocation (slice-3 relocation pattern, FIRST application to a
+// wrap-by-reassignment exclusion — prior wraps slices 8/10/11 used the
+// host-hook pattern instead). Pattern: SET in-flight pass+cycle state and
+// pre-wrap pool triggers BEFORE the main body runs, then RUN the main body
+// (existing canonical sync-all logic), then CLEAR in-flight state and
+// DISPATCH DC change listeners AFTER.
+//
+// Why relocate (not host-hook): the wrap's body referenced ONLY globalThis-
+// shared state (no compile.ts/ember-gxt-wrappers.ts module-local closures),
+// so the slice-3 relocate template applies cleanly — no host-hook indirection
+// needed. This contrasts with slices 8/10/11 which had to host-hook because
+// their wrap bodies closed over compile.ts module-local state
+// (`_wrapperIfUserFalse`, `_templateOnlyRenderedSet`, `_dynamicCompTemplates`)
+// that couldn't trivially move.
+//
+// Eliminates FIVE wrap-by-reassignment installers (compile.ts marker install
+// + compile.ts defineProperty trap + three ember-gxt-wrappers.ts inline
+// installer blocks) and the `__emberMarkFired` brand.
+const _UPDATE_HOOKS_FOR_MARK = new Set([
+  'didUpdateAttrs',
+  'didReceiveAttrs',
+  'willUpdate',
+  'willRender',
+]);
+
+function _wrapInstanceTriggerForSyncAllMark(inst: any): void {
+  if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
+  const origTrigger = inst.trigger;
+  const wrapped = function (this: any, name: string, ...args: any[]) {
+    const g = globalThis as any;
+    // Pass-id marker (pre-slice-12 marker install used this).
+    if (_UPDATE_HOOKS_FOR_MARK.has(name) && g.__gxtSyncAllInFlightPass) {
+      this.__gxtSyncAllFiredPassId = g.__gxtSyncAllInFlightPass;
+    }
+    // Cycle-id marker (pre-slice-12 setter-trap install used this — the
+    // brand was applied on REASSIGNMENT of `__gxtSyncAllWrappers`, so the
+    // observable difference between the two wraps in pre-slice-12 was the
+    // `__gxtHooksFiredCycleId` stamp on the cycle path).
+    if (_UPDATE_HOOKS_FOR_MARK.has(name) && g.__gxtSyncAllInFlightCycle) {
+      this.__gxtSyncAllFiredCycleId = g.__gxtSyncAllInFlightCycle;
+      // "Hooks actually fired" marker — distinguishes "syncAll visited but
+      // found no changes" (unconditional stamp from manager.ts trackedArgCells
+      // loop) from "syncAll actually fired update hooks". compile.ts's
+      // pool-reuse fallback uses this to decide whether to fire willRender
+      // for test #11044.
+      this.__gxtHooksFiredCycleId = g.__gxtSyncAllInFlightCycle;
+    }
+    return origTrigger.call(this, name, ...args);
+  };
+  Object.defineProperty(inst, 'trigger', {
+    value: wrapped,
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
+  inst.__gxtTriggerWrapped = true;
+}
+
+function _gxtSyncAllWrappers(): void {
+  const g = globalThis as any;
+
+  // === BEFORE: pre-slice-12 wrap setup (relocated from compile.ts:5078-5128
+  // + compile.ts:5129-5206 setter trap) ===
+  const __curPass = g.__emberRenderPassId || 0;
+  g.__gxtSyncAllInFlightPass = __curPass;
+  const __curCycle = g.__gxtSyncCycleId || 0;
+  g.__gxtSyncAllInFlightCycle = __curCycle;
+  // Proactively wrap `trigger` on all known-alive instances in all pool
+  // arrays so update-hook triggers fired during the body are recorded.
+  try {
+    const pools = g.__gxtAllPoolArrays;
+    if (pools) {
+      for (const poolArr of pools) {
+        for (const entry of poolArr) {
+          _wrapInstanceTriggerForSyncAllMark(entry && entry.instance);
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    // === MAIN BODY (the pre-slice-12 canonical sync-all logic) ===
+    _gxtSyncAllWrappersBody();
+  } finally {
+    // === AFTER: clear in-flight state and dispatch DC change listeners
+    // (relocated from compile.ts wrap finally + ember-gxt-wrappers.ts
+    // L1872 / L2043 / L2321 wrap bodies) ===
+    g.__gxtSyncAllInFlightPass = 0;
+    g.__gxtSyncAllInFlightCycle = 0;
+    const dcListeners = g.__dcChangeListeners;
+    if (dcListeners) {
+      for (const listener of dcListeners) {
+        try {
+          listener();
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }
+}
+
+// Dual-exposure: bridge slot reference is `_gxtSyncAllWrappers` (preserves
+// future-slice migrations through the bridge). Global assignment is RETAINED
+// for now because compile.ts's pool-reuse fallback fires sync via
+// `getGxtRenderer()?.compilePipeline.syncAllWrappers?.()` already (slice 12
+// reader migration), but other callers may still use the global. Future slice
+// can remove the global once all readers route through the bridge.
+(globalThis as any).__gxtSyncAllWrappers = _gxtSyncAllWrappers;
+
+function _gxtSyncAllWrappersBody(): void {
   _installTriggerReRenderWrapper();
   _updatedInstances.length = 0;
   const hasForced = _forcedRerenderInstances.size > 0;
@@ -3939,7 +4059,7 @@ function _installTriggerReRenderWrapper() {
   if (_dirtiedNestedObjectsForHooks.size > 0) {
     _dirtiedNestedObjectsForHooks = new Set();
   }
-};
+}
 
 // NOTE: a `(globalThis as any).__gxtGetUpdatedCount = ...` writer previously
 // lived here, intended for `__gxtTriggerReRender` to detect when no more
@@ -12551,6 +12671,16 @@ setGxtRenderer({
   compilePipeline: {
     syncWrapper: _gxtSyncWrapper,
     snapshotLiveInstances: _gxtSnapshotLiveInstances,
+    // Slice-12 (Cluster B): seeded here with the canonical `_gxtSyncAllWrappers`.
+    // Replaces the pre-slice-12 compile.ts wrap-by-reassignment installer
+    // (`_installSyncAllFiredMarker` + defineProperty trap at compile.ts:5068-
+    // 5206) plus the three ember-gxt-wrappers.ts wrap-by-reassignment sites
+    // (L1872 / L2043 / L2321 — DC change listener dispatch). The wrap bodies
+    // were RELOCATED into `_gxtSyncAllWrappers` itself (slice-3 relocation
+    // pattern — first wrap-by-reassignment to use it; prior wrap slices 8/10/11
+    // used host-hook because their bodies closed over compile.ts module-local
+    // state, but slice 12's wrap bodies referenced only globalThis-shared state).
+    syncAllWrappers: _gxtSyncAllWrappers,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is

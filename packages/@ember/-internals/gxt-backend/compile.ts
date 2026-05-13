@@ -5066,144 +5066,22 @@ function _resetTemplateOnlyState() {
   }
 }
 
-// Wrap __gxtSyncAllWrappers so that any instance whose update hooks are
-// fired by syncAll is marked with `__gxtSyncAllFiredPassId`. The $_tag
-// force-rerender fallback (renderComponent thunk below) consults this
-// marker to avoid double-firing willUpdate/willRender on the same instance
-// in the same render pass.
-// We record the mark by wrapping `instance.trigger` on a per-instance basis
-// on first invocation. When syncAll calls `trigger(hookName)` for an
-// update hook, the wrapper stamps `__gxtSyncAllFiredPassId` on the
-// instance. Once stamped, the wrapper stays but does nothing extra.
-function _installSyncAllFiredMarker() {
-  const _g = globalThis as any;
-  if (!_g.__gxtSyncAllWrappers || _g.__gxtSyncAllWrappers.__emberMarkFired) return;
-  const _origSyncAll = _g.__gxtSyncAllWrappers;
-  const UPDATE_HOOKS = new Set(['didUpdateAttrs', 'didReceiveAttrs', 'willUpdate', 'willRender']);
-  const wrapTrigger = (inst: any) => {
-    if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
-    const origTrigger = inst.trigger;
-    const wrapped = function (this: any, name: string, ...args: any[]) {
-      if (UPDATE_HOOKS.has(name) && _g.__gxtSyncAllInFlightPass) {
-        this.__gxtSyncAllFiredPassId = _g.__gxtSyncAllInFlightPass;
-      }
-      return origTrigger.call(this, name, ...args);
-    };
-    Object.defineProperty(inst, 'trigger', {
-      value: wrapped,
-      writable: true,
-      configurable: true,
-      enumerable: false,
-    });
-    inst.__gxtTriggerWrapped = true;
-  };
-  _g.__gxtSyncAllWrappers = function __gxtSyncAllWrappers_markFired() {
-    const __curPass = _g.__emberRenderPassId || 0;
-    _g.__gxtSyncAllInFlightPass = __curPass;
-    // Proactively wrap trigger on all known-alive instances in all pool
-    // arrays so triggers fired during syncAll are recorded.
-    try {
-      const pools = _g.__gxtAllPoolArrays;
-      if (pools) {
-        for (const poolArr of pools) {
-          for (const entry of poolArr) {
-            wrapTrigger(entry && entry.instance);
-          }
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-    try {
-      return _origSyncAll.apply(this, arguments as any);
-    } finally {
-      _g.__gxtSyncAllInFlightPass = 0;
-    }
-  };
-  _g.__gxtSyncAllWrappers.__emberMarkFired = true;
-}
-// Attempt install now (in case manager.ts already loaded), and again in a
-// microtask (in case manager.ts loads immediately after compile.ts).
-_installSyncAllFiredMarker();
-queueMicrotask(_installSyncAllFiredMarker);
-// Also install via a defineProperty trap on globalThis so any subsequent
-// assignment to __gxtSyncAllWrappers (e.g. from manager.ts) gets wrapped
-// immediately. Without this, compile.ts may load before manager.ts and
-// the initial install has nothing to wrap. The setter below re-runs the
-// installer each time the value changes.
-try {
-  const _gg = globalThis as any;
-  let _syncAllCurrent: any = _gg.__gxtSyncAllWrappers;
-  Object.defineProperty(_gg, '__gxtSyncAllWrappers', {
-    get() {
-      return _syncAllCurrent;
-    },
-    set(v: any) {
-      // If the new value isn't our mark-fired wrapper, wrap it inline.
-      if (v && !v.__emberMarkFired && typeof v === 'function') {
-        const _origSyncAll = v;
-        const UPDATE_HOOKS = new Set([
-          'didUpdateAttrs',
-          'didReceiveAttrs',
-          'willUpdate',
-          'willRender',
-        ]);
-        const wrapTrigger = (inst: any) => {
-          if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
-          const origTrigger = inst.trigger;
-          const wrapped = function (this: any, name: string, ...args: any[]) {
-            if (UPDATE_HOOKS.has(name) && _gg.__gxtSyncAllInFlightCycle) {
-              this.__gxtSyncAllFiredCycleId = _gg.__gxtSyncAllInFlightCycle;
-              // Also stamp a "hooks actually fired" marker — distinguishes
-              // "syncAll visited but found no changes" (unconditional stamp)
-              // from "syncAll actually fired update hooks". compile.ts's
-              // fallback uses this to decide whether pool-reuse-with-changes
-              // should still fire willRender for test #11044.
-              this.__gxtHooksFiredCycleId = _gg.__gxtSyncAllInFlightCycle;
-            }
-            return origTrigger.call(this, name, ...args);
-          };
-          Object.defineProperty(inst, 'trigger', {
-            value: wrapped,
-            writable: true,
-            configurable: true,
-            enumerable: false,
-          });
-          inst.__gxtTriggerWrapped = true;
-        };
-        const wrappedSyncAll = function () {
-          const __curCycle = _gg.__gxtSyncCycleId || 0;
-          _gg.__gxtSyncAllInFlightCycle = __curCycle;
-          try {
-            const pools = _gg.__gxtAllPoolArrays;
-            if (pools) {
-              for (const poolArr of pools) {
-                for (const entry of poolArr) {
-                  wrapTrigger(entry && entry.instance);
-                }
-              }
-            }
-          } catch {
-            /* ignore */
-          }
-          try {
-            return _origSyncAll.apply(this, arguments as any);
-          } finally {
-            _gg.__gxtSyncAllInFlightCycle = 0;
-          }
-        };
-        (wrappedSyncAll as any).__emberMarkFired = true;
-        _syncAllCurrent = wrappedSyncAll;
-      } else {
-        _syncAllCurrent = v;
-      }
-    },
-    configurable: true,
-    enumerable: true,
-  });
-} catch {
-  /* ignore property redefinition errors */
-}
+// Slice-12 (Cluster B): the pre-slice-12 `_installSyncAllFiredMarker` +
+// defineProperty trap that wrapped `__gxtSyncAllWrappers` on every reassignment
+// has been REPLACED. The wrap's before-body (set `__gxtSyncAllInFlightPass` /
+// `__gxtSyncAllInFlightCycle`, pre-wrap pool-instance `trigger`s for fire-
+// tracking) and after-body (clear in-flight state, dispatch DC change
+// listeners) are now folded directly into the canonical
+// `__gxtSyncAllWrappers` body in manager.ts (see `_gxtSyncAllWrappers` there
+// and the slice-12 block in this file's wired-up compile-pipeline part — the
+// reader at __gxtSyncDomNow Phase 1 below dispatches through
+// `getGxtRenderer()?.compilePipeline.syncAllWrappers?.()`).
+//
+// First wrap-by-reassignment migrated via the slice-3 relocation pattern
+// instead of the slice-8/10/11 host-hook pattern. The state crossed via
+// globalThis (`__gxtAllPoolArrays`, `__gxtSyncCycleId`,
+// `__gxtSyncAllInFlightCycle`, `__dcChangeListeners`) so no closures had to
+// move; the wrap bodies referenced ONLY shared globals.
 
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
@@ -5298,8 +5176,15 @@ try {
       // PHASE 1: Update arg cells and fire pre-render lifecycle hooks BEFORE
       // the force-rerender. The force-rerender (innerHTML='' + rebuild) resets
       // arg cells to current values, so changes must be detected first.
+      // Slice-12 (Cluster B): typed bridge dispatch via
+      // `compilePipeline.syncAllWrappers`. The bridge slot is the canonical
+      // `_gxtSyncAllWrappers` defined in manager.ts (which folds in the
+      // pre-slice-12 `_installSyncAllFiredMarker` + defineProperty-trap wrap
+      // behavior — set/clear in-flight pass+cycle state, pre-wrap pool
+      // triggers for fire-tracking, dispatch DC change listeners after).
+      // Replaces the pre-slice-12 globalThis read at this site.
       try {
-        const syncAll = (globalThis as any).__gxtSyncAllWrappers;
+        const syncAll = getGxtRenderer()?.compilePipeline.syncAllWrappers;
         if (typeof syncAll === 'function') {
           syncAll(); // Pre-render hooks + arg cell updates
           if ((globalThis as any).__gxtHadPendingSync) {

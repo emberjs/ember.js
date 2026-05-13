@@ -385,7 +385,13 @@ export interface GxtFormatCapabilities {
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
  *    `__gxtLastSafeStringResult`.
- *  - `__gxtSyncAllWrappers` (compile.ts:5155 reassigns) — wrap-by-reassignment.
+ *  - `__gxtSyncAllWrappers` — MIGRATED IN SLICE 12 to `syncAllWrappers` on this
+ *    namespace. First wrap-by-reassignment to use the slice-3 relocation
+ *    pattern instead of the slice-8/10/11 host-hook pattern: the wrap bodies
+ *    (compile.ts marker install + defineProperty trap; ember-gxt-wrappers.ts
+ *    DC change listener dispatch) referenced ONLY globalThis-shared state, so
+ *    they were folded directly into the canonical body in manager.ts. Five
+ *    wrap-by-reassignment installers eliminated.
  *  - `__gxtClearInstancePools` (manager.ts:9249 reassigns) — wrap-by-reassignment.
  */
 export interface GxtCompilePipelineCapabilities {
@@ -413,6 +419,43 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtSnapshotLiveInstances`.
    */
   snapshotLiveInstances(): void;
+
+  /**
+   * Run the per-cycle sync-all pass: iterate `trackedArgCells`, refresh arg
+   * cells whose getters' return values changed, fire pre-render lifecycle
+   * hooks (`willUpdate` / `willRender` / `didReceiveAttrs` / `didUpdateAttrs`)
+   * on the corresponding instances, and run the wrapper-element attribute /
+   * class binding sync pass.
+   *
+   * Called from compile.ts's `__gxtSyncDomNow` Phase 1 (BEFORE the
+   * force-rerender) so changes are detected before arg cells are reset by the
+   * rebuild. Also fires the registered `__dcChangeListeners` (string /
+   * curried / null dynamic-component listeners contributed by
+   * ember-gxt-wrappers.ts) AFTER the main body so dynamic-component swaps
+   * apply at the same point as arg-cell updates.
+   *
+   * The wrap-by-reassignment installer dance (compile.ts:5068-5206
+   * `_installSyncAllFiredMarker` + `defineProperty` trap with retry on every
+   * reassignment) is replaced in slice 12 by direct fold of the wrap's
+   * before-body (set `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle`,
+   * pre-wrap pool-instance `trigger`s for fire-tracking) and after-body
+   * (clear in-flight state, dispatch DC change listeners) into the canonical
+   * function body. State referenced by both halves of the wrap is shared via
+   * globalThis (`__gxtAllPoolArrays`, `__gxtSyncCycleId`, `__dcChangeListeners`)
+   * — no closures had to move, so the slice-3 relocation pattern applied
+   * directly (first wrap-by-reassignment to use it; slices 8/10/11 used the
+   * host-hook pattern instead because their wrap bodies closed over compile.ts
+   * module-local state).
+   *
+   * Previously: `(globalThis as any).__gxtSyncAllWrappers`. The globalThis
+   * writer is RETAINED for dual exposure: ember-gxt-wrappers.ts no longer
+   * needs to reassign the global (its DC-listener after-callback is folded
+   * into the canonical body), but other globalThis readers may still exist
+   * outside the source tree (the function name is a documented integration
+   * surface). A future slice can remove the dual exposure once all readers
+   * route through the bridge.
+   */
+  syncAllWrappers(): void;
 
   /**
    * Compile a template string to a gxt-compatible template factory.
