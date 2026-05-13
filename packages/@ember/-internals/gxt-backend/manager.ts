@@ -3974,7 +3974,10 @@ let _currentPassRenderedPassId = -1;
 // Used to detect which instances were removed after the rebuild.
 let _preRerenderSnapshot: Set<any> = new Set();
 
-(globalThis as any).__gxtSnapshotLiveInstances = function () {
+// (Cluster B slice 5) Exposed via the gxt-bridge as
+// `compilePipeline.snapshotLiveInstances`.
+// Was `(globalThis as any).__gxtSnapshotLiveInstances`.
+function _gxtSnapshotLiveInstances(): void {
   _preRerenderSnapshot.clear();
   // Clear the marked-for-destruction set from the previous cycle
   const markedSet = (globalThis as any).__gxtInstancesMarkedForDestruction;
@@ -3982,7 +3985,7 @@ let _preRerenderSnapshot: Set<any> = new Set();
   for (const instance of _allLiveInstances) {
     _preRerenderSnapshot.add(instance);
   }
-};
+}
 
 // Destroy unclaimed pool entries after a force-rerender.
 // Components that were in the old render but not in the new one need their
@@ -4711,7 +4714,10 @@ function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void
   }
 }
 
-(globalThis as any).__gxtSyncWrapper = function (obj: any, keyName: string) {
+// (Cluster B slice 5) Exposed via the gxt-bridge as
+// `compilePipeline.syncWrapper`.
+// Was `(globalThis as any).__gxtSyncWrapper`.
+function _gxtSyncWrapper(obj: any, keyName: string): void {
   const wrapper = getViewElement(obj);
   if (!(wrapper instanceof HTMLElement)) return;
   const attrBindings = obj?.attributeBindings;
@@ -4742,7 +4748,7 @@ function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void
   if (relevant) {
     syncWrapperElement(obj, wrapper, obj?.constructor, undefined);
   }
-};
+}
 
 /**
  * Build a wrapper element for a classic curly component.
@@ -12434,5 +12440,9 @@ setGxtRenderer({
   },
   format: {
     shouldWarnStyle: _gxtBridgeShouldWarnStyle,
+  },
+  compilePipeline: {
+    syncWrapper: _gxtSyncWrapper,
+    snapshotLiveInstances: _gxtSnapshotLiveInstances,
   },
 });

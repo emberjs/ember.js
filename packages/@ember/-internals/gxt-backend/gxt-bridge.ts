@@ -247,10 +247,90 @@ export interface GxtFormatCapabilities {
 }
 
 /**
+ * Compile-pipeline capabilities. Implemented by manager.ts, consumed by
+ * compile.ts (intra-package). The slice covers function-ref hooks where the
+ * writer lives in manager.ts and the reader needs to invoke the function
+ * without a direct import edge to manager.ts.
+ *
+ * NOT included in this slice (intentionally deferred — same exclusion classes
+ * documented on prior slices):
+ *  - `__gxtCompileTemplate` (writer in compile.ts, readers in glimmer/index.ts
+ *    + template-compiler/lib/template.ts + glimmer-workspace integration-tests)
+ *    — writer is in compile.ts NOT manager.ts; bridge install pattern installs
+ *    once at manager.ts EOF. Migrating requires either (a) relocating the
+ *    install call to compile.ts EOF (breaks "single install" convention) or
+ *    (b) extending the bridge with `installCompilePipelinePart({...})` for
+ *    incremental wiring. Defer until a future slice has a critical mass of
+ *    compile.ts-writer hooks to justify the API growth.
+ *  - `__gxtInstrumentFactory` (writer in ember-template-compiler.ts, reader
+ *    in glimmer/index.ts) — same constraint as `__gxtCompileTemplate`. Writer
+ *    is in a third file (neither manager nor compile). Defer.
+ *  - `__gxtResetIntervalBudget` (writer in compile.ts, readers in
+ *    internal-test-helpers/run.ts) — same constraint as `__gxtCompileTemplate`.
+ *  - `__gxtRegisterArrayOwner`, `__gxtRegisterObjectValueOwner` (writers in
+ *    compile.ts, readers split across manager.ts + glimmer/renderer.ts +
+ *    glimmer/templates/root.ts) — multi-package readers plus writer-in-compile.
+ *    Migrating cleanly requires relocating the writers to manager.ts (the
+ *    functions are small enough that relocation is feasible) — defer until a
+ *    future "compile-pipeline / register-owners" slice can group them.
+ *  - `__gxtIsRootComponent`, `__gxtUpdateRootTagValues` (writers in
+ *    glimmer/lib/renderer.ts, readers in gxt-backend) — REVERSE-FLOW
+ *    (writer outside gxt-backend, reader inside). The bridge convention has
+ *    the writer inside gxt-backend (the renderer). Migrating these would
+ *    invert the bridge direction and is structurally different from prior
+ *    slices.
+ *  - `__gxtDirectModule` (writer in gxt-with-runtime-hbs.ts, reader in
+ *    manager.ts) — writer is in a third gxt-backend file. Relocating the
+ *    writer to manager.ts is feasible (manager.ts already imports
+ *    `@lifeart/gxt`) but the relocation has independent risk; defer.
+ *  - `__gxtMarkTemplateRendered` / `__gxtBeginRenderPass` / `__gxtEndRenderPass`
+ *    — render-pass triad. `__gxtBeginRenderPass` is wrap-by-reassignment at
+ *    compile.ts:5106 (same exclusion class as slice 2's `__gxtCheckBacktracking`
+ *    and slice 3's `__gxtRebuildViewTreeFromDom`). The triad must move together
+ *    once that wrap is resolved.
+ *  - `__gxtClearIfWatchers` — intra-compile.ts read+write (writer at L3487,
+ *    reader at L5798). State-flag pattern in a single file; cleaner cleanup
+ *    is a module-local `const` in an intra-file refactor.
+ *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
+ *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
+ *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
+ *    `__gxtLastSafeStringResult`.
+ *  - `__gxtSyncAllWrappers` (compile.ts:5155 reassigns) — wrap-by-reassignment.
+ *  - `__gxtClearInstancePools` (manager.ts:9249 reassigns) — wrap-by-reassignment.
+ */
+export interface GxtCompilePipelineCapabilities {
+  /**
+   * Sync a classic-component wrapper element's attribute/class bindings when
+   * a property changes on the component. Called from compile.ts's
+   * `__gxtTriggerReRender` path after `cellFor(obj, keyName).update(...)`.
+   *
+   * Best-effort: returns early if the object has no wrapper element or no
+   * attribute/class bindings, or if the changed key isn't relevant to any
+   * binding.
+   *
+   * Previously: `(globalThis as any).__gxtSyncWrapper`.
+   */
+  syncWrapper(obj: unknown, keyName: string): void;
+
+  /**
+   * Snapshot all live component instances before a force-rerender. Used by
+   * `__gxtDestroyUnclaimedPoolEntries` to detect which instances were
+   * removed after the rebuild. Called from compile.ts at the start of
+   * `__gxtSyncDomNow`'s Phase 2a.
+   *
+   * Also clears the marked-for-destruction set from the previous cycle.
+   *
+   * Previously: `(globalThis as any).__gxtSnapshotLiveInstances`.
+   */
+  snapshotLiveInstances(): void;
+}
+
+/**
  * The aggregate GXT renderer capabilities object. Pilot exposed only the
- * destruction slice; subsequent slices added backtracking, view-utils, and
- * format. Future slices will be additional optional properties on this same
- * interface (e.g. `schedule`, `lifecycle`, `cellMirror`, …).
+ * destruction slice; subsequent slices added backtracking, view-utils,
+ * format, and compile-pipeline. Future slices will be additional readonly
+ * properties on this same interface (e.g. `schedule`, `lifecycle`,
+ * `cellMirror`, …).
  *
  * Why a single object rather than 30 individual exports? Easier to extend
  * incrementally without re-wiring imports each time; readers do
@@ -261,6 +341,7 @@ export interface GxtRenderer {
   readonly backtracking: GxtBacktrackingCapabilities;
   readonly viewUtils: GxtViewUtilsCapabilities;
   readonly format: GxtFormatCapabilities;
+  readonly compilePipeline: GxtCompilePipelineCapabilities;
 }
 
 let _renderer: GxtRenderer | null = null;

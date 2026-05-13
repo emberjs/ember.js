@@ -3333,10 +3333,10 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
       /* ignore */
     }
   }
-  // Sync wrapper element if the object has attribute/class bindings
+  // Sync wrapper element if the object has attribute/class bindings.
+  // (Cluster B slice 5) Was `(globalThis as any).__gxtSyncWrapper`.
   try {
-    const syncWrapper = (globalThis as any).__gxtSyncWrapper;
-    if (syncWrapper) syncWrapper(obj, keyName);
+    getGxtRenderer()?.compilePipeline.syncWrapper(obj, keyName);
   } catch {
     /* ignore */
   }
@@ -3354,14 +3354,10 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
   if ((globalThis as any).__gxtInAfterRender) {
     (globalThis as any).__gxtAfterRenderPropertyChange = true;
   }
-  // Track whether ANY property change was on a nested object (not a component's
-  // own cell). Nested changes need the morph (Phase 2b) because GXT's cell
-  // tracking doesn't cover nested property paths (e.g., this.model.color).
-  // Direct cell changes (e.g., this.positionTwo) are handled by Phase 1.
-  const isNestedChange = keyName.includes('.') || _deferredTagDirties?.length > 0;
-  if (isNestedChange) {
-    (globalThis as any).__gxtHadNestedPropertyChange = true;
-  }
+  // (Cluster B slice 5 orphan cleanup) The `__gxtHadNestedPropertyChange`
+  // flag previously set here had no readers anywhere in the source tree.
+  // The detection logic was dead code; both this writer and the reset writer
+  // (Phase 2 of __gxtForceEmberRerender) were removed.
   // DON'T call gxtSyncDom() here — property changes may be batched (e.g.,
   // set(cond2, true); set(cond1, false) in a single runTask). Calling
   // gxtSyncDom after each set() processes inner conditionals before outer
@@ -5524,11 +5520,12 @@ try {
       // gxtSyncDom didn't handle the update (e.g., inline $__if with function values,
       // undefined → truthy transitions). The morph must always run when hadPendingSync
       // is true from a property change to ensure correctness.
-      (globalThis as any).__gxtHadNestedPropertyChange = false;
-      // PHASE 2a: Snapshot live instances before force-rerender
+      // (Cluster B slice 5 orphan cleanup) `__gxtHadNestedPropertyChange`
+      // reset removed — flag had no readers anywhere in source.
+      // PHASE 2a: Snapshot live instances before force-rerender.
+      // (Cluster B slice 5) Was `(globalThis as any).__gxtSnapshotLiveInstances`.
       try {
-        const snapshot = (globalThis as any).__gxtSnapshotLiveInstances;
-        if (typeof snapshot === 'function') snapshot();
+        getGxtRenderer()?.compilePipeline.snapshotLiveInstances();
       } catch {
         /* ignore */
       }
@@ -5765,8 +5762,10 @@ setInterval(() => {
   // Reset current slot params
   currentSlotParams = null;
   (globalThis as any).__currentSlotParams = null;
-  // Reset sync scheduled flag
-  (globalThis as any).__gxtSyncScheduled = false;
+  // (Cluster B slice 5 orphan cleanup) `__gxtSyncScheduled` had no readers
+  // anywhere in source — only reset writes existed (here, in
+  // __gxtForceEmberRerender's cleanup block, and in test-case teardowns).
+  // Writer removed.
   // Reset slots context stack
   slotsContextStack.length = 0;
   // NOTE: Do NOT clear templateCache between tests. Each clear forces
@@ -5852,7 +5851,8 @@ setInterval(() => {
   (globalThis as any).__gxtHadPendingSync = false;
   (globalThis as any).__gxtHadNestedObjectChange = false;
   (globalThis as any).__gxtSyncing = false;
-  (globalThis as any).__gxtSyncScheduled = false;
+  // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed —
+  // flag had no readers anywhere.
   // Reset global rendering state
   (globalThis as any).$slots = undefined;
   (globalThis as any).$fw = undefined;

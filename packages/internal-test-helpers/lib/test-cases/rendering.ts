@@ -86,8 +86,8 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       if (typeof gxtCleanup === 'function') {
         gxtCleanup();
       }
-      // Ensure no pending GXT syncs leak between tests
-      (globalThis as any).__gxtSyncScheduled = false;
+      // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed —
+      // flag had no readers anywhere in source.
 
       if (this.component) {
         runDestroy(this.component);

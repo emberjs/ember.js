@@ -71,7 +71,7 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
     } finally {
       (globalThis as any).__gxtPendingSync = false;
       (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
-      (globalThis as any).__gxtSyncScheduled = false;
+      // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed.
       // Clear stale render errors so they don't leak into the next test.
       const clearErrors = (globalThis as any).__gxtClearRenderErrors;
       if (typeof clearErrors === 'function') clearErrors();

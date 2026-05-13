@@ -138,7 +138,7 @@ export abstract class AbstractStrictTestCase {
       _resetRenderers();
       (globalThis as any).__gxtPendingSync = false;
       (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
-      (globalThis as any).__gxtSyncScheduled = false;
+      // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed.
       // Clear stale render errors so they don't leak into the next test's
       // beforeEach. Errors like backtracking assertions are caught by
       // assert.rejectsAssertion but also captured in _renderErrors via
