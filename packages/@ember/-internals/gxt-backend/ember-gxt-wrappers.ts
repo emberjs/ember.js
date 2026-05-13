@@ -1868,17 +1868,21 @@ function createEmberDc(original: Function) {
       // Slice-12 (Cluster B): the pre-slice-12 wrap-by-reassignment that
       // installed an inline `__gxtSyncAllWrappers` wrapper to dispatch DC
       // change listeners has been REMOVED. The canonical `_gxtSyncAllWrappers`
-      // in manager.ts now dispatches `g.__dcChangeListeners` itself in its
-      // after-body (slice-3 relocation pattern). Only the Set creation + the
-      // `add` registration remain here.
-      if (!g.__dcChangeListeners) {
-        g.__dcChangeListeners = new Set();
-      }
-      g.__dcChangeListeners.add(_nullListener);
+      // in manager.ts now dispatches the change-listener Set itself in its
+      // after-body (slice-3 relocation pattern).
+      // Slice-14 (Cluster B): the Set itself moved to manager.ts module-local
+      // state behind the bridge's `addDynamicComponentListener` method, which
+      // returns an off-fn for symmetric cleanup. The pre-slice-14 inline
+      // `g.__dcChangeListeners.add(...)` writer + `.delete(...)` cleanup are
+      // replaced by `off()`.
+      const _offNullListener =
+        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
+          _nullListener
+        );
 
       const _nullCleanup = () => {
         _nullDestroyed = true;
-        g.__dcChangeListeners?.delete(_nullListener);
+        _offNullListener?.();
       };
       if (ctx && typeof gxtModule.registerDestructor === 'function') {
         try {
@@ -2027,19 +2031,23 @@ function createEmberDc(original: Function) {
         return true;
       };
 
-      // Add listener to __dcChangeListeners (shared with null/string paths).
-      // Slice-12 (Cluster B): the pre-slice-12 wrap-by-reassignment installer
-      // has been REMOVED — `_gxtSyncAllWrappers` in manager.ts dispatches the
-      // Set itself in its after-body (slice-3 relocation pattern).
-      if (!g.__dcChangeListeners) {
-        g.__dcChangeListeners = new Set();
-      }
-      g.__dcChangeListeners.add(_dcChangeListener);
+      // Add listener to the DC-change-listener registry (shared with
+      // null/string paths). Slice-12 (Cluster B): the pre-slice-12
+      // wrap-by-reassignment installer has been REMOVED —
+      // `_gxtSyncAllWrappers` in manager.ts dispatches the listener Set
+      // itself in its after-body (slice-3 relocation pattern). Slice-14
+      // (Cluster B): the Set moved from globalThis to manager.ts
+      // module-local state behind the bridge's `addDynamicComponentListener`
+      // method, which returns an off-fn for symmetric cleanup.
+      const _offDcListener =
+        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
+          _dcChangeListener
+        );
 
       // Cleanup destructor
       const _cleanupDcListener = () => {
         _dcDestroyed = true;
-        g.__dcChangeListeners?.delete(_dcChangeListener);
+        _offDcListener?.();
       };
       if (ctx && typeof gxtModule.registerDestructor === 'function') {
         try {
@@ -2295,22 +2303,28 @@ function createEmberDc(original: Function) {
         return true;
       };
 
-      // Add listener to __dcChangeListeners (shared with null/curried paths).
-      // Slice-12 (Cluster B): the pre-slice-12 wrap-by-reassignment installer
-      // has been REMOVED — `_gxtSyncAllWrappers` in manager.ts dispatches the
-      // Set itself in its after-body (slice-3 relocation pattern).
-      if (!g.__dcChangeListeners) {
-        g.__dcChangeListeners = new Set();
-      }
-      g.__dcChangeListeners.add(_dcChangeListener);
-      // Track string-path listener count for morph skip logic in compile.ts
-      g.__dcStringListenerCount = (g.__dcStringListenerCount || 0) + 1;
+      // Add listener to the DC-change-listener registry (shared with
+      // null/curried paths). Slice-12 (Cluster B): the pre-slice-12
+      // wrap-by-reassignment installer has been REMOVED —
+      // `_gxtSyncAllWrappers` in manager.ts dispatches the listener Set
+      // itself in its after-body (slice-3 relocation pattern). Slice-14
+      // (Cluster B): the Set + string-path counter moved from globalThis to
+      // manager.ts module-local state behind the bridge's
+      // `addDynamicComponentListener` method. The `stringPath: true` option
+      // bumps the counter consulted by morph-skip logic in
+      // `__gxtSyncDomNow` / arg-cell notifyPropertyChange dispatch in
+      // `_gxtSyncAllWrappersBody`; the returned off-fn handles both the Set
+      // delete and counter decrement in lockstep.
+      const _offDcListener =
+        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
+          _dcChangeListener,
+          { stringPath: true }
+        );
 
       // Cleanup destructor
       const _cleanupDcListener = () => {
         _dcDestroyed = true;
-        g.__dcChangeListeners?.delete(_dcChangeListener);
-        if (g.__dcStringListenerCount > 0) g.__dcStringListenerCount--;
+        _offDcListener?.();
         // NOTE: we do NOT call destroyCurrentDcInstance here — the surrounding
         // render tree is being torn down by Ember, which will fire destroy
         // hooks through its normal path. Calling it here would double-destroy.

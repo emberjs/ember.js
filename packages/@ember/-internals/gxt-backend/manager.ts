@@ -3617,6 +3617,48 @@ function _installTriggerReRenderWrapper() {
 // dispatch) into the canonical body below. All state crossed via globalThis
 // (`__gxtAllPoolArrays`, `__gxtSyncCycleId`, `__gxtSyncAllInFlightCycle`,
 // `__dcChangeListeners`) so no closures needed to be moved.
+
+// Slice-14 (Cluster B): the `__dcChangeListeners` Set and
+// `__dcStringListenerCount` counter that were left as globalThis-shared
+// semaphores by slice 12 are now manager.ts module-local. Writers
+// (`ember-gxt-wrappers.ts:1877 / :2037 / :2305`), counter readers
+// (`compile.ts:5202` morph-skip, `manager.ts:3857` notifyPropertyChange
+// dispatch), and the cross-test clear (`compile.ts:5684-5692`) all go through
+// the bridge methods `addDynamicComponentListener` /
+// `hasStringDynamicComponentListeners` / `clearDynamicComponentListeners`.
+// The Set's reader (the after-body dispatch in `_gxtSyncAllWrappers`)
+// iterates the module-local Set directly. No external readers exist (the Set
+// + counter were intra-gxt-backend only — confirmed by exhaustive grep), so
+// dual exposure is NOT retained.
+type _DcListener = () => boolean;
+const _dcChangeListeners = new Set<_DcListener>();
+let _dcStringListenerCount = 0;
+function _gxtAddDynamicComponentListener(
+  fn: _DcListener,
+  options?: { stringPath?: boolean }
+): () => void {
+  _dcChangeListeners.add(fn);
+  const isStringPath = options?.stringPath === true;
+  if (isStringPath) {
+    _dcStringListenerCount++;
+  }
+  let removed = false;
+  return function off(): void {
+    if (removed) return;
+    removed = true;
+    _dcChangeListeners.delete(fn);
+    if (isStringPath && _dcStringListenerCount > 0) {
+      _dcStringListenerCount--;
+    }
+  };
+}
+function _gxtClearDynamicComponentListeners(): void {
+  _dcChangeListeners.clear();
+  _dcStringListenerCount = 0;
+}
+function _gxtHasStringDynamicComponentListeners(): boolean {
+  return _dcStringListenerCount > 0;
+}
 //
 // AROUND-shape relocation (slice-3 relocation pattern, FIRST application to a
 // wrap-by-reassignment exclusion — prior wraps slices 8/10/11 used the
@@ -3706,17 +3748,15 @@ function _gxtSyncAllWrappers(): void {
   } finally {
     // === AFTER: clear in-flight state and dispatch DC change listeners
     // (relocated from compile.ts wrap finally + ember-gxt-wrappers.ts
-    // L1872 / L2043 / L2321 wrap bodies) ===
+    // L1872 / L2043 / L2321 wrap bodies; slice-14 moves the Set from
+    // globalThis to manager.ts module-local `_dcChangeListeners`) ===
     g.__gxtSyncAllInFlightPass = 0;
     g.__gxtSyncAllInFlightCycle = 0;
-    const dcListeners = g.__dcChangeListeners;
-    if (dcListeners) {
-      for (const listener of dcListeners) {
-        try {
-          listener();
-        } catch {
-          /* ignore */
-        }
+    for (const listener of _dcChangeListeners) {
+      try {
+        listener();
+      } catch {
+        /* ignore */
       }
     }
   }
@@ -3854,7 +3894,7 @@ function _gxtSyncAllWrappersBody(): void {
               // updates via syncAll (the Ember tag isn't dirtied by direct
               // property assignment).
               if (
-                (globalThis as any).__dcStringListenerCount > 0 &&
+                _gxtHasStringDynamicComponentListeners() &&
                 entry.instance &&
                 typeof entry.instance.trigger === 'function'
               ) {
@@ -12709,6 +12749,21 @@ setGxtRenderer({
     // state only, so the slice-3 relocation pattern applies — second
     // wrap-by-reassignment slice to use relocation after slice 12.
     clearInstancePools: _gxtClearInstancePools,
+    // Slice-14 (Cluster B): seeded here with the dynamic-component listener
+    // bridge methods. The Set (`_dcChangeListeners`) and counter
+    // (`_dcStringListenerCount`) live as manager.ts module-local state; the
+    // pre-slice-14 globalThis `__dcChangeListeners` / `__dcStringListenerCount`
+    // were intra-gxt-backend only (no external readers — confirmed by
+    // exhaustive grep), so dual exposure is NOT retained. Writers move from
+    // inline `g.__dcChangeListeners.add(...)` (ember-gxt-wrappers.ts L1877 /
+    // L2037 / L2305) to a single `addDynamicComponentListener` call that
+    // returns an off-fn for symmetric cleanup. The `stringPath: true`
+    // variant also bumps a counter consulted by
+    // `hasStringDynamicComponentListeners()` for compile.ts's morph-skip
+    // logic and manager.ts's notifyPropertyChange dispatch.
+    addDynamicComponentListener: _gxtAddDynamicComponentListener,
+    clearDynamicComponentListeners: _gxtClearDynamicComponentListeners,
+    hasStringDynamicComponentListeners: _gxtHasStringDynamicComponentListeners,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is

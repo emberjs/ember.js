@@ -401,6 +401,19 @@ export interface GxtFormatCapabilities {
  *    state — even cleaner than slice 12's globalThis-shared state — so the
  *    relocation collapsed into a single intra-file function with zero cross-
  *    file state references.
+ *  - `__dcChangeListeners` Set + `__dcStringListenerCount` counter — MIGRATED
+ *    IN SLICE 14 to `addDynamicComponentListener` /
+ *    `clearDynamicComponentListeners` / `hasStringDynamicComponentListeners`
+ *    on this namespace. The half-migrated leftover from slice 12: the Set's
+ *    reader was folded into manager.ts's `_gxtSyncAllWrappers` by slice 12 but
+ *    its writer sites stayed inline in ember-gxt-wrappers.ts (L1868 / L2039 /
+ *    L2317) plus a cross-test clear at compile.ts:5800-5801 and counter readers
+ *    at compile.ts:5317 + manager.ts:3713. Slice 14 promotes the Set + counter
+ *    to manager.ts module-local state and exposes typed bridge methods. NO
+ *    external readers (the Set + counter are intra-gxt-backend only —
+ *    confirmed by exhaustive grep), so dual exposure is NOT retained — the
+ *    `__dcChangeListeners` / `__dcStringListenerCount` globals are removed
+ *    outright.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -497,6 +510,79 @@ export interface GxtCompilePipelineCapabilities {
    * readers route through the bridge (or move into gxt-backend).
    */
   clearInstancePools(): void;
+
+  /**
+   * Register a dynamic-component change listener that fires AFTER every
+   * sync-all pass (in `_gxtSyncAllWrappers`'s after-body). Listeners are
+   * notified when dynamic-component swaps need to perform manual DOM updates
+   * — used by the three `$_dc_ember` paths in ember-gxt-wrappers.ts:
+   *   - null path (L1862): `_nullListener` performs the null-DOM swap.
+   *   - curried path (L2024): `_dcChangeListener` performs curried swap.
+   *   - string path (L2292): `_dcChangeListener` performs string-name swap.
+   *
+   * Returns an "off" function the caller invokes from its destructor to
+   * de-register the listener. The off-fn is idempotent.
+   *
+   * Pass `{ stringPath: true }` for the string-component path so the bridge
+   * tracks a counter consulted by `hasStringDynamicComponentListeners()`
+   * (compile.ts's `__gxtSyncDomNow` morph-skip logic; manager.ts's
+   * notifyPropertyChange dispatch when string-path listeners are present).
+   *
+   * Slice-14 design: the listener Set + string-path counter live as
+   * manager.ts module-local state (`_dcChangeListeners` Set,
+   * `_dcStringListenerCount` number). The pre-slice-14 globalThis Set + counter
+   * (`__dcChangeListeners`, `__dcStringListenerCount`) are removed outright —
+   * no external readers exist (intra-gxt-backend only). Replaces three inline
+   * `g.__dcChangeListeners.add(...)` writer sites at
+   * ember-gxt-wrappers.ts:1877 / :2037 / :2305 plus the counter increment at
+   * :2307, the cleanup `.delete(...)` sites at :1881 / :2042 / :2312, and the
+   * decrement at :2313 — all replaced by a single `addDynamicComponentListener`
+   * call returning the appropriate off-fn.
+   *
+   * Previously: `(globalThis as any).__dcChangeListeners` Set + the
+   * `(globalThis as any).__dcStringListenerCount` counter.
+   */
+  addDynamicComponentListener(
+    fn: () => boolean,
+    options?: { stringPath?: boolean }
+  ): () => void;
+
+  /**
+   * Clear all registered dynamic-component change listeners and reset the
+   * string-path listener counter to zero. Called from compile.ts's
+   * `__gxtSyncDomNow` test-teardown Phase 2 (the cross-test reset block at
+   * compile.ts:5800-5801) so listeners registered by a previous test do not
+   * fire (and are not counted) during the next test.
+   *
+   * Slice-14 design: replaces the pre-slice-14 inline
+   * `(globalThis as any).__dcChangeListeners.clear()` plus
+   * `(globalThis as any).__dcStringListenerCount = 0` at compile.ts:5800-5801
+   * with a single bridge call.
+   *
+   * Previously: `(globalThis as any).__dcChangeListeners.clear()` +
+   * `(globalThis as any).__dcStringListenerCount = 0`.
+   */
+  clearDynamicComponentListeners(): void;
+
+  /**
+   * Return `true` if any STRING-path dynamic-component listener is currently
+   * registered. Used by compile.ts's `__gxtSyncDomNow` Phase 1 to decide
+   * whether to skip the force-rerender morph (Phase 2b) — cell-based string-
+   * path swaps already handled dynamic-component identity via the bridge
+   * dispatch, so the morph would re-apply already-applied changes. Also used
+   * by manager.ts's arg-cell update path to dispatch
+   * `notifyPropertyChange` so Ember's tag-driven @computed properties on
+   * classic components recompute after arg updates via syncAll (the Ember tag
+   * isn't dirtied by direct property assignment).
+   *
+   * Slice-14 design: derived getter over the manager.ts module-local
+   * `_dcStringListenerCount` number. Replaces the pre-slice-14 inline
+   * `(globalThis as any).__dcStringListenerCount > 0` checks at
+   * compile.ts:5317 and manager.ts:3713 (the two reader sites).
+   *
+   * Previously: `(globalThis as any).__dcStringListenerCount > 0` inline.
+   */
+  hasStringDynamicComponentListeners(): boolean;
 
   /**
    * Compile a template string to a gxt-compatible template factory.

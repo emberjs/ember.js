@@ -5199,7 +5199,12 @@ function _resetTemplateOnlyState() {
           // via cell tracking. Skip the force-rerender morph (Phase 2b) only when
           // cell-based listeners exist. CurriedComponent listeners use manual DOM
           // swap and need the morph for other property changes to propagate.
-          if ((globalThis as any).__dcStringListenerCount > 0) {
+          // Slice-14 (Cluster B): consult the bridge-exposed
+          // `hasStringDynamicComponentListeners()` rather than the pre-slice-14
+          // globalThis counter.
+          if (
+            getGxtRenderer()?.compilePipeline.hasStringDynamicComponentListeners?.()
+          ) {
             (globalThis as any).__gxtHadPendingSync = false;
           }
         }
@@ -5679,17 +5684,17 @@ setInterval(() => {
   }
   // Clear pending if-watcher notifications from the previous test
   _pendingIfWatcherNotifications.length = 0;
-  // Clear dynamic component change listeners and stale getter from $_dc_ember
+  // Clear dynamic component change listeners and stale getter from $_dc_ember.
+  // Slice-14 (Cluster B): the Set + string-path counter migrated to manager.ts
+  // module-local state behind the bridge's
+  // `clearDynamicComponentListeners()` method. The bridge clear resets both
+  // the Set and the counter in lockstep — without that lockstep, orphaned
+  // listener count leaks across tests and makes __gxtSyncDomNow incorrectly
+  // clear __gxtHadPendingSync in Phase 1, which then causes
+  // __gxtForceEmberRerender to skip the morph for tests that need it (e.g.,
+  // classic Component.extend properties changed via set()).
   (globalThis as any).__dcComponentGetter = null;
-  if ((globalThis as any).__dcChangeListeners) {
-    (globalThis as any).__dcChangeListeners.clear();
-  }
-  // Reset the string-path listener counter in lockstep with clearing the Set.
-  // Without this, orphaned listener count leaks across tests and makes
-  // __gxtSyncDomNow incorrectly clear __gxtHadPendingSync in Phase 1, which
-  // then causes __gxtForceEmberRerender to skip the morph for tests that
-  // need it (e.g., classic Component.extend properties changed via set()).
-  (globalThis as any).__dcStringListenerCount = 0;
+  getGxtRenderer()?.compilePipeline.clearDynamicComponentListeners?.();
   // Clear component contexts to prevent stale render contexts accumulating
   if ((globalThis as any).__gxtComponentContexts) {
     (globalThis as any).__gxtComponentContexts = new WeakMap();
