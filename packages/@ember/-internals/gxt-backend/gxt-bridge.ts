@@ -922,6 +922,62 @@ export interface GxtCompilePipelineCapabilities {
   isRendering?(): boolean;
 
   /**
+   * Run `fn` while the render-pass depth counter (`_renderPassDepth` in
+   * `compile.ts`) is incremented; the counter is decremented on completion
+   * via `try/finally` (including when `fn` throws). Returns whatever `fn`
+   * returns. The decrement triggers the in-element deferred-render drain
+   * when depth transitions from 1 → 0 (parent fragment is now committed to
+   * the live document — see `_gxtSetIsRendering` body).
+   *
+   * Conditional-restore semantics (preserved exactly from pre-slice-21):
+   * ALWAYS increment depth on entry. On exit (in `finally`), ONLY decrement
+   * when we entered with depth == 0 (the call frame is the outermost
+   * render). When nested inside another render pass (entered with depth
+   * > 0), the decrement is SKIPPED, leaving the counter inflated by 1 for
+   * the rest of the enclosing frame. This pre-slice-21 "drift" is required
+   * to gate the in-element deferred-render drain trigger: the drain fires
+   * on the depth-1→0 transition during the OUTER frame's decrement — but
+   * ONLY when no nested frames inflated the counter. EMPIRICAL: a naive
+   * "always-increment, always-decrement" wrap (the natural slice-17/18
+   * shape) regresses 3 tests in `Strict Mode - renderComponent`
+   * ("multiple calls to render in to the same element appear as siblings"
+   * and variants) where the extra inner-frame drain replays a queued
+   * in-element render in the parent before the parent commits, producing
+   * duplicated DOM output.
+   *
+   * Slice-21 (Cluster B): graduates the two cross-package writer sites
+   * for `__gxtSetIsRendering` to this typed bridge helper:
+   *  - `glimmer/lib/renderer.ts:2249` (renderComponent top-level wrap
+   *    around the initial `renderIntoRegion(template, renderContext)`).
+   *  - `glimmer/lib/renderer.ts:2286` (`_doRender` reactor wrap around
+   *    `clearRegion(); renderIntoRegion(template, renderContext)`).
+   * Pre-slice-21 each site called `globalThis.__gxtSetIsRendering(true)`
+   * before the body and `__gxtSetIsRendering(false)` after with a manual
+   * `wasRendering` conditional restore. The helper folds the
+   * conditional-skip + try/finally pattern into one documented bridge
+   * surface (mirroring slice-17's `withTriggerSuppressed` and slice-18's
+   * `withInTriggerReRender` — the third "wrap a synchronous body in a
+   * state-flag toggle" helper on `compilePipeline`, with the additional
+   * conditional-skip semantics specific to the depth-counter / drain
+   * contract).
+   *
+   * The intra-file caller `compile.ts:13819` (templateFactory.render body)
+   * was also migrated in slice 21, but calls `_gxtSetIsRendering` directly
+   * (intra-module) with unconditional increment/decrement — its caller
+   * contract requires the bump for in-element render-pass detection
+   * regardless of nesting, and the surrounding try/catch already provides
+   * try/finally semantics.
+   *
+   * After slice-21 the `__gxtSetIsRendering` and `__gxtIsRendering`
+   * globalThis writers are DROPPED. The cross-package readers all route
+   * through `isRendering()` / `withRendering()` bridge surfaces, and the
+   * intra-file readers stay on the module-local `_gxtIsRendering` /
+   * `_gxtSetIsRendering` functions. Net globalThis surface delta: -2 slots
+   * (`__gxtIsRendering` + `__gxtSetIsRendering`).
+   */
+  withRendering?<T>(fn: () => T): T;
+
+  /**
    * Read-only predicate for the `__gxtSyncing` boolean flag toggled by
    * `compile.ts`'s `__gxtSyncDomNow` body (and the manager.ts post-render
    * hook re-entry guard at `manager.ts:4202-4215`). Returns `true` iff the

@@ -341,17 +341,23 @@ class CoreObject {
           // fires under DEBUG ObjectProxy access, and proxy creation also
           // requires the GXT pipeline to be loaded). See `isSyncing` /
           // `isRendering` / `isInTriggerReRender` docs in gxt-bridge.ts.
+          //
+          // Slice-21 (Cluster B): drop the `__gxtIsRendering` globalThis
+          // fallback branch — the bridge `isRendering()` predicate is the
+          // canonical source after slice 21 (the `__gxtIsRendering` and
+          // `__gxtSetIsRendering` globalThis writers are removed in the
+          // same slice). If the bridge has not been installed at trap-fire
+          // time we default to `false` (treat as "not in a render pass"),
+          // which is safe — without the GXT pipeline loaded, the trap
+          // cannot be hit. The `__gxtSyncing` / `__gxtInTriggerReRender`
+          // fallback branches are RETAINED — their globalThis writers
+          // remain live (see slices 18 and 20 deferrals).
           const _g = globalThis as any;
           const _pipeline = getGxtRenderer()?.compilePipeline;
           const _isRen = _pipeline?.isRendering;
           const _isSyn = _pipeline?.isSyncing;
           const _isInTrig = _pipeline?.isInTriggerReRender;
-          const _renderingNow =
-            typeof _isRen === 'function'
-              ? _isRen()
-              : typeof _g.__gxtIsRendering === 'function'
-                ? _g.__gxtIsRendering()
-                : false;
+          const _renderingNow = typeof _isRen === 'function' ? _isRen() : false;
           const _syncingNow =
             typeof _isSyn === 'function' ? _isSyn() : _g.__gxtSyncing === true;
           const _inTriggerNow =

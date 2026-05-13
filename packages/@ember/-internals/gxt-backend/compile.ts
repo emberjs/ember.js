@@ -1707,29 +1707,25 @@ if (false as boolean) {
 // "inside an active GXT template.render() pass" from "top-level
 // synchronous render entry (e.g. this.render in expectAssertion
 // tests)". The renderer (packages/@ember/-internals/glimmer/lib/renderer.ts)
-// already attempts to call globalThis.__gxtSetIsRendering(true) before
-// template.render() and restore after, but GXT itself does not expose
-// these helpers. Provide a simple depth counter so those calls toggle
-// a tracked boolean. Also wire compile.ts's own render() wrapper to
-// bump it, because precompileTemplate's render() is called from the
-// renderer.ts code path.
+// wraps `template.render()` with the bridge `compilePipeline.withRendering(fn)`
+// helper so this depth counter is bumped on entry and decremented on exit.
+// Compile.ts's own templateFactory.render() body also bumps it via the
+// intra-file `_gxtSetIsRendering` writer.
 //
 // Slice-19 (Cluster B): the read-side predicate `_gxtIsRendering` is
-// promoted to module-local scope and contributed to the bridge as
-// `compilePipeline.isRendering()` (see `installCompilePipelinePart` at the
-// bottom of this file). The globalThis writers (`__gxtIsRendering` /
-// `__gxtSetIsRendering`) are RETAINED:
-//   - `__gxtIsRendering` is retained as a fallback for bridge-route readers
-//     in `@ember/object/core.ts:320-326` (slice 20 — DEBUG proxy trap),
-//     `glimmer/lib/renderer.ts:2247` (slice 19 — renderComponent wraps), and
-//     for the rare bridge-not-yet-installed edge. Slice 20 closed slice 18/19's
-//     deferral by migrating the trap to call `isRendering()` / `isSyncing()` /
-//     `isInTriggerReRender()` together; all three migrated readers retain a
-//     globalThis fallback so the writer drop is still future work.
-//   - `__gxtSetIsRendering` is retained because the cross-package writer at
-//     `glimmer/lib/renderer.ts:2232/2272/2282` toggles it via globalThis and
-//     a future slice should migrate it as a paired `beginRendering()` /
-//     `endRendering()` helper (see suggested slice 21 in the memory notes).
+// contributed to the bridge as `compilePipeline.isRendering()` (see
+// `installCompilePipelinePart` at the bottom of this file).
+// Slice-21 (Cluster B): the writer `_gxtSetIsRendering` is contributed to
+// the bridge as `compilePipeline.withRendering(fn): T` (save-restore
+// wrapper around the depth-counter increment/decrement, including the
+// depth-1→0 in-element-deferred-render drain). The `__gxtIsRendering` and
+// `__gxtSetIsRendering` globalThis writers are DROPPED in slice 21 — all
+// cross-package readers (`@ember/object/core.ts:320-326` proxy trap and
+// `glimmer/lib/renderer.ts:2249/2286` renderComponent wraps) route
+// through the bridge predicate / helper, and the intra-file readers /
+// writers stay on the module-local `_gxtIsRendering` / `_gxtSetIsRendering`
+// functions. Net globalThis surface delta: -2 slots (`__gxtIsRendering` +
+// `__gxtSetIsRendering`).
 let _renderPassDepth = 0;
 function _gxtIsRendering(): boolean {
   return _renderPassDepth > 0;
@@ -1755,9 +1751,55 @@ function _gxtSetIsRendering(on: boolean): void {
     }
   }
 }
-if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
-  (globalThis as any).__gxtSetIsRendering = _gxtSetIsRendering;
-  (globalThis as any).__gxtIsRendering = _gxtIsRendering;
+
+// Slice-21 (Cluster B): typed save-restore helper that graduates the two
+// cross-package `__gxtSetIsRendering` writer sites at
+// `glimmer/lib/renderer.ts:2249/2286` to a bridge method. Each pre-slice-21
+// site manually called `globalThis.__gxtSetIsRendering(true)` before its
+// render body and `__gxtSetIsRendering(false)` after — with a `wasRendering`
+// conditional restore guard so the inner-frame decrement was skipped when
+// the call was nested inside another render pass. The helper folds the
+// same conditional-restore pattern into one documented surface — mirroring
+// slice-17's `withTriggerSuppressed` and slice-18's `withInTriggerReRender`
+// shapes (with an additional conditional-decrement contract specific to
+// the depth-counter drain semantics).
+//
+// Conditional-restore semantics (preserved EXACTLY from pre-slice-21):
+//   - ALWAYS increment depth on entry (`_gxtSetIsRendering(true)`).
+//   - On exit (in `finally`), ONLY decrement when we entered with depth
+//     == 0 (the call frame is the outermost render). When nested inside
+//     another render pass (entered with depth > 0), the decrement is
+//     SKIPPED, leaving the counter inflated by 1 for the rest of the
+//     enclosing frame.
+//
+// Why this exact semantics — and why it can't be replaced by the natural
+// balanced "always increment, always decrement" wrap from slices 17/18:
+// The depth-1→0 transition in `_gxtSetIsRendering(false)` runs the in-
+// element deferred-render drain. With the balanced wrap, EVERY nested
+// renderComponent call would trigger a drain on its own exit — causing
+// the parent fragment's queued in-element renders to fire while the
+// parent is still mid-render. Empirical: 3 `Strict Mode - renderComponent`
+// tests ("multiple calls to render in to the same element appear as
+// siblings" and variants) fail with the balanced wrap because the extra
+// inner-frame drain replays a queued in-element render in the parent
+// before the parent commits, producing duplicated DOM output.
+// The pre-slice-21 conditional-restore lets depth drift up by N (where N
+// is the number of nested renderComponent calls), so when the OUTER
+// frame's decrement runs, depth goes from N+1 → N — NOT 1→0 → no extra
+// drain. The drain ONLY fires when the outer frame had no nested
+// renderComponent calls (depth was 1, decrement to 0 → drain).
+//
+// See `withRendering` doc in gxt-bridge.ts.
+function _gxtWithRendering<T>(fn: () => T): T {
+  const wasRendering = _gxtIsRendering();
+  _gxtSetIsRendering(true);
+  try {
+    return fn();
+  } finally {
+    if (!wasRendering) {
+      _gxtSetIsRendering(false);
+    }
+  }
 }
 
 // Deferred in-element render queue. When $_inElement encounters a null
@@ -13811,12 +13853,18 @@ export function precompileTemplate(
         // fallback stack and bump the render-pass depth counter so
         // $_inElement can detect render-order timing issues and defer
         // the body render until the parent fragment commits.
-        const _setRenderPass: ((on: boolean) => void) | undefined = g.__gxtSetIsRendering;
+        //
+        // Slice-21 (Cluster B): call `_gxtSetIsRendering` directly (intra-
+        // file) rather than via `globalThis.__gxtSetIsRendering`. The
+        // cross-package writer sites at `glimmer/lib/renderer.ts` are
+        // migrated to the bridge `withRendering(fn)` helper in the same
+        // slice; this site, being intra-file, just invokes the module-
+        // local writer directly. Same counter, same drain semantics.
         const _inElemStack: string[] = (g.__gxtInElementFallbackIds =
           g.__gxtInElementFallbackIds || []);
         const _inElemStackStart = _inElemStack.length;
         for (const id of _inElementLiteralIds) _inElemStack.push(id);
-        if (typeof _setRenderPass === 'function') _setRenderPass(true);
+        _gxtSetIsRendering(true);
 
         try {
           // Phase 4.1: per-parent-element root isolation. Use a WeakMap keyed on
@@ -14239,7 +14287,7 @@ export function precompileTemplate(
           // Restore previous global values
           g.$slots = prevSlots;
           g.$fw = prevFw;
-          if (typeof _setRenderPass === 'function') _setRenderPass(false);
+          _gxtSetIsRendering(false);
           // Trim any un-consumed fallback ids pushed by this template
           // render (e.g. because no nested in-element hit the null-dest
           // path). Preserves ids pushed by ancestor renders.
@@ -14252,7 +14300,7 @@ export function precompileTemplate(
           // Restore globals even on error
           g.$slots = prevSlots;
           g.$fw = prevFw;
-          if (typeof _setRenderPass === 'function') _setRenderPass(false);
+          _gxtSetIsRendering(false);
           if (_inElemStack.length > _inElemStackStart) {
             _inElemStack.length = _inElemStackStart;
           }
@@ -14428,16 +14476,25 @@ installCompilePipelinePart({
   isInTriggerReRender: _gxtIsInTriggerReRender,
   // Slice-19 (Cluster B): read-only predicate for the render-pass depth
   // counter (`_renderPassDepth` defined near the top of this file). Replaces
-  // the cross-package globalThis lookup at `glimmer/lib/renderer.ts:2233`
-  // (used to decide whether to suppress text-effect creation during nested
-  // renderComponent calls). The globalThis writer `__gxtIsRendering` is
-  // RETAINED post-slice-19 because the slice-19 deferred the
-  // `@ember/object/core.ts:321` proxy-trap reader; slice 20 migrates that
-  // reader to use this bridge predicate alongside `isInTriggerReRender()`
-  // and `isSyncing()` (the writer remains on globalThis post-slice-20 —
-  // see suggested slice 21 in memory notes for the writer migration).
-  // See `isRendering` doc in gxt-bridge.ts.
+  // the cross-package globalThis lookup at `glimmer/lib/renderer.ts` (used
+  // to decide whether to suppress text-effect creation during nested
+  // renderComponent calls).
+  // Slice-21 (Cluster B): the `__gxtIsRendering` globalThis writer is
+  // DROPPED — all three reader sites (proxy trap, renderer.ts wasRendering
+  // probe, and the rare bridge-not-yet-installed edge) now route through
+  // this bridge predicate. See `isRendering` doc in gxt-bridge.ts.
   isRendering: _gxtIsRendering,
+  // Slice-21 (Cluster B): typed save-restore helper that graduates the two
+  // cross-package `__gxtSetIsRendering` writer sites (renderer.ts:2249/2286)
+  // and the intra-file site (this file's templateFactory.render body at
+  // L13819 — now calls `_gxtSetIsRendering` directly) to a bridge surface.
+  // The `__gxtSetIsRendering` and `__gxtIsRendering` globalThis writers are
+  // DROPPED in this slice — net -2 globalThis surface. The depth counter,
+  // drain-on-1→0 semantics, and re-entrancy contract are preserved by the
+  // module-local `_gxtSetIsRendering` writer (called by `_gxtWithRendering`
+  // and directly by the intra-file render body). See `withRendering` doc
+  // in gxt-bridge.ts.
+  withRendering: _gxtWithRendering,
   // Slice-20 (Cluster B): read-only predicate for the `__gxtSyncing` flag
   // toggled by `__gxtSyncDomNow` body (L5270/5717/5871) and manager.ts's
   // post-render-hook re-entry save-restore (L4202-4215). Lets the

@@ -2223,32 +2223,28 @@ function _renderComponentGxt(
 
     // Enable isRendering so GXT formulas created during template.render()
     // properly track cell dependencies (e.g., trackedObject cells).
-    // Use globalThis.__gxtSetIsRendering which is from the SAME module
-    // instance as GXT's formula system. The direct import may be from a
-    // different module copy.
-    // Save and restore the previous isRendering state to avoid clobbering
-    // it when renderComponent is called from within another render pass
-    // (e.g., from a component constructor during an outer template render).
     //
     // Slice-19 (Cluster B): read the render-pass depth through the typed
-    // `compilePipeline.isRendering()` bridge predicate. Falls back to the
-    // raw `globalThis.__gxtIsRendering` lookup for the (rare) case where
-    // the bridge hasn't been populated yet (the bridge writer at compile.ts
-    // module-init contributes the same `_gxtIsRendering` function reference
-    // as the globalThis writer, so the two are equivalent post-install).
-    // The `__gxtSetIsRendering` writer is left on globalThis pending a
-    // future slice 20 begin/end migration. See `isRendering` doc in
-    // gxt-bridge.ts.
-    const _setRendering = (globalThis as any).__gxtSetIsRendering;
-    const _bridgeIsRendering = getGxtRenderer()?.compilePipeline.isRendering;
-    const _isRendering =
-      typeof _bridgeIsRendering === 'function'
-        ? _bridgeIsRendering
-        : ((globalThis as any).__gxtIsRendering as (() => boolean) | undefined);
+    // `compilePipeline.isRendering()` bridge predicate.
+    // Slice-21 (Cluster B): wrap the render bodies with the typed
+    // `compilePipeline.withRendering(fn)` bridge helper (increment +
+    // try/finally + decrement). The bridge helper invokes
+    // `_gxtSetIsRendering` directly (intra-module to compile.ts), so
+    // semantics are identical to the pre-slice-21 `globalThis.
+    // __gxtSetIsRendering` lookup. The conditional-decrement workaround
+    // (`if (!wasRendering) _setRendering(false)`) is folded into the
+    // helper's unconditional decrement — depth counter handles nested
+    // calls correctly (outer N → inner N+1 → outer N). The
+    // `__gxtIsRendering` / `__gxtSetIsRendering` globalThis fallback
+    // branches are also dropped in this slice — the bridge install runs
+    // at compile.ts module init (top-level), strictly before any
+    // renderComponent invocation in a QUnit test (the bridge is loaded
+    // transitively through `@ember/-internals/glimmer` import). See
+    // `isRendering` / `withRendering` docs in gxt-bridge.ts.
+    const _pipeline = getGxtRenderer()?.compilePipeline;
+    const _isRendering = _pipeline?.isRendering;
+    const _withRendering = _pipeline?.withRendering;
     const wasRendering = typeof _isRendering === 'function' ? _isRendering() : false;
-    if (typeof _setRendering === 'function') {
-      _setRendering(true);
-    }
     // When renderComponent is called during an existing render pass (e.g.,
     // from a @cached getter during template evaluation), suppress gxtEffect
     // creation for text nodes. These nested renders are "static snapshots" —
@@ -2283,19 +2279,22 @@ function _renderComponentGxt(
       (globalThis as any).owner = owner;
       const prevSkip = (globalThis as any).__gxtSkipTextEffects;
       const wasRenderingLocal = typeof _isRendering === 'function' ? _isRendering() : false;
-      if (typeof _setRendering === 'function') _setRendering(true);
       if (wasRenderingLocal) (globalThis as any).__gxtSkipTextEffects = true;
       try {
         // Scoped re-render: clear only the nodes within this entry's
         // range, then render fresh content back into the same range. This
         // preserves sibling renders into the same target.
-        clearRegion();
-        renderIntoRegion(template, renderContext);
+        if (typeof _withRendering === 'function') {
+          _withRendering(() => {
+            clearRegion();
+            renderIntoRegion(template, renderContext);
+          });
+        } else {
+          clearRegion();
+          renderIntoRegion(template, renderContext);
+        }
       } finally {
         (globalThis as any).__gxtSkipTextEffects = prevSkip;
-        if (typeof _setRendering === 'function' && !wasRenderingLocal) {
-          _setRendering(false);
-        }
         (globalThis as any).owner = prevOwnerLocal;
         _rendering = false;
       }
@@ -2384,12 +2383,15 @@ function _renderComponentGxt(
       if (wasRendering) {
         (globalThis as any).__gxtSkipTextEffects = true;
       }
-      renderIntoRegion(template, renderContext);
+      if (typeof _withRendering === 'function') {
+        _withRendering(() => {
+          renderIntoRegion(template, renderContext);
+        });
+      } else {
+        renderIntoRegion(template, renderContext);
+      }
     } finally {
       (globalThis as any).__gxtSkipTextEffects = prevSkipTextEffects;
-      if (typeof _setRendering === 'function' && !wasRendering) {
-        _setRendering(false);
-      }
       // Arm the reactor: from now on, classic-tag dirties will trigger
       // _doRender. This is done in `finally` so that any tag dirties
       // that happened DURING initial render (e.g. from component init
