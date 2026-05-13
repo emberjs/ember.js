@@ -124,7 +124,7 @@ export function defineValue(
     // — invoking its setter (via `obj[keyName] = value`) would hit the
     // "Cannot override the computed property" assertion. Overwrite via
     // Object.defineProperty in that case.
-    if ((globalThis as any).__GXT_MODE__ && !wasDescriptor) {
+    if (__GXT_MODE__ && !wasDescriptor) {
       const existing = Object.getOwnPropertyDescriptor(obj, keyName);
       if (existing && existing.get) {
         // Cell getter exists — use setter to update value

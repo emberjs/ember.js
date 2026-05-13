@@ -71,7 +71,7 @@ function notifyPropertyChange(
   // formulas nor reads this marker, so skip the per-call WeakMap/Set
   // bookkeeping there — `clearItems4` issues thousands of notifies.
   let wasPresent = true;
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     const g: any = globalThis as any;
     if (!g.__gxtCPInvalidationSet) g.__gxtCPInvalidationSet = new WeakMap();
     const perObj: Set<string> = g.__gxtCPInvalidationSet.get(obj) || new Set();
@@ -112,7 +112,7 @@ function notifyPropertyChange(
     // NEVER have their `PROPERTY_DID_CHANGE` hook invoked.
     let isProtoNotify = false;
     if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
-      if (!meta.isInitializing() && (globalThis as any).__GXT_MODE__) {
+      if (!meta.isInitializing() && __GXT_MODE__) {
         // Fall through — allow markObjectAsDirty for GXT prototype-meta objects,
         // but remember we are in a prototype notification so we skip
         // `PROPERTY_DID_CHANGE` below (matching classic behavior).

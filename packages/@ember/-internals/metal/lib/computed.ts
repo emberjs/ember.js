@@ -476,7 +476,7 @@ export class ComputedProperty extends ComputedDescriptor {
       // never fire. Skip the lookups entirely when not in GXT mode — these
       // run on every CP get cache miss, including the 2998-row teardown
       // notify cascade.
-      if ((globalThis as any).__GXT_MODE__) {
+      if (__GXT_MODE__) {
         // While a CP.set is mid-flight, any re-entrant read (e.g. from a
         // GXT formula re-evaluation triggered by dirtyTagFor) must return
         // the setter's freshly-stored value rather than re-running the user
@@ -659,7 +659,7 @@ export class ComputedProperty extends ComputedDescriptor {
     // see an extra invocation on every set, corrupting user assertions.
     // Classic mode never re-enters via this path — gate to skip per-call
     // WeakMap+Set churn on the notify cascade.
-    const _inGxt = (globalThis as any).__GXT_MODE__;
+    const _inGxt = __GXT_MODE__;
     if (_inGxt) _beginCPSet(obj, keyName);
     try {
       notifyPropertyChange(obj, keyName, meta, value);

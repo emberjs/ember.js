@@ -194,7 +194,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // tag via Glimmer's standard tracking — duplicating here adds noise to the
     // autotrack frame on every @tracked read (a hot path for {{#each}} over
     // large arrays). Gate to GXT mode only.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       consumeTag(tagFor(this, key as string));
     }
 
@@ -205,7 +205,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // By reading from cellFor here, we ensure the formula's tracker captures
     // this cell as a dependency. The setter's cellFor.update() call ensures
     // the cell is dirtied when the property changes.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       const _cellFor = (globalThis as any).__gxtCellFor;
       if (typeof _cellFor === 'function') {
         try {
@@ -256,7 +256,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // but the cell may not be in the same tracking system as the formulas
     // created by gxtEffect in the compat layer. Using cellFor ensures the
     // cell that GXT effects track is also dirtied.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       const _cellFor = (globalThis as any).__gxtCellFor;
       if (typeof _cellFor === 'function') {
         try {
@@ -274,7 +274,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     //   GXT compat-validator and native validator in dual-module setups.
     // Both are no-ops or worse in classic mode and break upstream's narrow-
     // invalidation contract — gate them so classic builds match upstream.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       dirtyTagFor(this, SELF_TAG);
       // Also dirty the property-specific tag so observers watching 'key' or
       // 'key.[]' detect the change via getChainTagsForKey.
@@ -282,7 +282,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     }
     // In GXT mode, notify the Ember property system so that sync observers
     // and tag dirtying work correctly for QP tracking.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       const _notifyPropChange = (globalThis as any).__emberNotifyPropertyChange;
       if (typeof _notifyPropChange === 'function') {
         _notifyPropChange(this, key);
