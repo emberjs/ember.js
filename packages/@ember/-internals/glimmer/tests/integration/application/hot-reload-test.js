@@ -18,7 +18,7 @@ function expect(value) {
 // to avoid regressions
 
 // Skip in GXT mode - hot reloading depends on Glimmer VM internals
-if (!globalThis.__GXT_MODE__)
+if (!__GXT_MODE__)
   moduleFor(
     'Appliation test: template hot reloading',
     class extends ApplicationTestCase {

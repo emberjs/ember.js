@@ -15,7 +15,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 
 // GXT: Skip all mount test modules — engine rendering causes synchronous
 // infinite loops in GXT mode that freeze the entire test suite.
-const __gxtSkipMount = Boolean(globalThis.__GXT_MODE__);
+const __gxtSkipMount = __GXT_MODE__;
 
 import { backtrackingMessageFor } from '../utils/debug-stack';
 import { Component } from '../utils/helpers';
