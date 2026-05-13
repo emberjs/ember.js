@@ -720,6 +720,22 @@ export interface GxtCompilePipelineCapabilities {
    * Removing the global is a separate larger migration that has to route
    * every reader through the bridge first.
    *
+   * Slice-25 (Cluster B): first sub-slice of the longest-runway
+   * `__gxtTriggerReRender` reader-migration campaign. The two cross-package
+   * READERS at `metal/tracked.ts:308` (tracked setter notify) and
+   * `glimmer-tracking.ts:63` (custom-tracked-set host hook) now consume
+   * `compilePipeline.triggerReRender(...)` instead of
+   * `(globalThis as any).__gxtTriggerReRender`. Suppression semantics are
+   * preserved by a new module-local `_gxtTriggerSuppressedFlag` in
+   * compile.ts that `_gxtWithTriggerSuppressed` sets in parallel with the
+   * pre-slice-17 globalThis-clear — the flag is checked at the entry of
+   * `_gxtTriggerReRender` so bridge readers observe the same no-op during a
+   * `withTriggerSuppressed(fn)` frame. The globalThis writer is RETAINED
+   * because the remaining cross-package readers (manager.ts five sites,
+   * compile.ts three sites, validator.ts one site, property_events.ts one
+   * site) still consume the function via globalThis. The writer drop is a
+   * future slice once all readers are migrated.
+   *
    * Previously: `(globalThis as any).__gxtTriggerReRender`.
    */
   triggerReRender?(obj: object, keyName: string): void;
@@ -776,14 +792,24 @@ export interface GxtCompilePipelineCapabilities {
    * `(globalThis as any).__gxtTriggerReRender` (across metal, glimmer,
    * compile.ts) will observe `undefined` for the duration of `fn` and skip
    * their dispatch. The bridge's own `triggerReRender(...)` slot is NOT
-   * cleared (it still references `_gxtTriggerReRender` directly); however no
-   * current caller uses the bridge slot — all callers route through
-   * globalThis — so the suppression contract is preserved.
+   * cleared (it still references `_gxtTriggerReRender` directly).
+   *
+   * Slice-25 (Cluster B): with the first two cross-package READERS
+   * (`metal/tracked.ts:308`, `glimmer-tracking.ts:63`) migrated to consume
+   * `compilePipeline.triggerReRender(...)`, the suppression contract is
+   * preserved for bridge readers via a new module-local
+   * `_gxtTriggerSuppressedFlag` in compile.ts. The helper now sets the flag
+   * in parallel with the globalThis-clear; `_gxtTriggerReRender` short-
+   * circuits at entry when the flag is `true`. Net result: both globalThis-
+   * readers AND bridge-readers observe a no-op for the duration of `fn`.
+   * No new globalThis slot.
    *
    * The `__gxtTriggerReRender` globalThis writer at `compile.ts:3148` is
-   * RETAINED post-slice-17 because the many cross-package readers (metal,
-   * glimmer-tracking, manager.ts) still consume the function via globalThis.
-   * Removing the globalThis writer is a separate (larger) migration.
+   * RETAINED post-slice-25 because the remaining cross-package readers
+   * (manager.ts five sites, compile.ts three sites, validator.ts one site,
+   * property_events.ts one site) still consume the function via globalThis.
+   * Removing the globalThis writer is a future-slice migration that depends
+   * on those readers also being migrated to the bridge.
    */
   withTriggerSuppressed?<T>(fn: () => T): T;
 

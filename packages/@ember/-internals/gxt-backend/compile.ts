@@ -3318,7 +3318,33 @@ function _gxtWithSyncing<T>(value: boolean, fn: () => T): T {
   }
 }
 
+// Slice-25 (Cluster B): module-local suppression flag for the canonical
+// `_gxtTriggerReRender` function. Pre-slice-25 the suppression mechanism
+// (`_gxtWithTriggerSuppressed`) ONLY cleared the `globalThis.__gxtTriggerReRender`
+// slot, so legacy globalThis-readers observed `undefined` and skipped their
+// dispatch. With slice 25 the bridge `compilePipeline.triggerReRender(...)`
+// method is consumed by `metal/tracked.ts:308` and `glimmer-tracking.ts:63`
+// (the first two cross-package READERS migrated off the globalThis slot —
+// see `triggerReRender` doc in gxt-bridge.ts), but the bridge slot is NOT
+// cleared by `_gxtWithTriggerSuppressed` (only the globalThis slot is).
+// The flag bridges both surfaces: `_gxtWithTriggerSuppressed` sets it
+// while running `fn`, and `_gxtTriggerReRender` short-circuits at its entry
+// when the flag is `true` — so bridge readers observe the same no-op
+// suppression as globalThis readers. The flag is module-local (no new
+// globalThis slot); only the `_gxtWithTriggerSuppressed` writer sets it.
+let _gxtTriggerSuppressedFlag = false;
+
 const _gxtTriggerReRender = function (obj: object, keyName: string) {
+  // Slice-25 (Cluster B): honor the module-local suppression flag at the
+  // single entry point. When `_gxtWithTriggerSuppressed(fn)` is in flight
+  // the flag is `true` and we short-circuit — matching the legacy
+  // globalThis-cleared semantics observed by the four cross-package
+  // readers that still consume `(globalThis as any).__gxtTriggerReRender`
+  // (where the slot itself is `undefined` during suppression). The bridge
+  // readers (`metal/tracked.ts:308`, `glimmer-tracking.ts:63`) reach
+  // `_gxtTriggerReRender` via `compilePipeline.triggerReRender(...)`, so
+  // the flag-gate is the ONLY surface that preserves their suppression.
+  if (_gxtTriggerSuppressedFlag) return;
   // Slice-15: dispatch the BEFORE-chain (empty-chain check is a
   // length-zero short-circuit so per-call overhead stays at one cmp + one
   // branch when nothing is registered).
@@ -3377,9 +3403,20 @@ function _gxtWithTriggerSuppressed<T>(fn: () => T): T {
   const g: any = globalThis as any;
   const saved = g.__gxtTriggerReRender;
   g.__gxtTriggerReRender = undefined;
+  // Slice-25 (Cluster B): additionally set the module-local
+  // `_gxtTriggerSuppressedFlag` so bridge readers (`metal/tracked.ts:308`,
+  // `glimmer-tracking.ts:63`) that route through
+  // `compilePipeline.triggerReRender(...)` also observe the suppression
+  // (the bridge slot is NOT cleared; the flag-gate inside
+  // `_gxtTriggerReRender` is the suppression surface for them). The
+  // save/restore is re-entrancy-safe (`wasSuppressed` preserves an
+  // enclosing frame's flag value if any).
+  const wasSuppressed = _gxtTriggerSuppressedFlag;
+  _gxtTriggerSuppressedFlag = true;
   try {
     return fn();
   } finally {
+    _gxtTriggerSuppressedFlag = wasSuppressed;
     g.__gxtTriggerReRender = saved;
   }
 }

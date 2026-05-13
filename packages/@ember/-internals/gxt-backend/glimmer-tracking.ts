@@ -58,12 +58,19 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
     // publish it); when not installed we treat the flag as `false`
     // ("not rendering"), matching the pre-slice-22 truthiness check. See
     // `isCurrentlyRendering` doc in `./gxt-bridge`.
-    const _isCR = getGxtRenderer()?.compilePipeline.isCurrentlyRendering;
+    const _cp = getGxtRenderer()?.compilePipeline;
+    const _isCR = _cp?.isCurrentlyRendering;
     if (!(typeof _isCR === 'function' ? _isCR() : false)) {
-      const triggerReRender = (globalThis as any).__gxtTriggerReRender;
-      if (typeof triggerReRender === 'function') {
-        triggerReRender(this, key);
-      }
+      // Slice-25 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+      // raw-globalThis read to `compilePipeline.triggerReRender(this, key)`
+      // bridge method. The bridge method is optional (load-order independence
+      // — classic builds never publish it); when not installed the call is
+      // skipped, matching the pre-slice-25 `typeof === 'function'` guard.
+      // Suppression semantics (the `withTriggerSuppressed(fn)` frame) are
+      // preserved by the module-local `_gxtTriggerSuppressedFlag` short-
+      // circuit at the entry of `_gxtTriggerReRender` in compile.ts. See
+      // `triggerReRender` doc in `./gxt-bridge`.
+      _cp?.triggerReRender?.(this, key);
     }
   };
   trackedSet.__isTrackedSetter = true;

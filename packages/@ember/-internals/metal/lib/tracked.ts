@@ -303,12 +303,20 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // (`g.__gxtCurrentlyRendering` was `undefined` pre-install → falsy →
     // proceed). See `isCurrentlyRendering` doc in
     // `@ember/-internals/gxt-backend/gxt-bridge`.
-    const _isCR = getGxtRenderer()?.compilePipeline.isCurrentlyRendering;
+    const _cp = getGxtRenderer()?.compilePipeline;
+    const _isCR = _cp?.isCurrentlyRendering;
     if (!(typeof _isCR === 'function' ? _isCR() : false)) {
-      const triggerReRender = (globalThis as any).__gxtTriggerReRender;
-      if (typeof triggerReRender === 'function') {
-        triggerReRender(this, key);
-      }
+      // Slice-25 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+      // raw-globalThis read to `compilePipeline.triggerReRender(this, key)`
+      // bridge method. The bridge method is optional (load-order independence
+      // — classic builds never publish it); when not installed
+      // (`_cp?.triggerReRender === undefined`) the call is skipped, matching
+      // the pre-slice-25 `typeof === 'function'` guard. Suppression
+      // semantics (the `withTriggerSuppressed(fn)` frame) are preserved by
+      // the module-local `_gxtTriggerSuppressedFlag` short-circuit at the
+      // entry of `_gxtTriggerReRender` in compile.ts. See `triggerReRender`
+      // doc in `@ember/-internals/gxt-backend/gxt-bridge`.
+      _cp?.triggerReRender?.(this, key);
       // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
       const schedule = (globalThis as any).__gxtExternalSchedule;
       if (typeof schedule === 'function') {
