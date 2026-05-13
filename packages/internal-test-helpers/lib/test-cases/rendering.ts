@@ -142,7 +142,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       // Replace #qunit-fixture element to drop accumulated event listeners
       // (EventDispatcher.setup adds listeners that aren't always cleaned up)
       const fixture = document.getElementById('qunit-fixture');
-      if (fixture && (globalThis as any).__GXT_MODE__) {
+      if (fixture && __GXT_MODE__) {
         const fresh = fixture.cloneNode(false) as HTMLElement;
         fixture.parentNode?.replaceChild(fresh, fixture);
       }

@@ -28,7 +28,7 @@ export function isMarker(node: unknown): node is Comment | typeof TextNode {
     if (text === '') return true;
     // GXT internal placeholder comments
     if (
-      (globalThis as any).__GXT_MODE__ &&
+      __GXT_MODE__ &&
       (text.includes('placeholder') ||
         text.includes('if-entry') ||
         text.includes('each-entry') ||

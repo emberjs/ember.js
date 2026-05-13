@@ -1,6 +1,6 @@
 function normalizeInnerHTML(actualHTML: string) {
   // Strip GXT rendering artifacts
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     actualHTML = actualHTML
       // Remove GXT placeholder comments (including if-entry)
       .replace(
@@ -24,7 +24,7 @@ export default function equalInnerHTML(
   let actualHTML = normalizeInnerHTML(fragment.innerHTML);
   let expectedHTML = html;
   // In GXT mode, strip empty comments from expected too
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     expectedHTML = expectedHTML.replace(/<!---->/g, '');
   }
 

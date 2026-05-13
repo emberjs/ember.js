@@ -2,7 +2,7 @@ import { tokenize } from 'simple-html-tokenizer';
 
 /** Strip GXT rendering artifacts from HTML string */
 function stripGxtArtifacts(html: string): string {
-  if (!(globalThis as any).__GXT_MODE__) return html;
+  if (!__GXT_MODE__) return html;
   return (
     html
       // Remove GXT placeholder comments (including if-entry)
@@ -30,7 +30,7 @@ function generateTokens(containerOrHTML: string | Element) {
     // Also collapse whitespace between tags to match stripGxtArtifacts,
     // which performs the same collapse on the actual DOM innerHTML to
     // clean up whitespace left by removed placeholder comments.
-    if ((globalThis as any).__GXT_MODE__) {
+    if (__GXT_MODE__) {
       html = html
         .replace(/<!---->/g, '')
         .replace(/>\s+</g, '><')
@@ -55,7 +55,7 @@ function normalizeTokens(tokens: ReturnType<typeof tokenize>) {
     if (token.type === 'StartTag') {
       // Remove data-node-id from token attributes
       token.attributes = token.attributes
-        .filter((attr: any) => !(globalThis as any).__GXT_MODE__ || attr[0] !== 'data-node-id')
+        .filter((attr: any) => !__GXT_MODE__ || attr[0] !== 'data-node-id')
         .sort((a: any, b: any) => {
           if (a[0] > b[0]) {
             return 1;

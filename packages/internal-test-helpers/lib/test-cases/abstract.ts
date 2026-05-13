@@ -21,7 +21,7 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
     if (text === '') return true;
     // GXT internal placeholder comments
     if (
-      (globalThis as any).__GXT_MODE__ &&
+      __GXT_MODE__ &&
       (text.includes('placeholder') ||
         text.includes('if-entry') ||
         text.includes('each-entry') ||
@@ -302,7 +302,7 @@ export default abstract class AbstractTestCase {
 
   /** Remove GXT rendering artifacts from #qunit-fixture before assertions */
   private cleanGxtArtifacts() {
-    if (!(globalThis as any).__GXT_MODE__) return;
+    if (!__GXT_MODE__) return;
     const fixture = getElement();
     if (!fixture) return;
 

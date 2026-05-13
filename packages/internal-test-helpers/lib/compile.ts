@@ -24,7 +24,7 @@ export default function compile(
 ): TemplateFactory {
   // In GXT mode, use GXT compilation via ember-template-compiler's compile
   // (which is aliased to the GXT compat version)
-  if ((globalThis as any).__GXT_MODE__) {
+  if (__GXT_MODE__) {
     return etcCompile(templateSource, {
       moduleName: options.moduleName ?? options.meta?.moduleName ?? '(unknown template module)',
       strictMode: options.strictMode ?? false,
