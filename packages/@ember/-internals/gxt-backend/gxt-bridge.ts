@@ -207,10 +207,50 @@ export interface GxtViewUtilsCapabilities {
 }
 
 /**
+ * Format / attribute-value helpers. Implemented by manager.ts, currently only
+ * consumed intra-package — but exposed via the bridge for pattern uniformity
+ * with the prior slices and to give future cross-package consumers a typed
+ * entry point.
+ *
+ * NOT included in this slice (intentionally deferred — different bridge shape
+ * or non-bridge cleanup required):
+ *  - `__gxtNormAttr` / `__gxtQuotedAttr` / `__gxtUnboundEval` /
+ *    `__gxtUnboundResetSlots` — referenced by EMITTED CODE strings in
+ *    compile.ts (the compile post-processor writes literal
+ *    `globalThis.__gxtNormAttr` / `globalThis.__gxtQuotedAttr(...)` /
+ *    `globalThis.__gxtUnboundEval(...)` into generated template output).
+ *    Migrating any of these requires updating the code generator to emit
+ *    bridge-aware calls — out of scope for the runtime-only bridge migration.
+ *  - `__gxtLastSafeStringResult` — read+written entirely intra-`compile.ts`
+ *    (writer at SafeString toString hook, reader at attribute interpolation
+ *    site). Cleaner cleanup is to convert to a module-local `let` in an
+ *    intra-file refactor (same pattern as slice 3's exclusion of
+ *    `__gxtSuppressDirtyTagForDuringRebuild`).
+ *  - `__gxtSymbols` (compile.ts) — orphan writer; the comment in compile.ts
+ *    claims renderer.ts/root.ts consume it, but those modules actually read
+ *    `globalThis.__lifeartGxt` (a different key). Confirmed by exhaustive
+ *    grep — zero readers in the source tree. Cleaned up in this slice
+ *    alongside the migration (see slice 4 commit message).
+ */
+export interface GxtFormatCapabilities {
+  /**
+   * Decide whether to emit a style-binding XSS warning for the given
+   * (element, value) pair. The implementation tracks per-element dedup and
+   * suppresses warnings during force-rerender (`__gxtIsForceRerender`).
+   *
+   * Returns `true` if the caller SHOULD emit the warning, `false` if the
+   * element has already been warned about (or force-rerender is in flight).
+   *
+   * Previously: `(globalThis as any).__gxtShouldWarnStyle`.
+   */
+  shouldWarnStyle(element: unknown, value?: string): boolean;
+}
+
+/**
  * The aggregate GXT renderer capabilities object. Pilot exposed only the
- * destruction slice; subsequent slices added backtracking and view-utils.
- * Future slices will be additional optional properties on this same interface
- * (e.g. `schedule`, `lifecycle`, `cellMirror`, …).
+ * destruction slice; subsequent slices added backtracking, view-utils, and
+ * format. Future slices will be additional optional properties on this same
+ * interface (e.g. `schedule`, `lifecycle`, `cellMirror`, …).
  *
  * Why a single object rather than 30 individual exports? Easier to extend
  * incrementally without re-wiring imports each time; readers do
@@ -220,6 +260,7 @@ export interface GxtRenderer {
   readonly destruction: GxtDestructionCapabilities;
   readonly backtracking: GxtBacktrackingCapabilities;
   readonly viewUtils: GxtViewUtilsCapabilities;
+  readonly format: GxtFormatCapabilities;
 }
 
 let _renderer: GxtRenderer | null = null;

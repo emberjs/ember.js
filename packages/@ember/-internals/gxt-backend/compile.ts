@@ -1171,22 +1171,11 @@ function hasDynamicModifier(str: string): boolean {
   return false;
 }
 
-// Track style warnings per element to prevent duplicates when GXT sets style
-// via both prop() and attr() paths, or when manager.ts also sets it.
-// Also suppress all style warnings during force-rerender (morph).
-const _styleWarnedElements = new WeakSet<object>();
-
-function _shouldWarnStyle(element: any, _value?: string): boolean {
-  // During force-rerender, suppress all style warnings — the initial render already warned.
-  if ((globalThis as any).__gxtIsForceRerender) return false;
-  if (element && typeof element === 'object') {
-    if (_styleWarnedElements.has(element)) return false;
-    _styleWarnedElements.add(element);
-  }
-  return true;
-}
-// Expose for manager.ts to use the same deduplication
-(globalThis as any).__gxtShouldWarnStyle = _shouldWarnStyle;
+// NOTE: `_shouldWarnStyle` + `_styleWarnedElements` previously lived here and
+// were exposed to manager.ts via `(globalThis as any).__gxtShouldWarnStyle`.
+// Both are now defined inside manager.ts (next to their two reader sites) and
+// surfaced via `gxt-bridge`'s `format` capability (Cluster B slice 4). See
+// gxt-bridge.ts `GxtFormatCapabilities` docstring for the migration record.
 
 // Inline the style warning message to avoid importing @ember/-internals/views
 // (which can cause circular dependency issues during module initialization)
@@ -1231,14 +1220,13 @@ import {
   cellFor as _cellForFromDirectImport,
   effect as _effectFromDirectImport,
   formula as _formulaFromDirectImport,
-  // Symbols needed by renderer.ts / root.ts exposed via globalThis
-  RENDERING_CONTEXT as _GXT_RENDERING_CONTEXT,
+  // GXT symbols used directly by compile.ts (DOM api patching + parent-context plumbing).
+  // The `__gxtSymbols` orphan globalThis writer that previously also re-exported
+  // RENDERING_CONTEXT / provideContext / destroyElementSync / renderComponent /
+  // Component for renderer.ts / root.ts was removed in Cluster B slice 4 — those
+  // modules read `__lifeartGxt` (assigned in manager.ts), never `__gxtSymbols`.
   HTMLBrowserDOMApi as _GXT_HTMLBrowserDOMApi,
-  provideContext as _gxtProvideContext,
   getParentContext as _gxtGetParentContext,
-  destroyElementSync as _gxtDestroyElementSync,
-  renderComponent as _gxtRenderComponent,
-  Component as _GXT_Component,
   // Namespace providers for SVG/MathML rendering
   $_SVGProvider as _gxtSVGProvider,
   $_HTMLProvider as _gxtHTMLProvider,
@@ -1319,19 +1307,12 @@ function _getOrCreateGxtRoot(_parentElement: Element): any {
   return root;
 }
 
-// Expose GXT symbols on globalThis so renderer.ts and root.ts can access them
-// without importing from @lifeart/gxt (whose pre-bundled version drops these exports)
-(globalThis as any).__gxtSymbols = {
-  RENDERING_CONTEXT: _GXT_RENDERING_CONTEXT,
-  HTMLBrowserDOMApi: _GXT_HTMLBrowserDOMApi,
-  provideContext: _gxtProvideContext,
-  getParentContext: _gxtGetParentContext,
-  destroyElementSync: _gxtDestroyElementSync,
-  renderComponent: _gxtRenderComponent,
-  Component: _GXT_Component,
-  createRoot: gxtCreateRoot,
-  setParentContext: gxtSetParentContext,
-};
+// NOTE: a `(globalThis as any).__gxtSymbols = { ... }` writer previously lived
+// here, claiming to expose GXT symbols for renderer.ts / root.ts. Those
+// modules in fact read `globalThis.__lifeartGxt` (assigned in manager.ts),
+// not `__gxtSymbols` — the writer was an orphan with zero readers anywhere
+// in the source tree. Removed in Cluster B slice 4 alongside the format
+// capability migration.
 
 // Ensure the validator compat module is loaded (registers backtracking detection
 // functions on globalThis that ember-gxt-wrappers.ts needs at runtime).

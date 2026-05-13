@@ -717,6 +717,35 @@ const _gxtBridgePopParentView = () => {
 const _gxtBridgeGetElementView = (el: Element) => getElementView(el) as object | null;
 const _gxtBridgeGetViewElement = (view: object) => getViewElement(view as any) as Element | null;
 
+// =============================================================================
+// Style warning dedup (Cluster B slice 4 — format capability)
+// =============================================================================
+//
+// Tracks per-element style-binding warning emission so the same element isn't
+// warned about twice when both prop() and attr() paths set the attribute, or
+// when compile.ts and manager.ts both render the same node. Also suppresses
+// all warnings during force-rerender (morph) — the initial render already
+// warned.
+//
+// Previously: lived in compile.ts and surfaced to manager.ts via
+// `(globalThis as any).__gxtShouldWarnStyle`. Now intra-`manager.ts` (its only
+// readers are here, at the two attribute-binding sites in this file) and also
+// exposed via `gxt-bridge` for pattern uniformity with prior slices.
+const _styleWarnedElements = new WeakSet<object>();
+
+function _shouldWarnStyle(element: unknown, _value?: string): boolean {
+  // During force-rerender, suppress all style warnings — the initial render already warned.
+  if ((globalThis as any).__gxtIsForceRerender) return false;
+  if (element && typeof element === 'object') {
+    if (_styleWarnedElements.has(element as object)) return false;
+    _styleWarnedElements.add(element as object);
+  }
+  return true;
+}
+
+const _gxtBridgeShouldWarnStyle = (element: unknown, value?: string) =>
+  _shouldWarnStyle(element, value);
+
 /**
  * Rebuild the view-tree parent/child relationships from DOM ancestry.
  *
@@ -3299,8 +3328,7 @@ function syncWrapperElement(
       // Warn for style attribute bindings with non-safe strings (once per render pass per value)
       if (attrName === 'style' && value !== null && value !== undefined && value !== false) {
         const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
-        const shouldWarn = (globalThis as any).__gxtShouldWarnStyle;
-        if (!isHTMLSafe && (!shouldWarn || shouldWarn(wrapper, String(value)))) {
+        if (!isHTMLSafe && _shouldWarnStyle(wrapper, String(value))) {
           const warnFn = getDebugFunction('warn');
           if (warnFn)
             warnFn(constructStyleDeprecationMessage(String(value)), false, {
@@ -3835,11 +3863,12 @@ function _installTriggerReRenderWrapper() {
   }
 };
 
-// Expose the count of updated instances for the iterative sync loop.
-// Used by __gxtTriggerReRender to detect when no more instances are being dirtied.
-(globalThis as any).__gxtGetUpdatedCount = function () {
-  return _updatedInstances.length;
-};
+// NOTE: a `(globalThis as any).__gxtGetUpdatedCount = ...` writer previously
+// lived here, intended for `__gxtTriggerReRender` to detect when no more
+// instances were being dirtied during the iterative sync loop. The reader was
+// removed in an earlier refactor of the trigger-rerender path; the writer was
+// left dangling. Confirmed orphan via exhaustive grep — removed in Cluster B
+// slice 4 alongside the format capability migration.
 
 // Compute the depth of a component in the view tree.
 function _viewDepth(instance: any): number {
@@ -4892,8 +4921,7 @@ function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLE
       // Warn for style attribute bindings with non-safe strings (once per render pass per value)
       if (attrName === 'style' && value !== null && value !== undefined && value !== false) {
         const isHTMLSafe = value && typeof value === 'object' && typeof value.toHTML === 'function';
-        const shouldWarn = (globalThis as any).__gxtShouldWarnStyle;
-        if (!isHTMLSafe && (!shouldWarn || shouldWarn(wrapper, String(value)))) {
+        if (!isHTMLSafe && _shouldWarnStyle(wrapper, String(value))) {
           const warnFn = getDebugFunction('warn');
           if (warnFn)
             warnFn(constructStyleDeprecationMessage(String(value)), false, {
@@ -11602,7 +11630,13 @@ function __gxtInstallOnElementPatch(): void {
   // If a code path is ever found that removes elements from the DOM without
   // running their listeners' destructors, it should be addressed at that
   // teardown site rather than by instrumenting DOM removal here.
-  (globalThis as any).__gxtOnCounters = __gxtOnCounters;
+  //
+  // NOTE: a `(globalThis as any).__gxtOnCounters = __gxtOnCounters;` writer
+  // previously lived here, exposing the counters object on globalThis for
+  // external inspection. No external readers existed — the only consumer is
+  // the in-file Proxy at `setInternalModifierManager` below (which uses the
+  // module-local `__gxtOnCounters` const directly). Removed in Cluster B
+  // slice 4 alongside the format capability migration.
 }
 
 export function setInternalModifierManager(manager: any, modifier: any, _skipGuards?: boolean) {
@@ -12397,5 +12431,8 @@ setGxtRenderer({
     popParentView: _gxtBridgePopParentView,
     getElementView: _gxtBridgeGetElementView,
     getViewElement: _gxtBridgeGetViewElement,
+  },
+  format: {
+    shouldWarnStyle: _gxtBridgeShouldWarnStyle,
   },
 });
