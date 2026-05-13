@@ -41,7 +41,7 @@ import { JitSerializationDelegate } from '../suites/custom-dom-helper';
 function overrideRehydrationDelegate<D extends RenderDelegate>(
   Delegate: RenderDelegateConstructor<D>
 ): RenderDelegateConstructor<D> {
-  const gxtMode = (globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__;
+  const gxtMode = __GXT_MODE__;
   if (!gxtMode) return Delegate;
   if (Delegate.style !== 'rehydration') return Delegate;
   if ((Delegate as unknown) === GxtRehydrationDelegate) return Delegate;

@@ -96,7 +96,7 @@ export function generateSnapshot(element: SimpleElement): SimpleNode[] {
 // `equalTokens` when GXT_MODE is active. Net effect: the structural
 // HTML shape is compared; marker bookkeeping is ignored.
 export function isGxtModeActive(): boolean {
-  return Boolean((globalThis as unknown as { __GXT_MODE__?: boolean }).__GXT_MODE__);
+  return __GXT_MODE__;
 }
 
 // Empty comment (`<!---->`) is emitted by GXT as a cheap placeholder
