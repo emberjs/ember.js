@@ -217,21 +217,19 @@ abstract class ModifierManagerTest extends RenderTest {
   }
 
   @test({ skip: !DEBUG })
-  'provides a helpful deprecation when mutating a tracked value that was consumed already within constructor'(
-    assert: Assert
-  ) {
+  'allows get/set (lazy initialization) within modifier constructor'() {
     class Foo extends CustomModifier {
-      @tracked foo = 123;
+      @tracked foo: number | undefined;
 
       constructor(owner: Owner, args: Arguments) {
         super(owner, args);
 
-        // first read the tracked property
-
-        consume(this.foo);
-
-        // then attempt to update the tracked property
-        this.foo = 456;
+        // get/set/get pattern (lazy initialization)
+        let val = this.foo;
+        if (val === undefined) {
+          this.foo = 456;
+          val = this.foo;
+        }
       }
 
       override didInsertElement() {}
@@ -243,9 +241,8 @@ abstract class ModifierManagerTest extends RenderTest {
 
     let Main = defineComponent({ foo }, '<h1 {{foo}}>hello world</h1>');
 
-    assert.throws(() => {
-      this.renderComponent(Main);
-    }, /You attempted to update `foo` on `.*`, but it had already been used previously in the same computation/u);
+    this.renderComponent(Main);
+    this.assertHTML('<h1>hello world</h1>');
   }
 
   @test

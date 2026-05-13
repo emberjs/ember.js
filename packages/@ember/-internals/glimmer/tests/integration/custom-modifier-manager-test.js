@@ -12,7 +12,6 @@ import { setModifierManager, modifierCapabilities, setComponentTemplate } from '
 import { precompileTemplate } from '@ember/template-compilation';
 import EmberObject, { set } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../utils/debug-stack';
 
 class ModifierManagerTest extends RenderingTestCase {
   '@test throws a useful error when missing capabilities'(assert) {
@@ -243,9 +242,9 @@ class ModifierManagerTest extends RenderingTestCase {
     assert.equal(updateCount, 2);
   }
 
-  '@test provides a helpful assertion when mutating a value that was consumed already'() {
+  '@test allows get/set (lazy initialization) within modifier didInsertElement'(assert) {
     class Person {
-      @tracked name = 'bob';
+      @tracked name;
     }
 
     let ModifierClass = setModifierManager(
@@ -263,24 +262,25 @@ class ModifierManagerTest extends RenderingTestCase {
       }
     );
 
+    let person = new Person();
+
     this.registerModifier(
       'foo-bar',
       class MyModifier extends ModifierClass {
         didInsertElement([person]) {
-          person.name;
-          person.name = 'sam';
+          // get/set/get pattern (lazy initialization)
+          let val = person.name;
+          if (val === undefined) {
+            person.name = 'sam';
+            val = person.name;
+          }
         }
       }
     );
 
-    let expectedMessage = backtrackingMessageFor('name', Person.name, {
-      renderTree: [],
-      includeTopLevel: false,
-    });
+    this.render('<h1 {{foo-bar this.person}}>hello world</h1>', { person });
 
-    expectAssertion(() => {
-      this.render('<h1 {{foo-bar this.person}}>hello world</h1>', { person: new Person() });
-    }, expectedMessage);
+    assert.strictEqual(person.name, 'sam', 'lazy initialization in modifier works');
   }
 
   '@test capabilities helper function must be used to generate capabilities'(assert) {

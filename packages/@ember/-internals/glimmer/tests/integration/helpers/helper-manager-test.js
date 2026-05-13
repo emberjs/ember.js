@@ -6,7 +6,6 @@ import { set } from '@ember/object';
 import { setOwner } from '@ember/-internals/owner';
 import Service, { service } from '@ember/service';
 import { registerDestructor } from '@glimmer/destroyable';
-import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 class TestHelperManager {
   capabilities = helperCapabilities('3.23', {
@@ -216,7 +215,7 @@ moduleFor(
       this.assertText('hello');
     }
 
-    ['@test debug name is used for backtracking message']() {
+    ['@test allows get/set within the same tracking frame (lazy initialization)']() {
       this.registerCustomHelper(
         'hello',
         class extends TestHelper {
@@ -225,17 +224,13 @@ moduleFor(
           value() {
             this.foo;
             this.foo = 456;
+            return this.foo;
           }
         }
       );
 
-      let expectedMessage = backtrackingMessageFor('foo', '.*', {
-        renderTree: ['\\(result of a `TEST_HELPER` helper\\)'],
-      });
-
-      expectAssertion(() => {
-        this.render('{{hello}}');
-      }, expectedMessage);
+      this.render('{{hello}}');
+      this.assertText('456');
     }
 
     ['@test asserts against using both `hasValue` and `hasScheduledEffect`'](assert) {
@@ -347,20 +342,20 @@ moduleFor(
       assert.verifySteps([]);
     }
 
-    '@test custom helpers gives helpful assertion when reading then mutating a tracked value within constructor'() {
+    '@test custom helpers allows get/set/get (lazy initialization) within constructor'() {
       this.registerCustomHelper(
         'hello',
         class extends TestHelper {
-          @tracked foo = 123;
+          @tracked foo;
 
           constructor() {
             super(...arguments);
 
-            // first read the tracked property
-            this.foo;
-
-            // then attempt to update the tracked property
-            this.foo = 456;
+            // get/set/get pattern (lazy initialization)
+            let val = this.foo;
+            if (val === undefined) {
+              this.foo = 456;
+            }
           }
 
           value() {
@@ -369,36 +364,29 @@ moduleFor(
         }
       );
 
-      let expectedMessage = backtrackingMessageFor('foo');
-
-      expectAssertion(() => {
-        this.render('{{hello}}');
-      }, expectedMessage);
+      this.render('{{hello}}');
+      this.assertText('456');
     }
 
-    '@test custom helpers gives helpful assertion when reading then mutating a tracked value within value'() {
+    '@test custom helpers allows get/set/get (lazy initialization) within value'() {
       this.registerCustomHelper(
         'hello',
         class extends TestHelper {
-          @tracked foo = 123;
+          @tracked foo;
 
           value() {
-            // first read the tracked property
-            this.foo;
-
-            // then attempt to update the tracked property
-            this.foo = 456;
+            // get/set/get pattern (lazy initialization)
+            let val = this.foo;
+            if (val === undefined) {
+              this.foo = 456;
+            }
+            return this.foo;
           }
         }
       );
 
-      let expectedMessage = backtrackingMessageFor('foo', '.*', {
-        renderTree: ['\\(result of a `TEST_HELPER` helper\\)'],
-      });
-
-      expectAssertion(() => {
-        this.render('{{hello}}');
-      }, expectedMessage);
+      this.render('{{hello}}');
+      this.assertText('456');
     }
   }
 );
