@@ -5642,9 +5642,8 @@ setInterval(() => {
     (globalThis as any).__gxtClearTagHelperCache();
   }
   // Clear component instance pools to prevent stale reuse across tests
-  if (typeof (globalThis as any).__gxtClearInstancePools === 'function') {
-    (globalThis as any).__gxtClearInstancePools();
-  }
+  // Slice-13 (Cluster B): migrated to `compilePipeline.clearInstancePools`.
+  getGxtRenderer()?.compilePipeline.clearInstancePools?.();
   // Clear stale ifWatchers to prevent callbacks from previous tests firing on detached DOM
   if (typeof (globalThis as any).__gxtClearIfWatchers === 'function') {
     (globalThis as any).__gxtClearIfWatchers();

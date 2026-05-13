@@ -1104,14 +1104,38 @@ queueMicrotask(_patchEachSyncForRowKeying);
 // Retry once compile.ts's own patch has installed (it also uses microtask).
 setTimeout(_patchEachSyncForRowKeying, 0);
 
-// Expose a function to clear all instance pools between tests.
-// This prevents stale component instances from leaking across tests.
-(globalThis as any).__gxtClearInstancePools = function () {
+// Slice-13 (Cluster B): relocate the pre-slice-13 two-stage wrap into a single
+// canonical function. The pre-slice-13 layout was:
+//   (1) initial install here (clearing `_allPoolArrays`), and
+//   (2) wrap-by-reassignment near manager.ts:9461 that captured the original
+//       and reinstalled a wrapper also clearing `_customManagedPool` and
+//       `_customManagedInstances`.
+// Both halves closed over manager.ts module-local state ONLY (no globalThis
+// crossing, no cross-file closures), so the slice-3 relocation pattern applies
+// trivially: fold the second half into the canonical body, drop the
+// wrap-by-reassignment installer entirely.
+//
+// `_customManagedPool` and `_customManagedInstances` are declared after this
+// point in the file (manager.ts:660 and manager.ts:9414); forward-reference via
+// hoisted `const`/`let` is safe because `_gxtClearInstancePools` is never
+// called during module init (it's a test-teardown hook). The two TDZ-risk
+// reads are inside the function body and only run when a teardown fires —
+// long after both declarations have been evaluated.
+function _gxtClearInstancePools(): void {
   for (const pool of _allPoolArrays) {
     pool.length = 0;
   }
   _allPoolArrays.clear();
-};
+  _customManagedPool.clear();
+  _customManagedInstances.length = 0;
+}
+
+// Dual-exposure: bridge slot reference is `_gxtClearInstancePools` (preserves
+// future-slice migrations through the bridge). Global assignment is RETAINED
+// because `tests/helpers/test-helpers.js` (and historical user test code) may
+// read the function via globalThis. Future slice can remove the global once
+// all readers route through the bridge.
+(globalThis as any).__gxtClearInstancePools = _gxtClearInstancePools;
 
 /**
  * Remove a destroyed instance from every pool that holds it.
@@ -9457,13 +9481,10 @@ function hideGxtInternalPropsOn(target: any) {
   }
 }
 
-// Clear custom managed pool between tests
-const _origClearPools = (globalThis as any).__gxtClearInstancePools;
-(globalThis as any).__gxtClearInstancePools = function () {
-  if (typeof _origClearPools === 'function') _origClearPools();
-  _customManagedPool.clear();
-  _customManagedInstances.length = 0;
-};
+// Slice-13 (Cluster B): pre-slice-13 wrap-by-reassignment installer removed.
+// The clearing of `_customManagedPool` and `_customManagedInstances` was
+// relocated into the canonical `_gxtClearInstancePools` definition near
+// manager.ts:1109. See slice-13 commit message for the relocation rationale.
 
 /**
  * Handle a component with a custom component manager (from setComponentManager).
@@ -12681,6 +12702,13 @@ setGxtRenderer({
     // used host-hook because their bodies closed over compile.ts module-local
     // state, but slice 12's wrap bodies referenced only globalThis-shared state).
     syncAllWrappers: _gxtSyncAllWrappers,
+    // Slice-13 (Cluster B): seeded here with the canonical
+    // `_gxtClearInstancePools`. Replaces the pre-slice-13 two-stage wrap
+    // (initial install at manager.ts:1109 + wrap-by-reassignment at
+    // manager.ts:9461). Both halves closed over manager.ts module-local
+    // state only, so the slice-3 relocation pattern applies — second
+    // wrap-by-reassignment slice to use relocation after slice 12.
+    clearInstancePools: _gxtClearInstancePools,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is
