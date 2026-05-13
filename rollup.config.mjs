@@ -141,6 +141,11 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
     }),
     resolveTS(),
     version(),
+    // Cluster E (pilot): inline the build-time `__GXT_MODE__` flag so the
+    // classic dist never branches on it at runtime. The vite test build
+    // does the equivalent via Vite's `define`; this plugin mirrors that for
+    // the rollup-emitted classic bundle that the published `dist/` ships.
+    replaceGxtModeFlag(),
     resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     pruneEmptyBundles(),
   ];
@@ -746,6 +751,29 @@ const allowedCycles = [
   // destroyable when the GXT resolver-alias is active.
   'packages/@ember/-internals/gxt-backend/destroyable',
 ];
+
+// Cluster E (pilot): replace the bare `__GXT_MODE__` identifier with the
+// boolean literal for the classic rollup build. The classic dist NEVER runs
+// in GXT mode (the GXT test harness uses vite directly, see vite.config.mjs),
+// so this always inlines `false`. After this transform, terser/DCE collapses
+// `if (__GXT_MODE__) { ... }` → `if (false) { ... }` → dead-branch elimination.
+//
+// Why not `@rollup/plugin-replace`? Avoiding a new dep. The match here is
+// trivially constrained to the literal identifier (\b__GXT_MODE__\b) and
+// the produced source is byte-equivalent to what plugin-replace would emit.
+function replaceGxtModeFlag() {
+  const GXT_MODE_RE = /\b__GXT_MODE__\b/g;
+  return {
+    name: 'replace-gxt-mode-flag',
+    transform(code, id) {
+      if (id.includes('/node_modules/')) return null;
+      if (!code.includes('__GXT_MODE__')) return null;
+      const replaced = code.replace(GXT_MODE_RE, 'false');
+      if (replaced === code) return null;
+      return { code: replaced, map: null };
+    },
+  };
+}
 
 function handleRollupWarnings(level, log, handler) {
   switch (log.code) {

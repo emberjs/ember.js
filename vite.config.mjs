@@ -49,6 +49,17 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      // Cluster E (pilot): replace the bare `__GXT_MODE__` identifier with
+      // the boolean literal at transform time. Vite's `define` option does
+      // NOT cover source code here because this config sets `esbuild: false`
+      // — `define` would normally run via esbuild's source transformer.
+      // (The `define` block elsewhere in this config still works for
+      // node_modules dep prebundling because optimizeDeps uses esbuild
+      // independently of the source-transform pipeline.) Mirror the rollup
+      // build's `replaceGxtModeFlag` plugin so source files using the bare
+      // identifier work in both bundlers. See types/gxt-ambient.d.ts for
+      // the TS declaration.
+      replaceGxtModeFlag(useGxt),
       // Deduplicate GXT internal modules so they share one reactive core.
       // Vite's dev server already follows symlinks for /@fs/ serving, but
       // this plugin ensures consistency in environments where that doesn't work.
@@ -127,6 +138,14 @@ export default defineConfig(({ mode }) => {
     // free identifiers and crash at runtime. Define them here so the bundled
     // gxt code behaves correctly. In GXT mode the compiler plugin inlines
     // these itself, so we omit `define:` to avoid double-replacement.
+    //
+    // NOTE on `__GXT_MODE__`: it is NOT in this `define:` block because the
+    // identifier appears in this repo's TypeScript source, not in prebuilt
+    // node_modules dist chunks. Vite's `define:` runs through esbuild on
+    // source code, but this config sets `esbuild: false` (see below), so
+    // `define:` only covers what Vite's dep prebundler (optimizeDeps) walks
+    // — i.e. node_modules. Source-level replacement of `__GXT_MODE__` is
+    // performed by the `replaceGxtModeFlag` plugin above.
     ...(useGxt
       ? {}
       : {
@@ -342,6 +361,39 @@ function gxtEmberWrapperRedirect() {
       }
 
       return null;
+    },
+  };
+}
+
+// Cluster E (pilot): replace the bare `__GXT_MODE__` identifier with the
+// boolean literal so source code that writes `if (__GXT_MODE__) { ... }`
+// const-folds at bundle time. Mirrors the same-named helper in
+// rollup.config.mjs (which always inlines `false` for the classic dist).
+//
+// Why not Vite's built-in `define:` for this? `define:` is implemented via
+// esbuild's source transform, which is disabled here (`esbuild: false`).
+// `define:` therefore only applies through optimizeDeps' dep prebundling,
+// i.e. to node_modules code — not the ember source files where `__GXT_MODE__`
+// actually appears.
+//
+// Skip GXT vendor chunks: their `IS_DEV_MODE`/`TRY_CATCH_ERROR_HANDLING`
+// usage is handled separately (or — per the 2026-05-11 finding for
+// TRY_CATCH_ERROR_HANDLING — left as runtime identifiers, falsy at runtime).
+// The `__GXT_MODE__` identifier is unique to ember-source files; @lifeart/gxt
+// dist chunks don't reference it.
+function replaceGxtModeFlag(useGxt) {
+  const literal = useGxt ? 'true' : 'false';
+  const GXT_MODE_RE = /\b__GXT_MODE__\b/g;
+  return {
+    name: 'replace-gxt-mode-flag',
+    enforce: 'pre',
+    transform(code, id) {
+      const cleanId = id.split('?')[0].split('#')[0];
+      if (cleanId.includes('/node_modules/')) return null;
+      if (!code.includes('__GXT_MODE__')) return null;
+      const replaced = code.replace(GXT_MODE_RE, literal);
+      if (replaced === code) return null;
+      return { code: replaced, map: null };
     },
   };
 }
