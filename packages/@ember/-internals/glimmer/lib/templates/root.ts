@@ -1,4 +1,6 @@
 import { getComponentTemplate } from '@glimmer/manager';
+// (Cluster B slice 6) Bridge reader for `registerObjectValueOwner`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 // Lazy accessor for @lifeart/gxt symbols. The gxt-backend module (only loaded
 // in __GXT_MODE__) stashes the namespace on globalThis.__lifeartGxt at its
 // own load time. Avoiding a static `import * as _gxt from '@lifeart/gxt'`
@@ -762,7 +764,8 @@ export default function createRootTemplate(_owner: any) {
       // are tracked. Without this, set(model, 'color', 'blue') won't trigger
       // re-renders because the formula never tracked cell(context, 'model').
       const _cellFor = (globalThis as any).__gxtCellFor;
-      const _registerOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
+      // (Cluster B slice 6) Bridge reader for registerObjectValueOwner.
+      const _registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
       if (_cellFor) {
         try {
           const skipKeys = new Set([
@@ -1049,7 +1052,8 @@ export default function createRootTemplate(_owner: any) {
             // The previous model was registered via registerObjectValueOwner,
             // but the new model is a different object reference that needs its
             // own entry in _objectValueCellMap.
-            const _registerOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
+            // (Cluster B slice 6) Bridge reader for registerObjectValueOwner.
+            const _registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
             if (newModel && typeof newModel === 'object' && _registerOwner) {
               _registerOwner(newModel, lastArgsObj, 'model');
               _registerOwner(newModel, lastRenderContext, 'model');

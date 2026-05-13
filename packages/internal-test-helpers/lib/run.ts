@@ -1,5 +1,7 @@
 import { next, run, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
+// (Cluster B slice 6) Bridge reader for `resetIntervalBudget`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 import { Promise } from 'rsvp';
 
@@ -59,8 +61,7 @@ export function runAppend(view: any): void {
   (globalThis as any).__gxtPendingSync = false;
   (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
   // Reset interval sync budget after an explicit sync
-  const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
-  if (typeof resetBudget === 'function') resetBudget();
+  getGxtRenderer()?.compilePipeline.resetIntervalBudget?.();
   // Phase 3 step 7: the post-render flushRenderErrors() call was deleted.
   // Init-phase render errors now propagate synchronously through renderer.ts's
   // template.render() try/catch (Option C2, Phase 3 step 5). Lifecycle errors
@@ -140,8 +141,7 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
   if (typeof clearTags === 'function') clearTags();
   // Reset interval sync budget after an explicit runTask sync
-  const resetBudget = (globalThis as any).__gxtResetIntervalBudget;
-  if (typeof resetBudget === 'function') resetBudget();
+  getGxtRenderer()?.compilePipeline.resetIntervalBudget?.();
   // Phase 3 step 8: the runTask post-task flushRenderErrors() call was
   // deleted. Destroy-during-runTask errors used to require this drain
   // because __gxtDestroyUnclaimedPoolEntries Phase 3 captured throws into

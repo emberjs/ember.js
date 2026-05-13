@@ -450,6 +450,13 @@ import {
 } from '@glimmer/opcode-compiler';
 export { templateCacheCounters };
 
+// (Cluster B slice 6) Bridge reader for `compileTemplate` and
+// `instrumentFactory`. Both are contributed by gxt-backend's compile.ts /
+// ember-template-compiler.ts via `installCompilePipelinePart`. Classic
+// builds never load gxt-backend so `getGxtRenderer()` returns null and
+// the optional-chain DCEs away under `__GXT_MODE__ = false`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+
 // GXT-aware `template` shim. In GXT mode, the ember-template-compiler's
 // `precompile()` returns a JSON marker string containing `{__gxtTemplate,
 // source, moduleName}` rather than the classic Glimmer block-spec. Passing
@@ -463,13 +470,16 @@ function template(spec: unknown): ReturnType<typeof _templateFactory> {
   if (spec && typeof spec === 'object') {
     const anySpec = spec as Record<string, unknown>;
     if (anySpec['__gxtTemplate'] === true) {
-      const gxtCompile = (globalThis as any).__gxtCompileTemplate;
-      const instrument = (globalThis as any).__gxtInstrumentFactory;
+      const cp = getGxtRenderer()?.compilePipeline;
+      const gxtCompile = cp?.compileTemplate;
+      const instrument = cp?.instrumentFactory;
       const source = anySpec['source'];
       const moduleName = anySpec['moduleName'];
       if (typeof gxtCompile === 'function' && typeof source === 'string') {
         const factory = gxtCompile(source, { moduleName });
-        return typeof instrument === 'function' ? instrument(factory, { moduleName }) : factory;
+        const out =
+          typeof instrument === 'function' ? instrument(factory, { moduleName }) : factory;
+        return out as ReturnType<typeof _templateFactory>;
       }
     }
   }

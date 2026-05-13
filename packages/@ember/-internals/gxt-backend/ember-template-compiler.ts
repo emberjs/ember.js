@@ -233,7 +233,11 @@ function _normalizeHyphenBlockParams(template: string): { source: string; change
 }
 
 export function compile(templateString: string, options?: any) {
-  _maybeRegisterGlobalInstrument();
+  // (Cluster B slice 6) The slice-6 bridge install at module bottom now
+  // publishes `_instrumentFactory` via `installCompilePipelinePart`. The
+  // prior `_maybeRegisterGlobalInstrument()` defensive re-publish here was a
+  // belt-and-suspenders top-level globalThis writer; the module-bottom
+  // install runs eagerly at first import and is sufficient.
   // Named outlet assertion — matches classic AssertAgainstNamedOutlets plugin.
   _assertAgainstNamedOutlets(templateString, options?.moduleName);
 
@@ -314,12 +318,13 @@ export function compile(templateString: string, options?: any) {
 // obtains via the `precompile`+`template` pathway with the same cache
 // counter accounting used by the `compile(...)` pathway. Keeps the two
 // pathways accounting-consistent for tests that probe templateCacheCounters.
-function _maybeRegisterGlobalInstrument() {
-  const g = globalThis as any;
-  if (!g.__gxtInstrumentFactory) {
-    g.__gxtInstrumentFactory = _instrumentFactory;
-  }
-}
+// (Cluster B slice 6) Replaced the prior `globalThis.__gxtInstrumentFactory`
+// publish with a bridge contribution. See `installCompilePipelinePart` call
+// at module bottom. The function is kept here (rather than relocated to
+// manager.ts) because its closure captures `templateCacheCounters` which is
+// imported above; relocating would either pull the import edge across files
+// or fragment the function's only call site (glimmer/index.ts's template
+// shim, which reads via the bridge).
 
 function _instrumentFactory(factory: any, compileOptions?: any): any {
   if (!factory || (factory as any).__gxtCountedFactory) return factory;
@@ -403,7 +408,11 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
 
 // Eagerly publish the instrumentation so the `template` shim sees it even
 // when `template(precompile(...))` is called before any `compile()`.
-_maybeRegisterGlobalInstrument();
+// (Cluster B slice 6) Bridge install (replaces the prior globalThis publish).
+import { installCompilePipelinePart } from './gxt-bridge';
+installCompilePipelinePart({
+  instrumentFactory: _instrumentFactory,
+});
 
 /**
  * Precompile a template string (returns serialized form)

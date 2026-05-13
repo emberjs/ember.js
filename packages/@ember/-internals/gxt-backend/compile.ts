@@ -3033,7 +3033,10 @@ function registerObjectValueOwner(value: any, ownerObj: object, ownerKey: string
   }
   owners.add({ obj: ownerObj, key: ownerKey });
 }
-(globalThis as any).__gxtRegisterObjectValueOwner = registerObjectValueOwner;
+// (Cluster B slice 6) Exposed via the gxt-bridge as
+// `compilePipeline.registerObjectValueOwner`. The function definition stays
+// here because it closes over `_objectValueCellMap` (which is also READ at
+// L3181 below). See `installCompilePipelinePart` call at module bottom.
 
 function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
   if (!array || typeof array !== 'object') return;
@@ -3044,7 +3047,10 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
   }
   owners.add({ obj: ownerObj, key: ownerKey });
 }
-(globalThis as any).__gxtRegisterArrayOwner = registerArrayOwner;
+// (Cluster B slice 6) Exposed via the gxt-bridge as
+// `compilePipeline.registerArrayOwner`. Closure over `_arrayOwnerMap` is read
+// at L3078/L3102 below — relocation would fragment the map's call sites.
+// See `installCompilePipelinePart` call at module bottom.
 
 // Pending if-watcher notifications accumulated during __gxtTriggerReRender.
 // Flushed in __gxtSyncDomNow after all cells have been updated atomically.
@@ -5729,9 +5735,19 @@ try {
 //    runTask-triggered sync in between. Prevents the interval from driving
 //    an infinite re-render loop when tests produce continuous dirty state.
 let _intervalSyncBudget = 3;
-(globalThis as any).__gxtResetIntervalBudget = function () {
+// (Cluster B slice 6) Exposed via the gxt-bridge as
+// `compilePipeline.resetIntervalBudget`. Function closes over the
+// module-local `let` `_intervalSyncBudget` (also read by the setInterval
+// below). See `installCompilePipelinePart` call at module bottom.
+//
+// The globalThis writer is RETAINED alongside the bridge install because
+// `packages/demo/tests.html` (an HTML test harness) reads this hook via
+// `globalThis.__gxtResetIntervalBudget` and cannot import the bridge.
+// Same dual-exposure pattern as `__gxtCompileTemplate`.
+function _gxtResetIntervalBudget(): void {
   _intervalSyncBudget = 3;
-};
+}
+(globalThis as any).__gxtResetIntervalBudget = _gxtResetIntervalBudget;
 setInterval(() => {
   if ((globalThis as any).__gxtPendingSync) {
     // Don't fire during test transitions
@@ -14280,7 +14296,14 @@ export default function templateCompilation() {
   };
 }
 
-// Register the GXT compiler globally for @ember/template-compiler to use
+// Register the GXT compiler globally for @ember/template-compiler to use.
+// (Cluster B slice 6) Also exposed via the gxt-bridge as
+// `compilePipeline.compileTemplate`. The globalThis writer is RETAINED in
+// addition to the bridge install because
+// `@glimmer-workspace/integration-tests/.../gxt-delegate.ts` reads this hook
+// via globalThis and cannot depend on `@ember/-internals`. Dual exposure is
+// intentional for this single hook; all other slice-6 hooks remove globalThis.
+// See `installCompilePipelinePart` call at module bottom.
 (globalThis as any).__gxtCompileTemplate = compileTemplate;
 
 // @internal — exported for unit testing only
@@ -14304,3 +14327,31 @@ export const __test_internals = {
   hasDynamicHelper,
   hasDynamicModifier,
 };
+
+// =============================================================================
+// Cluster B slice 6 — gxt-bridge compile-pipeline-part install
+// =============================================================================
+// Contribute compile.ts-owned function references to the bridge's
+// `compilePipeline` namespace. These functions cannot live in manager.ts
+// because they close over compile.ts module-local state:
+//   - `registerObjectValueOwner` / `registerArrayOwner` close over
+//     `_objectValueCellMap` / `_arrayOwnerMap` (also read at compile.ts
+//     L3078/L3102/L3181)
+//   - `_gxtResetIntervalBudget` closes over `_intervalSyncBudget` (also
+//     read by the setInterval-driven fallback flusher below the writer)
+//   - `compileTemplate` is small but pulling its definition into manager.ts
+//     would create a circular import (manager.ts imports compile.ts and
+//     vice-versa is the very cycle the bridge exists to avoid). Easier to
+//     install it from here.
+//
+// Runs AFTER manager.ts's initial `setGxtRenderer` (manager.ts module init
+// is eager and runs before this file's bottom because consumers of this
+// file's `template`/`compile` exports must already have manager.ts loaded
+// transitively for the renderer to work at all).
+import { installCompilePipelinePart } from './gxt-bridge';
+installCompilePipelinePart({
+  compileTemplate: compileTemplate,
+  resetIntervalBudget: _gxtResetIntervalBudget,
+  registerArrayOwner: registerArrayOwner,
+  registerObjectValueOwner: registerObjectValueOwner,
+});

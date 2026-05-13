@@ -247,32 +247,33 @@ export interface GxtFormatCapabilities {
 }
 
 /**
- * Compile-pipeline capabilities. Implemented by manager.ts, consumed by
- * compile.ts (intra-package). The slice covers function-ref hooks where the
- * writer lives in manager.ts and the reader needs to invoke the function
- * without a direct import edge to manager.ts.
+ * Compile-pipeline capabilities. Composite namespace: methods may be
+ * contributed both from manager.ts (initial `setGxtRenderer` install) AND
+ * from compile.ts / ember-template-compiler.ts via `installCompilePipelinePart`
+ * (slice 6 — see below).
  *
- * NOT included in this slice (intentionally deferred — same exclusion classes
- * documented on prior slices):
- *  - `__gxtCompileTemplate` (writer in compile.ts, readers in glimmer/index.ts
- *    + template-compiler/lib/template.ts + glimmer-workspace integration-tests)
- *    — writer is in compile.ts NOT manager.ts; bridge install pattern installs
- *    once at manager.ts EOF. Migrating requires either (a) relocating the
- *    install call to compile.ts EOF (breaks "single install" convention) or
- *    (b) extending the bridge with `installCompilePipelinePart({...})` for
- *    incremental wiring. Defer until a future slice has a critical mass of
- *    compile.ts-writer hooks to justify the API growth.
- *  - `__gxtInstrumentFactory` (writer in ember-template-compiler.ts, reader
- *    in glimmer/index.ts) — same constraint as `__gxtCompileTemplate`. Writer
- *    is in a third file (neither manager nor compile). Defer.
- *  - `__gxtResetIntervalBudget` (writer in compile.ts, readers in
- *    internal-test-helpers/run.ts) — same constraint as `__gxtCompileTemplate`.
- *  - `__gxtRegisterArrayOwner`, `__gxtRegisterObjectValueOwner` (writers in
- *    compile.ts, readers split across manager.ts + glimmer/renderer.ts +
- *    glimmer/templates/root.ts) — multi-package readers plus writer-in-compile.
- *    Migrating cleanly requires relocating the writers to manager.ts (the
- *    functions are small enough that relocation is feasible) — defer until a
- *    future "compile-pipeline / register-owners" slice can group them.
+ * Slice 5 contributed `syncWrapper` and `snapshotLiveInstances` (manager.ts
+ * writers). Slice 6 extends the namespace with compile.ts-writer + third-file-
+ * writer hooks via a partial-install API. This is the first slice to evolve
+ * the bridge interface beyond "manager.ts installs everything at EOF".
+ *
+ * Why incremental install? `manager.ts` and `compile.ts` deliberately don't
+ * import each other (top-level circular-load hazard). A subset of compile-
+ * pipeline hooks have their function definitions in compile.ts where they
+ * close over compile-internal WeakMaps (`_arrayOwnerMap`, `_objectValueCellMap`)
+ * or compile-local `let` state (`_intervalSyncBudget`). Relocating those
+ * functions to manager.ts would require relocating the closures too, which
+ * either fragments the maps' reader sites (3+ intra-compile.ts callers) or
+ * pulls in scheduling state that has no place in manager.ts. Adding a small
+ * partial-install API is cleaner than forcing relocation.
+ *
+ * NOT included in this slice (intentionally deferred):
+ *  - `__gxtCompileTemplate` is migrated to the bridge for in-monorepo readers,
+ *    but the source globalThis writer is RETAINED in compile.ts because the
+ *    `@glimmer-workspace/integration-tests/.../gxt-delegate.ts` consumer lives
+ *    in a workspace that does NOT depend on `@ember/-internals`, so cannot
+ *    import the bridge. Dual exposure (bridge + globalThis) is intentional
+ *    for this hook. All other slice-6 hooks remove globalThis entirely.
  *  - `__gxtIsRootComponent`, `__gxtUpdateRootTagValues` (writers in
  *    glimmer/lib/renderer.ts, readers in gxt-backend) — REVERSE-FLOW
  *    (writer outside gxt-backend, reader inside). The bridge convention has
@@ -323,6 +324,80 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtSnapshotLiveInstances`.
    */
   snapshotLiveInstances(): void;
+
+  /**
+   * Compile a template string to a gxt-compatible template factory.
+   * Contributed by compile.ts (the function definition's home file).
+   * Read by `@ember/-internals/glimmer/index.ts` and
+   * `@ember/template-compiler/lib/template.ts` to delegate template
+   * compilation when GXT mode is active.
+   *
+   * NOTE: the source globalThis writer in compile.ts is RETAINED in addition
+   * to the bridge install because `@glimmer-workspace/integration-tests/.../
+   * gxt-delegate.ts` reads the function via globalThis and cannot depend on
+   * `@ember/-internals`. Dual exposure is intentional for this hook only.
+   *
+   * Previously: `(globalThis as any).__gxtCompileTemplate`.
+   */
+  compileTemplate?(templateString: string, options?: unknown): unknown;
+
+  /**
+   * Wrap a template factory with template-cache-counter instrumentation so
+   * the `templateFactory` resolver-cache accounting matches the classic
+   * Glimmer pathway. Contributed by ember-template-compiler.ts (the function
+   * definition's home file, where the closure over `templateCacheCounters`
+   * lives).
+   *
+   * Read by `@ember/-internals/glimmer/index.ts`'s `template` shim.
+   *
+   * Previously: `(globalThis as any).__gxtInstrumentFactory`.
+   */
+  instrumentFactory?(factory: unknown, compileOptions?: unknown): unknown;
+
+  /**
+   * Reset the interval-driven sync budget. Contributed by compile.ts (the
+   * function closes over compile.ts's `_intervalSyncBudget` module-local
+   * `let`, which is also read by the setInterval-driven fallback flusher).
+   *
+   * Called from internal-test-helpers/run.ts after each explicit sync /
+   * runTask to prevent the interval-driven fallback from being permanently
+   * starved by a long test.
+   *
+   * NOTE: the source globalThis writer in compile.ts is RETAINED in addition
+   * to the bridge install because `packages/demo/tests.html` (an HTML test
+   * harness, can't import TS) reads this hook via globalThis. Dual exposure
+   * pattern; same as `compileTemplate`.
+   *
+   * Previously: `(globalThis as any).__gxtResetIntervalBudget`.
+   */
+  resetIntervalBudget?(): void;
+
+  /**
+   * Register an array as having `(ownerObj, ownerKey)` as a logical owner so
+   * KVO array mutations (`pushObject`, `shiftObject`) dirty the owner's cell.
+   * Contributed by compile.ts (the function closes over compile.ts's
+   * `_arrayOwnerMap` WeakMap, which is also READ at multiple intra-compile.ts
+   * sites — relocation would fragment the map's call sites).
+   *
+   * Called from manager.ts (4 sites), glimmer/lib/renderer.ts, after
+   * installing cell-backed getters on classic component instances.
+   *
+   * Previously: `(globalThis as any).__gxtRegisterArrayOwner`.
+   */
+  registerArrayOwner?(array: unknown, ownerObj: object, ownerKey: string): void;
+
+  /**
+   * Register an object value as having `(ownerObj, ownerKey)` as a logical
+   * owner so writes to the object's properties dirty the owner's cell.
+   * Contributed by compile.ts (closure over `_objectValueCellMap` WeakMap,
+   * see `registerArrayOwner` for the same constraint).
+   *
+   * Called from manager.ts and glimmer/lib/templates/root.ts when classic
+   * controllers attach a model object to the render context.
+   *
+   * Previously: `(globalThis as any).__gxtRegisterObjectValueOwner`.
+   */
+  registerObjectValueOwner?(value: unknown, ownerObj: object, ownerKey: string): void;
 }
 
 /**
@@ -346,13 +421,64 @@ export interface GxtRenderer {
 
 let _renderer: GxtRenderer | null = null;
 
+// Slice-6 deferred-install queue. Contributions from compile.ts /
+// ember-template-compiler.ts arrive via `installCompilePipelinePart` and
+// may fire BEFORE manager.ts's `setGxtRenderer` call (the load-order of
+// the two large module-init paths depends on the entry point — entering
+// via `@ember/template-compiler` loads compile.ts first; entering via
+// the renderer loads manager.ts first). We buffer until the renderer is
+// available, then flush.
+let _pendingCompilePipelineParts: Partial<GxtCompilePipelineCapabilities>[] = [];
+
 /**
  * Install the renderer capabilities object. Called exactly once at
  * gxt-backend module init by manager.ts. Multiple calls overwrite, but this
  * is intentional only for tooling/tests; production code calls it once.
+ *
+ * The `compilePipeline` slot may receive ADDITIONAL methods from compile.ts
+ * and ember-template-compiler.ts via `installCompilePipelinePart` after this
+ * initial install. See slice-6 design note in `GxtCompilePipelineCapabilities`.
+ *
+ * On install we also flush any compile-pipeline parts that were registered
+ * BEFORE manager.ts loaded (see `_pendingCompilePipelineParts` above).
  */
 export function setGxtRenderer(renderer: GxtRenderer): void {
   _renderer = renderer;
+  if (_pendingCompilePipelineParts.length > 0) {
+    for (const part of _pendingCompilePipelineParts) {
+      Object.assign(_renderer.compilePipeline, part);
+    }
+    _pendingCompilePipelineParts = [];
+  }
+}
+
+/**
+ * Slice-6 install API. Allows compile.ts and ember-template-compiler.ts to
+ * contribute additional methods to the `compilePipeline` namespace.
+ *
+ * Why: a subset of compile-pipeline hooks have their function definitions in
+ * compile.ts (closing over compile-local WeakMaps / module-local `let` state)
+ * or in ember-template-compiler.ts (closing over imported counters). Those
+ * functions cannot be relocated to manager.ts without fragmenting their
+ * reader sites or pulling unrelated state across the file boundary. The
+ * partial-install API lets each writer file contribute its own slice.
+ *
+ * Contract: callable at any point during module init. If `setGxtRenderer`
+ * has already fired (manager.ts loaded first), the part is merged
+ * immediately via `Object.assign` into the existing `compilePipeline`
+ * object — so already-captured references (e.g. a `const cp =
+ * getGxtRenderer()?.compilePipeline` stored at top-level) see the new
+ * methods. If `setGxtRenderer` has NOT yet fired (compile.ts loaded first),
+ * the part is buffered and flushed when `setGxtRenderer` runs.
+ */
+export function installCompilePipelinePart(
+  part: Partial<GxtCompilePipelineCapabilities>
+): void {
+  if (_renderer === null) {
+    _pendingCompilePipelineParts.push(part);
+    return;
+  }
+  Object.assign(_renderer.compilePipeline, part);
 }
 
 /**

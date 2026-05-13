@@ -5,6 +5,8 @@ import { setComponentTemplate } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
 import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
+// (Cluster B slice 6) Bridge reader for `compileTemplate`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 type ComponentClass = abstract new (...args: any[]) => object;
 
@@ -399,7 +401,7 @@ export function template(
 ): object {
   // In GXT mode, use the GXT runtime compiler instead of Glimmer compiler
   if (__GXT_MODE__) {
-    const gxtCompile = (globalThis as any).__gxtCompileTemplate;
+    const gxtCompile = getGxtRenderer()?.compilePipeline.compileTemplate;
     if (gxtCompile) {
       const gxtOptions = { strictMode: true, ...providedOptions };
       const gxtComponent = (gxtOptions as any).component ?? templateOnly();
@@ -473,7 +475,7 @@ export function template(
         scopeValues,
       });
 
-      setComponentTemplate(gxtTemplate, gxtComponent);
+      setComponentTemplate(gxtTemplate as Parameters<typeof setComponentTemplate>[0], gxtComponent);
       return gxtComponent;
     }
   }

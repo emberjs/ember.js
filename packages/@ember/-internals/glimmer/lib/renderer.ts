@@ -4,6 +4,8 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId, setViewElement } from '@ember/-internals/views';
+// (Cluster B slice 6) Bridge reader for `registerArrayOwner`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
 (globalThis as any).__emberInternalsViews = { setViewElement, getViewElement };
@@ -598,7 +600,8 @@ class ClassicRootState {
               // data properties. Use skipDefine=false so GXT's native formula
               // tracking (in $_if, $_each, etc.) picks up cell.value reads.
               const _cellFor = (globalThis as any).__gxtCellFor;
-              const _registerArrayOwner = (globalThis as any).__gxtRegisterArrayOwner;
+              // (Cluster B slice 6) Bridge reader for registerArrayOwner.
+              const _registerArrayOwner = getGxtRenderer()?.compilePipeline.registerArrayOwner;
               _ensureTriggerReRenderPatched();
               if (_cellFor) {
                 const skipProps = new Set([

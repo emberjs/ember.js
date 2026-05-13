@@ -5717,9 +5717,13 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             const cell = cellForFn2(renderContext, key, /* skipDefine */ true);
             cell.update(initialVal);
             renderCtxArgCells[key] = { cell, getter, lastArgValue: initialVal };
-            const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
-            if (_regArrOwner && Array.isArray(initialVal)) {
-              _regArrOwner(initialVal, renderContext, key);
+            // (Cluster B slice 6) Bridge reader for registerArrayOwner.
+            if (Array.isArray(initialVal)) {
+              getGxtRenderer()?.compilePipeline.registerArrayOwner?.(
+                initialVal,
+                renderContext,
+                key
+              );
             }
             // Detect classic @computed CP with a setter on the prototype chain.
             // When present, the wrapper setter below must also invoke the CP's
@@ -5948,9 +5952,13 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               /* ignore */
             }
             // Register array owner for KVO array mutation tracking (pushObject, shiftObject, etc.)
-            const _regArrOwner = (globalThis as any).__gxtRegisterArrayOwner;
-            if (_regArrOwner && Array.isArray(initialVal)) {
-              _regArrOwner(initialVal, renderContext, key);
+            // (Cluster B slice 6) Bridge reader for registerArrayOwner.
+            if (Array.isArray(initialVal)) {
+              getGxtRenderer()?.compilePipeline.registerArrayOwner?.(
+                initialVal,
+                renderContext,
+                key
+              );
             }
           } catch {
             // Fallback to plain getter
@@ -6119,7 +6127,9 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
     '_debugContainerKey',
   ]);
 
-  const _registerArrayOwner = (globalThis as any).__gxtRegisterArrayOwner;
+  // (Cluster B slice 6) Bridge readers for registerArrayOwner /
+  // registerObjectValueOwner (used inside the loop below).
+  const _gxtCp = getGxtRenderer()?.compilePipeline;
   if (_cellFor && instance) {
     // Install cells for all enumerable properties on the instance and its prototype
     const seen = new Set<string>();
@@ -6185,14 +6195,13 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               }
             }
             // Register array owner for KVO array mutation tracking
-            if (_registerArrayOwner && Array.isArray(desc.value)) {
-              _registerArrayOwner(desc.value, instance, key);
+            if (Array.isArray(desc.value)) {
+              _gxtCp?.registerArrayOwner?.(desc.value, instance, key);
             }
             // Register reverse mapping: when a property on this object value changes,
             // dirty this cell so formulas reading nested paths (e.g., this.m.formattedMessage) re-evaluate.
-            const _regObjOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
-            if (_regObjOwner && desc.value && typeof desc.value === 'object') {
-              _regObjOwner(desc.value, instance, key);
+            if (desc.value && typeof desc.value === 'object') {
+              _gxtCp?.registerObjectValueOwner?.(desc.value, instance, key);
             }
           } catch {
             /* ignore */
@@ -12418,7 +12427,7 @@ export { $_MANAGERS };
 // queueMicrotask deferral is needed (and would in fact break compile.ts's
 // own top-level reads).
 
-import { setGxtRenderer } from './gxt-bridge';
+import { setGxtRenderer, getGxtRenderer } from './gxt-bridge';
 setGxtRenderer({
   destruction: {
     destroyDestroyable: _gxtBridgeDestroyDestroyable,

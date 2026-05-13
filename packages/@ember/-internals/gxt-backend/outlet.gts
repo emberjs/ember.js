@@ -1,4 +1,6 @@
 import { Component, createRoot, setParentContext, getParentContext } from '@lifeart/gxt';
+// (Cluster B slice 6) Bridge reader for `registerObjectValueOwner`.
+import { getGxtRenderer } from './gxt-bridge';
 
 /**
  * EmberOutletElement - Custom HTML element for Ember's {{outlet}} helper.
@@ -176,7 +178,8 @@ class EmberOutletElement extends HTMLElement {
       // Use the global cellFor to ensure we use the SAME module instance as
       // compile.ts (which handles __gxtTriggerReRender).
       const _cellFor = (globalThis as any).__gxtCellFor;
-      const registerOwner = (globalThis as any).__gxtRegisterObjectValueOwner;
+      // (Cluster B slice 6) Bridge reader for registerObjectValueOwner.
+      const registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
       if (_cellFor) {
         try {
           const internalKeys = new Set([
