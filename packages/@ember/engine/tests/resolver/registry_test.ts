@@ -4,9 +4,9 @@ import Service from '@ember/service';
 import { run } from '@ember/runloop';
 import type ApplicationInstance from '@ember/application/instance';
 
-const { module, test } = QUnit;
+const { test } = QUnit;
 
-module('strict-resolver | Application with modules', function (hooks) {
+QUnit.module('strict-resolver | Application with modules', function (hooks) {
   let app: Application | undefined;
   let instance: ApplicationInstance | undefined;
 
