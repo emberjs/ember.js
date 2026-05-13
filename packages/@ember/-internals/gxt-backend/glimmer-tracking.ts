@@ -6,6 +6,7 @@
  * natively with GXT's formula tracking.
  */
 import { trackedData, consumeTag, tagFor, dirtyTagFor } from '@glimmer/validator';
+import { getGxtRenderer } from './gxt-bridge';
 
 /**
  * @tracked decorator — makes a class property reactive.
@@ -36,11 +37,11 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
   trackedGet.__isTrackedGetter = true;
 
   const trackedSet: any = function (this: object, value: any) {
-    // GXT backtracking detection for @tracked properties
-    const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
-    if (typeof checkBacktracking === 'function') {
-      checkBacktracking(this, key);
-    }
+    // GXT backtracking detection for @tracked properties.
+    // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking`
+    // to the typed bridge. Method is optional in the interface (load-order
+    // independence — classic builds never publish it), so the call is guarded.
+    getGxtRenderer()?.backtracking.checkBacktracking?.(this, key);
     setter(this, value);
     // Dirty the property tag so createCache invalidates
     dirtyTagFor(this, key);

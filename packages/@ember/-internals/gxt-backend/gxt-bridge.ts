@@ -101,23 +101,30 @@ export interface GxtDestructionCapabilities {
 }
 
 /**
- * Backtracking capabilities. Implemented by validator.ts, consumed by
- * helper-manager.ts and ember-gxt-wrappers.ts (both intra-package) when
- * wrapping createHelper/getValue invocations so read-then-write inside a
- * helper compute is detected as a backtracking re-render.
+ * Backtracking capabilities. Implemented by validator.ts (frame management)
+ * and manager.ts (`checkBacktracking`), consumed by helper-manager.ts and
+ * ember-gxt-wrappers.ts (both intra-package) when wrapping createHelper/getValue
+ * invocations so read-then-write inside a helper compute is detected as a
+ * backtracking re-render, plus cross-package readers in
+ * `metal/property_set.ts`, `metal/tracked.ts`, and `gxt-backend/glimmer-tracking.ts`
+ * that call `checkBacktracking` from inside @tracked / set() setters.
  *
  * Begin/end are paired in `try/finally` — every begin must have a matching
  * end. The implementations are no-ops outside of an enclosing frame; missing
  * a begin (frame stays null) is safe.
  *
+ * Slice-10 design: the `checkBacktracking` method is seeded by manager.ts's
+ * initial `setGxtRenderer` install, with an optional `transformBacktrackingMessage`
+ * host hook contributed by compile.ts via `installBacktrackingPart`. The hook
+ * replaces the pre-slice-10 wrap-by-reassignment installer at compile.ts:5041
+ * (`_installTemplateOnlyRenderTreeInjection`) which wrapped
+ * `globalThis.__gxtCheckBacktracking` at runtime to inject template-only
+ * component names into the assertion message. The pre-slice-10 wrap reassigned
+ * the function and intercepted `__emberAssertFn` for the duration of the call;
+ * the bridge form is a typed message transformer that manager.ts applies before
+ * dispatching to `_assertFn`. Mirrors the slice-8 host-hook pattern.
+ *
  * NOT included in this slice (intentionally deferred):
- *  - `__gxtCheckBacktracking` (manager.ts) — compile.ts's
- *    `_installTemplateOnlyRenderTreeInjection` wraps the function by
- *    REASSIGNING globalThis.__gxtCheckBacktracking. The bridge's single-
- *    install setGxtRenderer pattern doesn't support that mutation model
- *    without redesign. Cross-package readers in metal/property_set.ts,
- *    metal/tracked.ts and glimmer-tracking.ts continue to read via
- *    globalThis until a future slice resolves the wrap-by-reassignment.
  *  - `__gxtAssertNotResolvedHelperAsNamedArg` (compile.ts) — referenced by
  *    EMITTED CODE strings (`globalThis.__gxtAssertNotResolvedHelperAsNamedArg(...)`
  *    appears in compiled template output). It's a code-generation hook, not
@@ -142,6 +149,43 @@ export interface GxtBacktrackingCapabilities {
    * Previously: `(globalThis as any).__gxtEndBacktrackingFrame`.
    */
   endFrame(): void;
+
+  /**
+   * Check if setting `key` on `targetObj` constitutes backtracking (i.e., the
+   * target's template was already rendered in the current pass). When true,
+   * assemble a render-tree assertion message and dispatch via the current
+   * `__emberAssertFn`. Best-effort: no-op outside a render pass and for
+   * targets not in the rendered set.
+   *
+   * Called from `@ember/-internals/metal/lib/property_set.ts:_setProp`,
+   * `@ember/-internals/metal/lib/tracked.ts:set`, and
+   * `gxt-backend/glimmer-tracking.ts:trackedSet`. Each caller already
+   * guards via DEBUG / `typeof === 'function'`, so missing bridge install
+   * (e.g., classic-Ember build) is safe.
+   *
+   * Slice-10: an optional `transformBacktrackingMessage` host hook
+   * contributed by compile.ts (via `installBacktrackingPart`) is applied to
+   * the assembled message before it reaches `_assertFn`. Pre-slice-10 this
+   * was implemented as a runtime wrap of `globalThis.__gxtCheckBacktracking`.
+   *
+   * Previously: `(globalThis as any).__gxtCheckBacktracking`.
+   */
+  checkBacktracking?(targetObj: unknown, key: string): void;
+
+  /**
+   * Host hook contributed by compile.ts (via `installBacktrackingPart`) that
+   * rewrites the backtracking assertion message before manager.ts's
+   * `checkBacktracking` dispatches it to `_assertFn`. Used to inject names of
+   * rendered template-only components into the render tree (template-only
+   * components have no instance and so are not visible in the parentView
+   * chain that `checkBacktracking` walks). Pre-slice-10 this logic lived in
+   * a wrap-by-reassignment installer at compile.ts:5041; this slice promotes
+   * it to a typed host hook.
+   *
+   * Best-effort: errors thrown from the hook are caught and the original
+   * message is used, matching the pre-slice-10 wrap's try/catch behavior.
+   */
+  transformBacktrackingMessage?(msg: string): string;
 }
 
 /**
@@ -644,6 +688,13 @@ let _pendingRenderPassParts: Partial<GxtRenderPassCapabilities>[] = [];
 // then flush.
 let _pendingRootComponentParts: Partial<GxtRootComponentCapabilities>[] = [];
 
+// Slice-10 deferred-install queue. Same load-order independence pattern as
+// slice 8's `_pendingRenderPassParts`, but for the `backtracking` namespace's
+// `transformBacktrackingMessage` host hook contributed by compile.ts.
+// compile.ts may load before manager.ts depending on entry point; buffer
+// until the renderer is available, then flush.
+let _pendingBacktrackingParts: Partial<GxtBacktrackingCapabilities>[] = [];
+
 /**
  * Install the renderer capabilities object. Called exactly once at
  * gxt-backend module init by manager.ts. Multiple calls overwrite, but this
@@ -686,6 +737,12 @@ export function setGxtRenderer(renderer: GxtRenderer): void {
       Object.assign(_renderer.rootComponent, part);
     }
     _pendingRootComponentParts = [];
+  }
+  if (_pendingBacktrackingParts.length > 0) {
+    for (const part of _pendingBacktrackingParts) {
+      Object.assign(_renderer.backtracking, part);
+    }
+    _pendingBacktrackingParts = [];
   }
 }
 
@@ -783,6 +840,29 @@ export function installRootComponentPart(
     return;
   }
   Object.assign(_renderer.rootComponent, part);
+}
+
+/**
+ * Slice-10 install API. Allows compile.ts to contribute the
+ * `transformBacktrackingMessage` host hook to the `backtracking` namespace.
+ * Mirrors `installRenderPassPart` (slice 8) — same host-hook pattern, but on
+ * a different namespace.
+ *
+ * The `beginFrame` / `endFrame` / `checkBacktracking` methods are seeded by
+ * manager.ts's initial `setGxtRenderer` call; `transformBacktrackingMessage`
+ * arrives later from compile.ts. Typical load order: compile.ts top-level runs
+ * the install AFTER manager.ts has already published `checkBacktracking` — but
+ * cross-entry import paths can flip the order, so we use the same pending-queue
+ * pattern as slices 6 / 7 / 8 / 9.
+ */
+export function installBacktrackingPart(
+  part: Partial<GxtBacktrackingCapabilities>
+): void {
+  if (_renderer === null) {
+    _pendingBacktrackingParts.push(part);
+    return;
+  }
+  Object.assign(_renderer.backtracking, part);
 }
 
 /**

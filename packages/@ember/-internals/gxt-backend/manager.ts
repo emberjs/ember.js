@@ -2864,8 +2864,20 @@ export function endRenderPass(): void {
  * Check if setting a property on an instance constitutes backtracking.
  * Called from Ember's set() during rendering to detect modifications
  * to already-rendered component state.
+ *
+ * Slice-10 (Cluster B): the function is now installed on the typed bridge via
+ * `setGxtRenderer({ backtracking: { checkBacktracking, ... } })` at file EOF
+ * and dispatched by cross-package callers through
+ * `getGxtRenderer()?.backtracking.checkBacktracking(...)`. Pre-slice-10 this
+ * was published as `(globalThis as any).__gxtCheckBacktracking` and wrapped
+ * at runtime by compile.ts:5041 (`_installTemplateOnlyRenderTreeInjection`)
+ * to inject template-only component names into the assertion message; that
+ * wrap is now a typed `transformBacktrackingMessage` host hook on the
+ * `backtracking` namespace contributed by compile.ts via
+ * `installBacktrackingPart`. We apply the hook (if registered) to the
+ * message immediately before dispatching to `_assertFn` below.
  */
-(globalThis as any).__gxtCheckBacktracking = function (targetObj: any, key: string): void {
+export function checkBacktracking(targetObj: any, key: string): void {
   if (!_isInRenderPass) return;
   if (!_templateRenderedInstances.has(targetObj)) {
     // The target might be a Proxy created by wrapNestedObjectForTracking.
@@ -2997,13 +3009,27 @@ export function endRenderPass(): void {
   // to pick up the stub installed by expectAssertion(). The module-level
   // import `assert` may be a stale reference in bundled/HMR'd code.
   const _assertFn = (globalThis as any).__emberAssertFn;
-  const msg = `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n${topLevelPrefix}${renderTree}\n\nStack trace for the update:`;
+  let msg = `You attempted to update \`${key}\` on \`${objName}\`, but it had already been used previously in the same computation. \`${key}\` was first used:\n\n- While rendering:\n${topLevelPrefix}${renderTree}\n\nStack trace for the update:`;
+  // Slice-10: apply the registered message-transform host hook (if any). The
+  // hook is contributed by compile.ts via `installBacktrackingPart` and
+  // injects template-only component names into the render tree. Pre-slice-10
+  // this was a runtime wrap of `globalThis.__gxtCheckBacktracking` at
+  // compile.ts:5041 (`_installTemplateOnlyRenderTreeInjection`); the bridge
+  // promotes it to a typed transformer dispatched here.
+  const _transformMsg = getGxtRenderer()?.backtracking.transformBacktrackingMessage;
+  if (_transformMsg) {
+    try {
+      msg = _transformMsg(msg);
+    } catch {
+      /* ignore — fall back to original message, matches pre-slice-10 wrap's try/catch */
+    }
+  }
   if (typeof _assertFn === 'function') {
     _assertFn(msg, false);
   } else {
     assert(msg, false);
   }
-};
+}
 
 export function captureRenderError(err: unknown): void {
   if (err instanceof Error) {
@@ -12458,6 +12484,12 @@ setGxtRenderer({
   backtracking: {
     beginFrame: beginBacktrackingFrame,
     endFrame: endBacktrackingFrame,
+    // Slice-10: `checkBacktracking` seeded here; the
+    // `transformBacktrackingMessage` host hook is contributed by compile.ts
+    // via `installBacktrackingPart` to inject template-only component names
+    // into the assertion message (replacing the pre-slice-10
+    // wrap-by-reassignment at compile.ts:5041).
+    checkBacktracking,
   },
   viewUtils: {
     pushParentView: _gxtBridgePushParentView,

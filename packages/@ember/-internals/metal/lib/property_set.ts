@@ -1,6 +1,7 @@
 import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
@@ -73,11 +74,11 @@ export function set<T>(obj: object, keyName: string | number, value: T, tolerant
     : _setProp(obj, keyName, value);
 
   // GXT backtracking detection: check AFTER set so toString() reflects the new value.
+  // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking` to
+  // the typed bridge. Method is optional in the interface (load-order
+  // independence — classic builds never publish it), so the call is guarded.
   if (DEBUG) {
-    const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
-    if (typeof checkBacktracking === 'function') {
-      checkBacktracking(obj, keyName);
-    }
+    getGxtRenderer()?.backtracking.checkBacktracking?.(obj, keyName);
   }
 
   return result;

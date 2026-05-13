@@ -4975,18 +4975,22 @@ queueMicrotask(patchGlobalEachSync);
 
 // Augment the backtracking assertion's render tree with template-only
 // component names. Template-only components have no instance and therefore
-// don't appear in the parentView chain that `__gxtCheckBacktracking` walks;
+// don't appear in the parentView chain that `checkBacktracking` walks;
 // without this augmentation, the render-tree message is missing entries like
 // `x-inner-template-only` that Glimmer VM would include.
 //
 // We track active template-only renders via `__gxtTemplateOnlyStack` (pushed
 // in the $_tag thunk below) and rewrite the backtracking assertion message
-// at report time. `__emberAssertFn` is installed on globalThis as a getter
-// (see manager.ts) that returns `getDebugFunction('assert')`; we can't
-// replace it in-place. Instead we wrap `getDebugFunction('assert')` by
-// intercepting via `setDebugFunction`, wrapping the returned function. The
-// simpler path: wrap the globalThis '__emberAssertFn' property directly
-// only if the current accessor allows overwrite.
+// at report time.
+//
+// Slice-10 (Cluster B): published as `backtracking.transformBacktrackingMessage`
+// via `installBacktrackingPart` at module bottom. Manager.ts's
+// `checkBacktracking` calls the hook (if registered) on the assembled
+// assertion message before dispatching to `_assertFn`. Pre-slice-10 this
+// logic was applied by a runtime wrap of `globalThis.__gxtCheckBacktracking`
+// (`_installTemplateOnlyRenderTreeInjection`) that installed a per-call
+// override on `__emberAssertFn`; the host-hook pattern (introduced in slice 8)
+// replaces the runtime mutation with a typed dispatched call.
 function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
   const _g = globalThis as any;
   const renderedSet = (_g.__gxtTemplateOnlyRenderedSet as Set<string>) || new Set();
@@ -5033,73 +5037,18 @@ function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
   ];
   return rebuilt.join('\n');
 }
-// Wrap __gxtCheckBacktracking to rewrite the assertion message's render tree
-// and include names of rendered template-only components. Template-only
-// components don't participate in the parentView chain that the original
-// function walks; without this, the render tree emitted by the backtracking
-// diagnostic is missing entries like `x-inner-template-only`.
-function _installTemplateOnlyRenderTreeInjection() {
-  const _g = globalThis as any;
-  if (_g.__gxtAssertInjected) return;
-  if (!_g.__gxtCheckBacktracking) return;
-  const orig = _g.__gxtCheckBacktracking;
-  // Intercept by patching __emberAssertFn seen by __gxtCheckBacktracking
-  // via its internal read of globalThis.__emberAssertFn. We achieve this by
-  // replacing __gxtCheckBacktracking with a thin wrapper that installs a
-  // per-call override on __emberAssertFn for the duration of the call. This
-  // keeps the wrapping scoped and avoids interfering with other uses of
-  // __emberAssertFn.
-  _g.__gxtCheckBacktracking = function __gxtCheckBacktracking_wrapInject(target: any, key: string) {
-    const desc = Object.getOwnPropertyDescriptor(_g, '__emberAssertFn');
-    const origGet = desc?.get;
-    if (!origGet) {
-      return orig.call(this, target, key);
-    }
-    // Override the getter for the duration of this call to return a wrapped
-    // assert that rewrites the msg using our template-only set.
-    try {
-      Object.defineProperty(_g, '__emberAssertFn', {
-        get() {
-          const inner = origGet.call(this);
-          if (typeof inner !== 'function') return inner;
-          if ((inner as any).__gxtTemplateOnlyInjectWrapped) return inner;
-          const wrapped = function (msg: any, test: any) {
-            if (typeof msg === 'string') {
-              msg = _rebuildBacktrackingMsgWithTemplateOnly(msg);
-            }
-            return inner.call(this, msg, test);
-          };
-          (wrapped as any).__gxtTemplateOnlyInjectWrapped = true;
-          return wrapped;
-        },
-        configurable: true,
-      });
-    } catch {
-      /* ignore */
-    }
-    try {
-      return orig.call(this, target, key);
-    } finally {
-      // Restore the original getter so that other assertion paths see the
-      // untransformed __emberAssertFn.
-      try {
-        Object.defineProperty(_g, '__emberAssertFn', {
-          get: origGet,
-          configurable: true,
-        });
-      } catch {
-        /* ignore */
-      }
-    }
-  };
-  _g.__gxtAssertInjected = true;
-}
-// Retry install across microtasks and delayed timeouts until
-// __gxtCheckBacktracking is defined by manager.ts.
-_installTemplateOnlyRenderTreeInjection();
-queueMicrotask(_installTemplateOnlyRenderTreeInjection);
-setTimeout(_installTemplateOnlyRenderTreeInjection, 0);
-setTimeout(_installTemplateOnlyRenderTreeInjection, 50);
+// Slice-10 (Cluster B): the pre-slice-10 `_installTemplateOnlyRenderTreeInjection`
+// helper that wrapped `globalThis.__gxtCheckBacktracking` at runtime is REMOVED.
+// The wrap's behavior — rewriting the backtracking assertion message via
+// `_rebuildBacktrackingMsgWithTemplateOnly` — is now contributed as a typed
+// `transformBacktrackingMessage` host hook on the `backtracking` namespace via
+// `installBacktrackingPart` (see module bottom). Manager.ts's
+// `checkBacktracking` dispatches the registered transform before passing the
+// message to `_assertFn`. The pre-slice-10 4-step retry-install
+// (`_installTemplateOnlyRenderTreeInjection()` + queueMicrotask + 2x setTimeout)
+// is eliminated — the install-API pattern handles load-order independence via
+// the deferred-install queue (`_pendingBacktrackingParts`). Same template as
+// slice 8 (`installRenderPassPart` + `beforeBeginRenderPass`).
 
 // Clear the template-only rendered set at the start of each render pass so
 // the backtracking injector only sees components that rendered during the
@@ -9045,14 +8994,15 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             _setInternalProp(args as any, '__thunkId', thunkId);
             // Track the render path for template-only components. They don't
             // appear in the parentView chain (no instance), so the backtracking
-            // diagnostic (`__gxtCheckBacktracking` in manager.ts) doesn't see
+            // diagnostic (`checkBacktracking` in manager.ts) doesn't see
             // them when building its `- While rendering:` tree. Snapshot the
             // `__gxtLastCreatedEmberInstance` before handle() runs; after
             // handle() completes, if __gxtLastCreatedEmberInstance is null
             // (renderGlimmerComponent path) this was a template-only render
-            // — add its kebabName to a per-render set. The assertion hook
-            // above (`__gxtCheckBacktracking` wrapper) reads this set to
-            // inject template-only names into the render tree.
+            // — add its kebabName to a per-render set. The
+            // `transformBacktrackingMessage` host hook contributed by this
+            // file via `installBacktrackingPart` (slice 10) reads this set
+            // to inject template-only names into the render tree.
             // Reset the set if the renderPassId changed since the last entry.
             {
               const _g = globalThis as any;
@@ -14355,7 +14305,11 @@ export const __test_internals = {
 // is eager and runs before this file's bottom because consumers of this
 // file's `template`/`compile` exports must already have manager.ts loaded
 // transitively for the renderer to work at all).
-import { installCompilePipelinePart, installRenderPassPart } from './gxt-bridge';
+import {
+  installCompilePipelinePart,
+  installRenderPassPart,
+  installBacktrackingPart,
+} from './gxt-bridge';
 installCompilePipelinePart({
   compileTemplate: compileTemplate,
   resetIntervalBudget: _gxtResetIntervalBudget,
@@ -14369,4 +14323,13 @@ installCompilePipelinePart({
 // `beginRenderPass` call, BEFORE manager.ts clears its template-rendered set.
 installRenderPassPart({
   beforeBeginRenderPass: _resetTemplateOnlyState,
+});
+
+// Slice-10 (Cluster B): replaces the pre-slice-10
+// `_installTemplateOnlyRenderTreeInjection` wrap-by-reassignment installer
+// (see `_rebuildBacktrackingMsgWithTemplateOnly` definition earlier in this
+// file). The host hook runs inside manager.ts's `checkBacktracking` body,
+// transforming the assembled assertion message before it reaches `_assertFn`.
+installBacktrackingPart({
+  transformBacktrackingMessage: _rebuildBacktrackingMsgWithTemplateOnly,
 });

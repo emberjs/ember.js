@@ -2,6 +2,7 @@ import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 // GXT dual-backend note: in classic mode `@glimmer/validator` resolves to the
 // vendored package; in EMBER_RENDER_BACKEND=gxt mode rollup aliases it to
 // packages/@ember/-internals/gxt-backend/validator.ts. Both shapes expose the
@@ -243,12 +244,12 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   }
 
   function set(this: object, newValue: unknown): void {
-    // GXT backtracking detection for @tracked properties
+    // GXT backtracking detection for @tracked properties.
+    // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking`
+    // to the typed bridge. Method is optional in the interface (load-order
+    // independence — classic builds never publish it), so the call is guarded.
     if (DEBUG) {
-      const checkBacktracking = (globalThis as any).__gxtCheckBacktracking;
-      if (typeof checkBacktracking === 'function') {
-        checkBacktracking(this, key);
-      }
+      getGxtRenderer()?.backtracking.checkBacktracking?.(this, key);
     }
     setter(this, newValue);
     // Directly update the GXT cell for this property using cellFor.
