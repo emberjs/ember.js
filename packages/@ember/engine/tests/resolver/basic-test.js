@@ -182,7 +182,7 @@ QUnit.module('StrictResolver', function (hooks) {
     assert.strictEqual(resolver2.resolve('service:foo'), 'from-ts', 'file extension was stripped');
   });
 
-  module('weird scenarios', function () {
+  QUnit.module('weird scenarios', function () {
     test('shorthand class with a falsy or missing `default` falls back to the class itself', function (assert) {
       // `.default` being falsy (undefined / null / 0 / '') means the shorthand
       // value is used directly — matching the "if there's a default use it,
