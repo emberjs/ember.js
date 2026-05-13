@@ -61,28 +61,22 @@ const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
-// In DEBUG + GXT mode, the proxy trap below must NOT fire its assertion when
-// `__gxtTriggerReRender` (compile.ts) does its own `obj[keyName]` probe to
-// pull a fresh value into a cell. We mark a per-call flag via a one-time
-// wrapper installed lazily on the first proxy creation (compile.ts loads
-// after core.ts, so we cannot wrap eagerly).
-let _triggerReRenderWrapped = false;
-function ensureTriggerReRenderWrapped() {
-  if (_triggerReRenderWrapped) return;
-  const g = globalThis as any;
-  const orig = g.__gxtTriggerReRender;
-  if (typeof orig !== 'function') return;
-  _triggerReRenderWrapped = true;
-  g.__gxtTriggerReRender = function (obj: object, keyName: string) {
-    const wasInside = g.__gxtInTriggerReRender;
-    g.__gxtInTriggerReRender = true;
-    try {
-      return orig.call(this, obj, keyName);
-    } finally {
-      g.__gxtInTriggerReRender = wasInside;
-    }
-  };
-}
+// Slice-15 (Cluster B): the pre-slice-15 `ensureTriggerReRenderWrapped`
+// wrap-by-reassignment is DELETED. Its only body — toggling
+// `__gxtInTriggerReRender` around the canonical trigger — is now folded
+// directly into compile.ts's canonical body's try/finally (see slice-15 doc
+// in `gxt-bridge.ts`). Every trigger invocation now sets the flag
+// unconditionally (without needing a wrap), so the DEBUG proxy-trap branch
+// at the call site below no longer needs an installer prelude.
+//
+// The proxy trap branch still reads `__gxtInTriggerReRender` directly at
+// L309-310 below — that reader is unchanged. The flag is now set by:
+//   1. `metal/property_events.ts:96-101` (caller-side, canonical
+//      `notifyPropertyChange` entry — same as pre-slice-15).
+//   2. The canonical `triggerReRender` body in `compile.ts` (slice-15
+//      addition — replaces this file's pre-slice-15 wrap).
+// Both writers use the same `wasInside`/restore pattern, so re-entrant calls
+// remain safe.
 
 const destroyCalled = new Set();
 
@@ -271,7 +265,8 @@ class CoreObject {
 
     let self;
     if (DEBUG && hasUnknownProperty(this)) {
-      ensureTriggerReRenderWrapped();
+      // Slice-15: the pre-slice-15 `ensureTriggerReRenderWrapped()` call was
+      // deleted (its wrap body is folded into compile.ts's canonical trigger).
       let messageFor = (obj: unknown, property: unknown) => {
         return (
           `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +

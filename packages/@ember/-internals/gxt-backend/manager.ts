@@ -3581,33 +3581,25 @@ function _shouldForceRerender(instance: any): boolean {
 const _updatedInstances: any[] = [];
 
 // Set of nested objects mutated during the current sync cycle. Populated by
-// the wrapper installed around __gxtTriggerReRender below. Consulted by
+// the BEFORE-chain host hook registered against compile.ts's
+// `triggerReRender` (see slice-15 contribution below). Consulted by
 // __gxtSyncAllWrappers to detect when an arg value (same object identity)
 // had a property mutated — e.g., set(item, 'value', 3) when `item` is
 // passed as an arg to a component. Without this, no arg cell changes and
 // the consumer's didUpdate never fires.
 let _dirtiedNestedObjectsForHooks: Set<object> = new Set();
 
-// Install a wrapper around __gxtTriggerReRender (defined in compile.ts)
-// that records the mutated object into _dirtiedNestedObjectsForHooks. Done
-// lazily on first call since compile.ts may load after manager.ts.
-let _triggerReRenderWrapped = false;
-function _installTriggerReRenderWrapper() {
-  if (_triggerReRenderWrapped) return;
-  const g = globalThis as any;
-  const orig = g.__gxtTriggerReRender;
-  if (typeof orig !== 'function') return;
-  _triggerReRenderWrapped = true;
-  g.__gxtTriggerReRender = function (obj: object, keyName: string) {
-    try {
-      if (obj && typeof obj === 'object') {
-        _dirtiedNestedObjectsForHooks.add(obj);
-      }
-    } catch {
-      /* ignore */
-    }
-    return orig.call(this, obj, keyName);
-  };
+// Slice-15 (Cluster B): the pre-slice-15 `_installTriggerReRenderWrapper`
+// wrap-by-reassignment is replaced by a registered BEFORE-chain host hook on
+// `compilePipeline.addBeforeTriggerReRender`. The hook closure captures
+// `_dirtiedNestedObjectsForHooks` (manager.ts module-local Set) so relocation
+// would have fragmented the Set's reader site (`_gxtSyncAllWrappersBody`
+// below) — host-hook applies instead. Registration is one-shot and lives for
+// the entire process; no off-fn is captured.
+function _gxtRecordDirtiedNestedObject(obj: object, _keyName: string): void {
+  if (obj && typeof obj === 'object') {
+    _dirtiedNestedObjectsForHooks.add(obj);
+  }
 }
 
 // Slice-12 (Cluster B): relocate the pre-slice-12 compile.ts wrap-by-
@@ -3771,7 +3763,10 @@ function _gxtSyncAllWrappers(): void {
 (globalThis as any).__gxtSyncAllWrappers = _gxtSyncAllWrappers;
 
 function _gxtSyncAllWrappersBody(): void {
-  _installTriggerReRenderWrapper();
+  // Slice-15: pre-slice-15 the wrap was installed lazily on first sync call
+  // (`_installTriggerReRenderWrapper`). The host-hook is now registered once
+  // at module init via `installCompilePipelinePart` at file EOF — see slice-15
+  // contribution block below.
   _updatedInstances.length = 0;
   const hasForced = _forcedRerenderInstances.size > 0;
 
@@ -12784,3 +12779,37 @@ setGxtRenderer({
   // regardless of which side loads first.
   rootComponent: {},
 });
+
+// Slice-15 (Cluster B): register manager.ts's BEFORE-chain host hook against
+// compile.ts's `triggerReRender` (see slice-15 doc on
+// `GxtCompilePipelineCapabilities.triggerReRender`). The hook records every
+// dirtied object into manager.ts's module-local
+// `_dirtiedNestedObjectsForHooks` Set (consulted by
+// `_gxtSyncAllWrappersBody` later in this file). Replaces the pre-slice-15
+// `_installTriggerReRenderWrapper` wrap-by-reassignment installer that
+// reassigned `globalThis.__gxtTriggerReRender` on first sync call.
+//
+// Load-order: compile.ts's `installCompilePipelinePart({addBeforeTriggerReRender,
+// ...})` either ran before `setGxtRenderer` above (buffered in the bridge's
+// pending queue and flushed by `setGxtRenderer`) or runs after (direct
+// `Object.assign` into the now-present `compilePipeline` namespace). Either
+// way, by the time `setGxtRenderer` returns the method is on the bridge if
+// compile.ts is part of the import graph (it always is when gxt-backend is
+// loaded — `setGxtRenderer` and `installCompilePipelinePart` both go through
+// the same singleton bridge). The defensive `?.` chain matches the slice-12 /
+// slice-13 / slice-14 reader pattern.
+//
+// If compile.ts hasn't loaded YET (extremely rare entry where manager.ts
+// loads first and compile.ts is pulled in lazily later), the deferred
+// microtask below re-attempts the registration once compile.ts has finished
+// its module init — same pattern as the pre-slice-15
+// `installTrackedSetDetector` in ember-gxt-wrappers.ts:2837.
+(function _gxtInstallTriggerReRenderHostHooks() {
+  const cp = getGxtRenderer()?.compilePipeline;
+  if (cp && typeof cp.addBeforeTriggerReRender === 'function') {
+    cp.addBeforeTriggerReRender(_gxtRecordDirtiedNestedObject);
+    return;
+  }
+  // Deferred-retry path: compile.ts hasn't published its contribution yet.
+  queueMicrotask(_gxtInstallTriggerReRenderHostHooks);
+})();

@@ -3063,7 +3063,91 @@ let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = []
 // GXT re-render trigger hook - called by Ember's notifyPropertyChange.
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
-(globalThis as any).__gxtTriggerReRender = function (obj: object, keyName: string) {
+//
+// Slice-15 (Cluster B): the canonical body is exposed via the gxt-bridge as
+// `compilePipeline.triggerReRender` (the globalThis writer is RETAINED for
+// dual exposure — see `triggerReRender` doc in `gxt-bridge.ts` for why the
+// save-restore sites at `validator.ts:117` and `manager.ts:11219` keep the
+// global slot). Two host-hook chains let cross-file contributors run code
+// before/after the canonical body without wrap-by-reassignment:
+//   - `_beforeTriggerReRender` — populated by manager.ts (dirtied-objects
+//     Set) and ember-gxt-wrappers.ts (tracked-set-since-rerender flag).
+//   - `_afterTriggerReRender` — populated by glimmer/lib/renderer.ts
+//     (ArrayProxy content-array owner dirtying).
+// Hot-path optimization: the chain dispatch is a `length > 0` fast check
+// so empty chains add zero per-call overhead.
+// Additionally, the `__gxtInTriggerReRender` flag toggle that pre-slice-15
+// lived in core.ts's `ensureTriggerReRenderWrapped` wrap-by-reassignment is
+// folded into the canonical body's try/finally below — replacing core.ts's
+// wrap entirely. The flag is also set by `metal/property_events.ts:96-101`
+// (caller-side) for the canonical notify path; setting it again here is
+// idempotent (the save/restore pattern uses `wasInside` so nested calls are
+// safe).
+type _TriggerReRenderHook = (obj: object, keyName: string) => void;
+const _beforeTriggerReRender: _TriggerReRenderHook[] = [];
+const _afterTriggerReRender: _TriggerReRenderHook[] = [];
+
+function _gxtAddBeforeTriggerReRender(fn: _TriggerReRenderHook): () => void {
+  _beforeTriggerReRender.push(fn);
+  let removed = false;
+  return function off(): void {
+    if (removed) return;
+    removed = true;
+    const idx = _beforeTriggerReRender.indexOf(fn);
+    if (idx >= 0) _beforeTriggerReRender.splice(idx, 1);
+  };
+}
+
+function _gxtAddAfterTriggerReRender(fn: _TriggerReRenderHook): () => void {
+  _afterTriggerReRender.push(fn);
+  let removed = false;
+  return function off(): void {
+    if (removed) return;
+    removed = true;
+    const idx = _afterTriggerReRender.indexOf(fn);
+    if (idx >= 0) _afterTriggerReRender.splice(idx, 1);
+  };
+}
+
+const _gxtTriggerReRender = function (obj: object, keyName: string) {
+  // Slice-15: dispatch the BEFORE-chain (empty-chain check is a
+  // length-zero short-circuit so per-call overhead stays at one cmp + one
+  // branch when nothing is registered).
+  if (_beforeTriggerReRender.length > 0) {
+    for (let i = 0; i < _beforeTriggerReRender.length; i++) {
+      try {
+        _beforeTriggerReRender[i]!(obj, keyName);
+      } catch {
+        /* ignore — host hook must not break canonical body */
+      }
+    }
+  }
+  // Slice-15: fold core.ts's `__gxtInTriggerReRender` around-flag toggle into
+  // the canonical body. Pre-slice-15 this lived in a wrap-by-reassignment at
+  // `@ember/object/core.ts:70` that wrapped the global trigger; subsuming the
+  // toggle here lets us delete that wrap entirely. The save/restore is
+  // re-entrancy-safe (`wasInside` preserves an enclosing toggle if any).
+  const _g_around: any = globalThis as any;
+  const _wasInside = _g_around.__gxtInTriggerReRender;
+  _g_around.__gxtInTriggerReRender = true;
+  try {
+    _gxtTriggerReRenderBody(obj, keyName);
+  } finally {
+    _g_around.__gxtInTriggerReRender = _wasInside;
+    if (_afterTriggerReRender.length > 0) {
+      for (let i = 0; i < _afterTriggerReRender.length; i++) {
+        try {
+          _afterTriggerReRender[i]!(obj, keyName);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }
+};
+(globalThis as any).__gxtTriggerReRender = _gxtTriggerReRender;
+
+const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // Custom modifier manager: notify install-phase watcher if this object is a
   // modifier instance whose installModifier is currently running. Classic Ember
   // captures tags dirtied inside the install track frame and schedules an update.
@@ -14200,6 +14284,21 @@ installCompilePipelinePart({
   resetIntervalBudget: _gxtResetIntervalBudget,
   registerArrayOwner: registerArrayOwner,
   registerObjectValueOwner: registerObjectValueOwner,
+  // Slice-15 (Cluster B): canonical `triggerReRender` + the two chain-aware
+  // host-hook registration methods (`addBeforeTriggerReRender` /
+  // `addAfterTriggerReRender`). The state-registry shape (slice 14) applied to
+  // chains. Pre-slice-15 had FOUR wrap-by-reassignment sites that this slice
+  // eliminates: manager.ts:3595 (dirtied nested objects), renderer.ts:431
+  // (ArrayProxy content owners — AFTER-hook), core.ts:70 (`__gxtInTriggerReRender`
+  // flag toggle — FOLDED into canonical body), ember-gxt-wrappers.ts:2837
+  // (tracked-set-since-rerender flag). The globalThis writer (compile.ts:3066
+  // — see canonical body) is RETAINED for dual exposure because the
+  // save-restore suppression sites at validator.ts:117 and manager.ts:11219
+  // swap the global slot temporarily; pre-slice-15 they observed the wrapped
+  // version. See `triggerReRender` doc in gxt-bridge.ts.
+  triggerReRender: _gxtTriggerReRender,
+  addBeforeTriggerReRender: _gxtAddBeforeTriggerReRender,
+  addAfterTriggerReRender: _gxtAddAfterTriggerReRender,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

@@ -428,18 +428,32 @@ function _registerArrayProxyOwner(proxy: any, ownerObj: object, ownerKey: string
   }
 }
 
-// Wrap __gxtTriggerReRender once to also handle ArrayProxy content arrays.
-let _triggerReRenderPatched = false;
+// Slice-15 (Cluster B): the pre-slice-15 `_ensureTriggerReRenderPatched`
+// wrap-by-reassignment is replaced by a registered AFTER-chain host hook on
+// `compilePipeline.addAfterTriggerReRender` (see slice-15 doc in
+// `gxt-bridge.ts`). The hook closes over `_proxyContentOwners` (renderer.ts
+// module-local WeakMap) so relocation would have fragmented the map's only
+// reader site — host-hook applies, not relocation.
+//
+// Why AFTER-hook: pre-slice-15 the wrap called `origTrigger(obj, keyName)`
+// FIRST and then did the ArrayProxy content-owner cell dirtying. The
+// AFTER-chain in compile.ts's canonical body runs the same sequence:
+// canonical body executes, then registered AFTER hooks run.
+//
+// Lazy install retained: pre-slice-15 the wrap was installed lazily on first
+// proxy registration (`_registerArrayProxyOwner`) so that classic-Ember
+// builds without GXT mode don't take the wrap overhead. The bridge form
+// keeps the lazy pattern — the first proxy registration installs the host
+// hook through the bridge if it's available.
+let _triggerReRenderHostHookInstalled = false;
 function _ensureTriggerReRenderPatched() {
-  if (_triggerReRenderPatched) return;
-  _triggerReRenderPatched = true;
-  const origTrigger = (globalThis as any).__gxtTriggerReRender;
-  if (!origTrigger) return;
+  if (_triggerReRenderHostHookInstalled) return;
+  const cp = getGxtRenderer()?.compilePipeline;
+  if (!cp || typeof cp.addAfterTriggerReRender !== 'function') return;
   const _cellFor = (globalThis as any).__gxtCellFor;
   if (!_cellFor) return;
-  (globalThis as any).__gxtTriggerReRender = function (obj: object, keyName: string) {
-    // Call original first
-    origTrigger(obj, keyName);
+  _triggerReRenderHostHookInstalled = true;
+  cp.addAfterTriggerReRender(function (obj: object, keyName: string) {
     // If this is a '[]' or 'length' notification on a native array that is
     // the content of an ArrayProxy, dirty the component cell with the proxy.
     if ((keyName === '[]' || keyName === 'length') && Array.isArray(obj)) {
@@ -455,7 +469,7 @@ function _ensureTriggerReRenderPatched() {
         }
       }
     }
-  };
+  });
 }
 
 class ClassicRootState {

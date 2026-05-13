@@ -2830,31 +2830,29 @@ Promise.resolve().then(async () => {
   }
 });
 
-// Hook __gxtTriggerReRender so we know when a tracked setter has fired
-// outside a render (indicating imminent rerender that needs fresh validation).
-// Installed lazily via a settable property, chaining any existing wrapper
-// (e.g., the one in @ember/object/core.ts's ensureTriggerReRenderWrapped).
-(function installTrackedSetDetector() {
-  const gg = globalThis as any;
-  // If __gxtTriggerReRender isn't set yet, defer via microtask until it is.
-  if (typeof gg.__gxtTriggerReRender !== 'function') {
-    if (!gg.__gxtTrackedSetDetectorScheduled) {
-      gg.__gxtTrackedSetDetectorScheduled = true;
-      queueMicrotask(() => {
-        gg.__gxtTrackedSetDetectorScheduled = false;
-        installTrackedSetDetector();
-      });
-    }
+// Slice-15 (Cluster B): the pre-slice-15 `installTrackedSetDetector`
+// wrap-by-reassignment is replaced by a registered BEFORE-chain host hook on
+// `compilePipeline.addBeforeTriggerReRender` (see slice-15 doc in
+// `gxt-bridge.ts`). The hook's only effect is setting
+// `globalThis.__gxtTrackedSetSinceRerender = true` — consumed by the
+// UpdatingVM `alwaysRevalidate` flip above. No module-local closure is
+// needed, but registering through the bridge keeps the chain ordering
+// observable and makes the wrap-elimination uniform across all four
+// pre-slice-15 wrap sites (manager.ts, renderer.ts, core.ts, this file).
+//
+// Load-order: same deferred-retry pattern as manager.ts's slice-15
+// registration. If `compilePipeline.addBeforeTriggerReRender` is not yet on
+// the bridge (compile.ts hasn't finished module init), the microtask
+// reschedules the registration.
+(function _gxtInstallTrackedSetDetectorHostHook() {
+  const cp = getGxtRenderer()?.compilePipeline;
+  if (cp && typeof cp.addBeforeTriggerReRender === 'function') {
+    cp.addBeforeTriggerReRender(function (_obj: object, _keyName: string) {
+      // Mark that a tracked set (or equivalent notify) has occurred since the
+      // last VM.execute. The flag is consumed in UpdatingVM.execute above.
+      (globalThis as any).__gxtTrackedSetSinceRerender = true;
+    });
     return;
   }
-  if (gg.__gxtTriggerReRender.__gxtTrackedSetDetectorInstalled) return;
-  const orig = gg.__gxtTriggerReRender;
-  const wrapped = function (this: any, obj: any, keyName: string) {
-    // Mark that a tracked set (or equivalent notify) has occurred since the
-    // last VM.execute. The flag is consumed in UpdatingVM.execute above.
-    gg.__gxtTrackedSetSinceRerender = true;
-    return orig.call(this, obj, keyName);
-  };
-  wrapped.__gxtTrackedSetDetectorInstalled = true;
-  gg.__gxtTriggerReRender = wrapped;
+  queueMicrotask(_gxtInstallTrackedSetDetectorHostHook);
 })();

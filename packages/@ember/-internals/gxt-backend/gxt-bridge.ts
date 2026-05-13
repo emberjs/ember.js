@@ -414,6 +414,36 @@ export interface GxtFormatCapabilities {
  *    confirmed by exhaustive grep), so dual exposure is NOT retained — the
  *    `__dcChangeListeners` / `__dcStringListenerCount` globals are removed
  *    outright.
+ *  - `__gxtTriggerReRender` — MIGRATED IN SLICE 15 to `triggerReRender` on
+ *    this namespace with two chain-aware host hooks:
+ *    `addBeforeTriggerReRender(fn)` / `addAfterTriggerReRender(fn)`. The
+ *    pre-slice-15 implementation had FOUR wrap-by-reassignment sites:
+ *    (1) `manager.ts:3595` `_installTriggerReRenderWrapper` — recorded
+ *    dirtied nested objects into a manager.ts module-local Set
+ *    (`_dirtiedNestedObjectsForHooks`); (2) `glimmer/lib/renderer.ts:431`
+ *    `_ensureTriggerReRenderPatched` — dirtied ArrayProxy content-array
+ *    owners from a renderer.ts module-local WeakMap (`_proxyContentOwners`)
+ *    AFTER the canonical body ran; (3) `@ember/object/core.ts:70`
+ *    `ensureTriggerReRenderWrapped` — toggled `g.__gxtInTriggerReRender`
+ *    around the canonical call; (4) `ember-gxt-wrappers.ts:2837`
+ *    `installTrackedSetDetector` — set `__gxtTrackedSetSinceRerender = true`.
+ *    Slice 15 promotes these to a multi-contributor BEFORE-chain +
+ *    AFTER-chain registered through bridge methods (state-registry shape
+ *    borrowed from slice 14, applied to chains instead of a single set).
+ *    The `__gxtInTriggerReRender` toggle is folded into the canonical body
+ *    itself (replacing core.ts's wrap entirely — its body became a no-op so
+ *    the file is just deleted of the wrap). The `__gxtTriggerReRender`
+ *    globalThis writer is RETAINED because the save-restore suppression
+ *    sites at `validator.ts:117-143` and `manager.ts:11219-11480` swap the
+ *    global slot temporarily; pre-slice-15 those sites observed the wrapped
+ *    version, so dual exposure preserves their semantics.
+ *
+ *    Chain dispatch is hot-path (called from every `notifyPropertyChange`).
+ *    The canonical body iterates the BEFORE-chain (if non-empty) before its
+ *    own body and the AFTER-chain (if non-empty) after; empty-chain check
+ *    is a `length > 0` test (zero per-call overhead when no contributor
+ *    registered). Each registration returns an off-fn for symmetric cleanup,
+ *    matching slice 14's `addDynamicComponentListener` ergonomics.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -657,6 +687,69 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtRegisterObjectValueOwner`.
    */
   registerObjectValueOwner?(value: unknown, ownerObj: object, ownerKey: string): void;
+
+  /**
+   * Dispatch a re-render trigger for `(obj, keyName)`. Called from every
+   * `notifyPropertyChange` (metal/property_events.ts:89) and from many direct
+   * call sites in manager.ts / compile.ts / glimmer-tracking.ts /
+   * tracked.ts. The canonical implementation lives in compile.ts (closure over
+   * `_arrayOwnerMap`, `_objectValueCellMap`, `_pendingIfWatcherNotifications`,
+   * the if-watcher WeakMap, etc. — none of which can be relocated without
+   * fragmenting their many intra-compile.ts reader sites).
+   *
+   * Contract: best-effort, never throws (every cell update / proto walk /
+   * computed-property recompute path is wrapped in try/catch internally).
+   * Hot-path: invoked on every property notification, so the implementation
+   * dispatches the BEFORE-chain and AFTER-chain hooks via `length > 0` fast
+   * checks — empty chains add zero per-call overhead.
+   *
+   * Slice-15 design: replaces the pre-slice-15 globalThis function published
+   * by `compile.ts:3066`. The globalThis writer is RETAINED because the
+   * save-restore suppression sites at `validator.ts:117-143` and
+   * `manager.ts:11219-11480` swap the global slot temporarily to suppress
+   * triggers during specific frames; pre-slice-15 those sites observed the
+   * wrapped version (so any in-flight chains keep firing through the wrap),
+   * and dual exposure preserves their semantics. A future slice can route
+   * the suppression sites through a typed `withTriggerSuppressed(...)`
+   * helper and drop the global.
+   *
+   * Previously: `(globalThis as any).__gxtTriggerReRender`.
+   */
+  triggerReRender?(obj: object, keyName: string): void;
+
+  /**
+   * Register a BEFORE-chain host hook to run BEFORE the canonical
+   * `triggerReRender` body. Returns an off-fn the caller invokes from its
+   * destructor (or never, for module-init contributors that live for the
+   * entire process) to de-register the hook. The off-fn is idempotent.
+   *
+   * Slice-15 contributors (each replacing one pre-slice-15 wrap-by-reassignment
+   * installer):
+   *  - `manager.ts` (was `_installTriggerReRenderWrapper`): adds the mutated
+   *    `obj` to manager.ts's module-local `_dirtiedNestedObjectsForHooks` Set.
+   *  - `ember-gxt-wrappers.ts` (was `installTrackedSetDetector`): sets
+   *    `globalThis.__gxtTrackedSetSinceRerender = true` so the UpdatingVM's
+   *    `alwaysRevalidate` flip fires on the next `execute`.
+   *
+   * Hook errors are caught and ignored (matching the pre-slice-15 wraps'
+   * try/catch behavior).
+   */
+  addBeforeTriggerReRender?(fn: (obj: object, keyName: string) => void): () => void;
+
+  /**
+   * Register an AFTER-chain host hook to run AFTER the canonical
+   * `triggerReRender` body. Returns an off-fn (idempotent).
+   *
+   * Slice-15 contributors:
+   *  - `glimmer/lib/renderer.ts` (was `_ensureTriggerReRenderPatched`): when
+   *    `keyName === '[]' || keyName === 'length'` on an Array that is the
+   *    content of an ArrayProxy, dirties the component cell with the proxy
+   *    value (not the content array). Closes over renderer.ts's module-local
+   *    `_proxyContentOwners` WeakMap.
+   *
+   * Hook errors are caught and ignored.
+   */
+  addAfterTriggerReRender?(fn: (obj: object, keyName: string) => void): () => void;
 }
 
 /**
