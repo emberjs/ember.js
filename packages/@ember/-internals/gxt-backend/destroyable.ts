@@ -24,6 +24,11 @@ import { DEBUG } from '@glimmer/env';
 import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 import { destroyable as gxtDestroyable } from '@lifeart/gxt/glimmer-compatibility';
 import { _getCurrentRunLoop, _backburner } from '@ember/runloop';
+// Slice-24 (Cluster B): intra-package import for the `compilePipeline.isSyncing`
+// bridge predicate (graduated the `__gxtSyncing` canonical state to a
+// module-local boolean in `compile.ts`). The `__gxtSyncing` globalThis
+// fallback at L319 is dropped in slice 24.
+import { getGxtRenderer } from './gxt-bridge';
 
 type Destroyable = object;
 type Destructor<T extends Destroyable> = (destroyable: T) => void;
@@ -310,13 +315,15 @@ function requiresDeferredDestruction<T extends Destroyable>(meta: DestroyableMet
 }
 
 export function destroy(destroyable: Destroyable): void {
-  const g = globalThis as unknown as { __gxtSyncing?: boolean };
   let meta = getDestroyableMeta(destroyable);
   if (_getCurrentRunLoop() !== null || _deferredDestroyMode) {
     // Inside a run loop OR in the canonical Destroyables test suite:
     // use deferred destruction so backburner sequences the flush.
     _destroyDeferred(destroyable);
-  } else if (g.__gxtSyncing) {
+  } else if (getGxtRenderer()?.compilePipeline.isSyncing?.()) {
+    // Slice-24 (Cluster B): route the `__gxtSyncing` read through the bridge
+    // predicate (canonical state graduated to module-local `_gxtSyncingFlag`
+    // in `compile.ts`). Pre-slice-24 read `globalThis.__gxtSyncing` directly.
     // GXT's post-run() DOM sync phase: wrap in join to flush synchronously.
     _backburner.join(() => {
       _destroyDeferred(destroyable);

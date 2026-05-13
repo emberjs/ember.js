@@ -1353,7 +1353,11 @@ function getCachedOrCreateInstance(
   // destroyed-before-syncEnd ordering. Only fire sync-willDestroy for
   // instances that existed BEFORE this sync cycle (they represent the
   // actual each-row rows being torn down).
-  if ((globalThis as any).__gxtSyncing) {
+  // Slice-24 (Cluster B): route the `__gxtSyncing` read through the bridge
+  // predicate (canonical state graduated to module-local `_gxtSyncingFlag`
+  // in `compile.ts`). The `__gxtSyncCycleId` reader is unchanged (separate
+  // flag — slice 24 only graduates `__gxtSyncing`).
+  if (getGxtRenderer()?.compilePipeline.isSyncing?.()) {
     instance.__gxtCreatedInSyncCycle = (globalThis as any).__gxtSyncCycleId || 0;
   }
 
@@ -4199,12 +4203,33 @@ const _POST_RENDER_MAX_REENTRY = 3;
   }
   if (hookProducedChanges && _postRenderHookReentryDepth < _POST_RENDER_MAX_REENTRY) {
     _postRenderHookReentryDepth++;
-    const wasSyncing = g.__gxtSyncing;
     try {
       // Temporarily clear the re-entrancy guard so __gxtSyncDomNow runs.
-      g.__gxtSyncing = false;
+      //
+      // Slice-24 (Cluster B): migrated from inline `wasSyncing = g.__gxtSyncing;
+      // g.__gxtSyncing = false; try { syncNow(); } finally { g.__gxtSyncing =
+      // wasSyncing; }` to the bridge save-restore helper
+      // `compilePipeline.withSyncing(false, fn)`. The bridge helper writes the
+      // module-local `_gxtSyncingFlag` in `compile.ts` (canonical state after
+      // slice 24); the `globalThis.__gxtSyncing` slot is DROPPED in slice 24.
+      // The bridge helper is optional (load-order independence — classic
+      // builds never publish it); if not yet installed we skip the syncNow
+      // attempt entirely (without the GXT pipeline loaded, there is no sync
+      // to flush — same null-safe pattern as `syncNow` itself).
+      const _withSyncing = getGxtRenderer()?.compilePipeline.withSyncing;
       const syncNow = g.__gxtSyncDomNow;
-      if (typeof syncNow === 'function') {
+      if (typeof _withSyncing === 'function' && typeof syncNow === 'function') {
+        _withSyncing(false, () => {
+          try {
+            syncNow();
+          } catch {
+            /* ignore */
+          }
+        });
+      } else if (typeof syncNow === 'function') {
+        // Bridge-unavailable edge: no save-restore wrap (the GXT pipeline
+        // isn't loaded, so there's no `_gxtSyncingFlag` to clear). Call
+        // syncNow directly; it self-guards via its own re-entrancy check.
         try {
           syncNow();
         } catch {
@@ -4212,7 +4237,6 @@ const _POST_RENDER_MAX_REENTRY = 3;
         }
       }
     } finally {
-      g.__gxtSyncing = wasSyncing;
       _postRenderHookReentryDepth--;
     }
   }
@@ -4823,7 +4847,9 @@ function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void
       '[DESTROY-NODES] called with',
       removedNodeList.length,
       'nodes; syncing=',
-      (globalThis as any).__gxtSyncing,
+      // Slice-24 (Cluster B): route through the bridge predicate
+      // (canonical state graduated to module-local `_gxtSyncingFlag`).
+      !!getGxtRenderer()?.compilePipeline.isSyncing?.(),
       'runLoop=',
       typeof (globalThis as any).Ember?.run?._getCurrentRunLoop === 'function'
         ? (globalThis as any).Ember.run._getCurrentRunLoop() !== null

@@ -1056,18 +1056,86 @@ export interface GxtCompilePipelineCapabilities {
    * gate behavior on whether the sync flush is the current frame. Same
    * namespace as slices 15/17/18/19.
    *
-   * The globalThis writer for `__gxtSyncing` is RETAINED post-slice-20
-   * because all six writers remain on globalThis and the five non-proxy-
-   * trap readers (compile.ts:5253/5759/4826, manager.ts:1356/4826,
-   * destroyable.ts:319) continue to read raw globalThis. The bridge
-   * predicate reads the same globalThis slot that the writers write — they
-   * are equivalent post-install.
+   * Slice-24 (Cluster B): the `__gxtSyncing` globalThis writer is DROPPED
+   * — canonical state is now the module-local `_gxtSyncingFlag` in
+   * `compile.ts`. All five non-proxy-trap readers (compile.ts:5253/5759/
+   * 4826, manager.ts:1356/4826, destroyable.ts:319) route through this
+   * bridge predicate exclusively. The proxy-trap reader's `__gxtSyncing`
+   * globalThis fallback (`@ember/object/core.ts:362`) is also dropped in
+   * slice 24. The four intra-file writers (compile.ts L5395/L5842/L5996
+   * straight-line + the manager.ts:4202-4215 post-render-hook save-restore)
+   * all route through the module-local state — the latter via the new
+   * `withSyncing(value, fn)` bridge helper below.
    *
-   * Fast-check: the implementation is `return (globalThis as any)
-   * .__gxtSyncing === true` — one boolean compare; zero allocations.
+   * Fast-check: the implementation reads the module-local
+   * `_gxtSyncingFlag` boolean — one boolean read; zero allocations.
    * Matches slice-18's `isInTriggerReRender()` body shape.
    */
   isSyncing?(): boolean;
+
+  /**
+   * Run `fn` while the `__gxtSyncing` boolean flag is set to `value`
+   * (save the prior value, set the flag, invoke `fn`, then restore the
+   * prior value via `try/finally`). Returns whatever `fn` returns.
+   * Re-entrancy-safe: an enclosing frame's value is preserved by the
+   * save-restore pattern (nested calls stack correctly).
+   *
+   * Slice-24 (Cluster B): graduates the cross-package writer at
+   * `manager.ts:4202-4215` (`_dispatchPostRenderHook` post-render-hook
+   * re-entry save-restore) to a typed bridge helper. Pre-slice-24 the
+   * site inlined `wasSyncing = g.__gxtSyncing; g.__gxtSyncing = false;
+   * try { syncNow(); } finally { g.__gxtSyncing = wasSyncing; }` to
+   * temporarily clear the re-entrancy guard so the nested
+   * `__gxtSyncDomNow` call proceeds (its body then promotes the flag
+   * back to `true` for its own execution, and resets to `false` in its
+   * own `finally`). The bridge helper folds the inline save-restore
+   * into one documented surface; the `value` argument controls the
+   * flag's value DURING the body (FALSE here for the manager.ts caller).
+   *
+   * Bridge shape decision: TWO-ARGUMENT save-restore wrapper
+   * `withSyncing<T>(value: boolean, fn: () => T): T` — a generalisation
+   * of slice-17's `withTriggerSuppressed` (set-to-FALSE-for-body) and
+   * slice-18's `withInTriggerReRender` (set-to-TRUE-for-body). Taking
+   * the value as an argument lets the same helper serve BOTH the "set
+   * TRUE for a sync flush body" caller (compile.ts `__gxtSyncDomNow` —
+   * which uses module-local `_gxtSetSyncing` directly because its
+   * try/finally already pairs the set/reset and no nested caller writes
+   * the flag to a different value mid-body) AND the "set FALSE to
+   * bypass the re-entrancy guard" caller (manager.ts:4202-4215). Note:
+   * this is the FIRST Cluster B bridge helper that takes a non-`fn`
+   * argument — prior `with*` helpers always set the same direction.
+   *
+   * Writer audit (pre-slice-24):
+   *  - Intra-file `__gxtSyncDomNow` body (compile.ts L5395 set-TRUE / L5842
+   *    set-FALSE in `finally`) — RETAINED as straight-line module-local
+   *    `_gxtSetSyncing(true/false)` calls (the body's try/finally already
+   *    provides cleanup pairing; matches slice-22's intra-file direct-
+   *    call decision).
+   *  - Intra-file `__gxtCleanupActiveComponents` cleanup (compile.ts L5996
+   *    set-FALSE) — RETAINED as straight-line `_gxtSetSyncing(false)`.
+   *  - Cross-package `manager.ts:4202-4215` post-render-hook re-entry —
+   *    MIGRATED in slice 24 to `withSyncing(false, fn)`.
+   *
+   * Reader contract: the flag is consumed by `isSyncing()` (above) —
+   * all six readers route through that predicate exclusively after
+   * slice 24, including the `@ember/object/core.ts:362` proxy trap
+   * which drops its globalThis fallback in this slice.
+   *
+   * Namespace decision: `compilePipeline`. Same namespace as slices
+   * 15/17/18/19/20/21/22/23. The flag's canonical state lives in
+   * `compile.ts` (the pipeline's home file).
+   *
+   * Bridge interface evolution: slice 24 — eighteenth API change.
+   * `GxtCompilePipelineCapabilities` extended with ONE new optional
+   * method (`withSyncing`). No new install API.
+   *
+   * After slice 24 the `__gxtSyncing` globalThis slot is DROPPED: the
+   * canonical state is the module-local `_gxtSyncingFlag` in
+   * `compile.ts`, the bridge methods are the sole cross-package surface,
+   * and the intra-file writers use the module-local setter directly.
+   * Net globalThis surface delta: -1 slot (`__gxtSyncing`).
+   */
+  withSyncing?<T>(value: boolean, fn: () => T): T;
 
   /**
    * Run `fn` while the `__gxtCurrentlyRendering` boolean flag is set to

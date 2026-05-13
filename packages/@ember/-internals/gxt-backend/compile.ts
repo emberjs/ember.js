@@ -3272,16 +3272,50 @@ function _gxtWithCurrentlyRendering<T>(fn: () => T): T {
 // trap through the bridge as a unit, closing the deferrals from slices 18
 // and 19.
 //
-// All six writers of `__gxtSyncing` remain on globalThis (4 in this file:
-// 5270/5717/5871 + the re-entrancy-guard read pair at 5253/5759 that
-// short-circuits when the flag is true; 2 in manager.ts:4202-4215 save-
-// restore). The other 5 readers (compile.ts:5253/5759/4826, manager.ts:
-// 1356/4826, destroyable.ts:319) remain on globalThis — they are intra-
-// file or intra-manager and not in the proxy-trap 3-flag group. See
-// `isSyncing` doc in gxt-bridge.ts. Hot path: one boolean compare, zero
-// allocations.
+// Slice-24 (Cluster B): graduates the canonical state to a module-local
+// boolean (`_gxtSyncingFlag`) and DROPS the `globalThis.__gxtSyncing` slot
+// entirely. All four intra-file writers (sync body set-true at L5395, body
+// reset-false at L5842, cleanup reset at L5996, plus the manager.ts post-
+// render-hook re-entry save-restore at L4202-4215) now route through the
+// module-local state. The five non-proxy-trap readers (compile.ts:5253/
+// 5759/4826, manager.ts:1356/4826, destroyable.ts:319) all route through
+// the bridge predicate `compilePipeline.isSyncing()` exclusively. The
+// proxy-trap reader's `__gxtSyncing` globalThis fallback at
+// `@ember/object/core.ts:362` is DROPPED. The cross-package writer at
+// `manager.ts:4202-4215` is migrated to the bridge save-restore helper
+// `compilePipeline.withSyncing(false, fn)` (the FALSE-for-body variant —
+// it temporarily clears the flag so the nested `__gxtSyncDomNow` call
+// bypasses the re-entrancy guard, then promotes the flag to TRUE for its
+// own body via this same helper). Net globalThis surface delta: -1 slot
+// (`__gxtSyncing`). Mirrors slice-22/23's pattern.
+let _gxtSyncingFlag = false;
 function _gxtIsSyncing(): boolean {
-  return (globalThis as any).__gxtSyncing === true;
+  return _gxtSyncingFlag;
+}
+function _gxtSetSyncing(on: boolean): void {
+  _gxtSyncingFlag = on;
+}
+// Slice-24 (Cluster B): save-restore wrapper for the `__gxtSyncing` flag
+// taking the new flag value as an argument. Paralleling slice-18's
+// `_gxtWithInTriggerReRender` (which is the set-TRUE-for-body variant)
+// AND slice-17's `_gxtWithTriggerSuppressed` (which is the set-to-
+// FALSE/null variant) under one helper. The compile.ts `__gxtSyncDomNow`
+// body uses straight-line set-true/set-false rather than this wrapper
+// (the body's try/finally already provides cleanup pairing; no nested
+// caller writes `__gxtSyncing` to a different value mid-body), matching
+// slice-22's intra-file direct-call decision for `_gxtSetCurrentlyRendering`.
+// The cross-package `manager.ts:4202-4215` post-render-hook re-entry
+// site uses this helper via the bridge with `value=false` to temporarily
+// clear the flag so the nested `__gxtSyncDomNow` invocation bypasses the
+// re-entrancy guard.
+function _gxtWithSyncing<T>(value: boolean, fn: () => T): T {
+  const wasSyncing = _gxtSyncingFlag;
+  _gxtSyncingFlag = value;
+  try {
+    return fn();
+  } finally {
+    _gxtSyncingFlag = wasSyncing;
+  }
 }
 
 const _gxtTriggerReRender = function (obj: object, keyName: string) {
@@ -4948,7 +4982,10 @@ function patchGlobalEachSync() {
       inverseFn = function wrappedInverseFn(ctx0: any) {
         try {
           const currentCycle = g.__gxtSyncCycleId || 0;
-          const isSyncing = !!g.__gxtSyncing;
+          // Slice-24 (Cluster B): read the module-local `_gxtSyncingFlag` via
+          // the module-private accessor (canonical state graduated from
+          // `globalThis.__gxtSyncing` in slice 24).
+          const isSyncing = _gxtIsSyncing();
           const alreadyFired =
             capturedParent &&
             (capturedParent as any).__gxtInverseDestroyFiredCycle === currentCycle;
@@ -5374,8 +5411,10 @@ function _resetTemplateOnlyState() {
 // Called after runTask() completes so test assertions see updated DOM.
 (globalThis as any).__gxtSyncDomNow = function () {
   // Re-entrancy guard: prevent infinite sync loops when force-rerender
-  // triggers cell updates that schedule additional syncs
-  if ((globalThis as any).__gxtSyncing) return;
+  // triggers cell updates that schedule additional syncs.
+  // Slice-24 (Cluster B): reads module-local `_gxtSyncingFlag` (graduated
+  // from `globalThis.__gxtSyncing` in slice 24).
+  if (_gxtIsSyncing()) return;
   if ((globalThis as any).__gxtPendingSync) {
     (globalThis as any).__gxtPendingSync = false;
     // Only signal "had pending sync" to the force-rerender if an actual property
@@ -5392,7 +5431,10 @@ function _resetTemplateOnlyState() {
     (globalThis as any).__gxtSyncIsPropertyDriven = !!(globalThis as any)
       .__gxtPendingSyncFromPropertyChange;
     (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
-    (globalThis as any).__gxtSyncing = true;
+    // Slice-24 (Cluster B): set module-local `_gxtSyncingFlag` (graduated
+    // from `globalThis.__gxtSyncing`). The matching `false` reset lives in
+    // the `finally` below, mirroring the pre-slice-24 globalThis pair.
+    _gxtSetSyncing(true);
     // Increment sync cycle ID so modifier update dedup works correctly.
     (globalThis as any).__gxtSyncCycleId = ((globalThis as any).__gxtSyncCycleId || 0) + 1;
     // Clear modifier update tracking for this new sync cycle
@@ -5839,7 +5881,9 @@ function _resetTemplateOnlyState() {
       // CRITICAL: Always reset __gxtSyncing even if an error escapes.
       // Without this, the flag stays true forever and __gxtSyncDomNow
       // becomes a permanent no-op, causing all subsequent tests to fail.
-      (globalThis as any).__gxtSyncing = false;
+      // Slice-24 (Cluster B): write to module-local `_gxtSyncingFlag`
+      // (graduated from `globalThis.__gxtSyncing`).
+      _gxtSetSyncing(false);
       // Also reset the property-driven mirror flag so a subsequent
       // initial-render sync starts in a clean state.
       (globalThis as any).__gxtSyncIsPropertyDriven = false;
@@ -5880,8 +5924,9 @@ setInterval(() => {
   if ((globalThis as any).__gxtPendingSync) {
     // Don't fire during test transitions
     if ((globalThis as any).__gxtTestTransition) return;
-    // Don't fire if a sync is already in progress (stuck flag)
-    if ((globalThis as any).__gxtSyncing) return;
+    // Don't fire if a sync is already in progress (stuck flag).
+    // Slice-24 (Cluster B): reads module-local `_gxtSyncingFlag`.
+    if (_gxtIsSyncing()) return;
     // Enforce budget to prevent interval-driven infinite loops
     if (_intervalSyncBudget <= 0) return;
     _intervalSyncBudget--;
@@ -5993,7 +6038,10 @@ setInterval(() => {
   (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
   (globalThis as any).__gxtHadPendingSync = false;
   (globalThis as any).__gxtHadNestedObjectChange = false;
-  (globalThis as any).__gxtSyncing = false;
+  // Slice-24 (Cluster B): reset module-local `_gxtSyncingFlag` (graduated
+  // from `globalThis.__gxtSyncing`). Mirrors slice-22's
+  // `__gxtCurrentlyRendering` cleanup pattern in this same body.
+  _gxtSetSyncing(false);
   // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed —
   // flag had no readers anywhere.
   // Reset global rendering state
@@ -14575,10 +14623,28 @@ installCompilePipelinePart({
   // `@ember/object/core.ts:324` DEBUG proxy-trap reader route through the
   // bridge alongside `isRendering()` (slice 19) and `isInTriggerReRender()`
   // (slice 18) — closing slice 18's and slice 19's deferrals as a unit.
-  // The globalThis writer is RETAINED post-slice-20 (the five non-proxy-
-  // trap readers continue to read raw globalThis; the writers all remain
-  // intra-file/intra-manager). See `isSyncing` doc in gxt-bridge.ts.
+  //
+  // Slice-24 (Cluster B): the `__gxtSyncing` globalThis writer is DROPPED
+  // — canonical state is now the module-local `_gxtSyncingFlag` in this
+  // file. All five non-proxy-trap readers (compile.ts:5253/5759/4826,
+  // manager.ts:1356/4826, destroyable.ts:319) route through this bridge
+  // predicate. The proxy-trap reader's `__gxtSyncing` globalThis fallback
+  // (`@ember/object/core.ts:362`) is dropped in the same slice. The
+  // manager.ts:4202-4215 post-render-hook save-restore writer routes
+  // through `withSyncing(false, fn)` below. See `isSyncing` /
+  // `withSyncing` docs in gxt-bridge.ts.
   isSyncing: _gxtIsSyncing,
+  // Slice-24 (Cluster B): save-restore wrapper for the `__gxtSyncing`
+  // flag. Takes the new value as an argument (TRUE for "promote a body
+  // into sync flush" semantics, FALSE for "temporarily clear the re-
+  // entrancy guard" semantics). The cross-package writer at
+  // `manager.ts:4202-4215` post-render-hook re-entry calls this with
+  // `value=false` to bypass the re-entrancy guard on the nested
+  // `__gxtSyncDomNow` invocation; the intra-file `__gxtSyncDomNow` body
+  // continues to use straight-line `_gxtSetSyncing(true/false)` because
+  // the body's try/finally already provides cleanup pairing. See
+  // `withSyncing` doc in gxt-bridge.ts.
+  withSyncing: _gxtWithSyncing,
   // Slice-22 (Cluster B): graduates the `__gxtCurrentlyRendering` boolean
   // flag (DIFFERENT from `__gxtIsRendering` — see slice 21's depth-counter
   // flag) to two new bridge methods: `withCurrentlyRendering(fn): T`

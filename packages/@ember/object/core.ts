@@ -38,9 +38,11 @@ import { OWNER } from '@glimmer/owner';
 // Slice-21 dropped the `__gxtIsRendering` globalThis fallback (its writer
 // was removed in the same slice). Slice-23 dropped the
 // `__gxtInTriggerReRender` globalThis fallback (its writer was removed in
-// slice 23). The `__gxtSyncing` fallback branch remains live pending its
-// own writer-drop slice. See `isSyncing` / `isRendering` /
-// `isInTriggerReRender` docs in gxt-bridge.ts.
+// slice 23). Slice-24 dropped the `__gxtSyncing` globalThis fallback
+// (its writer was removed in slice 24). With slice 24, ALL THREE GXT
+// state-flag reads in the proxy-trap predicate go through the bridge
+// exclusively — no globalThis fallbacks remain. See `isSyncing` /
+// `isRendering` / `isInTriggerReRender` docs in gxt-bridge.ts.
 import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 type EmberClassConstructor<T> = new (owner?: Owner) => T;
@@ -365,17 +367,22 @@ class CoreObject {
           // predicate is the canonical source after slice 23 (the
           // `__gxtInTriggerReRender` globalThis writer is removed in the
           // same slice). Default to `false` when the bridge is unavailable,
-          // same rationale as slice 21. The `__gxtSyncing` fallback branch
-          // is RETAINED — its globalThis writer remains live (see slice 20
-          // deferral).
-          const _g = globalThis as any;
+          // same rationale as slice 21.
+          //
+          // Slice-24 (Cluster B): drop the `__gxtSyncing` globalThis fallback
+          // branch — the bridge `isSyncing()` predicate is the canonical
+          // source after slice 24 (the `__gxtSyncing` globalThis writer is
+          // removed in the same slice). Default to `false` when the bridge
+          // is unavailable, same rationale as slices 21/23. Closes the
+          // slice-20 deferral. With this change, ALL THREE GXT state-flag
+          // reads in the proxy-trap predicate go through the bridge
+          // exclusively — no globalThis fallbacks remain.
           const _pipeline = getGxtRenderer()?.compilePipeline;
           const _isRen = _pipeline?.isRendering;
           const _isSyn = _pipeline?.isSyncing;
           const _isInTrig = _pipeline?.isInTriggerReRender;
           const _renderingNow = typeof _isRen === 'function' ? _isRen() : false;
-          const _syncingNow =
-            typeof _isSyn === 'function' ? _isSyn() : _g.__gxtSyncing === true;
+          const _syncingNow = typeof _isSyn === 'function' ? _isSyn() : false;
           const _inTriggerNow = typeof _isInTrig === 'function' ? _isInTrig() : false;
           const _isInternalPath =
             _renderingNow ||
