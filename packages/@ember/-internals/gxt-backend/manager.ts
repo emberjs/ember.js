@@ -526,8 +526,14 @@ if (typeof _gxtSetComponentRenderErrorReporter === 'function') {
             const rt = this && this.__gxtRecomputeTagRef;
             if (rt) {
               rt.value = ((rt.value as number) || 0) + 1;
-              const trig = (globalThis as any).__gxtTriggerReRender;
-              if (typeof trig === 'function') trig(rt, 'value');
+              // Slice-26 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+              // raw-globalThis read to `compilePipeline.triggerReRender(rt, 'value')`
+              // bridge method. Mirrors slice-25/26 cross-package reader migrations.
+              // The bridge method is optional; when not installed the call is
+              // skipped, matching the pre-slice-26 `typeof === 'function'` guard.
+              // Suppression semantics preserved by the module-local
+              // `_gxtTriggerSuppressedFlag` short-circuit in compile.ts.
+              getGxtRenderer()?.compilePipeline.triggerReRender?.(rt, 'value');
             }
           } catch {
             /* ignore */
@@ -541,8 +547,14 @@ if (typeof _gxtSetComponentRenderErrorReporter === 'function') {
             // tracked revision changes. The setter installed by cellFor
             // updates the underlying GXT cell, which notifies dependents.
             rt.value = ((rt.value as number) || 0) + 1;
-            const trig = (globalThis as any).__gxtTriggerReRender;
-            if (typeof trig === 'function') trig(rt, 'value');
+            // Slice-26 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+            // raw-globalThis read to `compilePipeline.triggerReRender(rt, 'value')`
+            // bridge method. Mirrors slice-25/26 cross-package reader migrations.
+            // The bridge method is optional; when not installed the call is
+            // skipped, matching the pre-slice-26 `typeof === 'function'` guard.
+            // Suppression semantics preserved by the module-local
+            // `_gxtTriggerSuppressedFlag` short-circuit in compile.ts.
+            getGxtRenderer()?.compilePipeline.triggerReRender?.(rt, 'value');
           }
           // Also invalidate the $_maybeHelper cache in ember-gxt-wrappers.ts
           // (classHelperInstanceCache) so the next render pass re-runs
@@ -2051,7 +2063,15 @@ function createComponentInstance(
     instance.__gxtArgKeyToCpDesc = argKeyToCpDesc;
 
     // Override PROPERTY_DID_CHANGE on the instance.
-    const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+    // Slice-26 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+    // raw-globalThis read to `compilePipeline.triggerReRender` bridge method.
+    // Capture-once at PROPERTY_DID_CHANGE override setup (matching the pre-
+    // slice-26 capture shape). The bridge method is optional; when not
+    // installed `triggerReRender` is `undefined`, matching the pre-slice-26
+    // behavior (the truthy guards on the call sites already skip undefined).
+    // Suppression semantics preserved by the module-local
+    // `_gxtTriggerSuppressedFlag` short-circuit in compile.ts.
+    const triggerReRender = getGxtRenderer()?.compilePipeline.triggerReRender;
     const origPDC = instance[PROPERTY_DID_CHANGE]?.bind(instance);
     instance[PROPERTY_DID_CHANGE] = function (key: string, value?: unknown) {
       // Skip if instance is destroyed or destroying (prevents "set on destroyed object")
@@ -2606,10 +2626,17 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         }
         lastArgValues[key] = newValue;
         // Notify Ember's computed property system that this property changed.
-        // This triggers __gxtTriggerReRender which recomputes @computed
-        // dependent keys (e.g., @computed('location') get componentName()).
+        // This triggers triggerReRender which recomputes @computed dependent
+        // keys (e.g., @computed('location') get componentName()).
         // Without this, computed properties that depend on args never invalidate.
-        const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+        //
+        // Slice-26 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+        // raw-globalThis read to `compilePipeline.triggerReRender(instance, key)`
+        // bridge method. The bridge method is optional; when not installed
+        // (`triggerReRender === undefined`) the call is skipped, matching the
+        // pre-slice-26 truthy guard. Suppression semantics preserved by the
+        // module-local `_gxtTriggerSuppressedFlag` short-circuit in compile.ts.
+        const triggerReRender = getGxtRenderer()?.compilePipeline.triggerReRender;
         if (triggerReRender) {
           try {
             triggerReRender(instance, key);

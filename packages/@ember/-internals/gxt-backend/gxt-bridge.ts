@@ -730,11 +730,24 @@ export interface GxtCompilePipelineCapabilities {
    * compile.ts that `_gxtWithTriggerSuppressed` sets in parallel with the
    * pre-slice-17 globalThis-clear — the flag is checked at the entry of
    * `_gxtTriggerReRender` so bridge readers observe the same no-op during a
-   * `withTriggerSuppressed(fn)` frame. The globalThis writer is RETAINED
-   * because the remaining cross-package readers (manager.ts five sites,
-   * compile.ts three sites, validator.ts one site, property_events.ts one
-   * site) still consume the function via globalThis. The writer drop is a
-   * future slice once all readers are migrated.
+   * `withTriggerSuppressed(fn)` frame.
+   *
+   * Slice-26 (Cluster B): second sub-slice of the reader-migration campaign
+   * — five more READERS migrated to `compilePipeline.triggerReRender(...)`:
+   *  - `metal/property_events.ts:103` — `notifyPropertyChange` GXT
+   *    integration trigger (third cross-package reader; mirrors slice 25).
+   *  - `manager.ts:529` — patched `recompute()` error-path bump trigger.
+   *  - `manager.ts:544` — patched `recompute()` happy-path bump trigger.
+   *  - `manager.ts:2054` — PROPERTY_DID_CHANGE override capture-once
+   *    (now captures `compilePipeline.triggerReRender`; four call sites
+   *    inside the closure body invoke the captured value through truthy
+   *    guards).
+   *  - `manager.ts:2612` — args dispatch CP-dependent-key reread trigger.
+   * The globalThis writer is RETAINED because the remaining cross-package
+   * readers (manager.ts:5487, compile.ts three sites at 6413/6472/6684,
+   * validator.ts:161 save-restore) still consume the function via
+   * globalThis. The writer drop is a future slice once all readers are
+   * migrated.
    *
    * Previously: `(globalThis as any).__gxtTriggerReRender`.
    */
@@ -805,11 +818,11 @@ export interface GxtCompilePipelineCapabilities {
    * No new globalThis slot.
    *
    * The `__gxtTriggerReRender` globalThis writer at `compile.ts:3148` is
-   * RETAINED post-slice-25 because the remaining cross-package readers
-   * (manager.ts five sites, compile.ts three sites, validator.ts one site,
-   * property_events.ts one site) still consume the function via globalThis.
-   * Removing the globalThis writer is a future-slice migration that depends
-   * on those readers also being migrated to the bridge.
+   * RETAINED post-slice-26 because the remaining cross-package readers
+   * (manager.ts:5487, compile.ts three sites at 6413/6472/6684, validator.ts:161
+   * save-restore) still consume the function via globalThis. Removing the
+   * globalThis writer is a future-slice migration that depends on those
+   * readers also being migrated to the bridge.
    */
   withTriggerSuppressed?<T>(fn: () => T): T;
 

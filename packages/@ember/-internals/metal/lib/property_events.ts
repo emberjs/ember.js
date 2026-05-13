@@ -100,33 +100,44 @@ function notifyPropertyChange(
     // computed-property getters whose cache revision hasn't been set yet (e.g. PromiseProxy).
     // Still fire for prototype meta objects so GXT stays in sync.
     if (meta === null || !meta.isInitializing()) {
-      const gxtTrigger = (globalThis as any).__gxtTriggerReRender;
-      if (typeof gxtTrigger === 'function') {
+      // Slice-26 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+      // raw-globalThis read to `compilePipeline.triggerReRender(obj, keyName)`
+      // bridge method (third cross-package reader migrated; mirrors slice 25's
+      // metal/tracked.ts and glimmer-tracking.ts shape). The bridge method is
+      // optional (load-order independence — classic builds never publish it);
+      // when not installed (`_cp?.triggerReRender === undefined`) the call is
+      // skipped, matching the pre-slice-26 `typeof === 'function'` guard.
+      // Suppression semantics (the `withTriggerSuppressed(fn)` frame) are
+      // preserved by the module-local `_gxtTriggerSuppressedFlag` short-circuit
+      // at the entry of `_gxtTriggerReRender` in compile.ts. See `triggerReRender`
+      // doc in `@ember/-internals/gxt-backend/gxt-bridge`.
+      const _cp = getGxtRenderer()?.compilePipeline;
+      const _triggerReRender = _cp?.triggerReRender;
+      if (typeof _triggerReRender === 'function') {
         // Mark the trigger scope so CP.get can preserve classic "don't eagerly
         // evaluate never-consumed CPs during a change notification" semantics.
         // (core.ts's lazy wrapper is only installed for proxied CoreObjects,
         // which misses plain `class Foo { @computed ... }` cases.)
         //
         // Slice-18 (Cluster B): the `__gxtInTriggerReRender` save-restore
-        // toggle that wraps the `gxtTrigger(obj, keyName)` call is routed
-        // through the typed `compilePipeline.withInTriggerReRender(fn)`
-        // bridge helper.
+        // toggle that wraps the trigger call is routed through the typed
+        // `compilePipeline.withInTriggerReRender(fn)` bridge helper.
         //
         // Slice-23 (Cluster B): the inline globalThis save-restore fallback
         // is DROPPED — the bridge is the sole writer surface. If the bridge
         // is unavailable (module-init window only — unreachable from any
-        // known `notifyPropertyChange` entry point), call `gxtTrigger`
+        // known `notifyPropertyChange` entry point), call the trigger
         // directly; the canonical body's internal `_gxtWithInTriggerReRender`
         // wrap still sets the flag for the body's duration, which is what
         // the CP.get re-entrance guard cares about. See `withInTriggerReRender`
         // doc in gxt-bridge.ts.
-        const _withIn = getGxtRenderer()?.compilePipeline.withInTriggerReRender;
+        const _withIn = _cp?.withInTriggerReRender;
         if (_withIn) {
           _withIn(() => {
-            gxtTrigger(obj, keyName);
+            _triggerReRender(obj, keyName);
           });
         } else {
-          gxtTrigger(obj, keyName);
+          _triggerReRender(obj, keyName);
         }
       }
     }
