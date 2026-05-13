@@ -145,9 +145,71 @@ export interface GxtBacktrackingCapabilities {
 }
 
 /**
+ * View utilities and parent-view stack management. Implemented by manager.ts
+ * (parent-view stack lives there) and ember-source's view-registry weakmaps,
+ * consumed by compile.ts (intra-package) plus glimmer/lib/templates/outlet.ts
+ * (cross-package — outlet rendering needs to push the enclosing classic-
+ * component wrapper view on the parentView stack so nested components inherit
+ * the correct parentView).
+ *
+ * Push/pop are paired in `try/finally` — every push during a render must have
+ * a matching pop. Missing a pop leaves a stale top-of-stack which corrupts
+ * subsequent renders.
+ *
+ * NOT included in this slice (intentionally deferred — same constraints as
+ * slice 2's `__gxtCheckBacktracking` exclusion):
+ *  - `__gxtRebuildViewTreeFromDom` (manager.ts) — compile.ts's
+ *    `_wrapGxtRebuildViewTree` patches the function by REASSIGNING
+ *    globalThis.__gxtRebuildViewTreeFromDom (with retry-interval install
+ *    handling). The bridge's single-install setGxtRenderer pattern does not
+ *    support that mutation model without redesign. Cross-package readers in
+ *    views/lib/system/utils.ts (getRootViews/getChildViews) continue to read
+ *    via globalThis until a future slice resolves the wrap-by-reassignment
+ *    pattern (likely by relocating the rebuild-wrap inside manager.ts).
+ *  - `__gxtSuppressDirtyTagForDuringRebuild` (manager.ts) — a boolean state
+ *    flag whose reads/writes are entirely intra-file (manager.ts). The
+ *    bridge is method-call shaped; state-flag semantics is a separate
+ *    pattern. The flag could become a module-local `let` independently of
+ *    the bridge migration.
+ */
+export interface GxtViewUtilsCapabilities {
+  /**
+   * Push a view onto the parent-view stack. Child components created during
+   * the next render(s) read the top of this stack as their `parentView`.
+   *
+   * Previously: `(globalThis as any).__gxtPushParentView`.
+   */
+  pushParentView(view: object): void;
+
+  /**
+   * Pop the top entry from the parent-view stack. Always called in a
+   * `finally` block paired with `pushParentView`.
+   *
+   * Previously: `(globalThis as any).__gxtPopParentView`.
+   */
+  popParentView(): void;
+
+  /**
+   * Look up the view associated with a DOM element via the ember-source
+   * ELEMENT_VIEW weakmap. Returns null when no view is associated.
+   *
+   * Previously: `(globalThis as any).__gxtViewUtilsRef.getElementView`.
+   */
+  getElementView(element: Element): object | null;
+
+  /**
+   * Look up the DOM element associated with a view via the ember-source
+   * VIEW_ELEMENT weakmap. Returns null when no element is associated.
+   *
+   * Previously: `(globalThis as any).__gxtViewUtilsRef.getViewElement`.
+   */
+  getViewElement(view: object): Element | null;
+}
+
+/**
  * The aggregate GXT renderer capabilities object. Pilot exposed only the
- * destruction slice; this iteration adds the backtracking slice. Future
- * slices will be additional optional properties on this same interface
+ * destruction slice; subsequent slices added backtracking and view-utils.
+ * Future slices will be additional optional properties on this same interface
  * (e.g. `schedule`, `lifecycle`, `cellMirror`, …).
  *
  * Why a single object rather than 30 individual exports? Easier to extend
@@ -157,6 +219,7 @@ export interface GxtBacktrackingCapabilities {
 export interface GxtRenderer {
   readonly destruction: GxtDestructionCapabilities;
   readonly backtracking: GxtBacktrackingCapabilities;
+  readonly viewUtils: GxtViewUtilsCapabilities;
 }
 
 let _renderer: GxtRenderer | null = null;

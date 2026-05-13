@@ -5,6 +5,14 @@
  * which creates this custom element. The element then renders the nested route template
  * by reading from the outlet state stored in globalThis.__currentOutletState.
  */
+// (Cluster B slice 3) — typed bridge access for the GXT view-utils namespace
+// (parent-view stack + view ↔ element WeakMap lookups). In classic builds
+// `getGxtRenderer()` returns null and every reader's optional chain DCEs to a
+// no-op; in GXT mode manager.ts installs the capabilities at module init.
+// The bridge module is a leaf with no side effects, so the import is safe to
+// pull from a non-gxt-backend package even under classic rollup.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+
 class EmberOutletElement extends HTMLElement {
   private _rendered = false;
   private _outletState: any = null;
@@ -225,12 +233,13 @@ class EmberOutletElement extends HTMLElement {
     // the old route's component is destroyed.
     let _parentViewPushed = false;
     try {
-      const viewUtils = (globalThis as any).__gxtViewUtilsRef;
-      const pushParentFn = (globalThis as any).__gxtPushParentView;
-      if (pushParentFn && viewUtils?.getElementView) {
+      // (Cluster B slice 3) — typed bridge call. Was __gxtViewUtilsRef +
+      // __gxtPushParentView.
+      const viewUtils = getGxtRenderer()?.viewUtils;
+      if (viewUtils) {
         const directParent = this.parentElement;
         if (directParent) {
-          const v = viewUtils.getElementView(directParent);
+          const v = viewUtils.getElementView(directParent) as any;
           if (v && !v.isDestroyed && !v.isDestroying) {
             // Only push if the owner of this view matches the owner of the
             // render we are about to do. If owners match, the wrapper is in
@@ -240,7 +249,7 @@ class EmberOutletElement extends HTMLElement {
             const renderOwner = nestedOutlet?.render?.owner;
             const viewOwner = (v as any)[Symbol.for('OWNER')] || (v as any).__owner;
             if (!renderOwner || !viewOwner || renderOwner === viewOwner) {
-              pushParentFn(v);
+              viewUtils.pushParentView(v);
               _parentViewPushed = true;
             }
           }
@@ -282,8 +291,8 @@ class EmberOutletElement extends HTMLElement {
       (globalThis as any).__currentOutletState = previousOutletState;
       if (_parentViewPushed) {
         try {
-          const popParentFn = (globalThis as any).__gxtPopParentView;
-          if (popParentFn) popParentFn();
+          // (Cluster B slice 3) — typed bridge call. Was __gxtPopParentView.
+          getGxtRenderer()?.viewUtils.popParentView();
         } catch {
           /* ignore */
         }
@@ -365,9 +374,10 @@ export default function createOutletTemplate(_owner: any) {
     // don't show up as root views).
     let _factoryParentPushed = false;
     try {
-      const viewUtils = (globalThis as any).__gxtViewUtilsRef;
-      const pushParentFn = (globalThis as any).__gxtPushParentView;
-      if (pushParentFn && viewUtils?.getElementView && parentElement) {
+      // (Cluster B slice 3) — typed bridge call. Was __gxtViewUtilsRef +
+      // __gxtPushParentView.
+      const viewUtils = getGxtRenderer()?.viewUtils;
+      if (viewUtils && parentElement) {
         // parentElement here is the rendering target (typically the
         // ember-outlet custom element or its direct parent div).
         // Walk up a couple of levels looking for the enclosing wrapper.
@@ -378,13 +388,13 @@ export default function createOutletTemplate(_owner: any) {
         let node: Element | null = parentElement as Element;
         let steps = 0;
         while (node && steps++ < 3) {
-          const v = viewUtils.getElementView(node);
+          const v = viewUtils.getElementView(node) as any;
           if (v && !v.isDestroyed && !v.isDestroying) {
             // Verify the view's element is in the live DOM
-            const viewEl = viewUtils.getViewElement ? viewUtils.getViewElement(v) : null;
+            const viewEl = viewUtils.getViewElement(v);
             const isLive = viewEl ? viewEl.isConnected : node.isConnected;
             if (isLive) {
-              pushParentFn(v);
+              viewUtils.pushParentView(v);
               _factoryParentPushed = true;
             }
             break;
@@ -429,8 +439,8 @@ export default function createOutletTemplate(_owner: any) {
     } finally {
       if (_factoryParentPushed) {
         try {
-          const popParentFn = (globalThis as any).__gxtPopParentView;
-          if (popParentFn) popParentFn();
+          // (Cluster B slice 3) — typed bridge call. Was __gxtPopParentView.
+          getGxtRenderer()?.viewUtils.popParentView();
         } catch {
           /* ignore */
         }

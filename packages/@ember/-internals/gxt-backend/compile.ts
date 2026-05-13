@@ -4275,13 +4275,13 @@ function patchGlobalIf() {
           // scope (e.g., the route controller), and re-rendered yield content
           // is added as a child of the controller instead of the component
           // invoking yield.
-          // Read push/pop dynamically — they may not be defined at patch time.
-          const pushPV = (globalThis as any).__gxtPushParentView;
-          const popPV = (globalThis as any).__gxtPopParentView;
+          // (Cluster B slice 3) — typed bridge call. Was
+          // __gxtPushParentView / __gxtPopParentView.
+          const viewUtils = getGxtRenderer()?.viewUtils;
           let pushed = false;
-          if (ifOwnerView && typeof pushPV === 'function') {
+          if (ifOwnerView && viewUtils) {
             try {
-              pushPV(ifOwnerView);
+              viewUtils.pushParentView(ifOwnerView);
               pushed = true;
             } catch {
               /* ignore */
@@ -4290,9 +4290,9 @@ function patchGlobalIf() {
           try {
             return origSyncState(v);
           } finally {
-            if (pushed && typeof popPV === 'function') {
+            if (pushed && viewUtils) {
               try {
-                popPV();
+                viewUtils.popParentView();
               } catch {
                 /* ignore */
               }
@@ -4613,8 +4613,9 @@ function patchGlobalEachSync() {
       }
     }
     const capturedParent: any = _initialParent;
-    const pushPV = g.__gxtPushParentView;
-    const popPV = g.__gxtPopParentView;
+    // (Cluster B slice 3) — typed bridge call. Was __gxtPushParentView /
+    // __gxtPopParentView.
+    const viewUtils = getGxtRenderer()?.viewUtils;
     // Ember View instances have an _isView/isView flag; only push actual
     // view-like instances. Plain objects / GXT contexts without a view
     // identity must not be pushed or they would become bogus parents.
@@ -4625,19 +4626,19 @@ function patchGlobalEachSync() {
         typeof capturedParent.trigger === 'function' ||
         'elementId' in capturedParent)
     );
-    // Only wrap when we have a view instance AND the push/pop helpers exist.
+    // Only wrap when we have a view instance AND the bridge is available.
     // On initial render, the parent is already on the stack (pushed by
     // renderTemplateWithParentView), so pushing again would merely stack —
     // `getCurrentParentView` still returns the same top. On update, the
     // stack is empty and this push makes the parent resolvable.
-    const canWrap = isViewInstance && typeof pushPV === 'function' && typeof popPV === 'function';
+    const canWrap = isViewInstance && !!viewUtils;
     const withParent = (cb: any): any => {
       if (!canWrap) return cb();
-      pushPV(capturedParent);
+      viewUtils!.pushParentView(capturedParent);
       try {
         return cb();
       } finally {
-        popPV();
+        viewUtils!.popParentView();
       }
     };
 
@@ -4736,9 +4737,12 @@ function patchGlobalEachSync() {
                 for (const root of directChildren) visit(root);
                 for (const c of candidates) if (!visited.has(c)) ordered.push(c);
 
-                const getViewElement =
-                  (g.__gxtViewUtilsRef && g.__gxtViewUtilsRef.getViewElement) ||
-                  ((inst: any) => inst && inst.element);
+                // (Cluster B slice 3) — typed bridge call. Was
+                // g.__gxtViewUtilsRef.getViewElement.
+                const _bridgeViewUtils = getGxtRenderer()?.viewUtils;
+                const getViewElement = _bridgeViewUtils
+                  ? (inst: any) => _bridgeViewUtils.getViewElement(inst)
+                  : (inst: any) => inst && inst.element;
                 const tempContainer = document.getElementById('qunit-fixture') || document.body;
                 const reattached: Array<{ element: Element }> = [];
                 (g as any).__gxtDestroyReattachInProgress = true;

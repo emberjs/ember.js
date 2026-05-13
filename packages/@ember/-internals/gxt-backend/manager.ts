@@ -704,15 +704,18 @@ function getCurrentParentView(): any | null {
   return parentViewStack.length > 0 ? parentViewStack[parentViewStack.length - 1] : null;
 }
 
-// Expose parent-view stack ops + lightweight view-utils on globalThis so
-// sibling compat modules (e.g. outlet.gts) can participate in parent-view
-// wiring without introducing a circular import on manager.ts.
-(globalThis as any).__gxtPushParentView = (view: any) => pushParentView(view);
-(globalThis as any).__gxtPopParentView = () => popParentView();
-(globalThis as any).__gxtViewUtilsRef = {
-  getElementView,
-  getViewElement,
+// Parent-view stack ops + lightweight view-utils are exposed to sibling
+// modules (compile.ts, glimmer/lib/templates/outlet.ts) via the typed
+// gxt-bridge — see setGxtRenderer call at EOF.
+//
+// Capability methods are bound to the underlying push/pop/getElementView/
+// getViewElement references hoisted above.
+const _gxtBridgePushParentView = (view: object) => pushParentView(view);
+const _gxtBridgePopParentView = () => {
+  popParentView();
 };
+const _gxtBridgeGetElementView = (el: Element) => getElementView(el) as object | null;
+const _gxtBridgeGetViewElement = (view: object) => getViewElement(view as any) as Element | null;
 
 /**
  * Rebuild the view-tree parent/child relationships from DOM ancestry.
@@ -12388,5 +12391,11 @@ setGxtRenderer({
   backtracking: {
     beginFrame: beginBacktrackingFrame,
     endFrame: endBacktrackingFrame,
+  },
+  viewUtils: {
+    pushParentView: _gxtBridgePushParentView,
+    popParentView: _gxtBridgePopParentView,
+    getElementView: _gxtBridgeGetElementView,
+    getViewElement: _gxtBridgeGetViewElement,
   },
 });
