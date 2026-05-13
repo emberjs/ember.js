@@ -851,6 +851,75 @@ export interface GxtCompilePipelineCapabilities {
    * `CP.get` hot path.
    */
   isInTriggerReRender?(): boolean;
+
+  /**
+   * Read-only predicate for the render-pass depth counter at
+   * `compile.ts:_renderPassDepth`. Returns `true` iff at least one render
+   * pass is currently active (i.e., `_gxtSetIsRendering(true)` was called
+   * more often than `_gxtSetIsRendering(false)` since module init).
+   *
+   * Slice-19 (Cluster B): graduates the single-writer / multi-reader render-
+   * pass-detect flag (`__gxtIsRendering`) to a typed read-side predicate.
+   * The writer (`compile.ts:_gxtSetIsRendering`, exposed as
+   * `globalThis.__gxtSetIsRendering`) is the only mutator of the depth
+   * counter; this predicate is the read-side surface.
+   *
+   * Writer + reader audit (pre-slice-19):
+   *   Writer (1):
+   *     - `compile.ts:_gxtSetIsRendering` — increment on `true`, decrement
+   *       on `false`. Called from:
+   *         - `glimmer/lib/renderer.ts:2236/2272/2283` via
+   *           `globalThis.__gxtSetIsRendering` (cross-package writer; the
+   *           renderer wraps each `template.render()` invocation with
+   *           `setIsRendering(true)` + restore).
+   *         - The depth counter is module-local to `compile.ts` so it is
+   *           shared between the in-element `$_inElement` readers and the
+   *           renderer's wraps (which both go through globalThis).
+   *   Readers (4):
+   *     - `compile.ts:1903` ($_inElement render-pass detect for deferred
+   *       in-element renders). MIGRATED in slice 19 to `_gxtIsRendering()`
+   *       intra-file call.
+   *     - `compile.ts:2130` ($_inElement self-insert heuristic). MIGRATED
+   *       in slice 19 to `_gxtIsRendering()` intra-file call.
+   *     - `glimmer/lib/renderer.ts:2233/2271` (renderComponent's
+   *       wasRendering save-restore + the inner `_doRender` reactor's
+   *       wasRenderingLocal check). MIGRATED in slice 19 to
+   *       `compilePipeline.isRendering()` bridge call.
+   *     - `@ember/object/core.ts:321` (DEBUG proxy trap `_isInternalPath`
+   *       predicate). NOT migrated in slice 19 — the trap reads three
+   *       globalThis flags together (`__gxtIsRendering`, `__gxtSyncing`,
+   *       `__gxtInTriggerReRender`); migrating only one would not improve
+   *       the edge count net. Slice 18 deferred the same trap for its own
+   *       `__gxtInTriggerReRender` reader. A future slice 20 can migrate
+   *       the whole 3-flag predicate at once (see suggested slice 20 in
+   *       memory notes).
+   *
+   * Bridge shape decision: read-only predicate (mirroring slice-18's
+   * `isInTriggerReRender()`). The single writer (`_gxtSetIsRendering`)
+   * is paired begin/end through cross-package callers in
+   * `glimmer/lib/renderer.ts`, not a `withRendering(fn)` save-restore
+   * helper. A future slice 20 can promote the writer to a paired
+   * `beginRendering()` / `endRendering()` (or `withRendering(fn)`) bridge
+   * surface, but slice 19 keeps the writer on globalThis to avoid touching
+   * the cross-package renderer.ts writer site at the same time.
+   *
+   * Namespace decision: `compilePipeline`. The flag is semantically a
+   * scope-modifier on the GXT template render pipeline — the writer +
+   * depth counter live in `compile.ts` (the pipeline's home file), the
+   * intra-package readers are in `$_inElement` rendering helpers, and the
+   * cross-package reader in `glimmer/lib/renderer.ts` is the renderer's
+   * wrapping of `template.render()`. Same namespace as slices 15/17/18.
+   *
+   * The globalThis writer `__gxtIsRendering` is RETAINED post-slice-19
+   * because of the unmigrated `@ember/object/core.ts:321` reader. The
+   * bridge predicate reads the same module-local `_renderPassDepth`
+   * counter as the globalThis function — they are equivalent post-install.
+   *
+   * Fast-check: the implementation is `return _renderPassDepth > 0` — one
+   * integer comparison; zero allocations. Suitable for hot-path use in
+   * the `$_inElement` rendering helpers.
+   */
+  isRendering?(): boolean;
 }
 
 /**

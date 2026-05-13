@@ -2229,8 +2229,22 @@ function _renderComponentGxt(
     // Save and restore the previous isRendering state to avoid clobbering
     // it when renderComponent is called from within another render pass
     // (e.g., from a component constructor during an outer template render).
+    //
+    // Slice-19 (Cluster B): read the render-pass depth through the typed
+    // `compilePipeline.isRendering()` bridge predicate. Falls back to the
+    // raw `globalThis.__gxtIsRendering` lookup for the (rare) case where
+    // the bridge hasn't been populated yet (the bridge writer at compile.ts
+    // module-init contributes the same `_gxtIsRendering` function reference
+    // as the globalThis writer, so the two are equivalent post-install).
+    // The `__gxtSetIsRendering` writer is left on globalThis pending a
+    // future slice 20 begin/end migration. See `isRendering` doc in
+    // gxt-bridge.ts.
     const _setRendering = (globalThis as any).__gxtSetIsRendering;
-    const _isRendering = (globalThis as any).__gxtIsRendering;
+    const _bridgeIsRendering = getGxtRenderer()?.compilePipeline.isRendering;
+    const _isRendering =
+      typeof _bridgeIsRendering === 'function'
+        ? _bridgeIsRendering
+        : ((globalThis as any).__gxtIsRendering as (() => boolean) | undefined);
     const wasRendering = typeof _isRendering === 'function' ? _isRendering() : false;
     if (typeof _setRendering === 'function') {
       _setRendering(true);

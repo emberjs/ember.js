@@ -1713,32 +1713,51 @@ if (false as boolean) {
 // a tracked boolean. Also wire compile.ts's own render() wrapper to
 // bump it, because precompileTemplate's render() is called from the
 // renderer.ts code path.
-if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
-  let _renderPassDepth = 0;
-  (globalThis as any).__gxtSetIsRendering = function (on: boolean) {
-    if (on) _renderPassDepth++;
-    else if (_renderPassDepth > 0) {
-      _renderPassDepth--;
-      // When the top-level render pass ends (depth 1 → 0) the parent's
-      // DOM fragment has been committed to its target. Drain any
-      // in-element deferred renders that were queued during this pass —
-      // by now their compile-time literal id targets are resolvable via
-      // document.getElementById. This is the synchronous drain point for
-      // the renderComponent strict-mode path, which does NOT go through
-      // __gxtRebuildViewTreeFromDom or __gxtFlushAfterInsertQueue.
-      if (_renderPassDepth === 0) {
-        try {
-          const drain = (globalThis as any).__gxtInElementDrainDeferred;
-          if (typeof drain === 'function') drain();
-        } catch {
-          /* ignore */
-        }
+//
+// Slice-19 (Cluster B): the read-side predicate `_gxtIsRendering` is
+// promoted to module-local scope and contributed to the bridge as
+// `compilePipeline.isRendering()` (see `installCompilePipelinePart` at the
+// bottom of this file). The globalThis writers (`__gxtIsRendering` /
+// `__gxtSetIsRendering`) are RETAINED:
+//   - `__gxtIsRendering` is retained because the unmigrated reader at
+//     `@ember/object/core.ts:321` (DEBUG proxy trap) reads three flags
+//     together (`__gxtIsRendering`, `__gxtSyncing`, `__gxtInTriggerReRender`);
+//     migrating one flag while leaving the other two raw would not improve
+//     the edge count net. Slice 18 already deferred the same trap for its
+//     own `__gxtInTriggerReRender` reader. A future slice (suggested slice
+//     20) can migrate the whole 3-flag predicate at once.
+//   - `__gxtSetIsRendering` is retained because the cross-package writer at
+//     `glimmer/lib/renderer.ts:2232/2272/2282` toggles it via globalThis and
+//     a future slice should migrate it as a paired `beginRendering()` /
+//     `endRendering()` helper (see suggested slice 20 in the memory notes).
+let _renderPassDepth = 0;
+function _gxtIsRendering(): boolean {
+  return _renderPassDepth > 0;
+}
+function _gxtSetIsRendering(on: boolean): void {
+  if (on) _renderPassDepth++;
+  else if (_renderPassDepth > 0) {
+    _renderPassDepth--;
+    // When the top-level render pass ends (depth 1 → 0) the parent's
+    // DOM fragment has been committed to its target. Drain any
+    // in-element deferred renders that were queued during this pass —
+    // by now their compile-time literal id targets are resolvable via
+    // document.getElementById. This is the synchronous drain point for
+    // the renderComponent strict-mode path, which does NOT go through
+    // __gxtRebuildViewTreeFromDom or __gxtFlushAfterInsertQueue.
+    if (_renderPassDepth === 0) {
+      try {
+        const drain = (globalThis as any).__gxtInElementDrainDeferred;
+        if (typeof drain === 'function') drain();
+      } catch {
+        /* ignore */
       }
     }
-  };
-  (globalThis as any).__gxtIsRendering = function () {
-    return _renderPassDepth > 0;
-  };
+  }
+}
+if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
+  (globalThis as any).__gxtSetIsRendering = _gxtSetIsRendering;
+  (globalThis as any).__gxtIsRendering = _gxtIsRendering;
 }
 
 // Deferred in-element render queue. When $_inElement encounters a null
@@ -1894,15 +1913,17 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
     // whose outer DOM fragment hasn't been committed to the live document
     // yet, `document.getElementById` returns null even though the target
     // element exists in the pending parent fragment. Detect this by
-    // checking __gxtIsRendering() — if true, we're mid-render and should
+    // checking _gxtIsRendering() — if true, we're mid-render and should
     // defer the block body render until after the parent commits.
     //
     // Outside of an active render pass (classic `this.render` assertion
     // tests that pass `this.someElement = null`), fall through to the
     // synchronous assertion so expectAssertion() still catches the throw.
-    const _gxtIsRenderingFn = (globalThis as any).__gxtIsRendering;
-    const _insideRenderPass =
-      typeof _gxtIsRenderingFn === 'function' && _gxtIsRenderingFn() === true;
+    //
+    // Slice-19 (Cluster B): intra-compile.ts reader — call the module-local
+    // `_gxtIsRendering` directly (which is also published on the bridge as
+    // `compilePipeline.isRendering()`). One call, zero globalThis lookups.
+    const _insideRenderPass = _gxtIsRendering();
     // Only defer if we have a compile-time literal id fallback to
     // re-resolve with. Without one, we cannot distinguish "render-order
     // timing bug" from "user actually passed null" — and deferring
@@ -2127,7 +2148,9 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
     // We detect self-insertion heuristically: the target is empty AND we
     // are currently inside a render pass. Standard `{{#in-element
     // externalTarget}}` into a non-rendering target is unaffected.
-    const gxtRenderingFn = (globalThis as any).__gxtIsRendering;
+    // Slice-19 (Cluster B): intra-compile.ts reader — call the module-local
+    // `_gxtIsRendering` directly (which is also published on the bridge as
+    // `compilePipeline.isRendering()`).
     // Suppress self-insert when a delegate explicitly tells us the current
     // render target is *not* the in-element destination. The rehydration
     // delegate sets __gxtInElementRenderTarget to the element it's
@@ -2144,8 +2167,7 @@ if (typeof (globalThis as any).__gxtIsRendering !== 'function') {
       insertBefore === null &&
       appendRef.childNodes.length === 0 &&
       !isExternalTarget &&
-      typeof gxtRenderingFn === 'function' &&
-      gxtRenderingFn() === true;
+      _gxtIsRendering();
     if (isSelfInsert) {
       // Return a fragment containing [content..., placeholder]. GXT's
       // outer-template commit will insert this whole fragment at the
@@ -14379,6 +14401,15 @@ installCompilePipelinePart({
   // gxt-bridge.ts.
   withInTriggerReRender: _gxtWithInTriggerReRender,
   isInTriggerReRender: _gxtIsInTriggerReRender,
+  // Slice-19 (Cluster B): read-only predicate for the render-pass depth
+  // counter (`_renderPassDepth` defined near the top of this file). Replaces
+  // the cross-package globalThis lookup at `glimmer/lib/renderer.ts:2233`
+  // (used to decide whether to suppress text-effect creation during nested
+  // renderComponent calls). The globalThis writer `__gxtIsRendering` is
+  // RETAINED post-slice-19 because of the unmigrated
+  // `@ember/object/core.ts:321` DEBUG proxy-trap reader (same trap that
+  // slice 18 deferred). See `isRendering` doc in gxt-bridge.ts.
+  isRendering: _gxtIsRendering,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
