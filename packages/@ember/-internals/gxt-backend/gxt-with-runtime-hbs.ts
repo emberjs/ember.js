@@ -212,10 +212,20 @@ export { $_helperHelper_ember as $_helperHelper };
 // Default export with overrides
 // @ts-ignore - direct path import (avoid circular alias: @lifeart/gxt → this file)
 import * as gxtModule from '@lifeart/gxt';
-// Store the GXT module reference on globalThis so that manager.ts can access
-// the original $_MANAGERS object (which GXT's internal functions close over).
-// This must happen before manager.ts runs.
-(globalThis as any).__gxtDirectModule = gxtModule;
+// (Cluster B slice 7) Publish the GXT module reference via the typed
+// gxt-bridge (`runtime.getGxtModule`) so manager.ts can obtain the
+// GXT-internal `$_MANAGERS` reference without a globalThis read. The
+// install-API mirrors slice 6's `installCompilePipelinePart`: if manager.ts
+// has already installed the renderer, the part is merged immediately; if
+// not, it's queued and flushed on `setGxtRenderer`.
+//
+// `__gxtOriginalManagers` is NOT migrated in this slice (slice 7 scope is
+// `__gxtDirectModule` only). It has a second writer in compile.ts and a
+// deferred-retry reader in manager.ts; a follow-up slice will handle it.
+import { installRuntimePart } from './gxt-bridge';
+installRuntimePart({
+  getGxtModule: () => gxtModule,
+});
 (globalThis as any).__gxtOriginalManagers = gxtModule.$_MANAGERS;
 import { hbs } from './runtime-hbs';
 export default {

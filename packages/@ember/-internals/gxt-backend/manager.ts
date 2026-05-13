@@ -12382,8 +12382,12 @@ function _createUpdatableTagForModifier(): any {
   // @ts-ignore - direct path import
   let gxtOrigManagers: any = null;
   try {
-    // Use the direct path import to get the same module-scope object
-    const gxtMod = (globalThis as any).__gxtDirectModule;
+    // (Cluster B slice 7) Read the GXT module via the typed gxt-bridge
+    // `runtime.getGxtModule()` (was `(globalThis as any).__gxtDirectModule`).
+    // The writer is `gxt-with-runtime-hbs.ts`, which contributes the runtime
+    // namespace via `installRuntimePart`. Optional chains guard against the
+    // gxt-with-runtime-hbs entry not being part of the import graph.
+    const gxtMod = getGxtRenderer()?.runtime.getGxtModule?.() as any;
     if (gxtMod?.$_MANAGERS) {
       gxtOrigManagers = gxtMod.$_MANAGERS;
     }
@@ -12454,4 +12458,8 @@ setGxtRenderer({
     syncWrapper: _gxtSyncWrapper,
     snapshotLiveInstances: _gxtSnapshotLiveInstances,
   },
+  // Slice-7: populated entirely via `installRuntimePart` from
+  // gxt-with-runtime-hbs.ts. Seeded empty here so `Object.assign` has a
+  // target object regardless of which side loads first.
+  runtime: {},
 });

@@ -281,9 +281,9 @@ export interface GxtFormatCapabilities {
  *    invert the bridge direction and is structurally different from prior
  *    slices.
  *  - `__gxtDirectModule` (writer in gxt-with-runtime-hbs.ts, reader in
- *    manager.ts) — writer is in a third gxt-backend file. Relocating the
- *    writer to manager.ts is feasible (manager.ts already imports
- *    `@lifeart/gxt`) but the relocation has independent risk; defer.
+ *    manager.ts) — MIGRATED IN SLICE 7. See `GxtRuntimeCapabilities` and
+ *    `installRuntimePart` below. Validates the install-API pattern with a
+ *    second non-manager.ts writer file.
  *  - `__gxtMarkTemplateRendered` / `__gxtBeginRenderPass` / `__gxtEndRenderPass`
  *    — render-pass triad. `__gxtBeginRenderPass` is wrap-by-reassignment at
  *    compile.ts:5106 (same exclusion class as slice 2's `__gxtCheckBacktracking`
@@ -401,10 +401,49 @@ export interface GxtCompilePipelineCapabilities {
 }
 
 /**
+ * Runtime / module-handoff capabilities. Implemented by
+ * `gxt-with-runtime-hbs.ts` (the file that imports `* as gxtModule from
+ * '@lifeart/gxt'` and re-exports the runtime-hbs-flavored namespace), consumed
+ * by manager.ts to obtain the SAME `@lifeart/gxt` namespace object that GXT's
+ * internal manager-handler functions close over. This is needed so manager.ts
+ * can mutate the original `$_MANAGERS` object in place (GXT's `$_maybeHelper`
+ * etc. capture a reference to it at module-init time; replacing the object
+ * wholesale would not be observed).
+ *
+ * Slice-7 design: a tiny one-method namespace, populated via the install-API
+ * pattern introduced in slice 6 (`installRuntimePart`). The writer file
+ * (`gxt-with-runtime-hbs.ts`) does NOT live in `manager.ts`, so we use a
+ * partial-install API rather than an initial `setGxtRenderer` field. This
+ * also validates the pattern with a SECOND non-manager.ts writer.
+ *
+ * NOT included in this slice (defer to future slices):
+ *  - `__gxtOriginalManagers` — also written by `gxt-with-runtime-hbs.ts:219`
+ *    AND by `compile.ts:6023`. Two writers + the deferred-retry consumer in
+ *    `manager.ts:12402` make this materially more complex than slice 7's
+ *    one-writer/one-reader scope. Defer until a dedicated slice can handle
+ *    the dual-write semantics.
+ */
+export interface GxtRuntimeCapabilities {
+  /**
+   * Return the `@lifeart/gxt` namespace object as imported by
+   * `gxt-with-runtime-hbs.ts`. Returns `undefined` if the writer file never
+   * loaded (i.e., the gxt-with-runtime-hbs entry was not part of the import
+   * graph for this build).
+   *
+   * Used by manager.ts's `$_MANAGERS`-mutation block to obtain the
+   * GXT-internal `$_MANAGERS` reference and install the Ember
+   * component/helper/modifier handlers in place.
+   *
+   * Previously: `(globalThis as any).__gxtDirectModule`.
+   */
+  getGxtModule?(): unknown;
+}
+
+/**
  * The aggregate GXT renderer capabilities object. Pilot exposed only the
  * destruction slice; subsequent slices added backtracking, view-utils,
- * format, and compile-pipeline. Future slices will be additional readonly
- * properties on this same interface (e.g. `schedule`, `lifecycle`,
+ * format, compile-pipeline, and runtime. Future slices will be additional
+ * readonly properties on this same interface (e.g. `schedule`, `lifecycle`,
  * `cellMirror`, …).
  *
  * Why a single object rather than 30 individual exports? Easier to extend
@@ -417,6 +456,7 @@ export interface GxtRenderer {
   readonly viewUtils: GxtViewUtilsCapabilities;
   readonly format: GxtFormatCapabilities;
   readonly compilePipeline: GxtCompilePipelineCapabilities;
+  readonly runtime: GxtRuntimeCapabilities;
 }
 
 let _renderer: GxtRenderer | null = null;
@@ -430,6 +470,17 @@ let _renderer: GxtRenderer | null = null;
 // available, then flush.
 let _pendingCompilePipelineParts: Partial<GxtCompilePipelineCapabilities>[] = [];
 
+// Slice-7 deferred-install queue. Same load-order independence pattern as
+// slice 6's compile-pipeline queue, but for the `runtime` namespace. The
+// writer (`gxt-with-runtime-hbs.ts`) re-exports `$_MANAGERS` from manager.ts,
+// so importing the writer file pulls manager.ts in transitively — but the
+// top-level statement in gxt-with-runtime-hbs.ts that runs the install
+// fires AFTER the re-exports' transitive `setGxtRenderer` has executed.
+// Still, when external code imports gxt-with-runtime-hbs.ts via a path that
+// reaches manager.ts only AFTER the install-call line, we'd have a null
+// renderer. Buffer until the renderer is available, then flush.
+let _pendingRuntimeParts: Partial<GxtRuntimeCapabilities>[] = [];
+
 /**
  * Install the renderer capabilities object. Called exactly once at
  * gxt-backend module init by manager.ts. Multiple calls overwrite, but this
@@ -439,8 +490,13 @@ let _pendingCompilePipelineParts: Partial<GxtCompilePipelineCapabilities>[] = []
  * and ember-template-compiler.ts via `installCompilePipelinePart` after this
  * initial install. See slice-6 design note in `GxtCompilePipelineCapabilities`.
  *
- * On install we also flush any compile-pipeline parts that were registered
- * BEFORE manager.ts loaded (see `_pendingCompilePipelineParts` above).
+ * The `runtime` slot is populated entirely via `installRuntimePart` (slice 7)
+ * from `gxt-with-runtime-hbs.ts`; manager.ts seeds an empty `runtime: {}` so
+ * the namespace exists for `Object.assign` to merge into.
+ *
+ * On install we also flush any compile-pipeline / runtime parts that were
+ * registered BEFORE manager.ts loaded (see `_pendingCompilePipelineParts`
+ * and `_pendingRuntimeParts` above).
  */
 export function setGxtRenderer(renderer: GxtRenderer): void {
   _renderer = renderer;
@@ -449,6 +505,12 @@ export function setGxtRenderer(renderer: GxtRenderer): void {
       Object.assign(_renderer.compilePipeline, part);
     }
     _pendingCompilePipelineParts = [];
+  }
+  if (_pendingRuntimeParts.length > 0) {
+    for (const part of _pendingRuntimeParts) {
+      Object.assign(_renderer.runtime, part);
+    }
+    _pendingRuntimeParts = [];
   }
 }
 
@@ -479,6 +541,26 @@ export function installCompilePipelinePart(
     return;
   }
   Object.assign(_renderer.compilePipeline, part);
+}
+
+/**
+ * Slice-7 install API. Allows `gxt-with-runtime-hbs.ts` to contribute methods
+ * to the `runtime` namespace. Mirrors `installCompilePipelinePart` (slice 6)
+ * for the same load-order independence: if `setGxtRenderer` has already fired
+ * (manager.ts loaded first), the part is merged immediately via `Object.assign`
+ * into the existing `runtime` object. If `setGxtRenderer` has NOT yet fired,
+ * the part is buffered and flushed when `setGxtRenderer` runs.
+ *
+ * Used by `gxt-with-runtime-hbs.ts` to publish the `@lifeart/gxt` namespace
+ * object so manager.ts can mutate the GXT-internal `$_MANAGERS` in place. See
+ * `GxtRuntimeCapabilities` for the namespace docs.
+ */
+export function installRuntimePart(part: Partial<GxtRuntimeCapabilities>): void {
+  if (_renderer === null) {
+    _pendingRuntimeParts.push(part);
+    return;
+  }
+  Object.assign(_renderer.runtime, part);
 }
 
 /**
