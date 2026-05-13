@@ -39,7 +39,11 @@ export function tagForProperty(
     // bypass setWithMandatorySetter. Skip for those cases to avoid false
     // positives while preserving the DEBUG checks for plain objects/observers
     // on non-component EmberObjects (e.g. EmberObject.create, controllers).
-    if ((globalThis as any).__GXT_MODE__) {
+    //
+    // Cluster E pilot: `__GXT_MODE__` here is a build-time constant (vite
+    // `define` for the test build, rollup `replaceGxtModeFlag` for the
+    // classic dist). After minification the branch DCE's in classic mode.
+    if (__GXT_MODE__) {
       if (
         propertyKey === 'args' ||
         propertyKey === 'attrs' ||
